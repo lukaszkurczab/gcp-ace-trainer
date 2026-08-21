@@ -44,6 +44,7 @@ import type { PracticeSessionRouteParams } from "./sessionConfig";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { CertificationPracticeSessionScreen } from "./CertificationPracticeSessionScreen";
+import { DesignInterviewPracticeScreen } from "./DesignInterviewPracticeScreen";
 
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
@@ -57,6 +58,9 @@ type CompletionFailure = Exclude<Awaited<ReturnType<typeof completeAlgorithmsPra
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
   if (getTrackRegistration(route.params.trackId).familyId === "certification" && (route.params.mode === "certification-diagnostic-baseline" || route.params.mode === "certification-focus-practice" || route.params.mode === "certification-scenario-practice" || route.params.mode === "certification-weak-area-review" || route.params.mode === "certification-mixed-practice" || route.params.mode === "certification-quick-review")) {
     return <CertificationPracticeSessionScreen navigation={navigation} route={route} />;
+  }
+  if (getTrackRegistration(route.params.trackId).familyId === "design_interview") {
+    return <DesignInterviewPracticeScreen navigation={navigation} route={route} />;
   }
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
@@ -352,7 +356,7 @@ async function loadOrStartAlgorithmsPractice(params: PracticeSessionRouteParams,
     await startAlgorithmsSession({
       feedbackMode: params.feedbackMode,
       modeId,
-      requestedLength: params.sessionLength,
+      requestedLength: params.sessionLength as 10 | 20 | 40,
       reviewItemRefs: params.reviewItemRefs,
       reviewSource: params.reviewSource,
       scope: resolveScope(params, modeId),

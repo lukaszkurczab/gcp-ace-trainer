@@ -39,6 +39,7 @@ import { SelectTrackScreen } from "./SelectTrackScreen";
 import {
   buildPracticeSessionConfig,
   buildCertificationPracticeResumeRoute,
+  buildDesignInterviewPracticeResumeRoute,
 } from "../practice/sessionConfig";
 import { HomeTab } from "./tabs/HomeTab";
 import type { HomeRecommendationAction } from "./tabs/homeTabModel";
@@ -189,12 +190,22 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     if (action.kind === "unavailable") return;
     try {
       if (action.kind === "resume_certification_practice") {
-        if (activeTrackId !== "google-cloud-associate-cloud-engineer") throw new Error("Certification Practice can resume only from its active track.");
         const session = await resumeActiveTrainingSession();
-        if (session.id !== action.sessionId || session.trackId !== "google-cloud-associate-cloud-engineer" || session.modeId !== action.modeId) {
+        if (!action.trackId && (session.id !== action.sessionId || session.trackId !== "google-cloud-associate-cloud-engineer" || session.modeId !== action.modeId)) {
+          throw new Error("The active Certification Practice session changed before it could be resumed.");
+        }
+        if (action.trackId && (session.id !== action.sessionId || session.trackId !== action.trackId || session.modeId !== action.modeId)) {
           throw new Error("The active Certification Practice session changed before it could be resumed.");
         }
         navigation.navigate(ROUTES.PRACTICE_SESSION, buildCertificationPracticeResumeRoute(session));
+        return;
+      }
+      if (action.kind === "resume_design_interview") {
+        const session = await resumeActiveTrainingSession();
+        if (session.id !== action.sessionId || session.trackId !== activeTrackId || session.modeId !== action.modeId) {
+          throw new Error("The active Design Interview session changed before it could be resumed.");
+        }
+        navigation.navigate(ROUTES.PRACTICE_SESSION, buildDesignInterviewPracticeResumeRoute(session));
         return;
       }
       if (action.kind === "choose_declared_scope") {

@@ -8,13 +8,22 @@ const root = process.cwd();
 const contentRoot = resolve(root, "../patternly-content");
 const lock = JSON.parse(readFileSync(resolve(root, "integration/contracts/content-release/release.lock.json"), "utf8"));
 const freeNodeTarget = resolve(root, "src/content/bundled/generatedFreeNodePackages.ts");
-const expectedTracks = ["coding-interview-dsa-problem-solving", "google-cloud-associate-cloud-engineer", "microsoft-azure-administrator-associate-az-104"];
+const expectedTracks = [
+  "coding-interview-dsa-problem-solving",
+  "backend-system-design-interview",
+  "object-oriented-design-interview",
+  "frontend-system-design-interview",
+  "google-cloud-associate-cloud-engineer",
+  "aws-certified-solutions-architect-associate",
+  "microsoft-azure-administrator-associate-az-104",
+  "microsoft-azure-ai-fundamentals-ai-901",
+];
 
 if (lock?.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || typeof lock.bundleId !== "string" || !Array.isArray(lock.artifacts)) {
   throw new Error("The application content lock is invalid.");
 }
 const lockedTracks = lock.artifacts.map((artifact) => artifact.trackId).sort();
-if (JSON.stringify(lockedTracks) !== JSON.stringify(expectedTracks)) {
+if (JSON.stringify(lockedTracks) !== JSON.stringify([...expectedTracks].sort())) {
   throw new Error("The application content lock must pin exactly the registered content artifacts.");
 }
 

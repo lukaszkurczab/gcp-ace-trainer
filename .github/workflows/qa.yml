@@ -26,7 +26,9 @@ jobs:
         run: |
           node -e '
             const lock = require("./integration/contracts/content-release/release.lock.json");
-            if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || !Array.isArray(lock.artifacts) || lock.artifacts.map((artifact) => artifact.trackId).join(",") !== "coding-interview-dsa-problem-solving,google-cloud-associate-cloud-engineer,microsoft-azure-administrator-associate-az-104" || !lock.artifacts.every((artifact) => /^[a-f0-9]{40}$/.test(artifact.producerCommit) && /^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit) && /^[a-z][a-z0-9-]*$/.test(artifact.releaseId))) process.exit(1);
+            const expectedTrackIds = ["aws-certified-solutions-architect-associate", "backend-system-design-interview", "coding-interview-dsa-problem-solving", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901", "object-oriented-design-interview"];
+            const trackIds = Array.isArray(lock.artifacts) ? lock.artifacts.map((artifact) => artifact.trackId) : [];
+            if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || trackIds.join(",") !== expectedTrackIds.join(",") || !lock.artifacts.every((artifact) => /^[a-f0-9]{40}$/.test(artifact.producerCommit) && /^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit) && /^[a-z][a-z0-9-]*$/.test(artifact.releaseId))) process.exit(1);
             process.stdout.write(`commit=${lock.artifacts.at(-1).producerCommit}\n`);
           ' >> "$GITHUB_OUTPUT"
       - name: Checkout locked content producer
@@ -114,7 +116,9 @@ jobs:
         run: |
           node -e '
             const lock = require("./integration/contracts/content-release/release.lock.json");
-            if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || !Array.isArray(lock.artifacts) || lock.artifacts.map((artifact) => artifact.trackId).join(",") !== "coding-interview-dsa-problem-solving,google-cloud-associate-cloud-engineer,microsoft-azure-administrator-associate-az-104" || !lock.artifacts.every((artifact) => /^[a-f0-9]{40}$/.test(artifact.producerCommit) && /^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit) && /^[a-z][a-z0-9-]*$/.test(artifact.releaseId))) process.exit(1);
+            const expectedTrackIds = ["aws-certified-solutions-architect-associate", "backend-system-design-interview", "coding-interview-dsa-problem-solving", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901", "object-oriented-design-interview"];
+            const trackIds = Array.isArray(lock.artifacts) ? lock.artifacts.map((artifact) => artifact.trackId) : [];
+            if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || trackIds.join(",") !== expectedTrackIds.join(",") || !lock.artifacts.every((artifact) => /^[a-f0-9]{40}$/.test(artifact.producerCommit) && /^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit) && /^[a-z][a-z0-9-]*$/.test(artifact.releaseId))) process.exit(1);
             process.stdout.write(`commit=${lock.artifacts.at(-1).producerCommit}\n`);
           ' >> "$GITHUB_OUTPUT"
       - name: Checkout locked content producer

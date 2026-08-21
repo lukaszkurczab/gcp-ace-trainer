@@ -110,9 +110,10 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
   const activeTrack = getTrackDisplay(activeTrackId);
   const topics = buildTopicRoadmapNodes({ activeTrackId, trainingAttempts });
   const rows = buildRoadmapRows(topics);
-  const resolvedSelectedTopicId = selectedTopicId ?? getDefaultSelectedTopicId(topics);
+  const resolvedSelectedTopicId = getSelectableTopicId(topics, selectedTopicId);
 
   function selectTopic(topic: TopicRoadmapNodeModel) {
+    if (topic.status === "locked") return;
     setSelectedTopicId(topic.id);
   }
 
@@ -229,6 +230,16 @@ function getDefaultSelectedTopicId(
     topics[0]?.id;
 }
 
+function getSelectableTopicId(
+  topics: readonly TopicRoadmapNodeModel[],
+  selectedTopicId?: string,
+): string | undefined {
+  const selected = topics.find((topic) => topic.id === selectedTopicId);
+  return selected && selected.status !== "locked"
+    ? selected.id
+    : getDefaultSelectedTopicId(topics);
+}
+
 function isTopicSelected(topic: TopicRoadmapNodeModel, selectedTopicId?: string): boolean {
   return topic.id === selectedTopicId;
 }
@@ -255,7 +266,8 @@ function RoadmapNode({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ selected }}
+      accessibilityState={{ disabled: topic.status === "locked", selected }}
+      disabled={topic.status === "locked"}
       onPress={onPress}
       style={({ pressed }) => [
         styles.node,
@@ -311,6 +323,7 @@ function DotGrid() {
 }
 
 function getTopicIcon(topic: TopicRoadmapNodeModel, activeTrackId: TrackId): IconName {
+  if (topic.status === "locked") return "shield";
   if (activeTrackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID) {
     return "route";
   }
@@ -337,6 +350,8 @@ function getCircleStyle(topic: TopicRoadmapNodeModel, selected: boolean, styles:
     return styles.nodeCircleActive;
   }
 
+  if (topic.status === "locked") return styles.nodeCircleLocked;
+
   return styles.nodeCircleAvailable;
 }
 
@@ -345,6 +360,8 @@ function getIconColor(topic: TopicRoadmapNodeModel, selected: boolean, palette: 
     return palette.textPrimary;
   }
 
+  if (topic.status === "locked") return palette.textSecondary;
+
   return palette.primary;
 }
 
@@ -352,6 +369,8 @@ function getLabelStyle(topic: TopicRoadmapNodeModel, selected: boolean, styles: 
   if (selected) {
     return styles.nodeLabelCurrent;
   }
+
+  if (topic.status === "locked") return styles.nodeLabelLocked;
 
   return styles.nodeLabelAvailable;
 }
@@ -466,6 +485,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     backgroundColor: palette.background,
     borderColor: palette.primary,
   },
+  nodeCircleLocked: {
+    backgroundColor: colorWithOpacity(palette.textPrimary, 0.04),
+    borderColor: palette.border,
+  },
   nodeCircleActive: {
     backgroundColor: palette.primary,
     borderColor: palette.background,
@@ -491,5 +514,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   nodeLabelCurrent: {
     color: palette.accentPurple,
+  },
+  nodeLabelLocked: {
+    color: palette.textSecondary,
   },
 });

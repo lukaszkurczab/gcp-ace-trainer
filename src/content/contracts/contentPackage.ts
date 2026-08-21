@@ -16,6 +16,8 @@ export type ContentPackageErrorCode =
   | "package_pin_mismatch"
   | "package_minimum_app_version";
 
+export type ContentPackageFamilyId = "coding_interview" | "certification" | "design_interview";
+
 export type ContentPackageRuntime = Readonly<{
   sha256Utf8(value: string): Promise<string>;
   sha256Bytes(value: Uint8Array): Promise<string>;
@@ -38,7 +40,7 @@ export type ContentPackageTrustRecord = Readonly<{ packageIdentity: string; pack
 
 export type ContentPackageRequest = Readonly<{
   trackId: string;
-  familyId: "coding_interview" | "certification";
+  familyId: ContentPackageFamilyId;
   freeNodeId: string;
   modeId: string;
   appVersion: string;
@@ -89,4 +91,5 @@ export type VerifiedContentPackageBase = Readonly<{
 
 export type VerifiedContentPackage =
   | (VerifiedContentPackageBase & Readonly<{ familyId: "coding_interview" }>)
-  | (VerifiedContentPackageBase & Readonly<{ familyId: "certification" }>);
+  | (VerifiedContentPackageBase & Readonly<{ familyId: "certification" }>)
+  | (VerifiedContentPackageBase & Readonly<{ familyId: "design_interview" }>);

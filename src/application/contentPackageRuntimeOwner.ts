@@ -1,11 +1,13 @@
 import { CodingInterviewFamilyRuntime } from "./coding-interview/CodingInterviewFamilyRuntime";
 import { CertificationFamilyRuntime } from "./certification/CertificationFamilyRuntime";
+import { DesignInterviewFamilyRuntime } from "./design-interview/DesignInterviewFamilyRuntime";
 import type { TrainingFamilyRuntime } from "./trainingLifecycle";
 import { GENERATED_FREE_NODE_PACKAGES } from "../content/bundled/generatedFreeNodePackages";
 import {
   ContentPackageResolver,
   createCertificationPackageRuntimeCatalog,
   createCodingPackageRuntimeCatalog,
+  createDesignPackageRuntimeCatalog,
   createPackageCatalogProfileAdapter,
   type PackageCatalogProfileAdapter,
 } from "../content/application";
@@ -59,7 +61,7 @@ export class ContentPackageRuntimeOwner {
 
   async verifyBundledPackages(): Promise<void> {
     await Promise.all(GENERATED_FREE_NODE_PACKAGES.map(async (source) => {
-      const familyId = source.trackId === "coding-interview-dsa-problem-solving" ? "coding_interview" : "certification";
+      const familyId = familyForTrack(source.trackId);
       await this.resolveForDiscovery(source.trackId, familyId);
     }));
   }
@@ -97,6 +99,8 @@ export class ContentPackageRuntimeOwner {
         ? new CodingInterviewFamilyRuntime(createCodingPackageRuntimeCatalog(pkg), undefined, pkg.taxonomyVersion)
         : pkg.familyId === "certification"
           ? new CertificationFamilyRuntime(createCertificationPackageRuntimeCatalog(pkg), pkg.taxonomyVersion)
+          : pkg.familyId === "design_interview"
+            ? new DesignInterviewFamilyRuntime(createDesignPackageRuntimeCatalog(pkg), pkg.taxonomyVersion)
           : unsupportedPackageFamily((pkg as { familyId: string }).familyId);
       const resolved = Object.freeze({ package: pkg, profile, runtime });
       this.resolvedExact.set(key, resolved);
@@ -111,9 +115,15 @@ function pinKey(pin: ContentPackagePin): string {
   return `${pin.packageIdentity}:${pin.packageVersion}:${pin.contentReleaseId}`;
 }
 
-function supportedFamily(familyId: TrackFamilyId): "coding_interview" | "certification" {
-  if (familyId === "coding_interview" || familyId === "certification") return familyId;
+function supportedFamily(familyId: TrackFamilyId): "coding_interview" | "certification" | "design_interview" {
+  if (familyId === "coding_interview" || familyId === "certification" || familyId === "design_interview") return familyId;
   throw new Error(`No content package runtime is installed for ${familyId}.`);
+}
+
+function familyForTrack(trackId: string): "coding_interview" | "certification" | "design_interview" {
+  if (trackId === "coding-interview-dsa-problem-solving") return "coding_interview";
+  if (trackId === "backend-system-design-interview" || trackId === "frontend-system-design-interview" || trackId === "object-oriented-design-interview") return "design_interview";
+  return "certification";
 }
 
 function unsupportedPackageFamily(familyId: string): never {

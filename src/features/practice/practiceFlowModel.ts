@@ -18,12 +18,13 @@ import {
   getAlgorithmItemsForRoadmapNode,
 } from "../../tracks/coding-interview";
 import type { CloudCertificationProgressViewModel } from "../../tracks/certification";
-import type { CertificationDomain, CertificationModeId } from "../../tracks/certification";
+import type { CertificationModeId } from "../../tracks/certification";
 import { getDomainLabel } from "../../utils";
 import type { AnalyticsData } from "../analytics/analyticsService";
 import type { PracticeSessionMode } from "./sessionConfig";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import type { AlgorithmQuestion } from "../../tracks/coding-interview/algorithmQuestionTypes";
+import { getTrackRoadmapCatalog } from "./trackRoadmapCatalog";
 
 function codingPackageContent() {
   const resolution = contentPackageRuntimeOwner.getPreparedDiscovery(CODING_INTERVIEW_TRACK_ID);
@@ -78,7 +79,7 @@ export type TopicRoadmapNodeModel = {
   id: string;
   label: string;
   progress: number;
-  status: "completed" | "current" | "available";
+  status: "completed" | "current" | "available" | "locked";
   title: string;
   tone: "info" | "muted" | "primary" | "success" | "warning";
 };
@@ -97,60 +98,10 @@ export type TopicRoadmapDetail =
       skillsTriedCount: number;
     }>;
 
-const cloudTopics: readonly TopicRoadmapNodeModel[] = [
-  {
-    detail: {
-      description: "Environment setup, projects, billing basics, and command-line context.",
-      kind: "authored",
-    },
-    id: "setup_environment",
-    label: "Strong",
-    progress: 1,
-    status: "completed",
-    title: "Cloud fundamentals",
-    tone: "success",
-  },
-  {
-    detail: {
-      description: "Access-control scenarios, IAM roles, and policy decisions.",
-      kind: "authored",
-    },
-    id: "access_security",
-    label: "Current",
-    progress: 0.42,
-    status: "current",
-    title: "IAM & Access Control",
-    tone: "primary",
-  },
-  {
-    detail: {
-      description: "Planning compute resources and implementation tradeoffs.",
-      kind: "authored",
-    },
-    id: "planning_implementation",
-    label: "Practicing",
-    progress: 0,
-    status: "available",
-    title: "Compute",
-    tone: "info",
-  },
-  {
-    detail: {
-      description: "Operations, networking, and day-two reliability scenarios.",
-      kind: "authored",
-    },
-    id: "operations",
-    label: "Practicing",
-    progress: 0,
-    status: "available",
-    title: "Networking",
-    tone: "info",
-  },
-];
-
 type PracticeFlowTrack =
   | Readonly<{ display: TrackDisplay; kind: "coding_interview" }>
-  | Readonly<{ display: TrackDisplay; kind: "certification" }>;
+  | Readonly<{ display: TrackDisplay; kind: "certification" }>
+  | Readonly<{ display: TrackDisplay; kind: "design_interview" }>;
 
 export function resolvePracticeFlowRegistration(
   registration: TrackRegistration,
@@ -175,6 +126,16 @@ export function resolvePracticeFlowRegistration(
         throw new UnsupportedTrackError(
           registration.id,
           "Certification practice presentation",
+        );
+      }
+    case "design_interview":
+      try {
+        contentPackageRuntimeOwner.getPreparedDiscovery(registration.id);
+        return "design_interview";
+      } catch {
+        throw new UnsupportedTrackError(
+          registration.id,
+          "Design Interview practice presentation",
         );
       }
     default:
@@ -217,8 +178,8 @@ export function getCurrentPracticeTopic(
       };
     }
     case "certification": {
-      const freeNodeId = activeTrack.id === "google-cloud-associate-cloud-engineer" ? "setup_environment" : contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile.freeNodeId;
-      const knownTopic = cloudTopics.find((topic) => topic.id === freeNodeId);
+      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile.freeNodeId;
+      const knownTopic = getTrackRoadmapCatalog(activeTrack.id).find((topic) => topic.id === freeNodeId);
       return {
         detail: {
           key: "Scenario practice across the track domains:",
@@ -227,6 +188,18 @@ export function getCurrentPracticeTopic(
         },
         id: freeNodeId,
         title: { kind: "authored", value: knownTopic?.title ?? getDomainLabel(freeNodeId) },
+      };
+    }
+    case "design_interview": {
+      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile.freeNodeId;
+      return {
+        detail: {
+          key: "Case practice across the installed Design Interview Free node.",
+          kind: "track-context",
+          trackTitle: track.display.shortTitle,
+        },
+        id: freeNodeId,
+        title: { kind: "authored", value: getTrackRoadmapCatalog(activeTrack.id).find((topic) => topic.id === freeNodeId)?.title ?? getDomainLabel(freeNodeId) },
       };
     }
   }
@@ -277,6 +250,8 @@ export function hasTrackProgress(input: {
         input.analytics.summary.totalPracticeQuestionsAnswered > 0 ||
         input.analytics.summary.totalCompletedExams > 0
       );
+    case "design_interview":
+      return input.trainingAttempts.some((attempt) => attempt.trackId === track.display.id);
   }
 }
 
@@ -297,10 +272,21 @@ export function buildPracticeModes(activeTrack: TrackDisplay, hasReviewEvidence 
         { detail: "Practice Coding Interview review items that are currently due.", enabled: availability(ALGORITHM_MODE_IDS.weakAreaReview), unavailableReason: hasReviewEvidence ? undefined : "No eligible review evidence is available in this Free node.", icon: "rotate-ccw", mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", tone: "danger" },
       ];
     case "certification":
-      return [
-        { detail: "Practice the bundled setup-environment node in 10, 20, or 40 questions.", enabled: availability("certification-focus-practice"), icon: "practice", mode: "certification-focus-practice", title: "Focus Practice", tone: "primary" },
+      {
+        const focusMode = profile.getMode("certification-focus-practice");
+        const quickMode = profile.getMode("certification-quick-review");
+        const lengths = focusMode.requestedLengths.join(", ");
+        return [
+        { detail: `Practice the installed Free node in ${lengths} questions.`, enabled: availability("certification-focus-practice"), icon: "practice", mode: "certification-focus-practice", title: "Focus Practice", tone: "primary" },
         { detail: "Review only saved weak areas whose review time has arrived.", enabled: availability("certification-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "No eligible review evidence is available in this Free node.", icon: "rotate-ccw", mode: "certification-weak-area-review", title: "Weak Area Review", tone: "danger" },
-        { detail: "Review up to 10 saved weak areas whose review time has arrived.", enabled: availability("certification-quick-review"), unavailableReason: hasReviewEvidence ? undefined : "No due review evidence is available in this Free node.", icon: "rotate-ccw", mode: "certification-quick-review", title: "Quick Review", tone: "danger" },
+        { detail: `Review up to ${quickMode.defaultRequestedLength} saved weak areas whose review time has arrived.`, enabled: availability("certification-quick-review"), unavailableReason: hasReviewEvidence ? undefined : "No due review evidence is available in this Free node.", icon: "rotate-ccw", mode: "certification-quick-review", title: "Quick Review", tone: "danger" },
+        ];
+      }
+    case "design_interview":
+      return [
+        { detail: "Learn the repeatable framework through the installed Free node.", enabled: availability("design-interview-learn-framework"), icon: "practice", mode: "design-interview-learn-framework", title: "Learn the framework", tone: "primary" },
+        { detail: "Practice explicit architecture tradeoffs from the installed Free node.", enabled: availability("design-interview-tradeoff-practice"), icon: "clipboard", mode: "design-interview-tradeoff-practice", title: "Tradeoff practice", tone: "success" },
+        { detail: "Review only saved Design Interview items whose review time has arrived.", enabled: availability("design-interview-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "No eligible review evidence is available in this Free node.", icon: "rotate-ccw", mode: "design-interview-weak-area-review", title: "Weak Area Review", tone: "danger" },
       ];
   }
 }
@@ -343,6 +329,15 @@ export function buildPracticeStatsSummary(input: {
         trackTitle: track.display.shortTitle,
       };
     }
+    case "design_interview": {
+      const attemptCount = input.trainingAttempts.filter((attempt) => attempt.trackId === track.display.id).length;
+      return {
+        detail: { key: "Progress, weak areas, and local Design Interview practice history.", kind: "key" },
+        metricLabel: "Answered",
+        metricValue: String(attemptCount),
+        trackTitle: track.display.shortTitle,
+      };
+    }
   }
 }
 
@@ -370,6 +365,10 @@ export function buildTrackProgressPercent(input: {
 
       return Math.min(100, Math.round((answered / 50) * 100));
     }
+    case "design_interview": {
+      const answered = input.trainingAttempts.filter((attempt) => attempt.trackId === track.display.id).length;
+      return Math.min(100, Math.round((answered / 50) * 100));
+    }
   }
 }
 
@@ -381,61 +380,69 @@ export function buildTopicRoadmapNodes(input: {
 
   switch (track.kind) {
     case "certification": {
-      const freeNodeId = input.activeTrackId === "google-cloud-associate-cloud-engineer" ? "setup_environment" : contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
-      const knownTopic = cloudTopics.find((topic) => topic.id === freeNodeId);
-      return knownTopic ? [knownTopic] : [{ detail: { description: "The installed certification Free node.", kind: "authored" }, id: freeNodeId, label: "Current", progress: 0, status: "current", title: getDomainLabel(freeNodeId), tone: "primary" }];
+      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
+      const attempts = input.trainingAttempts.filter((attempt) => attempt.trackId === input.activeTrackId);
+      return getTrackRoadmapCatalog(input.activeTrackId).map((node) => {
+        const isFreeNode = node.id === freeNodeId;
+        const practiced = isFreeNode ? attempts.filter((attempt) => attempt.item.itemId).length : 0;
+        const status = isFreeNode ? "current" : "locked" as const;
+        return {
+          detail: { description: node.description, kind: "authored" as const },
+          id: node.id,
+          label: isFreeNode ? (practiced > 0 ? "Practiced" : "Current") : "Locked",
+          progress: isFreeNode ? Math.min(1, practiced / 50) : 0,
+          status,
+          title: node.title,
+          tone: getTopicTone(status),
+        };
+      });
+    }
+    case "design_interview": {
+      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
+      const practiced = input.trainingAttempts.filter((attempt) => attempt.trackId === input.activeTrackId && attempt.item.itemId).length;
+      return getTrackRoadmapCatalog(input.activeTrackId).map((node) => {
+        const isFreeNode = node.id === freeNodeId;
+        const status = isFreeNode ? "current" : "locked" as const;
+        return {
+          detail: { description: node.description, kind: "authored" as const },
+          id: node.id,
+          label: isFreeNode ? (practiced > 0 ? "Practiced" : "Current") : "Locked",
+          progress: isFreeNode ? Math.min(1, practiced / 50) : 0,
+          status,
+          title: node.title,
+          tone: getTopicTone(status),
+        };
+      });
     }
     case "coding_interview": {
       const content = codingPackageContent();
       const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts, content });
 
       const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
-      return ALGORITHM_ROADMAP.nodes.filter((node) => node.id === freeNodeId).flatMap((node) => {
+      return getTrackRoadmapCatalog(input.activeTrackId).map((node) => {
         const itemCount = getAlgorithmItemsForRoadmapNode(node.id, content.items).length;
-        if (itemCount === 0) return [];
-
-        const nodeProgress = progress.nodeProgress.find(
-          (item) => item.nodeId === node.id,
-        );
-        const isCurrent = progress.activeRoadmapNode.id === node.id;
-        const status = isCurrent ? "current" : "available";
-
+        const nodeProgress = progress.nodeProgress.find((item) => item.nodeId === node.id);
+        const isFreeNode = node.id === freeNodeId;
+        const status = isFreeNode ? "current" : "locked" as const;
         return {
           detail: {
-            description: node.shortDescription,
+            description: node.description,
             itemCount,
-            kind: "algorithm-progress",
+            kind: "algorithm-progress" as const,
             practicedItemCount: nodeProgress?.uniquePracticedItemCount ?? 0,
-            skillCount:
-              nodeProgress?.coreSkillAtomCount ??
-              node.skillAtomIds?.length ??
-              0,
-            skillsTriedCount:
-              nodeProgress?.sampledCoreSkillAtomCount ??
-              0,
+            skillCount: nodeProgress?.coreSkillAtomCount ?? ALGORITHM_ROADMAP.nodes.find((candidate) => candidate.id === node.id)?.skillAtomIds?.length ?? 0,
+            skillsTriedCount: nodeProgress?.sampledCoreSkillAtomCount ?? 0,
           },
           id: node.id,
-          label: isCurrent
-            ? "Recommended"
-            : nodeProgress && nodeProgress.uniquePracticedItemCount > 0
-              ? "Practiced"
-              : "Available",
-          progress: nodeProgress && nodeProgress.itemCount > 0
-            ? nodeProgress.uniquePracticedItemCount / nodeProgress.itemCount
-            : 0,
+          label: isFreeNode ? "Recommended" : "Locked",
+          progress: isFreeNode && nodeProgress && nodeProgress.itemCount > 0 ? nodeProgress.uniquePracticedItemCount / nodeProgress.itemCount : 0,
           status,
-          title: node.label,
+          title: node.title,
           tone: getTopicTone(status),
         };
       });
     }
   }
-}
-
-export function getCloudTopicTitle(topicId: string): string {
-  const knownTopic = cloudTopics.find((topic) => topic.id === topicId);
-
-  return knownTopic?.title ?? getDomainLabel(topicId as CertificationDomain);
 }
 
 function getTopicTone(status: TopicRoadmapNodeModel["status"]): TopicRoadmapNodeModel["tone"] {
@@ -446,5 +453,7 @@ function getTopicTone(status: TopicRoadmapNodeModel["status"]): TopicRoadmapNode
       return "primary";
     case "available":
       return "info";
+    case "locked":
+      return "muted";
   }
 }

@@ -35,9 +35,11 @@ The v1 boundary is:
 ## Current verification boundary
 
 The repository already contains the canonical contract and fail-closed runtime
-privacy boundary. The external release gate remains `not_evidenced` until an
-authorized verifier binds current application commit
-`7db0c461f26f2b5c162483e8a95458405cc390be` to a complete evidence packet.
+privacy boundary. The current application checkout is intentionally dirty
+while launch-hardening work is in progress, so no exact release SHA is claimed
+by this v1 report. The external release gate remains `not_evidenced` until an
+authorized verifier binds a clean application commit to a complete evidence
+packet.
 
 The following are intentionally not asserted here:
 

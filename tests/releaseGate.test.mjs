@@ -117,7 +117,7 @@ test("launch readiness report is deterministic and exposes the unresolved releas
         "runtime_admission_missing",
         "technical_validation_not_admitted",
       ].includes(blocker.kind)));
-  assert.ok(report.blockers.some((blocker) => blocker.kind === "application_release_lock_scope_mismatch"));
+  assert.ok(report.blockers.some((blocker) => blocker.kind === "human_editorial_approval_missing"));
   assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing"));
 });
 

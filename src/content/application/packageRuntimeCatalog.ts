@@ -3,10 +3,11 @@ import type { AlgorithmRuntimeCatalog } from "../../tracks/coding-interview/algo
 import type { AlgorithmQuestion } from "../../tracks/coding-interview/algorithmQuestionTypes";
 import type { CertificationRuntimeCatalog } from "../../tracks/certification/certificationRuntimeCatalog";
 import type { CertificationQuestion } from "../../tracks/certification/domain";
+import type { DesignQuestion } from "../../tracks/design-interview";
 import type { PublishedAlgorithmsPracticeBlueprint, PublishedCertificationFocusPractice, PublishedCertificationQuickReview, PublishedCertificationWeakAreaReview } from "../contracts";
 
 export type PackageCatalogProfileAdapter = Readonly<{
-  familyId: "coding_interview" | "certification";
+  familyId: "coding_interview" | "certification" | "design_interview";
   packagePin: VerifiedContentPackage["packagePin"];
   trackId: string;
   freeNodeId: string;
@@ -58,11 +59,27 @@ export function createCodingPackageRuntimeCatalog(pkg: Extract<VerifiedContentPa
 export function createCertificationPackageRuntimeCatalog(pkg: Extract<VerifiedContentPackage, Readonly<{ familyId: "certification" }>>): CertificationRuntimeCatalog {
   const adapter = createPackageCatalogProfileAdapter(pkg); const items = adapter.items as readonly CertificationQuestion[];
   const config = (modeId: string) => adapter.getConfiguration(modeId);
-  const focus = (): PublishedCertificationFocusPractice => { const entry = config("certification-focus-practice"); return Object.freeze({ blueprintId: entry.configurationId, blueprintVersion: entry.configurationVersion, modeId: "certification-focus-practice", requestedLengths: entry.requestedLengths as readonly (10 | 20 | 40)[], shortening: "allowed_within_topic", selectionScope: "cloud_domain", topicIds: Object.freeze([adapter.freeNodeId]) }); };
-  const weak = (): PublishedCertificationWeakAreaReview => { const entry = config("certification-weak-area-review"); return Object.freeze({ blueprintId: entry.configurationId, blueprintVersion: entry.configurationVersion, modeId: "certification-weak-area-review", requestedLengths: entry.requestedLengths as readonly (10 | 20)[], shortening: "allowed_within_eligible_review_evidence", selectionScope: "eligible_due_review_evidence", persistentResolutionPolicy: "two_consecutive_due_review_successes" }); };
-  const quick = (): PublishedCertificationQuickReview => { const entry = config("certification-quick-review"); return Object.freeze({ blueprintId: entry.configurationId, blueprintVersion: entry.configurationVersion, modeId: "certification-quick-review", maximumLength: entry.defaultRequestedLength as 10, shortening: "allowed_within_eligible_review_evidence", selectionScope: "eligible_due_review_evidence", persistentResolutionPolicy: "two_consecutive_due_review_successes" }); };
+  const focus = (): PublishedCertificationFocusPractice => { const entry = config("certification-focus-practice"); return Object.freeze({ blueprintId: entry.configurationId, blueprintVersion: entry.configurationVersion, modeId: "certification-focus-practice", requestedLengths: entry.requestedLengths, defaultRequestedLength: entry.defaultRequestedLength, shortening: "allowed_within_topic", selectionScope: "cloud_domain", topicIds: Object.freeze([adapter.freeNodeId]) }); };
+  const weak = (): PublishedCertificationWeakAreaReview => { const entry = config("certification-weak-area-review"); return Object.freeze({ blueprintId: entry.configurationId, blueprintVersion: entry.configurationVersion, modeId: "certification-weak-area-review", requestedLengths: entry.requestedLengths, defaultRequestedLength: entry.defaultRequestedLength, shortening: "allowed_within_eligible_review_evidence", selectionScope: "eligible_due_review_evidence", persistentResolutionPolicy: "two_consecutive_due_review_successes" }); };
+  const quick = (): PublishedCertificationQuickReview => { const entry = config("certification-quick-review"); return Object.freeze({ blueprintId: entry.configurationId, blueprintVersion: entry.configurationVersion, modeId: "certification-quick-review", maximumLength: entry.defaultRequestedLength, shortening: "allowed_within_eligible_review_evidence", selectionScope: "eligible_due_review_evidence", persistentResolutionPolicy: "two_consecutive_due_review_successes" }); };
   const unavailable = (mode: string): never => { throw new Error(`Certification mode ${mode} is unavailable in package ${adapter.packagePin.packageIdentity}.`); };
   return Object.freeze({ getTrackId: () => adapter.trackId, getContentVersion: () => adapter.contentVersion, getPackagePin: () => adapter.packagePin, getItems: () => items, getItemsForMode: () => items, getItemById: (id: string) => adapter.getItemById(id) as CertificationQuestion, toContentItemRef: (item: CertificationQuestion) => ({ contentVersion: adapter.contentVersion, itemId: item.id, trackId: adapter.trackId, packagePin: adapter.packagePin }), getFocusPractice: focus, getWeakAreaReview: weak, getQuickReview: quick, getDiagnosticBaseline: () => unavailable("certification-diagnostic-baseline"), getScenarioPractice: () => unavailable("certification-scenario-practice"), getMixedPractice: () => unavailable("certification-mixed-practice"), getExamExperienceProfile: () => unavailable("certification-exam-simulation") });
+}
+
+export function createDesignPackageRuntimeCatalog(pkg: Extract<VerifiedContentPackage, Readonly<{ familyId: "design_interview" }>>): import("../../tracks/design-interview").DesignRuntimeCatalog {
+  const adapter = createPackageCatalogProfileAdapter(pkg);
+  const items = adapter.items as readonly DesignQuestion[];
+  return Object.freeze({
+    getTrackId: () => adapter.trackId,
+    getContentVersion: () => adapter.contentVersion,
+    getPackagePin: () => adapter.packagePin,
+    getItems: () => items,
+    getItemById: (id: string) => adapter.getItemById(id) as DesignQuestion,
+    toContentItemRef: (item: DesignQuestion) => ({ contentVersion: adapter.contentVersion, itemId: item.id, trackId: adapter.trackId, packagePin: adapter.packagePin }),
+    getMode: (modeId: string) => adapter.getMode(modeId),
+    getConfiguration: (modeId: string) => adapter.getConfiguration(modeId),
+    getFreeNodeId: () => adapter.freeNodeId,
+  });
 }
 
 function itemId(item: unknown): string {

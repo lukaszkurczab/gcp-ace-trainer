@@ -133,6 +133,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["TRACK-BRIEF-SOURCE-IDENTITY-001", ["track-registry-admission"]],
       ["FREE-NODE-EXPERIENCE-PROFILE-001", ["free-node-package-admission"]],
       ["FREE-NODE-PACKAGE-ADMISSION-001", ["free-node-package-admission"]],
+      ["ROADMAP-LOCKED-NODES-001", ["roadmap-locked-nodes"]],
       ["TRACK-IDENTITY-CUTOVER-001", ["track-identity-cutover"]],
       ["CONTENT-PACKAGES-001", ["canonical-packages-operations-platform"]],
       ["CONTENT-PACKAGE-RESOLVER-001", ["content-packages-verifier-resolver"]],

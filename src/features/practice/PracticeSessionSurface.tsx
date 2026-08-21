@@ -212,6 +212,7 @@ function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readon
 function exitCopy(trackId: TrackId | undefined): Readonly<{ description: string; destructiveLabel: string }> {
   if (trackId === "coding-interview-dsa-problem-solving") return Object.freeze({ description: "Pause to resume later, or end the session and view a partial summary. Saved answers remain available.", destructiveLabel: "End and view summary" });
   if (trackId === "google-cloud-associate-cloud-engineer") return Object.freeze({ description: "Pause keeps this exact session available to resume later. End session makes it non-resumable and returns to Practice.", destructiveLabel: "End session" });
+  if (trackId === "backend-system-design-interview" || trackId === "frontend-system-design-interview" || trackId === "object-oriented-design-interview") return Object.freeze({ description: "Pause keeps this exact Design Interview session available to resume later. End session makes it non-resumable and returns to Practice.", destructiveLabel: "End session" });
   throw new Error("Practice exit requires an exact supported track identity.");
 }
 

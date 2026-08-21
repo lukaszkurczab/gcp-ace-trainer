@@ -3,7 +3,16 @@ import test from "node:test";
 import { TrackRegistry, UnknownTrackError, UnknownTrackFamilyError, getTrackFamilyRegistration, getTrackRegistration, getTracks } from "../src/domain";
 
 test("registry resolves current tracks without a default", () => {
-  assert.deepEqual(getTracks().map((track) => track.id).sort(), ["coding-interview-dsa-problem-solving", "google-cloud-associate-cloud-engineer", "microsoft-azure-administrator-associate-az-104"]);
+  assert.deepEqual(getTracks().map((track) => track.id).sort(), [
+    "aws-certified-solutions-architect-associate",
+    "backend-system-design-interview",
+    "coding-interview-dsa-problem-solving",
+    "frontend-system-design-interview",
+    "google-cloud-associate-cloud-engineer",
+    "microsoft-azure-administrator-associate-az-104",
+    "microsoft-azure-ai-fundamentals-ai-901",
+    "object-oriented-design-interview",
+  ]);
   assert.equal(getTrackRegistration("coding-interview-dsa-problem-solving").familyId, "coding_interview");
   assert.equal(getTrackRegistration("google-cloud-associate-cloud-engineer").familyId, "certification");
   assert.equal(getTrackRegistration("microsoft-azure-administrator-associate-az-104").familyId, "certification");

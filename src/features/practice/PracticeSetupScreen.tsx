@@ -5,13 +5,14 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AppShellHeader, Button, Card, EmptyState, LoadingState, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { CODING_INTERVIEW_TRACK_ID, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
 import { goBackOrHome, type RootStackParamList } from "../../navigation";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { radius, spacing, typography } from "../../theme";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/coding-interview";
+import { isDesignInterviewModeId } from "../../tracks/design-interview";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import {
   buildTopicRoadmapNodes,
@@ -117,11 +118,12 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><EmptyState title={t("Practice setup is unavailable")} description={t("This topic is not available in the installed Free package.")} /></Screen>;
   const selectedMode = (route.params?.mode ?? packageProfile.primaryEntry.modeId) as PracticeSessionMode;
   packageProfile.getMode(selectedMode);
-  const diagnosticBaseline = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-diagnostic-baseline";
-  const focusPractice = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-focus-practice";
-  const scenarioPractice = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-scenario-practice";
-  const weakAreaReview = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-weak-area-review";
-  const mixedPractice = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-mixed-practice";
+  const certificationTrack = activeTrack.familyId === "certification";
+  const diagnosticBaseline = certificationTrack && selectedMode === "certification-diagnostic-baseline";
+  const focusPractice = certificationTrack && selectedMode === "certification-focus-practice";
+  const scenarioPractice = certificationTrack && selectedMode === "certification-scenario-practice";
+  const weakAreaReview = certificationTrack && selectedMode === "certification-weak-area-review";
+  const mixedPractice = certificationTrack && selectedMode === "certification-mixed-practice";
   const algorithmMode = activeTrack.id === CODING_INTERVIEW_TRACK_ID
     ? getAlgorithmMode(selectedMode)
     : null;
@@ -130,6 +132,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const configuredSessionLength = !selectedPackageMode.requestedLengths.includes(sessionLength)
     ? selectedPackageMode.defaultRequestedLength as PracticeSessionLength
     : sessionLength;
+  const designMode = isDesignInterviewModeId(selectedMode);
   const reviewBehaviorCopy = getPracticeReviewBehaviorCopy(activeTrack.id);
   const topic = resolvePracticeTopicModel({
     activeTrackId: activeTrack.id,
@@ -137,7 +140,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     trainingAttempts,
   });
   const focusTopics = focusPractice
-    ? buildTopicRoadmapNodes({ activeTrackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, trainingAttempts })
+    ? buildTopicRoadmapNodes({ activeTrackId: activeTrack.id, trainingAttempts })
     : [];
   const selectedFocusTopicId = focusPractice
     ? focusTopicId ?? packageProfile.freeNodeId
@@ -147,7 +150,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   function startSession() {
     const mode = selectedMode;
     if (focusPractice && !selectedFocusTopicId) {
-      setSetupError("Choose a Cloud domain before starting Focus Practice.");
+      setSetupError("Choose the installed Free node before starting Focus Practice.");
       return;
     }
     if (scenarioPractice && !scenarioCompetencyId) {
@@ -164,7 +167,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               reviewSource: route.params?.reviewSource,
               sessionLength: configuredSessionLength,
             }
-            : diagnosticBaseline || focusPractice || scenarioPractice || weakAreaReview || mixedPractice ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
+            : diagnosticBaseline || focusPractice || scenarioPractice || weakAreaReview || mixedPractice || designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         competencyId: scenarioPractice ? scenarioCompetencyId! : undefined,
         mode,
         source: "practiceSetup",
@@ -207,7 +210,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         {!diagnosticBaseline ? <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>
           {compactCodingPractice ? <PracticeSetupSectionHeader title={t("Session length")} subtitle={t("Number of items in your primary practice session.")} /> : <SectionHeader title={t("Session length")} tight />}
           <View style={[styles.lengthGrid, compactCodingPractice ? styles.compactLengthGrid : null]}>
-            {(algorithmMode?.profile.supportedLengths ?? (weakAreaReview ? [10, 20] : sessionLengths)).map((length) => (
+            {(algorithmMode?.profile.supportedLengths ?? selectedPackageMode.requestedLengths ?? (weakAreaReview ? [10, 20] : sessionLengths)).map((length) => (
               <SelectableOption
                 compact={compactCodingPractice}
                 key={length}

@@ -76,8 +76,26 @@ test("production admission remains closed until exact immutable Free-node packag
   const evaluations = await evaluateProductionTrackAdmissions(registrations);
   await prepareBundledTestPackages();
 
-  assert.deepEqual(registrations.map((registration) => registration.id).sort(), CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE.map((fact) => fact.trackId).sort());
-  assert.deepEqual(evaluations.map((evaluation) => evaluation.kind), ["package_evidence_verified_catalogue_gate_pending", "unverified_free_node_package", "package_evidence_verified_catalogue_gate_pending"]);
+  assert.deepEqual(CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE.map((fact) => fact.trackId).sort(), [
+    "aws-certified-solutions-architect-associate",
+    "backend-system-design-interview",
+    "coding-interview-dsa-problem-solving",
+    "frontend-system-design-interview",
+    "google-cloud-associate-cloud-engineer",
+    "microsoft-azure-administrator-associate-az-104",
+    "microsoft-azure-ai-fundamentals-ai-901",
+    "object-oriented-design-interview",
+  ]);
+  assert.deepEqual(evaluations.map((evaluation) => [evaluation.trackId, evaluation.kind]).sort(), [
+    ["aws-certified-solutions-architect-associate", "package_evidence_verified_catalogue_gate_pending"],
+    ["backend-system-design-interview", "package_evidence_verified_catalogue_gate_pending"],
+    ["coding-interview-dsa-problem-solving", "package_evidence_verified_catalogue_gate_pending"],
+    ["frontend-system-design-interview", "package_evidence_verified_catalogue_gate_pending"],
+    ["google-cloud-associate-cloud-engineer", "package_evidence_verified_catalogue_gate_pending"],
+    ["microsoft-azure-administrator-associate-az-104", "package_evidence_verified_catalogue_gate_pending"],
+    ["microsoft-azure-ai-fundamentals-ai-901", "package_evidence_verified_catalogue_gate_pending"],
+    ["object-oriented-design-interview", "package_evidence_verified_catalogue_gate_pending"],
+  ]);
   for (const fact of CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE) {
     const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === fact.trackId);
     const source = GENERATED_FREE_NODE_PACKAGES.find((candidate) => candidate.trackId === fact.trackId);
@@ -98,7 +116,7 @@ test("admission evaluator rejects missing and orphan artifact evidence instead o
   };
 
   assert.deepEqual(await evaluateProductionTrackAdmissions([registration], []), [{ trackId: candidate.trackId, kind: "missing_artifact_evidence" }]);
-  await assert.rejects(() => evaluateProductionTrackAdmissions(getTracks(), [...CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE, { trackId: candidate.trackId, bundledReleaseId: "patternly-core-unknown" }]), /orphaned/u);
+  await assert.rejects(() => evaluateProductionTrackAdmissions(getTracks(), [...CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE, { trackId: "hashicorp-terraform-associate-004" as never, bundledReleaseId: "patternly-core-unknown" }]), /orphaned/u);
   await assert.rejects(() => evaluateProductionTrackAdmissions(getTracks(), [CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE[0]!, CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE[0]!]), /unique track IDs/u);
 });
 
@@ -108,6 +126,15 @@ test("package admission rejects tampered bytes or extracted profile modes withou
   const profileTampered = GENERATED_FREE_NODE_PACKAGES.map((entry) => entry.trackId === coding.trackId ? { ...entry, profileModes: [...entry.profileModes, "coding-interview-simulation"] } : entry);
   for (const packages of [bytesTampered, profileTampered]) {
     const results = await evaluateProductionTrackAdmissions(getTracks(), CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE, TRACK_DENSITY_DESCRIPTORS, packages);
-    assert.deepEqual(results.map((result) => result.kind), ["unverified_free_node_package", "unverified_free_node_package", "package_evidence_verified_catalogue_gate_pending"]);
+    assert.deepEqual(results.map((result) => [result.trackId, result.kind]).sort(), [
+      ["aws-certified-solutions-architect-associate", "package_evidence_verified_catalogue_gate_pending"],
+      ["backend-system-design-interview", "package_evidence_verified_catalogue_gate_pending"],
+      ["coding-interview-dsa-problem-solving", "unverified_free_node_package"],
+      ["frontend-system-design-interview", "package_evidence_verified_catalogue_gate_pending"],
+      ["google-cloud-associate-cloud-engineer", "package_evidence_verified_catalogue_gate_pending"],
+      ["microsoft-azure-administrator-associate-az-104", "package_evidence_verified_catalogue_gate_pending"],
+      ["microsoft-azure-ai-fundamentals-ai-901", "package_evidence_verified_catalogue_gate_pending"],
+      ["object-oriented-design-interview", "package_evidence_verified_catalogue_gate_pending"],
+    ]);
   }
 });

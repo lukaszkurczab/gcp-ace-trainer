@@ -10,6 +10,7 @@ import { trainingSessionIdentity } from "../src/infrastructure/identity/training
 import { installMemoryStorage } from "./journalTestSupport";
 
 const NOW = "2026-08-02T08:00:00.000Z";
+const GCP_FREE_NODE_ID = "organization_projects_policies_services_quotas_and_assets";
 const developmentFlag = globalThis as typeof globalThis & { __DEV__?: boolean };
 
 function setDevelopment(value: boolean | undefined): void {
@@ -124,7 +125,7 @@ test("one injected identity port forwards exact lifecycle-owned IDs across both 
   const certification = await lifecycle.startSession({
     trackId: "google-cloud-associate-cloud-engineer",
     modeId: "certification-focus-practice",
-    request: { domain: "setup_environment", requestedLength: 10, sessionId: "second-caller-id-must-be-overwritten" },
+    request: { domain: GCP_FREE_NODE_ID, requestedLength: 10, sessionId: "second-caller-id-must-be-overwritten" },
   });
   assert.equal(certification.session.id, "google-cloud-associate-cloud-engineer:certification-focus-practice:00000000-0000-4000-8000-000000000002");
   assert.deepEqual(calls, [

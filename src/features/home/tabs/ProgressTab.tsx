@@ -63,7 +63,7 @@ export function ProgressTab({
     trainingAttempts,
   });
   const reviewAction = progress.reviewAction;
-  const isCertificationTrack = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID;
+  const isCertificationTrack = activeTrack.familyId === "certification";
 
   if (progress.algorithmsProgress) {
     return (
@@ -374,17 +374,13 @@ function formatDiagnosticFacts(
 function getProgressEmptyTitle(trackId: TrackDisplay["id"]): string {
   return trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID
     ? "No topic samples yet"
-    : "No algorithm progress yet";
+    : "No practice samples yet";
 }
 
 function getProgressEmptyDescription(
   trackId: TrackDisplay["id"],
   hasData: boolean,
 ): string {
-  if (trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID) {
-    return "Start a Coding Interview session to record local roadmap progress.";
-  }
-
   return hasData
     ? "Topic performance appears after answers have domain-level scoring data."
     : "Start a focused practice session to build track-aware performance data.";

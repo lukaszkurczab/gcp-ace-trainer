@@ -4,7 +4,7 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { contentPackageRuntimeOwner } from "../src/application/contentPackageRuntimeOwner";
-import { contentPackagePinsEqual } from "../src/domain";
+import { contentPackagePinsEqual, getTracks } from "../src/domain";
 
 const REMOVED_RUNTIME_OWNERS = [
   "src/content/catalogRepository.ts",
@@ -66,7 +66,8 @@ test("Free Practice entry points use the approved primary modes and never route 
   const hub = readFileSync("src/features/practice/PracticeHubScreen.tsx", "utf8");
   const setup = readFileSync("src/features/practice/PracticeSetupScreen.tsx", "utf8");
 
-  assert.match(hub, /\? ALGORITHM_MODE_IDS\.learnApproach\s*:\s*"certification-focus-practice"/);
+  assert.match(hub, /isCodingInterviewTrack[\s\S]*ALGORITHM_MODE_IDS\.learnApproach[\s\S]*"certification-focus-practice"/);
+  assert.match(hub, /isDesignInterviewTrack[\s\S]*packageProfile\.primaryEntry\.modeId/);
   assert.doesNotMatch(hub, /mode: "certification-diagnostic-baseline"/);
   assert.match(hub, /mode: "certification-focus-practice"/);
   assert.match(hub, /topicId: topic\.id, trackId: activeTrack\.id/);
@@ -92,6 +93,27 @@ test("package-backed Algorithms discovery never recommends an excluded whole-tra
   assert.equal(dashboard.recommendation.modeId, "coding-interview-guided-practice");
   assert.equal(dashboard.recommendation.action.kind, "start_practice");
   assert.equal(dashboard.recommendation.action.modeId, "coding-interview-guided-practice");
+});
+
+test("all eight launch tracks resolve an exact Free package and prepare through their canonical family runtime", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  for (const registration of getTracks()) {
+    const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(registration.id, registration.familyId);
+    assert.equal(resolved.package.trackId, registration.id);
+    assert.equal(resolved.package.familyId, registration.familyId);
+    assert.equal(resolved.package.packagePin.contentReleaseId, "patternly-launch-2026-08-21-02");
+    const mode = resolved.profile.primaryEntry.modeId;
+    const requestedLength = resolved.profile.getMode(mode).defaultRequestedLength;
+    const request = registration.familyId === "coding_interview"
+      ? { sessionId: `admission:${registration.id}`, requestedLength, feedbackMode: "afterEachAnswer", scope: { roadmapNodeId: resolved.profile.freeNodeId } }
+      : registration.familyId === "certification"
+        ? { sessionId: `admission:${registration.id}`, requestedLength, domain: resolved.profile.freeNodeId }
+        : { sessionId: `admission:${registration.id}`, requestedLength };
+    const prepared = await resolved.runtime.prepare({ trackId: registration.id, modeId: mode, request, attempts: [], reviews: [], now: "2026-08-21T10:00:00.000Z" });
+    assert.equal(prepared.session.trackId, registration.id);
+    assert.equal(prepared.session.packagePin.contentReleaseId, "patternly-launch-2026-08-21-02");
+    assert.ok(prepared.session.actualLength > 0);
+  }
 });
 
 function sourceFiles(directory: string): string[] {

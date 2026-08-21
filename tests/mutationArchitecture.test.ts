@@ -255,7 +255,8 @@ test("Certification route handoffs use exact resume intent and cannot hide failu
   assert.match(home, /loadActiveTrainingSession\(\)/);
   assert.match(home, /session\.id !== action\.sessionId \|\| session\.trackId !== "google-cloud-associate-cloud-engineer" \|\| session\.modeId !== action\.modeId/);
   assert.match(home, /buildCertificationPracticeResumeRoute\(session\)/);
-  assert.match(homeModel, /session\.trackId !== "google-cloud-associate-cloud-engineer" \|\| !isCertificationPracticeModeId\(session\.modeId\)/);
+  assert.match(homeModel, /session\.trackId !== input\.activeTrack\.id/);
+  assert.match(homeModel, /buildDesignInterviewPracticeResumeRoute\(session\)/);
   assert.equal((homeTab.match(/runtimeSelectors\.resume\.card/g) ?? []).length, 1);
   assert.equal((homeTab.match(/styles\.decisionCard/g) ?? []).length, 1);
   assert.doesNotMatch(facade, /catch\([^)]*\)[^{]*\{[^}]*return null|catch\([^)]*\)[^{]*\{[^}]*startCertificationSession/);

@@ -165,7 +165,92 @@ export function buildProgressTabModel(input: BuildProgressTabModelInput): Progre
     );
   }
 
-  throw new Error(`Progress projection unavailable for track ${input.activeTrackId}.`);
+  return buildInstalledPackageProgressTabModel(
+    input.activeTrackId,
+    input.trainingAttempts ?? [],
+    input.reviewQueueItems ?? [],
+    input.now ?? new Date().toISOString(),
+  );
+}
+
+type PackageProgressItem = Readonly<{
+  domain?: unknown;
+  id: string;
+  taxonomy?: Readonly<{ roadmapNodeId?: unknown }>;
+}>;
+
+function buildInstalledPackageProgressTabModel(
+  trackId: TrackDisplay["id"],
+  trainingAttempts: readonly TrainingAttempt[],
+  reviewQueueItems: readonly ReviewQueueEntry[],
+  now: string,
+): ProgressTabModel {
+  const packageResolution = contentPackageRuntimeOwner.getPreparedDiscovery(trackId);
+  const packageItems = packageResolution.profile.items as readonly PackageProgressItem[];
+  const packageItemIds = new Set(packageItems.map((item) => item.id));
+  const currentAttempts = trainingAttempts.filter((attempt) =>
+    attempt.trackId === trackId &&
+    attempt.item.trackId === trackId &&
+    attempt.item.contentVersion === packageResolution.package.contentVersion &&
+    contentPackagePinsEqual(attempt.item.packagePin, packageResolution.package.packagePin) &&
+    packageItemIds.has(attempt.item.itemId),
+  );
+  const currentReviews = reviewQueueItems.filter((entry) =>
+    entry.trackId === trackId &&
+    entry.sourceItem.trackId === trackId &&
+    entry.sourceItem.contentVersion === packageResolution.package.contentVersion &&
+    contentPackagePinsEqual(entry.sourceItem.packagePin, packageResolution.package.packagePin) &&
+    packageItemIds.has(entry.sourceItem.itemId),
+  );
+  const dueReviewCount = currentReviews.filter((entry) => entry.dueAt <= now).length;
+  const scores = new Map<string, { correct: number; earned: number; max: number; total: number }>();
+
+  for (const attempt of currentAttempts) {
+    const item = packageItems.find((candidate) => candidate.id === attempt.item.itemId);
+    const nodeId = typeof item?.domain === "string"
+      ? item.domain
+      : typeof item?.taxonomy?.roadmapNodeId === "string"
+        ? item.taxonomy.roadmapNodeId
+        : packageResolution.profile.freeNodeId;
+    const score = scores.get(nodeId) ?? { correct: 0, earned: 0, max: 0, total: 0 };
+    scores.set(nodeId, {
+      correct: score.correct + (attempt.result.kind === "correct" ? 1 : 0),
+      earned: score.earned + attempt.result.earnedPoints,
+      max: score.max + attempt.result.maxPoints,
+      total: score.total + 1,
+    });
+  }
+
+  const freeNodeLabel = getDomainLabel(packageResolution.profile.freeNodeId as CertificationDomain);
+  return {
+    activitySummary: {
+      detail: currentAttempts.length > 0
+        ? `Current Free node: ${freeNodeLabel}.`
+        : `Start the ${freeNodeLabel} Free node to record local practice.`,
+      label: "Answered",
+      value: currentAttempts.length,
+    },
+    hasData: currentAttempts.length > 0,
+    metrics: [
+      { label: "Answered", tone: "info", value: currentAttempts.length },
+      { label: "Due review", tone: dueReviewCount > 0 ? "warning" : "neutral", value: dueReviewCount },
+      { label: "Saved review", tone: "primary", value: currentReviews.length },
+    ],
+    performanceScores: [...scores.entries()].map(([nodeId, score]) => ({
+      correct: score.correct,
+      detail: `${score.earned}/${score.max} points`,
+      id: nodeId,
+      label: getDomainLabel(nodeId as CertificationDomain),
+      percent: score.max > 0 ? Math.round((score.earned / score.max) * 100) : 0,
+      total: score.total,
+    })),
+    performanceSectionTitle: "Performance areas",
+    reviewAction: dueReviewCount > 0 ? { kind: "canonicalReviewQueue" } : undefined,
+    reviewActionEnabled: dueReviewCount > 0,
+    reviewActionLabel: "Open review queue",
+    reviewQueueCount: dueReviewCount,
+    reviewQueueCopy: formatCanonicalReviewQueueCopy(dueReviewCount, currentReviews.filter((entry) => entry.reasons.includes("repeated_mistake")).length, currentReviews.length),
+  };
 }
 
 function buildCloudProgressTabModel(progress: CloudCertificationProgressViewModel): ProgressTabModel {

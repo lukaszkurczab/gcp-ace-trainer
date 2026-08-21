@@ -5,12 +5,14 @@ import type {
   ContentPackageRuntime,
   ContentPackageSource,
   ContentPackageTrustRecord,
+  ContentPackageFamilyId,
   VerifiedContentPackage,
   VerifiedPackageMode,
 } from "../contracts";
 import { ContentError } from "../errors";
 import { ALGORITHM_MODES } from "../../tracks/coding-interview/domain/algorithmModes";
 import { CERTIFICATION_MODES } from "../../tracks/certification/domain/certificationModes";
+import { DESIGN_INTERVIEW_MODE_IDS } from "../../tracks/design-interview/designModes";
 import { BUNDLED_CONTENT_PACKAGE_TRUST_INDEX } from "./bundledContentPackageTrustIndex";
 
 /** Resolves only immutable whole-node package bytes; it has no lifecycle or cache ownership. */
@@ -27,7 +29,7 @@ export class ContentPackageResolver {
     return verified;
   }
 
-  async resolveForDiscovery(trackId: string, familyId: "coding_interview" | "certification", appVersion: string): Promise<VerifiedContentPackage> {
+  async resolveForDiscovery(trackId: string, familyId: ContentPackageFamilyId, appVersion: string): Promise<VerifiedContentPackage> {
     const candidates = this.sources.filter((candidate) => candidate.trackId === trackId);
     if (candidates.length !== 1) fail("package_pin_not_found", `Track ${trackId} must have exactly one bundled Free package.`);
     return verify(candidates[0]!, appVersion, this.runtime, this.trustIndex, familyId);
@@ -50,7 +52,7 @@ export function createContentPackageResolver(sources: readonly ContentPackageSou
   return new ContentPackageResolver(sources, runtime, trustIndex);
 }
 
-async function verify(source: ContentPackageSource, appVersion: string, runtime: ContentPackageRuntime, trustIndex: readonly ContentPackageTrustRecord[], expectedFamilyId?: "coding_interview" | "certification", expectedFreeNodeId?: string): Promise<VerifiedContentPackage> {
+async function verify(source: ContentPackageSource, appVersion: string, runtime: ContentPackageRuntime, trustIndex: readonly ContentPackageTrustRecord[], expectedFamilyId?: ContentPackageFamilyId, expectedFreeNodeId?: string): Promise<VerifiedContentPackage> {
   if (!nonEmpty(source.trackId) || !nonEmpty(source.packageVersion) || !nonEmpty(source.packageBytes) || !sha(source.packageSha256) || !Number.isSafeInteger(source.packageSize) || source.packageSize !== source.packageBytes.length || !uniqueStrings(source.profileModes)) {
     fail("package_record_invalid", "Package source record is malformed.");
   }
@@ -63,7 +65,7 @@ async function verify(source: ContentPackageSource, appVersion: string, runtime:
   const manifest = outer.manifest;
   const required = ["assetCount", "bundleKind", "contentVersion", "familyId", "freeNodeId", "itemCount", "minimumAppVersion", "modeIds", "packageVersion", "payloadCanonicalSha256", "payloadCompressedSha256", "payloadCompressedSize", "payloadCompression", "payloadSchemaVersion", "payloadUncompressedSize", "profileId", "profileVersion", "provenance", "taxonomyVersion", "trackId"];
   exactKeys(manifest, required, "package_schema_invalid");
-  if (manifest.bundleKind !== "bundled_free_node" || manifest.packageVersion !== source.packageVersion || (manifest.familyId !== "coding_interview" && manifest.familyId !== "certification") || manifest.payloadCompression !== "gzip-level-9-mtime-0-v1" || manifest.payloadSchemaVersion !== "bundled-free-node-payload-v2" || !nonEmpty(manifest.contentVersion) || !nonEmpty(manifest.taxonomyVersion) || !nonEmpty(manifest.minimumAppVersion) || !sha(manifest.payloadCanonicalSha256) || !sha(manifest.payloadCompressedSha256) || !positive(manifest.payloadCompressedSize) || !positive(manifest.payloadUncompressedSize) || !uniqueStrings(manifest.modeIds) || !record(manifest.provenance) || !nonEmpty(manifest.provenance.releaseId)) fail("package_schema_invalid", "Package manifest is malformed.");
+  if (manifest.bundleKind !== "bundled_free_node" || manifest.packageVersion !== source.packageVersion || !isFamilyId(manifest.familyId) || manifest.payloadCompression !== "gzip-level-9-mtime-0-v1" || manifest.payloadSchemaVersion !== "bundled-free-node-payload-v2" || !nonEmpty(manifest.contentVersion) || !nonEmpty(manifest.taxonomyVersion) || !nonEmpty(manifest.minimumAppVersion) || !sha(manifest.payloadCanonicalSha256) || !sha(manifest.payloadCompressedSha256) || !positive(manifest.payloadCompressedSize) || !positive(manifest.payloadUncompressedSize) || !uniqueStrings(manifest.modeIds) || !record(manifest.provenance) || !nonEmpty(manifest.provenance.releaseId)) fail("package_schema_invalid", "Package manifest is malformed.");
   const familyId = manifest.familyId;
   if (manifest.trackId !== source.trackId || expectedFamilyId && familyId !== expectedFamilyId || expectedFreeNodeId && manifest.freeNodeId !== expectedFreeNodeId) fail("package_identity_mismatch", "Package manifest identity does not match its exact source and request.");
   if (!versionAtLeast(appVersion, manifest.minimumAppVersion)) fail("package_minimum_app_version", "Package requires a newer app version.");
@@ -90,24 +92,31 @@ async function verify(source: ContentPackageSource, appVersion: string, runtime:
   return Object.freeze({ familyId, packagePin: pin, trackId: manifest.trackId, freeNodeId: manifest.freeNodeId, contentVersion: manifest.contentVersion, taxonomyVersion: manifest.taxonomyVersion, minimumAppVersion: manifest.minimumAppVersion, catalog: Object.freeze({ itemIds: Object.freeze(itemIds as string[]), items: cloneFreeze(payload.items), assets }), profile });
 }
 
-function validateNodeLocalTaxonomy(taxonomy: unknown, items: unknown[], familyId: "coding_interview" | "certification", manifest: Record<string, unknown>): void {
-  if (!record(taxonomy) || taxonomy.trackId !== manifest.trackId || taxonomy.taxonomyVersion !== manifest.taxonomyVersion) fail("package_payload_invalid", "Package taxonomy identity is invalid.");
+function validateNodeLocalTaxonomy(taxonomy: unknown, items: unknown[], familyId: ContentPackageFamilyId, manifest: Record<string, unknown>): void {
+  if (!record(taxonomy)) fail("package_payload_invalid", "Package taxonomy identity is invalid.");
   if (familyId === "coding_interview") {
+    if (taxonomy.trackId !== manifest.trackId || taxonomy.taxonomyVersion !== manifest.taxonomyVersion) fail("package_payload_invalid", "Package taxonomy identity is invalid.");
     if (taxonomy.schemaVersion !== manifest.taxonomyVersion || !Array.isArray(taxonomy.roadmapNodes) || taxonomy.roadmapNodes.length !== 1 || !record(taxonomy.roadmapNodes[0]) || taxonomy.roadmapNodes[0].id !== manifest.freeNodeId || !items.every((item) => record(item) && record(item.taxonomy) && item.taxonomy.roadmapNodeId === manifest.freeNodeId)) fail("package_payload_invalid", "Coding package contains taxonomy outside its Free node.");
     return;
   }
+  if (familyId === "design_interview") {
+    if (taxonomy.schemaVersion !== "patternly-design-interview-curriculum-v1" || taxonomy.familyId !== familyId || taxonomy.freeNodeId !== manifest.freeNodeId || !nonEmpty(taxonomy.curriculumVersion) || !Array.isArray(taxonomy.nodes) || taxonomy.nodes.length !== 1 || !record(taxonomy.nodes[0]) || taxonomy.nodes[0].nodeId !== manifest.freeNodeId || taxonomy.nodes[0].freeOrPremiumRole !== "free" || !Array.isArray(taxonomy.slots) || taxonomy.slots.length === 0 || !items.every((item) => record(item) && record(item.taxonomy) && item.taxonomy.roadmapNodeId === manifest.freeNodeId)) fail("package_payload_invalid", "Design package contains taxonomy outside its Free node.");
+    return;
+  }
+  if (taxonomy.trackId !== manifest.trackId || taxonomy.taxonomyVersion !== manifest.taxonomyVersion) fail("package_payload_invalid", "Package taxonomy identity is invalid.");
   const legacyNodeLocal = taxonomy.schemaVersion === "taxonomy-config-v1" && Array.isArray(taxonomy.cloudDomains) && taxonomy.cloudDomains.length === 1 && taxonomy.cloudDomains[0] === manifest.freeNodeId && items.every((item) => record(item) && item.domain === manifest.freeNodeId);
   const modernNodeLocal = taxonomy.schemaVersion === "taxonomy-config-v1" && Array.isArray(taxonomy.nodeIds) && taxonomy.nodeIds.length === 1 && taxonomy.nodeIds[0] === manifest.freeNodeId && Array.isArray(taxonomy.tags) && taxonomy.tags.includes(manifest.freeNodeId) && items.every((item) => record(item) && item.nodeId === manifest.freeNodeId);
   if (!legacyNodeLocal && !modernNodeLocal) fail("package_payload_invalid", "Certification package contains taxonomy outside its Free node.");
 }
 
-function validateFamilyItems(items: unknown[], familyId: "coding_interview" | "certification"): void {
+function validateFamilyItems(items: unknown[], familyId: ContentPackageFamilyId): void {
   const feedback = (value: unknown): boolean => record(value) && nonEmpty(value.reason) && record(value.details) && Array.isArray(value.details.blocks) && value.details.blocks.length > 0;
   if (familyId === "coding_interview") {
     if (!items.every((item) => record(item) && nonEmpty(item.prompt) && feedback(item.feedback) && record(item.interaction) && validAlgorithmInteraction(item.interaction))) fail("package_payload_invalid", "Coding package item schema is invalid.");
     return;
   }
-  if (!items.every((item) => { if (!record(item) || !nonEmpty(item.question) || !Array.isArray(item.options) || item.options.length < 2 || !item.options.every((option: unknown) => record(option) && nonEmpty(option.id) && nonEmpty(option.text)) || !Array.isArray(item.correctOptionIds) || item.correctOptionIds.length === 0 || !feedback(item.feedback)) return false; const options = item.options as unknown[]; return item.correctOptionIds.every((id: unknown) => typeof id === "string" && options.some((option: unknown) => record(option) && option.id === id)); })) fail("package_payload_invalid", "Certification package item schema is invalid.");
+  if (familyId === "certification" && !items.every((item) => { if (!record(item) || !nonEmpty(item.question) || !Array.isArray(item.options) || item.options.length < 2 || !item.options.every((option: unknown) => record(option) && nonEmpty(option.id) && nonEmpty(option.text)) || !Array.isArray(item.correctOptionIds) || item.correctOptionIds.length === 0 || !feedback(item.feedback)) return false; const options = item.options as unknown[]; return item.correctOptionIds.every((id: unknown) => typeof id === "string" && options.some((option: unknown) => record(option) && option.id === id)); })) fail("package_payload_invalid", "Certification package item schema is invalid.");
+  if (familyId === "design_interview" && !items.every((item) => record(item) && nonEmpty(item.prompt) && feedback(item.feedback) && record(item.interaction) && validDesignInteraction(item.interaction) && record(item.taxonomy) && nonEmpty(item.taxonomy.roadmapNodeId))) fail("package_payload_invalid", "Design package item schema is invalid.");
 }
 function validAlgorithmInteraction(value: Record<string, unknown>): boolean {
   if (value.type === "choice") { if ((value.selectionMode !== "single" && value.selectionMode !== "multiple") || !Array.isArray(value.options) || value.options.length < 2 || !value.options.every((option: unknown) => record(option) && nonEmpty(option.id) && nonEmpty(option.text)) || !Array.isArray(value.acceptedOptionIds) || value.acceptedOptionIds.length === 0) return false; const options = value.options as unknown[]; return value.acceptedOptionIds.every((id: unknown) => typeof id === "string" && options.some((option: unknown) => record(option) && option.id === id)); }
@@ -115,7 +124,7 @@ function validAlgorithmInteraction(value: Record<string, unknown>): boolean {
   return value.type === "complexity" && Array.isArray(value.checkedDimensions) && value.checkedDimensions.length > 0 && record(value.availableValuesByDimension) && record(value.acceptedValuesByDimension);
 }
 
-function verifiedProfile(value: Record<string, unknown>, modeStructures: unknown, manifest: Record<string, unknown>, sourceModes: readonly string[], familyId: "coding_interview" | "certification") {
+function verifiedProfile(value: Record<string, unknown>, modeStructures: unknown, manifest: Record<string, unknown>, sourceModes: readonly string[], familyId: ContentPackageFamilyId) {
   const keys = ["familyId", "freeNodeId", "modes", "primaryEntry", "profileId", "profileVersion", "schemaVersion", "trackId"];
   exactKeys(value, keys, "package_profile_invalid");
   if (value.schemaVersion !== "patternly-free-node-experience-profile-v1" || value.trackId !== manifest.trackId || value.familyId !== manifest.familyId || value.freeNodeId !== manifest.freeNodeId || value.profileId !== manifest.profileId || value.profileVersion !== manifest.profileVersion || !Array.isArray(value.modes) || !record(value.primaryEntry) || !nonEmpty(value.primaryEntry.modeId) || !positive(value.primaryEntry.requestedLength)) fail("package_profile_invalid", "Package profile identity is invalid.");
@@ -143,22 +152,42 @@ function verifiedProfile(value: Record<string, unknown>, modeStructures: unknown
       const exact = (kind: string, sources: readonly string[], committed?: boolean) => selection.kind === kind && sameStrings(selection.reviewSources, sources) && (committed === undefined || selection.sessionMissesMustBeCommitted === committed);
       if (familyId === "coding_interview" && structure.modeId === "coding-interview-weak-area-review" && !exact("free_node_review_evidence", ["due_queue", "session_misses"], true)) fail("package_profile_invalid", "Coding Weak Area Review policy is not exact.");
       if (familyId === "certification" && structure.modeId === "certification-weak-area-review" && !exact("free_node_review_evidence", ["due_queue"])) fail("package_profile_invalid", "Certification Weak Area Review policy is not exact.");
-      if (familyId === "certification" && structure.modeId === "certification-quick-review" && (!exact("due_free_node_review_evidence", ["due_queue"]) || structure.defaultRequestedLength !== 10 || !sameNumbers(structure.requestedLengths, [10]))) fail("package_profile_invalid", "Certification Quick Review policy is not exact.");
+      if (familyId === "certification" && structure.modeId === "certification-quick-review" && (!exact("due_free_node_review_evidence", ["due_queue"]) || structure.requestedLengths.length !== 1 || structure.defaultRequestedLength !== structure.requestedLengths[0])) fail("package_profile_invalid", "Certification Quick Review policy is not exact.");
+      if (familyId === "design_interview" && structure.modeId === "design-interview-weak-area-review" && (!exact("free_node_review_evidence", ["due_queue"]) || structure.defaultRequestedLength !== 10 || !sameNumbers(structure.requestedLengths, [1, 10]))) fail("package_profile_invalid", "Design Weak Area Review policy is not exact.");
     }
     return Object.freeze({ configurationId: structure.configurationId, configurationVersion: structure.configurationVersion, modeId: structure.modeId, blueprintModeId: structure.blueprintModeId, availability: structure.availability, requestedLengths: Object.freeze([...structure.requestedLengths]), defaultRequestedLength: structure.defaultRequestedLength, reinsertPolicy: structure.reinsertPolicy, ...(structure.feedbackOptions === undefined ? {} : { feedbackOptions: Object.freeze([...structure.feedbackOptions]) }), selection: cloneFreeze(structure.selection) });
   });
   return Object.freeze({ profileId: value.profileId as string, profileVersion: value.profileVersion as string, primaryEntry: Object.freeze({ modeId: value.primaryEntry.modeId, requestedLength: value.primaryEntry.requestedLength }), modes: Object.freeze(modes), configurations: Object.freeze(configurations) });
 }
 
-function validateCanonicalRunnerMode(familyId: "coding_interview" | "certification", mode: Record<string, unknown>, structure: Record<string, unknown>): void {
+function validateCanonicalRunnerMode(familyId: ContentPackageFamilyId, mode: Record<string, unknown>, structure: Record<string, unknown>): void {
   if (familyId === "coding_interview") {
     const canonical = ALGORITHM_MODES.find((candidate) => candidate.id === mode.modeId);
     const requestedLengths = mode.requestedLengths as readonly number[];
     if (!canonical || canonical.contentBlueprintModeId !== mode.blueprintModeId || !requestedLengths.every((length) => canonical.profile.supportedLengths.includes(length as never)) || !canonical.profile.supportedFeedbackModes.every((feedback) => !Array.isArray(structure.feedbackOptions) || structure.feedbackOptions.includes(feedback)) && Array.isArray(structure.feedbackOptions)) fail("package_profile_invalid", "Coding package mode is not mapped to its canonical runner.");
     return;
   }
+  if (familyId === "design_interview") {
+    if (!DESIGN_INTERVIEW_MODE_IDS.includes(mode.modeId as typeof DESIGN_INTERVIEW_MODE_IDS[number]) || mode.blueprintModeId !== mode.modeId || mode.defaultRequestedLength !== 10 || !sameNumbers(mode.requestedLengths, [1, 10])) fail("package_profile_invalid", "Design package mode is not mapped to its canonical runner.");
+    return;
+  }
   const canonical = CERTIFICATION_MODES.find((candidate) => candidate.id === mode.modeId && candidate.enabled);
-  if (!canonical || mode.blueprintModeId !== mode.modeId || mode.defaultRequestedLength !== canonical.defaultQuestionCount) fail("package_profile_invalid", "Certification package mode is not mapped to its canonical runner.");
+  if (!canonical || mode.blueprintModeId !== mode.modeId || !positive(mode.defaultRequestedLength) || !Array.isArray(mode.requestedLengths) || !mode.requestedLengths.every(positive) || !mode.requestedLengths.includes(mode.defaultRequestedLength)) fail("package_profile_invalid", "Certification package mode is not mapped to its canonical runner.");
+}
+
+function isFamilyId(value: unknown): value is ContentPackageFamilyId {
+  return value === "coding_interview" || value === "certification" || value === "design_interview";
+}
+
+function validDesignInteraction(value: Record<string, unknown>): boolean {
+  if (value.type === "choice") {
+    if ((value.selectionMode !== "single" && value.selectionMode !== "multiple") || !Array.isArray(value.options) || value.options.length < 2 || !value.options.every((option) => record(option) && nonEmpty(option.id) && nonEmpty(option.text)) || !Array.isArray(value.acceptedOptionIds) || value.acceptedOptionIds.length === 0) return false;
+    const optionIds = new Set((value.options as unknown[]).map((option) => (option as Record<string, unknown>).id));
+    return new Set(value.acceptedOptionIds).size === value.acceptedOptionIds.length && value.acceptedOptionIds.every((id) => typeof id === "string" && optionIds.has(id));
+  }
+  if (value.type === "ordering") return value.scoringMethod === "adjacent_relations" && Array.isArray(value.elements) && value.elements.length >= 2 && value.elements.every((entry) => record(entry) && nonEmpty(entry.id) && nonEmpty(entry.text)) && Array.isArray(value.canonicalOrder) && value.canonicalOrder.length === value.elements.length && new Set(value.canonicalOrder).size === value.canonicalOrder.length && value.canonicalOrder.every((id) => typeof id === "string" && (value.elements as unknown[]).some((entry) => record(entry) && entry.id === id));
+  if (value.type === "decision_matrix") return value.scoringMethod === "dimension_exact" && Array.isArray(value.dimensions) && value.dimensions.length > 0 && value.dimensions.every((dimension) => record(dimension) && nonEmpty(dimension.dimensionId) && nonEmpty(dimension.label) && Array.isArray(dimension.values) && dimension.values.length >= 2 && dimension.values.every((entry) => record(entry) && nonEmpty(entry.valueId) && nonEmpty(entry.text)) && Array.isArray(dimension.acceptedValueIds) && dimension.acceptedValueIds.length > 0 && dimension.acceptedValueIds.every((id) => typeof id === "string" && (dimension.values as unknown[]).some((entry) => record(entry) && entry.valueId === id)));
+  return false;
 }
 
 async function verifiedAssets(value: unknown[], runtime: ContentPackageRuntime) {

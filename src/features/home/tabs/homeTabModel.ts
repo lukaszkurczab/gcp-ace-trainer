@@ -2,7 +2,8 @@ import type { IconName } from "../../../components";
 import type { TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
 import type { AlgorithmsRecommendationAction, CodingInterviewDashboard } from "../../../application/coding-interview";
 import { getCertificationMode, isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../../tracks/certification";
-import { buildCertificationPracticeResumeRoute } from "../../practice/sessionConfig";
+import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../../tracks/design-interview";
+import { buildCertificationPracticeResumeRoute, buildDesignInterviewPracticeResumeRoute } from "../../practice/sessionConfig";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import {
   getCurrentPracticeTopic,
@@ -16,9 +17,16 @@ export type CertificationPracticeResumeAction = Readonly<{
   kind: "resume_certification_practice";
   modeId: CertificationPracticeModeId;
   sessionId: string;
+  trackId?: TrackDisplay["id"];
 }>;
 
-export type HomeRecommendationAction = AlgorithmsRecommendationAction | CertificationPracticeResumeAction;
+export type DesignInterviewPracticeResumeAction = Readonly<{
+  kind: "resume_design_interview";
+  modeId: DesignInterviewModeId;
+  sessionId: string;
+}>;
+
+export type HomeRecommendationAction = AlgorithmsRecommendationAction | CertificationPracticeResumeAction | DesignInterviewPracticeResumeAction;
 
 export type HomeRecommendationModel = {
   detail: string;
@@ -70,12 +78,51 @@ export function buildHomeTabModel(input: BuildHomeTabModelInput): HomeTabModel {
 
 function buildCertificationResumeRecommendation(input: BuildHomeTabModelInput): HomeRecommendationModel | null {
   const session = input.activeSession;
-  if (input.activeTrack.id !== "google-cloud-associate-cloud-engineer" || !session || session.status !== "active" || session.trackId !== "google-cloud-associate-cloud-engineer" || !isCertificationPracticeModeId(session.modeId)) return null;
-  const modeTitle = getCertificationMode(session.modeId).title;
+  if (!session || session.status !== "active" || session.trackId !== input.activeTrack.id) return null;
+  if (input.activeTrack.familyId === "certification" && isCertificationPracticeModeId(session.modeId)) {
+    const modeTitle = getCertificationMode(session.modeId).title;
+    try {
+      buildCertificationPracticeResumeRoute(session);
+    } catch {
+      return unavailableResumeRecommendation(modeTitle);
+    }
+    return {
+      action: {
+        kind: "resume_certification_practice",
+        modeId: session.modeId,
+        sessionId: session.id,
+        ...(input.activeTrack.id === "google-cloud-associate-cloud-engineer" ? {} : { trackId: input.activeTrack.id }),
+      },
+      detail: `Resume this exact saved ${modeTitle} session at its current question.`,
+      enabled: true,
+      icon: "practice",
+      label: "Continue",
+      primaryLabel: "Continue session",
+      title: `Continue ${modeTitle}`,
+      tone: "primary",
+    };
+  }
+  if (input.activeTrack.familyId !== "design_interview" || !isDesignInterviewModeId(session.modeId)) return null;
+  const modeTitle = titleForDesignMode(session.modeId);
   try {
-    buildCertificationPracticeResumeRoute(session);
+    buildDesignInterviewPracticeResumeRoute(session);
   } catch {
-    const reason = "This saved Certification Practice session is incomplete and cannot be resumed.";
+    return unavailableResumeRecommendation(modeTitle);
+  }
+  return {
+    action: { kind: "resume_design_interview", modeId: session.modeId, sessionId: session.id },
+    detail: `Resume this exact saved ${modeTitle} session at its current question.`,
+    enabled: true,
+    icon: "practice",
+    label: "Continue",
+    primaryLabel: "Continue session",
+    title: `Continue ${modeTitle}`,
+    tone: "primary",
+  };
+}
+
+function unavailableResumeRecommendation(modeTitle: string): HomeRecommendationModel {
+    const reason = "This saved practice session is incomplete and cannot be resumed.";
     return {
       action: { kind: "unavailable", reason },
       detail: reason,
@@ -87,17 +134,10 @@ function buildCertificationResumeRecommendation(input: BuildHomeTabModelInput): 
       tone: "warning",
       unavailableReason: reason,
     };
-  }
-  return {
-    action: { kind: "resume_certification_practice", modeId: session.modeId, sessionId: session.id },
-    detail: `Resume this exact saved ${modeTitle} session at its current question.`,
-    enabled: true,
-    icon: "practice",
-    label: "Continue",
-    primaryLabel: "Continue session",
-    title: `Continue ${modeTitle}`,
-    tone: "primary",
-  };
+}
+
+function titleForDesignMode(modeId: DesignInterviewModeId): string {
+  return modeId.replace(/^design-interview-/, "").replace(/-/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 function buildAlgorithmsRecommendations(input: BuildHomeTabModelInput): HomeRecommendationModel[] {

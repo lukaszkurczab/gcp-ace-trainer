@@ -70,7 +70,7 @@ export function PracticeResponseControls({
     <View style={styles.stack}>
       {control.dimensions.map((dimension) => (
         <View key={dimension.id} style={styles.dimension}>
-          <Text style={styles.dimensionTitle}>{humanizeDimension(dimension.id)}</Text>
+          <Text style={styles.dimensionTitle}>{dimension.label ?? humanizeDimension(dimension.id)}</Text>
           <View style={styles.valueGrid}>
             {dimension.values.map((value) => {
               const selected = dimension.selectedValue === value;

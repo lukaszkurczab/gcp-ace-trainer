@@ -14,7 +14,6 @@ import {
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import {
-  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   getTrackDisplays,
   type TrackDisplay,
   type TrackId,
@@ -167,7 +166,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
             });
             const topic = getCurrentPracticeTopic(track, data.trainingAttempts);
             const primaryLabel = isActive ? "Continue" : started ? "Select" : "Start track";
-            const isCertificationTrack = track.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID;
+            const isCertificationTrack = track.familyId === "certification";
 
             return (
               <Card

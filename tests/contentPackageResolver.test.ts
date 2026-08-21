@@ -30,7 +30,7 @@ test("PKG-04A adapts each verified package into a closed family-local catalog/pr
   assert.ok(Object.isFrozen(coding.configurations));
   assert.ok(Object.isFrozen(coding.getConfiguration("coding-interview-guided-practice").selection));
 
-  const certification = createPackageCatalogProfileAdapter(await resolver.resolveForPreparation({ trackId: "google-cloud-associate-cloud-engineer", familyId: "certification", freeNodeId: "setup_environment", modeId: "certification-focus-practice", appVersion: "0.1.0" }));
+  const certification = createPackageCatalogProfileAdapter(await resolver.resolveForPreparation({ trackId: "google-cloud-associate-cloud-engineer", familyId: "certification", freeNodeId: "organization_projects_policies_services_quotas_and_assets", modeId: "certification-focus-practice", appVersion: "0.1.0" }));
   assert.equal(certification.familyId, "certification");
   assert.deepEqual(certification.modes.map((mode) => [mode.modeId, mode.requestedLengths]), [
     ["certification-focus-practice", [10, 20, 40]],
@@ -57,10 +57,10 @@ test("PKG-04A package catalogs are accepted by family runtimes only for their cl
   await assert.rejects(() => coding.prepare({ trackId: codingPackage.trackId, modeId: "coding-interview-custom-practice", request: { sessionId: "pkg-coding-custom-excluded", requestedLength: 20, scope: { mentalUnitId: codingItem.taxonomy.primaryMentalUnitId } }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" }), /does not support requested length|unavailable/);
   await assert.rejects(() => coding.prepare({ trackId: codingPackage.trackId, modeId: "coding-interview-simulation", request: { sessionId: "pkg-coding-excluded", requestedLength: 40, scope: { simulationProfileId: "outside" } }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" }), /unavailable/);
 
-  const certificationPackage = await resolver.resolveForPreparation({ trackId: "google-cloud-associate-cloud-engineer", familyId: "certification", freeNodeId: "setup_environment", modeId: "certification-focus-practice", appVersion: "0.1.0" });
+  const certificationPackage = await resolver.resolveForPreparation({ trackId: "google-cloud-associate-cloud-engineer", familyId: "certification", freeNodeId: "organization_projects_policies_services_quotas_and_assets", modeId: "certification-focus-practice", appVersion: "0.1.0" });
   if (certificationPackage.familyId !== "certification") throw new Error("Expected certification package.");
   const certification = new CertificationFamilyRuntime(createCertificationPackageRuntimeCatalog(certificationPackage), certificationPackage.taxonomyVersion);
-  const preparedCertification = await certification.prepare({ trackId: certificationPackage.trackId, modeId: "certification-focus-practice", request: { sessionId: "pkg-certification", requestedLength: 10, domain: "setup_environment" }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" });
+  const preparedCertification = await certification.prepare({ trackId: certificationPackage.trackId, modeId: "certification-focus-practice", request: { sessionId: "pkg-certification", requestedLength: 10, domain: "organization_projects_policies_services_quotas_and_assets" }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" });
   assert.equal(preparedCertification.session.actualLength, 10);
   await assert.rejects(() => certification.prepare({ trackId: certificationPackage.trackId, modeId: "certification-exam-simulation", request: { sessionId: "pkg-certification-excluded" }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" }), /unavailable/);
 });
@@ -84,13 +84,14 @@ test("PKG-04A adapter has no whole-track catalog dependency", () => {
 });
 
 const sources = GENERATED_FREE_NODE_PACKAGES as readonly ContentPackageSource[];
+const gcpSource = sources.find((source) => source.trackId === "google-cloud-associate-cloud-engineer")!;
 
 test("CONTENT-PACKAGE-RESOLVER-001 verifies exact bundled node packages and resolves only closed profile modes", async () => {
   const resolver = createContentPackageResolver(sources, runtime);
   const coding = await resolver.resolveForPreparation({ trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", freeNodeId: "complexity_and_constraints", modeId: "coding-interview-learn-approach", appVersion: "0.1.0" });
-  const gcp = await resolver.resolveForPreparation({ trackId: "google-cloud-associate-cloud-engineer", familyId: "certification", freeNodeId: "setup_environment", modeId: "certification-focus-practice", appVersion: "0.1.0" });
+  const gcp = await resolver.resolveForPreparation({ trackId: "google-cloud-associate-cloud-engineer", familyId: "certification", freeNodeId: "organization_projects_policies_services_quotas_and_assets", modeId: "certification-focus-practice", appVersion: "0.1.0" });
   assert.equal(coding.packagePin.packageIdentity, sources[0]!.packageSha256);
-  assert.equal(gcp.packagePin.packageIdentity, sources[1]!.packageSha256);
+  assert.equal(gcp.packagePin.packageIdentity, sources.find((source) => source.trackId === gcp.trackId)!.packageSha256);
   assert.ok(Object.isFrozen(coding));
   assert.ok(Object.isFrozen(coding.catalog.items[0]!));
   assert.ok(Object.isFrozen((coding.catalog.items[0] as { taxonomy: unknown }).taxonomy));
@@ -98,7 +99,7 @@ test("CONTENT-PACKAGE-RESOLVER-001 verifies exact bundled node packages and reso
   assert.ok(Object.isFrozen(coding.catalog.assets));
   assert.throws(() => { (coding.catalog.items[0] as { id: string }).id = "mutated"; }, TypeError);
   assert.equal(coding.catalog.itemIds.length, 158);
-  assert.equal(gcp.catalog.itemIds.length, 82);
+  assert.equal(gcp.catalog.itemIds.length, 136);
   await assert.rejects(() => resolver.resolveForPreparation({ trackId: coding.trackId, familyId: coding.familyId, freeNodeId: coding.freeNodeId, modeId: "coding-interview-simulation", appVersion: "0.1.0" }), code("package_mode_unavailable"));
   assert.deepEqual(await resolver.resolveExact(coding.packagePin, "0.1.0"), coding);
   const alternateBytes = `${sources[0]!.packageBytes} `;
@@ -128,10 +129,10 @@ test("CONTENT-PACKAGE-RESOLVER-001 verifies exact bundled node packages and reso
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.freeNodeExperienceProfile.primaryEntry = { modeId: "coding-interview-weak-area-review", requestedLength: 10 }; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "coding-interview-custom-practice").feedbackOptions = ["afterEachAnswer"]; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "coding-interview-weak-area-review").selection.emptyEligibility = "silent_substitute"; }, true), "package_profile_invalid");
-  await assertPackageFailure(repackPayload(sources[1]!, (payload) => { delete payload.modeStructures.configurations.find((entry: any) => entry.modeId === "certification-quick-review").selection.shortening; }, true), "package_profile_invalid");
+  await assertPackageFailure(repackPayload(gcpSource, (payload) => { delete payload.modeStructures.configurations.find((entry: any) => entry.modeId === "certification-quick-review").selection.shortening; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "coding-interview-weak-area-review").selection.reviewSources = ["due_queue", "outside"]; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "coding-interview-weak-area-review").selection.sessionMissesMustBeCommitted = false; }, true), "package_profile_invalid");
-  await assertPackageFailure(repackPayload(sources[1]!, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "certification-quick-review").selection.kind = "free_node_review_evidence"; }, true), "package_profile_invalid");
+  await assertPackageFailure(repackPayload(gcpSource, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "certification-quick-review").selection.kind = "free_node_review_evidence"; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.items[0] = { id: payload.items[0].id, taxonomy: payload.items[0].taxonomy }; }, true), "package_payload_invalid");
   await assertPackageFailure(repack(sources[0]!, (outer) => { outer.manifest.minimumAppVersion = "0.2.0"; }), "package_minimum_app_version");
   const provenanceForged = repack(sources[0]!, (outer) => { outer.manifest.provenance.sourceRepositoryCommit = "0".repeat(40); });
@@ -145,7 +146,7 @@ test("CONTENT-PACKAGE-RESOLVER-001 verifies exact bundled node packages and reso
 async function assertPackageFailure(source: ContentPackageSource, expectedCode: string): Promise<void> {
   const resolver = createContentPackageResolver([source], runtime, [{ packageIdentity: source.packageSha256, packageBytes: source.packageBytes }]);
   const certification = source.trackId === "google-cloud-associate-cloud-engineer";
-  await assert.rejects(() => resolver.resolveForPreparation(certification ? { trackId: source.trackId, familyId: "certification", freeNodeId: "setup_environment", modeId: "certification-focus-practice", appVersion: "0.1.0" } : { trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", freeNodeId: "complexity_and_constraints", modeId: "coding-interview-learn-approach", appVersion: "0.1.0" }), code(expectedCode));
+  await assert.rejects(() => resolver.resolveForPreparation(certification ? { trackId: source.trackId, familyId: "certification", freeNodeId: "organization_projects_policies_services_quotas_and_assets", modeId: "certification-focus-practice", appVersion: "0.1.0" } : { trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", freeNodeId: "complexity_and_constraints", modeId: "coding-interview-learn-approach", appVersion: "0.1.0" }), code(expectedCode));
 }
 function code(expected: string) { return (error: unknown) => error instanceof Error && "code" in error && (error as { code: string }).code === expected; }
 function repack(source: ContentPackageSource, mutate: (outer: any) => void): ContentPackageSource {

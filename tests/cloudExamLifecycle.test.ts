@@ -4,6 +4,8 @@ import test from "node:test";
 import { contentPackageRuntimeOwner } from "../src/application/contentPackageRuntimeOwner";
 import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 
+const GCP_FREE_NODE_ID = "organization_projects_policies_services_quotas_and_assets";
+
 async function profile() {
   await prepareBundledTestPackages();
   return contentPackageRuntimeOwner.getPreparedDiscovery("google-cloud-associate-cloud-engineer").profile;
@@ -17,9 +19,9 @@ test("Certification Diagnostic Baseline is excluded from the bundled Free packag
 test("Certification Focus Practice is the bundled Free package primary entry and remains node-local", async () => {
   const value = await profile();
   assert.equal(value.primaryEntry.modeId, "certification-focus-practice");
-  assert.equal(value.freeNodeId, "setup_environment");
+  assert.equal(value.freeNodeId, GCP_FREE_NODE_ID);
   assert.deepEqual(value.getMode("certification-focus-practice").requestedLengths, [10, 20, 40]);
-  assert.ok((value.items as readonly { domain: string }[]).every((item) => item.domain === "setup_environment"));
+  assert.ok((value.items as readonly { nodeId: string }[]).every((item) => item.nodeId === GCP_FREE_NODE_ID));
 });
 
 test("Certification Scenario Practice is excluded from the bundled Free package and direct entry fails", async () => {

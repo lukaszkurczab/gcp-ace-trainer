@@ -18,6 +18,7 @@ export type PracticeOrderingControl = Readonly<{
 export type PracticeComplexityControl = Readonly<{
   dimensions: readonly Readonly<{
     id: string;
+    label?: string;
     selectedValue?: string;
     values: readonly string[];
   }> [];
@@ -38,7 +39,7 @@ export type PracticeFeedback = Readonly<{
 export type PracticeInteractionRenderer =
   | Readonly<{ kind: "choice"; options: readonly Readonly<{ id: string; selected: boolean; text: string }> [] }>
   | Readonly<{ kind: "ordering"; elements: readonly Readonly<{ id: string; text: string }> [] }>
-  | Readonly<{ kind: "complexity"; dimensions: readonly Readonly<{ id: string; selectedValue?: string; values: readonly string[] }> [] }>;
+  | Readonly<{ kind: "complexity"; dimensions: readonly Readonly<{ id: string; label?: string; selectedValue?: string; values: readonly string[] }> [] }>;
 
 export type PracticeLocalResponse =
   | Readonly<{ kind: "choice"; selectedOptionIds: readonly string[] }>
@@ -154,6 +155,7 @@ export function buildPracticeResponseControl(input: Readonly<{
     kind: "complexity",
     dimensions: Object.freeze(input.renderer.dimensions.map((dimension) => Object.freeze({
       id: dimension.id,
+      ...(dimension.label ? { label: dimension.label } : {}),
       values: dimension.values,
       ...(selectedValues[dimension.id] ? { selectedValue: selectedValues[dimension.id] } : dimension.selectedValue ? { selectedValue: dimension.selectedValue } : {}),
     }))),

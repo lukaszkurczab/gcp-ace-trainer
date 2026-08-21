@@ -37,7 +37,7 @@ test("every bundled Free-node package exactly matches its producer artifact and 
 test("CI reads the current per-artifact content lock instead of retired aggregate lock fields", () => {
   const workflow = readFileSync(join(appRoot, ".github", "workflows", "qa.yml"), "utf8");
   assert.match(workflow, /lock\.schemaVersion !== 2/u);
-  assert.match(workflow, /coding-interview-dsa-problem-solving,google-cloud-associate-cloud-engineer,microsoft-azure-administrator-associate-az-104/u);
+  assert.match(workflow, /aws-certified-solutions-architect-associate.*backend-system-design-interview.*coding-interview-dsa-problem-solving.*frontend-system-design-interview.*google-cloud-associate-cloud-engineer.*microsoft-azure-administrator-associate-az-104.*microsoft-azure-ai-fundamentals-ai-901.*object-oriented-design-interview/su);
   assert.match(workflow, /lock\.artifacts\.at\(-1\)\.producerCommit/u);
   assert.doesNotMatch(workflow, /algorithms,cloud-certification/u);
   assert.doesNotMatch(workflow, /lock\.producerCommit/u);

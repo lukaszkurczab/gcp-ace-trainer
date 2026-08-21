@@ -1,9 +1,9 @@
 {
   "kind": "maestro-real-content-session-v1",
   "release": {
-    "releaseId": "patternly-core-0018",
-    "sourceRepositoryCommit": "4db6020429a1da67387eec2bcfe4fad80af15dfd",
-    "checksumSha256": "dfa5cbca599ffec276bd82ba3c7de09c71f0eedc13f473fad853eeef3361a423"
+    "releaseId": "patternly-launch-2026-08-21-02",
+    "sourceRepositoryCommit": "868a565f638286d45b5e5cef1acd1a7bf97fc38d",
+    "checksumSha256": "2e894561a314cc724c1c28180fc132125bb6e43968fdf935dc292bc8a3da5402"
   },
   "session": {
     "sessionId": "coding-interview-dsa-problem-solving:coding-interview-custom-practice:1",

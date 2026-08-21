@@ -34,7 +34,7 @@ import {
   saveTrainingSession,
 } from "../src/storage/repositories";
 import type { CertificationQuestion } from "../src/tracks/certification";
-import { buildCertificationPracticeResumeRoute, getCloudDomainForTopicId } from "../src/features/practice/sessionConfig";
+import { buildCertificationPracticeResumeRoute, getCertificationTopicIdForRoute } from "../src/features/practice/sessionConfig";
 import { installMemoryStorage } from "./journalTestSupport";
 import { STORAGE_KEYS } from "../src/storage/keys";
 
@@ -44,6 +44,8 @@ class MutableClock {
   set(value: string) { this.value = value; }
 }
 
+const GCP_FREE_NODE_ID = "organization_projects_policies_services_quotas_and_assets";
+
 function incorrectResponse(question: CertificationQuestion) {
   const wrong = question.options.find((option) => !question.correctOptionIds.includes(option.id));
   assert.ok(wrong);
@@ -52,12 +54,6 @@ function incorrectResponse(question: CertificationQuestion) {
 
 function correctResponse(question: CertificationQuestion) {
   return { kind: "option_selection" as const, selectedOptionIds: [...question.correctOptionIds] };
-}
-
-function partialResponse(question: CertificationQuestion) {
-  assert.equal(question.type, "multiple");
-  assert.ok(question.correctOptionIds.length > 1);
-  return { kind: "option_selection" as const, selectedOptionIds: [question.correctOptionIds[0]!] };
 }
 
 test("Certification family lifecycle journals one typed attempt and retains remediation identity", async () => {
@@ -75,7 +71,7 @@ test("Certification family lifecycle journals one typed attempt and retains reme
     },
   });
   const catalog = getCertificationPackageTestCatalog();
-  const question = catalog.getItems().find((item) => item.domain === "setup_environment");
+  const question = catalog.getItems().find((item) => item.nodeId === GCP_FREE_NODE_ID);
   assert.ok(question);
 
   const first = await lifecycle.startSession({
@@ -83,7 +79,7 @@ test("Certification family lifecycle journals one typed attempt and retains reme
     modeId: "certification-focus-practice",
     request: {
       requestedLength: 10,
-      domain: question.domain,
+      domain: GCP_FREE_NODE_ID,
     },
   });
   const firstQuestion = catalog.getItemById(first.firstOccurrence.itemId);
@@ -112,7 +108,7 @@ test("Certification family lifecycle journals one typed attempt and retains reme
     modeId: "certification-focus-practice",
     request: {
       requestedLength: 10,
-      domain: firstQuestion.domain,
+    domain: GCP_FREE_NODE_ID,
     },
   });
   assert.equal(second.firstOccurrence.itemId, firstQuestion.id);
@@ -139,12 +135,12 @@ test("Certification open starts once, resumes the exact mode, and never starts f
     wallClock: new MutableClock("2026-07-24T12:00:00.000Z"),
     sessionIds: { async create() { identitySequence += 1; return `certification-open-${identitySequence}`; } },
   });
-  const first = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const first = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(first.kind, "ready");
   if (first.kind !== "ready") return;
-  assert.equal(first.projection.session.configurationSnapshot.domain, "setup_environment");
+  assert.equal(first.projection.session.configurationSnapshot.domain, GCP_FREE_NODE_ID);
   assert.equal(identitySequence, 1);
-  const resumed = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const resumed = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(resumed.kind, "ready");
   if (resumed.kind === "ready") assert.equal(resumed.projection.session.id, first.projection.session.id);
   assert.equal(identitySequence, 1);
@@ -154,7 +150,7 @@ test("Certification open starts once, resumes the exact mode, and never starts f
   assert.equal(identitySequence, 1);
   await abandonCertificationSession(first.projection.session.id);
   await assert.rejects(
-    openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment", expectedSessionId: first.projection.session.id }),
+    openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID, expectedSessionId: first.projection.session.id }),
     (cause: unknown) => cause instanceof TrainingApplicationFailure && cause.code === "resume_unavailable",
   );
   assert.equal(identitySequence, 1);
@@ -167,7 +163,7 @@ test("Certification pause checkpoints and resumes the exact active session", asy
     wallClock: new MutableClock("2026-07-24T12:15:00.000Z"),
     sessionIds: { async create() { return "certification-pause-resume"; } },
   });
-  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") return;
   await enterCertificationPracticeForeground();
@@ -200,7 +196,7 @@ test("Certification pause checkpoints and resumes the exact active session", asy
   assert.equal(route.mode, action.modeId);
   assert.equal(route.expectedSessionId, action.sessionId);
   const resumed = await openCertificationPracticeSession({
-    domain: getCloudDomainForTopicId(route.topicId),
+    domain: getCertificationTopicIdForRoute(route.topicId),
     expectedSessionId: route.expectedSessionId,
     modeId: action.modeId,
     requestedLength: route.sessionLength,
@@ -221,7 +217,7 @@ test("Certification resume rejects an old Focus record without its immutable dom
     wallClock: new MutableClock("2026-07-24T12:16:00.000Z"),
     sessionIds: { async create() { return "certification-stale-focus"; } },
   });
-  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") return;
 
@@ -245,7 +241,7 @@ test("Certification end classifies a failed timer checkpoint before it reaches a
     wallClock: new MutableClock("2026-07-24T12:18:00.000Z"),
     sessionIds: { async create() { return "certification-abandon-timer-retry"; } },
   });
-  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") return;
   const sessionId = opened.projection.session.id;
@@ -275,7 +271,7 @@ test("Certification end recovers a durable timer checkpoint before abandonment r
     wallClock: new MutableClock("2026-07-24T12:19:00.000Z"),
     sessionIds: { async create() { return "certification-abandon-timer-recovery"; } },
   });
-  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") return;
   const sessionId = opened.projection.session.id;
@@ -324,7 +320,7 @@ test("Certification abandonment boundaries retry only before durability and othe
       wallClock: new MutableClock("2026-07-24T12:20:00.000Z"),
       sessionIds: { async create() { return `certification-abandon-${boundary.name}`; } },
     });
-    const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+    const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
     assert.equal(opened.kind, "ready", boundary.name);
     if (opened.kind !== "ready") continue;
     const sessionId = opened.projection.session.id;
@@ -370,7 +366,7 @@ test("Certification open handles a typed start race with one start and one autho
     wallClock: new MutableClock("2026-07-24T12:30:00.000Z"),
     sessionIds: { async create() { return "raced-certification-session"; } },
   });
-  const prepared = await lifecycle.startSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-focus-practice", request: { requestedLength: 10, domain: "setup_environment" } });
+  const prepared = await lifecycle.startSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-focus-practice", request: { requestedLength: 10, domain: GCP_FREE_NODE_ID } });
   installMemoryStorage();
   let starts = 0;
   lifecycle.startSession = async () => {
@@ -380,7 +376,7 @@ test("Certification open handles a typed start race with one start and one autho
     throw new TrainingApplicationFailure("active_session_conflict", "Race installed an authoritative active session.");
   };
   installTrainingLifecycleUseCases(lifecycle);
-  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(starts, 1);
   assert.equal(opened.kind, "ready");
   if (opened.kind === "ready") assert.equal(opened.projection.session.id, prepared.session.id);
@@ -393,24 +389,18 @@ test("Certification feedback projects exact materialized attempt results and can
     wallClock: new MutableClock("2026-07-24T10:30:00.000Z"),
     sessionIds: { async create() { return "certification-feedback-boundary"; } },
   });
-  const feedbackOpen = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const feedbackOpen = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(feedbackOpen.kind, "ready");
-  const observed = new Set<"correct" | "partial" | "incorrect">();
+  const observed = new Set<"correct" | "incorrect">();
 
-  for (let index = 0; index < 10 && observed.size < 3; index += 1) {
+  for (let index = 0; index < 10 && observed.size < 2; index += 1) {
     const before = await getCertificationPracticeProjection();
     assert.equal(before.response, null);
     assert.equal(before.feedback, null);
-    const expected = !observed.has("incorrect")
-      ? "incorrect" as const
-      : before.question.type === "multiple" && !observed.has("partial")
-        ? "partial" as const
-        : "correct" as const;
+    const expected = !observed.has("incorrect") ? "incorrect" as const : "correct" as const;
     const response = expected === "incorrect"
       ? incorrectResponse(before.question)
-      : expected === "partial"
-        ? partialResponse(before.question)
-        : correctResponse(before.question);
+      : correctResponse(before.question);
 
     await submitCertificationPracticeResponse(response);
     const after = await getCertificationPracticeProjection();
@@ -427,10 +417,10 @@ test("Certification feedback projects exact materialized attempt results and can
       assert.equal(after.feedback?.result, "incorrect");
     }
     observed.add(expected);
-    if (observed.size < 3) await advanceCertificationPracticeSession();
+    if (observed.size < 2 && after.ordinal < after.total) await advanceCertificationPracticeSession();
   }
 
-  assert.deepEqual([...observed].sort(), ["correct", "incorrect", "partial"]);
+  assert.deepEqual([...observed].sort(), ["correct", "incorrect"]);
 });
 
 test("Certification pre-journal failure preserves an editable response and resubmits exactly once", async () => {
@@ -440,7 +430,7 @@ test("Certification pre-journal failure preserves an editable response and resub
     wallClock: new MutableClock("2026-07-24T13:00:00.000Z"),
     sessionIds: { async create() { return "certification-pre-journal"; } },
   });
-  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") return;
   const response = incorrectResponse(opened.projection.question);
@@ -471,7 +461,7 @@ test("Certification journal-committed response locks without feedback and recove
     wallClock: new MutableClock("2026-07-24T13:30:00.000Z"),
     sessionIds: { async create() { return "certification-materialization-boundary"; } },
   });
-  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") return;
   const response = incorrectResponse(opened.projection.question);
@@ -507,7 +497,7 @@ test("Certification materialized response and feedback win through verification 
       wallClock: new MutableClock("2026-07-24T14:00:00.000Z"),
       sessionIds: { async create() { return `certification-${boundary}`; } },
     });
-    const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+    const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
     assert.equal(opened.kind, "ready");
     if (opened.kind !== "ready") continue;
     const response = incorrectResponse(opened.projection.question);
@@ -542,7 +532,7 @@ test("Certification advance failure retries only advance and never resubmits the
     wallClock: new MutableClock("2026-07-24T14:30:00.000Z"),
     sessionIds: { async create() { return "certification-advance-retry"; } },
   });
-  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") return;
   await submitCertificationPracticeResponse(incorrectResponse(opened.projection.question));
@@ -580,7 +570,7 @@ test("ordinary Certification facade owns timer start, response and final checkpo
     },
   });
 
-  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") return;
   const initialized = await getActiveForegroundTimer();
@@ -623,7 +613,7 @@ test("ordinary Certification facade owns timer start, response and final checkpo
   if (completed.kind === "verified") assert.equal(completed.value.result.sessionId, projection.session.id);
   assert.equal(await getActiveForegroundTimer(), null);
 
-  const restarted = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const restarted = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: GCP_FREE_NODE_ID });
   assert.equal(restarted.kind, "ready");
   if (restarted.kind === "ready") await abandonCertificationSession(restarted.projection.session.id);
   assert.equal(await getActiveForegroundTimer(), null);

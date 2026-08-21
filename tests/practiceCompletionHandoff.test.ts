@@ -201,7 +201,7 @@ async function algorithmsAtFinalFeedback(storage: CompletionFaultStorage, suffix
 
 async function certificationAtFinalFeedback(storage: CompletionFaultStorage, suffix: number): Promise<FinalFeedbackHarness> {
   installCompletionFixture(storage, suffix);
-  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
+  const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "organization_projects_policies_services_quotas_and_assets" });
   assert.equal(opened.kind, "ready");
   if (opened.kind !== "ready") throw new Error("Certification completion fixture did not open.");
   let projection = await getCertificationPracticeProjection();

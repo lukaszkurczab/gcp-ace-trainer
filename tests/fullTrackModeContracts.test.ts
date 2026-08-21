@@ -8,6 +8,7 @@ import { createCertificationFullTrackTestRuntime, createCodingFullTrackTestRunti
 
 const NOW = "2026-07-24T10:00:00.000Z";
 const CERTIFICATION_TRACK_ID = "google-cloud-associate-cloud-engineer";
+const GCP_FREE_NODE_ID = "organization_projects_policies_services_quotas_and_assets";
 
 test("Independent Practice uses one declared scope, supports ten or twenty items, and never substitutes a scope", async () => {
   const { catalog } = await createCodingFullTrackTestRuntime();
@@ -38,9 +39,9 @@ test("Certification Diagnostic Baseline uses its immutable 40-item blueprint and
 test("Certification Focus Practice requires its package domain and never fills from a sibling domain", async () => {
   const { catalog, runtime } = await createCertificationFullTrackTestRuntime();
   await assert.rejects(() => runtime.prepare({ trackId: CERTIFICATION_TRACK_ID, modeId: "certification-focus-practice", request: { sessionId: "focus-missing", requestedLength: 10 }, attempts: [], reviews: [], now: NOW }), /requires an explicit topic/u);
-  const prepared = await runtime.prepare({ trackId: CERTIFICATION_TRACK_ID, modeId: "certification-focus-practice", request: { sessionId: "focus", requestedLength: 40, domain: "setup_environment" }, attempts: [], reviews: [], now: NOW });
+  const prepared = await runtime.prepare({ trackId: CERTIFICATION_TRACK_ID, modeId: "certification-focus-practice", request: { sessionId: "focus", requestedLength: 40, domain: GCP_FREE_NODE_ID }, attempts: [], reviews: [], now: NOW });
   assert.equal(prepared.session.actualLength, 40);
-  assert.ok(prepared.session.itemOrder.every((entry) => catalog.getItemById(entry.item.itemId).domain === "setup_environment"));
+  assert.ok(prepared.session.itemOrder.every((entry) => catalog.getItemById(entry.item.itemId).nodeId === GCP_FREE_NODE_ID));
   await assert.rejects(() => runtime.prepare({ trackId: CERTIFICATION_TRACK_ID, modeId: "certification-focus-practice", request: { sessionId: "focus-sibling", requestedLength: 10, domain: "operations" }, attempts: [], reviews: [], now: NOW }), /content configuration is invalid|requires one domain declared by its installed blueprint/u);
 });
 
@@ -81,7 +82,7 @@ test("Certification Mixed Practice uses a deterministic unique interleaved bluep
   assert.deepEqual(first.session.itemOrder.map((entry) => entry.item.itemId), expected);
   assert.deepEqual(second.session.itemOrder.map((entry) => entry.item.itemId), expected);
   assert.equal(new Set(expected).size, 20);
-  await assert.rejects(() => prepare("mixed-invalid", 5), /supports only its installed 10, 20, or 40 item lengths/u);
+  await assert.rejects(() => prepare("mixed-invalid", 5), /requested length is not installed in this package/u);
   await assert.rejects(() => runtime.prepare({ trackId: CERTIFICATION_TRACK_ID, modeId: "certification-mixed-practice", request: { sessionId: "mixed-selector", requestedLength: 10, domain: "setup_environment" }, attempts: [], reviews: [], now: NOW }), /does not accept selectors/u);
 });
 

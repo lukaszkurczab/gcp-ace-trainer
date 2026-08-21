@@ -22,13 +22,13 @@ test("PKG-04A node adapter verifies both generated packages through the producti
   const certification = await resolver.resolveForPreparation({
     trackId: "google-cloud-associate-cloud-engineer",
     familyId: "certification",
-    freeNodeId: "setup_environment",
+    freeNodeId: "organization_projects_policies_services_quotas_and_assets",
     modeId: "certification-focus-practice",
     appVersion: "0.1.0",
   });
 
   assert.equal(coding.catalog.itemIds.length, 158);
-  assert.equal(certification.catalog.itemIds.length, 82);
+  assert.equal(certification.catalog.itemIds.length, 136);
 });
 
 test("PKG-04A package runtime rejects non-canonical base64 and malformed UTF-8", () => {

@@ -131,6 +131,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
   if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><EmptyState title={t("Practice is unavailable")} description={t("This topic is not available in the installed Free package.")} /></Screen>;
   const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
+  const isDesignInterviewTrack = activeTrack.familyId === "design_interview";
   const topic = resolvePracticeTopic({
     activeTrackId: activeTrack.id,
     routeTopicId: route.params?.topicId,
@@ -141,8 +142,14 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     const resolvedMode = mode ?? (
       isCodingInterviewTrack
         ? ALGORITHM_MODE_IDS.learnApproach
-        : "certification-focus-practice"
+        : isDesignInterviewTrack
+          ? packageProfile.primaryEntry.modeId as PracticeSessionMode
+          : "certification-focus-practice"
     );
+    if (isDesignInterviewTrack) {
+      navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode as PracticeSessionMode, source: mode === undefined ? "practiceHub" : "modeShortcut", topicId: topic.id, trackId: activeTrack.id }));
+      return;
+    }
     if (activeTrack.familyId === "certification" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
       navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, sessionLength: 10, source: "modeShortcut", topicId: topic.id, trackId: activeTrack.id });
       return;
@@ -203,9 +210,9 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           <Text style={styles.heroEyebrow}>{t("Recommended session")}</Text>
           <View style={[styles.heroHeading, largeText ? styles.heroHeadingLargeText : null]}>
             <IconTile
-              name={isCodingInterviewTrack ? "route" : "cloud"}
+              name={isCodingInterviewTrack || isDesignInterviewTrack ? "route" : "cloud"}
               size={48}
-              tone={isCodingInterviewTrack ? "primary" : "info"}
+              tone={isCodingInterviewTrack || isDesignInterviewTrack ? "primary" : "info"}
             />
             <Text style={styles.heroTitle}>
               {formatPracticeTopicTitle(topic.title, t)}
@@ -233,7 +240,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    ...(isCodingInterviewTrack ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "certification-focus-practice" as const }),
+                    ...(isCodingInterviewTrack ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : isDesignInterviewTrack ? { mode: packageProfile.primaryEntry.modeId as PracticeSessionMode } : { mode: "certification-focus-practice" as const }),
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,

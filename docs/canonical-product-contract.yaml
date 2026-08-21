@@ -154,6 +154,8 @@ requirements:
     statement: "Every implemented production track owns exactly one versioned closed Free-node experience profile: it is a subset of the track's complete validModes, uses only existing family mode IDs and canonical runners, defines only node-local configuration, and never creates a Free-only mode, runner, scoring path, or lifecycle."
   - id: FREE-NODE-PACKAGE-ADMISSION-001
     statement: "A production Free-node package is admitted only from immutable factual package evidence that binds one track, one freeNodeId, one versioned Free-node experience profile, pinned inventory and release provenance, deterministic bytes and checksum, an immediately executable primary session, and node-closed immediate and evidence-conditioned modes; a brief alone is not admission evidence."
+  - id: ROADMAP-LOCKED-NODES-001
+    statement: Every launch track shows its complete roadmap with the installed Free node first and every non-installed node visible as an explicit locked, non-selectable state; roadmap visibility never grants runtime content access or substitutes Premium content.
   - id: TRACK-IDENTITY-CUTOVER-001
     statement: Active registries and published artifacts use only coding_interview, coding-interview-dsa-problem-solving, and google-cloud-associate-cloud-engineer; algorithms and cloud-certification are not aliases, and persisted former track identities fail explicitly without translation or substitution.
   - id: CONTENT-PACKAGES-001
@@ -255,6 +257,10 @@ requirementTestCoverage:
       testPath: tests/trackAdmission.test.ts
       testName: production admission remains closed until exact immutable Free-node package evidence exists
       requirementIds: [FREE-NODE-EXPERIENCE-PROFILE-001, FREE-NODE-PACKAGE-ADMISSION-001]
+    - id: roadmap-locked-nodes
+      testPath: tests/practiceFlowModel.test.ts
+      testName: Every launch roadmap exposes its Free node first and all other nodes locked
+      requirementIds: [ROADMAP-LOCKED-NODES-001]
     - id: research-build-settings-contract
       testPath: tests/settingsPresentation.test.ts
       testName: Settings exposes only its five working navigation actions

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../src/domain";
-import { getTrackDisplay } from "../src/domain";
+import { getTrackDisplay, getTrackDisplays } from "../src/domain";
 import { buildAnalyticsData } from "../src/features/analytics/analyticsService";
 import { buildHomeTabModel } from "../src/features/home/tabs/homeTabModel";
 import { buildProgressTabModel } from "../src/features/home/tabs/progressTabModel";
@@ -82,7 +82,8 @@ function dueAlgorithmReview(
   };
 }
 
-test("Home projection exposes a stable empty-state focus without inventing evidence", () => {
+test("Home projection exposes a stable empty-state focus without inventing evidence", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
   const model = buildHomeTabModel({ activeTrack: getTrackDisplay("google-cloud-associate-cloud-engineer"), algorithmsDashboard: null, analytics: buildAnalyticsData([], []), dashboardError: null, trainingAttempts: [] });
   assert.equal(model.focusTitle, "Google Cloud Associate Cloud Engineer");
   assert.equal(model.primaryLabel, "Start learning");
@@ -94,7 +95,7 @@ test("Home prioritizes one exact ordinary Certification resume action and exclud
     actualLength: 10,
     configurationSnapshot: {
       answerChanges: "none",
-      domain: "setup_environment",
+      domain: "organization_projects_policies_services_quotas_and_assets",
       feedbackMode: "afterEachAnswer",
       kind: "certificationFocusPractice",
       navigation: "linear",
@@ -147,6 +148,22 @@ test("Progress tab projects Certification empty state and due review availabilit
   const due = buildProgressTabModel({ activeTrackId: "google-cloud-associate-cloud-engineer", analytics, attempts: [], practiceHistory: [], cloudProgress: { ...buildCloudCertificationProgressViewModel({ attempts: [], packagePin }), dueReviewCount: 2, scheduledReviewCount: 2 } });
   assert.equal(due.reviewQueueCount, 2);
   assert.deepEqual(due.reviewAction, { kind: "canonicalReviewQueue" });
+});
+
+test("Progress tab has an explicit empty projection for every installed launch package", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  for (const track of getTrackDisplays().filter((candidate) => candidate.id !== "google-cloud-associate-cloud-engineer" && candidate.id !== "coding-interview-dsa-problem-solving")) {
+    const model = buildProgressTabModel({
+      activeTrackId: track.id,
+      analytics: buildAnalyticsData([], []),
+      attempts: [],
+      practiceHistory: [],
+      trainingAttempts: [],
+    });
+    assert.equal(model.hasData, false, track.id);
+    assert.equal(model.performanceSectionTitle, "Performance areas", track.id);
+    assert.equal(model.reviewActionEnabled, false, track.id);
+  }
 });
 
 test("Progress projection rejects an unknown track instead of selecting a default", () => {

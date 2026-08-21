@@ -146,7 +146,8 @@ export type PublishedCertificationFocusPractice = Readonly<{
   blueprintId: string;
   blueprintVersion: string;
   modeId: "certification-focus-practice";
-  requestedLengths: readonly (10 | 20 | 40)[];
+  requestedLengths: readonly number[];
+  defaultRequestedLength?: number;
   shortening: "allowed_within_topic";
   selectionScope: "cloud_domain";
   topicIds: readonly string[];
@@ -156,7 +157,8 @@ export type PublishedCertificationScenarioPractice = Readonly<{
   blueprintId: string;
   blueprintVersion: string;
   modeId: "certification-scenario-practice";
-  requestedLengths: readonly (10 | 20 | 40)[];
+  requestedLengths: readonly number[];
+  defaultRequestedLength?: number;
   shortening: "allowed_within_competency";
   selectionScope: "explicit_tag_competency";
   competencies: readonly Readonly<{ id: string; label: string; scenarioItemIds: readonly string[] }>[];
@@ -166,7 +168,8 @@ export type PublishedCertificationWeakAreaReview = Readonly<{
   blueprintId: string;
   blueprintVersion: string;
   modeId: "certification-weak-area-review";
-  requestedLengths: readonly (10 | 20)[];
+  requestedLengths: readonly number[];
+  defaultRequestedLength?: number;
   shortening: "allowed_within_eligible_review_evidence";
   selectionScope: "eligible_due_review_evidence";
   persistentResolutionPolicy: "two_consecutive_due_review_successes";
@@ -176,7 +179,8 @@ export type PublishedCertificationMixedPractice = Readonly<{
   blueprintId: string;
   blueprintVersion: string;
   modeId: "certification-mixed-practice";
-  requestedLengths: readonly (10 | 20 | 40)[];
+  requestedLengths: readonly number[];
+  defaultRequestedLength?: number;
   shortening: "allowed_within_interleaved_blueprint";
   selectionScope: "unique_interleaved_blueprint";
   itemIds: readonly string[];
@@ -186,7 +190,7 @@ export type PublishedCertificationQuickReview = Readonly<{
   blueprintId: string;
   blueprintVersion: string;
   modeId: "certification-quick-review";
-  maximumLength: 10;
+  maximumLength: number;
   shortening: "allowed_within_eligible_review_evidence";
   selectionScope: "eligible_due_review_evidence";
   persistentResolutionPolicy: "two_consecutive_due_review_successes";

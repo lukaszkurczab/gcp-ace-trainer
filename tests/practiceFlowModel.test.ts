@@ -4,6 +4,7 @@ import test, { before } from "node:test";
 import type { TrackRegistration, TrainingAttempt } from "../src/domain";
 import {
   getTrackDisplay,
+  getTrackDisplays,
   UnknownTrackError,
   UnknownTrackFamilyError,
   UnsupportedTrackError,
@@ -27,7 +28,7 @@ import {
 } from "../src/features/practice/practiceFlowPresentation";
 import {
   ALGORITHM_MODE_IDS,
-  getRoadmapNodesWithActiveItems,
+  ALGORITHM_ROADMAP,
   type AlgorithmQuestion,
 } from "../src/tracks/coding-interview";
 import { contentPackageRuntimeOwner } from "../src/application/contentPackageRuntimeOwner";
@@ -128,7 +129,7 @@ test("Certification practice presentation composes the concrete Google Cloud nam
   );
   assert.equal(
     formatPracticeTopicTitle(topic.title, (value) => translate("pl", value)),
-    "Cloud fundamentals",
+    "Organization Projects Policies Services Quotas And Assets",
   );
   assert.equal(
     formatPracticeStatsTitle(stats, (value) => translate("pl", value)),
@@ -273,29 +274,24 @@ test("practice presentation rejects unknown families and unsupported registered 
   );
 });
 
-test("Algorithms roadmap exposes only the bundled package Free node", async () => {
+test("Every launch roadmap exposes its Free node first and all other nodes locked", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
-  const topics = buildTopicRoadmapNodes({
-    activeTrackId: "coding-interview-dsa-problem-solving",
-    trainingAttempts: [],
-  });
-
-  assert.deepEqual(
-    topics.map((topic) => topic.id),
-    getRoadmapNodesWithActiveItems(codingPackage().items).map((node) => node.id),
+  for (const track of getTrackDisplays()) {
+    const topics = buildTopicRoadmapNodes({ activeTrackId: track.id, trainingAttempts: [] });
+    const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(track.id).profile.freeNodeId;
+    assert.ok(topics.length > 1, `${track.id} must expose its full roadmap`);
+    assert.equal(topics[0]?.id, freeNodeId);
+    assert.equal(topics[0]?.status, "current");
+    assert.ok(topics.slice(1).every((topic) => topic.status === "locked"));
+    assert.equal(topics.filter((topic) => topic.label === "Recommended").length, track.familyId === "coding_interview" ? 1 : 0);
+  }
+  assert.equal(
+    buildTopicRoadmapNodes({ activeTrackId: "coding-interview-dsa-problem-solving", trainingAttempts: [] }).length,
+    ALGORITHM_ROADMAP.nodes.length,
   );
-  assert.equal(topics.length, 1);
-  assert.ok(topics.every((topic) =>
-    topic.status === "current" || topic.status === "available",
-  ));
-  assert.equal(topics.filter((topic) => topic.label === "Recommended").length, 1);
-  assert.ok(topics.filter((topic) => topic.status === "available").every((topic) =>
-    topic.label === "Available",
-  ));
-  assert.doesNotMatch(JSON.stringify(topics), /\b(?:locked|mastery|retention|readiness)\b/i);
 });
 
-test("Algorithms roadmap records practice inside the bundled package Free node", async () => {
+test("Algorithms roadmap records practice inside the bundled package Free node while keeping Premium nodes locked", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
   const items = codingPackage().items;
   const first = items[0];
@@ -310,9 +306,10 @@ test("Algorithms roadmap records practice inside the bundled package Free node",
     topic.id === first.taxonomy.roadmapNodeId,
   );
 
-  assert.equal(topics.length, 1);
+  assert.equal(topics.length, ALGORITHM_ROADMAP.nodes.length);
   assert.equal(practicedTopic?.status, "current");
   assert.equal(practicedTopic?.label, "Recommended");
   assert.equal(practicedTopic?.detail.kind, "algorithm-progress");
   assert.equal(practicedTopic?.detail.practicedItemCount, 1);
+  assert.ok(topics.filter((topic) => topic.id !== first.taxonomy.roadmapNodeId).every((topic) => topic.status === "locked"));
 });
