@@ -905,7 +905,7 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
     || !hasExactValues(platform.appearances as readonly string[], ["Light", "Dark", "System"])
     || platform.textScalingPercent !== 200
     || platform.evidenceDevices !== "phonesOnly"
-    || !hasExactValues(platform.signedPhysicalDeviceSmoke as readonly string[], ["iOS", "Android"])) {
+    || platform.physicalDeviceEvidence !== "optionalNonBlocking") {
     throw new CanonicalProductContractValidationError("Canonical platform contract must preserve the exact phone-only release matrix");
   }
 

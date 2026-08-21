@@ -411,6 +411,7 @@ test("defines package analytics report backup and platform semantics", () => {
   assert.deepEqual((contract.analyticsAndReports.contentReports as { prohibitedAutomaticAttachments: readonly string[] }).prohibitedAutomaticAttachments, ["learnerResponse", "fullPrompt", "fullFeedback", "email", "accountId"]);
   assert.equal(contract.backupAndRestore.deletedAccountResurrection, "prohibited");
   assert.equal(contract.platformRelease.ipadSupportClaim, "prohibited");
+  assert.equal(contract.platformRelease.physicalDeviceEvidence, "optionalNonBlocking");
 });
 
 test("defines one brand owner approval and repository handoff semantics", () => {

@@ -173,7 +173,7 @@ requirements:
   - id: BACKUP-RESTORE-001
     statement: Production Firestore targets seven-day point-in-time recovery for disaster recovery only, with a restore runbook, sanitized drill, deletion-tombstone reconciliation, and an absolute prohibition on deleted-account resurrection.
   - id: PLATFORM-RELEASE-001
-    statement: The target release uses Expo SDK 57, iOS 16.4 or later on iPhone only, Android API 28 minimum and API 36 target, portrait, Light Dark and System appearances, 200 percent text scaling, and signed physical-device evidence on both platforms.
+    statement: The target release uses Expo SDK 57, iOS 16.4 or later on iPhone only, Android API 28 minimum and API 36 target, portrait, Light Dark and System appearances, 200 percent text scaling, phone-only evidence, and signed distribution evidence. Physical-device testing is optional and never blocks launch readiness.
   - id: BRAND-DESIGN-AUTHORITY-001
     statement: Patternly is one focused flagship brand with subordinate track accents, a controlled 3-to-2-to-1 owner-approved Figma phase, restrained accessible motion and haptics, repository-owned handoff, and CODE_CANONICAL independence from paid Figma.
 requirementTestCoverage:
@@ -648,7 +648,7 @@ platformRelease:
   appearances: [Light, Dark, System]
   textScalingPercent: 200
   evidenceDevices: phonesOnly
-  signedPhysicalDeviceSmoke: [iOS, Android]
+  physicalDeviceEvidence: optionalNonBlocking
 designAuthority:
   brand: onePatternlyBrand
   trackIdentity: subordinateAccentsAndSharedGrammarSymbolsNotSubBrands

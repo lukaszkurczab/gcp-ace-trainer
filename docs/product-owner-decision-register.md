@@ -93,17 +93,18 @@ aktywnego planu.
 | PO-049 | Analytics i crash boundary           | `resolved`                 | Firebase Analytics/Crashlytics fail-closed za privacy/consent gate.           |
 | PO-050 | Content reports                      | `resolved`                 | Bounded context, domyślnie bez konta, jawna zgoda na link/contact.            |
 | PO-051 | PITR i bezpieczny restore            | `resolved`                 | Produkcyjne 7 dni PITR, tylko DR, tombstones zapobiegają resurrection.        |
-| PO-052 | Macierz platformowa                  | `resolved`                 | Expo 57, iPhone/iOS 16.4+, Android API 28/36, phone-only signed evidence.     |
+| PO-052 | Macierz platformowa                  | `resolved`                 | Expo 57, iPhone/iOS 16.4+, Android API 28/36, phone-only signed evidence; physical smoke requirement superseded by PO-063. |
 | PO-053 | Jedna marka Patternly                | `resolved`                 | Jedna marka z podrzędnymi accents/symbols tracków, bez sub-brands.            |
 | PO-054 | Figma i approval właściciela         | `resolved`                 | Jednorazowe 3→2→1; tylko owner oznacza realną pracę `APPROVED`.               |
 | PO-055 | Handoff Storybook/code               | `resolved`                 | `CODE_CANONICAL`, repo authority i brak trwałej płatnej zależności Figma.     |
-| PO-056 | Niedostępny device smoke PLAT-01     | `resolved`                 | Brak środowiska jest wyjątkiem, nie sfabrykowanym wynikiem device testu.       |
+| PO-056 | Niedostępny device smoke PLAT-01     | `resolved`                 | Brak środowiska nie jest wynikiem testu; physical-device evidence is optional under PO-063. |
 | PO-057 | Design-neutral RN migration PLAT-01  | `resolved`                 | Zamknięty wyjątek dla exact pełnego SHA i pięciu token-only substitutions.     |
 | PO-058 | Reviewed content two pointers         | `resolved`                 | Osiem wskazanych istniejących plików może stać się canonical content.          |
 | PO-059 | Zamknięte profile Free node           | `resolved`                 | Free package zamyka profil, nie pełne `validModes` tracku.                     |
 | PO-060 | Referencje PKG-04A Free experience    | `resolved`                 | Zatwierdzone minimalne stany Practice Hub, Setup i unavailable dla Free.       |
 | PO-061 | Finaliści systemu wizualnego B-03      | `resolved`                 | A — Boundary Signal i C — Focus Frame przechodzą do B-04; B zostaje tylko dowodem decyzji. |
 | PO-062 | Wybór systemu wizualnego B-04          | `resolved`                 | A — Boundary Signal jest jedynym kierunkiem B-05; C zostaje tylko dowodem decyzji. |
+| PO-063 | Launch bez wymaganego physical-device testu | `resolved`             | Fizyczne urządzenie może dostarczyć opcjonalne evidence, ale nie blokuje launch-readiness. |
 
 ## PO-001 — Architektura marki
 
@@ -1595,7 +1596,9 @@ platformach. Platform backup pozostaje wyłączony dla canonical learning/cache.
 
 **Supersedes:** rozszerza dokładnie phone-only granicę `PO-029`; zastępuje
 sprzeczne Light-only/tablet/current-SDK claims jako target.
-**Status:** `resolved`.
+**Status:** `resolved`; wymóg physical-device smoke dla launch acceptance został
+zastąpiony przez `PO-063`, przy zachowaniu phone-only platform scope i wymogu
+signed distribution evidence.
 
 ## PO-053 — Jedna marka Patternly
 
@@ -1658,8 +1661,9 @@ Brak dostępnego na tym hoście iOS phone simulatora oraz Android phone
 emulatora/device nie jest wynikiem testu urządzeniowego. Dla `PLAT-01` ta
 niedostępność jest `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`.
 Nie wolno przedstawiać jej jako wykonanego debug boot/smoke, signed
-physical-device proof ani zastępować sfabrykowanym rezultatem. Wymóg signed
-physical-device smoke z `PO-052` pozostaje wymaganiem release `REL-07`.
+physical-device proof ani zastępować sfabrykowanym rezultatem. Historyczny wymóg
+signed physical-device smoke z `PO-052` został zastąpiony przez `PO-063`; brak
+urządzenia nie może być przedstawiany jako wykonany test.
 
 **Status:** `resolved`; środowiskowy wyjątek jest ograniczony do braku
 unsigned iOS/Android device smoke w `PLAT-01`.
@@ -1839,3 +1843,20 @@ pełną authority A; tylko późniejszy `X-09C` może oznaczyć rzeczywistą pra
 
 **Status:** `resolved`; zastępuje aktywny wybór dwóch finalistów z PO-061 i
 odblokowuje wyłącznie B-05 dla A.
+
+## PO-063 — Launch bez wymaganego physical-device testu
+
+**Data:** 2026-08-21
+**Źródło:** bezpośrednia decyzja Product Ownera w aktywnej rozmowie.
+
+Dla bieżącego zakresu launch-readiness testy na fizycznym urządzeniu nie są
+wymagane. `physical-device-matrix` może zostać dostarczone jako opcjonalne
+evidence, ale jego brak nie tworzy blokera i nie może obniżać statusu release
+gate’a. Nadal wymagane pozostają signed distribution evidence, simulator /
+release-compatible journey, Figma parity, provider/store/security evidence,
+real content admissions oraz Product Owner GO.
+
+**Supersedes:** `PO-052` i `PO-056` wyłącznie w zakresie obowiązkowości
+physical-device smoke; zachowuje phone-only support matrix oraz signed-build
+requirements.
+**Status:** `resolved`.

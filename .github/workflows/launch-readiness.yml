@@ -1,0 +1,84 @@
+name: Launch readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      application_commit:
+        description: Exact application commit SHA to evaluate
+        required: true
+        type: string
+      content_commit:
+        description: Exact content repository commit SHA to evaluate
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  launch-gate:
+    name: Exact-SHA launch gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout application
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.application_commit }}
+          path: app
+          fetch-depth: 0
+      - name: Checkout content evidence repository
+        uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-content
+          ref: ${{ inputs.content_commit }}
+          path: patternly-content
+          fetch-depth: 0
+      - name: Verify exact checkout SHAs
+        env:
+          APPLICATION_COMMIT: ${{ inputs.application_commit }}
+          CONTENT_COMMIT: ${{ inputs.content_commit }}
+        run: |
+          set -euo pipefail
+          [[ "$APPLICATION_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CONTENT_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git -C app rev-parse HEAD)" = "$APPLICATION_COMMIT"
+          test "$(git -C patternly-content rev-parse HEAD)" = "$CONTENT_COMMIT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.1
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Install application dependencies
+        working-directory: app
+        run: npm ci
+      - name: Install content dependencies
+        working-directory: patternly-content
+        run: npm ci
+      - name: Validate exact content checkout
+        working-directory: patternly-content
+        run: |
+          set -euo pipefail
+          npm test
+          npm run authoring:validate
+          npm run audit:aws-workbook-source
+      - name: Run enforced release gate
+        id: release-gate
+        working-directory: app
+        env:
+          EXPECTED_APPLICATION_COMMIT: ${{ inputs.application_commit }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_APPLICATION_COMMIT"
+          set +e
+          node scripts/releaseGate.mjs --enforce > launch-readiness-report.json
+          gate_status=$?
+          set -e
+          node -e 'const fs = require("node:fs"); JSON.parse(fs.readFileSync("launch-readiness-report.json", "utf8"));'
+          exit "$gate_status"
+      - name: Upload launch readiness report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: launch-readiness-report-${{ inputs.application_commit }}
+          path: app/launch-readiness-report.json
+          if-no-files-found: error

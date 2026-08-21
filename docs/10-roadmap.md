@@ -16,10 +16,10 @@ This is a capability dependency map, not task sequencing or repository status. `
 8. **Backup and restore safety** — production seven-day PITR target, runbook, sanitized drill, deletion reconciliation and no resurrection.
 9. **Brand and visual foundation** — one Patternly brand, landscape/anti-reference audit, Figma 3→2→1 exploration and Product Owner approval of actual visual work.
 10. **Repository design authority** — tokens/assets, development-only Storybook, production components/states, visual/accessibility evidence, release exclusion and verified Figma-to-code handoff.
-11. **Vertical product closure** — Today, Practice, runners/simulations, Progress/nested Activity, Settings, account/adoption, Premium, packages/offline, reports, deletion and public surfaces each complete through design, code and device evidence.
+11. **Vertical product closure** — Today, Practice, runners/simulations, Progress/nested Activity, Settings, account/adoption, Premium, packages/offline, reports, deletion and public surfaces each complete through design, code and release-compatible evidence.
 12. **Representative family proofs** — GCP ACE, Coding Interview, Backend System Design, a second Certification track and a second Design Interview track prove reuse before broad copying.
 13. **Ten-track content expansion** — complete briefs, taxonomies, free nodes, package plans, reviewed content and publishing evidence; no placeholder admission or filler counts.
-14. **Platform/public/store hardening** — Expo SDK 57, target mobile matrix, links/domain/sender/legal/support surfaces, perceived quality, accessibility, performance, store assets, signing and physical-device evidence.
+14. **Platform/public/store hardening** — Expo SDK 57, target mobile matrix, links/domain/sender/legal/support surfaces, perceived quality, accessibility, performance, store assets, signing and release-compatible evidence; physical-device testing is optional and non-blocking.
 15. **Release closure** — clean signed artifacts, production provider/store state, complete gates, whole-product audit and explicit GO/NO-GO.
 
 ## Parallelism and dependencies
@@ -32,4 +32,4 @@ External domains, provider/store records, billing, PITR mutation, signing and su
 
 ## Exit condition
 
-Product completion requires verified behavior, obsolete-path deletion, applicable owner approvals, iOS/Android physical-device evidence, truthful public/store assets and clean signed-artifact smoke. A contract edit, Figma frame, Storybook render, screenshot, compile or partial test suite is not release completion.
+Product completion requires verified behavior, obsolete-path deletion, applicable owner approvals, iOS/Android release-compatible evidence, truthful public/store assets and clean signed-artifact smoke. Physical-device testing may provide optional evidence but is not a launch prerequisite. A contract edit, Figma frame, Storybook render, screenshot, compile or partial test suite is not release completion.

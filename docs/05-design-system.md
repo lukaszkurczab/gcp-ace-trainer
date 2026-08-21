@@ -104,7 +104,8 @@ by risk rather than by a wasteful cartesian product.
 Production builds must statically prove that Storybook and its entry path are
 absent from the release graph and bundle. Storybook tests complement rather
 than replace application integration, screenshot comparison, accessibility
-and physical-device QA.
+and release-compatible QA. Physical-device QA is optional and non-blocking
+for launch readiness.
 
 ## Brand, illustration, motion and haptics
 

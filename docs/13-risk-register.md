@@ -27,9 +27,9 @@ This register owns current product/architecture risk context. Task status and se
 | Figma becomes permanent paid dependency | High | Build/CI/docs require live Figma | Verified handoff, repository sources/exports and `CODE_CANONICAL` gate. |
 | Storybook drifts or enters release bundle | High | Parallel components/business access/release import | Production-component stories, typed fixtures, dependency boundary and static release exclusion proof. |
 | Token or local style bypass fragments UI | Medium | Unapproved literals/overrides/local motion | Repository token authority and lint/architecture checks. |
-| Motion/haptics harm accessibility or imply false durability | High | No reduced-motion path or success before commit | Semantic adapter, persistence-aware events, reduced-motion and physical-device checks. |
+| Motion/haptics harm accessibility or imply false durability | High | No reduced-motion path or success before commit | Semantic adapter, persistence-aware events, reduced-motion and release-compatible platform checks; physical-device capture is optional. |
 | Public/store visuals diverge from product | High | Different mark/copy/states across surfaces | One source package and whole-product/public/store consistency audit. |
-| Platform claims exceed evidence | High | iPad claim, wrong API target or simulator-only proof | Exact release matrix, phone-only signed smoke and 200%/screen-reader evidence. |
+| Platform claims exceed evidence | High | iPad claim, wrong API target or unsupported simulator-only proof | Exact release matrix, phone-only signed-artifact validation, release-compatible smoke, and 200%/screen-reader evidence; physical-device capture is optional. |
 | Low perceived quality survives functional QA | High | Flicker, unstable layout or weak operational states | Measured performance budgets, canonical state inventory, visual comparison and release-quality audit. |
 
 ## Recovery rule

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://patternly.app/schemas/release/release-evidence.schema.json",
+  "title": "Patternly release evidence envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "status",
+    "applicationCommit",
+    "verifiedAt",
+    "verifiedBy",
+    "evidenceReferences",
+    "evidenceSha256"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "patternly-release-evidence-v2" },
+    "id": {
+      "enum": [
+        "design-authority",
+        "security-and-privacy",
+        "provider-and-operations",
+        "signing-and-builds",
+        "physical-device-matrix",
+        "store-readiness",
+        "product-owner-go"
+      ]
+    },
+    "status": { "const": "verified" },
+    "applicationCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "verifiedAt": { "type": "string", "format": "date-time" },
+    "verifiedBy": { "type": "string", "minLength": 1 },
+    "evidenceReferences": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "value"],
+        "properties": {
+          "kind": { "type": "string", "minLength": 1 },
+          "value": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evidenceSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

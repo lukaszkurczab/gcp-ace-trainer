@@ -214,7 +214,7 @@ Tests must fail if an interaction is registered without its complete handler.
 
 The canonical-product-contract suite validates the complete Coding Interview mode matrix and entry resolution from the contract data. Application tests consume the resolved configuration rather than restating a mode list, session lengths, feedback timing, timer, or reinsert policy in this strategy.
 
-For Custom Practice, exercise every configuration declared by the contract, its required blueprint and explicit mental-unit boundary, unsupported-value rejection, the one-active-session lifecycle, and the specified feedback-disclosure boundary. A real-device evidence flow must reset development learning state before each independent case and preserve screenshots, Maestro output, and the resolved session-configuration selector outside the repository worktree.
+For Custom Practice, exercise every configuration declared by the contract, its required blueprint and explicit mental-unit boundary, unsupported-value rejection, the one-active-session lifecycle, and the specified feedback-disclosure boundary. A repeatable simulator or release-compatible evidence flow must reset development learning state before each independent case and preserve screenshots, Maestro output, and the resolved session-configuration selector outside the repository worktree. Physical-device capture is optional and non-blocking.
 
 ## Review selection tests
 
@@ -992,7 +992,7 @@ The complete release verification matrix also covers:
 - deletion/subscription truth, public deletion non-enumeration, PITR sandbox drill, tombstone reconciliation, and no-resurrection;
 - eight-track launch-scope admission and representative family proofs before broad content copying;
 - owner-approved Figma evidence, production components in development-only Storybook, risk-based state coverage, visual baselines, and release-bundle exclusion;
-- Light/Dark/System, 200% text, screen reader, reduced motion, semantic haptics, performance budgets, and signed physical-phone smoke on iOS and Android;
+- Light/Dark/System, 200% text, screen reader, reduced motion, semantic haptics, performance budgets, signed-artifact validation, and release-compatible smoke on iOS and Android; physical-device capture is optional and non-blocking;
 - public Privacy, Terms, support, auth-action, deletion and store surfaces plus signed-artifact release evidence.
 
 Critical flows require manual and screenshot-based verification on supported mobile platforms.
