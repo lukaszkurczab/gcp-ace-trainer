@@ -51,4 +51,7 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.doesNotMatch(simulation, /value:\$\{index \+ 1\}/);
   assert.match(simulation, /runtimeSelectors\.simulation\.action\(sessionId, action\.id\)/);
   assert.match(summary, /runtimeSelectors\.summary\.root\(sessionId\)/);
+  assert.match(progress, /screenTitle:[\s\S]*?fontSize:\s*30[\s\S]*?lineHeight:\s*36/);
+  assert.match(progress, /root:\s*\{\s*gap:\s*28\s*\}/);
+  assert.match(progress, /attentionCard:[\s\S]*?borderWidth:\s*0[\s\S]*?borderRadius:\s*14/);
 });
