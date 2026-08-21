@@ -78,8 +78,8 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run validate:content-boundary`: passed.
 - `git diff --check`: passed.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-final`: passed; current source produced an iOS bundle with 1,342 modules.
-- Existing iOS Release simulator build/install and dark/light Maestro capture were successful for the previous pushed slice, not for this current working tree.
-- Current-head Maestro capture was attempted with Metro cache cleared and an IPv4 listener. The safe direct flow still rendered the installed dev-client's cached pre-cutover track-selection route; the full RC runner was not used because its reset step clears local learning records. No new screenshot evidence is claimed for this pass.
+- A fresh current-head iOS dev-client was built and installed on a second iPhone 16 Pro simulator without invoking the destructive learning-state reset. Dark and light Maestro journeys each completed five screenshots covering Home, Practice Hub/setup, an unanswered coding question, the pause/end sheet, and a partial summary. Evidence is stored at `/tmp/patternly-figma-screens-2026-08-22-dark-fresh/` and `/tmp/patternly-figma-screens-2026-08-22-light-fresh/`.
+- The full RC runner remains intentionally unrun because its bootstrap step calls `audit/reset-learning-state` and would erase local learner records. The fresh dev-client journey used the current source bundle through an IPv4 Metro listener and is the current-head visual evidence for this pass.
 - Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, and route ownership tests pass.
 
 Not verified here: Android, signed/distribution builds, physical-device rendering, full 200% large-text traversal across every route, reduced-motion runtime capture, and every Figma operational/recovery state.
@@ -90,4 +90,4 @@ No route was deleted because the current reachability graph does not prove any e
 
 ## Remaining work
 
-The remaining gaps are explicit and blocking: run current-head dark/light screenshot comparison against a freshly built dev-client without clearing learner data; finish visual parity for all operational/recovery states; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
+The remaining gaps are explicit and blocking: extend the current-head dark/light screenshot matrix to immediate feedback, completed summaries, simulation, review, and recovery states; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
