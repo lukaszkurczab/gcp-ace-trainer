@@ -4,13 +4,13 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`
 Verified and pushed SHA: `b987b87a00ec53053c2c37bbae1e7b2d5a928da5`
-Current local verification SHA: `9a6e48f`
+Current local verification SHA: `736d32a`
 
 ## Outcome
 
-This pass extends the repository-owned visual system across the reachable Home, track selection, Progress, Settings, practice summary, simulation runner, simulation navigator, simulation summary/review, answer review, and review-empty states. It does not invent routes, metrics, commands, persistence, or account behavior for Figma frames that the current product does not expose.
+This pass extends the repository-owned visual system across the reachable Home, track selection, Progress, Settings, practice summary, simulation runner, simulation navigator, simulation summary/review, answer review, and review-empty states. Result summaries now use the Figma flat metric and outcome-row contract. It does not invent routes, metrics, commands, persistence, or account behavior for Figma frames that the current product does not expose.
 
 The implementation is not design-complete. Several Figma-backed operational states still need a fresh screenshot comparison, and the Figma file contains account, authentication, premium, content-trust, goal/cadence, and focus-area surfaces without a matching canonical runtime owner. The correct final status for this pass is `INCOMPLETE`.
 
@@ -57,8 +57,8 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Coding practice active question, single choice unanswered | `PracticeSessionScreen` / `SessionShell` / `PracticeResponseControls` | `68:569`, `750:6400` | `MATCHED` | Session top bar, question card, answer-option spacing/borders/badges, disabled submit, and dark/light tokens verified by iOS capture. |
 | Coding practice immediate feedback/details | `PracticeSessionScreen` / `PracticeResponseControls` / `PracticeFeedbackBlock` | `68:603`, `68:637`, `68:719` | `PARTIAL` | Question label/prompt, Figma answer-option badges, result label, bordered reason panel, and details disclosure now use the shared visual contract; fresh state-specific comparison is still pending. |
 | Practice pause/end, final item, persistence/recovery states | Session route owners / `PracticeSessionSurface` | `68:804`, `68:844`, `68:1074`, `68:1115`, `68:1156`, `68:1200`, `68:1239` | `PARTIAL` | The canonical three-command exit behavior is preserved while the leave flow now renders as a bottom action sheet with Figma surface, border, radius, spacing, and shadow geometry; the remaining operational states still need fresh comparison. |
-| Partial practice summary | `AlgorithmsPracticeSummaryScreen` | `750:6235`, `750:6109` | `PARTIAL` | Summary shell, truthful partial state, active time, completed-item count, and full-width vertical outcome rows now follow the Figma summary rhythm; current-head screenshot comparison remains pending. |
-| Completed practice summary | `AlgorithmsPracticeSummaryScreen` | `750:6235` | `PARTIAL` | Completed summary now has the Figma summary hierarchy and full-width vertical score distribution; current-head screenshot comparison remains pending. |
+| Partial practice summary | `AlgorithmsPracticeSummaryScreen` | `750:6235`, `750:6109` | `PARTIAL` | Summary shell, truthful partial state, active time, completed-item count, flat metric separators, and full-width vertical outcome rows now follow the Figma summary rhythm; current-head screenshot comparison remains pending. |
+| Completed practice summary | `AlgorithmsPracticeSummaryScreen` | `750:6235` | `PARTIAL` | Completed summary now has the Figma summary hierarchy, flat metric separators, and full-width vertical score distribution; current-head screenshot comparison remains pending. |
 | Bottom navigation | `BottomTabBar` / `AppBottomNavigation` | `140:875` | `MATCHED` | Surface, top rule, active indicator, safe-area padding, label scale, and tab geometry verified in dark/light captures. |
 | Shared Button | `Button` | `141:817` | `MATCHED` | Primary, pressed, disabled, secondary, ghost, and destructive contracts consolidated. |
 | Shared Screen Header | `ScreenHeader` | `140:881` | `MATCHED` | Back touch target, context, title, description, and large-text multiplier implemented and tested. |
@@ -68,7 +68,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Language, notifications, data, legal, diagnostics | Existing settings route owners | `822:7687` and related Page 1 sections | `DESIGN_MISSING` | Routes are reachable, but no verified Figma-specific frame-to-code parity was completed for each detail surface. |
 | Exam, exam review, result, answer review | `ExamScreen`, `ExamReviewScreen`, `ResultScreen`, `AnswerReviewScreen` | No direct current-state authority mapped | `DESIGN_MISSING` | Existing behavior and actions remain unchanged. |
 | Algorithms simulation active/navigator/recovery | `AlgorithmsInterviewSimulationScreen` and navigator | `74:539` through `74:1046` | `PARTIAL` | Choice rows, navigator sheet, Finish simulation action, and existing durable recovery states use the Figma geometry where the canonical projection exposes it; fresh state captures remain open. |
-| Simulation summary | `AlgorithmsInterviewSimulationResultScreen` / `SimulationSessionSurface` | `74:1046`, `750:6109` | `PARTIAL` | Summary shell, active time, outcome distribution, review availability, and real back/review commands are implemented; fresh screenshot comparison remains open. |
+| Simulation summary | `AlgorithmsInterviewSimulationResultScreen` / `SimulationSessionSurface` | `74:1046`, `750:6109` | `PARTIAL` | Figma summary title/mode hierarchy, flat metric separators, outcome distribution rows, review availability, and real back/review commands are implemented; fresh screenshot comparison remains open. |
 | Simulation review | `AlgorithmsInterviewSimulationResultScreen` | `765:6130` and related review frames | `PARTIAL` | All/Missed filters, score, current item, feedback blocks, pager, and back-to-summary are implemented over the verified result; fresh screenshot comparison remains open. |
 | Mistakes review and topic roadmap | Existing route owners | No direct current-state authority mapped | `DESIGN_MISSING` | Review now exposes an explicit no-active-track state; no direct Figma authority was found for the full queue/roadmap surfaces. |
 | Auth, account, premium, content trust/reporting | No current runtime route | Page 1 sections `57:1952`, `95:1563`, `107:960`, `115:738`; Library account/content nodes | `DESIGN_MISSING` | These are present in Figma but absent from the current launch route graph. Adding them would invent product scope and commands. |
@@ -86,6 +86,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - Focused track-selection/track-presentation tests: 7 passed after the returning-state shell cutover.
 - Focused Practice Hub/session accessibility tests: 14 passed after the Figma spacing/type refinement.
 - Focused Practice Setup/session accessibility tests: 44 passed after the compact segmented-control cutover.
+- Focused Home/result/simulation parity tests: 26 passed after the result-summary row and title cutover.
 - `git diff --check`: passed.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows`: passed; the post-summary-cutover source produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-progress-focus`: passed; the latest Home/Progress source produced an iOS bundle with 1,343 modules.
@@ -99,9 +100,11 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run qa:static`: passed again on `8c75d9b`: recovery inventory, typecheck, 544 tests, content boundary, and runtime privacy boundary.
 - `npm run qa:static`: passed on `9a6e48f`: recovery inventory, typecheck, 544/544 tests, content boundary, and runtime privacy boundary.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-practice-setup`: passed; the compact Practice Setup source produced an iOS bundle with 1,343 modules.
+- `npm run qa:static`: passed on `736d32a`: recovery inventory, typecheck, 544/544 tests, content boundary, and runtime privacy boundary.
+- `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows-v2`: passed; the latest practice and simulation summary source produced an iOS bundle with 1,343 modules.
 - The existing fresh iOS dev-client evidence was captured on commit `89a2fc0` on a second iPhone 16 Pro simulator without invoking the destructive learning-state reset. Dark and light Maestro journeys each completed five screenshots covering Home, Practice Hub/setup, an unanswered coding question, the pause/end sheet, and a partial summary. Evidence is stored at `/tmp/patternly-figma-screens-2026-08-22-dark-fresh/` and `/tmp/patternly-figma-screens-2026-08-22-light-fresh/`.
 - A post-`6ee92db`/`db9c637` runtime feedback or summary capture was not completed because CoreSimulatorService became unavailable before the safe Maestro inspection step; no new simulator evidence is claimed for these cutovers.
-- A post-`f5f87c2` Home/Progress/track-selection/Practice Hub/Practice Setup runtime capture was not completed because CoreSimulatorService remains unavailable; source, focused tests, full QA, and iOS export verify the compact control cutover, but no new screenshot evidence is claimed.
+- A post-`736d32a` Home/Progress/track-selection/Practice Hub/Practice Setup/practice-summary/simulation-summary runtime capture was not completed because CoreSimulatorService remains unavailable; source, focused tests, full QA, and iOS export verify the cutovers, but no new screenshot evidence is claimed.
 - The full RC runner remains intentionally unrun because its bootstrap step calls `audit/reset-learning-state` and would erase local learner records. The reference journey used the pre-`6ee92db` source bundle through an IPv4 Metro listener; it is retained as prior visual evidence, not as post-cutover proof.
 - Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, and route ownership tests pass.
 
