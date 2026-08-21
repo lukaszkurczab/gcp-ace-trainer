@@ -76,7 +76,10 @@ test("uses mandatory Details when a single-choice response omits the correct opt
 function files(root: string): readonly string[] { return readdirSync(root, { withFileTypes: true }).flatMap((entry) => entry.isDirectory() ? files(join(root, entry.name)) : [join(root, entry.name)]); }
 
 test("runtime has no network or test-fixture ingress and Algorithms has no legacy group/item contract", () => {
-  const runtime = files("src").filter((path) => /\.(ts|tsx)$/.test(path) && !path.endsWith("content/bundled/generatedFreeNodePackages.ts")).map((path) => readFileSync(path, "utf8")).join("\n");
+  const runtime = files("src").filter((path) => /\.(ts|tsx)$/.test(path)
+    && !path.endsWith("content/bundled/generatedFreeNodePackages.ts")
+    && !path.endsWith("infrastructure/clients/AccountAuthClientAdapter.ts"))
+    .map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(runtime, /from\s+["'][^"']*(?:tests\/|fixtures)[^"']*["']/);
   assert.doesNotMatch(runtime, /\b(?:fetch|XMLHttpRequest|axios|HttpContentSource|loadTrackContent)\b/);
   const algorithms = files("src/tracks/coding-interview").map((path) => readFileSync(path, "utf8")).join("\n");

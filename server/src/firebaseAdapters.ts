@@ -2,6 +2,7 @@ import { getApps, initializeApp, type App } from "firebase-admin/app";
 import { getAuth, type Auth } from "firebase-admin/auth";
 import { getAppCheck, type AppCheck } from "firebase-admin/app-check";
 import { FieldPath, getFirestore, type Firestore } from "firebase-admin/firestore";
+import type { AccountDeletionPort } from "./deletion.js";
 
 import {
   ACCOUNT_RECORD_TYPES,
@@ -41,7 +42,6 @@ import type {
 import {
   accountLifecycleGeneration,
   isAccountLifecycleTombstone,
-  type AccountLifecyclePort,
 } from "./accountLifecycle.js";
 
 const HASH_PATTERN = /^[a-f0-9]{64}$/u;
@@ -456,7 +456,7 @@ export type DeletionProof = Readonly<{
   resultCode: "account_deleted";
 }>;
 
-export class FirebaseAccountDeletionAdapter implements AccountLifecyclePort {
+export class FirebaseAccountDeletionAdapter implements AccountDeletionPort {
   constructor(
     private readonly firestore: Firestore,
     private readonly auth: Auth,
@@ -587,7 +587,8 @@ const sameDeletionProof = (left: DeletionProof, right: DeletionProof): boolean =
   && left.resultCode === right.resultCode;
 
 export type FirebaseAdminAccountRuntime = Readonly<{
-  lifecycle: AccountLifecyclePort;
+  deletion: AccountDeletionPort;
+  lifecycle: AccountDeletionPort;
   appCheckVerifier: FirebaseAdminAppCheckTokenVerifier;
   store: FirestoreAccountDatasetStore;
   verifier: FirebaseAdminIdTokenVerifier;
@@ -617,9 +618,11 @@ export const initializeFirebaseAdminAccountRuntime = (
   const app = dependencies.initializeApp({ projectId });
   const firestore = dependencies.getFirestore(app);
   const auth = dependencies.getAuth(app);
+  const deletion = new FirebaseAccountDeletionAdapter(firestore, auth);
   return {
     appCheckVerifier: new FirebaseAdminAppCheckTokenVerifier(dependencies.getAppCheck(app)),
-    lifecycle: new FirebaseAccountDeletionAdapter(firestore, auth),
+    deletion,
+    lifecycle: deletion,
     store: new FirestoreAccountDatasetStore(firestore),
     verifier: new FirebaseAdminIdTokenVerifier(auth),
   };

@@ -272,6 +272,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             })}
             onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
             onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
+            reviewQueueItems={data.reviewQueueItems}
             trainingAttempts={data.trainingAttempts}
           />
         ) : null}

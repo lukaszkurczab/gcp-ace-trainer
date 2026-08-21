@@ -31,6 +31,16 @@ const copy = {
             ],
           },
           {
+            detailTitle: "Account, sync, and deletion",
+            icon: "cloud",
+            summary: "Not connected in this build; learning records remain local.",
+            title: "Account unavailable",
+            paragraphs: [
+              "The authenticated account transport requires an explicit Patternly environment, identity provider, and App Check composition. This build has no composed provider, so it does not sync learning data.",
+              "Account deletion is available only after authenticated, recent re-authentication through that provider. This local-only state does not claim that a remote account exists or has been deleted.",
+            ],
+          },
+          {
             detailTitle: "Where learning data goes",
             icon: "cloud",
             summary: "Current learning records do not need a Patternly backend or cloud sync.",
@@ -85,6 +95,16 @@ const copy = {
             paragraphs: [
               "Patternly nie wymaga konta, imienia, adresu e-mail, danych logowania ani profilu tożsamości.",
               "Nie wymaga lokalizacji, kontaktów, zdjęć, mikrofonu, kamery, danych zdrowotnych, identyfikatorów reklamowych, samoocen ani syntetycznych metryk gotowości i opanowania materiału.",
+            ],
+          },
+          {
+            detailTitle: "Konto, synchronizacja i usunięcie",
+            icon: "cloud",
+            summary: "Niepodłączone w tej wersji; dane o nauce pozostają lokalnie.",
+            title: "Konto niedostępne",
+            paragraphs: [
+              "Uwierzytelniony transport konta wymaga jawnego środowiska Patternly, dostawcy tożsamości i konfiguracji App Check. Ta wersja nie ma złożonego dostawcy, więc nie synchronizuje danych o nauce.",
+              "Usunięcie konta jest dostępne wyłącznie po uwierzytelnieniu i ponownym uwierzytelnieniu w wymaganym, świeżym czasie przez tego dostawcę. Ten lokalny stan nie udaje, że istnieje zdalne konto ani że zostało usunięte.",
             ],
           },
           {

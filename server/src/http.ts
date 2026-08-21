@@ -8,6 +8,7 @@ import {
   type SyncMutation,
   type SyncOperationSemanticInput,
 } from "./accountService.js";
+import { deleteAccountRemotely, type AccountDeletionPort } from "./deletion.js";
 import {
   authenticateAccountRequest,
   type FirebaseAppCheckTokenVerifier,
@@ -21,6 +22,7 @@ export const MAX_SNAPSHOT_HTTP_RESPONSE_BYTES = 2 * 1024 * 1024;
 export const MAX_ADOPTION_HTTP_BODY_BYTES = 4 * 1024;
 export const MAX_ADOPTION_UPLOAD_HTTP_BODY_BYTES = 2 * 1024 * 1024;
 export const MAX_ADOPTION_PREVIEW_HTTP_RESPONSE_BYTES = 2 * 1024 * 1024;
+export const MAX_DELETION_HTTP_BODY_BYTES = 4 * 1024;
 
 const SYNC_PATH = "/v1/account/sync";
 const SNAPSHOT_PAGE_PATH = "/v1/account/snapshot/page";
@@ -30,6 +32,7 @@ const ADOPTION_ADVANCE_PATH = "/v1/account/adoption/advance";
 const ADOPTION_PREVIEW_PAGE_PATH = "/v1/account/adoption/preview/page";
 const ADOPTION_CONFIRM_PATH = "/v1/account/adoption/confirm";
 const ADOPTION_CANCEL_PATH = "/v1/account/adoption/cancel";
+const DELETION_PATH = "/v1/account/deletion";
 const HASH_PATTERN = /^[a-f0-9]{64}$/u;
 const JSON_MEDIA_TYPE = /^application\/json(?:\s*;\s*charset=utf-8)?$/iu;
 const UTF8_BOM = Buffer.from([0xef, 0xbb, 0xbf]);
@@ -69,6 +72,7 @@ type PublicErrorCode =
   | "not_found"
   | "record_revision_conflict"
   | "request_too_large"
+  | "provider_not_ready"
   | "snapshot_changed"
   | "stale_account_revision"
   | "unsupported_content_encoding"
@@ -95,6 +99,7 @@ export type AccountHttpDependencies = Readonly<{
   expectedProjectId: string;
   expectedAppCheckAppIds: readonly string[];
   lifecycle: AccountLifecyclePort;
+  deletion?: AccountDeletionPort;
   nowSeconds: () => number;
   service: AccountHttpService;
   verifier: FirebaseIdTokenVerifier;
@@ -384,6 +389,7 @@ type AdvanceAdoptionHttpInput = Parameters<AccountHttpService["advanceAdoption"]
 type AdoptionPreviewPageHttpInput = Parameters<AccountHttpService["readAdoptionPreviewPage"]>[1];
 type ConfirmAdoptionHttpInput = Parameters<AccountHttpService["confirmAdoptionOperation"]>[1];
 type CancelAdoptionHttpInput = Parameters<AccountHttpService["cancelAdoption"]>[1];
+type DeletionHttpInput = Readonly<{ requestId: string; requestedAt: string }>;
 
 const hasExactKeys = (value: Record<string, unknown>, expected: readonly string[]): boolean => {
   const actual = Object.keys(value);
@@ -444,6 +450,14 @@ const prevalidateCancelAdoptionInput = (body: unknown): CancelAdoptionHttpInput 
     throw new RequestBoundaryError(publicError(400, "invalid_request"));
   }
   return body as CancelAdoptionHttpInput;
+};
+
+const prevalidateDeletionInput = (body: unknown): DeletionHttpInput => {
+  if (!isObject(body) || !hasExactKeys(body, ["requestId", "requestedAt"])
+    || typeof body.requestId !== "string" || typeof body.requestedAt !== "string") {
+    throw new RequestBoundaryError(publicError(400, "invalid_request"));
+  }
+  return body as DeletionHttpInput;
 };
 
 const authorizationHeader = (request: IncomingMessage): string | undefined => {
@@ -599,6 +613,75 @@ const handleSnapshotPageRequest = async (
   }
 };
 
+const deletionServiceError = (error: unknown): ErrorResponse => {
+  switch (errorMessage(error)) {
+    case "invalid_request_id":
+    case "invalid_uid":
+    case "invalid_operation_time":
+    case "invalid_requested_at":
+      return publicError(400, "invalid_request");
+    case "account_lifecycle_conflict":
+    case "deletion_proof_collision":
+      return publicError(409, "immutable_integrity_conflict");
+    case "account_tombstoned":
+      return publicError(410, "account_tombstoned");
+    default:
+      return publicError(503, "account_data_retryable");
+  }
+};
+
+const handleDeletionRequest = async (
+  request: IncomingMessage,
+  response: ServerResponse,
+  dependencies: AccountHttpDependencies,
+): Promise<void> => {
+  if (!dependencies.deletion) {
+    sendError(response, publicError(503, "provider_not_ready"));
+    return;
+  }
+  let uid: string;
+  try {
+    ({ uid } = await authenticateAccountRequest({
+      headers: { authorization: authorizationHeader(request), "x-firebase-appcheck": appCheckHeader(request) },
+    }, {
+      appCheckVerifier: dependencies.appCheckVerifier,
+      expectedProjectId: dependencies.expectedProjectId,
+      expectedAppCheckAppIds: dependencies.expectedAppCheckAppIds,
+      nowSeconds: dependencies.nowSeconds,
+      requireRecentAuthentication: true,
+      verifier: dependencies.verifier,
+    }));
+  } catch (error) {
+    sendError(response, authenticationError(error));
+    return;
+  }
+
+  let input: DeletionHttpInput;
+  try {
+    validateEntityHeaders(request, MAX_DELETION_HTTP_BODY_BYTES);
+    input = prevalidateDeletionInput(decodeJson(await readRawBody(request, MAX_DELETION_HTTP_BODY_BYTES)));
+  } catch (error) {
+    sendError(
+      response,
+      error instanceof RequestBoundaryError ? error.response : publicError(500, "internal_error"),
+    );
+    return;
+  }
+
+  try {
+    const proof = await deleteAccountRemotely({
+      now: () => new Date(dependencies.nowSeconds() * 1_000),
+      port: dependencies.deletion,
+      requestId: input.requestId,
+      requestedAt: input.requestedAt,
+      uid,
+    });
+    sendJson(response, 200, { completedAt: proof.completedAt, requestId: proof.requestId, result: proof.resultCode });
+  } catch (error) {
+    sendError(response, deletionServiceError(error));
+  }
+};
+
 const handleAdoptionRequest = async (
   path: AdoptionPath,
   request: IncomingMessage,
@@ -678,7 +761,7 @@ const isAdoptionPath = (value: string | undefined): value is AdoptionPath =>
 
 export const createAccountHttpHandler = (dependencies: AccountHttpDependencies): RequestListener =>
   (request, response) => {
-    if (request.url !== SYNC_PATH && request.url !== SNAPSHOT_PAGE_PATH && !isAdoptionPath(request.url)) {
+    if (request.url !== SYNC_PATH && request.url !== SNAPSHOT_PAGE_PATH && request.url !== DELETION_PATH && !isAdoptionPath(request.url)) {
       sendError(response, publicError(404, "not_found"));
       return;
     }
@@ -690,7 +773,9 @@ export const createAccountHttpHandler = (dependencies: AccountHttpDependencies):
       ? handleSyncRequest(request, response, dependencies)
       : request.url === SNAPSHOT_PAGE_PATH
         ? handleSnapshotPageRequest(request, response, dependencies)
-        : handleAdoptionRequest(request.url, request, response, dependencies);
+        : request.url === DELETION_PATH
+          ? handleDeletionRequest(request, response, dependencies)
+          : handleAdoptionRequest(request.url, request, response, dependencies);
     void operation.catch(() => {
       if (!response.headersSent) sendError(response, publicError(500, "internal_error"));
       else response.destroy();

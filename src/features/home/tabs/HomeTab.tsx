@@ -1,8 +1,7 @@
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { Button, Card, Icon } from "../../../components";
-import type { TrackDisplay, TrainingSession } from "../../../domain";
-import type { TrainingAttempt } from "../../../domain";
+import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
 import type { CodingInterviewDashboard } from "../../../application/coding-interview";
 import { colorWithOpacity, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
@@ -26,6 +25,7 @@ type HomeTabProps = {
   onChooseTopic: () => void;
   onRecommendationAction: (action: HomeRecommendationAction) => void;
   onStartLearning: (topicId: string) => void;
+  reviewQueueItems: readonly ReviewQueueEntry[];
   trainingAttempts: readonly TrainingAttempt[];
 };
 
@@ -39,6 +39,7 @@ export function HomeTab({
   onChooseTopic,
   onRecommendationAction,
   onStartLearning,
+  reviewQueueItems,
   trainingAttempts,
 }: HomeTabProps) {
   const styles = useThemedStyles(createStyles);
@@ -59,6 +60,7 @@ export function HomeTab({
   const decisionIcon = recommendation?.icon ?? (isCodingInterviewTrack ? "route" : "cloud");
   const decisionTone = recommendation?.enabled === false ? "muted" : "primary";
   const decisionEnabled = recommendation?.enabled ?? true;
+  const overview = buildOverviewMetrics(activeTrack.id, reviewQueueItems, trainingAttempts);
 
   return (
     <>
@@ -142,8 +144,68 @@ export function HomeTab({
           <Icon color={palette.accentPurple} name="chevron-right" size={18} />
         </Pressable>
       </Card>
+      <View style={styles.overviewSection} testID="home-overview">
+        <Text style={styles.sectionLabel}>{t("Overview")}</Text>
+        {overview.map((metric) => (
+          <View key={metric.label} style={styles.overviewRow} accessibilityLabel={`${t(metric.label)}: ${t(metric.value)}`}>
+            <Text style={styles.overviewLabel}>{t(metric.label)}</Text>
+            <Text style={styles.overviewValue}>{t(metric.value)}</Text>
+          </View>
+        ))}
+      </View>
     </>
   );
+}
+
+type HomeOverviewMetric = Readonly<{ label: string; value: string }>;
+
+function buildOverviewMetrics(
+  trackId: TrackDisplay["id"],
+  reviewQueueItems: readonly ReviewQueueEntry[],
+  trainingAttempts: readonly TrainingAttempt[],
+): readonly HomeOverviewMetric[] {
+  const trackAttempts = trainingAttempts.filter((attempt) => attempt.trackId === trackId);
+  const weekStart = startOfUtcWeek(new Date());
+  const weekAttempts = trackAttempts.filter((attempt) => new Date(attempt.answeredAt).getTime() >= weekStart.getTime());
+  const dueReviews = reviewQueueItems.filter((entry) => entry.trackId === trackId && Date.parse(entry.dueAt) <= Date.now()).length;
+  const latestAttempt = [...trackAttempts].sort((left, right) => right.answeredAt.localeCompare(left.answeredAt))[0];
+
+  return [
+    { label: "This week", value: weekAttempts.length ? `${weekAttempts.length} answered` : "No activity yet" },
+    { label: "Review", value: dueReviews ? `${dueReviews} due` : "Nothing due" },
+    { label: "Last session", value: latestAttempt ? `${modeLabel(latestAttempt.modeId)} · ${relativeDay(latestAttempt.answeredAt)}` : "No activity yet" },
+  ];
+}
+
+function startOfUtcWeek(now: Date): Date {
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const daysSinceMonday = (start.getUTCDay() + 6) % 7;
+  start.setUTCDate(start.getUTCDate() - daysSinceMonday);
+  return start;
+}
+
+function modeLabel(modeId: string): string {
+  const labels: Record<string, string> = {
+    "coding-interview-guided-practice": "Guided Practice",
+    "coding-interview-learn-approach": "Learn Approach",
+    "certification-focus-practice": "Focus Practice",
+    "certification-quick-review": "Quick Review",
+    "design-interview-learn-framework": "Learn Framework",
+    "design-interview-tradeoff-practice": "Tradeoff Practice",
+    "design-interview-weak-area-review": "Weak Area Review",
+  };
+  return labels[modeId] ?? modeId.replace(/^(?:coding-interview|certification|design-interview)-/, "").replace(/-/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function relativeDay(answeredAt: string): string {
+  const day = new Date(answeredAt);
+  const today = new Date();
+  const dayKey = Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate());
+  const todayKey = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  const difference = Math.round((todayKey - dayKey) / 86_400_000);
+  if (difference === 0) return "Today";
+  if (difference === 1) return "Yesterday";
+  return `${difference} days ago`;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
@@ -260,6 +322,41 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textSecondary,
     fontSize: 14,
     lineHeight: 22,
+  },
+  overviewSection: {
+    gap: 0,
+    marginTop: spacing.xs,
+  },
+  sectionLabel: {
+    color: palette.textMuted,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+    lineHeight: 18,
+    marginBottom: spacing.xs,
+    textTransform: "uppercase",
+  },
+  overviewRow: {
+    alignItems: "center",
+    borderBottomColor: palette.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 48,
+    paddingVertical: spacing.sm,
+  },
+  overviewLabel: {
+    color: palette.textSecondary,
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  overviewValue: {
+    color: palette.textPrimary,
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 21,
+    textAlign: "right",
   },
   secondaryAction: {
     alignItems: "center",

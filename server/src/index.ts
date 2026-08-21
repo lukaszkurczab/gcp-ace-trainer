@@ -15,6 +15,7 @@ export interface ListeningHttpServer {
 export type ServerStartupDependencies = Readonly<{
   createFirebaseRuntime: (projectId: string) => Readonly<{
     appCheckVerifier: import("./authentication.js").FirebaseAppCheckTokenVerifier;
+    deletion?: import("./deletion.js").AccountDeletionPort;
     lifecycle: import("./accountLifecycle.js").AccountLifecyclePort;
     store: AccountDatasetStore;
     verifier: FirebaseIdTokenVerifier;
@@ -40,6 +41,7 @@ export const startServer = (
   const service = new AccountDataService(firebase.store);
   const server = dependencies.createHttpServer(createAccountHttpHandler({
     appCheckVerifier: firebase.appCheckVerifier,
+    ...(firebase.deletion ? { deletion: firebase.deletion } : {}),
     expectedProjectId: environment.firebaseProjectId,
     expectedAppCheckAppIds: environment.appCheckAppIds,
     lifecycle: firebase.lifecycle,
