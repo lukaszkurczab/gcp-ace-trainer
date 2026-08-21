@@ -299,7 +299,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderColor: palette.navigation.active,
     borderRadius: 22,
     elevation: 0,
-    gap: spacing.lg,
+    gap: spacing.md,
     padding: spacing.xl,
     position: "relative",
     shadowOpacity: 0,

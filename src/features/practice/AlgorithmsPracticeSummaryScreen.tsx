@@ -77,7 +77,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
           <Text style={styles.configuration} testID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}>{result.configuration.actualLength} {t("items")} · {t(result.configuration.feedbackTiming === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer")}</Text>
         </Card>
         <View style={styles.outcomeSection}>
-          <Text style={styles.sectionTitle}>{t("Outcome distribution")}</Text>
+          <Text style={styles.sectionTitle}>{t("Results")}</Text>
           {result.score ? (
             <View style={styles.outcomeRow}>
               <OutcomeStat label={t("Correct")} value={result.score.correctCount} tone="success" />
@@ -127,21 +127,21 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   summaryHeader: { gap: spacing.sm },
   eyebrow: { ...typography.caption, color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
   resultDescription: { ...typography.body, color: palette.textSecondary },
-  statsCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 24, gap: spacing.lg, padding: spacing.xl, shadowOpacity: 0 },
-  summaryStat: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 36 },
+  statsCard: { backgroundColor: "transparent", borderColor: "transparent", borderRadius: 0, borderWidth: 0, elevation: 0, gap: 0, padding: 0, shadowOpacity: 0 },
+  summaryStat: { alignItems: "center", borderBottomColor: palette.surface, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", justifyContent: "space-between", paddingVertical: spacing.md },
   summaryStatLabel: { ...typography.small, color: palette.textSecondary },
   summaryStatValue: { ...typography.bodyStrong, color: palette.textPrimary },
   configuration: { ...typography.caption, color: palette.textMuted },
   outcomeSection: { gap: spacing.md },
-  sectionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  sectionTitle: { color: palette.textSecondary, fontSize: 13, fontWeight: "700", lineHeight: 16 },
   outcomeRow: { gap: spacing.sm },
-  outcomeStat: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 10, flexDirection: "row", gap: spacing.sm, minHeight: 44, padding: spacing.md },
+  outcomeStat: { alignItems: "center", flexDirection: "row", gap: spacing.sm, paddingHorizontal: 0, paddingVertical: spacing.sm },
   outcomeDot: { borderRadius: 4, height: 8, width: 8 },
   successDot: { backgroundColor: palette.success },
   warningDot: { backgroundColor: palette.warning },
   dangerDot: { backgroundColor: palette.danger },
   outcomeLabel: { ...typography.body, color: palette.textPrimary, flex: 1 },
-  outcomeValue: { ...typography.bodyStrong, color: palette.textPrimary },
+  outcomeValue: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20 },
   scoreLine: { ...typography.small, color: palette.textSecondary },
   reviewBanner: { backgroundColor: palette.successSoft, borderColor: palette.success, borderRadius: 12, borderWidth: 1, gap: spacing.xs, padding: spacing.lg },
   reviewBannerTitle: { ...typography.bodyStrong, color: palette.textPrimary },

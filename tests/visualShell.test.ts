@@ -144,6 +144,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
   const session = source("src/features/coding-interview/session/SessionShell.tsx");
   const result = source("src/features/practice/AlgorithmsPracticeSummaryScreen.tsx");
+  const simulationSummary = source("src/features/simulation/SimulationSessionSurface.tsx");
 
   assert.match(home, /<Screen[\s\S]*<AppShellHeader \/>/);
   assert.match(home, /if \(!hasLoadedActiveTrack\) return <Screen edges=\{\["top"\]\} scroll=\{false\}><AppShellHeader \/><LoadingState/);
@@ -155,6 +156,11 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(session, /return \([\s\S]*<Screen[\s\S]*footer=/);
   assert.match(result, /<Screen/);
   assert.match(rootNavigator, /name=\{ROUTES\.ALGORITHMS_PRACTICE_SUMMARY\}[\s\S]*?options=\{\{ title: t\("Session result"\) \}\}/);
+  assert.match(result, /<Text style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
+  assert.match(result, /outcomeStat:[\s\S]*?paddingVertical:\s*spacing\.sm/);
+  assert.match(simulationSummary, /<Text style=\{styles\.summaryTitle\}>\{t\(projection\.title\)\}<\/Text>/);
+  assert.match(simulationSummary, /<Text style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
+  assert.match(simulationSummary, /summaryStat:[\s\S]*?borderBottomWidth:\s*StyleSheet\.hairlineWidth/);
 });
 
 test("Practice setup keeps one canonical back action and recovery copy names learner-visible consequences", () => {

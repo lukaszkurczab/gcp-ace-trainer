@@ -114,6 +114,7 @@ const polish: Readonly<Record<string, string>> = {
   "This session ended before every item was completed.": "Sesja zakończyła się przed ukończeniem wszystkich zadań.",
   "Completed items": "Ukończone zadania",
   "Outcome distribution": "Rozkład wyników",
+  "Results": "Wyniki",
   "Answer review available": "Dostępny przegląd odpowiedzi",
   "Review the saved explanations before leaving this session.": "Przejrzyj zapisane wyjaśnienia przed opuszczeniem sesji.",
   "Review answers": "Przejrzyj odpowiedzi",

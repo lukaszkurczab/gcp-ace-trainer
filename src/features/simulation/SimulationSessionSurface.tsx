@@ -134,9 +134,8 @@ function CompletedSurface({ projection, sessionId }: Readonly<{ projection: Simu
       <Screen edges={["top", "bottom"]} footer={<View style={styles.summaryActions}>{completion.reviewAction ? <Action action={completion.reviewAction} sessionId={sessionId} /> : null}{projection.actions?.primary ? <Action action={projection.actions.primary} sessionId={sessionId} /> : null}</View>}>
         <View style={styles.summaryShell}>
           <View style={styles.summaryHeader}>
-            <Text style={styles.eyebrow}>{t("Learn approach")} / {t(projection.modeLabel ?? "Coding Interview")}</Text>
-            <Text style={styles.title}>{t(projection.title)}</Text>
-            <Text style={styles.body}>{t("You completed this focused interview simulation.")}</Text>
+            <Text style={styles.summaryTitle}>{t(projection.title)}</Text>
+            <Text style={styles.summaryMode}>{t(projection.modeLabel ?? "Coding Interview")}</Text>
           </View>
           <Card style={styles.summaryStats} variant="layered">
             <SummaryStat label={t("Completed items")} value={`${completion.answeredCount} ${t("of")} ${completion.answeredCount + completion.unansweredCount}`} />
@@ -144,7 +143,7 @@ function CompletedSurface({ projection, sessionId }: Readonly<{ projection: Simu
             {completion.configuration ? <Text style={styles.caption}>{t(completion.configuration)}</Text> : null}
           </Card>
           <View style={styles.outcomeSection}>
-            <Text style={styles.sectionTitle}>{t("Outcome distribution")}</Text>
+            <Text style={styles.sectionTitle}>{t("Results")}</Text>
             <View style={styles.outcomeRow}><OutcomeStat label={t("Correct")} value={completion.correctCount} tone="success" /><OutcomeStat label={t("Partial")} value={completion.partialCount} tone="warning" /><OutcomeStat label={t("Incorrect")} value={completion.incorrectCount} tone="danger" /></View>
             <Text style={styles.body}>{completion.correctCount} {t("correct")} · {missedCount} {t("Missed")} · {completion.earnedPoints} / {completion.maxPoints} {t("points")}</Text>
           </View>
@@ -171,24 +170,26 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   body: { ...typography.small, color: palette.textSecondary },
   code: { backgroundColor: palette.background, borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, color: palette.textSecondary, fontFamily: "monospace", padding: spacing.md },
   confirmationTitle: { ...typography.heading, color: palette.textPrimary },
-  summaryActions: { gap: spacing.sm },
-  summaryShell: { gap: spacing.xl },
-  summaryHeader: { gap: spacing.sm },
+  summaryActions: { gap: spacing.md },
+  summaryShell: { gap: spacing.xxl },
+  summaryHeader: { gap: spacing.xs },
   eyebrow: { ...typography.caption, color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
-  summaryStats: { borderRadius: 24, gap: spacing.lg, padding: spacing.xl, shadowOpacity: 0 },
-  summaryStat: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 36 },
+  summaryStats: { backgroundColor: "transparent", borderColor: "transparent", borderRadius: 0, borderWidth: 0, elevation: 0, gap: 0, padding: 0, shadowOpacity: 0 },
+  summaryStat: { alignItems: "center", borderBottomColor: palette.surface, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", justifyContent: "space-between", paddingVertical: spacing.md },
   summaryStatLabel: { ...typography.body, color: palette.textSecondary },
   summaryValue: { ...typography.bodyStrong, color: palette.textPrimary },
+  summaryTitle: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", lineHeight: 28 },
+  summaryMode: { color: palette.textSecondary, fontSize: 14, fontWeight: "500", lineHeight: 20 },
   outcomeSection: { gap: spacing.md },
-  sectionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  sectionTitle: { color: palette.textSecondary, fontSize: 13, fontWeight: "700", lineHeight: 16 },
   outcomeRow: { gap: spacing.sm },
-  outcomeStat: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 10, flexDirection: "row", gap: spacing.sm, minHeight: 44, padding: spacing.md },
+  outcomeStat: { alignItems: "center", flexDirection: "row", gap: spacing.sm, paddingHorizontal: 0, paddingVertical: spacing.sm },
   outcomeDot: { borderRadius: 4, height: 8, width: 8 },
   successDot: { backgroundColor: palette.success },
   warningDot: { backgroundColor: palette.warning },
   dangerDot: { backgroundColor: palette.danger },
   outcomeLabel: { ...typography.body, color: palette.textPrimary, flex: 1 },
-  outcomeValue: { ...typography.bodyStrong, color: palette.textPrimary },
+  outcomeValue: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20 },
   reviewBanner: { borderColor: palette.success, borderRadius: radius.md, borderWidth: 1 },
   caption: { ...typography.caption, color: palette.textSecondary },
   controls: { gap: spacing.sm },

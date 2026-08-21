@@ -40,7 +40,7 @@ function AlgorithmsInterviewSimulationResultSurface({ navigation, sessionId }: R
   const projection: SimulationSurfaceProjection = result?.score
     ? {
         state: "completed",
-        title: "Session complete",
+        title: "Simulation complete",
         modeLabel: "Coding Interview",
         completion: {
           activeTime: formatElapsed(result.elapsedForegroundMs),
