@@ -325,8 +325,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textPrimary,
   },
   changeTrack: {
-    ...typography.bodyStrong,
     color: palette.primary,
+    fontSize: 13,
+    fontWeight: "600",
+    lineHeight: 18,
   },
   topicContext: {
     alignItems: "center",
@@ -340,18 +342,20 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     width: 6,
   },
   topicContextText: {
-    ...typography.small,
     color: palette.textSecondary,
+    fontSize: 13,
+    fontWeight: "500",
+    lineHeight: 18,
   },
   pressed: {
     opacity: 0.78,
   },
   heroCard: {
-    gap: spacing.lg,
     backgroundColor: palette.surface,
     borderColor: colorWithOpacity(palette.primary, 0.45),
     borderRadius: 22,
     elevation: 0,
+    gap: spacing.md,
     padding: spacing.xl,
     shadowOpacity: 0,
     position: "relative",
@@ -373,16 +377,19 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flexDirection: "column",
   },
   heroTitle: {
-    ...typography.heading,
     color: palette.textPrimary,
     flex: 1,
+    fontSize: 20,
+    fontWeight: "600",
+    lineHeight: 28,
   },
   heroDetail: {
     ...typography.body,
     color: palette.textSecondary,
+    lineHeight: 20,
   },
   heroActions: {
-    gap: spacing.xl,
+    gap: spacing.md,
   },
   settingsAction: {
     alignItems: "center",
@@ -397,16 +404,17 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     opacity: 0.78,
   },
   settingsActionText: {
-    ...typography.small,
     color: palette.accentPurple,
+    fontSize: 13,
     fontWeight: "600",
+    lineHeight: 18,
   },
   section: {
     gap: spacing.md,
   },
   modeList: {
     borderColor: palette.border,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     borderWidth: 1,
     overflow: "hidden",
   },
