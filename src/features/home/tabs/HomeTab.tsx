@@ -157,11 +157,13 @@ export function HomeTab({
         <Text style={styles.sectionLabel}>{t("Overview")}</Text>
         {overview.map((metric) => (
           <View key={metric.label} style={styles.overviewRow} accessibilityLabel={`${t(metric.label)}: ${t(metric.value)}`}>
-            <View style={styles.overviewCopy}>
-              <Text style={styles.overviewLabel}>{t(metric.label)}</Text>
-              <View style={styles.overviewTrack}><View style={[styles.overviewFill, { width: `${metric.progress * 100}%` }]} /></View>
+            <Text maxFontSizeMultiplier={2} style={styles.overviewLabel}>{t(metric.label)}</Text>
+            <View style={styles.overviewValueGroup}>
+              <View style={styles.overviewTrack}>
+                <View style={[styles.overviewFill, { width: `${metric.progress * 100}%` }]} />
+              </View>
+              <Text maxFontSizeMultiplier={2} style={styles.overviewValue}>{t(metric.value)}</Text>
             </View>
-            <Text style={styles.overviewValue}>{t(metric.value)}</Text>
           </View>
         ))}
       </View>
@@ -267,8 +269,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     minHeight: 44,
   },
   trackContextLargeText: {
-    alignSelf: "stretch",
     alignItems: "flex-start",
+    alignSelf: "stretch",
   },
   trackContextCopy: {
     alignItems: "center",
@@ -377,38 +379,41 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderBottomColor: palette.border,
     borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
-    justifyContent: "space-between",
-    minHeight: 48,
-    paddingVertical: spacing.sm,
-  },
-  overviewCopy: {
-    flex: 1,
-    gap: spacing.xs,
-    minWidth: 0,
+    gap: spacing.sm,
+    minHeight: 42,
+    paddingVertical: spacing.xs,
   },
   overviewTrack: {
     backgroundColor: palette.border,
-    borderRadius: 2,
+    borderRadius: 100,
     height: 4,
     overflow: "hidden",
-    width: "100%",
+    width: 40,
   },
   overviewFill: {
     backgroundColor: palette.accentTeal,
-    borderRadius: 2,
+    borderRadius: 100,
     height: 4,
   },
   overviewLabel: {
     color: palette.textSecondary,
     flex: 1,
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 22,
+    minWidth: 0,
+  },
+  overviewValueGroup: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexShrink: 1,
+    gap: spacing.xs,
   },
   overviewValue: {
     color: palette.textPrimary,
+    flexShrink: 1,
     fontSize: 14,
     fontWeight: "600",
-    lineHeight: 21,
+    lineHeight: 22,
     textAlign: "right",
   },
   secondaryAction: {
