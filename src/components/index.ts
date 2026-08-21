@@ -1,4 +1,5 @@
 export * from "./AppShellHeader";
+export * from "./AnswerOption";
 export * from "./Badge";
 export * from "./BottomTabBar";
 export * from "./Button";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Button, Card, Screen } from "../../components";
+import { AnswerOption, Button, Card, Screen } from "../../components";
 import { radius, spacing, typography } from "../../theme";
 import { complexityValueAccessibilityLabel, orderingMoveAccessibilityLabel } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
@@ -99,7 +99,7 @@ function ResponseControl({ control, disabled, itemId, onChange, sessionId }: Rea
   const { t } = useAppPreferences();
   if (control.kind === "choice") {
     const role = control.selectionMode === "single" ? "radio" : "checkbox";
-    return <View style={styles.controls}>{control.options.map((option) => <Pressable accessibilityLabel={option.label} accessibilityRole={role} accessibilityState={{ checked: option.selected }} disabled={disabled} key={option.id} onPress={() => onChange?.({ kind: "choice", optionId: option.id, selected: !option.selected })} style={({ pressed }) => [styles.optionRow, option.selected ? styles.optionRowSelected : null, pressed && !disabled ? styles.pressed : null]} testID={simulationOptionSelector(itemId, option.id)}><View style={[styles.optionRadio, option.selected ? styles.optionRadioSelected : null]}>{option.selected ? <View style={styles.optionRadioDot} /> : null}</View><Text maxFontSizeMultiplier={2} style={styles.optionText}>{option.label}</Text></Pressable>)}</View>;
+    return <View style={styles.controls}>{control.options.map((option, index) => <AnswerOption accessibilityLabel={option.label} accessibilityRole={role} accessibilityState={{ checked: option.selected }} disabled={disabled} key={option.id} letter={String.fromCharCode(65 + index)} onPress={() => onChange?.({ kind: "choice", optionId: option.id, selected: !option.selected })} state={option.selected ? "selected" : "default"} testID={simulationOptionSelector(itemId, option.id)} text={option.label} />)}</View>;
   }
   if (control.kind === "ordering") {
     return <View style={styles.controls}>{control.elements.map((element, index) => <View key={element.id} style={styles.orderRow} testID={simulationOptionSelector(itemId, element.id)}><Text style={styles.orderLabel}>{`${index + 1}. ${element.label}`}</Text><View style={styles.orderActions}><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "up")} disabled={disabled || index === 0} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "up" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:up`) : undefined} variant="secondary">{t("Up")}</Button><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "down")} disabled={disabled || index === control.elements.length - 1} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "down" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:down`) : undefined} variant="secondary">{t("Down")}</Button></View></View>)}</View>;
@@ -196,12 +196,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   heading: { gap: spacing.xs, justifyContent: "center", minHeight: 48 },
   notice: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   noticeText: { ...typography.small, color: palette.textPrimary },
-  optionRow: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1.5, flexDirection: "row", gap: spacing.md, minHeight: 54, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
-  optionRowSelected: { backgroundColor: palette.primarySoft, borderColor: palette.primary },
-  optionRadio: { alignItems: "center", borderColor: palette.borderStrong, borderRadius: 10, borderWidth: 2, height: 20, justifyContent: "center", width: 20 },
-  optionRadioSelected: { borderColor: palette.primary },
-  optionRadioDot: { backgroundColor: palette.primary, borderRadius: 4, height: 8, width: 8 },
-  optionText: { ...typography.body, color: palette.textPrimary, flex: 1 },
   pressed: { opacity: 0.78 },
   neutral: { backgroundColor: palette.elevatedSurface, borderColor: palette.border },
   orderActions: { flexDirection: "row", flexShrink: 0, gap: spacing.xs },

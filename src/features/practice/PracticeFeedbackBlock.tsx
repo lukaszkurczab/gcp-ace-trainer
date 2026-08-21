@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useState } from "react";
 
+import { Icon } from "../../components";
 import { radius, spacing, typography } from "../../theme";
 import type { PracticeFeedback } from "./practiceSessionPresentation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -12,7 +13,7 @@ import type { ContentItemRef } from "../../domain";
 
 export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ feedback: PracticeFeedback; item: ContentItemRef; itemId: string }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { colors: palette, t } = useAppPreferences();
   const [detailsOpen, setDetailsOpen] = useState(false);
   return (
     <View style={styles.container} testID={runtimeSelectors.session.feedback(itemId)}>
@@ -32,7 +33,7 @@ export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ fee
         testID={runtimeSelectors.session.detailsToggle(itemId)}
       >
         <Text style={styles.detailsLabel}>{t("Details")}</Text>
-        <Text style={styles.detailsIndicator}>{detailsOpen ? "−" : "+"}</Text>
+        <Icon color={palette.textSecondary} name={detailsOpen ? "chevron-up" : "chevron-down"} size={18} />
       </Pressable>
       {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}><AlgorithmFeedbackDocumentBlock document={feedback.details} item={item} /></View> : null}
     </View>
@@ -53,9 +54,8 @@ function formatFeedbackResult(result: PracticeFeedback["result"]): string {
 const createStyles = (palette: AppColors) => StyleSheet.create({
   container: { gap: spacing.md },
   details: { gap: spacing.md },
-  detailsIndicator: { ...typography.bodyStrong, color: palette.accentPurple },
   detailsLabel: { ...typography.bodyStrong, color: palette.textPrimary },
-  detailsToggle: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 48 },
+  detailsToggle: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 48, paddingHorizontal: spacing.xs, paddingVertical: spacing.md },
   reason: { ...typography.body, color: palette.textSecondary },
   reasonLabel: { ...typography.caption, color: palette.textSecondary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
   reasonPanel: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },

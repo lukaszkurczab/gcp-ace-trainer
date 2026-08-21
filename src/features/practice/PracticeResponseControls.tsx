@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { AnswerOption, type AnswerOptionState } from "../../components";
 import { radius, spacing, typography } from "../../theme";
 import {
   complexityValueAccessibilityLabel,
@@ -105,27 +106,21 @@ function ChoiceOption({ editable, index, itemId, onPress, option, role }: Readon
   option: Readonly<{ id: string; state: "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct"; text: string }>;
   role: "checkbox" | "radio";
 }>) {
-  const styles = useThemedStyles(createStyles);
   const selected = option.state === "selected" || option.state === "correct" || option.state === "incorrect" || option.state === "omitted_correct";
   const correctness = practiceOptionCorrectnessValue(option.state);
 
-  return (
-    <Pressable
-      accessibilityLabel={option.text}
-      accessibilityRole={role}
-      accessibilityState={{ checked: selected, disabled: !editable }}
-      accessibilityValue={correctness ? { text: correctness } : undefined}
-      disabled={!editable}
-      onPress={onPress}
-      style={({ pressed }) => [styles.choiceOption, choiceStateStyle(option.state, styles), pressed && editable ? styles.pressed : null, !editable ? styles.locked : null]}
-      testID={itemId ? runtimeSelectors.session.option(itemId, option.id) : undefined}
-    >
-      <View style={[styles.optionLetter, option.state === "selected" ? styles.optionLetterSelected : null, option.state === "correct" || option.state === "omitted_correct" ? styles.optionLetterCorrect : null, option.state === "incorrect" ? styles.optionLetterIncorrect : null]}>
-        <Text style={[styles.optionLetterText, option.state === "selected" ? styles.optionLetterTextSelected : null, option.state === "correct" || option.state === "omitted_correct" ? styles.optionLetterTextCorrect : null, option.state === "incorrect" ? styles.optionLetterTextIncorrect : null]}>{String.fromCharCode(65 + index)}</Text>
-      </View>
-      <Text style={[styles.optionText, option.state === "correct" || option.state === "omitted_correct" || option.state === "incorrect" ? styles.feedbackText : null]}>{option.text}</Text>
-    </Pressable>
-  );
+  return <AnswerOption
+    accessibilityLabel={option.text}
+    accessibilityRole={role}
+    accessibilityState={{ checked: selected, disabled: !editable }}
+    accessibilityValue={correctness ? { text: correctness } : undefined}
+    disabled={!editable}
+    letter={String.fromCharCode(65 + index)}
+    onPress={onPress}
+    state={option.state === "neutral" ? "default" : option.state as AnswerOptionState}
+    testID={itemId ? runtimeSelectors.session.option(itemId, option.id) : undefined}
+    text={option.text}
+  />;
 }
 
 function OrderingMove({ direction, disabled, elementLabel, index, onPress, total }: Readonly<{
@@ -151,38 +146,18 @@ function OrderingMove({ direction, disabled, elementLabel, index, onPress, total
   );
 }
 
-function choiceStateStyle(state: "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct", styles: ReturnType<typeof createStyles>) {
-  if (state === "correct" || state === "omitted_correct") return styles.choiceCorrect;
-  if (state === "incorrect") return styles.choiceIncorrect;
-  if (state === "selected") return styles.choiceSelected;
-  return undefined;
-}
-
 function humanizeDimension(value: string): string {
   return value.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  choiceCorrect: { backgroundColor: palette.success, borderColor: palette.success, borderWidth: 1.5 },
-  choiceIncorrect: { backgroundColor: palette.danger, borderColor: palette.danger, borderWidth: 1.5 },
-  choiceOption: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1.5, flexDirection: "row", gap: 14, minHeight: 54, padding: spacing.lg },
-  choiceSelected: { backgroundColor: palette.surface, borderColor: palette.primary, borderWidth: 1.5 },
   dimension: { gap: spacing.sm },
   dimensionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   locked: { opacity: 0.9 },
-  feedbackText: { color: palette.onPrimary },
   moveButton: { alignItems: "center", borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48 },
   moveButtonDisabled: { opacity: 0.4 },
   moveText: { ...typography.bodyStrong, color: palette.textPrimary },
   optionText: { ...typography.body, color: palette.textPrimary, flex: 1 },
-  optionLetter: { alignItems: "center", backgroundColor: palette.border, borderRadius: radius.sm, justifyContent: "center", minHeight: 24, minWidth: 24, padding: spacing.xs },
-  optionLetterCorrect: { backgroundColor: palette.border },
-  optionLetterIncorrect: { backgroundColor: palette.border },
-  optionLetterSelected: { backgroundColor: palette.border },
-  optionLetterText: { color: palette.textPrimary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
-  optionLetterTextCorrect: { color: palette.success },
-  optionLetterTextIncorrect: { color: palette.danger },
-  optionLetterTextSelected: { color: palette.primary },
   orderActions: { flexDirection: "row", flexShrink: 0, gap: spacing.xs },
   orderIndex: { ...typography.bodyStrong, color: palette.accentPurple, minWidth: 20 },
   orderRow: { alignItems: "flex-start", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, minHeight: 64, padding: spacing.md },
