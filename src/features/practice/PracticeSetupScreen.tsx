@@ -313,7 +313,7 @@ function SelectableOption({ compact = false, label, meta, onPress, selected, tes
       testID={testID}
     >
       <Text style={[styles.lengthValue, compact ? styles.compactLengthValue : null, selected ? (compact ? styles.compactSelectedText : styles.selectedText) : null]}>{label}</Text>
-      <Text numberOfLines={1} style={[styles.optionMeta, compact ? styles.compactOptionMeta : null, selected && compact ? styles.compactSelectedText : null]}>{meta}</Text>
+      <Text numberOfLines={1} style={[styles.optionMeta, compact ? styles.compactOptionMeta : null, selected && compact ? styles.compactSelectedMeta : null]}>{meta}</Text>
     </Pressable>
   );
 }
@@ -404,8 +404,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.md,
   },
   compactLengthGrid: {
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.border,
+    borderRadius: radius.button,
+    borderWidth: 1,
+    flexDirection: "row",
     flexWrap: "nowrap",
     gap: spacing.xs,
+    padding: spacing.xs,
   },
   lengthOption: {
     alignItems: "center",
@@ -422,18 +428,20 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     paddingVertical: spacing.md,
   },
   compactLengthOption: {
-    backgroundColor: palette.navigation.surface,
-    borderColor: palette.choice.border,
-    borderRadius: radius.sheet,
+    backgroundColor: "transparent",
+    borderColor: "transparent",
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flex: 1,
     gap: 0,
-    minHeight: 54,
+    minHeight: 44,
     minWidth: 0,
     paddingHorizontal: spacing.xs,
     paddingVertical: spacing.xs,
   },
   compactSelectedLengthOption: {
-    backgroundColor: palette.navigation.active,
-    borderColor: palette.navigation.active,
+    backgroundColor: palette.primary,
+    borderColor: palette.primary,
   },
   selectedOption: {
     backgroundColor: palette.primarySoft,
@@ -455,7 +463,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textPrimary,
   },
   compactSelectedText: {
-    color: palette.background,
+    color: palette.textPrimary,
+  },
+  compactSelectedMeta: {
+    color: palette.onPrimary,
   },
   optionMeta: {
     ...typography.caption,
