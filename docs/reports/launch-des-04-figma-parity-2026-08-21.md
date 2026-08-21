@@ -4,8 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`
 Verified and pushed SHA: `b987b87a00ec53053c2c37bbae1e7b2d5a928da5`
+Current local verification SHA: `3fbb599`
 
 ## Outcome
 
@@ -45,7 +46,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 
 | Reachable surface/state | Current canonical owner | Figma authority | Status | Notes |
 |---|---|---|---|---|
-| Home ready, Coding track, no activity | `HomeScreen` / `HomeTab` | `55:445` | `MATCHED` | Shell, title, track context, recommendation card, action geometry, overview rows, colors, and bottom navigation aligned. Current recommendation copy remains data-driven. |
+| Home ready, Coding track, no activity | `HomeScreen` / `HomeTab` | `55:445` | `MATCHED` | Shell, title, track context, recommendation card, action geometry, inline 40 px overview mini-bars, colors, and bottom navigation aligned. Current recommendation copy remains data-driven. |
 | Home track switch | `SelectTrackScreen` | `42:422`, `42:478`, `42:539` | `PARTIAL` | The local selection plus single footer Continue command now follows the Figma track-choice shell. Current-head screenshot capture remains pending; the safe capture path encountered the installed dev-client's cached pre-cutover route. |
 | Home active session | `HomeScreen` / `HomeTab` | `55:539` | `PARTIAL` | Resume card, overview, focus, activity, and bottom navigation are implemented from real local session data; current-head screenshot comparison remains pending. |
 | Home review due | `HomeScreen` / `HomeTab` | `55:632` | `PARTIAL` | Review weak areas, Start review, Manage settings, overview, focus, and activity are implemented without synthetic counts; current-head screenshot comparison remains pending. |
@@ -80,11 +81,13 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run validate:runtime-privacy-boundary`: passed.
 - `npm run validate:content-boundary`: passed.
 - Focused `algorithmsSessionAccessibility.test.ts`: 12 passed, including the shared AnswerOption geometry contract.
+- Focused Home/Progress/large-text tests: 20 passed after the Home Overview metric-row cutover.
 - `git diff --check`: passed.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows`: passed; the post-summary-cutover source produced an iOS bundle with 1,343 modules.
 - `npm run qa:static`: passed after the post-cutover source changes: recovery inventory, typecheck, 544 tests, content boundary, and runtime privacy boundary.
 - The existing fresh iOS dev-client evidence was captured on commit `89a2fc0` on a second iPhone 16 Pro simulator without invoking the destructive learning-state reset. Dark and light Maestro journeys each completed five screenshots covering Home, Practice Hub/setup, an unanswered coding question, the pause/end sheet, and a partial summary. Evidence is stored at `/tmp/patternly-figma-screens-2026-08-22-dark-fresh/` and `/tmp/patternly-figma-screens-2026-08-22-light-fresh/`.
 - A post-`6ee92db`/`db9c637` runtime feedback or summary capture was not completed because CoreSimulatorService became unavailable before the safe Maestro inspection step; no new simulator evidence is claimed for these cutovers.
+- A post-`3fbb599` Home Overview runtime capture was not completed because CoreSimulatorService remains unavailable; the source and focused tests verify the cutover, but no new screenshot evidence is claimed.
 - The full RC runner remains intentionally unrun because its bootstrap step calls `audit/reset-learning-state` and would erase local learner records. The reference journey used the pre-`6ee92db` source bundle through an IPv4 Metro listener; it is retained as prior visual evidence, not as post-cutover proof.
 - Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, and route ownership tests pass.
 
@@ -96,4 +99,4 @@ No route was deleted because the current reachability graph does not prove any e
 
 ## Remaining work
 
-The remaining gaps are explicit and blocking: extend the current-head dark/light screenshot matrix to immediate feedback, completed summaries, simulation, review, and recovery states; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
+The remaining gaps are explicit and blocking: restore the simulator and extend the current-head dark/light screenshot matrix to immediate feedback, completed summaries, simulation, review, and recovery states; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
