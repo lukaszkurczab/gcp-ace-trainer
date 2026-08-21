@@ -30,7 +30,7 @@ type SelectTrackScreenProps = {
 export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelected }: SelectTrackScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
-  const { t } = useAppPreferences();
+  const { colors: palette, t } = useAppPreferences();
   const largeText = fontScale >= 1.3;
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>(CODING_INTERVIEW_TRACK_ID);
   const [loaded, setLoaded] = useState(false);
@@ -79,12 +79,18 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
             </Button>
           </View>
         )}
-        style={styles.screenContent}
+        style={[styles.screenContent, !onboarding ? styles.returningScreenContent : null]}
       >
-        {!onboarding ? <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Home")} /> : null}
+        {!onboarding ? <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} /> : null}
         <View style={styles.intro}>
-          <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Choose a track")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Choose what you want to practice first. You can switch tracks later.")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.title}>{t(onboarding ? "Choose a track" : "Tracks")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{t(onboarding ? "Choose what you want to practice first. You can switch tracks later." : "Choose the track you want to practice now.")}</Text>
+          {!onboarding ? (
+            <View style={styles.safetyBadge}>
+              <Icon color={colorWithOpacity(palette.textMuted, 0.5)} name="shield-alert" size={14} />
+              <Text maxFontSizeMultiplier={2} style={styles.safetyText}>{t("Changing the current track does not remove existing progress.")}</Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.trackList}>
@@ -146,9 +152,12 @@ function TrackChoiceCard({ largeText, onPress, selected, title, track }: Readonl
 const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: { backgroundColor: palette.background, flex: 1 },
   screenContent: { paddingBottom: spacing.lg },
+  returningScreenContent: { paddingTop: spacing.xl },
   intro: { gap: spacing.sm },
   title: { ...typography.title, color: palette.textPrimary },
   subtitle: { ...typography.small, color: palette.textSecondary },
+  safetyBadge: { alignItems: "center", flexDirection: "row", gap: spacing.xs, paddingVertical: spacing.xxs },
+  safetyText: { color: colorWithOpacity(palette.textMuted, 0.5), fontSize: 12, lineHeight: 16 },
   trackList: { gap: spacing.sm },
   trackCard: {
     backgroundColor: palette.surface,
