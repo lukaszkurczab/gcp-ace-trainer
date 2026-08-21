@@ -4,7 +4,7 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`
 
 ## Outcome
 
@@ -32,7 +32,9 @@ Updated canonical owners:
 - `src/components/BottomTabBar.tsx`: safe-area, active indicator, top rule, and label geometry.
 - `src/components/ProgressBar.tsx`: Figma four-pixel progress track.
 - `src/features/coding-interview/session/SessionShell.tsx`: compact session top bar.
-- `src/features/practice/PracticeResponseControls.tsx`: Figma answer-option surfaces, borders, letter badges, and correctness states.
+- `src/components/AnswerOption.tsx`: one canonical Figma answer-option primitive for default, selected, correct, incorrect, and omitted-compatible states.
+- `src/features/practice/PracticeResponseControls.tsx` and `src/features/simulation/SimulationSessionSurface.tsx`: both choice renderers consume the shared answer-option primitive; correctness and persistence remain runtime-owned.
+- `src/features/practice/PracticeFeedbackBlock.tsx`: Figma disclosure-row geometry and chevron states for answer details.
 
 No second component library or compatibility styling path was introduced. Existing `AppShellHeader` remains the canonical branded/recovery header for loading, unavailable, and native-context states where the local Figma Screen Header is not the runtime owner.
 
@@ -58,7 +60,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Bottom navigation | `BottomTabBar` / `AppBottomNavigation` | `140:875` | `MATCHED` | Surface, top rule, active indicator, safe-area padding, label scale, and tab geometry verified in dark/light captures. |
 | Shared Button | `Button` | `141:817` | `MATCHED` | Primary, pressed, disabled, secondary, ghost, and destructive contracts consolidated. |
 | Shared Screen Header | `ScreenHeader` | `140:881` | `MATCHED` | Back touch target, context, title, description, and large-text multiplier implemented and tested. |
-| Shared Answer Option | `PracticeResponseControls` | `248:2394` | `MATCHED` | Default, selected, correct, incorrect, and omitted-compatible letter-badge geometry implemented; correctness remains runtime-owned. |
+| Shared Answer Option | `AnswerOption` consumed by Practice and Simulation | `248:2394` | `MATCHED` | Default, selected, correct, incorrect, and omitted-compatible letter-badge geometry is one repository-owned primitive; correctness remains runtime-owned. |
 | Progress tab | `ProgressTab` | `842:9563`, `842:10822`, `842:10949`, `842:11057`, `842:11192`, `842:11410`, `842:11466`, `842:11568`, `842:11692` | `PARTIAL` | Figma week/focus/attention hierarchy is implemented over real local evidence, including explicit empty performance evidence and the existing Algorithms roadmap/diagnostics. Goal/cadence and activity sub-surfaces remain canonical conflicts; current-head screenshot comparison remains pending. |
 | Settings root and appearance | `SettingsTab` / `AppearanceSettingsScreen` | `822:7687`, `619:5237` | `MATCHED` | Root and appearance journeys pass in both dark and light iOS captures; current settings commands remain canonical. |
 | Language, notifications, data, legal, diagnostics | Existing settings route owners | `822:7687` and related Page 1 sections | `DESIGN_MISSING` | Routes are reachable, but no verified Figma-specific frame-to-code parity was completed for each detail surface. |
@@ -77,12 +79,14 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run validate:runtime-privacy-boundary`: passed.
 - `npm run validate:content-boundary`: passed.
 - `git diff --check`: passed.
-- `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-final`: passed; current source produced an iOS bundle with 1,342 modules.
-- A fresh current-head iOS dev-client was built and installed on a second iPhone 16 Pro simulator without invoking the destructive learning-state reset. Dark and light Maestro journeys each completed five screenshots covering Home, Practice Hub/setup, an unanswered coding question, the pause/end sheet, and a partial summary. Evidence is stored at `/tmp/patternly-figma-screens-2026-08-22-dark-fresh/` and `/tmp/patternly-figma-screens-2026-08-22-light-fresh/`.
-- The full RC runner remains intentionally unrun because its bootstrap step calls `audit/reset-learning-state` and would erase local learner records. The fresh dev-client journey used the current source bundle through an IPv4 Metro listener and is the current-head visual evidence for this pass.
+- `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-answer-option`: passed; the post-cutover source produced an iOS bundle with 1,343 modules.
+- `npm run qa:static`: passed after the post-cutover source changes: recovery inventory, typecheck, 544 tests, content boundary, and runtime privacy boundary.
+- The existing fresh iOS dev-client evidence was captured on commit `89a2fc0` on a second iPhone 16 Pro simulator without invoking the destructive learning-state reset. Dark and light Maestro journeys each completed five screenshots covering Home, Practice Hub/setup, an unanswered coding question, the pause/end sheet, and a partial summary. Evidence is stored at `/tmp/patternly-figma-screens-2026-08-22-dark-fresh/` and `/tmp/patternly-figma-screens-2026-08-22-light-fresh/`.
+- A post-`6ee92db` runtime feedback capture was not completed because CoreSimulatorService became unavailable before the safe Maestro inspection step; no new simulator evidence is claimed for the shared answer-option cutover.
+- The full RC runner remains intentionally unrun because its bootstrap step calls `audit/reset-learning-state` and would erase local learner records. The reference journey used the pre-`6ee92db` source bundle through an IPv4 Metro listener; it is retained as prior visual evidence, not as post-cutover proof.
 - Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, and route ownership tests pass.
 
-Not verified here: Android, signed/distribution builds, physical-device rendering, full 200% large-text traversal across every route, reduced-motion runtime capture, and every Figma operational/recovery state.
+Not verified here: Android, signed/distribution builds, physical-device rendering, full 200% large-text traversal across every route, reduced-motion runtime capture, post-`6ee92db` simulator rendering, and every Figma operational/recovery state.
 
 ## Deletion and dead-code review
 
