@@ -4,9 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`
 Verified and pushed SHA: `b987b87a00ec53053c2c37bbae1e7b2d5a928da5`
-Current local verification SHA: `736d32a`
+Current local verification SHA: `3e6a282`
 
 ## Outcome
 
@@ -63,7 +63,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Shared Button | `Button` | `141:817` | `MATCHED` | Primary, pressed, disabled, secondary, ghost, and destructive contracts consolidated. |
 | Shared Screen Header | `ScreenHeader` | `140:881` | `MATCHED` | Back touch target, context, title, description, and large-text multiplier implemented and tested. |
 | Shared Answer Option | `AnswerOption` consumed by Practice and Simulation | `248:2394` | `MATCHED` | Default, selected, correct, incorrect, and omitted-compatible letter-badge geometry is one repository-owned primitive; correctness remains runtime-owned. |
-| Progress tab | `ProgressTab` | `842:9563`, `842:10822`, `842:10949`, `842:11057`, `842:11192`, `842:11410`, `842:11466`, `842:11568`, `842:11692` | `PARTIAL` | Figma week/focus/attention hierarchy is implemented over real local evidence, including the compact Current focus card with truthful evidence-only percentage and the existing Algorithms roadmap/diagnostics. Goal/cadence and activity sub-surfaces remain canonical conflicts; current-head screenshot comparison remains pending. |
+| Progress tab | `ProgressTab` | `842:9563`, `842:10822`, `842:10949`, `842:11057`, `842:11192`, `842:11410`, `842:11466`, `842:11568`, `842:11692` | `PARTIAL` | Figma week/focus/attention hierarchy is implemented over real local evidence, including the 30/36 title, 28 px section rhythm, 40 px selector, borderless 14 px attention cards, compact Current focus card with truthful evidence-only percentage, and existing Algorithms roadmap/diagnostics. Goal/cadence and activity sub-surfaces remain canonical conflicts; current-head screenshot comparison remains pending. |
 | Settings root and appearance | `SettingsTab` / `AppearanceSettingsScreen` | `822:7687`, `619:5237` | `MATCHED` | Root and appearance journeys pass in both dark and light iOS captures; current settings commands remain canonical. |
 | Language, notifications, data, legal, diagnostics | Existing settings route owners | `822:7687` and related Page 1 sections | `DESIGN_MISSING` | Routes are reachable, but no verified Figma-specific frame-to-code parity was completed for each detail surface. |
 | Exam, exam review, result, answer review | `ExamScreen`, `ExamReviewScreen`, `ResultScreen`, `AnswerReviewScreen` | No direct current-state authority mapped | `DESIGN_MISSING` | Existing behavior and actions remain unchanged. |
@@ -87,6 +87,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - Focused Practice Hub/session accessibility tests: 14 passed after the Figma spacing/type refinement.
 - Focused Practice Setup/session accessibility tests: 44 passed after the compact segmented-control cutover.
 - Focused Home/result/simulation parity tests: 26 passed after the result-summary row and title cutover.
+- Focused Progress/Home shell/projection tests: 23 passed after the Progress spacing/card cutover.
 - `git diff --check`: passed.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows`: passed; the post-summary-cutover source produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-progress-focus`: passed; the latest Home/Progress source produced an iOS bundle with 1,343 modules.
@@ -102,9 +103,11 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-practice-setup`: passed; the compact Practice Setup source produced an iOS bundle with 1,343 modules.
 - `npm run qa:static`: passed on `736d32a`: recovery inventory, typecheck, 544/544 tests, content boundary, and runtime privacy boundary.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows-v2`: passed; the latest practice and simulation summary source produced an iOS bundle with 1,343 modules.
+- `npm run qa:static`: passed on `3e6a282`: recovery inventory, typecheck, 544/544 tests, content boundary, and runtime privacy boundary.
+- `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-progress-v2`: passed; the latest Progress source produced an iOS bundle with 1,343 modules.
 - The existing fresh iOS dev-client evidence was captured on commit `89a2fc0` on a second iPhone 16 Pro simulator without invoking the destructive learning-state reset. Dark and light Maestro journeys each completed five screenshots covering Home, Practice Hub/setup, an unanswered coding question, the pause/end sheet, and a partial summary. Evidence is stored at `/tmp/patternly-figma-screens-2026-08-22-dark-fresh/` and `/tmp/patternly-figma-screens-2026-08-22-light-fresh/`.
 - A post-`6ee92db`/`db9c637` runtime feedback or summary capture was not completed because CoreSimulatorService became unavailable before the safe Maestro inspection step; no new simulator evidence is claimed for these cutovers.
-- A post-`736d32a` Home/Progress/track-selection/Practice Hub/Practice Setup/practice-summary/simulation-summary runtime capture was not completed because CoreSimulatorService remains unavailable; source, focused tests, full QA, and iOS export verify the cutovers, but no new screenshot evidence is claimed.
+- A post-`3e6a282` Home/Progress/track-selection/Practice Hub/Practice Setup/practice-summary/simulation-summary runtime capture was not completed because CoreSimulatorService remains unavailable; source, focused tests, full QA, and iOS export verify the cutovers, but no new screenshot evidence is claimed.
 - The full RC runner remains intentionally unrun because its bootstrap step calls `audit/reset-learning-state` and would erase local learner records. The reference journey used the pre-`6ee92db` source bundle through an IPv4 Metro listener; it is retained as prior visual evidence, not as post-cutover proof.
 - Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, and route ownership tests pass.
 
