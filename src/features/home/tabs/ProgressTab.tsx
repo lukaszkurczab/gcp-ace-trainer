@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Badge, Button, Card, Icon, IconTile, ProgressBar, type IconName } from "../../../components";
+import { Badge, Button, Card, Icon, IconTile, ProgressBar } from "../../../components";
 import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
@@ -43,10 +43,9 @@ export function ProgressTab({
   const focus = model.algorithmsProgress?.currentFocus;
   const focusTitle = focus?.title ?? model.performanceScores[0]?.label ?? activeTrack.shortTitle;
   const focusProgress = focus?.showProgress ? focus.progressPercent : model.performanceScores[0]?.percent ?? 0;
-  const focusDetail = focus?.explanation ?? model.performanceScores[0]?.detail ?? model.activitySummary.detail;
-  const focusIcon: IconName = activeTrack.familyId === "certification" ? "cloud" : "practice";
   const focusAction = model.algorithmsProgress?.priority.primaryAction ?? model.reviewAction;
   const focusActionLabel = model.algorithmsProgress ? "Open practice" : model.reviewActionLabel;
+  const hasFocusEvidence = focus?.showProgress === true || model.performanceScores.length > 0;
   const weekValue = model.activitySummary.value;
   const progressRatio = focusProgress > 0 ? Math.min(1, focusProgress / 100) : weekValue > 0 ? 1 : 0;
 
@@ -83,16 +82,12 @@ export function ProgressTab({
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("Current focus")}</Text>
         <Card style={styles.focusCard}>
-          <View style={styles.focusHeader}>
-            <View style={styles.focusCopy}>
-              <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{t(focusTitle)}</Text>
-              <Text style={styles.focusSubtitle}>{t(focus?.showProgress ? "Recent effectiveness" : "Local evidence")}</Text>
-            </View>
-            <IconTile name={focusIcon} size={32} tone="primary" />
-          </View>
-          <Text style={styles.focusPercent}>{focusProgress}%</Text>
-          <Text style={styles.focusDetail}>{t(focusDetail)}</Text>
-          <ProgressBar progress={progressRatio} tone="primary" />
+          <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{t(focusTitle)}</Text>
+          {hasFocusEvidence ? (
+            <Text maxFontSizeMultiplier={2} style={styles.focusPercent}>{focusProgress}%</Text>
+          ) : (
+            <Text maxFontSizeMultiplier={2} style={styles.focusEmpty}>{t("No evidence yet")}</Text>
+          )}
           {focusAction && onProgressAction ? (
             <Button onPress={() => onProgressAction(focusAction)} variant="ghost">
               {t(focusActionLabel)}
@@ -228,13 +223,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   weekAction: { ...typography.small, color: palette.primary },
   section: { gap: spacing.md },
   sectionHeading: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
-  focusCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.sm, padding: spacing.lg },
-  focusHeader: { alignItems: "flex-start", flexDirection: "row", gap: spacing.md, justifyContent: "space-between" },
-  focusCopy: { flex: 1, gap: spacing.xs },
-  focusTitle: { ...typography.heading, color: palette.textPrimary },
-  focusSubtitle: { ...typography.small, color: palette.textSecondary },
-  focusPercent: { color: palette.textPrimary, fontSize: 34, fontWeight: "700", lineHeight: 40 },
-  focusDetail: { ...typography.small, color: palette.textSecondary },
+  focusCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 14, gap: spacing.md, padding: spacing.lg },
+  focusTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  focusPercent: { color: palette.textPrimary, fontSize: 36, fontWeight: "700", lineHeight: 40 },
+  focusEmpty: { ...typography.small, color: palette.textSecondary },
   attentionCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.sm, padding: spacing.lg },
   emptyAttentionCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.xs, padding: spacing.lg },
   attentionTitleRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
