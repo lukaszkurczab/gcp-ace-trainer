@@ -38,7 +38,7 @@ test("local remote-client boundary is explicit and has no implicit endpoint", ()
 test("public environment accepts the complete sandbox-only Firebase domain configuration", () => {
   const environment = parseConfiguredPublicEnvironment(sandboxConfiguration);
   assert.equal(environment.environment, "sandbox");
-  assert.deepEqual(Object.values(createApprovedClientRegistry({ kind: "configured", value: environment })).map((client) => client.availability), APPROVED_CLIENT_IDS.map(() => "provider_not_composed"));
+  assert.deepEqual(Object.values(createApprovedClientRegistry({ kind: "configured", value: environment })).map((client) => client.availability), ["available", "provider_not_composed", "provider_not_composed", "provider_not_composed", "provider_not_composed"]);
 });
 
 test("public environment rejects extra keys, incomplete values, unsafe URLs, and production Firebase defaults", () => {
@@ -49,7 +49,7 @@ test("public environment rejects extra keys, incomplete values, unsafe URLs, and
 
 const runtimePrivacyValidator = resolve("scripts/validateRuntimePrivacyBoundary.mjs");
 const fixtureApprovedRegistry = `export const APPROVED_CLIENT_ADAPTERS = Object.freeze({
-  account_auth: Object.freeze({ exportName: "createAccountAuthClientAdapter", fileName: "AccountAuthClientAdapter.ts" }),
+  account_auth: Object.freeze({ exportName: "createPatternlyApiClient", fileName: "PatternlyApiClientAdapter.ts" }),
   entitlement: Object.freeze({ exportName: "createEntitlementClientAdapter", fileName: "EntitlementClientAdapter.ts" }),
   package_delivery: Object.freeze({ exportName: "createPackageDeliveryClientAdapter", fileName: "PackageDeliveryClientAdapter.ts" }),
   analytics_crash: Object.freeze({ exportName: "createAnalyticsCrashClientAdapter", fileName: "AnalyticsCrashClientAdapter.ts" }),
@@ -79,18 +79,18 @@ function validatePrivacyFixture(files: Readonly<Record<string, string>>): Return
 
 test("runtime privacy keeps console and raw errors forbidden inside adapters and rejects sibling client paths", () => {
   const cleanAdapter = validatePrivacyFixture({
-    "src/infrastructure/clients/AccountAuthClientAdapter.ts": "export function createAccountAuthClientAdapter() { return fetch(\"https://example.invalid\"); }\n",
+    "src/infrastructure/clients/PatternlyApiClientAdapter.ts": "export function createPatternlyApiClient() { return fetch(\"https://example.invalid\"); }\n",
   });
   assert.equal(cleanAdapter.status, 0, String(cleanAdapter.stderr ?? ""));
 
   const adapterConsole = validatePrivacyFixture({
-    "src/infrastructure/clients/AccountAuthClientAdapter.ts": "console.error(\"leak\");\nexport function createAccountAuthClientAdapter() { return fetch(\"https://example.invalid\"); }\n",
+    "src/infrastructure/clients/PatternlyApiClientAdapter.ts": "console.error(\"leak\");\nexport function createPatternlyApiClient() { return fetch(\"https://example.invalid\"); }\n",
   });
   assert.equal(adapterConsole.status, 1);
   assert.match(String(adapterConsole.stderr ?? ""), /production console diagnostic/u);
 
   const adapterRawError = validatePrivacyFixture({
-    "src/infrastructure/clients/AccountAuthClientAdapter.ts": "export function createAccountAuthClientAdapter(error: Error) { return error.message + fetch(\"https://example.invalid\"); }\n",
+    "src/infrastructure/clients/PatternlyApiClientAdapter.ts": "export function createPatternlyApiClient(error: Error) { return error.message + fetch(\"https://example.invalid\"); }\n",
   });
   assert.equal(adapterRawError.status, 1);
   assert.match(String(adapterRawError.stderr ?? ""), /raw operational error message/u);

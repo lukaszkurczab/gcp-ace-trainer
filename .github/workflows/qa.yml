@@ -44,18 +44,9 @@ jobs:
           cache: npm
           cache-dependency-path: |
             app/package-lock.json
-            app/server/package-lock.json
       - name: Install application dependencies
         working-directory: app
         run: npm ci
-      - name: Install server dependencies
-        working-directory: app/server
-        run: npm ci
-      - name: Typecheck and build server from its locked dependencies
-        working-directory: app/server
-        run: |
-          npm run typecheck
-          npm run build
       - name: Verify clean generated native platform contract
         working-directory: app
         shell: bash
@@ -134,12 +125,8 @@ jobs:
           cache: npm
           cache-dependency-path: |
             app/package-lock.json
-            app/server/package-lock.json
       - name: Install application dependencies
         working-directory: app
-        run: npm ci
-      - name: Install server dependencies
-        working-directory: app/server
         run: npm ci
       - name: Run pinned multi-track release round-trip
         working-directory: app

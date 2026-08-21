@@ -9,9 +9,9 @@ import { contentPackageRuntimeOwner } from "../src/application/contentPackageRun
 import { GENERATED_FREE_NODE_PACKAGES } from "../src/content/bundled/generatedFreeNodePackages";
 import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 
-const appRoot = process.cwd();
-const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? resolve(appRoot, "../patternly-content");
-const lock = JSON.parse(readFileSync(join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
+const frontendRoot = process.cwd();
+const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? resolve(frontendRoot, "../patternly-content");
+const lock = JSON.parse(readFileSync(join(frontendRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
 
 test("every bundled Free-node package exactly matches its producer artifact and release lock", async () => {
   await prepareBundledTestPackages();
@@ -35,7 +35,7 @@ test("every bundled Free-node package exactly matches its producer artifact and 
 });
 
 test("CI reads the current per-artifact content lock instead of retired aggregate lock fields", () => {
-  const workflow = readFileSync(join(appRoot, ".github", "workflows", "qa.yml"), "utf8");
+  const workflow = readFileSync(join(frontendRoot, ".github", "workflows", "qa.yml"), "utf8");
   assert.match(workflow, /lock\.schemaVersion !== 2/u);
   assert.match(workflow, /aws-certified-solutions-architect-associate.*backend-system-design-interview.*coding-interview-dsa-problem-solving.*frontend-system-design-interview.*google-cloud-associate-cloud-engineer.*microsoft-azure-administrator-associate-az-104.*microsoft-azure-ai-fundamentals-ai-901.*object-oriented-design-interview/su);
   assert.match(workflow, /lock\.artifacts\.at\(-1\)\.producerCommit/u);

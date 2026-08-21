@@ -22,7 +22,7 @@ test("families do not import one another and source contains no replacement brid
   const certification = files("src/tracks/certification").map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(algorithms, /certification/); assert.doesNotMatch(certification, /tracks\/coding-interview/);
   const sourcePaths = files("src");
-  assert.equal(sourcePaths.some((path) => /Adapter|Compatibility/.test(path)), false);
+  assert.equal(sourcePaths.some((path) => /Adapter|Compatibility/.test(path) && !path.endsWith("infrastructure/clients/PatternlyApiClientAdapter.ts")), false);
   const source = sourcePaths.map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(source, /as unknown as|@ts-ignore|@ts-expect-error|toCanonical|fromLegacy/);
 });

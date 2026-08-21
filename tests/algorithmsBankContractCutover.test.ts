@@ -78,7 +78,7 @@ function files(root: string): readonly string[] { return readdirSync(root, { wit
 test("runtime has no network or test-fixture ingress and Algorithms has no legacy group/item contract", () => {
   const runtime = files("src").filter((path) => /\.(ts|tsx)$/.test(path)
     && !path.endsWith("content/bundled/generatedFreeNodePackages.ts")
-    && !path.endsWith("infrastructure/clients/AccountAuthClientAdapter.ts"))
+    && !path.endsWith("infrastructure/clients/PatternlyApiClientAdapter.ts"))
     .map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(runtime, /from\s+["'][^"']*(?:tests\/|fixtures)[^"']*["']/);
   assert.doesNotMatch(runtime, /\b(?:fetch|XMLHttpRequest|axios|HttpContentSource|loadTrackContent)\b/);

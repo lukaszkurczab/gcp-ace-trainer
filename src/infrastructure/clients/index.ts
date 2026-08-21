@@ -1,3 +1,3 @@
 export * from "./approvedClientRegistry";
-export * from "./AccountAuthClientAdapter";
+export * from "./PatternlyApiClientAdapter";
 export * from "./publicEnvironment";
