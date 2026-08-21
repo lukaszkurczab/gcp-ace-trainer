@@ -16,12 +16,16 @@ test("session control labels identify the dimension, ordering position, and comm
 });
 
 test("interactive Algorithms session controls use real 48-point minimum geometry without hit-area substitutes", () => {
+  const answerOption = source("src/components/AnswerOption.tsx");
   const button = source("src/components/Button.tsx");
   const practiceControls = source("src/features/practice/PracticeResponseControls.tsx");
   const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
-  const surfaces = `${practiceControls}\n${feedback}`;
+  const surfaces = `${answerOption}\n${practiceControls}\n${feedback}`;
 
+  assert.match(answerOption, /option: \{[^}]*borderWidth:\s*1\.5[^}]*minHeight:\s*54[^}]*padding:/);
+  assert.match(answerOption, /letterBadge:\s*\{[^}]*minHeight:\s*24[^}]*minWidth:\s*24/);
+  assert.match(answerOption, /<Text maxFontSizeMultiplier=\{2\}/);
   assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*48[\s\S]*?minWidth:\s*48/);
   assert.match(practiceControls, /moveButton:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(practiceControls, /valueOption:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
