@@ -120,8 +120,8 @@ function ChoiceOption({ editable, index, itemId, onPress, option, role }: Readon
       style={({ pressed }) => [styles.choiceOption, choiceStateStyle(option.state, styles), pressed && editable ? styles.pressed : null, !editable ? styles.locked : null]}
       testID={itemId ? runtimeSelectors.session.option(itemId, option.id) : undefined}
     >
-      <View style={[styles.optionLetter, option.state === "correct" || option.state === "omitted_correct" ? styles.optionLetterCorrect : null, option.state === "incorrect" ? styles.optionLetterIncorrect : null]}>
-        <Text style={[styles.optionLetterText, option.state === "correct" || option.state === "omitted_correct" || option.state === "incorrect" ? styles.optionLetterTextOnAction : null]}>{String.fromCharCode(65 + index)}</Text>
+      <View style={[styles.optionLetter, option.state === "selected" ? styles.optionLetterSelected : null, option.state === "correct" || option.state === "omitted_correct" ? styles.optionLetterCorrect : null, option.state === "incorrect" ? styles.optionLetterIncorrect : null]}>
+        <Text style={[styles.optionLetterText, option.state === "selected" ? styles.optionLetterTextSelected : null, option.state === "correct" || option.state === "omitted_correct" ? styles.optionLetterTextCorrect : null, option.state === "incorrect" ? styles.optionLetterTextIncorrect : null]}>{String.fromCharCode(65 + index)}</Text>
       </View>
       <Text style={[styles.optionText, option.state === "correct" || option.state === "omitted_correct" || option.state === "incorrect" ? styles.feedbackText : null]}>{option.text}</Text>
     </Pressable>
@@ -176,10 +176,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   moveText: { ...typography.bodyStrong, color: palette.textPrimary },
   optionText: { ...typography.body, color: palette.textPrimary, flex: 1 },
   optionLetter: { alignItems: "center", backgroundColor: palette.border, borderRadius: radius.sm, justifyContent: "center", minHeight: 24, minWidth: 24, padding: spacing.xs },
-  optionLetterCorrect: { backgroundColor: palette.success },
-  optionLetterIncorrect: { backgroundColor: palette.danger },
+  optionLetterCorrect: { backgroundColor: palette.border },
+  optionLetterIncorrect: { backgroundColor: palette.border },
+  optionLetterSelected: { backgroundColor: palette.border },
   optionLetterText: { color: palette.textPrimary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
-  optionLetterTextOnAction: { color: palette.onPrimary },
+  optionLetterTextCorrect: { color: palette.success },
+  optionLetterTextIncorrect: { color: palette.danger },
+  optionLetterTextSelected: { color: palette.primary },
   orderActions: { flexDirection: "row", flexShrink: 0, gap: spacing.xs },
   orderIndex: { ...typography.bodyStrong, color: palette.accentPurple, minWidth: 20 },
   orderRow: { alignItems: "flex-start", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, minHeight: 64, padding: spacing.md },

@@ -16,10 +16,13 @@ export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ fee
   const [detailsOpen, setDetailsOpen] = useState(false);
   return (
     <View style={styles.container} testID={runtimeSelectors.session.feedback(itemId)}>
-      <Text style={styles.result} testID={runtimeSelectors.session.result(itemId, feedback.result)}>
-        {feedback.result === "correct" ? t("Correct") : t("Incorrect")}
-      </Text>
-      <Text accessibilityLabel={`${t("Verified answer explanation.")} ${feedback.reason}`} style={styles.reason} testID={runtimeSelectors.session.reason(itemId)}>{feedback.reason}</Text>
+      <View accessible accessibilityLabel={`${t("Answer result")}: ${t(formatFeedbackResult(feedback.result))}`}>
+        <Text style={styles.result} testID={runtimeSelectors.session.result(itemId, feedback.result)}>{t(formatFeedbackResult(feedback.result))}</Text>
+      </View>
+      <View style={styles.reasonPanel}>
+        <Text style={styles.reasonLabel}>{t("Reason")}</Text>
+        <Text accessibilityLabel={`${t("Verified answer explanation.")} ${feedback.reason}`} style={styles.reason} testID={runtimeSelectors.session.reason(itemId)}>{feedback.reason}</Text>
+      </View>
       <Pressable
         accessibilityLabel={t(detailsOpen ? "Hide answer details" : "Show answer details")}
         accessibilityRole="button"
@@ -36,12 +39,25 @@ export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ fee
   );
 }
 
+function formatFeedbackResult(result: PracticeFeedback["result"]): string {
+  switch (result) {
+    case "correct":
+      return "Correct";
+    case "partial":
+      return "Partial";
+    case "incorrect":
+      return "Incorrect";
+  }
+}
+
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  container: { backgroundColor: palette.elevatedSurface, borderColor: palette.borderStrong, borderRadius: radius.xl, borderWidth: 1, gap: spacing.lg, padding: spacing.xxl },
+  container: { gap: spacing.md },
   details: { gap: spacing.md },
   detailsIndicator: { ...typography.bodyStrong, color: palette.accentPurple },
   detailsLabel: { ...typography.bodyStrong, color: palette.textPrimary },
   detailsToggle: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 48 },
-  reason: { ...typography.bodyStrong, color: palette.textPrimary },
-  result: { ...typography.caption, color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
+  reason: { ...typography.body, color: palette.textSecondary },
+  reasonLabel: { ...typography.caption, color: palette.textSecondary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
+  reasonPanel: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },
+  result: { ...typography.caption, alignSelf: "flex-start", color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
 });

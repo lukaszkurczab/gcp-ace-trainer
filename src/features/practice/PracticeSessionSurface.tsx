@@ -1,6 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Button, Card } from "../../components";
+import { Button } from "../../components";
 import type { ContentItemRef, TrackId } from "../../domain";
 import type { SessionMetricPresentation } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
@@ -123,18 +123,15 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
 function QuestionCard({ question }: Readonly<{ question: PracticeQuestionPresentation }>) {
   const styles = useThemedStyles(createStyles);
   return (
-    <Card
-      style={styles.questionCard}
-      testID={runtimeSelectors.session.question(question.itemId)}
-      variant="layered"
-    >
-      <Text style={styles.prompt}>{question.prompt}</Text>
+    <View style={styles.questionCard} testID={runtimeSelectors.session.question(question.itemId)}>
+      <Text maxFontSizeMultiplier={2} style={styles.questionLabel}>{"QUESTION"}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.prompt}>{question.prompt}</Text>
       {question.constraints?.length ? (
         <View style={styles.constraints}>
           {question.constraints.map((constraint) => <Text key={constraint} style={styles.constraint}>• {constraint}</Text>)}
         </View>
       ) : null}
-    </Card>
+    </View>
   );
 }
 
@@ -222,17 +219,18 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   actions: { gap: spacing.sm },
   constraint: { ...typography.small, color: palette.textSecondary },
   constraints: { gap: spacing.xs },
-  exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.borderStrong, borderRadius: radius.lg, borderWidth: 1, gap: spacing.md, maxWidth: 480, padding: spacing.lg, width: "100%" },
+  exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.button, borderTopRightRadius: radius.button, borderWidth: 1, elevation: 8, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, width: "100%" },
   exitTitle: { ...typography.heading, color: palette.textPrimary },
   notice: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },
   noticeError: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
   noticeSuccess: { backgroundColor: palette.successSoft, borderColor: palette.success },
   noticeText: { ...typography.small, color: palette.textSecondary },
-  modalBackdrop: { alignItems: "center", backgroundColor: "rgba(0, 0, 0, 0.56)", flex: 1, justifyContent: "center", padding: spacing.lg },
+  modalBackdrop: { backgroundColor: "rgba(0, 0, 0, 0.56)", flex: 1, justifyContent: "flex-end" },
   modalDismissArea: { ...StyleSheet.absoluteFill },
   preparing: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, gap: spacing.sm, minHeight: 160, justifyContent: "center", padding: spacing.xl },
   preparingTitle: { ...typography.heading, color: palette.textPrimary },
-  prompt: { ...typography.heading, color: palette.textPrimary },
+  questionLabel: { ...typography.caption, color: palette.primary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
+  prompt: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", letterSpacing: -0.3, lineHeight: 28 },
+  questionCard: { gap: spacing.md },
   questionAndResponse: { gap: spacing.lg },
-  questionCard: { gap: spacing.lg },
 });
