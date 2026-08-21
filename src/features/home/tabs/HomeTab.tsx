@@ -169,16 +169,10 @@ export function HomeTab({
       </View>
       <View style={styles.detailSection}>
         <Text style={styles.sectionLabel}>{t("Current focus")}</Text>
-        <Card style={styles.focusCard}>
-          <View style={styles.focusHeader}>
-            <View style={styles.focusCopy}>
-              <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{formatPracticeTopicTitle(model.heroTitle, t)}</Text>
-              <Text maxFontSizeMultiplier={2} style={styles.focusDetail}>{formatPracticeTopicDetail(model.heroSubtitle, t)}</Text>
-            </View>
-            <Icon color={palette.accentTeal} name={isCodingInterviewTrack ? "route" : "cloud"} size={20} />
-          </View>
+        <View style={[styles.focusRow, largeText ? styles.focusRowLargeText : null]}>
+          <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{formatPracticeTopicTitle(model.heroTitle, t)}</Text>
           <Button onPress={onChooseTopic} variant="ghost">{t("Open focus")}</Button>
-        </Card>
+        </View>
       </View>
       <View style={styles.detailSection}>
         <Text style={styles.sectionLabel}>{t("Recent activity")}</Text>
@@ -186,16 +180,15 @@ export function HomeTab({
           <View style={styles.activityList}>
             {trainingAttempts.slice(0, 3).map((attempt) => (
               <View key={attempt.id} style={styles.activityRow}>
-                <View style={styles.activityDot} />
                 <View style={styles.activityCopy}>
-                  <Text style={styles.activityTitle}>{t(modeLabel(attempt.modeId))}</Text>
-                  <Text style={styles.activityDetail}>{`${relativeDay(attempt.answeredAt)} · ${attempt.result.kind}`}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(modeLabel(attempt.modeId))}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{`${relativeDay(attempt.answeredAt)} · ${attempt.result.kind}`}</Text>
                 </View>
               </View>
             ))}
           </View>
         ) : (
-          <Card style={styles.emptyActivityCard}><Text style={styles.activityDetail}>{t("No activity yet")}</Text></Card>
+          <Text maxFontSizeMultiplier={2} style={styles.activityEmpty}>{t("No activity yet")}</Text>
         )}
       </View>
     </>
@@ -433,45 +426,29 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   detailSection: {
     gap: spacing.sm,
   },
-  focusCard: {
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
-    gap: spacing.sm,
-    padding: spacing.lg,
-  },
-  focusHeader: {
-    alignItems: "flex-start",
+  focusRow: {
+    alignItems: "center",
     flexDirection: "row",
     gap: spacing.md,
     justifyContent: "space-between",
   },
-  focusCopy: {
-    flex: 1,
-    gap: spacing.xs,
-    minWidth: 0,
+  focusRowLargeText: {
+    alignItems: "flex-start",
+    flexDirection: "column",
   },
   focusTitle: {
     ...typography.bodyStrong,
     color: palette.textPrimary,
-  },
-  focusDetail: {
-    ...typography.small,
-    color: palette.textSecondary,
+    flex: 1,
+    minWidth: 0,
   },
   activityList: {
-    gap: spacing.sm,
+    gap: 0,
   },
   activityRow: {
-    alignItems: "center",
     flexDirection: "row",
-    gap: spacing.sm,
-    minHeight: 48,
-  },
-  activityDot: {
-    backgroundColor: palette.accentTeal,
-    borderRadius: 4,
-    height: 8,
-    width: 8,
+    minHeight: 44,
+    paddingVertical: spacing.xs,
   },
   activityCopy: {
     flex: 1,
@@ -485,9 +462,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     ...typography.caption,
     color: palette.textSecondary,
   },
-  emptyActivityCard: {
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
-    padding: spacing.lg,
+  activityEmpty: {
+    ...typography.small,
+    color: palette.textSecondary,
   },
 });
