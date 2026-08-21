@@ -33,7 +33,7 @@ export function BottomTabBar<TId extends string>({
   return (
     <View
       accessibilityRole="tablist"
-      style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}
+      style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 34) }]}
       testID={testID}
     >
       {items.map((item) => {
@@ -48,6 +48,7 @@ export function BottomTabBar<TId extends string>({
             onPress={() => onChange(item.id)}
             style={({ pressed }) => [
               styles.tabButton,
+              isActive ? styles.tabButtonActive : null,
               pressed ? styles.tabButtonPressed : null,
             ]}
             testID={`${testID ?? "bottom-tab-bar"}-${item.id}`}
@@ -83,7 +84,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     alignItems: "center",
     backgroundColor: palette.navigation.surface,
     borderColor: palette.navigation.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1,
     bottom: 0,
     flexDirection: "row",
     justifyContent: "space-around",
@@ -106,6 +107,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     minHeight: 60,
     paddingHorizontal: spacing.xs,
     paddingVertical: spacing.sm,
+  },
+  tabButtonActive: {
+    minHeight: 66,
   },
   tabButtonPressed: {
     backgroundColor: palette.navigation.pressedSurface,

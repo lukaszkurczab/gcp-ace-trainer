@@ -5,7 +5,7 @@ import type { AppColors } from "./tokens";
 export function buildNavigationTheme(colors: AppColors): Theme {
   return {
     ...DefaultTheme,
-    dark: colors.background === "#0C1324",
+    dark: colors.background === "#081328",
     colors: {
       ...DefaultTheme.colors,
       background: colors.background,

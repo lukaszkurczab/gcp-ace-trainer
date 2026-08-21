@@ -22,7 +22,7 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
   const surfaces = `${practiceControls}\n${feedback}`;
 
-  assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*52[\s\S]*?minWidth:\s*48/);
+  assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*48[\s\S]*?minWidth:\s*48/);
   assert.match(practiceControls, /moveButton:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(practiceControls, /valueOption:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(feedback, /detailsToggle:\s*\{[^}]*minHeight:\s*48/);
@@ -93,7 +93,7 @@ test("large text can grow session chrome and controls without fixed interactive 
   const practice = source("src/features/practice/PracticeResponseControls.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
 
-  assert.match(shell, /topBar:\s*\{[\s\S]*?minHeight:\s*56/);
+  assert.match(shell, /topBar:\s*\{[\s\S]*?minHeight:\s*49/);
   assert.doesNotMatch(shell, /numberOfLines=\{?1\}?/);
   assert.doesNotMatch(shell, /topBar:\s*\{[^}]*\bheight:\s*56/);
   assert.match(practice, /orderRow:\s*\{[^}]*alignItems:\s*"flex-start"/);

@@ -58,7 +58,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   content: {
     flex: 1,
     gap: spacing.lg,
-    padding: spacing.lg
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl
   },
   contentCompact: {
     gap: spacing.md,
@@ -70,9 +72,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   footer: {
     backgroundColor: palette.background,
     borderColor: palette.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1,
     gap: spacing.md,
-    padding: spacing.lg
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg
   },
   footerCompact: {
     padding: spacing.md

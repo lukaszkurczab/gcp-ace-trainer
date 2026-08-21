@@ -65,7 +65,7 @@ export function HomeTab({
   return (
     <>
       <View style={styles.pageIntro}>
-        <Text style={styles.pageTitle}>{t("Your next practice")}</Text>
+        <Text style={styles.pageTitle}>{t("Home")}</Text>
         <Pressable
           accessibilityRole="button"
           onPress={onChangeTrack}
@@ -131,7 +131,7 @@ export function HomeTab({
           testID={resumeSessionId
             ? runtimeSelectors.resume.continue(resumeSessionId)
             : undefined}
-          variant="secondary"
+          variant="primary"
         >
           {t(decisionLabel)}
         </Button>
@@ -264,7 +264,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     textTransform: "uppercase",
   },
   decisionCard: {
-    backgroundColor: palette.navigation.surface,
+    backgroundColor: palette.surface,
     borderColor: palette.navigation.active,
     borderRadius: 22,
     elevation: 0,

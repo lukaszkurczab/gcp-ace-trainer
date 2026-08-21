@@ -3,7 +3,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { AppShellHeader, Button, Card, EmptyState, LoadingState, Screen, SectionHeader } from "../../components";
+import { AppShellHeader, Button, Card, EmptyState, LoadingState, Screen, ScreenHeader, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { CODING_INTERVIEW_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
@@ -179,23 +179,37 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
   return (
     <View style={styles.shell} testID={runtimeSelectors.practice.setupRoot()}>
-      <Screen edges={["top", "bottom"]}>
-        <AppShellHeader
+      <Screen
+        edges={["top", "bottom"]}
+        footer={compactCodingPractice ? (
+          <View style={styles.footerActions}>
+            {setupError ? <Text accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
+            <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
+          </View>
+        ) : undefined}
+      >
+        {compactCodingPractice ? <ScreenHeader
+          backAction={{ onPress: () => goBackOrHome(navigation) }}
+          context={t("Practice")}
+          description={t("Adjust your default practice. Session size and feedback apply across tracks.")}
+          title={t("Practice settings")}
+          titleTestID={runtimeSelectors.practice.customSetupTitle()}
+        /> : <AppShellHeader
           backAction={{ onPress: () => goBackOrHome(navigation) }}
           context={t(activeTrack.title)}
-        />
+        />}
 
-        <View style={[styles.intro, compactCodingPractice ? styles.compactIntro : null]}>
+        {!compactCodingPractice ? <View style={styles.intro}>
           <Text
-            style={[styles.title, compactCodingPractice ? styles.compactTitle : null]}
-            testID={algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? runtimeSelectors.practice.customSetupTitle() : undefined}
+            style={styles.title}
+            testID={compactCodingPractice ? runtimeSelectors.practice.customSetupTitle() : undefined}
           >
-            {t(algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? "Custom Practice" : "Practice setup")}
+            {t("Practice setup")}
           </Text>
-          <Text style={[styles.subtitle, compactCodingPractice ? styles.compactSubtitle : null]}>
+          <Text style={styles.subtitle}>
             {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : scenarioPractice ? t("Choose one competency. The session uses only its approved scenario questions.") : weakAreaReview ? t("Review only saved weak areas whose review time has arrived.") : mixedPractice ? t("Practice the approved interleaved Cloud question set.") : `${t("Configure the next session for")} ${formatPracticeTopicTitle(topic.title, t)}.`}
           </Text>
-        </View>
+        </View> : null}
 
         {focusPractice ? <View style={styles.section}>
           <SectionHeader title={t("Cloud domain")} subtitle={t("Required for Focus Practice")} tight />
@@ -265,10 +279,10 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </Card>
         ) : null}
 
-        <View style={styles.actions}>
+        {!compactCodingPractice ? <View style={styles.actions}>
           {setupError ? <Text accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
           <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
-        </View>
+        </View> : null}
       </Screen>
     </View>
   );
@@ -355,18 +369,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     ...typography.title,
     color: palette.textPrimary,
   },
-  compactTitle: {
-    fontSize: 28,
-    lineHeight: 34,
-  },
   subtitle: {
     ...typography.small,
     color: palette.textSecondary,
-  },
-  compactSubtitle: {
-    color: palette.textMuted,
-    fontSize: 13.5,
-    lineHeight: 19,
   },
   error: {
     ...typography.small,
@@ -567,6 +572,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   actions: {
     gap: spacing.md,
     marginTop: spacing.xl,
+  },
+  footerActions: {
+    gap: spacing.md,
   },
 });
 

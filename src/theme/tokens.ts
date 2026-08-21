@@ -15,8 +15,8 @@ export const colors = {
     onPrimary: "#FFFFFF",
     textSecondary: "#506176",
     textMuted: "#7B8798",
-    primary: "#2563EB",
-    primarySoft: "#E8F0FF",
+    primary: "#0F766E",
+    primarySoft: "#E6F6F4",
     success: "#15803D",
     successSoft: "#E8F7EE",
     warning: "#B45309",
@@ -87,22 +87,24 @@ export const colors = {
     }
   },
   dark: {
-    background: brand.nightNavy,
-    surface: "#111827",
-    elevatedSurface: "#1E293B",
-    border: "#263247",
+    // Figma authority: Page 1 and Patternly Library dark-mode contracts.
+    // Keep brand.nightNavy above unchanged because it is also the app-mark color.
+    background: "#081328",
+    surface: "#0E1B31",
+    elevatedSurface: "#0F172A",
+    border: "#1E293B",
     borderStrong: "#334155",
-    textPrimary: "#F8FAFC",
-    onPrimary: "#FFFFFF",
-    textSecondary: "#CBD5E1",
-    textMuted: "#94A3B8",
-    primary: "#8B5CF6",
-    primarySoft: "#2B2147",
-    success: "#6EE7A8",
+    textPrimary: "#F1F5F9",
+    onPrimary: "#081328",
+    textSecondary: "#AAB6C8",
+    textMuted: "#738198",
+    primary: "#20C997",
+    primarySoft: "#143A38",
+    success: "#34B564",
     successSoft: "#123B2A",
     warning: "#F6B44B",
     warningSoft: "#442B0B",
-    danger: "#FDA29B",
+    danger: "#FF6B6B",
     dangerSoft: "#4A1715",
     info: "#38BDF8",
     infoSoft: "#0B344A",
@@ -114,7 +116,7 @@ export const colors = {
     accentOrangeSoft: "#43240F",
     navigation: {
       surface: "#0E1B31",
-      border: "#F1F5F9",
+      border: "#1E293B",
       active: "#20C997",
       pressedSurface: "#0F172A",
       textPrimary: "#F1F5F9",
@@ -195,6 +197,7 @@ export const radius = {
   md: 8,
   lg: 12,
   xl: 16,
+  button: 14,
   sheet: 14,
   pill: 999
 } as const;
@@ -216,23 +219,23 @@ export const typography = {
     fontWeight: "700"
   },
   body: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 22,
     fontWeight: "400"
   },
   bodyStrong: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 18,
     fontWeight: "600"
   },
   small: {
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 22,
     fontWeight: "400"
   },
   caption: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 11,
+    lineHeight: 15,
     fontWeight: "500"
   },
   navigationLabel: {
@@ -242,7 +245,7 @@ export const typography = {
   },
   listRowTitle: {
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 17,
     fontWeight: "600"
   },
   listRowDetail: {

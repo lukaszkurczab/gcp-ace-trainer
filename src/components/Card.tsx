@@ -38,8 +38,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   card: {
     backgroundColor: palette.surface,
     borderColor: palette.border,
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.lg,
+    borderWidth: 1,
     gap: spacing.md,
     padding: spacing.lg
   },
@@ -57,8 +57,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     ...shadows.elevated,
     backgroundColor: palette.elevatedSurface,
     borderColor: palette.borderStrong,
-    borderRadius: radius.xl,
-    padding: spacing.xxl,
+    borderRadius: 22,
+    padding: spacing.xl,
   },
   tonal: {
     ...shadows.elevated,

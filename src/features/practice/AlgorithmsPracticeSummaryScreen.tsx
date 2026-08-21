@@ -89,7 +89,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   feedbackItems: { gap: spacing.lg },
   feedbackPrompt: { ...typography.bodyStrong, color: palette.textPrimary },
   feedbackTitle: { ...typography.bodyStrong, color: palette.textPrimary },
-  result: { gap: spacing.xl },
+  result: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 24, gap: spacing.xl, padding: spacing.xl, shadowOpacity: 0 },
   resultText: { ...typography.body, color: palette.textSecondary },
-  resultTitle: { ...typography.heading, color: palette.textPrimary },
+  resultTitle: { color: palette.textPrimary, fontSize: 32, fontWeight: "400", letterSpacing: -1, lineHeight: 39 },
 });

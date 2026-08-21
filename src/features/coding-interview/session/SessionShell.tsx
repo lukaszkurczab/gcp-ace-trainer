@@ -117,7 +117,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   topBar: {
     alignItems: "center",
     flexDirection: "row",
-    minHeight: 56,
+    minHeight: 49,
     paddingVertical: spacing.sm,
   },
   topBarLargeText: {

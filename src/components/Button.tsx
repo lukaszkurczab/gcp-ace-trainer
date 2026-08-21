@@ -56,7 +56,7 @@ export function Button({
       style={({ pressed }) => [
         styles.base,
         styles[variant],
-        pressed && !isDisabled ? styles.pressed : null,
+        pressed && !isDisabled ? [styles.pressed, styles[`${variant}Pressed`]] : null,
         isDisabled ? styles.disabled : null,
         style
       ]}
@@ -75,15 +75,15 @@ function getActivityColor(variant: ButtonVariant, palette: AppColors): string {
 const createStyles = (palette: AppColors) => StyleSheet.create({
   base: {
     alignItems: "center",
-    borderRadius: radius.lg,
+    borderRadius: radius.button,
     borderWidth: 1,
     flexDirection: "row",
     gap: spacing.sm,
     justifyContent: "center",
-    minHeight: 52,
+    minHeight: 48,
     minWidth: 48,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md
+    paddingHorizontal: spacing.xl,
+    paddingVertical: 15
   },
   primary: {
     backgroundColor: palette.primary,
@@ -94,19 +94,31 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderColor: palette.border
   },
   ghost: {
-    backgroundColor: palette.primarySoft,
-    borderColor: palette.primarySoft
+    backgroundColor: "transparent",
+    borderColor: "transparent"
   },
   destructive: {
     backgroundColor: palette.danger,
     borderColor: palette.danger
   },
   pressed: {
-    opacity: 0.82
+    opacity: 1
+  },
+  primaryPressed: {
+    backgroundColor: palette.primary === "#20C997" ? "#2DD4A8" : palette.primary,
+  },
+  secondaryPressed: {
+    backgroundColor: palette.elevatedSurface,
+  },
+  ghostPressed: {
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  destructivePressed: {
+    opacity: 0.86,
   },
   disabled: {
     backgroundColor: palette.elevatedSurface,
-    borderColor: palette.border
+    borderColor: palette.borderStrong,
   },
   spinner: {
     marginLeft: -spacing.xs
@@ -123,10 +135,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textPrimary
   },
   ghostLabel: {
-    color: palette.primary
+    color: palette.textSecondary
   },
   destructiveLabel: {
-    color: palette.onPrimary
+    color: palette.textPrimary
   },
   disabledLabel: {
     color: palette.textMuted

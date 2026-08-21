@@ -14,6 +14,7 @@ import {
   ListRow,
   LoadingState,
   Screen,
+  ScreenHeader,
   SectionHeader,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
@@ -26,7 +27,7 @@ import {
   loadReviewQueueItems,
 } from "../../application/learningReadModels";
 import { getAlgorithmsInterviewSimulationEntry } from "../../application/coding-interview";
-import { spacing, typography } from "../../theme";
+import { colorWithOpacity, radius, spacing, typography } from "../../theme";
 import {
   ALGORITHM_MODE_IDS,
 } from "../../tracks/coding-interview";
@@ -138,6 +139,8 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     trainingAttempts: data.trainingAttempts,
   });
   const modes = buildPracticeModes(activeTrack, data.hasReviewEvidence);
+  const primaryMode = modes[0]!;
+  const topicDetail = formatPracticeTopicDetail(topic.detail, t);
   function startSession(mode?: PracticeSessionMode | CertificationModeId) {
     const resolvedMode = mode ?? (
       isCodingInterviewTrack
@@ -194,33 +197,34 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   return (
     <View style={styles.shell} testID={runtimeSelectors.practice.hubRoot()}>
       <Screen edges={["top"]} style={styles.screenContent}>
-        <AppShellHeader
-          backAction={{ onPress: () => goBackOrHome(navigation) }}
-          context={t(activeTrack.title)}
-        />
-
         <View style={styles.pageIntro}>
-          <Text style={styles.pageTitle}>{t("Choose your practice")}</Text>
-          <Text style={styles.pageSubtitle}>
-            {t("Start with the recommended session or choose a different format.")}
-          </Text>
+          <Text style={styles.pageTitle}>{t("Practice")}</Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => navigation.navigate(ROUTES.SELECT_TRACK)}
+            style={({ pressed }) => [styles.trackContext, pressed ? styles.pressed : null]}
+          >
+            <View style={styles.trackContextCopy}>
+              <IconTile name={isCodingInterviewTrack || isDesignInterviewTrack ? "code-brackets" : "cloud"} size={22} tone="primary" />
+              <Text style={styles.trackContextTitle}>{t(activeTrack.shortTitle)}</Text>
+            </View>
+            <Text style={styles.changeTrack}>{t("Change")}</Text>
+          </Pressable>
+          <View accessibilityLabel={topicDetail} style={styles.topicContext}>
+            <View style={styles.topicDot} />
+            <Text style={styles.topicContextText}>{formatPracticeTopicTitle(topic.title, t)}</Text>
+          </View>
         </View>
 
         <Card variant="layered" style={styles.heroCard}>
-          <Text style={styles.heroEyebrow}>{t("Recommended session")}</Text>
+          <View style={styles.cardRail} />
           <View style={[styles.heroHeading, largeText ? styles.heroHeadingLargeText : null]}>
-            <IconTile
-              name={isCodingInterviewTrack || isDesignInterviewTrack ? "route" : "cloud"}
-              size={48}
-              tone={isCodingInterviewTrack || isDesignInterviewTrack ? "primary" : "info"}
-            />
             <Text style={styles.heroTitle}>
-              {formatPracticeTopicTitle(topic.title, t)}
+              {t(primaryMode.title)}
             </Text>
           </View>
-          <View style={styles.divider} />
           <Text style={styles.heroDetail}>
-            {formatPracticeTopicDetail(topic.detail, t)}
+            {t(primaryMode.detail)}
           </Text>
           <View style={styles.heroActions}>
             <Button
@@ -229,11 +233,6 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             >
               {t("Start session")}
             </Button>
-            <View style={styles.alternativeDivider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.orLabel}>{t("or")}</Text>
-              <View style={styles.dividerLine} />
-            </View>
             <Pressable
               accessibilityRole="button"
               onPress={() =>
@@ -263,28 +262,29 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
 
         <View style={styles.section}>
           <SectionHeader
-            title={t("Other practice formats")}
-            subtitle={t("Choose a format when the recommendation does not fit your goal.")}
+            title={t("More ways to practice")}
             tight
           />
-          {modes.map((mode) => (
-            <ListRow
-              detail={t(mode.unavailableReason ?? mode.detail)}
-              key={mode.mode}
-              leading={<IconTile name={mode.icon} tone={mode.enabled ? mode.tone : "muted"} />}
-              onPress={mode.enabled ? () => startSession(mode.mode) : undefined}
-              style={mode.enabled ? undefined : styles.disabledRow}
-              testID={runtimeSelectors.practice.modeCard(mode.mode)}
-              title={t(mode.title)}
-              trailing={
-                mode.enabled ? (
-                  <Icon color={palette.textMuted} name="chevron-right" size={18} />
-                ) : (
-                  <Badge label={t("Unavailable")} tone="neutral" />
-                )
-              }
-            />
-          ))}
+          <View style={styles.modeList}>
+            {modes.map((mode, index) => (
+              <ListRow
+                detail={t(mode.unavailableReason ?? mode.detail)}
+                key={mode.mode}
+                leading={<IconTile name={mode.icon} size={32} tone={mode.enabled ? mode.tone : "muted"} />}
+                onPress={mode.enabled ? () => startSession(mode.mode) : undefined}
+                style={[styles.modeRow, index === modes.length - 1 ? styles.modeRowLast : null, mode.enabled ? null : styles.disabledRow]}
+                testID={runtimeSelectors.practice.modeCard(mode.mode)}
+                title={t(mode.title)}
+                trailing={
+                  mode.enabled ? (
+                    <Icon color={palette.textMuted} name="chevron-right" size={22} />
+                  ) : (
+                    <Badge label={t("Unavailable")} tone="neutral" />
+                  )
+                }
+              />
+            ))}
+          </View>
         </View>
 
       </Screen>
@@ -302,29 +302,71 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     paddingBottom: TAB_BAR_RESERVED_HEIGHT,
   },
   pageIntro: {
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   pageTitle: {
     ...typography.title,
     color: palette.textPrimary,
   },
-  pageSubtitle: {
-    ...typography.body,
-    color: palette.textSecondary,
-  },
-  heroCard: {
-    gap: spacing.xl,
-  },
-  heroEyebrow: {
-    ...typography.caption,
-    color: palette.accentPurple,
-    letterSpacing: 0.7,
-    textTransform: "uppercase",
-  },
-  heroHeading: {
+  trackContext: {
     alignItems: "center",
     flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 44,
+  },
+  trackContextCopy: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+    minWidth: 0,
+  },
+  trackContextTitle: {
+    ...typography.bodyStrong,
+    color: palette.textPrimary,
+  },
+  changeTrack: {
+    ...typography.bodyStrong,
+    color: palette.primary,
+  },
+  topicContext: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  topicDot: {
+    backgroundColor: palette.primary,
+    borderRadius: radius.pill,
+    height: 6,
+    width: 6,
+  },
+  topicContextText: {
+    ...typography.small,
+    color: palette.textSecondary,
+  },
+  pressed: {
+    opacity: 0.78,
+  },
+  heroCard: {
     gap: spacing.lg,
+    backgroundColor: palette.surface,
+    borderColor: colorWithOpacity(palette.primary, 0.45),
+    borderRadius: 22,
+    elevation: 0,
+    padding: spacing.xl,
+    shadowOpacity: 0,
+    position: "relative",
+  },
+  cardRail: {
+    backgroundColor: palette.primary,
+    borderRadius: 2,
+    height: 64,
+    left: -1,
+    position: "absolute",
+    top: 20,
+    width: 3,
+  },
+  heroHeading: {
+    minHeight: 28,
   },
   heroHeadingLargeText: {
     alignItems: "flex-start",
@@ -339,26 +381,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     ...typography.body,
     color: palette.textSecondary,
   },
-  divider: {
-    backgroundColor: palette.border,
-    height: StyleSheet.hairlineWidth,
-  },
   heroActions: {
     gap: spacing.xl,
-  },
-  alternativeDivider: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  dividerLine: {
-    backgroundColor: palette.border,
-    flex: 1,
-    height: StyleSheet.hairlineWidth,
-  },
-  orLabel: {
-    ...typography.caption,
-    color: palette.textMuted,
   },
   settingsAction: {
     alignItems: "center",
@@ -379,6 +403,23 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   section: {
     gap: spacing.md,
+  },
+  modeList: {
+    borderColor: palette.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  modeRow: {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: 0,
+    borderWidth: 0,
+    borderBottomWidth: 1,
+    minHeight: 72,
+  },
+  modeRowLast: {
+    borderBottomWidth: 0,
   },
   disabledRow: {
     opacity: 0.62,

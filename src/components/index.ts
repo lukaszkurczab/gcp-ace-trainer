@@ -15,6 +15,7 @@ export * from "./LoadingState";
 export * from "./MetricCard";
 export * from "./ProgressBar";
 export * from "./Screen";
+export * from "./ScreenHeader";
 export * from "./SectionHeader";
 export * from "./SettingsGroup";
 export * from "./SettingsBottomSheet";

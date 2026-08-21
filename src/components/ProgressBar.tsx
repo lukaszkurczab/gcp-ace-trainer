@@ -27,7 +27,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   track: {
     backgroundColor: palette.elevatedSurface,
     borderRadius: radius.pill,
-    height: 8,
+    height: 4,
     overflow: "hidden",
     width: "100%"
   },
