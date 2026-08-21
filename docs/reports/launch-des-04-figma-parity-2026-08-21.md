@@ -4,9 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`
 Verified and pushed SHA: `b987b87a00ec53053c2c37bbae1e7b2d5a928da5`
-Current local verification SHA: `50acdd6`
+Current local verification SHA: `dd02de1`
 
 ## Outcome
 
@@ -47,7 +47,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Reachable surface/state | Current canonical owner | Figma authority | Status | Notes |
 |---|---|---|---|---|
 | Home ready, Coding track, no activity | `HomeScreen` / `HomeTab` | `55:445` | `MATCHED` | Shell, title, track context, recommendation card, action geometry, inline 40 px overview mini-bars, plain Current focus/activity rows, colors, and bottom navigation aligned. Existing topic-selection behavior remains canonical; no unowned View activity route was invented. |
-| Home track switch | `SelectTrackScreen` | `42:422`, `42:478`, `42:539` | `PARTIAL` | The local selection plus single footer Continue command now follows the Figma track-choice shell. Current-head screenshot capture remains pending; the safe capture path encountered the installed dev-client's cached pre-cutover route. |
+| Home track switch | `SelectTrackScreen` | `42:422`, `42:478`, `42:539` | `PARTIAL` | Local selection cards, returning-state Tracks/safety context, and the single footer Continue command follow the Figma track-choice shell. The footer remains because it is the canonical commit command even though the returning Figma frame omits it. Current-head screenshot capture remains pending. |
 | Home active session | `HomeScreen` / `HomeTab` | `55:539` | `PARTIAL` | Resume card, overview, focus, activity, and bottom navigation are implemented from real local session data; current-head screenshot comparison remains pending. |
 | Home review due | `HomeScreen` / `HomeTab` | `55:632` | `PARTIAL` | Review weak areas, Start review, Manage settings, overview, focus, and activity are implemented without synthetic counts; current-head screenshot comparison remains pending. |
 | Practice Hub ready/review available | `PracticeHubScreen` | `55:993` | `CANONICAL_CONFLICT` | Shell, topic context, hero card, grouped rows, and navigation were aligned. Figma's mode taxonomy and copy do not match the current canonical modes and commands, so no Figma-only mode or CTA was added. |
@@ -83,16 +83,19 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - Focused `algorithmsSessionAccessibility.test.ts`: 12 passed, including the shared AnswerOption geometry contract.
 - Focused Home/Progress/large-text tests: 20 passed after the Home Overview metric-row cutover.
 - Focused Progress projection/large-text tests: 12 passed after the Current focus card cutover.
+- Focused track-selection/track-presentation tests: 7 passed after the returning-state shell cutover.
 - `git diff --check`: passed.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows`: passed; the post-summary-cutover source produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-progress-focus`: passed; the latest Home/Progress source produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-home-focus`: passed; the latest Home source produced an iOS bundle with 1,343 modules.
+- `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-track-selection`: passed; the latest track-selection source produced an iOS bundle with 1,343 modules.
 - `npm run qa:static`: passed after the post-cutover source changes: recovery inventory, typecheck, 544 tests, content boundary, and runtime privacy boundary.
 - `npm run qa:static`: passed again on `e4c9e99`: recovery inventory, typecheck, 544 tests, content boundary, and runtime privacy boundary.
 - `npm run qa:static`: passed again on `50acdd6`: recovery inventory, typecheck, 544 tests, content boundary, and runtime privacy boundary.
+- `npm run qa:static`: passed again on `dd02de1`: recovery inventory, typecheck, 544 tests, content boundary, and runtime privacy boundary.
 - The existing fresh iOS dev-client evidence was captured on commit `89a2fc0` on a second iPhone 16 Pro simulator without invoking the destructive learning-state reset. Dark and light Maestro journeys each completed five screenshots covering Home, Practice Hub/setup, an unanswered coding question, the pause/end sheet, and a partial summary. Evidence is stored at `/tmp/patternly-figma-screens-2026-08-22-dark-fresh/` and `/tmp/patternly-figma-screens-2026-08-22-light-fresh/`.
 - A post-`6ee92db`/`db9c637` runtime feedback or summary capture was not completed because CoreSimulatorService became unavailable before the safe Maestro inspection step; no new simulator evidence is claimed for these cutovers.
-- A post-`50acdd6` Home/Progress runtime capture was not completed because CoreSimulatorService remains unavailable; the source, focused tests, and iOS export verify the cutovers, but no new screenshot evidence is claimed.
+- A post-`dd02de1` Home/Progress/track-selection runtime capture was not completed because CoreSimulatorService remains unavailable; the source, focused tests, and iOS export verify the cutovers, but no new screenshot evidence is claimed.
 - The full RC runner remains intentionally unrun because its bootstrap step calls `audit/reset-learning-state` and would erase local learner records. The reference journey used the pre-`6ee92db` source bundle through an IPv4 Metro listener; it is retained as prior visual evidence, not as post-cutover proof.
 - Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, and route ownership tests pass.
 
