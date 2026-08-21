@@ -5,6 +5,7 @@ Repository: `Patternly`
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
 Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`
+Verified and pushed SHA: `b987b87a00ec53053c2c37bbae1e7b2d5a928da5`
 
 ## Outcome
 
@@ -78,6 +79,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run qa:static`: passed, including recovery inventory and both runtime/content boundary checks.
 - `npm run validate:runtime-privacy-boundary`: passed.
 - `npm run validate:content-boundary`: passed.
+- Focused `algorithmsSessionAccessibility.test.ts`: 12 passed, including the shared AnswerOption geometry contract.
 - `git diff --check`: passed.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows`: passed; the post-summary-cutover source produced an iOS bundle with 1,343 modules.
 - `npm run qa:static`: passed after the post-cutover source changes: recovery inventory, typecheck, 544 tests, content boundary, and runtime privacy boundary.
