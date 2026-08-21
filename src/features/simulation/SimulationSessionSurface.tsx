@@ -157,12 +157,12 @@ function CompletedSurface({ projection, sessionId }: Readonly<{ projection: Simu
 
 function SummaryStat({ label, value }: Readonly<{ label: string; value: string }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.summaryStat}><Text style={styles.caption}>{label}</Text><Text style={styles.summaryValue}>{value}</Text></View>;
+  return <View style={styles.summaryStat}><Text style={styles.summaryStatLabel}>{label}</Text><Text style={styles.summaryValue}>{value}</Text></View>;
 }
 
 function OutcomeStat({ label, tone, value }: Readonly<{ label: string; tone: "danger" | "success" | "warning"; value: number }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.outcomeStat}><View style={[styles.outcomeDot, styles[`${tone}Dot`]]} /><Text style={styles.caption}>{label}</Text><Text style={styles.outcomeValue}>{value}</Text></View>;
+  return <View style={styles.outcomeStat}><View style={[styles.outcomeDot, styles[`${tone}Dot`]]} /><Text style={styles.outcomeLabel}>{label}</Text><Text style={styles.outcomeValue}>{value}</Text></View>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
@@ -177,16 +177,18 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   eyebrow: { ...typography.caption, color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
   summaryStats: { borderRadius: 24, gap: spacing.lg, padding: spacing.xl, shadowOpacity: 0 },
   summaryStat: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 36 },
+  summaryStatLabel: { ...typography.body, color: palette.textSecondary },
   summaryValue: { ...typography.bodyStrong, color: palette.textPrimary },
   outcomeSection: { gap: spacing.md },
   sectionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
-  outcomeRow: { flexDirection: "row", gap: spacing.sm },
-  outcomeStat: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, flex: 1, gap: spacing.xs, padding: spacing.md },
+  outcomeRow: { gap: spacing.sm },
+  outcomeStat: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 10, flexDirection: "row", gap: spacing.sm, minHeight: 44, padding: spacing.md },
   outcomeDot: { borderRadius: 4, height: 8, width: 8 },
   successDot: { backgroundColor: palette.success },
   warningDot: { backgroundColor: palette.warning },
   dangerDot: { backgroundColor: palette.danger },
-  outcomeValue: { ...typography.heading, color: palette.textPrimary },
+  outcomeLabel: { ...typography.body, color: palette.textPrimary, flex: 1 },
+  outcomeValue: { ...typography.bodyStrong, color: palette.textPrimary },
   reviewBanner: { borderColor: palette.success, borderRadius: radius.md, borderWidth: 1 },
   caption: { ...typography.caption, color: palette.textSecondary },
   controls: { gap: spacing.sm },
