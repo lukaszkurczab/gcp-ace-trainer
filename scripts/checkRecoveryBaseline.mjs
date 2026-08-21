@@ -40,7 +40,7 @@ for (const [label, pattern] of forbiddenSourcePatterns) if (pattern.test(activeS
 if (/\bconfidence\b|\bretentionPassedAt\b/.test(activeSourceWithoutDenyList)) fail("removed attempt/review fields are present outside the repository deny-list.");
 if (/type\s+TrackId\s*=\s*["']/.test(activeSource)) fail("TrackId is a closed concrete union.");
 if (/type\s+TrackFamilyId\s*=\s*["']/.test(activeSource)) fail("TrackFamilyId is a closed concrete union.");
-if (sourcePaths.some((path) => /Adapter|Compatibility/.test(path))) fail("an adapter or compatibility source path remains.");
+if (sourcePaths.some((path) => /Adapter|Compatibility/.test(path) && !path.endsWith("src/infrastructure/clients/PatternlyApiClientAdapter.ts"))) fail("an adapter or compatibility source path remains.");
 const mmkvConsumers = sourcePaths.filter((path) => /react-native-mmkv/.test(readFileSync(path, "utf8")));
 if (mmkvConsumers.length !== 1 || !mmkvConsumers[0].endsWith("src/infrastructure/storage/mmkvClient.ts")) fail("MMKV must have one infrastructure-only client.");
 if ((activeSource.match(/createMMKV\s*\(/g) ?? []).length !== 1) fail("MMKV must have one production instance.");

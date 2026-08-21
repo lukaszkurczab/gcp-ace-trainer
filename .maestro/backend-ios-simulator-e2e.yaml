@@ -1,0 +1,27 @@
+appId: com.lkurczab.patternly
+name: Patternly backend — iOS simulator end-to-end
+tags:
+  - backend-e2e
+  - ios
+---
+- killApp
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-backend-diagnostics"
+    timeout: 30000
+- tapOn:
+    id: "settings-backend-diagnostics"
+- extendedWaitUntil:
+    visible:
+      id: "backend-e2e-summary"
+    timeout: 120000
+- assertVisible: "All backend paths passed"

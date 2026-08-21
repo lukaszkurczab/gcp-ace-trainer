@@ -263,7 +263,7 @@ requirementTestCoverage:
       requirementIds: [ROADMAP-LOCKED-NODES-001]
     - id: research-build-settings-contract
       testPath: tests/settingsPresentation.test.ts
-      testName: Settings exposes only its five working navigation actions
+      testName: Settings exposes five participant navigation actions and one explicit backend verification action
       requirementIds: [RESEARCH-BUILD-SETTINGS-001]
     - id: patternly-build-identity-contract
       testPath: tests/buildIdentity.test.ts

@@ -33,8 +33,8 @@ test("route coverage has one native or inline shell owner and preserves active-s
     .filter((match) => /headerShown:\s*false/.test(match[2] ?? ""))
     .map((match) => match[1]);
 
-  assert.equal(routeIds.length, 21);
-  assert.equal(new Set(routeIds).size, 21);
+  assert.equal(routeIds.length, 22);
+  assert.equal(new Set(routeIds).size, 22);
   assert.deepEqual(headerlessRouteIds, [
     "HOME",
     "SELECT_TRACK",

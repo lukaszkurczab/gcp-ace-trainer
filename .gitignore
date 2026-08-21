@@ -5,6 +5,7 @@ web-build/
 .maestro
 !.maestro/
 .maestro/*
+!.maestro/backend-ios-simulator-e2e.yaml
 !.maestro/screenshot-capture/
 .maestro/screenshot-capture/*
 !.maestro/screenshot-capture/visual-shell/

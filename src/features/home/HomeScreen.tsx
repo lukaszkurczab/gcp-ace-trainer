@@ -291,6 +291,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         {activeTab === "settings" ? (
           <SettingsTab
             onOpenAppearance={() => navigation.navigate(ROUTES.APPEARANCE_SETTINGS)}
+            onOpenBackendDiagnostics={() => navigation.navigate(ROUTES.BACKEND_DIAGNOSTICS)}
             onOpenLanguage={() => navigation.navigate(ROUTES.LANGUAGE_SETTINGS)}
             onOpenLegalInformation={() => navigation.navigate(ROUTES.LEGAL_INFORMATION)}
             onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS)}

@@ -9,9 +9,9 @@ const preferenceSelection = readFileSync("src/features/home/PreferenceSelectionS
 const appearanceSettings = readFileSync("src/features/home/AppearanceSettingsScreen.tsx", "utf8");
 const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
-test("Settings exposes only its five working navigation actions", () => {
+test("Settings exposes five participant navigation actions and one explicit backend verification action", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
-  assert.equal(navigationRows.length, 5);
+  assert.equal(navigationRows.length, 6);
 
   for (const callback of [
     "onOpenAppearance",
@@ -22,11 +22,15 @@ test("Settings exposes only its five working navigation actions", () => {
   ]) {
     assert.match(settingsTab, new RegExp(`onPress=\\{${callback}\\}`));
   }
+  assert.match(settingsTab, /testID="settings-backend-diagnostics"/);
+  assert.match(settingsTab, /backendDiagnosticsConfigured \? \(/);
 });
 
-test("Settings has no additional participant-facing action group", () => {
+test("Settings keeps the backend verification group explicitly development-only", () => {
   const groups = settingsTab.match(/<SettingsGroup\b/g) ?? [];
-  assert.equal(groups.length, 4);
+  assert.equal(groups.length, 5);
+  assert.match(settingsTab, /title=\{text\.developerVerification\}/);
+  assert.match(settingsTab, /backendDiagnosticsConfigured \? \([\s\S]*?\) : null/);
 });
 
 test("grouped settings rows follow the Figma 200% text geometry", () => {

@@ -24,6 +24,8 @@ const environment = parseConfiguredPublicEnvironment({
 
 test("generated client refuses an unconfigured environment and missing token", async () => {
   assert.throws(() => createPatternlyApiClient({ apiOrigin: "http://127.0.0.1:8080", getIdToken: async () => "token" }), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "client_unconfigured");
+  const localClient = createPatternlyApiClient({ allowLocalHttpForSimulator: true, apiOrigin: "http://127.0.0.1:8080", getIdToken: async () => "token", fetchImplementation: async () => new Response(JSON.stringify({ status: "ok", service: "patternly-backend" })) });
+  assert.deepEqual(await localClient.getHealth(), { status: "ok", service: "patternly-backend" });
   const client = createPatternlyApiClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => null, fetchImplementation: async () => new Response("{}") });
   await assert.rejects(client.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "authentication_required");
 });
@@ -40,12 +42,17 @@ test("generated client uses typed REST paths, bearer auth, timeout and bounded e
   });
   await client.getProgress();
   await client.syncProgress({ mutations: [] });
+  await client.getReady();
+  await client.getOpenApi();
   assert.deepEqual(calls.map((call) => [call.method, call.url]), [
     ["GET", "https://api.sandbox.patternly.invalid/v1/progress"],
     ["POST", "https://api.sandbox.patternly.invalid/v1/progress/sync"],
+    ["GET", "https://api.sandbox.patternly.invalid/ready"],
+    ["GET", "https://api.sandbox.patternly.invalid/openapi.json"],
   ]);
   assert.deepEqual(calls[0]?.headers, { authorization: "Bearer id-token" });
   assert.deepEqual(calls[1]?.headers, { authorization: "Bearer id-token", "content-type": "application/json" });
+  assert.deepEqual(calls[2]?.headers, {});
   const failing = createPatternlyApiClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => "id-token", fetchImplementation: async () => new Response(JSON.stringify({ error: { code: "version_conflict" } }), { status: 409 }) });
   await assert.rejects(failing.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "server_error" && error.status === 409 && error.serverCode === "version_conflict");
 });

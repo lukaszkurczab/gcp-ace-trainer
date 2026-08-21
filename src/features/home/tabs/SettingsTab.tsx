@@ -5,9 +5,11 @@ import type { StorageIssue } from "../../../application/learningReadModels";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
 import type { AppearancePreference, LanguagePreference } from "../../../application/appPreferences";
 import { spacing, typography, type AppColors } from "../../../theme";
+import { isPatternlyBackendE2eConfigured } from "../../../infrastructure/clients/patternlyBackendRuntime";
 
 type SettingsTabProps = {
   onOpenAppearance: () => void;
+  onOpenBackendDiagnostics: () => void;
   onOpenLanguage: () => void;
   onOpenLegalInformation: () => void;
   onOpenNotifications: () => void;
@@ -23,6 +25,9 @@ const copy = {
     data: "Your data",
     dataDetail: "View the local data contract for this app.",
     dataPrivacy: "Data & privacy",
+    developerVerification: "Developer verification",
+    backendDiagnostics: "Backend diagnostics",
+    backendDiagnosticsDetail: "Run every local backend path on this simulator.",
     info: "These settings control how Patternly looks and sends reminders on this device.",
     language: "Language",
     languageDetail: "Choose the language used across Patternly.",
@@ -41,6 +46,9 @@ const copy = {
     data: "Twoje dane",
     dataDetail: "Zobacz lokalny kontrakt danych tej aplikacji.",
     dataPrivacy: "Dane i prywatność",
+    developerVerification: "Weryfikacja deweloperska",
+    backendDiagnostics: "Diagnostyka backendu",
+    backendDiagnosticsDetail: "Uruchom wszystkie lokalne ścieżki backendu na tym symulatorze.",
     info: "Te ustawienia kontrolują wygląd Patternly i przypomnienia na tym urządzeniu.",
     language: "Język",
     languageDetail: "Wybierz język używany w całym Patternly.",
@@ -56,6 +64,7 @@ const copy = {
 
 export function SettingsTab({
   onOpenAppearance,
+  onOpenBackendDiagnostics,
   onOpenLanguage,
   onOpenLegalInformation,
   onOpenNotifications,
@@ -66,6 +75,7 @@ export function SettingsTab({
   const { appearance, language, locale } = useAppPreferences();
   const text = copy[locale];
   const latestStorageIssue = storageIssues[0] ?? null;
+  const backendDiagnosticsConfigured = isPatternlyBackendE2eConfigured();
 
   return (
     <>
@@ -122,6 +132,18 @@ export function SettingsTab({
         <SettingsNavigationRow detail={text.dataDetail} icon="database" onPress={onOpenYourData} testID="settings-your-data" title={text.data} />
         <SettingsNavigationRow detail={text.legalDetail} icon="shield-check" onPress={onOpenLegalInformation} testID="settings-legal-information" title={text.legal} />
       </SettingsGroup>
+
+      {backendDiagnosticsConfigured ? (
+        <SettingsGroup title={text.developerVerification}>
+          <SettingsNavigationRow
+            detail={text.backendDiagnosticsDetail}
+            icon="server-stack"
+            onPress={onOpenBackendDiagnostics}
+            testID="settings-backend-diagnostics"
+            title={text.backendDiagnostics}
+          />
+        </SettingsGroup>
+      ) : null}
     </>
   );
 }

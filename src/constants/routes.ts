@@ -5,6 +5,7 @@ export const ROUTES = {
   LANGUAGE_SETTINGS: "LanguageSettings",
   NOTIFICATION_SETTINGS: "NotificationSettings",
   YOUR_DATA: "YourData",
+  BACKEND_DIAGNOSTICS: "BackendDiagnostics",
   SELECT_TRACK: "select_track",
   PRACTICE_HUB: "PracticeHub",
   ALGORITHMS_SCOPE_SELECTION: "AlgorithmsScopeSelection",
