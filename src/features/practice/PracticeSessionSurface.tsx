@@ -210,12 +210,16 @@ function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readon
     <Modal animationType="fade" onRequestClose={onDismiss} transparent visible>
       <View style={styles.modalBackdrop}>
         <Pressable accessibilityLabel={t("Keep learning")} accessibilityRole="button" onPress={onDismiss} style={styles.modalDismissArea} />
-        <View accessibilityViewIsModal style={styles.exitSurface}>
-          <Text style={styles.exitTitle}>{t("Pause or end this session?")}</Text>
-          <Text style={styles.noticeText}>{t(copy.description)}</Text>
-          <View style={styles.actions}>
-            <Button onPress={onDismiss} testID={sessionId ? runtimeSelectors.session.keepLearning(sessionId) : undefined} variant="secondary">{t("Keep learning")}</Button>
-            <Button onPress={onLeave} testID={sessionId ? runtimeSelectors.session.leaveAndResume(sessionId) : undefined}>{t("Pause and resume later")}</Button>
+        <View accessibilityViewIsModal style={styles.exitModalStack}>
+          <View style={styles.exitSurface}>
+            <Text style={styles.exitTitle}>{t("Pause or end this session?")}</Text>
+            <Text style={styles.noticeText}>{t(copy.description)}</Text>
+            <View style={styles.exitSheetActions}>
+              <Button onPress={onDismiss} testID={sessionId ? runtimeSelectors.session.keepLearning(sessionId) : undefined}>{t("Keep learning")}</Button>
+              <Button onPress={onLeave} testID={sessionId ? runtimeSelectors.session.leaveAndResume(sessionId) : undefined} variant="secondary">{t("Pause and resume later")}</Button>
+            </View>
+          </View>
+          <View style={styles.exitDestructiveAction}>
             <Button onPress={onAbandon} testID={sessionId ? runtimeSelectors.session.abandon(sessionId) : undefined} variant="destructive">{t(copy.destructiveLabel)}</Button>
           </View>
         </View>
@@ -246,6 +250,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   constraint: { ...typography.small, color: palette.textSecondary },
   constraints: { gap: spacing.xs },
   exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.button, borderTopRightRadius: radius.button, borderWidth: 1, elevation: 8, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, width: "100%" },
+  exitModalStack: { width: "100%" },
+  exitSheetActions: { gap: spacing.sm },
+  exitDestructiveAction: { backgroundColor: palette.background, paddingHorizontal: spacing.xl, paddingBottom: spacing.sm, width: "100%" },
   exitTitle: { ...typography.heading, color: palette.textPrimary },
   notice: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },
   noticeError: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.warning, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
