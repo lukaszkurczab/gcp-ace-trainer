@@ -129,7 +129,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.ALGORITHMS_PRACTICE_SUMMARY}
         component={AlgorithmsPracticeSummaryScreen}
-        options={{ title: t("Session result") }}
+        options={{ headerShown: false, title: t("Session result") }}
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION}

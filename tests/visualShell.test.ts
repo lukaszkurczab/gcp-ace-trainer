@@ -48,6 +48,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "ANSWER_REVIEW",
     "PRACTICE_SETUP",
     "PRACTICE_SESSION",
+    "ALGORITHMS_PRACTICE_SUMMARY",
     "ALGORITHMS_INTERVIEW_SIMULATION",
   ]);
 
@@ -165,9 +166,9 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(source("src/features/practice/AlgorithmsScopeSelectionScreen.tsx"), /state\.kind === "unavailable"[\s\S]*?<Screen edges=\{\["top"\]\}><AppShellHeader[\s\S]*?onActionPress=\{\(\) => goBackOrHome\(navigation\)\}/);
   assert.match(session, /return \([\s\S]*<Screen[\s\S]*footer=/);
   assert.match(result, /<Screen/);
-  assert.match(rootNavigator, /name=\{ROUTES\.ALGORITHMS_PRACTICE_SUMMARY\}[\s\S]*?options=\{\{ title: t\("Session result"\) \}\}/);
+  assert.match(rootNavigator, /name=\{ROUTES\.ALGORITHMS_PRACTICE_SUMMARY\}[\s\S]*?options=\{\{ headerShown: false, title: t\("Session result"\) \}\}/);
   assert.match(result, /<Text style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
-  assert.match(result, /outcomeStat:[\s\S]*?paddingVertical:\s*spacing\.sm/);
+  assert.match(result, /outcomeStat:[\s\S]*?padding:\s*spacing\.md/);
   assert.match(simulationSummary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.summaryTitle\}>\{t\(projection\.title\)\}<\/Text>/);
   assert.match(simulationSummary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
   assert.match(simulationSummary, /summaryHeaderBar:\s*\{\s*height:\s*52\s*\}/);
