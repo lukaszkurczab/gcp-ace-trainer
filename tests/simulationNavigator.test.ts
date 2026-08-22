@@ -21,7 +21,10 @@ test("simulation question navigator has the approved states, accessible labels, 
   assert.match(source, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
   assert.match(source, /<ScrollView contentContainerStyle=\{styles\.grid\} style=\{styles\.gridScroll\}>/);
   assert.match(source, /position\.state !== "answered"/);
-  assert.match(source, /minHeight: 48/);
+  assert.match(source, /height: columns === 5 \? 56 : 48/);
+  assert.match(source, /width: columns === 5 \? 56 : 48/);
+  assert.match(source, /<IconButton accessibilityLabel=/);
+  assert.doesNotMatch(source, /Finish simulation/);
   assert.match(source, /accessibilityLiveRegion="polite"/);
   assert.match(source, /Complete the response before leaving this question\./);
   assert.match(source, /Couldn't save this response\./);

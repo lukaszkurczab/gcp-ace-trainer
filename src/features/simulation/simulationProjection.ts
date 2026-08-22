@@ -52,7 +52,7 @@ export type SimulationAction = Readonly<{
   label: string;
   loading?: boolean;
   onPress: () => void;
-  variant?: "primary" | "secondary" | "destructive";
+  variant?: "primary" | "secondary" | "ghost" | "destructive";
 }>;
 
 export type SimulationOperationPresentation = Readonly<{
@@ -65,10 +65,9 @@ export type SimulationOperationPresentation = Readonly<{
 
 /** Keeps response submission and final review/finish transitions in one screen action model. */
 export function simulationPrimaryAction(input: Readonly<{ complete: boolean; finalOccurrence: boolean; responseChanged: boolean; onSave: () => void; onSaveAndContinue: () => void; onFinish: () => void }>): SimulationAction {
+  if (!input.finalOccurrence) return { id: "save-and-continue", label: "Save and continue", disabled: !input.complete, onPress: input.onSaveAndContinue };
   if (!input.responseChanged) return { id: "finish-simulation", label: "Finish simulation", disabled: false, onPress: input.onFinish };
-  return input.finalOccurrence
-    ? { id: "save-response", label: "Save response", disabled: !input.complete, onPress: input.onSave }
-    : { id: "save-and-continue", label: "Save and continue", disabled: !input.complete, onPress: input.onSaveAndContinue };
+  return { id: "save-response", label: "Save response", disabled: !input.complete, onPress: input.onSave };
 }
 
 /** Formats the application-owned remaining foreground duration for the visible timer. */
@@ -135,7 +134,6 @@ export type SimulationSurfaceProjection = Readonly<{
   notice?: SimulationNotice;
   operation?: SimulationOperationPresentation;
   onOccurrencePress?: (occurrenceId: string) => Promise<SimulationNavigatorSelectionResult>;
-  onFinish?: () => void;
   onResponseChange?: (change: SimulationResponseChange) => void;
   position?: SessionMetricPresentation;
   progress?: number;

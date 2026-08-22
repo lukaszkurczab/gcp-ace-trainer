@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { AnswerOption, Button, Card, Screen } from "../../components";
+import { AnswerOption, Button, Card, Icon, Screen } from "../../components";
 import { radius, spacing, typography } from "../../theme";
 import { complexityValueAccessibilityLabel, orderingMoveAccessibilityLabel } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
@@ -32,49 +32,47 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
     ? <ConfirmationActionBar confirmation={projection.confirmation} sessionId={runtimeIdentity?.sessionId} />
     : projection.actions ? <ActionBar sessionId={runtimeIdentity?.sessionId} {...projection.actions} /> : undefined;
   const interactionLocked = projection.state !== "editable";
+  const savedResponse = projection.state === "editable" && projection.notice?.message === "Saved";
 
   return (
     <View style={styles.root} testID={runtimeIdentity ? runtimeSelectors.simulation.root(runtimeIdentity.sessionId) : undefined}>
       <SessionShell
         actionBar={actionBar}
+        layout={savedResponse ? "simulationSaved" : "simulation"}
         modeLabel={projection.modeLabel}
+        onPositionPress={projection.state === "editable" ? () => setNavigatorVisible(true) : undefined}
         position={projection.position}
+        positionAccessibilityLabel={projection.position ? `Open question navigator, ${projection.position.label}` : undefined}
         progress={projection.progress}
         timer={projection.timer}
       >
-        <Pressable accessibilityLabel={projection.state === "editable" ? `Open question navigator, ${activeQuestionLabel(projection.position?.label)}` : undefined} accessibilityRole={projection.state === "editable" ? "button" : "header"} disabled={projection.state !== "editable"} onPress={() => setNavigatorVisible(true)} style={styles.heading}>
-          <Text style={projection.state === "editable" ? styles.questionLabel : styles.title}>
-            {projection.state === "editable" ? activeQuestionLabel(projection.position?.label) : projection.title}
-          </Text>
-        </Pressable>
-        {projection.notice ? <Notice notice={projection.notice} /> : null}
-        {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} /> : null}
+        {projection.state !== "editable" ? <Text style={styles.title}>{projection.title}</Text> : null}
+        {savedResponse ? <SavedQuestionContext onNavigator={() => setNavigatorVisible(true)} /> : null}
+        {savedResponse ? <SavedStatus /> : null}
+        {projection.notice && projection.state !== "editable" ? <Notice notice={projection.notice} /> : null}
+        {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} variant={savedResponse ? "simulationSaved" : "simulation"} /> : null}
         {projection.operation ? <SimulationOperationPanel operation={projection.operation} /> : null}
         {projection.confirmation ? <Confirmation confirmation={projection.confirmation} /> : null}
       </SessionShell>
-      {projection.state === "editable" && projection.onOccurrencePress ? <SimulationQuestionNavigator onDismiss={() => setNavigatorVisible(false)} onFinish={projection.onFinish} onOccurrencePress={projection.onOccurrencePress} positions={projection.navigator} visible={navigatorVisible} /> : null}
+      {projection.state === "editable" && projection.onOccurrencePress ? <SimulationQuestionNavigator onDismiss={() => setNavigatorVisible(false)} onOccurrencePress={projection.onOccurrencePress} positions={projection.navigator} visible={navigatorVisible} /> : null}
     </View>
   );
-}
-
-function activeQuestionLabel(position: string | undefined): string {
-  const current = position?.match(/^(\d+) of \d+$/)?.[1];
-  return current ? `Question ${current}` : "Question";
 }
 
 function ActionBar({ primary, secondary, sessionId }: NonNullable<SimulationSurfaceProjection["actions"]> & Readonly<{ sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.actionBar}>
-      {secondary ? <View style={styles.actionSlot}><Action action={secondary} sessionId={sessionId} /></View> : null}
-      {primary ? <View style={styles.actionSlot}><Action action={primary} sessionId={sessionId} /></View> : null}
+      {primary ? <View style={styles.actionSlot}><Action action={primary} fullWidth sessionId={sessionId} /></View> : null}
+      {secondary ? <View style={styles.actionSlot}><Action action={secondary} fullWidth sessionId={sessionId} /></View> : null}
     </View>
   );
 }
 
-function Action({ action, sessionId }: Readonly<{ action: SimulationAction; sessionId?: string }>) {
+function Action({ action, fullWidth = false, sessionId }: Readonly<{ action: SimulationAction; fullWidth?: boolean; sessionId?: string }>) {
+  const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
-  return <Button accessibilityLabel={action.accessibilityLabel ? t(action.accessibilityLabel) : undefined} disabled={action.disabled} loading={action.loading} onPress={action.onPress} testID={sessionId && action.id ? runtimeSelectors.simulation.action(sessionId, action.id) : undefined} variant={action.variant}>{t(action.label)}</Button>;
+  return <Button accessibilityLabel={action.accessibilityLabel ? t(action.accessibilityLabel) : undefined} disabled={action.disabled} loading={action.loading} onPress={action.onPress} style={fullWidth ? styles.fullWidthAction : undefined} testID={sessionId && action.id ? runtimeSelectors.simulation.action(sessionId, action.id) : undefined} variant={action.variant}>{t(action.label)}</Button>;
 }
 
 function Notice({ notice }: Readonly<{ notice: NonNullable<SimulationSurfaceProjection["notice"]> }>) {
@@ -82,29 +80,42 @@ function Notice({ notice }: Readonly<{ notice: NonNullable<SimulationSurfaceProj
   return <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, styles[notice.tone]]}><Text style={styles.noticeText}>{notice.message}</Text></View>;
 }
 
-function Question({ itemId, locked, onChange, question, sessionId }: Readonly<{ itemId?: string; locked: boolean; onChange?: (change: SimulationResponseChange) => void; question: NonNullable<SimulationSurfaceProjection["question"]>; sessionId?: string }>) {
+function SavedQuestionContext({ onNavigator }: Readonly<{ onNavigator: () => void }>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
+  return <View style={styles.savedQuestionContext}><Text maxFontSizeMultiplier={2} style={styles.savedQuestionContextLabel}>{t("Question")}</Text><View style={styles.savedQuestionContextSpacer} /><Pressable accessibilityLabel={t("Open question navigator")} accessibilityRole="button" onPress={onNavigator} style={styles.savedNavigator}><Icon color={styles.savedNavigatorLabel.color} name="grid" size={14} /><Text maxFontSizeMultiplier={2} style={styles.savedNavigatorLabel}>{t("Navigator")}</Text></Pressable></View>;
+}
+
+function SavedStatus() {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
+  return <View accessible accessibilityLabel={t("Saved")} style={styles.savedStatus}><View accessibilityElementsHidden style={styles.savedStatusDot} /><Text maxFontSizeMultiplier={2} style={styles.savedStatusLabel}>{t("Saved")}</Text></View>;
+}
+
+function Question({ itemId, locked, onChange, question, sessionId, variant }: Readonly<{ itemId?: string; locked: boolean; onChange?: (change: SimulationResponseChange) => void; question: NonNullable<SimulationSurfaceProjection["question"]>; sessionId?: string; variant?: "simulation" | "simulationSaved" }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   return (
     <Card style={styles.questionCard} testID={itemId ? runtimeSelectors.simulation.question(itemId) : undefined}>
-      <Text style={styles.prompt}>{question.prompt}</Text>
+      {variant ? <Text maxFontSizeMultiplier={2} style={[styles.questionLabel, variant === "simulationSaved" ? styles.savedQuestionLabel : null]}>{t("QUESTION")}</Text> : null}
+      <Text maxFontSizeMultiplier={2} style={[styles.prompt, variant === "simulation" ? styles.simulationPrompt : null, variant === "simulationSaved" ? styles.savedPrompt : null]}>{question.prompt}</Text>
       {question.code ? <Text accessibilityLabel={t("Code sample")} style={styles.code}>{question.code}</Text> : null}
-      <ResponseControl control={question.control} disabled={locked || !onChange} itemId={itemId} onChange={onChange} sessionId={sessionId} />
+      <ResponseControl control={question.control} disabled={locked || !onChange} itemId={itemId} onChange={onChange} sessionId={sessionId} variant={variant} />
     </Card>
   );
 }
 
-function ResponseControl({ control, disabled, itemId, onChange, sessionId }: Readonly<{ control: SimulationResponseControl; disabled: boolean; itemId?: string; onChange?: (change: SimulationResponseChange) => void; sessionId?: string }>) {
+function ResponseControl({ control, disabled, itemId, onChange, sessionId, variant }: Readonly<{ control: SimulationResponseControl; disabled: boolean; itemId?: string; onChange?: (change: SimulationResponseChange) => void; sessionId?: string; variant?: "simulation" | "simulationSaved" }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   if (control.kind === "choice") {
     const role = control.selectionMode === "single" ? "radio" : "checkbox";
-    return <View style={styles.controls}>{control.options.map((option, index) => <AnswerOption accessibilityLabel={option.label} accessibilityRole={role} accessibilityState={{ checked: option.selected }} disabled={disabled} key={option.id} letter={String.fromCharCode(65 + index)} onPress={() => onChange?.({ kind: "choice", optionId: option.id, selected: !option.selected })} state={option.selected ? "selected" : "default"} testID={simulationOptionSelector(itemId, option.id)} text={option.label} />)}</View>;
+    return <View style={[styles.controls, variant === "simulation" ? styles.simulationControls : null, variant === "simulationSaved" ? styles.savedControls : null]}>{control.options.map((option, index) => <AnswerOption accessibilityLabel={option.label} accessibilityRole={role} accessibilityState={{ checked: option.selected }} disabled={disabled} key={option.id} letter={String.fromCharCode(65 + index)} onPress={() => onChange?.({ kind: "choice", optionId: option.id, selected: !option.selected })} state={option.selected ? "selected" : "default"} testID={simulationOptionSelector(itemId, option.id)} text={option.label} />)}</View>;
   }
   if (control.kind === "ordering") {
-    return <View style={styles.controls}>{control.elements.map((element, index) => <View key={element.id} style={styles.orderRow} testID={simulationOptionSelector(itemId, element.id)}><Text style={styles.orderLabel}>{`${index + 1}. ${element.label}`}</Text><View style={styles.orderActions}><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "up")} disabled={disabled || index === 0} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "up" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:up`) : undefined} variant="secondary">{t("Up")}</Button><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "down")} disabled={disabled || index === control.elements.length - 1} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "down" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:down`) : undefined} variant="secondary">{t("Down")}</Button></View></View>)}</View>;
+    return <View style={[styles.controls, variant === "simulation" ? styles.simulationControls : null, variant === "simulationSaved" ? styles.savedControls : null]}>{control.elements.map((element, index) => <View key={element.id} style={styles.orderRow} testID={simulationOptionSelector(itemId, element.id)}><Text style={styles.orderLabel}>{`${index + 1}. ${element.label}`}</Text><View style={styles.orderActions}><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "up")} disabled={disabled || index === 0} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "up" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:up`) : undefined} variant="secondary">{t("Up")}</Button><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "down")} disabled={disabled || index === control.elements.length - 1} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "down" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:down`) : undefined} variant="secondary">{t("Down")}</Button></View></View>)}</View>;
   }
-  return <View style={styles.controls}>{control.dimensions.map((dimension) => <View key={dimension.id} style={styles.dimension}><Text style={styles.dimensionLabel}>{dimension.label}</Text><View style={styles.valueRow}>{dimension.values.map((value) => { const selected = dimension.selectedValue === value; return <Button accessibilityLabel={complexityValueAccessibilityLabel(dimension.label, value)} accessibilityRole="radio" accessibilityState={{ checked: selected }} disabled={disabled} key={value} onPress={() => onChange?.({ dimensionId: dimension.id, kind: "complexity", value })} testID={simulationOptionSelector(itemId, value)} variant={selected ? "primary" : "secondary"}>{value}</Button>; })}</View></View>)}</View>;
+  return <View style={[styles.controls, variant === "simulation" ? styles.simulationControls : null, variant === "simulationSaved" ? styles.savedControls : null]}>{control.dimensions.map((dimension) => <View key={dimension.id} style={styles.dimension}><Text style={styles.dimensionLabel}>{dimension.label}</Text><View style={styles.valueRow}>{dimension.values.map((value) => { const selected = dimension.selectedValue === value; return <Button accessibilityLabel={complexityValueAccessibilityLabel(dimension.label, value)} accessibilityRole="radio" accessibilityState={{ checked: selected }} disabled={disabled} key={value} onPress={() => onChange?.({ dimensionId: dimension.id, kind: "complexity", value })} testID={simulationOptionSelector(itemId, value)} variant={selected ? "primary" : "secondary"}>{value}</Button>; })}</View></View>)}</View>;
 }
 
 function simulationOptionSelector(itemId: string | undefined, optionId: string): string | undefined {
@@ -120,8 +131,7 @@ function Confirmation({ confirmation }: Readonly<{ confirmation: NonNullable<Sim
 }
 
 function ConfirmationActionBar({ confirmation, sessionId }: Readonly<{ confirmation: NonNullable<SimulationSurfaceProjection["confirmation"]>; sessionId?: string }>) {
-  const styles = useThemedStyles(createStyles);
-  return <View style={styles.actionBar}><Action action={confirmation.secondary} sessionId={sessionId} /><Action action={confirmation.primary} sessionId={sessionId} /></View>;
+  return <ActionBar primary={confirmation.primary} secondary={confirmation.secondary} sessionId={sessionId} />;
 }
 
 function CompletedSurface({ projection, sessionId }: Readonly<{ projection: SimulationSurfaceProjection; sessionId?: string }>) {
@@ -165,8 +175,6 @@ function OutcomeStat({ label, tone, value }: Readonly<{ label: string; tone: "da
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  actionBar: { flexDirection: "row", gap: spacing.sm },
-  actionSlot: { flex: 1 },
   body: { ...typography.small, color: palette.textSecondary },
   code: { backgroundColor: palette.background, borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, color: palette.textSecondary, fontFamily: "monospace", padding: spacing.md },
   confirmationTitle: { ...typography.heading, color: palette.textPrimary },
@@ -196,7 +204,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dimension: { gap: spacing.xs },
   dimensionLabel: { ...typography.bodyStrong, color: palette.textPrimary },
   error: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
-  heading: { gap: spacing.xs, justifyContent: "center", minHeight: 48 },
+  actionBar: { gap: spacing.sm, width: "100%" },
+  actionSlot: { alignSelf: "stretch" },
+  fullWidthAction: { alignSelf: "stretch" },
   notice: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   noticeText: { ...typography.small, color: palette.textPrimary },
   pressed: { opacity: 0.78 },
@@ -206,9 +216,22 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   orderRow: { alignItems: "flex-start", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   prompt: { ...typography.body, color: palette.textPrimary },
   questionCard: { backgroundColor: "transparent", borderWidth: 0, padding: 0 },
-  questionLabel: { ...typography.bodyStrong, color: palette.textPrimary },
+  questionLabel: { color: palette.primary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   root: { flex: 1 },
   success: { backgroundColor: palette.successSoft, borderColor: palette.success },
   title: { ...typography.title, color: palette.textPrimary },
+  simulationControls: { gap: 14 },
+  simulationPrompt: { fontSize: 22, fontWeight: "600", letterSpacing: -0.3, lineHeight: 28 },
+  savedControls: { gap: spacing.md },
+  savedNavigator: { alignItems: "center", flexDirection: "row", gap: spacing.xs, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
+  savedNavigatorLabel: { color: palette.textSecondary, fontSize: 11, fontWeight: "500", lineHeight: 15 },
+  savedPrompt: { fontSize: 16, fontWeight: "500", lineHeight: 22 },
+  savedQuestionContext: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minHeight: 21, width: "100%" },
+  savedQuestionContextLabel: { color: palette.textPrimary, fontSize: 13, fontWeight: "600", lineHeight: 17 },
+  savedQuestionContextSpacer: { flex: 1, minHeight: 20 },
+  savedQuestionLabel: { color: palette.primary, fontSize: 10, fontWeight: "700", lineHeight: 12, opacity: 0.5 },
+  savedStatus: { alignItems: "center", flexDirection: "row", gap: 6, minHeight: 17 },
+  savedStatusDot: { backgroundColor: palette.primary, borderRadius: radius.pill, height: 6, width: 6 },
+  savedStatusLabel: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 17 },
   valueRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
 });

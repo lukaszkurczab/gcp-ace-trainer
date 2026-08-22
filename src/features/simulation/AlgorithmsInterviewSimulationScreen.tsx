@@ -134,13 +134,12 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
       progress: projection.position.current / projection.position.total, timer: simulationTimer(projection.remainingForegroundMs),
       notice: { tone: changed ? "neutral" : "success", message: changed ? "Not saved yet" : response ? "Saved" : "No saved response" },
       question: question(projection, response), navigator: navigator(projection), runtimeIdentity: { itemId: projection.item.itemId, sessionId: projection.session.id },
-      onFinish: () => setOverlay("finish"),
       onOccurrencePress: async (occurrenceId) => {
         const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId);
         return target ? goTo(target.index) : "save_failed";
       },
       onResponseChange: (change) => setLocalResponse(applyResponseChange(response, projection, change)),
-      actions: { primary: simulationPrimaryAction({ complete: isComplete(response, projection), finalOccurrence: projection.position.current === projection.position.total, responseChanged: changed, onSave: () => { void save(); }, onSaveAndContinue: () => { void saveAndContinue(); }, onFinish: () => setOverlay("finish") }), secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } },
+      actions: { primary: simulationPrimaryAction({ complete: isComplete(response, projection), finalOccurrence: projection.position.current === projection.position.total, responseChanged: changed, onSave: () => { void save(); }, onSaveAndContinue: () => { void saveAndContinue(); }, onFinish: () => setOverlay("finish") }), secondary: { accessibilityLabel: "Leave simulation. Opens confirmation to leave and resume later.", id: "leave-session", label: "Leave simulation", onPress: () => setOverlay("leave"), variant: "ghost" } },
     };
   // UI callbacks intentionally refresh with the current application projection.
   // eslint-disable-next-line react-hooks/exhaustive-deps

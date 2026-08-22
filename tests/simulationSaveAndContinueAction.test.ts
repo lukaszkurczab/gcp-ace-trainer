@@ -14,3 +14,11 @@ test("non-final simulation CTA labels, disables, and invokes only save-and-conti
   assert.equal(saves, 0);
   assert.equal(saveAndContinues, 1);
 });
+
+test("an unanswered non-final simulation occurrence keeps the Figma Save and continue CTA disabled", () => {
+  let finished = 0;
+  const action = simulationPrimaryAction({ complete: false, finalOccurrence: false, responseChanged: false, onSave: () => undefined, onSaveAndContinue: () => undefined, onFinish: () => { finished += 1; } });
+  assert.deepEqual({ id: action.id, label: action.label, disabled: action.disabled }, { id: "save-and-continue", label: "Save and continue", disabled: true });
+  action.onPress();
+  assert.equal(finished, 0);
+});

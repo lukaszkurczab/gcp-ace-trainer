@@ -183,6 +183,21 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   assert.match(facade, /controls: feedback\.controls/);
 });
 
+test("simulation active shell uses the Figma question and action-footer variant", () => {
+  const shell = source("src/features/coding-interview/session/SessionShell.tsx");
+  const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
+  const screen = source("src/features/simulation/AlgorithmsInterviewSimulationScreen.tsx");
+
+  assert.match(shell, /layout\?: "practice" \| "simulation"/);
+  assert.match(shell, /onPositionPress\?: \(\) => void/);
+  assert.match(shell, /simulationContent: \{[\s\S]*paddingTop: spacing\.xl/);
+  assert.match(simulation, /layout=\{savedResponse \? "simulationSaved" : "simulation"\}/);
+  assert.match(simulation, /variant=\{savedResponse \? "simulationSaved" : "simulation"\}/);
+  assert.match(simulation, /simulationPrompt: \{[\s\S]*fontSize: 22[\s\S]*lineHeight: 28/);
+  assert.match(simulation, /actionBar: \{[\s\S]*width: "100%"/);
+  assert.match(screen, /label: "Leave simulation"[\s\S]*variant: "ghost"/);
+});
+
 test("Practice setup keeps one canonical back action and recovery copy names learner-visible consequences", () => {
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
   const session = source("src/features/practice/PracticeSessionScreen.tsx");
