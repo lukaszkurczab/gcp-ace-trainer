@@ -44,7 +44,7 @@ export function ProgressTab({
   const focusTitle = focus?.title ?? model.performanceScores[0]?.label ?? activeTrack.shortTitle;
   const focusProgress = focus?.showProgress ? focus.progressPercent : model.performanceScores[0]?.percent ?? 0;
   const focusAction = model.algorithmsProgress?.priority.primaryAction ?? model.reviewAction;
-  const focusActionLabel = model.algorithmsProgress ? "Open practice" : model.reviewActionLabel;
+  const focusActionLabel = model.algorithmsProgress ? "Open Practice" : model.reviewActionLabel;
   const hasFocusEvidence = focus?.showProgress === true || model.performanceScores.length > 0;
   const weekValue = model.activitySummary.value;
   const progressRatio = focusProgress > 0 ? Math.min(1, focusProgress / 100) : weekValue > 0 ? 1 : 0;
