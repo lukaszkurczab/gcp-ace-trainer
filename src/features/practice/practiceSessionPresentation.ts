@@ -184,7 +184,7 @@ export function getPracticePrimaryAction(input: Readonly<{
     return Object.freeze({ enabled: input.hasLocalResponse, label: "Check answer", loading: false });
   }
   if (input.phase === "submitting_before_journal") return Object.freeze({ enabled: false, label: "Checking answer…", loading: true });
-  if (input.phase === "submit_journal_failed") return Object.freeze({ enabled: input.hasLocalResponse, label: "Check answer", loading: false });
+  if (input.phase === "submit_journal_failed") return Object.freeze({ enabled: input.hasLocalResponse, label: "Try again", loading: false });
   if (input.phase === "commit_pending") return Object.freeze({ enabled: false, label: "Finishing the update…", loading: true });
   if (input.phase === "advancing") return Object.freeze({ enabled: false, label: "Loading next question…", loading: true });
   if (input.phase === "feedback") return Object.freeze({ enabled: true, label: input.isFinalPosition ? "Finish session" : "Next", loading: false });
