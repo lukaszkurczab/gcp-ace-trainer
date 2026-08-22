@@ -28,6 +28,7 @@ tags:
     centerElement: true
     timeout: 30000
     visibilityPercentage: 50
+- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__core__005__track-selection-ready__${THEME}__${DEVICE_PROFILE}"
 - tapOn:
     id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
 - scrollUntilVisible:
@@ -117,6 +118,7 @@ tags:
 - extendedWaitUntil:
     visible: "Pause or end this session?"
     timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__core__035__practice-exit-sheet-ready__${THEME}__${DEVICE_PROFILE}"
 - tapOn: "End and view summary"
 - extendedWaitUntil:
     visible: "Partial summary"
@@ -129,6 +131,13 @@ tags:
       id: "patternly:practice:hub:root"
     timeout: 30000
 - tapOn:
+    id: "main-tab-bar-progress"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:progress:root"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__core__045__progress-ready__${THEME}__${DEVICE_PROFILE}"
+- tapOn:
     id: "main-tab-bar-settings"
 - extendedWaitUntil:
     visible:
@@ -137,6 +146,29 @@ tags:
 - assertVisible:
     id: "settings-appearance"
 - takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__core__050__settings-root-ready__${THEME}__${DEVICE_PROFILE}"
+
+- tapOn:
+    id: "settings-notifications"
+- extendedWaitUntil:
+    visible: "Notifications"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__core__055__notifications-ready__${THEME}__${DEVICE_PROFILE}"
+- tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 30000
+- tapOn:
+    id: "settings-your-data"
+- extendedWaitUntil:
+    visible: "Data & privacy"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__core__057__data-privacy-ready__${THEME}__${DEVICE_PROFILE}"
+- tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 30000
 
 - tapOn:
     id: "settings-appearance"
