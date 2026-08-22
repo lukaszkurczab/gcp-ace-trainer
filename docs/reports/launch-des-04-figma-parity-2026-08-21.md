@@ -4,9 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`
 Verified and pushed SHA: `b987b87a00ec53053c2c37bbae1e7b2d5a928da5`
-Current local verification SHA: `f509e91`
+Current local verification SHA: `189ff31`
 
 ## Outcome
 
@@ -106,12 +106,14 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows-v2`: passed; the latest practice and simulation summary source produced an iOS bundle with 1,343 modules.
 - `npm run qa:static`: passed on `3e6a282`: recovery inventory, typecheck, 544/544 tests, content boundary, and runtime privacy boundary.
 - `npm run qa:static`: passed on `f509e91`: recovery inventory, typecheck, 545/545 tests, content boundary, and runtime privacy boundary.
+- `npm run qa:static`: passed on `189ff31`: recovery inventory, typecheck, 545/545 tests, content boundary, and runtime privacy boundary.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v2`: passed; the simulation review shell produced an iOS bundle with 1,343 modules.
+- `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v3`: passed after the reduced-motion review-navigator change; the iOS bundle contained 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-progress-v2`: passed; the latest Progress source produced an iOS bundle with 1,343 modules.
 - Current-head iOS dev-client evidence was captured from `3e6a282` through the local Metro endpoint on one verified iPhone 16 Pro iOS 18.6 simulator, without invoking the destructive learning-state reset. Dark and light resetless Maestro journeys each completed six screenshots covering Home, Custom Practice setup, an unanswered coding question, a partial summary, Settings root, and Appearance; an additional Progress checkpoint was captured in both themes. Evidence is stored at `/tmp/patternly-figma-screens-2026-08-22-dark-current/` and `/tmp/patternly-figma-screens-2026-08-22-light-current/`.
 - The first post-capture attempt used two pre-existing simulator bundles and produced mixed-version screenshots; those `*-v2/` artifacts are not treated as current-head evidence. The verified simulator was explicitly opened with `exp+patternly://expo-development-client/?url=http://127.0.0.1:8090`; the second simulator retained an older cached bundle and was excluded from current-head claims.
 - The full RC runner remains intentionally unrun because its bootstrap step calls `audit/reset-learning-state` and would erase local learner records. The reference journey used the pre-`6ee92db` source bundle through an IPv4 Metro listener; it is retained as prior visual evidence, not as post-cutover proof.
-- Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, and route ownership tests pass.
+- Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, route ownership, and reduced-motion navigator behavior tests pass.
 
 Not verified here: Android, signed/distribution builds, physical-device rendering, full 200% large-text traversal across every route, reduced-motion runtime capture, completed-summary and simulation/review/recovery screenshot comparison, and every Figma operational state.
 
