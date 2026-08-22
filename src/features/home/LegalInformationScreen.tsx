@@ -1,4 +1,7 @@
 import { SettingsInformationScreen, type InformationSection } from "./SettingsInformationScreen";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { ROUTES } from "../../constants/routes";
+import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences } from "../../preferences";
 
 const copy = {
@@ -6,6 +9,8 @@ const copy = {
     close: "Close",
     infoBody: "Patternly is an independent learning tool. This screen explains the current privacy, security, and study-use boundaries.",
     infoTitle: "Privacy and study use",
+    legal: "Legal information",
+    settings: "Settings",
     sections: [
       {
         title: "Privacy and security",
@@ -63,6 +68,8 @@ const copy = {
     close: "Zamknij",
     infoBody: "Patternly jest niezależnym narzędziem do nauki. Ten ekran wyjaśnia obecne granice prywatności, bezpieczeństwa i korzystania z materiałów.",
     infoTitle: "Prywatność i korzystanie z materiałów",
+    legal: "Informacje prawne",
+    settings: "Ustawienia",
     sections: [
       {
         title: "Prywatność i bezpieczeństwo",
@@ -118,8 +125,10 @@ const copy = {
   },
 } as const;
 
-export function LegalInformationScreen() {
+type LegalInformationScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.LEGAL_INFORMATION>;
+
+export function LegalInformationScreen({ navigation }: LegalInformationScreenProps) {
   const { locale } = useAppPreferences();
   const text = copy[locale];
-  return <SettingsInformationScreen closeLabel={text.close} infoBody={text.infoBody} infoTitle={text.infoTitle} sections={text.sections} />;
+  return <SettingsInformationScreen closeLabel={text.close} infoBody={text.infoBody} infoTitle={text.infoTitle} screenHeader={{ context: text.settings, onBack: () => navigation.goBack(), title: text.legal }} sections={text.sections} />;
 }

@@ -69,7 +69,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.LEGAL_INFORMATION}
         component={LegalInformationScreen}
-        options={{ title: t("Legal information") }}
+        options={{ headerShown: false, title: t("Legal information") }}
       />
       <Stack.Screen
         name={ROUTES.NOTIFICATION_SETTINGS}
