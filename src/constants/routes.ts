@@ -2,7 +2,6 @@ export const ROUTES = {
   HOME: "Home",
   APPEARANCE_SETTINGS: "AppearanceSettings",
   LEGAL_INFORMATION: "LegalInformation",
-  LANGUAGE_SETTINGS: "LanguageSettings",
   NOTIFICATION_SETTINGS: "NotificationSettings",
   YOUR_DATA: "YourData",
   BACKEND_DIAGNOSTICS: "BackendDiagnostics",

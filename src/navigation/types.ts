@@ -8,7 +8,6 @@ export type RootStackParamList = {
   [ROUTES.HOME]: { initialTab?: Exclude<ShellTab, "practice"> } | undefined;
   [ROUTES.APPEARANCE_SETTINGS]: undefined;
   [ROUTES.LEGAL_INFORMATION]: undefined;
-  [ROUTES.LANGUAGE_SETTINGS]: undefined;
   [ROUTES.NOTIFICATION_SETTINGS]: undefined;
   [ROUTES.YOUR_DATA]: undefined;
   [ROUTES.BACKEND_DIAGNOSTICS]: undefined;

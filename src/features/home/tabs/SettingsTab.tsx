@@ -3,14 +3,13 @@ import { StyleSheet, Text, View } from "react-native";
 import { Icon, IconTile, ListRow, ScreenHeader, SettingsGroup, type IconName } from "../../../components";
 import type { StorageIssue } from "../../../application/learningReadModels";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
-import type { AppearancePreference, LanguagePreference } from "../../../application/appPreferences";
+import type { AppearancePreference } from "../../../application/appPreferences";
 import { spacing, typography, type AppColors } from "../../../theme";
 import { isPatternlyBackendE2eConfigured } from "../../../infrastructure/clients/patternlyBackendRuntime";
 
 type SettingsTabProps = {
   onOpenAppearance: () => void;
   onOpenBackendDiagnostics: () => void;
-  onOpenLanguage: () => void;
   onOpenLegalInformation: () => void;
   onOpenNotifications: () => void;
   onOpenPracticeSettings: () => void;
@@ -32,8 +31,6 @@ const copy = {
     backendDiagnostics: "Backend diagnostics",
     backendDiagnosticsDetail: "Run every local backend path on this simulator.",
     learning: "Learning",
-    language: "Language",
-    languageDetail: "Choose the language used across Patternly.",
     legal: "Legal information",
     legalDetail: "Privacy and study-use information.",
     notifications: "Notifications",
@@ -56,8 +53,6 @@ const copy = {
     backendDiagnostics: "Diagnostyka backendu",
     backendDiagnosticsDetail: "Uruchom wszystkie lokalne ścieżki backendu na tym symulatorze.",
     learning: "Nauka",
-    language: "Język",
-    languageDetail: "Wybierz język używany w całym Patternly.",
     legal: "Informacje prawne",
     legalDetail: "Prywatność i informacje o korzystaniu z materiałów.",
     notifications: "Powiadomienia",
@@ -72,7 +67,6 @@ const copy = {
 export function SettingsTab({
   onOpenAppearance,
   onOpenBackendDiagnostics,
-  onOpenLanguage,
   onOpenLegalInformation,
   onOpenNotifications,
   onOpenPracticeSettings,
@@ -80,7 +74,7 @@ export function SettingsTab({
   storageIssues,
 }: SettingsTabProps) {
   const styles = useThemedStyles(createStyles);
-  const { appearance, language, locale } = useAppPreferences();
+  const { appearance, locale } = useAppPreferences();
   const text = copy[locale];
   const latestStorageIssue = storageIssues[0] ?? null;
   const backendDiagnosticsConfigured = isPatternlyBackendE2eConfigured();
@@ -119,14 +113,6 @@ export function SettingsTab({
             onPress={onOpenPracticeSettings}
             testID="settings-practice"
             title={text.practiceSettings}
-          />
-          <SettingsNavigationRow
-            detail={text.languageDetail}
-            icon="settings"
-            onPress={onOpenLanguage}
-            testID="settings-language"
-            title={text.language}
-            value={languageLabel(locale, language)}
           />
           <SettingsNavigationRow
             detail={text.notificationsDetail}
@@ -168,14 +154,6 @@ function appearanceLabel(locale: AppLocale, appearance: AppearancePreference): s
     pl: { dark: "Ciemny", light: "Jasny", system: "System" },
   };
   return labels[locale][appearance];
-}
-
-function languageLabel(locale: AppLocale, language: LanguagePreference): string {
-  const labels: Record<AppLocale, Record<LanguagePreference, string>> = {
-    en: { en: "English", pl: "Polish", system: "System" },
-    pl: { en: "Angielski", pl: "Polski", system: "System" },
-  };
-  return labels[locale][language];
 }
 
 function SettingsNavigationRow({ detail, icon, onPress, testID, title, value }: Readonly<{

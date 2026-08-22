@@ -11,11 +11,10 @@ const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
 test("Settings exposes five participant navigation actions and one explicit backend verification action", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
-  assert.equal(navigationRows.length, 7);
+  assert.equal(navigationRows.length, 6);
 
   for (const callback of [
     "onOpenAppearance",
-    "onOpenLanguage",
     "onOpenLegalInformation",
     "onOpenNotifications",
     "onOpenPracticeSettings",
