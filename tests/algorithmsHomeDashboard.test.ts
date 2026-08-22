@@ -129,6 +129,26 @@ test("Algorithms dashboard exposes the exact active session as a resume action",
   assert.deepEqual(value.recommendation.action, { kind: "resume_active_session", modeId: ALGORITHM_MODE_IDS.guidedPractice, sessionId: "active-session", topicId: TOPIC });
 });
 
+test("Home recommendation icons follow the Figma ready and active-session variants", async () => {
+  await prepareBundledTestPackages();
+  const activeTrack = getTrackDisplay("coding-interview-dsa-problem-solving");
+  const common = { activeTrack, analytics: buildAnalyticsData([], []), dashboardError: null, trainingAttempts: [] } as const;
+  const readyDashboard: CodingInterviewDashboard = {
+    recommendation: {
+      action: { kind: "start_practice", modeId: ALGORITHM_MODE_IDS.learnApproach, topicId: TOPIC },
+      explanation: "Build the approach for Binary search signal.",
+      modeId: ALGORITHM_MODE_IDS.learnApproach,
+      reason: "learn_approach",
+    },
+  };
+  const ready = buildHomeTabModel({ ...common, algorithmsDashboard: readyDashboard, activeSession: null });
+  assert.equal(ready.recommendations[0]?.icon, "cpu");
+
+  const activeDashboard = await runtime().queryDashboard({ activeSession: activeSession(), attempts: [], now: NOW, reviews: [], trackId: activeTrack.id });
+  const active = buildHomeTabModel({ ...common, algorithmsDashboard: activeDashboard, activeSession: activeSession() });
+  assert.equal(active.recommendations[0]?.icon, "play");
+});
+
 test("Algorithms dashboard starts recognition only with its one declared set", async () => {
   const value = await dashboard({ reviews: [review({ dueAt: "2026-07-21T11:00:00.000Z", id: "pattern", reason: "wrong_pattern" })] });
   assert.deepEqual(value.recommendation.action, {
