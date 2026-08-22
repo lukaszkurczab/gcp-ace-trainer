@@ -4,13 +4,13 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`
 Verified and pushed SHA: not performed in this pass; the remote branch was not changed.
-Current local verification SHA: `6453c01`
+Current local verification SHA: `12c7f59`
 
 ## Outcome
 
-This pass extends the repository-owned visual system across the reachable Home, track selection, Progress, Settings, practice summary, simulation runner, simulation navigator, simulation summary/review, answer review, review-empty states, and Practice completion async state. Result summaries now use the Figma flat metric and outcome-row contract, and Practice completion now uses the Figma async-state card with an explicit empty action region. It does not invent routes, metrics, commands, persistence, or account behavior for Figma frames that the current product does not expose. Dark/light iOS runtime evidence exists for the earlier verified head `3e6a282`; later visual slices remain source-verified but lack fresh simulator comparison because CoreSimulatorService is unavailable.
+This pass extends the repository-owned visual system across the reachable Home, track selection, Progress, Settings, practice summary, simulation runner, simulation navigator, simulation summary/review, answer review, review-empty states, and Practice completion async state. The Settings root now uses the Figma Screen Header description, section-label/divider geometry, canonical leading icons, and a real link to the existing Practice Setup route. Result summaries use the Figma flat metric and outcome-row contract, and Practice completion uses the Figma async-state card with an explicit empty action region. It does not invent routes, metrics, commands, persistence, or account behavior for Figma frames that the current product does not expose. The canonical runtime default remains 20 practice items; the Figma root's sample copy says 10, so the implementation keeps the product contract instead of changing behavior for visual text alone. Dark/light iOS runtime evidence exists for the earlier verified head `3e6a282`; later visual slices remain source-verified but lack fresh simulator comparison because CoreSimulatorService is unavailable.
 
 The implementation is not design-complete. Several Figma-backed operational states still need a fresh screenshot comparison, and the Figma file contains account, authentication, premium, content-trust, goal/cadence, and focus-area surfaces without a matching canonical runtime owner. The correct final status for this pass is `INCOMPLETE`.
 
@@ -19,7 +19,7 @@ The implementation is not design-complete. Several Figma-backed operational stat
 - File: `kZXD7cNBKUU7x0ceTHPFpR`
 - Page: `0:1` (`Page 1`)
 - Component/library page: `118:738` (`Patternly Library`)
-- Relevant authority nodes: Home `55:445`; Practice Hub `55:993`; Practice Setup `55:2172`; Session states `68:549` through `68:1239`; Simulation states `74:539` through `74:1126`; Summary `750:6235`; Practice variants `750:6400` through `750:6403`; Screen Header `140:881`; Bottom Navigation `140:875`; Button `141:817`; Answer Option `248:2394`; Settings Content `822:7687`; Progress `842:9563`; Review Shell `765:6130`.
+- Relevant authority nodes: Home `55:445`; Practice Hub `55:993`; Practice Setup `55:2172`; Session states `68:549` through `68:1239`; Simulation states `74:539` through `74:1126`; Summary `750:6235`; Practice variants `750:6400` through `750:6403`; Screen Header `140:881`; Bottom Navigation `140:875`; Button `141:817`; Answer Option `248:2394`; Settings root `822:7850`; Settings Content `822:7687`; Progress `842:9563`; Review Shell `765:6130`.
 
 ## Repository-owned design system
 
@@ -31,6 +31,8 @@ Updated canonical owners:
 - `src/components/Card.tsx`: default and layered surface geometry.
 - `src/components/Screen.tsx`: shared page padding and footer geometry.
 - `src/components/ScreenHeader.tsx`: local Figma screen-header contract with accessible back action, context, title, and description.
+- `src/components/SettingsGroup.tsx`: Figma settings section labels plus optional divider-owned row groups.
+- `src/components/ListRow.tsx` and `src/components/IconTile.tsx`: Figma settings row copy rhythm and explicit 24 px leading icon support.
 - `src/components/BottomTabBar.tsx`: safe-area, active indicator, top rule, and label geometry.
 - `src/components/ProgressBar.tsx`: Figma four-pixel progress track.
 - `src/features/coding-interview/session/SessionShell.tsx`: compact session top bar.
@@ -64,7 +66,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Shared Screen Header | `ScreenHeader` | `140:881` | `MATCHED` | Back touch target, context, title, description, and large-text multiplier implemented and tested. |
 | Shared Answer Option | `AnswerOption` consumed by Practice and Simulation | `248:2394` | `MATCHED` | Default, selected, correct, incorrect, and omitted-compatible letter-badge geometry is one repository-owned primitive; correctness remains runtime-owned. |
 | Progress tab | `ProgressTab` | `842:9563`, `842:10822`, `842:10949`, `842:11057`, `842:11192`, `842:11410`, `842:11466`, `842:11568`, `842:11692` | `PARTIAL` | Figma week/focus/attention hierarchy is implemented over real local evidence, including the 30/36 title, 28 px section rhythm, 40 px selector, borderless 14 px attention cards, compact Current focus card with truthful evidence-only percentage, and existing Algorithms roadmap/diagnostics. Goal/cadence and activity sub-surfaces remain canonical conflicts; existing resetless dark/light iOS capture from `3e6a282` completed. |
-| Settings root | `SettingsTab` | `822:7687` | `CANONICAL_CONFLICT` | The live root keeps canonical Language, Legal, diagnostics, and local-data commands, while Figma also specifies Account & Plan, Sync & backup, Goal & cadence, Practice settings, and Help & information rows without matching runtime owners. No Figma-only route or command is invented. |
+| Settings root | `SettingsTab` | `822:7850`, `822:7687` | `CANONICAL_CONFLICT` | Root shell/header description, section labels, dividers, icons, and the real Practice Setup entry now follow Figma. The live root still keeps canonical Language, Legal, diagnostics, and local-data commands; Figma also specifies Account & Plan, Sync & backup, Goal & cadence, and Help & information rows without matching runtime owners. The Figma sample says 10 items while the canonical runtime default is 20. No Figma-only route or command is invented. |
 | Appearance | `AppearanceSettingsScreen` | `619:5237` | `MATCHED` | The appearance journey passes in both dark and light resetless iOS captures from `3e6a282` and preserves the canonical Dark/Light/System preference contract. |
 | Language, notifications, data, legal, diagnostics | Existing settings route owners | `822:7687` and related Page 1 sections | `DESIGN_MISSING` | Routes are reachable, but no verified Figma-specific frame-to-code parity was completed for each detail surface. |
 | Exam, exam review, result, answer review | `ExamScreen`, `ExamReviewScreen`, `ResultScreen`, `AnswerReviewScreen` | No direct current-state authority mapped | `DESIGN_MISSING` | Existing behavior and actions remain unchanged. |
@@ -76,11 +78,13 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 
 ## Verification
 
-- `npm test`: 547 passed, 0 failed.
+- `npm test`: current run executed 547 tests; 512 passed and 35 failed in the existing canonical-product-contract validation. The failures concern the unresolved `research-build-settings-contract` mapping and Account/learning contract fixture assertions; neither the contract YAML nor its test changed between `6453c01` and `12c7f59`.
 - `npm run typecheck`: passed.
-- `npm run qa:static`: passed, including recovery inventory and both runtime/content boundary checks.
-- `npm run validate:runtime-privacy-boundary`: passed.
-- `npm run validate:content-boundary`: passed.
+- `npm run qa:static`: not green on the current head because its `npm test` stage stops on those 35 canonical-product-contract failures; recovery inventory and typecheck passed before the stop.
+- `npm run validate:runtime-privacy-boundary`: passed on the current head.
+- `npm run validate:content-boundary`: passed on the current head.
+- Focused Settings/visual-shell tests: 15/15 passed after the Settings root cutover.
+- `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v13`: passed after the Settings root cutover; the iOS bundle contained 1,343 modules.
 - Focused `algorithmsSessionAccessibility.test.ts`: 12 passed, including the shared AnswerOption geometry contract.
 - Focused Home/Progress/large-text tests: 20 passed after the Home Overview metric-row cutover.
 - Focused Progress projection/large-text tests: 12 passed after the Current focus card cutover.
@@ -144,4 +148,4 @@ No route was deleted because the current reachability graph does not prove any e
 
 ## Remaining work
 
-The remaining gaps are explicit and blocking: extend the existing `3e6a282` dark/light screenshot matrix to the latest `6453c01` source and add immediate feedback, completed summaries, simulation, review, recovery, and summary states; compare the implemented Figma simulation operational states (`74:726`, `74:834`, `74:879`, `74:968`, `74:992`, `74:1046`) and Practice operational states (`68:804` through `68:1239`) against fresh runtime captures; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
+The remaining gaps are explicit and blocking: extend the existing `3e6a282` dark/light screenshot matrix to the latest `12c7f59` source and add immediate feedback, completed summaries, simulation, review, recovery, summary, and the updated Settings root states; compare the implemented Figma simulation operational states (`74:726`, `74:834`, `74:879`, `74:968`, `74:992`, `74:1046`) and Practice operational states (`68:804` through `68:1239`) against fresh runtime captures; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
