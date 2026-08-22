@@ -172,15 +172,17 @@ test("Progress projection rejects an unknown track instead of selecting a defaul
 
 test("Algorithms Progress first use states the evidence limit and offers one useful start action", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
-  const model = buildProgressTabModel({
+  const progress = buildProgressTabModel({
     activeTrackId: "coding-interview-dsa-problem-solving",
     analytics: buildAnalyticsData([], []),
     attempts: [],
     practiceHistory: [],
     trainingAttempts: [],
-  }).algorithmsProgress;
+  });
+  const model = progress.algorithmsProgress;
 
   assert.ok(model);
+  assert.equal(progress.reviewActionLabel, "Review weak areas");
   assert.equal(model.priority.label, "Get started");
   assert.equal(model.priority.primaryActionLabel, "Start practice");
   assert.equal(model.priority.secondaryAction, undefined);
@@ -199,7 +201,7 @@ test("Algorithms Progress first use states the evidence limit and offers one use
 test("Algorithms Progress keeps due review evidence honest and recommendations overridable", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
   const attempt = algorithmAttempt("incorrect");
-  const model = buildProgressTabModel({
+  const progress = buildProgressTabModel({
     activeTrackId: "coding-interview-dsa-problem-solving",
     analytics: buildAnalyticsData([], []),
     attempts: [],
@@ -207,9 +209,11 @@ test("Algorithms Progress keeps due review evidence honest and recommendations o
     practiceHistory: [],
     reviewQueueItems: [dueAlgorithmReview(attempt)],
     trainingAttempts: [attempt],
-  }).algorithmsProgress;
+  });
+  const model = progress.algorithmsProgress;
 
   assert.ok(model);
+  assert.equal(progress.reviewActionLabel, "Review weak areas");
   assert.equal(model.priority.label, "Repeated mistake");
   assert.equal(model.priority.primaryActionMode, ALGORITHM_MODE_IDS.weakAreaReview);
   assert.equal(model.priority.secondaryActionMode, ALGORITHM_MODE_IDS.guidedPractice);

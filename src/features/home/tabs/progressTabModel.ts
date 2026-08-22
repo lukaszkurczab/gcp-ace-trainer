@@ -388,7 +388,7 @@ function buildAlgorithmsProgressTabModel(
         }
       : undefined,
     reviewActionEnabled: dueReviewCount > 0,
-    reviewActionLabel: "Open review queue",
+    reviewActionLabel: "Review weak areas",
     reviewQueueCount: dueReviewCount,
     reviewQueueCopy: formatAlgorithmsReviewQueueCopy(dueReviewCount, algorithmsReviewItems.length),
   };
