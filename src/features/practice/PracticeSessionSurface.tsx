@@ -65,6 +65,7 @@ export type PracticeSessionSurfaceProps = Readonly<{
   progress?: number;
   question?: PracticeQuestionPresentation;
   retryLabel?: string;
+  retryVariant?: "primary" | "secondary";
   runtimeIdentity?: PracticeRuntimeIdentity;
   timer?: SessionMetricPresentation;
 }>;
@@ -189,7 +190,7 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
           {t(props.primaryAction.label)}
         </Button>
       ) : null}
-      {props.onRetry && props.retryLabel ? <Button onPress={props.onRetry} variant="secondary">{t(props.retryLabel)}</Button> : null}
+      {props.onRetry && props.retryLabel ? <Button onPress={props.onRetry} variant={props.retryVariant ?? "secondary"}>{t(props.retryLabel)}</Button> : null}
       {props.allowLeave !== false && props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "completion_failed" && props.phase !== "abandoning" && props.phase !== "abandonment_failed_before_journal" && props.phase !== "abandonment_recovery_required" ? <Button onPress={props.onRequestLeave} testID={props.runtimeIdentity ? runtimeSelectors.session.leave(props.runtimeIdentity.sessionId) : undefined} variant="ghost">{t("Leave session")}</Button> : null}
     </View>
   );
