@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Badge, Button, Card, Icon, IconTile, ProgressBar } from "../../../components";
+import { Badge, Button, Card, Icon, IconTile, ProgressBar, type IconName } from "../../../components";
 import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
@@ -10,7 +10,7 @@ import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
 import { spacing, typography } from "../../../theme";
 import { runtimeSelectors } from "../../../testing/runtimeSelectors";
-import { buildProgressTabModel, type ProgressAction } from "./progressTabModel";
+import { buildProgressTabModel, type ProgressAction, type ProgressTabActivityItem } from "./progressTabModel";
 
 type ProgressTabProps = {
   activeTrack: TrackDisplay;
@@ -118,6 +118,9 @@ export function ProgressTab({
           </Card>
         )}
       </View>
+
+      <ActivitySection items={model.activity} trackFamily={activeTrack.familyId} />
+
       {model.algorithmsProgress ? (
         <AlgorithmsEvidenceSection
           model={model.algorithmsProgress}
@@ -130,6 +133,54 @@ export function ProgressTab({
       )}
     </View>
   );
+}
+
+function ActivitySection({ items, trackFamily }: Readonly<{ items: readonly ProgressTabActivityItem[]; trackFamily: string }>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
+  const groups = ["Today", "Yesterday", "This week", "Earlier"] as const;
+  return (
+    <View style={styles.section} testID="patternly:progress:activity">
+      <Text style={styles.sectionTitle}>{t("Activity")}</Text>
+      {items.length > 0 ? groups.map((group) => {
+        const groupItems = items.filter((item) => item.group === group);
+        if (groupItems.length === 0) return null;
+        return (
+          <View key={group} style={styles.activityGroup}>
+            <Text style={styles.activityGroupLabel}>{t(group)}</Text>
+            <View style={styles.activityRows}>
+              {groupItems.map((item, index) => (
+                <View key={item.id} style={[styles.activityRow, index === groupItems.length - 1 ? styles.activityRowLast : null]}>
+                  <IconTile iconSize={20} name={activityIcon(item.modeId, trackFamily)} size={36} tone={activityTone(item.outcome)} />
+                  <View style={styles.activityCopy}>
+                    <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(item.title)}</Text>
+                    <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{`${t("Answered")} · ${t(item.detail)} · ${item.time}`}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        );
+      }) : (
+        <Card style={styles.emptyActivityCard}>
+          <Text style={styles.activityTitle}>{t("No activity yet")}</Text>
+          <Text style={styles.activityDetail}>{t("Complete a practice item to see local activity here.")}</Text>
+        </Card>
+      )}
+    </View>
+  );
+}
+
+function activityIcon(modeId: string, trackFamily: string): IconName {
+  if (trackFamily === "certification" || modeId.startsWith("certification-")) return "cloud";
+  if (trackFamily === "design_interview" || modeId.startsWith("design-interview-")) return "book-open";
+  return "route";
+}
+
+function activityTone(outcome: ProgressTabActivityItem["outcome"]): "danger" | "success" | "warning" {
+  if (outcome === "correct") return "success";
+  if (outcome === "incorrect") return "danger";
+  return "warning";
 }
 
 function AlgorithmsEvidenceSection({
@@ -213,6 +264,15 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   pressed: { opacity: 0.78 },
   sectionLabel: { color: palette.info, fontSize: 12, fontWeight: "600", lineHeight: 19 },
   sectionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  activityGroup: { gap: spacing.xs },
+  activityGroupLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
+  activityRows: { backgroundColor: palette.surface, borderRadius: 14, overflow: "hidden" },
+  activityRow: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: spacing.md, minHeight: 73, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
+  activityRowLast: { borderBottomWidth: 0 },
+  activityCopy: { flex: 1, gap: spacing.xxs, minWidth: 0 },
+  activityTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  activityDetail: { ...typography.caption, color: palette.textSecondary },
+  emptyActivityCard: { backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: spacing.xs, padding: spacing.lg },
   weekCard: { backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: 14 },
   weekHeader: { alignItems: "flex-start", flexDirection: "row", gap: 10, justifyContent: "space-between" },
   weekCopy: { flex: 1, gap: spacing.xs },

@@ -5,6 +5,7 @@ import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt, TrainingSession }
 import type { CodingInterviewDashboard } from "../../../application/coding-interview";
 import { colorWithOpacity, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
+import { modeLabel, relativeDay } from "./activityPresentation";
 import { buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
@@ -220,30 +221,6 @@ function startOfUtcWeek(now: Date): Date {
   const daysSinceMonday = (start.getUTCDay() + 6) % 7;
   start.setUTCDate(start.getUTCDate() - daysSinceMonday);
   return start;
-}
-
-function modeLabel(modeId: string): string {
-  const labels: Record<string, string> = {
-    "coding-interview-guided-practice": "Guided Practice",
-    "coding-interview-learn-approach": "Learn Approach",
-    "certification-focus-practice": "Focus Practice",
-    "certification-quick-review": "Quick Review",
-    "design-interview-learn-framework": "Learn Framework",
-    "design-interview-tradeoff-practice": "Tradeoff Practice",
-    "design-interview-weak-area-review": "Weak Area Review",
-  };
-  return labels[modeId] ?? modeId.replace(/^(?:coding-interview|certification|design-interview)-/, "").replace(/-/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
-function relativeDay(answeredAt: string): string {
-  const day = new Date(answeredAt);
-  const today = new Date();
-  const dayKey = Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate());
-  const todayKey = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-  const difference = Math.round((todayKey - dayKey) / 86_400_000);
-  if (difference === 0) return "Today";
-  if (difference === 1) return "Yesterday";
-  return `${difference} days ago`;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

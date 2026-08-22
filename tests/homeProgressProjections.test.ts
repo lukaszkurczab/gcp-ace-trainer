@@ -217,6 +217,32 @@ test("Algorithms Progress keeps due review evidence honest and recommendations o
   assert.match(model.currentFocus.explanation, /does not restrict other topics/i);
 });
 
+test("Progress activity is nested, date-grouped, and limited to the active content package", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const current = algorithmAttempt("correct");
+  const stale = {
+    ...algorithmAttempt("incorrect"),
+    id: "stale-attempt",
+    item: { ...current.item, packagePin: { ...current.item.packagePin, contentReleaseId: "stale-release" } },
+    reviewEvidence: { ...current.reviewEvidence, sourceItem: { ...current.item, packagePin: { ...current.item.packagePin, contentReleaseId: "stale-release" } } },
+  };
+  const model = buildProgressTabModel({
+    activeTrackId: "coding-interview-dsa-problem-solving",
+    analytics: buildAnalyticsData([], []),
+    attempts: [],
+    now: NOW,
+    practiceHistory: [],
+    trainingAttempts: [stale, current],
+  });
+
+  assert.deepEqual(model.activity.map(({ detail, group, time, title }) => ({ detail, group, time, title })), [{
+    detail: "Correct",
+    group: "Today",
+    time: `${String(new Date(NOW).getHours()).padStart(2, "0")}:00`,
+    title: "Guided Practice",
+  }]);
+});
+
 test("Algorithms Progress derives a deterministic continuation from recorded evidence", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
   const attempt = algorithmAttempt("correct");

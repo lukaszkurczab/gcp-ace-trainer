@@ -22,6 +22,7 @@ import {
   type PracticeSessionMode,
   type PracticeSessionRouteParams,
 } from "../../practice/sessionConfig";
+import { activityTime, modeLabel, relativeDay } from "./activityPresentation";
 
 type MetricTone = "neutral" | "primary" | "success" | "warning" | "danger" | "info";
 type LearningTone = "danger" | "warning" | "info" | "success" | "muted";
@@ -37,6 +38,17 @@ export type ProgressTabActivitySummary = {
   label: string;
   value: number;
 };
+
+export type ProgressTabActivityItem = Readonly<{
+  answeredAt: string;
+  detail: string;
+  group: "Today" | "Yesterday" | "This week" | "Earlier";
+  id: string;
+  modeId: string;
+  outcome: "correct" | "incorrect" | "partial";
+  time: string;
+  title: string;
+}>;
 
 export type ProgressTabPerformanceScore = {
   correct: number;
@@ -118,6 +130,7 @@ export type AlgorithmsProgressScreenModel = {
 };
 
 export type ProgressTabModel = {
+  activity: readonly ProgressTabActivityItem[];
   activitySummary: ProgressTabActivitySummary;
   algorithmsProgress?: AlgorithmsProgressScreenModel;
   hasData: boolean;
@@ -154,7 +167,7 @@ export type BuildProgressTabModelInput = {
 
 export function buildProgressTabModel(input: BuildProgressTabModelInput): ProgressTabModel {
   if (input.activeTrackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && input.cloudProgress) {
-    return buildCloudProgressTabModel(input.cloudProgress);
+    return buildCloudProgressTabModel(input.cloudProgress, input.trainingAttempts ?? [], input.now ?? new Date().toISOString());
   }
 
   if (input.activeTrackId === CODING_INTERVIEW_TRACK_ID) {
@@ -223,6 +236,7 @@ function buildInstalledPackageProgressTabModel(
 
   const freeNodeLabel = getDomainLabel(packageResolution.profile.freeNodeId as CertificationDomain);
   return {
+    activity: buildActivityItems(currentAttempts, now),
     activitySummary: {
       detail: currentAttempts.length > 0
         ? `Current Free node: ${freeNodeLabel}.`
@@ -253,8 +267,13 @@ function buildInstalledPackageProgressTabModel(
   };
 }
 
-function buildCloudProgressTabModel(progress: CloudCertificationProgressViewModel): ProgressTabModel {
+function buildCloudProgressTabModel(
+  progress: CloudCertificationProgressViewModel,
+  trainingAttempts: readonly TrainingAttempt[],
+  now: string,
+): ProgressTabModel {
   return {
+    activity: buildActivityItems(trainingAttempts.filter((attempt) => attempt.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID), now),
     activitySummary: {
       detail:
         progress.totalAttempts > 0
@@ -329,6 +348,12 @@ function buildAlgorithmsProgressTabModel(
   );
   const dueReviewItems = algorithmsReviewItems.filter((item) => item.dueAt <= now);
   const dueReviewCount = dueReviewItems.length;
+  const currentAttempts = trainingAttempts.filter((attempt) =>
+    attempt.trackId === CODING_INTERVIEW_TRACK_ID &&
+    attempt.item.contentVersion === packageResolution.package.contentVersion &&
+    contentPackagePinsEqual(attempt.item.packagePin, packageResolution.package.packagePin) &&
+    packageItems.some((item) => item.id === attempt.item.itemId),
+  );
   const algorithmsProgress = buildAlgorithmsProgressScreenModel({
     dueReviewItems,
     facts,
@@ -339,6 +364,7 @@ function buildAlgorithmsProgressTabModel(
   });
 
   return {
+    activity: buildActivityItems(currentAttempts, now),
     activitySummary: {
       detail: `Current roadmap node: ${facts.activeRoadmapNode.label}.`,
       label: "Items practiced",
@@ -366,6 +392,38 @@ function buildAlgorithmsProgressTabModel(
     reviewQueueCount: dueReviewCount,
     reviewQueueCopy: formatAlgorithmsReviewQueueCopy(dueReviewCount, algorithmsReviewItems.length),
   };
+}
+
+function buildActivityItems(trainingAttempts: readonly TrainingAttempt[], now: string): readonly ProgressTabActivityItem[] {
+  const referenceDate = new Date(now);
+  return [...trainingAttempts]
+    .sort((left, right) => right.answeredAt.localeCompare(left.answeredAt))
+    .slice(0, 12)
+    .map((attempt) => ({
+      answeredAt: attempt.answeredAt,
+      detail: formatOutcome(attempt.result.kind),
+      group: activityGroup(attempt.answeredAt, referenceDate),
+      id: attempt.id,
+      modeId: attempt.modeId,
+      outcome: attempt.result.kind,
+      time: activityTime(attempt.answeredAt),
+      title: modeLabel(attempt.modeId),
+    }));
+}
+
+function activityGroup(timestamp: string, now: Date): ProgressTabActivityItem["group"] {
+  const day = relativeDay(timestamp, now);
+  if (day === "Today") return "Today";
+  if (day === "Yesterday") return "Yesterday";
+  const value = new Date(timestamp);
+  const difference = Math.round((Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate())) / 86_400_000);
+  return difference >= 0 && difference <= 7 ? "This week" : "Earlier";
+}
+
+function formatOutcome(outcome: TrainingAttempt["result"]["kind"]): string {
+  if (outcome === "correct") return "Correct";
+  if (outcome === "incorrect") return "Incorrect";
+  return "Partial";
 }
 
 type AlgorithmsRemediationState = {
