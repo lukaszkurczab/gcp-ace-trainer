@@ -55,7 +55,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.APPEARANCE_SETTINGS}
         component={AppearanceSettingsScreen}
-        options={{ title: t("Appearance") }}
+        options={{ headerShown: false, title: t("Appearance") }}
       />
       <Stack.Screen
         name={ROUTES.YOUR_DATA}

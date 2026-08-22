@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { ChoiceRow, Screen } from "../../components";
+import { ChoiceRow, Screen, ScreenHeader } from "../../components";
 import { useThemedStyles } from "../../preferences";
 import { spacing, typography, type AppColors } from "../../theme";
 
@@ -14,6 +14,7 @@ type PreferenceOption = Readonly<{
 
 type PreferenceSelectionScreenProps = Readonly<{
   currentValue: string;
+  header?: Readonly<{ context: string; onBack: () => void; title: string }>;
   intro: string;
   onSelect: (value: string) => Promise<void>;
   options: readonly PreferenceOption[];
@@ -22,6 +23,7 @@ type PreferenceSelectionScreenProps = Readonly<{
 
 export function PreferenceSelectionScreen({
   currentValue,
+  header,
   intro,
   onSelect,
   options,
@@ -41,8 +43,16 @@ export function PreferenceSelectionScreen({
   }
 
   return (
-    <Screen>
-      <Text style={styles.intro}>{intro}</Text>
+    <Screen edges={header ? ["top", "bottom"] : undefined}>
+      {header ? (
+        <ScreenHeader
+          backAction={{ onPress: header.onBack }}
+          context={header.context}
+          contextTone="primary"
+          description={intro}
+          title={header.title}
+        />
+      ) : <Text style={styles.intro}>{intro}</Text>}
       <View style={styles.choiceGroup} accessibilityRole="radiogroup" accessibilityLabel={sectionTitle}>
         {options.map((option) => {
           const selected = option.value === currentValue;

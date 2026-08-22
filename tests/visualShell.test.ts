@@ -37,6 +37,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
   assert.equal(new Set(routeIds).size, 22);
   assert.deepEqual(headerlessRouteIds, [
     "HOME",
+    "APPEARANCE_SETTINGS",
     "NOTIFICATION_SETTINGS",
     "SELECT_TRACK",
     "PRACTICE_HUB",
@@ -155,8 +156,8 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(home, /<Screen[\s\S]*<AppShellHeader \/>/);
   assert.match(home, /if \(!hasLoadedActiveTrack\) return <Screen edges=\{\["top"\]\} scroll=\{false\}><AppShellHeader \/><LoadingState/);
   assert.match(settings, /<PreferenceSelectionScreen/);
-  assert.match(preferenceSelection, /<Screen>/);
-  assert.match(rootNavigator, /name=\{ROUTES\.APPEARANCE_SETTINGS\}[\s\S]*?options=\{\{ title: t\("Appearance"\) \}\}/);
+  assert.match(preferenceSelection, /<Screen\b/);
+  assert.match(rootNavigator, /name=\{ROUTES\.APPEARANCE_SETTINGS\}[\s\S]*?options=\{\{ headerShown: false, title: t\("Appearance"\) \}\}/);
   assert.match(setup, /<Screen edges=\{\["top", "bottom"\]\}>[\s\S]*<AppShellHeader/);
   assert.match(source("src/features/practice/AlgorithmsScopeSelectionScreen.tsx"), /state\.kind === "unavailable"[\s\S]*?<Screen edges=\{\["top"\]\}><AppShellHeader[\s\S]*?onActionPress=\{\(\) => goBackOrHome\(navigation\)\}/);
   assert.match(session, /return \([\s\S]*<Screen[\s\S]*footer=/);
