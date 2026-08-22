@@ -147,14 +147,16 @@ export function HomeTab({
         >
           {t(decisionLabel)}
         </Button>
-        <Pressable
-          accessibilityRole="button"
-          onPress={isReviewRecommendation ? onOpenSettings : onChooseTopic}
-          style={({ pressed }) => [styles.secondaryAction, pressed ? styles.pressed : null]}
-        >
-          <Text style={styles.secondaryActionText}>{t(isReviewRecommendation ? "Manage settings" : "Choose another topic")}</Text>
-          {isReviewRecommendation ? null : <Icon color={palette.accentPurple} name="chevron-right" size={18} />}
-        </Pressable>
+        {hasActiveSession ? null : (
+          <Pressable
+            accessibilityRole="button"
+            onPress={isReviewRecommendation ? onOpenSettings : onChooseTopic}
+            style={({ pressed }) => [styles.secondaryAction, pressed ? styles.pressed : null]}
+          >
+            <Text style={styles.secondaryActionText}>{t(isReviewRecommendation ? "Manage settings" : "Choose another topic")}</Text>
+            {isReviewRecommendation ? null : <Icon color={palette.accentPurple} name="chevron-right" size={18} />}
+          </Pressable>
+        )}
       </Card>
       <View style={styles.overviewSection} testID="home-overview">
         <Text style={styles.sectionLabel}>{t("Overview")}</Text>
@@ -174,7 +176,7 @@ export function HomeTab({
         <Text style={styles.sectionLabel}>{t("Current focus")}</Text>
         <View style={[styles.focusRow, largeText ? styles.focusRowLargeText : null]}>
           <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{formatPracticeTopicTitle(model.heroTitle, t)}</Text>
-          <Button onPress={onChooseTopic} variant="ghost">{t("Open focus")}</Button>
+          <Button onPress={onChooseTopic} variant="ghost">{t("Open Practice")}</Button>
         </View>
       </View>
       <View style={styles.detailSection}>

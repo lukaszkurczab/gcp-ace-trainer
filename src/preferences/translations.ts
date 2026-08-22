@@ -51,7 +51,7 @@ const polish: Readonly<Record<string, string>> = {
   "Session in progress": "Sesja w toku",
   "Resume session": "Wznów sesję",
   "Review weak areas": "Powtórz słabe obszary",
-  "Open focus": "Otwórz cel",
+  "Open Practice": "Otwórz praktykę",
   "Recent activity": "Ostatnia aktywność",
   "Start review": "Rozpocznij powtórkę",
   "Start guided practice": "Rozpocznij ćwiczenia z prowadzeniem",
