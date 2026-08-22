@@ -54,6 +54,7 @@ export function HomeTab({
   const hasActiveSession = activeSession?.status === "active" && activeSession.trackId === activeTrack.id;
   const isReviewRecommendation = recommendation?.action.kind === "start_practice" &&
     recommendation.action.reviewSource !== undefined;
+  const isRecommendationSettingsAction = !hasActiveSession && recommendation !== undefined;
   const resumeSessionId = recommendation?.action.kind === "resume_active_session" || recommendation?.action.kind === "resume_certification_practice"
     ? recommendation.action.sessionId
     : undefined;
@@ -150,11 +151,11 @@ export function HomeTab({
         {hasActiveSession ? null : (
           <Pressable
             accessibilityRole="button"
-            onPress={isReviewRecommendation ? onOpenSettings : onChooseTopic}
+            onPress={isRecommendationSettingsAction ? onOpenSettings : onChooseTopic}
             style={({ pressed }) => [styles.secondaryAction, pressed ? styles.pressed : null]}
           >
-            <Text style={styles.secondaryActionText}>{t(isReviewRecommendation ? "Manage settings" : "Choose another topic")}</Text>
-            {isReviewRecommendation ? null : <Icon color={palette.accentPurple} name="chevron-right" size={18} />}
+            <Text style={styles.secondaryActionText}>{t(isRecommendationSettingsAction ? "Manage settings" : "Choose another topic")}</Text>
+            {isRecommendationSettingsAction ? null : <Icon color={palette.accentPurple} name="chevron-right" size={18} />}
           </Pressable>
         )}
       </Card>
