@@ -8,11 +8,19 @@ tags:
 # exactly this learner journey; only their preparation boundary differs.
 - runFlow:
     when:
-      visible:
-        id: "patternly:home:change-track"
+      visible: "Choose a track"
     commands:
-      - tapOn:
-          id: "patternly:home:change-track"
+      - tapOn: "Go back"
+      - extendedWaitUntil:
+          visible:
+            id: "patternly:home:change-track"
+          timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:change-track"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:change-track"
 - scrollUntilVisible:
     element:
       id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
@@ -22,6 +30,12 @@ tags:
     visibilityPercentage: 50
 - tapOn:
     id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:select-track:continue"
+    direction: DOWN
+    centerElement: true
+    timeout: 30000
 - tapOn:
     id: "patternly:home:select-track:continue"
 - scrollUntilVisible:
