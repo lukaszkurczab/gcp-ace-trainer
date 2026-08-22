@@ -60,7 +60,7 @@ Fresh visual evidence:
 | 2 | `AppearanceSettings` | `AppearanceSettingsScreen` | `partial` | Move into the canonical shell and verify system/light/dark across the supported device matrix. |
 | 3 | `YourData` | `YourDataScreen` | `blocking` | Replace the current “no account or recovery” contract with truthful local/remote data, export/adoption, account deletion and recovery semantics. |
 | 4 | `LegalInformation` | `LegalInformationScreen` | `blocking` | Connect public privacy/terms destinations and account-data disclosures; preserve only claims proven by the shipped binary. |
-| 5 | `LanguageSettings` | `LanguageSettingsScreen` | `blocking` | It currently presents a choice surface with only English. Remove the route for an English-only launch or implement a real supported language choice. |
+| 5 | `LanguageSettings` | removed from the launch route graph | `resolved` | The launch product is English-only. The route and Settings entry were removed until a real second language is implemented. |
 | 6 | `NotificationSettings` | `NotificationSettingsScreen` | `partial` | Complete checking, undetermined, denied, granted, invalid-time, save, disable and unexpected-error presentation in the canonical shell. |
 | 7 | `SelectTrack` | `SelectTrackScreen` | `partial` | Complete onboarding/returning variants, active/unstarted/archived track states and first-viewport density; connect it to the decided auth entry. |
 | 8 | `PracticeHub` | `PracticeHubScreen` | `partial` | Reduce oversized repeated cards; verify both families, enabled/unavailable modes, no-track recovery and every mode destination. |

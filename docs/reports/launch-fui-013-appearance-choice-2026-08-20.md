@@ -19,7 +19,8 @@ preview is decorative and must not enter the accessibility tree.
 - `src/components/ChoiceRow.tsx` now exposes the used `appearancePreview`
   variant and renders the repository-owned System/Light/Dark preview geometry.
 - `src/features/home/AppearanceSettingsScreen.tsx` passes the canonical
-  appearance variant; `LanguageSettingsScreen` remains on the plain choice row.
+  appearance variant. The English-only launch no longer exposes a Language
+  Settings route.
 - `src/theme/tokens.ts` owns the preview colors for both light and dark app
   modes; no remote Figma asset or live Figma dependency was added.
 
