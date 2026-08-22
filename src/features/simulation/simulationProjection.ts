@@ -110,7 +110,6 @@ export type SimulationResponseChange =
 export type SimulationCompletionProjection = Readonly<{
   activeTime?: string;
   answeredCount: number;
-  configuration?: string;
   correctCount: number;
   earnedPoints: number;
   incorrectCount: number;

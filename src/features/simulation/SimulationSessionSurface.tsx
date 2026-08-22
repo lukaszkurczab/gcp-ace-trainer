@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AnswerOption, Button, Card, Icon, Screen } from "../../components";
 import { radius, spacing, typography } from "../../theme";
@@ -137,23 +137,30 @@ function CompletedSurface({ projection, sessionId }: Readonly<{ projection: Simu
   const missedCount = completion.partialCount + completion.incorrectCount;
   return (
     <View style={styles.root} testID={sessionId ? runtimeSelectors.summary.root(sessionId) : undefined}>
-      <Screen edges={["top", "bottom"]} footer={<View style={styles.summaryActions}>{completion.reviewAction ? <Action action={completion.reviewAction} sessionId={sessionId} /> : null}{projection.actions?.primary ? <Action action={projection.actions.primary} sessionId={sessionId} /> : null}</View>}>
+      <Screen edges={["top", "bottom"]} scroll={false} style={styles.summaryScreen}>
         <View style={styles.summaryShell}>
-          <View style={styles.summaryHeader}>
-            <Text style={styles.summaryTitle}>{t(projection.title)}</Text>
-            <Text style={styles.summaryMode}>{t(projection.modeLabel ?? "Coding Interview")}</Text>
+          <View style={styles.summaryHeaderBar} />
+          <ScrollView contentContainerStyle={styles.summaryContent} showsVerticalScrollIndicator={false} style={styles.summaryContentScroll}>
+            <View style={styles.summaryHeader}>
+              <Text maxFontSizeMultiplier={2} style={styles.summaryTitle}>{t(projection.title)}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.summaryMode}>{t(projection.modeLabel ?? "Coding Interview")}</Text>
+            </View>
+            <View style={styles.summaryMetrics}>
+              <SummaryStat label={t("Answered")} value={`${completion.answeredCount} ${t("of")} ${completion.answeredCount + completion.unansweredCount}`} />
+              <View style={styles.summarySeparator} />
+              <SummaryStat label={t("Active time")} value={completion.activeTime ?? "—"} />
+              <View style={styles.summarySeparator} />
+            </View>
+            <View style={styles.outcomeSection}>
+              <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Results")}</Text>
+              <View style={styles.outcomeRow}><OutcomeStat label={t("Correct")} value={completion.correctCount} tone="success" /><OutcomeStat label={t("Partial")} value={completion.partialCount} tone="warning" /><OutcomeStat label={t("Incorrect")} value={completion.incorrectCount} tone="warning" /></View>
+              <Text style={styles.body}>{completion.correctCount} {t("correct")} · {missedCount} {t("Missed")} · {completion.earnedPoints} / {completion.maxPoints} {t("points")}</Text>
+            </View>
+          </ScrollView>
+          <View style={styles.summaryFooter}>
+            {completion.reviewAvailable && completion.reviewAction ? <Action action={completion.reviewAction} fullWidth sessionId={sessionId} /> : null}
+            {projection.actions?.primary ? <Action action={projection.actions.primary} fullWidth sessionId={sessionId} /> : null}
           </View>
-          <Card style={styles.summaryStats} variant="layered">
-            <SummaryStat label={t("Completed items")} value={`${completion.answeredCount} ${t("of")} ${completion.answeredCount + completion.unansweredCount}`} />
-            <SummaryStat label={t("Active time")} value={completion.activeTime ?? "—"} />
-            {completion.configuration ? <Text style={styles.caption}>{t(completion.configuration)}</Text> : null}
-          </Card>
-          <View style={styles.outcomeSection}>
-            <Text style={styles.sectionTitle}>{t("Results")}</Text>
-            <View style={styles.outcomeRow}><OutcomeStat label={t("Correct")} value={completion.correctCount} tone="success" /><OutcomeStat label={t("Partial")} value={completion.partialCount} tone="warning" /><OutcomeStat label={t("Incorrect")} value={completion.incorrectCount} tone="danger" /></View>
-            <Text style={styles.body}>{completion.correctCount} {t("correct")} · {missedCount} {t("Missed")} · {completion.earnedPoints} / {completion.maxPoints} {t("points")}</Text>
-          </View>
-          {completion.reviewAvailable ? <Card style={styles.reviewBanner} variant="success"><Text style={styles.confirmationTitle}>{t("Answer review available")}</Text><Text style={styles.body}>{t("Review the saved explanations before leaving this session.")}</Text></Card> : null}
         </View>
       </Screen>
     </View>
@@ -177,12 +184,17 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   confirmationBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 0, 0, 0.48)" },
   confirmationRoot: { flex: 1, justifyContent: "flex-end" },
   confirmationSheet: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, borderWidth: 1, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, elevation: 8 },
-  summaryActions: { gap: spacing.md },
-  summaryShell: { gap: spacing.xxl },
+  summaryScreen: { gap: 0, padding: 0 },
+  summaryShell: { backgroundColor: palette.surface, borderRadius: 24, flex: 1, overflow: "hidden" },
+  summaryHeaderBar: { height: 52 },
   summaryHeader: { gap: spacing.xs },
+  summaryContent: { gap: 28, padding: 24, paddingBottom: 28 },
+  summaryContentScroll: { flex: 1 },
+  summaryFooter: { gap: spacing.md, padding: spacing.xl },
   eyebrow: { ...typography.caption, color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
-  summaryStats: { backgroundColor: "transparent", borderColor: "transparent", borderRadius: 0, borderWidth: 0, elevation: 0, gap: 0, padding: 0, shadowOpacity: 0 },
-  summaryStat: { alignItems: "center", borderBottomColor: palette.surface, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", justifyContent: "space-between", paddingVertical: spacing.md },
+  summaryMetrics: { gap: spacing.md },
+  summarySeparator: { backgroundColor: palette.surface, height: 1, width: "100%" },
+  summaryStat: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingVertical: spacing.md },
   summaryStatLabel: { ...typography.body, color: palette.textSecondary },
   summaryValue: { ...typography.bodyStrong, color: palette.textPrimary },
   summaryTitle: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", lineHeight: 28 },
@@ -197,8 +209,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dangerDot: { backgroundColor: palette.danger },
   outcomeLabel: { ...typography.body, color: palette.textPrimary, flex: 1 },
   outcomeValue: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20 },
-  reviewBanner: { borderColor: palette.success, borderRadius: radius.md, borderWidth: 1 },
-  caption: { ...typography.caption, color: palette.textSecondary },
   controls: { gap: spacing.sm },
   dimension: { gap: spacing.xs },
   dimensionLabel: { ...typography.bodyStrong, color: palette.textPrimary },

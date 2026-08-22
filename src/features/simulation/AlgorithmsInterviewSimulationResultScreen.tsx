@@ -47,7 +47,6 @@ function AlgorithmsInterviewSimulationResultSurface({ navigation, sessionId }: R
         completion: {
           activeTime: formatElapsed(result.elapsedForegroundMs),
           answeredCount: result.answeredOccurrenceIds.length,
-          configuration: `${result.configuration.actualLength} items · Feedback at session end`,
           unansweredCount: result.unansweredOccurrenceIds.length,
           correctCount: result.score.correctCount,
           partialCount: result.score.partialCount,

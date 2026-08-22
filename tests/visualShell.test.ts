@@ -132,6 +132,7 @@ test("Screen and SessionShell remain the only general and active-session page ow
   assert.deepEqual(safeAreaOwners, []);
   assert.deepEqual(scrollViewOwners, [
     "src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx",
+    "src/features/simulation/SimulationSessionSurface.tsx",
     "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",
   ]);
   assert.match(screen, /<SafeAreaView[\s\S]*<ScrollView/);
@@ -161,9 +162,11 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(rootNavigator, /name=\{ROUTES\.ALGORITHMS_PRACTICE_SUMMARY\}[\s\S]*?options=\{\{ title: t\("Session result"\) \}\}/);
   assert.match(result, /<Text style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
   assert.match(result, /outcomeStat:[\s\S]*?paddingVertical:\s*spacing\.sm/);
-  assert.match(simulationSummary, /<Text style=\{styles\.summaryTitle\}>\{t\(projection\.title\)\}<\/Text>/);
-  assert.match(simulationSummary, /<Text style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
-  assert.match(simulationSummary, /summaryStat:[\s\S]*?borderBottomWidth:\s*StyleSheet\.hairlineWidth/);
+  assert.match(simulationSummary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.summaryTitle\}>\{t\(projection\.title\)\}<\/Text>/);
+  assert.match(simulationSummary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
+  assert.match(simulationSummary, /summaryHeaderBar:\s*\{\s*height:\s*52\s*\}/);
+  assert.match(simulationSummary, /summarySeparator:\s*\{[\s\S]*?height:\s*1/);
+  assert.doesNotMatch(simulationSummary, /summaryStats|reviewBanner|configuration\?:/);
 });
 
 test("simulation review owns the Figma review shell and keeps navigator outcomes explicit", () => {
