@@ -164,7 +164,7 @@ function buildAlgorithmsRecommendations(input: BuildHomeTabModelInput): HomeReco
 function primaryLabelFor(reason: CodingInterviewDashboard["recommendation"]["reason"]): string {
   if (reason === "active_session") return "Continue session";
   if (reason === "overdue_review" || reason === "repeated_mistake") return "Start review";
-  if (reason === "learn_approach") return "Start learning";
+  if (reason === "learn_approach") return "Start session";
   if (reason === "guided_practice") return "Start guided practice";
   if (reason === "contrast_practice") return "Start contrast practice";
   if (reason === "recognize_patterns") return "Start pattern practice";

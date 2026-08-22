@@ -143,6 +143,7 @@ test("Home recommendation icons follow the Figma ready and active-session varian
   };
   const ready = buildHomeTabModel({ ...common, algorithmsDashboard: readyDashboard, activeSession: null });
   assert.equal(ready.recommendations[0]?.icon, "cpu");
+  assert.equal(ready.recommendations[0]?.primaryLabel, "Start session");
 
   const activeDashboard = await runtime().queryDashboard({ activeSession: activeSession(), attempts: [], now: NOW, reviews: [], trackId: activeTrack.id });
   const active = buildHomeTabModel({ ...common, algorithmsDashboard: activeDashboard, activeSession: activeSession() });
