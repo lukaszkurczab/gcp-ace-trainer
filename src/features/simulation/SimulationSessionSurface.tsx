@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AnswerOption, Button, Card, Icon, Screen } from "../../components";
 import { radius, spacing, typography } from "../../theme";
@@ -10,7 +10,7 @@ import { mayRenderSimulationCompletion } from "./simulationViewModel";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { isRuntimeSelectorId, runtimeSelectors } from "../../testing/runtimeSelectors";
-import { SimulationQuestionNavigator } from "./navigator/SimulationQuestionNavigator";
+import { SimulationQuestionNavigator, useReducedMotion } from "./navigator/SimulationQuestionNavigator";
 import { SimulationOperationPanel } from "./operation/SimulationOperationPanel";
 
 
@@ -28,9 +28,7 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
   if (mayRenderSimulationCompletion(projection)) {
     return <CompletedSurface projection={projection} sessionId={runtimeIdentity?.sessionId} />;
   }
-  const actionBar = projection.confirmation
-    ? <ConfirmationActionBar confirmation={projection.confirmation} sessionId={runtimeIdentity?.sessionId} />
-    : projection.actions ? <ActionBar sessionId={runtimeIdentity?.sessionId} {...projection.actions} /> : undefined;
+  const actionBar = projection.confirmation ? undefined : projection.actions ? <ActionBar sessionId={runtimeIdentity?.sessionId} {...projection.actions} /> : undefined;
   const interactionLocked = projection.state !== "editable";
   const savedResponse = projection.state === "editable" && projection.notice?.message === "Saved";
 
@@ -52,19 +50,20 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
         {projection.notice && projection.state !== "editable" ? <Notice notice={projection.notice} /> : null}
         {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} variant={savedResponse ? "simulationSaved" : "simulation"} /> : null}
         {projection.operation ? <SimulationOperationPanel operation={projection.operation} /> : null}
-        {projection.confirmation ? <Confirmation confirmation={projection.confirmation} /> : null}
       </SessionShell>
       {projection.state === "editable" && projection.onOccurrencePress ? <SimulationQuestionNavigator onDismiss={() => setNavigatorVisible(false)} onOccurrencePress={projection.onOccurrencePress} positions={projection.navigator} visible={navigatorVisible} /> : null}
+      {projection.confirmation ? <ConfirmationActionSheet confirmation={projection.confirmation} sessionId={runtimeIdentity?.sessionId} /> : null}
     </View>
   );
 }
 
-function ActionBar({ primary, secondary, sessionId }: NonNullable<SimulationSurfaceProjection["actions"]> & Readonly<{ sessionId?: string }>) {
+function ActionBar({ primary, secondary, sessionId, tertiary }: NonNullable<SimulationSurfaceProjection["actions"]> & Readonly<{ sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.actionBar}>
       {primary ? <View style={styles.actionSlot}><Action action={primary} fullWidth sessionId={sessionId} /></View> : null}
       {secondary ? <View style={styles.actionSlot}><Action action={secondary} fullWidth sessionId={sessionId} /></View> : null}
+      {tertiary ? <View style={styles.actionSlot}><Action action={tertiary} fullWidth sessionId={sessionId} /></View> : null}
     </View>
   );
 }
@@ -124,14 +123,11 @@ function simulationOptionSelector(itemId: string | undefined, optionId: string):
   return isRuntimeSelectorId(candidate) ? runtimeSelectors.simulation.option(itemId, optionId) : undefined;
 }
 
-function Confirmation({ confirmation }: Readonly<{ confirmation: NonNullable<SimulationSurfaceProjection["confirmation"]> }>) {
+function ConfirmationActionSheet({ confirmation, sessionId }: Readonly<{ confirmation: NonNullable<SimulationSurfaceProjection["confirmation"]>; sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
-  return <Card variant="tonal"><Text style={styles.confirmationTitle}>{t(confirmation.title)}</Text><Text style={styles.body}>{t(confirmation.description)}</Text></Card>;
-}
-
-function ConfirmationActionBar({ confirmation, sessionId }: Readonly<{ confirmation: NonNullable<SimulationSurfaceProjection["confirmation"]>; sessionId?: string }>) {
-  return <ActionBar primary={confirmation.primary} secondary={confirmation.secondary} sessionId={sessionId} />;
+  const reduceMotion = useReducedMotion();
+  return <Modal animationType={reduceMotion ? "none" : "slide"} onRequestClose={confirmation.secondary.onPress} statusBarTranslucent transparent visible><View style={styles.confirmationRoot}><Pressable accessibilityLabel="Keep working" accessibilityRole="button" onPress={confirmation.secondary.onPress} style={styles.confirmationBackdrop} /><View accessibilityViewIsModal style={styles.confirmationSheet}><Text maxFontSizeMultiplier={2} style={styles.confirmationTitle}>{t(confirmation.title)}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t(confirmation.description)}</Text><Action action={confirmation.primary} fullWidth sessionId={sessionId} /><Action action={confirmation.secondary} fullWidth sessionId={sessionId} /></View></View></Modal>;
 }
 
 function CompletedSurface({ projection, sessionId }: Readonly<{ projection: SimulationSurfaceProjection; sessionId?: string }>) {
@@ -178,6 +174,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   body: { ...typography.small, color: palette.textSecondary },
   code: { backgroundColor: palette.background, borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, color: palette.textSecondary, fontFamily: "monospace", padding: spacing.md },
   confirmationTitle: { ...typography.heading, color: palette.textPrimary },
+  confirmationBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 0, 0, 0.48)" },
+  confirmationRoot: { flex: 1, justifyContent: "flex-end" },
+  confirmationSheet: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, borderWidth: 1, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, elevation: 8 },
   summaryActions: { gap: spacing.md },
   summaryShell: { gap: spacing.xxl },
   summaryHeader: { gap: spacing.xs },

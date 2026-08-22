@@ -14,4 +14,6 @@ test("active simulation surface fills the viewport and keeps navigator presentat
   assert.match(source, /styles\.questionLabel[\s\S]*t\("QUESTION"\)/);
   assert.match(source, /<SimulationQuestionNavigator onDismiss=/);
   assert.match(source, /visible=\{navigatorVisible\}/);
+  assert.match(source, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
+  assert.match(source, /confirmationSheet:/);
 });

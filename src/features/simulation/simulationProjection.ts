@@ -60,6 +60,7 @@ export type SimulationOperationPresentation = Readonly<{
   description: string;
   kind: "saving-response" | "save-failed" | "response-saved-navigation-failed" | "finalizing" | "finalization-recovery-required";
   lockMessage: string;
+  noticeMessage?: string;
   title: string;
 }>;
 
@@ -121,7 +122,7 @@ export type SimulationCompletionProjection = Readonly<{
 }>;
 
 export type SimulationSurfaceProjection = Readonly<{
-  actions?: Readonly<{ primary?: SimulationAction; secondary?: SimulationAction }>;
+  actions?: Readonly<{ primary?: SimulationAction; secondary?: SimulationAction; tertiary?: SimulationAction }>;
   completion?: SimulationCompletionProjection;
   confirmation?: Readonly<{
     description: string;

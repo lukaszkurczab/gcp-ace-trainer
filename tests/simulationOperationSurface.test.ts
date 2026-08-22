@@ -13,10 +13,14 @@ test("simulation operation surface renders only declared state actions and never
   assert.match(screen, /operation\.kind === "navigation_failed" \|\| operation\.kind === "save_and_continue_advance_recovery"/);
   assert.match(screen, /operation\.kind === "finalization_journal_failed" \|\| operation\.kind === "materialization_failed"/);
   assert.match(screen, /id: "simulation-keep-editing", label: "Keep editing"/);
+  assert.match(screen, /tertiary: \{ id: "simulation-leave-resumable", label: "Leave simulation", onPress: callbacks\.onLeave, variant: "ghost" \}/);
+  assert.match(screen, /noticeMessage: "Couldn't save this response\. Your current answer is still here\."/);
+  assert.match(screen, /noticeMessage: "Navigation restored\. Your saved response is ready to continue\."/);
   assert.match(screen, /id: operation\.error\.allowedAction === "retry_same_command" \? "simulation-finish" : "simulation-recover"/);
   assert.doesNotMatch(screen, /id: "retry"/);
   assert.doesNotMatch(screen, /label: "Try again", onPress: retry/);
   assert.match(panel, /accessibilityLiveRegion="polite"/);
+  assert.match(panel, /name="alert-triangle"/);
   assert.match(panel, /ActivityIndicator/);
   assert.match(lifecycle, /resumeEditableSimulationAfterSaveFailure/);
   assert.match(lifecycle, /operation\.kind !== "save_failed" && operation\.kind !== "stale_revision"/);

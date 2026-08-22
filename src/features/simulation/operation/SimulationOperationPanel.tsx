@@ -11,8 +11,10 @@ type SimulationOperationPanelProps = Readonly<{ operation: SimulationOperationPr
 export function SimulationOperationPanel({ operation }: SimulationOperationPanelProps) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette, t } = useAppPreferences();
+  const notice = operation.kind === "save-failed" || operation.kind === "response-saved-navigation-failed";
   const pending = operation.kind === "saving-response" || operation.kind === "finalizing";
   const failed = operation.kind === "save-failed" || operation.kind === "finalization-recovery-required";
+  if (notice) return <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.notice}><Icon color={palette.warning} name="alert-triangle" size={20} /><Text style={styles.noticeText}>{t(operation.noticeMessage ?? operation.title)}</Text></View>;
   return (
     <View style={[styles.panel, pending ? styles.pending : failed ? styles.failed : styles.warning]}>
       <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.statusContent}>
@@ -33,6 +35,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   failed: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
   lockMessage: { ...typography.caption, color: palette.textSecondary, flex: 1 },
   lockRow: { alignItems: "center", borderTopColor: palette.border, borderTopWidth: 1, flexDirection: "row", gap: spacing.sm, paddingTop: spacing.sm },
+  notice: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.warning, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
+  noticeText: { ...typography.body, color: palette.warning, flex: 1 },
   panel: { borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },
   pending: { backgroundColor: palette.primarySoft, borderColor: palette.primary },
   title: { ...typography.bodyStrong, color: palette.textPrimary, flex: 1 },
