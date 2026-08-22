@@ -1,30 +1,30 @@
 import { useEffect, useState } from "react";
-import { Linking, StyleSheet, Text, TextInput, View } from "react-native";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   Button,
   Icon,
   IconTile,
-  InfoBlock,
   ListRow,
   Screen,
+  ScreenHeader,
   SettingsBottomSheet,
-  SettingsDialog,
-  SettingsGroup,
 } from "../../components";
+import { ROUTES } from "../../constants/routes";
+import type { RootStackParamList } from "../../navigation";
 import {
   formatDailyReminderTime,
   NotificationPermissionDeniedError,
   parseDailyReminderTime,
 } from "../../application/notificationPreferences";
 import { useAppPreferences, useNotificationSettings, useThemedStyles, type AppLocale } from "../../preferences";
-import { spacing, typography, type AppColors } from "../../theme";
+import { radius, spacing, typography, type AppColors } from "../../theme";
 
 const copy = {
   en: {
     close: "Close",
     dailyReminder: "Daily reminder",
-    dailyReminderDetail: "Choose when Patternly should remind you to practise.",
     disableReminder: "Turn off reminder",
     notificationBody: "Choose one focused Patternly practice session.",
     notificationTitle: "Time to practise",
@@ -34,24 +34,23 @@ const copy = {
     permissionGranted: "Notifications are allowed",
     permissionGrantedDetail: "Patternly can show local practice reminders.",
     permissionPending: "Checking notification permission",
+    permissionSection: "Permission",
     permissionRequest: "Enable notifications",
     permissionUndeterminedDetail: "Allow local notifications before setting a reminder.",
-    preferences: "Preferences",
     reminderOff: "Off",
-    reminderPermissionDenied: "Allow notifications in device settings before saving a reminder.",
     reminderSave: "Save reminder",
     reminderTimeInvalid: "Use a valid 24-hour time, for example 20:00.",
     reminderTimePlaceholder: "20:00",
-    settingsDialogMessage: "Patternly needs notification permission to schedule a daily reminder. You can enable it in device settings.",
-    settingsDialogTitle: "Enable notifications in settings",
+    reminderNote: "One daily reminder on this device.",
+    reminderSection: "Practice reminder",
+    settings: "Settings",
+    notifications: "Notifications",
     sheetIntro: "Set a daily time for one focused practice session.",
     sheetTitle: "Daily reminder",
-    notNow: "Not now",
   },
   pl: {
     close: "Zamknij",
     dailyReminder: "Codzienne przypomnienie",
-    dailyReminderDetail: "Wybierz, kiedy Patternly ma przypominać o ćwiczeniach.",
     disableReminder: "Wyłącz przypomnienie",
     notificationBody: "Wybierz jedną skupioną sesję ćwiczeń w Patternly.",
     notificationTitle: "Czas na ćwiczenia",
@@ -61,30 +60,31 @@ const copy = {
     permissionGranted: "Powiadomienia są dozwolone",
     permissionGrantedDetail: "Patternly może wyświetlać lokalne przypomnienia o ćwiczeniach.",
     permissionPending: "Sprawdzanie uprawnienia do powiadomień",
+    permissionSection: "Uprawnienia",
     permissionRequest: "Włącz powiadomienia",
     permissionUndeterminedDetail: "Zezwól na lokalne powiadomienia przed ustawieniem przypomnienia.",
-    preferences: "Preferencje",
     reminderOff: "Wyłączone",
-    reminderPermissionDenied: "Zezwól na powiadomienia w ustawieniach urządzenia przed zapisaniem przypomnienia.",
     reminderSave: "Zapisz przypomnienie",
     reminderTimeInvalid: "Podaj prawidłową godzinę w formacie 24-godzinnym, np. 20:00.",
     reminderTimePlaceholder: "20:00",
-    settingsDialogMessage: "Patternly potrzebuje zgody na powiadomienia, aby ustawić codzienne przypomnienie. Możesz ją włączyć w ustawieniach urządzenia.",
-    settingsDialogTitle: "Włącz powiadomienia w ustawieniach",
+    reminderNote: "Jedno codzienne przypomnienie na tym urządzeniu.",
+    reminderSection: "Przypomnienie o ćwiczeniach",
+    settings: "Ustawienia",
+    notifications: "Powiadomienia",
     sheetIntro: "Ustaw codzienną godzinę jednej skupionej sesji ćwiczeń.",
     sheetTitle: "Codzienne przypomnienie",
-    notNow: "Nie teraz",
   },
 } as const;
 
-export function NotificationSettingsScreen() {
+type NotificationSettingsScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.NOTIFICATION_SETTINGS>;
+
+export function NotificationSettingsScreen({ navigation }: NotificationSettingsScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { colors, locale } = useAppPreferences();
   const notifications = useNotificationSettings();
   const [reminderError, setReminderError] = useState<string | null>(null);
   const [reminderSheetVisible, setReminderSheetVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState("20:00");
-  const [settingsDialogVisible, setSettingsDialogVisible] = useState(false);
   const text = copy[locale];
 
   useEffect(() => {
@@ -92,8 +92,7 @@ export function NotificationSettingsScreen() {
   }, [notifications.dailyReminder]);
 
   async function requestPermission() {
-    const permission = await notifications.requestPermission();
-    if (permission === "denied") setSettingsDialogVisible(true);
+    await notifications.requestPermission();
   }
 
   async function saveReminder() {
@@ -115,7 +114,6 @@ export function NotificationSettingsScreen() {
     } catch (error) {
       if (error instanceof NotificationPermissionDeniedError) {
         setReminderSheetVisible(false);
-        setSettingsDialogVisible(true);
         return;
       }
       throw error;
@@ -130,38 +128,49 @@ export function NotificationSettingsScreen() {
   const permission = permissionPresentation(notifications.permission, text);
 
   return (
-    <Screen>
-      <InfoBlock
-        body={permission.detail}
-        icon={<Icon color={permission.iconColor(colors)} name={permission.icon} size={18} />}
-        testID={`notification-permission-${notifications.permission ?? "checking"}`}
-        title={permission.title}
-        tone={permission.tone}
+    <Screen edges={["top", "bottom"]}>
+      <ScreenHeader
+        backAction={{ onPress: () => navigation.goBack() }}
+        context={text.settings}
+        contextTone="primary"
+        title={text.notifications}
       />
 
-      {notifications.permission === "undetermined" ? (
-        <Button onPress={() => { void requestPermission(); }}>{text.permissionRequest}</Button>
-      ) : null}
-      {notifications.permission === "denied" ? (
-        <Button onPress={() => { void Linking.openSettings(); }} variant="secondary">{text.openDeviceSettings}</Button>
-      ) : null}
+      <View style={styles.content}>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{text.permissionSection}</Text>
+        <PermissionCard
+          detail={permission.detail}
+          icon={permission.icon}
+          iconColor={permission.iconColor(colors)}
+          onOpenSettings={notifications.permission === "denied" ? () => { void Linking.openSettings(); } : undefined}
+          testID={`notification-permission-${notifications.permission ?? "checking"}`}
+          title={permission.title}
+          tone={permission.tone}
+          openSettingsLabel={text.openDeviceSettings}
+        />
 
-      <SettingsGroup title={text.preferences}>
+        {notifications.permission === "undetermined" ? (
+          <Button onPress={() => { void requestPermission(); }}>{text.permissionRequest}</Button>
+        ) : null}
+
+        <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{text.reminderSection}</Text>
         <ListRow
-          detail={text.dailyReminderDetail}
-          leading={<IconTile name="rotate-ccw" size={32} tone="settings" />}
+          detail={notifications.dailyReminder ? formatDailyReminderTime(notifications.dailyReminder) : text.reminderOff}
+          leading={<IconTile iconSize={20} name="bell" size={32} tone="settings" />}
           onPress={() => setReminderSheetVisible(true)}
           title={text.dailyReminder}
-          trailing={<View style={styles.reminderValue}><Text style={styles.reminderValueLabel}>{notifications.dailyReminder ? formatDailyReminderTime(notifications.dailyReminder) : text.reminderOff}</Text><Icon color={colors.listRow.icon} name="chevron-right" size={20} /></View>}
-          variant="grouped"
+          trailing={<Icon color={colors.listRow.icon} name="chevron-right" size={16} />}
+          variant="settings"
         />
-      </SettingsGroup>
+        <Text maxFontSizeMultiplier={2} style={styles.note}>{text.reminderNote}</Text>
+      </View>
 
       <SettingsBottomSheet
         closeLabel={text.close}
         intro={text.sheetIntro}
         onClose={() => setReminderSheetVisible(false)}
         title={text.sheetTitle}
+        variant="reminder"
         visible={reminderSheetVisible}
       >
         <TextInput
@@ -179,22 +188,42 @@ export function NotificationSettingsScreen() {
         <View style={styles.sheetActions}>
           <Button onPress={() => { void saveReminder(); }}>{text.reminderSave}</Button>
           {notifications.dailyReminder ? (
-            <Button onPress={() => { void disableReminder(); }} variant="secondary">{text.disableReminder}</Button>
+            <Button onPress={() => { void disableReminder(); }} variant="ghost">{text.disableReminder}</Button>
           ) : null}
         </View>
       </SettingsBottomSheet>
-
-      <SettingsDialog
-        closeLabel={text.close}
-        message={text.settingsDialogMessage}
-        onClose={() => setSettingsDialogVisible(false)}
-        onPrimaryAction={() => { setSettingsDialogVisible(false); void Linking.openSettings(); }}
-        primaryActionLabel={text.openDeviceSettings}
-        secondaryActionLabel={text.notNow}
-        title={text.settingsDialogTitle}
-        visible={settingsDialogVisible}
-      />
     </Screen>
+  );
+}
+
+function PermissionCard({ detail, icon, iconColor, onOpenSettings, openSettingsLabel, testID, title, tone }: Readonly<{
+  detail: string;
+  icon: "alert-triangle" | "settings" | "shield-check";
+  iconColor: string;
+  onOpenSettings?: () => void;
+  openSettingsLabel: string;
+  testID: string;
+  title: string;
+  tone: "neutral" | "success" | "warning";
+}>) {
+  const styles = useThemedStyles(createStyles);
+  return (
+    <View style={[styles.permissionCard, tone === "warning" ? styles.permissionWarning : null]} testID={testID}>
+      <View style={styles.permissionHeader}>
+        <View style={[styles.permissionIcon, tone === "success" ? styles.permissionSuccessIcon : tone === "warning" ? styles.permissionWarningIcon : null]}>
+          <Icon color={iconColor} name={icon} size={20} />
+        </View>
+        <View style={styles.permissionCopy}>
+          <Text maxFontSizeMultiplier={2} style={[styles.permissionTitle, tone === "warning" ? styles.permissionWarningTitle : null]}>{title}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.permissionDetail}>{detail}</Text>
+        </View>
+      </View>
+      {onOpenSettings ? (
+        <Pressable accessibilityRole="button" onPress={onOpenSettings} style={styles.permissionAction}>
+          <Text maxFontSizeMultiplier={2} style={styles.permissionActionText}>{openSettingsLabel}</Text>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 
@@ -214,9 +243,22 @@ function permissionPresentation(
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  reminderValue: { alignItems: "center", flexDirection: "row", gap: spacing.xs },
-  reminderValueLabel: { ...typography.caption, color: palette.textMuted },
-  reminderTimeInput: { ...typography.body, backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: 8, borderWidth: 1, color: palette.textPrimary, minHeight: 48, paddingHorizontal: spacing.md },
+  content: { gap: spacing.xl },
+  sectionLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
+  permissionCard: { backgroundColor: palette.listRow.surface, borderRadius: radius.button, gap: spacing.md, padding: spacing.lg },
+  permissionWarning: { backgroundColor: palette.warningSoft },
+  permissionHeader: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  permissionIcon: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderRadius: radius.md, height: 32, justifyContent: "center", width: 32 },
+  permissionSuccessIcon: { backgroundColor: palette.successSoft },
+  permissionWarningIcon: { backgroundColor: palette.warningSoft },
+  permissionCopy: { flex: 1, gap: spacing.xxs, minWidth: 0 },
+  permissionTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
+  permissionWarningTitle: { color: palette.warning, fontWeight: "600" },
+  permissionDetail: { color: palette.textSecondary, fontSize: 12.5, lineHeight: 16 },
+  permissionAction: { alignItems: "flex-start", justifyContent: "center", minHeight: 44 },
+  permissionActionText: { color: palette.warning, fontSize: 14, fontWeight: "600", lineHeight: 20 },
+  note: { color: palette.textMuted, fontSize: 12.5, lineHeight: 16 },
+  reminderTimeInput: { color: palette.textPrimary, fontSize: 28, fontWeight: "600", height: 66, lineHeight: 34, paddingHorizontal: spacing.xl, paddingVertical: spacing.md, textAlign: "center" },
   reminderError: { ...typography.small, color: palette.danger },
   sheetActions: { gap: spacing.sm },
 });

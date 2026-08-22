@@ -9,7 +9,7 @@ const preferenceSelection = readFileSync("src/features/home/PreferenceSelectionS
 const appearanceSettings = readFileSync("src/features/home/AppearanceSettingsScreen.tsx", "utf8");
 const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
-test("Settings exposes six participant navigation actions and one explicit backend verification action", () => {
+test("Settings exposes five participant navigation actions and one explicit backend verification action", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
   assert.equal(navigationRows.length, 7);
 
@@ -67,7 +67,7 @@ test("appearance choices use the Figma preview variants without changing languag
 test("settings bottom sheets use the Figma elevated shell and modal accessibility boundary", () => {
   const bottomSheet = readFileSync("src/components/SettingsBottomSheet.tsx", "utf8");
   const tokens = readFileSync("src/theme/tokens.ts", "utf8");
-  assert.match(bottomSheet, /accessibilityViewIsModal style=\{styles\.sheet\}/);
+  assert.match(bottomSheet, /accessibilityViewIsModal style=\{(?:styles\.sheet|\[styles\.sheet,)/);
   assert.match(bottomSheet, /backgroundColor:\s*palette\.bottomSheet\.surface/);
   assert.match(bottomSheet, /borderTopLeftRadius:\s*radius\.sheet/);
   assert.match(bottomSheet, /shadowOffset:\s*\{ height:\s*-4, width:\s*0 \}/);

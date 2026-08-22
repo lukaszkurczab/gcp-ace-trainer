@@ -37,6 +37,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
   assert.equal(new Set(routeIds).size, 22);
   assert.deepEqual(headerlessRouteIds, [
     "HOME",
+    "NOTIFICATION_SETTINGS",
     "SELECT_TRACK",
     "PRACTICE_HUB",
     "ALGORITHMS_SCOPE_SELECTION",
@@ -56,6 +57,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
   ]) {
     assert.match(source(path), /<AppShellHeader\b/);
   }
+  assert.match(source("src/features/home/NotificationSettingsScreen.tsx"), /<ScreenHeader\b/);
 
   assert.match(source("src/features/coding-interview/session/SessionShell.tsx"), /<Screen edges=\{\["top", "bottom"\]\}/);
   assert.match(source("src/features/practice/PracticeSessionSurface.tsx"), /<SessionShell\b/);

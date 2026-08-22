@@ -11,13 +11,14 @@ type ScreenHeaderProps = Readonly<{
     onPress: () => void;
   }>;
   context?: string;
+  contextTone?: "muted" | "primary";
   description?: string;
   titleTestID?: string;
   title: string;
 }>;
 
 /** Figma Patternly Library Screen Header: local context, title, and optional description. */
-export function ScreenHeader({ backAction, context, description, title, titleTestID }: ScreenHeaderProps) {
+export function ScreenHeader({ backAction, context, contextTone = "muted", description, title, titleTestID }: ScreenHeaderProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
 
@@ -32,7 +33,7 @@ export function ScreenHeader({ backAction, context, description, title, titleTes
               onPress={backAction.onPress}
             />
           ) : null}
-          {context ? <Text maxFontSizeMultiplier={2} style={styles.context}>{context}</Text> : null}
+          {context ? <Text maxFontSizeMultiplier={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null]}>{context}</Text> : null}
         </View>
       ) : null}
       <View style={styles.copy}>
@@ -57,6 +58,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     ...typography.small,
     color: palette.textMuted,
     fontWeight: "600",
+  },
+  contextPrimary: {
+    color: palette.textPrimary,
   },
   copy: {
     gap: spacing.xs,

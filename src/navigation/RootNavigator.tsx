@@ -80,7 +80,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.NOTIFICATION_SETTINGS}
         component={NotificationSettingsScreen}
-        options={{ title: t("Notifications") }}
+        options={{ headerShown: false, title: t("Notifications") }}
       />
       <Stack.Screen
         name={ROUTES.SELECT_TRACK}

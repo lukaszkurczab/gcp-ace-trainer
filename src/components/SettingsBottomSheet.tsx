@@ -12,21 +12,22 @@ type SettingsBottomSheetProps = {
   intro: string;
   onClose: () => void;
   title: string;
+  variant?: "default" | "reminder";
   visible: boolean;
 };
 
-export function SettingsBottomSheet({ children, closeLabel, intro, onClose, title, visible }: SettingsBottomSheetProps) {
+export function SettingsBottomSheet({ children, closeLabel, intro, onClose, title, variant = "default", visible }: SettingsBottomSheetProps) {
   const styles = useThemedStyles(createStyles);
   const insets = useSafeAreaInsets();
   return (
     <Modal animationType="slide" onRequestClose={onClose} statusBarTranslucent transparent visible={visible}>
       <View style={styles.root}>
         <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={onClose} style={styles.backdrop} />
-        <View accessibilityViewIsModal style={styles.sheet}>
-          <ScrollView contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <View accessibilityViewIsModal style={[styles.sheet, variant === "reminder" ? styles.reminderSheet : null]}>
+          <ScrollView contentContainerStyle={[styles.content, variant === "reminder" ? styles.reminderContent : null, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <View style={styles.handle} />
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.intro}>{intro}</Text>
+            <Text maxFontSizeMultiplier={2} style={[styles.title, variant === "reminder" ? styles.reminderTitle : null]}>{title}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.intro}>{intro}</Text>
             {children}
           </ScrollView>
         </View>
@@ -52,7 +53,16 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     elevation: 8
   },
   content: { gap: spacing.md, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  reminderSheet: {
+    minHeight: 432,
+  },
+  reminderContent: {
+    gap: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+  },
   handle: { alignSelf: "center", backgroundColor: palette.bottomSheet.handle, borderRadius: radius.pill, height: 4, marginBottom: spacing.xs, width: 44 },
   title: { ...typography.heading, color: palette.textPrimary },
+  reminderTitle: { fontSize: 22, letterSpacing: -0.3, lineHeight: 28, fontWeight: "600" },
   intro: { ...typography.small, color: palette.textSecondary },
 });

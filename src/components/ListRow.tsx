@@ -15,7 +15,7 @@ type ListRowProps = {
   testID?: string;
   title: string;
   trailing?: ReactNode;
-  variant?: "card" | "grouped";
+  variant?: "card" | "grouped" | "settings";
 };
 
 export function ListRow({
@@ -32,20 +32,20 @@ export function ListRow({
   const styles = useThemedStyles(createStyles);
   const rowStyle = [
     styles.row,
-    variant === "grouped" ? styles.groupedRow : styles.cardRow,
+    variant === "grouped" ? styles.groupedRow : variant === "settings" ? styles.settingsRow : styles.cardRow,
     style,
   ];
   const content = (
     <>
       {leading ? <View style={styles.leading}>{leading}</View> : null}
-      <View style={[styles.copy, variant === "grouped" ? styles.groupedCopy : null]}>
+      <View style={[styles.copy, variant === "card" ? null : styles.groupedCopy]}>
         <View style={[styles.titleRow, variant === "grouped" ? styles.groupedTitleRow : null]}>
-          <Text maxFontSizeMultiplier={2} numberOfLines={2} style={[styles.title, variant === "grouped" ? styles.groupedTitle : null]}>
+          <Text maxFontSizeMultiplier={2} numberOfLines={2} style={[styles.title, variant === "grouped" ? styles.groupedTitle : variant === "settings" ? styles.settingsTitle : null]}>
             {title}
           </Text>
           {meta ? <Text maxFontSizeMultiplier={2} style={styles.meta}>{meta}</Text> : null}
         </View>
-        {detail ? <Text maxFontSizeMultiplier={2} style={[styles.detail, variant === "grouped" ? styles.groupedDetail : null]}>{detail}</Text> : null}
+        {detail ? <Text maxFontSizeMultiplier={2} style={[styles.detail, variant === "grouped" ? styles.groupedDetail : variant === "settings" ? styles.settingsDetail : null]}>{detail}</Text> : null}
       </View>
       {trailing ? <View style={styles.trailing}>{trailing}</View> : null}
     </>
@@ -89,6 +89,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: 14,
   },
+  settingsRow: {
+    backgroundColor: palette.listRow.surface,
+    borderRadius: radius.button,
+    minHeight: 63,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 14,
+  },
   pressed: {
     opacity: 0.84
   },
@@ -126,6 +133,18 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   groupedDetail: {
     ...typography.listRowDetail,
     color: palette.listRow.textSecondary,
+  },
+  settingsTitle: {
+    color: palette.listRow.textPrimary,
+    fontSize: 14,
+    fontWeight: "500",
+    lineHeight: 18,
+  },
+  settingsDetail: {
+    color: palette.primary,
+    fontSize: 13,
+    fontWeight: "400",
+    lineHeight: 16,
   },
   meta: {
     ...typography.caption,
