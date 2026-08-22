@@ -10,6 +10,8 @@ test("passive runtime selectors are attached to visible content rather than cont
 
   assert.match(home, /<Card variant="layered" style=\{styles\.decisionCard\}>/);
   assert.match(home, /<Text style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
+  assert.match(home, /onPress=\{isReviewRecommendation \? onOpenSettings : onChooseTopic\}/);
+  assert.match(home, /t\(isReviewRecommendation \? "Manage settings" : "Choose another topic"\)/);
   assert.doesNotMatch(home, /<Card[^>]*testID=\{runtimeSelectors\.home\.trackCard/);
   assert.match(feedback, /<Text style=\{styles\.result\} testID=\{runtimeSelectors\.session\.result\(itemId, feedback\.result\)\}>/);
   assert.doesNotMatch(feedback, /<View style=\{styles\.container\} testID=\{runtimeSelectors\.session\.result/);

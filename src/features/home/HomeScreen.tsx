@@ -270,6 +270,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             onChooseTopic={() => navigation.navigate(ROUTES.TOPIC_ROADMAP, {
               trackId: activeTrack.id,
             })}
+            onOpenSettings={() => setActiveTab("settings")}
             onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
             onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
             reviewQueueItems={data.reviewQueueItems}

@@ -24,6 +24,7 @@ type HomeTabProps = {
   dashboardError: string | null;
   onChangeTrack: () => void;
   onChooseTopic: () => void;
+  onOpenSettings: () => void;
   onRecommendationAction: (action: HomeRecommendationAction) => void;
   onStartLearning: (topicId: string) => void;
   reviewQueueItems: readonly ReviewQueueEntry[];
@@ -38,6 +39,7 @@ export function HomeTab({
   dashboardError,
   onChangeTrack,
   onChooseTopic,
+  onOpenSettings,
   onRecommendationAction,
   onStartLearning,
   reviewQueueItems,
@@ -147,11 +149,11 @@ export function HomeTab({
         </Button>
         <Pressable
           accessibilityRole="button"
-          onPress={onChooseTopic}
+          onPress={isReviewRecommendation ? onOpenSettings : onChooseTopic}
           style={({ pressed }) => [styles.secondaryAction, pressed ? styles.pressed : null]}
         >
-          <Text style={styles.secondaryActionText}>{t("Choose another topic")}</Text>
-          <Icon color={palette.accentPurple} name="chevron-right" size={18} />
+          <Text style={styles.secondaryActionText}>{t(isReviewRecommendation ? "Manage settings" : "Choose another topic")}</Text>
+          {isReviewRecommendation ? null : <Icon color={palette.accentPurple} name="chevron-right" size={18} />}
         </Pressable>
       </Card>
       <View style={styles.overviewSection} testID="home-overview">
