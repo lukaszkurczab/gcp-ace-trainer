@@ -4,9 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`, `61cc0a0`, `00c7cb7`, `0060009`, `fe87b5b`, `471c8aa`, `6384050`, `47eb23c`, `04ae92e`, `78eb8cb`, `36e6e73`, `e6ecb58`, `851e09a`, `2cbdf75`, `7770c57`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`, `61cc0a0`, `00c7cb7`, `0060009`, `fe87b5b`, `471c8aa`, `6384050`, `47eb23c`, `04ae92e`, `78eb8cb`, `36e6e73`, `e6ecb58`, `851e09a`, `2cbdf75`, `7770c57`, `32c170d`
 Verified and pushed SHA: not performed in this pass; the remote branch was not changed.
-Current local verification SHA: `7770c57`
+Current local verification SHA: `32c170d`
 
 ## Outcome
 
@@ -50,9 +50,9 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 
 | Reachable surface/state | Current canonical owner | Figma authority | Status | Notes |
 |---|---|---|---|---|
-| Home ready, Coding track, no activity | `HomeScreen` / `HomeTab` | `55:445` | `MATCHED` | Shell, title, track context, recommendation card, `Manage settings` secondary action, `Open Practice` focus action, inline 40 px overview mini-bars, plain Current focus/activity rows, colors, and bottom navigation aligned. Existing topic-selection behavior remains canonical; no unowned View activity route was invented. |
+| Home ready, Coding track, no activity | `HomeScreen` / `HomeTab` | `55:445` | `MATCHED` | Shell, title, track context, CPU recommendation icon, recommendation card, `Manage settings` secondary action, `Open Practice` focus action, inline 40 px overview mini-bars, plain Current focus/activity rows, colors, and bottom navigation aligned. Existing topic-selection behavior remains canonical; no unowned View activity route was invented. |
 | Home track switch | `SelectTrackScreen` | `42:422`, `42:478`, `42:539` | `PARTIAL` | Local selection cards, returning-state Tracks/safety context, and the single footer Continue command follow the Figma track-choice shell. The footer remains because it is the canonical commit command even though the returning Figma frame omits it. Latest-source screenshot capture remains pending. |
-| Home active session | `HomeScreen` / `HomeTab` | `55:539` | `PARTIAL` | Resume card, overview, focus, activity, and bottom navigation are implemented from real local session data; the active-session card now omits the non-Figma secondary CTA and the focus action uses `Open Practice`; latest-source screenshot comparison remains pending. |
+| Home active session | `HomeScreen` / `HomeTab` | `55:539` | `PARTIAL` | Resume card with the Figma play icon, overview, focus, activity, and bottom navigation are implemented from real local session data; the active-session card now omits the non-Figma secondary CTA and the focus action uses `Open Practice`; latest-source screenshot comparison remains pending. |
 | Home review due | `HomeScreen` / `HomeTab` | `55:632` | `PARTIAL` | Review weak areas, Start review, Manage settings, overview, focus, and activity are implemented without synthetic counts; latest-source screenshot comparison remains pending. |
 | Practice Hub ready/review available | `PracticeHubScreen` | `55:993` | `CANONICAL_CONFLICT` | Shell, topic context, hero card spacing/type, grouped rows, and navigation are aligned. Figma's mode taxonomy and copy do not match the current canonical modes and commands, so no Figma-only mode or CTA was added. |
 | Practice Hub unavailable | `PracticeHubScreen` | `55:1139` | `CANONICAL_CONFLICT` | `55:1139` is the Practice screen with only the Review weak areas row unavailable, not a separate unavailable route. The canonical runtime already exposes that row with an explicit no-due reason; Figma's surrounding mode taxonomy and copy conflict with the current command model. |
@@ -102,6 +102,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run qa:static`: passed on `851e09a`: recovery inventory (279 active source files, 112 active tests, 542 recovery cases), typecheck, 551/551 tests, content boundary, and runtime privacy boundary.
 - `npm run qa:static`: passed on `2cbdf75`: recovery inventory (279 active source files, 112 active tests, 542 recovery cases), typecheck, 551/551 tests, content boundary, and runtime privacy boundary.
 - `npm run qa:static`: passed on `7770c57`: recovery inventory (279 active source files, 112 active tests, 542 recovery cases), typecheck, 551/551 tests, content boundary, and runtime privacy boundary.
+- `npm run qa:static`: passed on `32c170d`: recovery inventory (279 active source files, 112 active tests, 543 recovery cases), typecheck, 552/552 tests, content boundary, and runtime privacy boundary.
 - `npm run validate:runtime-privacy-boundary`: passed on `67a9636`.
 - `npm run validate:content-boundary`: passed on `67a9636`.
 - Focused notification/settings/visual-shell/canonical tests: 49/49 passed before the implementation commit; the same checks are included in the 549-test full run.
@@ -132,6 +133,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-practice-recovery-primary-2026-08-22`: passed; the practice recovery-primary source produced an iOS bundle with 1,345 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-home-active-session-2026-08-22`: passed; the Home active-session source produced an iOS bundle with 1,345 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-home-recommendation-settings-2026-08-22`: passed; the Home recommendation-settings source produced an iOS bundle with 1,345 modules.
+- `npx expo export --platform ios --output-dir /tmp/patternly-export-home-icons-2026-08-22`: passed; the Home icon source produced an iOS bundle with 1,345 modules.
 - Route cleanup: removed the English-only `LanguageSettings` route and Settings row per the canonical launch contract; focused settings, visual-shell, and typecheck verification passed after the cutover.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows`: passed; the post-summary-cutover source produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-progress-focus`: passed; the latest Home/Progress source produced an iOS bundle with 1,343 modules.
