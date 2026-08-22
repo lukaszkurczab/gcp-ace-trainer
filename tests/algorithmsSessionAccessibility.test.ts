@@ -67,6 +67,7 @@ test("canonical session surfaces expose deterministic state and do not group int
   assert.match(practiceSurface, /props\.phase === "completing" \? <CompletingNotice \/> : null/);
   assert.match(practiceSurface, /<View style=\{styles\.asyncStatusRow\}>\s*<View accessible accessibilityLabel=\{t\("Finishing this session…"\)\} style=\{styles\.asyncIcon\}>[\s\S]*?name="rotate-ccw"[\s\S]*?<Text style=\{styles\.asyncStatusLabel\}>\{t\("LOADING"\)\}<\/Text>/);
   assert.match(practiceSurface, /asyncIcon:\s*\{[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?borderRadius:\s*radius\.lg[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
+  assert.match(practiceSurface, /asyncStatusLabel:\s*\{[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"600"[\s\S]*?lineHeight:\s*16/);
   assert.match(practiceSurface, /asyncState:\s*\{[\s\S]*?backgroundColor:\s*palette\.surface[\s\S]*?borderRadius:\s*radius\.button[\s\S]*?gap:\s*spacing\.lg[\s\S]*?padding:\s*spacing\.xl/);
   assert.match(practiceSurface, /completingActions:\s*\{\s*minHeight:\s*48\s*\}/);
   assert.match(simulation, /accessible accessibilityLabel=\{notice\.message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);

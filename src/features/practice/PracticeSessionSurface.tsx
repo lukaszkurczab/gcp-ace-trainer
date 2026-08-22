@@ -237,7 +237,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   actions: { gap: spacing.sm },
   asyncDescription: { ...typography.body, color: palette.textSecondary },
   asyncIcon: { alignItems: "center", backgroundColor: palette.surfaceInput, borderRadius: radius.lg, height: 44, justifyContent: "center", width: 44 },
-  asyncStatusLabel: { ...typography.caption, color: palette.textMuted, flex: 1, fontWeight: "600", letterSpacing: 0.5 },
+  asyncStatusLabel: { ...typography.caption, color: palette.textMuted, flex: 1, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   asyncStatusRow: { alignItems: "center", flexDirection: "row", gap: spacing.md, width: "100%" },
   asyncState: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.button, borderWidth: 1, gap: spacing.lg, padding: spacing.xl },
   asyncSpacer: { height: 50, minHeight: 50, width: 1 },
