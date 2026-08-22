@@ -1,6 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Button } from "../../components";
+import { Button, Icon } from "../../components";
 import type { ContentItemRef, TrackId } from "../../domain";
 import type { SessionMetricPresentation } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
@@ -148,11 +148,9 @@ function PreparingNotice() {
 
 function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
   const styles = useThemedStyles(createStyles);
-  return (
-    <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, notice.tone === "error" ? styles.noticeError : notice.tone === "success" ? styles.noticeSuccess : null]}>
-      <Text style={styles.noticeText}>{notice.message}</Text>
-    </View>
-  );
+  const { colors: palette } = useAppPreferences();
+  const operationFailure = notice.tone === "error";
+  return <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, operationFailure ? styles.noticeError : notice.tone === "success" ? styles.noticeSuccess : null]}>{operationFailure ? <Icon color={palette.warning} name="alert-triangle" size={20} /> : null}<Text style={[styles.noticeText, operationFailure ? styles.noticeErrorText : null]}>{notice.message}</Text></View>;
 }
 
 function ActionBar(props: PracticeSessionSurfaceProps) {
@@ -222,7 +220,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.button, borderTopRightRadius: radius.button, borderWidth: 1, elevation: 8, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, width: "100%" },
   exitTitle: { ...typography.heading, color: palette.textPrimary },
   notice: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },
-  noticeError: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
+  noticeError: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.warning, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
+  noticeErrorText: { color: palette.warning, flex: 1 },
   noticeSuccess: { backgroundColor: palette.successSoft, borderColor: palette.success },
   noticeText: { ...typography.small, color: palette.textSecondary },
   modalBackdrop: { backgroundColor: "rgba(0, 0, 0, 0.56)", flex: 1, justifyContent: "flex-end" },

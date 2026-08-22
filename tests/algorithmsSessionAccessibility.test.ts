@@ -62,6 +62,8 @@ test("canonical session surfaces expose deterministic state and do not group int
   assert.match(simulation, /accessibilityLabel=\{option\.label\} accessibilityRole=\{role\} accessibilityState=\{\{ checked: option\.selected \}\}/);
   assert.match(simulation, /accessibilityRole="radio" accessibilityState=\{\{ checked: selected \}\}/);
   assert.match(practiceSurface, /accessible accessibilityLabel=\{notice\.message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
+  assert.match(practiceSurface, /name="alert-triangle"/);
+  assert.match(practiceSurface, /noticeError:\s*\{[\s\S]*?backgroundColor:\s*palette\.elevatedSurface[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
   assert.match(simulation, /accessible accessibilityLabel=\{notice\.message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
   assert.match(shell, /accessibilityLabel=\{timer\?\.accessibilityLabel\} accessibilityRole=\{timer \? "timer" : undefined\}/);
   assert.match(shell, /accessibilityLabel=\{position\?\.accessibilityLabel\}/);
