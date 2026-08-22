@@ -4,9 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`
 Verified and pushed SHA: `b987b87a00ec53053c2c37bbae1e7b2d5a928da5`
-Current local verification SHA: `3e6a282`
+Current local verification SHA: `f509e91`
 
 ## Outcome
 
@@ -69,13 +69,13 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Exam, exam review, result, answer review | `ExamScreen`, `ExamReviewScreen`, `ResultScreen`, `AnswerReviewScreen` | No direct current-state authority mapped | `DESIGN_MISSING` | Existing behavior and actions remain unchanged. |
 | Algorithms simulation active/navigator/recovery | `AlgorithmsInterviewSimulationScreen` and navigator | `74:539` through `74:1046` | `PARTIAL` | Choice rows, navigator sheet, Finish simulation action, and existing durable recovery states use the Figma geometry where the canonical projection exposes it; fresh state captures remain open. |
 | Simulation summary | `AlgorithmsInterviewSimulationResultScreen` / `SimulationSessionSurface` | `74:1046`, `750:6109` | `PARTIAL` | Figma summary title/mode hierarchy, flat metric separators, outcome distribution rows, review availability, and real back/review commands are implemented; fresh screenshot comparison remains open. |
-| Simulation review | `AlgorithmsInterviewSimulationResultScreen` | `765:6130` and related review frames | `PARTIAL` | All/Missed filters, score, current item, feedback blocks, pager, and back-to-summary are implemented over the verified result; fresh screenshot comparison remains open. |
+| Simulation review | `AlgorithmsInterviewSimulationResultScreen` | `765:6130` and related review frames | `PARTIAL` | The canonical Review Shell now owns the compact back/context header, segmented All/Missed filter, persisted answer-option outcomes, Details disclosure, pager, six-column navigator sheet, and explicit unavailable-result state. Fresh screenshot comparison remains open. |
 | Mistakes review and topic roadmap | Existing route owners | No direct current-state authority mapped | `DESIGN_MISSING` | Review now exposes an explicit no-active-track state; no direct Figma authority was found for the full queue/roadmap surfaces. |
 | Auth, account, premium, content trust/reporting | No current runtime route | Page 1 sections `57:1952`, `95:1563`, `107:960`, `115:738`; Library account/content nodes | `DESIGN_MISSING` | These are present in Figma but absent from the current launch route graph. Adding them would invent product scope and commands. |
 
 ## Verification
 
-- `npm test`: 544 passed, 0 failed.
+- `npm test`: 545 passed, 0 failed.
 - `npm run typecheck`: passed.
 - `npm run qa:static`: passed, including recovery inventory and both runtime/content boundary checks.
 - `npm run validate:runtime-privacy-boundary`: passed.
@@ -104,6 +104,8 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run qa:static`: passed on `736d32a`: recovery inventory, typecheck, 544/544 tests, content boundary, and runtime privacy boundary.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows-v2`: passed; the latest practice and simulation summary source produced an iOS bundle with 1,343 modules.
 - `npm run qa:static`: passed on `3e6a282`: recovery inventory, typecheck, 544/544 tests, content boundary, and runtime privacy boundary.
+- `npm run qa:static`: passed on `f509e91`: recovery inventory, typecheck, 545/545 tests, content boundary, and runtime privacy boundary.
+- `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v2`: passed; the simulation review shell produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-progress-v2`: passed; the latest Progress source produced an iOS bundle with 1,343 modules.
 - Current-head iOS dev-client evidence was captured from `3e6a282` through the local Metro endpoint on one verified iPhone 16 Pro iOS 18.6 simulator, without invoking the destructive learning-state reset. Dark and light resetless Maestro journeys each completed six screenshots covering Home, Custom Practice setup, an unanswered coding question, a partial summary, Settings root, and Appearance; an additional Progress checkpoint was captured in both themes. Evidence is stored at `/tmp/patternly-figma-screens-2026-08-22-dark-current/` and `/tmp/patternly-figma-screens-2026-08-22-light-current/`.
 - The first post-capture attempt used two pre-existing simulator bundles and produced mixed-version screenshots; those `*-v2/` artifacts are not treated as current-head evidence. The verified simulator was explicitly opened with `exp+patternly://expo-development-client/?url=http://127.0.0.1:8090`; the second simulator retained an older cached bundle and was excluded from current-head claims.
@@ -111,6 +113,8 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, and route ownership tests pass.
 
 Not verified here: Android, signed/distribution builds, physical-device rendering, full 200% large-text traversal across every route, reduced-motion runtime capture, completed-summary and simulation/review/recovery screenshot comparison, and every Figma operational state.
+
+The fresh simulator pass for the new Review Shell was blocked by CoreSimulatorService becoming unavailable after the export; no destructive state reset or alternate runtime claim was made.
 
 ## Deletion and dead-code review
 
