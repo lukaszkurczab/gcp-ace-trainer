@@ -4,9 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`, `61cc0a0`
 Verified and pushed SHA: not performed in this pass; the remote branch was not changed.
-Current local verification SHA: `e4fb7c3`
+Current local verification SHA: `61cc0a0`
 
 ## Outcome
 
@@ -19,7 +19,7 @@ The implementation is not design-complete. Several Figma-backed operational stat
 - File: `kZXD7cNBKUU7x0ceTHPFpR`
 - Page: `0:1` (`Page 1`)
 - Component/library page: `118:738` (`Patternly Library`)
-- Relevant authority nodes: Home `55:445`; Practice Hub `55:993`; Practice Setup `55:2172`; Session states `68:549` through `68:1239`; Simulation states `74:539` through `74:1126`; Summary `750:6235`; Practice variants `750:6400` through `750:6403`; Screen Header `140:881`; Bottom Navigation `140:875`; Button `141:817`; Answer Option `248:2394`; Settings root `822:7850`; Settings Content `822:7687`; Notifications granted `92:865`; Notifications blocked `92:889`; Notification editor `92:914`; Progress `842:9563`; Activity `842:11192`, `842:11410`, `842:11466`; Review Shell `765:6130`; Answer Review `81:538`, `81:602`, `81:674`, `81:738`, `81:843`, `82:538`; Data & privacy `95:1303`.
+- Relevant authority nodes: Home `55:445`; Practice Hub `55:993`; Practice Setup `55:2172`; Session states `68:549` through `68:1239`; Simulation states `74:539` through `74:1126`; Summary `750:6235`; Practice variants `750:6400` through `750:6403`; Screen Header `140:881`; Bottom Navigation `140:875`; Button `141:817`; Answer Option `248:2394`; Settings root `822:7850`; Settings Content `822:7687`; Appearance `92:827`; Notifications granted `92:865`; Notifications blocked `92:889`; Notification editor `92:914`; Progress `842:9563`; Activity `842:11192`, `842:11410`, `842:11466`; Review Shell `765:6130`; Answer Review `81:538`, `81:602`, `81:674`, `81:738`, `81:843`, `82:538`; Data & privacy `95:1303`.
 
 ## Repository-owned design system
 
@@ -70,7 +70,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Progress tab | `ProgressTab` | `842:9563`, `842:10822`, `842:10949`, `842:11057`, `842:11192`, `842:11410`, `842:11466`, `842:11568`, `842:11692` | `PARTIAL` | Figma week/focus/attention hierarchy is implemented over real local evidence, including the 30/36 title, 28 px section rhythm, 40 px selector, borderless 14 px attention cards, compact Current focus card with truthful evidence-only percentage, nested grouped Activity rows, and existing Algorithms roadmap/diagnostics. Goal/cadence remains a canonical conflict; existing resetless dark/light iOS capture from `3e6a282` completed. |
 | Activity nested under Progress | `ProgressTab` / `progressTabModel` | `842:11192`, `842:11410`, `842:11466` | `PARTIAL` | The direct Figma Activity screen is not a separate route under the canonical product contract (`activity: nestedUnderProgress`). Progress now renders grouped Today/Yesterday/This week/Earlier rows from exact active-package `TrainingAttempt` records, with local outcome/time evidence and explicit empty state. Figma's session-level labels, durations, and navigable row destinations are not fabricated because the current record model does not provide them. |
 | Settings root | `SettingsTab` | `822:7850`, `822:7687` | `CANONICAL_CONFLICT` | Root shell/header description, section labels, dividers, icons, and the real Practice Setup entry now follow Figma. The live root still keeps canonical Language, Legal, diagnostics, and local-data commands; Figma also specifies Account & Plan, Sync & backup, Goal & cadence, and Help & information rows without matching runtime owners. The Figma sample says 10 items while the canonical runtime default is 20. No Figma-only route or command is invented. |
-| Appearance | `AppearanceSettingsScreen` | `619:5237` | `MATCHED` | The appearance journey passes in both dark and light resetless iOS captures from `3e6a282` and preserves the canonical Dark/Light/System preference contract. |
+| Appearance | `AppearanceSettingsScreen` / `PreferenceSelectionScreen` | `619:5237`, `140:881` | `MATCHED` | The route now owns the Figma local Screen Header with Settings context, description, 44 px back target, and the existing preview/radio choice rows. It preserves the canonical Dark/Light/System preference contract; fresh latest-head simulator comparison remains pending. |
 | Notifications detail states | `NotificationSettingsScreen` | `92:865`, `92:889`, `92:914` | `PARTIAL` | Granted/blocked permission cards, inline device-settings action, reminder row, local header, and reminder editor are implemented from the exact Figma states. Fresh runtime screenshot comparison remains pending because CoreSimulatorService is unavailable. |
 | Your data / Data & privacy | `YourDataScreen` / `SettingsInformationScreen` | `95:1303` | `CANONICAL_CONFLICT` | The Figma surface assumes a guest profile with account-required sync/backup and privacy/account navigation. The current canonical product is explicitly local-only, has no composed identity provider, and exposes expanded local-data boundaries instead; no fictional account or sync CTA was added. |
 | Language, legal, diagnostics | Existing settings route owners | `822:7687` and related Page 1 sections | `DESIGN_MISSING` | Routes are reachable, but no verified Figma-specific frame-to-code parity was completed for each detail surface. Notifications and Your data are tracked separately above. |
@@ -88,6 +88,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run typecheck`: passed on `51909b9`.
 - `npm run qa:static`: passed on `67a9636`: recovery inventory, typecheck, 550/550 tests, content boundary, and runtime privacy boundary.
 - `npm run qa:static`: passed on `e4fb7c3`: recovery inventory, typecheck, 551/551 tests, content boundary, and runtime privacy boundary.
+- `npm run qa:static`: passed on `61cc0a0`: recovery inventory, typecheck, 551/551 tests, content boundary, and runtime privacy boundary.
 - `npm run validate:runtime-privacy-boundary`: passed on `67a9636`.
 - `npm run validate:content-boundary`: passed on `67a9636`.
 - Focused notification/settings/visual-shell/canonical tests: 49/49 passed before the implementation commit; the same checks are included in the 549-test full run.
@@ -104,6 +105,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `git diff --check`: passed.
 - `node --test --import tsx tests/homeProgressProjections.test.ts`: passed, 12/12 tests including nested Activity grouping and exact-package filtering.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-progress-activity-2026-08-22`: passed; the nested Activity source produced an iOS bundle with 1,346 modules.
+- `npx expo export --platform ios --output-dir /tmp/patternly-export-appearance-header-2026-08-22`: passed; the Appearance local-header source produced an iOS bundle with 1,346 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows`: passed; the post-summary-cutover source produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-progress-focus`: passed; the latest Home/Progress source produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-home-focus`: passed; the latest Home source produced an iOS bundle with 1,343 modules.
@@ -149,7 +151,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, route ownership, and reduced-motion navigator behavior tests pass.
 - Focused review-shell checks: 46/46 passed after extracting the shared Review Shell/Navigator and wiring Certification Answer Review.
 
-Not verified here: Android, signed/distribution builds, physical-device rendering, full 200% large-text traversal across every route, reduced-motion runtime capture, notification granted/blocked/editor screenshot comparison, completed-summary and simulation/review/recovery screenshot comparison, and every Figma operational state.
+Not verified here: Android, signed/distribution builds, physical-device rendering, full 200% large-text traversal across every route, reduced-motion runtime capture, latest-head Appearance screenshot comparison, notification granted/blocked/editor screenshot comparison, completed-summary and simulation/review/recovery screenshot comparison, and every Figma operational state.
 
 The fresh simulator pass for the new Review Shell and the current simulation active/navigator/recovery/summary cutover was blocked by CoreSimulatorService becoming unavailable after the export; no destructive state reset or alternate runtime claim was made.
 
@@ -159,4 +161,4 @@ No route was deleted because the current reachability graph does not prove any e
 
 ## Remaining work
 
-The remaining gaps are explicit and blocking: extend the existing `3e6a282` dark/light screenshot matrix to the latest `e4fb7c3` source and add notification granted/blocked/editor, immediate feedback, completed summaries, simulation, review, recovery, summary, Answer Review, and the updated Settings root and nested Activity states; compare the implemented Figma simulation operational states (`74:726`, `74:834`, `74:879`, `74:968`, `74:992`, `74:1046`) and Practice operational states (`68:804` through `68:1239`) against fresh runtime captures; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
+The remaining gaps are explicit and blocking: extend the existing `3e6a282` dark/light screenshot matrix to the latest `61cc0a0` source and add notification granted/blocked/editor, immediate feedback, completed summaries, simulation, review, recovery, summary, Answer Review, and the updated Settings root, Appearance, and nested Activity states; compare the implemented Figma simulation operational states (`74:726`, `74:834`, `74:879`, `74:968`, `74:992`, `74:1046`) and Practice operational states (`68:804` through `68:1239`) against fresh runtime captures; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
