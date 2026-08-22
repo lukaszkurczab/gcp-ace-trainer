@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { Icon, IconTile, ListRow, SettingsGroup, type IconName } from "../../../components";
+import { Icon, IconTile, ListRow, ScreenHeader, SettingsGroup, type IconName } from "../../../components";
 import type { StorageIssue } from "../../../application/learningReadModels";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
 import type { AppearancePreference, LanguagePreference } from "../../../application/appPreferences";
@@ -13,6 +13,7 @@ type SettingsTabProps = {
   onOpenLanguage: () => void;
   onOpenLegalInformation: () => void;
   onOpenNotifications: () => void;
+  onOpenPracticeSettings: () => void;
   onOpenYourData: () => void;
   storageIssues: readonly StorageIssue[];
 };
@@ -22,6 +23,7 @@ const copy = {
     appearance: "Appearance",
     appearanceDetail: "Choose the theme used on this device.",
     appSettings: "Settings",
+    settingsDescription: "Manage your account, learning preferences, and app settings.",
     app: "App",
     data: "Your data",
     dataDetail: "View the local data contract for this app.",
@@ -36,6 +38,8 @@ const copy = {
     legalDetail: "Privacy and study-use information.",
     notifications: "Notifications",
     notificationsDetail: "Set permission and daily practice reminders.",
+    practiceSettings: "Practice settings",
+    practiceSettingsDetail: "20 items · After each answer",
     storageDegraded: "Local data degraded",
     storageStatus: "Storage status",
   },
@@ -43,6 +47,7 @@ const copy = {
     appearance: "Wygląd",
     appearanceDetail: "Wybierz motyw używany na tym urządzeniu.",
     appSettings: "Ustawienia",
+    settingsDescription: "Zarządzaj kontem, preferencjami nauki i ustawieniami aplikacji.",
     app: "Aplikacja",
     data: "Twoje dane",
     dataDetail: "Zobacz lokalny kontrakt danych tej aplikacji.",
@@ -57,6 +62,8 @@ const copy = {
     legalDetail: "Prywatność i informacje o korzystaniu z materiałów.",
     notifications: "Powiadomienia",
     notificationsDetail: "Ustaw zgodę i codzienne przypomnienie o ćwiczeniach.",
+    practiceSettings: "Ustawienia ćwiczeń",
+    practiceSettingsDetail: "20 elementów · Po każdej odpowiedzi",
     storageDegraded: "Problem z danymi lokalnymi",
     storageStatus: "Stan danych",
   },
@@ -68,6 +75,7 @@ export function SettingsTab({
   onOpenLanguage,
   onOpenLegalInformation,
   onOpenNotifications,
+  onOpenPracticeSettings,
   onOpenYourData,
   storageIssues,
 }: SettingsTabProps) {
@@ -78,13 +86,11 @@ export function SettingsTab({
   const backendDiagnosticsConfigured = isPatternlyBackendE2eConfigured();
 
   return (
-    <>
-      <View style={styles.pageIntro} testID="settings-screen">
-        <Text style={styles.screenTitle}>{text.appSettings}</Text>
-      </View>
+    <View style={styles.page} testID="settings-screen">
+      <ScreenHeader description={text.settingsDescription} title={text.appSettings} />
 
       {latestStorageIssue ? (
-        <SettingsGroup title={text.storageStatus}>
+        <SettingsGroup dividers title={text.storageStatus}>
           <ListRow
             detail={formatStorageIssue(latestStorageIssue, locale)}
             leading={<IconTile name="alert-triangle" tone="warning" />}
@@ -94,56 +100,65 @@ export function SettingsTab({
         </SettingsGroup>
       ) : null}
 
-      <SettingsGroup title={text.app}>
-        <SettingsNavigationRow
-          detail={text.appearanceDetail}
-          icon="grid"
-          onPress={onOpenAppearance}
-          testID="settings-appearance"
-          title={text.appearance}
-          value={appearanceLabel(locale, appearance)}
-        />
-      </SettingsGroup>
-
-      <SettingsGroup title={text.learning}>
-        <SettingsNavigationRow
-          detail={text.languageDetail}
-          icon="settings"
-          onPress={onOpenLanguage}
-          testID="settings-language"
-          title={text.language}
-          value={languageLabel(locale, language)}
-        />
-        <SettingsNavigationRow
-          detail={text.notificationsDetail}
-          icon="rotate-ccw"
-          onPress={onOpenNotifications}
-          testID="settings-notifications"
-          title={text.notifications}
-        />
-      </SettingsGroup>
-
-      <SettingsGroup title={text.dataPrivacy}>
-        <SettingsNavigationRow detail={text.dataDetail} icon="database" onPress={onOpenYourData} testID="settings-your-data" title={text.data} />
-        <SettingsNavigationRow detail={text.legalDetail} icon="shield-check" onPress={onOpenLegalInformation} testID="settings-legal-information" title={text.legal} />
-      </SettingsGroup>
-
-      {backendDiagnosticsConfigured ? (
-        <SettingsGroup title={text.developerVerification}>
+      <View style={styles.content}>
+        <SettingsGroup dividers title={text.app}>
           <SettingsNavigationRow
-            detail={text.backendDiagnosticsDetail}
-            icon="server-stack"
-            onPress={onOpenBackendDiagnostics}
-            testID="settings-backend-diagnostics"
-            title={text.backendDiagnostics}
+            detail={text.appearanceDetail}
+            icon="moon-half"
+            onPress={onOpenAppearance}
+            testID="settings-appearance"
+            title={text.appearance}
+            value={appearanceLabel(locale, appearance)}
           />
         </SettingsGroup>
-      ) : null}
-      <View style={styles.footer}>
-        <Text style={styles.footerTitle}>Patternly</Text>
-        <Text style={styles.footerText}>{`Version 0.1.0 · Build 1`}</Text>
+
+        <SettingsGroup dividers title={text.learning}>
+          <SettingsNavigationRow
+            detail={text.practiceSettingsDetail}
+            icon="settings"
+            onPress={onOpenPracticeSettings}
+            testID="settings-practice"
+            title={text.practiceSettings}
+          />
+          <SettingsNavigationRow
+            detail={text.languageDetail}
+            icon="settings"
+            onPress={onOpenLanguage}
+            testID="settings-language"
+            title={text.language}
+            value={languageLabel(locale, language)}
+          />
+          <SettingsNavigationRow
+            detail={text.notificationsDetail}
+            icon="bell"
+            onPress={onOpenNotifications}
+            testID="settings-notifications"
+            title={text.notifications}
+          />
+        </SettingsGroup>
+
+        <SettingsGroup dividers title={text.dataPrivacy}>
+          <SettingsNavigationRow detail={text.dataDetail} icon="shield" onPress={onOpenYourData} testID="settings-your-data" title={text.data} />
+          <SettingsNavigationRow detail={text.legalDetail} icon="shield-check" onPress={onOpenLegalInformation} testID="settings-legal-information" title={text.legal} />
+        </SettingsGroup>
+
+        {backendDiagnosticsConfigured ? (
+          <SettingsGroup dividers title={text.developerVerification}>
+            <SettingsNavigationRow
+              detail={text.backendDiagnosticsDetail}
+              icon="server-stack"
+              onPress={onOpenBackendDiagnostics}
+              testID="settings-backend-diagnostics"
+              title={text.backendDiagnostics}
+            />
+          </SettingsGroup>
+        ) : null}
       </View>
-    </>
+      <View style={styles.footer}>
+        <Text maxFontSizeMultiplier={2} style={styles.footerTitle}>Patternly</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.footerText}>{`Version 0.1.0 · Build 1`}</Text>
+      </View>
+    </View>
   );
 }
 
@@ -176,7 +191,7 @@ function SettingsNavigationRow({ detail, icon, onPress, testID, title, value }: 
   return (
     <ListRow
       detail={detail}
-      leading={<IconTile name={icon} size={32} tone="settings" />}
+      leading={<IconTile iconSize={24} name={icon} size={32} tone="settings" />}
       onPress={onPress}
       testID={testID}
       title={title}
@@ -193,8 +208,8 @@ function formatStorageIssue(issue: StorageIssue, locale: AppLocale): string {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  pageIntro: { gap: spacing.md },
-  screenTitle: { ...typography.heading, color: palette.textPrimary },
+  page: { gap: spacing.xl },
+  content: { gap: spacing.xl },
   preferenceMeta: { alignItems: "center", flexDirection: "row", gap: spacing.xs },
   preferenceValue: { ...typography.caption, color: palette.textMuted },
   footer: { alignItems: "center", gap: spacing.xxs, paddingHorizontal: spacing.lg, paddingTop: spacing.lg },

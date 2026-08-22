@@ -9,15 +9,16 @@ const preferenceSelection = readFileSync("src/features/home/PreferenceSelectionS
 const appearanceSettings = readFileSync("src/features/home/AppearanceSettingsScreen.tsx", "utf8");
 const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
-test("Settings exposes five participant navigation actions and one explicit backend verification action", () => {
+test("Settings exposes six participant navigation actions and one explicit backend verification action", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
-  assert.equal(navigationRows.length, 6);
+  assert.equal(navigationRows.length, 7);
 
   for (const callback of [
     "onOpenAppearance",
     "onOpenLanguage",
     "onOpenLegalInformation",
     "onOpenNotifications",
+    "onOpenPracticeSettings",
     "onOpenYourData",
   ]) {
     assert.match(settingsTab, new RegExp(`onPress=\\{${callback}\\}`));
@@ -38,8 +39,11 @@ test("grouped settings rows follow the Figma 200% text geometry", () => {
   assert.match(listRow, /listRowTitle/);
   assert.match(listRow, /listRowDetail/);
   assert.match(settingsGroup, /rows:\s*\{[\s\S]*?gap:\s*spacing\.sm,/);
-  assert.match(settingsTab, /IconTile name=\{icon\} size=\{32\} tone="settings"/);
+  assert.match(settingsTab, /IconTile iconSize=\{24\} name=\{icon\} size=\{32\} tone="settings"/);
   assert.match(settingsTab, /name="chevron-right" size=\{20\}/);
+  assert.match(settingsTab, /<ScreenHeader description=\{text\.settingsDescription\} title=\{text\.appSettings\}/);
+  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.learning\}>/);
+  assert.match(settingsGroup, /dividedRows:[\s\S]*?gap:\s*0/);
 });
 
 test("preference selection uses the canonical accessible radio choice row", () => {

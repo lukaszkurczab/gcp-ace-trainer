@@ -38,7 +38,7 @@ export function ListRow({
   const content = (
     <>
       {leading ? <View style={styles.leading}>{leading}</View> : null}
-      <View style={styles.copy}>
+      <View style={[styles.copy, variant === "grouped" ? styles.groupedCopy : null]}>
         <View style={[styles.titleRow, variant === "grouped" ? styles.groupedTitleRow : null]}>
           <Text maxFontSizeMultiplier={2} numberOfLines={2} style={[styles.title, variant === "grouped" ? styles.groupedTitle : null]}>
             {title}
@@ -105,6 +105,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.xs
   },
   groupedTitleRow: {
+    gap: spacing.xxs,
+  },
+  groupedCopy: {
     gap: spacing.xxs,
   },
   title: {

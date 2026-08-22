@@ -296,6 +296,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             onOpenLanguage={() => navigation.navigate(ROUTES.LANGUAGE_SETTINGS)}
             onOpenLegalInformation={() => navigation.navigate(ROUTES.LEGAL_INFORMATION)}
             onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS)}
+            onOpenPracticeSettings={() => navigation.navigate(ROUTES.PRACTICE_SETUP, { trackId: activeTrack.id })}
             onOpenYourData={() => navigation.navigate(ROUTES.YOUR_DATA)}
             storageIssues={data.storageIssues}
           />

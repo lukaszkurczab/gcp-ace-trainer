@@ -9,19 +9,20 @@ import type { AppColors } from "../theme";
 type IconTileTone = "danger" | "info" | "muted" | "primary" | "settings" | "success" | "warning";
 
 type IconTileProps = {
+  iconSize?: number;
   name: IconName;
   size?: number;
   tone?: IconTileTone;
 };
 
-export function IconTile({ name, size = 40, tone = "primary" }: IconTileProps) {
+export function IconTile({ iconSize, name, size = 40, tone = "primary" }: IconTileProps) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
   const toneStyle = getToneStyles(palette)[tone];
 
   return (
     <View style={[styles.tile, { backgroundColor: toneStyle.backgroundColor, height: size, width: size }]}>
-      <Icon color={toneStyle.color} name={name} size={Math.round(size * 0.56)} />
+      <Icon color={toneStyle.color} name={name} size={iconSize ?? Math.round(size * 0.56)} />
     </View>
   );
 }
