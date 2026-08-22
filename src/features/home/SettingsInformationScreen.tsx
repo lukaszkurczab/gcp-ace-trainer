@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Icon, IconTile, InfoBlock, ListRow, Screen, SettingsBottomSheet, SettingsGroup, type IconName } from "../../components";
+import { Icon, IconTile, InfoBlock, ListRow, Screen, ScreenHeader, SettingsBottomSheet, SettingsGroup, type IconName } from "../../components";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { spacing, typography, type AppColors } from "../../theme";
 
@@ -22,15 +22,24 @@ type SettingsInformationScreenProps = Readonly<{
   closeLabel: string;
   infoBody: string;
   infoTitle: string;
+  screenHeader?: Readonly<{ context: string; onBack: () => void; title: string }>;
   sections: readonly InformationSection[];
 }>;
 
-export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, sections }: SettingsInformationScreenProps) {
+export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, screenHeader, sections }: SettingsInformationScreenProps) {
   const styles = useThemedStyles(createStyles);
   const [activeTopic, setActiveTopic] = useState<InformationTopic | null>(null);
 
   return (
-    <Screen>
+    <Screen edges={screenHeader ? ["top", "bottom"] : undefined}>
+      {screenHeader ? (
+        <ScreenHeader
+          backAction={{ onPress: screenHeader.onBack }}
+          context={screenHeader.context}
+          contextTone="primary"
+          title={screenHeader.title}
+        />
+      ) : null}
       <InfoBlock body={infoBody} icon={<Icon name="shield-check" size={18} />} title={infoTitle} />
       {sections.map((section) => (
         <SettingsGroup key={section.title} title={section.title}>

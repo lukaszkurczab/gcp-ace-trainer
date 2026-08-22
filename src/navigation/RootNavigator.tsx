@@ -60,7 +60,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.YOUR_DATA}
         component={YourDataScreen}
-        options={{ title: t("Your data") }}
+        options={{ headerShown: false, title: t("Your data") }}
       />
       <Stack.Screen
         name={ROUTES.BACKEND_DIAGNOSTICS}

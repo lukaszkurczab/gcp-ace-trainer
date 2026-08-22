@@ -1,9 +1,14 @@
 import { SettingsInformationScreen, type InformationSection } from "./SettingsInformationScreen";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { ROUTES } from "../../constants/routes";
+import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences } from "../../preferences";
 
 const copy = {
   en: {
     close: "Close",
+    data: "Data",
+    dataPrivacy: "Data & privacy",
     infoBody: "Patternly stores learning data locally on this device to run sessions, review progress, and recover one active session.",
     infoTitle: "Your learning data",
     sections: [
@@ -71,6 +76,8 @@ const copy = {
   },
   pl: {
     close: "Zamknij",
+    data: "Dane",
+    dataPrivacy: "Dane i prywatność",
     infoBody: "Patternly zapisuje dane o nauce lokalnie na tym urządzeniu, aby prowadzić sesje, powtórki i bezpiecznie odzyskać jedną aktywną sesję.",
     infoTitle: "Twoje dane o nauce",
     sections: [
@@ -138,8 +145,10 @@ const copy = {
   },
 } as const;
 
-export function YourDataScreen() {
+type YourDataScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.YOUR_DATA>;
+
+export function YourDataScreen({ navigation }: YourDataScreenProps) {
   const { locale } = useAppPreferences();
   const text = copy[locale];
-  return <SettingsInformationScreen closeLabel={text.close} infoBody={text.infoBody} infoTitle={text.infoTitle} sections={text.sections} />;
+  return <SettingsInformationScreen closeLabel={text.close} infoBody={text.infoBody} infoTitle={text.infoTitle} screenHeader={{ context: text.data, onBack: () => navigation.goBack(), title: text.dataPrivacy }} sections={text.sections} />;
 }

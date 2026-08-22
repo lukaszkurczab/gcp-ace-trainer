@@ -38,6 +38,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
   assert.deepEqual(headerlessRouteIds, [
     "HOME",
     "APPEARANCE_SETTINGS",
+    "YOUR_DATA",
     "NOTIFICATION_SETTINGS",
     "SELECT_TRACK",
     "PRACTICE_HUB",
