@@ -130,7 +130,10 @@ test("Screen and SessionShell remain the only general and active-session page ow
   const header = source("src/components/AppShellHeader.tsx");
 
   assert.deepEqual(safeAreaOwners, []);
-  assert.deepEqual(scrollViewOwners, ["src/features/simulation/navigator/SimulationQuestionNavigator.tsx"]);
+  assert.deepEqual(scrollViewOwners, [
+    "src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx",
+    "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",
+  ]);
   assert.match(screen, /<SafeAreaView[\s\S]*<ScrollView/);
   assert.match(header, /placement === "stack"[\s\S]*<SafeAreaView edges=\{\["top"\]\}/);
   assert.doesNotMatch(source("src/features/coding-interview/session/SessionShell.tsx"), /SafeAreaView|ScrollView/);
@@ -161,6 +164,22 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(simulationSummary, /<Text style=\{styles\.summaryTitle\}>\{t\(projection\.title\)\}<\/Text>/);
   assert.match(simulationSummary, /<Text style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
   assert.match(simulationSummary, /summaryStat:[\s\S]*?borderBottomWidth:\s*StyleSheet\.hairlineWidth/);
+});
+
+test("simulation review owns the Figma review shell and keeps navigator outcomes explicit", () => {
+  const review = source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx");
+  const facade = source("src/application/coding-interview/codingInterviewSessionFacade.ts");
+
+  assert.match(review, /<IconButton[\s\S]*icon="chevron-left"/);
+  assert.match(review, /filterShell:/);
+  assert.match(review, /<AnswerOption/);
+  assert.match(review, /<PracticeFeedbackBlock/);
+  assert.match(review, /<ReviewNavigator/);
+  assert.match(review, /Result unavailable/);
+  assert.match(review, /No saved answer was recorded for this question\./);
+  assert.match(review, /fontScale >= 1\.8/);
+  assert.match(facade, /interaction: buildAlgorithmInteractionViewModel/);
+  assert.match(facade, /controls: feedback\.controls/);
 });
 
 test("Practice setup keeps one canonical back action and recovery copy names learner-visible consequences", () => {

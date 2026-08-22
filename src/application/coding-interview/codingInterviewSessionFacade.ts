@@ -84,12 +84,14 @@ export type AlgorithmsSessionResultProjection = Readonly<{
   feedbackItems: readonly Readonly<{
     correctness: "correct" | "partial" | "incorrect";
     details: AlgorithmFeedbackDocument;
+    interaction: ReturnType<typeof buildAlgorithmInteractionViewModel>;
     item: ContentItemRef;
     itemId: string;
     occurrenceId: string;
     ordinal: number;
     prompt: string;
     reason: string;
+    controls: ReturnType<typeof composeCommittedAlgorithmPracticeFeedback>["controls"];
   }>[];
   score: Readonly<{ correctCount: number; partialCount: number; incorrectCount: number; pointsEarned: number; maxPoints: number }> | null;
 }>;
@@ -560,12 +562,18 @@ async function completedFeedbackItems(session: TrainingSession, attempts: readon
     return [Object.freeze({
       correctness: feedback.correctness,
       details: feedback.details,
+      interaction: buildAlgorithmInteractionViewModel(
+        question,
+        attempt.response as AlgorithmResponse,
+        session.optionOrderByOccurrence[occurrence.occurrenceId] ?? [],
+      ),
       item: occurrence.item,
       itemId: occurrence.item.itemId,
       occurrenceId: occurrence.occurrenceId,
       ordinal: index + 1,
       prompt: question.prompt,
       reason: feedback.reason,
+      controls: feedback.controls,
     })];
   }));
 }
