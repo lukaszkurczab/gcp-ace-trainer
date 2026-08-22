@@ -38,6 +38,7 @@ test("Practice action model separates final feedback from the durable Finish com
   assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "commit_pending" }), { enabled: false, label: "Finishing the update…", loading: true });
   assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "feedback" }), { enabled: true, label: "Next", loading: false });
   assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: true, phase: "feedback" }), { enabled: true, label: "Finish session", loading: false });
+  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "advance_failed" }), { enabled: true, label: "Try again", loading: false });
   assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: false, isFinalPosition: true, phase: "completing" }), { enabled: false, label: "Finishing session…", loading: true });
   assert.equal(getPracticePrimaryAction({ hasLocalResponse: false, isFinalPosition: true, phase: "completion_failed" }), null);
 });
