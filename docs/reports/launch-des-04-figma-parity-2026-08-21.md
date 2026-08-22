@@ -4,9 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`
 Verified and pushed SHA: `b987b87a00ec53053c2c37bbae1e7b2d5a928da5`
-Current local verification SHA: `0459be1`
+Current local verification SHA: `98e3a66`
 
 ## Outcome
 
@@ -68,7 +68,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Appearance | `AppearanceSettingsScreen` | `619:5237` | `MATCHED` | The appearance journey passes in both dark and light current-head iOS captures and preserves the canonical Dark/Light/System preference contract. |
 | Language, notifications, data, legal, diagnostics | Existing settings route owners | `822:7687` and related Page 1 sections | `DESIGN_MISSING` | Routes are reachable, but no verified Figma-specific frame-to-code parity was completed for each detail surface. |
 | Exam, exam review, result, answer review | `ExamScreen`, `ExamReviewScreen`, `ResultScreen`, `AnswerReviewScreen` | No direct current-state authority mapped | `DESIGN_MISSING` | Existing behavior and actions remain unchanged. |
-| Algorithms simulation active/navigator/recovery | `AlgorithmsInterviewSimulationScreen` and navigator | `74:539` through `74:1046` | `PARTIAL` | Active unanswered/changed shells now use the Figma question hierarchy, compact top bar, stacked footer, and canonical `Save and continue` behavior; saved-response mode uses the reference saved shell; the navigator now matches the Figma sheet/grid geometry and removes the extra `Finish simulation` control. Durable recovery states still need fresh comparison. |
+| Algorithms simulation active/navigator/recovery | `AlgorithmsInterviewSimulationScreen` and navigator | `74:539` through `74:1046` | `PARTIAL` | Active unanswered/changed shells now use the Figma question hierarchy, compact top bar, stacked footer, and canonical `Save and continue` behavior; saved-response mode uses the reference saved shell; the navigator now matches the Figma sheet/grid geometry and removes the extra `Finish simulation` control. Save-failure/navigation-recovery notices, three-action recovery footers, and finish/pause confirmation bottom sheets now use the Figma operational geometry while retaining canonical command semantics. Fresh runtime captures remain blocked. |
 | Simulation summary | `AlgorithmsInterviewSimulationResultScreen` / `SimulationSessionSurface` | `74:1046`, `750:6109` | `PARTIAL` | Figma summary title/mode hierarchy, flat metric separators, outcome distribution rows, review availability, and real back/review commands are implemented; fresh screenshot comparison remains open. |
 | Simulation review | `AlgorithmsInterviewSimulationResultScreen` | `765:6130` and related review frames | `PARTIAL` | The canonical Review Shell now owns the compact back/context header, segmented All/Missed filter, persisted answer-option outcomes, Details disclosure, pager, six-column navigator sheet, and explicit unavailable-result state. Fresh screenshot comparison remains open. |
 | Mistakes review and topic roadmap | Existing route owners | No direct current-state authority mapped | `DESIGN_MISSING` | Review now exposes an explicit no-active-track state; no direct Figma authority was found for the full queue/roadmap surfaces. |
@@ -111,6 +111,8 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - Focused simulation shell/action/navigator tests: 26/26 passed after the active-shell and navigator cutover.
 - `npm run qa:static`: passed on `0459be1`: recovery inventory, typecheck, 547/547 tests, content boundary, and runtime privacy boundary.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v5`: passed after the simulation active-shell and navigator cutover; the iOS bundle contained 1,343 modules.
+- `npm run qa:static`: passed on `98e3a66`: recovery inventory, typecheck, 547/547 tests, content boundary, and runtime privacy boundary.
+- `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v6`: passed after the simulation recovery notices and confirmation-sheet cutover; the iOS bundle contained 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v2`: passed; the simulation review shell produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v3`: passed after the reduced-motion review-navigator change; the iOS bundle contained 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v4`: passed after the Review Shell unavailable-result copy correction; the iOS bundle contained 1,343 modules.
@@ -122,7 +124,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 
 Not verified here: Android, signed/distribution builds, physical-device rendering, full 200% large-text traversal across every route, reduced-motion runtime capture, completed-summary and simulation/review/recovery screenshot comparison, and every Figma operational state.
 
-The fresh simulator pass for the new Review Shell and the current simulation active/navigator cutover was blocked by CoreSimulatorService becoming unavailable after the export; no destructive state reset or alternate runtime claim was made.
+The fresh simulator pass for the new Review Shell and the current simulation active/navigator/recovery cutover was blocked by CoreSimulatorService becoming unavailable after the export; no destructive state reset or alternate runtime claim was made.
 
 ## Deletion and dead-code review
 
