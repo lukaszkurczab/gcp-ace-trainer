@@ -78,7 +78,7 @@ export function formatPracticeElapsedTime(milliseconds: number): string {
 
 export function noticeForPracticeOperation(operation: PracticeDurableOperationState): PracticeNotice | undefined {
   if (operation.kind === "submitting_before_journal") return { tone: "neutral", message: "Saving your answer…" };
-  if (operation.kind === "submit_journal_failed") return { tone: "error", message: "The answer was not durably submitted. You can safely submit the same local response again." };
+  if (operation.kind === "submit_journal_failed") return { tone: "error", message: "We couldn't save your response. Your current answer is still here." };
   if (operation.kind === "commit_pending" || operation.kind === "commit_materialization_failed" || operation.kind === "commit_verification_failed" || operation.kind === "verified_pending_clear") return { tone: "error", message: "Your response is immutable because a durable command exists. Recovery must replay that exact command." };
   if (operation.kind === "recovery_required") return { tone: "error", message: "A previous session update must be recovered before another answer can be submitted." };
   if (operation.kind === "advancing") return { tone: "neutral", message: "Opening the next question…" };

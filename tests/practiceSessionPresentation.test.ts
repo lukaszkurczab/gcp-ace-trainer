@@ -54,7 +54,7 @@ test("Practice operation notice mapping remains one family-neutral interpretatio
   const error = (allowedAction: "submit_again" | "recover" | "retry_same_command") => ({ operation: "practice_submit" as const, durableState: "journal_durable" as const, retrySafety: "recovery_only" as const, allowedAction, prohibitedFallback: "No fallback." });
   const cases: readonly [PracticeDurableOperationState, { tone: "neutral" | "error" | "success"; message: string } | undefined][] = [
     [{ family: "practice", kind: "submitting_before_journal" }, { tone: "neutral", message: "Saving your answer…" }],
-    [{ family: "practice", kind: "submit_journal_failed", error: error("submit_again") }, { tone: "error", message: "The answer was not durably submitted. You can safely submit the same local response again." }],
+    [{ family: "practice", kind: "submit_journal_failed", error: error("submit_again") }, { tone: "error", message: "We couldn't save your response. Your current answer is still here." }],
     [{ family: "practice", kind: "commit_materialization_failed", error: error("recover") }, { tone: "error", message: "Your response is immutable because a durable command exists. Recovery must replay that exact command." }],
     [{ family: "practice", kind: "recovery_required", error: error("recover") }, { tone: "error", message: "A previous session update must be recovered before another answer can be submitted." }],
     [{ family: "practice", kind: "advancing" }, { tone: "neutral", message: "Opening the next question…" }],
