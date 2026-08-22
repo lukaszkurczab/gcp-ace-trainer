@@ -64,6 +64,10 @@ test("canonical session surfaces expose deterministic state and do not group int
   assert.match(practiceSurface, /accessible accessibilityLabel=\{notice\.message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
   assert.match(practiceSurface, /name="alert-triangle"/);
   assert.match(practiceSurface, /noticeError:\s*\{[\s\S]*?backgroundColor:\s*palette\.elevatedSurface[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
+  assert.match(practiceSurface, /props\.phase === "completing" \? <CompletingNotice \/> : null/);
+  assert.match(practiceSurface, /<View accessible accessibilityLabel=\{t\("Finishing this session…"\)\} style=\{styles\.asyncIcon\}>[\s\S]*?name="rotate-ccw"/);
+  assert.match(practiceSurface, /asyncState:\s*\{[\s\S]*?backgroundColor:\s*palette\.surface[\s\S]*?borderRadius:\s*radius\.button[\s\S]*?gap:\s*spacing\.lg[\s\S]*?padding:\s*spacing\.xl/);
+  assert.match(practiceSurface, /completingActions:\s*\{\s*minHeight:\s*48\s*\}/);
   assert.match(simulation, /accessible accessibilityLabel=\{notice\.message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
   assert.match(shell, /accessibilityLabel=\{timer\?\.accessibilityLabel\} accessibilityRole=\{timer \? "timer" : undefined\}/);
   assert.match(shell, /accessibilityLabel=\{position\?\.accessibilityLabel\}/);

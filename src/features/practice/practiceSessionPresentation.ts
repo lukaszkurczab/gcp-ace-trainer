@@ -102,7 +102,7 @@ export function noticeForPracticeCompletionCheckpoint(kind: "recover" | "retry")
  * enabling controls in a prohibited phase.
  */
 export function allowsPracticeFeedback(phase: PracticeSurfacePhase): boolean {
-  return phase === "feedback" || phase === "advancing" || phase === "advance_failed" || phase === "completing" || phase === "completion_failed" || phase === "completed";
+  return phase === "feedback" || phase === "advancing" || phase === "advance_failed" || phase === "completion_failed" || phase === "completed";
 }
 
 export function allowsPracticeResponseEditing(phase: PracticeSurfacePhase): boolean {

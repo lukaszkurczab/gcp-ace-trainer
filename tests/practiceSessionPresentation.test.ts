@@ -15,7 +15,7 @@ import {
 import type { PracticeDurableOperationState } from "../src/application/trainingLifecycle";
 
 test("Practice presentation never discloses feedback before the durable feedback boundary", () => {
-  for (const phase of ["preparing", "unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "recovery_required", "abandoning"] as const) {
+  for (const phase of ["preparing", "unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "recovery_required", "completing", "abandoning"] as const) {
     assert.equal(allowsPracticeFeedback(phase), false, phase);
   }
   for (const phase of ["feedback", "advancing", "advance_failed", "completed"] as const) {

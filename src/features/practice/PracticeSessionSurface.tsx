@@ -79,7 +79,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   const editable = allowsPracticeResponseEditing(props.phase);
   const visibleFeedback = allowsPracticeFeedback(props.phase) ? props.feedback : undefined;
   const itemId = props.runtimeIdentity?.itemId ?? props.question?.itemId;
-  const controls = props.question && props.phase !== "preparing" ? (
+  const controls = props.question && props.phase !== "preparing" && props.phase !== "completing" ? (
     <>
       <QuestionCard question={props.question} />
       <PracticeResponseControls
@@ -108,12 +108,13 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
       timerTestID={props.runtimeIdentity ? runtimeSelectors.session.timer(props.runtimeIdentity.sessionId) : undefined}
     >
       {props.phase === "preparing" ? <PreparingNotice /> : null}
+      {props.phase === "completing" ? <CompletingNotice /> : null}
       {props.runtimeIdentity && controls ? (
         <View testID={runtimeSelectors.session.track(props.runtimeIdentity.trackId)}>
           <View style={styles.questionAndResponse} testID={runtimeSelectors.session.roadmapNode(props.runtimeIdentity.roadmapNodeId)}>{controls}</View>
         </View>
       ) : controls ? <View style={styles.questionAndResponse}>{controls}</View> : null}
-      {props.notice ? <DurabilityNotice notice={props.notice} /> : null}
+      {props.notice && props.phase !== "completing" ? <DurabilityNotice notice={props.notice} /> : null}
       {visibleFeedback && props.feedbackItem && itemId ? <PracticeFeedbackBlock feedback={visibleFeedback} item={props.feedbackItem} itemId={itemId} /> : null}
       {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} sessionId={props.runtimeIdentity?.sessionId} trackId={props.runtimeIdentity?.trackId} /> : null}
     </SessionShell>
@@ -146,6 +147,24 @@ function PreparingNotice() {
   );
 }
 
+function CompletingNotice() {
+  const styles = useThemedStyles(createStyles);
+  const { colors: palette, t } = useAppPreferences();
+  return (
+    <View style={styles.asyncState}>
+      <View style={styles.asyncStatusRow}>
+        <Text style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
+        <View accessible accessibilityLabel={t("Finishing this session…")} style={styles.asyncIcon}>
+          <Icon color={palette.textSecondary} name="rotate-ccw" size={24} />
+        </View>
+      </View>
+      <Text maxFontSizeMultiplier={2} style={styles.asyncTitle}>{t("Finishing this session…")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Saving your answers and preparing your summary.")}</Text>
+      <View accessible={false} style={styles.asyncSpacer} />
+    </View>
+  );
+}
+
 function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
@@ -157,6 +176,7 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   if (props.exit.kind !== "none") return null;
+  if (props.phase === "completing") return <View style={styles.completingActions} />;
   return (
     <View style={styles.actions}>
       {props.primaryAction ? (
@@ -170,7 +190,7 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
         </Button>
       ) : null}
       {props.onRetry && props.retryLabel ? <Button onPress={props.onRetry} variant="secondary">{t(props.retryLabel)}</Button> : null}
-      {props.allowLeave !== false && props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "completing" && props.phase !== "completion_failed" && props.phase !== "abandoning" && props.phase !== "abandonment_failed_before_journal" && props.phase !== "abandonment_recovery_required" ? <Button onPress={props.onRequestLeave} testID={props.runtimeIdentity ? runtimeSelectors.session.leave(props.runtimeIdentity.sessionId) : undefined} variant="ghost">{t("Leave session")}</Button> : null}
+      {props.allowLeave !== false && props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "completion_failed" && props.phase !== "abandoning" && props.phase !== "abandonment_failed_before_journal" && props.phase !== "abandonment_recovery_required" ? <Button onPress={props.onRequestLeave} testID={props.runtimeIdentity ? runtimeSelectors.session.leave(props.runtimeIdentity.sessionId) : undefined} variant="ghost">{t("Leave session")}</Button> : null}
     </View>
   );
 }
@@ -215,6 +235,14 @@ function noop() {}
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   actions: { gap: spacing.sm },
+  asyncDescription: { ...typography.body, color: palette.textSecondary },
+  asyncIcon: { alignItems: "center", backgroundColor: palette.background, borderRadius: radius.lg, height: 44, justifyContent: "center", width: 44 },
+  asyncStatusLabel: { ...typography.caption, color: palette.textMuted, fontWeight: "600", letterSpacing: 0.5 },
+  asyncStatusRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", width: "100%" },
+  asyncState: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.button, borderWidth: 1, gap: spacing.lg, padding: spacing.xl },
+  asyncSpacer: { height: 50, minHeight: 50, width: 1 },
+  asyncTitle: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", lineHeight: 28 },
+  completingActions: { minHeight: 48 },
   constraint: { ...typography.small, color: palette.textSecondary },
   constraints: { gap: spacing.xs },
   exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.button, borderTopRightRadius: radius.button, borderWidth: 1, elevation: 8, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, width: "100%" },
