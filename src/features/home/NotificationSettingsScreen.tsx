@@ -31,7 +31,7 @@ const copy = {
     openDeviceSettings: "Open device settings",
     permissionDenied: "Notifications are blocked",
     permissionDeniedDetail: "Allow notifications in device settings to use reminders.",
-    permissionGranted: "Notifications are allowed",
+    permissionGranted: "Notifications allowed",
     permissionGrantedDetail: "Patternly can show local practice reminders.",
     permissionPending: "Checking notification permission",
     permissionSection: "Permission",
@@ -45,7 +45,7 @@ const copy = {
     reminderSection: "Practice reminder",
     settings: "Settings",
     notifications: "Notifications",
-    sheetIntro: "Set a daily time for one focused practice session.",
+    sheetIntro: "Choose when Patternly should remind you to practise.",
     sheetTitle: "Daily reminder",
   },
   pl: {

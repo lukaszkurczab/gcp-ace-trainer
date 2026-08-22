@@ -12,6 +12,6 @@ test("visual shell has one shared journey and an explicit production-ready prepa
   assert.match(releaseFlow, /patternly:content:ready/);
   assert.doesNotMatch(releaseFlow, /audit\/reset-learning-state|ready-after-audit-reset/);
   assert.match(releaseFlow, /- runFlow: visual-shell-capture\.yaml/);
-  assert.equal((captureFlow.match(/- takeScreenshot:/g) ?? []).length, 6);
+  assert.equal((captureFlow.match(/- takeScreenshot:/g) ?? []).length, 11);
   assert.doesNotMatch(captureFlow, /audit\/reset-learning-state|ready-after-audit-reset/);
 });
