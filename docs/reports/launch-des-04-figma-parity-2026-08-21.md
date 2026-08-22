@@ -4,9 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`
 Verified and pushed SHA: not performed in this pass; the remote branch was not changed.
-Current local verification SHA: `06b0397`
+Current local verification SHA: `32c0cdd`
 
 ## Outcome
 
@@ -69,7 +69,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Language, notifications, data, legal, diagnostics | Existing settings route owners | `822:7687` and related Page 1 sections | `DESIGN_MISSING` | Routes are reachable, but no verified Figma-specific frame-to-code parity was completed for each detail surface. |
 | Exam, exam review, result, answer review | `ExamScreen`, `ExamReviewScreen`, `ResultScreen`, `AnswerReviewScreen` | No direct current-state authority mapped | `DESIGN_MISSING` | Existing behavior and actions remain unchanged. |
 | Algorithms simulation active/navigator/recovery | `AlgorithmsInterviewSimulationScreen` and navigator | `74:539` through `74:1046` | `PARTIAL` | Active unanswered/changed shells now use the Figma question hierarchy, compact top bar, stacked footer, and canonical `Save and continue` behavior; saved-response mode uses the reference saved shell; the navigator now matches the Figma sheet/grid geometry and removes the extra `Finish simulation` control. Save-failure/navigation-recovery notices, three-action recovery footers, and finish/pause confirmation bottom sheets now use the Figma operational geometry while retaining canonical command semantics. Fresh runtime captures remain blocked. |
-| Simulation summary | `AlgorithmsInterviewSimulationResultScreen` / `SimulationSessionSurface` | `74:1046`, `750:6109` | `PARTIAL` | One rounded summary shell now owns the Figma header bar, scrollable title/metrics/results content, flat separators, outcome distribution rows, and fixed full-width Review answers/Back footer. Fresh screenshot comparison remains open. |
+| Simulation summary | `AlgorithmsInterviewSimulationResultScreen` / `SimulationSessionSurface` | `74:1046`, `750:6109` | `PARTIAL` | One rounded summary shell now owns the Figma header bar, scrollable title/metrics/results content, 16 px metric rhythm with flat separators, outcome distribution rows, and fixed full-width Review answers/Back footer. Fresh screenshot comparison remains open. |
 | Simulation review | `AlgorithmsInterviewSimulationResultScreen` | `765:6130` and related review frames | `PARTIAL` | The canonical Review Shell now owns the compact back/context header, segmented All/Missed filter, persisted answer-option outcomes, Details disclosure, pager, six-column navigator sheet, and explicit unavailable-result state. Fresh screenshot comparison remains open. |
 | Mistakes review and topic roadmap | Existing route owners | No direct current-state authority mapped | `DESIGN_MISSING` | Review now exposes an explicit no-active-track state; no direct Figma authority was found for the full queue/roadmap surfaces. |
 | Auth, account, premium, content trust/reporting | No current runtime route | Page 1 sections `57:1952`, `95:1563`, `107:960`, `115:738`; Library account/content nodes | `DESIGN_MISSING` | These are present in Figma but absent from the current launch route graph. Adding them would invent product scope and commands. |
@@ -117,6 +117,8 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v7`: passed after the simulation summary shell cutover; the iOS bundle contained 1,343 modules.
 - `npm run qa:static`: passed on `06b0397`: recovery inventory, typecheck, 547/547 tests, content boundary, and runtime privacy boundary.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v8`: passed after the Practice recovery-notice cutover; the iOS bundle contained 1,343 modules.
+- `npm run qa:static`: passed on `32c0cdd`: recovery inventory, typecheck, 547/547 tests, content boundary, and runtime privacy boundary.
+- `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v9`: passed after the Figma summary metric-spacing correction; the iOS bundle contained 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v2`: passed; the simulation review shell produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v3`: passed after the reduced-motion review-navigator change; the iOS bundle contained 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v4`: passed after the Review Shell unavailable-result copy correction; the iOS bundle contained 1,343 modules.
@@ -136,4 +138,4 @@ No route was deleted because the current reachability graph does not prove any e
 
 ## Remaining work
 
-The remaining gaps are explicit and blocking: extend the existing `3e6a282` dark/light screenshot matrix to the latest `06b0397` source and add immediate feedback, completed summaries, simulation, review, recovery, and summary states; compare the implemented Figma simulation operational states (`74:726`, `74:834`, `74:879`, `74:968`, `74:992`, `74:1046`) and Practice operational states (`68:804` through `68:1239`) against fresh runtime captures; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
+The remaining gaps are explicit and blocking: extend the existing `3e6a282` dark/light screenshot matrix to the latest `32c0cdd` source and add immediate feedback, completed summaries, simulation, review, recovery, and summary states; compare the implemented Figma simulation operational states (`74:726`, `74:834`, `74:879`, `74:968`, `74:992`, `74:1046`) and Practice operational states (`68:804` through `68:1239`) against fresh runtime captures; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
