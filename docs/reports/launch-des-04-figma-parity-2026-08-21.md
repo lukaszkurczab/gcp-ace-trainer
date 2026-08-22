@@ -4,9 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`
 Verified and pushed SHA: not performed in this pass; the remote branch was not changed.
-Current local verification SHA: `f4c518c`
+Current local verification SHA: `6453c01`
 
 ## Outcome
 
@@ -123,6 +123,8 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v10`: passed after the Practice completion async-state cutover; the iOS bundle contained 1,343 modules.
 - `npm run qa:static`: passed on `f4c518c`: recovery inventory, typecheck, 547/547 tests, content boundary, and runtime privacy boundary.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v11`: passed after the dedicated `surfaceInput` token and completion status-row geometry correction; the iOS bundle contained 1,343 modules.
+- `npm run qa:static`: passed on `6453c01`: recovery inventory, typecheck, 547/547 tests, content boundary, and runtime privacy boundary.
+- `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v12`: passed after the completion status typography correction; the iOS bundle contained 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v2`: passed; the simulation review shell produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v3`: passed after the reduced-motion review-navigator change; the iOS bundle contained 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-review-2026-08-22-v4`: passed after the Review Shell unavailable-result copy correction; the iOS bundle contained 1,343 modules.
@@ -142,4 +144,4 @@ No route was deleted because the current reachability graph does not prove any e
 
 ## Remaining work
 
-The remaining gaps are explicit and blocking: extend the existing `3e6a282` dark/light screenshot matrix to the latest `f4c518c` source and add immediate feedback, completed summaries, simulation, review, recovery, and summary states; compare the implemented Figma simulation operational states (`74:726`, `74:834`, `74:879`, `74:968`, `74:992`, `74:1046`) and Practice operational states (`68:804` through `68:1239`) against fresh runtime captures; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
+The remaining gaps are explicit and blocking: extend the existing `3e6a282` dark/light screenshot matrix to the latest `6453c01` source and add immediate feedback, completed summaries, simulation, review, recovery, and summary states; compare the implemented Figma simulation operational states (`74:726`, `74:834`, `74:879`, `74:968`, `74:992`, `74:1046`) and Practice operational states (`68:804` through `68:1239`) against fresh runtime captures; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.
