@@ -192,7 +192,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   summaryContentScroll: { flex: 1 },
   summaryFooter: { gap: spacing.md, padding: spacing.xl },
   eyebrow: { ...typography.caption, color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
-  summaryMetrics: { gap: spacing.md },
+  summaryMetrics: { gap: spacing.lg },
   summarySeparator: { backgroundColor: palette.surface, height: 1, width: "100%" },
   summaryStat: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingVertical: spacing.md },
   summaryStatLabel: { ...typography.body, color: palette.textSecondary },

@@ -165,6 +165,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(simulationSummary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.summaryTitle\}>\{t\(projection\.title\)\}<\/Text>/);
   assert.match(simulationSummary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
   assert.match(simulationSummary, /summaryHeaderBar:\s*\{\s*height:\s*52\s*\}/);
+  assert.match(simulationSummary, /summaryMetrics:\s*\{\s*gap:\s*spacing\.lg\s*\}/);
   assert.match(simulationSummary, /summarySeparator:\s*\{[\s\S]*?height:\s*1/);
   assert.doesNotMatch(simulationSummary, /summaryStats|reviewBanner|configuration\?:/);
 });
