@@ -71,7 +71,7 @@ function NavigatorFeedbackBanner({ feedback, onRetry }: Readonly<{ feedback: Exc
   return <View style={[styles.feedback, saveFailed ? styles.feedbackError : styles.feedbackWarning]}><View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.feedbackMessage}><Text style={styles.feedbackText}>{t(saveFailed ? "Couldn't save this response." : "Complete the response before leaving this question.")}</Text></View>{saveFailed ? <Button onPress={onRetry} variant="secondary">{t("Try again")}</Button> : null}</View>;
 }
 
-function useReducedMotion(): boolean {
+export function useReducedMotion(): boolean {
   const [reduceMotion, setReduceMotion] = useState(false);
   useEffect(() => {
     let subscribed = true;

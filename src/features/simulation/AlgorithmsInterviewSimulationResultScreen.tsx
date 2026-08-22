@@ -15,6 +15,7 @@ import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
 import { PracticeFeedbackBlock } from "../practice/PracticeFeedbackBlock";
+import { useReducedMotion } from "./navigator/SimulationQuestionNavigator";
 
 type SummaryProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY>;
 type ReviewProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW>;
@@ -261,8 +262,9 @@ function FilterTab({ active, label, onPress, styles }: Readonly<{ active: boolea
 
 function ReviewNavigator({ answeredOccurrences, columns, currentOrdinal, onClose, onSelect, result, t, visible }: Readonly<{ answeredOccurrences: ReadonlySet<string>; columns: number; currentOrdinal: number; onClose: () => void; onSelect: (ordinal: number) => void; result: AlgorithmsSessionResultProjection; t: (value: string) => string; visible: boolean }>) {
   const styles = useThemedStyles(createReviewStyles);
+  const reduceMotion = useReducedMotion();
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+    <Modal animationType={reduceMotion ? "none" : "slide"} onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.navigatorBackdrop}>
         <Pressable accessibilityLabel={t("Close answer navigator")} accessibilityRole="button" onPress={onClose} style={styles.navigatorDismissArea} />
         <View accessibilityViewIsModal style={styles.navigatorSheet}>
