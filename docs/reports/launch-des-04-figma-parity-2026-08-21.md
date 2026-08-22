@@ -4,9 +4,9 @@ Date: 2026-08-22
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`, `61cc0a0`, `00c7cb7`, `0060009`, `fe87b5b`, `471c8aa`, `6384050`, `47eb23c`, `04ae92e`, `78eb8cb`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`, `61cc0a0`, `00c7cb7`, `0060009`, `fe87b5b`, `471c8aa`, `6384050`, `47eb23c`, `04ae92e`, `78eb8cb`, `36e6e73`
 Verified and pushed SHA: not performed in this pass; the remote branch was not changed.
-Current local verification SHA: `78eb8cb`
+Current local verification SHA: `36e6e73`
 
 ## Outcome
 
@@ -97,6 +97,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run qa:static`: passed on `47eb23c`: recovery inventory (279 active source files, 112 active tests, 542 recovery cases), typecheck, 551/551 tests, content boundary, and runtime privacy boundary.
 - `npm run qa:static`: passed on `04ae92e`: recovery inventory (279 active source files, 112 active tests, 542 recovery cases), typecheck, 551/551 tests, content boundary, and runtime privacy boundary.
 - `npm run qa:static`: passed on `78eb8cb`: recovery inventory (279 active source files, 112 active tests, 542 recovery cases), typecheck, 551/551 tests, content boundary, and runtime privacy boundary.
+- `npm run qa:static`: passed on `36e6e73`: recovery inventory (279 active source files, 112 active tests, 542 recovery cases), typecheck, 551/551 tests, content boundary, and runtime privacy boundary.
 - `npm run validate:runtime-privacy-boundary`: passed on `67a9636`.
 - `npm run validate:content-boundary`: passed on `67a9636`.
 - Focused notification/settings/visual-shell/canonical tests: 49/49 passed before the implementation commit; the same checks are included in the 549-test full run.
@@ -122,6 +123,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-practice-exit-sheet-2026-08-22`: passed; the practice exit-sheet source produced an iOS bundle with 1,345 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-practice-save-retry-2026-08-22`: passed; the practice save-retry source produced an iOS bundle with 1,345 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-export-practice-recovery-copy-2026-08-22`: passed; the practice recovery-copy source produced an iOS bundle with 1,345 modules.
+- `npx expo export --platform ios --output-dir /tmp/patternly-export-home-review-settings-2026-08-22`: passed; the Home review-due action source produced an iOS bundle with 1,345 modules.
 - Route cleanup: removed the English-only `LanguageSettings` route and Settings row per the canonical launch contract; focused settings, visual-shell, and typecheck verification passed after the cutover.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-summary-rows`: passed; the post-summary-cutover source produced an iOS bundle with 1,343 modules.
 - `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22-progress-focus`: passed; the latest Home/Progress source produced an iOS bundle with 1,343 modules.
