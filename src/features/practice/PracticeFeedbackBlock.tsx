@@ -53,8 +53,8 @@ function formatFeedbackResult(result: PracticeFeedback["result"]): string {
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   container: { gap: spacing.md },
-  details: { gap: spacing.md },
-  detailsLabel: { ...typography.bodyStrong, color: palette.textPrimary },
+  details: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, gap: spacing.md, paddingTop: spacing.md },
+  detailsLabel: { ...typography.bodyStrong, color: palette.textSecondary },
   detailsToggle: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 48, paddingHorizontal: spacing.xs, paddingVertical: spacing.md },
   reason: { ...typography.body, color: palette.textSecondary },
   reasonLabel: { ...typography.caption, color: palette.textSecondary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
