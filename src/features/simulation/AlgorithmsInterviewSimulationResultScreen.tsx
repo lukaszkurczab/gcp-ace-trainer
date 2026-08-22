@@ -134,7 +134,7 @@ function AlgorithmsInterviewSimulationReviewSurface({ navigation, sessionId }: R
         <View style={styles.unavailableContent}>
           <View style={styles.unavailableIcon}><Icon color={styles.unavailableIconGlyph.color} name="warning" size={24} /></View>
           <Text style={styles.unavailableTitle}>{t("Result unavailable")}</Text>
-          <Text style={styles.unavailableDescription}>{t("No saved answer was recorded for this question.")}</Text>
+          <Text style={styles.unavailableDescription}>{t("This question was added after your session completed. No answer was recorded.")}</Text>
         </View>
         <ReviewNavigator
           answeredOccurrences={answeredOccurrences}
