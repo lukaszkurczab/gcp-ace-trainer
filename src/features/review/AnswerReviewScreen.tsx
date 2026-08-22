@@ -1,24 +1,23 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
-import type { ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Badge, Button, Card, EmptyState, LoadingState, ProgressBar, Screen, SectionHeader } from "../../components";
+
+import { AnswerOption, Button, EmptyState, Icon, LoadingState, ReviewNavigator, ReviewShell, type ReviewFilter, Screen } from "../../components";
+import { setQuestionNeedsReview } from "../../application/certification";
+import { loadExamSummaries as getAttempts, loadReviewQueueItems as getReviewQueueItems } from "../../application/learningReadModels";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { contentPackagePinsEqual } from "../../domain";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
-import { loadExamSummaries as getAttempts, loadReviewQueueItems as getReviewQueueItems } from "../../application/learningReadModels";
-import { setQuestionNeedsReview } from "../../application/certification";
-import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/certification";
-import { radius, spacing, typography } from "../../theme";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import type { AppColors } from "../../theme";
-import { contentPackagePinsEqual } from "../../domain";
-
+import { radius, spacing, typography, type AppColors } from "../../theme";
+import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/certification";
+import { AlgorithmFeedbackDocumentBlock } from "../practice/AlgorithmFeedbackDocumentBlock";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ANSWER_REVIEW>;
-type ReviewFilter = "all" | "incorrect";
-export function AnswerReviewScreen({ route }: Props) {
+
+export function AnswerReviewScreen({ navigation, route }: Props) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const [attempt, setAttempt] = useState<CertificationExamSummaryViewModel | null>(null);
@@ -26,76 +25,197 @@ export function AnswerReviewScreen({ route }: Props) {
   const [reviewIds, setReviewIds] = useState<Set<string>>(new Set());
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [updatingReviewIds, setUpdatingReviewIds] = useState<Set<string>>(new Set());
-  const [filter, setFilter] = useState<ReviewFilter>(route.params?.initialFilter ?? "all");
+  const [filter, setFilter] = useState<ReviewFilter>(route.params?.initialFilter === "incorrect" ? "missed" : "all");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  useFocusEffect(useCallback(() => { let active = true; setReviewError(null); setHasLoadedReviewData(false); void Promise.all([getAttempts(), getReviewQueueItems()]).then(([attempts, reviews]) => { if (!active) return; const selected = attempts.find((item) => item.id === route.params?.attemptId) ?? attempts[0] ?? null; setAttempt(selected); setReviewIds(new Set(reviews.value.filter((entry) => selected?.answers.some((answer) => answer.item.itemId === entry.sourceItem.itemId && answer.item.contentVersion === entry.sourceItem.contentVersion && contentPackagePinsEqual(answer.item.packagePin, entry.sourceItem.packagePin))).map((entry) => entry.sourceItem.itemId))); setHasLoadedReviewData(true); }).catch((error) => { if (active) { setReviewError(describeOperationalFailure(error, "Review data could not be loaded locally.")); setHasLoadedReviewData(true); } }); return () => { active = false; }; }, [route.params?.attemptId]));
-  const answers = useMemo(() => !attempt ? [] : filter === "incorrect" ? attempt.answers.filter((answer) => !answer.isCorrect) : attempt.answers, [attempt, filter]);
+  const [navigatorVisible, setNavigatorVisible] = useState(false);
+
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    setReviewError(null);
+    setHasLoadedReviewData(false);
+    void Promise.all([getAttempts(), getReviewQueueItems()])
+      .then(([attempts, reviews]) => {
+        if (!active) return;
+        const selected = attempts.find((item) => item.id === route.params?.attemptId) ?? attempts[0] ?? null;
+        setAttempt(selected);
+        setReviewIds(new Set(reviews.value
+          .filter((entry) => selected?.answers.some((answer) => answer.item.itemId === entry.sourceItem.itemId && answer.item.contentVersion === entry.sourceItem.contentVersion && contentPackagePinsEqual(answer.item.packagePin, entry.sourceItem.packagePin)))
+          .map((entry) => entry.sourceItem.itemId)));
+        setSelectedIndex(0);
+        setHasLoadedReviewData(true);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setReviewError(describeOperationalFailure(error, "Review data could not be loaded locally."));
+        setHasLoadedReviewData(true);
+      });
+    return () => { active = false; };
+  }, [route.params?.attemptId]));
+
+  const answers = useMemo(() => {
+    return attempt ? filter === "missed" ? attempt.answers.filter((answer) => !answer.isCorrect) : attempt.answers : [];
+  }, [attempt, filter]);
   const currentIndex = answers.length ? Math.min(selectedIndex, answers.length - 1) : 0;
   const currentAnswer = answers[currentIndex] ?? null;
-  async function toggle(answer: CertificationAnswerViewModel) { const marked = !reviewIds.has(answer.questionId); setReviewError(null); setUpdatingReviewIds((current) => new Set(current).add(answer.questionId)); try { if (!attempt) throw new Error("The reviewed Certification session is unavailable."); await setQuestionNeedsReview({ question: answer.questionSnapshot, sourceAttemptId: answer.attemptId, sourceItem: answer.item, sourceSessionId: attempt.id }, marked); setReviewIds((current) => { const next = new Set(current); marked ? next.add(answer.questionId) : next.delete(answer.questionId); return next; }); } catch (error) { setReviewError(describeOperationalFailure(error, "The review mark could not be saved locally.")); } finally { setUpdatingReviewIds((current) => { const next = new Set(current); next.delete(answer.questionId); return next; }); } }
+  const missedCount = attempt?.answers.filter((answer) => !answer.isCorrect).length ?? 0;
+  const navigatorItems = attempt?.answers.map((answer, index) => ({ answered: answer.isAnswered, id: answer.questionId, ordinal: index + 1 })) ?? [];
+  const contextLabel = answers.length === 0
+    ? `0 ${t("of")} 0`
+    : filter === "missed" && currentAnswer
+      ? `${t("Question")} ${currentAnswer.questionNumber} • ${currentIndex + 1} ${t("of")} ${answers.length}`
+      : `${currentIndex + 1} ${t("of")} ${answers.length}`;
+
+  async function toggle(answer: CertificationAnswerViewModel) {
+    const marked = !reviewIds.has(answer.questionId);
+    setReviewError(null);
+    setUpdatingReviewIds((current) => new Set(current).add(answer.questionId));
+    try {
+      if (!attempt) throw new Error("The reviewed Certification session is unavailable.");
+      await setQuestionNeedsReview({ question: answer.questionSnapshot, sourceAttemptId: answer.attemptId, sourceItem: answer.item, sourceSessionId: attempt.id }, marked);
+      setReviewIds((current) => {
+        const next = new Set(current);
+        marked ? next.add(answer.questionId) : next.delete(answer.questionId);
+        return next;
+      });
+    } catch (error) {
+      setReviewError(describeOperationalFailure(error, "The review mark could not be saved locally."));
+    } finally {
+      setUpdatingReviewIds((current) => {
+        const next = new Set(current);
+        next.delete(answer.questionId);
+        return next;
+      });
+    }
+  }
+
   if (reviewError) return <Screen><EmptyState title={t("Review unavailable")} description={t(reviewError)} /></Screen>;
   if (!hasLoadedReviewData) return <Screen><LoadingState title={t("Loading review…")} /></Screen>;
-  return <Screen>{attempt ? (
-        <>
-          <View style={styles.reviewHeader}>
-            <View style={styles.reviewHeaderCopy}>
-              <Text style={styles.eyebrow}>{t("Answer review")}</Text>
-              <Text maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Review your answers")}</Text>
-            </View>
-            <Text style={styles.position}>{answers.length ? `${currentIndex + 1} ${t("of")} ${answers.length}` : "0"}</Text>
-          </View>
-          <View style={styles.scoreHeader}>
-            <View style={styles.scoreCopy}>
-              <Text style={styles.scoreLabel}>{t("Session score")}</Text>
-              <Text style={styles.scoreValue}>{`${attempt.correctCount}/${attempt.questionCount}`}</Text>
-            </View>
-            <Text style={styles.scorePercent}>{attempt.scorePercent}%</Text>
-          </View>
-          <ProgressBar progress={attempt.scorePercent / 100} />
-          <View accessibilityRole="tablist" style={styles.filterRow}>
-            <FilterChip active={filter === "all"} label={t("All")} onPress={() => { setFilter("all"); setSelectedIndex(0); }} tone="info" />
-            <FilterChip active={filter === "incorrect"} label={t("Missed")} onPress={() => { setFilter("incorrect"); setSelectedIndex(0); }} tone="danger" />
-          </View>
-          {currentAnswer ? <AnswerCard answer={currentAnswer} disabled={updatingReviewIds.has(currentAnswer.questionId)} needsReview={reviewIds.has(currentAnswer.questionId)} onToggle={() => void toggle(currentAnswer)} /> : <Card><EmptyState title={t("No answers in this view")} description={t("Switch filters to review the full attempt.")} /></Card>}
-          {currentAnswer ? (
-            <View style={styles.pager}>
-              <Button disabled={currentIndex === 0} onPress={() => setSelectedIndex((index) => Math.max(0, index - 1))} variant="secondary">{t("Previous")}</Button>
-              <Button disabled={currentIndex >= answers.length - 1} onPress={() => setSelectedIndex((index) => Math.min(answers.length - 1, index + 1))}>{t("Next")}</Button>
-            </View>
-          ) : null}
-        </>
-      ) : <Card><EmptyState title={t("No attempt found")} description={t("Submit an exam before reviewing answers.")} /></Card>}</Screen>;
+  if (!attempt) return <Screen><EmptyState title={t("No attempt found")} description={t("Submit an exam before reviewing answers.")} /></Screen>;
+
+  return (
+    <ReviewShell
+      backLabel={t("Go back")}
+      contextLabel={contextLabel}
+      filter={filter}
+      missedCount={missedCount}
+      nextDisabled={!currentAnswer || currentIndex >= answers.length - 1}
+      onBack={() => navigation.goBack()}
+      onFilterChange={(nextFilter) => { setFilter(nextFilter); setSelectedIndex(0); }}
+      onNavigator={() => setNavigatorVisible(true)}
+      onNext={() => setSelectedIndex((index) => Math.min(answers.length - 1, index + 1))}
+      onPrevious={() => setSelectedIndex((index) => Math.max(0, index - 1))}
+      previousDisabled={!currentAnswer || currentIndex === 0}
+      testID={`answer-review-${attempt.id}`}
+      totalOccurrences={attempt.answers.length}
+    >
+      {currentAnswer ? (
+        <AnswerReviewContent
+          answer={currentAnswer}
+          disabled={updatingReviewIds.has(currentAnswer.questionId)}
+          needsReview={reviewIds.has(currentAnswer.questionId)}
+          onToggle={() => { void toggle(currentAnswer); }}
+        />
+      ) : (
+        <View style={styles.unavailableContent}>
+          <View style={styles.unavailableIcon}><Icon color={styles.unavailableIconGlyph.color} name="warning" size={24} /></View>
+          <Text maxFontSizeMultiplier={2} style={styles.unavailableTitle}>{t("No answers in this view")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.unavailableDescription}>{t("Switch filters to review the full attempt.")}</Text>
+        </View>
+      )}
+      <ReviewNavigator
+        currentOrdinal={currentAnswer?.questionNumber ?? 1}
+        items={navigatorItems}
+        onClose={() => setNavigatorVisible(false)}
+        onSelect={(ordinal) => { setFilter("all"); setSelectedIndex(ordinal - 1); setNavigatorVisible(false); }}
+        visible={navigatorVisible}
+      />
+    </ReviewShell>
+  );
 }
-function AnswerCard({ answer, disabled, needsReview, onToggle }: { answer: CertificationAnswerViewModel; disabled: boolean; needsReview: boolean; onToggle: () => void }) {
-  const styles = useThemedStyles(createStyles); const { t } = useAppPreferences(); const question = answer.questionSnapshot; return <Card variant={!answer.isAnswered || !answer.isCorrect ? "warning" : "default"}><SectionHeader title={`${t("Question")} ${answer.questionNumber}`} subtitle={t(answer.isAnswered ? answer.isCorrect ? "Correct" : "Incorrect" : "Unanswered")} action={<Badge label={t(needsReview ? "Needs Review" : answer.wasFlagged ? "Flagged" : answer.isCorrect ? "Correct" : "Review")} tone={needsReview ? "warning" : answer.isCorrect ? "success" : "danger"} />} /><Text style={styles.questionText}>{question.question}</Text><DiagnosticBlock label={t("Selected answer")} tone={answer.isCorrect ? "neutral" : "danger"} value={getOptionText(answer, answer.selectedOptionIds) || t("No answer selected.")} /><DiagnosticBlock label={t("Correct answer")} tone="success" value={getOptionText(answer, answer.correctOptionIds)} /><DiagnosticBlock label={t("Explanation")} value={question.feedback.reason} /><Button disabled={disabled} variant={needsReview ? "primary" : "secondary"} onPress={onToggle}>{t(needsReview ? "Marked Needs Review" : "Mark Needs Review")}</Button></Card>; }
-function getOptionText(answer: CertificationAnswerViewModel, ids: readonly string[]) { const byId = new Map(answer.questionSnapshot.options.map((option) => [option.id, option.text])); return ids.map((id) => byId.get(id) ?? id).join(", "); }
-function DiagnosticBlock({ label, tone = "neutral", value, children }: { label: string; tone?: "neutral" | "success" | "danger"; value?: string; children?: ReactNode }) {
-  const styles = useThemedStyles(createStyles); return <View style={[styles.detailBlock, tone === "success" ? styles.successBlock : null, tone === "danger" ? styles.dangerBlock : null]}><Text style={styles.detailLabel}>{label}</Text>{value ? <Text style={styles.detailText}>{value}</Text> : children}</View>; }
-function FilterChip({ active, label, onPress, tone }: { active: boolean; label: string; onPress: () => void; tone: "danger" | "info" }) {
-  const styles = useThemedStyles(createStyles); return <Pressable accessibilityRole="button" accessibilityState={{ selected: active }} onPress={onPress} style={({ pressed }) => [styles.filterChip, active ? styles[`${tone}FilterChip`] : null, pressed ? styles.pressed : null]}><Text style={[styles.filterChipText, active ? styles.activeFilterChipText : null]}>{label}</Text></Pressable>; }
+
+function AnswerReviewContent({ answer, disabled, needsReview, onToggle }: Readonly<{ answer: CertificationAnswerViewModel; disabled: boolean; needsReview: boolean; onToggle: () => void }>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
+  const selected = new Set(answer.selectedOptionIds);
+  const correct = new Set(answer.correctOptionIds);
+  return (
+    <>
+      <View style={styles.questionBlock}>
+        <Text maxFontSizeMultiplier={2} style={styles.questionEyebrow}>{t("Question").toUpperCase()}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.question}>{answer.questionSnapshot.question}</Text>
+      </View>
+      <View style={styles.options}>
+        {answer.questionSnapshot.options.map((option, index) => (
+          <AnswerOption
+            accessibilityLabel={option.text}
+            accessibilityRole={answer.questionSnapshot.type === "multiple" ? "checkbox" : "radio"}
+            accessibilityState={{ checked: selected.has(option.id), disabled: true }}
+            disabled
+            key={option.id}
+            letter={String.fromCharCode(65 + index)}
+            onPress={() => undefined}
+            state={answerOptionState(selected.has(option.id), correct.has(option.id))}
+            text={option.text}
+          />
+        ))}
+      </View>
+      {answer.isAnswered ? <ReviewFeedback answer={answer} /> : <Text maxFontSizeMultiplier={2} style={styles.unanswered}>{t("Unanswered")}</Text>}
+      <Button disabled={disabled} onPress={onToggle} variant="ghost">{t(needsReview ? "Marked Needs Review" : "Mark Needs Review")}</Button>
+    </>
+  );
+}
+
+function ReviewFeedback({ answer }: Readonly<{ answer: CertificationAnswerViewModel }>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  return (
+    <View style={styles.feedback}>
+      <Text maxFontSizeMultiplier={2} style={styles.result}>{t(answer.isCorrect ? "Correct" : "Incorrect")}</Text>
+      <View style={styles.reasonPanel}>
+        <Text maxFontSizeMultiplier={2} style={styles.reasonLabel}>{t("Reason")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.reason}>{answer.questionSnapshot.feedback.reason}</Text>
+      </View>
+      <Pressable
+        accessibilityLabel={t(detailsOpen ? "Hide answer details" : "Show answer details")}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: detailsOpen }}
+        onPress={() => setDetailsOpen((current) => !current)}
+        style={styles.detailsToggle}
+      >
+        <Text maxFontSizeMultiplier={2} style={styles.detailsLabel}>{t("Details")}</Text>
+        <Icon color={styles.detailsIcon.color} name={detailsOpen ? "chevron-up" : "chevron-down"} size={18} />
+      </Pressable>
+      {detailsOpen ? <View style={styles.details}><AlgorithmFeedbackDocumentBlock document={answer.questionSnapshot.feedback.details} item={answer.item} /></View> : null}
+    </View>
+  );
+}
+
+function answerOptionState(selected: boolean, correct: boolean) {
+  if (correct && selected) return "correct" as const;
+  if (correct) return "omitted_correct" as const;
+  if (selected) return "incorrect" as const;
+  return "default" as const;
+}
+
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  reviewHeader: { alignItems: "flex-end", flexDirection: "row", justifyContent: "space-between" },
-  reviewHeaderCopy: { flex: 1, gap: spacing.xs },
-  eyebrow: { ...typography.caption, color: palette.primary, letterSpacing: 0.7, textTransform: "uppercase" },
-  reviewTitle: { ...typography.title, color: palette.textPrimary },
-  position: { ...typography.bodyStrong, color: palette.textSecondary },
-  scoreHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
-  scoreCopy: { gap: spacing.xs },
-  scoreLabel: { ...typography.caption, color: palette.textSecondary, textTransform: "uppercase" },
-  scoreValue: { ...typography.heading, color: palette.textPrimary },
-  scorePercent: { ...typography.heading, color: palette.primary },
-  filterRow: { flexDirection: "row", gap: spacing.sm },
-  filterChip: { borderColor: palette.border, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-  infoFilterChip: { backgroundColor: palette.infoSoft, borderColor: palette.info },
-  dangerFilterChip: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
-  filterChipText: { ...typography.caption, color: palette.textSecondary },
-  activeFilterChipText: { color: palette.textPrimary },
-  pressed: { opacity: 0.8 },
-  questionText: { ...typography.bodyStrong, color: palette.textPrimary },
-  detailBlock: { gap: spacing.xs, padding: spacing.md },
-  successBlock: { backgroundColor: palette.successSoft },
-  dangerBlock: { backgroundColor: palette.dangerSoft },
-  detailLabel: { ...typography.caption, color: palette.textSecondary },
-  detailText: { ...typography.body, color: palette.textPrimary },
-  pager: { flexDirection: "row", gap: spacing.sm },
+  details: { gap: spacing.md },
+  detailsIcon: { color: palette.textSecondary },
+  detailsLabel: { ...typography.bodyStrong, color: palette.textPrimary },
+  detailsToggle: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 48, paddingHorizontal: spacing.xs, paddingVertical: spacing.md },
+  feedback: { gap: spacing.md },
+  options: { gap: spacing.sm },
+  question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
+  questionBlock: { gap: spacing.xs },
+  questionEyebrow: { color: palette.primary, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 15, opacity: 0.5 },
+  reason: { ...typography.body, color: palette.textSecondary },
+  reasonLabel: { ...typography.caption, color: palette.textSecondary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
+  reasonPanel: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },
+  result: { ...typography.caption, alignSelf: "flex-start", color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
+  unavailableContent: { alignItems: "center", backgroundColor: "rgba(14,22,40,0.6)", borderColor: "rgba(255,255,255,0.05)", borderRadius: 18, gap: spacing.lg, marginTop: 101, paddingHorizontal: spacing.xxxl, paddingVertical: 28 },
+  unavailableDescription: { color: palette.textMuted, fontSize: 14, lineHeight: 21, maxWidth: 289, textAlign: "center" },
+  unavailableIcon: { alignItems: "center", backgroundColor: "rgba(30,41,59,0.5)", borderRadius: 24, height: 48, justifyContent: "center", width: 48 },
+  unavailableIconGlyph: { color: palette.warning },
+  unavailableTitle: { color: palette.textPrimary, fontSize: 17, fontWeight: "600", lineHeight: 21, textAlign: "center" },
+  unanswered: { ...typography.bodyStrong, color: palette.textMuted },
 });

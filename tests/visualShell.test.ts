@@ -42,6 +42,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "PRACTICE_HUB",
     "ALGORITHMS_SCOPE_SELECTION",
     "TOPIC_ROADMAP",
+    "ANSWER_REVIEW",
     "PRACTICE_SETUP",
     "PRACTICE_SESSION",
     "ALGORITHMS_INTERVIEW_SIMULATION",
@@ -133,7 +134,6 @@ test("Screen and SessionShell remain the only general and active-session page ow
 
   assert.deepEqual(safeAreaOwners, []);
   assert.deepEqual(scrollViewOwners, [
-    "src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx",
     "src/features/simulation/SimulationSessionSurface.tsx",
     "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",
   ]);
@@ -174,19 +174,32 @@ test("representative Home, Settings, setup, session, and result routes keep cano
 
 test("simulation review owns the Figma review shell and keeps navigator outcomes explicit", () => {
   const review = source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx");
+  const sharedReviewShell = source("src/components/ReviewShell.tsx");
+  const sharedReviewNavigator = source("src/components/ReviewNavigator.tsx");
   const facade = source("src/application/coding-interview/codingInterviewSessionFacade.ts");
 
-  assert.match(review, /<IconButton[\s\S]*icon="chevron-left"/);
-  assert.match(review, /filterShell:/);
+  assert.match(sharedReviewShell, /<IconButton[\s\S]*icon="chevron-left"/);
+  assert.match(sharedReviewShell, /filterShell:/);
   assert.match(review, /<AnswerOption/);
   assert.match(review, /<PracticeFeedbackBlock/);
   assert.match(review, /<ReviewNavigator/);
   assert.match(review, /Result unavailable/);
   assert.match(review, /This question was added after your session completed\. No answer was recorded\./);
-  assert.match(review, /fontScale >= 1\.8/);
-  assert.match(review, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
+  assert.match(sharedReviewNavigator, /fontScale >= 1\.8/);
+  assert.match(sharedReviewNavigator, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
   assert.match(facade, /interaction: buildAlgorithmInteractionViewModel/);
   assert.match(facade, /controls: feedback\.controls/);
+});
+
+test("answer review uses the shared Figma review shell and preserves review marking", () => {
+  const review = source("src/features/review/AnswerReviewScreen.tsx");
+  const sharedReviewShell = source("src/components/ReviewShell.tsx");
+
+  assert.match(review, /<ReviewShell[\s\S]*onNavigator=/);
+  assert.match(review, /<AnswerOption/);
+  assert.match(review, /<ReviewNavigator/);
+  assert.match(review, /setQuestionNeedsReview/);
+  assert.match(sharedReviewShell, /filterShell:/);
 });
 
 test("simulation active shell uses the Figma question and action-footer variant", () => {

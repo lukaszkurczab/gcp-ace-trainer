@@ -120,7 +120,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.ANSWER_REVIEW}
         component={AnswerReviewScreen}
-        options={{ title: t("Answer Review") }}
+        options={{ headerShown: false, title: t("Answer Review") }}
       />
       <Stack.Screen
         name={ROUTES.PRACTICE_SETUP}

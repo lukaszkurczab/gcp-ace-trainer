@@ -84,7 +84,7 @@ test("exactly the fourteen inventoried generic pending branches use LoadingState
 test("pending data is distinct from true empty and onboarding outcomes", () => {
   for (const [path, loadedState, emptyBoundary] of [
     ["src/features/practice/PracticeHubScreen.tsx", "hasLoadedData", "if (!activeTrackId)"],
-    ["src/features/review/AnswerReviewScreen.tsx", "hasLoadedReviewData", "return <Screen>{attempt ?"],
+    ["src/features/review/AnswerReviewScreen.tsx", "hasLoadedReviewData", "if (!attempt) return"],
   ] as const) {
     const file = source(path);
     assert.match(file, new RegExp(`useState\\(false\\)`), `${path} initializes ${loadedState}`);
