@@ -8,6 +8,7 @@ export const colors = {
   light: {
     background: "#F0F2F5",
     surface: "#FFFFFF",
+    surfaceInput: "#F7FAF9",
     elevatedSurface: "#F9FBFE",
     border: "#D9E2EC",
     borderStrong: "#B9C6D4",
@@ -91,6 +92,7 @@ export const colors = {
     // Keep brand.nightNavy above unchanged because it is also the app-mark color.
     background: "#081328",
     surface: "#0E1B31",
+    surfaceInput: "#0B1529",
     elevatedSurface: "#0F172A",
     border: "#1E293B",
     borderStrong: "#334155",

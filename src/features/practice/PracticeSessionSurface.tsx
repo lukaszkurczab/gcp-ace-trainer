@@ -153,10 +153,10 @@ function CompletingNotice() {
   return (
     <View style={styles.asyncState}>
       <View style={styles.asyncStatusRow}>
-        <Text style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
         <View accessible accessibilityLabel={t("Finishing this session…")} style={styles.asyncIcon}>
           <Icon color={palette.textSecondary} name="rotate-ccw" size={24} />
         </View>
+        <Text style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
       </View>
       <Text maxFontSizeMultiplier={2} style={styles.asyncTitle}>{t("Finishing this session…")}</Text>
       <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Saving your answers and preparing your summary.")}</Text>
@@ -236,9 +236,9 @@ function noop() {}
 const createStyles = (palette: AppColors) => StyleSheet.create({
   actions: { gap: spacing.sm },
   asyncDescription: { ...typography.body, color: palette.textSecondary },
-  asyncIcon: { alignItems: "center", backgroundColor: palette.background, borderRadius: radius.lg, height: 44, justifyContent: "center", width: 44 },
-  asyncStatusLabel: { ...typography.caption, color: palette.textMuted, fontWeight: "600", letterSpacing: 0.5 },
-  asyncStatusRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", width: "100%" },
+  asyncIcon: { alignItems: "center", backgroundColor: palette.surfaceInput, borderRadius: radius.lg, height: 44, justifyContent: "center", width: 44 },
+  asyncStatusLabel: { ...typography.caption, color: palette.textMuted, flex: 1, fontWeight: "600", letterSpacing: 0.5 },
+  asyncStatusRow: { alignItems: "center", flexDirection: "row", gap: spacing.md, width: "100%" },
   asyncState: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.button, borderWidth: 1, gap: spacing.lg, padding: spacing.xl },
   asyncSpacer: { height: 50, minHeight: 50, width: 1 },
   asyncTitle: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", lineHeight: 28 },
