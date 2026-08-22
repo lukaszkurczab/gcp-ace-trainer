@@ -259,6 +259,7 @@ const polish: Readonly<Record<string, string>> = {
   "Keep learning": "Kontynuuj naukę",
   "Leave and resume later, or abandon it permanently. Answers already saved remain available.": "Wyjdź i wróć później albo trwale porzuć sesję. Zapisane odpowiedzi pozostaną dostępne.",
   "Recover session": "Odzyskaj sesję",
+  "Continue recovery": "Kontynuuj odzyskiwanie",
   "Verified answer explanation.": "Zweryfikowane wyjaśnienie odpowiedzi.",
   "Hide answer details": "Ukryj szczegóły odpowiedzi",
   "Show answer details": "Pokaż szczegóły odpowiedzi",

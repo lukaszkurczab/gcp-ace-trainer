@@ -330,7 +330,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
       question={{ constraints: projection.constraints, itemId: projection.item.itemId, prompt: projection.prompt, responseControl }}
-      retryLabel={completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Recover completion" : completionFailure.kind === "retry_final_checkpoint" ? "Retry final checkpoint" : "Recover final checkpoint" : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Recover session" : undefined}
+      retryLabel={completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Recover completion" : completionFailure.kind === "retry_final_checkpoint" ? "Retry final checkpoint" : "Recover final checkpoint" : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Continue recovery" : undefined}
       runtimeIdentity={{
         itemId: projection.item.itemId,
         actualLength: projection.session.actualLength,
