@@ -8,4 +8,8 @@ test("SessionShell reserves its fixed action-footer height after scrollable feed
   assert.match(shell, /const SESSION_ACTION_FOOTER_CLEARANCE = \(48 \* 2\) \+ spacing\.sm \+ \(spacing\.lg \* 2\);/);
   assert.match(shell, /content:\s*\{[\s\S]*paddingBottom: SESSION_ACTION_FOOTER_CLEARANCE,/);
   assert.match(shell, /footer=\{actionBar \? <View style=\{styles\.actionRegion\}>\{actionBar\}<\/View> : undefined\}/);
+  assert.match(shell, /footerVariant=\{layout === "practice" \? "session" : "default"\}/);
+  const screen = readFileSync("src/components/Screen.tsx", "utf8");
+  assert.match(screen, /footerVariant\?: "default" \| "review" \| "session" \| "sticky"/);
+  assert.match(screen, /footerSession:\s*\{[\s\S]*justifyContent:\s*"flex-end"[\s\S]*minHeight:\s*228[\s\S]*gap:\s*spacing\.sm/);
 });

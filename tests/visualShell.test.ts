@@ -298,7 +298,7 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
   assert.match(setup, /compactSectionTitle:[\s\S]*?textTransform:\s*"uppercase"/);
   assert.match(choiceRow, /density\?:\s*"comfortable" \| "compact"/);
   assert.match(choiceRow, /compactRow:\s*\{[\s\S]*?minHeight:\s*48/);
-  assert.match(screen, /footerVariant\?:\s*"default" \| "review" \| "sticky"/);
+  assert.match(screen, /footerVariant\?:\s*"default" \| "review" \| "session" \| "sticky"/);
   assert.match(screen, /footerSticky:\s*\{[\s\S]*?colorWithOpacity\("#FFFFFF", 0\.05\)/);
   assert.match(screenHeader, /variant\?: "default" \| "activity" \| "practiceSetup"/);
   assert.match(screenHeader, /practiceSetupDescription:\s*\{[\s\S]*?fontSize:\s*13\.5[\s\S]*?lineHeight:\s*19/);

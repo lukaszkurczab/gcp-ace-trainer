@@ -58,7 +58,7 @@ export function SessionShell({
     : null;
 
   return (
-    <Screen edges={["top", "bottom"]} footer={actionBar ? <View style={styles.actionRegion}>{actionBar}</View> : undefined} style={[styles.content, isSimulationLayout ? styles.contentSimulation : null]}>
+    <Screen edges={["top", "bottom"]} footer={actionBar ? <View style={styles.actionRegion}>{actionBar}</View> : undefined} footerVariant={layout === "practice" ? "session" : "default"} style={[styles.content, isSimulationLayout ? styles.contentSimulation : null]}>
       <View style={[styles.sessionRoot, isSimulationLayout ? styles.sessionRootSimulation : null]} testID={rootTestID}>
         <View style={[styles.topBar, isSimulationLayout ? styles.topBarSimulation : null, isSavedSimulationLayout ? styles.topBarSavedSimulation : null, usesLargeTextLayout ? styles.topBarLargeText : null]}>
           <View accessible={Boolean(timer)} accessibilityElementsHidden={!timer} accessibilityLabel={timer?.accessibilityLabel} accessibilityRole={timer ? "timer" : undefined} importantForAccessibility={timer ? "yes" : "no-hide-descendants"} style={[styles.topSlot, isSimulationLayout ? styles.topSlotSimulation : null, usesLargeTextLayout ? styles.topSlotLargeText : null]} testID={timerTestID}>
