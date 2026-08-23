@@ -57,6 +57,10 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.match(summary, /runtimeSelectors\.summary\.root\(sessionId\)/);
   assert.match(progress, /screenTitle:[\s\S]*?fontSize:\s*30[\s\S]*?lineHeight:\s*36/);
   assert.match(progress, /root:\s*\{\s*gap:\s*28\s*\}/);
+  assert.match(progress, /trackSelector:\s*\{[\s\S]*?backgroundColor:\s*palette\.surfaceInput/);
+  assert.match(progress, /weekTitle:\s*\{[\s\S]*?fontSize:\s*14[\s\S]*?fontWeight:\s*"500"/);
+  assert.match(progress, /focusTitle:\s*\{[\s\S]*?fontSize:\s*16[\s\S]*?fontWeight:\s*"600"/);
+  assert.match(progress, /attentionDetail:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"400"/);
   assert.match(progress, /attentionCard:[\s\S]*?borderWidth:\s*0[\s\S]*?borderRadius:\s*14/);
   assert.match(progress, /const focusActionLabel = model\.algorithmsProgress \? "Open Practice"/);
 });

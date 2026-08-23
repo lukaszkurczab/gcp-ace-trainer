@@ -108,7 +108,7 @@ export function ProgressTab({
             </View>
             <Text style={styles.attentionDetail}>{t(model.reviewQueueCopy)}</Text>
             {model.reviewAction && onProgressAction ? (
-              <Button onPress={() => onProgressAction(model.reviewAction!)} variant="ghost">
+              <Button labelStyle={styles.attentionActionLabel} onPress={() => onProgressAction(model.reviewAction!)} variant="ghost">
                 {t(model.reviewActionLabel)}
               </Button>
             ) : null}
@@ -268,7 +268,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   root: { gap: 28 },
   header: { gap: 28 },
   screenTitle: { color: palette.textPrimary, fontSize: 30, fontWeight: "600", letterSpacing: -0.4, lineHeight: 36 },
-  trackSelector: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 12, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 40, paddingHorizontal: 14 },
+  trackSelector: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: 12, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 40, paddingHorizontal: 14 },
   trackSelectorText: { ...typography.bodyStrong, color: palette.textSecondary },
   pressed: { opacity: 0.78 },
   sectionLabel: { color: palette.info, fontSize: 12, fontWeight: "600", lineHeight: 19 },
@@ -279,22 +279,22 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   activityRow: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: spacing.md, minHeight: 73, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
   activityRowLast: { borderBottomWidth: 0 },
   activityCopy: { flex: 1, gap: spacing.xxs, minWidth: 0 },
-  activityTitle: { ...typography.bodyStrong, color: palette.textPrimary },
-  activityDetail: { ...typography.caption, color: palette.textSecondary },
+  activityTitle: { color: palette.textPrimary, fontSize: 13, fontWeight: "500", lineHeight: 18 },
+  activityDetail: { color: palette.textSecondary, fontSize: 12, fontWeight: "400", lineHeight: 18 },
   emptyActivityCard: { backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: spacing.xs, padding: spacing.lg },
   weekCard: { backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: 14 },
   weekHeader: { alignItems: "flex-start", flexDirection: "row", gap: 10, justifyContent: "space-between" },
   weekCopy: { flex: 1, gap: spacing.xs },
-  weekTitle: { ...typography.bodyStrong, color: palette.textPrimary },
-  weekDetail: { ...typography.small, color: palette.textSecondary },
+  weekTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
+  weekDetail: { color: palette.textSecondary, fontSize: 13, fontWeight: "400", lineHeight: 18 },
   miniBar: { backgroundColor: palette.borderStrong, borderRadius: 2, height: 4, marginTop: spacing.xs, overflow: "hidden", width: 44 },
   miniBarFill: { backgroundColor: palette.success, borderRadius: 2, height: 4 },
-  weekAction: { ...typography.small, color: palette.primary },
+  weekAction: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 18 },
   section: { gap: 10 },
   sectionHeading: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
   activityLink: { ...typography.small, color: palette.primary, fontWeight: "600" },
   focusCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 14, gap: spacing.md, padding: spacing.lg },
-  focusTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  focusTitle: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20 },
   focusPercent: { color: palette.textPrimary, fontSize: 36, fontWeight: "700", lineHeight: 40 },
   focusEmpty: { ...typography.small, color: palette.textSecondary },
   attentionCard: { backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: 6, paddingHorizontal: spacing.lg, paddingVertical: 14 },
@@ -302,7 +302,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   attentionTitleRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
   attentionDot: { backgroundColor: palette.danger, borderRadius: 4, height: 7, width: 7 },
   attentionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
-  attentionDetail: { ...typography.small, color: palette.textSecondary },
+  attentionDetail: { color: palette.textSecondary, fontSize: 13, fontWeight: "400", lineHeight: 18 },
+  attentionActionLabel: { fontSize: 13, lineHeight: 18 },
   evidenceCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.md, padding: spacing.lg },
   roadmapRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   roadmapCopy: { flex: 1, gap: spacing.xs, minWidth: 0 },
