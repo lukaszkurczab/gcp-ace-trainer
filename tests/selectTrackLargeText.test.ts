@@ -21,8 +21,16 @@ test("Algorithms bootstrap accepts a reachable large-text control without requir
   assert.match(bootstrap, /visibilityPercentage: 50/);
 });
 
-test("track cards use the Figma route/server-stack icon pair and shared input tile", () => {
-  assert.match(source, /coding \? "route" : cloud \? "server-stack"/);
+test("track cards use the canonical Figma icon mapping for every active track", () => {
+  assert.match(source, /\[CODING_INTERVIEW_TRACK_ID\]: "route"/);
+  assert.match(source, /\[GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID\]: "server-stack"/);
+  assert.match(source, /\[BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID\]: "database"/);
+  assert.match(source, /\[OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID\]: "grid"/);
+  assert.match(source, /\[FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID\]: "device-phone"/);
+  assert.match(source, /\[AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID\]: "cloud"/);
+  assert.match(source, /\[MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID\]: "settings"/);
+  assert.match(source, /\[MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID\]: "cpu"/);
+  assert.match(source, /No canonical icon is registered for track/);
   assert.match(source, /color=\{palette\.primary\} name=\{icon\}/);
   assert.match(source, /trackIcon:\s*\{[\s\S]*?backgroundColor: palette\.surfaceInput[\s\S]*?borderColor: palette\.primary/);
 });

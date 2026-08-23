@@ -362,9 +362,12 @@ The source geometry now follows the verified Figma contract for title rhythm,
 29/35 title typography, 14/20 supporting copy, 12 px track-list gap, 20 px
 card radius, 10 px card internal rhythm, 11/15.4 supporting labels, and the
 sticky-footer spacing. All eight track registrations remain rendered because
-the current registry and admission tests are canonical; Figma's two-card
-Coding/GCP projection is therefore an explicit scope/canonical conflict, not
-a reason to hide six runtime tracks.
+the current registry and admission tests are canonical. The live screen
+fixtures still show a two-card Coding/GCP projection, but the canonical Figma
+component set `230:1983` now contains selected and unselected variants for all
+eight tracks, with neutral semantic icon instances for the six additional
+tracks; this removes the icon-authority gap without changing the screen-level
+scope conflict or hiding runtime tracks.
 
 Commit `364a832` adds the repo-owned `AmbientBackdrop` and the downloaded
 Figma topography SVG to the shared `Screen` owner. The exact dark-mode glow
@@ -375,9 +378,10 @@ does not provide a light ambient variant.
 This slice is still not marked `MATCHED`: Figma nodes `42:604` and `42:642`
 define unknown/unadmitted registration-failure dialogs, but the current route
 has no truthful registration-state input or owner for them. The eight-track
-registry projection also remains a canonical scope conflict against Figma's
-two-card projection. Runtime pixel proof is still unavailable because Maestro
-is absent and CoreSimulatorService refuses simulator connections. Focused
+registry projection remains a screen-level scope conflict against Figma's
+two-card screen projection, while its shared card/icon authority is now
+complete in `230:1983`. Runtime pixel proof is still unavailable because
+Maestro is absent and CoreSimulatorService refuses simulator connections. Focused
 ambient/Select Track/visual-shell checks passed 15/15; `npm run qa:static`
 passed with recovery inventory 284/114/555, 564/564 tests, typecheck,
 content-boundary, and runtime-privacy-boundary checks.

@@ -3,12 +3,18 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
-import { AppShellHeader, Button, Icon, Screen } from "../../components";
+import { AppShellHeader, Button, Icon, Screen, type IconName } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import {
+  AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID,
+  BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
   CODING_INTERVIEW_TRACK_ID,
+  FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
   GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   getTrackDisplays,
+  MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID,
+  MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID,
+  OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID,
   type TrackDisplay,
   type TrackId,
 } from "../../domain";
@@ -25,6 +31,23 @@ type SelectTrackScreenProps = {
   onboarding?: boolean;
   onTrackSelected?: (trackId: TrackId) => void;
 };
+
+const TRACK_ICONS: Readonly<Record<string, IconName>> = {
+  [AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID]: "cloud",
+  [BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID]: "database",
+  [CODING_INTERVIEW_TRACK_ID]: "route",
+  [FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID]: "device-phone",
+  [GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID]: "server-stack",
+  [MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID]: "settings",
+  [MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID]: "cpu",
+  [OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID]: "grid",
+};
+
+function getTrackIconName(trackId: TrackId): IconName {
+  const iconName = TRACK_ICONS[trackId];
+  if (!iconName) throw new Error(`No canonical icon is registered for track ${trackId}.`);
+  return iconName;
+}
 
 /** Figma 05A track-choice shell. Selection is local until the single footer command commits it. */
 export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelected }: SelectTrackScreenProps) {
@@ -132,7 +155,7 @@ function TrackChoiceCard({ disabled, largeText, onPress, selected, title, track 
   const { colors: palette, t } = useAppPreferences();
   const coding = track.id === CODING_INTERVIEW_TRACK_ID;
   const cloud = track.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID;
-  const icon = coding ? "route" : cloud ? "server-stack" : "grid";
+  const icon = getTrackIconName(track.id);
   const subtitle = coding ? "DSA & Problem Solving" : cloud ? "Cloud Fundamentals" : track.shortTitle;
   const freeStart = coding ? "Free start · Complexity and constraints" : cloud ? "Free start · Cloud fundamentals" : track.shortTitle;
 
