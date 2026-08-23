@@ -13,7 +13,7 @@ type ScreenHeaderProps = Readonly<{
   context?: string;
   contextTone?: "muted" | "primary";
   description?: string;
-  variant?: "default" | "activity";
+  variant?: "default" | "activity" | "practiceSetup";
   titleTestID?: string;
   title: string;
 }>;
@@ -24,9 +24,9 @@ export function ScreenHeader({ backAction, context, contextTone = "muted", descr
   const { t } = useAppPreferences();
 
   return (
-    <View style={[styles.container, variant === "activity" ? styles.activityContainer : null]}>
+    <View style={[styles.container, variant === "activity" ? styles.activityContainer : null, variant === "practiceSetup" ? styles.practiceSetupContainer : null]}>
       {backAction || context ? (
-        <View style={[styles.contextRow, variant === "activity" ? styles.activityContextRow : null]}>
+        <View style={[styles.contextRow, variant === "activity" ? styles.activityContextRow : null, variant === "practiceSetup" ? styles.practiceSetupContextRow : null]}>
           {backAction ? (
             <IconButton
               accessibilityLabel={backAction.accessibilityLabel ?? t("Go back")}
@@ -34,12 +34,12 @@ export function ScreenHeader({ backAction, context, contextTone = "muted", descr
               onPress={backAction.onPress}
             />
           ) : null}
-          {context ? <Text maxFontSizeMultiplier={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null]}>{context}</Text> : null}
+          {context ? <Text maxFontSizeMultiplier={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null, variant === "practiceSetup" ? styles.practiceSetupContext : null]}>{context}</Text> : null}
         </View>
       ) : null}
-      <View style={styles.copy}>
+      <View style={[styles.copy, variant === "practiceSetup" ? styles.practiceSetupCopy : null]}>
         <Text maxFontSizeMultiplier={2} style={[styles.title, variant === "activity" ? styles.activityTitle : null]} testID={titleTestID}>{title}</Text>
-        {description ? <Text maxFontSizeMultiplier={2} style={styles.description}>{description}</Text> : null}
+        {description ? <Text maxFontSizeMultiplier={2} style={[styles.description, variant === "practiceSetup" ? styles.practiceSetupDescription : null]}>{description}</Text> : null}
       </View>
     </View>
   );
@@ -61,16 +61,29 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   activityContextRow: {
     gap: spacing.sm,
   },
+  practiceSetupContainer: {
+    gap: spacing.lg,
+  },
+  practiceSetupContextRow: {
+    gap: spacing.sm,
+  },
   context: {
     ...typography.small,
     color: palette.textMuted,
     fontWeight: "600",
+  },
+  practiceSetupContext: {
+    fontWeight: "500",
+    lineHeight: 17,
   },
   contextPrimary: {
     color: palette.textPrimary,
   },
   copy: {
     gap: spacing.xs,
+  },
+  practiceSetupCopy: {
+    gap: 6,
   },
   title: {
     ...typography.title,
@@ -84,5 +97,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   description: {
     ...typography.small,
     color: palette.textSecondary,
+  },
+  practiceSetupDescription: {
+    fontSize: 13.5,
+    fontWeight: "400",
+    lineHeight: 19,
   },
 });

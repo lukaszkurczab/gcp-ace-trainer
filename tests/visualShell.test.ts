@@ -245,14 +245,26 @@ test("simulation active shell uses the Figma question and action-footer variant"
 test("Practice setup keeps one canonical back action and recovery copy names learner-visible consequences", () => {
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
   const session = source("src/features/practice/PracticeSessionScreen.tsx");
+  const choiceRow = source("src/components/ChoiceRow.tsx");
+  const screen = source("src/components/Screen.tsx");
+  const screenHeader = source("src/components/ScreenHeader.tsx");
 
   assert.equal((setup.match(/\{t\("Back"\)\}/g) ?? []).length, 0);
   assert.match(setup, /<AppShellHeader[\s\S]*backAction=\{\{ onPress: \(\) => goBackOrHome\(navigation\) \}\}/);
   assert.match(setup, /compactCodingPractice = algorithmMode\?\.id === ALGORITHM_MODE_IDS\.customPractice/);
-  assert.match(setup, /compactLengthGrid:[\s\S]*?padding:\s*spacing\.xs/);
-  assert.match(setup, /compactLengthOption:[\s\S]*?minHeight:\s*44/);
-  assert.match(setup, /compactPanel:[\s\S]*?minHeight:\s*48/);
+  assert.match(setup, /footerVariant=\{compactCodingPractice \? "sticky" : "default"\}/);
+  assert.match(setup, /<ScreenHeader[\s\S]*variant="practiceSetup"/);
+  assert.match(setup, /<ChoiceRow[\s\S]*density="compact"/);
+  assert.match(setup, /compactLengthGrid:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?minHeight:\s*54[\s\S]*?padding:\s*spacing\.xs/);
+  assert.match(setup, /compactLengthOption:[\s\S]*?borderRadius:\s*10[\s\S]*?minHeight:\s*44/);
   assert.match(setup, /compactSectionTitle:[\s\S]*?textTransform:\s*"uppercase"/);
+  assert.match(choiceRow, /density\?:\s*"comfortable" \| "compact"/);
+  assert.match(choiceRow, /compactRow:\s*\{[\s\S]*?minHeight:\s*48/);
+  assert.match(screen, /footerVariant\?:\s*"default" \| "sticky"/);
+  assert.match(screen, /footerSticky:\s*\{[\s\S]*?colorWithOpacity\("#FFFFFF", 0\.05\)/);
+  assert.match(screenHeader, /variant\?: "default" \| "activity" \| "practiceSetup"/);
+  assert.match(screenHeader, /practiceSetupDescription:\s*\{[\s\S]*?fontSize:\s*13\.5[\s\S]*?lineHeight:\s*19/);
+  assert.doesNotMatch(setup, /Focus areas|Save settings/);
   assert.match(session, /Your saved answers remain available, but this session cannot be resumed\./);
   assert.doesNotMatch(session, /durable records stay available/);
 });

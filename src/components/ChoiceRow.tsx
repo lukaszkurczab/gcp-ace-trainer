@@ -6,7 +6,9 @@ import type { AppColors } from "../theme";
 
 type ChoiceRowProps = {
   appearancePreview?: "dark" | "light" | "system";
+  accessibilityLabel?: string;
   detail: string;
+  density?: "comfortable" | "compact";
   disabled?: boolean;
   onPress: () => void;
   selected: boolean;
@@ -14,16 +16,18 @@ type ChoiceRowProps = {
   title: string;
 };
 
-/** Canonical comfortable radio row from Figma's Choice Group pattern. */
-export function ChoiceRow({ appearancePreview, detail, disabled = false, onPress, selected, testID, title }: ChoiceRowProps) {
+/** Canonical radio row from Figma's Choice Group pattern. */
+export function ChoiceRow({ accessibilityLabel, appearancePreview, density = "comfortable", detail, disabled = false, onPress, selected, testID, title }: ChoiceRowProps) {
   const styles = useThemedStyles(createStyles);
+  const compact = density === "compact";
   return (
     <Pressable
+      accessibilityLabel={accessibilityLabel}
       accessibilityRole="radio"
       accessibilityState={{ disabled, selected }}
       disabled={disabled}
       onPress={onPress}
-      style={[styles.row, selected ? styles.selected : styles.unselected, disabled ? styles.disabled : null]}
+      style={[styles.row, compact ? styles.compactRow : null, selected ? styles.selected : styles.unselected, disabled ? styles.disabled : null]}
       testID={testID}
     >
       {appearancePreview ? <AppearancePreview mode={appearancePreview} /> : null}
@@ -32,7 +36,7 @@ export function ChoiceRow({ appearancePreview, detail, disabled = false, onPress
       </View>
       <View style={styles.content}>
         <Text maxFontSizeMultiplier={2} style={[styles.title, appearancePreview ? styles.appearanceTitle : null]}>{title}</Text>
-        <Text maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text>
+        {!compact ? <Text maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text> : null}
       </View>
     </Pressable>
   );
@@ -60,6 +64,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
     minHeight: 72,
+    paddingHorizontal: 14,
+    paddingVertical: spacing.md,
+  },
+  compactRow: {
+    minHeight: 48,
     paddingHorizontal: 14,
     paddingVertical: spacing.md,
   },

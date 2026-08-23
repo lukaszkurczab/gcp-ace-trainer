@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
 
-import { spacing } from "../theme";
+import { colorWithOpacity, spacing } from "../theme";
 import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
@@ -12,11 +12,12 @@ type ScreenProps = {
   compact?: boolean;
   edges?: Edge[];
   footer?: ReactNode;
+  footerVariant?: "default" | "sticky";
   scroll?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export function Screen({ children, compact = false, edges = ["bottom"], footer, scroll = true, style }: ScreenProps) {
+export function Screen({ children, compact = false, edges = ["bottom"], footer, footerVariant = "default", scroll = true, style }: ScreenProps) {
   const styles = useThemedStyles(createStyles);
   const contentStyle = [styles.content, compact ? styles.contentCompact : null, footer ? styles.contentWithFooter : null, style];
   const content = <View style={contentStyle}>{children}</View>;
@@ -35,7 +36,7 @@ export function Screen({ children, compact = false, edges = ["bottom"], footer, 
       ) : (
         content
       )}
-      {footer ? <View style={[styles.footer, compact ? styles.footerCompact : null]}>{footer}</View> : null}
+      {footer ? <View style={[styles.footer, compact ? styles.footerCompact : null, footerVariant === "sticky" ? styles.footerSticky : null]}>{footer}</View> : null}
     </SafeAreaView>
   );
 }
@@ -79,5 +80,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   footerCompact: {
     padding: spacing.md
-  }
+  },
+  footerSticky: {
+    borderColor: colorWithOpacity("#FFFFFF", 0.05),
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+  },
 });

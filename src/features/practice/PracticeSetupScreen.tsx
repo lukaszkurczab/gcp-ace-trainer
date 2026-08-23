@@ -3,7 +3,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { AppShellHeader, Button, Card, EmptyState, LoadingState, Screen, ScreenHeader, SectionHeader } from "../../components";
+import { AppShellHeader, Button, Card, ChoiceRow, EmptyState, LoadingState, Screen, ScreenHeader, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { CODING_INTERVIEW_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
@@ -181,19 +181,21 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     <View style={styles.shell} testID={runtimeSelectors.practice.setupRoot()}>
       <Screen
         edges={["top", "bottom"]}
+        footerVariant={compactCodingPractice ? "sticky" : "default"}
         footer={compactCodingPractice ? (
           <View style={styles.footerActions}>
             {setupError ? <Text accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
             <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
           </View>
         ) : undefined}
-      >
+    >
         {compactCodingPractice ? <ScreenHeader
           backAction={{ onPress: () => goBackOrHome(navigation) }}
           context={t("Practice")}
           description={t("Adjust your default practice. Session size and feedback apply across tracks.")}
           title={t("Practice settings")}
           titleTestID={runtimeSelectors.practice.customSetupTitle()}
+          variant="practiceSetup"
         /> : <AppShellHeader
           backAction={{ onPress: () => goBackOrHome(navigation) }}
           context={t(activeTrack.title)}
@@ -329,6 +331,9 @@ type SelectablePanelProps = {
 
 function SelectablePanel({ compact = false, detail, label, onPress, selected, testID }: SelectablePanelProps) {
   const styles = useThemedStyles(createStyles);
+  if (compact) {
+    return <ChoiceRow accessibilityLabel={`${label}. ${detail}`} density="compact" detail={detail} onPress={onPress} selected={selected} testID={testID} title={label} />;
+  }
   return (
     <Pressable
       accessibilityRole="button"
@@ -337,18 +342,17 @@ function SelectablePanel({ compact = false, detail, label, onPress, selected, te
       onPress={onPress}
       style={({ pressed }) => [
         styles.panel,
-        compact ? styles.compactPanel : null,
-        selected ? (compact ? styles.compactSelectedPanel : styles.selectedOption) : null,
+        selected ? styles.selectedOption : null,
         pressed ? styles.pressed : null,
       ]}
       testID={testID}
-    >
+      >
       <View style={styles.panelCopy}>
-        <Text style={[styles.panelTitle, compact ? styles.compactPanelTitle : null, selected && !compact ? styles.selectedText : null]}>{label}</Text>
-        {compact ? null : <Text style={styles.subtitle}>{detail}</Text>}
+        <Text style={[styles.panelTitle, selected ? styles.selectedText : null]}>{label}</Text>
+        <Text style={styles.subtitle}>{detail}</Text>
       </View>
-      <View style={[styles.radio, compact ? styles.compactRadio : null, selected ? (compact ? styles.compactRadioSelected : styles.radioSelected) : null]}>
-        {selected ? <View style={[styles.radioDot, compact ? styles.compactRadioDot : null]} /> : null}
+      <View style={[styles.radio, selected ? styles.radioSelected : null]}>
+        {selected ? <View style={styles.radioDot} /> : null}
       </View>
     </Pressable>
   );
@@ -361,9 +365,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   intro: {
     gap: spacing.sm,
-  },
-  compactIntro: {
-    gap: spacing.xs,
   },
   title: {
     ...typography.title,
@@ -381,10 +382,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.md,
   },
   compactSection: {
+    marginBottom: spacing.xs,
     gap: spacing.sm,
   },
   compactSectionHeader: {
-    gap: spacing.xxs,
+    gap: spacing.xs,
   },
   compactSectionTitle: {
     color: palette.textPrimary,
@@ -396,7 +398,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   compactSectionSubtitle: {
     color: palette.textMuted,
     fontSize: 12.5,
-    lineHeight: 19,
+    lineHeight: 15,
   },
   lengthGrid: {
     flexDirection: "row",
@@ -404,13 +406,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.md,
   },
   compactLengthGrid: {
-    backgroundColor: palette.elevatedSurface,
+    backgroundColor: palette.surfaceInput,
     borderColor: palette.border,
     borderRadius: radius.button,
     borderWidth: 1,
     flexDirection: "row",
     flexWrap: "nowrap",
     gap: spacing.xs,
+    minHeight: 54,
     padding: spacing.xs,
   },
   lengthOption: {
@@ -430,7 +433,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   compactLengthOption: {
     backgroundColor: "transparent",
     borderColor: "transparent",
-    borderRadius: radius.lg,
+    borderRadius: 10,
     borderWidth: 1,
     flex: 1,
     gap: 0,
@@ -489,18 +492,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     minHeight: 92,
     padding: spacing.lg,
   },
-  compactPanel: {
-    backgroundColor: palette.navigation.surface,
-    borderColor: palette.choice.border,
-    borderRadius: radius.lg,
-    minHeight: 48,
-    paddingHorizontal: 14,
-    paddingVertical: spacing.md,
-  },
-  compactSelectedPanel: {
-    backgroundColor: palette.navigation.surface,
-    borderColor: palette.choice.active,
-  },
   panelCopy: {
     flex: 1,
     gap: spacing.xs,
@@ -508,11 +499,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   panelTitle: {
     ...typography.bodyStrong,
     color: palette.textSecondary,
-  },
-  compactPanelTitle: {
-    color: palette.textPrimary,
-    fontSize: 14,
-    lineHeight: 21,
   },
   radio: {
     alignItems: "center",
@@ -523,15 +509,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     justifyContent: "center",
     width: 28,
   },
-  compactRadio: {
-    borderColor: palette.choice.border,
-    borderRadius: 10,
-    height: 20,
-    width: 20,
-  },
-  compactRadioSelected: {
-    borderColor: palette.choice.active,
-  },
   radioSelected: {
     borderColor: palette.primary,
   },
@@ -540,11 +517,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderRadius: radius.pill,
     height: 12,
     width: 12,
-  },
-  compactRadioDot: {
-    backgroundColor: palette.choice.active,
-    height: 8,
-    width: 8,
   },
   reviewCard: {
     alignItems: "center",
