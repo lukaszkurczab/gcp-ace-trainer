@@ -261,14 +261,14 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               <ListRow
                 detail={t(mode.unavailableReason ?? mode.detail)}
                 key={mode.mode}
-                leading={<IconTile name={mode.icon} size={32} tone={mode.enabled ? mode.tone : "muted"} />}
+                leading={<IconTile iconSize={24} name={mode.icon} size={32} tone={mode.enabled ? (isCodingInterviewTrack ? "settings" : mode.tone) : "muted"} />}
                 onPress={mode.enabled ? () => startSession(mode.mode) : undefined}
                 style={[styles.modeRow, index === modes.length - 1 ? styles.modeRowLast : null, mode.enabled ? null : styles.disabledRow]}
                 testID={runtimeSelectors.practice.modeCard(mode.mode)}
                 title={t(mode.title)}
                 trailing={
                   mode.enabled ? (
-                    <Icon color={palette.textMuted} name="chevron-right" size={22} />
+                    <Icon color={palette.textMuted} name="chevron-right" size={20} />
                   ) : (
                     <Badge label={t("Unavailable")} tone="neutral" />
                   )
