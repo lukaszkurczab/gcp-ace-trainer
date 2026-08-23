@@ -1,0 +1,62 @@
+appId: com.lkurczab.patternly
+name: Patternly visual shell — Progress and nested Activity
+tags:
+  - screenshot
+  - uiux-evidence
+  - progress
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Data & privacy"
+    commands:
+      - tapOn: "Go back"
+      - extendedWaitUntil:
+          visible:
+            id: "settings-screen"
+          timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: "main-tab-bar-progress"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-settings"
+- runFlow:
+    when:
+      visible:
+        id: "main-tab-bar-home"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-settings"
+- runFlow:
+    when:
+      visible:
+        id: "settings-screen"
+    commands:
+      - tapOn:
+          id: "settings-appearance"
+      - extendedWaitUntil:
+          visible: "Choose how Patternly looks on this device."
+          timeout: 30000
+      - tapOn: "^${THEME_LABEL},.*"
+      - tapOn: "Go back"
+      - extendedWaitUntil:
+          visible:
+            id: "settings-screen"
+          timeout: 30000
+      - tapOn:
+          id: "main-tab-bar-progress"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:progress:root"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__progress__established__${THEME}__${DEVICE_PROFILE}"
+- scrollUntilVisible:
+    element:
+      id: "patternly:progress:activity"
+    direction: DOWN
+    centerElement: true
+    timeout: 30000
+    visibilityPercentage: 50
+- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__progress__activity__${THEME}__${DEVICE_PROFILE}"
