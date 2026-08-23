@@ -37,5 +37,7 @@ test("simulation question navigator has the approved states, accessible labels, 
   assert.match(source, /frozen=\{feedback\?\.kind === "save_failed"\}/);
   assert.match(source, /fullWidthAction/);
   assert.match(source, /name="alert-triangle"/);
+  assert.match(source, /operationNotice:\s*\{[\s\S]*?borderRadius:\s*radius\.lg[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
+  assert.match(source, /saveFailureStack:\s*\{\s*gap:\s*spacing\.md/);
   assert.match(source, /Try again/);
 });
