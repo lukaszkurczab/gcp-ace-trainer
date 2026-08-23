@@ -298,6 +298,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderRadius: 22,
     elevation: 0,
     gap: spacing.lg,
+    overflow: "hidden",
     padding: spacing.xl,
     position: "relative",
     shadowOpacity: 0,

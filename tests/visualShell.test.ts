@@ -193,7 +193,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(homeTab, /isReviewRecommendation[\s\S]*?Review due items before they become stale\./);
   assert.match(home, /activeTab === "home" \? styles\.homeScreenContent/);
   assert.match(home, /homeScreenContent:\s*\{[\s\S]*?gap:\s*18[\s\S]*?paddingTop:\s*12/);
-  assert.match(homeTab, /decisionCard:[\s\S]*?gap:\s*spacing\.lg/);
+  assert.match(homeTab, /decisionCard:[\s\S]*?gap:\s*spacing\.lg[\s\S]*?overflow:\s*"hidden"/);
   assert.match(homeTab, /decisionTitle:[\s\S]*?letterSpacing:\s*-0\.3/);
   assert.match(homeTab, /sectionLabel:[\s\S]*?fontSize:\s*13/);
   assert.match(homeTab, /overviewValueGroup:[\s\S]*?gap:\s*spacing\.sm/);
