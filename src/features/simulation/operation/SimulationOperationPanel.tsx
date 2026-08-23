@@ -39,7 +39,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   failed: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
   lockMessage: { ...typography.caption, color: palette.textSecondary, flex: 1 },
   lockRow: { alignItems: "center", borderTopColor: palette.border, borderTopWidth: 1, flexDirection: "row", gap: spacing.sm, paddingTop: spacing.sm },
-  notice: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.warning, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
+  notice: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.warning, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
   noticeText: { ...typography.body, color: palette.warning, flex: 1 },
   panel: { borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },
   pending: { backgroundColor: palette.primarySoft, borderColor: palette.primary },

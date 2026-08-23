@@ -256,7 +256,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   exitDestructiveAction: { backgroundColor: palette.background, paddingHorizontal: spacing.xl, paddingBottom: spacing.sm, width: "100%" },
   exitTitle: { ...typography.heading, color: palette.textPrimary },
   notice: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },
-  noticeError: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.warning, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
+  noticeError: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.warning, borderRadius: radius.lg, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
   noticeErrorText: { color: palette.warning, flex: 1 },
   noticeSuccess: { backgroundColor: palette.successSoft, borderColor: palette.success },
   noticeText: { ...typography.small, color: palette.textSecondary },

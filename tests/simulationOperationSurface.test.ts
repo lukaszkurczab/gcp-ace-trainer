@@ -21,6 +21,8 @@ test("simulation operation surface renders only declared state actions and never
   assert.doesNotMatch(screen, /label: "Try again", onPress: retry/);
   assert.match(panel, /accessibilityLiveRegion="polite"/);
   assert.match(panel, /name="alert-triangle"/);
+  assert.match(panel, /notice:\s*\{[\s\S]*?borderRadius:\s*radius\.lg[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
+  assert.match(readFileSync("src/features/practice/PracticeSessionSurface.tsx", "utf8"), /noticeError:\s*\{[\s\S]*?borderRadius:\s*radius\.lg[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
   assert.match(panel, /ActivityIndicator/);
   assert.match(lifecycle, /resumeEditableSimulationAfterSaveFailure/);
   assert.match(lifecycle, /operation\.kind !== "save_failed" && operation\.kind !== "stale_revision"/);
