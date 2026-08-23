@@ -190,7 +190,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   content: { gap: spacing.xl },
   preferenceMeta: { alignItems: "center", flexDirection: "row", gap: spacing.xs },
   preferenceValue: { ...typography.caption, color: palette.textMuted },
-  footer: { alignItems: "center", gap: spacing.xxs, paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
-  footerTitle: { ...typography.bodyStrong, color: palette.textPrimary },
-  footerText: { ...typography.caption, color: palette.textMuted },
+  footer: { alignItems: "center", gap: spacing.xxs, paddingHorizontal: spacing.lg },
+  footerTitle: { color: palette.textPrimary, fontSize: 13, fontWeight: "600", lineHeight: 16 },
+  footerText: { color: palette.textMuted, fontSize: 11, fontWeight: "400", lineHeight: 15 },
 });

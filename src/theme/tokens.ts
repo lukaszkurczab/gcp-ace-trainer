@@ -258,7 +258,7 @@ export const typography = {
   },
   listRowDetail: {
     fontSize: 11,
-    lineHeight: 15,
+    lineHeight: 15.4,
     fontWeight: "400"
   },
   processingTitle: {

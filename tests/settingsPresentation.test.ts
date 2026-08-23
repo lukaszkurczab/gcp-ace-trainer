@@ -45,6 +45,18 @@ test("grouped settings rows follow the Figma 200% text geometry", () => {
   assert.match(settingsGroup, /dividedRows:[\s\S]*?gap:\s*0/);
 });
 
+test("Settings app identity follows the Figma footer geometry", () => {
+  assert.match(settingsTab, /footer: \{[\s\S]*?gap: spacing\.xxs,[\s\S]*?paddingHorizontal: spacing\.lg \}/);
+  assert.match(settingsTab, /footerTitle: \{ color: palette\.textPrimary, fontSize: 13, fontWeight: "600", lineHeight: 16 \}/);
+  assert.match(settingsTab, /footerText: \{ color: palette\.textMuted, fontSize: 11, fontWeight: "400", lineHeight: 15 \}/);
+});
+
+test("shared supporting list-row text uses the Figma fractional line height", () => {
+  assert.match(listRow, /listRowDetail/);
+  const tokens = readFileSync("src/theme/tokens.ts", "utf8");
+  assert.match(tokens, /listRowDetail:[\s\S]*?fontSize: 11,[\s\S]*?lineHeight: 15\.4,[\s\S]*?fontWeight: "400"/);
+});
+
 test("preference selection uses the canonical accessible radio choice row", () => {
   assert.match(preferenceSelection, /<View style=\{styles\.choiceGroup\} accessibilityRole="radiogroup"/);
   assert.match(preferenceSelection, /<ChoiceRow[\s\S]*selected=\{selected\}[\s\S]*testID=\{`preference-option-\$\{option\.value\}`\}/);
