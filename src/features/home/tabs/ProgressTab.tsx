@@ -102,7 +102,12 @@ export function ProgressTab({
             <Text style={styles.sectionTitle}>{t("Current focus")}</Text>
             <Card style={styles.focusCard}>
               <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{t(focusTitle)}</Text>
-              {hasFocusEvidence ? (
+              {focus ? (
+                <>
+                  <Text maxFontSizeMultiplier={2} style={styles.focusStatus}>{t(focus.statusLabel)}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.focusEvidenceDetail}>{`${t("Items practiced")}: ${focus.practicedLabel}`}</Text>
+                </>
+              ) : hasFocusEvidence ? (
                 <Text maxFontSizeMultiplier={2} style={styles.focusPercent}>{focusProgress}%</Text>
               ) : (
                 <Text maxFontSizeMultiplier={2} style={styles.focusEmpty}>{t("No evidence yet")}</Text>
@@ -321,6 +326,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   activityLink: { ...typography.small, color: palette.primary, fontWeight: "600" },
   focusCard: { ...shadows.none, backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 14, gap: spacing.md, padding: spacing.lg },
   focusTitle: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20 },
+  focusStatus: { color: palette.textSecondary, fontSize: 14, lineHeight: 20 },
+  focusEvidenceDetail: { color: palette.info, fontSize: 13, lineHeight: 18 },
   focusPercent: { color: palette.textPrimary, fontSize: 36, fontWeight: "700", lineHeight: 40 },
   focusEmpty: { ...typography.small, color: palette.textSecondary },
   focusActionLabel: { color: palette.primary, fontSize: 14, fontWeight: "600", lineHeight: 18 },

@@ -74,6 +74,7 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.match(progress, /weekTitle:\s*\{[\s\S]*?fontSize:\s*14[\s\S]*?fontWeight:\s*"500"/);
   assert.match(progress, /miniBar:\s*\{[\s\S]*?backgroundColor:\s*palette\.surface[\s\S]*?height:\s*4/);
   assert.match(progress, /focusTitle:\s*\{[\s\S]*?fontSize:\s*16[\s\S]*?fontWeight:\s*"600"/);
+  assert.match(progress, /focus \? \([\s\S]*?focus\.statusLabel[\s\S]*?focus\.practicedLabel[\s\S]*?\) : hasFocusEvidence/);
   assert.match(progress, /<Button labelStyle=\{styles\.focusActionLabel\}[\s\S]*?variant="ghost">/);
   assert.match(progress, /activityRow:\s*\{[\s\S]*?gap:\s*10[\s\S]*?paddingVertical:\s*spacing\.md/);
   assert.match(progress, /activityTitle:\s*\{[\s\S]*?fontSize:\s*14[\s\S]*?lineHeight:\s*18/);
