@@ -128,6 +128,10 @@ test("the shared header owns accessible back geometry and long-copy reflow witho
   assert.match(screenHeader, /<IconButton[\s\S]*icon="chevron-left"/);
   assert.match(screenHeader, /title: string/);
   assert.match(screenHeader, /description\?: string/);
+  assert.match(screenHeader, /container:\s*\{\s*gap:\s*spacing\.lg/);
+  assert.match(screenHeader, /contextRow:\s*\{[\s\S]*?gap:\s*spacing\.sm/);
+  assert.match(screenHeader, /description:\s*\{[\s\S]*?color:\s*palette\.textMuted/);
+  assert.match(screenHeader, /practiceSetupDescription:\s*\{[\s\S]*?color:\s*palette\.textSecondary/);
   assert.match(screenHeader, /contextRow:[\s\S]*minHeight:\s*44/);
   assert.match(screenHeader, /title:\s*\{[\s\S]*\.\.\.typography\.title/);
   assert.match(screenHeader, /maxFontSizeMultiplier=\{2\}/);

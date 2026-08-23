@@ -47,7 +47,7 @@ export function ScreenHeader({ backAction, context, contextTone = "muted", descr
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   container: {
-    gap: spacing.md,
+    gap: spacing.lg,
   },
   activityContainer: {
     gap: spacing.sm,
@@ -55,7 +55,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   contextRow: {
     alignItems: "center",
     flexDirection: "row",
-    gap: spacing.md,
+    gap: spacing.sm,
     minHeight: 44,
   },
   activityContextRow: {
@@ -96,9 +96,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   description: {
     ...typography.small,
-    color: palette.textSecondary,
+    color: palette.textMuted,
   },
   practiceSetupDescription: {
+    color: palette.textSecondary,
     fontSize: 13.5,
     fontWeight: "400",
     lineHeight: 19,
