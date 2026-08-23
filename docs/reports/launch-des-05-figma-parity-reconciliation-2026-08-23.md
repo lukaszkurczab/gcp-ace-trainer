@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `8822cd7`
+Current source SHA at packet update: `5e3a69f`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -1093,6 +1093,25 @@ passed `11/11`; fresh `npm run qa:static` passed recovery inventory
 `284/114/557`, TypeScript, `566/566` tests, content boundary, and runtime
 privacy boundary. Current-head Light/Dark runtime pixel comparison and
 Product Owner approval remain open; this does not claim 99% parity.
+
+## Addendum — Settings section-label rhythm convergence
+
+The current connector channel `ksxw21cw` was revalidated against live Figma
+`822:7687` (`Pattern / Settings Content`). The canonical Figma groups place
+the first 63 px row directly after the 13 px section label; the previous
+shared `SettingsGroup` added a 4 px title-to-row gap. Commit `5e3a69f` adds an
+explicit title-gap contract and sets the three canonical Settings root groups
+(`App`, `Learning`, and `Data & privacy`) to `0 px`. The default 4 px gap is
+retained for `SettingsInformationScreen`, which has no route-bound reference
+in this Figma scope.
+
+No fixture-only Account, Sync, Plan, Goal & cadence, or Help rows were added,
+and the repository-owned version string was not replaced with the Figma
+fixture's sample version. Focused Settings presentation checks passed `8/8`;
+the full `npm run qa:static` passed with recovery inventory `284/114/557`,
+TypeScript, `566/566` tests, content boundary, and runtime privacy boundary.
+Current-head Light/Dark runtime comparison and Product Owner approval remain
+open; this is source-level convergence, not a 99% claim.
 
 ## Addendum — Fixed question-shell structure convergence
 
