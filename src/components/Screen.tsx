@@ -82,7 +82,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderTopWidth: 1,
     gap: spacing.md,
     paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg
+    paddingVertical: spacing.xl
   },
   footerCompact: {
     padding: spacing.md

@@ -171,6 +171,7 @@ test("Screen and SessionShell remain the only general and active-session page ow
   assert.match(screen, /<SafeAreaView[\s\S]*<ScrollView/);
   assert.match(screen, /content:\s*\{[\s\S]*?gap:\s*spacing\.xl/);
   assert.match(screen, /contentCompact:\s*\{[\s\S]*?gap:\s*spacing\.md/);
+  assert.match(screen, /footer:\s*\{[\s\S]*?paddingVertical:\s*spacing\.xl/);
   assert.match(header, /placement === "stack"[\s\S]*<SafeAreaView edges=\{\["top"\]\}/);
   assert.doesNotMatch(source("src/features/coding-interview/session/SessionShell.tsx"), /SafeAreaView|ScrollView/);
 });

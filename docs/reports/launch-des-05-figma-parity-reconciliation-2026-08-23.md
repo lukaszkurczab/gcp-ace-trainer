@@ -1075,3 +1075,21 @@ Fresh `npm run qa:static` on source SHA `bd0fc5e` passed recovery inventory
 privacy boundary. The repository was clean on `main` before this
 documentation-only evidence update; no push was performed. This does not
 claim 99% parity or Product Owner approval.
+
+## Addendum — Default footer vertical rhythm convergence
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`Pattern / Screen Shell · Dark` node `830:7457`. The shared `Screen` default
+footer used `spacing.lg` (`16 px`) vertically, while the live Figma shell uses
+`20 px` top and bottom padding. The canonical default footer now uses the
+existing `spacing.xl` token (`20 px`). Specialized `compact`, `review`,
+`session`, and `sticky` footer contracts remain explicit and unchanged.
+
+This is a shell-geometry-only correction: no route, action, lifecycle,
+persistence, accessibility, or semantic contract changed. The reachability
+scan found active consumers for every footer variant and no obsolete or
+duplicate visual owner introduced by the change. Focused shell/session checks
+passed `11/11`; fresh `npm run qa:static` passed recovery inventory
+`284/114/557`, TypeScript, `566/566` tests, content boundary, and runtime
+privacy boundary. Current-head Light/Dark runtime pixel comparison and
+Product Owner approval remain open; this does not claim 99% parity.

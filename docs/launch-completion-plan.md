@@ -591,6 +591,16 @@ semantic contract changed. Focused shell checks passed 25/25; full
 tests, typecheck, content-boundary, and runtime-privacy-boundary. Same-head
 runtime pixel proof and Product Owner approval remain open.
 
+## Addendum — Default footer vertical rhythm convergence
+
+Current-channel Figma node `830:7457` uses `20 px` vertical padding for the
+general Screen footer. The canonical `Screen` default footer now uses the
+existing `spacing.xl` token; `compact`, `review`, `session`, and `sticky`
+variants remain explicit because they own separate layout contracts. Focused
+shell/session checks passed `11/11`, and `npm run qa:static` passed with
+recovery inventory `284/114/557` and `566/566` tests. Runtime Light/Dark pixel
+proof and Product Owner approval remain open.
+
 ## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.
