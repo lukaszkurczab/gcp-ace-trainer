@@ -133,6 +133,7 @@ tags:
 - extendedWaitUntil:
     visible: "Pause or end this session?"
     timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__algorithms__practice-exit-sheet__${THEME}__${DEVICE_PROFILE}"
 - tapOn: "Pause and resume later"
 - extendedWaitUntil:
     visible:
