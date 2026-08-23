@@ -11,7 +11,7 @@ import { contentPackagePinsEqual } from "../../domain";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { radius, spacing, typography, type AppColors } from "../../theme";
+import { colorWithOpacity, spacing, typography, type AppColors } from "../../theme";
 import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/certification";
 import { AlgorithmFeedbackDocumentBlock } from "../practice/AlgorithmFeedbackDocumentBlock";
 
@@ -139,11 +139,12 @@ function AnswerReviewContent({ answer, disabled, needsReview, onToggle }: Readon
   const selected = new Set(answer.selectedOptionIds);
   const correct = new Set(answer.correctOptionIds);
   return (
-    <>
+    <View style={styles.answerContent}>
       <View style={styles.questionBlock}>
         <Text maxFontSizeMultiplier={2} style={styles.questionEyebrow}>{t("Question").toUpperCase()}</Text>
         <Text maxFontSizeMultiplier={2} style={styles.question}>{answer.questionSnapshot.question}</Text>
       </View>
+      <View style={styles.questionOptionsSpacer} />
       <View style={styles.options}>
         {answer.questionSnapshot.options.map((option, index) => (
           <AnswerOption
@@ -159,9 +160,10 @@ function AnswerReviewContent({ answer, disabled, needsReview, onToggle }: Readon
           />
         ))}
       </View>
+      <View style={styles.optionsFeedbackSpacer} />
       {answer.isAnswered ? <ReviewFeedback answer={answer} /> : <Text maxFontSizeMultiplier={2} style={styles.unanswered}>{t("Unanswered")}</Text>}
-      <Button disabled={disabled} onPress={onToggle} variant="ghost">{t(needsReview ? "Marked Needs Review" : "Mark Needs Review")}</Button>
-    </>
+      <Button disabled={disabled} onPress={onToggle} style={styles.markAction} variant="ghost">{t(needsReview ? "Marked Needs Review" : "Mark Needs Review")}</Button>
+    </View>
   );
 }
 
@@ -171,22 +173,26 @@ function ReviewFeedback({ answer }: Readonly<{ answer: CertificationAnswerViewMo
   const [detailsOpen, setDetailsOpen] = useState(false);
   return (
     <View style={styles.feedback}>
-      <Text maxFontSizeMultiplier={2} style={styles.result}>{t(answer.isCorrect ? "Correct" : "Incorrect")}</Text>
-      <View style={styles.reasonPanel}>
+      <View style={styles.reasonSection}>
+        <View style={styles.reasonDivider} />
+        <View style={styles.reasonSpacer} />
         <Text maxFontSizeMultiplier={2} style={styles.reasonLabel}>{t("Reason")}</Text>
         <Text maxFontSizeMultiplier={2} style={styles.reason}>{answer.questionSnapshot.feedback.reason}</Text>
       </View>
-      <Pressable
-        accessibilityLabel={t(detailsOpen ? "Hide answer details" : "Show answer details")}
-        accessibilityRole="button"
-        accessibilityState={{ expanded: detailsOpen }}
-        onPress={() => setDetailsOpen((current) => !current)}
-        style={styles.detailsToggle}
-      >
-        <Text maxFontSizeMultiplier={2} style={styles.detailsLabel}>{t("Details")}</Text>
-        <Icon color={styles.detailsIcon.color} name={detailsOpen ? "chevron-up" : "chevron-down"} size={18} />
-      </Pressable>
-      {detailsOpen ? <View style={styles.details}><AlgorithmFeedbackDocumentBlock document={answer.questionSnapshot.feedback.details} item={answer.item} /></View> : null}
+      <View style={[styles.detailsSection, detailsOpen ? styles.detailsSectionExpanded : null]}>
+        {detailsOpen ? <View style={styles.detailsDivider} /> : null}
+        <Pressable
+          accessibilityLabel={t(detailsOpen ? "Hide answer details" : "Show answer details")}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: detailsOpen }}
+          onPress={() => setDetailsOpen((current) => !current)}
+          style={styles.detailsToggle}
+        >
+          <Text maxFontSizeMultiplier={2} style={styles.detailsLabel}>{t("Details")}</Text>
+          <Icon color={styles.detailsIcon.color} name={detailsOpen ? "chevron-up" : "chevron-down"} size={18} />
+        </Pressable>
+        {detailsOpen ? <View style={styles.details}><AlgorithmFeedbackDocumentBlock document={answer.questionSnapshot.feedback.details} item={answer.item} /></View> : null}
+      </View>
     </View>
   );
 }
@@ -199,19 +205,27 @@ function answerOptionState(selected: boolean, correct: boolean) {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  details: { gap: spacing.md },
+  answerContent: { gap: 0 },
+  details: { gap: spacing.lg, paddingBottom: spacing.lg, paddingTop: spacing.xs },
   detailsIcon: { color: palette.textSecondary },
-  detailsLabel: { ...typography.bodyStrong, color: palette.textPrimary },
+  detailsLabel: { ...typography.bodyStrong, color: palette.textSecondary },
+  detailsSection: { gap: spacing.xl },
+  detailsSectionExpanded: { gap: 0 },
+  detailsDivider: { backgroundColor: colorWithOpacity("#FFFFFF", 0.06), height: StyleSheet.hairlineWidth, width: "100%" },
   detailsToggle: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 48, paddingHorizontal: spacing.xs, paddingVertical: spacing.md },
-  feedback: { gap: spacing.md },
+  feedback: { gap: spacing.xl },
   options: { gap: spacing.sm },
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   questionBlock: { gap: spacing.xs },
-  questionEyebrow: { color: palette.primary, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 15, opacity: 0.5 },
+  questionEyebrow: { color: palette.primary, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, opacity: 0.5 },
   reason: { ...typography.body, color: palette.textSecondary },
-  reasonLabel: { ...typography.caption, color: palette.textSecondary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
-  reasonPanel: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },
-  result: { ...typography.caption, alignSelf: "flex-start", color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
+  reasonDivider: { backgroundColor: colorWithOpacity("#FFFFFF", 0.06), height: StyleSheet.hairlineWidth, width: "100%" },
+  reasonLabel: { ...typography.caption, color: colorWithOpacity(palette.primary, 0.6), fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
+  reasonSection: { gap: spacing.sm },
+  reasonSpacer: { height: spacing.xs },
+  markAction: { marginTop: spacing.xl },
+  optionsFeedbackSpacer: { height: 28 },
+  questionOptionsSpacer: { height: 22 },
   unavailableContent: { alignItems: "center", backgroundColor: "rgba(14,22,40,0.6)", borderColor: "rgba(255,255,255,0.05)", borderRadius: 18, gap: spacing.lg, marginTop: 101, paddingHorizontal: spacing.xxxl, paddingVertical: 28 },
   unavailableDescription: { color: palette.textMuted, fontSize: 14, lineHeight: 21, maxWidth: 289, textAlign: "center" },
   unavailableIcon: { alignItems: "center", backgroundColor: "rgba(30,41,59,0.5)", borderRadius: 24, height: 48, justifyContent: "center", width: 48 },

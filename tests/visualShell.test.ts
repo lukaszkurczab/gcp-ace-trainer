@@ -237,7 +237,16 @@ test("answer review uses the shared Figma review shell and preserves review mark
   assert.match(review, /<AnswerOption/);
   assert.match(review, /<ReviewNavigator/);
   assert.match(review, /setQuestionNeedsReview/);
+  assert.match(review, /questionOptionsSpacer:\s*\{\s*height:\s*22\s*\}/);
+  assert.match(review, /optionsFeedbackSpacer:\s*\{\s*height:\s*28\s*\}/);
+  assert.match(review, /reasonDivider:/);
+  assert.match(review, /reasonSection:/);
+  assert.doesNotMatch(review, /reasonPanel|styles\.result/);
   assert.match(sharedReviewShell, /filterShell:/);
+  assert.match(sharedReviewShell, /footerVariant="review"/);
+  assert.match(sharedReviewShell, /footer:\s*\{[\s\S]*flexDirection:\s*"row"/);
+  assert.match(sharedReviewShell, /footerButton:\s*\{[\s\S]*flex:\s*1/);
+  assert.match(sharedReviewShell, /backgroundColor:\s*palette\.surfaceInput/);
 });
 
 test("simulation active shell uses the Figma question and action-footer variant", () => {
@@ -273,7 +282,7 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
   assert.match(setup, /compactSectionTitle:[\s\S]*?textTransform:\s*"uppercase"/);
   assert.match(choiceRow, /density\?:\s*"comfortable" \| "compact"/);
   assert.match(choiceRow, /compactRow:\s*\{[\s\S]*?minHeight:\s*48/);
-  assert.match(screen, /footerVariant\?:\s*"default" \| "sticky"/);
+  assert.match(screen, /footerVariant\?:\s*"default" \| "review" \| "sticky"/);
   assert.match(screen, /footerSticky:\s*\{[\s\S]*?colorWithOpacity\("#FFFFFF", 0\.05\)/);
   assert.match(screenHeader, /variant\?: "default" \| "activity" \| "practiceSetup"/);
   assert.match(screenHeader, /practiceSetupDescription:\s*\{[\s\S]*?fontSize:\s*13\.5[\s\S]*?lineHeight:\s*19/);

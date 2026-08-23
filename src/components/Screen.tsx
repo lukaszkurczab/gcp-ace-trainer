@@ -12,7 +12,7 @@ type ScreenProps = {
   compact?: boolean;
   edges?: Edge[];
   footer?: ReactNode;
-  footerVariant?: "default" | "sticky";
+  footerVariant?: "default" | "review" | "sticky";
   scroll?: boolean;
   style?: StyleProp<ViewStyle>;
 };
@@ -36,7 +36,7 @@ export function Screen({ children, compact = false, edges = ["bottom"], footer, 
       ) : (
         content
       )}
-      {footer ? <View style={[styles.footer, compact ? styles.footerCompact : null, footerVariant === "sticky" ? styles.footerSticky : null]}>{footer}</View> : null}
+      {footer ? <View style={[styles.footer, compact ? styles.footerCompact : null, footerVariant === "review" ? styles.footerReview : null, footerVariant === "sticky" ? styles.footerSticky : null]}>{footer}</View> : null}
     </SafeAreaView>
   );
 }
@@ -80,6 +80,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   footerCompact: {
     padding: spacing.md
+  },
+  footerReview: {
+    borderColor: colorWithOpacity("#FFFFFF", 0.04),
+    gap: 0,
+    paddingBottom: spacing.xxxl,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
   },
   footerSticky: {
     borderColor: colorWithOpacity("#FFFFFF", 0.05),
