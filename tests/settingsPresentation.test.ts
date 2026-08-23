@@ -38,10 +38,14 @@ test("grouped settings rows follow the Figma 200% text geometry", () => {
   assert.match(listRow, /listRowTitle/);
   assert.match(listRow, /listRowDetail/);
   assert.match(settingsGroup, /rows:\s*\{[\s\S]*?gap:\s*spacing\.sm,/);
+  assert.match(settingsGroup, /titleGap\?: number/);
+  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.app\} titleGap=\{0\}>/);
+  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.learning\} titleGap=\{0\}>/);
+  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.dataPrivacy\} titleGap=\{0\}>/);
   assert.match(settingsTab, /IconTile iconSize=\{24\} name=\{icon\} size=\{32\} tone="settings"/);
   assert.match(settingsTab, /name="chevron-right" size=\{20\}/);
   assert.match(settingsTab, /<ScreenHeader description=\{text\.settingsDescription\} title=\{text\.appSettings\}/);
-  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.learning\}>/);
+  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.learning\} titleGap=\{0\}>/);
   assert.match(settingsGroup, /dividedRows:[\s\S]*?gap:\s*0/);
 });
 

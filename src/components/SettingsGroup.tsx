@@ -9,14 +9,15 @@ import type { AppColors } from "../theme";
 type SettingsGroupProps = {
   children: ReactNode;
   dividers?: boolean;
+  titleGap?: number;
   title: string;
 };
 
-export function SettingsGroup({ children, dividers = false, title }: SettingsGroupProps) {
+export function SettingsGroup({ children, dividers = false, title, titleGap = spacing.xs }: SettingsGroupProps) {
   const styles = useThemedStyles(createStyles);
   const rows = Children.toArray(children);
   return (
-    <View style={styles.group}>
+    <View style={[styles.group, { gap: titleGap }]}>
       <Text maxFontSizeMultiplier={2} style={styles.title}>{title}</Text>
       <View style={[styles.rows, dividers ? styles.dividedRows : null]}>
         {rows.map((row, index) => (

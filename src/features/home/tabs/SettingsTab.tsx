@@ -95,7 +95,7 @@ export function SettingsTab({
       ) : null}
 
       <View style={styles.content}>
-        <SettingsGroup dividers title={text.app}>
+        <SettingsGroup dividers title={text.app} titleGap={0}>
           <SettingsNavigationRow
             detail={text.appearanceDetail}
             icon="moon-half"
@@ -106,7 +106,7 @@ export function SettingsTab({
           />
         </SettingsGroup>
 
-        <SettingsGroup dividers title={text.learning}>
+        <SettingsGroup dividers title={text.learning} titleGap={0}>
           <SettingsNavigationRow
             detail={text.practiceSettingsDetail}
             icon="settings"
@@ -123,7 +123,7 @@ export function SettingsTab({
           />
         </SettingsGroup>
 
-        <SettingsGroup dividers title={text.dataPrivacy}>
+        <SettingsGroup dividers title={text.dataPrivacy} titleGap={0}>
           <SettingsNavigationRow detail={text.dataDetail} icon="shield" onPress={onOpenYourData} testID="settings-your-data" title={text.data} />
           <SettingsNavigationRow detail={text.legalDetail} icon="shield-check" onPress={onOpenLegalInformation} testID="settings-legal-information" title={text.legal} />
         </SettingsGroup>
