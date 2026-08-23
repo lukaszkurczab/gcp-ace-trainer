@@ -357,7 +357,7 @@ rejects simulator connections; no 99% parity claim is made.
 
 ## Addendum — Current-head Practice Hub revalidation
 
-On current source SHA `d4d0cfc`, the live Figma node `55:993` was revalidated
+On current source SHA `7a93ad4`, the live Figma node `55:993` was revalidated
 through connector channel `ksxw21cw` with fresh design context and screenshot
 evidence. The canonical `PracticeHubScreen` already matches the safe visual
 contract: 18 px page/intro rhythm; layered hero surface with 22 px radius,
@@ -397,8 +397,24 @@ system checks passed 40/40 and typecheck passed. This does not change the
 remaining runtime pixel-evidence or owner-approval blockers.
 
 Post-cleanup `npm run qa:static` also passed with recovery inventory
-281/113/552, 561/561 tests, content-boundary, and runtime-privacy-boundary
+282/113/552, 561/561 tests, content-boundary, and runtime-privacy-boundary
 checks.
+
+## Addendum — Shared review-unavailable surface convergence
+
+Commit `7a93ad4` consolidates the identical inner Figma review-unavailable
+surface used by Certification Answer Review and Simulation Review into the
+repository-owned `ReviewUnavailableSurface` component. Each route keeps its
+own outer shell and positioning (`marginTop` for Answer Review and the
+absolute 185 px/353 px result state for Simulation Review); only the repeated
+warning icon, 48 px icon tile, title, description, and text hierarchy now
+have one visual owner. No data, navigator, filter, review-marking, or route
+semantics changed.
+
+Focused visual-shell/accessibility checks passed 23/23; `npm run qa:static`
+passed with recovery inventory 282/113/552 and 561/561 tests. Runtime
+pixel comparison for both review states remains unverified because Maestro
+is unavailable and CoreSimulatorService refuses simulator connections.
 
 ## Addendum — Button state-token decision boundary
 
