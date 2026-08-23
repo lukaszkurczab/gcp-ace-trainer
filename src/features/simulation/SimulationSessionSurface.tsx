@@ -135,7 +135,6 @@ function CompletedSurface({ projection, sessionId }: Readonly<{ projection: Simu
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const completion = projection.completion!;
-  const missedCount = completion.partialCount + completion.incorrectCount;
   return (
     <View style={styles.root} testID={sessionId ? runtimeSelectors.summary.root(sessionId) : undefined}>
       <Screen edges={["top", "bottom"]} scroll={false} style={styles.summaryScreen}>
@@ -155,7 +154,6 @@ function CompletedSurface({ projection, sessionId }: Readonly<{ projection: Simu
             <View style={styles.outcomeSection}>
               <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Results")}</Text>
               <View style={styles.outcomeRow}><OutcomeStat label={t("Correct")} value={completion.correctCount} tone="success" /><OutcomeStat label={t("Partial")} value={completion.partialCount} tone="warning" /><OutcomeStat label={t("Incorrect")} value={completion.incorrectCount} tone="warning" /></View>
-              <Text style={styles.body}>{completion.correctCount} {t("correct")} · {missedCount} {t("Missed")} · {completion.earnedPoints} / {completion.maxPoints} {t("points")}</Text>
             </View>
           </ScrollView>
           <View style={styles.summaryFooter}>

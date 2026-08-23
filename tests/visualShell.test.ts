@@ -174,6 +174,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(simulationSummary, /summaryHeaderBar:\s*\{\s*height:\s*52\s*\}/);
   assert.match(simulationSummary, /summaryMetrics:\s*\{\s*gap:\s*spacing\.lg\s*\}/);
   assert.match(simulationSummary, /summarySeparator:\s*\{[\s\S]*?height:\s*1/);
+  assert.doesNotMatch(simulationSummary, /completion\.earnedPoints|completion\.maxPoints|missedCount/);
   assert.doesNotMatch(simulationSummary, /summaryStats|reviewBanner|configuration\?:/);
 });
 
