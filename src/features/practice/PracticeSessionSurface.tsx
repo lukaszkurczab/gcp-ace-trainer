@@ -272,5 +272,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   questionLabel: { ...typography.caption, color: palette.primary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
   prompt: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", letterSpacing: -0.3, lineHeight: 28 },
   questionCard: { gap: spacing.md },
-  questionAndResponse: { gap: spacing.lg },
+  questionAndResponse: { gap: spacing.md },
 });

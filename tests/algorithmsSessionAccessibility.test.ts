@@ -176,6 +176,13 @@ test("Practice Hub geometry follows live Figma while keeping canonical mode owne
   assert.match(practiceHub, /buildPracticeModes\(activeTrack, data\.hasReviewEvidence\)/);
 });
 
+test("Practice Question Shell keeps the Figma prompt-to-answer rhythm", () => {
+  const surface = source("src/features/practice/PracticeSessionSurface.tsx");
+
+  assert.match(surface, /questionCard:\s*\{[\s\S]*?gap:\s*spacing\.md/);
+  assert.match(surface, /questionAndResponse:\s*\{\s*gap:\s*spacing\.md\s*\}/);
+});
+
 test("certification exam stacks descriptive actions so large text cannot clip flagging or navigation", () => {
   const exam = source("src/features/exam/ExamScreen.tsx");
 
