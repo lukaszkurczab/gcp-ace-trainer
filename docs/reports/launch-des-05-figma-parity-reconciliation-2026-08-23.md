@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `b8e4083`
+Current source SHA at packet update: `bd0fc5e`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -317,14 +317,14 @@ for semantic migration until that decision exists.
 - Live Figma design context and screenshots: pass for the current file/page/
   library and the node set recorded above, including the revalidations in the
   addenda.
-- `npm run typecheck`: pass at current source SHA `b8e4083`.
+- `npm run typecheck`: pass at current source SHA `bd0fc5e`.
 - Latest focused Practice Hub/Question Shell/accessibility checks: 26/26 pass; latest focused
   Activity checks: 35/35 pass; latest focused Progress/Home/review/visual
   checks: 36/36 pass.
-- Full `npm run qa:static`: pass at source commit `b8e4083`, with recovery
+- Full `npm run qa:static`: pass at source commit `bd0fc5e`, with recovery
   inventory 284/114/557 and 566/566 tests, TypeScript, content boundary, and
   runtime privacy boundary.
-- Working tree: clean after the `b8e4083` application commit and current
+- Working tree: clean after the `bd0fc5e` application commit and current
   documentation update.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
@@ -1019,4 +1019,22 @@ Focused Practice Hub/Question Shell/accessibility checks passed `26/26`; full
 tests, TypeScript, content-boundary, and runtime-privacy-boundary checks. This
 is source-level convergence, not a `MATCHED` claim: current-head Light/Dark
 runtime pixel comparison, Maestro/CoreSimulator capture, and Product Owner
+approval remain open.
+
+## Addendum — Practice feedback label-state convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma `68:637`
+(`06E · Immediate feedback · Default`) and `68:719` (`REF-06A · Details
+expanded`). The immediate-feedback reason panel renders the title-case label
+`Reason`, while the expanded reference renders `REASON`; both retain the same
+12/16 semibold label geometry and the same reason-panel surface. Commit
+`bd0fc5e` makes the existing `PracticeFeedbackBlock` use the already-present
+`detailsOpen` state for this casing-only visual variant. No feedback result,
+scoring, disclosure command, authored copy, or persistence behavior changed.
+
+Focused Practice Hub/Question Shell/accessibility checks passed `26/26`; full
+`npm run qa:static` passed at `bd0fc5e` with recovery inventory `284/114/557`
+and `566/566` tests, TypeScript, content-boundary, and runtime-privacy-boundary
+checks. This remains source-level convergence: fresh current-head Light/Dark
+runtime pixel comparison, expanded-details geometry proof, and Product Owner
 approval remain open.
