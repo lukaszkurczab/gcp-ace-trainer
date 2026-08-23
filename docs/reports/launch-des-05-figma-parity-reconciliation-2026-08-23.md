@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `deb7b81`
+Current source SHA at packet update: `6dd51f6`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -518,6 +518,23 @@ No goal, cadence, effectiveness, trend, or focus-area metric was added. The
 action reuses `algorithmsProgress.priority.primaryAction`; model shape, durable
 records, route ownership, selectors, and accessibility semantics remain
 unchanged. Polish translations were added for the two new visible strings.
+Focused Progress/Home checks passed 29/29; `npm run qa:static` passed with
+recovery inventory 283/113/553 and 562/562 tests, typecheck, content-boundary,
+and runtime-privacy-boundary checks. Current-head runtime pixel comparison
+remains unverified because Maestro is unavailable and CoreSimulatorService
+refuses simulator connections.
+
+## Addendum — Progress evidence-copy truthfulness
+
+Commit `6dd51f6` removes a misleading presentation from the Algorithms
+Progress focus card. The previous branch rendered the roadmap node's
+`itemCoveragePercent` as a large effectiveness percentage, although the
+canonical model defines it as item coverage and does not provide effectiveness
+data. The card now renders the existing `statusLabel` and `practicedLabel`
+instead; score percentages remain available only on track projections that
+provide canonical `performanceScores`.
+
+No model, durable record, route, action command, or new metric was added.
 Focused Progress/Home checks passed 29/29; `npm run qa:static` passed with
 recovery inventory 283/113/553 and 562/562 tests, typecheck, content-boundary,
 and runtime-privacy-boundary checks. Current-head runtime pixel comparison
