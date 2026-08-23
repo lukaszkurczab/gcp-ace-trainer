@@ -36,7 +36,13 @@ test("Home uses the approved compact presentation without changing recommendatio
 
   assert.match(home, /trackIconContainer:[\s\S]*?height:\s*22/);
   assert.match(home, /decisionCard:[\s\S]*?borderColor:\s*palette\.navigation\.active[\s\S]*?borderRadius:\s*22/);
+  assert.match(home, /decisionHeading:\s*\{[\s\S]*?alignItems:\s*"center"/);
   assert.match(home, /decisionIconTile:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
+  assert.match(home, /overviewSection:\s*\{[\s\S]*?gap:\s*2/);
+  assert.match(home, /overviewRow:[\s\S]*?borderBottomWidth:\s*1[\s\S]*?paddingVertical:\s*10/);
+  assert.match(home, /overviewTrack:\s*\{[\s\S]*?backgroundColor:\s*palette\.textPrimary/);
+  assert.match(home, /overviewFill:\s*\{[\s\S]*?backgroundColor:\s*palette\.primary/);
+  assert.match(home, /focusActionLabel:\s*\{[\s\S]*?color:\s*palette\.primary[\s\S]*?lineHeight:\s*18/);
   assert.match(home, /startButton:[\s\S]*?minHeight:\s*49/);
   assert.match(home, /<Button[\s\S]*?testID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)/);
   assert.match(home, /<Text style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
