@@ -129,6 +129,11 @@ test("the shared header owns accessible back geometry and long-copy reflow witho
   assert.match(screenHeader, /contextRow:[\s\S]*minHeight:\s*44/);
   assert.match(screenHeader, /title:\s*\{[\s\S]*\.\.\.typography\.title/);
   assert.match(screenHeader, /maxFontSizeMultiplier=\{2\}/);
+  assert.match(screenHeader, /activityContainer:[\s\S]*gap:\s*spacing\.sm/);
+  const activity = source("src/features/home/ActivityScreen.tsx");
+  assert.match(activity, /groupLabel:[\s\S]*fontSize:\s*12[\s\S]*lineHeight:\s*15/);
+  assert.doesNotMatch(activity, /groupLabel:[^\n]*textTransform/);
+  assert.match(activity, /statusDetail:\s*\{\s*color:\s*palette\.warning\s*\}/);
 });
 
 test("Screen and SessionShell remain the only general and active-session page owners", () => {

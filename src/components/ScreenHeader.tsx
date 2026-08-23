@@ -24,9 +24,9 @@ export function ScreenHeader({ backAction, context, contextTone = "muted", descr
   const { t } = useAppPreferences();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, variant === "activity" ? styles.activityContainer : null]}>
       {backAction || context ? (
-        <View style={styles.contextRow}>
+        <View style={[styles.contextRow, variant === "activity" ? styles.activityContextRow : null]}>
           {backAction ? (
             <IconButton
               accessibilityLabel={backAction.accessibilityLabel ?? t("Go back")}
@@ -49,11 +49,17 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   container: {
     gap: spacing.md,
   },
+  activityContainer: {
+    gap: spacing.sm,
+  },
   contextRow: {
     alignItems: "center",
     flexDirection: "row",
     gap: spacing.md,
     minHeight: 44,
+  },
+  activityContextRow: {
+    gap: spacing.sm,
   },
   context: {
     ...typography.small,

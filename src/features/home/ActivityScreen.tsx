@@ -140,7 +140,7 @@ function ActivityRow({ item, last, onPress }: Readonly<{ item: ActivityItem; las
         <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.title}>{t(item.modeTitle)}</Text>
         <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.detail}>{[t(item.trackTitle), item.scopeLabel].filter(Boolean).join(" · ")}</Text>
         <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.detail}>{`${activityCountLabel(item, t)} · ${item.duration}`}</Text>
-        <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.detail}>{`${t(item.statusLabel)} · ${translateDateLabel(item.dateLabel, t)}`}</Text>
+        <Text maxFontSizeMultiplier={2} numberOfLines={1} style={[styles.detail, item.status === "completed" ? null : styles.statusDetail]}>{`${t(item.statusLabel)} · ${translateDateLabel(item.dateLabel, t)}`}</Text>
       </View>
       <Icon color={palette.textMuted} name="chevron-right" size={18} />
     </Pressable>
@@ -186,21 +186,22 @@ function translateDateLabel(label: string, translate: (value: string) => string)
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  screen: { gap: spacing.md },
+  screen: { gap: spacing.sm },
   filter: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 40, paddingHorizontal: 14 },
-  filterText: { ...typography.body, color: palette.textSecondary },
+  filterText: { ...typography.body, color: palette.textSecondary, fontWeight: "600" },
   list: { gap: spacing.md, paddingBottom: spacing.lg, paddingTop: spacing.xs },
   group: { gap: spacing.xs },
-  groupLabel: { ...typography.caption, color: palette.textSecondary, fontWeight: "600", textTransform: "uppercase" },
+  groupLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "600", lineHeight: 15 },
   groupCard: { backgroundColor: palette.surface, borderRadius: 14, overflow: "hidden" },
   row: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: 10, minHeight: 73, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
   rowLast: { borderBottomWidth: 0 },
-  iconTile: { alignItems: "center", backgroundColor: palette.primary, borderRadius: radius.md, height: 36, justifyContent: "center", width: 36 },
+  iconTile: { alignItems: "center", backgroundColor: palette.primary, borderRadius: 10, height: 36, justifyContent: "center", width: 36 },
   endedIconTile: { backgroundColor: palette.danger },
   expiredIconTile: { backgroundColor: palette.warning },
-  copy: { flex: 1, gap: 1, minWidth: 0 },
+  copy: { flex: 1, gap: 2, minWidth: 0 },
   title: { ...typography.bodyStrong, color: palette.textPrimary },
-  detail: { ...typography.caption, color: palette.textSecondary },
+  detail: { ...typography.caption, color: palette.textSecondary, fontWeight: "400" },
+  statusDetail: { color: palette.warning },
   pressed: { opacity: 0.78 },
   empty: { alignItems: "center", flex: 1, justifyContent: "center" },
   filterOption: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 48, paddingHorizontal: spacing.sm },
