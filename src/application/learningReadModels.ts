@@ -1,4 +1,4 @@
-import type { TrackId } from "../domain";
+import type { GoalRecord, TrackId } from "../domain";
 import { getTrainingLifecycleUseCases } from "./trainingLifecycle";
 import type { CodingInterviewDashboard } from "./coding-interview/CodingInterviewFamilyRuntime";
 import {
@@ -9,9 +9,11 @@ import {
   getActiveTrackId,
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
+  getGoal,
   getReviewQueueItems,
   getTrainingAttempts,
   saveActiveTrackId,
+  saveGoal,
 } from "../storage/repositories";
 import { getAttempts, getPracticeHistory } from "../storage/queries";
 import type { StorageIssue } from "../storage/repositories/result";
@@ -26,6 +28,8 @@ export type { StorageIssue };
 
 export async function loadActiveTrackId() { return getActiveTrackId(); }
 export async function selectActiveTrack(trackId: TrackId) { await saveActiveTrackId(trackId); }
+export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId); }
+export async function persistGoal(goal: GoalRecord): Promise<void> { await saveGoal(goal); }
 export async function loadExamSummaries() { return getAttempts(); }
 export async function loadPracticeHistory() { return getPracticeHistory(); }
 export async function loadTrainingAttempts() { return getTrainingAttempts(); }

@@ -13,6 +13,7 @@ export type RootStackParamList = {
   [ROUTES.YOUR_DATA]: undefined;
   [ROUTES.BACKEND_DIAGNOSTICS]: undefined;
   [ROUTES.SELECT_TRACK]: undefined;
+  [ROUTES.GOAL_CADENCE]: { trackId?: TrackId } | undefined;
   [ROUTES.PRACTICE_HUB]: { topicId?: string } | undefined;
   [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home"; targetMentalUnitId?: string };
   [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId } | undefined;

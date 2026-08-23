@@ -13,6 +13,7 @@ import { NotificationSettingsScreen } from "../features/home/NotificationSetting
 import { YourDataScreen } from "../features/home/YourDataScreen";
 import { BackendDiagnosticsScreen } from "../features/home/BackendDiagnosticsScreen";
 import { SelectTrackScreen } from "../features/home/SelectTrackScreen";
+import { GoalCadenceScreen } from "../features/home/GoalCadenceScreen";
 import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
 import { PracticeHubScreen } from "../features/practice/PracticeHubScreen";
 import { AlgorithmsScopeSelectionScreen } from "../features/practice/AlgorithmsScopeSelectionScreen";
@@ -86,6 +87,11 @@ export function RootNavigator() {
         name={ROUTES.SELECT_TRACK}
         component={SelectTrackScreen}
         options={{ headerShown: false, title: t("Choose a track") }}
+      />
+      <Stack.Screen
+        name={ROUTES.GOAL_CADENCE}
+        component={GoalCadenceScreen}
+        options={{ headerShown: false, title: t("Goal & cadence") }}
       />
       <Stack.Screen
         name={ROUTES.PRACTICE_HUB}

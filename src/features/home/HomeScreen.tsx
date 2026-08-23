@@ -21,6 +21,7 @@ import {
   loadActiveTrainingSession,
   loadCodingInterviewDashboard,
   loadCloudCertificationProgress as loadCloudCertificationProgressViewModel,
+  loadGoal,
   loadExamSummaries as getAttempts,
   loadPracticeHistory as getPracticeHistory,
   loadReviewQueueItems as getReviewQueueItems,
@@ -29,7 +30,7 @@ import {
 } from "../../application/learningReadModels";
 import { type CloudCertificationProgressViewModel } from "../../tracks/certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/certification";
-import { type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
+import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
 import type { CodingInterviewDashboard } from "../../application/coding-interview";
 import { resumeActiveTrainingSession } from "../../application/trainingLifecycle";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
@@ -63,6 +64,7 @@ type ShellData = {
   activeSession: TrainingSession | null;
   attempts: CertificationExamSummaryViewModel[];
   cloudProgress: CloudCertificationProgressViewModel | null;
+  goal: GoalRecord | null;
   practiceHistory: CertificationPracticeAnswerViewModel[];
   reviewQueueItems: ReviewQueueEntry[];
   storageIssues: readonly StorageIssue[];
@@ -86,6 +88,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     activeSession: null,
     attempts: [],
     cloudProgress: null,
+    goal: null,
     practiceHistory: [],
     reviewQueueItems: [],
     storageIssues: [],
@@ -122,6 +125,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             getReviewQueueItems(),
             getTrainingAttempts(),
           ]);
+          const goal = savedTrackId ? await loadGoal(savedTrackId) : null;
           let algorithmsDashboard: CodingInterviewDashboard | null = null;
           let algorithmsDashboardError: string | null = null;
           if (savedTrackId === CODING_INTERVIEW_TRACK_ID) {
@@ -137,6 +141,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               activeSession,
               attempts: savedAttempts,
               cloudProgress,
+              goal,
               practiceHistory: savedPracticeHistory,
               reviewQueueItems: reviewQueueItemsResult.value,
               storageIssues: [],
@@ -288,8 +293,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             analytics={analytics}
             attempts={data.attempts}
             cloudProgress={data.cloudProgress}
+            goal={data.goal}
             onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
             onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
+            onOpenGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { trackId: activeTrack.id })}
             onProgressAction={handleProgressAction}
             practiceHistory={data.practiceHistory}
             reviewQueueItems={data.reviewQueueItems}

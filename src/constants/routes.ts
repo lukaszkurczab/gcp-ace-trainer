@@ -7,6 +7,7 @@ export const ROUTES = {
   YOUR_DATA: "YourData",
   BACKEND_DIAGNOSTICS: "BackendDiagnostics",
   SELECT_TRACK: "select_track",
+  GOAL_CADENCE: "GoalCadence",
   PRACTICE_HUB: "PracticeHub",
   ALGORITHMS_SCOPE_SELECTION: "AlgorithmsScopeSelection",
   TOPIC_ROADMAP: "TopicRoadmap",

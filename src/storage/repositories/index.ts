@@ -12,3 +12,4 @@ export * from "./trainingSessionRepository";
 export * from "./trainingSessionResultRepository";
 export * from "./trainingSessionDraftRepository";
 export * from "./foregroundTimerRepository";
+export * from "./goalRepository";

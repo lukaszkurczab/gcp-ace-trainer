@@ -102,9 +102,17 @@ export const runtimeSelectors = Object.freeze({
   }),
   progress: Object.freeze({
     root: () => selector("progress", "root"),
+    goal: () => selector("progress", "goal"),
     activitySection: () => selector("progress", "activity-section"),
     node: (roadmapNodeId: string) => selector("progress", "node", roadmapNodeId),
     activity: () => selector("progress", "activity"),
+  }),
+  goal: Object.freeze({
+    root: () => selector("goal", "root"),
+    save: () => selector("goal", "save"),
+    goalType: (goalType: string) => selector("goal", "type", goalType),
+    cadence: () => selector("goal", "cadence"),
+    day: (day: string) => selector("goal", "day", day),
   }),
   activity: Object.freeze({
     root: () => selector("activity", "root"),

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Badge, Button, Card, Icon, IconTile, ProgressBar, type IconName } from "../../../components";
-import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
+import type { GoalRecord, ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
 import type { AnalyticsData } from "../../analytics/analyticsService";
@@ -17,8 +17,10 @@ type ProgressTabProps = {
   analytics: AnalyticsData;
   attempts: CertificationExamSummaryViewModel[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
+  goal?: GoalRecord | null;
   onChangeTrack: () => void;
   onOpenActivity?: () => void;
+  onOpenGoal?: () => void;
   onProgressAction?: (action: ProgressAction) => void;
   practiceHistory: CertificationPracticeAnswerViewModel[];
   reviewQueueItems?: readonly ReviewQueueEntry[];
@@ -31,8 +33,10 @@ export function ProgressTab({
   analytics,
   attempts,
   cloudProgress,
+  goal = null,
   onChangeTrack,
   onOpenActivity,
+  onOpenGoal,
   onProgressAction,
   practiceHistory,
   reviewQueueItems = [],
@@ -80,6 +84,7 @@ export function ProgressTab({
             </View>
           </View>
           {model.reviewQueueCount > 0 ? <Text style={styles.weekAction}>{t(`${model.reviewQueueCount} review items due`)}</Text> : null}
+          {onOpenGoal ? <Pressable accessibilityRole="button" accessibilityLabel={t(goal ? "View learning goal" : "Set a learning goal")} onPress={onOpenGoal} style={({ pressed }) => [styles.weekGoalAction, pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.goal()}><Text style={styles.weekAction}>{t(goal ? "View goal" : "Set a goal")}</Text></Pressable> : null}
         </Card>
       </View>
 
@@ -321,6 +326,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   miniBar: { backgroundColor: palette.surface, borderRadius: 2, height: 4, marginTop: spacing.xs, overflow: "hidden", width: 44 },
   miniBarFill: { backgroundColor: palette.success, borderRadius: 2, height: 4 },
   weekAction: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 18 },
+  weekGoalAction: { alignSelf: "flex-start", minHeight: 32, justifyContent: "center" },
   section: { gap: 10 },
   sectionHeading: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
   activityLink: { color: palette.primary, fontSize: 13, fontWeight: "600", lineHeight: 18 },
