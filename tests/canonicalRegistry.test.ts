@@ -2,16 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { TrackRegistry, UnknownTrackError, UnknownTrackFamilyError, getTrackFamilyRegistration, getTrackRegistration, getTracks } from "../src/domain";
 
-test("registry resolves current tracks without a default", () => {
-  assert.deepEqual(getTracks().map((track) => track.id).sort(), [
-    "aws-certified-solutions-architect-associate",
-    "backend-system-design-interview",
+test("registry resolves current tracks in canonical launch order without a default", () => {
+  assert.deepEqual(getTracks().map((track) => track.id), [
     "coding-interview-dsa-problem-solving",
+    "backend-system-design-interview",
+    "object-oriented-design-interview",
     "frontend-system-design-interview",
     "google-cloud-associate-cloud-engineer",
+    "aws-certified-solutions-architect-associate",
     "microsoft-azure-administrator-associate-az-104",
     "microsoft-azure-ai-fundamentals-ai-901",
-    "object-oriented-design-interview",
   ]);
   assert.equal(getTrackRegistration("coding-interview-dsa-problem-solving").familyId, "coding_interview");
   assert.equal(getTrackRegistration("google-cloud-associate-cloud-engineer").familyId, "certification");

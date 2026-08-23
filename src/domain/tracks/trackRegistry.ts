@@ -12,31 +12,6 @@ export const MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID = "microsoft-azure-
 
 const registrationDefinitions = [
   {
-    id: BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
-    familyId: "design_interview",
-    metadata: { accentColor: "#0F766E", accentMutedColor: "#E6FFFB", description: "Requirements, capacity, architecture boundaries, and explicit backend tradeoffs for system-design interviews.", legalNote: "Original training content for backend system-design interview practice.", shortTitle: "Backend System Design", status: "active", title: "Backend System Design Interview" },
-  },
-  {
-    id: FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
-    familyId: "design_interview",
-    metadata: { accentColor: "#C2410C", accentMutedColor: "#FFF7ED", description: "User journeys, client boundaries, state, delivery, accessibility, and frontend architecture tradeoffs.", legalNote: "Original training content for frontend system-design interview practice.", shortTitle: "Frontend System Design", status: "active", title: "Frontend System Design Interview" },
-  },
-  {
-    id: OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID,
-    familyId: "design_interview",
-    metadata: { accentColor: "#9333EA", accentMutedColor: "#FAF5FF", description: "Domain vocabulary, responsibilities, collaborations, invariants, and extensibility tradeoffs.", legalNote: "Original training content for object-oriented design interview practice.", shortTitle: "Object-Oriented Design", status: "active", title: "Object-Oriented Design Interview" },
-  },
-  {
-    id: AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID,
-    familyId: "certification",
-    metadata: { accentColor: "#B45309", accentMutedColor: "#FFFBEB", description: "Independent scenario practice for AWS Certified Solutions Architect - Associate concepts.", legalNote: "Independent study content. Not affiliated with or endorsed by Amazon Web Services.", shortTitle: "AWS Solutions Architect", status: "active", title: "AWS Certified Solutions Architect - Associate" },
-  },
-  {
-    id: MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID,
-    familyId: "certification",
-    metadata: { accentColor: "#0369A1", accentMutedColor: "#F0F9FF", description: "Independent scenario practice for Microsoft Azure AI Fundamentals AI-901 concepts.", legalNote: "Independent study content. Not affiliated with or endorsed by Microsoft.", shortTitle: "Azure AI Fundamentals", status: "active", title: "Microsoft Azure AI Fundamentals AI-901" },
-  },
-  {
     id: CODING_INTERVIEW_TRACK_ID,
     familyId: "coding_interview",
     metadata: {
@@ -48,6 +23,21 @@ const registrationDefinitions = [
       status: "active",
       title: "Coding Interview: DSA & Problem Solving",
     },
+  },
+  {
+    id: BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
+    familyId: "design_interview",
+    metadata: { accentColor: "#0F766E", accentMutedColor: "#E6FFFB", description: "Requirements, capacity, architecture boundaries, and explicit backend tradeoffs for system-design interviews.", legalNote: "Original training content for backend system-design interview practice.", shortTitle: "Backend System Design", status: "active", title: "Backend System Design Interview" },
+  },
+  {
+    id: OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID,
+    familyId: "design_interview",
+    metadata: { accentColor: "#9333EA", accentMutedColor: "#FAF5FF", description: "Domain vocabulary, responsibilities, collaborations, invariants, and extensibility tradeoffs.", legalNote: "Original training content for object-oriented design interview practice.", shortTitle: "Object-Oriented Design", status: "active", title: "Object-Oriented Design Interview" },
+  },
+  {
+    id: FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
+    familyId: "design_interview",
+    metadata: { accentColor: "#C2410C", accentMutedColor: "#FFF7ED", description: "User journeys, client boundaries, state, delivery, accessibility, and frontend architecture tradeoffs.", legalNote: "Original training content for frontend system-design interview practice.", shortTitle: "Frontend System Design", status: "active", title: "Frontend System Design Interview" },
   },
   {
     id: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
@@ -63,6 +53,11 @@ const registrationDefinitions = [
     },
   },
   {
+    id: AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID,
+    familyId: "certification",
+    metadata: { accentColor: "#B45309", accentMutedColor: "#FFFBEB", description: "Independent scenario practice for AWS Certified Solutions Architect - Associate concepts.", legalNote: "Independent study content. Not affiliated with or endorsed by Amazon Web Services.", shortTitle: "AWS Solutions Architect", status: "active", title: "AWS Certified Solutions Architect - Associate" },
+  },
+  {
     id: MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID,
     familyId: "certification",
     metadata: {
@@ -73,6 +68,19 @@ const registrationDefinitions = [
       shortTitle: "Azure Administrator AZ-104",
       status: "active",
       title: "Microsoft Azure Administrator Associate AZ-104",
+    },
+  },
+  {
+    id: MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID,
+    familyId: "certification",
+    metadata: {
+      accentColor: "#0369A1",
+      accentMutedColor: "#F0F9FF",
+      description: "Independent scenario practice for Microsoft Azure AI Fundamentals AI-901 concepts.",
+      legalNote: "Independent study content. Not affiliated with or endorsed by Microsoft.",
+      shortTitle: "Azure AI Fundamentals",
+      status: "active",
+      title: "Microsoft Azure AI Fundamentals AI-901",
     },
   },
 ] as const satisfies readonly TrackRegistration[];
