@@ -4,6 +4,7 @@ import test from "node:test";
 import type { ActivitySessionRecord } from "../src/application/activityReadModels";
 import type { EvidenceRef } from "../src/domain";
 import { ALL_ACTIVITY_TRACKS, buildActivityModel } from "../src/features/home/tabs/activityModel";
+import { activityCompletionLabel } from "../src/features/home/tabs/activityPresentation";
 
 const codingTrack = "coding-interview-dsa-problem-solving";
 const cloudTrack = "google-cloud-associate-cloud-engineer";
@@ -44,6 +45,13 @@ test("Activity track filter returns only records for the selected canonical trac
   ], cloudTrack, now);
 
   assert.deepEqual(model.items.map((item) => item.id), ["cloud"]);
+});
+
+test("Home recent activity uses completion copy without exposing result internals", () => {
+  const translate = (value: string) => value;
+  assert.equal(activityCompletionLabel("2026-08-23T11:00:00.000Z", translate, now), "Completed today");
+  assert.equal(activityCompletionLabel("2026-08-22T11:00:00.000Z", translate, now), "Completed yesterday");
+  assert.equal(activityCompletionLabel("2026-08-20T11:00:00.000Z", translate, now), "Completed · 3 days ago");
 });
 
 function record(input: Readonly<{

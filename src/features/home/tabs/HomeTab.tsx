@@ -5,7 +5,7 @@ import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt, TrainingSession }
 import type { CodingInterviewDashboard } from "../../../application/coding-interview";
 import { colorWithOpacity, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import { modeLabel, relativeDay } from "./activityPresentation";
+import { activityCompletionLabel, modeLabel, relativeDay } from "./activityPresentation";
 import { buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
@@ -195,7 +195,7 @@ export function HomeTab({
               <View key={attempt.id} style={styles.activityRow}>
                 <View style={styles.activityCopy}>
                   <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(modeLabel(attempt.modeId))}</Text>
-                  <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{`${relativeDay(attempt.answeredAt)} · ${attempt.result.kind}`}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{activityCompletionLabel(attempt.answeredAt, t)}</Text>
                 </View>
               </View>
             ))}

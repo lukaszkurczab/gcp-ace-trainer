@@ -50,6 +50,8 @@ const polish: Readonly<Record<string, string>> = {
   "Complete a practice session to see it in Activity.": "Ukończ sesję ćwiczeń, aby zobaczyć ją w Aktywności.",
   "No activity for this track yet.": "Dla tej ścieżki nie ma jeszcze aktywności.",
   "Completed": "Ukończono",
+  "Completed today": "Ukończono dzisiaj",
+  "Completed yesterday": "Ukończono wczoraj",
   "Ended early": "Zakończono wcześniej",
   "Time expired": "Upłynął czas",
   "item": "zadanie",
