@@ -51,6 +51,9 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
   const activeTime = formatElapsed(result.elapsedForegroundMs);
   const resultStateLabel = result.completionKind === "completed" ? "Session complete" : "Session ended early";
   const resultTitle = result.completionKind === "completed" ? "Session complete" : "Partial summary";
+  const reviewCount = result.score
+    ? result.score.partialCount + result.score.incorrectCount
+    : result.feedbackItems.filter((item) => item.correctness !== "correct").length;
   return (
     <Screen edges={["top", "bottom"]} style={styles.screen}>
       <View style={styles.summaryShell}>
@@ -61,15 +64,18 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
         <View style={styles.summaryContent}>
           <View style={styles.summaryHeader}>
             <Text style={styles.resultTitle} testID={runtimeSelectors.summary.root(result.sessionId)}>{t(resultTitle)}</Text>
-            <Text style={styles.resultDescription}>{t(result.completionKind === "completed" ? "You completed this focused practice session." : "This session ended before every item was completed.")}</Text>
+            <Text style={styles.resultDescription}>{t(result.completionKind === "completed" ? "Your performance record has been analyzed and logged." : "This session ended before every item was completed.")}</Text>
           </View>
-          <View style={styles.statsCard}>
+          <View
+            style={styles.statsCard}
+            testID={result.completionKind === "completed" ? runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming) : undefined}
+          >
             <SummaryStat label={t("Completed items")} value={`${result.answeredOccurrenceIds.length} ${t("of")} ${result.totalOccurrences}`} />
             <SummaryStat label={t("Active time")} value={activeTime} />
-            <Text style={styles.configuration} testID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}>{result.configuration.actualLength} {t("items")} · {t(result.configuration.feedbackTiming === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer")}</Text>
+            {result.completionKind !== "completed" ? <Text style={styles.configuration} testID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}>{result.configuration.actualLength} {t("items")} · {t(result.configuration.feedbackTiming === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer")}</Text> : null}
           </View>
           <View style={styles.outcomeSection}>
-            <Text style={styles.sectionTitle}>{t("Results")}</Text>
+            {result.completionKind === "completed" ? <Text style={styles.sectionTitle}>{t("Outcome distribution")}</Text> : <Text style={styles.sectionTitle}>{t("Results")}</Text>}
             {result.score ? (
               <View style={styles.outcomeRow}>
                 <OutcomeStat label={t("Correct")} value={result.score.correctCount} tone="success" />
@@ -81,7 +87,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
             )}
             {result.score ? <Text style={styles.scoreLine}>{result.score.correctCount} {t("correct")} · {missedCount} {t("Missed")} · {result.score.pointsEarned} / {result.score.maxPoints} {t("points")}</Text> : null}
           </View>
-          {result.feedbackItems.length > 0 ? <View style={styles.reviewBanner}><Icon color={styles.reviewBannerText.color} name="clock-check" size={16} /><View style={styles.reviewBannerCopy}><Text style={styles.reviewBannerTitle}>{t("Answer review available")}</Text><Text style={styles.reviewBannerText}>{t("Review the saved explanations before leaving this session.")}</Text></View></View> : null}
+          {result.feedbackItems.length > 0 ? <View style={styles.reviewBanner}><Icon color={styles.reviewBannerText.color} name="clock-check" size={16} /><Text style={styles.reviewBannerText}>{t("Review created")} — {reviewCount} {t("items will return when due.")}</Text></View> : null}
           {showReview && result.feedbackItems.length > 0 ? (
             <View style={styles.feedbackItems}>
               <Text style={styles.feedbackTitle}>{t("Answer review")}</Text>
@@ -149,8 +155,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   outcomeValue: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20 },
   scoreLine: { ...typography.small, color: palette.textSecondary },
   reviewBanner: { alignItems: "flex-start", backgroundColor: palette.success, borderColor: palette.border, borderRadius: 10, borderWidth: 1, flexDirection: "row", gap: spacing.sm, padding: 14 },
-  reviewBannerCopy: { flex: 1, gap: spacing.xxs },
-  reviewBannerTitle: { ...typography.bodyStrong, color: palette.onPrimary },
   reviewBannerText: { ...typography.small, color: palette.onPrimary },
   summaryFooter: { gap: spacing.sm, padding: spacing.xl },
   feedbackItem: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, gap: spacing.md, paddingTop: spacing.lg },
