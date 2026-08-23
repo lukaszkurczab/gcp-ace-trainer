@@ -188,6 +188,8 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(homeTab, /decisionCard:[\s\S]*?gap:\s*spacing\.lg/);
   assert.match(homeTab, /decisionTitle:[\s\S]*?letterSpacing:\s*-0\.3/);
   assert.match(homeTab, /sectionLabel:[\s\S]*?fontSize:\s*13/);
+  assert.match(homeTab, /overviewValueGroup:[\s\S]*?gap:\s*spacing\.sm/);
+  assert.match(homeTab, /overviewValue:\s*\{[\s\S]*\.\.\.typography\.bodyStrong/);
   assert.match(homeTab, /currentFocusTitle:[\s\S]*?fontSize:\s*15[\s\S]*?fontWeight:\s*"500"[\s\S]*?lineHeight:\s*18/);
   assert.match(homeTab, /activityDetail:[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"400"/);
   assert.match(homeTab, /secondaryActionText:[\s\S]*?color:\s*palette\.primary[\s\S]*?lineHeight:\s*18/);

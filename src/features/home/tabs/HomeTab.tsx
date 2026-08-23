@@ -397,14 +397,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     flexShrink: 1,
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
   overviewValue: {
+    ...typography.bodyStrong,
     color: palette.textPrimary,
     flexShrink: 1,
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 22,
     textAlign: "right",
   },
   secondaryAction: {
