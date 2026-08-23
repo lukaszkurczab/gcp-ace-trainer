@@ -133,18 +133,24 @@ function ActivityRow({ item, last, onPress }: Readonly<{ item: ActivityItem; las
       style={({ pressed }) => [styles.row, last ? styles.rowLast : null, pressed ? styles.pressed : null]}
       testID={runtimeSelectors.activity.row(item.sessionId)}
     >
-      <View style={[styles.iconTile, item.status === "ended-early" ? styles.endedIconTile : null]}>
+      <View style={[styles.iconTile, item.status === "ended-early" ? styles.endedIconTile : item.status === "time-expired" ? styles.expiredIconTile : null]}>
         <Icon color={palette.onPrimary} name={item.icon} size={20} />
       </View>
       <View style={styles.copy}>
         <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.title}>{t(item.modeTitle)}</Text>
-        <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.detail}>{t(item.trackTitle)}</Text>
-        <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.detail}>{`${item.totalCount} ${t(item.totalCount === 1 ? "item" : "items")} · ${item.duration}`}</Text>
+        <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.detail}>{[t(item.trackTitle), item.scopeLabel].filter(Boolean).join(" · ")}</Text>
+        <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.detail}>{`${activityCountLabel(item, t)} · ${item.duration}`}</Text>
         <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.detail}>{`${t(item.statusLabel)} · ${translateDateLabel(item.dateLabel, t)}`}</Text>
       </View>
       <Icon color={palette.textMuted} name="chevron-right" size={18} />
     </Pressable>
   );
+}
+
+function activityCountLabel(item: ActivityItem, translate: (value: string) => string): string {
+  if (item.answerCount === item.totalCount) return `${item.totalCount} ${translate(item.totalCount === 1 ? "item" : "items")}`;
+  if (item.status === "ended-early") return `${item.answerCount} ${translate("of")} ${item.totalCount} ${translate("answered")}`;
+  return `${item.answerCount} ${translate("answered")} · ${Math.max(0, item.totalCount - item.answerCount)} ${translate("unanswered")}`;
 }
 
 function FilterOption({ label, onPress, selected }: Readonly<{ label: string; onPress: () => void; selected: boolean }>) {
@@ -190,7 +196,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   row: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: 10, minHeight: 73, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
   rowLast: { borderBottomWidth: 0 },
   iconTile: { alignItems: "center", backgroundColor: palette.primary, borderRadius: radius.md, height: 36, justifyContent: "center", width: 36 },
-  endedIconTile: { backgroundColor: palette.warning },
+  endedIconTile: { backgroundColor: palette.danger },
+  expiredIconTile: { backgroundColor: palette.warning },
   copy: { flex: 1, gap: 1, minWidth: 0 },
   title: { ...typography.bodyStrong, color: palette.textPrimary },
   detail: { ...typography.caption, color: palette.textSecondary },

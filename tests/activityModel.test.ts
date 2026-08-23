@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import type { ActivitySessionRecord } from "../src/application/activityReadModels";
+import type { EvidenceRef } from "../src/domain";
 import { ALL_ACTIVITY_TRACKS, buildActivityModel } from "../src/features/home/tabs/activityModel";
 
 const codingTrack = "coding-interview-dsa-problem-solving";
@@ -10,7 +11,7 @@ const now = new Date("2026-08-23T12:00:00.000Z");
 
 test("Activity groups durable terminal sessions and keeps the row projection truthful", () => {
   const model = buildActivityModel([
-    record({ id: "today", modeId: "coding-interview-guided-practice", trackId: codingTrack, status: "completed", completedAt: "2026-08-23T11:42:00.000Z", totalOccurrences: 20, answered: 20 }),
+    record({ id: "today", modeId: "coding-interview-guided-practice", trackId: codingTrack, status: "completed", completedAt: "2026-08-23T11:42:00.000Z", totalOccurrences: 20, answered: 20, scopeRefs: [{ axisId: "roadmap_node", nodeId: "complexity_and_constraints", role: "primary" }] }),
     record({ id: "yesterday", modeId: "certification-focus-practice", trackId: cloudTrack, status: "abandoned", completedAt: "2026-08-22T09:00:00.000Z", totalOccurrences: 10, answered: 3 }),
     record({ id: "week", modeId: "coding-interview-simulation", trackId: codingTrack, status: "completed", completedAt: "2026-08-19T09:00:00.000Z", totalOccurrences: 40, answered: 38 }),
     record({ id: "older", modeId: "coding-interview-learn-approach", trackId: codingTrack, status: "completed", completedAt: "2026-08-01T09:00:00.000Z", totalOccurrences: 5, answered: 5 }),
@@ -22,6 +23,18 @@ test("Activity groups durable terminal sessions and keeps the row projection tru
   assert.equal(model.items[1]?.statusLabel, "Ended early");
   assert.equal(model.items[2]?.icon, "clock-check");
   assert.equal(model.items[0]?.duration, "01:00");
+  assert.equal(model.items[0]?.scopeLabel, "Complexity and constraints");
+});
+
+test("Activity identifies an absolute-deadline completion without relabeling manual abandonment", () => {
+  const model = buildActivityModel([
+    record({ id: "expired", modeId: "certification-exam-simulation", trackId: cloudTrack, status: "completed", completedAt: "2026-08-23T11:00:00.000Z", totalOccurrences: 10, answered: 8, deadline: "2026-08-23T10:00:00.000Z" }),
+    record({ id: "ended", modeId: "certification-exam-simulation", trackId: cloudTrack, status: "abandoned", completedAt: "2026-08-23T09:00:00.000Z", totalOccurrences: 10, answered: 8, deadline: "2026-08-23T08:00:00.000Z" }),
+  ], ALL_ACTIVITY_TRACKS, now);
+
+  assert.equal(model.items[0]?.status, "time-expired");
+  assert.equal(model.items[0]?.statusLabel, "Time expired");
+  assert.equal(model.items[1]?.status, "ended-early");
 });
 
 test("Activity track filter returns only records for the selected canonical track", () => {
@@ -41,6 +54,8 @@ function record(input: Readonly<{
   status: "completed" | "abandoned";
   totalOccurrences: number;
   trackId: string;
+  scopeRefs?: readonly EvidenceRef[];
+  deadline?: string;
 }>): ActivitySessionRecord {
   return {
     attemptCount: input.answered,
@@ -55,10 +70,11 @@ function record(input: Readonly<{
       trackId: input.trackId,
       unansweredOccurrenceIds: Array.from({ length: input.totalOccurrences - input.answered }, (_, index) => `unanswered-${index}`),
     },
+    scopeRefs: input.scopeRefs ?? [],
     session: {
       activeForegroundMs: 60_000,
       actualLength: input.totalOccurrences,
-      configurationSnapshot: { feedbackMode: "atSessionEnd" },
+      configurationSnapshot: { feedbackMode: "atSessionEnd", ...(input.deadline ? { timer: "absoluteDeadline", timerDeadlineAt: input.deadline } : {}) },
       contentVersion: "test",
       currentItemIndex: input.totalOccurrences - 1,
       id: input.id,

@@ -1,8 +1,11 @@
 import type { IconName } from "../../../components";
 import { getTrackDisplay, type TrackId } from "../../../domain";
+import type { CertificationDomain } from "../../../tracks/certification/domain";
 import type { ActivitySessionRecord } from "../../../application/activityReadModels";
 import { activityTimestamp } from "../../../application/activityReadModels";
 import { activityTime, modeLabel } from "./activityPresentation";
+import { getDomainLabel } from "../../../utils";
+import { getTrackRoadmapCatalog } from "../../practice/trackRoadmapCatalog";
 
 export const ALL_ACTIVITY_TRACKS = "all" as const;
 export type ActivityFilter = typeof ALL_ACTIVITY_TRACKS | TrackId;
@@ -18,7 +21,8 @@ export type ActivityItem = Readonly<{
   modeId: string;
   modeTitle: string;
   sessionId: string;
-  status: "completed" | "ended-early";
+  scopeLabel: string | null;
+  status: "completed" | "ended-early" | "time-expired";
   statusLabel: string;
   totalCount: number;
   trackFamily: string;
@@ -51,6 +55,7 @@ function toActivityItem(record: ActivitySessionRecord, now: Date): ActivityItem 
   const answerCount = record.result?.answeredOccurrenceIds.length ?? record.attemptCount;
   const group = activityGroup(timestamp, now);
   const track = getTrackDisplay(session.trackId);
+  const status = activityStatus(record);
   return {
     answerCount,
     dateLabel: activityDateLabel(timestamp, group),
@@ -61,12 +66,36 @@ function toActivityItem(record: ActivitySessionRecord, now: Date): ActivityItem 
     modeId: session.modeId,
     modeTitle: modeLabel(session.modeId),
     sessionId: session.id,
-    status: session.status === "completed" ? "completed" : "ended-early",
-    statusLabel: session.status === "completed" ? "Completed" : "Ended early",
+    scopeLabel: activityScopeLabel(record, track.familyId),
+    status: status.kind,
+    statusLabel: status.label,
     totalCount,
     trackFamily: track.familyId,
     trackTitle: track.shortTitle,
   };
+}
+
+function activityScopeLabel(record: ActivitySessionRecord, trackFamily: string): string | null {
+  const roadmapNodeIds = uniqueScopeNodeIds(record, "roadmap_node");
+  if (roadmapNodeIds.length === 1) {
+    return getTrackRoadmapCatalog(record.session.trackId).find((node) => node.id === roadmapNodeIds[0])?.title ?? null;
+  }
+  const domainIds = uniqueScopeNodeIds(record, "cloud-domain");
+  if (trackFamily === "certification" && domainIds.length === 1) return getDomainLabel(domainIds[0] as CertificationDomain);
+  return null;
+}
+
+function uniqueScopeNodeIds(record: ActivitySessionRecord, axisId: string): readonly string[] {
+  return [...new Set(record.scopeRefs.filter((ref) => ref.axisId === axisId).map((ref) => ref.nodeId))];
+}
+
+function activityStatus(record: ActivitySessionRecord): Readonly<{ kind: ActivityItem["status"]; label: string }> {
+  if (record.session.status !== "completed") return { kind: "ended-early", label: "Ended early" };
+  const deadline = record.session.configurationSnapshot.timerDeadlineAt;
+  if (record.session.configurationSnapshot.timer === "absoluteDeadline" && typeof deadline === "string" && Date.parse(deadline) <= Date.parse(activityTimestamp(record))) {
+    return { kind: "time-expired", label: "Time expired" };
+  }
+  return { kind: "completed", label: "Completed" };
 }
 
 function activityGroup(timestamp: string, now: Date): ActivityGroup {

@@ -51,6 +51,7 @@ const polish: Readonly<Record<string, string>> = {
   "No activity for this track yet.": "Dla tej ścieżki nie ma jeszcze aktywności.",
   "Completed": "Ukończono",
   "Ended early": "Zakończono wcześniej",
+  "Time expired": "Upłynął czas",
   "item": "zadanie",
   "Guided Practice": "Ćwiczenia z prowadzeniem",
   "Learn Approach": "Nauka podejścia",

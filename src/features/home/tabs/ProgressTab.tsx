@@ -142,7 +142,7 @@ function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ item
   const { t } = useAppPreferences();
   const groups = ["Today", "Yesterday", "This week", "Earlier"] as const;
   return (
-    <View style={styles.section} testID="patternly:progress:activity">
+    <View style={styles.section} testID={runtimeSelectors.progress.activitySection()}>
       <View style={styles.sectionHeading}>
         <Text style={styles.sectionTitle}>{t("Activity")}</Text>
         {onOpenActivity ? (

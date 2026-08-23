@@ -1,4 +1,4 @@
-import type { TrainingAttempt, TrainingSession, TrainingSessionResult } from "../domain";
+import type { EvidenceRef, TrainingAttempt, TrainingSession, TrainingSessionResult } from "../domain";
 import { getTrainingAttempts, getTrainingSessionResult, getTrainingSessions } from "../storage/repositories";
 
 export type ActivitySessionRecord = Readonly<{
@@ -6,6 +6,7 @@ export type ActivitySessionRecord = Readonly<{
   latestAttemptAt: string | null;
   result: TrainingSessionResult | null;
   session: TrainingSession;
+  scopeRefs: readonly EvidenceRef[];
 }>;
 
 /**
@@ -28,10 +29,26 @@ export async function loadActivitySessionRecords(): Promise<readonly ActivitySes
       latestAttemptAt,
       result: await getTrainingSessionResult(session.id),
       session,
+      scopeRefs: activityScopeRefs(attempts),
     } satisfies ActivitySessionRecord;
   }));
 
   return Object.freeze([...records].sort((left, right) => activityTimestamp(right).localeCompare(activityTimestamp(left))));
+}
+
+function activityScopeRefs(attempts: readonly TrainingAttempt[]): readonly EvidenceRef[] {
+  const seen = new Set<string>();
+  const refs: EvidenceRef[] = [];
+  for (const attempt of attempts) {
+    for (const ref of attempt.reviewEvidence.taxonomyOrSkillRefs) {
+      if (ref.axisId !== "roadmap_node" && ref.axisId !== "cloud-domain") continue;
+      const key = `${ref.axisId}:${ref.nodeId}:${ref.role ?? ""}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      refs.push(ref);
+    }
+  }
+  return Object.freeze(refs.map((ref) => Object.freeze({ ...ref })));
 }
 
 function groupAttemptsBySession(attempts: readonly TrainingAttempt[]): Map<string, TrainingAttempt[]> {

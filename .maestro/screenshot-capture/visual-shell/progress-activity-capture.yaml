@@ -54,7 +54,7 @@ tags:
 - takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__progress__established__${THEME}__${DEVICE_PROFILE}"
 - scrollUntilVisible:
     element:
-      id: "patternly:progress:activity"
+      id: "patternly:progress:activity-section"
     direction: DOWN
     centerElement: true
     timeout: 30000

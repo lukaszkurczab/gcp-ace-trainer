@@ -102,6 +102,7 @@ export const runtimeSelectors = Object.freeze({
   }),
   progress: Object.freeze({
     root: () => selector("progress", "root"),
+    activitySection: () => selector("progress", "activity-section"),
     node: (roadmapNodeId: string) => selector("progress", "node", roadmapNodeId),
     activity: () => selector("progress", "activity"),
   }),
