@@ -118,7 +118,7 @@ export const colors = {
     accentOrangeSoft: "#43240F",
     navigation: {
       surface: "#0E1B31",
-      border: "#1E293B",
+      border: "#F1F5F9",
       active: "#20C997",
       pressedSurface: "#0F172A",
       textPrimary: "#F1F5F9",
