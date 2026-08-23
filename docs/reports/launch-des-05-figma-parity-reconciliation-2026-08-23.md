@@ -261,3 +261,22 @@ Focused review-shell checks passed, and `npm run qa:static` passed on
 checks. Current dark/light runtime pixel comparison for Answer Review,
 navigator, and unavailable review states remains unverified; this addendum is
 source evidence, not a 99% completion claim.
+
+## Addendum — Simulation shell geometry convergence
+
+The current channel `ksxw21cw` was revalidated against active simulation
+frames `74:539` and `74:834`, the navigator save-failure frame `74:726`, and
+shared Answer Option authority `248:2394`. Commit `3ed145a` applies only the
+safe visual facts owned by the existing canonical paths: simulation progress
+uses `surface/input`, navigator cells use the elevated surface with 56 px
+baseline geometry and 12/16 semibold labels, frozen cells no longer apply a
+source-level opacity reduction, and the shared letter badge uses 12/16
+semibold typography. No simulation command, persistence state, footer owner,
+or semantic mode was changed.
+
+Focused simulation/Answer Option/visual-shell checks passed 25/25, and
+`npm run qa:static` passed on `3ed145a` with 559/559 tests, TypeScript,
+content-boundary, and runtime-privacy checks. Fresh dark/light runtime pixel
+comparison for active simulation, navigator failure, recovery, and review
+operational states remains unverified; this addendum is source evidence, not a
+99% completion claim.

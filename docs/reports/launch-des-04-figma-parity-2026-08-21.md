@@ -4,9 +4,9 @@ Date: 2026-08-23
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`, `61cc0a0`, `00c7cb7`, `0060009`, `fe87b5b`, `471c8aa`, `6384050`, `47eb23c`, `04ae92e`, `78eb8cb`, `36e6e73`, `e6ecb58`, `851e09a`, `2cbdf75`, `7770c57`, `32c170d`, `8fe50e0`, `04e865c`, `0f76f03`, `15768ce`, `16ddbfb`, `b5314a6`, `330f699`, `3185518`, `d05069f`, `577ef10`, `bc9613f`, `04f5960`, `ec2980e`, `f631cf4`, `53d063e`, `86de854`, `7678253`, `a2e4f72`, `8fb2a6a`, `afea4ed`, `36727b6`, `7e9c0a2`, `2ee93bc`, `115ac44`, `5bb4400`, `5a7d3d8`, `3175a63`, `d7c6611`, `bc09d63`, `65aeccd`, `256717e`, `cc7cdf5`, `ee7dde1`, `36ce521`, `28ec843`, `4d27861`, `45016a5`, `621c4bd`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`, `61cc0a0`, `00c7cb7`, `0060009`, `fe87b5b`, `471c8aa`, `6384050`, `47eb23c`, `04ae92e`, `78eb8cb`, `36e6e73`, `e6ecb58`, `851e09a`, `2cbdf75`, `7770c57`, `32c170d`, `8fe50e0`, `04e865c`, `0f76f03`, `15768ce`, `16ddbfb`, `b5314a6`, `330f699`, `3185518`, `d05069f`, `577ef10`, `bc9613f`, `04f5960`, `ec2980e`, `f631cf4`, `53d063e`, `86de854`, `7678253`, `a2e4f72`, `8fb2a6a`, `afea4ed`, `36727b6`, `7e9c0a2`, `2ee93bc`, `115ac44`, `5bb4400`, `5a7d3d8`, `3175a63`, `d7c6611`, `bc09d63`, `65aeccd`, `256717e`, `cc7cdf5`, `ee7dde1`, `36ce521`, `28ec843`, `4d27861`, `45016a5`, `621c4bd`, `3ed145a`
 Verified and pushed SHA: not performed in this pass; the remote branch was not changed.
-Current local verification SHA: `621c4bd`
+Current local verification SHA: `3ed145a`
 
 ## Outcome
 
@@ -35,6 +35,15 @@ Review places the 353 px surface at the Figma 185 px content offset and keeps
 the existing explicit navigator and previous/next commands. The ordinary
 Answer Review and true filtered empty state remain on their own canonical
 layout contracts.
+
+`3ed145a` extends the same live Figma pass to the Coding Interview simulation
+shell and navigator: active frames `74:539` and `74:834` now use the Figma
+`surface/input` progress track, navigator failure frame `74:726` now uses
+elevated 56 px cells with 12/16 semibold labels and no hidden frozen-state
+opacity, and shared Answer Option authority `248:2394` now uses a 12/16
+semibold letter badge. The source change is limited to the existing canonical
+styles; simulation semantics, footer ownership, and persistence paths remain
+unchanged.
 
 ## Current-head follow-up
 
@@ -296,6 +305,8 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - Focused visual-shell/canonical/loading checks: 46/46 passed after the Result unavailable geometry correction; TypeScript and `git diff --check` passed.
 - `npm run qa:static`: passed on `621c4bd`; recovery inventory (283 active source files, 113 active tests, 550 recovery cases), TypeScript, 559/559 tests, content boundary, and runtime privacy boundary all passed.
 - Focused visual-shell/accessibility/runtime-audit tests: 26/26 passed after the shared Button typography correction; `git diff --check` passed.
+- Focused simulation/Answer Option/visual-shell tests: 25/25 passed after the live `74:539`, `74:726`, `74:834`, and `248:2394` geometry correction; TypeScript and `git diff --check` passed.
+- `npm run qa:static`: passed on `3ed145a`; recovery inventory (283 active source files, 113 active tests, 550 recovery cases), TypeScript, 559/559 tests, content boundary, and runtime privacy boundary all passed.
 - `maestro check-syntax .maestro/screenshot-capture/visual-shell/track-selection-capture.yaml`: passed. The capture-only flow covers the reachable returning `Tracks` top viewport plus Coding-selected and Google Cloud-selected states and restores Home without committing a changed track.
 - Fresh light/dark track-selection flows completed on iPhone 16 Pro iOS 18.6 after the registry-order correction. Evidence is stored at `/tmp/patternly-capture-track-selection-dark-v5/` and `/tmp/patternly-capture-track-selection-light-v10/`.
 - `git diff --check`: passed.
@@ -314,6 +325,11 @@ its absence from the approved Figma states is recorded as the explicit
 The Result unavailable correction removed the old padded inline unavailable
 card and replaced it with the one shared-shell content variant required by
 `82:538`; no second unavailable owner or alternate fallback path remains.
+
+The simulation geometry correction changed only the existing canonical
+`SessionShell`, `SimulationQuestionNavigator`, and `AnswerOption` style owners;
+no duplicate simulation shell, navigator, badge component, fallback branch, or
+route was introduced or left reachable.
 
 No route was deleted because the current reachability graph does not prove any existing route obsolete. The superseded visual geometry was removed in place from the canonical primitives and route owners: old button sizing/pressed behavior, card radii, generic screen padding/footer geometry, navigation rule/padding, session top-bar height, answer-option circles, the ready-state Practice Hub/AppShell header composition, the notification screen's generic SettingsDialog flow, and the old Answer Review card/filter/diagnostic composition. The simulation-local Review Shell and Answer Navigator implementations were removed after extraction to the shared components; `SettingsDialog` remains reachable from its Exam owner, so it was not deleted globally. Track selection also removed the obsolete selected-only `trackIconSelected` branch and the family-wide certification `cloud` icon fallback; the canonical mapping is now Coding `route`, Google Cloud `server-stack`, and `grid` for the remaining catalogue entries. The Practice Summary slice removed the unreferenced `scoreLine`, `missedCount`, and `warningDot` presentation path after live Figma comparison; persisted scoring remains owned by the application projection. No duplicate design-system path, hidden fallback, placeholder feature, or Figma-only command was left behind.
 
