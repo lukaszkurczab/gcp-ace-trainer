@@ -247,7 +247,7 @@ function permissionPresentation(
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  content: { gap: spacing.xl },
+  content: { gap: spacing.xxl },
   sectionLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
   permissionCard: { backgroundColor: palette.listRow.surface, borderRadius: radius.button, gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.lg },
   permissionGranted: { paddingVertical: 14 },

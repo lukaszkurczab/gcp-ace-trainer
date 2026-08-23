@@ -11,6 +11,7 @@ test("notification settings owns the Figma granted and blocked states in one loc
   assert.match(navigator, /name=\{ROUTES\.NOTIFICATION_SETTINGS\}[\s\S]*?headerShown:\s*false/);
   assert.match(screen, /<ScreenHeader[\s\S]*context=\{text\.settings\}[\s\S]*contextTone="primary"[\s\S]*title=\{text\.notifications\}/);
   assert.match(screen, /permissionSection: "Permission"/);
+  assert.match(screen, /content:\s*\{\s*gap:\s*spacing\.xxl\s*\}/);
   assert.match(screen, /permissionCard:[\s\S]*?borderRadius:\s*radius\.button[\s\S]*?paddingHorizontal:\s*spacing\.lg[\s\S]*?paddingVertical:\s*spacing\.lg/);
   assert.match(screen, /permissionGranted:[\s\S]*?paddingVertical:\s*14/);
   assert.match(screen, /permissionWarning:[\s\S]*?backgroundColor:\s*palette\.warningSoft/);
