@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `176e331`
+Current source SHA at packet update: `8d32858`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -449,6 +449,21 @@ contract changed. Focused Home/visual/large-text checks passed 15/15;
 tests, typecheck, content-boundary, and runtime-privacy-boundary checks.
 Current-head runtime pixel comparison remains unverified because Maestro is
 unavailable and CoreSimulatorService refuses simulator connections.
+
+## Addendum — Home recent-activity copy convergence
+
+Commit `8d32858` aligns the Home recent-activity detail with the live Figma
+states `55:445` and `55:539`. Figma renders a completion label such as
+`Completed yesterday`; the Home projection now uses a canonical translated
+completion label and no longer exposes the internal `attempt.result.kind`
+value in the compact surface. Durable attempt data, date handling for older
+entries, the Activity route, selectors, and action semantics remain intact.
+
+Focused Home/activity checks passed 19/19; `npm run qa:static` passed with
+recovery inventory 283/113/552 and 562/562 tests, typecheck,
+content-boundary, and runtime-privacy-boundary checks. Current-head runtime
+pixel comparison remains unverified because Maestro is unavailable and
+CoreSimulatorService refuses simulator connections.
 
 ## Addendum — Button state-token decision boundary
 
