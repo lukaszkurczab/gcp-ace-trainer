@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `7e9b200`
+Current source SHA at packet update: `e257af4`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -92,7 +92,7 @@ Only the repository plan statuses are used below.
 | Area | Status | Evidence and boundary |
 |---|---|---|
 | Canonical route graph and screen owners | `done` | `RootNavigator` has one owner for Home, Activity, Settings, Practice Hub, Practice Setup, active Practice, summaries, simulation, and review. Source ownership and route tests pass. This proves architecture, not pixel parity. |
-| Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commit `7e9b200` aligns the shared Button pressed/disabled matrix to Figma `141:817`; current slices still require runtime comparison across all states and themes. |
+| Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commits `7e9b200` and `e257af4` align the shared Button state matrix and Bottom Navigation separator to Figma `141:817` and `140:875`; current slices still require runtime comparison across all states and themes. |
 | Home, Progress, and Activity source slices | `partial` | Commits through `15f54c1` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
@@ -716,3 +716,21 @@ kept as a competing path. Focused visual/accessibility checks passed 31/31;
 full `npm run qa:static` passed with recovery inventory 284/114/555 and
 564/564 tests, typecheck, content-boundary, and runtime-privacy-boundary.
 Same-head runtime pixel proof and Product Owner approval remain open.
+
+## Addendum — Bottom Navigation separator convergence
+
+Commit `e257af4` revalidated the canonical Bottom Navigation authority
+`140:875` / `483:5328` and its Light/Dark stress instances `830:7805` /
+`830:9045` in connector channel `ksxw21cw`. Figma resolves the
+`surface/overlay` top separator to `#F1F5F9` in both themes; the dark
+repository token had remained `#1E293B`, while the Light token was already
+aligned. The existing `BottomTabBar` remains the single owner of the four
+destination tabs, active indicator, item heights, icon sizing, caption metrics,
+pressed state, accessibility roles, and safe-area padding.
+
+Only the central dark `navigation.border` token changed. No route, label,
+callback, lifecycle, persistence, or fallback path changed. Focused shell /
+accessibility checks passed 29/29; full `npm run qa:static` passed with
+recovery inventory 284/114/556 and 565/565 tests, typecheck,
+content-boundary, and runtime-privacy-boundary. Same-head runtime pixel proof
+and Product Owner approval remain open.
