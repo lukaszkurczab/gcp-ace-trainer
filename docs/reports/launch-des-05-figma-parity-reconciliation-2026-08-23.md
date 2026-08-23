@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `6f8b0c6`
+Current source SHA at packet update: `992d5bb`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -92,7 +92,7 @@ Only the repository plan statuses are used below.
 | Area | Status | Evidence and boundary |
 |---|---|---|
 | Canonical route graph and screen owners | `done` | `RootNavigator` has one owner for Home, Activity, Settings, Practice Hub, Practice Setup, active Practice, summaries, simulation, and review. Source ownership and route tests pass. This proves architecture, not pixel parity. |
-| Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commits `7e9b200`, `e257af4`, and `2eb6c65` align the shared Button state matrix, Bottom Navigation separator, and Screen Header base geometry to Figma `141:817`, `140:875`, and `140:881`; current slices still require runtime comparison across all states and themes. |
+| Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commits `7e9b200`, `e257af4`, `2eb6c65`, and `992d5bb` align the shared Button state matrix, Bottom Navigation separator, Screen Header base geometry, and Screen Shell default spacing to Figma `141:817`, `140:875`, `140:881`, and `830:7457`; current slices still require runtime comparison across all states and themes. |
 | Home, Progress, and Activity source slices | `partial` | Commits through `15f54c1` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract, and `6f8b0c6` aligns the Coding row icon container/icon/chevron geometry from `232:1716`. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
@@ -772,3 +772,19 @@ changed; no duplicate icon owner was introduced. Focused checks passed 34/34;
 full `npm run qa:static` passed with recovery inventory 284/114/556 and
 565/565 tests, typecheck, content-boundary, and runtime-privacy-boundary.
 Same-head runtime pixel proof and Product Owner approval remain open.
+
+## Addendum — Screen Shell spacing convergence
+
+Commit `992d5bb` revalidated Figma `Pattern / Screen Shell · Dark` `830:7457`
+in connector channel `ksxw21cw`. The reference uses `space/20` between
+scroll-content blocks. The canonical `src/components/Screen.tsx` now uses
+`spacing.xl` (`20 px`) for the default content gap; compact density remains
+`spacing.md`, and route-owned overrides such as Practice, Home, and Activity
+remain explicit.
+
+This is a shared visual spacing correction only. Padding, footer geometry,
+route ownership, commands, lifecycle, persistence, accessibility, and product
+semantics are unchanged. Focused shell checks passed 25/25; full
+`npm run qa:static` passed with recovery inventory 284/114/556 and 565/565
+tests, typecheck, content-boundary, and runtime-privacy-boundary. Same-head
+runtime pixel proof and Product Owner approval remain open.
