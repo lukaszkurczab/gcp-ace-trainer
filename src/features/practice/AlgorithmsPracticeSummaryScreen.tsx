@@ -142,7 +142,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   summaryStatValue: { ...typography.bodyStrong, color: palette.textPrimary },
   configuration: { ...typography.caption, color: palette.textMuted },
   outcomeSection: { gap: spacing.md },
-  sectionTitle: { color: palette.textSecondary, fontSize: 13, fontWeight: "700", lineHeight: 16 },
+  sectionTitle: { color: palette.textSecondary, fontSize: 10, fontWeight: "700", letterSpacing: 1.2, lineHeight: 12, textTransform: "uppercase" },
   outcomeRow: { gap: spacing.sm },
   outcomeStat: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 10, flexDirection: "row", gap: 10, padding: spacing.md },
   outcomeDot: { borderRadius: 4, height: 8, width: 8 },
