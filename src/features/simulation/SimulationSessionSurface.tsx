@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AnswerOption, Button, Card, Icon, Screen } from "../../components";
@@ -11,7 +12,7 @@ import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { isRuntimeSelectorId, runtimeSelectors } from "../../testing/runtimeSelectors";
 import { SimulationQuestionNavigator, useReducedMotion } from "./navigator/SimulationQuestionNavigator";
-import { SimulationOperationPanel } from "./operation/SimulationOperationPanel";
+import { isSimulationOperationNotice, SimulationOperationPanel } from "./operation/SimulationOperationPanel";
 
 
 type SimulationSessionSurfaceProps = Readonly<{ projection: SimulationSurfaceProjection }>;
@@ -28,7 +29,8 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
   if (mayRenderSimulationCompletion(projection)) {
     return <CompletedSurface projection={projection} sessionId={runtimeIdentity?.sessionId} />;
   }
-  const actionBar = projection.confirmation ? undefined : projection.actions ? <ActionBar sessionId={runtimeIdentity?.sessionId} {...projection.actions} /> : undefined;
+  const operationNotice = projection.operation && isSimulationOperationNotice(projection.operation) ? <SimulationOperationPanel operation={projection.operation} /> : null;
+  const actionBar = projection.confirmation ? undefined : projection.actions ? <ActionBar operationNotice={operationNotice} sessionId={runtimeIdentity?.sessionId} {...projection.actions} /> : operationNotice;
   const interactionLocked = projection.state !== "editable";
   const savedResponse = projection.state === "editable" && projection.notice?.message === "Saved";
 
@@ -49,7 +51,7 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
         {savedResponse ? <SavedStatus /> : null}
         {projection.notice && projection.state !== "editable" ? <Notice notice={projection.notice} /> : null}
         {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} variant={savedResponse ? "simulationSaved" : "simulation"} /> : null}
-        {projection.operation ? <SimulationOperationPanel operation={projection.operation} /> : null}
+        {projection.operation && !isSimulationOperationNotice(projection.operation) ? <SimulationOperationPanel operation={projection.operation} /> : null}
       </SessionShell>
       {projection.state === "editable" && projection.onOccurrencePress ? <SimulationQuestionNavigator onDismiss={() => setNavigatorVisible(false)} onOccurrencePress={projection.onOccurrencePress} positions={projection.navigator} visible={navigatorVisible} /> : null}
       {projection.confirmation ? <ConfirmationActionSheet confirmation={projection.confirmation} sessionId={runtimeIdentity?.sessionId} /> : null}
@@ -57,10 +59,11 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
   );
 }
 
-function ActionBar({ primary, secondary, sessionId, tertiary }: NonNullable<SimulationSurfaceProjection["actions"]> & Readonly<{ sessionId?: string }>) {
+function ActionBar({ operationNotice, primary, secondary, sessionId, tertiary }: NonNullable<SimulationSurfaceProjection["actions"]> & Readonly<{ operationNotice?: ReactNode; sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   return (
-    <View style={styles.actionBar}>
+    <View style={[styles.actionBar, operationNotice ? styles.actionBarOperation : null]}>
+      {operationNotice}
       {primary ? <View style={styles.actionSlot}><Action action={primary} fullWidth sessionId={sessionId} /></View> : null}
       {secondary ? <View style={styles.actionSlot}><Action action={secondary} fullWidth sessionId={sessionId} /></View> : null}
       {tertiary ? <View style={styles.actionSlot}><Action action={tertiary} fullWidth sessionId={sessionId} /></View> : null}
@@ -179,11 +182,11 @@ function OutcomeStat({ label, tone, value }: Readonly<{ label: string; tone: "da
 const createStyles = (palette: AppColors) => StyleSheet.create({
   body: { ...typography.small, color: palette.textSecondary },
   code: { backgroundColor: palette.background, borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, color: palette.textSecondary, fontFamily: "monospace", padding: spacing.md },
-  confirmationTitle: { ...typography.heading, color: palette.textPrimary },
+  confirmationTitle: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", letterSpacing: -0.3, lineHeight: 28 },
   confirmationBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 0, 0, 0.48)" },
   confirmationRoot: { flex: 1, justifyContent: "flex-end" },
   confirmationStack: { width: "100%" },
-  confirmationSheet: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, borderWidth: 1, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, elevation: 8 },
+  confirmationSheet: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, borderWidth: 1, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, elevation: 8 },
   confirmationDestructive: { backgroundColor: palette.background, paddingHorizontal: spacing.xl, paddingBottom: spacing.sm, paddingTop: spacing.md },
   summaryScreen: { gap: 0, padding: 0 },
   summaryShell: { backgroundColor: palette.surface, borderRadius: 24, flex: 1, overflow: "hidden" },
@@ -215,6 +218,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dimensionLabel: { ...typography.bodyStrong, color: palette.textPrimary },
   error: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
   actionBar: { gap: spacing.sm, width: "100%" },
+  actionBarOperation: { gap: spacing.md },
   actionSlot: { alignSelf: "stretch" },
   fullWidthAction: { alignSelf: "stretch" },
   notice: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },

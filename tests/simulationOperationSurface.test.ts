@@ -25,6 +25,8 @@ test("simulation operation surface renders only declared state actions and never
   assert.match(lifecycle, /resumeEditableSimulationAfterSaveFailure/);
   assert.match(lifecycle, /operation\.kind !== "save_failed" && operation\.kind !== "stale_revision"/);
   assert.match(facade, /operation\.error\.allowedAction !== "recover"/);
+  assert.match(readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8"), /isSimulationOperationNotice\(projection\.operation\)/);
+  assert.match(readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8"), /actionBarOperation:\s*\{\s*gap:\s*spacing\.md\s*\}/);
 });
 
 test("simulation pause/end uses one Figma action sheet and keeps the destructive command reachable", () => {
@@ -36,7 +38,9 @@ test("simulation pause/end uses one Figma action sheet and keeps the destructive
   assert.match(screen, /label: "End simulation"/);
   assert.match(screen, /destructive:/);
   assert.doesNotMatch(screen, /overlay === "abandon"/);
-  assert.match(readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8"), /confirmationDestructive/);
+  const surface = readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8");
+  assert.match(surface, /confirmationDestructive/);
+  assert.match(surface, /confirmationSheet:\s*\{[^}]*borderTopLeftRadius:\s*radius\.sheet[^}]*borderTopRightRadius:\s*radius\.sheet/);
 });
 
 test("simulation finish confirmation uses the Figma action-required copy and review dismissal", () => {
@@ -44,5 +48,7 @@ test("simulation finish confirmation uses the Figma action-required copy and rev
   assert.match(screen, /description: "Review this action before continuing\."/);
   assert.match(screen, /label: "Finish simulation"/);
   assert.match(screen, /label: "Keep reviewing"/);
-  assert.match(readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8"), /accessibilityLabel=\{t\(dismiss\.label\)\}/);
+  const surface = readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8");
+  assert.match(surface, /accessibilityLabel=\{t\(dismiss\.label\)\}/);
+  assert.match(surface, /confirmationTitle:\s*\{[^}]*fontSize:\s*22[^}]*fontWeight:\s*"600"[^}]*letterSpacing:\s*-0\.3[^}]*lineHeight:\s*28/);
 });

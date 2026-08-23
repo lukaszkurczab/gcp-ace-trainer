@@ -7,11 +7,15 @@ import type { SimulationOperationPresentation } from "../simulationProjection";
 
 type SimulationOperationPanelProps = Readonly<{ operation: SimulationOperationPresentation }>;
 
+export function isSimulationOperationNotice(operation: SimulationOperationPresentation): boolean {
+  return operation.kind === "save-failed" || operation.kind === "response-saved-navigation-failed";
+}
+
 /** Renders only the normalized operation state and CTA facts supplied by the screen projection. */
 export function SimulationOperationPanel({ operation }: SimulationOperationPanelProps) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette, t } = useAppPreferences();
-  const notice = operation.kind === "save-failed" || operation.kind === "response-saved-navigation-failed";
+  const notice = isSimulationOperationNotice(operation);
   const pending = operation.kind === "saving-response" || operation.kind === "finalizing";
   const failed = operation.kind === "save-failed" || operation.kind === "finalization-recovery-required";
   if (notice) return <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.notice}><Icon color={palette.warning} name="alert-triangle" size={20} /><Text style={styles.noticeText}>{t(operation.noticeMessage ?? operation.title)}</Text></View>;
