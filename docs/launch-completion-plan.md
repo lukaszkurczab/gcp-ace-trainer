@@ -689,6 +689,21 @@ tests plus TypeScript and both boundary validators. Runtime Light/Dark proof
 and Product Owner approval remain open; do not mark Home or the overall
 objective as 99% parity.
 
+## Addendum — Progress action-token convergence
+
+Current-channel Figma `842:9563` confirms that visible Progress status/action
+accents use the green `action/primary` token. The canonical `ProgressTab` now
+uses `palette.primary` for the `This week` label, focus evidence detail, and
+`Review weak areas` label; no Progress data or command changed.
+
+Figma-only goal/cadence/focus-area values, effectiveness chart, and `View all
+track evidence` route remain unresolved because the repository has no truthful
+owner for them. Focused Progress/projection/visual checks passed `26/26`, and
+full `npm run qa:static` passed with `284/114/557` recovery inventory and
+`566/566` tests plus TypeScript and both boundary validators. Runtime
+Light/Dark proof and Product Owner approval remain open; do not mark Progress
+or the overall objective as 99% parity.
+
 ## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.

@@ -1214,3 +1214,25 @@ Source commit `8f17eba` passed focused Home/visual/accessibility checks
 (`29/29`), TypeScript, and full `npm run qa:static` with recovery inventory
 `284/114/557`, `566/566` tests, content boundary, and runtime privacy
 boundary. This does not claim 99% parity.
+
+## Addendum — Progress action-token convergence
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`842:9563` (Progress · Established Evidence). The route's existing local
+evidence model already owns the current-focus, review, activity, and
+learning-map surfaces. Figma binds the visible status/action accents to the
+green `action/primary` token; `ProgressTab` now applies `palette.primary` to
+the `This week` label, the focus evidence detail, and the `Review weak areas`
+action label. The previous blue `info`/inherited ghost-label colors were
+visual token mismatches.
+
+The Figma goal/cadence/focus-area values, effectiveness chart, and
+`View all track evidence` route still have no truthful canonical owner in the
+repository. They remain explicit scope conflicts and were not synthesized.
+The Progress row stays `PARTIAL` pending current-head Light/Dark runtime
+captures and owner approval.
+
+Source commit `ad1b97a` passed focused Progress/projection/visual checks
+(`26/26`), TypeScript, and full `npm run qa:static` with recovery inventory
+`284/114/557`, `566/566` tests, content boundary, and runtime privacy
+boundary. This does not claim 99% parity.
