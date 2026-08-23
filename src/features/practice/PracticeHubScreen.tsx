@@ -326,7 +326,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   topicContext: {
     alignItems: "center",
     flexDirection: "row",
-    gap: spacing.sm,
+    gap: 6,
   },
   topicDot: {
     backgroundColor: palette.primary,
@@ -345,10 +345,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   heroCard: {
     backgroundColor: palette.surface,
-    borderColor: colorWithOpacity(palette.primary, 0.45),
+    borderColor: colorWithOpacity(palette.primary, 0.28),
     borderRadius: 22,
     elevation: 0,
-    gap: spacing.lg,
+    gap: spacing.xl,
     padding: spacing.xl,
     shadowOffset: { height: 16, width: 0 },
     shadowOpacity: 0.22,
@@ -361,14 +361,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     height: 44,
     left: -1,
     position: "absolute",
-    top: 20,
+    top: 19,
     width: 3,
   },
   heroText: {
     gap: 6,
   },
   heroHeading: {
-    minHeight: 28,
+    minHeight: 24,
   },
   heroHeadingLargeText: {
     alignItems: "flex-start",
@@ -379,7 +379,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flex: 1,
     fontSize: 20,
     fontWeight: "600",
-    lineHeight: 28,
+    lineHeight: 24,
   },
   heroDetail: {
     color: palette.textSecondary,
@@ -388,7 +388,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     lineHeight: 19,
   },
   heroActions: {
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   settingsAction: {
     alignItems: "center",
@@ -405,8 +405,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   settingsActionText: {
     color: palette.primary,
     fontSize: 13,
-    fontWeight: "600",
-    lineHeight: 18,
+    fontWeight: "500",
+    lineHeight: 16,
   },
   section: {
     gap: spacing.md,
