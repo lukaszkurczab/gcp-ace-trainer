@@ -218,14 +218,16 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
 
         <Card variant="layered" style={styles.heroCard}>
           <View style={styles.cardRail} />
-          <View style={[styles.heroHeading, largeText ? styles.heroHeadingLargeText : null]}>
-            <Text style={styles.heroTitle}>
-              {t(primaryMode.title)}
+          <View style={styles.heroText}>
+            <View style={[styles.heroHeading, largeText ? styles.heroHeadingLargeText : null]}>
+              <Text style={styles.heroTitle}>
+                {t(primaryMode.title)}
+              </Text>
+            </View>
+            <Text style={styles.heroDetail}>
+              {t(primaryMode.detail)}
             </Text>
           </View>
-          <Text style={styles.heroDetail}>
-            {t(primaryMode.detail)}
-          </Text>
           <View style={styles.heroActions}>
             <Button
               onPress={() => startSession()}
@@ -255,7 +257,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               >
                 {t(isCodingInterviewTrack ? "Custom Practice" : "Manage settings")}
               </Text>
-              <Icon color={palette.accentPurple} name="chevron-right" size={16} />
+              <Icon color={palette.primary} name="chevron-right" size={16} />
             </Pressable>
           </View>
         </Card>
@@ -282,6 +284,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                     <Badge label={t("Unavailable")} tone="neutral" />
                   )
                 }
+                variant="grouped"
               />
             ))}
           </View>
@@ -299,10 +302,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flex: 1,
   },
   screenContent: {
+    gap: 18,
     paddingBottom: TAB_BAR_RESERVED_HEIGHT,
   },
   pageIntro: {
-    gap: spacing.md,
+    gap: 18,
   },
   pageTitle: {
     ...typography.title,
@@ -355,19 +359,24 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderColor: colorWithOpacity(palette.primary, 0.45),
     borderRadius: 22,
     elevation: 0,
-    gap: spacing.md,
+    gap: spacing.lg,
     padding: spacing.xl,
-    shadowOpacity: 0,
+    shadowOffset: { height: 16, width: 0 },
+    shadowOpacity: 0.22,
+    shadowRadius: 40,
     position: "relative",
   },
   cardRail: {
     backgroundColor: palette.primary,
     borderRadius: 2,
-    height: 64,
+    height: 44,
     left: -1,
     position: "absolute",
     top: 20,
     width: 3,
+  },
+  heroText: {
+    gap: 6,
   },
   heroHeading: {
     minHeight: 28,
@@ -384,12 +393,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     lineHeight: 28,
   },
   heroDetail: {
-    ...typography.body,
     color: palette.textSecondary,
-    lineHeight: 20,
+    fontSize: 13.5,
+    fontWeight: "400",
+    lineHeight: 19,
   },
   heroActions: {
-    gap: spacing.md,
+    gap: spacing.lg,
   },
   settingsAction: {
     alignItems: "center",
@@ -404,7 +414,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     opacity: 0.78,
   },
   settingsActionText: {
-    color: palette.accentPurple,
+    color: palette.primary,
     fontSize: 13,
     fontWeight: "600",
     lineHeight: 18,
@@ -414,14 +424,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   modeList: {
     borderColor: palette.border,
-    borderRadius: radius.xl,
+    borderRadius: 18,
     borderWidth: 1,
+    backgroundColor: palette.elevatedSurface,
     overflow: "hidden",
   },
   modeRow: {
     backgroundColor: palette.surface,
     borderColor: palette.border,
-    borderRadius: 0,
     borderWidth: 0,
     borderBottomWidth: 1,
     minHeight: 72,

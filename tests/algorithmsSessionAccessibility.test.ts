@@ -140,6 +140,25 @@ test("Practice Hub keeps the quiet-layered recommendation readable at large text
   assert.doesNotMatch(practiceHub, /MetricCard|statsHeader|statsMetric/);
 });
 
+test("Practice Hub geometry follows live Figma while keeping canonical mode ownership", () => {
+  const practiceHub = source("src/features/practice/PracticeHubScreen.tsx");
+  const listRow = source("src/components/ListRow.tsx");
+
+  assert.match(practiceHub, /screenContent:\s*\{[\s\S]*?gap:\s*18/);
+  assert.match(practiceHub, /pageIntro:\s*\{[\s\S]*?gap:\s*18/);
+  assert.match(practiceHub, /heroCard:\s*\{[\s\S]*?gap:\s*spacing\.lg[\s\S]*?shadowOpacity:\s*0\.22[\s\S]*?shadowRadius:\s*40/);
+  assert.match(practiceHub, /heroText:\s*\{[\s\S]*?gap:\s*6/);
+  assert.match(practiceHub, /heroDetail:\s*\{[\s\S]*?fontSize:\s*13\.5[\s\S]*?lineHeight:\s*19/);
+  assert.match(practiceHub, /heroActions:\s*\{[\s\S]*?gap:\s*spacing\.lg/);
+  assert.match(practiceHub, /cardRail:\s*\{[\s\S]*?height:\s*44/);
+  assert.match(practiceHub, /modeList:\s*\{[\s\S]*?borderRadius:\s*18[\s\S]*?backgroundColor:\s*palette\.elevatedSurface/);
+  assert.match(practiceHub, /<ListRow[\s\S]*?variant="grouped"/);
+  assert.match(listRow, /groupedCopy:\s*\{[\s\S]*?gap:\s*spacing\.xxs/);
+  assert.match(listRow, /groupedDetail:\s*\{[\s\S]*?typography\.listRowDetail/);
+  assert.match(practiceHub, /settingsActionText:\s*\{[\s\S]*?color:\s*palette\.primary/);
+  assert.match(practiceHub, /buildPracticeModes\(activeTrack, data\.hasReviewEvidence\)/);
+});
+
 test("certification exam stacks descriptive actions so large text cannot clip flagging or navigation", () => {
   const exam = source("src/features/exam/ExamScreen.tsx");
 
