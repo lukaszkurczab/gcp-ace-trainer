@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `bd0fc5e`
+Current source SHA at packet update: `8822cd7`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -1236,3 +1236,23 @@ Source commit `ad1b97a` passed focused Progress/projection/visual checks
 (`26/26`), TypeScript, and full `npm run qa:static` with recovery inventory
 `284/114/557`, `566/566` tests, content boundary, and runtime privacy
 boundary. This does not claim 99% parity.
+
+## Addendum — Activity instance geometry revalidation
+
+The current connector channel `ksxw21cw` was revalidated against the
+populated Activity screen `842:11192`, the concrete row instance `842:11177`,
+and the track selector `842:11173`. The screen-level row instances are
+`353×95`: their visible content uses `16 px` horizontal padding, `12 px`
+vertical padding, `10 px` inter-column gap, a `36×36` icon tile, 14 px
+semibold title text, and 11/15.4 px caption lines. The existing
+`ActivityScreen` source owns those values; its `minHeight: 73` is the content
+minimum before the 24 px vertical padding and therefore does not make the
+rendered row 73 px tall. The selector also matches the 40 px height, 14 px
+horizontal inset, 8 px gap, and 18 px chevron.
+
+No source delta is justified by this pass. The Figma `PaginationLoading`
+label (`Loading older activity...`) still has no truthful pagination owner in
+the repository, whose canonical read model loads the durable local history as
+one verified projection. It was not added as a permanent or synthetic loading
+state. Current-head Light/Dark runtime comparison, capture tooling, and
+Product Owner approval remain open; this does not claim 99% parity.
