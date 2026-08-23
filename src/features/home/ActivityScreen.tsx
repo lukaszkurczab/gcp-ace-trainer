@@ -61,16 +61,36 @@ export function ActivityScreen({ navigation }: Props) {
   return (
     <Screen edges={["top", "bottom"]} style={styles.screen}>
       {header}
-      <Pressable
-        accessibilityLabel={t("Filter activity")}
-        accessibilityRole="button"
-        onPress={() => setFilterVisible(true)}
-        style={({ pressed }) => [styles.filter, pressed ? styles.pressed : null]}
-        testID={runtimeSelectors.activity.filter()}
-      >
-        <Text maxFontSizeMultiplier={2} style={styles.filterText}>{t(filter === ALL_ACTIVITY_TRACKS ? "All tracks" : getTrackLabel(filter))}</Text>
-        <Icon color={palette.textSecondary} name="chevron-down" size={18} />
-      </Pressable>
+      <View style={styles.filter}>
+        <Pressable
+          accessibilityLabel={t("Filter activity")}
+          accessibilityRole="button"
+          onPress={() => setFilterVisible(true)}
+          style={({ pressed }) => [styles.filterTrigger, pressed ? styles.pressed : null]}
+          testID={runtimeSelectors.activity.filter()}
+        >
+          <Text maxFontSizeMultiplier={2} style={[styles.filterText, filter !== ALL_ACTIVITY_TRACKS ? styles.filterSelectedText : null]}>{t(filter === ALL_ACTIVITY_TRACKS ? "All tracks" : getTrackLabel(filter))}</Text>
+        </Pressable>
+        {filter !== ALL_ACTIVITY_TRACKS ? (
+          <Pressable
+            accessibilityLabel={t("Clear activity filter")}
+            accessibilityRole="button"
+            onPress={() => setFilter(ALL_ACTIVITY_TRACKS)}
+            style={({ pressed }) => [styles.filterAction, pressed ? styles.pressed : null]}
+            testID={runtimeSelectors.activity.filterClear()}
+          >
+            <Icon color={palette.textPrimary} name="close" size={18} />
+          </Pressable>
+        ) : null}
+        <Pressable
+          accessibilityLabel={t("Open activity filter")}
+          accessibilityRole="button"
+          onPress={() => setFilterVisible(true)}
+          style={({ pressed }) => [styles.filterAction, pressed ? styles.pressed : null]}
+        >
+          <Icon color={palette.textPrimary} name="chevron-down" size={18} />
+        </Pressable>
+      </View>
       {model.items.length > 0 ? (
         <View style={styles.list} testID={runtimeSelectors.activity.root()}>
           {model.groups.map((group) => (
@@ -211,8 +231,11 @@ function translateDateLabel(label: string, translate: (value: string) => string)
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   screen: { gap: spacing.sm },
-  filter: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 40, paddingHorizontal: 14 },
+  filter: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", gap: spacing.sm, minHeight: 40, paddingHorizontal: 14 },
+  filterTrigger: { flex: 1, minWidth: 0 },
+  filterAction: { alignItems: "center", height: 18, justifyContent: "center", width: 18 },
   filterText: { ...typography.bodyStrong, color: palette.textSecondary },
+  filterSelectedText: { color: palette.textPrimary },
   list: { gap: spacing.md, paddingBottom: spacing.lg, paddingTop: spacing.xs },
   group: { gap: spacing.xs },
   groupLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "600", lineHeight: 15 },
@@ -227,12 +250,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   detail: { color: palette.textSecondary, fontSize: 11, fontWeight: "400", lineHeight: 15.4 },
   statusDetail: { color: palette.warning },
   pressed: { opacity: 0.78 },
-  empty: { alignItems: "center", flex: 1, justifyContent: "center" },
+  empty: { alignItems: "center", flex: 1, justifyContent: "center", paddingBottom: 80 },
   emptyActivityState: { alignItems: "center", gap: 16, paddingHorizontal: spacing.xl, width: "100%" },
   emptyActivityIcon: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 24, flexDirection: "row", gap: 2, height: 48, justifyContent: "center", width: 48 },
-  emptyActivityBarTall: { backgroundColor: palette.primary, borderRadius: 2, height: 14, width: 3 },
-  emptyActivityBarShort: { backgroundColor: palette.primary, borderRadius: 2, height: 8, width: 3 },
-  emptyActivityTitle: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 21, textAlign: "center" },
+  emptyActivityBarTall: { backgroundColor: palette.success, borderRadius: 2, height: 14, width: 3 },
+  emptyActivityBarShort: { backgroundColor: palette.success, borderRadius: 2, height: 8, width: 3 },
+  emptyActivityTitle: { color: palette.textPrimary, fontSize: 17, fontWeight: "600", lineHeight: 21, textAlign: "center" },
   emptyActivityDescription: { color: palette.textSecondary, fontSize: 14, lineHeight: 20, maxWidth: 353, textAlign: "center" },
   emptyActivityPrimary: { minWidth: 151 },
   emptyActivitySecondaryLabel: { color: palette.primary, fontSize: 14, fontWeight: "600", lineHeight: 18 },

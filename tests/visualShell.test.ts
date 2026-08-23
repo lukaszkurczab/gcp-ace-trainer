@@ -140,11 +140,17 @@ test("the shared header owns accessible back geometry and long-copy reflow witho
   assert.match(activity, /groupLabel:[\s\S]*fontSize:\s*12[\s\S]*lineHeight:\s*15/);
   assert.doesNotMatch(activity, /groupLabel:[^\n]*textTransform/);
   assert.match(activity, /filterText:\s*\{\s*\.\.\.typography\.bodyStrong/);
+  assert.match(activity, /filterTrigger:\s*\{\s*flex:\s*1[\s\S]*minWidth:\s*0/);
+  assert.match(activity, /filterClear\(\)/);
+  assert.match(activity, /filterSelectedText:\s*\{\s*color:\s*palette\.textPrimary\s*\}/);
   assert.match(activity, /function ActivityEmptyState/);
   assert.match(activity, /Completed sessions and reviews will appear here\./);
   assert.match(activity, /onPress=\{onShowAll\}/);
   assert.match(activity, /onPress=\{onOpenPractice\}/);
+  assert.match(activity, /empty:\s*\{[\s\S]*?paddingBottom:\s*80/);
   assert.match(activity, /emptyActivityState:\s*\{[\s\S]*?gap:\s*16/);
+  assert.match(activity, /emptyActivityBarTall:\s*\{\s*backgroundColor:\s*palette\.success/);
+  assert.match(activity, /emptyActivityTitle:\s*\{[\s\S]*?fontSize:\s*17/);
   assert.match(activity, /row:\s*\{[\s\S]*?borderBottomWidth:\s*1[\s\S]*?gap:\s*10[\s\S]*?minHeight:\s*73/);
   assert.match(activity, /detail:\s*\{[\s\S]*?fontSize:\s*11[\s\S]*?lineHeight:\s*15\.4/);
   assert.match(activity, /statusDetail:\s*\{\s*color:\s*palette\.warning\s*\}/);

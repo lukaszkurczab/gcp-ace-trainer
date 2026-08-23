@@ -44,6 +44,8 @@ const polish: Readonly<Record<string, string>> = {
   "View activity": "Zobacz aktywność",
   "All tracks": "Wszystkie ścieżki",
   "Filter activity": "Filtruj aktywność",
+  "Clear activity filter": "Wyczyść filtr aktywności",
+  "Open activity filter": "Otwórz filtr aktywności",
   "Completed sessions and reviews will appear here.": "Ukończone sesje i powtórki pojawią się tutaj.",
   "No activity for this track": "Brak aktywności dla tej ścieżki",
   "Your Activity may still contain sessions from other tracks.": "Twoja aktywność może nadal zawierać sesje z innych ścieżek.",

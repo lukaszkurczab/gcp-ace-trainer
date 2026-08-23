@@ -109,6 +109,7 @@ export const runtimeSelectors = Object.freeze({
   activity: Object.freeze({
     root: () => selector("activity", "root"),
     filter: () => selector("activity", "filter"),
+    filterClear: () => selector("activity", "filter-clear"),
     row: (sessionId: string) => selector("activity", "row", sessionId),
   }),
   simulation: Object.freeze({
