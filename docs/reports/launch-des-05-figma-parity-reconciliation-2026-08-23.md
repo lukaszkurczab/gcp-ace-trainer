@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `5e3a69f`
+Current source SHA at packet update: `a6d05c6`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -95,7 +95,7 @@ Only the repository plan statuses are used below.
 | Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commits `7e9b200`, `e257af4`, `2eb6c65`, and `992d5bb` align the shared Button state matrix, Bottom Navigation separator, Screen Header base geometry, and Screen Shell default spacing to Figma `141:817`, `140:875`, `140:881`, and `830:7457`; current slices still require runtime comparison across all states and themes. |
 | Home, Progress, and Activity source slices | `partial` | Commits through `15f54c1` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
-| Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract, and `6f8b0c6` aligns the Coding row icon container/icon/chevron geometry from `232:1716`. The current source does not render the Figma fixture's `Independent Practice` / `Coding Interview` rows; that fixture-versus-contract discrepancy is recorded separately, and fresh runtime pixel comparison remains blocked. |
+| Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract, `6f8b0c6` aligns the Coding row icon container/icon/chevron geometry from `232:1716`, and `a6d05c6` aligns the section-label inset/typography and removes the fixture-only hero-action chevron. The current source does not render the Figma fixture's `Independent Practice` / `Coding Interview` rows; that fixture-versus-contract discrepancy is recorded separately, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
 | Current Practice preparing-state visual parity | `partial` | `0a7e8c3` reuses the canonical async-state owner for the preparing card, status row, typography, spacer, and item terminology from `68:549`; the Figma-only `Leave practice` command remains unresolved because the preparing phase has no safe lifecycle/command owner. Fresh runtime pixel comparison remains blocked. |
 | Current Practice Question Shell/footer visual parity | `partial` | `86e32d9` adds a Practice-only `session` footer variant with 228 px minimum height, bottom alignment, and 8 px action gap from `68:569`/`68:603`; `7e9b200` aligns the shared Button pressed/disabled state matrix from `141:817`. Simulation keeps its existing footer owner. Fresh runtime pixel comparison remains blocked. |
@@ -1093,6 +1093,23 @@ passed `11/11`; fresh `npm run qa:static` passed recovery inventory
 `284/114/557`, TypeScript, `566/566` tests, content boundary, and runtime
 privacy boundary. Current-head Light/Dark runtime pixel comparison and
 Product Owner approval remain open; this does not claim 99% parity.
+
+## Addendum — Practice Hub section chrome convergence
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`55:993`. The `More ways to practice` section uses a route-local 6 px top
+inset and 13/16 bold muted label; the previous shared `SectionHeader tight`
+rendered a 14/18 semibold label without that inset. The hero secondary action
+also has text only in the reference, so its extra 16 px chevron was removed.
+
+Commit `a6d05c6` keeps the canonical four Coding Free modes, their existing
+commands, unavailable states, route ownership, lifecycle, persistence, and
+accessibility unchanged. The Figma-only mode rows and settings semantics were
+not introduced. Focused Practice Hub/accessibility checks passed `15/15`; the
+full `npm run qa:static` passed with recovery inventory `284/114/557`,
+`566/566` tests, TypeScript, content-boundary, and runtime-privacy-boundary
+checks. Current-head Light/Dark runtime comparison and Product Owner approval
+remain open; this does not claim 99% parity.
 
 ## Addendum — Settings section-label rhythm convergence
 
