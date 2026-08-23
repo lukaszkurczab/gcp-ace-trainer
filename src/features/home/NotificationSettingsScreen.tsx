@@ -212,8 +212,8 @@ function PermissionCard({ detail, icon, iconColor, onOpenSettings, openSettingsL
 }>) {
   const styles = useThemedStyles(createStyles);
   return (
-    <View style={[styles.permissionCard, tone === "warning" ? styles.permissionWarning : null]} testID={testID}>
-      <View style={styles.permissionHeader}>
+    <View style={[styles.permissionCard, tone === "success" ? styles.permissionGranted : null, tone === "warning" ? styles.permissionWarning : null]} testID={testID}>
+      <View style={[styles.permissionHeader, tone === "warning" ? styles.permissionWarningHeader : null]}>
         <View style={[styles.permissionIcon, tone === "success" ? styles.permissionSuccessIcon : tone === "warning" ? styles.permissionWarningIcon : null]}>
           <Icon color={iconColor} name={icon} size={20} />
         </View>
@@ -249,9 +249,11 @@ function permissionPresentation(
 const createStyles = (palette: AppColors) => StyleSheet.create({
   content: { gap: spacing.xl },
   sectionLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
-  permissionCard: { backgroundColor: palette.listRow.surface, borderRadius: radius.button, gap: spacing.md, padding: spacing.lg },
+  permissionCard: { backgroundColor: palette.listRow.surface, borderRadius: radius.button, gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: spacing.lg },
+  permissionGranted: { paddingVertical: 14 },
   permissionWarning: { backgroundColor: palette.warningSoft },
   permissionHeader: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  permissionWarningHeader: { gap: 10 },
   permissionIcon: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderRadius: radius.md, height: 32, justifyContent: "center", width: 32 },
   permissionSuccessIcon: { backgroundColor: palette.successSoft },
   permissionWarningIcon: { backgroundColor: palette.warningSoft },
@@ -260,9 +262,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   permissionWarningTitle: { color: palette.warning, fontWeight: "600" },
   permissionDetail: { color: palette.textSecondary, fontSize: 12.5, lineHeight: 16 },
   permissionAction: { alignItems: "flex-start", justifyContent: "center", minHeight: 44 },
-  permissionActionText: { color: palette.warning, fontSize: 14, fontWeight: "600", lineHeight: 20 },
+  permissionActionText: { color: palette.warning, fontSize: 14, fontWeight: "600", lineHeight: 18 },
   note: { color: palette.textMuted, fontSize: 12.5, lineHeight: 16 },
-  reminderTimeInput: { color: palette.textPrimary, fontSize: 28, fontWeight: "600", height: 66, lineHeight: 34, paddingHorizontal: spacing.xl, paddingVertical: spacing.md, textAlign: "center" },
+  reminderTimeInput: { color: palette.textPrimary, fontSize: 28, fontWeight: "600", height: 66, lineHeight: 34, paddingHorizontal: spacing.xl, paddingVertical: spacing.lg, textAlign: "center" },
   reminderError: { ...typography.small, color: palette.danger },
-  sheetActions: { gap: spacing.sm },
+  sheetActions: { gap: spacing.lg },
 });

@@ -25,9 +25,9 @@ export function SettingsBottomSheet({ children, closeLabel, intro, onClose, titl
         <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={onClose} style={styles.backdrop} />
         <View accessibilityViewIsModal style={[styles.sheet, variant === "reminder" ? styles.reminderSheet : null]}>
           <ScrollView contentContainerStyle={[styles.content, variant === "reminder" ? styles.reminderContent : null, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-            <View style={styles.handle} />
+            <View style={[styles.handle, variant === "reminder" ? styles.reminderHandle : null]} />
             <Text maxFontSizeMultiplier={2} style={[styles.title, variant === "reminder" ? styles.reminderTitle : null]}>{title}</Text>
-            <Text maxFontSizeMultiplier={2} style={styles.intro}>{intro}</Text>
+            <Text maxFontSizeMultiplier={2} style={[styles.intro, variant === "reminder" ? styles.reminderIntro : null]}>{intro}</Text>
             {children}
           </ScrollView>
         </View>
@@ -61,8 +61,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.md,
   },
+  reminderHandle: { marginBottom: 0 },
   handle: { alignSelf: "center", backgroundColor: palette.bottomSheet.handle, borderRadius: radius.pill, height: 4, marginBottom: spacing.xs, width: 44 },
   title: { ...typography.heading, color: palette.textPrimary },
   reminderTitle: { fontSize: 22, letterSpacing: -0.3, lineHeight: 28, fontWeight: "600" },
   intro: { ...typography.small, color: palette.textSecondary },
+  reminderIntro: { fontSize: 14, fontWeight: "400", lineHeight: 22 },
 });
