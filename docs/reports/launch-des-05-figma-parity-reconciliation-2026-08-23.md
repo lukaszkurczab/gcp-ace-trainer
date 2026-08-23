@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `a81c390`
+Current source SHA at packet update: `fbb49e1`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -317,12 +317,12 @@ for semantic migration until that decision exists.
 - Live Figma design context and screenshots: pass for the current file/page/
   library and the node set recorded above, including the revalidations in the
   addenda.
-- `npm run typecheck`: pass at current source SHA `a81c390`.
-- Latest focused review/visual checks: 20/20 pass.
-- Full `npm run qa:static`: pass at source commit `a81c390`, with recovery
+- `npm run typecheck`: pass at current source SHA `fbb49e1`.
+- Latest focused Home/review/visual checks: 36/36 pass.
+- Full `npm run qa:static`: pass at source commit `fbb49e1`, with recovery
   inventory 284/114/556 and 565/565 tests, TypeScript, content boundary, and
   runtime privacy boundary.
-- Working tree: clean after the `a81c390` application commit and current
+- Working tree: clean after the `fbb49e1` application commit and current
   documentation update.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
@@ -897,3 +897,26 @@ with recovery inventory `284/114/556` and `565/565` tests, TypeScript,
 content-boundary, and runtime-privacy-boundary checks. This is source-level
 convergence, not a `MATCHED` claim: current-head Light/Dark pixel comparison,
 Maestro/CoreSimulator capture, and Product Owner approval remain open.
+
+## Addendum — Home Overview metric convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma nodes
+`55:445` (`02A · Home · Coding · Ready`) and `55:539` (`02B · Home · Coding ·
+Active session`). Both states use the shared `Metric Row` contract: an `8 px`
+gap between the 40×4 progress track and the value, with the value using the
+14 px semibold body-strong treatment. The Home owner had used a `4 px` gap and
+the 14/22 body line box, which widened and vertically over-sized the metric
+value group.
+
+Commit `fbb49e1` changes only `HomeTab` Overview metric presentation to the
+existing `spacing.sm` and `typography.bodyStrong` tokens. Ready and active
+session recommendation ownership, actions, activity copy, track selection,
+navigation, persistence, and accessibility semantics remain unchanged. No
+obsolete path or duplicate visual owner was retained or introduced.
+
+Focused Home/visual/large-text checks passed `36/36`; full
+`npm run qa:static` passed with recovery inventory `284/114/556` and `565/565`
+tests, TypeScript, content-boundary, and runtime-privacy-boundary checks. This
+is source-level convergence, not a `MATCHED` claim: current-head Light/Dark
+runtime pixel comparison, Maestro/CoreSimulator capture, and Product Owner
+approval remain open.
