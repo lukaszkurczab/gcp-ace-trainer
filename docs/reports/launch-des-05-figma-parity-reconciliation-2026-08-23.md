@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `86e32d9`
+Current source SHA at packet update: `0341424`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -57,6 +57,9 @@ the current file:
 | Current Practice preparing frame | `68:549` — `06A · Preparing` |
 | Current Practice Question Shell unanswered frame | `68:569` — `06B · Single choice · Unanswered` |
 | Current Practice Question Shell selected frame | `68:603` — `06C · Single choice · Selected · Immediate feedback mode` |
+| Current Practice immediate-feedback frame | `68:637` — `06E · Immediate feedback · Default` |
+| Current Practice details-expanded frame | `68:719` — `REF-06A · Details expanded` |
+| Current Practice final-item frame | `68:844` — `06F · Final item` |
 | Current Progress frame | `842:9563` — `Pattern / Progress Screen · Established Evidence` |
 | Current Progress empty-state frame | `842:10949` — `Pattern / Progress Screen · No Evidence` |
 | Current Activity frame | `842:11192` — `Pattern / Activity Screen · Populated` |
@@ -96,6 +99,7 @@ Only the repository plan statuses are used below.
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
 | Current Practice preparing-state visual parity | `partial` | `0a7e8c3` reuses the canonical async-state owner for the preparing card, status row, typography, spacer, and item terminology from `68:549`; the Figma-only `Leave practice` command remains unresolved because the preparing phase has no safe lifecycle/command owner. Fresh runtime pixel comparison remains blocked. |
 | Current Practice Question Shell/footer visual parity | `partial` | `86e32d9` adds a Practice-only `session` footer variant with 228 px minimum height, bottom alignment, and 8 px action gap from `68:569`/`68:603`; Simulation keeps its existing footer owner. Shared disabled Button token parity remains unresolved. Fresh runtime pixel comparison remains blocked. |
+| Current Practice feedback surface parity | `partial` | `0341424` removes the redundant visible result label after revalidation of `68:637`/`68:719`/`68:844`; correctness remains expressed by the canonical answer-option state and reason/details surfaces, with the runtime result selector kept on the visible reason panel. Expanded-details geometry and fresh runtime pixel comparison remain open. |
 | Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
 | Runtime screenshot and pixel evidence | `blocking` | Existing captures prove selected previous slices only. Current Activity-route capture and several same-head state comparisons remain unverified because `maestro` is unavailable and CoreSimulatorService refused the simulator connection. |
@@ -664,3 +668,22 @@ semantics changed. Focused shell/session checks passed 34/34; full
 typecheck, content-boundary, and runtime-privacy-boundary checks. Runtime
 pixel proof remains unavailable because Maestro is absent and
 CoreSimulatorService refuses simulator connections.
+
+## Addendum — Practice feedback surface convergence
+
+Commit `0341424` revalidated live Figma nodes `68:637` (`06E · Immediate
+feedback · Default`), `68:719` (`REF-06A · Details expanded`) and `68:844`
+(`06F · Final item`) against the canonical `PracticeFeedbackBlock` owner.
+These references expose correctness through the answer-option state and the
+reason/details surfaces, without a separate visible `Correct`/`Incorrect`/
+`Partial` label. The redundant result label, formatter, and unused
+translation were removed. The runtime result selector remains attached to the
+visible reason panel, preserving the auditability contract without adding a
+second UI element.
+
+No scoring, feedback, navigation, persistence, or command semantics changed.
+Focused feedback/accessibility/session checks passed 34/34; full
+`npm run qa:static` passed with recovery inventory 284/114/555, 564/564 tests,
+typecheck, content-boundary, and runtime-privacy-boundary checks. Expanded
+details geometry and same-head runtime pixel proof remain open because
+Maestro is absent and CoreSimulatorService refuses simulator connections.
