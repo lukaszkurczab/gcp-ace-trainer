@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `17f1e25`
+Current source SHA at packet update: `d71f5dd`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -1352,3 +1352,30 @@ Focused Select Track/ambient/shell checks passed `15/15`; fresh
 remains `PARTIAL` because current-head Light/Dark pixel capture, the
 screen-level two-card versus eight-track scope decision, and Product Owner
 approval remain open. This does not claim 99% parity.
+
+## Addendum — List Row disabled-state convergence
+
+The current connector channel `ksxw21cw` was revalidated against the shared
+List Row disabled references `155:852` (shown) and `155:876` (hidden). Both
+references keep the row fully legible on `surfaceInput`, preserve the row's
+normal geometry, and use secondary supporting text; they do not apply a
+whole-row opacity treatment. The shown reference also uses the muted leading
+icon treatment.
+
+Commit `d71f5dd` updates the existing shared `ListRow` owner to use the
+canonical `surfaceInput` disabled background and `textSecondary` detail color,
+passes the real disabled state to `Pressable`, and exposes the corresponding
+accessibility state. The only direct disabled caller is the existing blocked
+daily-reminder row, which now selects the existing muted `IconTile` tone while
+preserving its current command, notification state, and explicit unavailable
+copy. The previous generic opacity/text-muted rule was removed because it
+contradicted the Figma state; no second row owner, route, persistence path, or
+new prop semantics were introduced.
+
+Focused notification/settings/accessibility/shell checks passed `35/35`.
+Fresh `npm run qa:static` passed recovery inventory `284/114/557`, TypeScript,
+`566/566` tests, content boundary, and runtime privacy boundary. Current-head
+Light/Dark pixel capture, CoreSimulator/Maestro evidence, and Product Owner
+approval remain open. The hidden List Row variant has no reachable canonical
+caller in the current app, so no artificial usage path was added. This is
+source-level convergence only and does not claim 99% parity.
