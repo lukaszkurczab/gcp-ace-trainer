@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet creation: `65aeccd`
+Current source SHA at packet update: `d1483e9`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -357,7 +357,7 @@ rejects simulator connections; no 99% parity claim is made.
 
 ## Addendum — Current-head Practice Hub revalidation
 
-On current source SHA `7a93ad4`, the live Figma node `55:993` was revalidated
+On the then-current source SHA `7a93ad4`, the live Figma node `55:993` was revalidated
 through connector channel `ksxw21cw` with fresh design context and screenshot
 evidence. The canonical `PracticeHubScreen` already matches the safe visual
 contract: 18 px page/intro rhythm; layered hero surface with 22 px radius,
@@ -415,6 +415,24 @@ Focused visual-shell/accessibility checks passed 23/23; `npm run qa:static`
 passed with recovery inventory 282/113/552 and 561/561 tests. Runtime
 pixel comparison for both review states remains unverified because Maestro
 is unavailable and CoreSimulatorService refuses simulator connections.
+
+## Addendum — Details disclosure convergence
+
+Commit `d1483e9` consolidates the duplicated `Details` disclosure control in
+`PracticeFeedbackBlock` and `ReviewFeedbackBlock` into the repository-owned
+`DetailsDisclosure` component. The shared owner preserves the Figma-validated
+toggle geometry: 48 px minimum height, surface/border treatment, spacing,
+secondary label hierarchy, chevron state, and the accessible expanded/collapse
+contract. Practice and review routes retain their own surrounding reason,
+divider, separator, and rich-details layout because those contracts are not
+identical.
+
+No feedback semantics, durable state, route contract, or runtime selector
+changed. Focused accessibility/visual-shell/session checks passed 27/27;
+`npm run qa:static` passed with recovery inventory 283/113/552 and 561/561
+tests, typecheck, content-boundary, and runtime-privacy-boundary checks.
+Current-head runtime pixel comparison remains unverified because Maestro is
+unavailable and CoreSimulatorService refuses simulator connections.
 
 ## Addendum — Button state-token decision boundary
 
