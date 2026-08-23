@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `992d5bb`
+Current source SHA at packet update: `21e6ff8`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -854,3 +854,22 @@ semantics are unchanged. Focused shell checks passed 25/25; full
 `npm run qa:static` passed with recovery inventory 284/114/556 and 565/565
 tests, typecheck, content-boundary, and runtime-privacy-boundary. Same-head
 runtime pixel proof and Product Owner approval remain open.
+
+## Addendum — Notification content spacing convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma nodes
+`92:865` (granted), `92:889` (permission blocked), and `92:914` (reminder
+editor). The two full-screen notification states use a `24 px` gap between
+their content blocks; the local owner had retained `spacing.xl` (`20 px`).
+
+Commit `21e6ff8` changes only `NotificationSettingsScreen.content` to the
+existing `spacing.xxl` (`24 px`) token. The reminder editor's own `16 px`
+internal gap remains in `SettingsBottomSheet` and is not changed. Permission
+commands, device-settings handoff, disabled reminder behavior, local
+persistence, copy, and accessibility semantics remain untouched. The
+notification sentinel and shared shell checks passed `20/20`; full
+`npm run qa:static` passed with recovery inventory `284/114/556` and `565/565`
+tests, TypeScript, content-boundary, and runtime-privacy-boundary.
+
+This is source-level convergence, not a `MATCHED` claim: current-head
+Light/Dark pixel comparison and Product Owner approval remain open.
