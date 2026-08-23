@@ -15,7 +15,6 @@ import {
   LoadingState,
   Screen,
   ScreenHeader,
-  SectionHeader,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { contentPackagePinsEqual, getTrackDisplay, type TrackId } from "../../domain";
@@ -246,16 +245,14 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               >
                 {t(isCodingInterviewTrack ? "Custom Practice" : "Manage settings")}
               </Text>
-              <Icon color={palette.primary} name="chevron-right" size={16} />
             </Pressable>
           </View>
         </Card>
 
         <View style={styles.section}>
-          <SectionHeader
-            title={t("More ways to practice")}
-            tight
-          />
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t("More ways to practice")}</Text>
+          </View>
           <View style={styles.modeList}>
             {modes.map((mode, index) => (
               <ListRow
@@ -410,6 +407,15 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   section: {
     gap: spacing.md,
+  },
+  sectionHeader: {
+    paddingTop: 6,
+  },
+  sectionTitle: {
+    color: palette.textMuted,
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 16,
   },
   modeList: {
     borderColor: palette.border,
