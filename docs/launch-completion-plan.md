@@ -674,6 +674,21 @@ visual checks passed `27/27`, and full `npm run qa:static` passed with
 validators. Runtime Light/Dark proof and Product Owner approval remain open;
 do not mark this route or the overall objective as 99% parity.
 
+## Addendum — Home recommendation-card clipping convergence
+
+Current-channel Figma `55:445` confirms the Home recommendation card clips
+its contents at the rounded 22 px boundary. The canonical card rail is
+positioned at `left: -1`, so `HomeTab` now uses `overflow: "hidden"` to keep
+that rail inside the card. The existing primary border, 20 px inset, 16 px
+rhythm, 44 px icon tile, title typography, CTA, and recommendation ownership
+remain unchanged.
+
+Focused Home/visual/accessibility checks passed `29/29`; full
+`npm run qa:static` passed with `284/114/557` recovery inventory and `566/566`
+tests plus TypeScript and both boundary validators. Runtime Light/Dark proof
+and Product Owner approval remain open; do not mark Home or the overall
+objective as 99% parity.
+
 ## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.

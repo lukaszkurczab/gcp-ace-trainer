@@ -1195,3 +1195,22 @@ Source commit `a404eac` passed the focused setup/loading/configuration/visual
 checks (`27/27`), TypeScript, and full `npm run qa:static` with recovery
 inventory `284/114/557`, `566/566` tests, content boundary, and runtime
 privacy boundary. This does not claim 99% parity.
+
+## Addendum — Home recommendation-card clipping convergence
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`55:445` (Home · Coding · Ready). The canonical recommendation card already
+matched the 22 px radius, primary border, 20 px inset, 16 px card rhythm,
+44 px icon tile, 22/28 title, and primary CTA. Figma also clips the card
+contents at its rounded boundary; the source card rail is positioned at
+`left: -1`, so `HomeTab` now sets `overflow: "hidden"` on the card to keep
+the rail inside that boundary.
+
+No recommendation data, route, command, progress model, or accessibility
+behavior changed. The Home row remains `PARTIAL` pending current-head
+Light/Dark runtime captures and owner approval.
+
+Source commit `8f17eba` passed focused Home/visual/accessibility checks
+(`29/29`), TypeScript, and full `npm run qa:static` with recovery inventory
+`284/114/557`, `566/566` tests, content boundary, and runtime privacy
+boundary. This does not claim 99% parity.
