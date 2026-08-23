@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `a6d05c6`
+Current source SHA at packet update: `5a0fabe`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -1093,6 +1093,22 @@ passed `11/11`; fresh `npm run qa:static` passed recovery inventory
 `284/114/557`, TypeScript, `566/566` tests, content boundary, and runtime
 privacy boundary. Current-head Light/Dark runtime pixel comparison and
 Product Owner approval remain open; this does not claim 99% parity.
+
+## Addendum — Review reason typography convergence
+
+The current connector channel `ksxw21cw` was revalidated against Answer
+Review `81:538`. Its shared review feedback uses Inter Medium at 14/22 for
+the visible Reason body. Practice feedback remains a separate owner and keeps
+its Figma-defined regular body treatment.
+
+Commit `5a0fabe` applies `fontWeight: "500"` only to the repository-owned
+`ReviewFeedbackBlock`, used by Certification Answer Review and Simulation
+Review. No feedback semantics, review marking, details disclosure, route,
+lifecycle, or persistence behavior changed. Focused visual-shell checks passed
+`10/10`; full `npm run qa:static` passed with recovery inventory
+`284/114/557`, `566/566` tests, TypeScript, content-boundary, and
+runtime-privacy-boundary checks. Current-head Light/Dark runtime comparison
+and Product Owner approval remain open; this does not claim 99% parity.
 
 ## Addendum — Practice Hub section chrome convergence
 
