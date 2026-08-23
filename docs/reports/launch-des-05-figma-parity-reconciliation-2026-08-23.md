@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `fbb49e1`
+Current source SHA at packet update: `e4466b9`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -317,12 +317,12 @@ for semantic migration until that decision exists.
 - Live Figma design context and screenshots: pass for the current file/page/
   library and the node set recorded above, including the revalidations in the
   addenda.
-- `npm run typecheck`: pass at current source SHA `fbb49e1`.
-- Latest focused Home/review/visual checks: 36/36 pass.
-- Full `npm run qa:static`: pass at source commit `fbb49e1`, with recovery
+- `npm run typecheck`: pass at current source SHA `e4466b9`.
+- Latest focused Progress/Home/review/visual checks: 36/36 pass.
+- Full `npm run qa:static`: pass at source commit `e4466b9`, with recovery
   inventory 284/114/556 and 565/565 tests, TypeScript, content boundary, and
   runtime privacy boundary.
-- Working tree: clean after the `fbb49e1` application commit and current
+- Working tree: clean after the `e4466b9` application commit and current
   documentation update.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
@@ -920,3 +920,27 @@ tests, TypeScript, content-boundary, and runtime-privacy-boundary checks. This
 is source-level convergence, not a `MATCHED` claim: current-head Light/Dark
 runtime pixel comparison, Maestro/CoreSimulator capture, and Product Owner
 approval remain open.
+
+## Addendum — Progress typography convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma nodes
+`842:9563` (`Pattern / Progress Screen · Established Evidence`) and
+`842:10949` (`Pattern / Progress Screen · No Evidence`). The populated
+reference uses a 12 px medium status label for current-focus evidence and a
+13 px semibold activity link. The local Progress owner had rendered the focus
+status as 14/20 and inherited the 14/22 small-link treatment.
+
+Commit `e4466b9` changes only those two existing style owners to 12/18 medium
+and 13/18 semibold. The empty state was rechecked against `842:10949` and
+already owns the same icon/title/description/action structure, so it was not
+changed. The Figma weekly-goal/cadence labels, effectiveness trend chart, and
+track-evidence surface are not backed by the canonical local model; they were
+not added as synthetic metrics, metadata, or new routes.
+
+No route, command, learning evidence, persistence, accessibility behavior, or
+fallback path changed, and no obsolete Progress visual owner was retained or
+introduced. Focused Progress/Home/review/visual checks passed `36/36`; full
+`npm run qa:static` passed with recovery inventory `284/114/556` and `565/565`
+tests, TypeScript, content-boundary, and runtime-privacy-boundary checks.
+This is source-level convergence, not a `MATCHED` claim: current-head
+Light/Dark runtime pixel comparison and Product Owner approval remain open.
