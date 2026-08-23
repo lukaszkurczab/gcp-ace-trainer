@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA: `65aeccd`
+Current source SHA at packet creation: `65aeccd`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -242,3 +242,21 @@ Android, signed/distribution rendering, and owner approval of the current
 `ksxw21cw` frame set. The simulator/capture blocker remains explicit in the
 parity report; it does not justify inventing screenshot evidence or marking
 the 99% objective complete.
+
+## Addendum — Answer Review convergence
+
+After this packet was created, the current channel `ksxw21cw` was revalidated
+against the live Review Shell authority `81:538` and canonical instance
+`801:7299`, plus the shared Pattern Review Shell component `765:6130`.
+Source commits `4d27861` and `45016a5` now align the shared review footer,
+filter surface/tabs, answer-review spacing, plain Reason section, Details
+disclosure, and Simulation Review feedback owner. The existing `Needs Review`
+mutation remains intact; because it is not represented in the approved Figma
+states, the parity matrix records that behavior as `CANONICAL_CONFLICT` rather
+than removing it from the product.
+
+Focused review-shell checks passed, and `npm run qa:static` passed on
+`45016a5` with 559/559 tests, TypeScript, content-boundary, and runtime-privacy
+checks. Current dark/light runtime pixel comparison for Answer Review,
+navigator, and unavailable review states remains unverified; this addendum is
+source evidence, not a 99% completion claim.

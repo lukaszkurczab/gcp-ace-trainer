@@ -256,6 +256,17 @@ review i odstęp stopki są zgodne na poziomie źródła. Usunięto dodatkową l
 pozostają bez zmian. Runtime pixel comparison nadal wymaga działającego
 capture environment.
 
+`45016a5` domyka source-level Answer Review slice względem live Figma
+`81:538` / canonical instance `801:7299`: Review Shell ma dwukolumnową
+stopkę, intrinsic-width filter tabs na `surface/input`, a Certification
+Answer Review używa divider/spacing/disclosure z Figma bez dodatkowej etykiety
+wyniku i obramowanego panelu Reason. Mutacja `Needs Review` pozostaje
+kanonicznym zachowaniem i jest jawnie oznaczona jako `CANONICAL_CONFLICT`,
+ponieważ zatwierdzone stany Figma nie pokazują tego kontrolera. `npm run
+qa:static` przechodzi: 559/559 testów. Wspólny `ReviewFeedbackBlock` jest
+używany przez Certification Answer Review i Simulation Review; immediate
+Practice feedback pozostaje na osobnym kontrakcie Figma.
+
 ## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.
