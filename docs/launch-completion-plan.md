@@ -1,13 +1,13 @@
 # Patternly — plan wykonawczy do komercyjnego launchu
 
-_Audyt: 2026-08-21. To jest jedyny aktywny dokument kolejności prac i statusu. Zachowanie produktu definiują docs/canonical-product-contract.yaml, rejestr decyzji Product Ownera i dokumenty właścicielskie. Raporty, screenshoty i Git są wyłącznie dowodami._
+_Audyt: 2026-08-23. To jest jedyny aktywny dokument kolejności prac i statusu. Zachowanie produktu definiują docs/canonical-product-contract.yaml, rejestr decyzji Product Ownera i dokumenty właścicielskie. Raporty, screenshoty i Git są wyłącznie dowodami._
 
 ## 1. Zasady pracy
 
 - Statusy: done, partial, blocking, deferred, planned, unknown / needs evidence.
 - Done wymaga dowodu na bieżącym canonical SHA albo niezmiennym artefakcie. Stary CI, raport lub screenshot nie wystarcza.
 - Screenshot z symulatora nie jest Figma parity, signed buildem ani store approval; testy na fizycznym urządzeniu są poza obowiązkowym zakresem tego launchu.
-- Figma authority wskazana przez właściciela: channel `76kzylrb`; Patternly Library i Page 1 są obowiązującym punktem odniesienia.
+- Bieżący connector channel wskazany przez właściciela: `ksxw21cw`; file `kZXD7cNBKUU7x0ceTHPFpR`, Patternly Library i Page 1 są punktami odniesienia do rewalidacji. Channel nie jest sam w sobie owner approval. Historyczne `76kzylrb` i `eon17bsz` nie mogą być traktowane jako bieżąca approval authority; explicit Product Owner approval dla scoped PKG-04A pozostaje związany z `wtk4hp8i` / board root `10:2`.
 - Nie dodawać project ID, credentiali, sekretów, store/provider data ani release admission bez realnej autoryzacji i dowodu. Nie rozszerzać release locka ani nie relabelować historycznych package/release.
 - Każdy slice implementacyjny używa apply_patch, focused tests, validatorów, canonical branch i exact-SHA CI; aktualizuje ten plan i jeden raport dowodowy.
 - Każdy delegowany task implementacyjny, QA, research, review lub release używa wyłącznie gpt-5.6-luna z reasoning max. Trwałe wymaganie jest w AGENTS.md obu repo i należy je wpisać do raportu.
@@ -23,7 +23,7 @@ _Audyt: 2026-08-21. To jest jedyny aktywny dokument kolejności prac i statusu. 
 | Content lock    | App lock obejmuje dokładnie 8 tracków w `patternly-app-content-0020`, release `patternly-launch-2026-08-21-02`.                                                                                                                                                                                                                                             | Schema, provenance, package IDs i SHA są walidowane fail-closed; bieżący lock nie zastępuje human sign-off ani publishing/runtime admission.                                                                                                                        |
 | Platform/EAS    | Expo 57.0.11 / React Native 0.86.2; iOS 16.4/iPhone-only; Android min 28, target/compile 36; portrait; Light/Dark/System.                                                                                                                                                                                                                                   | Production EAS ma requireCommit, autoIncrement i fail-closed signing. Plugin Androida wymaga czterech PATTERNLY*ANDROID_RELEASE*\*; credentials/project ID nie istnieją w repo.                                                                                     |
 | AWS T1 audit    | 2 568 pozycji, 137 source JSON, 21 node; source audit przechodzi.                                                                                                                                                                                                                                                                                           | `audit:aws-workbook-source` przechodzi, ale `validate:track` kończy się SOURCE_COMMIT_UNAVAILABLE; wykryto także rozjazd wersji envelope oraz tylko 4 itemy Free-node i 20 itemów diagnostic-eligible.                                                              |
-| Figma authority | Aktualny connector zweryfikował file/page/library oraz Home `55:445` i Practice `55:2172`; design context i screenshoty są dostępne.                                                                                                                                                                                                                        | [DES-003 revalidation](reports/launch-des-003-figma-authority-revalidation-2026-08-21.md). Nie jest to owner approval ani full parity; physical-device evidence jest opcjonalne i nie blokuje launchu.                                                              |
+| Figma authority | Current connector session `ksxw21cw` zweryfikował file/page/library oraz Practice Hub `55:993`, Practice Setup `55:2172`, Home `55:445` i shared Button `141:817`; design context i screenshoty są dostępne.                                                                                                                                                                                                                        | [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md). Dostęp do connectora nie jest owner approval ani full parity; physical-device evidence jest opcjonalne i nie blokuje launchu.                                                              |
 | Maestro         | Current HEAD 19b6601 został zbudowany na iOS 18.6 simulator; Debug visual-shell przeszedł 6/6 Dark i 6/6 Light, a embedded Release-compatible flow również 6/6 Dark i 6/6 Light. Read-only discovery znalazł sparowany iPhone 11, ale jest zablokowany (`kAMDMobileImageMounterDeviceLocked`), więc DDI services są niedostępne; Android nie ma urządzenia. | Debug captures mają Expo overlay; simulator nie jest signed distribution, a Figma, store/provider i owner approval nadal brak. Fizyczne urządzenie nie jest wymagane do tego launchu. [QA-02 report](reports/launch-qa-02-current-head-ios-simulator-2026-08-21.md) |
 
 ### Confirmed facts vs assumptions
@@ -43,7 +43,7 @@ _Audyt: 2026-08-21. To jest jedyny aktywny dokument kolejności prac i statusu. 
 | Eight-track catalogue                            | partial  | Catalogue and lock have exactly eight tracks; every node is visible with the first Free node selectable and the rest explicitly locked. Admission remains open.                                                                               |
 | Identity/sync/adoption/deletion                  | partial  | Server foundations and boundary tests exist; app client/provider vertical, deployment, signed-build and exact-SHA end-to-end proof remain open. [DATA-01/02 reconciliation](reports/launch-data-01-02-client-provider-boundary-2026-08-21.md) |
 | Premium/delivery                                 | blocking | Brak StoreKit/Play, RevenueCat, backend entitlement i remote package delivery.                                                                                                                                                                |
-| Company-grade UI                                 | partial  | Dwa bounded Figma slices i aktualny connector evidence istnieją, ale brak zatwierdzonego pełnego vertical scope, owner approval oraz current-SHA parity evidence.                                                                             |
+| Company-grade UI                                 | partial  | Źródłowe slice'y Home, Practice, Progress, Activity, Settings i session/review istnieją, a current connector evidence obejmuje kolejne Practice nodes; brak jednego owner-bound scope, pełnego current-SHA pixel matrix oraz rozstrzygnięcia sprzecznych Figma/product-contract stanów. [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md) |
 | Ops/security/privacy                             | blocking | Kontrakt istnieje; provider, consent, retention, deployment/restore evidence nie.                                                                                                                                                             |
 | Signing/store                                    | blocking | Boundary istnieje, signed candidates i store records nie. Testy fizycznego urządzenia nie są wymagane przez aktualny zakres launchu.                                                                                                          |
 
@@ -52,7 +52,7 @@ _Audyt: 2026-08-21. To jest jedyny aktywny dokument kolejności prac i statusu. 
 1. Stary plan nazywał agent records human review verified, lecz schema/generator hard-code’uje codex/owner_authorized_agent. Właściciel osobiście potwierdził w aktywnej rozmowie 2026-08-20 zatwierdzenie dokładnych manifestów z 2026-08-17 / e73c731. Należy utrwalić to jako owner decision, ale nie relabelować istniejących agent records ani nie używać ich dla nowych source/release manifests.
 2. Liczba 622 w starym handoffie jest nieaktualna: aktualne exact CI ma 624. Recovery check (618 cases) jest inną miarą.
 3. Readiness ustawia humanReview approved mechanicznie, więc release gate zaniża prawdziwy risk.
-4. Patternly Library i Page 1 w kanale `76kzylrb` są bieżącą owner-declared design authority. Nadal brakuje zapisanej external parity evidence dla bieżącego SHA; nie kopiować historycznych metryk ani traktować lokalnego screenshotu jako approval. Physical-device evidence jest opcjonalne.
+4. Bieżący connector session wskazany przez właściciela to `ksxw21cw`; `76kzylrb` i `eon17bsz` są wcześniejszymi zapisami. Jedyna znaleziona explicit Product Owner approval dla scoped PKG-04A pozostaje związana z `wtk4hp8i` / board root `10:2`. Nadal brakuje owner-bound map dla bieżącego launch scope i external parity evidence dla bieżącego SHA; nie kopiować historycznych metryk ani traktować lokalnego screenshotu jako approval. Physical-device evidence jest opcjonalne.
 5. GCP/AZ pins są historyczne względem current authoring. Dopuszczalny jest wyłącznie nowy immutable release, nigdy relabel.
 6. Content readiness obejmuje source, validator, package i technical evidence dla ośmiu tracków; to nadal nie jest publishing admission, dopóki nie ma aktualnego human review i package admission dla każdego tracku.
 7. Sześć obowiązkowych evidence/release JSON nie istnieje. Nie tworzyć pustych deklaracji; rekord powstaje tylko po realnym provider/store/signing action. `physical-device-matrix` może istnieć jako opcjonalny rekord, ale jego brak nie blokuje launchu.
@@ -61,6 +61,10 @@ _Audyt: 2026-08-21. To jest jedyny aktywny dokument kolejności prac i statusu. 
 10. Gate wymaga teraz także clean application checkout; lokalne zmiany nie mogą być przedstawione jako exact-SHA release input.
 11. Zwykłe QA nie uruchamiało enforced launch gate. Dodano osobny ręczny workflow `.github/workflows/launch-readiness.yml`, aby rozdzielić regresję od admission; workflow wymaga teraz jawnych `application_commit` i `content_commit`, waliduje oba checkouty, uruchamia content suite/authoring/AWS validators i zapisuje report po exact application SHA. Wynik exact-SHA tego workflow pozostaje pending do push/run; GitHub API jest obecnie dostępne read-only, ale workflow pozostaje lokalny i nie istnieje jeszcze zdalnie ([GOV-09](reports/launch-gov-09-current-ci-access-boundary-2026-08-21.md)).
 12. External evidence ma teraz canonical v2 envelope bound to application HEAD i self-integral hash; to chroni integralność rekordu, ale nie zastępuje realnej autoryzacji, provider/store/Figma proof ani Product Owner GO. Physical-device evidence jest jawnie opcjonalne.
+13. Live Figma node `55:993` nie może być kopiowany semantycznie bez reconciliacji: pokazuje `Independent Practice`, którego nie ma w zatwierdzonym Free profile, oraz nie pokazuje canonical `Custom Practice` row. [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md) wiąże bezpieczne zmiany do geometrii z zachowaniem product truth.
+14. Live Figma node `55:2172` pokazuje `Focus areas` i `Save settings`, ale obecny canonical Custom Practice ma explicit mental-unit, feedback timing i `Start session`; brak modelu focus-area/save. Nie dodawać tych stanów jako metadata ani fake implementation.
+15. Istnieje kontraktowa sprzeczność: bieżący `canonical-product-contract.yaml` i runtime obsługują Custom `[10,20,40]`, natomiast `PO-059`, `PO-060` i PKG-04A opisują Free Custom jako dokładnie `10`. Przed zmianą semantics potrzebna jest jawna decyzja właściciela.
+16. Current source-level Practice Hub parity ma bezpieczne różnice do zamknięcia: card gap/shadow oraz mode-row title/detail hierarchy. Najbliższy task to bounded geometry slice `DES-005-A`; nie zmienia on trybów, route'ów ani komend.
 
 ## 5. Architektura, retencja i lane’y
 
@@ -178,12 +182,12 @@ Nonvisual GOV/CNT/DATA work może biec równolegle z DES-01. UI nie może wyprze
 
 - **Cel:** per-vertical owner-approved Figma states zanim UI będzie przepisywane.
 - **Scope / non-goals:** live nodes, owner approval, terminology/route/accessibility/motion mapping; agent nie projektuje ani nie self-approves.
-- **Inputs:** file kZXD7cNBKUU7x0ceTHPFpR, existing refs, canonical Today/Practice/Progress/Settings/account/commercial rules.
+- **Inputs:** file kZXD7cNBKUU7x0ceTHPFpR, current connector session `ksxw21cw`, existing refs, canonical Today/Practice/Progress/Settings/account/commercial rules, and scoped Product Owner approval `wtk4hp8i` only where explicitly recorded.
 - **Acceptance:** UI slice ma node, owner, states, Light/Dark/large text/reduced motion i route mapping; stale references są retired/reconciled explicitly.
 - **Verification / evidence:** live connector context/screenshot, owner sign-off, contract change-gate mapping; raport launch-des-01-current-figma-authority-YYYY-MM-DD.md.
 - **Ryzyko:** generic UI lub stale Figma terminology.
 
-### DES-02/03/04 — design system i wszystkie produktowe verticals — planned
+### DES-02/03/04 — design system i wszystkie produktowe verticals — partial
 
 - **Cel:** repo-owned tokens/primitives i approved UI dla guest/free core, runner/summary/progress/settings oraz account/premium/deletion/legal/support.
 - **Scope / non-goals:** dev-only Storybook, assets/licensing, navigation, a11y/motion/haptics; tylko states zaimplementowane przez DATA/COM, bez fake CTAs/routes.
@@ -214,9 +218,9 @@ Nonvisual GOV/CNT/DATA work może biec równolegle z DES-01. UI nie może wyprze
 
 - **Cel:** dowieść finalnych signed candidates na iOS i Androidzie; fizyczne urządzenia nie są warunkiem akceptacji tego launchu.
 - **Scope / non-goals:** simulators+phones, Dark/Light/System, 200% text, keyboard, screen reader, reduced motion, network/install/upgrade/restore; rozdzielać screenshot/parity/device/store evidence.
-- **Inputs:** approved nodes, signed builds, defined device/OS matrix.
+- **Inputs:** owner-bound approved nodes, current source SHA, signed builds when available, defined device/OS matrix, and [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md).
 - **Acceptance:** absolute outputs/manifests; node→screen/state review; simulator/release-compatible journey bez dev menu; performance/layout budgets mają measured result. Physical-device capture może zostać wykonany opcjonalnie, ale nie może blokować gate’a.
-- **Verification / evidence:** current-head iOS simulator evidence obejmuje Debug Dark/Light oraz embedded Release-compatible Dark/Light, po 6/6 checkpointów; discovery potwierdza paired physical iPhone 11, lecz blokada urządzenia (`kAMDMobileImageMounterDeviceLocked`) uniemożliwia DDI/build inspection, a Android nie jest podłączony. Signed distribution, screenshot/video/hierarchy acceptance i Figma parity nadal wymagają wykonania; physical iOS/Android pozostają opcjonalne; [raport QA-02](reports/launch-qa-02-current-head-ios-simulator-2026-08-21.md).
+- **Verification / evidence:** previous current-head iOS simulator evidence obejmuje Debug Dark/Light oraz embedded Release-compatible Dark/Light, po 6/6 checkpointów; later source slices have focused tests and selected historical captures, but current Activity/Practice-route capture is blocked because `maestro` is unavailable and CoreSimulatorService refused the connection. Discovery previously confirmed paired physical iPhone 11, lecz blokada urządzenia (`kAMDMobileImageMounterDeviceLocked`) uniemożliwia DDI/build inspection, a Android nie jest podłączony. Signed distribution, screenshot/video/hierarchy acceptance i Figma parity nadal wymagają wykonania; physical iOS/Android pozostają opcjonalne; [raport QA-02](reports/launch-qa-02-current-head-ios-simulator-2026-08-21.md) oraz [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md).
 - **Ryzyko:** simulator-only confidence, visual match with wrong logic, missing a11y state.
 
 ### REL-01/02/03 — store packet, signed beta, review i GO/NO-GO — planned / external gate
@@ -230,7 +234,15 @@ Nonvisual GOV/CNT/DATA work może biec równolegle z DES-01. UI nie może wyprze
 
 ## 7. Pierwsze kolejne zadanie
 
-Lokalny etap implementacyjny jest domknięty dla locka, resolvera, ośmiu rodzin i package/runtime proofs. Następny krok nie może tworzyć deklaratywnych rekordów: trzeba wykonać realne human review/admission contentu, provider sandbox readback, security/privacy evidence, design parity evidence oraz później signing/store actions. Exact-SHA gate pozostaje pending, ponieważ bieżący app worktree jest dirty. Product Owner GO pozostaje po stronie właściciela.
+Pierwszy lokalny task UI to `DES-005-A`: dopasować geometrię Practice Hub do
+live node `55:993` przy zachowaniu zatwierdzonego PKG-04A mode truth. Nie wolno
+przy tym dodawać Independent, Focus areas, `Save settings` ani zmieniać
+Custom length. Równoległa decyzja właściciela `DES-005-C` musi rozstrzygnąć
+owner-bound channel oraz sprzeczność Custom `10` versus `10/20/40` przed
+jakąkolwiek zmianą semantyczną Practice Setup. Exact-SHA gate pozostaje
+pending, ponieważ bieżący app worktree nie jest jeszcze zewnętrznie
+zweryfikowany po tej dokumentacyjnej reconciliacji. Product Owner GO pozostaje
+po stronie właściciela.
 
 ## 8. Kryterium końcowe
 
