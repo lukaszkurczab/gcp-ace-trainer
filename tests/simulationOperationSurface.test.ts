@@ -38,3 +38,11 @@ test("simulation pause/end uses one Figma action sheet and keeps the destructive
   assert.doesNotMatch(screen, /overlay === "abandon"/);
   assert.match(readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8"), /confirmationDestructive/);
 });
+
+test("simulation finish confirmation uses the Figma action-required copy and review dismissal", () => {
+  assert.match(screen, /title: "Action required"/);
+  assert.match(screen, /description: "Review this action before continuing\."/);
+  assert.match(screen, /label: "Finish simulation"/);
+  assert.match(screen, /label: "Keep reviewing"/);
+  assert.match(readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8"), /accessibilityLabel=\{t\(dismiss\.label\)\}/);
+});
