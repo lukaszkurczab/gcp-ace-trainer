@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `058c6ea`
+Current source SHA at packet update: `b8e4083`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -317,14 +317,14 @@ for semantic migration until that decision exists.
 - Live Figma design context and screenshots: pass for the current file/page/
   library and the node set recorded above, including the revalidations in the
   addenda.
-- `npm run typecheck`: pass at current source SHA `058c6ea`.
-- Latest focused Practice Hub/accessibility checks: 24/24 pass; latest focused
+- `npm run typecheck`: pass at current source SHA `b8e4083`.
+- Latest focused Practice Hub/Question Shell/accessibility checks: 26/26 pass; latest focused
   Activity checks: 35/35 pass; latest focused Progress/Home/review/visual
   checks: 36/36 pass.
-- Full `npm run qa:static`: pass at source commit `058c6ea`, with recovery
-  inventory 284/114/556 and 565/565 tests, TypeScript, content boundary, and
+- Full `npm run qa:static`: pass at source commit `b8e4083`, with recovery
+  inventory 284/114/557 and 566/566 tests, TypeScript, content boundary, and
   runtime privacy boundary.
-- Working tree: clean after the `058c6ea` application commit and current
+- Working tree: clean after the `b8e4083` application commit and current
   documentation update.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
@@ -983,14 +983,39 @@ The topic indicator uses a `6 px` gap and the settings label uses 13 px medium
 text with a 16 px line box.
 
 Commit `058c6ea` applies those visual facts in the existing `PracticeHubScreen`
-owner and updates the focused geometry sentinels. Canonical mode ownership,
+owner and updates the focused geometry sentinels. Follow-up commit `b8e4083`
+corrects the card and action-stack rhythm tokens from `spacing.xl` to
+`spacing.lg`, making the Figma 16 px rhythm explicit in source. Canonical mode ownership,
 the four-mode Coding Free contract, navigation commands, unavailable states,
 large-text branch, lifecycle, persistence, and accessibility behavior remain
 unchanged; no Figma-only `Independent Practice` or `Coding Interview` rows
 were added.
 
-Focused Practice Hub/accessibility checks passed `24/24`; full
-`npm run qa:static` passed with recovery inventory `284/114/556` and `565/565`
+The final focused Practice Hub/Question Shell/accessibility suite passed
+`26/26`; full `npm run qa:static` passed with recovery inventory
+`284/114/557` and `566/566`
+tests, TypeScript, content-boundary, and runtime-privacy-boundary checks. This
+is source-level convergence, not a `MATCHED` claim: current-head Light/Dark
+runtime pixel comparison, Maestro/CoreSimulator capture, and Product Owner
+approval remain open.
+
+## Addendum — Practice Question prompt-to-answer rhythm convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma node
+`68:569` (`06B · Single choice · Unanswered`) and its shared Question Shell
+component. The reference uses a 12 px vertical rhythm through the scrollable
+question content, including the transition from the prompt to the first
+answer option. The canonical `PracticeSessionSurface` had kept a 16 px gap on
+the wrapper between `QuestionCard` and `PracticeResponseControls`, while the
+question label/prompt and answer-option stack already used 12 px.
+
+Commit `2668022` changes that existing wrapper to `spacing.md` (`12 px`) and
+adds a focused sentinel. Answer-option geometry, footer ownership, submit and
+leave commands, feedback timing, lifecycle, persistence, and accessibility
+semantics remain unchanged.
+
+Focused Practice Hub/Question Shell/accessibility checks passed `26/26`; full
+`npm run qa:static` passed with recovery inventory `284/114/557` and `566/566`
 tests, TypeScript, content-boundary, and runtime-privacy-boundary checks. This
 is source-level convergence, not a `MATCHED` claim: current-head Light/Dark
 runtime pixel comparison, Maestro/CoreSimulator capture, and Product Owner
