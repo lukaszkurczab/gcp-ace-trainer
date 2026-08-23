@@ -1308,3 +1308,47 @@ the repository, whose canonical read model loads the durable local history as
 one verified projection. It was not added as a permanent or synthetic loading
 state. Current-head Light/Dark runtime comparison, capture tooling, and
 Product Owner approval remain open; this does not claim 99% parity.
+
+## Addendum — Default Screen content inset convergence
+
+The current connector channel `ksxw21cw` was revalidated against the live
+Figma Screen Shell `830:7457`, including its `393×852` stress instance
+`830:7459`. The reference `scroll-content` uses `space/20` as its outer inset
+on all four sides. In the default no-footer content contract, the canonical
+`Screen` already owned the horizontal and bottom 20 px tokens; its default
+top inset was the remaining 16 px outlier. Footer-specific clearance remains
+an explicit separate contract in the shared shell.
+
+Commit `8d6efa1` changes only the shared default `Screen.content` top inset
+from `spacing.lg` to the existing `spacing.xl` token. Compact density, footer
+variants, safe-area edges, and route-owned overrides remain explicit and
+unchanged. No route, command, lifecycle, persistence, accessibility, or
+semantic contract changed, and the dead-path scan found no duplicate shell
+owner introduced by the correction.
+
+Focused shell/session checks passed `25/25`; fresh `npm run qa:static` passed
+recovery inventory `284/114/557`, TypeScript, `566/566` tests, content
+boundary, and runtime privacy boundary. Current-head Light/Dark pixel capture,
+CoreSimulator/Maestro tooling, and Product Owner approval remain open. This
+is source-level convergence only and does not claim 99% parity.
+
+## Addendum — Select Track sticky-footer owner convergence
+
+The current connector channel `ksxw21cw` was revalidated against Select Track
+`42:422` (`05A · First choice · Coding selected`). The reference uses a
+dedicated `Sticky-Bottom-Area` with a 16 px top inset, a 0.05 white separator,
+and 20 px outer bottom padding around its 4 px safe local content clearance.
+
+Commit `17f1e25` routes `SelectTrackScreen` through the existing shared
+`Screen` `sticky` footer variant and reduces its route-local footer content
+padding from 8 px to 4 px. The existing selection state, eight-track registry,
+commit command, persistence, large-text stacking, and accessibility contract
+remain unchanged. No registration-failure dialog or Figma-only track
+projection was introduced.
+
+Focused Select Track/ambient/shell checks passed `15/15`; fresh
+`npm run qa:static` passed recovery inventory `284/114/557`, TypeScript,
+`566/566` tests, content boundary, and runtime privacy boundary. The row
+remains `PARTIAL` because current-head Light/Dark pixel capture, the
+screen-level two-card versus eight-track scope decision, and Product Owner
+approval remain open. This does not claim 99% parity.

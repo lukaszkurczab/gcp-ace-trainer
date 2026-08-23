@@ -704,8 +704,6 @@ full `npm run qa:static` passed with `284/114/557` recovery inventory and
 Light/Dark proof and Product Owner approval remain open; do not mark Progress
 or the overall objective as 99% parity.
 
-## 8. Kryterium końcowe
-
 Current-channel Activity revalidation at source SHA `8822cd7` confirms that
 the populated row instance is `353×95` after its 73 px content minimum and
 24 px vertical padding; the canonical `ActivityScreen` already owns the
@@ -723,5 +721,33 @@ the Figma sample version string were not introduced. Focused Settings checks
 passed `8/8`; full `npm run qa:static` passed with `284/114/557` recovery
 inventory and `566/566` tests. Runtime pixel evidence and Product Owner
 approval remain open.
+
+## Addendum — Default Screen content inset convergence
+
+Live Figma Screen Shell `830:7457` / stress instance `830:7459` uses a
+20 px outer inset for `scroll-content`. Commit `8d6efa1` aligns the shared
+default `Screen.content` top inset with the existing `spacing.xl` token. The
+default horizontal and bottom tokens remain 20 px; footer-specific clearance
+is an explicit separate contract. Compact density, specialized footer
+variants, safe-area handling, and route-owned overrides remain unchanged.
+Focused shell/session checks passed `25/25`, and the full `npm run qa:static`
+passed with recovery inventory `284/114/557` and `566/566` tests. Runtime
+Light/Dark capture, CoreSimulator/Maestro evidence, and owner approval remain
+open; this is not a 99% parity claim.
+
+## Addendum — Select Track sticky-footer owner convergence
+
+Live Figma Select Track `42:422` uses a dedicated sticky bottom area with a
+16 px top inset, a 0.05 white separator, and 20 px outer bottom padding.
+Commit `17f1e25` binds `SelectTrackScreen` to the existing shared `Screen`
+`sticky` footer variant and reduces the local footer content clearance from
+8 px to 4 px. Selection semantics, the eight-track registry, persistence,
+large-text behavior, and accessibility remain unchanged. Focused checks passed
+`15/15`, and the full `npm run qa:static` passed with recovery inventory
+`284/114/557` and `566/566` tests. Current-head Light/Dark capture, the
+screen-level track-scope decision, and owner approval remain open; this is not
+a 99% parity claim.
+
+## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.
