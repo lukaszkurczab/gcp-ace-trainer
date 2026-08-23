@@ -323,6 +323,7 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
   assert.match(setup, /<ChoiceRow[\s\S]*density="compact"/);
   assert.match(setup, /compactLengthGrid:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?minHeight:\s*54[\s\S]*?padding:\s*spacing\.xs/);
   assert.match(setup, /compactLengthOption:[\s\S]*?borderRadius:\s*10[\s\S]*?minHeight:\s*44/);
+  assert.match(setup, /compactSelectedMeta:\s*\{\s*color:\s*palette\.primary\s*,?\s*\}/);
   assert.match(setup, /compactSectionTitle:[\s\S]*?textTransform:\s*"uppercase"/);
   assert.match(choiceRow, /density\?:\s*"comfortable" \| "compact"/);
   assert.match(choiceRow, /compactRow:\s*\{[\s\S]*?minHeight:\s*48/);

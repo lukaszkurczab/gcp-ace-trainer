@@ -469,7 +469,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textPrimary,
   },
   compactSelectedMeta: {
-    color: palette.onPrimary,
+    color: palette.primary,
   },
   optionMeta: {
     ...typography.caption,
