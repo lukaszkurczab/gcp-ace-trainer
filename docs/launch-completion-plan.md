@@ -637,6 +637,27 @@ boundary checks. Runtime Light/Dark pixel proof, action-sheet comparison,
 CoreSimulator/Maestro capture, and Product Owner approval remain open; do not
 mark this as 99% parity.
 
+## Addendum — Practice summary outcome-label convergence
+
+Current-channel Figma `750:6235` confirms that the completed practice summary
+uses a 10 px bold uppercase `OUTCOME DISTRIBUTION` label with 1.2 px tracking
+and a 12 px line height. The canonical `AlgorithmsPracticeSummaryScreen` now
+owns that exact label treatment; its shell, metric rows, outcome rows, review
+note, and 48 px actions were already aligned at source level.
+
+The Figma secondary CTA says `Back to Home`, but the canonical action is
+`PRACTICE_HUB`, so the app continues to say `Back to practice` rather than
+making the label semantically false. This remains a documented
+`CANONICAL_CONFLICT`; no source change should be made until the command owner
+is decided. The summary remains `partial` pending current-head Light/Dark
+runtime capture and Product Owner approval.
+
+Commit `6b5ad42` passed focused summary/navigation and visual-shell checks
+(`2/2` and `10/10`),
+TypeScript, and full `npm run qa:static` (`284/114/557` recovery inventory,
+`566/566` tests, content boundary, and runtime privacy boundary). Do not mark
+this route or the overall objective as 99% parity.
+
 ## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.

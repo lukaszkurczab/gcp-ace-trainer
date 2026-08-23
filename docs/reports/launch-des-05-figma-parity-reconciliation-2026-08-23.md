@@ -170,11 +170,11 @@ mechanically derivable from the matrix rather than inferred from test status.
 
 ## Confirmed contradictions and stale assumptions
 
-1. The active launch plan still names `76kzylrb` as the Figma authority. The
-   current task supplies `ksxw21cw`; prior repository references also name
-   `eon17bsz`, while the only explicit Product Owner approval found for the
-   Free interaction subset is `wtk4hp8i`. These references need a single
-   owner-bound mapping before final approval.
+1. An earlier report snapshot recorded `76kzylrb` as the Figma authority. The
+   current launch plan now names `ksxw21cw`; prior repository references also
+   name `eon17bsz`, while the only explicit Product Owner approval found for
+   the Free interaction subset is `wtk4hp8i`. These references still need a
+   single owner-bound mapping before final approval.
 
 2. Current frame `55:993` visibly contains `Independent Practice` and a
    `Coding Interview` row. The approved Free profile explicitly excludes
@@ -1152,3 +1152,26 @@ Focused operation/session/shell checks passed `34/34`. Fresh
 Light/Dark runtime pixel evidence, CoreSimulator/Maestro capture, action-sheet
 runtime comparison, and Product Owner approval remain open. This does not
 claim 99% parity.
+
+## Addendum — Practice summary outcome-label convergence
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`750:6235` (Practice complete). The canonical summary already matched the
+shell, 24 px content inset, 28 px content rhythm, factual metrics, outcome
+rows, review note, and 48 px action geometry. The remaining confirmed visual
+delta was the `OUTCOME DISTRIBUTION` label: the source now uses 10 px bold
+uppercase text, 1.2 px letter spacing, and a 12 px line height on
+`AlgorithmsPracticeSummaryScreen`.
+
+The Figma secondary label says `Back to Home`, while the canonical command
+still navigates to `PRACTICE_HUB` and is intentionally labeled `Back to
+practice`. No misleading copy-only change was made; this remains an explicit
+`CANONICAL_CONFLICT` until the product owner supplies the intended command.
+The completed-summary row remains `PARTIAL`, not `MATCHED`, because current
+head Light/Dark runtime captures and owner approval are still missing.
+
+Source commit `6b5ad42` passed focused summary/navigation and visual-shell
+checks (`2/2` and `10/10`), TypeScript, and full `npm run qa:static` with
+recovery inventory `284/114/557`, `566/566` tests, content boundary, and
+runtime privacy boundary. This is a source-level correction only and does
+not claim 99% parity.
