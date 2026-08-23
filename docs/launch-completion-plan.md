@@ -267,6 +267,12 @@ qa:static` przechodzi: 559/559 testów. Wspólny `ReviewFeedbackBlock` jest
 używany przez Certification Answer Review i Simulation Review; immediate
 Practice feedback pozostaje na osobnym kontrakcie Figma.
 
+`621c4bd` domyka source-level Result unavailable slice względem live Figma
+`82:538` / `801:7653`: Simulation Review używa pełnego content area bez
+paddingu zwykłego review, a unavailable surface ma kanoniczne zakotwiczenie
+185 px i szerokość 353 px. `npm run qa:static` przechodzi: 559/559 testów.
+Świeże runtime pixel evidence dla tego stanu nadal pozostaje wymagane.
+
 ## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.

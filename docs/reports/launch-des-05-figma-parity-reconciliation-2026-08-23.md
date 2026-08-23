@@ -248,15 +248,16 @@ the 99% objective complete.
 After this packet was created, the current channel `ksxw21cw` was revalidated
 against the live Review Shell authority `81:538` and canonical instance
 `801:7299`, plus the shared Pattern Review Shell component `765:6130`.
-Source commits `4d27861` and `45016a5` now align the shared review footer,
+Source commits `4d27861`, `45016a5`, and `621c4bd` now align the shared review footer,
 filter surface/tabs, answer-review spacing, plain Reason section, Details
-disclosure, and Simulation Review feedback owner. The existing `Needs Review`
+disclosure, Simulation Review feedback owner, and the Result unavailable
+content-area/surface geometry. The existing `Needs Review`
 mutation remains intact; because it is not represented in the approved Figma
 states, the parity matrix records that behavior as `CANONICAL_CONFLICT` rather
 than removing it from the product.
 
 Focused review-shell checks passed, and `npm run qa:static` passed on
-`45016a5` with 559/559 tests, TypeScript, content-boundary, and runtime-privacy
+`621c4bd` with 559/559 tests, TypeScript, content-boundary, and runtime-privacy
 checks. Current dark/light runtime pixel comparison for Answer Review,
 navigator, and unavailable review states remains unverified; this addendum is
 source evidence, not a 99% completion claim.
