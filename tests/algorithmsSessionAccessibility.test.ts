@@ -195,6 +195,8 @@ test("practice runtime selectors are derived from the canonical session projecti
   assert.match(controls, /runtimeSelectors\.session\.complexityValue\(itemId, dimension\.id, value\)/);
   assert.match(feedback, /runtimeSelectors\.session\.result\(itemId, feedback\.result\)/);
   assert.match(feedback, /accessibilityLabel=\{`\$\{t\("Verified answer explanation\."\)\} \$\{feedback\.reason\}`\}/);
+  assert.match(feedback, /reasonLabel:\s*\{[^}]*fontSize:\s*12[^}]*lineHeight:\s*16/);
+  assert.doesNotMatch(feedback, /reasonLabel:\s*\{[^}]*typography\.caption/);
   assert.doesNotMatch(`${surface}\n${controls}\n${feedback}`, /accessibilityLabel=\{[^}]*runtimeSelectors/);
 });
 
@@ -208,6 +210,8 @@ test("rich feedback renders semantic blocks with accessible code, headings, list
   assert.match(document, /accessibilityLabel=\{block\.alt\}/);
   assert.match(document, /CALLOUT_LABEL\[block\.kind\]/);
   assert.match(document, /resolveTextAsset\(item, block\.assetId\)/);
+  assert.match(document, /paragraph:\s*\{[^}]*fontSize:\s*13[^}]*lineHeight:\s*20/);
+  assert.match(document, /listText:\s*\{[^}]*fontSize:\s*13[^}]*lineHeight:\s*20/);
   assert.match(assets, /Asset \$\{assetId\} is unavailable in the exact verified package/);
   assert.doesNotMatch(document, /dangerouslySetInnerHTML|WebView|HTML/);
 });

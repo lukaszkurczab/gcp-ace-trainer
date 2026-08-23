@@ -35,13 +35,13 @@ function FeedbackBlock({ block, index, item, styles }: Readonly<{ block: Algorit
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   document: { gap: spacing.md },
-  paragraph: { ...typography.small, color: palette.textSecondary },
-  headingTwo: { ...typography.bodyStrong, color: palette.textPrimary, marginTop: spacing.xs },
-  headingThree: { ...typography.small, color: palette.textPrimary, marginTop: spacing.xs },
+  paragraph: { color: palette.textSecondary, fontSize: 13, lineHeight: 20 },
+  headingTwo: { color: palette.textPrimary, fontSize: 13, fontWeight: "600", lineHeight: 20, marginTop: spacing.xs },
+  headingThree: { color: palette.textPrimary, fontSize: 13, lineHeight: 20, marginTop: spacing.xs },
   list: { gap: spacing.xs },
   listRow: { alignItems: "flex-start", flexDirection: "row", gap: spacing.sm },
   listMarker: { ...typography.small, color: palette.accentPurple, minWidth: 20 },
-  listText: { ...typography.small, color: palette.textSecondary, flex: 1 },
+  listText: { color: palette.textSecondary, flex: 1, fontSize: 13, lineHeight: 20 },
   codeShell: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, gap: spacing.xs, padding: spacing.md },
   codeLanguage: { ...typography.small, color: palette.textSecondary, textTransform: "uppercase" },
   code: { color: palette.textPrimary, fontFamily: "Menlo", fontSize: 13, lineHeight: 20 },
@@ -55,5 +55,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   callout: { backgroundColor: palette.surface, borderColor: palette.border, borderLeftColor: palette.accentPurple, borderLeftWidth: 3, borderRadius: radius.sm, gap: spacing.xs, padding: spacing.md },
   calloutKind: { ...typography.small, color: palette.accentPurple, textTransform: "uppercase" },
   calloutTitle: { ...typography.bodyStrong, color: palette.textPrimary },
-  calloutText: { ...typography.small, color: palette.textSecondary },
+  calloutText: { color: palette.textSecondary, fontSize: 13, lineHeight: 20 },
 });

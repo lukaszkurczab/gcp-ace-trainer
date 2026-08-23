@@ -31,6 +31,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   container: { gap: spacing.md },
   details: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, gap: spacing.md, paddingTop: spacing.md },
   reason: { ...typography.body, color: palette.textSecondary },
-  reasonLabel: { ...typography.caption, color: palette.textSecondary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
+  reasonLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16, textTransform: "uppercase" },
   reasonPanel: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },
 });
