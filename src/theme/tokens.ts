@@ -231,6 +231,11 @@ export const typography = {
     lineHeight: 18,
     fontWeight: "600"
   },
+  button: {
+    fontSize: 15,
+    lineHeight: 18,
+    fontWeight: "600"
+  },
   small: {
     fontSize: 14,
     lineHeight: 22,

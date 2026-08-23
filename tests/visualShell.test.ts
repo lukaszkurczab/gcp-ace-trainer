@@ -175,6 +175,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(homeTab, /currentFocusTitle:[\s\S]*?fontSize:\s*15[\s\S]*?fontWeight:\s*"500"/);
   assert.match(homeTab, /activityDetail:[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"400"/);
   assert.match(button, /labelStyle\?: StyleProp<TextStyle>/);
+  assert.match(button, /label:\s*\{[\s\S]*\.\.\.typography\.button/);
   assert.match(button, /styles\.label, styles\[`\$\{variant\}Label`\], labelStyle/);
   assert.match(home, /if \(!hasLoadedActiveTrack\) return <Screen edges=\{\["top"\]\} scroll=\{false\}><AppShellHeader \/><LoadingState/);
   assert.match(settings, /<PreferenceSelectionScreen/);

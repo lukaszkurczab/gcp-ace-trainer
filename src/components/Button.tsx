@@ -127,7 +127,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     marginLeft: -spacing.xs
   },
   label: {
-    ...typography.bodyStrong,
+    ...typography.button,
     flexShrink: 1,
     textAlign: "center"
   },
