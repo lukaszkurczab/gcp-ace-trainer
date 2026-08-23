@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `6dd51f6`
+Current source SHA at packet update: `15f54c1`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -53,6 +53,10 @@ the current file:
 | Current Practice Setup frame | `55:2172` — `04A · Manage Practice Settings · Coding` |
 | Current Progress frame | `842:9563` — `Pattern / Progress Screen · Established Evidence` |
 | Current Progress empty-state frame | `842:10949` — `Pattern / Progress Screen · No Evidence` |
+| Current Activity frame | `842:11192` — `Pattern / Activity Screen · Populated` |
+| Current Activity empty frame | `842:11410` — `Pattern / Activity Screen · Empty` |
+| Current Activity filtered-empty frame | `842:11466` — `Pattern / Activity Screen · Filtered Empty` |
+| Figma-only Track Evidence frame | `842:11057` — `Pattern / Track Evidence Screen` |
 | Shared Button authority | `141:817` |
 | Current connector session | `ksxw21cw`, supplied by the owner in the active task |
 
@@ -75,7 +79,7 @@ Only the repository plan statuses are used below.
 |---|---|---|
 | Canonical route graph and screen owners | `done` | `RootNavigator` has one owner for Home, Activity, Settings, Practice Hub, Practice Setup, active Practice, summaries, simulation, and review. Source ownership and route tests pass. This proves architecture, not pixel parity. |
 | Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Current slices still require runtime comparison across all states and themes. |
-| Home, Progress, and Activity source slices | `partial` | Commits through `b58042d` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
+| Home, Progress, and Activity source slices | `partial` | Commits through `15f54c1` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
@@ -523,6 +527,32 @@ recovery inventory 283/113/553 and 562/562 tests, typecheck, content-boundary,
 and runtime-privacy-boundary checks. Current-head runtime pixel comparison
 remains unverified because Maestro is unavailable and CoreSimulatorService
 refuses simulator connections.
+
+## Addendum — Activity empty-state convergence
+
+Commit `15f54c1` aligns the reachable Activity empty states with live Figma
+nodes `842:11410` and `842:11466` in connector channel `ksxw21cw`. The screen
+now uses a local Activity empty renderer with the two-bar activity glyph,
+Figma-aligned copy, and the existing `PRACTICE_HUB` command. A filtered-empty
+state additionally exposes `Show all activity`, which resets the existing
+filter, plus the same practice command as a secondary action.
+
+The shared `EmptyState` remains the unavailable/error primitive; no route,
+session model, persistence, or read projection changed. Focused Activity /
+visual / loading checks passed 30/30; `npm run qa:static` passed with recovery
+inventory 283/113/553 and 562/562 tests, typecheck, content-boundary, and
+runtime-privacy-boundary checks. Current-head runtime pixel comparison remains
+unverified because Maestro is unavailable and CoreSimulatorService refuses
+simulator connections.
+
+## Owner-bound gap — Track Evidence route
+
+Figma node `842:11057` defines a `Track Evidence` screen, but the repository has
+no matching `RootNavigator` route, `RootStackParamList` entry, screen owner, or
+canonical command. The existing Progress projection has local roadmap evidence
+rows, but adding a new detail screen would change the route graph and product
+surface. This remains an explicit owner/product decision gap; no Figma-only
+screen was added.
 
 ## Addendum — Progress evidence-copy truthfulness
 
