@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `a749654`
+Current source SHA at packet update: `058c6ea`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -196,15 +196,15 @@ mechanically derivable from the matrix rather than inferred from test status.
    is a material contract/document contradiction; it must be resolved before
    changing the setup's session-length semantics.
 
-5. There are already source-level Practice Hub geometry differences that are
-   safe to address without changing product truth: the current Figma Hub card
-   uses a 16 px internal rhythm and a visible shadow; the source owner uses a
-   12 px card gap and overrides the layered shadow opacity to zero. The current
-   Figma mode rows use 14 px semibold titles, 11 px regular details with a
-   2 px text gap, 32 px elevated icon tiles with an 8 px radius, and 72 px row
-   geometry. The source's default `ListRow` details currently use the broader
-   14/22 `small` style and 4 px copy gap. These are visual-owner corrections,
-   not reasons to rename or add modes.
+5. The latest safe Practice Hub geometry slice is now applied in commit
+   `058c6ea`: the primary card uses the live 16 px internal rhythm, 0.28
+   primary-border opacity, 20/24 title metrics, and rail top offset 19 px; the
+   topic indicator uses a 6 px gap and the settings action uses 13/16 medium
+   text. The current Figma mode rows still use 14 px semibold titles, 11 px
+   regular details with a 2 px text gap, 32 px elevated icon tiles with an
+   8 px radius, and 72 px row geometry; the source's grouped `ListRow` variant
+   owns those values. These are visual-owner corrections, not reasons to
+   rename or add modes.
 
 ## Implementation-ready tasks
 
@@ -317,13 +317,14 @@ for semantic migration until that decision exists.
 - Live Figma design context and screenshots: pass for the current file/page/
   library and the node set recorded above, including the revalidations in the
   addenda.
-- `npm run typecheck`: pass at current source SHA `a749654`.
-- Latest focused Activity checks: 35/35 pass; latest focused
-  Progress/Home/review/visual checks: 36/36 pass.
-- Full `npm run qa:static`: pass at source commit `a749654`, with recovery
+- `npm run typecheck`: pass at current source SHA `058c6ea`.
+- Latest focused Practice Hub/accessibility checks: 24/24 pass; latest focused
+  Activity checks: 35/35 pass; latest focused Progress/Home/review/visual
+  checks: 36/36 pass.
+- Full `npm run qa:static`: pass at source commit `058c6ea`, with recovery
   inventory 284/114/556 and 565/565 tests, TypeScript, content boundary, and
   runtime privacy boundary.
-- Working tree: clean after the `a749654` application commit and current
+- Working tree: clean after the `058c6ea` application commit and current
   documentation update.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
@@ -969,3 +970,28 @@ recovery inventory `284/114/556` and `565/565` tests, TypeScript,
 content-boundary, and runtime-privacy-boundary checks. This is source-level
 convergence, not a `MATCHED` claim: current-head Light/Dark runtime pixel
 comparison and Product Owner approval remain open.
+
+## Addendum — Practice Hub primary-card geometry convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma node
+`55:993`, its primary card `55:1022`, rail `55:1023`, card text `55:1024` /
+`55:1025` / `55:1026`, settings action `55:1029`, and shared Button authority
+`141:817`. The card metadata defines a `353×204` surface with `20 px`
+padding, `16 px` gaps, a `0.28` primary border, visible `0 16 40` shadow,
+20/24 title metrics, 13.5/19 description metrics, and a rail at top `19 px`.
+The topic indicator uses a `6 px` gap and the settings label uses 13 px medium
+text with a 16 px line box.
+
+Commit `058c6ea` applies those visual facts in the existing `PracticeHubScreen`
+owner and updates the focused geometry sentinels. Canonical mode ownership,
+the four-mode Coding Free contract, navigation commands, unavailable states,
+large-text branch, lifecycle, persistence, and accessibility behavior remain
+unchanged; no Figma-only `Independent Practice` or `Coding Interview` rows
+were added.
+
+Focused Practice Hub/accessibility checks passed `24/24`; full
+`npm run qa:static` passed with recovery inventory `284/114/556` and `565/565`
+tests, TypeScript, content-boundary, and runtime-privacy-boundary checks. This
+is source-level convergence, not a `MATCHED` claim: current-head Light/Dark
+runtime pixel comparison, Maestro/CoreSimulator capture, and Product Owner
+approval remain open.
