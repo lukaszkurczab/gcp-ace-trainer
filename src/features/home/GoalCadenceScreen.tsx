@@ -50,6 +50,16 @@ const DAY_LABELS: Readonly<Record<GoalDay, string>> = {
   sun: "Sunday",
 };
 
+const DAY_SHORT_LABELS: Readonly<Record<GoalDay, string>> = {
+  mon: "Mon",
+  tue: "Tue",
+  wed: "Wed",
+  thu: "Thu",
+  fri: "Fri",
+  sat: "Sat",
+  sun: "Sun",
+};
+
 export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette, locale, t } = useAppPreferences();
@@ -287,20 +297,16 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
       </View>
 
       <View style={styles.formSection} testID={runtimeSelectors.goal.cadence()}>
-        <View style={styles.sectionHeading}>
-          <View style={styles.sectionCopy}>
-            <Text style={styles.sectionTitle}>{t("Weekly cadence")}</Text>
-            <Text style={styles.sectionSubtitle}>{t("Sessions per week")}</Text>
-          </View>
-          <View style={styles.stepper}>
-            <Pressable accessibilityLabel={t("Decrease sessions per week")} accessibilityRole="button" disabled={weeklySessionTarget <= 1} onPress={() => onSetWeeklyTarget(Math.max(1, weeklySessionTarget - 1))} style={styles.stepperButton}>
-              <Text style={styles.stepperGlyph}>−</Text>
-            </Pressable>
-            <Text accessibilityLabel={`${t("Sessions per week")}: ${weeklySessionTarget}`} style={styles.stepperValue}>{String(weeklySessionTarget)}</Text>
-            <Pressable accessibilityLabel={t("Increase sessions per week")} accessibilityRole="button" disabled={weeklySessionTarget >= 7} onPress={() => onSetWeeklyTarget(Math.min(7, weeklySessionTarget + 1))} style={styles.stepperButton}>
-              <Text style={styles.stepperGlyph}>+</Text>
-            </Pressable>
-          </View>
+        <Text style={styles.sectionTitle}>{t("Weekly cadence")}</Text>
+        <Text style={styles.sectionSubtitle}>{t("Sessions per week")}</Text>
+        <View style={styles.stepper}>
+          <Pressable accessibilityLabel={t("Decrease sessions per week")} accessibilityRole="button" disabled={weeklySessionTarget <= 1} onPress={() => onSetWeeklyTarget(Math.max(1, weeklySessionTarget - 1))} style={styles.stepperButton}>
+            <Text style={styles.stepperGlyph}>−</Text>
+          </Pressable>
+          <Text accessibilityLabel={`${t("Sessions per week")}: ${weeklySessionTarget}`} style={styles.stepperValue}>{String(weeklySessionTarget)}</Text>
+          <Pressable accessibilityLabel={t("Increase sessions per week")} accessibilityRole="button" disabled={weeklySessionTarget >= 7} onPress={() => onSetWeeklyTarget(Math.min(7, weeklySessionTarget + 1))} style={styles.stepperButton}>
+            <Text style={styles.stepperGlyph}>+</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -322,7 +328,7 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
                 style={[styles.dayButton, selected ? styles.dayButtonSelected : styles.dayButtonUnselected]}
                 testID={runtimeSelectors.goal.day(day)}
               >
-                <Text style={[styles.dayLabel, selected ? styles.dayLabelSelected : null]}>{day.slice(0, 1).toUpperCase()}</Text>
+                <Text style={[styles.dayLabel, selected ? styles.dayLabelSelected : null]}>{DAY_SHORT_LABELS[day]}</Text>
               </Pressable>
             );
           })}
@@ -392,30 +398,29 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   title: { color: palette.textPrimary, fontSize: 22, fontWeight: "700", lineHeight: 27 },
   trackContext: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
   trackDot: { borderRadius: radius.pill, height: 8, width: 8 },
-  trackLabel: { ...typography.small, color: palette.textPrimary, fontWeight: "600" },
-  description: { ...typography.small, color: palette.textPrimary, lineHeight: 19 },
+  trackLabel: { ...typography.small, color: palette.textSecondary, fontWeight: "500" },
+  description: { ...typography.small, color: palette.primary, lineHeight: 19 },
   statusBadge: { backgroundColor: palette.success, borderRadius: radius.md, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
   pausedBadge: { backgroundColor: palette.warning },
-  statusBadgeLabel: { color: palette.onPrimary, fontSize: 11, fontWeight: "700", lineHeight: 14 },
+  statusBadgeLabel: { color: palette.primary, fontSize: 11, fontWeight: "700", lineHeight: 14 },
   form: { gap: 28 },
   formSection: { gap: spacing.sm },
-  sectionHeading: { alignItems: "center", flexDirection: "row", gap: spacing.lg, justifyContent: "space-between" },
   sectionCopy: { flex: 1, gap: spacing.xs },
   sectionTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "700", lineHeight: 18 },
-  sectionSubtitle: { ...typography.small, color: palette.textSecondary, lineHeight: 18 },
+  sectionSubtitle: { ...typography.small, color: palette.primary, lineHeight: 18 },
   choiceGroup: { gap: spacing.md },
   dateField: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", minHeight: 48, paddingHorizontal: 14 },
   dateInput: { ...typography.body, color: palette.textPrimary, flex: 1, paddingVertical: 0 },
-  stepper: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  stepper: { alignItems: "center", flexDirection: "row", justifyContent: "center" },
   stepperButton: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, height: 44, justifyContent: "center", width: 44 },
   stepperGlyph: { color: palette.textPrimary, fontSize: 22, lineHeight: 24 },
-  stepperValue: { color: palette.textPrimary, fontSize: 24, fontWeight: "700", lineHeight: 29, minWidth: 22, textAlign: "center" },
-  daysRow: { flexDirection: "row", gap: spacing.xs, justifyContent: "space-between" },
+  stepperValue: { color: palette.textPrimary, fontSize: 24, fontWeight: "700", lineHeight: 29, textAlign: "center", width: 80 },
+  daysRow: { flexDirection: "row", gap: 6, justifyContent: "space-between" },
   dayButton: { alignItems: "center", borderRadius: 10, borderWidth: 1, height: 36, justifyContent: "center", width: 44 },
   dayButtonSelected: { backgroundColor: palette.success, borderColor: palette.success },
   dayButtonUnselected: { backgroundColor: palette.surface, borderColor: palette.border },
   dayLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "700", lineHeight: 15 },
-  dayLabelSelected: { color: palette.onPrimary },
+  dayLabelSelected: { color: palette.primary },
   reminderRow: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", gap: spacing.md, justifyContent: "space-between", paddingHorizontal: 14, paddingVertical: spacing.md },
   reminderCopy: { flex: 1, gap: spacing.xs },
   reminderTitle: { ...typography.bodyStrong, color: palette.textPrimary },
