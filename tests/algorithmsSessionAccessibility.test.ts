@@ -159,12 +159,12 @@ test("Practice Hub geometry follows live Figma while keeping canonical mode owne
   assert.match(practiceHub, /screenContent:\s*\{[\s\S]*?gap:\s*18/);
   assert.match(practiceHub, /pageIntro:\s*\{[\s\S]*?gap:\s*18/);
   assert.match(practiceHub, /topicContext:\s*\{[\s\S]*?gap:\s*6/);
-  assert.match(practiceHub, /heroCard:\s*\{[\s\S]*?borderColor:\s*colorWithOpacity\(palette\.primary, 0\.28\)[\s\S]*?gap:\s*spacing\.xl[\s\S]*?shadowOpacity:\s*0\.22[\s\S]*?shadowRadius:\s*40/);
+  assert.match(practiceHub, /heroCard:\s*\{[\s\S]*?borderColor:\s*colorWithOpacity\(palette\.primary, 0\.28\)[\s\S]*?gap:\s*spacing\.lg[\s\S]*?shadowOpacity:\s*0\.22[\s\S]*?shadowRadius:\s*40/);
   assert.match(practiceHub, /heroText:\s*\{[\s\S]*?gap:\s*6/);
   assert.match(practiceHub, /heroHeading:\s*\{[\s\S]*?minHeight:\s*24/);
   assert.match(practiceHub, /heroTitle:\s*\{[\s\S]*?fontSize:\s*20[\s\S]*?lineHeight:\s*24/);
   assert.match(practiceHub, /heroDetail:\s*\{[\s\S]*?fontSize:\s*13\.5[\s\S]*?lineHeight:\s*19/);
-  assert.match(practiceHub, /heroActions:\s*\{[\s\S]*?gap:\s*spacing\.xl/);
+  assert.match(practiceHub, /heroActions:\s*\{[\s\S]*?gap:\s*spacing\.lg/);
   assert.match(practiceHub, /cardRail:\s*\{[\s\S]*?height:\s*44[\s\S]*?top:\s*19/);
   assert.match(practiceHub, /modeList:\s*\{[\s\S]*?borderRadius:\s*18[\s\S]*?backgroundColor:\s*palette\.elevatedSurface/);
   assert.match(practiceHub, /<IconTile iconSize=\{24\} name=\{mode\.icon\} size=\{32\} tone=\{mode\.enabled \? \(isCodingInterviewTrack \? "settings" : mode\.tone\) : "muted"\} \/>/);

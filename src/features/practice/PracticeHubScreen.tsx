@@ -348,7 +348,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderColor: colorWithOpacity(palette.primary, 0.28),
     borderRadius: 22,
     elevation: 0,
-    gap: spacing.xl,
+    gap: spacing.lg,
     padding: spacing.xl,
     shadowOffset: { height: 16, width: 0 },
     shadowOpacity: 0.22,
@@ -388,7 +388,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     lineHeight: 19,
   },
   heroActions: {
-    gap: spacing.xl,
+    gap: spacing.lg,
   },
   settingsAction: {
     alignItems: "center",
