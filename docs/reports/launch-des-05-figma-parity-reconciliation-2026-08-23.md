@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `1c8a8cc`
+Current source SHA at packet update: `364a832`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -90,7 +90,7 @@ Only the repository plan statuses are used below.
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
-| Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`. The eight-track registry projection, missing ambient/topo layer, and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
+| Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
 | Runtime screenshot and pixel evidence | `blocking` | Existing captures prove selected previous slices only. Current Activity-route capture and several same-head state comparisons remain unverified because `maestro` is unavailable and CoreSimulatorService refused the simulator connection. |
 | Account, authentication, Premium, content trust, and deletion UI | `unknown / needs evidence` | The canonical contract defines boundaries, but the current route graph does not provide matching owners for all Figma surfaces. Owner must decide whether those Figma surfaces are in this parity objective or outside the current launch route graph. |
@@ -605,13 +605,18 @@ the current registry and admission tests are canonical; Figma's two-card
 Coding/GCP projection is therefore an explicit scope/canonical conflict, not
 a reason to hide six runtime tracks.
 
-The ambient/topo layer visible in the Figma source remains unimplemented, so
-this slice is not marked `MATCHED`. Figma nodes `42:604` and `42:642` define
-unknown/unadmitted registration-failure dialogs, but the current route has no
-truthful registration-state input or owner for them; they remain a visible
-route/design gap rather than invented local error states. Runtime pixel proof
-is still unavailable because Maestro is absent and CoreSimulatorService
-refuses simulator connections. Focused Select Track and visual-shell checks
-passed 14/14; `npm run qa:static` passed with recovery inventory 283/113/554,
-563/563 tests, typecheck, content-boundary, and runtime-privacy-boundary
-checks.
+Commit `364a832` adds the repo-owned `AmbientBackdrop` and the downloaded
+Figma topography SVG to the shared `Screen` owner. The exact dark-mode glow
+positions and four contour ellipses are now reused by Select Track and
+Practice Hub; light mode remains solid because the current Figma authority
+does not provide a light ambient variant.
+
+This slice is still not marked `MATCHED`: Figma nodes `42:604` and `42:642`
+define unknown/unadmitted registration-failure dialogs, but the current route
+has no truthful registration-state input or owner for them. The eight-track
+registry projection also remains a canonical scope conflict against Figma's
+two-card projection. Runtime pixel proof is still unavailable because Maestro
+is absent and CoreSimulatorService refuses simulator connections. Focused
+ambient/Select Track/visual-shell checks passed 15/15; `npm run qa:static`
+passed with recovery inventory 284/114/555, 564/564 tests, typecheck,
+content-boundary, and runtime-privacy-boundary checks.
