@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `d71f5dd`
+Current source SHA at packet update: `fc5bbeb`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -62,6 +62,8 @@ the current file:
 | Current Practice final-item frame | `68:844` — `06F · Final item` |
 | Current Progress frame | `842:9563` — `Pattern / Progress Screen · Established Evidence` |
 | Current Progress empty-state frame | `842:10949` — `Pattern / Progress Screen · No Evidence` |
+| Current Goal & cadence create frame | `842:11569` — `Goal & cadence · Create` |
+| Current Goal & cadence active frame | `842:11693` — `Goal & cadence · Active` |
 | Current Activity frame | `842:11192` — `Pattern / Activity Screen · Populated` |
 | Current Activity empty frame | `842:11410` — `Pattern / Activity Screen · Empty` |
 | Current Activity filtered-empty frame | `842:11466` — `Pattern / Activity Screen · Filtered Empty` |
@@ -104,7 +106,7 @@ Only the repository plan statuses are used below.
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
 | Runtime screenshot and pixel evidence | `blocking` | Existing captures prove selected previous slices only. Current Activity-route capture and several same-head state comparisons remain unverified because `maestro` is unavailable and CoreSimulatorService refused the simulator connection. |
 | Account, authentication, Premium, content trust, and deletion UI | `unknown / needs evidence` | The canonical contract defines boundaries, but the current route graph does not provide matching owners for all Figma surfaces. Owner must decide whether those Figma surfaces are in this parity objective or outside the current launch route graph. |
-| Goals, cadence, focus areas, and Progress effectiveness | `blocking` | The Figma frames expose values/actions that the current local model does not truthfully provide. Adding labels or synthetic metrics would violate the canonical contract. |
+| Goals, cadence, focus areas, and Progress effectiveness | `partial` | Goal & cadence now has a canonical per-track record, route, create/active states, and Progress entry point. Figma-only focus-area and effectiveness semantics still have no owner; current-head Light/Dark runtime comparison and Product Owner approval remain open. |
 
 ## Phase A — reachable-path parity matrix
 
@@ -126,10 +128,11 @@ permission to invent a replacement UI.
 | Home overview | `Home` default tab | Established track, recommendation, overview metrics, recent activity | Light / Dark | `55:445`, `55:539` | `HomeScreen`, `HomeTab`, `Card`, `Button` | `PARTIAL` | Produce same-head screenshots for ready, review-due, active/resume, and no-activity variants. |
 | Home bootstrap and failures | `Home` load / focus effect | Loading, shell read error, recommendation unavailable; the no-track branch delegates to `SelectTrack` below | Light / Dark | No route-bound approved state in the current set | `Screen`, `SelectTrackScreen`, `LoadingState`, `EmptyState` | `DESIGN_MISSING` | Request exact Figma states, including trigger and recovery action; keep current explicit unavailable states until then. |
 | Progress | `Home` → Progress tab | Established evidence, no evidence, focus/attention actions, diagnostics expansion | Light / Dark | `842:9563`, `842:10949` | `ProgressTab`, `Card`, `ListRow`, `Button`, `EmptyState` | `PARTIAL` | Capture populated and empty states at current SHA; separately verify the existing model-backed actions. |
+| Goal & cadence | Progress weekly-goal action → `GoalCadence` | Create, active, paused; per-track cadence and preferred days | Light / Dark | `842:11569`, `842:11693` | `GoalCadenceScreen`, `ChoiceRow`, `Screen`, `Button`, canonical goal repository | `PARTIAL` | Capture create/active states at current SHA in both themes; validate the paused state and notification-settings handoff against owner-approved behavior. |
 | Track Evidence | Progress evidence action (not currently routed) | Read-only evidence list and row drill-down | Light / Dark | `842:11057` | No canonical route owner; `TopicRoadmapScreen` is not equivalent | `CANONICAL_CONFLICT` | Owner must decide route/read-model/row-command ownership or explicitly exclude this Figma surface from launch scope. |
 | Activity | `Activity` | Populated, empty, filtered-empty, filter selection | Light / Dark | `842:11192`, `842:11410`, `842:11466`; row patterns `830:7642`, `830:8898` | `ActivityScreen`, `ScreenHeader`, `ListRow`, `EmptyState`, sheet primitives | `PARTIAL` | Restore capture tooling and compare populated, empty, filtered-empty, filter-sheet, and large-text states. |
 | Settings root | `Home` → Settings tab | Canonical app, learning, data/privacy, developer rows and app identity | Light / Dark | `822:7687`, `830:8182`, `830:9422` | `SettingsTab`, `SettingsGroup`, `ListRow`, `IconTile`, `ScreenHeader` | `PARTIAL` | Capture the current canonical row set; do not add rows merely because they appear in the Figma fixture. |
-| Settings fixture-only rows | Settings design reference | Account, sync, plan, goals, cadence, help rows absent from current commands | Light / Dark | `830:8182`, `830:9422` | No canonical route/command owner | `CANONICAL_CONFLICT` | Resolve scope with the owner; no account or commercial semantics may be created from this fixture alone. |
+| Settings fixture-only rows | Settings design reference | Account, sync, plan, help rows absent from current commands; Goal & cadence is owned from Progress | Light / Dark | `830:8182`, `830:9422` | No canonical route/command owner for these Settings rows | `CANONICAL_CONFLICT` | Resolve scope with the owner; no account or commercial semantics may be created from this fixture alone. |
 | Appearance settings | `AppearanceSettings` | Light, Dark, System selection and preview | Light / Dark / System | No current route-bound approved node | `AppearanceSettingsScreen`, `SettingsDialog`, `ScreenHeader` | `DESIGN_MISSING` | Supply a route-bound Figma state set covering selection, preview, and persistence feedback. |
 | Notifications | `NotificationSettings` | Permission checking, undetermined, denied, granted, editor sheet, invalid time, save/disable failure | Light / Dark | `92:865`, `92:889`, `92:914` | `NotificationSettingsScreen`, `ScreenHeader`, `SettingsDialog`, `Button` | `PARTIAL` | Capture all permission/editor/error states at current SHA and bind native prompt boundaries separately. |
 | Data, legal, diagnostics | `YourData`, `LegalInformation`, `BackendDiagnostics` | Local-data contract, legal links, configured developer verification, unavailable/error states | Light / Dark | No current route-bound approved node | `ScreenHeader`, `Screen`, `EmptyState`, `Button` | `DESIGN_MISSING` | Obtain route-bound design states after the account/data/legal contract is owner-approved; do not copy Figma-only account surfaces. |
@@ -1379,3 +1382,29 @@ Light/Dark pixel capture, CoreSimulator/Maestro evidence, and Product Owner
 approval remain open. The hidden List Row variant has no reachable canonical
 caller in the current app, so no artificial usage path was added. This is
 source-level convergence only and does not claim 99% parity.
+
+## Addendum — Goal & cadence canonical route convergence
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`842:11569` (Goal & cadence · Create) and `842:11693` (Goal & cadence ·
+Active). The former Figma-only goal/cadence surface now has a canonical
+owner: `GoalCadenceScreen`, entered from the Progress weekly card for the
+active track. The create state uses the existing `ChoiceRow`, `Screen`,
+`IconButton`, `Button`, and theme tokens; the active state renders the
+persisted summary, status, preferred days, and notification-settings handoff.
+
+The domain contract is per-track and descriptor-backed. A goal stores only
+truthful fields currently owned by the UI: goal template, optional validated
+ISO target date, weekly session target, preferred days, and active/paused
+status. It persists through the canonical repository namespace, with no
+second storage path and no synthetic target date. Reminder scheduling remains
+owned by Notification Settings, matching the Figma handoff rather than
+creating a duplicate reminder command.
+
+Commit `fc5bbeb` adds the route, domain validator, application read/write
+ports, repository, Progress entry point, translations, and focused contract /
+presentation tests. Full `npm run qa:static` passed recovery inventory
+`287/116/563`, TypeScript, `572/572` tests, content boundary, and runtime
+privacy boundary. The Goal & cadence row remains `PARTIAL`: same-head
+Light/Dark runtime screenshots, paused-state visual comparison, and Product
+Owner approval are still open. This addendum does not claim 99% parity.
