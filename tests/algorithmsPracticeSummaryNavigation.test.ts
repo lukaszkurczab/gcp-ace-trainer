@@ -23,7 +23,7 @@ test("practice summary reloads the immutable result and runner navigation requir
   const session = source("src/features/practice/PracticeSessionScreen.tsx");
 
   assert.match(summary, /await getAlgorithmsPracticeSummaryProjection\(sessionId\)/);
-  assert.match(summary, /<Text style=\{styles\.resultTitle\} testID=\{runtimeSelectors\.summary\.root\(result\.sessionId\)\}>/);
+  assert.match(summary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.resultTitle\} testID=\{runtimeSelectors\.summary\.root\(result\.sessionId\)\}>/);
   assert.doesNotMatch(summary, /<View style=\{styles\.result\} testID=\{runtimeSelectors\.summary\.root/);
   assert.match(summary, /runtimeSelectors\.summary\.backToPractice\(result\.sessionId\)/);
   assert.match(summary, /runtimeSelectors\.summary\.configuration\(result\.sessionId, result\.configuration\.actualLength, result\.configuration\.feedbackTiming\)/);
@@ -31,8 +31,7 @@ test("practice summary reloads the immutable result and runner navigation requir
   assert.match(summary, /PracticeFeedbackBlock/);
   assert.match(summary, /<PracticeFeedbackBlock item=\{item\.item\} itemId=\{item\.occurrenceId\}/);
   assert.doesNotMatch(summary, /itemId=\{`\$\{result\.sessionId\}:\$\{item\.occurrenceId\}`\}/);
-  assert.match(summary, /result\.score\.correctCount\} \{t\("correct"\)\} · \{missedCount\} \{t\("Missed"\)\}/);
-  assert.doesNotMatch(summary, /result\.score\.partialCount\} \{t\("partial"\)\}|result\.score\.incorrectCount\} \{t\("incorrect"\)\}/);
+  assert.doesNotMatch(summary, /missedCount|scoreLine|pointsEarned|points\)/);
   const verifiedCompletion = session.slice(session.indexOf("async function applyCompletionResult"), session.indexOf("async function retryOrRecoverCompletion"));
   assert.match(verifiedCompletion, /if \(result\.kind !== "verified"\) \{ setCompletionFailure\(result\); return; \}/);
   assert.doesNotMatch(verifiedCompletion, /setState|setLocalResponse/);

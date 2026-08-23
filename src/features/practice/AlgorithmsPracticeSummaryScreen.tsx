@@ -47,7 +47,6 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
   }
 
   const { result } = state;
-  const missedCount = result.score ? result.score.partialCount + result.score.incorrectCount : null;
   const activeTime = formatElapsed(result.elapsedForegroundMs);
   const resultStateLabel = result.completionKind === "completed" ? "Session complete" : "Session ended early";
   const resultTitle = result.completionKind === "completed" ? "Session complete" : "Partial summary";
@@ -58,13 +57,13 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
     <Screen edges={["top", "bottom"]} style={styles.screen}>
       <View style={styles.summaryShell}>
         <View accessibilityLabel={t(resultStateLabel)} style={styles.summaryHeaderBar}>
-          <Text style={styles.eyebrow}>{t("Learn approach")}</Text>
-          <Text style={styles.summaryMode}>{t("Coding Interview")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.eyebrow}>{t("Learn approach")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.summaryMode}>{t("Coding Interview")}</Text>
         </View>
         <View style={styles.summaryContent}>
           <View style={styles.summaryHeader}>
-            <Text style={styles.resultTitle} testID={runtimeSelectors.summary.root(result.sessionId)}>{t(resultTitle)}</Text>
-            <Text style={styles.resultDescription}>{t(result.completionKind === "completed" ? "Your performance record has been analyzed and logged." : "This session ended before every item was completed.")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.resultTitle} testID={runtimeSelectors.summary.root(result.sessionId)}>{t(resultTitle)}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.resultDescription}>{t(result.completionKind === "completed" ? "Your performance record has been analyzed and logged." : "This session ended before every item was completed.")}</Text>
           </View>
           <View
             style={styles.statsCard}
@@ -79,15 +78,14 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
             {result.score ? (
               <View style={styles.outcomeRow}>
                 <OutcomeStat label={t("Correct")} value={result.score.correctCount} tone="success" />
-                <OutcomeStat label={t("Partial")} value={result.score.partialCount} tone="warning" />
+                <OutcomeStat label={t("Partial")} value={result.score.partialCount} tone="danger" />
                 <OutcomeStat label={t("Incorrect")} value={result.score.incorrectCount} tone="danger" />
               </View>
             ) : (
               <Text style={styles.resultText}>{result.completionKind === "abandoned" ? t("Score is shown only after a completed session.") : t("Verified result details are unavailable.")}</Text>
             )}
-            {result.score ? <Text style={styles.scoreLine}>{result.score.correctCount} {t("correct")} · {missedCount} {t("Missed")} · {result.score.pointsEarned} / {result.score.maxPoints} {t("points")}</Text> : null}
           </View>
-          {result.feedbackItems.length > 0 ? <View style={styles.reviewBanner}><Icon color={styles.reviewBannerText.color} name="clock-check" size={16} /><Text style={styles.reviewBannerText}>{t("Review created")} — {reviewCount} {t("items will return when due.")}</Text></View> : null}
+          {result.feedbackItems.length > 0 ? <View style={styles.reviewBanner}><Icon color={styles.reviewBannerText.color} name="clock-check" size={16} /><Text maxFontSizeMultiplier={2} style={styles.reviewBannerText}>{t("Review created")} — {reviewCount} {t("items will return when due.")}</Text></View> : null}
           {showReview && result.feedbackItems.length > 0 ? (
             <View style={styles.feedbackItems}>
               <Text style={styles.feedbackTitle}>{t("Answer review")}</Text>
@@ -115,12 +113,12 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
 
 function SummaryStat({ label, value }: Readonly<{ label: string; value: string }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.summaryStat}><Text style={styles.summaryStatLabel}>{label}</Text><Text style={styles.summaryStatValue}>{value}</Text></View>;
+  return <View style={styles.summaryStat}><Text maxFontSizeMultiplier={2} style={styles.summaryStatLabel}>{label}</Text><Text maxFontSizeMultiplier={2} style={styles.summaryStatValue}>{value}</Text></View>;
 }
 
-function OutcomeStat({ label, tone, value }: Readonly<{ label: string; tone: "danger" | "success" | "warning"; value: number }>) {
+function OutcomeStat({ label, tone, value }: Readonly<{ label: string; tone: "danger" | "success"; value: number }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.outcomeStat}><View style={[styles.outcomeDot, styles[`${tone}Dot`]]} /><Text style={styles.outcomeLabel}>{label}</Text><Text style={styles.outcomeValue}>{value}</Text></View>;
+  return <View style={styles.outcomeStat}><View style={[styles.outcomeDot, styles[`${tone}Dot`]]} /><Text maxFontSizeMultiplier={2} style={styles.outcomeLabel}>{label}</Text><Text maxFontSizeMultiplier={2} style={styles.outcomeValue}>{value}</Text></View>;
 }
 
 function formatElapsed(milliseconds: number): string {
@@ -134,29 +132,27 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   summaryShell: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.xxl, borderWidth: 1, overflow: "hidden" },
   summaryHeaderBar: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 52, paddingHorizontal: spacing.xl, paddingVertical: 18 },
   summaryHeader: { gap: spacing.sm },
-  summaryMode: { ...typography.bodyStrong, color: palette.textSecondary },
-  eyebrow: { ...typography.bodyStrong, color: palette.textPrimary, textTransform: "uppercase" },
+  summaryMode: { color: palette.textSecondary, fontSize: 13, fontWeight: "600", lineHeight: 16 },
+  eyebrow: { color: palette.textPrimary, fontSize: 13, fontWeight: "700", lineHeight: 16, textTransform: "uppercase" },
   summaryContent: { gap: 28, padding: spacing.xxl },
   resultDescription: { ...typography.body, color: palette.textSecondary },
-  statsCard: { gap: spacing.sm },
-  summaryStat: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", justifyContent: "space-between", paddingBottom: spacing.md },
+  statsCard: { gap: spacing.md },
+  summaryStat: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: 1, flexDirection: "row", justifyContent: "space-between", paddingBottom: spacing.md },
   summaryStatLabel: { ...typography.small, color: palette.textSecondary },
   summaryStatValue: { ...typography.bodyStrong, color: palette.textPrimary },
   configuration: { ...typography.caption, color: palette.textMuted },
   outcomeSection: { gap: spacing.md },
   sectionTitle: { color: palette.textSecondary, fontSize: 13, fontWeight: "700", lineHeight: 16 },
   outcomeRow: { gap: spacing.sm },
-  outcomeStat: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 10, flexDirection: "row", gap: spacing.sm, padding: spacing.md },
+  outcomeStat: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 10, flexDirection: "row", gap: 10, padding: spacing.md },
   outcomeDot: { borderRadius: 4, height: 8, width: 8 },
   successDot: { backgroundColor: palette.success },
-  warningDot: { backgroundColor: palette.warning },
   dangerDot: { backgroundColor: palette.danger },
   outcomeLabel: { ...typography.body, color: palette.textPrimary, flex: 1 },
-  outcomeValue: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20 },
-  scoreLine: { ...typography.small, color: palette.textSecondary },
-  reviewBanner: { alignItems: "flex-start", backgroundColor: palette.success, borderColor: palette.border, borderRadius: 10, borderWidth: 1, flexDirection: "row", gap: spacing.sm, padding: 14 },
-  reviewBannerText: { ...typography.small, color: palette.onPrimary },
-  summaryFooter: { gap: spacing.sm, padding: spacing.xl },
+  outcomeValue: { color: palette.textPrimary, fontSize: 14, fontWeight: "600", lineHeight: 18 },
+  reviewBanner: { alignItems: "flex-start", backgroundColor: palette.success, borderColor: palette.border, borderRadius: 10, borderWidth: 1, flexDirection: "row", gap: 10, padding: 14 },
+  reviewBannerText: { color: palette.onPrimary, flex: 1, fontSize: 13, lineHeight: 18 },
+  summaryFooter: { gap: spacing.md, padding: spacing.xl },
   feedbackItem: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, gap: spacing.md, paddingTop: spacing.lg },
   feedbackItems: { gap: spacing.lg },
   feedbackPrompt: { ...typography.bodyStrong, color: palette.textPrimary },

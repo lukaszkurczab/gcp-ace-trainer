@@ -187,7 +187,15 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(result, /<Screen/);
   assert.match(rootNavigator, /name=\{ROUTES\.ALGORITHMS_PRACTICE_SUMMARY\}[\s\S]*?options=\{\{ headerShown: false, title: t\("Session result"\) \}\}/);
   assert.match(result, /<Text style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
-  assert.match(result, /outcomeStat:[\s\S]*?padding:\s*spacing\.md/);
+  assert.match(result, /eyebrow:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"700"[\s\S]*?lineHeight:\s*16/);
+  assert.match(result, /statsCard:\s*\{\s*gap:\s*spacing\.md\s*\}/);
+  assert.match(result, /summaryStat:\s*\{[\s\S]*?borderBottomWidth:\s*1[\s\S]*?paddingBottom:\s*spacing\.md/);
+  assert.match(result, /outcomeStat:[\s\S]*?gap:\s*10[\s\S]*?padding:\s*spacing\.md/);
+  assert.match(result, /outcomeValue:\s*\{[\s\S]*?fontSize:\s*14[\s\S]*?lineHeight:\s*18/);
+  assert.match(result, /reviewBanner:\s*\{[\s\S]*?gap:\s*10[\s\S]*?padding:\s*14/);
+  assert.match(result, /reviewBannerText:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?lineHeight:\s*18/);
+  assert.match(result, /summaryFooter:\s*\{\s*gap:\s*spacing\.md/);
+  assert.doesNotMatch(result, /scoreLine|pointsEarned|points\)/);
   assert.match(simulationSummary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.summaryTitle\}>\{t\(projection\.title\)\}<\/Text>/);
   assert.match(simulationSummary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
   assert.match(simulationSummary, /summaryHeaderBar:\s*\{\s*height:\s*52\s*\}/);
