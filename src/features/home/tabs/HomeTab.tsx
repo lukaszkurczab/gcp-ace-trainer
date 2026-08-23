@@ -319,7 +319,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   decisionIconTile: {
     alignItems: "center",
-    backgroundColor: palette.choice.surface,
+    backgroundColor: palette.surfaceInput,
     borderColor: palette.choice.active,
     borderRadius: 14,
     borderWidth: 1,

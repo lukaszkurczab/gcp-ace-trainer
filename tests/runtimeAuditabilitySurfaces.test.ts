@@ -36,7 +36,7 @@ test("Home uses the approved compact presentation without changing recommendatio
 
   assert.match(home, /trackIconContainer:[\s\S]*?height:\s*22/);
   assert.match(home, /decisionCard:[\s\S]*?borderColor:\s*palette\.navigation\.active[\s\S]*?borderRadius:\s*22/);
-  assert.match(home, /decisionIconTile:[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
+  assert.match(home, /decisionIconTile:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
   assert.match(home, /startButton:[\s\S]*?minHeight:\s*49/);
   assert.match(home, /<Button[\s\S]*?testID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)/);
   assert.match(home, /<Text style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
