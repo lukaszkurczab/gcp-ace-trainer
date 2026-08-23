@@ -41,7 +41,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   detailsSectionExpanded: { gap: 0 },
   detailsDivider: { backgroundColor: colorWithOpacity("#FFFFFF", 0.06), height: StyleSheet.hairlineWidth, width: "100%" },
   feedback: { gap: spacing.xl },
-  reason: { ...typography.body, color: palette.textSecondary },
+  reason: { ...typography.body, color: palette.textSecondary, fontWeight: "500" },
   reasonDivider: { backgroundColor: colorWithOpacity("#FFFFFF", 0.06), height: StyleSheet.hairlineWidth, width: "100%" },
   reasonLabel: { ...typography.caption, color: colorWithOpacity(palette.primary, 0.6), fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
   reasonSection: { gap: spacing.sm },

@@ -267,6 +267,7 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   assert.match(facade, /controls: feedback\.controls/);
   const reviewFeedback = source("src/features/review/ReviewFeedbackBlock.tsx");
   assert.match(reviewFeedback, /reasonDivider:/);
+  assert.match(reviewFeedback, /reason:\s*\{[^}]*\.\.\.typography\.body[^}]*fontWeight:\s*"500"/);
   assert.doesNotMatch(reviewFeedback, /reasonPanel|result:/);
 });
 
