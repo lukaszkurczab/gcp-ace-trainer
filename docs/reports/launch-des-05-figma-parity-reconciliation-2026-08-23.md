@@ -923,6 +923,21 @@ is source-level convergence, not a `MATCHED` claim: current-head Light/Dark
 runtime pixel comparison, Maestro/CoreSimulator capture, and Product Owner
 approval remain open.
 
+## Addendum — Practice final-item state revalidation
+
+The current channel `ksxw21cw` was revalidated against live Figma node
+`68:844` (`06F · Final item`). It confirms the existing canonical final-item
+semantics: the correct answer state, title-case `Reason`, collapsed `Details`,
+primary `Finish session`, and ghost `Leave session`. At source SHA `bd0fc5e`,
+`AnswerOption`, `DetailsDisclosure`, and `getPracticePrimaryAction` already own
+these states. No second completion path, fixture-only layout, or semantic
+shortcut was added.
+
+This is a revalidation with no additional source delta. The final-item row
+still remains `PARTIAL` in the matrix until current-head Light/Dark runtime
+capture and expanded-details geometry evidence exist; Product Owner approval
+also remains open.
+
 ## Addendum — Progress typography convergence
 
 The current channel `ksxw21cw` was revalidated against live Figma nodes
