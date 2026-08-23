@@ -219,7 +219,7 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   assert.match(sharedReviewShell, /<IconButton[\s\S]*icon="chevron-left"/);
   assert.match(sharedReviewShell, /filterShell:/);
   assert.match(review, /<AnswerOption/);
-  assert.match(review, /<PracticeFeedbackBlock/);
+  assert.match(review, /<ReviewFeedbackBlock/);
   assert.match(review, /<ReviewNavigator/);
   assert.match(review, /Result unavailable/);
   assert.match(review, /This question was added after your session completed\. No answer was recorded\./);
@@ -227,6 +227,9 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   assert.match(sharedReviewNavigator, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
   assert.match(facade, /interaction: buildAlgorithmInteractionViewModel/);
   assert.match(facade, /controls: feedback\.controls/);
+  const reviewFeedback = source("src/features/review/ReviewFeedbackBlock.tsx");
+  assert.match(reviewFeedback, /reasonDivider:/);
+  assert.doesNotMatch(reviewFeedback, /reasonPanel|result:/);
 });
 
 test("answer review uses the shared Figma review shell and preserves review marking", () => {
@@ -239,9 +242,7 @@ test("answer review uses the shared Figma review shell and preserves review mark
   assert.match(review, /setQuestionNeedsReview/);
   assert.match(review, /questionOptionsSpacer:\s*\{\s*height:\s*22\s*\}/);
   assert.match(review, /optionsFeedbackSpacer:\s*\{\s*height:\s*28\s*\}/);
-  assert.match(review, /reasonDivider:/);
-  assert.match(review, /reasonSection:/);
-  assert.doesNotMatch(review, /reasonPanel|styles\.result/);
+  assert.match(review, /<ReviewFeedbackBlock/);
   assert.match(sharedReviewShell, /filterShell:/);
   assert.match(sharedReviewShell, /footerVariant="review"/);
   assert.match(sharedReviewShell, /footer:\s*\{[\s\S]*flexDirection:\s*"row"/);

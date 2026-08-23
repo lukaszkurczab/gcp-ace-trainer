@@ -13,7 +13,7 @@ import { spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
-import { PracticeFeedbackBlock } from "../practice/PracticeFeedbackBlock";
+import { ReviewFeedbackBlock } from "../review/ReviewFeedbackBlock";
 
 type SummaryProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY>;
 type ReviewProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW>;
@@ -184,7 +184,7 @@ function AlgorithmsInterviewSimulationReviewSurface({ navigation, sessionId }: R
               })}
             </View>
           ) : null}
-          <PracticeFeedbackBlock item={current.item} itemId={current.occurrenceId} feedback={{ details: current.details, reason: current.reason, result: current.correctness }} />
+          <ReviewFeedbackBlock item={current.item} feedback={{ details: current.details, reason: current.reason }} />
         </>
       ) : <EmptyState title={t("No answers in this view")} description={t("Switch filters to review the full simulation.")} />}
       <ReviewNavigator

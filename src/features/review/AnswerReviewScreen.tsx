@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { AnswerOption, Button, EmptyState, Icon, LoadingState, ReviewNavigator, ReviewShell, type ReviewFilter, Screen } from "../../components";
 import { setQuestionNeedsReview } from "../../application/certification";
@@ -11,9 +11,9 @@ import { contentPackagePinsEqual } from "../../domain";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { colorWithOpacity, spacing, typography, type AppColors } from "../../theme";
+import { spacing, typography, type AppColors } from "../../theme";
 import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/certification";
-import { AlgorithmFeedbackDocumentBlock } from "../practice/AlgorithmFeedbackDocumentBlock";
+import { ReviewFeedbackBlock } from "./ReviewFeedbackBlock";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ANSWER_REVIEW>;
 
@@ -161,38 +161,8 @@ function AnswerReviewContent({ answer, disabled, needsReview, onToggle }: Readon
         ))}
       </View>
       <View style={styles.optionsFeedbackSpacer} />
-      {answer.isAnswered ? <ReviewFeedback answer={answer} /> : <Text maxFontSizeMultiplier={2} style={styles.unanswered}>{t("Unanswered")}</Text>}
+      {answer.isAnswered ? <ReviewFeedbackBlock feedback={answer.questionSnapshot.feedback} item={answer.item} /> : <Text maxFontSizeMultiplier={2} style={styles.unanswered}>{t("Unanswered")}</Text>}
       <Button disabled={disabled} onPress={onToggle} style={styles.markAction} variant="ghost">{t(needsReview ? "Marked Needs Review" : "Mark Needs Review")}</Button>
-    </View>
-  );
-}
-
-function ReviewFeedback({ answer }: Readonly<{ answer: CertificationAnswerViewModel }>) {
-  const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  return (
-    <View style={styles.feedback}>
-      <View style={styles.reasonSection}>
-        <View style={styles.reasonDivider} />
-        <View style={styles.reasonSpacer} />
-        <Text maxFontSizeMultiplier={2} style={styles.reasonLabel}>{t("Reason")}</Text>
-        <Text maxFontSizeMultiplier={2} style={styles.reason}>{answer.questionSnapshot.feedback.reason}</Text>
-      </View>
-      <View style={[styles.detailsSection, detailsOpen ? styles.detailsSectionExpanded : null]}>
-        {detailsOpen ? <View style={styles.detailsDivider} /> : null}
-        <Pressable
-          accessibilityLabel={t(detailsOpen ? "Hide answer details" : "Show answer details")}
-          accessibilityRole="button"
-          accessibilityState={{ expanded: detailsOpen }}
-          onPress={() => setDetailsOpen((current) => !current)}
-          style={styles.detailsToggle}
-        >
-          <Text maxFontSizeMultiplier={2} style={styles.detailsLabel}>{t("Details")}</Text>
-          <Icon color={styles.detailsIcon.color} name={detailsOpen ? "chevron-up" : "chevron-down"} size={18} />
-        </Pressable>
-        {detailsOpen ? <View style={styles.details}><AlgorithmFeedbackDocumentBlock document={answer.questionSnapshot.feedback.details} item={answer.item} /></View> : null}
-      </View>
     </View>
   );
 }
@@ -206,23 +176,10 @@ function answerOptionState(selected: boolean, correct: boolean) {
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   answerContent: { gap: 0 },
-  details: { gap: spacing.lg, paddingBottom: spacing.lg, paddingTop: spacing.xs },
-  detailsIcon: { color: palette.textSecondary },
-  detailsLabel: { ...typography.bodyStrong, color: palette.textSecondary },
-  detailsSection: { gap: spacing.xl },
-  detailsSectionExpanded: { gap: 0 },
-  detailsDivider: { backgroundColor: colorWithOpacity("#FFFFFF", 0.06), height: StyleSheet.hairlineWidth, width: "100%" },
-  detailsToggle: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 48, paddingHorizontal: spacing.xs, paddingVertical: spacing.md },
-  feedback: { gap: spacing.xl },
   options: { gap: spacing.sm },
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   questionBlock: { gap: spacing.xs },
   questionEyebrow: { color: palette.primary, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, opacity: 0.5 },
-  reason: { ...typography.body, color: palette.textSecondary },
-  reasonDivider: { backgroundColor: colorWithOpacity("#FFFFFF", 0.06), height: StyleSheet.hairlineWidth, width: "100%" },
-  reasonLabel: { ...typography.caption, color: colorWithOpacity(palette.primary, 0.6), fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
-  reasonSection: { gap: spacing.sm },
-  reasonSpacer: { height: spacing.xs },
   markAction: { marginTop: spacing.xl },
   optionsFeedbackSpacer: { height: 28 },
   questionOptionsSpacer: { height: 22 },
