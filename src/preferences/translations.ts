@@ -207,6 +207,8 @@ const polish: Readonly<Record<string, string>> = {
   "Learning priority": "Priorytet nauki",
   "Use your current evidence to choose the next learning action.": "Wykorzystaj dotychczasowe wyniki, aby wybrać kolejny krok nauki.",
   "Current focus": "Bieżący cel",
+  "No learning evidence yet": "Brak danych o nauce",
+  "Complete a Practice session to begin building Progress.": "Ukończ sesję ćwiczeń, aby zacząć budować postęp.",
   "Practiced": "Przećwiczone",
   "practiced": "przećwiczonych",
   "Items practiced": "Przećwiczone zadania",

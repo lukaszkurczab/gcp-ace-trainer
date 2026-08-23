@@ -68,6 +68,8 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.match(progress, /root:\s*\{\s*gap:\s*28\s*\}/);
   assert.match(progress, /<View style=\{styles\.weekSection\}>[\s\S]*?<Text style=\{styles\.sectionLabel\}>/);
   assert.match(progress, /weekSection:\s*\{\s*gap:\s*10\s*\}/);
+  assert.match(progress, /!model\.hasData \? \([\s\S]*?No learning evidence yet[\s\S]*?Open Practice/);
+  assert.match(progress, /emptyProgressState:\s*\{[\s\S]*?paddingTop:\s*40/);
   assert.match(progress, /trackSelector:\s*\{[\s\S]*?backgroundColor:\s*palette\.surfaceInput/);
   assert.match(progress, /weekTitle:\s*\{[\s\S]*?fontSize:\s*14[\s\S]*?fontWeight:\s*"500"/);
   assert.match(progress, /miniBar:\s*\{[\s\S]*?backgroundColor:\s*palette\.surface[\s\S]*?height:\s*4/);

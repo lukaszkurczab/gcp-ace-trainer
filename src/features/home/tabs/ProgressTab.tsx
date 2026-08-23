@@ -83,57 +83,74 @@ export function ProgressTab({
         </Card>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("Current focus")}</Text>
-        <Card style={styles.focusCard}>
-          <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{t(focusTitle)}</Text>
-          {hasFocusEvidence ? (
-            <Text maxFontSizeMultiplier={2} style={styles.focusPercent}>{focusProgress}%</Text>
-          ) : (
-            <Text maxFontSizeMultiplier={2} style={styles.focusEmpty}>{t("No evidence yet")}</Text>
-          )}
-          {focusAction && onProgressAction ? (
-            <Button labelStyle={styles.focusActionLabel} onPress={() => onProgressAction(focusAction)} variant="ghost">
-              {t(focusActionLabel)}
+      {!model.hasData ? (
+        <View style={styles.emptyProgressState}>
+          <View style={styles.emptyProgressIcon}>
+            <Text style={styles.emptyProgressGlyph}>⫶</Text>
+          </View>
+          <Text maxFontSizeMultiplier={2} style={styles.emptyProgressTitle}>{t("No learning evidence yet")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.emptyProgressDescription}>{t("Complete a Practice session to begin building Progress.")}</Text>
+          {model.algorithmsProgress && onProgressAction ? (
+            <Button onPress={() => onProgressAction(model.algorithmsProgress!.priority.primaryAction)} style={styles.emptyProgressAction}>
+              {t("Open Practice")}
             </Button>
           ) : null}
-        </Card>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("Needs attention")}</Text>
-        {model.reviewQueueCount > 0 ? (
-          <Card style={styles.attentionCard}>
-            <View style={styles.attentionTitleRow}>
-              <View style={styles.attentionDot} />
-              <Text style={styles.attentionTitle}>{t("Review due")}</Text>
-            </View>
-            <Text style={styles.attentionDetail}>{t(model.reviewQueueCopy)}</Text>
-            {model.reviewAction && onProgressAction ? (
-              <Button labelStyle={styles.attentionActionLabel} onPress={() => onProgressAction(model.reviewAction!)} variant="ghost">
-                {t(model.reviewActionLabel)}
-              </Button>
-            ) : null}
-          </Card>
-        ) : (
-          <Card style={styles.emptyAttentionCard}>
-            <Text style={styles.attentionTitle}>{t("Nothing needs attention")}</Text>
-            <Text style={styles.attentionDetail}>{t("Keep practicing to build local evidence for this track.")}</Text>
-          </Card>
-        )}
-      </View>
-
-      <ActivitySection items={model.activity} onOpenActivity={onOpenActivity} trackFamily={activeTrack.familyId} />
-
-      {model.algorithmsProgress ? (
-        <AlgorithmsEvidenceSection
-          model={model.algorithmsProgress}
-          onProgressAction={onProgressAction}
-          showDiagnostics={showDiagnostics}
-          setShowDiagnostics={setShowDiagnostics}
-        />
+        </View>
       ) : (
-        <PerformanceEvidenceSection scores={model.performanceScores} trackFamily={activeTrack.familyId} />
+        <>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t("Current focus")}</Text>
+            <Card style={styles.focusCard}>
+              <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{t(focusTitle)}</Text>
+              {hasFocusEvidence ? (
+                <Text maxFontSizeMultiplier={2} style={styles.focusPercent}>{focusProgress}%</Text>
+              ) : (
+                <Text maxFontSizeMultiplier={2} style={styles.focusEmpty}>{t("No evidence yet")}</Text>
+              )}
+              {focusAction && onProgressAction ? (
+                <Button labelStyle={styles.focusActionLabel} onPress={() => onProgressAction(focusAction)} variant="ghost">
+                  {t(focusActionLabel)}
+                </Button>
+              ) : null}
+            </Card>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t("Needs attention")}</Text>
+            {model.reviewQueueCount > 0 ? (
+              <Card style={styles.attentionCard}>
+                <View style={styles.attentionTitleRow}>
+                  <View style={styles.attentionDot} />
+                  <Text style={styles.attentionTitle}>{t("Review due")}</Text>
+                </View>
+                <Text style={styles.attentionDetail}>{t(model.reviewQueueCopy)}</Text>
+                {model.reviewAction && onProgressAction ? (
+                  <Button labelStyle={styles.attentionActionLabel} onPress={() => onProgressAction(model.reviewAction!)} variant="ghost">
+                    {t(model.reviewActionLabel)}
+                  </Button>
+                ) : null}
+              </Card>
+            ) : (
+              <Card style={styles.emptyAttentionCard}>
+                <Text style={styles.attentionTitle}>{t("Nothing needs attention")}</Text>
+                <Text style={styles.attentionDetail}>{t("Keep practicing to build local evidence for this track.")}</Text>
+              </Card>
+            )}
+          </View>
+
+          <ActivitySection items={model.activity} onOpenActivity={onOpenActivity} trackFamily={activeTrack.familyId} />
+
+          {model.algorithmsProgress ? (
+            <AlgorithmsEvidenceSection
+              model={model.algorithmsProgress}
+              onProgressAction={onProgressAction}
+              showDiagnostics={showDiagnostics}
+              setShowDiagnostics={setShowDiagnostics}
+            />
+          ) : (
+            <PerformanceEvidenceSection scores={model.performanceScores} trackFamily={activeTrack.familyId} />
+          )}
+        </>
       )}
     </View>
   );
@@ -275,6 +292,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   pressed: { opacity: 0.78 },
   sectionLabel: { color: palette.info, fontSize: 12, fontWeight: "600", lineHeight: 19 },
   weekSection: { gap: 10 },
+  emptyProgressState: { alignItems: "center", gap: 16, paddingHorizontal: spacing.lg, paddingTop: 40 },
+  emptyProgressIcon: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 24, height: 48, justifyContent: "center", width: 48 },
+  emptyProgressGlyph: { color: palette.info, fontSize: 24, lineHeight: 29 },
+  emptyProgressTitle: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20, textAlign: "center" },
+  emptyProgressDescription: { color: palette.textSecondary, fontSize: 14, lineHeight: 20, maxWidth: 280, textAlign: "center" },
+  emptyProgressAction: { minWidth: 144 },
   sectionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   activityGroup: { gap: spacing.xs },
   activityGroupLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
