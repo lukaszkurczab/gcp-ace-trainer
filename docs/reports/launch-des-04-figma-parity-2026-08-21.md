@@ -6,7 +6,7 @@ Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
 Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`, `61cc0a0`, `00c7cb7`, `0060009`, `fe87b5b`, `471c8aa`, `6384050`, `47eb23c`, `04ae92e`, `78eb8cb`, `36e6e73`, `e6ecb58`, `851e09a`, `2cbdf75`, `7770c57`, `32c170d`, `8fe50e0`, `04e865c`, `0f76f03`, `15768ce`, `16ddbfb`, `b5314a6`, `330f699`, `3185518`, `d05069f`, `577ef10`, `bc9613f`, `04f5960`, `ec2980e`, `f631cf4`, `53d063e`, `86de854`, `7678253`
 Verified and pushed SHA: not performed in this pass; the remote branch was not changed.
-Current local verification SHA: `7678253`
+Current local verification SHA: `52d9d9d`
 
 ## Outcome
 
@@ -28,6 +28,7 @@ The implementation is not design-complete. Several Figma-backed operational stat
 - The Simulation pause/end path now follows Figma `74:992`: one action sheet exposes `Action required`, `Review this action before continuing.`, `Keep working`, `Leave and resume later`, and the separated destructive `End simulation` action. The previously unreachable abandon overlay was removed; the canonical abandon command is now reachable from the Figma-shaped sheet.
 - The Simulation finish confirmation now follows Figma `74:968` with `Action required`, `Review this action before continuing.`, primary `Finish simulation`, and secondary `Keep reviewing`; the backdrop accessibility label is derived from the real dismiss action.
 - The Simulation summary now omits the extra points/missed-copy line that was not present in Figma `74:1046`; the durable score projection remains unchanged, while the visible summary is limited to the canonical metric and outcome rows. Source parity is verified; fresh runtime comparison remains open.
+- The now-unused `earnedPoints`/`maxPoints` fields were removed from the simulation UI projection after the summary cutover; domain scoring and persisted result records remain unchanged.
 - Fresh current Release light evidence for Data & privacy is stored at `/tmp/patternly-capture-data-privacy-light-release-v1/`. Direct comparison against Figma `95:1303` confirms the existing `CANONICAL_CONFLICT`: Figma expects account-required sync/backup and privacy/account links, while the runtime truthfully exposes local-only learning-data boundaries without inventing account commands.
 - Fresh current Release Progress evidence now covers both themes and both scroll positions at `/tmp/patternly-capture-progress-activity-light-release-v3/` and `/tmp/patternly-capture-progress-activity-dark-release-v1/`. Direct comparison against `842:9563` and `842:11192` confirms the shared shell geometry, token treatment, grouped activity-row geometry, and explicit local-data behavior; Figma's separate Activity route, navigable rows, goal/cadence data, and authored session metadata remain canonical conflicts or unverified pixel-level details.
 
@@ -223,6 +224,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run qa:static`: passed on `53d063e`; recovery inventory, typecheck, all `553/553` tests, content boundary, and runtime privacy boundary passed after the Simulation Navigator and pause/end cutovers.
 - `npm run qa:static`: passed on `86de854`; recovery inventory, typecheck, all `554/554` tests, content boundary, and runtime privacy boundary passed after the Simulation finish-confirmation cutover.
 - `npm run qa:static`: passed on `7678253`; recovery inventory, typecheck, all `554/554` tests, content boundary, and runtime privacy boundary passed after the Simulation summary outcome cutover.
+- `npm run qa:static`: passed on `52d9d9d`; recovery inventory, typecheck, all `554/554` tests, content boundary, and runtime privacy boundary passed after removing the unused simulation UI metrics.
 
 Not verified here: Android, signed/distribution builds, physical-device rendering, full 200% large-text traversal across every route, reduced-motion runtime capture, pixel-level notification-blocked comparison, pixel-level feedback, summary, and Progress/Activity comparison, dark Answer Review/pixel-level review comparison, simulation/recovery screenshot comparison, and every Figma operational state. The current simulator is available; these are open coverage items, not a simulator-service blocker.
 
