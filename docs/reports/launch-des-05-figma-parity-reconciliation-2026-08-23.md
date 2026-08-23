@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `e4466b9`
+Current source SHA at packet update: `a749654`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -317,12 +317,13 @@ for semantic migration until that decision exists.
 - Live Figma design context and screenshots: pass for the current file/page/
   library and the node set recorded above, including the revalidations in the
   addenda.
-- `npm run typecheck`: pass at current source SHA `e4466b9`.
-- Latest focused Progress/Home/review/visual checks: 36/36 pass.
-- Full `npm run qa:static`: pass at source commit `e4466b9`, with recovery
+- `npm run typecheck`: pass at current source SHA `a749654`.
+- Latest focused Activity checks: 35/35 pass; latest focused
+  Progress/Home/review/visual checks: 36/36 pass.
+- Full `npm run qa:static`: pass at source commit `a749654`, with recovery
   inventory 284/114/556 and 565/565 tests, TypeScript, content boundary, and
   runtime privacy boundary.
-- Working tree: clean after the `e4466b9` application commit and current
+- Working tree: clean after the `a749654` application commit and current
   documentation update.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
@@ -944,3 +945,27 @@ introduced. Focused Progress/Home/review/visual checks passed `36/36`; full
 tests, TypeScript, content-boundary, and runtime-privacy-boundary checks.
 This is source-level convergence, not a `MATCHED` claim: current-head
 Light/Dark runtime pixel comparison and Product Owner approval remain open.
+
+## Addendum — Activity empty and clearable-filter convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma nodes
+`842:11192` (`Pattern / Activity Screen · Populated`), `842:11410`
+(`Pattern / Activity Screen · Empty`), and `842:11466`
+(`Pattern / Activity Screen · Filtered Empty`). Populated rows retain the
+existing 73 px row, 36 px icon tile, 10 px row gap, 11/15.4 detail text, and
+status-color mapping. Empty states use an 80 px bottom inset, a 17 px title,
+and success-colored activity bars. The filtered selector is clearable and
+uses primary text for the selected track.
+
+Commit `a749654` applies those visual facts and exposes the clear icon through
+the existing `setFilter(All tracks)` transition. The filter sheet, track
+taxonomy, activity read model, row navigation, empty-state commands, and
+unavailable path remain canonical; no alternate filter model, route, or
+fallback was introduced. The new clear affordance has a dedicated runtime
+selector and translated accessibility copy.
+
+Focused Activity checks passed `35/35`; full `npm run qa:static` passed with
+recovery inventory `284/114/556` and `565/565` tests, TypeScript,
+content-boundary, and runtime-privacy-boundary checks. This is source-level
+convergence, not a `MATCHED` claim: current-head Light/Dark runtime pixel
+comparison and Product Owner approval remain open.
