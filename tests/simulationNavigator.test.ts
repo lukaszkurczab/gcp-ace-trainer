@@ -17,7 +17,9 @@ test("simulation question navigator has the approved states, accessible labels, 
   assert.equal(navigatorCellLabel(position("current"), 11), "Question 12, current");
   assert.equal(navigatorCellLabel(position("answered"), 6), "Question 7, answered and saved");
   assert.equal(navigatorCellLabel(position("unanswered"), 17), "Question 18, unanswered");
+  assert.equal(navigatorCellLabel(position("current"), 11, true), "Question 12, navigation unavailable while save recovers");
   assert.equal(navigatorStateLabel(position("answered")), "Saved");
+  assert.equal(navigatorStateLabel(position("answered"), true), "Frozen");
   assert.match(source, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
   assert.match(source, /<ScrollView contentContainerStyle=\{styles\.grid\} style=\{styles\.gridScroll\}>/);
   assert.match(source, /position\.state !== "answered"/);
@@ -28,5 +30,9 @@ test("simulation question navigator has the approved states, accessible labels, 
   assert.match(source, /accessibilityLiveRegion="polite"/);
   assert.match(source, /Complete the response before leaving this question\./);
   assert.match(source, /Couldn't save this response\./);
+  assert.match(source, /Couldn't save this response\. Your current answer is still here\./);
+  assert.match(source, /frozen=\{feedback\?\.kind === "save_failed"\}/);
+  assert.match(source, /fullWidthAction/);
+  assert.match(source, /name="alert-triangle"/);
   assert.match(source, /Try again/);
 });
