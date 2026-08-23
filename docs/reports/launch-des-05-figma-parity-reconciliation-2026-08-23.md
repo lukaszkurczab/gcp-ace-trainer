@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `536b19b`
+Current source SHA at packet update: `7e9b200`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -92,13 +92,13 @@ Only the repository plan statuses are used below.
 | Area | Status | Evidence and boundary |
 |---|---|---|
 | Canonical route graph and screen owners | `done` | `RootNavigator` has one owner for Home, Activity, Settings, Practice Hub, Practice Setup, active Practice, summaries, simulation, and review. Source ownership and route tests pass. This proves architecture, not pixel parity. |
-| Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Current slices still require runtime comparison across all states and themes. |
+| Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commit `7e9b200` aligns the shared Button pressed/disabled matrix to Figma `141:817`; current slices still require runtime comparison across all states and themes. |
 | Home, Progress, and Activity source slices | `partial` | Commits through `15f54c1` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
 | Current Practice preparing-state visual parity | `partial` | `0a7e8c3` reuses the canonical async-state owner for the preparing card, status row, typography, spacer, and item terminology from `68:549`; the Figma-only `Leave practice` command remains unresolved because the preparing phase has no safe lifecycle/command owner. Fresh runtime pixel comparison remains blocked. |
-| Current Practice Question Shell/footer visual parity | `partial` | `86e32d9` adds a Practice-only `session` footer variant with 228 px minimum height, bottom alignment, and 8 px action gap from `68:569`/`68:603`; Simulation keeps its existing footer owner. Shared disabled Button token parity remains unresolved. Fresh runtime pixel comparison remains blocked. |
+| Current Practice Question Shell/footer visual parity | `partial` | `86e32d9` adds a Practice-only `session` footer variant with 228 px minimum height, bottom alignment, and 8 px action gap from `68:569`/`68:603`; `7e9b200` aligns the shared Button pressed/disabled state matrix from `141:817`. Simulation keeps its existing footer owner. Fresh runtime pixel comparison remains blocked. |
 | Current Practice feedback surface parity | `partial` | `0341424` removes the redundant visible result label after revalidation of `68:637`/`68:719`/`68:844`; `536b19b` aligns `REASON` to 12/16 and rich-details body text to 13/20. Correctness remains expressed by the canonical answer-option state and reason/details surfaces, with the runtime result selector kept on the visible reason panel. Expanded-details geometry and fresh runtime pixel comparison remain open. |
 | Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
@@ -489,7 +489,7 @@ content-boundary, and runtime-privacy-boundary checks. Current-head runtime
 pixel comparison remains unverified because Maestro is unavailable and
 CoreSimulatorService refuses simulator connections.
 
-## Addendum — Button state-token decision boundary
+## Addendum — Button state-token decision boundary (historical)
 
 Live Figma `141:817` was revalidated against the repository-owned `Button`
 primitive. The shared component currently has one generic disabled treatment,
@@ -498,15 +498,12 @@ and Ghost disabled/pressed states. A worker review confirmed that the
 existing palette cannot represent the complete matrix without misusing
 unrelated Light/Dark roles or introducing local color fallbacks.
 
-This row remains `PARTIAL` with a design-system decision required; it is not
-a code gap to patch opportunistically. The minimum owner-bound decision is a symmetric
-Light/Dark button token group for primary-pressed surface, primary-disabled
-border, ghost-pressed surface, and destructive foreground, plus an explicit
-decision on whether runtime `loading` should inherit the Figma Disabled
-appearance. No Button source change was made; the existing geometry,
-accessibility, and loading behavior remain stable. The contrast of the live
-Dark destructive-disabled foreground also requires owner/accessibility review
-before implementation.
+At that audit point the state matrix remained `PARTIAL` with a design-system
+decision required; this was not a code gap to patch opportunistically. The
+decision boundary was the symmetric Light/Dark mapping for pressed/disabled
+states and whether runtime `loading` should inherit Disabled. Commit `7e9b200`
+records the resulting source-level convergence in the current addendum below;
+fresh runtime proof and owner/accessibility approval remain separate gates.
 
 ## Addendum — Progress weekly-block geometry convergence
 
@@ -702,3 +699,20 @@ Focused feedback/accessibility/session checks passed 32/32; full
 typecheck, content-boundary, and runtime-privacy-boundary checks. Same-head
 runtime pixel proof remains unavailable because Maestro is absent and
 CoreSimulatorService refuses simulator connections.
+
+## Addendum — Shared Button state matrix convergence
+
+Commit `7e9b200` revalidated live Figma shared Button `141:817` in connector
+channel `ksxw21cw` and applied its Default/Pressed/Disabled matrix to the
+canonical `src/components/Button.tsx` owner. Primary, Secondary, Destructive,
+and Ghost now use variant-specific disabled surface, border, label, and
+pressed-state mappings from the existing Light/Dark semantic palette. Runtime
+`loading` explicitly inherits the same disabled mapping through the existing
+`isDisabled` contract.
+
+No raw color literals, route, command, lifecycle, persistence, or accessibility
+contract changed. The obsolete generic disabled style was removed rather than
+kept as a competing path. Focused visual/accessibility checks passed 31/31;
+full `npm run qa:static` passed with recovery inventory 284/114/555 and
+564/564 tests, typecheck, content-boundary, and runtime-privacy-boundary.
+Same-head runtime pixel proof and Product Owner approval remain open.
