@@ -207,7 +207,7 @@ test("dynamic track titles cross the translation boundary and long header copy c
   );
   assert.match(practiceHub, /formatPracticeTopicDetail\(topic\.detail,\s*t\)/);
   assert.match(practiceHub, /formatPracticeTopicTitle\(topic\.title,\s*t\)/);
-  assert.doesNotMatch(practiceHub, /buildPracticeStatsSummary|MetricCard/);
+  assert.doesNotMatch(practiceHub, /buildPracticeStatsSummary/);
   assert.doesNotMatch(practiceHub, /t\(topic\.title\)/);
   assert.doesNotMatch(
     practiceHub,

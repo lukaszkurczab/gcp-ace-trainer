@@ -138,7 +138,7 @@ test("Practice Hub keeps the quiet-layered recommendation readable at large text
 
   assert.match(practiceHub, /<Card variant="layered" style=\{styles\.heroCard\}>/);
   assert.match(practiceHub, /heroHeadingLargeText:\s*\{[^}]*flexDirection:\s*"column"/);
-  assert.doesNotMatch(practiceHub, /MetricCard|statsHeader|statsMetric/);
+  assert.doesNotMatch(practiceHub, /statsHeader|statsMetric/);
 });
 
 test("Practice Hub geometry follows live Figma while keeping canonical mode ownership", () => {

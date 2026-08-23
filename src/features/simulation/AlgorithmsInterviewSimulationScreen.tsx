@@ -41,7 +41,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     return () => listener.remove();
   }, [load]);
   useEffect(() => subscribeAlgorithmsSimulationProjectionRefresh((event) => {
-    if (event.kind === "expired") navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "timeout", sessionId: event.sessionId });
+    if (event.kind === "expired") navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { sessionId: event.sessionId });
     else void load();
   }), [load, navigation]);
   const sessionId = screen?.kind === "ready" ? screen.projection.session.id : null;
@@ -94,7 +94,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   }
   async function finish() {
     if (screen?.kind !== "ready") return;
-    try { await finalizeAlgorithmsSimulation(); navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "manual", sessionId: screen.projection.session.id }); } catch { await load(); }
+    try { await finalizeAlgorithmsSimulation(); navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { sessionId: screen.projection.session.id }); } catch { await load(); }
   }
   async function abandon() { try { await abandonAlgorithmsSession(); navigation.goBack(); } catch { await load(); } }
   async function resumeEditingAfterSaveFailure() { try { await resumeAlgorithmsSimulationEditingAfterSaveFailure(); } catch { /* The application keeps the operation state when resume-editing is invalid. */ } await load(); }

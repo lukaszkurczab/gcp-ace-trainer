@@ -14,9 +14,9 @@ export type RootStackParamList = {
   [ROUTES.BACKEND_DIAGNOSTICS]: undefined;
   [ROUTES.SELECT_TRACK]: undefined;
   [ROUTES.PRACTICE_HUB]: { topicId?: string } | undefined;
-  [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home" | "practiceHub"; targetMentalUnitId?: string };
+  [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home"; targetMentalUnitId?: string };
   [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId } | undefined;
-  [ROUTES.EXAM]: { expectedSessionId?: string; questionIndex?: number } | undefined;
+  [ROUTES.EXAM]: { expectedSessionId?: string } | undefined;
   [ROUTES.EXAM_REVIEW]: { sessionId: string };
   [ROUTES.RESULT]: { sessionId: string };
   [ROUTES.ANSWER_REVIEW]: { attemptId?: string; initialFilter?: "all" | "incorrect" } | undefined;
@@ -24,7 +24,7 @@ export type RootStackParamList = {
   [ROUTES.PRACTICE_SESSION]: PracticeSessionRouteParams;
   [ROUTES.ALGORITHMS_PRACTICE_SUMMARY]: { sessionId: string };
   [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION]: { profileId: string };
-  [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY]: { completionKind: "manual" | "timeout"; sessionId: string };
+  [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY]: { sessionId: string };
   [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW]: { sessionId: string };
   [ROUTES.MISTAKES_REVIEW]: undefined;
 };

@@ -165,7 +165,7 @@ function FilterOption({ label, onPress, selected }: Readonly<{ label: string; on
 
 function openActivityItem(item: ActivityItem, navigation: Props["navigation"]): void {
   if (item.modeId === "coding-interview-simulation") {
-    navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "manual", sessionId: item.sessionId });
+    navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { sessionId: item.sessionId });
     return;
   }
   if (item.trackFamily === "coding_interview") {
