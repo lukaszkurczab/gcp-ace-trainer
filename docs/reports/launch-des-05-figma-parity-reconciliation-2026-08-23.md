@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `2eb6c65`
+Current source SHA at packet update: `6f8b0c6`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -95,7 +95,7 @@ Only the repository plan statuses are used below.
 | Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commits `7e9b200`, `e257af4`, and `2eb6c65` align the shared Button state matrix, Bottom Navigation separator, and Screen Header base geometry to Figma `141:817`, `140:875`, and `140:881`; current slices still require runtime comparison across all states and themes. |
 | Home, Progress, and Activity source slices | `partial` | Commits through `15f54c1` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
-| Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
+| Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract, and `6f8b0c6` aligns the Coding row icon container/icon/chevron geometry from `232:1716`. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
 | Current Practice preparing-state visual parity | `partial` | `0a7e8c3` reuses the canonical async-state owner for the preparing card, status row, typography, spacer, and item terminology from `68:549`; the Figma-only `Leave practice` command remains unresolved because the preparing phase has no safe lifecycle/command owner. Fresh runtime pixel comparison remains blocked. |
 | Current Practice Question Shell/footer visual parity | `partial` | `86e32d9` adds a Practice-only `session` footer variant with 228 px minimum height, bottom alignment, and 8 px action gap from `68:569`/`68:603`; `7e9b200` aligns the shared Button pressed/disabled state matrix from `141:817`. Simulation keeps its existing footer owner. Fresh runtime pixel comparison remains blocked. |
@@ -751,5 +751,24 @@ different local rhythm. This is a source-level geometry correction only: no
 route, command, lifecycle, persistence, accessibility, or semantic product
 contract changed, and no duplicate header path was added. Focused checks passed
 34/34; full `npm run qa:static` passed with recovery inventory 284/114/556 and
+565/565 tests, typecheck, content-boundary, and runtime-privacy-boundary.
+Same-head runtime pixel proof and Product Owner approval remain open.
+
+## Addendum — Practice Hub row icon convergence
+
+Commit `6f8b0c6` revalidated the canonical Figma row instance `232:1716` in
+connector channel `ksxw21cw`. The row uses a `32×32` icon container with
+`radius/8`, `color/surface/elevated`, a `24×24` leading icon, and a `20 px`
+trailing icon slot. The Coding Practice Hub now uses the existing `IconTile`
+with `iconSize={24}` and the existing `settings` tone for enabled Coding rows;
+the tone resolves to the repository's neutral elevated/list-row palette. The
+chevron is rendered at `20 px`.
+
+The change is route-local and preserves the current four-mode canonical model.
+Certification and Design Interview rows keep their previous semantic tone
+mapping because this node does not establish their visual contract. No route,
+command, lifecycle, persistence, accessibility, or mode-availability behavior
+changed; no duplicate icon owner was introduced. Focused checks passed 34/34;
+full `npm run qa:static` passed with recovery inventory 284/114/556 and
 565/565 tests, typecheck, content-boundary, and runtime-privacy-boundary.
 Same-head runtime pixel proof and Product Owner approval remain open.
