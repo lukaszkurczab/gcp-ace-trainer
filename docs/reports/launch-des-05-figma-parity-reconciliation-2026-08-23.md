@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `fc5bbeb`
+Current source SHA at packet update: `3e37ab3`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -1401,9 +1401,10 @@ second storage path and no synthetic target date. Reminder scheduling remains
 owned by Notification Settings, matching the Figma handoff rather than
 creating a duplicate reminder command.
 
-Commit `fc5bbeb` adds the route, domain validator, application read/write
-ports, repository, Progress entry point, translations, and focused contract /
-presentation tests. Full `npm run qa:static` passed recovery inventory
+Commits `fc5bbeb` and `3e37ab3` add the route, domain validator, application
+read/write ports, repository, Progress entry point, translations, and focused
+contract/presentation tests, then close the day-label, stepper, and status-token
+deltas against the live create reference. Full `npm run qa:static` passed recovery inventory
 `287/116/563`, TypeScript, `572/572` tests, content boundary, and runtime
 privacy boundary. The Goal & cadence row remains `PARTIAL`: same-head
 Light/Dark runtime screenshots, paused-state visual comparison, and Product
