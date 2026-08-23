@@ -320,3 +320,22 @@ recovery inventory 283/113/552, content-boundary, and runtime-privacy checks.
 Fresh runtime pixel comparison remains blocked by the unavailable Maestro
 binary and refused CoreSimulatorService; this addendum does not claim 99%
 parity.
+
+## Addendum — Practice recovery notice radius convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma `68:1074`
+and canonical `Operation Notice` `258:2847`. The two repository-owned
+recovery notice owners already matched the Figma elevated surface, warning
+border, 16 px padding, 12 px gap, and warning copy; their only identified
+geometry gap was an 8 px radius.
+
+Commit `4314107` changes both `PracticeSessionSurface` and
+`SimulationOperationPanel` to the Figma 12 px radius. It preserves the
+existing footer ownership, retry/recovery semantics, lifecycle, persistence,
+and explicit unavailable states; no duplicate notice or fallback branch was
+introduced.
+
+Focused Practice/Simulation checks passed 26/26 and `npm run qa:static`
+passed with 561/561 tests and recovery inventory 283/113/552. Runtime pixel
+comparison remains unavailable because Maestro is absent and CoreSimulatorService
+rejects simulator connections; no 99% parity claim is made.

@@ -374,6 +374,27 @@ content-boundary, and runtime-privacy checks. Runtime pixel comparison remains
 unverified because `maestro` is absent and CoreSimulatorService rejects
 simulator connections; this is source evidence, not a 99% completion claim.
 
+## Addendum — Practice recovery notice radius convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma
+`68:1074` (`ERR-06A · Save failed`) and its canonical `Operation Notice`
+component `258:2847`. The existing Practice and Simulation recovery notices
+already shared the correct elevated surface, warning border, 16 px padding,
+12 px internal gap, 14/22 warning copy, and existing footer CTA ownership, but
+both canonical style owners still used an 8 px radius.
+
+Commit `4314107` changes only those two owners to the live 12 px notice radius:
+`PracticeSessionSurface` for durable Practice save/advance recovery and
+`SimulationOperationPanel` for Simulation save/navigation recovery. No notice
+placement, retry/recovery command, lifecycle state, persistence rule, or
+fallback path changed.
+
+Focused Practice/Simulation presentation and accessibility checks passed
+26/26; `npm run qa:static` passed with 561/561 tests, recovery inventory
+283/113/552, content-boundary, and runtime-privacy checks. Fresh runtime pixel
+comparison remains blocked by unavailable Maestro/CoreSimulatorService, so
+this is source evidence rather than a 99% completion claim.
+
 No route was deleted because the current reachability graph does not prove any existing route obsolete. The superseded visual geometry was removed in place from the canonical primitives and route owners: old button sizing/pressed behavior, card radii, generic screen padding/footer geometry, navigation rule/padding, session top-bar height, answer-option circles, the ready-state Practice Hub/AppShell header composition, the notification screen's generic SettingsDialog flow, and the old Answer Review card/filter/diagnostic composition. The simulation-local Review Shell and Answer Navigator implementations were removed after extraction to the shared components; `SettingsDialog` remains reachable from its Exam owner, so it was not deleted globally. Track selection also removed the obsolete selected-only `trackIconSelected` branch and the family-wide certification `cloud` icon fallback; the canonical mapping is now Coding `route`, Google Cloud `server-stack`, and `grid` for the remaining catalogue entries. The Practice Summary slice removed the unreferenced `scoreLine`, `missedCount`, and `warningDot` presentation path after live Figma comparison; persisted scoring remains owned by the application projection. No duplicate design-system path, hidden fallback, placeholder feature, or Figma-only command was left behind.
 
 ## Remaining work
