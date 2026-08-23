@@ -168,8 +168,8 @@ export function HomeTab({
       </Card>
       <View style={styles.overviewSection} testID="home-overview">
         <Text style={styles.sectionLabel}>{t("Overview")}</Text>
-        {overview.map((metric) => (
-          <View key={metric.label} style={styles.overviewRow} accessibilityLabel={`${t(metric.label)}: ${t(metric.value)}`}>
+        {overview.map((metric, index) => (
+          <View key={metric.label} style={[styles.overviewRow, index < overview.length - 1 ? styles.overviewRowDivider : null]} accessibilityLabel={`${t(metric.label)}: ${t(metric.value)}`}>
             <Text maxFontSizeMultiplier={2} style={styles.overviewLabel}>{t(metric.label)}</Text>
             <View style={styles.overviewValueGroup}>
               <View style={styles.overviewTrack}>
@@ -210,7 +210,6 @@ export function HomeTab({
           testID={runtimeSelectors.home.activity()}
         >
           <Text style={styles.activityActionText}>{t("View activity")}</Text>
-          <Icon color={palette.accentTeal} name="chevron-right" size={18} />
         </Pressable>
       </View>
     </>
@@ -367,11 +366,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   overviewRow: {
     alignItems: "center",
-    borderBottomColor: palette.border,
-    borderBottomWidth: 1,
     flexDirection: "row",
     gap: spacing.sm,
     paddingVertical: 10,
+  },
+  overviewRowDivider: {
+    borderBottomColor: palette.border,
+    borderBottomWidth: 1,
   },
   overviewTrack: {
     backgroundColor: palette.textPrimary,

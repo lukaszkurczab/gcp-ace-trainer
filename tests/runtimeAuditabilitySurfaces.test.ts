@@ -39,7 +39,8 @@ test("Home uses the approved compact presentation without changing recommendatio
   assert.match(home, /decisionHeading:\s*\{[\s\S]*?alignItems:\s*"center"/);
   assert.match(home, /decisionIconTile:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
   assert.match(home, /overviewSection:\s*\{[\s\S]*?gap:\s*2/);
-  assert.match(home, /overviewRow:[\s\S]*?borderBottomWidth:\s*1[\s\S]*?paddingVertical:\s*10/);
+  assert.match(home, /overview\.map\(\(metric, index\)[\s\S]*?index < overview\.length - 1 \? styles\.overviewRowDivider : null/);
+  assert.match(home, /overviewRowDivider:[\s\S]*?borderBottomWidth:\s*1/);
   assert.match(home, /overviewTrack:\s*\{[\s\S]*?backgroundColor:\s*palette\.textPrimary/);
   assert.match(home, /overviewFill:\s*\{[\s\S]*?backgroundColor:\s*palette\.primary/);
   assert.match(home, /focusActionLabel:\s*\{[\s\S]*?color:\s*palette\.primary[\s\S]*?lineHeight:\s*18/);
