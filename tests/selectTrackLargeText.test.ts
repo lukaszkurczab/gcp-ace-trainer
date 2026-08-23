@@ -40,7 +40,8 @@ test("track selection mirrors the Figma returning and switching footer states", 
   assert.match(source, /const showFooter = !loaded \|\| onboarding \|\| selectedTrackId !== activeTrackId/);
   assert.match(source, /onboarding \? "Continue" : "Use this track"/);
   assert.match(source, /placement="back"/);
-  assert.match(source, /footerContent:\s*\{\s*gap: 14[\s\S]*?paddingBottom: spacing\.sm/);
+  assert.match(source, /footerVariant="sticky"/);
+  assert.match(source, /footerContent:\s*\{\s*gap: 14[\s\S]*?paddingBottom: spacing\.xs/);
   assert.match(source, /trackList:\s*\{\s*gap: spacing\.md\s*\}/);
   assert.match(source, /trackSubtitle:\s*\{\s*color: palette\.textMuted[\s\S]*?fontSize: 11[\s\S]*?fontWeight: "400"[\s\S]*?lineHeight: 15\.4/);
 });

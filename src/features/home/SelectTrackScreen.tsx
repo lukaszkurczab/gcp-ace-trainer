@@ -118,6 +118,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
             </Button>
           </View>
         ) : undefined}
+        footerVariant="sticky"
         style={[styles.screenContent, !onboarding ? styles.returningScreenContent : null]}
       >
         {!onboarding ? <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} placement="back" /> : null}
@@ -229,7 +230,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   freeDotSelected: { backgroundColor: palette.primary },
   freeLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "400", lineHeight: 15.4 },
   pressed: { opacity: 0.8 },
-  footerContent: { gap: 14, paddingBottom: spacing.sm },
+  footerContent: { gap: 14, paddingBottom: spacing.xs },
   actionsLargeText: { flexDirection: "column" },
   actionButton: { flex: 1 },
   actionButtonLargeText: { flex: 0, width: "100%" },
