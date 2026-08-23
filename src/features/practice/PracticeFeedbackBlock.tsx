@@ -18,7 +18,7 @@ export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ fee
   return (
     <View style={styles.container} testID={runtimeSelectors.session.feedback(itemId)}>
       <View style={styles.reasonPanel} testID={runtimeSelectors.session.result(itemId, feedback.result)}>
-        <Text style={styles.reasonLabel}>{t("Reason")}</Text>
+        <Text style={[styles.reasonLabel, detailsOpen ? styles.reasonLabelExpanded : null]}>{t("Reason")}</Text>
         <Text accessibilityLabel={`${t("Verified answer explanation.")} ${feedback.reason}`} style={styles.reason} testID={runtimeSelectors.session.reason(itemId)}>{feedback.reason}</Text>
       </View>
       <DetailsDisclosure expanded={detailsOpen} onPress={() => setDetailsOpen((current) => !current)} testID={runtimeSelectors.session.detailsToggle(itemId)} />
@@ -31,6 +31,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   container: { gap: spacing.md },
   details: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, gap: spacing.md, paddingTop: spacing.md },
   reason: { ...typography.body, color: palette.textSecondary },
-  reasonLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16, textTransform: "uppercase" },
+  reasonLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
+  reasonLabelExpanded: { textTransform: "uppercase" },
   reasonPanel: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },
 });
