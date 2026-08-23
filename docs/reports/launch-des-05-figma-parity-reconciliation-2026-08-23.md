@@ -547,12 +547,18 @@ simulator connections.
 
 ## Owner-bound gap — Track Evidence route
 
-Figma node `842:11057` defines a `Track Evidence` screen, but the repository has
-no matching `RootNavigator` route, `RootStackParamList` entry, screen owner, or
-canonical command. The existing Progress projection has local roadmap evidence
-rows, but adding a new detail screen would change the route graph and product
-surface. This remains an explicit owner/product decision gap; no Figma-only
-screen was added.
+Figma node `842:11057` defines a read-only `Track Evidence` screen: a pushed
+header from Progress, track context, and a seven-row evidence list with
+detail/chevron affordances. The repository does have `TopicRoadmapScreen` and
+`ROUTES.TOPIC_ROADMAP`, but that route is a different canonical surface: it
+lets the learner choose a practice topic, renders available/current/locked
+roadmap nodes, and returns the selection to Practice Hub. It is therefore not
+a safe owner for the Figma evidence list.
+
+Adding a matching detail route would change the route graph, evidence read
+projection, and row drill-down command. This remains an explicit owner/product
+decision gap; no Figma-only screen was added and the existing Topic Roadmap was
+not relabeled or repurposed.
 
 ## Addendum — Progress evidence-copy truthfulness
 
