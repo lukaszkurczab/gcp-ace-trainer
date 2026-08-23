@@ -145,6 +145,7 @@ tags:
     id: "patternly:session:option:alg-complexity-amortized-010:amortized_each"
 - tapOn:
     id: "patternly:session:submit:alg-complexity-amortized-010"
+- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__algorithms__final-item__feedback__${THEME}__${DEVICE_PROFILE}"
 - tapOn:
     id: "patternly:session:continue:alg-complexity-amortized-010"
 - extendedWaitUntil:
@@ -152,8 +153,3 @@ tags:
     timeout: 30000
 - assertVisible: "Session complete"
 - takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__algorithms__summary__completed__${THEME}__${DEVICE_PROFILE}"
-- tapOn: "Review answers"
-- extendedWaitUntil:
-    visible: "Answer review"
-    timeout: 30000
-- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__algorithms__summary-review__expanded__${THEME}__${DEVICE_PROFILE}"
