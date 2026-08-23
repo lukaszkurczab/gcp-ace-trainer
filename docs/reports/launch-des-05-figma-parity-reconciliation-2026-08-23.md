@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `8d32858`
+Current source SHA at packet update: `b58042d`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -51,6 +51,7 @@ the current file:
 | Library | `118:738` Patternly Library |
 | Current Practice Hub frame | `55:993` — `03A · Practice · Coding · Review available` |
 | Current Practice Setup frame | `55:2172` — `04A · Manage Practice Settings · Coding` |
+| Current Progress frame | `842:9563` — `Pattern / Progress Screen · Established Evidence` |
 | Shared Button authority | `141:817` |
 | Current connector session | `ksxw21cw`, supplied by the owner in the active task |
 
@@ -73,7 +74,7 @@ Only the repository plan statuses are used below.
 |---|---|---|
 | Canonical route graph and screen owners | `done` | `RootNavigator` has one owner for Home, Activity, Settings, Practice Hub, Practice Setup, active Practice, summaries, simulation, and review. Source ownership and route tests pass. This proves architecture, not pixel parity. |
 | Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Current slices still require runtime comparison across all states and themes. |
-| Home, Progress, and Activity source slices | `partial` | Commits through `d7c6611` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
+| Home, Progress, and Activity source slices | `partial` | Commits through `b58042d` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
@@ -483,3 +484,21 @@ appearance. No Button source change was made; the existing geometry,
 accessibility, and loading behavior remain stable. The contrast of the live
 Dark destructive-disabled foreground also requires owner/accessibility review
 before implementation.
+
+## Addendum — Progress weekly-block geometry convergence
+
+Commit `b58042d` applies one safe layout correction to the repository-owned
+Progress surface against live Figma node `842:9563` in connector channel
+`ksxw21cw`. The `This week` label and weekly card now share one section with a
+10 px internal gap, matching the Figma `ThisWeek` frame and removing the
+accidental 28 px root gap that displaced `Current focus` and all following
+content by 18 px.
+
+The change does not add the Figma-only goal, cadence, recent-effectiveness,
+trend, or focus-area metrics because the current local evidence model does not
+provide them truthfully. No data projection, route, action command, runtime
+selector, or accessibility contract changed. Focused Progress/Home checks
+passed 29/29; `npm run qa:static` passed with recovery inventory 283/113/553
+and 562/562 tests, typecheck, content-boundary, and runtime-privacy-boundary
+checks. Current-head runtime pixel comparison remains unverified because
+Maestro is unavailable and CoreSimulatorService refuses simulator connections.
