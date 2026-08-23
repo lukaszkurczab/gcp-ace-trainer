@@ -59,8 +59,14 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.match(progress, /root:\s*\{\s*gap:\s*28\s*\}/);
   assert.match(progress, /trackSelector:\s*\{[\s\S]*?backgroundColor:\s*palette\.surfaceInput/);
   assert.match(progress, /weekTitle:\s*\{[\s\S]*?fontSize:\s*14[\s\S]*?fontWeight:\s*"500"/);
+  assert.match(progress, /miniBar:\s*\{[\s\S]*?backgroundColor:\s*palette\.surface[\s\S]*?height:\s*4/);
   assert.match(progress, /focusTitle:\s*\{[\s\S]*?fontSize:\s*16[\s\S]*?fontWeight:\s*"600"/);
+  assert.match(progress, /<Button labelStyle=\{styles\.focusActionLabel\}[\s\S]*?variant="ghost">/);
+  assert.match(progress, /activityRow:\s*\{[\s\S]*?gap:\s*10[\s\S]*?paddingVertical:\s*spacing\.md/);
+  assert.match(progress, /activityTitle:\s*\{[\s\S]*?fontSize:\s*14[\s\S]*?lineHeight:\s*18/);
   assert.match(progress, /attentionDetail:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"400"/);
   assert.match(progress, /attentionCard:[\s\S]*?borderWidth:\s*0[\s\S]*?borderRadius:\s*14/);
+  assert.match(progress, /attentionTitleRow:\s*\{[\s\S]*?gap:\s*6/);
+  assert.match(progress, /attentionDot:\s*\{[\s\S]*?height:\s*6[\s\S]*?width:\s*6/);
   assert.match(progress, /const focusActionLabel = model\.algorithmsProgress \? "Open Practice"/);
 });
