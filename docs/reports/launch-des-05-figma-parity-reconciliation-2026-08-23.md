@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA: `bc09d63`
+Current source SHA: `65aeccd`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -76,7 +76,7 @@ Only the repository plan statuses are used below.
 | Home, Progress, and Activity source slices | `partial` | Commits through `d7c6611` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
-| Current Practice Setup visual parity | `partial` | `55:2172` supplies compact segmented-control, choice-row, header, sticky-footer, and spacing facts. Its Focus areas and `Save settings` semantics are not represented by the current canonical route/model and must not be invented. |
+| Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
 | Runtime screenshot and pixel evidence | `blocking` | Existing captures prove selected previous slices only. Current Activity-route capture and several same-head state comparisons remain unverified because `maestro` is unavailable and CoreSimulatorService refused the simulator connection. |
 | Account, authentication, Premium, content trust, and deletion UI | `unknown / needs evidence` | The canonical contract defines boundaries, but the current route graph does not provide matching owners for all Figma surfaces. Owner must decide whether those Figma surfaces are in this parity objective or outside the current launch route graph. |
@@ -147,7 +147,7 @@ Only the repository plan statuses are used below.
 - **Report target:** append the result to the current parity report and this
   reconciliation packet; do not rewrite historical Figma reports.
 
-### DES-005-B — Practice Setup geometry convergence after contract decision
+### DES-005-B — Practice Setup geometry convergence without semantic migration
 
 - **Goal:** Match safe compact setup geometry from `55:2172` without creating
   unowned focus-area or save semantics.
@@ -156,8 +156,8 @@ Only the repository plan statuses are used below.
 - **Non-goals:** Do not decide the 10 versus 10/20/40 contract in code; do not
   add a focus-area persistence model; do not rename `Start session` to
   `Save settings` without owner authorization.
-- **Inputs:** `55:2172`, canonical contract, PO-059/060, and the owner decision
-  from DES-005-C.
+- **Inputs:** `55:2172`, canonical contract, PO-059/060, and the current
+  canonical route/model. DES-005-C remains required for semantic migration.
 - **Acceptance criteria:** compact header, section labels, segmented control,
   radio rows, sticky footer, large-text behavior, and a11y match the approved
   state; all rendered fields map to real route/model values; unavailable states
@@ -167,6 +167,9 @@ Only the repository plan statuses are used below.
 - **Risks:** visual changes can accidentally change session length, feedback,
   focus scope, or start command.
 - **Report target:** parity report plus the contract decision note.
+
+- **Status:** safe geometry slice complete in `65aeccd`; owner decision remains
+  required before adding or renaming any semantic control.
 
 ### DES-005-C — Owner-bound Figma authority and Custom Practice contract decision
 
@@ -215,19 +218,20 @@ Only the repository plan statuses are used below.
 
 ## First next task
 
-**DES-005-A is complete in `bc09d63`.** It changed only visual geometry that is
+**DES-005-A is complete in `bc09d63`, and the safe geometry portion of
+DES-005-B is complete in `65aeccd`.** These changes only altered visual geometry that is
 directly observable in the current Figma frame and already owned by the
 canonical Practice Hub/list/card primitives. The next task is **DES-005-C**:
 resolve owner-bound authority and the Custom Practice `10` versus `10/20/40`
 contract before any Practice Setup semantic change. DES-005-B remains blocked
-until that decision exists.
+for semantic migration until that decision exists.
 
 ## Verification performed and evidence limits
 
 - Live Figma design context and screenshots: pass for `55:993` and `55:2172`.
 - `npm run typecheck`: pass at current source SHA lineage.
 - Focused Practice/model/visual-shell tests: 33/33 pass.
-- Full `npm run qa:static`: pass on source commit `bc09d63`, with 559/559
+- Full `npm run qa:static`: pass on source commit `65aeccd`, with 559/559
   tests, TypeScript, content boundary, and runtime privacy boundary.
 - Working tree: clean at the implementation boundary before this report update.
 - No graph output was present in the repository; graph orientation was not

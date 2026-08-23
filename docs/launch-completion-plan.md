@@ -64,7 +64,7 @@ _Audyt: 2026-08-23. To jest jedyny aktywny dokument kolejności prac i statusu. 
 13. Live Figma node `55:993` nie może być kopiowany semantycznie bez reconciliacji: pokazuje `Independent Practice`, którego nie ma w zatwierdzonym Free profile, oraz nie pokazuje canonical `Custom Practice` row. [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md) wiąże bezpieczne zmiany do geometrii z zachowaniem product truth.
 14. Live Figma node `55:2172` pokazuje `Focus areas` i `Save settings`, ale obecny canonical Custom Practice ma explicit mental-unit, feedback timing i `Start session`; brak modelu focus-area/save. Nie dodawać tych stanów jako metadata ani fake implementation.
 15. Istnieje kontraktowa sprzeczność: bieżący `canonical-product-contract.yaml` i runtime obsługują Custom `[10,20,40]`, natomiast `PO-059`, `PO-060` i PKG-04A opisują Free Custom jako dokładnie `10`. Przed zmianą semantics potrzebna jest jawna decyzja właściciela.
-16. Current source-level Practice Hub parity ma bezpieczne różnice do zamknięcia: card gap/shadow oraz mode-row title/detail hierarchy. Najbliższy task to bounded geometry slice `DES-005-A`; nie zmienia on trybów, route'ów ani komend.
+16. `bc09d63` zamknął bezpieczną geometrię Practice Hub, a `65aeccd` zamknął bezpieczną geometrię Practice Setup. Oba slice'y nie zmieniają trybów, route'ów, komend ani danych. Następny task to owner-bound `DES-005-C`; dopiero po tej decyzji można zmieniać semantic contract Custom Practice.
 
 ## 5. Architektura, retencja i lane’y
 
@@ -238,11 +238,16 @@ Nonvisual GOV/CNT/DATA work może biec równolegle z DES-01. UI nie może wyprze
 bezpiecznym faktom z live node `55:993`, a zatwierdzony PKG-04A mode truth
 pozostaje bez zmian. Nie dodano Independent, Focus areas ani `Save settings`.
 
+Bezpieczna, geometryczna część `DES-005-B` jest wykonana w `65aeccd`:
+Practice Setup używa canonical compact `ChoiceRow`, header/footer variants i
+segmented-control geometry z `55:2172`. Nie zmieniono długości sesji,
+feedback timing, komendy `Start session` ani modelu focus areas.
+
 Pierwszy kolejny task to `DES-005-C`: właściciel musi rozstrzygnąć owner-bound
 channel oraz sprzeczność Custom `10` versus `10/20/40` przed jakąkolwiek zmianą
-semantyczną Practice Setup. `DES-005-B` pozostaje zablokowany do czasu tej
-decyzji. Exact-SHA gate, fresh runtime pixel comparison i Product Owner GO
-pozostają pending.
+semantyczną Practice Setup. Semantic migration w `DES-005-B` pozostaje
+zablokowany do czasu tej decyzji. Exact-SHA gate, fresh runtime pixel
+comparison i Product Owner GO pozostają pending.
 
 ## 8. Kryterium końcowe
 
