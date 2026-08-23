@@ -125,12 +125,15 @@ function AlgorithmsInterviewSimulationReviewSurface({ navigation, sessionId }: R
         onNext={() => setUnavailableOrdinal(Math.min(result.totalOccurrences, unavailableOrdinal + 1))}
         previousDisabled={unavailableOrdinal === 1}
         nextDisabled={unavailableOrdinal === result.totalOccurrences}
+        contentVariant="unavailable"
         testID={runtimeSelectors.summary.root(sessionId)}
       >
         <View style={styles.unavailableContent}>
-          <View style={styles.unavailableIcon}><Icon color={styles.unavailableIconGlyph.color} name="warning" size={24} /></View>
-          <Text style={styles.unavailableTitle}>{t("Result unavailable")}</Text>
-          <Text style={styles.unavailableDescription}>{t("This question was added after your session completed. No answer was recorded.")}</Text>
+          <View style={styles.unavailableSurface}>
+            <View style={styles.unavailableIcon}><Icon color={styles.unavailableIconGlyph.color} name="warning" size={24} /></View>
+            <Text style={styles.unavailableTitle}>{t("Result unavailable")}</Text>
+            <Text style={styles.unavailableDescription}>{t("This question was added after your session completed. No answer was recorded.")}</Text>
+          </View>
         </View>
         <ReviewNavigator
           currentOrdinal={unavailableOrdinal}
@@ -210,7 +213,8 @@ const createReviewStyles = (palette: AppColors) => StyleSheet.create({
   questionEyebrow: { color: palette.primary, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 15, opacity: 0.5 },
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   options: { gap: spacing.sm },
-  unavailableContent: { alignItems: "center", backgroundColor: "rgba(14,22,40,0.6)", borderColor: "rgba(255,255,255,0.05)", borderRadius: 18, gap: spacing.lg, marginTop: 101, paddingHorizontal: spacing.xxxl, paddingVertical: 28 },
+  unavailableContent: { alignSelf: "stretch", flex: 1, position: "relative", width: "100%" },
+  unavailableSurface: { alignItems: "center", backgroundColor: "rgba(14,22,40,0.6)", borderColor: "rgba(255,255,255,0.05)", borderRadius: 18, borderWidth: 1, gap: spacing.lg, left: 20, paddingHorizontal: spacing.xxxl, paddingVertical: 28, position: "absolute", top: 185, width: 353 },
   unavailableIcon: { alignItems: "center", backgroundColor: "rgba(30,41,59,0.5)", borderRadius: 24, height: 48, justifyContent: "center", width: 48 },
   unavailableIconGlyph: { color: palette.warning },
   unavailableTitle: { color: palette.textPrimary, fontSize: 17, fontWeight: "600", lineHeight: 21, textAlign: "center" },

@@ -221,8 +221,10 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   assert.match(review, /<AnswerOption/);
   assert.match(review, /<ReviewFeedbackBlock/);
   assert.match(review, /<ReviewNavigator/);
+  assert.match(review, /contentVariant="unavailable"/);
   assert.match(review, /Result unavailable/);
   assert.match(review, /This question was added after your session completed\. No answer was recorded\./);
+  assert.match(review, /unavailableSurface:\s*\{[\s\S]*top:\s*185[\s\S]*width:\s*353/);
   assert.match(sharedReviewNavigator, /fontScale >= 1\.8/);
   assert.match(sharedReviewNavigator, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
   assert.match(facade, /interaction: buildAlgorithmInteractionViewModel/);

@@ -25,6 +25,7 @@ type ReviewShellProps = Readonly<{
   testID?: string;
   totalOccurrences: number;
   backLabel?: string;
+  contentVariant?: "default" | "unavailable";
 }>;
 
 /** Shared Figma Review Shell used by simulation and answer-level review routes. */
@@ -43,6 +44,7 @@ export function ReviewShell({
   previousDisabled,
   testID,
   totalOccurrences,
+  contentVariant = "default",
 }: ReviewShellProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
@@ -79,7 +81,7 @@ export function ReviewShell({
         <FilterTab active={filter === "all"} label={`${t("All")} ${totalOccurrences}`} onPress={() => onFilterChange("all")} styles={styles} />
         <FilterTab active={filter === "missed"} label={`${t("Missed")} ${missedCount}`} onPress={() => onFilterChange("missed")} styles={styles} />
       </View>
-      <View style={styles.scrollableContent}>{children}</View>
+      <View style={[styles.scrollableContent, contentVariant === "unavailable" ? styles.scrollableContentUnavailable : null]}>{children}</View>
     </Screen>
   );
 }
@@ -110,4 +112,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   navigatorLabel: { color: palette.primary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   screen: { gap: 0, paddingBottom: 0, paddingHorizontal: 0, paddingTop: 0 },
   scrollableContent: { flex: 1, gap: spacing.xl, paddingBottom: spacing.xxl, paddingHorizontal: spacing.xl, paddingLeft: spacing.xxl, paddingTop: spacing.xxl },
+  scrollableContentUnavailable: { gap: 0, overflow: "hidden", padding: 0 },
 });
