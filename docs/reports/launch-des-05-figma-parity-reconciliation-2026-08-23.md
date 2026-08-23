@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `0341424`
+Current source SHA at packet update: `536b19b`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -99,7 +99,7 @@ Only the repository plan statuses are used below.
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
 | Current Practice preparing-state visual parity | `partial` | `0a7e8c3` reuses the canonical async-state owner for the preparing card, status row, typography, spacer, and item terminology from `68:549`; the Figma-only `Leave practice` command remains unresolved because the preparing phase has no safe lifecycle/command owner. Fresh runtime pixel comparison remains blocked. |
 | Current Practice Question Shell/footer visual parity | `partial` | `86e32d9` adds a Practice-only `session` footer variant with 228 px minimum height, bottom alignment, and 8 px action gap from `68:569`/`68:603`; Simulation keeps its existing footer owner. Shared disabled Button token parity remains unresolved. Fresh runtime pixel comparison remains blocked. |
-| Current Practice feedback surface parity | `partial` | `0341424` removes the redundant visible result label after revalidation of `68:637`/`68:719`/`68:844`; correctness remains expressed by the canonical answer-option state and reason/details surfaces, with the runtime result selector kept on the visible reason panel. Expanded-details geometry and fresh runtime pixel comparison remain open. |
+| Current Practice feedback surface parity | `partial` | `0341424` removes the redundant visible result label after revalidation of `68:637`/`68:719`/`68:844`; `536b19b` aligns `REASON` to 12/16 and rich-details body text to 13/20. Correctness remains expressed by the canonical answer-option state and reason/details surfaces, with the runtime result selector kept on the visible reason panel. Expanded-details geometry and fresh runtime pixel comparison remain open. |
 | Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
 | Runtime screenshot and pixel evidence | `blocking` | Existing captures prove selected previous slices only. Current Activity-route capture and several same-head state comparisons remain unverified because `maestro` is unavailable and CoreSimulatorService refused the simulator connection. |
@@ -687,3 +687,18 @@ Focused feedback/accessibility/session checks passed 34/34; full
 typecheck, content-boundary, and runtime-privacy-boundary checks. Expanded
 details geometry and same-head runtime pixel proof remain open because
 Maestro is absent and CoreSimulatorService refuses simulator connections.
+
+## Addendum — Practice feedback typography convergence
+
+Commit `536b19b` revalidated the live expanded-details reference `68:719` and
+applied only its safe typography facts to the existing feedback owners:
+`REASON` is now 12/16 semibold, while rich feedback paragraphs, headings, list
+text, and callout text use 13/20. The shared document renderer remains the
+canonical content-block owner; no content schema, authored copy, scoring,
+navigation, persistence, or command semantics changed.
+
+Focused feedback/accessibility/session checks passed 32/32; full
+`npm run qa:static` passed with recovery inventory 284/114/555, 564/564 tests,
+typecheck, content-boundary, and runtime-privacy-boundary checks. Same-head
+runtime pixel proof remains unavailable because Maestro is absent and
+CoreSimulatorService refuses simulator connections.
