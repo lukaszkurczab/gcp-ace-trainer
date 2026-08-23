@@ -67,19 +67,21 @@ export function ProgressTab({
         </Pressable>
       </View>
 
-      <Text style={styles.sectionLabel}>{t("This week")}</Text>
-      <Card style={styles.weekCard}>
-        <View style={styles.weekHeader}>
-          <View style={styles.weekCopy}>
-            <Text maxFontSizeMultiplier={2} style={styles.weekTitle}>{t(formatWeekTitle(weekValue))}</Text>
-            <Text maxFontSizeMultiplier={2} style={styles.weekDetail}>{t(model.activitySummary.detail)}</Text>
+      <View style={styles.weekSection}>
+        <Text style={styles.sectionLabel}>{t("This week")}</Text>
+        <Card style={styles.weekCard}>
+          <View style={styles.weekHeader}>
+            <View style={styles.weekCopy}>
+              <Text maxFontSizeMultiplier={2} style={styles.weekTitle}>{t(formatWeekTitle(weekValue))}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.weekDetail}>{t(model.activitySummary.detail)}</Text>
+            </View>
+            <View style={styles.miniBar}>
+              <View style={[styles.miniBarFill, { width: `${Math.round(progressRatio * 100)}%` }]} />
+            </View>
           </View>
-          <View style={styles.miniBar}>
-            <View style={[styles.miniBarFill, { width: `${Math.round(progressRatio * 100)}%` }]} />
-          </View>
-        </View>
-        {model.reviewQueueCount > 0 ? <Text style={styles.weekAction}>{t(`${model.reviewQueueCount} review items due`)}</Text> : null}
-      </Card>
+          {model.reviewQueueCount > 0 ? <Text style={styles.weekAction}>{t(`${model.reviewQueueCount} review items due`)}</Text> : null}
+        </Card>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("Current focus")}</Text>
@@ -272,6 +274,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   trackSelectorText: { ...typography.bodyStrong, color: palette.textSecondary },
   pressed: { opacity: 0.78 },
   sectionLabel: { color: palette.info, fontSize: 12, fontWeight: "600", lineHeight: 19 },
+  weekSection: { gap: 10 },
   sectionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   activityGroup: { gap: spacing.xs },
   activityGroupLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
