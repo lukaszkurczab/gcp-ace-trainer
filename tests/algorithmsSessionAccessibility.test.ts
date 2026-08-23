@@ -20,6 +20,7 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   const button = source("src/components/Button.tsx");
   const practiceControls = source("src/features/practice/PracticeResponseControls.tsx");
   const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
+  const detailsDisclosure = source("src/components/DetailsDisclosure.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
   const surfaces = `${answerOption}\n${practiceControls}\n${feedback}`;
 
@@ -30,9 +31,10 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*48[\s\S]*?minWidth:\s*48/);
   assert.match(practiceControls, /moveButton:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(practiceControls, /valueOption:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
-  assert.match(feedback, /detailsToggle:\s*\{[^}]*minHeight:\s*48/);
+  assert.match(feedback, /<DetailsDisclosure expanded=\{detailsOpen\}/);
+  assert.match(detailsDisclosure, /toggle:\s*\{[^}]*minHeight:\s*48/);
+  assert.match(detailsDisclosure, /label:\s*\{[^}]*color:\s*palette\.textSecondary/);
   assert.match(feedback, /details:\s*\{[^}]*borderTopColor:\s*palette\.border[^}]*paddingTop:\s*spacing\.md/);
-  assert.match(feedback, /detailsLabel:\s*\{[^}]*color:\s*palette\.textSecondary/);
   assert.match(simulation, /layout=\{savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(simulation, /variant=\{savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.doesNotMatch(surfaces, /hitSlop/);

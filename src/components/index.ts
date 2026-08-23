@@ -5,6 +5,7 @@ export * from "./BottomTabBar";
 export * from "./Button";
 export * from "./Card";
 export * from "./ChoiceRow";
+export * from "./DetailsDisclosure";
 export * from "./EmptyState";
 export * from "./Icon";
 export * from "./IconButton";
