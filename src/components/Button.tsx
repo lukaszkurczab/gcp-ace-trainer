@@ -48,6 +48,8 @@ export function Button({
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
   const isDisabled = disabled || loading;
+  const disabledStyle = variant === "primary" ? styles.primaryDisabled : variant === "secondary" ? styles.secondaryDisabled : variant === "destructive" ? styles.destructiveDisabled : styles.ghostDisabled;
+  const disabledLabelStyle = variant === "primary" ? styles.primaryDisabledLabel : variant === "secondary" ? styles.secondaryDisabledLabel : variant === "destructive" ? styles.destructiveDisabledLabel : styles.ghostDisabledLabel;
 
   return (
     <Pressable
@@ -60,18 +62,19 @@ export function Button({
         styles.base,
         styles[variant],
         pressed && !isDisabled ? [styles.pressed, styles[`${variant}Pressed`]] : null,
-        isDisabled ? styles.disabled : null,
+        isDisabled ? disabledStyle : null,
         style
       ]}
       testID={testID}
     >
-      {loading ? <ActivityIndicator color={getActivityColor(variant, palette)} size="small" style={styles.spinner} /> : null}
-      <Text maxFontSizeMultiplier={2} style={[styles.label, styles[`${variant}Label`], labelStyle, isDisabled ? styles.disabledLabel : null]}>{children}</Text>
+      {loading ? <ActivityIndicator color={getActivityColor(variant, palette, isDisabled)} size="small" style={styles.spinner} /> : null}
+      <Text maxFontSizeMultiplier={2} style={[styles.label, styles[`${variant}Label`], labelStyle, isDisabled ? disabledLabelStyle : null]}>{children}</Text>
     </Pressable>
   );
 }
 
-function getActivityColor(variant: ButtonVariant, palette: AppColors): string {
+function getActivityColor(variant: ButtonVariant, palette: AppColors, isDisabled: boolean): string {
+  if (isDisabled) return variant === "primary" || variant === "destructive" ? palette.textPrimary : variant === "secondary" ? palette.textMuted : palette.textSecondary;
   return variant === "primary" || variant === "destructive" ? palette.onPrimary : palette.primary;
 }
 
@@ -117,11 +120,24 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.08)",
   },
   destructivePressed: {
-    opacity: 0.86,
+    backgroundColor: palette.danger,
+    borderColor: palette.danger,
   },
-  disabled: {
-    backgroundColor: palette.elevatedSurface,
-    borderColor: palette.borderStrong,
+  primaryDisabled: {
+    backgroundColor: palette.surfaceInput,
+    borderColor: palette.textMuted,
+  },
+  secondaryDisabled: {
+    backgroundColor: palette.surfaceInput,
+    borderColor: palette.border,
+  },
+  destructiveDisabled: {
+    backgroundColor: palette.danger,
+    borderColor: palette.danger,
+  },
+  ghostDisabled: {
+    backgroundColor: "transparent",
+    borderColor: "transparent",
   },
   spinner: {
     marginLeft: -spacing.xs
@@ -143,7 +159,17 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   destructiveLabel: {
     color: palette.textPrimary
   },
-  disabledLabel: {
-    color: palette.textMuted
+  primaryDisabledLabel: {
+    color: palette.textPrimary,
+  },
+  secondaryDisabledLabel: {
+    color: palette.textMuted,
+  },
+  destructiveDisabledLabel: {
+    color: palette.textPrimary,
+  },
+  ghostDisabledLabel: {
+    color: palette.textSecondary,
+    opacity: 0.55,
   }
 });

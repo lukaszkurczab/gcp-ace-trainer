@@ -189,6 +189,12 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(button, /labelStyle\?: StyleProp<TextStyle>/);
   assert.match(button, /label:\s*\{[\s\S]*\.\.\.typography\.button/);
   assert.match(button, /styles\.label, styles\[`\$\{variant\}Label`\], labelStyle/);
+  assert.match(button, /primaryDisabled:\s*\{[\s\S]*backgroundColor:\s*palette\.surfaceInput[\s\S]*borderColor:\s*palette\.textMuted/);
+  assert.match(button, /secondaryDisabled:\s*\{[\s\S]*backgroundColor:\s*palette\.surfaceInput[\s\S]*borderColor:\s*palette\.border/);
+  assert.match(button, /destructiveDisabled:\s*\{[\s\S]*backgroundColor:\s*palette\.danger[\s\S]*borderColor:\s*palette\.danger/);
+  assert.match(button, /ghostDisabledLabel:\s*\{[\s\S]*color:\s*palette\.textSecondary[\s\S]*opacity:\s*0\.55/);
+  assert.match(button, /isDisabled \? disabledStyle : null/);
+  assert.match(button, /isDisabled \? disabledLabelStyle : null/);
   assert.match(home, /if \(!hasLoadedActiveTrack\) return <Screen edges=\{\["top"\]\} scroll=\{false\}><AppShellHeader \/><LoadingState/);
   assert.match(settings, /<PreferenceSelectionScreen/);
   assert.match(preferenceSelection, /<Screen\b/);
