@@ -75,6 +75,9 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.match(progress, /miniBar:\s*\{[\s\S]*?backgroundColor:\s*palette\.surface[\s\S]*?height:\s*4/);
   assert.match(progress, /focusTitle:\s*\{[\s\S]*?fontSize:\s*16[\s\S]*?fontWeight:\s*"600"/);
   assert.match(progress, /focusStatus:\s*\{[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"500"[\s\S]*?lineHeight:\s*18/);
+  assert.match(progress, /sectionLabel:\s*\{\s*color:\s*palette\.primary[\s\S]*?fontSize:\s*12/);
+  assert.match(progress, /focusEvidenceDetail:\s*\{\s*color:\s*palette\.primary/);
+  assert.match(progress, /attentionActionLabel:\s*\{\s*color:\s*palette\.primary[\s\S]*?fontSize:\s*13/);
   assert.match(progress, /focus \? \([\s\S]*?focus\.statusLabel[\s\S]*?focus\.practicedLabel[\s\S]*?\) : hasFocusEvidence/);
   assert.match(progress, /<Button labelStyle=\{styles\.focusActionLabel\}[\s\S]*?variant="ghost">/);
   assert.match(progress, /activityLink:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"600"[\s\S]*?lineHeight:\s*18/);
