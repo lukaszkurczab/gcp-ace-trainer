@@ -1053,3 +1053,25 @@ and `566/566` tests, TypeScript, content-boundary, and runtime-privacy-boundary
 checks. This remains source-level convergence: fresh current-head Light/Dark
 runtime pixel comparison, expanded-details geometry proof, and Product Owner
 approval remain open.
+
+## Addendum — Current-channel cross-surface revalidation
+
+The current connector channel `ksxw21cw` was revalidated against Activity
+populated/empty nodes `842:11192` and `842:11410`, granted Notifications
+`92:865`, shared Button `141:817`, expanded Practice details `68:719`, and
+Practice Preparing `68:549`. The existing canonical owners already expose the
+safe Figma geometry: Activity filter/rows/empty CTA, Notification section and
+settings-row rhythm, the full Button state matrix, the 12/16 `REASON` label
+and 13/20 rich-details typography, and the Preparing async card.
+
+No source delta was justified by this pass. Figma-only `Loading older
+activity...` and `Leave practice` still have no truthful pagination or
+preparing-lifecycle command owner; adding them would create a fake state.
+The expanded details surface remains source-level aligned but is not promoted
+to `MATCHED` without current-head Light/Dark runtime evidence.
+
+Fresh `npm run qa:static` on source SHA `bd0fc5e` passed recovery inventory
+`284/114/557`, TypeScript, `566/566` tests, content boundary, and runtime
+privacy boundary. The repository was clean on `main` before this
+documentation-only evidence update; no push was performed. This does not
+claim 99% parity or Product Owner approval.
