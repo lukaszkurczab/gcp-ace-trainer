@@ -13,7 +13,6 @@ type SessionShellProps = Readonly<{
   actionBar?: ReactNode;
   children: ReactNode;
   layout?: "practice" | "simulation" | "simulationSaved";
-  footerVariant?: "default" | "session" | "simulation";
   modeTestID?: string;
   modeLabel?: string;
   onPositionPress?: () => void;
@@ -36,7 +35,6 @@ type SessionShellProps = Readonly<{
 export function SessionShell({
   actionBar,
   children,
-  footerVariant,
   layout = "practice",
   modeTestID,
   modeLabel,
@@ -61,7 +59,7 @@ export function SessionShell({
     <Screen
       edges={["top", "bottom"]}
       footer={actionBar ? <View style={styles.actionRegion}>{actionBar}</View> : undefined}
-      footerVariant={footerVariant ?? (layout === "practice" ? "session" : "simulation")}
+      footerVariant={layout === "practice" ? "session" : "simulation"}
       header={(
         <>
           <View style={[styles.topBar, isSimulationLayout ? styles.topBarSimulation : null, isSavedSimulationLayout ? styles.topBarSavedSimulation : null]}>

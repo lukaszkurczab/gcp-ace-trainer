@@ -611,13 +611,31 @@ keeps the top bar horizontal at 200% text size, and selects explicit 228 px
 Practice or 361 px active-Simulation footer geometry. The obsolete large-text
 column/session-root styles were removed after the reachability scan.
 
-The operation-recovery reference `74:834` remains an explicit open delta:
-Figma places the notice and recovery actions below a footer-less question
-shell, while the current runtime still owns them through the existing default
-footer. Focused checks passed `33/33`; current-tree `npm run qa:static` passed
+The preceding addendum recorded the operation-recovery reference `74:834` as
+an open delta; the implementation below supersedes that status. The prior
+evidence correctly identified that Figma places the notice and recovery
+actions below a footer-less question shell. Focused checks passed `33/33`; the
+then-current `npm run qa:static` passed
 `284/114/557` recovery inventory and `566/566` tests with TypeScript and both
 boundary checks. Runtime Light/Dark pixel proof, recovery geometry, and
 Product Owner approval remain open; do not mark this as 99% parity.
+
+## Addendum — Simulation operation-recovery layout convergence
+
+Figma `74:834` and `74:879` define the recovery geometry as a footer-less
+852 px question shell followed by a 20 px gap, a 353×76 notice, 48 px full
+width actions, 12 px action spacing, and a 16 px bottom inset. The canonical
+`SimulationSessionSurface` now renders that recovery region below
+`SessionShell`; operation notices no longer enter the fixed `Screen` footer.
+The obsolete `actionBarOperation` style and `SessionShell` footer override
+were removed. Operation projections, commands, selectors, accessibility, and
+persistence are unchanged.
+
+Focused checks passed `34/34`; current-tree `npm run qa:static` passed
+`284/114/557` recovery inventory and `566/566` tests with TypeScript and both
+boundary checks. Runtime Light/Dark pixel proof, action-sheet comparison,
+CoreSimulator/Maestro capture, and Product Owner approval remain open; do not
+mark this as 99% parity.
 
 ## 8. Kryterium końcowe
 

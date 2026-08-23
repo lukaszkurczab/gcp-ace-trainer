@@ -30,7 +30,7 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
     return <CompletedSurface projection={projection} sessionId={runtimeIdentity?.sessionId} />;
   }
   const operationNotice = projection.operation && isSimulationOperationNotice(projection.operation) ? <SimulationOperationPanel operation={projection.operation} /> : null;
-  const actionBar = projection.confirmation ? undefined : projection.actions ? <ActionBar operationNotice={operationNotice} sessionId={runtimeIdentity?.sessionId} {...projection.actions} /> : operationNotice;
+  const actionBar = projection.confirmation || operationNotice ? undefined : projection.actions ? <ActionBar sessionId={runtimeIdentity?.sessionId} {...projection.actions} /> : undefined;
   const interactionLocked = projection.state !== "editable";
   const savedResponse = projection.state === "editable" && projection.notice?.message === "Saved";
 
@@ -38,7 +38,6 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
     <View style={styles.root} testID={runtimeIdentity ? runtimeSelectors.simulation.root(runtimeIdentity.sessionId) : undefined}>
       <SessionShell
         actionBar={actionBar}
-        footerVariant={operationNotice ? "default" : "simulation"}
         layout={savedResponse ? "simulationSaved" : "simulation"}
         modeLabel={projection.modeLabel}
         onPositionPress={projection.state === "editable" ? () => setNavigatorVisible(true) : undefined}
@@ -54,20 +53,34 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
         {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} variant={savedResponse ? "simulationSaved" : "simulation"} /> : null}
         {projection.operation && !isSimulationOperationNotice(projection.operation) ? <SimulationOperationPanel operation={projection.operation} /> : null}
       </SessionShell>
+      {operationNotice ? <SimulationRecoverySurface actions={projection.actions} operationNotice={operationNotice} sessionId={runtimeIdentity?.sessionId} /> : null}
       {projection.state === "editable" && projection.onOccurrencePress ? <SimulationQuestionNavigator onDismiss={() => setNavigatorVisible(false)} onOccurrencePress={projection.onOccurrencePress} positions={projection.navigator} visible={navigatorVisible} /> : null}
       {projection.confirmation ? <ConfirmationActionSheet confirmation={projection.confirmation} sessionId={runtimeIdentity?.sessionId} /> : null}
     </View>
   );
 }
 
-function ActionBar({ operationNotice, primary, secondary, sessionId, tertiary }: NonNullable<SimulationSurfaceProjection["actions"]> & Readonly<{ operationNotice?: ReactNode; sessionId?: string }>) {
+function ActionBar({ primary, secondary, sessionId, tertiary }: NonNullable<SimulationSurfaceProjection["actions"]> & Readonly<{ sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   return (
-    <View style={[styles.actionBar, operationNotice ? styles.actionBarOperation : null]}>
-      {operationNotice}
+    <View style={styles.actionBar}>
       {primary ? <View style={styles.actionSlot}><Action action={primary} fullWidth sessionId={sessionId} /></View> : null}
       {secondary ? <View style={styles.actionSlot}><Action action={secondary} fullWidth sessionId={sessionId} /></View> : null}
       {tertiary ? <View style={styles.actionSlot}><Action action={tertiary} fullWidth sessionId={sessionId} /></View> : null}
+    </View>
+  );
+}
+
+function SimulationRecoverySurface({ actions, operationNotice, sessionId }: Readonly<{ actions?: SimulationSurfaceProjection["actions"]; operationNotice: ReactNode; sessionId?: string }>) {
+  const styles = useThemedStyles(createStyles);
+  return (
+    <View style={styles.recoveryRegion}>
+      {operationNotice}
+      {actions ? <View style={styles.recoveryActions}>
+        {actions.primary ? <Action action={actions.primary} fullWidth sessionId={sessionId} /> : null}
+        {actions.secondary ? <Action action={actions.secondary} fullWidth sessionId={sessionId} /> : null}
+        {actions.tertiary ? <Action action={actions.tertiary} fullWidth sessionId={sessionId} /> : null}
+      </View> : null}
     </View>
   );
 }
@@ -219,7 +232,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dimensionLabel: { ...typography.bodyStrong, color: palette.textPrimary },
   error: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
   actionBar: { gap: spacing.sm, width: "100%" },
-  actionBarOperation: { gap: spacing.md },
   actionSlot: { alignSelf: "stretch" },
   fullWidthAction: { alignSelf: "stretch" },
   notice: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
@@ -231,6 +243,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   orderRow: { alignItems: "flex-start", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   prompt: { ...typography.body, color: palette.textPrimary },
   questionCard: { backgroundColor: "transparent", borderWidth: 0, padding: 0 },
+  recoveryActions: { gap: spacing.md, width: "100%" },
+  recoveryRegion: { gap: spacing.lg, paddingBottom: spacing.lg, paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
   questionLabel: { color: palette.primary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   root: { flex: 1 },
   success: { backgroundColor: palette.successSoft, borderColor: palette.success },

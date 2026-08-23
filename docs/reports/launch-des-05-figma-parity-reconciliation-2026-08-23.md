@@ -1122,3 +1122,33 @@ privacy boundary. This is source-level convergence only: current-head
 Light/Dark runtime pixel evidence, CoreSimulator/Maestro capture, operation
 recovery geometry, and Product Owner approval remain open. This does not
 claim 99% parity.
+
+## Addendum — Simulation operation-recovery layout convergence
+
+This addendum supersedes the preceding open-delta statement for the recovery
+surface.
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`74:834` (`07E · Save failure · Keep editing`) and `74:879`
+(`07F · Navigation recovery`). Both references use an 852 px footer-less
+question shell followed by a 20 px gap, a 353×76 operation notice, full-width
+48 px actions, 12 px action spacing, and 16 px bottom inset. `74:834` has
+`Try again`, `Keep editing`, and `Leave simulation`; `74:879` has `Continue`
+and `Leave simulation`.
+
+`SimulationSessionSurface` now removes operation notices from the fixed
+`Screen` footer entirely and renders one canonical recovery region below the
+`SessionShell`. The previous `actionBarOperation` styling and the
+`SessionShell` footer override were removed because they represented the
+wrong owner and could not produce the Figma footer-less shell. The existing
+operation projection, commands, runtime selectors, accessibility semantics,
+and persistence behavior remain unchanged. The neighboring action-sheet
+references `74:968` and `74:992` were revalidated; no source delta was made
+there because the existing modal remains the canonical action-sheet owner.
+
+Focused operation/session/shell checks passed `34/34`. Fresh
+`npm run qa:static` passed recovery inventory `284/114/557`, TypeScript,
+`566/566` tests, content boundary, and runtime privacy boundary. Current-head
+Light/Dark runtime pixel evidence, CoreSimulator/Maestro capture, action-sheet
+runtime comparison, and Product Owner approval remain open. This does not
+claim 99% parity.

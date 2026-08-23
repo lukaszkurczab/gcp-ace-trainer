@@ -298,7 +298,8 @@ test("simulation active shell uses the Figma question and action-footer variant"
   assert.match(shell, /header=\{/);
   assert.match(shell, /sessionContent:\s*\{\s*gap:\s*spacing\.md,?\s*\}/);
   assert.match(shell, /progressTrackSimulation:\s*\{\s*backgroundColor:\s*palette\.surfaceInput/);
-  assert.match(simulation, /footerVariant=\{operationNotice \? "default" : "simulation"\}/);
+  assert.match(simulation, /operationNotice \? <SimulationRecoverySurface/);
+  assert.doesNotMatch(simulation, /footerVariant=\{operationNotice/);
   assert.match(simulation, /layout=\{savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(simulation, /variant=\{savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(simulation, /simulationPrompt: \{[\s\S]*fontSize: 22[\s\S]*lineHeight: 28/);
