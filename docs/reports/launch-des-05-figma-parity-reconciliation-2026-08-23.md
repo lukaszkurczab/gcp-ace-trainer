@@ -354,3 +354,67 @@ Focused Practice/Simulation checks passed 26/26 and `npm run qa:static`
 passed with 561/561 tests and recovery inventory 283/113/552. Runtime pixel
 comparison remains unavailable because Maestro is absent and CoreSimulatorService
 rejects simulator connections; no 99% parity claim is made.
+
+## Addendum — Current-head Practice Hub revalidation
+
+On current source SHA `d4d0cfc`, the live Figma node `55:993` was revalidated
+through connector channel `ksxw21cw` with fresh design context and screenshot
+evidence. The canonical `PracticeHubScreen` already matches the safe visual
+contract: 18 px page/intro rhythm; layered hero surface with 22 px radius,
+20 px padding, 16 px internal rhythm, visible 3×44 px rail, 6 px copy gap,
+20/28 hero title, 13.5/19 detail, and 16 px action gap; the grouped mode
+surface and 72 px rows preserve the 14/11/2 text hierarchy and 32/8 icon-tile
+geometry.
+
+An independent implementation pass made no code change because no additional
+safe geometry mismatch was found. The canonical `buildPracticeModes()` list,
+commands, explicit weak-area unavailable state, accessibility behavior, and
+large-text handling remain unchanged. Figma-only Independent Practice and
+Coding Interview rows remain a `CANONICAL_CONFLICT`, not an implementation
+target. Focused Practice Hub checks passed 2/2, typecheck and `git diff
+--check` passed, and `npm run qa:static` passed with recovery inventory
+281/113/552 and 561/561 tests. Fresh runtime pixel comparison remains
+unverified because Maestro is unavailable and CoreSimulatorService refuses
+the simulator connection; this is source evidence, not a 99% completion
+claim.
+
+## Addendum — Reachability and dead-code convergence
+
+Commit `d4d0cfc` applies the evidence-backed cleanup from the current route
+and design-system audit. The unused `DomainAccent` and `MetricCard` exports
+and files were removed after an inbound-reference scan; the associated tests
+now assert the remaining canonical Practice Hub presentation without naming
+deleted symbols. The unreachable Practice Hub branch for Free-excluded scope
+modes was deleted, while the independently reachable Home declared-scope
+entry remains unchanged.
+
+The navigation contract was also reduced to its actual consumers: the unused
+`Exam.questionIndex` parameter and simulation-summary `completionKind` route
+parameter were removed. Simulation summaries continue to derive completion
+state from the verified durable result, so this is a route-contract cleanup,
+not a lifecycle or visual behavior change. Focused route/presentation/design
+system checks passed 40/40 and typecheck passed. This does not change the
+remaining runtime pixel-evidence or owner-approval blockers.
+
+Post-cleanup `npm run qa:static` also passed with recovery inventory
+281/113/552, 561/561 tests, content-boundary, and runtime-privacy-boundary
+checks.
+
+## Addendum — Button state-token decision boundary
+
+Live Figma `141:817` was revalidated against the repository-owned `Button`
+primitive. The shared component currently has one generic disabled treatment,
+while the Figma authority defines distinct Primary, Secondary, Destructive,
+and Ghost disabled/pressed states. A worker review confirmed that the
+existing palette cannot represent the complete matrix without misusing
+unrelated Light/Dark roles or introducing local color fallbacks.
+
+This row is therefore `DESIGN_SYSTEM_DECISION_REQUIRED`, not a code gap to
+patch opportunistically. The minimum owner-bound decision is a symmetric
+Light/Dark button token group for primary-pressed surface, primary-disabled
+border, ghost-pressed surface, and destructive foreground, plus an explicit
+decision on whether runtime `loading` should inherit the Figma Disabled
+appearance. No Button source change was made; the existing geometry,
+accessibility, and loading behavior remain stable. The contrast of the live
+Dark destructive-disabled foreground also requires owner/accessibility review
+before implementation.
