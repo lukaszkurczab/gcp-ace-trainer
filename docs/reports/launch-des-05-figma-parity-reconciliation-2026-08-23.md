@@ -1175,3 +1175,23 @@ checks (`2/2` and `10/10`), TypeScript, and full `npm run qa:static` with
 recovery inventory `284/114/557`, `566/566` tests, content boundary, and
 runtime privacy boundary. This is a source-level correction only and does
 not claim 99% parity.
+
+## Addendum — Practice setup selected-segment token convergence
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`55:2172` (Custom Practice settings). The compact segmented control already
+matched the 54 px shell, 4 px inset, 10 px selected segment, and selected
+primary surface. Its selected `questions` caption was using `onPrimary`,
+while Figma specifies the action `primary` token; the canonical
+`PracticeSetupScreen` now uses `palette.primary` for that caption.
+
+The Figma-only `Focus areas` summary and `Save settings` CTA remain excluded:
+the current route owns `Start session`, session-length selection, feedback
+timing, and the corresponding session command, but no truthful focus-area
+selection or settings-save command exists in the repository. The route stays
+`PARTIAL` pending current-head Light/Dark runtime evidence and owner approval.
+
+Source commit `a404eac` passed the focused setup/loading/configuration/visual
+checks (`27/27`), TypeScript, and full `npm run qa:static` with recovery
+inventory `284/114/557`, `566/566` tests, content boundary, and runtime
+privacy boundary. This does not claim 99% parity.

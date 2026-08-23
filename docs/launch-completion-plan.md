@@ -658,6 +658,22 @@ TypeScript, and full `npm run qa:static` (`284/114/557` recovery inventory,
 `566/566` tests, content boundary, and runtime privacy boundary). Do not mark
 this route or the overall objective as 99% parity.
 
+## Addendum — Practice setup selected-segment token convergence
+
+Current-channel Figma `55:2172` confirms the Custom Practice compact control
+uses the action `primary` token for the selected segment's `questions` caption.
+The canonical `PracticeSetupScreen` now uses `palette.primary` instead of
+`palette.onPrimary`; the 54 px segmented shell, 4 px inset, 10 px selected
+segment, compact choice rows, header, and sticky footer remain unchanged.
+
+Figma-only `Focus areas` and `Save settings` remain unimplemented because the
+repository has no truthful owner or command for them; the canonical route
+continues to expose `Start session`. Focused setup/loading/configuration/
+visual checks passed `27/27`, and full `npm run qa:static` passed with
+`284/114/557` recovery inventory and `566/566` tests plus both boundary
+validators. Runtime Light/Dark proof and Product Owner approval remain open;
+do not mark this route or the overall objective as 99% parity.
+
 ## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.
