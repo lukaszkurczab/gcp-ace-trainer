@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `d1483e9`
+Current source SHA at packet update: `176e331`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -429,6 +429,22 @@ identical.
 
 No feedback semantics, durable state, route contract, or runtime selector
 changed. Focused accessibility/visual-shell/session checks passed 27/27;
+`npm run qa:static` passed with recovery inventory 283/113/552 and 561/561
+tests, typecheck, content-boundary, and runtime-privacy-boundary checks.
+Current-head runtime pixel comparison remains unverified because Maestro is
+unavailable and CoreSimulatorService refuses simulator connections.
+
+## Addendum — Home metric and activity CTA convergence
+
+Commit `176e331` applies two safe visual corrections to the repository-owned
+Home surface against live Figma node `55:445` in connector channel `ksxw21cw`.
+Overview now places its divider only between metric rows, matching the Figma
+structure without leaving a trailing line after `Last session`. The Recent
+activity `View activity` action retains its accessible press target and action
+semantics but no longer renders a chevron, matching the text-only Figma CTA.
+
+No data projection, route, action command, runtime selector, or accessibility
+contract changed. Focused Home/visual/large-text checks passed 15/15;
 `npm run qa:static` passed with recovery inventory 283/113/552 and 561/561
 tests, typecheck, content-boundary, and runtime-privacy-boundary checks.
 Current-head runtime pixel comparison remains unverified because Maestro is
