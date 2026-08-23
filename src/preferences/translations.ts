@@ -284,7 +284,7 @@ const polish: Readonly<Record<string, string>> = {
   "Leave session": "Opuść sesję",
   "Preparing session": "Przygotowywanie sesji",
   "Preparing practice": "Przygotowywanie ćwiczeń",
-  "Preparing the session plan and first question.": "Przygotowywanie planu sesji i pierwszego pytania.",
+  "Preparing the session plan and first item.": "Przygotowywanie planu sesji i pierwszego zadania.",
   "Keep learning": "Kontynuuj naukę",
   "Leave and resume later, or abandon it permanently. Answers already saved remain available.": "Wyjdź i wróć później albo trwale porzuć sesję. Zapisane odpowiedzi pozostaną dostępne.",
   "Recover session": "Odzyskaj sesję",

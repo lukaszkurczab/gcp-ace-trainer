@@ -139,11 +139,18 @@ function QuestionCard({ question }: Readonly<{ question: PracticeQuestionPresent
 
 function PreparingNotice() {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { colors: palette, t } = useAppPreferences();
   return (
-    <View accessibilityLabel={t("Preparing session")} style={styles.preparing}>
-      <Text style={styles.preparingTitle}>{t("Preparing practice")}</Text>
-      <Text style={styles.noticeText}>{t("Preparing the session plan and first question.")}</Text>
+    <View accessibilityLabel={t("Preparing session")} style={styles.asyncState}>
+      <View style={styles.asyncStatusRow}>
+        <View accessible accessibilityLabel={t("Preparing session")} style={styles.asyncIcon}>
+          <Icon color={palette.textSecondary} name="rotate-ccw" size={24} />
+        </View>
+        <Text style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
+      </View>
+      <Text maxFontSizeMultiplier={2} style={styles.asyncTitle}>{t("Preparing practice")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Preparing the session plan and first item.")}</Text>
+      <View accessible={false} style={styles.asyncSpacer} />
     </View>
   );
 }
@@ -262,8 +269,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   noticeText: { ...typography.small, color: palette.textSecondary },
   modalBackdrop: { backgroundColor: "rgba(0, 0, 0, 0.56)", flex: 1, justifyContent: "flex-end" },
   modalDismissArea: { ...StyleSheet.absoluteFill },
-  preparing: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, gap: spacing.sm, minHeight: 160, justifyContent: "center", padding: spacing.xl },
-  preparingTitle: { ...typography.heading, color: palette.textPrimary },
   questionLabel: { ...typography.caption, color: palette.primary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
   prompt: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", letterSpacing: -0.3, lineHeight: 28 },
   questionCard: { gap: spacing.md },
