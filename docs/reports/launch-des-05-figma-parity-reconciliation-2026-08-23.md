@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `b58042d`
+Current source SHA at packet update: `deb7b81`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -52,6 +52,7 @@ the current file:
 | Current Practice Hub frame | `55:993` — `03A · Practice · Coding · Review available` |
 | Current Practice Setup frame | `55:2172` — `04A · Manage Practice Settings · Coding` |
 | Current Progress frame | `842:9563` — `Pattern / Progress Screen · Established Evidence` |
+| Current Progress empty-state frame | `842:10949` — `Pattern / Progress Screen · No Evidence` |
 | Shared Button authority | `141:817` |
 | Current connector session | `ksxw21cw`, supplied by the owner in the active task |
 
@@ -502,3 +503,23 @@ passed 29/29; `npm run qa:static` passed with recovery inventory 283/113/553
 and 562/562 tests, typecheck, content-boundary, and runtime-privacy-boundary
 checks. Current-head runtime pixel comparison remains unverified because
 Maestro is unavailable and CoreSimulatorService refuses simulator connections.
+
+## Addendum — Progress no-evidence state convergence
+
+Commit `deb7b81` applies the safe empty-state branch from live Figma node
+`842:10949` in connector channel `ksxw21cw`. When the canonical projection
+reports `model.hasData === false`, Progress now renders the explicit no-evidence
+surface: the Figma-aligned glyph, title, explanatory copy, and, only for the
+Algorithms family where an existing canonical action is available, `Open
+Practice`. The previous empty `Current focus`, `Needs attention`, activity, and
+evidence sections are not rendered in this state.
+
+No goal, cadence, effectiveness, trend, or focus-area metric was added. The
+action reuses `algorithmsProgress.priority.primaryAction`; model shape, durable
+records, route ownership, selectors, and accessibility semantics remain
+unchanged. Polish translations were added for the two new visible strings.
+Focused Progress/Home checks passed 29/29; `npm run qa:static` passed with
+recovery inventory 283/113/553 and 562/562 tests, typecheck, content-boundary,
+and runtime-privacy-boundary checks. Current-head runtime pixel comparison
+remains unverified because Maestro is unavailable and CoreSimulatorService
+refuses simulator connections.
