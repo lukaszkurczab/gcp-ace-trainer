@@ -409,8 +409,8 @@ and Ghost disabled/pressed states. A worker review confirmed that the
 existing palette cannot represent the complete matrix without misusing
 unrelated Light/Dark roles or introducing local color fallbacks.
 
-This row is therefore `DESIGN_SYSTEM_DECISION_REQUIRED`, not a code gap to
-patch opportunistically. The minimum owner-bound decision is a symmetric
+This row remains `PARTIAL` with a design-system decision required; it is not
+a code gap to patch opportunistically. The minimum owner-bound decision is a symmetric
 Light/Dark button token group for primary-pressed surface, primary-disabled
 border, ghost-pressed surface, and destructive foreground, plus an explicit
 decision on whether runtime `loading` should inherit the Figma Disabled

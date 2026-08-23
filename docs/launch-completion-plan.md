@@ -254,8 +254,8 @@ Practice Hub dla wykluczonych trybów scope. Usunięto też nieużywane parametr
 czyta wyłącznie zweryfikowany durable result. Nie zmieniono żadnej komendy,
 taksonomii ani reachable wizualnego stanu.
 
-Shared Button `141:817` pozostaje `DESIGN_SYSTEM_DECISION_REQUIRED`: pełna
-zgodność stanów wymaga nowych symetrycznych tokenów Light/Dark oraz decyzji,
+Shared Button `141:817` pozostaje `PARTIAL`, z decyzją design-systemową do
+wykonania: pełna zgodność stanów wymaga nowych symetrycznych tokenów Light/Dark oraz decyzji,
 czy `loading` ma dziedziczyć Disabled. Nie dodano lokalnych kolorów ani
 niebezpiecznego mapowania między tematami.
 
