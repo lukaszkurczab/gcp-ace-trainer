@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `0a7e8c3`
+Current source SHA at packet update: `86e32d9`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -55,6 +55,8 @@ the current file:
 | Current Practice Hub frame | `55:993` — `03A · Practice · Coding · Review available` |
 | Current Practice Setup frame | `55:2172` — `04A · Manage Practice Settings · Coding` |
 | Current Practice preparing frame | `68:549` — `06A · Preparing` |
+| Current Practice Question Shell unanswered frame | `68:569` — `06B · Single choice · Unanswered` |
+| Current Practice Question Shell selected frame | `68:603` — `06C · Single choice · Selected · Immediate feedback mode` |
 | Current Progress frame | `842:9563` — `Pattern / Progress Screen · Established Evidence` |
 | Current Progress empty-state frame | `842:10949` — `Pattern / Progress Screen · No Evidence` |
 | Current Activity frame | `842:11192` — `Pattern / Activity Screen · Populated` |
@@ -93,6 +95,7 @@ Only the repository plan statuses are used below.
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
 | Current Practice preparing-state visual parity | `partial` | `0a7e8c3` reuses the canonical async-state owner for the preparing card, status row, typography, spacer, and item terminology from `68:549`; the Figma-only `Leave practice` command remains unresolved because the preparing phase has no safe lifecycle/command owner. Fresh runtime pixel comparison remains blocked. |
+| Current Practice Question Shell/footer visual parity | `partial` | `86e32d9` adds a Practice-only `session` footer variant with 228 px minimum height, bottom alignment, and 8 px action gap from `68:569`/`68:603`; Simulation keeps its existing footer owner. Shared disabled Button token parity remains unresolved. Fresh runtime pixel comparison remains blocked. |
 | Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
 | Runtime screenshot and pixel evidence | `blocking` | Existing captures prove selected previous slices only. Current Activity-route capture and several same-head state comparisons remain unverified because `maestro` is unavailable and CoreSimulatorService refused the simulator connection. |
@@ -642,4 +645,22 @@ visual-shell checks passed 43/43; `npm run typecheck` and `git diff --check`
 passed, and full `npm run qa:static` passed with recovery inventory 284/114/555,
 564/564 tests, typecheck, content-boundary, and runtime-privacy-boundary
 checks. Runtime pixel proof remains unavailable because Maestro is absent and
+CoreSimulatorService refuses simulator connections.
+
+## Addendum — Practice Question Shell footer convergence
+
+Commit `86e32d9` revalidated live Figma nodes `68:569` (`06B · Single choice ·
+Unanswered`) and `68:603` (`06C · Single choice · Selected · Immediate feedback
+mode`) against the shared `SessionShell` owner. The Practice route now uses a
+dedicated `session` footer variant: 228 px minimum height, bottom-aligned
+actions, and an 8 px action gap, matching the Figma action-footer geometry.
+Simulation continues to use its existing layout-specific footer path.
+
+The shared disabled Button colors remain unresolved against `141:817` and were
+not copied locally; they require one design-system token decision for all
+Button variants. No command, state transition, persistence, or response
+semantics changed. Focused shell/session checks passed 34/34; full
+`npm run qa:static` passed with recovery inventory 284/114/555, 564/564 tests,
+typecheck, content-boundary, and runtime-privacy-boundary checks. Runtime
+pixel proof remains unavailable because Maestro is absent and
 CoreSimulatorService refuses simulator connections.
