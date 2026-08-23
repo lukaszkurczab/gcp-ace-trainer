@@ -58,6 +58,8 @@ export function ListRow({
     return (
       <Pressable
         accessibilityRole="button"
+        accessibilityState={{ disabled }}
+        disabled={disabled}
         onPress={onPress}
         style={({ pressed }) => [rowStyle, pressed ? styles.pressed : null]}
         testID={testID}
@@ -103,10 +105,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     opacity: 0.84
   },
   disabled: {
-    opacity: 0.5,
+    backgroundColor: palette.surfaceInput,
   },
   disabledDetail: {
-    color: palette.textMuted,
+    color: palette.textSecondary,
   },
   leading: {
     alignItems: "center",

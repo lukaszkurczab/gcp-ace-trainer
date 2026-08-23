@@ -160,7 +160,7 @@ export function NotificationSettingsScreen({ navigation }: NotificationSettingsS
         <ListRow
           detail={reminderBlocked ? text.reminderBlocked : notifications.dailyReminder ? formatDailyReminderTime(notifications.dailyReminder) : text.reminderOff}
           disabled={reminderBlocked}
-          leading={<IconTile iconSize={20} name="bell" size={32} tone="settings" />}
+          leading={<IconTile iconSize={20} name="bell" size={32} tone={reminderBlocked ? "muted" : "settings"} />}
           onPress={reminderBlocked ? undefined : () => setReminderSheetVisible(true)}
           title={text.dailyReminder}
           trailing={reminderBlocked ? undefined : <Icon color={colors.listRow.icon} name="chevron-right" size={16} />}
