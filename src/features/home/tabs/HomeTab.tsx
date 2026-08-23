@@ -24,6 +24,7 @@ type HomeTabProps = {
   dashboardError: string | null;
   onChangeTrack: () => void;
   onChooseTopic: () => void;
+  onOpenActivity: () => void;
   onOpenSettings: () => void;
   onRecommendationAction: (action: HomeRecommendationAction) => void;
   onStartLearning: (topicId: string) => void;
@@ -39,6 +40,7 @@ export function HomeTab({
   dashboardError,
   onChangeTrack,
   onChooseTopic,
+  onOpenActivity,
   onOpenSettings,
   onRecommendationAction,
   onStartLearning,
@@ -75,7 +77,10 @@ export function HomeTab({
   const decisionIcon = recommendation?.icon ?? (isCodingInterviewTrack ? "route" : "cloud");
   const decisionTone = recommendation?.enabled === false ? "muted" : "primary";
   const decisionEnabled = recommendation?.enabled ?? true;
-  const overview = buildOverviewMetrics(activeTrack.id, reviewQueueItems, trainingAttempts);
+  const recentAttempts = trainingAttempts
+    .filter((attempt) => attempt.trackId === activeTrack.id && attempt.sessionId !== activeSession?.id)
+    .sort((left, right) => right.answeredAt.localeCompare(left.answeredAt));
+  const overview = buildOverviewMetrics(activeTrack.id, reviewQueueItems, trainingAttempts, activeSession?.id);
 
   return (
     <>
@@ -184,9 +189,9 @@ export function HomeTab({
       </View>
       <View style={styles.detailSection}>
         <Text style={styles.sectionLabel}>{t("Recent activity")}</Text>
-        {trainingAttempts.length > 0 ? (
+        {recentAttempts.length > 0 ? (
           <View style={styles.activityList}>
-            {trainingAttempts.slice(0, 3).map((attempt) => (
+            {recentAttempts.slice(0, 1).map((attempt) => (
               <View key={attempt.id} style={styles.activityRow}>
                 <View style={styles.activityCopy}>
                   <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(modeLabel(attempt.modeId))}</Text>
@@ -198,6 +203,15 @@ export function HomeTab({
         ) : (
           <Text maxFontSizeMultiplier={2} style={styles.activityEmpty}>{t("No activity yet")}</Text>
         )}
+        <Pressable
+          accessibilityRole="button"
+          onPress={onOpenActivity}
+          style={({ pressed }) => [styles.activityAction, pressed ? styles.pressed : null]}
+          testID={runtimeSelectors.home.activity()}
+        >
+          <Text style={styles.activityActionText}>{t("View activity")}</Text>
+          <Icon color={palette.accentTeal} name="chevron-right" size={18} />
+        </Pressable>
       </View>
     </>
   );
@@ -209,8 +223,9 @@ function buildOverviewMetrics(
   trackId: TrackDisplay["id"],
   reviewQueueItems: readonly ReviewQueueEntry[],
   trainingAttempts: readonly TrainingAttempt[],
+  activeSessionId?: string,
 ): readonly HomeOverviewMetric[] {
-  const trackAttempts = trainingAttempts.filter((attempt) => attempt.trackId === trackId);
+  const trackAttempts = trainingAttempts.filter((attempt) => attempt.trackId === trackId && attempt.sessionId !== activeSessionId);
   const weekStart = startOfUtcWeek(new Date());
   const weekAttempts = trackAttempts.filter((attempt) => new Date(attempt.answeredAt).getTime() >= weekStart.getTime());
   const dueReviews = reviewQueueItems.filter((entry) => entry.trackId === trackId && Date.parse(entry.dueAt) <= Date.now()).length;
@@ -449,5 +464,19 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   activityEmpty: {
     ...typography.small,
     color: palette.textSecondary,
+  },
+  activityAction: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    gap: spacing.xs,
+    minHeight: 44,
+    paddingHorizontal: spacing.xs,
+  },
+  activityActionText: {
+    color: palette.accentTeal,
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 22,
   },
 });

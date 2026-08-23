@@ -270,6 +270,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             onChooseTopic={() => navigation.navigate(ROUTES.TOPIC_ROADMAP, {
               trackId: activeTrack.id,
             })}
+            onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
             onOpenSettings={() => setActiveTab("settings")}
             onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
             onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
@@ -284,6 +285,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             attempts={data.attempts}
             cloudProgress={data.cloudProgress}
             onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
+            onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
             onProgressAction={handleProgressAction}
             practiceHistory={data.practiceHistory}
             reviewQueueItems={data.reviewQueueItems}

@@ -1,5 +1,6 @@
 export const ROUTES = {
   HOME: "Home",
+  ACTIVITY: "Activity",
   APPEARANCE_SETTINGS: "AppearanceSettings",
   LEGAL_INFORMATION: "LegalInformation",
   NOTIFICATION_SETTINGS: "NotificationSettings",

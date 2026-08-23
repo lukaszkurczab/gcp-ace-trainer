@@ -18,6 +18,7 @@ type ProgressTabProps = {
   attempts: CertificationExamSummaryViewModel[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
   onChangeTrack: () => void;
+  onOpenActivity?: () => void;
   onProgressAction?: (action: ProgressAction) => void;
   practiceHistory: CertificationPracticeAnswerViewModel[];
   reviewQueueItems?: readonly ReviewQueueEntry[];
@@ -31,6 +32,7 @@ export function ProgressTab({
   attempts,
   cloudProgress,
   onChangeTrack,
+  onOpenActivity,
   onProgressAction,
   practiceHistory,
   reviewQueueItems = [],
@@ -119,7 +121,7 @@ export function ProgressTab({
         )}
       </View>
 
-      <ActivitySection items={model.activity} trackFamily={activeTrack.familyId} />
+      <ActivitySection items={model.activity} onOpenActivity={onOpenActivity} trackFamily={activeTrack.familyId} />
 
       {model.algorithmsProgress ? (
         <AlgorithmsEvidenceSection
@@ -135,13 +137,20 @@ export function ProgressTab({
   );
 }
 
-function ActivitySection({ items, trackFamily }: Readonly<{ items: readonly ProgressTabActivityItem[]; trackFamily: string }>) {
+function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ items: readonly ProgressTabActivityItem[]; onOpenActivity?: () => void; trackFamily: string }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const groups = ["Today", "Yesterday", "This week", "Earlier"] as const;
   return (
     <View style={styles.section} testID="patternly:progress:activity">
-      <Text style={styles.sectionTitle}>{t("Activity")}</Text>
+      <View style={styles.sectionHeading}>
+        <Text style={styles.sectionTitle}>{t("Activity")}</Text>
+        {onOpenActivity ? (
+          <Pressable accessibilityRole="button" onPress={onOpenActivity} style={({ pressed }) => [pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.activity()}>
+            <Text style={styles.activityLink}>{t("View activity")}</Text>
+          </Pressable>
+        ) : null}
+      </View>
       {items.length > 0 ? groups.map((group) => {
         const groupItems = items.filter((item) => item.group === group);
         if (groupItems.length === 0) return null;
@@ -283,6 +292,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   weekAction: { ...typography.small, color: palette.primary },
   section: { gap: 10 },
   sectionHeading: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  activityLink: { ...typography.small, color: palette.primary, fontWeight: "600" },
   focusCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 14, gap: spacing.md, padding: spacing.lg },
   focusTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   focusPercent: { color: palette.textPrimary, fontSize: 36, fontWeight: "700", lineHeight: 40 },

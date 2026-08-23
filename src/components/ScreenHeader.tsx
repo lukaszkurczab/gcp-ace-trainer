@@ -13,12 +13,13 @@ type ScreenHeaderProps = Readonly<{
   context?: string;
   contextTone?: "muted" | "primary";
   description?: string;
+  variant?: "default" | "activity";
   titleTestID?: string;
   title: string;
 }>;
 
 /** Figma Patternly Library Screen Header: local context, title, and optional description. */
-export function ScreenHeader({ backAction, context, contextTone = "muted", description, title, titleTestID }: ScreenHeaderProps) {
+export function ScreenHeader({ backAction, context, contextTone = "muted", description, title, titleTestID, variant = "default" }: ScreenHeaderProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
 
@@ -37,7 +38,7 @@ export function ScreenHeader({ backAction, context, contextTone = "muted", descr
         </View>
       ) : null}
       <View style={styles.copy}>
-        <Text maxFontSizeMultiplier={2} style={styles.title} testID={titleTestID}>{title}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.title, variant === "activity" ? styles.activityTitle : null]} testID={titleTestID}>{title}</Text>
         {description ? <Text maxFontSizeMultiplier={2} style={styles.description}>{description}</Text> : null}
       </View>
     </View>
@@ -68,6 +69,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   title: {
     ...typography.title,
     color: palette.textPrimary,
+  },
+  activityTitle: {
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: "600",
   },
   description: {
     ...typography.small,

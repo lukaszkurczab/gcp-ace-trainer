@@ -28,6 +28,7 @@ export const runtimeSelectors = Object.freeze({
     root: () => selector("home", "root"),
     trackCard: (trackId: TrackId) => selector("home", "track-card", trackId),
     changeTrack: () => selector("home", "change-track"),
+    activity: () => selector("home", "activity"),
     selectTrack: (trackId: TrackId) => selector("home", "select-track", trackId),
     selectTrackContinue: () => selector("home", "select-track", "continue"),
   }),
@@ -102,6 +103,12 @@ export const runtimeSelectors = Object.freeze({
   progress: Object.freeze({
     root: () => selector("progress", "root"),
     node: (roadmapNodeId: string) => selector("progress", "node", roadmapNodeId),
+    activity: () => selector("progress", "activity"),
+  }),
+  activity: Object.freeze({
+    root: () => selector("activity", "root"),
+    filter: () => selector("activity", "filter"),
+    row: (sessionId: string) => selector("activity", "row", sessionId),
   }),
   simulation: Object.freeze({
     root: (sessionId: string) => selector("simulation", "root", sessionId),

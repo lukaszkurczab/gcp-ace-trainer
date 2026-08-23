@@ -6,6 +6,7 @@ import type { AlgorithmsDeclaredScopeMode } from "../application/coding-intervie
 
 export type RootStackParamList = {
   [ROUTES.HOME]: { initialTab?: Exclude<ShellTab, "practice"> } | undefined;
+  [ROUTES.ACTIVITY]: undefined;
   [ROUTES.APPEARANCE_SETTINGS]: undefined;
   [ROUTES.LEGAL_INFORMATION]: undefined;
   [ROUTES.NOTIFICATION_SETTINGS]: undefined;

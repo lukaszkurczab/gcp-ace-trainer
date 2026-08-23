@@ -18,6 +18,7 @@ const genericPendingPaths = [
   "src/features/exam/ExamScreen.tsx",
   "src/features/exam/ResultScreen.tsx",
   "src/features/home/HomeScreen.tsx",
+  "src/features/home/ActivityScreen.tsx",
   "src/features/practice/AlgorithmsPracticeSummaryScreen.tsx",
   "src/features/practice/AlgorithmsScopeSelectionScreen.tsx",
   "src/features/practice/CertificationPracticeSessionScreen.tsx",
@@ -62,7 +63,7 @@ test("EmptyState is the centered retained-content/unavailable status primitive",
   assert.doesNotMatch(emptyState, /backgroundColor: palette\.elevatedSurface|borderRadius: radius/);
 });
 
-test("exactly the fourteen inventoried generic pending branches use LoadingState", () => {
+test("exactly the fifteen inventoried generic pending branches use LoadingState", () => {
   const consumers = tsxFiles("src")
     .filter((path) => /<LoadingState\b/.test(source(path)))
     .sort();

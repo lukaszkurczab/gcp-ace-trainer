@@ -6,6 +6,7 @@ import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { ExamScreen } from "../features/exam/ExamScreen";
 import { HomeScreen } from "../features/home/HomeScreen";
+import { ActivityScreen } from "../features/home/ActivityScreen";
 import { AppearanceSettingsScreen } from "../features/home/AppearanceSettingsScreen";
 import { LegalInformationScreen } from "../features/home/LegalInformationScreen";
 import { NotificationSettingsScreen } from "../features/home/NotificationSettingsScreen";
@@ -50,6 +51,11 @@ export function RootNavigator() {
         name={ROUTES.HOME}
         component={HomeScreen}
         options={{ headerShown: false, title: "Patternly" }}
+      />
+      <Stack.Screen
+        name={ROUTES.ACTIVITY}
+        component={ActivityScreen}
+        options={{ headerShown: false, title: t("Activity") }}
       />
       <Stack.Screen
         name={ROUTES.APPEARANCE_SETTINGS}
