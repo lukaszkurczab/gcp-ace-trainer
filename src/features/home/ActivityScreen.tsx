@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { EmptyState, Icon, LoadingState, Screen, ScreenHeader, SettingsBottomSheet } from "../../components";
+import { Button, EmptyState, Icon, LoadingState, Screen, ScreenHeader, SettingsBottomSheet } from "../../components";
 import { ROUTES } from "../../constants";
 import { getTrackDisplays } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
@@ -91,9 +91,10 @@ export function ActivityScreen({ navigation }: Props) {
         </View>
       ) : (
         <View style={styles.empty} testID={runtimeSelectors.activity.root()}>
-          <EmptyState
-            description={t(filter === ALL_ACTIVITY_TRACKS ? "Complete a practice session to see it in Activity." : "No activity for this track yet.")}
-            title={t("No activity yet")}
+          <ActivityEmptyState
+            filtered={filter !== ALL_ACTIVITY_TRACKS}
+            onOpenPractice={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
+            onShowAll={() => setFilter(ALL_ACTIVITY_TRACKS)}
           />
         </View>
       )}
@@ -119,6 +120,29 @@ export function ActivityScreen({ navigation }: Props) {
         ))}
       </SettingsBottomSheet>
     </Screen>
+  );
+}
+
+function ActivityEmptyState({ filtered, onOpenPractice, onShowAll }: Readonly<{ filtered: boolean; onOpenPractice: () => void; onShowAll: () => void }>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
+  return (
+    <View style={styles.emptyActivityState}>
+      <View style={styles.emptyActivityIcon}>
+        <View style={styles.emptyActivityBarTall} />
+        <View style={styles.emptyActivityBarShort} />
+      </View>
+      <Text maxFontSizeMultiplier={2} style={styles.emptyActivityTitle}>{t(filtered ? "No activity for this track" : "No activity yet")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.emptyActivityDescription}>{t(filtered ? "Your Activity may still contain sessions from other tracks." : "Completed sessions and reviews will appear here.")}</Text>
+      {filtered ? (
+        <>
+          <Button onPress={onShowAll} style={styles.emptyActivityPrimary}>{t("Show all activity")}</Button>
+          <Button labelStyle={styles.emptyActivitySecondaryLabel} onPress={onOpenPractice} variant="ghost">{t("Open Practice")}</Button>
+        </>
+      ) : (
+        <Button onPress={onOpenPractice} style={styles.emptyActivityPrimary}>{t("Open Practice")}</Button>
+      )}
+    </View>
   );
 }
 
@@ -204,6 +228,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   statusDetail: { color: palette.warning },
   pressed: { opacity: 0.78 },
   empty: { alignItems: "center", flex: 1, justifyContent: "center" },
+  emptyActivityState: { alignItems: "center", gap: 16, paddingHorizontal: spacing.xl, width: "100%" },
+  emptyActivityIcon: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 24, flexDirection: "row", gap: 2, height: 48, justifyContent: "center", width: 48 },
+  emptyActivityBarTall: { backgroundColor: palette.primary, borderRadius: 2, height: 14, width: 3 },
+  emptyActivityBarShort: { backgroundColor: palette.primary, borderRadius: 2, height: 8, width: 3 },
+  emptyActivityTitle: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 21, textAlign: "center" },
+  emptyActivityDescription: { color: palette.textSecondary, fontSize: 14, lineHeight: 20, maxWidth: 353, textAlign: "center" },
+  emptyActivityPrimary: { minWidth: 151 },
+  emptyActivitySecondaryLabel: { color: palette.primary, fontSize: 14, fontWeight: "600", lineHeight: 18 },
   filterOption: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 48, paddingHorizontal: spacing.sm },
   filterOptionText: { ...typography.body, color: palette.textPrimary },
   selectedIcon: { color: palette.primary },
