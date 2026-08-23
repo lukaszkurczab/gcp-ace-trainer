@@ -8,6 +8,7 @@ import type { AppColors } from "../theme";
 
 type ListRowProps = {
   detail?: string;
+  disabled?: boolean;
   leading?: ReactNode;
   meta?: string;
   onPress?: () => void;
@@ -20,6 +21,7 @@ type ListRowProps = {
 
 export function ListRow({
   detail,
+  disabled = false,
   leading,
   meta,
   onPress,
@@ -33,6 +35,7 @@ export function ListRow({
   const rowStyle = [
     styles.row,
     variant === "grouped" ? styles.groupedRow : variant === "settings" ? styles.settingsRow : styles.cardRow,
+    disabled ? styles.disabled : null,
     style,
   ];
   const content = (
@@ -45,7 +48,7 @@ export function ListRow({
           </Text>
           {meta ? <Text maxFontSizeMultiplier={2} style={styles.meta}>{meta}</Text> : null}
         </View>
-        {detail ? <Text maxFontSizeMultiplier={2} style={[styles.detail, variant === "grouped" ? styles.groupedDetail : variant === "settings" ? styles.settingsDetail : null]}>{detail}</Text> : null}
+        {detail ? <Text maxFontSizeMultiplier={2} style={[styles.detail, variant === "grouped" ? styles.groupedDetail : variant === "settings" ? styles.settingsDetail : null, disabled ? styles.disabledDetail : null]}>{detail}</Text> : null}
       </View>
       {trailing ? <View style={styles.trailing}>{trailing}</View> : null}
     </>
@@ -98,6 +101,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   pressed: {
     opacity: 0.84
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  disabledDetail: {
+    color: palette.textMuted,
   },
   leading: {
     alignItems: "center",

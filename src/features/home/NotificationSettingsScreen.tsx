@@ -38,6 +38,7 @@ const copy = {
     permissionRequest: "Enable notifications",
     permissionUndeterminedDetail: "Allow local notifications before setting a reminder.",
     reminderOff: "Off",
+    reminderBlocked: "Blocked",
     reminderSave: "Save reminder",
     reminderTimeInvalid: "Use a valid 24-hour time, for example 20:00.",
     reminderTimePlaceholder: "20:00",
@@ -64,6 +65,7 @@ const copy = {
     permissionRequest: "Włącz powiadomienia",
     permissionUndeterminedDetail: "Zezwól na lokalne powiadomienia przed ustawieniem przypomnienia.",
     reminderOff: "Wyłączone",
+    reminderBlocked: "Zablokowane",
     reminderSave: "Zapisz przypomnienie",
     reminderTimeInvalid: "Podaj prawidłową godzinę w formacie 24-godzinnym, np. 20:00.",
     reminderTimePlaceholder: "20:00",
@@ -86,6 +88,7 @@ export function NotificationSettingsScreen({ navigation }: NotificationSettingsS
   const [reminderSheetVisible, setReminderSheetVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState("20:00");
   const text = copy[locale];
+  const reminderBlocked = notifications.permission === "denied";
 
   useEffect(() => {
     if (notifications.dailyReminder) setReminderTime(formatDailyReminderTime(notifications.dailyReminder));
@@ -155,14 +158,15 @@ export function NotificationSettingsScreen({ navigation }: NotificationSettingsS
 
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{text.reminderSection}</Text>
         <ListRow
-          detail={notifications.dailyReminder ? formatDailyReminderTime(notifications.dailyReminder) : text.reminderOff}
+          detail={reminderBlocked ? text.reminderBlocked : notifications.dailyReminder ? formatDailyReminderTime(notifications.dailyReminder) : text.reminderOff}
+          disabled={reminderBlocked}
           leading={<IconTile iconSize={20} name="bell" size={32} tone="settings" />}
-          onPress={() => setReminderSheetVisible(true)}
+          onPress={reminderBlocked ? undefined : () => setReminderSheetVisible(true)}
           title={text.dailyReminder}
-          trailing={<Icon color={colors.listRow.icon} name="chevron-right" size={16} />}
+          trailing={reminderBlocked ? undefined : <Icon color={colors.listRow.icon} name="chevron-right" size={16} />}
           variant="settings"
         />
-        <Text maxFontSizeMultiplier={2} style={styles.note}>{text.reminderNote}</Text>
+        {reminderBlocked ? null : <Text maxFontSizeMultiplier={2} style={styles.note}>{text.reminderNote}</Text>}
       </View>
 
       <SettingsBottomSheet

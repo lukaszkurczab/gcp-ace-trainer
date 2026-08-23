@@ -14,6 +14,7 @@ web-build/
 !.maestro/screenshot-capture/visual-shell/visual-shell-release.yaml
 !.maestro/screenshot-capture/visual-shell/notification-permission-capture.yaml
 !.maestro/screenshot-capture/visual-shell/notification-blocked-capture.yaml
+!.maestro/screenshot-capture/visual-shell/notification-blocked-current-capture.yaml
 !.maestro/screenshot-capture/visual-shell/algorithms-feedback-capture.yaml
 !.maestro/screenshot-capture/visual-shell/algorithms-completed-summary-capture.yaml
 !.maestro/screenshot-capture/visual-shell/algorithms-completed-summary-deferred-capture.yaml
