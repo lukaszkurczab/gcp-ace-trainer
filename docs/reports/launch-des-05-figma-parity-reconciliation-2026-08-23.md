@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `21e6ff8`
+Current source SHA at packet update: `a81c390`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -317,13 +317,13 @@ for semantic migration until that decision exists.
 - Live Figma design context and screenshots: pass for the current file/page/
   library and the node set recorded above, including the revalidations in the
   addenda.
-- `npm run typecheck`: pass at current source SHA `992d5bb`.
-- Latest focused shell/session checks: 25/25 pass.
-- Full `npm run qa:static`: pass at source commit `992d5bb`, with recovery
+- `npm run typecheck`: pass at current source SHA `a81c390`.
+- Latest focused review/visual checks: 20/20 pass.
+- Full `npm run qa:static`: pass at source commit `a81c390`, with recovery
   inventory 284/114/556 and 565/565 tests, TypeScript, content boundary, and
   runtime privacy boundary.
-- Working tree: clean after documentation commits `eb591ea` and `c8810d8`;
-  application source remains at `992d5bb`.
+- Working tree: clean after the `a81c390` application commit and current
+  documentation update.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
 
@@ -873,3 +873,27 @@ tests, TypeScript, content-boundary, and runtime-privacy-boundary.
 
 This is source-level convergence, not a `MATCHED` claim: current-head
 Light/Dark pixel comparison and Product Owner approval remain open.
+
+## Addendum — Answer Review filter spacing convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma node
+`81:538` (`08A · Answer Review · Default`). The reference places the 44 px
+review filter inside a full-width wrapper with `20 px` horizontal and `8 px`
+vertical padding. The shared `ReviewShell` had applied the horizontal inset
+directly to the filter and omitted the 16 px vertical rhythm, moving the
+question content upward. The same reference defines a `6 px` gap between the
+`QUESTION` eyebrow and prompt; the Answer Review owner had used the repository
+`4 px` token.
+
+Commit `a81c390` adds the canonical `filterRow` wrapper and changes only the
+Answer Review question-block gap to the observed `6 px` value. The shared
+ReviewShell now serves the same spacing contract for Answer Review and
+Simulation Review. Navigation, filtering, review marking, answer state,
+details disclosure, persistence, and accessibility semantics remain unchanged;
+no second shell or fallback path was introduced.
+
+Focused review/visual checks passed `20/20`; full `npm run qa:static` passed
+with recovery inventory `284/114/556` and `565/565` tests, TypeScript,
+content-boundary, and runtime-privacy-boundary checks. This is source-level
+convergence, not a `MATCHED` claim: current-head Light/Dark pixel comparison,
+Maestro/CoreSimulator capture, and Product Owner approval remain open.
