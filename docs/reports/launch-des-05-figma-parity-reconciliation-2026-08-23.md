@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `5a0fabe`
+Current source SHA at packet update: `17f1e25`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
