@@ -3,7 +3,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { AnswerOption, Button, EmptyState, Icon, LoadingState, ReviewNavigator, ReviewShell, type ReviewFilter, Screen } from "../../components";
+import { AnswerOption, Button, EmptyState, LoadingState, ReviewNavigator, ReviewShell, ReviewUnavailableSurface, type ReviewFilter, Screen } from "../../components";
 import { setQuestionNeedsReview } from "../../application/certification";
 import { loadExamSummaries as getAttempts, loadReviewQueueItems as getReviewQueueItems } from "../../application/learningReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
@@ -116,11 +116,11 @@ export function AnswerReviewScreen({ navigation, route }: Props) {
           onToggle={() => { void toggle(currentAnswer); }}
         />
       ) : (
-        <View style={styles.unavailableContent}>
-          <View style={styles.unavailableIcon}><Icon color={styles.unavailableIconGlyph.color} name="warning" size={24} /></View>
-          <Text maxFontSizeMultiplier={2} style={styles.unavailableTitle}>{t("No answers in this view")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.unavailableDescription}>{t("Switch filters to review the full attempt.")}</Text>
-        </View>
+        <ReviewUnavailableSurface
+          description={t("Switch filters to review the full attempt.")}
+          style={styles.unavailableContent}
+          title={t("No answers in this view")}
+        />
       )}
       <ReviewNavigator
         currentOrdinal={currentAnswer?.questionNumber ?? 1}
@@ -184,9 +184,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   optionsFeedbackSpacer: { height: 28 },
   questionOptionsSpacer: { height: 22 },
   unavailableContent: { alignItems: "center", backgroundColor: "rgba(14,22,40,0.6)", borderColor: "rgba(255,255,255,0.05)", borderRadius: 18, gap: spacing.lg, marginTop: 101, paddingHorizontal: spacing.xxxl, paddingVertical: 28 },
-  unavailableDescription: { color: palette.textMuted, fontSize: 14, lineHeight: 21, maxWidth: 289, textAlign: "center" },
-  unavailableIcon: { alignItems: "center", backgroundColor: "rgba(30,41,59,0.5)", borderRadius: 24, height: 48, justifyContent: "center", width: 48 },
-  unavailableIconGlyph: { color: palette.warning },
-  unavailableTitle: { color: palette.textPrimary, fontSize: 17, fontWeight: "600", lineHeight: 21, textAlign: "center" },
   unanswered: { ...typography.bodyStrong, color: palette.textMuted },
 });

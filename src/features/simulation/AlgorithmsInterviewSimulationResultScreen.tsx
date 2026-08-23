@@ -5,7 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { getAlgorithmsPracticeResultProjection, type AlgorithmsSessionResultProjection } from "../../application/coding-interview";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { AnswerOption, EmptyState, Icon, ReviewNavigator, ReviewShell, Screen } from "../../components";
+import { AnswerOption, EmptyState, ReviewNavigator, ReviewShell, ReviewUnavailableSurface, Screen } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -129,11 +129,11 @@ function AlgorithmsInterviewSimulationReviewSurface({ navigation, sessionId }: R
         testID={runtimeSelectors.summary.root(sessionId)}
       >
         <View style={styles.unavailableContent}>
-          <View style={styles.unavailableSurface}>
-            <View style={styles.unavailableIcon}><Icon color={styles.unavailableIconGlyph.color} name="warning" size={24} /></View>
-            <Text style={styles.unavailableTitle}>{t("Result unavailable")}</Text>
-            <Text style={styles.unavailableDescription}>{t("This question was added after your session completed. No answer was recorded.")}</Text>
-          </View>
+          <ReviewUnavailableSurface
+            description={t("This question was added after your session completed. No answer was recorded.")}
+            style={styles.unavailableSurface}
+            title={t("Result unavailable")}
+          />
         </View>
         <ReviewNavigator
           currentOrdinal={unavailableOrdinal}
@@ -215,10 +215,6 @@ const createReviewStyles = (palette: AppColors) => StyleSheet.create({
   options: { gap: spacing.sm },
   unavailableContent: { alignSelf: "stretch", flex: 1, position: "relative", width: "100%" },
   unavailableSurface: { alignItems: "center", backgroundColor: "rgba(14,22,40,0.6)", borderColor: "rgba(255,255,255,0.05)", borderRadius: 18, borderWidth: 1, gap: spacing.lg, left: 20, paddingHorizontal: spacing.xxxl, paddingVertical: 28, position: "absolute", top: 185, width: 353 },
-  unavailableIcon: { alignItems: "center", backgroundColor: "rgba(30,41,59,0.5)", borderRadius: 24, height: 48, justifyContent: "center", width: 48 },
-  unavailableIconGlyph: { color: palette.warning },
-  unavailableTitle: { color: palette.textPrimary, fontSize: 17, fontWeight: "600", lineHeight: 21, textAlign: "center" },
-  unavailableDescription: { color: palette.textMuted, fontSize: 14, lineHeight: 21, maxWidth: 289, textAlign: "center" },
 });
 
 function messageFor(error: unknown): string { return describeOperationalFailure(error, "The session result is not available because verification did not complete."); }

@@ -214,6 +214,7 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   const review = source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx");
   const sharedReviewShell = source("src/components/ReviewShell.tsx");
   const sharedReviewNavigator = source("src/components/ReviewNavigator.tsx");
+  const sharedUnavailableSurface = source("src/components/ReviewUnavailableSurface.tsx");
   const facade = source("src/application/coding-interview/codingInterviewSessionFacade.ts");
 
   assert.match(sharedReviewShell, /<IconButton[\s\S]*icon="chevron-left"/);
@@ -221,6 +222,10 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   assert.match(review, /<AnswerOption/);
   assert.match(review, /<ReviewFeedbackBlock/);
   assert.match(review, /<ReviewNavigator/);
+  assert.match(review, /<ReviewUnavailableSurface/);
+  assert.match(sharedUnavailableSurface, /name="warning"/);
+  assert.match(sharedUnavailableSurface, /borderRadius:\s*18/);
+  assert.match(sharedUnavailableSurface, /maxWidth:\s*289/);
   assert.match(review, /contentVariant="unavailable"/);
   assert.match(review, /Result unavailable/);
   assert.match(review, /This question was added after your session completed\. No answer was recorded\./);

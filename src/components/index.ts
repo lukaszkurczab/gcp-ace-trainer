@@ -15,6 +15,7 @@ export * from "./LoadingState";
 export * from "./ProgressBar";
 export * from "./ReviewShell";
 export * from "./ReviewNavigator";
+export * from "./ReviewUnavailableSurface";
 export * from "./Screen";
 export * from "./ScreenHeader";
 export * from "./SectionHeader";
