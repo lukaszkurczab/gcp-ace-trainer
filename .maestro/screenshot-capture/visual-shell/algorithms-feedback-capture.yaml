@@ -5,6 +5,26 @@ tags:
   - uiux-evidence
   - algorithms
 ---
+- launchApp
+- runFlow:
+    when:
+      visible:
+        id: "patternly:practice:setup:root"
+    commands:
+      - tapOn: "Go back"
+      - extendedWaitUntil:
+          visible:
+            id: "patternly:practice:hub:root"
+          timeout: 30000
+- runFlow:
+    when:
+      visible: "Session complete"
+    commands:
+      - tapOn: "Back to practice"
+      - extendedWaitUntil:
+          visible:
+            id: "patternly:practice:hub:root"
+          timeout: 30000
 - runFlow:
     when:
       visible: "Notifications"
@@ -33,6 +53,30 @@ tags:
     visible:
       id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-settings"
+      - extendedWaitUntil:
+          visible:
+            id: "settings-screen"
+          timeout: 30000
+      - tapOn:
+          id: "settings-appearance"
+      - extendedWaitUntil:
+          visible: "Choose how Patternly looks on this device."
+          timeout: 30000
+      - tapOn: "^${THEME_LABEL},.*"
+      - tapOn: "Go back"
+      - tapOn:
+          id: "main-tab-bar-home"
+      - extendedWaitUntil:
+          visible:
+            id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+          timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
 - extendedWaitUntil:
@@ -58,8 +102,13 @@ tags:
 - takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__algorithms__question__${THEME}__${DEVICE_PROFILE}"
 - tapOn:
     id: "patternly:session:option:alg-complexity-amortized-001:each_worst_constant"
-- tapOn:
-    id: "patternly:session:submit:alg-complexity-amortized-001"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:submit:alg-complexity-amortized-001"
+    commands:
+      - tapOn:
+          id: "patternly:session:submit:alg-complexity-amortized-001"
 - scrollUntilVisible:
     element:
       id: "patternly:session:feedback:alg-complexity-amortized-001"
