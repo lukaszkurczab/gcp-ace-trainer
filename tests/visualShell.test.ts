@@ -133,6 +133,9 @@ test("the shared header owns accessible back geometry and long-copy reflow witho
   const activity = source("src/features/home/ActivityScreen.tsx");
   assert.match(activity, /groupLabel:[\s\S]*fontSize:\s*12[\s\S]*lineHeight:\s*15/);
   assert.doesNotMatch(activity, /groupLabel:[^\n]*textTransform/);
+  assert.match(activity, /filterText:\s*\{\s*\.\.\.typography\.bodyStrong/);
+  assert.match(activity, /row:\s*\{[\s\S]*?borderBottomWidth:\s*1[\s\S]*?gap:\s*10[\s\S]*?minHeight:\s*73/);
+  assert.match(activity, /detail:\s*\{[\s\S]*?fontSize:\s*11[\s\S]*?lineHeight:\s*15\.4/);
   assert.match(activity, /statusDetail:\s*\{\s*color:\s*palette\.warning\s*\}/);
 });
 
