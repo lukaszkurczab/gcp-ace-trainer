@@ -26,3 +26,15 @@ test("simulation operation surface renders only declared state actions and never
   assert.match(lifecycle, /operation\.kind !== "save_failed" && operation\.kind !== "stale_revision"/);
   assert.match(facade, /operation\.error\.allowedAction !== "recover"/);
 });
+
+test("simulation pause/end uses one Figma action sheet and keeps the destructive command reachable", () => {
+  assert.match(screen, /overlay === "pause_end"/);
+  assert.match(screen, /title: "Action required"/);
+  assert.match(screen, /description: "Review this action before continuing\."/);
+  assert.match(screen, /label: "Keep working"/);
+  assert.match(screen, /label: "Leave and resume later"/);
+  assert.match(screen, /label: "End simulation"/);
+  assert.match(screen, /destructive:/);
+  assert.doesNotMatch(screen, /overlay === "abandon"/);
+  assert.match(readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8"), /confirmationDestructive/);
+});

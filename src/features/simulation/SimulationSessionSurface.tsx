@@ -127,7 +127,8 @@ function ConfirmationActionSheet({ confirmation, sessionId }: Readonly<{ confirm
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const reduceMotion = useReducedMotion();
-  return <Modal animationType={reduceMotion ? "none" : "slide"} onRequestClose={confirmation.secondary.onPress} statusBarTranslucent transparent visible><View style={styles.confirmationRoot}><Pressable accessibilityLabel="Keep working" accessibilityRole="button" onPress={confirmation.secondary.onPress} style={styles.confirmationBackdrop} /><View accessibilityViewIsModal style={styles.confirmationSheet}><Text maxFontSizeMultiplier={2} style={styles.confirmationTitle}>{t(confirmation.title)}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t(confirmation.description)}</Text><Action action={confirmation.primary} fullWidth sessionId={sessionId} /><Action action={confirmation.secondary} fullWidth sessionId={sessionId} /></View></View></Modal>;
+  const dismiss = confirmation.dismiss ?? confirmation.secondary;
+  return <Modal animationType={reduceMotion ? "none" : "slide"} onRequestClose={dismiss.onPress} statusBarTranslucent transparent visible><View style={styles.confirmationRoot}><Pressable accessibilityLabel="Keep working" accessibilityRole="button" onPress={dismiss.onPress} style={styles.confirmationBackdrop} /><View accessibilityViewIsModal style={styles.confirmationStack}><View style={styles.confirmationSheet}><Text maxFontSizeMultiplier={2} style={styles.confirmationTitle}>{t(confirmation.title)}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t(confirmation.description)}</Text><Action action={confirmation.primary} fullWidth sessionId={sessionId} /><Action action={confirmation.secondary} fullWidth sessionId={sessionId} /></View>{confirmation.destructive ? <View style={styles.confirmationDestructive}><Action action={confirmation.destructive} fullWidth sessionId={sessionId} /></View> : null}</View></View></Modal>;
 }
 
 function CompletedSurface({ projection, sessionId }: Readonly<{ projection: SimulationSurfaceProjection; sessionId?: string }>) {
@@ -183,7 +184,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   confirmationTitle: { ...typography.heading, color: palette.textPrimary },
   confirmationBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 0, 0, 0.48)" },
   confirmationRoot: { flex: 1, justifyContent: "flex-end" },
+  confirmationStack: { width: "100%" },
   confirmationSheet: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, borderWidth: 1, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, elevation: 8 },
+  confirmationDestructive: { backgroundColor: palette.background, paddingHorizontal: spacing.xl, paddingBottom: spacing.sm, paddingTop: spacing.md },
   summaryScreen: { gap: 0, padding: 0 },
   summaryShell: { backgroundColor: palette.surface, borderRadius: 24, flex: 1, overflow: "hidden" },
   summaryHeaderBar: { height: 52 },

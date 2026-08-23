@@ -13,8 +13,7 @@ export type SimulationSurfaceState =
   | "save_failed"
   | "stale_revision"
   | "finish_confirmation"
-  | "leave_confirmation"
-  | "abandon_confirmation"
+  | "pause_end_confirmation"
   | "abandoning"
   | "abandon_failed"
   | "expired"
@@ -125,6 +124,8 @@ export type SimulationSurfaceProjection = Readonly<{
   completion?: SimulationCompletionProjection;
   confirmation?: Readonly<{
     description: string;
+    destructive?: SimulationAction;
+    dismiss?: SimulationAction;
     primary: SimulationAction;
     secondary: SimulationAction;
     title: string;
