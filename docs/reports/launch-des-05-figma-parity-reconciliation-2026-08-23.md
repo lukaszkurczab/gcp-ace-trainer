@@ -106,6 +106,68 @@ Only the repository plan statuses are used below.
 | Account, authentication, Premium, content trust, and deletion UI | `unknown / needs evidence` | The canonical contract defines boundaries, but the current route graph does not provide matching owners for all Figma surfaces. Owner must decide whether those Figma surfaces are in this parity objective or outside the current launch route graph. |
 | Goals, cadence, focus areas, and Progress effectiveness | `blocking` | The Figma frames expose values/actions that the current local model does not truthfully provide. Adding labels or synthetic metrics would violate the canonical contract. |
 
+## Phase A — reachable-path parity matrix
+
+The matrix below is derived from the current `RootNavigator` and the
+conditional render branches in the route owners. `Current status` uses the
+Phase A categories from the parity brief: it is not a final claim of visual
+parity. In particular, `PARTIAL` includes source-level convergence whose
+current-head Light/Dark screenshot comparison is still unavailable.
+
+`DESIGN_MISSING` means that the current Figma file/channel has no approved,
+route-bound authority for that state. `CANONICAL_CONFLICT` means that the
+available Figma reference describes a command, data model, taxonomy, or state
+that contradicts the repository-owned product contract. Neither category is a
+permission to invent a replacement UI.
+
+| Surface | Route / trigger | App state | Theme | Figma node | Shared components | Current status | Required action |
+|---|---|---|---|---|---|---|---|
+| Application shell | All stack routes and Home tabs | Normal scroll, footer, safe area, large text | Light / Dark / System | `830:7457`, `830:8697`; header `830:7792`, `830:9032`; navigation `830:7805`, `830:9045` | `Screen`, `ScreenHeader`, `AppShellHeader`, `BottomTabBar`, `Button` | `PARTIAL` | Capture the current SHA in both themes and bind each shared state to the approved node set. |
+| Home overview | `Home` default tab | Established track, recommendation, overview metrics, recent activity | Light / Dark | `55:445`, `55:539` | `HomeScreen`, `HomeTab`, `Card`, `Button` | `PARTIAL` | Produce same-head screenshots for ready, review-due, active/resume, and no-activity variants. |
+| Home bootstrap and failures | `Home` load / focus effect | Loading, shell read error, recommendation unavailable; the no-track branch delegates to `SelectTrack` below | Light / Dark | No route-bound approved state in the current set | `Screen`, `SelectTrackScreen`, `LoadingState`, `EmptyState` | `DESIGN_MISSING` | Request exact Figma states, including trigger and recovery action; keep current explicit unavailable states until then. |
+| Progress | `Home` → Progress tab | Established evidence, no evidence, focus/attention actions, diagnostics expansion | Light / Dark | `842:9563`, `842:10949` | `ProgressTab`, `Card`, `ListRow`, `Button`, `EmptyState` | `PARTIAL` | Capture populated and empty states at current SHA; separately verify the existing model-backed actions. |
+| Track Evidence | Progress evidence action (not currently routed) | Read-only evidence list and row drill-down | Light / Dark | `842:11057` | No canonical route owner; `TopicRoadmapScreen` is not equivalent | `CANONICAL_CONFLICT` | Owner must decide route/read-model/row-command ownership or explicitly exclude this Figma surface from launch scope. |
+| Activity | `Activity` | Populated, empty, filtered-empty, filter selection | Light / Dark | `842:11192`, `842:11410`, `842:11466`; row patterns `830:7642`, `830:8898` | `ActivityScreen`, `ScreenHeader`, `ListRow`, `EmptyState`, sheet primitives | `PARTIAL` | Restore capture tooling and compare populated, empty, filtered-empty, filter-sheet, and large-text states. |
+| Settings root | `Home` → Settings tab | Canonical app, learning, data/privacy, developer rows and app identity | Light / Dark | `822:7687`, `830:8182`, `830:9422` | `SettingsTab`, `SettingsGroup`, `ListRow`, `IconTile`, `ScreenHeader` | `PARTIAL` | Capture the current canonical row set; do not add rows merely because they appear in the Figma fixture. |
+| Settings fixture-only rows | Settings design reference | Account, sync, plan, goals, cadence, help rows absent from current commands | Light / Dark | `830:8182`, `830:9422` | No canonical route/command owner | `CANONICAL_CONFLICT` | Resolve scope with the owner; no account or commercial semantics may be created from this fixture alone. |
+| Appearance settings | `AppearanceSettings` | Light, Dark, System selection and preview | Light / Dark / System | No current route-bound approved node | `AppearanceSettingsScreen`, `SettingsDialog`, `ScreenHeader` | `DESIGN_MISSING` | Supply a route-bound Figma state set covering selection, preview, and persistence feedback. |
+| Notifications | `NotificationSettings` | Permission checking, undetermined, denied, granted, editor sheet, invalid time, save/disable failure | Light / Dark | `92:865`, `92:889`, `92:914` | `NotificationSettingsScreen`, `ScreenHeader`, `SettingsDialog`, `Button` | `PARTIAL` | Capture all permission/editor/error states at current SHA and bind native prompt boundaries separately. |
+| Data, legal, diagnostics | `YourData`, `LegalInformation`, `BackendDiagnostics` | Local-data contract, legal links, configured developer verification, unavailable/error states | Light / Dark | No current route-bound approved node | `ScreenHeader`, `Screen`, `EmptyState`, `Button` | `DESIGN_MISSING` | Obtain route-bound design states after the account/data/legal contract is owner-approved; do not copy Figma-only account surfaces. |
+| Track selection | `SelectTrack`, Home/Practice no-track branch | First choice, returning unchanged, returning with changed selection | Light / Dark | `42:422`, `42:478`, `42:539` | `SelectTrackScreen`, `Screen`, `AmbientBackdrop`, `Button` | `PARTIAL` | Capture onboarding and both returning states; validate eight-track rendering against the approved launch scope. |
+| Track registration failures | `SelectTrack` registration/admission failure trigger | Unknown registration and unadmitted registration | Light / Dark | `42:604`, `42:642` | No truthful registration-state input in current route | `CANONICAL_CONFLICT` | Owner must provide the registration-state contract or retire these references from this scope; do not add simulated failure dialogs. |
+| Practice Hub | `PracticeHub` and Home/Practice entry | Loading, review available/unavailable, enabled/unavailable mode rows; the no-track branch delegates to `SelectTrack` | Light / Dark | `55:993`, row `232:1716` | `PracticeHubScreen`, `Screen`, `Card`, `ListRow`, `IconTile`, `Button` | `PARTIAL` | Capture loaded states; verify current canonical four-mode Coding Free contract against the approved frame scope. |
+| Practice Hub fixture-only modes | Practice Hub Figma rows | `Independent Practice` / `Coding Interview` rows versus canonical Learn, Guided, Custom, Weak Area Review | Light / Dark | `55:993` | No new mode owner permitted | `CANONICAL_CONFLICT` | Keep the repository-owned mode taxonomy; resolve the Figma/product discrepancy before any semantic row change. |
+| Practice scope and roadmap | `AlgorithmsScopeSelection`, `TopicRoadmap` | Scope ready/loading/unavailable; current, selected, locked, empty, and handoff rows | Light / Dark | No current route-bound approved node | `Screen`, `ScreenHeader`, `ListRow`, `ChoiceRow`, `EmptyState` | `DESIGN_MISSING` | Supply exact route/state references before changing route-owned geometry or taxonomy presentation. |
+| Practice setup | `PracticeSetup` | Loading, unavailable, canonical mode configuration, validation, small-screen/keyboard states | Light / Dark | `55:2172` | `PracticeSetupScreen`, `Screen`, `ChoiceRow`, `Card`, `Button`, `ScreenHeader` | `PARTIAL` | Capture canonical setup variants and resolve current-head visual deltas without changing session semantics. |
+| Practice setup fixture-only controls | `PracticeSetup` Figma state | Focus areas summary and `Save settings` footer | Light / Dark | `55:2172` | No canonical focus-area/save command owner | `CANONICAL_CONFLICT` | Resolve the Custom Practice length and focus-area/save contract with the owner before semantic implementation. |
+| Practice session — preparing and operation | `PracticeSession` | Preparing, operation notice, retry, leave/pause/abandon and recovery states | Light / Dark | `68:549`, `68:1074` | `PracticeSessionSurface`, `SessionShell`, `OperationNotice`, `Button` | `PARTIAL` | Capture current source states; obtain a lifecycle owner for any Figma-only preparing command. |
+| Practice session — question and feedback | `PracticeSession` | Unanswered, selected, immediate feedback, details expanded, final item | Light / Dark | `68:569`, `68:603`, `68:637`, `68:719`, `68:844` | `PracticeSessionSurface`, `SessionShell`, `AnswerOption`, `PracticeFeedbackBlock`, `DetailsDisclosure` | `PARTIAL` | Capture all interaction states in both themes and verify expanded content at current SHA. |
+| Practice session — other families | `PracticeSession` | Certification and Design Interview question/feedback variants | Light / Dark | No family-specific approved node in the current set | Family-specific session owners plus shared primitives | `DESIGN_MISSING` | Request family-specific references; keep the existing canonical lifecycle and explicit unavailable branches. |
+| Practice summary | `AlgorithmsPracticeSummary` | Loading, verified completed, ended early, unavailable | Light / Dark | `750:6235` | `AlgorithmsPracticeSummaryScreen`, `Screen`, `Button`, `EmptyState` | `PARTIAL` | Capture verified and unavailable outcomes; keep durable-result ownership unchanged. |
+| Certification exam | `Exam` | Preparing, question, selected response, navigator, flag, timeout, finish confirmation/failure | Light / Dark | No current route-bound approved node | `ExamScreen`, `Card`, `SettingsDialog`, `Button` | `DESIGN_MISSING` | Supply exam-specific references before replacing the current exam shell or confirmation states. |
+| Certification exam outcomes | `ExamReview`, `Result` | Loading, populated review, empty review, verified result, unavailable result | Light / Dark | No complete route-bound outcome set; shared unavailable reference only | `ExamReviewScreen`, `ResultScreen`, `ReviewUnavailableSurface`, `EmptyState` | `DESIGN_MISSING` | Provide route-bound outcome designs; do not expand the thin result surface with speculative metrics or actions. |
+| Simulation | `AlgorithmsInterviewSimulation` | Active/editing, save failure, navigator failure, operation recovery, leave/abandon, finish confirmation | Light / Dark | `74:539`, `74:726`, `74:834`, `74:879`, `74:968`, `74:992` | `AlgorithmsInterviewSimulationScreen`, `SessionShell`, `SimulationQuestionNavigator`, `SimulationOperationPanel`, `SettingsDialog` | `PARTIAL` | Capture active, navigator, recovery, action-sheet, and finalization states at current SHA. |
+| Simulation summary and review | `AlgorithmsInterviewSimulationSummary`, `AlgorithmsInterviewSimulationReview` | Verified result, filter all/missed, answer selection, details, unavailable result | Light / Dark | `81:538`, `801:7299`, `765:6130`, `82:538`, `801:7653` | `ReviewShell`, `ReviewNavigator`, `ReviewFeedbackBlock`, `ReviewUnavailableSurface`, `DetailsDisclosure` | `PARTIAL` | Capture current result/review states; preserve explicit unavailable and `Needs Review` contract conflict. |
+| Answer review | `AnswerReview` | Loading, no attempt, populated, filtered empty, details, update/error state | Light / Dark | `81:538`, `801:7299`, `765:6130`, `248:2394` | `ReviewShell`, `ReviewNavigator`, `AnswerOption`, `ReviewFeedbackBlock`, `DetailsDisclosure` | `PARTIAL` | Produce current-head screenshots; record `Needs Review` as a canonical conflict because the approved state does not show that mutation. |
+| Mistakes review | `MistakesReview` | Loading, no track, empty, filtered-empty, populated, unavailable | Light / Dark | No current route-bound approved node | `MistakesReviewScreen`, `ReviewShell`, `ListRow`, `EmptyState` | `DESIGN_MISSING` | Request the review-queue reference set for both families and all empty/error states. |
+
+### Matrix conclusion
+
+The current route graph is fully enumerated, but the matrix is not yet a
+final parity result: no current-head row may be promoted to `MATCHED` until
+the required Light/Dark evidence is captured and compared. The safe source
+work is therefore complete for the currently revalidated Figma-backed slices;
+the remaining work splits into three independent lanes:
+
+1. `DES-005-C`: owner-bound authority and the Custom Practice contract;
+2. `DES-005-D`: current-head visual capture for every `PARTIAL` row;
+3. owner-supplied Figma states or product decisions for `DESIGN_MISSING` and
+   `CANONICAL_CONFLICT` rows.
+
+This keeps missing design from blocking unrelated source work, while making
+the final `MATCHED` / `DESIGN_MISSING` / `CANONICAL_CONFLICT` report
+mechanically derivable from the matrix rather than inferred from test status.
+
 ## Confirmed contradictions and stale assumptions
 
 1. The active launch plan still names `76kzylrb` as the Figma authority. The
