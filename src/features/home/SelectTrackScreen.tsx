@@ -115,7 +115,7 @@ function TrackChoiceCard({ largeText, onPress, selected, title, track }: Readonl
   const { colors: palette, t } = useAppPreferences();
   const coding = track.id === CODING_INTERVIEW_TRACK_ID;
   const cloud = track.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID;
-  const icon = coding ? "route" : track.familyId === "certification" ? "cloud" : "grid";
+  const icon = coding ? "route" : cloud ? "server-stack" : "grid";
   const subtitle = coding ? "DSA & Problem Solving" : cloud ? "Cloud Fundamentals" : track.shortTitle;
   const freeStart = coding ? "Free start · Complexity and constraints" : cloud ? "Free start · Cloud fundamentals" : track.shortTitle;
 
@@ -130,8 +130,8 @@ function TrackChoiceCard({ largeText, onPress, selected, title, track }: Readonl
       {selected ? <View style={styles.selectedRail} /> : null}
       <View style={[styles.cardTopRow, largeText ? styles.trackMetaRowLargeText : null]}>
         <View style={styles.cardInfo}>
-          <View style={[styles.trackIcon, selected ? styles.trackIconSelected : null]}>
-            <Icon color={selected ? palette.primary : palette.textPrimary} name={icon} size={24} />
+          <View style={styles.trackIcon}>
+            <Icon color={palette.primary} name={icon} size={24} />
           </View>
           <View style={styles.titleGroup}>
                 <Text maxFontSizeMultiplier={2} style={[styles.trackTitle, selected ? null : styles.trackTitleUnselected]}>{coding ? t("Coding Interview") : title}</Text>
@@ -173,8 +173,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   cardTopRow: { alignItems: "flex-start", flexDirection: "row", gap: spacing.md, justifyContent: "space-between" },
   trackMetaRowLargeText: { alignItems: "flex-start", flexDirection: "column" },
   cardInfo: { alignItems: "flex-start", flex: 1, flexDirection: "row", gap: spacing.md, minWidth: 0 },
-  trackIcon: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: 14, borderWidth: 1, height: 44, justifyContent: "center", width: 44 },
-  trackIconSelected: { backgroundColor: colorWithOpacity(palette.primary, 0.08), borderColor: palette.primary },
+  trackIcon: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.primary, borderRadius: 14, borderWidth: 1, height: 44, justifyContent: "center", width: 44 },
   titleGroup: { flex: 1, gap: spacing.xxs, minWidth: 0 },
   trackTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   trackTitleUnselected: { color: palette.textSecondary },

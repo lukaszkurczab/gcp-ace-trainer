@@ -20,3 +20,9 @@ test("Algorithms bootstrap accepts a reachable large-text control without requir
   assert.match(bootstrap, /centerElement: false/);
   assert.match(bootstrap, /visibilityPercentage: 50/);
 });
+
+test("track cards use the Figma route/server-stack icon pair and shared input tile", () => {
+  assert.match(source, /coding \? "route" : cloud \? "server-stack"/);
+  assert.match(source, /color=\{palette\.primary\} name=\{icon\}/);
+  assert.match(source, /trackIcon:\s*\{[\s\S]*?backgroundColor: palette\.surfaceInput[\s\S]*?borderColor: palette\.primary/);
+});
