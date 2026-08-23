@@ -15,8 +15,8 @@ test("passive runtime selectors are attached to visible content rather than cont
   assert.match(home, /hasActiveSession \? null : \(/);
   assert.match(home, /t\("Open Practice"\)/);
   assert.doesNotMatch(home, /<Card[^>]*testID=\{runtimeSelectors\.home\.trackCard/);
-  assert.match(feedback, /<Text style=\{styles\.result\} testID=\{runtimeSelectors\.session\.result\(itemId, feedback\.result\)\}>/);
-  assert.doesNotMatch(feedback, /<View style=\{styles\.container\} testID=\{runtimeSelectors\.session\.result/);
+  assert.match(feedback, /<View style=\{styles\.reasonPanel\} testID=\{runtimeSelectors\.session\.result\(itemId, feedback\.result\)\}>/);
+  assert.doesNotMatch(feedback, /styles\.result\b|formatFeedbackResult/);
 });
 
 test("active-session resume uses the single recommendation card and a separate continue control", () => {

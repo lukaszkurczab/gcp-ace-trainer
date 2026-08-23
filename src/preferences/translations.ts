@@ -276,7 +276,6 @@ const polish: Readonly<Record<string, string>> = {
   "Code sample": "Przykład kodu",
   "Score": "Wynik",
   "Correct": "Poprawne",
-  "Answer result": "Wynik odpowiedzi",
   "Reason": "Uzasadnienie",
   "Incorrect": "Niepoprawne",
   "Partial": "Częściowe",
