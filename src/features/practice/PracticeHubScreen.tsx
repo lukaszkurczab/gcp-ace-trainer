@@ -68,7 +68,7 @@ const TAB_BAR_RESERVED_HEIGHT = 128;
 
 export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colorMode, colors: palette, t } = useAppPreferences();
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
@@ -185,7 +185,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
 
   return (
     <View style={styles.shell} testID={runtimeSelectors.practice.hubRoot()}>
-      <Screen edges={["top"]} style={styles.screenContent}>
+      <Screen ambient={colorMode === "dark"} edges={["top"]} style={styles.screenContent}>
         <View style={styles.pageIntro}>
           <Text style={styles.pageTitle}>{t("Practice")}</Text>
           <Pressable
@@ -287,7 +287,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {
-    backgroundColor: palette.background,
+    backgroundColor: "transparent",
     flex: 1,
   },
   screenContent: {

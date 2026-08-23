@@ -5,11 +5,13 @@ import { SafeAreaView, type Edge } from "react-native-safe-area-context";
 import { colorWithOpacity, spacing } from "../theme";
 import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
+import { AmbientBackdrop } from "./AmbientBackdrop";
 
 
 type ScreenProps = {
   children: ReactNode;
   compact?: boolean;
+  ambient?: boolean;
   edges?: Edge[];
   footer?: ReactNode;
   footerVariant?: "default" | "review" | "sticky";
@@ -17,13 +19,14 @@ type ScreenProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Screen({ children, compact = false, edges = ["bottom"], footer, footerVariant = "default", scroll = true, style }: ScreenProps) {
+export function Screen({ ambient = false, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", scroll = true, style }: ScreenProps) {
   const styles = useThemedStyles(createStyles);
   const contentStyle = [styles.content, compact ? styles.contentCompact : null, footer ? styles.contentWithFooter : null, style];
   const content = <View style={contentStyle}>{children}</View>;
 
   return (
-    <SafeAreaView edges={edges} style={styles.safeArea}>
+    <SafeAreaView edges={edges} style={[styles.safeArea, ambient ? styles.ambientSafeArea : null]}>
+      {ambient ? <AmbientBackdrop /> : null}
       {scroll ? (
         <ScrollView
           contentContainerStyle={[styles.scrollContent, compact ? styles.scrollContentCompact : null]}
@@ -45,6 +48,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   safeArea: {
     backgroundColor: palette.background,
     flex: 1
+  },
+  ambientSafeArea: {
+    backgroundColor: "transparent",
   },
   scrollContent: {
     flexGrow: 1,

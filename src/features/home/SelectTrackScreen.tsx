@@ -30,7 +30,7 @@ type SelectTrackScreenProps = {
 export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelected }: SelectTrackScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
-  const { colors: palette, t } = useAppPreferences();
+  const { colorMode, colors: palette, t } = useAppPreferences();
   const largeText = fontScale >= 1.3;
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>(CODING_INTERVIEW_TRACK_ID);
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
@@ -72,6 +72,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
   return (
     <View style={styles.shell} testID="patternly:home:select-track:root">
       <Screen
+        ambient={colorMode === "dark"}
         edges={["top", "bottom"]}
         footer={showFooter ? (
           <View style={[styles.footerContent, largeText ? styles.actionsLargeText : null]}>
@@ -167,7 +168,7 @@ function TrackChoiceCard({ disabled, largeText, onPress, selected, title, track 
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  shell: { backgroundColor: palette.background, flex: 1 },
+  shell: { backgroundColor: "transparent", flex: 1 },
   screenContent: { gap: spacing.xxl, paddingBottom: spacing.lg, paddingTop: spacing.xs },
   returningScreenContent: { gap: spacing.lg, paddingTop: spacing.xs },
   intro: { gap: spacing.sm },
