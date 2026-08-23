@@ -118,6 +118,8 @@ test("the shared header owns accessible back geometry and long-copy reflow witho
   assert.match(header, /headerCopy:\s*\{[\s\S]*?flex:\s*1,[\s\S]*?minWidth:\s*0,/);
   assert.match(header, /brandTitle:\s*\{[\s\S]*?flexShrink:\s*1,/);
   assert.match(header, /headerMeta:\s*\{[\s\S]*?flexShrink:\s*1,/);
+  assert.match(header, /placement === "back"[\s\S]*?backNavigation:/);
+  assert.match(header, /backChevron:\s*\{[\s\S]*?height: 36,[\s\S]*?width: 36,/);
   assert.match(header, /maxFontSizeMultiplier=\{2\}/);
   assert.doesNotMatch(header, /numberOfLines|ROUTES|canGoBack|navigate\(/);
   assert.match(backFallback, /if \(navigation\.canGoBack\(\)\)[\s\S]*navigation\.goBack\(\)[\s\S]*navigation\.navigate\(ROUTES\.HOME, \{ initialTab: "home" \}\)/);

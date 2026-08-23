@@ -33,13 +33,16 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
   const { colors: palette, t } = useAppPreferences();
   const largeText = fontScale >= 1.3;
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>(CODING_INTERVIEW_TRACK_ID);
+  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
       void getActiveTrackId().then((trackId) => {
         if (!active) return;
+        setActiveTrackId(trackId ?? null);
         setSelectedTrackId(trackId ?? CODING_INTERVIEW_TRACK_ID);
         setLoaded(true);
       });
@@ -48,40 +51,52 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
   );
 
   async function commitSelection() {
-    if (!loaded) return;
+    if (!loaded || isSaving) return;
     const track = getTrackDisplays().find((candidate) => candidate.id === selectedTrackId);
     if (!track || track.status === "archived") return;
-    await saveActiveTrackId(track.id);
-    onTrackSelected?.(track.id);
-    if (onTrackSelected) return;
-    navigation.navigate(ROUTES.HOME, { initialTab: "home" });
+    setIsSaving(true);
+    try {
+      await saveActiveTrackId(track.id);
+      setActiveTrackId(track.id);
+      onTrackSelected?.(track.id);
+      if (onTrackSelected) return;
+      navigation.navigate(ROUTES.HOME, { initialTab: "home" });
+    } finally {
+      setIsSaving(false);
+    }
   }
+
+  const selectedTrack = getTrackDisplays().find((track) => track.id === selectedTrackId);
+  const showFooter = !loaded || onboarding || selectedTrackId !== activeTrackId;
 
   return (
     <View style={styles.shell} testID="patternly:home:select-track:root">
       <Screen
         edges={["top", "bottom"]}
-        footer={(
+        footer={showFooter ? (
           <View style={[styles.footerContent, largeText ? styles.actionsLargeText : null]}>
-            <View style={[styles.selectedSummary, largeText ? styles.progressHeaderLargeText : null]}>
-              <Text style={styles.selectedLabel}>{t("Selected")}</Text>
-              <Text maxFontSizeMultiplier={2} style={styles.selectedValue}>
-                {t(getTrackDisplays().find((track) => track.id === selectedTrackId)?.shortTitle ?? "Coding Interview")}
-              </Text>
-            </View>
+            {onboarding || selectedTrackId === activeTrackId ? (
+              <View style={[styles.selectedSummary, largeText ? styles.progressHeaderLargeText : null]}>
+                <Text style={styles.selectedLabel}>{t("Selected")}</Text>
+                <Text maxFontSizeMultiplier={2} style={styles.selectedValue}>
+                  {t(selectedTrack?.shortTitle ?? "Coding Interview")}
+                </Text>
+              </View>
+            ) : null}
             <Button
-              disabled={!loaded}
+              disabled={!loaded || isSaving || (!onboarding && selectedTrackId === activeTrackId)}
+              loading={isSaving}
               onPress={() => { void commitSelection(); }}
               style={[styles.actionButton, largeText ? styles.actionButtonLargeText : null]}
               testID={runtimeSelectors.home.selectTrackContinue()}
             >
-              {t("Continue")}
+              {t(onboarding ? "Continue" : "Use this track")}
             </Button>
           </View>
-        )}
+        ) : undefined}
         style={[styles.screenContent, !onboarding ? styles.returningScreenContent : null]}
       >
-        {!onboarding ? <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} /> : null}
+        {!onboarding ? <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} placement="back" /> : null}
         <View style={styles.intro}>
           <Text maxFontSizeMultiplier={2} style={styles.title}>{t(onboarding ? "Choose a track" : "Tracks")}</Text>
           <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{t(onboarding ? "Choose what you want to practice first. You can switch tracks later." : "Choose the track you want to practice now.")}</Text>
@@ -98,6 +113,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
             <TrackChoiceCard
               key={track.id}
               largeText={largeText}
+              disabled={isSaving}
               onPress={() => setSelectedTrackId(track.id)}
               selected={track.id === selectedTrackId}
               track={track}
@@ -110,7 +126,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
   );
 }
 
-function TrackChoiceCard({ largeText, onPress, selected, title, track }: Readonly<{ largeText: boolean; onPress: () => void; selected: boolean; title: string; track: TrackDisplay }>) {
+function TrackChoiceCard({ disabled, largeText, onPress, selected, title, track }: Readonly<{ disabled?: boolean; largeText: boolean; onPress: () => void; selected: boolean; title: string; track: TrackDisplay }>) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette, t } = useAppPreferences();
   const coding = track.id === CODING_INTERVIEW_TRACK_ID;
@@ -122,7 +138,8 @@ function TrackChoiceCard({ largeText, onPress, selected, title, track }: Readonl
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityState={{ selected }}
+      accessibilityState={{ disabled, selected }}
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [styles.trackCard, selected ? styles.trackCardSelected : null, pressed ? styles.pressed : null]}
       testID={runtimeSelectors.home.selectTrack(track.id)}
@@ -151,49 +168,49 @@ function TrackChoiceCard({ largeText, onPress, selected, title, track }: Readonl
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: { backgroundColor: palette.background, flex: 1 },
-  screenContent: { paddingBottom: spacing.lg },
-  returningScreenContent: { paddingTop: spacing.xl },
+  screenContent: { gap: spacing.xxl, paddingBottom: spacing.lg, paddingTop: spacing.xs },
+  returningScreenContent: { gap: spacing.lg, paddingTop: spacing.xs },
   intro: { gap: spacing.sm },
-  title: { ...typography.title, color: palette.textPrimary },
-  subtitle: { ...typography.small, color: palette.textSecondary },
-  safetyBadge: { alignItems: "center", flexDirection: "row", gap: spacing.xs, paddingVertical: spacing.xxs },
-  safetyText: { color: colorWithOpacity(palette.textMuted, 0.5), fontSize: 12, lineHeight: 16 },
-  trackList: { gap: spacing.sm },
+  title: { color: palette.textPrimary, fontSize: 29, fontWeight: "600", lineHeight: 35 },
+  subtitle: { color: palette.textSecondary, fontSize: 14, lineHeight: 20 },
+  safetyBadge: { alignItems: "center", flexDirection: "row", gap: 6, paddingVertical: spacing.xs },
+  safetyText: { color: colorWithOpacity(palette.textMuted, 0.5), fontSize: 12, lineHeight: 15.4 },
+  trackList: { gap: spacing.md },
   trackCard: {
     backgroundColor: palette.surface,
     borderColor: palette.border,
     borderRadius: 20,
     borderWidth: 1,
-    gap: spacing.sm,
+    gap: 10,
     padding: spacing.lg,
     position: "relative",
   },
   trackCardSelected: { borderColor: palette.primary },
   selectedRail: { backgroundColor: palette.primary, borderRadius: 2, height: 44, left: -1, position: "absolute", top: 54, width: 3 },
-  cardTopRow: { alignItems: "flex-start", flexDirection: "row", gap: spacing.md, justifyContent: "space-between" },
+  cardTopRow: { alignItems: "flex-start", flexDirection: "row", gap: spacing.md, justifyContent: "space-between", overflow: "hidden" },
   trackMetaRowLargeText: { alignItems: "flex-start", flexDirection: "column" },
   cardInfo: { alignItems: "flex-start", flex: 1, flexDirection: "row", gap: spacing.md, minWidth: 0 },
   trackIcon: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.primary, borderRadius: 14, borderWidth: 1, height: 44, justifyContent: "center", width: 44 },
   titleGroup: { flex: 1, gap: spacing.xxs, minWidth: 0 },
   trackTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   trackTitleUnselected: { color: palette.textSecondary },
-  trackSubtitle: { ...typography.caption, color: palette.textMuted },
+  trackSubtitle: { color: palette.textMuted, fontSize: 11, fontWeight: "400", lineHeight: 15.4 },
   radio: { alignItems: "center", borderRadius: 10, borderWidth: 2, height: 20, justifyContent: "center", width: 20 },
   radioSelected: { borderColor: palette.primary },
   radioUnselected: { borderColor: palette.border },
   radioDot: { backgroundColor: palette.primary, borderRadius: 4, height: 8, width: 8 },
   trackDescription: { ...typography.body, color: palette.textMuted },
-  freeBadge: { alignItems: "center", flexDirection: "row", gap: spacing.xs },
+  freeBadge: { alignItems: "center", flexDirection: "row", gap: 6 },
   freeDot: { backgroundColor: palette.textMuted, borderRadius: 4, height: 7, width: 7 },
   freeDotSelected: { backgroundColor: palette.primary },
-  freeLabel: { ...typography.caption, color: palette.textMuted },
+  freeLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "400", lineHeight: 15.4 },
   pressed: { opacity: 0.8 },
-  footerContent: { gap: spacing.sm },
+  footerContent: { gap: 14, paddingBottom: spacing.sm },
   actionsLargeText: { flexDirection: "column" },
   actionButton: { flex: 1 },
   actionButtonLargeText: { flex: 0, width: "100%" },
   progressHeaderLargeText: { alignItems: "flex-start", flexDirection: "column", justifyContent: "flex-start" },
   selectedSummary: { gap: spacing.xxs },
-  selectedLabel: { ...typography.caption, color: palette.textMuted },
-  selectedValue: { ...typography.bodyStrong, color: palette.textPrimary },
+  selectedLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "400", lineHeight: 15.4 },
+  selectedValue: { color: palette.textPrimary, fontSize: 13, fontWeight: "500", lineHeight: 16 },
 });

@@ -30,6 +30,7 @@ const polish: Readonly<Record<string, string>> = {
   "Select": "Wybierz",
   "View track": "Zobacz ścieżkę",
   "Continue": "Kontynuuj",
+  "Use this track": "Użyj tej ścieżki",
   "Start track": "Rozpocznij ścieżkę",
   "Current track": "Bieżąca ścieżka",
   "Change track": "Zmień ścieżkę",

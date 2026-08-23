@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { spacing, typography } from "../theme";
+import { colorWithOpacity, spacing, typography } from "../theme";
+import { Icon } from "./Icon";
 import { IconButton } from "./IconButton";
 import { PatternlyMark } from "./PatternlyMark";
 import { useAppPreferences, useThemedStyles } from "../preferences";
@@ -13,7 +14,7 @@ type AppShellHeaderProps = {
     onPress: () => void;
   }>;
   context?: string;
-  placement?: "inline" | "stack";
+  placement?: "inline" | "stack" | "back";
 };
 
 export function AppShellHeader({ backAction, context, placement = "inline" }: AppShellHeaderProps) {
@@ -39,6 +40,24 @@ export function AppShellHeader({ backAction, context, placement = "inline" }: Ap
       </View>
     </View>
   );
+
+  if (placement === "back") {
+    return (
+      <View style={styles.backNavigation}>
+        <Pressable
+          accessibilityLabel={backAction?.accessibilityLabel ?? t("Go back")}
+          accessibilityRole="button"
+          disabled={!backAction}
+          hitSlop={4}
+          onPress={backAction?.onPress}
+          style={({ pressed }) => [styles.backChevron, pressed ? styles.backPressed : null]}
+        >
+          <Icon color={palette.textSecondary} name="chevron-left" size={16} />
+        </Pressable>
+        <Text maxFontSizeMultiplier={2} style={styles.backLabel}>Patternly</Text>
+      </View>
+    );
+  }
 
   if (placement === "stack") {
     return <SafeAreaView edges={["top"]} style={styles.stackSafeArea}>{header}</SafeAreaView>;
@@ -89,5 +108,28 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   stackSafeArea: {
     backgroundColor: palette.surface,
+  },
+  backNavigation: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+    minHeight: 36,
+  },
+  backChevron: {
+    alignItems: "center",
+    backgroundColor: colorWithOpacity(palette.textPrimary, 0.06),
+    borderRadius: spacing.md,
+    height: 36,
+    justifyContent: "center",
+    width: 36,
+  },
+  backPressed: {
+    backgroundColor: colorWithOpacity(palette.textPrimary, 0.1),
+  },
+  backLabel: {
+    color: palette.textSecondary,
+    fontSize: 14,
+    fontWeight: "500",
+    lineHeight: 18,
   },
 });
