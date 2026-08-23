@@ -297,3 +297,26 @@ content-boundary, and runtime-privacy checks. Fresh runtime pixel comparison
 for these operational states remains unverified because `maestro` is absent
 and CoreSimulatorService rejects simulator connections; this is source
 evidence, not a 99% completion claim.
+
+## Addendum — Settings content footer convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma
+`822:7687` (`Pattern / Settings Content`) with fresh design context and
+screenshot evidence. The applicable current Settings rows already use the
+canonical source primitives and match the live 32 px icon tile, 63 px row,
+16/14 px padding, 12 px radius, and tracked section-label geometry. Figma-only
+account, sync, plan, cadence, and help rows conflict with the current product
+commands and were not introduced.
+
+Commit `acd2201` aligns the existing Settings app identity with Figma: 13 px
+semibold product name, 11 px regular version metadata, 2 px internal gap, and
+no duplicate footer top padding. The shared list-row supporting token uses the
+live 11/15.4 line-height contract. No semantic route, command, persistence
+behavior, or fallback path changed.
+
+Focused Settings/Notification presentation checks passed 10/10;
+`npm run typecheck` passed; `npm run qa:static` passed with 561/561 tests,
+recovery inventory 283/113/552, content-boundary, and runtime-privacy checks.
+Fresh runtime pixel comparison remains blocked by the unavailable Maestro
+binary and refused CoreSimulatorService; this addendum does not claim 99%
+parity.

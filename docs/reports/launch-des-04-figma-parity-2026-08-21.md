@@ -348,6 +348,32 @@ the existing action-bar owner. The shared kind classifier is the single owner;
 no duplicate notice renderer, alternate recovery branch, or hidden fallback
 remains.
 
+## Addendum — Settings content footer convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma node
+`822:7687` (`Pattern / Settings Content`) with a fresh design context and
+screenshot. The source already owned the applicable row geometry through
+`SettingsGroup`, `ListRow`, and `IconTile`: 11 px tracked section labels,
+32 px icon tiles, 63 px supporting rows, 16 px horizontal padding, 14 px
+vertical padding, and 12 px row radius. The Figma sample also contains
+account, sync, plan, cadence, and help rows that are not canonical current
+product commands; those remain recorded as a semantic authority conflict and
+were not added.
+
+Commit `acd2201` applies the safe source-level parity facts to the existing
+Settings owner: app identity uses 13 px semibold branding, 11 px regular
+version text, a 2 px internal gap, and the page-owned 20 px separation from
+the final settings group without duplicate footer padding. The shared
+supporting list-row token now uses Figma's 11/15.4 line height. No route,
+command, storage behavior, or Figma-only row was introduced.
+
+Focused Settings and Notification presentation checks passed 10/10;
+`npm run typecheck` passed; `npm run qa:static` passed with recovery inventory
+283 active source files, 113 active tests, 552 recovery cases, 561/561 tests,
+content-boundary, and runtime-privacy checks. Runtime pixel comparison remains
+unverified because `maestro` is absent and CoreSimulatorService rejects
+simulator connections; this is source evidence, not a 99% completion claim.
+
 No route was deleted because the current reachability graph does not prove any existing route obsolete. The superseded visual geometry was removed in place from the canonical primitives and route owners: old button sizing/pressed behavior, card radii, generic screen padding/footer geometry, navigation rule/padding, session top-bar height, answer-option circles, the ready-state Practice Hub/AppShell header composition, the notification screen's generic SettingsDialog flow, and the old Answer Review card/filter/diagnostic composition. The simulation-local Review Shell and Answer Navigator implementations were removed after extraction to the shared components; `SettingsDialog` remains reachable from its Exam owner, so it was not deleted globally. Track selection also removed the obsolete selected-only `trackIconSelected` branch and the family-wide certification `cloud` icon fallback; the canonical mapping is now Coding `route`, Google Cloud `server-stack`, and `grid` for the remaining catalogue entries. The Practice Summary slice removed the unreferenced `scoreLine`, `missedCount`, and `warningDot` presentation path after live Figma comparison; persisted scoring remains owned by the application projection. No duplicate design-system path, hidden fallback, placeholder feature, or Figma-only command was left behind.
 
 ## Remaining work
