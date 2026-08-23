@@ -314,12 +314,16 @@ for semantic migration until that decision exists.
 
 ## Verification performed and evidence limits
 
-- Live Figma design context and screenshots: pass for `55:993` and `55:2172`.
-- `npm run typecheck`: pass at current source SHA lineage.
-- Focused Practice/model/visual-shell tests: 33/33 pass.
-- Full `npm run qa:static`: pass on source commit `65aeccd`, with 559/559
-  tests, TypeScript, content boundary, and runtime privacy boundary.
-- Working tree: clean at the implementation boundary before this report update.
+- Live Figma design context and screenshots: pass for the current file/page/
+  library and the node set recorded above, including the revalidations in the
+  addenda.
+- `npm run typecheck`: pass at current source SHA `992d5bb`.
+- Latest focused shell/session checks: 25/25 pass.
+- Full `npm run qa:static`: pass at source commit `992d5bb`, with recovery
+  inventory 284/114/556 and 565/565 tests, TypeScript, content boundary, and
+  runtime privacy boundary.
+- Working tree: clean after documentation commits `eb591ea` and `c8810d8`;
+  application source remains at `992d5bb`.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
 
