@@ -49,8 +49,6 @@ function AlgorithmsInterviewSimulationResultSurface({ navigation, sessionId }: R
           correctCount: result.score.correctCount,
           partialCount: result.score.partialCount,
           incorrectCount: result.score.incorrectCount,
-          earnedPoints: result.score.pointsEarned,
-          maxPoints: result.score.maxPoints,
           reviewAvailable: result.feedbackItems.length > 0,
           reviewAction: { id: "review-session", label: "Review answers", onPress: () => navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW, { sessionId: result.sessionId }), variant: "primary" as const },
         },

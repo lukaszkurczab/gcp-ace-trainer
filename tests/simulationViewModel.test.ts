@@ -23,7 +23,7 @@ test("Simulation navigator accepts complete unique projections for each supporte
 });
 
 test("Simulation completion metrics are withheld before the verified completed projection", () => {
-  const completion = { answeredCount: 40, correctCount: 10, earnedPoints: 10, incorrectCount: 20, maxPoints: 40, partialCount: 10, unansweredCount: 0 };
+  const completion = { answeredCount: 40, correctCount: 10, incorrectCount: 20, partialCount: 10, unansweredCount: 0 };
   assert.equal(mayRenderSimulationCompletion(projection("finalizing", completion)), false);
   assert.equal(mayRenderSimulationCompletion(projection("completed", completion)), true);
   assert.equal(mayRenderSimulationCompletion(projection("completed")), false);

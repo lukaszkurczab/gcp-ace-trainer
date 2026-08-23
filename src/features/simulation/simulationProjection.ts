@@ -110,9 +110,7 @@ export type SimulationCompletionProjection = Readonly<{
   activeTime?: string;
   answeredCount: number;
   correctCount: number;
-  earnedPoints: number;
   incorrectCount: number;
-  maxPoints: number;
   partialCount: number;
   reviewAvailable?: boolean;
   reviewAction?: SimulationAction;
