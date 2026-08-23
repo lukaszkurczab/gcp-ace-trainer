@@ -36,7 +36,7 @@ const appIconOutputFiles = [
   "patternly-app-icon-monochrome.png",
 ];
 
-const qaAMasterPathFragments = ["M102 228", "M131 24H175.84", "M78.80 24H119.90"];
+const qaAMasterPathFragments = ["M102 231", "M131 24H175.84", "M78.80 24H119.90"];
 
 function readText(path: string) {
   return readFileSync(path, "utf8");
