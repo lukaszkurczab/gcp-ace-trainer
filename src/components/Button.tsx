@@ -7,6 +7,7 @@ import {
   type AccessibilityRole,
   type AccessibilityState,
   type StyleProp,
+  type TextStyle,
   type ViewStyle,
 } from "react-native";
 
@@ -24,6 +25,7 @@ type ButtonProps = {
   children: ReactNode;
   disabled?: boolean;
   loading?: boolean;
+  labelStyle?: StyleProp<TextStyle>;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -37,6 +39,7 @@ export function Button({
   children,
   disabled = false,
   loading = false,
+  labelStyle,
   onPress,
   style,
   testID,
@@ -63,7 +66,7 @@ export function Button({
       testID={testID}
     >
       {loading ? <ActivityIndicator color={getActivityColor(variant, palette)} size="small" style={styles.spinner} /> : null}
-      <Text maxFontSizeMultiplier={2} style={[styles.label, styles[`${variant}Label`], isDisabled ? styles.disabledLabel : null]}>{children}</Text>
+      <Text maxFontSizeMultiplier={2} style={[styles.label, styles[`${variant}Label`], labelStyle, isDisabled ? styles.disabledLabel : null]}>{children}</Text>
     </Pressable>
   );
 }

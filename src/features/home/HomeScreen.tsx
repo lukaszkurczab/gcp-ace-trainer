@@ -258,7 +258,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
 
   return (
     <View style={styles.shell}>
-      <Screen key={activeTab} edges={["top"]} style={styles.screenContent}>
+      <Screen
+        key={activeTab}
+        edges={["top"]}
+        style={[styles.screenContent, activeTab === "home" ? styles.homeScreenContent : null]}
+      >
         {activeTab === "home" ? (
           <HomeTab
             activeSession={data.activeSession}
@@ -321,5 +325,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   screenContent: {
     paddingBottom: TAB_BAR_RESERVED_HEIGHT,
+  },
+  homeScreenContent: {
+    gap: 18,
+    paddingTop: 12,
   },
 });

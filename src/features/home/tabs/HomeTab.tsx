@@ -183,8 +183,8 @@ export function HomeTab({
       <View style={styles.detailSection}>
         <Text style={styles.sectionLabel}>{t("Current focus")}</Text>
         <View style={[styles.focusRow, largeText ? styles.focusRowLargeText : null]}>
-          <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{formatPracticeTopicTitle(model.heroTitle, t)}</Text>
-          <Button onPress={onChooseTopic} variant="ghost">{t("Open Practice")}</Button>
+          <Text maxFontSizeMultiplier={2} style={styles.currentFocusTitle}>{formatPracticeTopicTitle(model.heroTitle, t)}</Text>
+          <Button labelStyle={styles.focusActionLabel} onPress={onChooseTopic} variant="ghost">{t("Open Practice")}</Button>
         </View>
       </View>
       <View style={styles.detailSection}>
@@ -298,7 +298,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderColor: palette.navigation.active,
     borderRadius: 22,
     elevation: 0,
-    gap: spacing.md,
+    gap: spacing.lg,
     padding: spacing.xl,
     position: "relative",
     shadowOpacity: 0,
@@ -325,6 +325,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textPrimary,
     fontSize: 22,
     fontWeight: "600",
+    letterSpacing: -0.3,
     lineHeight: 28,
   },
   decisionCopy: {
@@ -359,7 +360,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   sectionLabel: {
     color: palette.textMuted,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "700",
     letterSpacing: 0.5,
     lineHeight: 18,
@@ -441,6 +442,18 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
+  currentFocusTitle: {
+    color: palette.textPrimary,
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "500",
+    lineHeight: 22,
+    minWidth: 0,
+  },
+  focusActionLabel: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
   activityList: {
     gap: 0,
   },
@@ -454,12 +467,16 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.xxs,
   },
   activityTitle: {
-    ...typography.bodyStrong,
     color: palette.textPrimary,
+    fontSize: 14,
+    fontWeight: "500",
+    lineHeight: 18,
   },
   activityDetail: {
-    ...typography.caption,
     color: palette.textSecondary,
+    fontSize: 12,
+    fontWeight: "400",
+    lineHeight: 18,
   },
   activityEmpty: {
     ...typography.small,
@@ -475,7 +492,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   activityActionText: {
     color: palette.accentTeal,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "600",
     lineHeight: 22,
   },

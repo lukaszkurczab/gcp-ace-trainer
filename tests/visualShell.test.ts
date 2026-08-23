@@ -157,6 +157,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   const rootNavigator = source("src/navigation/RootNavigator.tsx");
   const home = source("src/features/home/HomeScreen.tsx");
   const homeTab = source("src/features/home/tabs/HomeTab.tsx");
+  const button = source("src/components/Button.tsx");
   const settings = source("src/features/home/AppearanceSettingsScreen.tsx");
   const preferenceSelection = source("src/features/home/PreferenceSelectionScreen.tsx");
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
@@ -166,6 +167,15 @@ test("representative Home, Settings, setup, session, and result routes keep cano
 
   assert.match(home, /<Screen[\s\S]*<AppShellHeader \/>/);
   assert.match(homeTab, /isReviewRecommendation[\s\S]*?Review due items before they become stale\./);
+  assert.match(home, /activeTab === "home" \? styles\.homeScreenContent/);
+  assert.match(home, /homeScreenContent:\s*\{[\s\S]*?gap:\s*18[\s\S]*?paddingTop:\s*12/);
+  assert.match(homeTab, /decisionCard:[\s\S]*?gap:\s*spacing\.lg/);
+  assert.match(homeTab, /decisionTitle:[\s\S]*?letterSpacing:\s*-0\.3/);
+  assert.match(homeTab, /sectionLabel:[\s\S]*?fontSize:\s*13/);
+  assert.match(homeTab, /currentFocusTitle:[\s\S]*?fontSize:\s*15[\s\S]*?fontWeight:\s*"500"/);
+  assert.match(homeTab, /activityDetail:[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"400"/);
+  assert.match(button, /labelStyle\?: StyleProp<TextStyle>/);
+  assert.match(button, /styles\.label, styles\[`\$\{variant\}Label`\], labelStyle/);
   assert.match(home, /if \(!hasLoadedActiveTrack\) return <Screen edges=\{\["top"\]\} scroll=\{false\}><AppShellHeader \/><LoadingState/);
   assert.match(settings, /<PreferenceSelectionScreen/);
   assert.match(preferenceSelection, /<Screen\b/);
