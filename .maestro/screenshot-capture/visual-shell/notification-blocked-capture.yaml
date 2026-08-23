@@ -1,0 +1,80 @@
+appId: com.lkurczab.patternly
+name: Patternly visual shell — blocked notification permission
+tags:
+  - screenshot
+  - uiux-evidence
+---
+- runFlow:
+    when:
+      visible: "Return to Patternly"
+    commands:
+      - tapOn: "Patternly"
+      - extendedWaitUntil:
+          visible: "Patternly"
+          timeout: 30000
+      - tapOn: "Apps"
+      - extendedWaitUntil:
+          visible: "Apps"
+          timeout: 30000
+      - tapOn: "Settings"
+- runFlow:
+    when:
+      visible: "Cancel"
+    commands:
+      - tapOn: "Cancel"
+- runFlow:
+    when:
+      visible: "Settings"
+    commands:
+      - scrollUntilVisible:
+          element: "Apps"
+          direction: DOWN
+          timeout: 30000
+      - tapOn: "Apps"
+      - extendedWaitUntil:
+          visible: "Apps"
+          timeout: 30000
+      - scrollUntilVisible:
+          element: "Patternly"
+          direction: DOWN
+          timeout: 30000
+      - tapOn: "Patternly"
+- extendedWaitUntil:
+    visible:
+      id: "NOTIFICATIONS"
+    timeout: 30000
+- tapOn:
+    id: "NOTIFICATIONS"
+- extendedWaitUntil:
+    visible: "Allow Notifications"
+    timeout: 30000
+- tapOn:
+    text: "Allow Notifications"
+    checked: true
+- runFlow:
+    when:
+      visible: "Return to Patternly"
+    commands:
+      - tapOn: "Return to Patternly"
+- launchApp
+- runFlow:
+    when:
+      visible:
+        id: "main-tab-bar-settings"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-settings"
+- runFlow:
+    when:
+      visible:
+        id: "settings-screen"
+    commands:
+      - tapOn:
+          id: "settings-notifications"
+- extendedWaitUntil:
+    visible: "Notifications"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "Notifications are blocked"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__notifications__blocked__${THEME}__${DEVICE_PROFILE}"

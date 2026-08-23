@@ -13,6 +13,8 @@ web-build/
 !.maestro/screenshot-capture/visual-shell/visual-shell-capture.yaml
 !.maestro/screenshot-capture/visual-shell/visual-shell-release.yaml
 !.maestro/screenshot-capture/visual-shell/notification-permission-capture.yaml
+!.maestro/screenshot-capture/visual-shell/notification-blocked-capture.yaml
+!.maestro/screenshot-capture/visual-shell/algorithms-feedback-capture.yaml
 
 npm-debug.log*
 yarn-debug.log*
