@@ -25,6 +25,9 @@ test("simulation question navigator has the approved states, accessible labels, 
   assert.match(source, /position\.state !== "answered"/);
   assert.match(source, /height: columns === 5 \? 56 : 48/);
   assert.match(source, /width: columns === 5 \? 56 : 48/);
+  assert.match(source, /cell:\s*\{[\s\S]*backgroundColor:\s*palette\.elevatedSurface/);
+  assert.match(source, /cellText:\s*\{[\s\S]*fontSize:\s*12[\s\S]*lineHeight:\s*16/);
+  assert.match(source, /frozenCell:\s*\{\s*borderColor:\s*palette\.border\s*\}/);
   assert.match(source, /<IconButton accessibilityLabel=/);
   assert.doesNotMatch(source, /Finish simulation/);
   assert.match(source, /accessibilityLiveRegion="polite"/);

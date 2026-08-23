@@ -71,7 +71,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   letterCorrect: { color: palette.success },
   letterIncorrect: { color: palette.danger },
   letterSelected: { color: palette.primary },
-  letterText: { ...typography.caption, color: palette.textMuted, fontWeight: "600", letterSpacing: 0.5 },
+  letterText: { color: palette.textMuted, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   locked: { opacity: 0.9 },
   option: { alignItems: "center", borderRadius: radius.lg, borderWidth: 1.5, flexDirection: "row", gap: 14, minHeight: 54, padding: spacing.lg },
   pressed: { opacity: 0.82 },

@@ -69,7 +69,7 @@ export function SessionShell({
           </View>
           <PositionSlot isSavedSimulationLayout={isSavedSimulationLayout} isSimulationLayout={isSimulationLayout} onPress={onPositionPress} position={position} positionAccessibilityLabel={positionAccessibilityLabel} positionTestID={positionTestID} styles={styles} usesLargeTextLayout={usesLargeTextLayout} />
         </View>
-        <View accessible={verifiedProgress !== null} accessibilityElementsHidden={verifiedProgress === null} accessibilityLabel={verifiedProgress === null ? undefined : "Session progress"} accessibilityRole={verifiedProgress === null ? undefined : "progressbar"} accessibilityValue={verifiedProgress === null ? undefined : { max: 100, min: 0, now: Math.round(verifiedProgress * 100) }} importantForAccessibility={verifiedProgress === null ? "no-hide-descendants" : "yes"} style={styles.progressTrack} testID={progressTestID}>
+        <View accessible={verifiedProgress !== null} accessibilityElementsHidden={verifiedProgress === null} accessibilityLabel={verifiedProgress === null ? undefined : "Session progress"} accessibilityRole={verifiedProgress === null ? undefined : "progressbar"} accessibilityValue={verifiedProgress === null ? undefined : { max: 100, min: 0, now: Math.round(verifiedProgress * 100) }} importantForAccessibility={verifiedProgress === null ? "no-hide-descendants" : "yes"} style={[styles.progressTrack, isSimulationLayout ? styles.progressTrackSimulation : null]} testID={progressTestID}>
           {verifiedProgress === null ? null : <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.progressFill, { width: `${verifiedProgress * 100}%` }]} />}
         </View>
         {isSimulationLayout ? <View style={[styles.simulationContent, isSavedSimulationLayout ? styles.simulationContentSaved : null]}>{children}</View> : children}
@@ -135,6 +135,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     height: 4,
     marginHorizontal: -spacing.xl,
     overflow: "hidden",
+  },
+  progressTrackSimulation: {
+    backgroundColor: palette.surfaceInput,
   },
   sessionRootSimulation: {
     gap: 0,
