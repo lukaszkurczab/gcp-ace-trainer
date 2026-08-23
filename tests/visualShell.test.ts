@@ -66,7 +66,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
   assert.match(source("src/features/home/NotificationSettingsScreen.tsx"), /<ScreenHeader\b/);
   assert.match(source("src/features/home/LegalInformationScreen.tsx"), /screenHeader=\{\{ context: text\.settings/);
 
-  assert.match(source("src/features/coding-interview/session/SessionShell.tsx"), /<Screen edges=\{\["top", "bottom"\]\}/);
+  assert.match(source("src/features/coding-interview/session/SessionShell.tsx"), /<Screen[\s\S]*edges=\{\["top", "bottom"\]\}/);
   assert.match(source("src/features/practice/PracticeSessionSurface.tsx"), /<SessionShell\b/);
   assert.match(source("src/features/simulation/SimulationSessionSurface.tsx"), /<SessionShell\b/);
 });
@@ -172,6 +172,7 @@ test("Screen and SessionShell remain the only general and active-session page ow
   assert.match(screen, /content:\s*\{[\s\S]*?gap:\s*spacing\.xl/);
   assert.match(screen, /contentCompact:\s*\{[\s\S]*?gap:\s*spacing\.md/);
   assert.match(screen, /footer:\s*\{[\s\S]*?paddingVertical:\s*spacing\.xl/);
+  assert.match(screen, /header\?: ReactNode/);
   assert.match(header, /placement === "stack"[\s\S]*<SafeAreaView edges=\{\["top"\]\}/);
   assert.doesNotMatch(source("src/features/coding-interview/session/SessionShell.tsx"), /SafeAreaView|ScrollView/);
 });
@@ -294,8 +295,10 @@ test("simulation active shell uses the Figma question and action-footer variant"
 
   assert.match(shell, /layout\?: "practice" \| "simulation"/);
   assert.match(shell, /onPositionPress\?: \(\) => void/);
-  assert.match(shell, /simulationContent: \{[\s\S]*paddingTop: spacing\.xl/);
+  assert.match(shell, /header=\{/);
+  assert.match(shell, /sessionContent:\s*\{\s*gap:\s*spacing\.md,?\s*\}/);
   assert.match(shell, /progressTrackSimulation:\s*\{\s*backgroundColor:\s*palette\.surfaceInput/);
+  assert.match(simulation, /footerVariant=\{operationNotice \? "default" : "simulation"\}/);
   assert.match(simulation, /layout=\{savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(simulation, /variant=\{savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(simulation, /simulationPrompt: \{[\s\S]*fontSize: 22[\s\S]*lineHeight: 28/);
@@ -321,7 +324,7 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
   assert.match(setup, /compactSectionTitle:[\s\S]*?textTransform:\s*"uppercase"/);
   assert.match(choiceRow, /density\?:\s*"comfortable" \| "compact"/);
   assert.match(choiceRow, /compactRow:\s*\{[\s\S]*?minHeight:\s*48/);
-  assert.match(screen, /footerVariant\?:\s*"default" \| "review" \| "session" \| "sticky"/);
+  assert.match(screen, /footerVariant\?:\s*"default" \| "review" \| "session" \| "simulation" \| "sticky"/);
   assert.match(screen, /footerSticky:\s*\{[\s\S]*?colorWithOpacity\("#FFFFFF", 0\.05\)/);
   assert.match(screenHeader, /variant\?: "default" \| "activity" \| "practiceSetup"/);
   assert.match(screenHeader, /practiceSetupDescription:\s*\{[\s\S]*?fontSize:\s*13\.5[\s\S]*?lineHeight:\s*19/);

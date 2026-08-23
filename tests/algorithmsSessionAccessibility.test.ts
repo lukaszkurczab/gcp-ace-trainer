@@ -115,7 +115,7 @@ test("large text can grow session chrome and controls without fixed interactive 
   const practice = source("src/features/practice/PracticeResponseControls.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
 
-  assert.match(shell, /topBar:\s*\{[\s\S]*?minHeight:\s*49/);
+  assert.match(shell, /topBar:\s*\{[\s\S]*?minHeight:\s*16/);
   assert.doesNotMatch(shell, /numberOfLines=\{?1\}?/);
   assert.doesNotMatch(shell, /topBar:\s*\{[^}]*\bheight:\s*56/);
   assert.match(practice, /orderRow:\s*\{[^}]*alignItems:\s*"flex-start"/);

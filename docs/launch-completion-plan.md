@@ -601,6 +601,24 @@ shell/session checks passed `11/11`, and `npm run qa:static` passed with
 recovery inventory `284/114/557` and `566/566` tests. Runtime Light/Dark pixel
 proof and Product Owner approval remain open.
 
+## Addendum — Fixed question-shell structure convergence
+
+Current-channel Figma nodes `74:539`, `851:11383`, and `68:569` confirm that
+the shared question shell owns a fixed top bar and progress track above the
+scrolling body, with a 20 px content inset and 12 px body rhythm. The
+canonical `SessionShell` now uses `Screen.header` for that fixed region,
+keeps the top bar horizontal at 200% text size, and selects explicit 228 px
+Practice or 361 px active-Simulation footer geometry. The obsolete large-text
+column/session-root styles were removed after the reachability scan.
+
+The operation-recovery reference `74:834` remains an explicit open delta:
+Figma places the notice and recovery actions below a footer-less question
+shell, while the current runtime still owns them through the existing default
+footer. Focused checks passed `33/33`; current-tree `npm run qa:static` passed
+`284/114/557` recovery inventory and `566/566` tests with TypeScript and both
+boundary checks. Runtime Light/Dark pixel proof, recovery geometry, and
+Product Owner approval remain open; do not mark this as 99% parity.
+
 ## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.

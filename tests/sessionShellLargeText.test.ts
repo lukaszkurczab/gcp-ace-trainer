@@ -6,10 +6,10 @@ const source = readFileSync("src/features/coding-interview/session/SessionShell.
 const practiceSurface = readFileSync("src/features/practice/PracticeSessionSurface.tsx", "utf8");
 const buttonSource = readFileSync("src/components/Button.tsx", "utf8");
 
-test("SessionShell stacks metadata before large text can collapse into narrow columns", () => {
-  assert.match(source, /fontScale >= 1\.3/);
-  assert.match(source, /styles\.topBarLargeText/);
-  assert.match(source, /topBarLargeText:\s*\{[\s\S]*flexDirection:\s*"column"/);
+test("SessionShell keeps the Figma top bar in one row at large text", () => {
+  assert.doesNotMatch(source, /useWindowDimensions|fontScale >= 1\.3|topBarLargeText|topSlotLargeText/);
+  assert.match(source, /topBar:\s*\{[\s\S]*flexDirection:\s*"row"[\s\S]*minHeight:\s*16/);
+  assert.match(source, /topBar:\s*\{[\s\S]*paddingHorizontal:\s*spacing\.xl/);
 });
 
 test("SessionShell keeps chrome readable without allowing it to crowd out authored content", () => {

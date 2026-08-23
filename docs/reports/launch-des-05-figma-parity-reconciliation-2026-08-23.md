@@ -1093,3 +1093,32 @@ passed `11/11`; fresh `npm run qa:static` passed recovery inventory
 `284/114/557`, TypeScript, `566/566` tests, content boundary, and runtime
 privacy boundary. Current-head Light/Dark runtime pixel comparison and
 Product Owner approval remain open; this does not claim 99% parity.
+
+## Addendum — Fixed question-shell structure convergence
+
+The current connector channel `ksxw21cw` was revalidated against live Figma
+`74:539` (Simulation active), `851:11383` (G04 Practice canonical QA),
+`68:569` (Practice active), and `74:834` (operation recovery). The canonical
+question shell keeps the top bar and 4 px progress track outside the scrolling
+body, starts scroll content at the 20 px shell inset, and uses a 12 px body
+rhythm. The top bar remains a horizontal row at the 200% text-size reference;
+the previous large-text column path was removed. Practice uses the proven
+228 px action footer, while active Simulation uses the proven 361 px footer.
+
+`Screen` now exposes the fixed `header` slot and an explicit `simulation`
+footer variant; `SessionShell` is the single owner of the shared shell
+geometry and maps practice/simulation defaults to those contracts. The
+operation-recovery state remains explicitly separate: Figma `74:834` places
+its notice and actions below a footer-less question shell, while the current
+runtime still renders that notice/action surface through the existing default
+footer. No lifecycle, command, persistence, content, scoring, or route
+semantics changed, and the removed large-text/session-root styles have no
+remaining references.
+
+Focused shell/session/accessibility checks passed `33/33`. Fresh
+`npm run qa:static` on the current working tree passed recovery inventory
+`284/114/557`, TypeScript, `566/566` tests, content boundary, and runtime
+privacy boundary. This is source-level convergence only: current-head
+Light/Dark runtime pixel evidence, CoreSimulator/Maestro capture, operation
+recovery geometry, and Product Owner approval remain open. This does not
+claim 99% parity.

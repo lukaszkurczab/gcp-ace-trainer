@@ -14,12 +14,13 @@ type ScreenProps = {
   ambient?: boolean;
   edges?: Edge[];
   footer?: ReactNode;
-  footerVariant?: "default" | "review" | "session" | "sticky";
+  footerVariant?: "default" | "review" | "session" | "simulation" | "sticky";
+  header?: ReactNode;
   scroll?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export function Screen({ ambient = false, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", scroll = true, style }: ScreenProps) {
+export function Screen({ ambient = false, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, style }: ScreenProps) {
   const styles = useThemedStyles(createStyles);
   const contentStyle = [styles.content, compact ? styles.contentCompact : null, footer ? styles.contentWithFooter : null, style];
   const content = <View style={contentStyle}>{children}</View>;
@@ -27,6 +28,7 @@ export function Screen({ ambient = false, children, compact = false, edges = ["b
   return (
     <SafeAreaView edges={edges} style={[styles.safeArea, ambient ? styles.ambientSafeArea : null]}>
       {ambient ? <AmbientBackdrop /> : null}
+      {header}
       {scroll ? (
         <ScrollView
           contentContainerStyle={[styles.scrollContent, compact ? styles.scrollContentCompact : null]}
@@ -39,7 +41,7 @@ export function Screen({ ambient = false, children, compact = false, edges = ["b
       ) : (
         content
       )}
-      {footer ? <View style={[styles.footer, compact ? styles.footerCompact : null, footerVariant === "review" ? styles.footerReview : null, footerVariant === "session" ? styles.footerSession : null, footerVariant === "sticky" ? styles.footerSticky : null]}>{footer}</View> : null}
+      {footer ? <View style={[styles.footer, compact ? styles.footerCompact : null, footerVariant === "review" ? styles.footerReview : null, footerVariant === "session" ? styles.footerSession : null, footerVariant === "simulation" ? styles.footerSimulation : null, footerVariant === "sticky" ? styles.footerSticky : null]}>{footer}</View> : null}
     </SafeAreaView>
   );
 }
@@ -97,6 +99,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   footerSession: {
     justifyContent: "flex-end",
     minHeight: 228,
+    gap: spacing.sm,
+  },
+  footerSimulation: {
+    justifyContent: "flex-end",
+    minHeight: 361,
     gap: spacing.sm,
   },
   footerSticky: {
