@@ -280,3 +280,20 @@ content-boundary, and runtime-privacy checks. Fresh dark/light runtime pixel
 comparison for active simulation, navigator failure, recovery, and review
 operational states remains unverified; this addendum is source evidence, not a
 99% completion claim.
+
+## Addendum — Simulation operation footer convergence
+
+The current channel `ksxw21cw` was revalidated against the live recovery
+frames `74:834` and `74:879`, plus action-sheet frames `74:968` and `74:992`.
+Commit `a3e2937` moves only the two recoverable operation notices into the
+existing `SessionShell` footer, producing the Figma order of notice, primary
+recovery action, secondary action, and Leave action. The shared action sheet
+now uses the live 22/28 semibold title and 14 px sheet radius. Durable command
+semantics, operation recovery, and all non-notice panels remain unchanged.
+
+Focused simulation operation/action-sheet/visual-shell checks passed 28/28,
+and `npm run qa:static` passed on `a3e2937` with 559/559 tests, TypeScript,
+content-boundary, and runtime-privacy checks. Fresh runtime pixel comparison
+for these operational states remains unverified because `maestro` is absent
+and CoreSimulatorService rejects simulator connections; this is source
+evidence, not a 99% completion claim.
