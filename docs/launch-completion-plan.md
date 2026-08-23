@@ -277,6 +277,14 @@ paddingu zwykłego review, a unavailable surface ma kanoniczne zakotwiczenie
 185 px i szerokość 353 px. `npm run qa:static` przechodzi: 559/559 testów.
 Świeże runtime pixel evidence dla tego stanu nadal pozostaje wymagane.
 
+`92dcdc2` domyka kolejną bezpieczną geometrię stanu Simulation Navigator
+`74:726`: Notice ma promień 12 px, a odstęp między Notice i pełno-wymiarowym
+`Try again` wynosi 12 px, zgodnie z live Figma. Nie zmieniono retry command,
+frozen-cell state, reduced-motion ani żadnej semantyki lifecycle. Focused
+checks 17/17, typecheck oraz `npm run qa:static` przechodzą przy 561/561
+testach i inventory 283/113/552. Runtime pixel comparison pozostaje
+zablokowane przez brak Maestro/CoreSimulatorService.
+
 ## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.

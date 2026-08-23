@@ -397,6 +397,29 @@ this is source evidence rather than a 99% completion claim.
 
 No route was deleted because the current reachability graph does not prove any existing route obsolete. The superseded visual geometry was removed in place from the canonical primitives and route owners: old button sizing/pressed behavior, card radii, generic screen padding/footer geometry, navigation rule/padding, session top-bar height, answer-option circles, the ready-state Practice Hub/AppShell header composition, the notification screen's generic SettingsDialog flow, and the old Answer Review card/filter/diagnostic composition. The simulation-local Review Shell and Answer Navigator implementations were removed after extraction to the shared components; `SettingsDialog` remains reachable from its Exam owner, so it was not deleted globally. Track selection also removed the obsolete selected-only `trackIconSelected` branch and the family-wide certification `cloud` icon fallback; the canonical mapping is now Coding `route`, Google Cloud `server-stack`, and `grid` for the remaining catalogue entries. The Practice Summary slice removed the unreferenced `scoreLine`, `missedCount`, and `warningDot` presentation path after live Figma comparison; persisted scoring remains owned by the application projection. No duplicate design-system path, hidden fallback, placeholder feature, or Figma-only command was left behind.
 
+## Addendum — Simulation navigator recovery notice convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma node
+`74:726` (`Pattern Navigator Sheet · Save failure`) and the shared
+`Operation Notice` contract. The navigator recovery notice already had the
+correct elevated surface, warning border, 16 px padding, 12 px internal gap,
+14/22 warning copy, frozen-cell behavior, and full-width `Try again` action.
+Its remaining source-level differences were an 8 px notice radius instead of
+12 px and a 16 px notice-to-action gap instead of 12 px.
+
+Commit `92dcdc2` changes only `SimulationQuestionNavigator` to use the live
+12 px radius and 12 px recovery stack gap. The navigator state machine,
+frozen-cell semantics, retry command, reduced-motion handling, and modal
+accessibility boundary are unchanged; no duplicate notice owner or fallback
+path was introduced.
+
+Focused navigator/operation/session checks passed 17/17; `npm run typecheck`
+passed; `npm run qa:static` passed with recovery inventory 283 active source
+files, 113 active tests, 552 recovery cases, 561/561 tests, content-boundary,
+and runtime-privacy checks. Fresh runtime pixel comparison remains blocked by
+the unavailable Maestro binary and refused CoreSimulatorService, so this is
+source evidence rather than a 99% completion claim.
+
 ## Remaining work
 
 The remaining gaps are explicit and blocking: extend the current-head dark/light screenshot matrix with simulation, recovery, dark Answer Review, navigator/unavailable review states, and deeper Progress/Activity pixel comparisons; compare the implemented Figma simulation operational states (`74:726`, `74:834`, `74:879`, `74:968`, `74:992`, `74:1046`) and Practice recovery states (`68:1074`, `68:1115`, `68:1156`, `68:1200`, `68:1239`) against fresh runtime captures; close the remaining pixel-level notification, feedback, summary, and Progress/Activity comparisons; resolve the completed-summary `Back to Home` versus canonical `Back to practice` command conflict; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.

@@ -243,6 +243,21 @@ Android, signed/distribution rendering, and owner approval of the current
 parity report; it does not justify inventing screenshot evidence or marking
 the 99% objective complete.
 
+## Addendum — Simulation navigator recovery notice convergence
+
+The current channel `ksxw21cw` was revalidated against live Figma `74:726`,
+where the save-failure navigator uses a 12 px `Operation Notice` radius and a
+12 px gap before the full-width `Try again` action. Commit `92dcdc2` applies
+those two geometry facts to the existing `SimulationQuestionNavigator` owner.
+The retry command, frozen navigator cells, modal accessibility boundary,
+reduced-motion behavior, and all lifecycle semantics remain unchanged.
+
+Focused navigator/operation/session checks passed 17/17; typecheck and
+`git diff --check` passed; `npm run qa:static` passed with 561/561 tests and
+recovery inventory 283/113/552. Runtime pixel comparison remains blocked by
+the unavailable Maestro binary and refused CoreSimulatorService; no 99%
+parity claim is made.
+
 ## Addendum — Answer Review convergence
 
 After this packet was created, the current channel `ksxw21cw` was revalidated
