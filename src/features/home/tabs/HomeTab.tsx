@@ -65,6 +65,8 @@ export function HomeTab({
       : recommendation?.title ?? formatPracticeTopicTitle(model.heroTitle, t);
   const decisionDetail = hasActiveSession
     ? t(modeLabel(activeSession.modeId))
+    : isReviewRecommendation
+      ? t("Review due items before they become stale.")
     : recommendation
       ? t(recommendation.unavailableReason ?? recommendation.detail)
     : formatPracticeTopicDetail(model.heroSubtitle, t);

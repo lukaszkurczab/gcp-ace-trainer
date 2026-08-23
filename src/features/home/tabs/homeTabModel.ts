@@ -173,7 +173,7 @@ function primaryLabelFor(reason: CodingInterviewDashboard["recommendation"]["rea
 
 function iconFor(reason: CodingInterviewDashboard["recommendation"]["reason"]): IconName {
   if (reason === "active_session") return "play";
-  if (reason === "overdue_review" || reason === "repeated_mistake") return "rotate-ccw";
+  if (reason === "overdue_review" || reason === "repeated_mistake") return "cpu";
   if (reason === "learn_approach") return "cpu";
   return "route";
 }

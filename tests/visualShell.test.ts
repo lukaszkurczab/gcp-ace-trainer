@@ -150,6 +150,7 @@ test("Screen and SessionShell remain the only general and active-session page ow
 test("representative Home, Settings, setup, session, and result routes keep canonical ownership", () => {
   const rootNavigator = source("src/navigation/RootNavigator.tsx");
   const home = source("src/features/home/HomeScreen.tsx");
+  const homeTab = source("src/features/home/tabs/HomeTab.tsx");
   const settings = source("src/features/home/AppearanceSettingsScreen.tsx");
   const preferenceSelection = source("src/features/home/PreferenceSelectionScreen.tsx");
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
@@ -158,6 +159,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   const simulationSummary = source("src/features/simulation/SimulationSessionSurface.tsx");
 
   assert.match(home, /<Screen[\s\S]*<AppShellHeader \/>/);
+  assert.match(homeTab, /isReviewRecommendation[\s\S]*?Review due items before they become stale\./);
   assert.match(home, /if \(!hasLoadedActiveTrack\) return <Screen edges=\{\["top"\]\} scroll=\{false\}><AppShellHeader \/><LoadingState/);
   assert.match(settings, /<PreferenceSelectionScreen/);
   assert.match(preferenceSelection, /<Screen\b/);

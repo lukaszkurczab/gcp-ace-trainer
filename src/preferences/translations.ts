@@ -54,6 +54,7 @@ const polish: Readonly<Record<string, string>> = {
   "Open Practice": "Otwórz praktykę",
   "Recent activity": "Ostatnia aktywność",
   "Start review": "Rozpocznij powtórkę",
+  "Review due items before they become stale.": "Powtórz zaległe elementy, zanim się zestarzeją.",
   "Start guided practice": "Rozpocznij ćwiczenia z prowadzeniem",
   "Start contrast practice": "Rozpocznij ćwiczenia kontrastowe",
   "Start pattern practice": "Rozpocznij rozpoznawanie wzorców",
