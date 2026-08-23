@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA: `dfae2bc`
+Current source SHA: `bc09d63`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -75,7 +75,7 @@ Only the repository plan statuses are used below.
 | Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Current slices still require runtime comparison across all states and themes. |
 | Home, Progress, and Activity source slices | `partial` | Commits through `d7c6611` align documented source geometry and typography against live nodes. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
-| Current Practice Hub visual parity | `partial` | `55:993` supplies safe geometry facts, but its visible `Independent Practice` row and copy do not match the approved Free interaction contract. The source must retain canonical mode semantics while converging on safe shared geometry. |
+| Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `55:2172` supplies compact segmented-control, choice-row, header, sticky-footer, and spacing facts. Its Focus areas and `Save settings` semantics are not represented by the current canonical route/model and must not be invented. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
 | Runtime screenshot and pixel evidence | `blocking` | Existing captures prove selected previous slices only. Current Activity-route capture and several same-head state comparisons remain unverified because `maestro` is unavailable and CoreSimulatorService refused the simulator connection. |
@@ -215,20 +215,21 @@ Only the repository plan statuses are used below.
 
 ## First next task
 
-The first implementation task is **DES-005-A**, because it is unblocked by the
-authority contradiction: it changes only visual geometry that is directly
-observable in the current Figma frame and already owned by the canonical
-Practice Hub/list/card primitives. DES-005-C must run before any change to
-Custom Practice lengths, focus areas, `Save settings`, or Figma-only copy.
+**DES-005-A is complete in `bc09d63`.** It changed only visual geometry that is
+directly observable in the current Figma frame and already owned by the
+canonical Practice Hub/list/card primitives. The next task is **DES-005-C**:
+resolve owner-bound authority and the Custom Practice `10` versus `10/20/40`
+contract before any Practice Setup semantic change. DES-005-B remains blocked
+until that decision exists.
 
 ## Verification performed and evidence limits
 
 - Live Figma design context and screenshots: pass for `55:993` and `55:2172`.
 - `npm run typecheck`: pass at current source SHA lineage.
-- Focused Practice/session/visual-shell tests: 32/32 pass.
-- Previous full `npm run qa:static`: pass on source commit `d7c6611`, with
-  558/558 tests, TypeScript, content boundary, and runtime privacy boundary.
-- Working tree: clean at `dfae2bc`.
+- Focused Practice/model/visual-shell tests: 33/33 pass.
+- Full `npm run qa:static`: pass on source commit `bc09d63`, with 559/559
+  tests, TypeScript, content boundary, and runtime privacy boundary.
+- Working tree: clean at the implementation boundary before this report update.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
 

@@ -234,15 +234,15 @@ Nonvisual GOV/CNT/DATA work może biec równolegle z DES-01. UI nie może wyprze
 
 ## 7. Pierwsze kolejne zadanie
 
-Pierwszy lokalny task UI to `DES-005-A`: dopasować geometrię Practice Hub do
-live node `55:993` przy zachowaniu zatwierdzonego PKG-04A mode truth. Nie wolno
-przy tym dodawać Independent, Focus areas, `Save settings` ani zmieniać
-Custom length. Równoległa decyzja właściciela `DES-005-C` musi rozstrzygnąć
-owner-bound channel oraz sprzeczność Custom `10` versus `10/20/40` przed
-jakąkolwiek zmianą semantyczną Practice Setup. Exact-SHA gate pozostaje
-pending, ponieważ bieżący app worktree nie jest jeszcze zewnętrznie
-zweryfikowany po tej dokumentacyjnej reconciliacji. Product Owner GO pozostaje
-po stronie właściciela.
+`DES-005-A` jest wykonane w `bc09d63`: geometria Practice Hub odpowiada
+bezpiecznym faktom z live node `55:993`, a zatwierdzony PKG-04A mode truth
+pozostaje bez zmian. Nie dodano Independent, Focus areas ani `Save settings`.
+
+Pierwszy kolejny task to `DES-005-C`: właściciel musi rozstrzygnąć owner-bound
+channel oraz sprzeczność Custom `10` versus `10/20/40` przed jakąkolwiek zmianą
+semantyczną Practice Setup. `DES-005-B` pozostaje zablokowany do czasu tej
+decyzji. Exact-SHA gate, fresh runtime pixel comparison i Product Owner GO
+pozostają pending.
 
 ## 8. Kryterium końcowe
 
