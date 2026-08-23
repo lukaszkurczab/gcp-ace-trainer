@@ -238,6 +238,7 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
 
   assert.match(sharedReviewShell, /<IconButton[\s\S]*icon="chevron-left"/);
   assert.match(sharedReviewShell, /filterShell:/);
+  assert.match(sharedReviewShell, /filterRow:\s*\{[\s\S]*paddingHorizontal:\s*spacing\.xl[\s\S]*paddingVertical:\s*spacing\.sm/);
   assert.match(review, /<AnswerOption/);
   assert.match(review, /<ReviewFeedbackBlock/);
   assert.match(review, /<ReviewNavigator/);
@@ -267,6 +268,7 @@ test("answer review uses the shared Figma review shell and preserves review mark
   assert.match(review, /<ReviewNavigator/);
   assert.match(review, /setQuestionNeedsReview/);
   assert.match(review, /questionOptionsSpacer:\s*\{\s*height:\s*22\s*\}/);
+  assert.match(review, /questionBlock:\s*\{\s*gap:\s*6\s*\}/);
   assert.match(review, /optionsFeedbackSpacer:\s*\{\s*height:\s*28\s*\}/);
   assert.match(review, /<ReviewFeedbackBlock/);
   assert.match(sharedReviewShell, /filterShell:/);

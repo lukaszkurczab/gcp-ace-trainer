@@ -77,9 +77,11 @@ export function ReviewShell({
           <Text maxFontSizeMultiplier={2} style={styles.navigatorLabel}>{t("Navigator")}</Text>
         </Pressable>
       </View>
-      <View accessibilityRole="tablist" style={styles.filterShell}>
-        <FilterTab active={filter === "all"} label={`${t("All")} ${totalOccurrences}`} onPress={() => onFilterChange("all")} styles={styles} />
-        <FilterTab active={filter === "missed"} label={`${t("Missed")} ${missedCount}`} onPress={() => onFilterChange("missed")} styles={styles} />
+      <View style={styles.filterRow}>
+        <View accessibilityRole="tablist" style={styles.filterShell}>
+          <FilterTab active={filter === "all"} label={`${t("All")} ${totalOccurrences}`} onPress={() => onFilterChange("all")} styles={styles} />
+          <FilterTab active={filter === "missed"} label={`${t("Missed")} ${missedCount}`} onPress={() => onFilterChange("missed")} styles={styles} />
+        </View>
       </View>
       <View style={[styles.scrollableContent, contentVariant === "unavailable" ? styles.scrollableContentUnavailable : null]}>{children}</View>
     </Screen>
@@ -97,7 +99,8 @@ function FilterTab({ active, label, onPress, styles }: Readonly<{ active: boolea
 const createStyles = (palette: AppColors) => StyleSheet.create({
   contextRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 64, paddingHorizontal: spacing.xl, paddingVertical: 10 },
   contextText: { color: palette.textSecondary, fontSize: 13, fontWeight: "500", lineHeight: 18 },
-  filterShell: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", minHeight: 44, marginHorizontal: spacing.xl, padding: 4 },
+  filterRow: { paddingHorizontal: spacing.xl, paddingVertical: spacing.sm },
+  filterShell: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", minHeight: 44, padding: 4 },
   filterTab: { alignItems: "center", borderRadius: 10, justifyContent: "center", minHeight: 34, paddingHorizontal: spacing.xl, paddingVertical: spacing.xs },
   filterTabActive: { backgroundColor: palette.primary, borderColor: palette.primary, borderWidth: 1 },
   filterTabLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },

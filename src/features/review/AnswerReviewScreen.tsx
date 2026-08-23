@@ -178,7 +178,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   answerContent: { gap: 0 },
   options: { gap: spacing.sm },
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
-  questionBlock: { gap: spacing.xs },
+  questionBlock: { gap: 6 },
   questionEyebrow: { color: palette.primary, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, opacity: 0.5 },
   markAction: { marginTop: spacing.xl },
   optionsFeedbackSpacer: { height: 28 },
