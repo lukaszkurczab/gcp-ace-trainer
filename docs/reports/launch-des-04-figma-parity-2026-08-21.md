@@ -4,9 +4,9 @@ Date: 2026-08-23
 Repository: `Patternly`  
 Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
-Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`, `61cc0a0`, `00c7cb7`, `0060009`, `fe87b5b`, `471c8aa`, `6384050`, `47eb23c`, `04ae92e`, `78eb8cb`, `36e6e73`, `e6ecb58`, `851e09a`, `2cbdf75`, `7770c57`, `32c170d`, `8fe50e0`, `04e865c`, `0f76f03`, `15768ce`, `16ddbfb`, `b5314a6`, `330f699`, `3185518`, `d05069f`, `577ef10`, `bc9613f`, `04f5960`, `ec2980e`, `f631cf4`, `53d063e`, `86de854`, `7678253`, `a2e4f72`, `8fb2a6a`, `afea4ed`, `36727b6`
+Implementation commits: `4b91494`, `4391884`, `6ee92db`, `db9c637`, `3fbb599`, `e4c9e99`, `50acdd6`, `dd02de1`, `8c75d9b`, `f5f87c2`, `9a6e48f`, `736d32a`, `3e6a282`, `f509e91`, `189ff31`, `d6ee92e`, `0459be1`, `98e3a66`, `2968f10`, `06b0397`, `32c0cdd`, `d065f0f`, `f4c518c`, `6453c01`, `12c7f59`, `51909b9`, `67a9636`, `e4fb7c3`, `61cc0a0`, `00c7cb7`, `0060009`, `fe87b5b`, `471c8aa`, `6384050`, `47eb23c`, `04ae92e`, `78eb8cb`, `36e6e73`, `e6ecb58`, `851e09a`, `2cbdf75`, `7770c57`, `32c170d`, `8fe50e0`, `04e865c`, `0f76f03`, `15768ce`, `16ddbfb`, `b5314a6`, `330f699`, `3185518`, `d05069f`, `577ef10`, `bc9613f`, `04f5960`, `ec2980e`, `f631cf4`, `53d063e`, `86de854`, `7678253`, `a2e4f72`, `8fb2a6a`, `afea4ed`, `36727b6`, `7e9c0a2`
 Verified and pushed SHA: not performed in this pass; the remote branch was not changed.
-Current local verification SHA: `36727b6`
+Current local verification SHA: `7e9c0a2`
 
 ## Outcome
 
@@ -16,6 +16,7 @@ The implementation is not design-complete. Several Figma-backed operational stat
 
 ## Current-head follow-up
 
+- Figma context and screenshot inspection of Home active session `55:539` found one source-level token mismatch independent of live session data: the active-session icon tile used `choice.surface` instead of the authority's `surface/input`. Commit `7e9c0a2` changes `HomeTab` to the repository-owned `palette.surfaceInput` token and adds a source regression assertion. Focused Home/runtime tests and TypeScript pass; full runtime pixel closure remains open because the no-reset capture has different real session content from the static Figma fixture.
 - `b5314a6` aligns the English notification granted copy and reminder-editor intro with Figma nodes `92:865` and `92:914`, and adds a canonical capture flow that handles both `Off` and persisted `20:00` reminder states.
 - Fresh iOS Release evidence from the embedded bundle on simulator `00B8F5B5-DF44-4621-8E30-56927604FA96` completed the notification granted and editor captures in both themes. Evidence is stored at `/tmp/patternly-capture-notifications-dark-v4/` and `/tmp/patternly-capture-notifications-light-v6/`.
 - The comparison now verifies the Figma copy, `20:00` row state, saved editor CTA `Turn off reminder`, sheet geometry, and both theme treatments. The blocked permission node `92:889` is now covered by a current Release capture in both the light and dark state paths; full pixel-level closure remains open.
@@ -233,6 +234,7 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 - `npm run qa:static`: passed on `afea4ed`; recovery inventory (279 active source files, 112 active tests, 546 recovery cases), typecheck, 555/555 tests, content boundary, and runtime privacy boundary all passed.
 - `36727b6` canonical-registry verification: focused registry, track-selection, and track-presentation tests passed, 10/10; the launch order is asserted as Coding, Backend, Object-Oriented, Frontend, Google Cloud, AWS, Azure Administrator, Azure AI.
 - `npm run qa:static`: passed on `36727b6`; recovery inventory (279 active source files, 112 active tests, 546 recovery cases), typecheck, 555/555 tests, content boundary, and runtime privacy boundary all passed after the registry-order correction.
+- `npm run qa:static`: passed on `7e9c0a2` after the Home active-session icon-tile token correction; recovery inventory (279 active source files, 112 active tests, 546 recovery cases), typecheck, 555/555 tests, content boundary, and runtime privacy boundary all passed.
 - `maestro check-syntax .maestro/screenshot-capture/visual-shell/track-selection-capture.yaml`: passed. The capture-only flow covers the reachable returning `Tracks` top viewport plus Coding-selected and Google Cloud-selected states and restores Home without committing a changed track.
 - Fresh light/dark track-selection flows completed on iPhone 16 Pro iOS 18.6 after the registry-order correction. Evidence is stored at `/tmp/patternly-capture-track-selection-dark-v5/` and `/tmp/patternly-capture-track-selection-light-v10/`.
 - `git diff --check`: passed.
