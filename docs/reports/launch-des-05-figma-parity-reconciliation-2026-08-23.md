@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `364a832`
+Current source SHA at packet update: `0a7e8c3`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -33,6 +33,7 @@ content, entitlement, and command truth.
 - Canonical route owners in `src/navigation/RootNavigator.tsx`.
 - Practice owners in `src/features/practice/PracticeHubScreen.tsx`,
   `src/features/practice/PracticeSetupScreen.tsx`,
+  `src/features/practice/PracticeSessionSurface.tsx`,
   `src/features/practice/practiceFlowModel.ts`, and shared primitives
   `src/components/Screen.tsx`, `src/components/ListRow.tsx`,
   `src/components/Card.tsx`, and `src/components/Button.tsx`.
@@ -53,6 +54,7 @@ the current file:
 | Library | `118:738` Patternly Library |
 | Current Practice Hub frame | `55:993` — `03A · Practice · Coding · Review available` |
 | Current Practice Setup frame | `55:2172` — `04A · Manage Practice Settings · Coding` |
+| Current Practice preparing frame | `68:549` — `06A · Preparing` |
 | Current Progress frame | `842:9563` — `Pattern / Progress Screen · Established Evidence` |
 | Current Progress empty-state frame | `842:10949` — `Pattern / Progress Screen · No Evidence` |
 | Current Activity frame | `842:11192` — `Pattern / Activity Screen · Populated` |
@@ -90,6 +92,7 @@ Only the repository plan statuses are used below.
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract. Its visible `Independent Practice` row and copy still do not match the canonical mode model, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
+| Current Practice preparing-state visual parity | `partial` | `0a7e8c3` reuses the canonical async-state owner for the preparing card, status row, typography, spacer, and item terminology from `68:549`; the Figma-only `Leave practice` command remains unresolved because the preparing phase has no safe lifecycle/command owner. Fresh runtime pixel comparison remains blocked. |
 | Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
 | Runtime screenshot and pixel evidence | `blocking` | Existing captures prove selected previous slices only. Current Activity-route capture and several same-head state comparisons remain unverified because `maestro` is unavailable and CoreSimulatorService refused the simulator connection. |
@@ -620,3 +623,23 @@ is absent and CoreSimulatorService refuses simulator connections. Focused
 ambient/Select Track/visual-shell checks passed 15/15; `npm run qa:static`
 passed with recovery inventory 284/114/555, 564/564 tests, typecheck,
 content-boundary, and runtime-privacy-boundary checks.
+
+## Addendum — Practice preparing-state convergence
+
+Commit `0a7e8c3` revalidated live Figma node `68:549` (`06A · Preparing`)
+against the canonical `PracticeSessionSurface` owner. `PreparingNotice` now
+reuses the existing async-state card owner used by completion: 44 px status
+icon, `LOADING` label, Figma-shaped title/description hierarchy, and the
+reserved lower spacer are shared rather than maintained as a second preparing
+card style. The description uses the canonical item terminology.
+
+The Figma bottom `Leave practice` action remains intentionally unresolved.
+The current preparing phase has no safe lifecycle command owner and the route
+does not expose a truthful command input for it; adding a no-op or an invented
+transition would create a fake state. The obsolete `preparing` and
+`preparingTitle` styles were deleted. Focused session/accessibility/loading/
+visual-shell checks passed 43/43; `npm run typecheck` and `git diff --check`
+passed, and full `npm run qa:static` passed with recovery inventory 284/114/555,
+564/564 tests, typecheck, content-boundary, and runtime-privacy-boundary
+checks. Runtime pixel proof remains unavailable because Maestro is absent and
+CoreSimulatorService refuses simulator connections.
