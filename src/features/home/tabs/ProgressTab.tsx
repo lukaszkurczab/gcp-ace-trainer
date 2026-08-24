@@ -205,7 +205,7 @@ function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ item
         <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Recent activity")}</Text>
         {onOpenActivity ? (
           <Pressable accessibilityRole="button" onPress={onOpenActivity} style={({ pressed }) => [pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.activity()}>
-            <Text maxFontSizeMultiplier={2} style={styles.activityLink}>{t("View activity")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.activityLink}>{t("View all activity")}</Text>
           </Pressable>
         ) : null}
       </View>

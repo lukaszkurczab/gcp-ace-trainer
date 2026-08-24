@@ -139,21 +139,22 @@ models, and routes, implement it directly without parallel architecture. A
 Figma-only metric or provider/account/commercial behavior remains unexplained
 until its real contract exists, rather than becoming fabricated product truth.
 
-The current completed code slice is the Algorithms Progress evidence-state
+The current completed code slices are the Algorithms Progress evidence-state
 parity implementation in `src/features/home/tabs/ProgressTab.tsx` and
-`src/features/home/tabs/progressTabModel.ts`, with projection coverage in
-`tests/homeProgressProjections.test.ts` and visual-shell coverage in
-`tests/visualShell.test.ts`. It adds no route, persistence, metric source,
+`src/features/home/tabs/progressTabModel.ts`, plus Activity variable-height row
+parity in `src/features/home/ActivityScreen.tsx`. Projection coverage is in
+`tests/homeProgressProjections.test.ts`, activity behavior in
+`tests/activityModel.test.ts`, and visual-shell coverage in
+`tests/visualShell.test.ts`. They add no route, persistence, metric source,
 account command, or commercial contract. Sparse states explicitly withhold
 effectiveness and trend values until recorded response thresholds are met;
-established values are derived from the exact current content package.
+established values are derived from the exact current content package. Activity
+rows no longer clip long scope/status copy and remain accessible at 200% text.
 
-Next code slice: Activity populated/empty/filtered-empty parity. Align the
-existing Activity screen to the G07 canonical rows and empty-state geometry
-using its current durable session read model, with no new navigation or data
-authority. Acceptance requires exact current-track filtering, truthful
-completed/ended/time-expired status copy, 200% text coverage, focused tests,
-and a fresh plan checkpoint.
+Next code slice: inspect the remaining buildable G07 Goal cadence and existing
+Settings surfaces for geometry-only deltas. Account, recovery, Premium, report,
+and provider-backed states remain explainable tasks but are not to be fabricated
+without their canonical input contracts.
 
 ### 3. Content Review Console V1
 

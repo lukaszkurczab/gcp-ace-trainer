@@ -288,6 +288,16 @@ test("Progress follows the current Figma section copy and 200% text contract", (
   assert.equal(textNodes.every((node) => node.includes("maxFontSizeMultiplier={2}")), true);
 });
 
+test("Activity rows preserve the variable-height Figma copy at large text", () => {
+  const activity = source("src/features/home/ActivityScreen.tsx");
+  const row = activity.slice(activity.indexOf("function ActivityRow"), activity.indexOf("function activityCountLabel"));
+
+  assert.doesNotMatch(row, /numberOfLines/);
+  assert.match(row, /maxFontSizeMultiplier=\{2\} style=\{styles\.title\}/);
+  assert.match(row, /maxFontSizeMultiplier=\{2\} style=\{styles\.detail\}/);
+  assert.match(activity, /row:\s*\{[\s\S]*?minHeight:\s*73/);
+});
+
 test("simulation review owns the Figma review shell and keeps navigator outcomes explicit", () => {
   const review = source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx");
   const sharedReviewShell = source("src/components/ReviewShell.tsx");

@@ -181,10 +181,10 @@ function ActivityRow({ item, last, onPress }: Readonly<{ item: ActivityItem; las
         <Icon color={palette.onPrimary} name={item.icon} size={20} />
       </View>
       <View style={styles.copy}>
-        <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.title}>{t(item.modeTitle)}</Text>
-        <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.detail}>{[t(item.trackTitle), item.scopeLabel].filter(Boolean).join(" · ")}</Text>
-        <Text maxFontSizeMultiplier={2} numberOfLines={1} style={styles.detail}>{`${activityCountLabel(item, t)} · ${item.duration}`}</Text>
-        <Text maxFontSizeMultiplier={2} numberOfLines={1} style={[styles.detail, item.status === "completed" ? null : styles.statusDetail]}>{`${t(item.statusLabel)} · ${translateDateLabel(item.dateLabel, t)}`}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.title}>{t(item.modeTitle)}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.detail}>{[t(item.trackTitle), item.scopeLabel].filter(Boolean).join(" · ")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.detail}>{`${activityCountLabel(item, t)} · ${item.duration}`}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.detail, item.status === "completed" ? null : styles.statusDetail]}>{`${t(item.statusLabel)} · ${translateDateLabel(item.dateLabel, t)}`}</Text>
       </View>
       <Icon color={palette.textMuted} name="chevron-right" size={18} />
     </Pressable>
