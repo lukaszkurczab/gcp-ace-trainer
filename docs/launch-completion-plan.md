@@ -16,7 +16,7 @@ _Audyt: 2026-08-23. To jest jedyny aktywny dokument kolejności prac i statusu. 
 
 | Obszar          | Fakt                                                                                                                                                                                                                                                                                                                                                        | Dowód i granica                                                                                                                                                                                                                                                     |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App             | app source baseline: `2b19f81`; `origin/main` nie został zmieniony w tym tasku                                                                                                                                                                                                                                                                               | Current source passes recovery 287/116/564, TypeScript, 573/573 tests, content-boundary, and runtime-privacy checks. Current-head visual-shell capture passed all 11 checkpoints in Dark and Light; full matrix capture, normalized pixel comparison, and owner approval remain pending. |
+| App             | app source baseline: `8b2dd0e`; `origin/main` nie został zmieniony w tym tasku                                                                                                                                                                                                                                                                               | Current source passes recovery 287/116/565, TypeScript, 574/574 tests, content-boundary, and runtime-privacy checks. Current-head visual-shell capture passed all 11 checkpoints in Dark and Light; full matrix capture, normalized pixel comparison, and owner approval remain pending. |
 | Content         | master i origin/master: 12b99c78e03ec6c58964d7f83d11d1b50af08467                                                                                                                                                                                                                                                                                            | Exact-SHA [CI 32388398769](https://github.com/lukaszkurczab/patternly-content/actions/runs/32388398769) success; lokalnie zmiana GOV-01 ma 143/143 testów, authoring 10/10 i 838 source JSON. Exact-SHA dla tej zmiany pending.                                     |
 | Worktree        | App przed audytem miał user change .gitignore dodający .maestro.                                                                                                                                                                                                                                                                                            | Nie przypisywać go temu planowi. Plan i oba AGENTS.md są lokalnymi zmianami audytu.                                                                                                                                                                                 |
 | Release gate    | `npm run release:gate` pozostaje `not_ready`.                                                                                                                                                                                                                                                                                                               | Lock i lokalne artefakty obejmują 8 tracków; otwarte są dirty app checkout, 6 external evidence, 8 human content approvals, 8 publishing admissions i 8 runtime admissions. `physical-device-matrix` jest opcjonalny i nie blokuje launchu.                         |
@@ -953,6 +953,25 @@ only metric was added. Focused visual-shell checks and `npm run typecheck`
 passed; current-head full QA, Light/Dark runtime capture, and Product Owner
 approval remain the required evidence gates. This is not a `MATCHED` or 99%
 claim without current-head runtime pixel evidence.
+
+## Addendum — Reachable 200% text contract
+
+Commit `8b2dd0e` applies the existing Figma stress contract
+`maxFontSizeMultiplier={2}` to visible React Native text across the reachable
+Home, Progress, Practice, Settings, Simulation, Exam, Review, shared-component,
+and rich-feedback owners. The same commit aligns the Progress section heading
+with the current Figma established-evidence copy `Recent activity`; route,
+projection, selector, persistence, scoring, and navigation semantics are
+unchanged. The rich-feedback code-token spans inherit the same explicit cap;
+the only remaining `Text` without visible copy is the empty ExamReview runtime
+selector marker.
+
+The slice was verified with recovery inventory `287/116/565`, TypeScript,
+`574/574` tests, `git diff --check`, content boundary, and runtime privacy
+boundary. It is a source-level stress-contract improvement, not a `MATCHED` or
+99% claim: normalized Figma comparison, the complete current-head reachable
+state matrix, `DESIGN_MISSING`/`CANONICAL_CONFLICT` owner decisions, and
+Product Owner approval remain open.
 
 ## 8. Kryterium końcowe
 

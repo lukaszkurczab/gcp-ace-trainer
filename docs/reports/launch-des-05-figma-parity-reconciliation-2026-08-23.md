@@ -1860,3 +1860,25 @@ runtime evidence packs, not a Figma `MATCHED` decision: screenshots are
 logical viewport, so normalized node-to-screen comparison is still required.
 The remaining reachable-state matrix, `DESIGN_MISSING`/
 `CANONICAL_CONFLICT` decisions, and Product Owner approval remain open.
+
+## Addendum — Reachable 200% text contract
+
+Commit `8b2dd0e` completes the source-level 200% text contract for visible
+React Native text across the reachable Home, Progress, Practice, Settings,
+Simulation, Exam, Review, shared-component, and rich-feedback owners. Existing
+Figma stress references `882:14459`, `766:5732`, `766:5822`, and shared Button
+`141:817` establish the contract; this slice applies it consistently through
+the canonical owners with `maxFontSizeMultiplier={2}`. The current Progress
+authority `842:9563` also uses the established-evidence section copy
+`Recent activity`, which is now the source copy. No route, model, selector,
+scoring, persistence, navigation command, visual token, or Figma-only metric
+was added. The rich-feedback code-token spans keep the explicit cap; the only
+remaining text node without visible copy is the empty ExamReview runtime marker.
+
+The source audit found no visible render-owned `<Text>` without the cap across
+the changed reachable surfaces. Verification on `8b2dd0e` passed recovery
+inventory `287/116/565`, TypeScript, `574/574` tests, `git diff --check`,
+content boundary, and runtime privacy boundary. This is source-level
+convergence, not a `MATCHED` or 99% claim: current-head normalized Figma
+comparison, full reachable-state capture, `DESIGN_MISSING`/
+`CANONICAL_CONFLICT` owner decisions, and Product Owner approval remain open.
