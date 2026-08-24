@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import {
   getAlgorithmsPracticeSummaryProjection,
@@ -54,13 +54,13 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
     ? result.score.partialCount + result.score.incorrectCount
     : result.feedbackItems.filter((item) => item.correctness !== "correct").length;
   return (
-    <Screen edges={["top", "bottom"]} style={styles.screen}>
+    <Screen edges={["top", "bottom"]} scroll={false} style={styles.screen}>
       <View style={styles.summaryShell}>
         <View accessibilityLabel={t(resultStateLabel)} style={styles.summaryHeaderBar}>
           <Text maxFontSizeMultiplier={2} style={styles.eyebrow}>{t("Learn approach")}</Text>
           <Text maxFontSizeMultiplier={2} style={styles.summaryMode}>{t("Coding Interview")}</Text>
         </View>
-        <View style={styles.summaryContent}>
+        <ScrollView contentContainerStyle={styles.summaryContent} showsVerticalScrollIndicator={false} style={styles.summaryContentScroll}>
           <View style={styles.summaryHeader}>
             <Text maxFontSizeMultiplier={2} style={styles.resultTitle} testID={runtimeSelectors.summary.root(result.sessionId)}>{t(resultTitle)}</Text>
             <Text maxFontSizeMultiplier={2} style={styles.resultDescription}>{t(result.completionKind === "completed" ? "Your performance record has been analyzed and logged." : "This session ended before every item was completed.")}</Text>
@@ -97,7 +97,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
               ))}
             </View>
           ) : null}
-        </View>
+        </ScrollView>
         <View style={styles.summaryFooter}>
           {result.feedbackItems.length > 0 ? (
             <Button onPress={() => setShowReview((current) => !current)} testID={runtimeSelectors.summary.reviewAnswers(result.sessionId)} variant="primary">
@@ -129,12 +129,13 @@ function formatElapsed(milliseconds: number): string {
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   screen: { paddingBottom: 0, paddingHorizontal: 0, paddingTop: 0 },
-  summaryShell: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.xxl, borderWidth: 1, overflow: "hidden" },
-  summaryHeaderBar: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 52, paddingHorizontal: spacing.xl, paddingVertical: 18 },
+  summaryShell: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.xxl, borderWidth: 1, flex: 1, overflow: "hidden" },
+  summaryHeaderBar: { alignItems: "flex-start", borderBottomColor: palette.border, borderBottomWidth: 1, columnGap: spacing.md, flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", minHeight: 52, paddingHorizontal: spacing.xl, paddingVertical: 18, rowGap: spacing.xs },
   summaryHeader: { gap: spacing.sm },
-  summaryMode: { color: palette.textSecondary, fontSize: 13, fontWeight: "600", lineHeight: 16 },
-  eyebrow: { color: palette.textPrimary, fontSize: 13, fontWeight: "700", lineHeight: 16, textTransform: "uppercase" },
+  summaryMode: { color: palette.textSecondary, flexShrink: 1, fontSize: 13, fontWeight: "600", lineHeight: 16, textAlign: "right" },
+  eyebrow: { color: palette.textPrimary, flexShrink: 1, fontSize: 13, fontWeight: "700", lineHeight: 16, textTransform: "uppercase" },
   summaryContent: { gap: 28, padding: spacing.xxl },
+  summaryContentScroll: { flex: 1 },
   resultDescription: { ...typography.body, color: palette.textSecondary },
   statsCard: { gap: spacing.md },
   summaryStat: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: 1, flexDirection: "row", justifyContent: "space-between", paddingBottom: spacing.md },

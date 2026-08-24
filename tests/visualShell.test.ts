@@ -182,6 +182,7 @@ test("Screen and SessionShell remain the only general and active-session page ow
 
   assert.deepEqual(safeAreaOwners, []);
   assert.deepEqual(scrollViewOwners, [
+    "src/features/practice/AlgorithmsPracticeSummaryScreen.tsx",
     "src/features/simulation/SimulationSessionSurface.tsx",
     "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",
   ]);
@@ -243,9 +244,14 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(source("src/features/practice/AlgorithmsScopeSelectionScreen.tsx"), /state\.kind === "unavailable"[\s\S]*?<Screen edges=\{\["top"\]\}><AppShellHeader[\s\S]*?onActionPress=\{\(\) => goBackOrHome\(navigation\)\}/);
   assert.match(session, /return \([\s\S]*<Screen[\s\S]*footer=/);
   assert.match(result, /<Screen/);
+  assert.match(result, /<Screen edges=\{\["top", "bottom"\]\} scroll=\{false\}/);
+  assert.match(result, /<ScrollView contentContainerStyle=\{styles\.summaryContent\}[\s\S]*<\/ScrollView>/);
   assert.match(rootNavigator, /name=\{ROUTES\.ALGORITHMS_PRACTICE_SUMMARY\}[\s\S]*?options=\{\{ headerShown: false, title: t\("Session result"\) \}\}/);
   assert.match(result, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
   assert.match(result, /eyebrow:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"700"[\s\S]*?lineHeight:\s*16/);
+  assert.match(result, /summaryShell:\s*\{[\s\S]*?flex:\s*1/);
+  assert.match(result, /summaryHeaderBar:\s*\{[\s\S]*?flexWrap:\s*"wrap"/);
+  assert.match(result, /summaryMode:\s*\{[\s\S]*?flexShrink:\s*1[\s\S]*?textAlign:\s*"right"/);
   assert.match(result, /statsCard:\s*\{\s*gap:\s*spacing\.md\s*\}/);
   assert.match(result, /summaryStat:\s*\{[\s\S]*?borderBottomWidth:\s*1[\s\S]*?paddingBottom:\s*spacing\.md/);
   assert.match(result, /sectionTitle:\s*\{[\s\S]*?fontSize:\s*10[\s\S]*?fontWeight:\s*"700"[\s\S]*?letterSpacing:\s*1\.2[\s\S]*?lineHeight:\s*12[\s\S]*?textTransform:\s*"uppercase"/);
