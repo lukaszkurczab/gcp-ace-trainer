@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `38af502`
+Current source SHA at packet update: `4f918ad`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -1618,3 +1618,24 @@ full `npm run qa:static` passed with recovery inventory `287/116/563`,
 `572/572` tests, TypeScript, content boundary, and runtime privacy boundary.
 Current-head Light/Dark/200% runtime capture and Product Owner approval remain
 open; this addendum does not claim 99% parity.
+
+## Addendum — Shared visual-effect token cutover
+
+Commit `4f918ad` completes a repository-owned token cutover for repeated visual
+effects used by the reachable UI. `src/theme/tokens.ts` now owns the shared
+scrims, review/session overlays, subtle borders, dividers, sheet handles,
+unavailable surfaces, shadow color, dark ambient colors, and theme-specific
+primary pressed color. Shared shell, button, modal, review, practice,
+simulation, Goal & cadence, and ambient owners consume those tokens directly.
+
+The migration preserves the existing Figma values and runtime behavior; it does
+not introduce a second theme, visual fallback, route, command, or semantic
+state. The dead-literal scan found no remaining raw overlay/scrim/shadow or
+ambient canvas literal outside the token owner; domain track accents remain
+explicit content metadata.
+
+Focused visual/accessibility/session/Goal checks passed `44/44`; full
+`npm run qa:static` passed recovery inventory `287/116/564`, `573/573` tests,
+TypeScript, content boundary, and runtime privacy boundary. This is design
+system convergence, not a `MATCHED` or 99% claim: current-head Light/Dark/200%
+runtime capture and Product Owner approval remain open.
