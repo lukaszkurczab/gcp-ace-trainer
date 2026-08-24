@@ -17,6 +17,10 @@ The app working head already contained user-owned commits ahead of the pushed
 baseline; those commits were preserved. The content source banks and inventories
 were not mass-edited.
 
+After the reconciliation push, the owner introduced an uncommitted Android NDK
+prebuild pin slice in the application worktree. It is intentionally excluded from
+the reconciliation commits and is not attributed to this controller.
+
 Pushed and independently re-fetched canonical refs after the follow-up cleanup:
 
 | Repository | Canonical ref | Verified head |
@@ -115,6 +119,9 @@ evidence locations.
   store evidence was created. The delegated QA attempt used `gpt-5.6-luna` at
   `max` as required by `AGENTS.md` but returned no report, so the controller
   verdict is `PASS WITH GAPS`, not independent QA approval.
+- Owner NDK slice: focused tests 2/2, full app suite 578/578, and typecheck
+  passed; the files remain uncommitted and the app worktree is dirty, so this is
+  not canonical release evidence or a pushed implementation claim.
 - Content `npm test`: 146 passed after the stale-evidence assertion repair;
   the local Console bind test was run with localhost binding enabled.
 - Content contract test now verifies that the superseded `868a565f` artifact is
@@ -139,8 +146,9 @@ exists. Source inspection also confirms that account/entitlement runtime provide
 composition is not present; adding speculative adapters would contradict the
 provider boundary. At this head,
 provider composition, runtime/publishing admission,
-immutable full-package evidence, actual EAS signing/build evidence, and external
-release evidence are genuine gates; none is fabricated by this report.
+immutable full-package evidence, actual EAS signing/build evidence, external
+release evidence, and owner resolution of the dirty NDK working tree are genuine
+gates; none is fabricated by this report.
 
 The genuine gates remain exact provider/store SKU and pricing choices, provider and
 production credentials/configuration, domain/legal/privacy, flagged/new content

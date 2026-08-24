@@ -62,7 +62,7 @@ app SHA because each plan update creates a new documentation commit.
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
 | 6. Commercial entitlement | planned | No provider-neutral entitlement runtime is currently composed. The fixed/recurring chain remains an implementation task after the provider/backend input contract exists; no store/provider evidence is claimed. |
 | 7. Provider, privacy, security, operations | planned | Production configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery evidence remains absent and requires the corresponding external gates. |
-| 8. QA, signing, stores, GO/NO-GO | partial | Owner commits `03a032c` (signing boundary) and `15b00af` (EAS project/update initialization) are on canonical `main`; focused tests and the full app suite pass, while actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable external gates. |
+| 8. QA, signing, stores, GO/NO-GO | partial | Owner commits `03a032c` (signing boundary) and `15b00af` (EAS project/update initialization) are on canonical `main`; an additional uncommitted Android NDK pin slice passes local tests but makes the app worktree dirty. Actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable gates. |
 
 ## Execution stages
 
@@ -201,10 +201,15 @@ The current owner-owned EAS/signing slice is committed on canonical `main` at
 does not prove an EAS-managed signed artifact. The delegated QA attempt used the
 required `gpt-5.6-luna` model at `max` reasoning but returned no report, so the
 controller records local QA as `PASS WITH GAPS`, not independent QA approval.
-The current canonical app head also passes the full suite (577/577) and
-`npm run typecheck`; content `0463a2b` passes its full suite (146/146) with the
-local Console bind test run under the required localhost-enabled environment.
-Both canonical worktrees are clean after refetch.
+An owner-owned, uncommitted Android NDK prebuild pin is present in `app.json`,
+`plugins/withAndroidNdkVersion.js`, `tests/platformConfig.test.ts`, and
+`tests/androidNdkVersion.test.ts`. Its focused tests pass 2/2, the full app
+suite passes 578/578, and typecheck passes. The controller has not staged,
+committed, or pushed this slice. The current canonical app head also passes the
+previous full suite (577/577) and `npm run typecheck`; content `0463a2b` passes
+its full suite (146/146) with the local Console bind test run under the required
+localhost-enabled environment. The app worktree is intentionally dirty due to
+owner changes; content remains clean.
 
 ## Genuine stop gates
 
@@ -218,6 +223,8 @@ Stop only for:
 - Apple, Google, RevenueCat, EAS, signing, store, domain, legal, privacy,
   provider credentials, Firebase/backend/IAM/billing/deploy, or production config;
 - runtime admission or publishing admission for any launch track;
+- owner resolution of the uncommitted Android NDK working-tree slice before a
+  clean canonical release verification can be claimed;
 - organic beta-user recruitment/feedback;
 - final owner review and explicit GO/NO-GO.
 
