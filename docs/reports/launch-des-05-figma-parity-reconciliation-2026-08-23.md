@@ -1675,3 +1675,25 @@ inventory `287/116/564`, `573/573` tests, content boundary, and runtime privacy
 boundary. This is source-level convergence, not a `MATCHED` or 99% claim:
 current-head Light/Dark/200% runtime capture and Product Owner approval remain
 open.
+
+## Addendum — Practice Hub unavailable-row reconciliation
+
+Live Figma `55:1139` confirms that the unavailable review state is a variant
+inside Practice Hub, not a separate route. Its row uses `surface/input`, keeps a
+chevron, and renders the status inside the supporting copy (`Unavailable · No
+review items are due yet.`). The canonical repository instead renders an
+explicit non-actionable row with an `Unavailable` badge and package-scoped
+reason copy, preserving the product contract that an empty review queue must
+never substitute ordinary practice.
+
+This is a `CANONICAL_CONFLICT`, not a safe geometry-only change: removing the
+badge or making the chevron actionable would alter the explicit unavailable
+boundary, while copying the Figma sentence would change the current
+package-scoped diagnostic contract. No source change was made. The owner must
+decide whether the Figma row is the approved unavailable presentation or a
+fixture variant before this state can move beyond `PARTIAL`.
+
+Page-1 metadata also contains account, authentication, premium, and content
+delivery frames, but the current `RootNavigator` does not expose those routes.
+They remain outside the reachable-path parity matrix until a canonical route
+owner exists; no Figma-only route was added.
