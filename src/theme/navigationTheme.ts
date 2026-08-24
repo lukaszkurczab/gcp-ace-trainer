@@ -1,11 +1,11 @@
 import { DefaultTheme, type Theme } from "@react-navigation/native";
 
-import type { AppColors } from "./tokens";
+import { ambient, type AppColors } from "./tokens";
 
 export function buildNavigationTheme(colors: AppColors): Theme {
   return {
     ...DefaultTheme,
-    dark: colors.background === "#081328",
+    dark: colors.background === ambient.canvas,
     colors: {
       ...DefaultTheme.colors,
       background: colors.background,

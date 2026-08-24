@@ -4,7 +4,7 @@ import { Button, Icon } from "../../components";
 import type { ContentItemRef, TrackId } from "../../domain";
 import type { SessionMetricPresentation } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
-import { radius, spacing, typography } from "../../theme";
+import { effects, radius, spacing, typography } from "../../theme";
 import { PracticeFeedbackBlock } from "./PracticeFeedbackBlock";
 import { PracticeResponseControls } from "./PracticeResponseControls";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -257,7 +257,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   completingActions: { minHeight: 48 },
   constraint: { ...typography.small, color: palette.textSecondary },
   constraints: { gap: spacing.xs },
-  exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.button, borderTopRightRadius: radius.button, borderWidth: 1, elevation: 8, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, width: "100%" },
+  exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.button, borderTopRightRadius: radius.button, borderWidth: 1, elevation: 8, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: effects.shadowColor, shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, width: "100%" },
   exitModalStack: { width: "100%" },
   exitSheetActions: { gap: spacing.sm },
   exitDestructiveAction: { backgroundColor: palette.background, paddingHorizontal: spacing.xl, paddingBottom: spacing.sm, width: "100%" },
@@ -267,7 +267,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   noticeErrorText: { color: palette.warning, flex: 1 },
   noticeSuccess: { backgroundColor: palette.successSoft, borderColor: palette.success },
   noticeText: { ...typography.small, color: palette.textSecondary },
-  modalBackdrop: { backgroundColor: "rgba(0, 0, 0, 0.56)", flex: 1, justifyContent: "flex-end" },
+  modalBackdrop: { backgroundColor: effects.sessionScrim, flex: 1, justifyContent: "flex-end" },
   modalDismissArea: { ...StyleSheet.absoluteFill },
   questionLabel: { ...typography.caption, color: palette.primary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
   prompt: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", letterSpacing: -0.3, lineHeight: 28 },

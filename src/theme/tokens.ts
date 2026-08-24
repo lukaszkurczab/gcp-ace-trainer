@@ -4,6 +4,28 @@ export const brand = {
   warmWhite: "#F6F8FB"
 } as const;
 
+/** Shared visual effects whose values are independent of the active color mode. */
+export const effects = {
+  divider: "rgba(255, 255, 255, 0.06)",
+  ghostPressed: "rgba(255, 255, 255, 0.08)",
+  handle: "rgba(255, 255, 255, 0.12)",
+  reviewScrim: "rgba(2, 6, 23, 0.56)",
+  scrim: "rgba(0, 0, 0, 0.48)",
+  shadowColor: "#000000",
+  sessionScrim: "rgba(0, 0, 0, 0.56)",
+  subtleBorder: "rgba(255, 255, 255, 0.05)",
+  unavailableIconSurface: "rgba(30, 41, 59, 0.5)",
+  unavailableSurface: "rgba(14, 22, 40, 0.6)",
+} as const;
+
+/** Figma Page 1 ambient colors shared by the dark application shells. */
+export const ambient = {
+  canvas: "#081328",
+  goalTeal: "#20C997",
+  indigo: "#4F46E5",
+  teal: "#14B7A6",
+} as const;
+
 export const colors = {
   light: {
     background: "#F0F2F5",
@@ -14,6 +36,7 @@ export const colors = {
     borderStrong: "#B9C6D4",
     textPrimary: "#132033",
     onPrimary: "#FFFFFF",
+    primaryPressed: "#0F766E",
     textSecondary: "#506176",
     textMuted: "#7B8798",
     primary: "#0F766E",
@@ -98,6 +121,7 @@ export const colors = {
     borderStrong: "#334155",
     textPrimary: "#F1F5F9",
     onPrimary: "#081328",
+    primaryPressed: "#2DD4A8",
     textSecondary: "#AAB6C8",
     textMuted: "#738198",
     primary: "#20C997",

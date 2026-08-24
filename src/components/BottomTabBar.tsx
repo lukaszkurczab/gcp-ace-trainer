@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { radius, spacing, typography } from "../theme";
+import { effects, radius, spacing, typography } from "../theme";
 import { Icon, type IconName } from "./Icon";
 import { useAppPreferences, useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
@@ -93,7 +93,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     paddingTop: 0,
     position: "absolute",
     right: 0,
-    shadowColor: "#000000",
+    shadowColor: effects.shadowColor,
     shadowOffset: { width: 0, height: -8 },
     shadowOpacity: 0.14,
     shadowRadius: 14,

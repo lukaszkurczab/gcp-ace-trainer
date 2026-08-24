@@ -9,7 +9,7 @@ import { AnswerOption, EmptyState, ReviewNavigator, ReviewShell, ReviewUnavailab
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { spacing, typography, type AppColors } from "../../theme";
+import { effects, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
@@ -214,7 +214,7 @@ const createReviewStyles = (palette: AppColors) => StyleSheet.create({
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   options: { gap: spacing.sm },
   unavailableContent: { alignSelf: "stretch", flex: 1, position: "relative", width: "100%" },
-  unavailableSurface: { alignItems: "center", backgroundColor: "rgba(14,22,40,0.6)", borderColor: "rgba(255,255,255,0.05)", borderRadius: 18, borderWidth: 1, gap: spacing.lg, left: 20, paddingHorizontal: spacing.xxxl, paddingVertical: 28, position: "absolute", top: 185, width: 353 },
+  unavailableSurface: { alignItems: "center", backgroundColor: effects.unavailableSurface, borderColor: effects.subtleBorder, borderRadius: 18, borderWidth: 1, gap: spacing.lg, left: 20, paddingHorizontal: spacing.xxxl, paddingVertical: 28, position: "absolute", top: 185, width: 353 },
 });
 
 function messageFor(error: unknown): string { return describeOperationalFailure(error, "The session result is not available because verification did not complete."); }

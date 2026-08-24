@@ -27,7 +27,7 @@ import {
 import { getTrackDisplay, isRegisteredTrackId, type TrackId } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { colorWithOpacity, radius, spacing, typography, type AppColors } from "../../theme";
+import { effects, colorWithOpacity, radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 type GoalCadenceScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.GOAL_CADENCE>;
@@ -442,9 +442,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   reminderCopy: { flex: 1, gap: spacing.xs },
   reminderTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   reminderDetail: { ...typography.small, color: palette.textSecondary },
-  summaryCard: { backgroundColor: palette.surface, borderColor: colorWithOpacity("#FFFFFF", 0.05), borderRadius: 14, borderWidth: 1, gap: 14, padding: spacing.lg },
+  summaryCard: { backgroundColor: palette.surface, borderColor: effects.subtleBorder, borderRadius: 14, borderWidth: 1, gap: 14, padding: spacing.lg },
   summaryRow: { gap: spacing.xs },
-  summaryDivider: { backgroundColor: colorWithOpacity("#FFFFFF", 0.06), height: StyleSheet.hairlineWidth, width: "100%" },
+  summaryDivider: { backgroundColor: effects.divider, height: StyleSheet.hairlineWidth, width: "100%" },
   summaryLabel: { color: palette.primary, fontSize: 12, fontWeight: "400", lineHeight: 15 },
   summaryValue: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
   dayBadges: { flexDirection: "row", gap: 6 },

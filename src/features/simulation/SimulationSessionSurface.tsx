@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AnswerOption, Button, Card, Icon, Screen } from "../../components";
-import { radius, spacing, typography } from "../../theme";
+import { effects, radius, spacing, typography } from "../../theme";
 import { complexityValueAccessibilityLabel, orderingMoveAccessibilityLabel } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
 import type { SimulationAction, SimulationResponseChange, SimulationResponseControl, SimulationSurfaceProjection } from "./simulationProjection";
@@ -197,10 +197,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   body: { ...typography.small, color: palette.textSecondary },
   code: { backgroundColor: palette.background, borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, color: palette.textSecondary, fontFamily: "monospace", padding: spacing.md },
   confirmationTitle: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", letterSpacing: -0.3, lineHeight: 28 },
-  confirmationBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 0, 0, 0.48)" },
+  confirmationBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: effects.scrim },
   confirmationRoot: { flex: 1, justifyContent: "flex-end" },
   confirmationStack: { width: "100%" },
-  confirmationSheet: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, borderWidth: 1, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: "#000000", shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, elevation: 8 },
+  confirmationSheet: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, borderWidth: 1, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: effects.shadowColor, shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, elevation: 8 },
   confirmationDestructive: { backgroundColor: palette.background, paddingHorizontal: spacing.xl, paddingBottom: spacing.sm, paddingTop: spacing.md },
   summaryScreen: { gap: 0, padding: 0 },
   summaryShell: { backgroundColor: palette.surface, borderRadius: 24, flex: 1, overflow: "hidden" },

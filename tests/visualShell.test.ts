@@ -12,6 +12,20 @@ function sourceFiles(root: string): string[] {
   });
 }
 
+test("shared visual effects have one theme-token owner", () => {
+  const tokens = source("src/theme/tokens.ts");
+  const appSource = sourceFiles("src")
+    .filter((path) => !path.endsWith("src/theme/tokens.ts") && !path.endsWith("src/domain/tracks/trackRegistry.ts"))
+    .map(source)
+    .join("\n");
+
+  assert.match(tokens, /export const effects = \{[\s\S]*?reviewScrim:[\s\S]*?subtleBorder:/);
+  assert.match(tokens, /export const ambient = \{[\s\S]*?canvas:[\s\S]*?indigo:/);
+  assert.doesNotMatch(appSource, /rgba\(/);
+  assert.doesNotMatch(appSource, /shadowColor:\s*"#/);
+  assert.doesNotMatch(appSource, /backgroundColor:\s*"#081328"/);
+});
+
 test("all branded navigation headers use the one AppShellHeader path", () => {
   const files = sourceFiles("src");
   const combined = files.map(source).join("\n");
@@ -339,7 +353,8 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
   assert.match(choiceRow, /density\?:\s*"comfortable" \| "compact"/);
   assert.match(choiceRow, /compactRow:\s*\{[\s\S]*?minHeight:\s*48/);
   assert.match(screen, /footerVariant\?:\s*"default" \| "review" \| "session" \| "simulation" \| "sticky"/);
-  assert.match(screen, /footerSticky:\s*\{[\s\S]*?colorWithOpacity\("#FFFFFF", 0\.05\)/);
+  assert.match(screen, /import \{ effects, spacing \} from "\.\.\/theme"/);
+  assert.match(screen, /footerSticky:\s*\{[\s\S]*?borderColor: effects\.subtleBorder/);
   assert.match(screenHeader, /variant\?: "default" \| "activity" \| "practiceSetup"/);
   assert.match(screenHeader, /practiceSetupDescription:\s*\{[\s\S]*?fontSize:\s*13\.5[\s\S]*?lineHeight:\s*19/);
   assert.doesNotMatch(setup, /Focus areas|Save settings/);

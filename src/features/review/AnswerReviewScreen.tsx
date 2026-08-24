@@ -11,7 +11,7 @@ import { contentPackagePinsEqual } from "../../domain";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { spacing, typography, type AppColors } from "../../theme";
+import { effects, spacing, typography, type AppColors } from "../../theme";
 import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/certification";
 import { ReviewFeedbackBlock } from "./ReviewFeedbackBlock";
 
@@ -183,6 +183,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   markAction: { marginTop: spacing.xl },
   optionsFeedbackSpacer: { height: 28 },
   questionOptionsSpacer: { height: 22 },
-  unavailableContent: { alignItems: "center", backgroundColor: "rgba(14,22,40,0.6)", borderColor: "rgba(255,255,255,0.05)", borderRadius: 18, gap: spacing.lg, marginTop: 101, paddingHorizontal: spacing.xxxl, paddingVertical: 28 },
+  unavailableContent: { alignItems: "center", backgroundColor: effects.unavailableSurface, borderColor: effects.subtleBorder, borderRadius: 18, gap: spacing.lg, marginTop: 101, paddingHorizontal: spacing.xxxl, paddingVertical: 28 },
   unanswered: { ...typography.bodyStrong, color: palette.textMuted },
 });

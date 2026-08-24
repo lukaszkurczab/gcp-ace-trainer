@@ -11,7 +11,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import { radius, spacing, typography } from "../theme";
+import { effects, radius, spacing, typography } from "../theme";
 import { useAppPreferences, useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
@@ -111,13 +111,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     opacity: 1
   },
   primaryPressed: {
-    backgroundColor: palette.primary === "#20C997" ? "#2DD4A8" : palette.primary,
+    backgroundColor: palette.primaryPressed,
   },
   secondaryPressed: {
     backgroundColor: palette.elevatedSurface,
   },
   ghostPressed: {
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: effects.ghostPressed,
   },
   destructivePressed: {
     backgroundColor: palette.danger,

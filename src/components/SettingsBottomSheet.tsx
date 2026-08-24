@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { radius, spacing, typography } from "../theme";
+import { effects, radius, spacing, typography } from "../theme";
 import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
@@ -38,7 +38,7 @@ export function SettingsBottomSheet({ children, closeLabel, intro, onClose, titl
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   root: { flex: 1, justifyContent: "flex-end" },
-  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 0, 0, 0.48)" },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: effects.scrim },
   sheet: {
     backgroundColor: palette.bottomSheet.surface,
     borderColor: palette.bottomSheet.border,
@@ -46,7 +46,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderTopRightRadius: radius.sheet,
     borderTopWidth: StyleSheet.hairlineWidth,
     maxHeight: "86%",
-    shadowColor: "#000000",
+    shadowColor: effects.shadowColor,
     shadowOffset: { height: -4, width: 0 },
     shadowOpacity: 0.48,
     shadowRadius: 12,
