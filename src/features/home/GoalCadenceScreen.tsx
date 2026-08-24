@@ -205,13 +205,16 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
         <View style={styles.titleBlock}>
           <View style={styles.titleRow}>
             <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Goal & cadence")}</Text>
-            {!editing ? <View style={[styles.statusBadge, goal?.status === "paused" ? styles.pausedBadge : null]}><Text style={styles.statusBadgeLabel}>{t(goal?.status === "paused" ? "Paused" : "Active")}</Text></View> : null}
           </View>
           <View style={styles.trackContext}>
             <View style={[styles.trackDot, { backgroundColor: track.accentColor }]} />
             <Text maxFontSizeMultiplier={2} style={styles.trackLabel}>{t(track.shortTitle)}</Text>
           </View>
-          {editing ? <Text maxFontSizeMultiplier={2} style={styles.description}>{t("Set a learning rhythm for this track.")}</Text> : null}
+          {editing ? <Text maxFontSizeMultiplier={2} style={styles.description}>{t("Set a learning rhythm for this track.")}</Text> : (
+            <View style={styles.statusRow}>
+              <View style={[styles.statusBadge, goal?.status === "paused" ? styles.pausedBadge : null]}><Text style={styles.statusBadgeLabel}>{t(goal?.status === "paused" ? "Paused" : "Active")}</Text></View>
+            </View>
+          )}
         </View>
       </View>
 
@@ -361,14 +364,26 @@ function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onToggle
     <View style={styles.form} testID={runtimeSelectors.goal.root()}>
       <View style={styles.summaryCard}>
         <SummaryRow label={t("Goal")} value={t(copy.title)} />
+        <View style={styles.summaryDivider} />
         <SummaryRow label={t("Target date")} value={goal.targetDate ? formatGoalDate(goal.targetDate, locale) : t("No target date")} />
+        <View style={styles.summaryDivider} />
         <SummaryRow label={t("Sessions/week")} value={String(goal.weeklySessionTarget)} />
-        <SummaryRow label={t("Preferred days")} value={goal.preferredDays.length ? goal.preferredDays.map((day) => t(DAY_LABELS[day])).join(" · ") : t("No preferred days")} />
+        <View style={styles.summaryDivider} />
         <View style={styles.summaryRow}>
-          <View style={styles.summaryCopy}>
-            <Text style={styles.summaryLabel}>{t("Reminders")}</Text>
-            <Text style={styles.summaryValue}>{t("Managed in notification settings")}</Text>
-          </View>
+          <Text style={styles.summaryLabel}>{t("Preferred days")}</Text>
+          {goal.preferredDays.length ? (
+            <View style={styles.dayBadges}>
+              {goal.preferredDays.map((day) => (
+                <View key={day} style={styles.dayBadge}>
+                  <Text style={styles.dayBadgeLabel}>{DAY_SHORT_LABELS[day]}</Text>
+                </View>
+              ))}
+            </View>
+          ) : <Text style={styles.summaryValue}>{t("No preferred days")}</Text>}
+        </View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryReminderRow}>
+          <Text style={[styles.summaryLabel, styles.summaryReminderLabel]}>{t("Reminders")}</Text>
           <Pressable accessibilityRole="button" onPress={onOpenNotifications}><Text style={styles.summaryLink}>{t("Notification settings")}</Text></Pressable>
         </View>
       </View>
@@ -382,7 +397,7 @@ function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onToggle
 
 function SummaryRow({ label, value }: Readonly<{ label: string; value: string }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.summaryRow}><View style={styles.summaryCopy}><Text style={styles.summaryLabel}>{label}</Text><Text style={styles.summaryValue}>{value}</Text></View></View>;
+  return <View style={styles.summaryRow}><Text style={styles.summaryLabel}>{label}</Text><Text style={styles.summaryValue}>{value}</Text></View>;
 }
 
 function formatGoalDate(value: string, locale: "en" | "pl"): string {
@@ -391,11 +406,11 @@ function formatGoalDate(value: string, locale: "en" | "pl"): string {
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   screenContent: { gap: spacing.xxl, paddingBottom: spacing.xxl, paddingTop: 28 },
-  header: { gap: spacing.lg },
+  header: { gap: spacing.sm },
   headerContext: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minHeight: 44 },
   context: { ...typography.small, color: palette.textSecondary, fontWeight: "500" },
   titleBlock: { gap: spacing.sm },
-  titleRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm, justifyContent: "space-between" },
+  titleRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
   title: { color: palette.textPrimary, fontSize: 22, fontWeight: "700", lineHeight: 27 },
   trackContext: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
   trackDot: { borderRadius: radius.pill, height: 8, width: 8 },
@@ -404,6 +419,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   statusBadge: { backgroundColor: palette.success, borderRadius: radius.md, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
   pausedBadge: { backgroundColor: palette.warning },
   statusBadgeLabel: { color: palette.primary, fontSize: 11, fontWeight: "700", lineHeight: 14 },
+  statusRow: { alignItems: "center", flexDirection: "row" },
   form: { gap: 28 },
   formSection: { gap: spacing.sm },
   sectionCopy: { flex: 1, gap: spacing.xs },
@@ -426,12 +442,17 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   reminderCopy: { flex: 1, gap: spacing.xs },
   reminderTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   reminderDetail: { ...typography.small, color: palette.textSecondary },
-  summaryCard: { backgroundColor: palette.surface, borderColor: colorWithOpacity("#FFFFFF", 0.05), borderRadius: 14, borderWidth: 1, paddingHorizontal: spacing.lg },
-  summaryRow: { alignItems: "center", borderBottomColor: colorWithOpacity("#FFFFFF", 0.06), borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", justifyContent: "space-between", minHeight: 68, paddingVertical: spacing.md },
-  summaryCopy: { flex: 1, gap: spacing.xs },
-  summaryLabel: { ...typography.small, color: palette.textSecondary },
-  summaryValue: { ...typography.bodyStrong, color: palette.textPrimary },
-  summaryLink: { ...typography.small, color: palette.primary, fontWeight: "700" },
+  summaryCard: { backgroundColor: palette.surface, borderColor: colorWithOpacity("#FFFFFF", 0.05), borderRadius: 14, borderWidth: 1, gap: 14, padding: spacing.lg },
+  summaryRow: { gap: spacing.xs },
+  summaryDivider: { backgroundColor: colorWithOpacity("#FFFFFF", 0.06), height: StyleSheet.hairlineWidth, width: "100%" },
+  summaryLabel: { color: palette.primary, fontSize: 12, fontWeight: "400", lineHeight: 15 },
+  summaryValue: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
+  dayBadges: { flexDirection: "row", gap: 6 },
+  dayBadge: { backgroundColor: colorWithOpacity(palette.primary, 0.12), borderRadius: 6, paddingHorizontal: spacing.sm },
+  dayBadgeLabel: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 15 },
+  summaryReminderRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
+  summaryReminderLabel: { flex: 1 },
+  summaryLink: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 15 },
   centerAction: { alignItems: "center", minHeight: 40, justifyContent: "center" },
   centerActionLabel: { ...typography.small, color: palette.textSecondary, fontWeight: "600" },
   error: { color: palette.danger, fontSize: 13, lineHeight: 18 },

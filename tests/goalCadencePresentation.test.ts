@@ -17,6 +17,13 @@ test("goal cadence is a reachable root route backed by the canonical repository"
   assert.match(screen, /Preferred days/);
   assert.match(screen, /Managed in notification settings/);
   assert.match(screen, /status === "paused"/);
+  assert.match(screen, /header: \{ gap: spacing\.sm \}/);
+  assert.match(screen, /trackContext[\s\S]*?statusRow/);
+  assert.match(screen, /editing \? <Text[\s\S]*?: \([\s\S]*?statusRow/);
+  assert.match(screen, /summaryCard:[\s\S]*?gap: 14[\s\S]*?padding: spacing\.lg/);
+  assert.match(screen, /summaryDivider:[\s\S]*?height: StyleSheet\.hairlineWidth/);
+  assert.match(screen, /dayBadges:[\s\S]*?gap: 6/);
+  assert.match(screen, /dayBadge:[\s\S]*?backgroundColor: colorWithOpacity\(palette\.primary, 0\.12\)/);
   assert.doesNotMatch(screen, /getKeyValueStorage|MMKV/);
 });
 
