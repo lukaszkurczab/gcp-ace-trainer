@@ -14,4 +14,5 @@ test("visual shell has one shared journey and an explicit production-ready prepa
   assert.match(releaseFlow, /- runFlow: visual-shell-capture\.yaml/);
   assert.equal((captureFlow.match(/- takeScreenshot:/g) ?? []).length, 11);
   assert.doesNotMatch(captureFlow, /audit\/reset-learning-state|ready-after-audit-reset/);
+  assert.match(captureFlow, /id: "settings-your-data"[\s\S]*?direction: DOWN[\s\S]*?visibilityPercentage: 50[\s\S]*?tapOn:\s*\n    id: "settings-your-data"/);
 });

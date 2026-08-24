@@ -158,6 +158,13 @@ tags:
     visible:
       id: "settings-screen"
     timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "settings-your-data"
+    direction: DOWN
+    centerElement: true
+    timeout: 30000
+    visibilityPercentage: 50
 - tapOn:
     id: "settings-your-data"
 - extendedWaitUntil:
