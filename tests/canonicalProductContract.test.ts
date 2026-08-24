@@ -145,6 +145,14 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["BACKUP-RESTORE-001", ["canonical-packages-operations-platform"]],
       ["PLATFORM-RELEASE-001", ["canonical-packages-operations-platform"]],
       ["BRAND-DESIGN-AUTHORITY-001", ["canonical-brand-design-authority"]],
+      ["CONTENT-VALUE-POSITIONING-001", ["canonical-strategic-reconciliation-boundaries"]],
+      ["CONTENT-BASELINE-ACCEPTANCE-001", ["canonical-strategic-reconciliation-boundaries"]],
+      ["CONTENT-COVERAGE-QUALITY-001", ["canonical-strategic-reconciliation-boundaries"]],
+      ["SESSION-PROFILE-LENGTH-001", ["canonical-strategic-reconciliation-boundaries"]],
+      ["CONTENT-REVIEW-CONSOLE-001", ["canonical-strategic-reconciliation-boundaries"]],
+      ["PREMIUM-ENTITLEMENT-SOURCES-001", ["canonical-strategic-reconciliation-boundaries"]],
+      ["SOLO-FOUNDER-OPERATING-001", ["canonical-strategic-reconciliation-boundaries"]],
+      ["AI-MOCK-INTERVIEW-001", ["canonical-strategic-reconciliation-boundaries"]],
     ],
   );
   assert.throws(
@@ -374,7 +382,7 @@ test("defines sign-out, retention, verified deletion, and public deletion reques
 
 test("defines commercial guest and identity target semantics", () => {
   const contract = loadCanonicalProductContract();
-  assert.deepEqual(contract.commercialEntitlement.premiumProducts, ["monthly", "annual"]);
+  assert.deepEqual(contract.commercialEntitlement.premiumProducts, ["fixedDuration30Day", "fixedDuration90Day", "recurring"]);
   assert.equal(contract.commercialEntitlement.entitlement, "oneAccountBoundPremiumForAllPremiumContentInAllTracks");
   assert.equal(contract.commercialEntitlement.trackSlots, "prohibited");
   assert.equal(contract.commercialEntitlement.offlineVerificationGraceDays, 7);
@@ -389,6 +397,22 @@ test("defines commercial guest and identity target semantics", () => {
   assert.equal(contract.environmentAndPublicLinks.localConfiguration, "unconfiguredFailsClosed");
   assert.deepEqual(contract.environmentAndPublicLinks.ordinaryFirebaseActionCodes, { expiry: "providerControlled", singleUse: "providerControlled" });
   assert.deepEqual(contract.environmentAndPublicLinks.publicDeletionPossessionToken, { expiryMinutes: 30, singleUse: true });
+});
+
+test("defines the strategic reconciliation content, session, console, commerce, and operating boundaries", () => {
+  const contract = loadCanonicalProductContract();
+  const requirements = new Map(contract.requirements.map((requirement) => [requirement.id, requirement.statement]));
+  assert.match(requirements.get("CONTENT-VALUE-POSITIONING-001") ?? "", /decision-practice and remediation product/);
+  assert.match(requirements.get("CONTENT-BASELINE-ACCEPTANCE-001") ?? "", /accepted eight-track launch content banks/);
+  assert.match(requirements.get("CONTENT-COVERAGE-QUALITY-001") ?? "", /No global question-count threshold/);
+  assert.match(requirements.get("SESSION-PROFILE-LENGTH-001") ?? "", /resolved supported subset/);
+  assert.match(requirements.get("CONTENT-REVIEW-CONSOLE-001") ?? "", /local\/internal repository-owned/);
+  assert.deepEqual(contract.commercialEntitlement.premiumProducts, ["fixedDuration30Day", "fixedDuration90Day", "recurring"]);
+  assert.match(requirements.get("PREMIUM-ENTITLEMENT-SOURCES-001") ?? "", /SKU-neutral/);
+  assert.match(requirements.get("SOLO-FOUNDER-OPERATING-001") ?? "", /no paid testers, coaches, reviewers/);
+  assert.match(requirements.get("AI-MOCK-INTERVIEW-001") ?? "", /outside the launch product scope/);
+  assert.deepEqual(contract.learningProducts.launchTrackScope, contract.learningProducts.targetTracks);
+  assert.equal((contract.learningProducts.launchTrackScope as readonly string[]).length, 8);
 });
 
 test("defines device session sync surface goal and learning-product semantics", () => {

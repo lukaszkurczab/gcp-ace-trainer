@@ -216,6 +216,14 @@ The canonical-product-contract suite validates the complete Coding Interview mod
 
 For Custom Practice, exercise every configuration declared by the contract, its required blueprint and explicit mental-unit boundary, unsupported-value rejection, the one-active-session lifecycle, and the specified feedback-disclosure boundary. A repeatable simulator or release-compatible evidence flow must reset development learning state before each independent case and preserve screenshots, Maestro output, and the resolved session-configuration selector outside the repository worktree. Physical-device capture is optional and non-blocking.
 
+Content and profile tests must also prove that the accepted eight-track baseline is
+not mass-mutated by readiness tooling, that no global question-count threshold is
+used as launch readiness, that requested and actual lengths come from the resolved
+track/package/Free profile, and that unsupported lengths fail explicitly. Console
+tests must keep automated signals advisory, require explicit human outcomes, bind
+review to item identity and fingerprint, and invalidate review when content
+changes.
+
 ## Review selection tests
 
 For Coding Interview `Weak Area Review`, test that selection:

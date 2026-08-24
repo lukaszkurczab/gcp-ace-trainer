@@ -38,6 +38,36 @@ Brak odpowiedzi nie oznacza akceptacji ceny, przyszłego tracku ani finalnej
 stylistyki. Każda zmiana decyzji wymaga aktualizacji konsekwencji i zakresu
 aktywnego planu.
 
+## Bieżąca władza właściciela — strategic reconciliation 2026-08-24
+
+Nowsza dyrektywa właściciela z 2026-08-24 przejmuje bieżące znaczenie poniższych
+obszarów. Ten blok jest aktualnym skrótem wykonawczym; starsze wpisy pozostają
+historią i nie mogą być używane jako konkurencyjna instrukcja.
+
+| Obszar | Obowiązująca decyzja |
+| --- | --- |
+| Launch scope | Dokładnie osiem tracków z `canonical-product-contract.yaml`; Terraform 004 i KCNA są post-launch. |
+| Content baseline | Istniejące osiem banków launchowych jest zaakceptowanym finalnym baseline'em; bez masowego redukowania, rozszerzania ani exhaustive re-review. |
+| Content quality | Brak globalnej reguły `>120 questions/node`; zmiany są celowane i evidence-driven, a liczność jest wyłącznie sygnałem operacyjnym. |
+| Session capability | Rodzina i tryb definiują envelope, a wersjonowany track/package/Free profile rozstrzyga dostępny podzbiór długości; UI pokazuje wyłącznie resolved profile. |
+| Review tooling | Powstaje lokalny/internal Content Review Console; source files pozostają authority, sygnały automatyczne są advisory, a decyzje człowieka są jawne. |
+| Product position | Patternly jest produktem decision-practice/remediation, nie question bankiem. Wartością jest explained decision loop, remediation, revisit i transfer. |
+| Premium | Jedno SKU-neutral account entitlement dla fixed 30-day, fixed 90-day oraz discounted recurring access; exact SKUs, ceny i promocje pozostają gate'em providera/właściciela. |
+| Operating model | Solo founder; bez założenia płatnych testerów, coachów, reviewerów, agencji lub stałej płatnej zależności Figma. AI mock interviewer nie wchodzi do launchu. |
+| Cleanup | Jeden obowiązkowy cleanup stage usuwa obsolete evidence, directives, finished-task notes, duplicate reports i dead artifacts, zachowując unikalne provenance/release/legal/security evidence. |
+
+### Jawnie zastąpione aktywne założenia
+
+- `PO-037` w zakresie „monthly + annual only” jest zastąpione modelem fixed
+  30-day/fixed 90-day/recurring; pozostają Free, jedno entitlement, brak slotów i
+  brak tiers.
+- `PO-046` w zakresie launchowej liczby tracków jest zastąpione dokładnie ośmioma
+  trackami; repozytoryjne briefy post-launch nie są launch admission.
+- `PO-059` i powiązane referencje w zakresie długości są interpretowane przez
+  resolved profile, a nie jako uniwersalna obietnica każdej rodziny lub Free.
+- Historyczne progi liczności lub dokumenty opisujące Patternly jako question bank
+  nie są aktywną władzą produktu.
+
 ## Skrót
 
 | ID     | Decyzja                             | Status                     | Ustawienie robocze                                                            |
@@ -78,7 +108,7 @@ aktywnego planu.
 | PO-034 | Odporne dokończenie zdalnego usunięcia | `owner-decision-required` | Wynik produktowy jest wymagany; dokładna mutacja schedulera nie jest autoryzowana. |
 | PO-035 | Osobny Finish zwykłej sesji          | `implemented`              | Trwały zapis odpowiedzi poprzedza jedyną jawną akcję terminalną.              |
 | PO-036 | Guest-first i adopcja                | `resolved`                 | Pierwsza wartość lokalnie; konto na granicy Premium/sync/restore.             |
-| PO-037 | Free i Premium                       | `resolved`                 | Stałe Free; monthly + annual; jedno Premium; bez slotów i tierów.             |
+| PO-037 | Free i Premium                       | `partly superseded by PO-064` | Stałe Free; jedno Premium; brak slotów i tierów; model produktów przejęty przez PO-064. |
 | PO-038 | Autorytet Premium i grace            | `resolved`                 | Store → RevenueCat → backend; cross-platform; 7 dni zweryfikowanego offline.  |
 | PO-039 | Usunięcie a subskrypcja sklepu       | `resolved`                 | Natychmiastowe usunięcie konta jest niezależne od anulowania/refundu.          |
 | PO-040 | Metody tożsamości i recovery codes   | `resolved`                 | Email/hasło, Apple, Google oraz osiem jednorazowych kodów.                     |
@@ -87,7 +117,7 @@ aktywnego planu.
 | PO-043 | Sesja urządzenia i incremental sync  | `resolved`                 | Jedna aktywna sesja per device; brak remote draft/pointer/timer/journal.       |
 | PO-044 | Własność powierzchni produktu        | `resolved`                 | Today, Practice, Progress, Settings; Activity zagnieżdżone pod Progress.       |
 | PO-045 | Cele per track                       | `resolved`                 | Ważne templates wpływają na cadence/rekomendacje, nigdy access/scoring.       |
-| PO-046 | Wewnętrzne families i dziesięć tracków | `resolved`              | Trzy wewnętrzne families; dziesięć równych briefs i gate admission.           |
+| PO-046 | Wewnętrzne families i launch scope    | `partly superseded by PO-064` | Trzy wewnętrzne families; dokładnie osiem launch tracks, a Terraform/KCNA post-launch. |
 | PO-047 | Granica Coding Interview             | `resolved`                 | `coding_interview`, strategy-first, atomowa migracja, bez sugestii judge'a.   |
 | PO-048 | Niezmienne node packages             | `resolved`                 | Bundled free nodes i autoryzowane immutable whole-node Premium packages.      |
 | PO-049 | Analytics i crash boundary           | `resolved`                 | Firebase Analytics/Crashlytics fail-closed za privacy/consent gate.           |
@@ -207,6 +237,40 @@ blokuje wspieranej konfiguracji. Publiczne mastery/retention jest zabronione.
 
 **Ustawienie robocze:** B jest obowiązującym kontraktem.
 
+**Status:** `resolved`.
+
+## PO-064 — Strategic reconciliation and launch-readiness authority
+
+**Data:** 2026-08-24
+**Źródło:** bezpośrednia dyrektywa właściciela `patternly-owner-directive-strategic-reconciliation-2026-08-24.md` oraz manual actions companion.
+
+PO-064 ustanawia bieżący launch scope i sposób prowadzenia dalszej pracy:
+
+- launch ma dokładnie osiem tracków; istniejące osiem banków jest zaakceptowanym
+  finalnym baseline'em;
+- nie ma globalnego readiness gate `>120 questions/node`, a content changes są
+  celowane, evidence-driven i nie otwierają masowego re-review baseline'u;
+- family/mode capability jest rozstrzygana przez versioned track/package/Free
+  profile, który dostarcza resolved session-length subset;
+- lokalny/internal Content Review Console ma wspierać targeted review bez drugiego
+  authority, cloud storage, remote DB, auth, secrets, auto-rewrite lub self-approval;
+- Patternly jest decision-practice/remediation product, a nie question bankiem;
+- Premium pozostaje jednym SKU-neutral entitlement dla fixed 30-day, fixed 90-day
+  i discounted recurring access; exact store products, pricing i promocje są
+  osobnym provider/owner gate'em;
+- AI mock interviewer, paid testers/coaches/reviewers i permanent paid Figma
+  dependency nie należą do założeń launchu;
+- jeden cleanup stage usuwa obsolete evidence, directives, finished-task notes,
+  duplicate reports i dead artifacts, zachowując unikalne provenance/release/legal/
+  security evidence.
+
+PO-064 jest bieżącą władzą dla planu, kontraktu i narracyjnych dokumentów. Nie
+tworzy fałszywego provider/store/Figma/human evidence; genuine external gates
+pozostają jawne i są jedynymi powodami zatrzymania pracy.
+
+**Supersedes:** sprzeczne aktywne założenia w `PO-037`, `PO-046`, `PO-059`,
+wcześniejszych planach launchu oraz materiałach opisujących count threshold,
+question-bank positioning lub uniwersalną dostępność sesji.
 **Status:** `resolved`.
 
 **Trigger decyzji właściciela:** tylko formalna zmiana
@@ -1333,14 +1397,16 @@ ukończona albo jawnie porzucona.
 launchowe znaczenie `ADR-003`.
 **Status:** `resolved`.
 
-## PO-037 — Permanent Free i jeden Premium
+## PO-037 — Permanent Free i jeden Premium (częściowo zastąpione przez PO-064)
 
 **Data:** 2026-08-08
 **Źródło:** bezpośrednia decyzja Product Ownera.
 
 Produkt ma stałe Free oraz jedno account-bound Premium obejmujące cały Premium
-content wszystkich tracków. Sprzedawany jest jeden produkt miesięczny i jeden
-roczny. Nie istnieją active-track slots, track-count tiers ani
+content wszystkich tracków. Historyczny zapis o jednym produkcie miesięcznym i
+jednym rocznym został w zakresie product-shape zastąpiony przez `PO-064`, która
+ustanawia fixed 30-day, fixed 90-day i discounted recurring access za jednym
+SKU-neutral entitlement. Nie istnieją active-track slots, track-count tiers ani
 assignment/release/cooldown. Cena liczbowa i identyfikatory produktów są
 późniejszą decyzją store i nie mogą być zgadywane.
 
@@ -1349,7 +1415,7 @@ dociąga Premium filler. Guest nie kupuje Premium.
 
 **Supersedes:** `PO-011` oraz sprzeczne slot/tier statements z materiałów
 wizualnych.
-**Status:** `resolved`.
+**Status:** `partly superseded by PO-064`; Free/Premium boundary remains resolved.
 
 ## PO-038 — Autorytet entitlement, restore i offline grace
 

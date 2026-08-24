@@ -53,7 +53,7 @@ No silent merge or discard is permitted. Cancellation or failure preserves the l
 
 Today contains current track/fast switch, active local session if present, one executable recommendation, weekly goal state, due review when higher priority, compact previous-session context, at most one evidence-backed insight and actionable sync/entitlement warnings. It is not a mode catalogue.
 
-Practice contains manual roadmap/node and mode selection, setup, active local session, review modes, simulation where supported, package/download state and explicit Free/Premium availability. It does not duplicate Today.
+Practice contains manual roadmap/node and mode selection, setup, active local session, review modes, simulation where supported, package/download state and explicit Free/Premium availability. The setup UI exposes only the session lengths resolved by the selected versioned track/package/Free profile; a family capability envelope is not a promise that every profile supports every length. It does not duplicate Today.
 
 Progress contains node evidence, weak areas, recurring errors, trend, goal adherence, due review, recent Activity and entry to full Activity.
 

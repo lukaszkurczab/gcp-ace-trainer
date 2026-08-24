@@ -178,6 +178,22 @@ requirements:
     statement: The target release uses Expo SDK 57, iOS 16.4 or later on iPhone only, Android API 28 minimum and API 36 target, portrait, Light Dark and System appearances, 200 percent text scaling, phone-only evidence, and signed distribution evidence. Physical-device testing is optional and never blocks launch readiness.
   - id: BRAND-DESIGN-AUTHORITY-001
     statement: Patternly is one focused flagship brand with subordinate track accents, a controlled 3-to-2-to-1 owner-approved Figma phase, restrained accessible motion and haptics, repository-owned handoff, and CODE_CANONICAL independence from paid Figma.
+  - id: CONTENT-VALUE-POSITIONING-001
+    statement: Patternly is a decision-practice and remediation product whose learning loop is recognition, decision and mechanism, explained correctness and distractor reasoning, varied practice, repeated-mistake remediation, revisit, and transfer; question count is not the product value proposition.
+  - id: CONTENT-BASELINE-ACCEPTANCE-001
+    statement: The accepted eight-track launch content banks are the final launch baseline; they are not subject to mass reduction, mass expansion, or exhaustive re-review, and any change must target a demonstrated factual, technical, scoring, feedback, duplicate, coverage, session-profile, provenance, or runtime defect.
+  - id: CONTENT-COVERAGE-QUALITY-001
+    statement: No global question-count threshold defines readiness; future content changes are evidence-driven by coverage, mental-unit variation, validity, diagnostic value, provenance, and resolved session profiles, while raw counts remain operational evidence only.
+  - id: SESSION-PROFILE-LENGTH-001
+    statement: A family and mode declare a capability envelope, while each versioned track, package, and Free profile declares its resolved supported subset; the UI exposes only that resolved profile, shortening is explicit with requested and actual lengths, and an unsupported requested length fails without runtime inference or cross-unit filler.
+  - id: CONTENT-REVIEW-CONSOLE-001
+    statement: The Content Review Console is a local/internal repository-owned review surface; source files remain authoritative, review identity includes exact item identity and content fingerprint, changes invalidate prior review, automated risk signals are advisory, and human outcomes are explicit without cloud hosting, remote database, auth, secrets, auto-rewrite, self-approval, or a second content authority.
+  - id: PREMIUM-ENTITLEMENT-SOURCES-001
+    statement: Premium entitlement is SKU-neutral and account-bound across fixed non-renewing 30-day access, fixed non-renewing 90-day access, and discounted recurring access; exact storefront products, prices, and promotions remain provider/owner gates, while entitlement authority flows store transaction to RevenueCat normalization to backend projection to bounded device cache.
+  - id: SOLO-FOUNDER-OPERATING-001
+    statement: Launch execution assumes one founder using automation, local/internal tools, and managed infrastructure; no paid testers, coaches, reviewers, agency, or permanent paid design dependency is assumed, and unavailable external evidence remains explicit rather than fabricated.
+  - id: AI-MOCK-INTERVIEW-001
+    statement: An AI mock interviewer is outside the launch product scope; Patternly's interview practice remains authored decision practice with explicit feedback, remediation, review, and transfer.
 requirementTestCoverage:
   version: 1
   tests:
@@ -469,9 +485,13 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: defines one brand owner approval and repository handoff semantics
       requirementIds: [BRAND-DESIGN-AUTHORITY-001]
+    - id: canonical-strategic-reconciliation-boundaries
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines the strategic reconciliation content, session, console, commerce, and operating boundaries
+      requirementIds: [CONTENT-VALUE-POSITIONING-001, CONTENT-BASELINE-ACCEPTANCE-001, CONTENT-COVERAGE-QUALITY-001, SESSION-PROFILE-LENGTH-001, CONTENT-REVIEW-CONSOLE-001, PREMIUM-ENTITLEMENT-SOURCES-001, SOLO-FOUNDER-OPERATING-001, AI-MOCK-INTERVIEW-001]
 commercialEntitlement:
   freeAccess: permanent
-  premiumProducts: [monthly, annual]
+  premiumProducts: [fixedDuration30Day, fixedDuration90Day, recurring]
   entitlement: oneAccountBoundPremiumForAllPremiumContentInAllTracks
   tiers: prohibited
   trackSlots: prohibited

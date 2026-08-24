@@ -1,1149 +1,162 @@
-# Patternly — plan wykonawczy do komercyjnego launchu
-
-_Audyt: 2026-08-23. To jest jedyny aktywny dokument kolejności prac i statusu. Zachowanie produktu definiują docs/canonical-product-contract.yaml, rejestr decyzji Product Ownera i dokumenty właścicielskie. Raporty, screenshoty i Git są wyłącznie dowodami._
-
-## 1. Zasady pracy
-
-- Statusy: done, partial, blocking, deferred, planned, unknown / needs evidence.
-- Done wymaga dowodu na bieżącym canonical SHA albo niezmiennym artefakcie. Stary CI, raport lub screenshot nie wystarcza.
-- Screenshot z symulatora nie jest Figma parity, signed buildem ani store approval; testy na fizycznym urządzeniu są poza obowiązkowym zakresem tego launchu.
-- Bieżący connector channel wskazany przez właściciela: `ksxw21cw`; file `kZXD7cNBKUU7x0ceTHPFpR`, Patternly Library i Page 1 są punktami odniesienia do rewalidacji. Channel nie jest sam w sobie owner approval. Historyczne `76kzylrb` i `eon17bsz` nie mogą być traktowane jako bieżąca approval authority; explicit Product Owner approval dla scoped PKG-04A pozostaje związany z `wtk4hp8i` / board root `10:2`.
-- Nie dodawać project ID, credentiali, sekretów, store/provider data ani release admission bez realnej autoryzacji i dowodu. Nie rozszerzać release locka ani nie relabelować historycznych package/release.
-- Każdy slice implementacyjny używa apply_patch, focused tests, validatorów, canonical branch i exact-SHA CI; aktualizuje ten plan i jeden raport dowodowy.
-- Każdy delegowany task implementacyjny, QA, research, review lub release używa wyłącznie gpt-5.6-luna z reasoning max. Trwałe wymaganie jest w AGENTS.md obu repo i należy je wpisać do raportu.
-
-## 2. Potwierdzony baseline
-
-| Obszar          | Fakt                                                                                                                                                                                                                                                                                                                                                        | Dowód i granica                                                                                                                                                                                                                                                     |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App             | current repository HEAD: `c4000c9`; source behavior slice: `239e167`; `origin/main` nie został zmieniony w tym tasku                                                                                                                                                                                                                                                                               | Current source passes recovery 287/116/567, TypeScript, 576/576 tests, content-boundary, and runtime-privacy checks. Existing visual-shell packs are tied to preceding source SHAs; full current-head matrix capture, normalized pixel comparison, and owner approval remain pending. |
-| Content         | master i origin/master: 12b99c78e03ec6c58964d7f83d11d1b50af08467                                                                                                                                                                                                                                                                                            | Exact-SHA [CI 32388398769](https://github.com/lukaszkurczab/patternly-content/actions/runs/32388398769) success; lokalnie zmiana GOV-01 ma 143/143 testów, authoring 10/10 i 838 source JSON. Exact-SHA dla tej zmiany pending.                                     |
-| Worktree        | App przed audytem miał user change .gitignore dodający .maestro.                                                                                                                                                                                                                                                                                            | Nie przypisywać go temu planowi. Plan i oba AGENTS.md są lokalnymi zmianami audytu.                                                                                                                                                                                 |
-| Release gate    | `npm run release:gate` pozostaje `not_ready`.                                                                                                                                                                                                                                                                                                               | Lock i lokalne artefakty obejmują 8 tracków; otwarte są dirty app checkout, 6 external evidence, 8 human content approvals, 8 publishing admissions i 8 runtime admissions. `physical-device-matrix` jest opcjonalny i nie blokuje launchu.                         |
-| Content lock    | App lock obejmuje dokładnie 8 tracków w `patternly-app-content-0020`, release `patternly-launch-2026-08-21-02`.                                                                                                                                                                                                                                             | Schema, provenance, package IDs i SHA są walidowane fail-closed; bieżący lock nie zastępuje human sign-off ani publishing/runtime admission.                                                                                                                        |
-| Platform/EAS    | Expo 57.0.11 / React Native 0.86.2; iOS 16.4/iPhone-only; Android min 28, target/compile 36; portrait; Light/Dark/System.                                                                                                                                                                                                                                   | Production EAS ma requireCommit, autoIncrement i fail-closed signing. Plugin Androida wymaga czterech PATTERNLY*ANDROID_RELEASE*\*; credentials/project ID nie istnieją w repo.                                                                                     |
-| AWS T1 audit    | 2 568 pozycji, 137 source JSON, 21 node; source audit przechodzi.                                                                                                                                                                                                                                                                                           | `audit:aws-workbook-source` przechodzi, ale `validate:track` kończy się SOURCE_COMMIT_UNAVAILABLE; wykryto także rozjazd wersji envelope oraz tylko 4 itemy Free-node i 20 itemów diagnostic-eligible.                                                              |
-| Figma authority | Current connector session `ksxw21cw` zweryfikował file/page/library oraz Practice Hub `55:993`, Practice Setup `55:2172`, Practice preparing `68:549`, Practice Question Shell `68:569` / `68:603` / `68:637` / `68:719` / `68:844`, Home `55:445`, Progress `842:9563` / `842:10949`, Goal & cadence `842:11569` / `842:11693`, Activity `842:11192` / `842:11410` / `842:11466`, Select Track `42:422` / `42:478` / `42:539` / `42:604` / `42:642`, Simulation `74:834` / `74:879` / `74:968` / `74:992`, Answer Review `81:538` i shared Button `141:817`; design context i screenshoty są dostępne.                                                                                                                                                                                                                        | [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md) and [DES-005-D handoff](reports/launch-des-005-current-head-visual-evidence-handoff-2026-08-24.md). Dostęp do connectora nie jest owner approval ani full parity; physical-device evidence jest opcjonalne i nie blokuje launchu.                                                              |
-| Maestro         | Explicitny binary `2.6.1` z `/Users/lukaszkurczab/.maestro/bin/maestro` wykonał current-head capture dla source `bcb0ddd` na iPhone 16 Pro / iOS 18.6 (`00B8F5B5-DF44-4621-8E30-56927604FA96`) dla pełnego 11-checkpoint visual shell w Dark i Light, populated Activity w obu motywach oraz 200% Summary stress slice. Source `1998810` ma timer parity, `1062f76` footer/progress geometry parity, a `c0682ab` poprawia 200% capture flow przez jawne przewinięcie `settings-your-data`; nowy runtime capture nadal zatrzymał się na niedostępnym lokalnym bundle Expo. | Dowody pozostają poza worktree: bieżące `/tmp/patternly-capture-visual-shell-dark-2026-08-24-current/`, `/tmp/patternly-capture-visual-shell-light-2026-08-24-current/`, `/tmp/patternly-capture-activity-dark-2026-08-24-current/`, `/tmp/patternly-capture-activity-light-2026-08-24-current/` i `/tmp/patternly-capture-visual-shell-200-light-2026-08-24-v3/`, wcześniejsze `/tmp/patternly-capture-current-head-dark-2026-08-24/`, `/tmp/patternly-capture-current-head-large-text-2026-08-24/`, `/tmp/patternly-capture-current-head-large-text-dark-2026-08-24/`. Pełna macierz wszystkich reachable states, pełne current-head 200% runtime coverage, normalized Figma comparison, Android, signed/distribution rendering i owner approval nadal są otwarte; Android nie ma urządzenia. |
-
-### Confirmed facts vs assumptions
-
-**Potwierdzone:** wszystkie osiem tracków ma lokalny package/runtime path, Free package i deterministyczne artefakty release; Design Interview obsługuje choice, ordering i decision matrix. Żaden track nie ma publishing/runtime admission. Brak IAP/RevenueCat oraz realnego provider deployment. Figma authority/parity i owner approval pozostają zewnętrznymi bramami.
-
-Figma revalidation for the current capture scope also covers Notifications
-`92:889` / `92:914` and Bottom Navigation Light stress `830:9045`; these
-references are evidence sources, not Product Owner approval.
-
-**Niepotwierdzone:** konto EAS/Apple/Play/RevenueCat/Firebase, domena/public deletion URL, Product Owner approval dla pełnego launch scope Figma, pełne parity states, signing/store approvals. Physical-device tests są opcjonalne i nie są warunkiem launchu. Właściciel osobiście potwierdził w aktywnej rozmowie 2026-08-20 zatwierdzenie dokładnych ośmiu manifestów contentu z source SHA e73c731; nie potwierdza to jednak nowych lub zmienionych future release manifests.
-
-## 3. Status
-
-| Obszar                                           | Status   | Stan / warunek przejścia                                                                                                                                                                                                                      |
-| ------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Contract, Coding/Certification kernel, static CI | done     | Zachować jako regression sentinels.                                                                                                                                                                                                           |
-| AWS source audit                                 | partial  | Audyt ukończony; realny contract/release/package nie istnieje.                                                                                                                                                                                |
-| Eight launch tracks / local runtime              | partial  | Current lock, package resolver, family runtimes and local proofs exist for all eight; zero publishing/runtime admission.                                                                                                                      |
-| Human content sign-off                           | done     | Owner manifest rozdziela human owner decision od agent-prepared records; local content suite 143/143 green, exact-SHA CI dla zmiany nadal pending.                                                                                            |
-| Eight-track catalogue                            | partial  | Catalogue and lock have exactly eight tracks; every node is visible with the first Free node selectable and the rest explicitly locked. Admission remains open.                                                                               |
-| Identity/sync/adoption/deletion                  | partial  | Server foundations and boundary tests exist; app client/provider vertical, deployment, signed-build and exact-SHA end-to-end proof remain open. [DATA-01/02 reconciliation](reports/launch-data-01-02-client-provider-boundary-2026-08-21.md) |
-| Premium/delivery                                 | blocking | Brak StoreKit/Play, RevenueCat, backend entitlement i remote package delivery.                                                                                                                                                                |
-| Company-grade UI                                 | partial  | Źródłowe slice'y Home, Practice, Progress, Activity, Settings i session/review istnieją, a current connector evidence obejmuje kolejne Practice nodes; brak jednego owner-bound scope, pełnego current-SHA pixel matrix oraz rozstrzygnięcia sprzecznych Figma/product-contract stanów. [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md) |
-| Ops/security/privacy                             | blocking | Kontrakt istnieje; provider, consent, retention, deployment/restore evidence nie.                                                                                                                                                             |
-| Signing/store                                    | blocking | Boundary istnieje, signed candidates i store records nie. Testy fizycznego urządzenia nie są wymagane przez aktualny zakres launchu.                                                                                                          |
-
-## 4. Gaps, sprzeczności i przestarzałe twierdzenia
-
-1. Stary plan nazywał agent records human review verified, lecz schema/generator hard-code’uje codex/owner_authorized_agent. Właściciel osobiście potwierdził w aktywnej rozmowie 2026-08-20 zatwierdzenie dokładnych manifestów z 2026-08-17 / e73c731. Należy utrwalić to jako owner decision, ale nie relabelować istniejących agent records ani nie używać ich dla nowych source/release manifests.
-2. Liczba 622 w starym handoffie jest nieaktualna: aktualne exact CI ma 624. Recovery check (618 cases) jest inną miarą.
-3. Readiness ustawia humanReview approved mechanicznie, więc release gate zaniża prawdziwy risk.
-4. Bieżący connector session wskazany przez właściciela to `ksxw21cw`; `76kzylrb` i `eon17bsz` są wcześniejszymi zapisami. Jedyna znaleziona explicit Product Owner approval dla scoped PKG-04A pozostaje związana z `wtk4hp8i` / board root `10:2`. Nadal brakuje owner-bound map dla bieżącego launch scope i external parity evidence dla bieżącego SHA; nie kopiować historycznych metryk ani traktować lokalnego screenshotu jako approval. Physical-device evidence jest opcjonalne.
-5. GCP/AZ pins są historyczne względem current authoring. Dopuszczalny jest wyłącznie nowy immutable release, nigdy relabel.
-6. Content readiness obejmuje source, validator, package i technical evidence dla ośmiu tracków; to nadal nie jest publishing admission, dopóki nie ma aktualnego human review i package admission dla każdego tracku.
-7. Sześć obowiązkowych evidence/release JSON nie istnieje. Nie tworzyć pustych deklaracji; rekord powstaje tylko po realnym provider/store/signing action. `physical-device-matrix` może istnieć jako opcjonalny rekord, ale jego brak nie blokuje launchu.
-8. Zewnętrzne bramy obejmują in-app i web account deletion, Data Safety/App Privacy, prawdziwe subscription records/testy oraz provider/trademark review. Android API 36 jest aktualny, ale nie zastępuje signed builda i Play proof.
-9. Release lock jest teraz sprawdzany fail-closed po schema, wymaganych identyfikatorach, immutable SHA i exact release IDs dla wszystkich ośmiu tracków.
-10. Gate wymaga teraz także clean application checkout; lokalne zmiany nie mogą być przedstawione jako exact-SHA release input.
-11. Zwykłe QA nie uruchamiało enforced launch gate. Dodano osobny ręczny workflow `.github/workflows/launch-readiness.yml`, aby rozdzielić regresję od admission; workflow wymaga teraz jawnych `application_commit` i `content_commit`, waliduje oba checkouty, uruchamia content suite/authoring/AWS validators i zapisuje report po exact application SHA. Wynik exact-SHA tego workflow pozostaje pending do push/run; GitHub API jest obecnie dostępne read-only, ale workflow pozostaje lokalny i nie istnieje jeszcze zdalnie ([GOV-09](reports/launch-gov-09-current-ci-access-boundary-2026-08-21.md)).
-12. External evidence ma teraz canonical v2 envelope bound to application HEAD i self-integral hash; to chroni integralność rekordu, ale nie zastępuje realnej autoryzacji, provider/store/Figma proof ani Product Owner GO. Physical-device evidence jest jawnie opcjonalne.
-13. Live Figma node `55:993` nie może być kopiowany semantycznie bez reconciliacji: pokazuje `Independent Practice`, którego nie ma w zatwierdzonym Free profile, oraz nie pokazuje canonical `Custom Practice` row. [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md) wiąże bezpieczne zmiany do geometrii z zachowaniem product truth.
-14. Live Figma node `55:2172` pokazuje `Focus areas` i `Save settings`, ale obecny canonical Custom Practice ma explicit mental-unit, feedback timing i `Start session`; brak modelu focus-area/save. Nie dodawać tych stanów jako metadata ani fake implementation.
-15. Istnieje kontraktowa sprzeczność: bieżący `canonical-product-contract.yaml` i runtime obsługują Custom `[10,20,40]`, natomiast `PO-059`, `PO-060` i PKG-04A opisują Free Custom jako dokładnie `10`. Przed zmianą semantics potrzebna jest jawna decyzja właściciela.
-16. `bc09d63` zamknął bezpieczną geometrię Practice Hub, `65aeccd` zamknął bezpieczną geometrię Practice Setup, `256717e` domknął source-level geometrię Practice Summary względem `750:6235`, `cc7cdf5` dopasował kolejną bezpieczną warstwę Progress względem `842:9563`, `ee7dde1` dopasował metadata i separatory zagnieżdżonej Activity względem `842:11192`, `36ce521` dopasował source-level geometrię Home review-due względem `55:632` — nagłówek decyzji, rytm overview, mini-progress i hierarchię akcji, a `28ec843` dopasował Notification względem `92:865`, `92:889` i `92:914` — permission-card density oraz reminder-editor sheet rhythm. Te slice'y nie zmieniają trybów, route'ów, komend ani danych; w podsumowaniu usunięto wyłącznie nadmiarową prezentację `missed/points`, której nie ma w Figma, a w Progress/Activity nie dodano brakujących celów, effectiveness ani paginacji. Następny task semantyczny to owner-bound `DES-005-C`; dopiero po tej decyzji można zmieniać semantic contract Custom Practice.
-17. `3ed145a` dopasował bezpieczną geometrię Coding Interview Simulation do live Figma `74:539`, `74:726`, `74:834` i shared Answer Option `248:2394`: progress track używa `surface/input`, navigator ma elevated 56 px cells oraz 12/16 labels bez ukrytej redukcji frozen opacity, a wspólny letter badge ma 12/16 semibold. Zmiana nie narusza semantyki sesji, footer ownership ani persistence. Focused 25/25 i pełny `qa:static` 559/559 przeszły; runtime pixel comparison pozostaje otwarte z powodu blokady capture tooling.
-18. `a3e2937` domknął operation-footer geometry Simulation względem live Figma `74:834`, `74:879`, `74:968` i `74:992`: recoverable notices są teraz w istniejącym `SessionShell` footer przed canonicalnymi CTA, a wspólny action sheet ma 22/28 semibold heading i radius 14. Nie zmieniono lifecycle, command semantics ani persistence; usunięto wyłącznie starą notice placement z scrollowanej treści. Focused 28/28 i pełny `qa:static` 559/559 przeszły; runtime pixel evidence pozostaje otwarte.
-19. `acd2201` domknął bezpieczną geometrię Settings względem live Figma `822:7687`: istniejące `SettingsGroup`/`ListRow`/`IconTile` zachowują canonicalne wiersze, a footer identity używa 13 px semibold / 11 px regular, gap 2 i jednego page-owned odstępu. Shared supporting text używa line-height 15.4. Nie dodano Figma-only account/sync/plan/cadence/help commands ani nie zmieniono route'ów, danych lub persistence. Focused Settings/Notification 10/10 i pełny `qa:static` 561/561 przeszły; runtime pixel evidence pozostaje otwarte.
-20. `4314107` domknął radius live Figma `Operation Notice` (`68:1074`, `258:2847`) w obu istniejących ownerach Practice i Simulation: warning recovery surfaces używają 12 px zamiast 8 px. Nie zmieniono notice placement, retry/recovery commands, lifecycle ani persistence; focused Practice/Simulation 26/26 i pełny `qa:static` 561/561 przeszły. Runtime pixel evidence pozostaje otwarte.
-21. Live Figma `842:11057` definiuje read-only ekran `Track Evidence`, ale żaden istniejący route nie jest jego ownerem. `TopicRoadmapScreen` i `ROUTES.TOPIC_ROADMAP` są osiągalne, lecz mają inną semantykę: wybór tematu do Practice, stany locked/current/selected i powrót do Practice Hub. Nie podmieniać tej ścieżki ani nie dodawać nowej wyłącznie na podstawie Figma; potrzebna jest jawna decyzja właściciela produktu o route graph, drill-downie i modelu evidence.
-22. Live Figma `42:422`, `42:478` i `42:539` definiuje geometrię onboardingowego, powracającego i zmienionego wyboru tracku; `42:604` i `42:642` są osobnymi stanami błędów rejestracji, których obecny route graph nie potrafi osiągnąć. Commits `1c8a8cc` i `364a832` dopasowały bezpieczne stany selekcji, footer oraz dark ambient/topo layer, ale zachowały wszystkie osiem canonicalnych tracków, podczas gdy referencja pokazuje Coding/GCP, i nie dodały nieosiągalnych dialogów. To pozostaje `PARTIAL` z jawnym `CANONICAL_CONFLICT`/route gap, nie pełny `MATCHED`.
-23. Live Figma `68:549` definiuje stan przygotowywania Practice z async-state card, statusem `LOADING`, tytułem/opisem i dolnym `Leave practice`. Commit `0a7e8c3` dopasował bezpieczną strukturę wizualną i copy w istniejącym ownerze `PreparingNotice`, usuwając starą, duplikującą się gałąź stylów. Dolny command pozostaje niezaimplementowany, bo przygotowywanie nie ma obecnie bezpiecznego ownera lifecycle/command; nie dodawać no-op ani nowego route state. To pozostaje `PARTIAL`, a nie `MATCHED`.
-24. Live Figma `68:569` i `68:603` definiuje Practice Question Shell z akcjami przy dolnej krawędzi w stopce wysokości 228 px. Commit `86e32d9` dodał owner-bound `session` footer variant tylko do Practice, bez zmiany Simulation. Commit `7e9b200` dopasował centralną macierz pressed/disabled shared Button `141:817` bez lokalnych kolorów; fresh runtime pixel evidence nadal pozostaje otwarte.
-25. Live Figma `68:637` (immediate feedback), `68:719` (details expanded) i `68:844` (final item) pokazuje feedback przez stan odpowiedzi, reason card i disclosure/details, bez osobnego widocznego napisu `Correct`/`Incorrect`/`Partial`. Commit `0341424` usunął redundantny result label, helper i nieużywaną translację; selector audytowy pozostał na widocznym reason panel. Geometria expanded details, pełne final-state porównanie i fresh runtime pixel evidence pozostają partial/blocking.
-26. Figma `68:719` definiuje etykietę `REASON` jako 12/16 semibold oraz treść rich Details jako 13/20. Commit `536b19b` dopasował te wartości w istniejącym Practice feedback ownerze i współdzielonym rendererze dokumentu; nie zmieniono schematu bloków, copy, scoring ani Review semantics. Fresh runtime pixel evidence nadal pozostaje blocking.
-27. Live Figma shared Button `141:817` definiuje osobne stany Default/Pressed/Disabled dla Primary, Secondary, Destructive i Ghost. Commit `7e9b200` mapuje tę macierz do centralnego `Button` z istniejącymi tokenami Light/Dark: warianty disabled mają osobne surface/border/label, Destructive pressed zachowuje canonical danger surface, a Ghost disabled zachowuje transparentną powierzchnię i 55% opacity label. `loading` dziedziczy Disabled jawnie przez istniejący `isDisabled`; nie zmieniono geometrii, komend, lifecycle ani persistence. Focused checks 31/31 i pełny `npm run qa:static` 564/564 przeszły; runtime pixel evidence i owner approval nadal są otwarte.
-28. Live Figma `140:875` / `483:5328` oraz Light/Dark stress instances `830:7805` / `830:9045` definiują górny separator Bottom Navigation jako `surface/overlay` `#F1F5F9`, przy zachowaniu istniejącej geometrii 20×2 active indicator, 60/66 px item heights, 24 px icons, 4 px gap i 11/15.4 labels. Commit `e257af4` dopasował wyłącznie dark `navigation.border` do tego centralnego tokenu; light token już był zgodny. Nie zmieniono route'ów, tab labels, callbacks, accessibility ani safe-area handling. Focused checks 29/29 i pełny `npm run qa:static` 565/565 przeszły; runtime pixel evidence nadal pozostaje otwarte.
-29. Live Figma Screen Header `140:881` definiuje wspólny odstęp kontenera `16 px` (`space/16`), odstęp wiersza back/context `8 px` (`space/8`) oraz muted description. Commit `2eb6c65` dopasował bazowy `ScreenHeader` do tych wartości i dodał sentinele źródłowe; istniejące Activity oraz Practice Setup zachowują jawne warianty owner-specific, ponieważ mają odrębne rytmy i kolory opisu w swoich referencjach. Nie zmieniono route'ów, komend, lifecycle, persistence ani accessibility. Focused checks 34/34 i pełny `npm run qa:static` 565/565 przeszły; runtime pixel evidence nadal pozostaje otwarte.
-30. Live Figma Practice Hub row `232:1716` definiuje neutralny `surface/elevated` dla kafelka `32×32`, ikonę `24×24` i trailing slot `20 px`. Commit `6f8b0c6` dopasował te detale wyłącznie dla Coding Practice Hub: istniejący `settings` tone mapuje do neutralnego elevated surface, a inne rodziny zachowują własne tony ikon. Nie zmieniono nazw czterech canonicalnych trybów, route'ów, komend, lifecycle, persistence ani accessibility. Focused checks 34/34 i pełny `npm run qa:static` 565/565 przeszły; runtime pixel evidence nadal pozostaje otwarte.
-31. Live Figma `Pattern / Screen Shell · Dark` `830:7457` definiuje `space/20` pomiędzy elementami scrollowanej treści. Commit `992d5bb` dopasował domyślny `Screen.content.gap` z `spacing.lg` do `spacing.xl`; istniejące compact oraz route-owned gap overrides pozostały bez zmian. Nie zmieniono paddingów, footerów, route'ów, komend, lifecycle, persistence ani accessibility. Focused shell checks 25/25 i pełny `npm run qa:static` 565/565 przeszły; runtime pixel evidence nadal pozostaje otwarte.
-32. Raport [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md) zawiera teraz Phase A parity matrix dla wszystkich aktualnych właścicieli tras i ich warunkowych stanów. Macierz rozdziela `PARTIAL`, `DESIGN_MISSING` i `CANONICAL_CONFLICT`; żaden wiersz nie jest jeszcze `MATCHED`, ponieważ current-head Light/Dark capture pozostaje niedostępny. Następne lane'y są niezależne: owner-bound `DES-005-C`, current-head evidence `DES-005-D` oraz uzupełnienie brakujących referencji/decyzji przez właściciela.
-33. Live Figma `81:538` definiuje wrapper filtra Answer Review z paddingiem `20/8` oraz odstęp `6 px` pomiędzy etykietą `QUESTION` a promptem. Commit `a81c390` dopasował te wartości w jednym współdzielonym `ReviewShell` i kanonicznym `AnswerReviewScreen`; Simulation Review korzysta z tego samego wrappera. Nie zmieniono filtrów, navigatora, review marking, answer state, disclosure, route'ów ani persistence. Focused review/visual checks 20/20 i pełny `npm run qa:static` 565/565 przeszły; current-head Light/Dark runtime pixel evidence i owner approval nadal są otwarte.
-34. Live Figma `55:445` i `55:539` definiuje Overview `Metric Row` z gapem `8 px` pomiędzy paskiem a wartością oraz semibold body-strong 14 px. Commit `fbb49e1` dopasował `HomeTab` do tych tokenów dla stanów Ready i Active session. Nie zmieniono rekomendacji, akcji, route'ów, track selection, activity, persistence ani accessibility. Focused Home/visual/large-text checks 36/36 i pełny `npm run qa:static` 565/565 przeszły; current-head Light/Dark runtime pixel evidence i owner approval nadal są otwarte.
-35. Live Figma `842:9563` i `842:10949` definiuje odpowiednio populated i no-evidence Progress. Commit `e4466b9` dopasował bezpieczną typografię istniejącego statusu fokusu do 12/18 medium oraz linku aktywności do 13/18 semibold. Pusty stan zachował istniejącą strukturę, a Figma-only weekly goal/cadence, effectiveness trend i Track Evidence nie zostały dopisane bez canonicalnego modelu. Nie zmieniono route'ów, akcji, evidence, persistence ani accessibility. Focused Progress/Home/review/visual checks 36/36 i pełny `npm run qa:static` 565/565 przeszły; current-head Light/Dark runtime pixel evidence i owner approval nadal są otwarte.
-36. Live Figma `842:11192`, `842:11410` i `842:11466` definiuje populated, empty oraz filtered-empty Activity. Commit `a749654` zachował istniejącą geometrię populated rows, dodał Figma-clearable filter affordance przez już istniejący wybór `All tracks`, przesunął empty content o `80 px` od dołu oraz dopasował success icon bars i tytuł 17 px. Nie dodano nowego modelu danych, route'u ani alternatywnego filtra; clear action używa istniejącego canonicalnego przejścia `setFilter(All tracks)`. Dodano dedykowany runtime selector i polskie accessibility copy. Focused Activity checks 35/35 i pełny `npm run qa:static` 565/565 przeszły; current-head Light/Dark runtime pixel evidence i owner approval nadal są otwarte.
-37. Live Figma `55:993` / `55:1022` definiuje Practice Hub primary card z paddingiem 20 px, rytmem 16 px, border opacity 0.28, tytułem 20/24, opisem 13.5/19 i rail top 19 px. Commit `058c6ea` dopasował geometrię, `b8e4083` skorygował oba wewnętrzne rytmy z `spacing.xl` do canonicalnego `spacing.lg` (16 px), a `a6d05c6` dopasował sekcyjny inset/label oraz usunął fixture-only chevron z hero action. `5a0fabe` dopasował też typografię Reason w review ownerze; nie zmienia to Practice feedback ownera. Zachowano kanoniczne cztery tryby Coding Free, komendy, unavailable states, lifecycle, persistence i accessibility. Nie dodano Figma-only `Independent Practice` ani `Coding Interview` rows. Finalny focused Practice Hub/Question Shell/accessibility suite przeszedł 26/26, a pełny `npm run qa:static` 566/566 przy recovery 284/114/557; current-head Light/Dark runtime pixel evidence i owner approval nadal są otwarte.
-38. Live Figma `68:569` definiuje 12 px scroll-content rhythm pomiędzy promptem i odpowiedziami. Commit `2668022` dopasował istniejący `PracticeSessionSurface.questionAndResponse` do `spacing.md`; nie zmieniono answer-option geometry, footer ownera, submit/leave commands, feedback timing, lifecycle, persistence ani accessibility. Focused Practice Hub/Question Shell/accessibility checks 26/26 i pełny `npm run qa:static` 566/566 przeszły przy recovery inventory 284/114/557; current-head Light/Dark runtime pixel evidence i owner approval nadal są otwarte.
-39. Live Figma `68:844` potwierdza final-item state: correct answer, title-case `Reason`, collapsed `Details`, `Finish session` i `Leave session`. Rewalidacja na current source `bd0fc5e` nie wykazała bezpiecznego source delta: `AnswerOption`, `DetailsDisclosure` i `getPracticePrimaryAction` już są canonicalnymi ownerami tych stanów. Nie dodano drugiej ścieżki finalizacji ani fixture-only layoutu; expanded-details geometry i current-head runtime pixel evidence pozostają partial.
-40. Current-channel rewalidacja objęła Activity `842:11192` / `842:11410`, Notifications `92:865`, shared Button `141:817`, expanded Practice details `68:719` i Preparing `68:549`. Istniejący canonical owner już odpowiada bezpiecznej geometrii i typografii. Figma-only pagination Activity, `Leave practice` w Preparing oraz fixture-only commands pozostają niezaimplementowane, bo repo nie ma dla nich prawdziwego ownera; nie dodano no-op ani syntetycznego stanu. Świeże `npm run qa:static` na source `bd0fc5e` przeszło: recovery `284/114/557`, TypeScript, `566/566` testów, content boundary i runtime privacy boundary. Runtime Light/Dark pixel capture oraz Product Owner approval pozostają otwarte.
-41. `38af502` dopasował `GoalCadenceScreen` do bieżących Figma `842:11569` / `842:11693`: header ma 8 px wewnętrznego gapu, Active status jest osobnym wierszem pod track context, a summary używa 14 px gapu, jawnych separatorów, 12 px teal labels, 14 px medium values i badge'ów preferowanych dni. Zachowano istniejący route owner, model celu, persistence, notification-settings command i pause semantics; usunięto tylko konkurencyjny oversized summary-row presentation. Focused Goal/ambient/runtime-audit checks przeszły 7/7, pełny `npm run qa:static` przeszło recovery 287/116/563 i 572/572 testów; runtime Light/Dark/200% capture oraz Product Owner approval pozostają otwarte.
-42. `4f918ad` scentralizował powtarzalne visual-effect values w `src/theme/tokens.ts`: scrimy, review/session overlays, subtle borders, dividers, sheet handles, unavailable surfaces, shadow color, ambient palette i theme-specific primary pressed state. Shared shell, Button, modal, review, Practice, Simulation, Goal & cadence oraz ambient owners używają jednego token ownera; zachowano wartości Figma i zachowanie runtime. Focused checks przeszły 44/44, pełny `npm run qa:static` przeszło recovery 287/116/564 i 573/573 testów, TypeScript oraz oba boundary validators; runtime Light/Dark/200% capture i Product Owner approval pozostają otwarte.
-43. Rewalidacja screenshotu Figma `842:11693` wykazała `CANONICAL_CONFLICT`: referencja Active pokazuje summary, `Pause goal` i `Save changes`, ale nie pokazuje `Edit goal`; canonicalny runtime ma prawdziwy `Edit goal`, który otwiera draft i umożliwia istniejący `persistGoal`. Nie usuwać komendy ani nie tworzyć no-op `Save changes`; właściciel musi rozstrzygnąć, czy referencja jest read-only, już-edytowalnym wariantem czy niepełnym stanem.
-44. Live Figma `55:993` pokazuje sekcję `MORE WAYS TO PRACTICE` uppercase. Commit `2bc34df` dodał wyłącznie `textTransform: "uppercase"` do istniejącego `PracticeHubScreen.sectionTitle`; cztery canonicalne tryby, unavailable states, route'y, komendy, lifecycle, persistence i accessibility pozostały bez zmian. Focused checks 30/30 i pełny `npm run qa:static` 573/573 przeszły; runtime Light/Dark/200% capture oraz Product Owner approval pozostają otwarte.
-45. Rewalidacja Figma `55:1139` wykazała `CANONICAL_CONFLICT` dla unavailable review row: Figma pokazuje status w supporting copy i zachowany chevron, a canonicalny runtime używa jawnego `Unavailable` badge’a i nieaktywnego wiersza, żeby nie podstawiać zwykłej praktyki przy pustym review queue. Nie zmieniać bez decyzji ownera. Page-1 account/auth/premium/content-delivery frames nie są osiągalne z bieżącego `RootNavigator`, więc nie dodawać ich jako nowych route’ów.
-46. Commit `92fe971` dopasował istniejącą etykietę akcji celu w Progress do Figma `842:9564`: dla istniejącego celu widoczne są `Manage goal` / `Manage learning goal`, a dla braku celu `Set a goal` / `Set a learning goal`. Zachowano istniejący `onOpenGoal`, route, model, persistence i semantykę edycji; zmiana nie dodaje syntetycznych metryk ani Figma-only komendy. Focused Goal/visual/runtime-audit checks przeszły 17/17, a pełny `npm run qa:static` na baseline `92fe971` przeszedł recovery 287/116/564 i 573/573 testów wraz z TypeScript oraz boundary validators. Runtime Light/Dark/200% capture i Product Owner approval pozostają otwarte.
-47. Rewalidacja Figma `74:1464` (`EXAM PRACTICE`) potwierdziła `DESIGN_MISSING` dla osiągalnych `Exam` i `ExamReview`: node jest kartą-specyfikacją z profile-owned facts, a nie route-bound ekranem 393×852. Nie zastępować go Simulation/Answer Review ani nie implementować jego opisów jako nowej semantyki. Potrzebne są zatwierdzone ekrany Certification i outcomes, zanim ten lane będzie można podnieść w macierzy.
-48. Rewalidacja bieżącego kanału względem współdzielonego Figma `Pattern / Appearance Choice` (`619:5237`, stress `882:14452`) oraz compact `Choice Row` w `55:2172` wykazała dwa canonicalne układy: Appearance z preview układa preview → copy → radio, a zwykły/compact row radio → copy. `ec888d9` dopasował trailing radio dla Appearance; `e6935c4` zachował leading radio dla Goal cadence i compact Practice Setup przez jawny wariant w jednym ownerze. Nie zmieniono wartości, persistence, a11y ani komend. Focused settings/visual/goal checks przeszły 21/21; full current-head QA na `e6935c4` przeszedł recovery 287/116/564, 573/573 testów, TypeScript i oba boundary validators. Runtime Light/Dark/200% capture i Product Owner approval pozostają otwarte.
-
-## 5. Architektura, retencja i lane’y
-
-| Subsystem                             | Decyzja                                | Obowiązek                                                                                                                                   |
-| ------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Contract, tests, Coding/Certification | KEEP / VERIFY                          | Rozszerzać przez generic contracts, utrzymać regression suite.                                                                              |
-| Eight-track descriptors               | KEEP, nie eksponować                   | Nie są production registry ani permission.                                                                                                  |
-| Design Interview                      | KEEP / VERIFY                          | Family interaction/package contract, runtime, rich scoring i recovery są lokalnie zaimplementowane; external admissions pozostają wymagane. |
-| Current content lock/releases         | KEEP FROZEN                            | Cross-repo byte inputs; końcowy lock będzie nowy i atomiczny.                                                                               |
-| Agent content approvals               | REWRITE                                | Real signer workflow; nie relabelować istniejących records.                                                                                 |
-| Auth/server foundations               | KEEP / REWRITE vertical                | Domknąć one client–server lifecycle; wykryte stale/silent paths usuwać.                                                                     |
-| Commerce/package delivery             | ADD                                    | Store → RevenueCat → backend → bounded device cache.                                                                                        |
-| UI/brand                              | KEEP / REWRITE by approved vertical    | QA-A jest bazą, nie dowodem pełnego UI.                                                                                                     |
-| Artifacts                             | KEEP minimal / DELETE proven duplicate | Usunięto 11 nieśledzonych, bezreferencyjnych Maestro dirs (~65 MB); immutable releases/provenance i cytowane QA-A zachować.                 |
-
-    GOV-01 approval integrity ─┬─ CNT-01 AWS contract ────────────────┐
-                               ├─ CNT-02 recut Coding/GCP/AI/AZ ──────┼─ CNT-04 release/sign-off ─┐
-                               └─ RUN-01 Design contract ─ CNT-03 ────┘                            │
-    DATA-01 identity ─ DATA-02 sync/deletion ─ COM-01 delivery ────────────────────────────────────┼─ CAT-01 eight-track lock
-    DES-01 Figma scope ─ DES-02 system ─ DES-03/04 UI ─ QA-02 visual/simulator ────────────────────┤
-    OPS-01 providers/public/legal ─ REL-01 signing/store ─ REL-02 beta/review ─ REL-03 GO ─────────┘
-
-Nonvisual GOV/CNT/DATA work może biec równolegle z DES-01. UI nie może wyprzedzić właściwego approved Figma state. External gates nie blokują bezpiecznych lokalnych tasków, tylko finalne admission/GO.
-
-## 6. Niezależne taski
-
-### GOV-01 — prawdziwa semantyka content approval — partial
-
-- **Cel:** uniemożliwić uznanie agent action za human sign-off.
-- **Scope / non-goals:** schema, validator, readiness, review packet i testy content; nie oceniać pytań za człowieka ani nie nadawać admission.
-- **Inputs:** obecne approval JSON, exact manifests oraz osobiste potwierdzenie właściciela z aktywnej rozmowy 2026-08-20 dla manifestów e73c731.
-- **Acceptance:** owner decision trwałe wiąże realną osobę, source commit, manifest, datę i zakres; agent wyłącznie przygotowuje packet; brak świeżego podpisu dla nowego manifestu daje pending.
-- **Verification / evidence:** negative tests self-approval, schema validation, npm test, exact CI; raport patternly-content/docs/reports/launch-gov-01-content-approval-integrity-YYYY-MM-DD.md.
-- **Ryzyko / stop:** utrata traceability albo użycie starego potwierdzenia dla zmienionego source; nie retroaktywnie zmieniać historycznych agent records.
-- **Stan 2026-08-21:** schema, validator, readiness, review packets, owner manifest i negative tests są zaimplementowane lokalnie; exact-SHA CI i canonical push pozostają do wykonania po autoryzacji external mutation.
-
-### GOV-02 — higiena dokumentów i artefaktów — partial
-
-- **Cel:** jeden aktywny plan i minimalne, cytowalne evidence.
-- **Scope / non-goals:** docs/reports/artifacts references; nie usuwać immutable releases, locks, provenance, fixtures ani QA-A bez complete dependency scan.
-- **Inputs:** git ls-files, inbound-reference scan, Git history; wykonane usunięcie 11 zero-reference ignored dirs.
-- **Acceptance:** usuwany target ma exact path, zero inbound refs i zero runtime/test dependency; aktualne/cytowane evidence zostaje.
-- **Verification / evidence:** rg inbound scan, relevant tests, git diff --check; raport docs/reports/launch-gov-02-evidence-retention-YYYY-MM-DD.md.
-- **Ryzyko:** utrata audit/byte evidence; przy niepewności zachować.
-- **Recheck 2026-08-21:** [evidence-retention recheck](reports/launch-gov-02-evidence-retention-recheck-2026-08-21.md) potwierdza brak dodatkowego udowodnionego dead path oraz koryguje dwa aktywne sformułowania, które traktowały physical smoke jako obowiązkowy. Historycznie usunięte ścieżki są nieobecne i bez live references; aktywne Maestro, current-head visual evidence, audyty, provenance i fixtures pozostają. Puste lokalne katalogi user-testing nie są śledzonym artefaktem. Testy fizycznego urządzenia nie są wymagane.
-
-### CNT-01 — AWS publishing contract — blocking / owner decision required
-
-- **Cel:** zamienić AWS source w walidowalny release candidate bez package substitute.
-- **Scope / non-goals:** config/tracks, selector, closed Free profile, technical-evidence inputs, generator/validator; nie budować/admitować package przed upstream proof.
-- **Inputs:** AWS source/registry/curriculum, app Certification modes, obecny SOURCE_COMMIT_UNAVAILABLE, [CNT-01 audit](../../patternly-content/docs/reports/launch-cnt-01-aws-contract-audit-2026-08-21.md).
-- **Acceptance:** właściciel najpierw wybiera canonical content/taxonomy version oraz zatwierdza recut Free-node i diagnostic coverage; potem `validate:track` przechodzi z buildable source commit, Free node ma supported profile/selector i testy granic, a technical evidence wiąże wszystkie inputs. Nie zmieniać zatwierdzonego source ani manifestu przed tą decyzją.
-- **Verification / evidence:** focused publishing tests, AWS audit, authoring validation, exact CI; raport patternly-content/docs/reports/launch-cnt-01-aws-contract-audit-YYYY-MM-DD.md.
-- **Ryzyko:** skopiowanie GCP contractu, stale commit, unsupported mode.
-
-### CNT-02 — recut Coding/GCP/AI-901/AZ-104 — planned
-
-- **Cel:** po jednym fresh immutable release na track bez relabelu historycznych artefaktów.
-- **Scope / non-goals:** source drift, provenance, technical evidence, full artifact, Free package; nie zmieniać app lock/runtime admission.
-- **Inputs:** current sources oraz core-0018/AI901-0001/AZ104-0002/app lock.
-- **Current preflight:** [CNT-02 publishing input preflight](../../patternly-content/docs/reports/launch-cnt-02-publishing-input-preflight-2026-08-21.md) confirms Coding and AZ-104 validation against existing technical inputs, while GCP still lacks a current canonical runtime/authoring contract. The historical GCP configuration was removed during the corrective curriculum recut and is incompatible with the current node, item IDs, and mode eligibility; it must not be restored or relabeled.
-- **Acceptance:** exact source, new release ID/checksum, technical evidence i Free package per track; historyczny GCP/AZ pin nie jest presented as current.
-- **Verification / evidence:** per-track validate/rebuild/checksum/content CI; cztery raporty launch-cnt-02-<track>-YYYY-MM-DD.md.
-- **Ryzyko:** mutation package, app/content drift, full release udający Free proof.
-
-### RUN-01 + CNT-03 — Design family runtime i Backend/OOD/Frontend — local implementation done / admission open
-
-- **Cel:** jeden canonical Design runtime dla choice/ordering/decision matrix, następnie trzy independent releases.
-- **Scope / non-goals:** schema, scoring, persistence, package validation, Backend representative proof, potem OOD/Frontend; nie używać choice-only fallback ani nie eksponować tracku przed admission.
-- **Inputs:** trzy banks; Frontend ma 1 018 ordering i 147 decision-matrix; canonical session contract.
-- **Current state:** the app has one canonical `design_interview` runtime for choice, ordering and decision-matrix interactions, with immutable package identity, scoring, persistence and recovery tests. Content and external admission still must prove the exact current artifacts; historical source-gap findings are not current approval.
-- **Acceptance:** durable scoring/recovery/a11y dla każdego typu; każdy track ma full immutable release, Free package, technical evidence i real sign-off finalnego manifestu.
-- **Verification / evidence:** unit/property/negative tests, cold relaunch, package checks, Maestro po Figma approval, exact CI; raporty launch-run-01-_ i launch-cnt-03-<track>-_.
-- **Ryzyko:** abstraction ukrywająca różnicę scoringu; proxy interaction.
-
-### CAT-01 — atomiczny osiem-trackowy admission/lock — local lock done / external admission open
-
-- **Cel:** po kompletnym łańcuchu aktywować dokładnie osiem tracków.
-- **Scope / non-goals:** generic resolver/catalogue/admission assertions i jeden fresh lock; lock ma już dokładnie osiem IDs, bez rozszerzania scope.
-- **Inputs:** admitted full release + Free package + real sign-off dla każdego tracku i runtime proofs rodzin.
-- **Acceptance:** lock ma dokładnie osiem IDs, byte-matches producer artifacts, app renderuje wyłącznie admitted tracks, failure explicit.
-- **Verification / evidence:** cross-repo checksum, offline/cache/session-pin/eviction, launch:readiness --enforce, exact CI obu repo; raport launch-cat-01-eight-track-cutover-YYYY-MM-DD.md.
-- **Ryzyko:** early lock expansion, stale package, partial catalogue/family leakage.
-
-### DATA-01 — identity/provider-neutral lifecycle — partial; client/provider vertical open
-
-- **Cel:** complete account lifecycle: email/password, Apple, Google, recovery codes, App Check i explicit outcomes.
-- **Scope / non-goals:** app/server contract, environment schema, protected API, reauth/revocation; bez provider mutation/secrets.
-- **Inputs:** canonical account contract i existing Firebase/server foundations.
-- **Acceptance:** no anonymous/email merge/fake success; unconfigured fail-closed; every lifecycle transition ma explicit valid/duplicate/expired/offline/rate-limit/revoked/remote state.
-- **Verification / evidence:** server-side auth/deletion/adoption boundary tests and local contract checks exist; app client integration, provider lifecycle, sensitive storage/log scan, signed builds and exact-SHA end-to-end CI remain open. [Current boundary reconciliation](reports/launch-data-01-02-client-provider-boundary-2026-08-21.md); final report launch-data-01-identity-vertical-YYYY-MM-DD.md.
-- **Ryzyko:** token persistence, enumeration, retained account-wide session assumptions.
-- **Stan 2026-08-21:** server tombstone/authentication/HTTP foundations are partially evidenced by [DATA-01 tombstone](reports/launch-data-001-lifecycle-tombstone-2026-08-20.md); the app has no account route or composed remote adapter. Do not copy the historical account design or add a provider fallback.
-
-### DATA-02 — sync, adoption i deletion — partial; app orchestration open
-
-- **Cel:** one local-first/outbox/account-dataset lifecycle z deterministic adoption i deletion proof.
-- **Scope / non-goals:** journal/outbox/CAS/conflict/sign-out/tombstone/public possession link; nie obiecywać provider deletion przed execution.
-- **Inputs:** DATA-01, device-only active-session rule, commercial deletion semantics.
-- **Acceptance:** preview+confirm, no silent merge, device session never syncs; deletion wymaga reauth, verifies local+remote removal i exposes failure.
-- **Verification / evidence:** server-side account dataset, adoption, device-only-field rejection and deletion tests exist; app outbox/adoption orchestration, provider drill, approved Figma states and signed builds remain open. Physical-device testing is optional. [Current boundary reconciliation](reports/launch-data-01-02-client-provider-boundary-2026-08-21.md); final report launch-data-02-sync-adoption-deletion-YYYY-MM-DD.md.
-- **Ryzyko:** data loss/resurrection/subscription conflation.
-- **Stan 2026-08-21:** [DATA-02 device-session boundary](reports/launch-data-002-device-session-remote-boundary-2026-08-20.md) is a completed hardening slice, not full mobile sync/adoption. DATA-02 depends on the DATA-01 client boundary and current approved Figma states.
-
-### COM-01 — entitlement, purchase, restore i delivery — planned
-
-- **Cel:** jeden monthly i annual Premium dla verified accountu, backend-authorized package delivery.
-- **Scope / non-goals:** StoreKit/Play adapter, RevenueCat normalization, backend projection, 7-day bounded cache, restore/conflict/downgrade/signed URL; bez tworzenia store products/RevenueCat records lokalnie.
-- **Inputs:** DATA-01/02, CAT-01 packages, commercial contract.
-- **Acceptance:** guest nie kupuje/pobiera; authority = store → RevenueCat → backend → cache; explicit restore conflict; no per-question Firestore fetch; deletion nie udaje refund/cancel.
-- **Verification / evidence:** adapter tests, provider integration po autoryzacji, cache/offline i signed sandbox purchase/restore evidence; raport launch-com-01-commercial-vertical-YYYY-MM-DD.md.
-- **Ryzyko:** entitlement bypass, cross-account restore, stale cache, policy breach.
-
-### DES-01 — live Figma authority i firmowy UX scope — partial
-
-- **Cel:** per-vertical owner-approved Figma states zanim UI będzie przepisywane.
-- **Scope / non-goals:** live nodes, owner approval, terminology/route/accessibility/motion mapping; agent nie projektuje ani nie self-approves.
-- **Inputs:** file kZXD7cNBKUU7x0ceTHPFpR, current connector session `ksxw21cw`, existing refs, canonical Today/Practice/Progress/Settings/account/commercial rules, and scoped Product Owner approval `wtk4hp8i` only where explicitly recorded.
-- **Acceptance:** UI slice ma node, owner, states, Light/Dark/large text/reduced motion i route mapping; stale references są retired/reconciled explicitly.
-- **Verification / evidence:** live connector context/screenshot, owner sign-off, contract change-gate mapping; raport launch-des-01-current-figma-authority-YYYY-MM-DD.md.
-- **Ryzyko:** generic UI lub stale Figma terminology.
-
-### DES-02/03/04 — design system i wszystkie produktowe verticals — partial
-
-- **Cel:** repo-owned tokens/primitives i approved UI dla guest/free core, runner/summary/progress/settings oraz account/premium/deletion/legal/support.
-- **Scope / non-goals:** dev-only Storybook, assets/licensing, navigation, a11y/motion/haptics; tylko states zaimplementowane przez DATA/COM, bez fake CTAs/routes.
-- **Inputs:** DES-01, CAT-01, DATA/COM.
-- **Acceptance:** no internal family IDs/old aliases/fake metrics; 200% text, Dark/Light/System, screen reader/reduced motion; superseded component/path jest usunięty albo uzasadniony.
-- **Verification / evidence:** component/state tests, production bundle exclusion, Maestro absolute output paths, visual diff node→screen/state; trzy raporty launch-des-02/03/04-\*.
-- **Ryzyko:** polish over logic, old two-track branches, inaccessible controls.
-
-### OPS-01 — provider, security i operations — planned / external gate
-
-- **Cel:** minimum-privilege sandbox→production operation z public surfaces, consent, retention i restore.
-- **Scope / non-goals:** Firebase/App Check/Auth/Firestore, Cloud Run digest deploy/IAM, domain/sender, PITR drill, Analytics/Crashlytics/reporting; bez mutation bez owner packet.
-- **Inputs:** DATA/COM code, ops/privacy contract, authorized provider access.
-- **Acceptance:** provider readback udowadnia app IDs, deployed revision, IAM, HTTPS origins, backup/restore/rollback; no key in repo; analytics/crash fail-closed until consent.
-- **Verification / evidence:** provider API/CLI readback, health/API, IAM diff, restore drill, sanitized logs; raport launch-ops-01-provider-operations-YYYY-MM-DD.md.
-- **Ryzyko:** overgrant/cost/secret leak/deleted-account resurrection.
-
-### QA-01 — logic/security regression matrix — planned
-
-- **Cel:** przetestować wszystkie canonical paths i failures, nie tylko happy path.
-- **Scope / non-goals:** eight tracks/modes, package integrity, identity/data/commercial, offline/concurrency/abuse, MASVS storage/crypto/auth/network/platform/code/privacy; mock nie jest provider/device proof.
-- **Inputs:** CAT/DATA/COM/DES code, current test suite i contract.
-- **Acceptance:** matrix obejmuje guest/Free/Premium, every mode, active/relaunch/abandon/finalize/review, auth/recovery/reauth, adoption/conflict/sync, restore/downgrade/deletion/consent/report, corruption/eviction/offline/retry.
-- **Verification / evidence:** CI-permitted qa:static, exact CI obu repo, real eight-track release CI; raport launch-qa-01-contract-security-matrix-YYYY-MM-DD.md.
-- **Ryzyko:** green mocks, tests chroniące starą semantykę.
-
-### QA-02 — Maestro, parity, a11y i performance; physical devices optional — partial
-
-- **Cel:** dowieść finalnych signed candidates na iOS i Androidzie; fizyczne urządzenia nie są warunkiem akceptacji tego launchu.
-- **Scope / non-goals:** simulators+phones, Dark/Light/System, 200% text, keyboard, screen reader, reduced motion, network/install/upgrade/restore; rozdzielać screenshot/parity/device/store evidence.
-- **Inputs:** owner-bound approved nodes, current source SHA, signed builds when available, defined device/OS matrix, and [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md).
-- **Acceptance:** absolute outputs/manifests; node→screen/state review; simulator/release-compatible journey bez dev menu; performance/layout budgets mają measured result. Physical-device capture może zostać wykonany opcjonalnie, ale nie może blokować gate’a.
-- **Verification / evidence:** current-head iOS simulator evidence now includes the shared 11-checkpoint visual shell in Dark and Light, populated Progress/Activity and Activity filter-sheet captures in both themes, Settings/blocked Notifications large-text stress captures, and complete 11-checkpoint 200% Light/Dark packs, using explicit Maestro `2.6.1`; outputs are recorded in the launch plan and [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md). Logical-viewport-normalized Figma comparison, signed distribution, screenshot/video/hierarchy acceptance and remaining route/state coverage still require execution. Discovery previously confirmed paired physical iPhone 11, lecz blokada urządzenia (`kAMDMobileImageMounterDeviceLocked`) uniemożliwia DDI/build inspection, a Android nie jest podłączony. Physical iOS/Android pozostają opcjonalne; [raport QA-02](reports/launch-qa-02-current-head-ios-simulator-2026-08-21.md).
-- **Ryzyko:** simulator-only confidence, visual match with wrong logic, missing a11y state.
-
-### REL-01/02/03 — store packet, signed beta, review i GO/NO-GO — planned / external gate
-
-- **Cel:** realne legal/privacy/store/signing inputs, signed TestFlight/Play candidates, beta/review oraz końcowa decyzja.
-- **Scope / non-goals:** App Store Connect/Play, App Privacy/Data Safety, privacy/terms/support/deletion URLs, IAP metadata, provider/trademark review, EAS signing, TestFlight/internal→closed test; bez publikacji/mutacji bez osobnej autoryzacji.
-- **Inputs:** OPS, COM, QA, final assets/copy, legal owner, authorized credentials.
-- **Acceptance:** declarations odpowiadają realnym flows; deletion web resource działa; subscription terms/restore/management są poprawne; no implied provider affiliation; exact-SHA archive provenance; qualifying personal Play account ma 12 opted-in testers przez 14 dni; GO tylko przy zero blockers i explicit owner approval.
-- **Verification / evidence:** store exports/readback, URL probes, legal/IP approval, EAS/build IDs/checksum, tester/review evidence, independent launch:readiness --enforce; raporty launch-rel-01/02/03-\*.
-- **Ryzyko:** policy rejection, inaccurate privacy, signing leak, stale evidence.
-
-## 7. Pierwsze kolejne zadanie
-
-`DES-005-A` jest wykonane w `bc09d63`: geometria Practice Hub odpowiada
-bezpiecznym faktom z live node `55:993`, a zatwierdzony PKG-04A mode truth
-pozostaje bez zmian. Nie dodano Independent, Focus areas ani `Save settings`.
-
-Bieżąca rewalidacja source slice `7a93ad4` przez kanał `ksxw21cw` potwierdziła
-ten slice bez dodatkowego source diffu: Practice Hub jest zgodny z bezpieczną
-geometrią Figma na poziomie source, a konflikt taxonomy pozostaje jawnie
-canonicalny. Runtime pixel evidence nadal nie jest dostępne.
-
-Commit `d4d0cfc` wykonał dodatkowy dead-code check: usunięto nieużywane
-`DomainAccent` i `MetricCard` wraz z barrel exports oraz nieosiągalną gałąź
-Practice Hub dla wykluczonych trybów scope. Usunięto też nieużywane parametry
-`Exam.questionIndex` i symulacyjnego summary `completionKind`; summary nadal
-czyta wyłącznie zweryfikowany durable result. Nie zmieniono żadnej komendy,
-taksonomii ani reachable wizualnego stanu.
-
-Commit `7a93ad4` skonsolidował identyczną wewnętrzną prezentację review
-unavailable w repo-owned `ReviewUnavailableSurface`. Answer Review i
-Simulation Review zachowują własne pozycjonowanie/shell oraz teksty stanu;
-usunięto wyłącznie zduplikowaną geometrię ikony, tytułu i opisu.
-
-Commit `d1483e9` skonsolidował powtarzalny przełącznik `Details` z Practice
-Feedback i Answer Review/Simulation Review w repo-owned `DetailsDisclosure`.
-Wspólny komponent posiada jedną geometrię Figma (minHeight 48, surface/border,
-spacing, typografia, chevron) oraz wspólny kontrakt accessibility; lokalne
-sekcje nadal zachowują własne separatory, padding i układ treści. Nie zmieniono
-semantyki feedbacku, durable state ani selectorów runtime. Focused checks
-przeszły 27/27, a pełny `npm run qa:static` przeszedł przy inventory
-283/113/552 i 561/561 testach. Bieżący runtime pixel proof nadal nie jest
-dostępny z powodu braku Maestro i odmowy połączenia CoreSimulatorService.
-
-Commit `176e331` domknął kolejną bezpieczną geometrię Home względem live Figma
-`55:445`: Overview renderuje separatory wyłącznie między metrykami, bez linii
-po ostatnim wierszu, a `View activity` pozostaje tekstowym CTA bez chevronu.
-Nie zmieniono danych, akcji, selectorów ani touch targetu. Focused Home/visual/
-large-text checks przeszły 15/15, a pełny `npm run qa:static` przeszedł przy
-inventory 283/113/552 i 561/561 testach. Runtime pixel proof bieżącego SHA
-nadal nie jest dostępny.
-
-Commit `8d32858` dopasował copy Recent activity do live Home `55:445` i `55:539`:
-Figma pokazuje completion label (`Completed today` / `Completed yesterday`),
-więc Home nie ujawnia już technicznego `attempt.result.kind`. Zachowano
-durable attempt, datę dla starszych wpisów, action semantics i istniejący
-Activity route. Dodano jawne tłumaczenia PL oraz test helpera. Focused checks
-przeszły 19/19, a pełny `npm run qa:static` przeszedł przy inventory
-283/113/552 i 562/562 testach. Runtime pixel proof bieżącego SHA nadal jest
-niezweryfikowany.
-
-Commit `b58042d` dopasował bezpieczną geometrię górnej części Progress względem
-live Figma `842:9563`: etykieta `This week` i weekly card są jednym blokiem z
-odstępem 10 px, dzięki czemu `Current focus` wraca na pozycję wynikającą z
-referencji zamiast dziedziczyć 28 px root gap pomiędzy etykietą i kartą. Nie
-dodano Figma-only goal, cadence ani effectiveness metrics i nie zmieniono
-modelu, akcji, route'ów ani selectorów. Focused Progress/Home checks przeszły
-29/29, a pełny `npm run qa:static` przeszedł przy inventory 283/113/553 i
-562/562 testach. Runtime pixel proof bieżącego SHA nadal jest niezweryfikowany.
-
-Commit `deb7b81` dopasował jawny empty state Progress względem live Figma
-`842:10949`: przy `model.hasData === false` aplikacja pokazuje ikonę, komunikat
-`No learning evidence yet`, opis oraz — wyłącznie dla Algorithms, gdzie model
-ma już kanoniczną akcję — `Open Practice`. Usunięto z tego stanu pusty
-`Current focus`, `Needs attention`, activity i evidence dashboard; nie dodano
-syntetycznych celów, effectiveness ani trendów. Dodano brakujące tłumaczenia
-PL. Focused Progress/Home checks przeszły 29/29, a pełny `npm run qa:static`
-przeszedł przy inventory 283/113/553 i 562/562 testach. Runtime pixel proof
-bieżącego SHA nadal jest niezweryfikowany.
-
-Commit `6dd51f6` usunął kolejne mylące mapowanie z Progress: Algorithms nie
-renderuje już `itemCoveragePercent` jako dużego procentu skuteczności. Karta
-focus pokazuje istniejący `statusLabel` i `practicedLabel`; procent pozostaje
-tylko dla tracków, których model dostarcza rzeczywiste `performanceScores`.
-Nie zmieniono modelu ani nie dodano effectiveness metric. Focused
-Progress/Home checks przeszły 29/29, a pełny `npm run qa:static` przeszedł przy
-inventory 283/113/553 i 562/562 testach. Runtime pixel proof bieżącego SHA
-nadal jest niezweryfikowany.
-
-Commit `15f54c1` dopasował reachable Activity empty states względem live Figma
-`842:11410` i `842:11466`: lokalny renderer ma ikonę aktywności, copy, `Open
-Practice`, a dla filtrowanego braku danych także `Show all activity` i ten sam
-practice command jako akcję drugorzędną. Wspólny `EmptyState` nadal obsługuje
-wyłącznie unavailable/error. Nie zmieniono read modelu, route graph ani
-persistence. Focused Activity/visual/loading checks przeszły 30/30, a pełny
-`npm run qa:static` przeszedł przy inventory 283/113/553 i 562/562 testach.
-Runtime pixel proof bieżącego SHA nadal jest niezweryfikowany.
-
-W poprzednim audycie shared Button `141:817` pozostawał `PARTIAL`, ponieważ
-macierz stanów i dziedziczenie `loading` wymagały rozstrzygnięcia. Commit
-`7e9b200` rozwiązuje ten source-level gap centralnie przez istniejące tokeny
-Light/Dark, bez lokalnych kolorów i bez mapowania między tematami. Aktualny
-stan oraz granice runtime są zapisane w addendum poniżej.
-
-## Addendum — Select Track state and geometry convergence
-
-Commit `1c8a8cc` revalidated the current connector channel `ksxw21cw` against
-live Figma nodes `42:422` (first choice), `42:478` (returning with the current
-track), and `42:539` (returning after changing the track). The repository-owned
-`SelectTrackScreen` now keeps the durable active track separate from the local
-selection: onboarding retains the selected-track context and `Continue`, a
-returning user with no change has no footer, and a returning user who changes
-selection gets the Figma-shaped `Use this track` action. The existing
-`AppShellHeader` also owns the compact 36 px back-navigation variant used by
-the returning state.
-
-The source geometry now follows the verified Figma contract for title rhythm,
-29/35 title typography, 14/20 supporting copy, 12 px track-list gap, 20 px
-card radius, 10 px card internal rhythm, 11/15.4 supporting labels, and the
-sticky-footer spacing. All eight track registrations remain rendered because
-the current registry and admission tests are canonical. The live screen
-fixtures still show a two-card Coding/GCP projection, but the canonical Figma
-component set `230:1983` now contains selected and unselected variants for all
-eight tracks, with neutral semantic icon instances for the six additional
-tracks; this removes the icon-authority gap without changing the screen-level
-scope conflict or hiding runtime tracks.
-
-Commit `364a832` adds the repo-owned `AmbientBackdrop` and the downloaded
-Figma topography SVG to the shared `Screen` owner. The exact dark-mode glow
-positions and four contour ellipses are now reused by Select Track and
-Practice Hub; light mode remains solid because the current Figma authority
-does not provide a light ambient variant.
-
-This slice is still not marked `MATCHED`: Figma nodes `42:604` and `42:642`
-define unknown/unadmitted registration-failure dialogs, but the current route
-has no truthful registration-state input or owner for them. The eight-track
-registry projection remains a screen-level scope conflict against Figma's
-two-card screen projection, while its shared card/icon authority is now
-complete in `230:1983`. Runtime pixel proof is still unavailable because
-Maestro is absent and CoreSimulatorService refuses simulator connections. Focused
-ambient/Select Track/visual-shell checks passed 15/15; `npm run qa:static`
-passed with recovery inventory 284/114/555, 564/564 tests, typecheck,
-content-boundary, and runtime-privacy-boundary checks.
-
-Bezpieczna, geometryczna część `DES-005-B` jest wykonana w `65aeccd`:
-Practice Setup używa canonical compact `ChoiceRow`, header/footer variants i
-segmented-control geometry z `55:2172`. Nie zmieniono długości sesji,
-feedback timing, komendy `Start session` ani modelu focus areas.
-
-Pierwszy kolejny task to `DES-005-C`: właściciel musi rozstrzygnąć owner-bound
-channel oraz sprzeczność Custom `10` versus `10/20/40` przed jakąkolwiek zmianą
-semantyczną Practice Setup. Semantic migration w `DES-005-B` pozostaje
-zablokowany do czasu tej decyzji. Exact-SHA gate, fresh runtime pixel
-comparison i Product Owner GO pozostają pending.
-
-`256717e` domyka kolejną bezpieczną część podsumowania Practice względem live
-node `750:6235`: typografia nagłówka, rytm metryk, wiersze outcome, notice
-review i odstęp stopki są zgodne na poziomie źródła. Usunięto dodatkową linię
-`correct · missed · points` oraz nieużywany wariant warning; scoring i review
-pozostają bez zmian. Runtime pixel comparison nadal wymaga działającego
-capture environment.
-
-`45016a5` domyka source-level Answer Review slice względem live Figma
-`81:538` / canonical instance `801:7299`: Review Shell ma dwukolumnową
-stopkę, intrinsic-width filter tabs na `surface/input`, a Certification
-Answer Review używa divider/spacing/disclosure z Figma bez dodatkowej etykiety
-wyniku i obramowanego panelu Reason. Mutacja `Needs Review` pozostaje
-kanonicznym zachowaniem i jest jawnie oznaczona jako `CANONICAL_CONFLICT`,
-ponieważ zatwierdzone stany Figma nie pokazują tego kontrolera. `npm run
-qa:static` przechodzi: 559/559 testów. Wspólny `ReviewFeedbackBlock` jest
-używany przez Certification Answer Review i Simulation Review; immediate
-Practice feedback pozostaje na osobnym kontrakcie Figma.
-
-`621c4bd` domyka source-level Result unavailable slice względem live Figma
-`82:538` / `801:7653`: Simulation Review używa pełnego content area bez
-paddingu zwykłego review, a unavailable surface ma kanoniczne zakotwiczenie
-185 px i szerokość 353 px. `npm run qa:static` przechodzi: 559/559 testów.
-Świeże runtime pixel evidence dla tego stanu nadal pozostaje wymagane.
-
-`92dcdc2` domyka kolejną bezpieczną geometrię stanu Simulation Navigator
-`74:726`: Notice ma promień 12 px, a odstęp między Notice i pełno-wymiarowym
-`Try again` wynosi 12 px, zgodnie z live Figma. Nie zmieniono retry command,
-frozen-cell state, reduced-motion ani żadnej semantyki lifecycle. Focused
-checks 17/17, typecheck oraz `npm run qa:static` przechodzą przy 561/561
-testach i inventory 283/113/552. Runtime pixel comparison pozostaje
-zablokowane przez brak Maestro/CoreSimulatorService.
-
-## Addendum — Practice preparing-state convergence
-
-Commit `0a7e8c3` revalidated live Figma node `68:549` (`06A · Preparing`)
-against the canonical `PracticeSessionSurface` owner. `PreparingNotice` now
-reuses the existing async-state card owner used by completion: 44 px status
-icon, `LOADING` label, Figma-shaped title/description hierarchy, and the
-reserved lower spacer are shared rather than maintained as a second preparing
-card style. The description uses the canonical item terminology.
-
-The Figma bottom `Leave practice` action remains intentionally unresolved.
-The current preparing phase has no safe lifecycle command owner and the route
-does not expose a truthful command input for it; adding a no-op or an invented
-transition would create a fake state. The obsolete `preparing` and
-`preparingTitle` styles were deleted. Focused session/accessibility/loading/
-visual-shell checks passed 43/43; `npm run typecheck` and `git diff --check`
-passed, and full `npm run qa:static` passed with recovery inventory 284/114/555,
-564/564 tests, typecheck, content-boundary, and runtime-privacy-boundary
-checks. Runtime pixel proof remains unavailable because Maestro is absent and
-CoreSimulatorService refuses simulator connections.
-
-## Addendum — Practice Question Shell footer convergence
-
-Commit `86e32d9` revalidated live Figma nodes `68:569` (`06B · Single choice ·
-Unanswered`) and `68:603` (`06C · Single choice · Selected · Immediate feedback
-mode`) against the shared `SessionShell` owner. The Practice route now uses a
-dedicated `session` footer variant: 228 px minimum height, bottom-aligned
-actions, and an 8 px action gap, matching the Figma action-footer geometry.
-Simulation continues to use its existing layout-specific footer path.
-
-The shared disabled Button colors remain unresolved against `141:817` and were
-not copied locally; they require one design-system token decision for all
-Button variants. No command, state transition, persistence, or response
-semantics changed. Focused shell/session checks passed 34/34; full
-`npm run qa:static` passed with recovery inventory 284/114/555, 564/564 tests,
-typecheck, content-boundary, and runtime-privacy-boundary checks. Runtime
-pixel proof remains unavailable because Maestro is absent and
-CoreSimulatorService refuses simulator connections.
-
-## Addendum — Practice feedback surface convergence
-
-Commit `0341424` revalidated live Figma nodes `68:637` (`06E · Immediate
-feedback · Default`), `68:719` (`REF-06A · Details expanded`) and `68:844`
-(`06F · Final item`) against the canonical `PracticeFeedbackBlock` owner.
-Those references expose correctness through the canonical answer-option state
-and the reason/details surfaces; they do not show a separate visible result
-label. The redundant result label, its formatter, and its unused translation
-were removed. The runtime result selector remains attached to the visible
-reason panel so existing auditability does not require a second UI element.
-
-No scoring, feedback, navigation, persistence, or command semantics changed.
-Focused feedback/accessibility/session checks passed 34/34; full
-`npm run qa:static` passed with recovery inventory 284/114/555, 564/564 tests,
-typecheck, content-boundary, and runtime-privacy-boundary checks. The richer
-expanded-details geometry and same-head runtime pixel proof remain open;
-Maestro is absent and CoreSimulatorService refuses simulator connections.
-
-## Addendum — Practice feedback typography convergence
-
-Commit `536b19b` revalidated the live expanded-details reference `68:719` and
-applied only its safe typography facts to the existing feedback owners:
-`REASON` is now 12/16 semibold, while rich feedback paragraphs, headings, list
-text, and callout text use 13/20. The shared document renderer remains the
-canonical content-block owner; no content schema, authored copy, scoring,
-navigation, persistence, or command semantics changed.
-
-Focused feedback/accessibility/session checks passed 32/32; full
-`npm run qa:static` passed with recovery inventory 284/114/555, 564/564 tests,
-typecheck, content-boundary, and runtime-privacy-boundary checks. Same-head
-runtime pixel proof remains unavailable because Maestro is absent and
-CoreSimulatorService refuses simulator connections.
-
-## Addendum — Shared Button state matrix convergence
-
-Commit `7e9b200` revalidated live Figma shared Button `141:817` in connector
-channel `ksxw21cw` and applied its Default/Pressed/Disabled matrix to the
-canonical `src/components/Button.tsx` owner. Primary, Secondary, Destructive,
-and Ghost now use variant-specific disabled surface, border, label, and
-pressed-state mappings from the existing Light/Dark semantic palette. The
-runtime `loading` state explicitly inherits the same disabled mapping through
-the existing `isDisabled` contract, so no second loading appearance was
-introduced.
-
-No raw color literals, route, command, lifecycle, persistence, or accessibility
-contract changed. The obsolete generic disabled style was removed rather than
-kept as a competing path. Focused visual/accessibility checks passed 31/31;
-full `npm run qa:static` passed with recovery inventory 284/114/555 and
-564/564 tests, typecheck, content-boundary, and runtime-privacy-boundary.
-Same-head runtime pixel proof and Product Owner approval remain open.
-
-## Addendum — Bottom Navigation separator convergence
-
-Commit `e257af4` revalidated the canonical Bottom Navigation authority
-`140:875` / `483:5328` and its Light/Dark stress instances `830:7805` /
-`830:9045` in connector channel `ksxw21cw`. The Figma `surface/overlay`
-separator resolves to `#F1F5F9` in both themes; the dark repository token had
-remained `#1E293B`, while the Light token was already aligned. The canonical
-`BottomTabBar` continues to own the existing four destinations, active
-indicator, item heights, icon sizing, caption metrics, pressed state,
-accessibility roles, and safe-area padding.
-
-Only the central dark `navigation.border` token changed. No route, label,
-callback, lifecycle, persistence, or fallback path changed. Focused shell /
-accessibility checks passed 29/29; full `npm run qa:static` passed with
-recovery inventory 284/114/556 and 565/565 tests, typecheck,
-content-boundary, and runtime-privacy-boundary. Same-head runtime pixel proof
-and Product Owner approval remain open.
-
-## Addendum — Screen Header base geometry convergence
-
-Commit `2eb6c65` revalidated live Figma Screen Header `140:881` in connector
-channel `ksxw21cw`. The shared reference uses `space/16` between the header
-container sections, `space/8` between the back control and context title, a
-44 px touch target with a 36 px visible outlined icon button, and muted
-description text. The canonical `ScreenHeader` now uses `spacing.lg` for the
-base container, `spacing.sm` for the base context row, and `palette.textMuted`
-for the base description.
-
-Existing Activity and Practice Setup owners retain explicit local overrides
-for their already-established layout rhythm and description tone. No route,
-command, lifecycle, persistence, or accessibility contract changed; no second
-header implementation was introduced. Focused visual-shell checks passed
-34/34; full `npm run qa:static` passed with recovery inventory 284/114/556 and
-565/565 tests, typecheck, content-boundary, and runtime-privacy-boundary.
-Same-head runtime pixel proof and Product Owner approval remain open.
-
-## Addendum — Practice Hub row icon convergence
-
-Commit `6f8b0c6` revalidated the live Figma row instance `232:1716` in
-connector channel `ksxw21cw`. Its canonical row geometry uses a `32×32`
-icon container with `radius/8`, `surface/elevated` background, a `24×24`
-leading icon, and a `20 px` trailing icon slot. The Coding Practice Hub now
-passes `iconSize={24}` to its existing `IconTile`, uses the existing
-`settings` tone for enabled Coding rows so the icon tile resolves to the
-neutral elevated palette, and renders the existing chevron at `20 px`.
-
-This is a route-local visual correction. Certification and Design Interview
-rows keep their existing tone mapping because those variants were not proven by
-this Figma node. Canonical mode titles, icons, availability, route ownership,
-commands, lifecycle, persistence, and accessibility remain unchanged. Focused
-checks passed 34/34; full `npm run qa:static` passed with recovery inventory
-284/114/556 and 565/565 tests, typecheck, content-boundary, and
-runtime-privacy-boundary. Same-head runtime pixel proof and Product Owner
-approval remain open.
-
-## Addendum — Screen Shell spacing convergence
-
-Commit `992d5bb` revalidated Figma `Pattern / Screen Shell · Dark` `830:7457`
-in connector channel `ksxw21cw`. The canonical scroll-content pattern uses
-`space/20` between its content blocks. The shared `src/components/Screen.tsx`
-now maps the default `content.gap` to `spacing.xl` (`20 px`), while the
-compact density remains `spacing.md` and route-owned overrides remain explicit
-for screens with a specialized rhythm.
-
-No padding, footer, route, command, lifecycle, persistence, accessibility, or
-semantic contract changed. Focused shell checks passed 25/25; full
-`npm run qa:static` passed with recovery inventory 284/114/556 and 565/565
-tests, typecheck, content-boundary, and runtime-privacy-boundary. Same-head
-runtime pixel proof and Product Owner approval remain open.
-
-## Addendum — Default footer vertical rhythm convergence
-
-Current-channel Figma node `830:7457` uses `20 px` vertical padding for the
-general Screen footer. The canonical `Screen` default footer now uses the
-existing `spacing.xl` token; `compact`, `review`, `session`, and `sticky`
-variants remain explicit because they own separate layout contracts. Focused
-shell/session checks passed `11/11`, and `npm run qa:static` passed with
-recovery inventory `284/114/557` and `566/566` tests. Runtime Light/Dark pixel
-proof and Product Owner approval remain open.
-
-## Addendum — Fixed question-shell structure convergence
-
-Current-channel Figma nodes `74:539`, `851:11383`, and `68:569` confirm that
-the shared question shell owns a fixed top bar and progress track above the
-scrolling body, with a 20 px content inset and 12 px body rhythm. The
-canonical `SessionShell` now uses `Screen.header` for that fixed region,
-keeps the top bar horizontal at 200% text size, and selects explicit 228 px
-Practice or 361 px active-Simulation footer geometry. The obsolete large-text
-column/session-root styles were removed after the reachability scan.
-
-The preceding addendum recorded the operation-recovery reference `74:834` as
-an open delta; the implementation below supersedes that status. The prior
-evidence correctly identified that Figma places the notice and recovery
-actions below a footer-less question shell. Focused checks passed `33/33`; the
-then-current `npm run qa:static` passed
-`284/114/557` recovery inventory and `566/566` tests with TypeScript and both
-boundary checks. Runtime Light/Dark pixel proof, recovery geometry, and
-Product Owner approval remain open; do not mark this as 99% parity.
-
-## Addendum — Simulation operation-recovery layout convergence
-
-Figma `74:834` and `74:879` define the recovery geometry as a footer-less
-852 px question shell followed by a 20 px gap, a 353×76 notice, 48 px full
-width actions, 12 px action spacing, and a 16 px bottom inset. The canonical
-`SimulationSessionSurface` now renders that recovery region below
-`SessionShell`; operation notices no longer enter the fixed `Screen` footer.
-The obsolete `actionBarOperation` style and `SessionShell` footer override
-were removed. Operation projections, commands, selectors, accessibility, and
-persistence are unchanged.
-
-Focused checks passed `34/34`; current-tree `npm run qa:static` passed
-`284/114/557` recovery inventory and `566/566` tests with TypeScript and both
-boundary checks. Runtime Light/Dark pixel proof, action-sheet comparison,
-CoreSimulator/Maestro capture, and Product Owner approval remain open; do not
-mark this as 99% parity.
-
-## Addendum — Practice summary outcome-label convergence
-
-Current-channel Figma `750:6235` confirms that the completed practice summary
-uses a 10 px bold uppercase `OUTCOME DISTRIBUTION` label with 1.2 px tracking
-and a 12 px line height. The canonical `AlgorithmsPracticeSummaryScreen` now
-owns that exact label treatment; its shell, metric rows, outcome rows, review
-note, and 48 px actions were already aligned at source level.
-
-The Figma secondary CTA says `Back to Home`, but the canonical action is
-`PRACTICE_HUB`, so the app continues to say `Back to practice` rather than
-making the label semantically false. This remains a documented
-`CANONICAL_CONFLICT`; no source change should be made until the command owner
-is decided. The summary remains `partial` pending current-head Light/Dark
-runtime capture and Product Owner approval.
-
-Commit `6b5ad42` passed focused summary/navigation and visual-shell checks
-(`2/2` and `10/10`),
-TypeScript, and full `npm run qa:static` (`284/114/557` recovery inventory,
-`566/566` tests, content boundary, and runtime privacy boundary). Do not mark
-this route or the overall objective as 99% parity.
-
-## Addendum — Practice setup selected-segment token convergence
-
-Current-channel Figma `55:2172` confirms the Custom Practice compact control
-uses the action `primary` token for the selected segment's `questions` caption.
-The canonical `PracticeSetupScreen` now uses `palette.primary` instead of
-`palette.onPrimary`; the 54 px segmented shell, 4 px inset, 10 px selected
-segment, compact choice rows, header, and sticky footer remain unchanged.
-
-Figma-only `Focus areas` and `Save settings` remain unimplemented because the
-repository has no truthful owner or command for them; the canonical route
-continues to expose `Start session`. Focused setup/loading/configuration/
-visual checks passed `27/27`, and full `npm run qa:static` passed with
-`284/114/557` recovery inventory and `566/566` tests plus both boundary
-validators. Runtime Light/Dark proof and Product Owner approval remain open;
-do not mark this route or the overall objective as 99% parity.
-
-## Addendum — Home recommendation-card clipping convergence
-
-Current-channel Figma `55:445` confirms the Home recommendation card clips
-its contents at the rounded 22 px boundary. The canonical card rail is
-positioned at `left: -1`, so `HomeTab` now uses `overflow: "hidden"` to keep
-that rail inside the card. The existing primary border, 20 px inset, 16 px
-rhythm, 44 px icon tile, title typography, CTA, and recommendation ownership
-remain unchanged.
-
-Focused Home/visual/accessibility checks passed `29/29`; full
-`npm run qa:static` passed with `284/114/557` recovery inventory and `566/566`
-tests plus TypeScript and both boundary validators. Runtime Light/Dark proof
-and Product Owner approval remain open; do not mark Home or the overall
-objective as 99% parity.
-
-## Addendum — Progress action-token convergence
-
-Current-channel Figma `842:9563` confirms that visible Progress status/action
-accents use the green `action/primary` token. The canonical `ProgressTab` now
-uses `palette.primary` for the `This week` label, focus evidence detail, and
-`Review weak areas` label; no Progress data or command changed.
-
-Figma-only goal/cadence/focus-area values, effectiveness chart, and `View all
-track evidence` route remain unresolved because the repository has no truthful
-owner for them. Focused Progress/projection/visual checks passed `26/26`, and
-full `npm run qa:static` passed with `284/114/557` recovery inventory and
-`566/566` tests plus TypeScript and both boundary validators. Runtime
-Light/Dark proof and Product Owner approval remain open; do not mark Progress
-or the overall objective as 99% parity.
-
-Current-channel Activity revalidation at source SHA `8822cd7` confirms that
-the populated row instance is `353×95` after its 73 px content minimum and
-24 px vertical padding; the canonical `ActivityScreen` already owns the
-matching 14 px title, 11/15.4 px details, 36 px icon tile, and 18 px
-chevron. The Figma-only `Loading older activity...` label was not added
-because the local Activity read model has no pagination command or lifecycle
-owner. This is evidence of no source delta, not a `MATCHED` or 99% claim.
-
-Current-channel Figma `822:7687` also confirms that Settings section labels
-touch the first row without the previous 4 px title gap. Commit `5e3a69f`
-adds the explicit `SettingsGroup` title-gap contract and sets only the
-canonical Settings root groups to `0 px`; information screens retain their
-existing default. Fixture-only account/sync/plan/cadence/help semantics and
-the Figma sample version string were not introduced. Focused Settings checks
-passed `8/8`; full `npm run qa:static` passed with `284/114/557` recovery
-inventory and `566/566` tests. Runtime pixel evidence and Product Owner
-approval remain open.
-
-## Addendum — Default Screen content inset convergence
-
-Live Figma Screen Shell `830:7457` / stress instance `830:7459` uses a
-20 px outer inset for `scroll-content`. Commit `8d6efa1` aligns the shared
-default `Screen.content` top inset with the existing `spacing.xl` token. The
-default horizontal and bottom tokens remain 20 px; footer-specific clearance
-is an explicit separate contract. Compact density, specialized footer
-variants, safe-area handling, and route-owned overrides remain unchanged.
-Focused shell/session checks passed `25/25`, and the full `npm run qa:static`
-passed with recovery inventory `284/114/557` and `566/566` tests. Runtime
-Light/Dark capture, CoreSimulator/Maestro evidence, and owner approval remain
-open; this is not a 99% parity claim.
-
-## Addendum — Select Track sticky-footer owner convergence
-
-Live Figma Select Track `42:422` uses a dedicated sticky bottom area with a
-16 px top inset, a 0.05 white separator, and 20 px outer bottom padding.
-Commit `17f1e25` binds `SelectTrackScreen` to the existing shared `Screen`
-`sticky` footer variant and reduces the local footer content clearance from
-8 px to 4 px. Selection semantics, the eight-track registry, persistence,
-large-text behavior, and accessibility remain unchanged. Focused checks passed
-`15/15`, and the full `npm run qa:static` passed with recovery inventory
-`284/114/557` and `566/566` tests. Current-head Light/Dark capture, the
-screen-level track-scope decision, and owner approval remain open; this is not
-a 99% parity claim.
-
-## Addendum — List Row disabled-state convergence
-
-Live Figma shared List Row `155:852` and `155:876` keep disabled rows on the
-`surfaceInput` surface with normal legibility and secondary supporting text;
-they do not use whole-row opacity. Commit `d71f5dd` applies that contract to
-the existing shared `ListRow`, passes `disabled` through to `Pressable` and
-accessibility state, and uses the existing muted icon tone for the blocked
-daily-reminder owner in `NotificationSettingsScreen`. The previous generic
-opacity/text-muted style was removed because it was not the Figma state.
-
-No route, command, notification persistence, or new disabled-row semantics
-were added. The dead-path check found no other direct disabled `ListRow`
-caller, and the hidden Figma variant has no reachable canonical caller.
-Focused checks passed `35/35`; current local `npm run qa:static` passed recovery
-inventory `284/114/557`, TypeScript, `566/566` tests, content-boundary, and
-runtime-privacy-boundary. Current-head Light/Dark capture, CoreSimulator/
-Maestro evidence, and owner approval remain open; this is not a 99% parity
-claim.
-
-## Addendum — Goal & cadence canonical route convergence
-
-Current-channel Figma `842:11569` (Create) and `842:11693` (Active) now have
-one repository-backed route owner. Commits `fc5bbeb` and `3e37ab3` add the descriptor-backed
-per-track goal contract, canonical `goal:<trackId>` persistence, application
-read/write ports, `GoalCadenceScreen`, and the Progress weekly-card entry
-point. Create uses the existing `ChoiceRow` and shared shell/token system;
-Active renders the saved goal summary with explicit active/paused state and a
-link to the existing Notification Settings owner.
-
-The implementation does not persist the Figma sample date unless the learner
-enters a valid date, does not create a duplicate reminder command, and does
-not introduce Figma-only focus-area or effectiveness semantics. Focused goal
-contract/presentation checks passed `6/6`; current local `npm run qa:static`
-passed recovery inventory `287/116/563`, `572/572` tests, TypeScript,
-content-boundary, and runtime-privacy-boundary. This source slice remains
-`PARTIAL` pending same-head Light/Dark runtime evidence, paused-state visual
-comparison, and Product Owner approval; it does not claim 99% parity.
-
-## Addendum — Activity ambient and filtered-empty convergence
-
-Current-channel Figma `842:11192`, `842:11410`, and `842:11466` define the
-Activity populated/empty family: dark Activity uses the Page 1 Glow-UL, while
-filtered-empty adds a 40 px horizontal inset to the centered empty stack.
-Commits `e09ca7d` and `a726705` extend the existing shared
-`Screen`/`AmbientBackdrop` owner with an Activity-only dark variant and apply
-the exact 40 px inset only when the filter is active. Existing Activity model, filter command, route, and durable
-history projection remain unchanged; no alternate path or fallback was added.
-Focused Activity/ambient/visual-shell checks passed `15/15`; current local
-`npm run qa:static` passed recovery inventory `287/116/563`, `572/572` tests,
-TypeScript, content-boundary, and runtime-privacy-boundary. Activity remains
-`partial` pending same-head Light/Dark runtime capture and owner approval; this
-does not claim 99% parity.
-
-## Addendum — Goal ambient-layer convergence
-
-Current-channel Goal & cadence Figma `842:11569` and `842:11693` use one
-Glow-UL without the indigo/topography layer. Commit `0659a5f` adds the
-explicit Goal variant to the shared `AmbientBackdrop`: `left:0/top:0`,
-`#20C997` at 6%, and the reference gradient transform are preserved, while
-Track/Practice default and Activity geometry remain separate and unchanged.
-No goal route, persistence, cadence, or notification semantics changed.
-Focused Goal/ambient/visual-shell checks passed `13/13`; current local
-`npm run qa:static` passed recovery inventory `287/116/563`, `572/572` tests,
-TypeScript, content-boundary, and runtime-privacy-boundary. Goal remains
-`partial` pending runtime Light/Dark capture, paused-state comparison, and
-owner approval; this is not a 99% parity claim.
-
-## Addendum — Shared Screen Header context typography
-
-Current-channel Figma `140:881` defines a 14 px semibold context label with
-an 18 px rhythm in the shared Screen Header. Commit `f3afd92` maps the
-existing `ScreenHeader` context to `typography.bodyStrong`; the existing
-practice-setup medium-weight override, 44 px back target, row gap, title,
-description, and route semantics remain unchanged. Focused shell/header checks
-passed `11/11`; current local `npm run qa:static` passed recovery inventory
-`287/116/563`, `572/572` tests, TypeScript, content-boundary, and
-runtime-privacy-boundary. Runtime Light/Dark capture and owner approval remain
-open; this is not a 99% parity claim.
-
-## Addendum — Progress content inset convergence
-
-Current-channel Figma `842:9563` defines a 16 px top inset for the Progress
-scrollable content while retaining 20 px horizontal/bottom insets and a 28 px
-section rhythm. Commit `8c0a9b8` applies that inset only to the Progress tab
-owner in `HomeScreen`; the shared `Screen` default and Home/Settings spacing
-remain unchanged. Focused Progress/Home/visual-shell checks passed `22/22`;
-current local `npm run qa:static` passed recovery inventory `287/116/563`,
-`572/572` tests, TypeScript, content-boundary, and runtime-privacy-boundary.
-Runtime Light/Dark capture and owner approval remain open; this is not a 99%
-parity claim.
-
-## Addendum — Progress no-evidence state convergence
-
-Current-channel Figma `842:10949` defines a compact 24 px/700 Progress title,
-an empty weekly card with 14 px horizontal and 12 px vertical padding, 4 px
-card rhythm, no progress bar, a 48 px icon with 20 px radius, and 40 px
-vertical empty-state inset. Commit `0db6c20` applies these styles only when
-the canonical Progress model has no evidence and uses the existing Button
-owner for the success/pill Open Practice CTA. Repository-owned copy and
-commands remain unchanged; no synthetic session target or goal value was
-introduced. Focused Progress/Home/visual-shell checks passed `26/26`; current
-local `npm run qa:static` passed recovery inventory `287/116/563`, `572/572`
-tests, TypeScript, content-boundary, and runtime-privacy-boundary. Runtime
-Light/Dark capture and owner approval remain open; this is not a 99% parity
-claim.
-
-## Addendum — Home recent activity row convergence
-
-Na bieżącym kanale Figma `ksxw21cw`, node `55:445` pokazuje copy ostatniej
-aktywności i akcję `View activity` w jednym wierszu. Commit `c327b58` dopasował
-canonical owner `HomeTab` dla stanu z aktywnością i jawnego stanu pustego.
-Projection prób, copy, runtime selector i komenda nawigacji pozostały bez
-zmian; usunięto jedynie nieużywany wrapper listy oraz osobny wiersz akcji.
-Focused Home/visual-shell checks przeszły `15/15`, a bieżące
-`npm run qa:static` przeszło recovery `287/116/563`, `572/572` testów,
-TypeScript, content-boundary i runtime-privacy-boundary. Capture Light/Dark
-na current head oraz Product Owner approval nadal są otwarte.
-
-## Addendum — DES-005-C: Practice expanded-details wrapper
-
-Audyt bieżącego kanału `ksxw21cw` na Figma `68:719` oraz source SHA
-`c327b58` rozdzielił dwa fakty, które wcześniej były zapisane zbyt szeroko.
-`DetailsDisclosure` ma już canonicalny wiersz 48 px, padding 4/12 px,
-chevron 18 px i poprawny `accessibilityState.expanded`. Natomiast
-`PracticeFeedbackBlock` nie ma zewnętrznego elevated panelu obejmującego
-disclosure oraz rozwinięty dokument: obecny `container` układa reason card,
-disclosure i dokument wyłącznie przez gap 12 px. Figma pokazuje reason card
-osobno oraz panel details z border 1 px, radius 12 px, paddingiem 16 px i
-wewnętrznym gapem 12 px.
-
-Pierwszy następny task implementacyjny to `DES-005-C — Practice
-expanded-details wrapper`:
-
-- zmienić wyłącznie canonical owner `PracticeFeedbackBlock`, zachowując
-  `DetailsDisclosure` i `AlgorithmFeedbackDocumentBlock` jako jedyne istniejące
-  ownery tych fragmentów;
-- opakować disclosure i opcjonalny dokument w jeden panel oparty o istniejące
-  tokeny design systemu (`surface/elevated`, border, radius, spacing), bez
-  surowych kolorów Figma;
-- zostawić reason panel poza tym wrapperem oraz zachować feedback, scoring,
-  copy, route, lifecycle, persistence i accessibility bez zmian;
-- zweryfikować collapsed/expanded, Light/Dark, 200% text i brak clippingu;
-- uruchomić focused Practice/session/accessibility/visual checks, typecheck,
-  `git diff --check` i pełne `npm run qa:static`.
-
-Nie implementować Figma-only komendy, nowego result labela, drugiego renderera
-details ani alternatywnego stanu. Jeśli collapsed-state lub mapowanie panelu
-na token nie wynika z bieżącej authority, zatrzymać zmianę i zapisać decyzję,
-zamiast dopowiadać semantykę. Runtime Light/Dark capture pozostaje osobnym
-blocking evidence gate z powodu niedostępnego Maestro/CoreSimulator.
-
-Ten addendum jest dokumentacyjny; w tej pętli nie zmieniono kodu produkcyjnego.
-
-## Addendum — DES-005-C implementation convergence
-
-Commit `1c9457b` domyka źródłową geometrię Practice expanded-details:
-collapsed `Details` pozostaje samodzielnym wierszem 48 px, a po rozwinięciu
-disclosure i rich document są w jednym panelu opartym o istniejące tokeny
-`elevatedSurface`, `border`, `radius.lg`, `spacing.lg` i `spacing.md`.
-Reason card pozostaje poza wrapperem. Nie dodano raw Figma colors, drugiego
-renderera ani zmian feedbacku, scoringu, route, lifecycle, persistence lub
-komend.
-
-Pozostaje jawny konflikt stanów: Figma `68:637` (immediate feedback default)
-nie pokazuje wiersza Details, natomiast kanoniczny kontrakt after-answer oraz
-istniejące M1/M2 runtime selectors wymagają osiągalnego rich feedback details.
-Nie usunięto tej ścieżki po cichu. Przed podniesieniem statusu ponad `partial`
-właściciel musi rozstrzygnąć, czy `68:637` reprezentuje wariant bez disclosure,
-czy referencja jest niepełna względem pełnego after-answer flow.
-
-Focused Practice/session/accessibility i M1/M2 checks przeszły `23/23`,
-`npm run typecheck` oraz pełne `npm run qa:static` przeszły: recovery
-`287/116/563`, `572/572` testów, TypeScript, content-boundary i
-runtime-privacy-boundary. Runtime Light/Dark capture oraz Product Owner
-approval nadal są otwarte.
-
-## Addendum — Summary Shell large-text propagation
-
-Current-channel Figma `882:14459` is the 200% stress instance of the shared
-`Pattern / Summary Shell` (`750:6109` / `750:6107`). The existing simulation
-summary already owned the shell geometry, completion semantics, footer buttons,
-and large-text contract for its title, mode, and section label, but its
-`Answered`, `Active time`, and outcome label/value text nodes did not set the
-same `maxFontSizeMultiplier={2}` used by the other summary and shared-shell
-text. Commit `9312cf2` closes the source-level accessibility/parity gap in
-the existing `SummaryStat` and `OutcomeStat` owners; `03fff7a` then aligns the
-metric row's flex/reflow structure with the same Figma contract.
-
-No summary copy, result model, navigation command, button geometry, or Figma-
-only metric was added. Focused visual-shell checks and `npm run typecheck`
-passed; current-head full QA, Light/Dark runtime capture, and Product Owner
-approval remain the required evidence gates. This is not a `MATCHED` or 99%
-claim without current-head runtime pixel evidence.
-
-## Addendum — Reachable 200% text contract
-
-Commit `8b2dd0e` applies the existing Figma stress contract
-`maxFontSizeMultiplier={2}` to visible React Native text across the reachable
-Home, Progress, Practice, Settings, Simulation, Exam, Review, shared-component,
-and rich-feedback owners. The same commit aligns the Progress section heading
-with the current Figma established-evidence copy `Recent activity`; route,
-projection, selector, persistence, scoring, and navigation semantics are
-unchanged. The rich-feedback code-token spans inherit the same explicit cap;
-the only remaining `Text` without visible copy is the empty ExamReview runtime
-selector marker.
-
-The slice was verified with recovery inventory `287/116/565`, TypeScript,
-`574/574` tests, `git diff --check`, content boundary, and runtime privacy
-boundary. It is a source-level stress-contract improvement, not a `MATCHED` or
-99% claim: normalized Figma comparison, the complete current-head reachable
-state matrix, `DESIGN_MISSING`/`CANONICAL_CONFLICT` owner decisions, and
-Product Owner approval remain open.
-
-## Addendum — Current-head visual-shell capture after `8b2dd0e`
-
-After the source slice, the unchanged canonical flow
-`.maestro/screenshot-capture/visual-shell/visual-shell.yaml` completed all 11
-checkpoints in both themes on the explicit iPhone 16 Pro / iOS 18.6 simulator
-`00B8F5B5-DF44-4621-8E30-56927604FA96`, using Maestro `2.6.1`:
-
-- Dark: `/tmp/patternly-capture-visual-shell-dark-2026-08-24-current/`
-- Light: `/tmp/patternly-capture-visual-shell-light-2026-08-24-current/`
-
-The capture-only preparation flow changed the active track before entering the
-canonical journey so the existing track-selection footer was genuinely
-reachable; it did not change production source or the committed capture flow.
-The Light Progress capture was visually inspected and showed no new clipping
-in the empty-state copy, action, or bottom navigation. These are current-head
-runtime evidence packs, not normalized Figma comparisons and not `MATCHED`
-decisions. Current-head 200% runtime capture, the full reachable-state matrix,
-`DESIGN_MISSING`/`CANONICAL_CONFLICT` owner decisions, and Product Owner
-approval remain open.
-
-## Addendum — Current-head populated Activity evidence after `8b2dd0e`
-
-Using the existing canonical Practice flow, a real ten-item session was paused,
-resumed, and completed before entering Progress and Activity. The capture-only
-preparation flow used existing commands and selectors; it changed no production
-source and no committed Maestro flow. On the same iPhone 16 Pro / iOS 18.6
-simulator and Maestro `2.6.1`, the populated Progress Activity section, the
-populated Activity route, and the Activity filter sheet were captured in both
-themes:
-
-- Dark: `/tmp/patternly-capture-activity-dark-2026-08-24-current/`
-- Light: `/tmp/patternly-capture-activity-light-2026-08-24-current/`
-
-The Light populated Activity route was visually inspected: the Progress header,
-track filter, completed Custom Practice row, title/details hierarchy, icon tile,
-chevron, and bottom safe area are present without observed clipping. This
-closes the previous local tooling block for these populated states, but the
-Activity matrix remains `PARTIAL`: normalized comparison, empty and filtered-empty
-runtime states, current-head 200% capture, and Product Owner approval remain
-open. No obsolete Activity owner or alternate state path was found or removed.
-
-## Addendum — Current-head 200% Summary stress convergence after `bcb0ddd`
-
-The current-head 200% Light run exposed a real Summary-shell defect in the
-canonical `AlgorithmsPracticeSummaryScreen`: the outer `Screen` scrolled the
-whole shell, the footer fell below the viewport, and the `LEARN APPROACH` plus
-track label row overlapped. Commit `bcb0ddd` keeps the existing route, result
-model, commands, and copy, but makes the summary shell fill the viewport with
-an inner content scroll, a fixed footer, and a wrapping/shrinking header row.
-No alternate renderer or navigation fallback was added.
-
-After the fix, `/tmp/patternly-capture-visual-shell-200-light-2026-08-24-v3/`
-verified the 200% Light visual-shell path through the partial Summary and
-`Back to practice` → Practice Hub transition. The existing flow then stopped
-at the later Settings/Data & privacy step because its capture-only selector did
-not scroll the 200%-sized `settings-your-data` row into view; this is a capture
-flow coverage gap, not a product-route change. The current source was verified
-with `npm run qa:static`: recovery `287/116/565`, TypeScript, `574/574` tests,
-content boundary, and runtime privacy boundary. Full current-head 200% route
-coverage, normalized Figma comparison, and Product Owner approval remain open.
-
-## Addendum — Session top-bar timer label convergence after `1998810`
-
-The live Figma authority for the shared Question Shell (`kZXD7cNBKUU7x0ceTHPFpR`, node `68:569`, connector `ksxw21cw`) specifies a three-column top bar whose left slot renders the timer value (`00:00`), while spoken context remains separate. The current active-session 200% evidence exposed that the three practice callers were passing `Active time 00:00` into the visual slot, consuming the space needed by the centered mode label.
-
-Commit `1998810` changes only the visual projection for Algorithms, Design Interview, and Certification practice timers to the value-only format. The existing `accessibilityLabel` retains `Active foreground time …`, so this is a geometry/parity correction with no lifecycle, timer, copy-semantic, or navigation change. A source contract test now protects the split between visual value and spoken context. No obsolete owner, duplicate renderer, fallback, or compatibility path was added or removed.
-
-Verification passed: recovery inventory `287/116/566`, TypeScript, `575/575` tests, content boundary, runtime privacy boundary, and `git diff --check`. A fresh 200% simulator capture was attempted, but the local Expo bundle was unreachable from the iOS simulator (`Failed to load app from http://127.0.0.1:8100`); therefore this slice makes no current-head runtime-pixel claim. Direct current-head Light/Dark/200% capture, normalized Figma comparison, full reachable-state matrix, owner decisions, and Product Owner approval remain open.
-
-## Addendum — Shared session footer and progress geometry after `1062f76`
-
-Figma Simulation `74:539` and the shared Question Shell `68:569` both define the session footer as `px20 / py16` with the existing fixed heights (`361` for Simulation and `228` for Practice). The same references define a 4 px progress track with a 2 px radius. Commit `1062f76` applies these values in the canonical `Screen` footer variants and `SessionShell` progress owner; it does not change action order, button semantics, content, timer behavior, or lifecycle.
-
-Focused session/visual/accessibility checks passed `33/33`; full `npm run qa:static` passed recovery `287/116/566`, TypeScript, `575/575` tests, content boundary, and runtime privacy boundary. This remains source-level convergence only: current-head runtime capture is still blocked by the local Expo bundle connection, and normalized Figma comparison, full reachable-state coverage, owner decisions, and Product Owner approval remain open.
-
-## Addendum — 200% visual capture flow coverage after `c0682ab`
-
-The canonical `.maestro/screenshot-capture/visual-shell/visual-shell-capture.yaml` now calls `scrollUntilVisible` for `settings-your-data` before tapping it. This removes the prior false-positive `Data & privacy` wait at the 200% content size and keeps the capture journey aligned with the real scrollable Settings owner. No production route, selector, or fallback was added. The flow passes Maestro syntax validation and its repository contract test.
-
-This improves evidence tooling only; the current-head runtime capture remains unverified because the local Expo bundle could not be reached from the iOS simulator.
-
-## Addendum — Current-head 200% Light/Dark runtime evidence after `c0682ab`
-
-The current source `c0682ab` completed the canonical 11-checkpoint visual-shell
-flow at the simulator's `accessibility-extra-extra-extra-large` content-size
-category on the iPhone 16 Pro / iOS 18.6 simulator
-`00B8F5B5-DF44-4621-8E30-56927604FA96`, using Maestro `2.6.1`:
-
-- Light: `/tmp/patternly-capture-visual-shell-200-light-2026-08-24-v5/`
-- Dark: `/tmp/patternly-capture-visual-shell-200-dark-2026-08-24-v2/`
-
-All 11 checkpoints passed in each theme, including active session, partial
-Summary, Settings, blocked Notifications, Data & privacy, and Appearance. The
-sampled frames showed no observed clipping in the corrected timer/top bar,
-session footer, Summary footer, Settings rows, or bottom navigation. The
-temporary preparation flow was deleted after capture; no production source or
-committed capture flow changed. This closes the current-head 200% capture
-gap, but normalized Figma comparison, remaining route/state coverage, owner
-decisions, signed distribution, and Product Owner approval remain open.
-
-## Addendum — Simulation confirmation chrome convergence after `239e167`
-
-Figma channel `ksxw21cw` supplied confirmation references `74:968` (Finish
-confirmation) and `74:992` (Pause or end), with comparison context from
-`74:834` and `74:879`. Commit `239e167` routes the existing confirmation
-projection through the canonical `SessionShell` using an explicit
-`simulationConfirmation` layout. It shares the large simulation top chrome
-owner with `simulationSaved`: 48 px top row, 20/16 chrome padding, 13 px
-timer/position and mode typography, and the Figma confirmation border token
-for the progress track.
-
-No command, lifecycle, content, persistence, or accessibility semantics
-changed. No alternate renderer, fake seed, deep link, or capture-only
-production path was added. The only removed code was the duplicated saved vs
-confirmation style naming, replaced by one shared large-simulation owner.
-
-Focused checks passed `32/32`; current `npm run qa:static` passed recovery
-inventory `287/116/567`, TypeScript, `576/576` tests, content-boundary, and
-runtime-privacy-boundary validation; `git diff --check` also passed. Runtime
-confirmation capture is still unverified because Simulation is excluded from
-the truthful bundled Free entry modes and no durable active simulation was
-available for resume. The matrix therefore remains `PARTIAL`, with normalized
-Figma comparison, owner approval, and remaining state coverage open.
-
-## Addendum — DES-005-D current-head visual evidence handoff after `c4000c9`
-
-The current repository baseline is `c4000c9`, with the latest source behavior
-slice in `239e167`. The new [DES-005-D handoff](reports/launch-des-005-current-head-visual-evidence-handoff-2026-08-24.md)
-defines the next independently verifiable parity task: current-head
-Light/Dark/200% capture for the reachable shared shell, Home, Progress,
-Activity, and Settings owners, followed by normalized comparison.
-
-Revalidated Figma context and screenshots for `830:7457`, `55:445`, and
-`842:9563` confirm safe geometry facts already represented by the canonical
-source owners. Progress still contains Figma-only effectiveness/trend/Track
-Evidence semantics, and the Settings fixture contains non-route-bound rows;
-both remain explicit `CANONICAL_CONFLICT`/`DESIGN_MISSING` decisions. No new
-metrics, routes, seed sessions, or no-op actions are permitted to close the
-visual gap.
-
-The initial next task was `DES-005-D1` capture evidence. It had to record exact
-source SHA, route/state/theme/device/profile, reproducible flow, missing-state
-classification, and screenshot manifest. Normalized Figma comparison and
-Product Owner approval remain open; this handoff does not claim `MATCHED` or
-99% parity. The capture requirement is completed by the addendum below;
-`DES-005-D2` is now next.
-
-## Addendum — DES-005-D1 current-head runtime evidence after `c7c1f9e`
-
-The visual-shell evidence pack now covers the current repository HEAD
-`c7c1f9e51d92246a1c76eec65683028775ad1f46` on iPhone 16 Pro / iOS 18.6
-(`00B8F5B5-DF44-4621-8E30-56927604FA96`) with Maestro 2.6.1 and local Metro
-loopback. The canonical 11-checkpoint flow passed 11/11 in Light and Dark at
-standard content size and 11/11 in both themes at the simulator's
-`accessibility-extra-extra-extra-large` 200% stress category.
-
-Evidence metadata, the 44-screenshot manifest, run report, coverage matrix,
-and explicit blockers are in
-`artifacts/maestro-screen-capture/des005d-current-head-2026-08-24/`. The
-pack covers Track selection, Home, Practice Setup, active session, exit sheet,
-partial Summary, Progress, Settings, Notifications, Data & privacy, and
-Appearance. Activity and the remaining route/state branches remain uncovered
-by this scoped pack. The temporary active-track precondition was deleted and
-no production source or committed canonical flow changed.
-
-This closes the current-head runtime capture gate for the scoped shell lane,
-not the parity objective: normalized Figma comparison, Activity/full
-reachable-state evidence, Figma-only semantic owner decisions, and Product
-Owner approval remain open. `DES-005-D2` is the next implementation-ready
-task.
-
-## 8. Kryterium końcowe
-
-Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.
+# Patternly — launch completion plan
+
+**Authority:** `docs/canonical-product-contract.yaml`,
+`docs/product-owner-decision-register.md`, and the owner directive/manual actions
+dated 2026-08-24. This file owns execution order and repository status only.
+
+**As of:** 2026-08-24
+
+**Starting pushed app head:** `2668022f2211453cb5a715bb0da5f1473fb3c119` on `origin/main`
+
+**Starting pushed content head:** `7fcf28d159c19e6b5d1c7e63828ae943ca3ce7e3` on `origin/master`
+
+The app checkout also contained a clean, user-owned local `main` ahead of its
+pushed head. It is preserved and will be pushed with verified reconciliation work;
+the pushed ref is the release baseline until that verification completes.
+
+## Locked launch decisions
+
+- Launch contains exactly these eight learner-visible tracks:
+  `coding-interview-dsa-problem-solving`, `backend-system-design-interview`,
+  `frontend-system-design-interview`, `object-oriented-design-interview`,
+  `aws-certified-solutions-architect-associate`,
+  `google-cloud-associate-cloud-engineer`,
+  `microsoft-azure-administrator-associate-az-104`, and
+  `microsoft-azure-ai-fundamentals-ai-901`.
+- The current eight-track banks are the accepted final launch baseline. No mass
+  reduction, mass expansion, or exhaustive re-review is authorized.
+- There is no global `>120 questions/node` readiness rule. Content changes are
+  targeted and evidence-driven; counts are operational evidence only.
+- A family/mode capability envelope is narrowed by the versioned track, package,
+  and Free profile. The UI renders the resolved profile and explicitly reports
+  requested versus actual length when shortening is allowed.
+- Patternly is decision practice and remediation, not a question bank. Its loop is
+  recognition → decision/mechanism → explained correctness and alternatives →
+  varied practice → repeated-mistake remediation → revisit → transfer.
+- Premium is one SKU-neutral account entitlement for fixed 30-day, fixed 90-day,
+  and discounted recurring access. Exact products, prices, and promotions remain
+  provider/owner gates.
+- The local/internal Content Review Console is a review aid over source files;
+  source remains authoritative, automated signals are advisory, and human outcomes
+  are explicit. No cloud, remote database, production auth, secrets, auto-rewrite,
+  self-approval, or second content authority.
+- There is no AI mock interviewer and no assumed paid tester, coach, reviewer,
+  agency, or permanent paid Figma dependency.
+
+## Current status
+
+| Stage | Status | Exit evidence |
+| --- | --- | --- |
+| 0. Strategic reconciliation | partial | Contract, tests, decision register and affected docs are being reconciled; this plan is the single active execution source. |
+| 1. Evidence and artifact cleanup | planned | Strict deletion audit and cleanup in both repositories, preserving unique provenance/release/legal/security evidence. |
+| 2. Figma/UI reconciliation | partial | Existing repository-owned implementation and visual evidence exist; remaining semantic conflicts or owner approvals remain explicit. |
+| 3. Content Review Console V1 | planned | Local console renders real source items, surfaces advisory risks/coverage, tracks fingerprints, and records explicit human outcomes. |
+| 4. Eight-track content audit | partial | Existing evidence is available; targeted classification is required without reopening the accepted baseline by count. |
+| 5. Account, identity, sync, adoption, deletion | partial | Local and server foundations exist; release-compatible provider, failure, deletion and cross-device evidence remains to be closed. |
+| 6. Commercial entitlement | planned | SKU-neutral fixed/recurring entitlement chain is implemented and verified without inventing store/provider evidence. |
+| 7. Provider, privacy, security, operations | planned | External configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery gates are evidenced. |
+| 8. QA, signing, stores, GO/NO-GO | planned | Release-compatible test/signing/store evidence and explicit owner GO/NO-GO exist. |
+
+## Execution stages
+
+### 0. Strategic reconciliation — current slice
+
+Update the canonical contract and its coverage tests; update the owner register;
+reconcile only affected narrative documents; replace stale launch-plan history;
+and supersede contradictory active assumptions. Verify contract parsing, focused
+tests, documentation references, and both clean/pushed heads.
+
+The first non-blocked task after this slice is Stage 1 cleanup.
+
+### 1. Evidence and artifact cleanup — mandatory
+
+Audit both repositories and remove only artifacts that satisfy all of these:
+
+1. no runtime, build, test, or active-document dependency;
+2. no inbound active reference;
+3. no unique immutable release, provenance, legal, security, or owner-decision
+   evidence;
+4. no current owner decision depends on it; and
+5. Git history is sufficient for provenance.
+
+Remove obsolete evidence, directives, finished-task notes, duplicate reports and
+dead artifacts. Preserve the canonical contract, decision register, design
+authority, current plan, active assets/licenses, and unique immutable evidence.
+Run reference searches and focused repository tests before and after deletion.
+
+### 2. Figma/UI reconciliation
+
+Reconcile only affected UI behavior and geometry against the canonical contract.
+Practice Setup must expose the resolved profile-specific session capability. Do
+not invent routes, metrics, unavailable content, Figma approvals, or semantic
+product decisions. Geometry differences default to the canonical product truth;
+stop only for a real unresolved owner approval or material semantic conflict.
+
+### 3. Content Review Console V1
+
+Build the smallest local/internal console in `patternly-content`. It must navigate
+track → node → mental unit, search/filter real items, render prompt/answer/scoring/
+Reason/Details/distractor explanations, show taxonomy/provenance/source identity,
+surface advisory risk and coverage, navigate to risks, and record
+`approved|needs_change|rejected` with note, exact identity, and fingerprint.
+Changed content invalidates prior review. Support diff, keyboard use, and bounded
+batch operations. Source files remain the only content authority.
+
+### 4. Eight-track content audit
+
+Audit current banks with targeted classification:
+`no_action`, `advisory`, `needs_human_review`, `confirmed_change_required`, or
+`blocking_content_defect`. A missing classification is not a reason to add items.
+Review new/materially changed items through the human outcome path. If a real
+defect is confirmed, make the smallest source correction, create a new immutable
+release/package identity, and preserve provenance. Do not mass-edit banks or add
+count-driven content.
+
+### 5. Account, identity, sync, adoption, deletion
+
+Close the guest-first adoption preview, deterministic reconciliation, identity
+provider/recovery, local durability, bounded sync, conflict, sign-out, deletion,
+retention, and no-resurrection paths. Every unavailable provider or configuration
+state is visible and fail-closed. Verify with focused tests and release-compatible
+flows; no production provider evidence is fabricated.
+
+### 6. Commercial entitlement
+
+Implement and verify one account-bound entitlement independent of storefront SKU
+shape. Support fixed-duration and recurring access through the same
+store → RevenueCat → backend projection → bounded device cache chain. Keep exact
+SKU names, prices, promotions, product availability, and provider configuration at
+the owner/provider gate. Verify Free, purchase, restore, cross-platform, offline
+grace, downgrade, deletion/billing independence, and package authorization.
+
+### 7. Provider, privacy, security, operations
+
+Close only with real evidence for Firebase/backend/App Check/IAM/deploy/billing/
+retention, domains/DNS/email/public URLs, provider credentials, legal/privacy,
+secrets, logging, recovery, and operational runbooks. Draft instructions and
+local checks are not production evidence.
+
+### 8. QA, signing, stores, GO/NO-GO
+
+Run contract, architecture, type, unit, integration, UI, accessibility, and
+release-compatible flows; verify clean working trees, immutable manifests,
+provenance, signed artifacts, store metadata, privacy/legal surfaces, and the
+whole-product journey. Request explicit owner GO/NO-GO only after all internal
+evidence is complete. Physical-device testing is optional and non-blocking.
+
+## Genuine stop gates
+
+Continue through routine cleanup, implementation, deletion, tests, architecture,
+local/internal tooling, evidence manifests, and draft provider instructions.
+Stop only for:
+
+- owner review of flagged/new content;
+- unresolved Figma owner approval or material semantic conflict;
+- exact pricing, SKU, recurring period, product name, or promotion choice;
+- Apple, Google, RevenueCat, EAS, signing, store, domain, legal, privacy,
+  provider credentials, Firebase/backend/IAM/billing/deploy, or production config;
+- organic beta-user recruitment/feedback;
+- final owner review and explicit GO/NO-GO.
+
+No stage may claim provider, store, Figma, human-review, legal, or production
+evidence that has not actually occurred.

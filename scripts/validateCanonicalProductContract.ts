@@ -700,7 +700,7 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   const target = contract as CanonicalProductContract;
   const commercial = target.commercialEntitlement;
   if (commercial.freeAccess !== "permanent"
-    || !hasExactValues(commercial.premiumProducts as readonly string[], ["monthly", "annual"])
+    || !hasExactValues(commercial.premiumProducts as readonly string[], ["fixedDuration30Day", "fixedDuration90Day", "recurring"])
     || commercial.entitlement !== "oneAccountBoundPremiumForAllPremiumContentInAllTracks"
     || commercial.tiers !== "prohibited"
     || commercial.trackSlots !== "prohibited"

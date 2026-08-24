@@ -18,7 +18,7 @@ Content quality is part of the product contract. Runtime, UI, validators, or gen
 
 ## Catalogue, Free verticals, and publication
 
-Learners see tracks, not implementation families. The internal families are `certification`, `coding_interview`, and `design_interview`. The target catalogue contains ten equal-status track briefs; a track enters the production registry only with a real bundled `freeNodeId`, complete core loop, valid modes and goal templates, Progress dimensions, provenance rules, and a release-ready content/package plan. Empty cards, placeholder tracks, and fixed filler counts are prohibited.
+Learners see tracks, not implementation families. The internal families are `certification`, `coding_interview`, and `design_interview`. The launch catalogue contains exactly eight learner-visible track briefs; Terraform Associate (004) and KCNA remain post-launch briefs only. A track enters the production registry only with a real bundled `freeNodeId`, complete core loop, valid modes and goal templates, Progress dimensions, provenance rules, and a release-ready content/package plan. Empty cards, placeholder tracks, and fixed filler counts are prohibited.
 
 Shared architecture is proven before broad copying: GCP ACE for Certification, Coding Interview for `coding_interview`, Backend System Design for Design Interview, then a second representative track in each reusable family. Brief approval is not production admission and does not authorize bulk content generation.
 
@@ -32,6 +32,21 @@ profile, which selects existing family modes and only the node-local structures
 needed for the declared Free experience. It never creates a Free-only mode,
 runner, scoring path, or lifecycle. The canonical product contract owns exact
 profile configurations and package-admission evidence.
+
+### Baseline and targeted quality
+
+The current eight-track content banks are the accepted final launch baseline. They
+must not be mass-reduced, mass-expanded, or exhaustively re-reviewed. A content
+change requires evidence of a factual, technical, scoring, feedback, semantic
+duplicate, coverage, session-profile, provenance, or runtime defect. There is no
+global question-count readiness threshold: counts remain operational evidence,
+while quality is judged by mental-unit coverage and variation, validity,
+diagnostic value, provenance, repeated-use behavior, and the resolved profile.
+
+The local/internal Content Review Console is a review aid over canonical source
+files. It may surface risk signals, coverage and changed-since-review state, but
+human outcomes remain explicit and source files remain authoritative. It is not a
+cloud service, remote database, second content authority, or auto-approval path.
 
 Launch application and content are English-only. Future locale packages reuse stable evidence identities while localizing learner-visible content; they do not fork scores, attempts, review evidence, or taxonomy identity merely because language changes.
 

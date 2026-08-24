@@ -80,9 +80,14 @@ The runtime never substitutes:
 
 ## 2. Mode configuration
 
-The runtime resolves Coding Interview and Certification modes exclusively from `canonical-product-contract.yaml`. It does not maintain mode matrices, entry mappings, session lengths, feedback timing, reinsert behavior, shortening policy, or timer behavior in this specification.
+The runtime resolves Coding Interview and Certification modes exclusively from `canonical-product-contract.yaml`. A family/mode capability envelope is narrowed by the selected versioned track, package, and Free profile before the UI renders setup. This specification does not maintain mode matrices, entry mappings, session lengths, feedback timing, reinsert behavior, shortening policy, or timer behavior.
 
 An entry intent or review source is validated by the resolved family configuration. Unknown or unsupported values fail preparation explicitly; the runtime never infers behavior from a mode label.
+
+The resolved profile is the only learner-visible session-length source. When a
+shortenable mode cannot satisfy the request, the result states both requested and
+actual lengths. A fixed or unsupported request fails explicitly; runtime does not
+use bank size to invent a capability, switch mental units, or add filler.
 
 ## 4. Session preparation
 

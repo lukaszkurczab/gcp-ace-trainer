@@ -25,7 +25,7 @@ Differences between providers and exams belong in the track instance and its off
 
 ## Evidence, feedback, and review
 
-Evidence separates volume, learning-stage evidence, and performance signals. The track neither collects confidence nor displays synthetic readiness/retention/mastery percentages.
+Evidence separates volume, learning-stage evidence, and performance signals. The track neither collects confidence nor displays synthetic readiness/retention/mastery percentages. Content volume is operational evidence, not a global readiness rule; the accepted launch baseline remains intact and new or materially changed items receive targeted technical/editorial review.
 
 Every instructional choice item has a concise `Reason`, complete collapsed `Details`, and a meaningful explanation for each active wrong option keyed by stable option ID. Details remains available after correct, partial, and incorrect attempts. Content must explain the scenario requirement, relevant service/property, expected decision, selected wrong reasoning where applicable, and transfer boundary. Human technical/editorial review is required.
 

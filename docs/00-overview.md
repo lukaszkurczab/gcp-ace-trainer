@@ -6,7 +6,9 @@ Patternly is a commercial, guest-first and local-first mobile product for delibe
 
 Local-first does not mean local-only. Learning mutations become durable on the device before any compact account operation is queued. The synchronized product adds Firebase Authentication, a Patternly API on Cloud Run, Firestore account projections, RevenueCat entitlement normalization and immutable Premium node packages in Cloud Storage. Network or provider failure must not silently replace verified local learning evidence.
 
-Permanent Free access is part of the product. Premium is one account-bound entitlement covering all Premium content in every track, sold through one monthly and one annual product. There are no active-track slots, track-count tiers, release/cooldown rules or guest purchases.
+Permanent Free access is part of the product. Premium is one account-bound entitlement covering all Premium content in every track, supplied through fixed 30-day access, fixed 90-day access, and discounted recurring access. Storefront products and prices remain release inputs; there are no active-track slots, track-count tiers, release/cooldown rules or guest purchases.
+
+Patternly is a decision-practice and remediation product, not a question bank. Its value is the loop from recognition to a technical decision, mechanism and explained alternatives, varied practice, repeated-mistake remediation, revisit, and transfer. Content count is operational evidence, not the learner-facing product claim.
 
 ## Tracks and internal families
 

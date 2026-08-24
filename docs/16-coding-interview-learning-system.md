@@ -324,6 +324,12 @@ It does not infer missing stages, distributions, thresholds, or mode support fro
 
 `canonical-product-contract.yaml` is the only Coding Interview mode matrix. It supplies the mode IDs and labels together with selection boundary, session length, feedback, timer, shortening, and reinsert configuration. This learning document does not repeat those values or map entry intents.
 
+The family and mode configuration defines a capability envelope, but a versioned
+track/package/Free profile resolves the subset available to the learner. Practice
+setup renders only that resolved profile. The runtime never infers an unavailable
+length from inventory, fills from another mental unit, or silently changes the
+requested length.
+
 The exact session plan is selected, ordered, and persisted before the first item appears. Selection does not adapt silently in response to answers during the active session.
 
 ## Shared non-simulation contract

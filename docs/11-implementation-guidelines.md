@@ -27,6 +27,16 @@ An implementation prompt, current screen, existing service, obsolete test, or re
 
 A conflict is resolved by updating the canonical product contract and test, not by adding a compatibility branch.
 
+## Content Review Console boundary
+
+The Content Review Console is a local/internal repository tool, not a runtime
+service. It reads canonical source files and may persist only review evidence that
+binds an exact item identity and content fingerprint. Source files remain the
+authority. Risk heuristics, coverage views, and changed-since-review signals are
+advisory; only an explicit human outcome can approve, request change, or reject an
+item. Do not add cloud hosting, a remote database, production auth, secrets,
+automatic rewriting, self-approval, or a second content authority.
+
 ## Mandatory recovery rule
 
 If an existing model, record, flow, module, key, route, API, or test cannot move into the canonical structure without preserving obsolete semantics, delete it.

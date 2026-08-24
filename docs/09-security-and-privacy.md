@@ -61,7 +61,7 @@ The App Store and Google Play own transactions. RevenueCat normalizes store stat
 
 RevenueCat uses the opaque Patternly account ID. Purchase requires a verified Patternly account. Guests cannot purchase, restore, or download Premium packages.
 
-Premium is one entitlement across every Premium track, with one monthly and one annual product. There are no active-track slots, track tiers, release cooldowns, or account-local substitutions.
+Premium is one entitlement across every Premium track, supplied through fixed 30-day access, fixed 90-day access, and discounted recurring access. There are no active-track slots, track tiers, release cooldowns, or account-local substitutions. Exact storefront products, prices, and promotions remain release inputs rather than entitlement semantics.
 
 Cross-platform Premium follows the verified Patternly account and normalized store state. Purchase and restore conflicts produce explicit ownership/recovery outcomes. They never silently transfer learning data, merge accounts, or trust a local SDK result as backend authorization.
 
@@ -98,6 +98,16 @@ A learner may report content using a closed category set and optional bounded de
 By default a report is not linked to the Patternly account and does not attach the learner response, account ID, email, full prompt, answer options, explanation, or feedback. Account linking and contact details require separate explicit opt-in, with the exact attachment previewed before submission.
 
 Offline reports have visible queued/retrying/failed/sent states. The UI confirms submission only after server acknowledgement. Server records use bounded retention, closed admin states, access control, audit events, and deletion/de-identification rules. The content repository owns the report-to-correction-to-release workflow; reports never mutate published packages directly.
+
+## Content Review Console
+
+The Content Review Console is local/internal and repository-owned. Canonical source
+files remain the content authority; the console must not upload source or learner
+data, create a remote database, require production authentication or secrets, or
+silently become a second review store. Review records bind exact item identity and
+content fingerprint, changed content invalidates prior review, automated signals
+remain advisory, and only explicit human outcomes can approve, request change, or
+reject an item.
 
 ## Logging and secrets
 

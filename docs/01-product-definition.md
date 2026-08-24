@@ -23,7 +23,9 @@ An account is required for Premium purchase, synchronization, restore and cross-
 
 Free is permanent. Every visible production track includes one complete bundled `freeNodeId`. Free sessions filter strictly to that node and never use Premium filler to reach a requested length.
 
-Premium is one account-bound entitlement for all Premium content in all tracks, available as one monthly and one annual product. It has no track slots or track-count tiers. Store transactions are authoritative at Apple or Google, RevenueCat normalizes them, the Patternly backend owns the account entitlement projection, and the device keeps only a bounded offline cache. A guest cannot purchase Premium or download Premium packages.
+Premium is one account-bound entitlement for all Premium content in all tracks, supplied through fixed 30-day access, fixed 90-day access, and discounted recurring access. It has no track slots or track-count tiers. Store transactions are authoritative at Apple or Google, RevenueCat normalizes them, the Patternly backend owns the account entitlement projection, and the device keeps only a bounded offline cache. A guest cannot purchase Premium or download Premium packages.
+
+Patternly's learning value is decision practice and remediation: recognition, mechanism-based choice, explained correctness and distractors, varied practice, repeated-mistake recovery, revisit, and transfer. The accepted eight-track content baseline remains intact; future content changes are targeted and evidence-driven, and a raw bank count never substitutes for coverage, variation, validity, diagnostic value, provenance, or an explicit session profile.
 
 After downgrade, historical learning, Activity, Progress, feedback and review remain readable. A Premium session started while entitled can finish on the same device. No new Premium session starts without valid entitlement, and the main recommendation always offers an executable Free alternative.
 
