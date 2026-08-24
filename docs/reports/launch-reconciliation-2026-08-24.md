@@ -21,8 +21,8 @@ Pushed and independently re-fetched canonical refs after the follow-up cleanup:
 
 | Repository | Canonical ref | Verified head |
 | --- | --- | --- |
-| `lukaszkurczab/gcp-ace-trainer` | `main` | `3535fb2ad6952efd6ffcf6ea88145f9915926f4e` |
-| `lukaszkurczab/patternly-content` | `master` | `876e61316257b29929b961e2a7bdaac173d63ab9` |
+| `lukaszkurczab/gcp-ace-trainer` | `main` | `b5343ef` |
+| `lukaszkurczab/patternly-content` | `master` | `631b278` |
 
 ## Changed files
 
@@ -59,7 +59,10 @@ Content repository:
 - `scripts/review/content-review-console.mjs`, its outcome schema, focused tests,
   and the local reviewer package command.
 - Coding Interview source-bound technical and simulation evidence regenerated
-  after the Console package change, plus the eight-track readiness report.
+  after the Console package change, plus the eight-track readiness report. The
+  report was rechecked after the documentation-only content head `631b278`.
+- Five affected AWS checkpoint/audit narratives were reconciled so their counts
+  remain provenance without implying a node floor or global count gate.
 
 ## Reconciled authority
 
