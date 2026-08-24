@@ -102,7 +102,8 @@ evidence locations.
 - App focused contract/gate tests: 38 passed.
 - App `git diff --check`: passed.
 - App `npm run launch:readiness`: internal content lock/source integrity passed;
-  current app worktree is clean at the owner-pushed `03a032c` EAS/signing commit;
+  current app worktree is clean after owner commits `03a032c` (signing boundary)
+  and `15b00af` (EAS project/update initialization);
   overall status remains `not_ready` because external/admission evidence is
   absent.
 - Focused owner-owned EAS/signing QA: 5/5 tests passed. This is local

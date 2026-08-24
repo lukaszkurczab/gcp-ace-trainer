@@ -58,7 +58,7 @@ Both refs are independently fetched and verified at each handoff.
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
 | 6. Commercial entitlement | planned | No provider-neutral entitlement runtime is currently composed. The fixed/recurring chain remains an implementation task after the provider/backend input contract exists; no store/provider evidence is claimed. |
 | 7. Provider, privacy, security, operations | planned | Production configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery evidence remains absent and requires the corresponding external gates. |
-| 8. QA, signing, stores, GO/NO-GO | partial | Owner commit `03a032c` containing the EAS/signing hardening is on canonical `main` and passes the five focused local tests; actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable external gates. |
+| 8. QA, signing, stores, GO/NO-GO | partial | Owner commits `03a032c` (signing boundary) and `15b00af` (EAS project/update initialization) are on canonical `main`; focused tests and the full app suite pass, while actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable external gates. |
 
 ## Execution stages
 
@@ -189,7 +189,7 @@ whole-product journey. Request explicit owner GO/NO-GO only after all internal
 evidence is complete. Physical-device testing is optional and non-blocking.
 
 The current owner-owned EAS/signing slice is committed on canonical `main` at
-`03a032c` and locally verified with
+`03a032c`, with EAS project/update initialization in `15b00af`, and locally verified with
 `tests/easReleaseConfiguration.test.ts` and `tests/releaseSigningBoundary.test.ts`
 (5/5 passing). This proves configuration and no-debug-fallback invariants only; it
 does not prove an EAS-managed signed artifact. The delegated QA attempt used the
