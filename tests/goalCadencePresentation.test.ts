@@ -30,5 +30,5 @@ test("goal cadence is a reachable root route backed by the canonical repository"
 test("Progress owns the goal entry point for the active track", () => {
   assert.match(progress, /onOpenGoal\?: \(\) => void/);
   assert.match(progress, /testID=\{runtimeSelectors\.progress\.goal\(\)\}/);
-  assert.match(progress, /goal \? "View goal" : "Set a goal"/);
+  assert.match(progress, /goal \? "Manage goal" : "Set a goal"/);
 });
