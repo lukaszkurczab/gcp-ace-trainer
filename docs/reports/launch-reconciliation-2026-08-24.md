@@ -117,8 +117,9 @@ evidence locations.
 
 The local/internal Content Review Console V1, eight-track structural audit, and
 mandatory cleanup stage are complete; the accepted content baseline remains
-unchanged. The next non-blocked task is internal account/entitlement and release
-hardening. At this head, provider composition, runtime/publishing admission,
+unchanged. The immediate next internal task is independent QA of the six
+owner-owned EAS/signing changes already in the app worktree. At this head,
+provider composition, runtime/publishing admission,
 immutable full-package evidence, owner-owned signing changes, and external
 release evidence are genuine gates; none is fabricated by this report.
 

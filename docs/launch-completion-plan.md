@@ -51,7 +51,7 @@ Both refs are independently fetched and verified at each handoff.
 | Stage | Status | Exit evidence |
 | --- | --- | --- |
 | 0. Strategic reconciliation | complete | Contract, tests, current-only decision register and affected docs are reconciled and pushed to canonical heads. |
-| 1. Evidence and artifact cleanup | in_progress | The current-only decision-register rule and affected content count-gate narrative cleanup are complete; the remaining strict deletion audit preserves unique provenance/release/legal/security evidence. |
+| 1. Evidence and artifact cleanup | complete | The current-only decision-register rule, affected content count-gate narrative cleanup, and removal of the unreferenced resolved RC-003 decision packet are complete. Retained directives/reports are explicitly non-authoritative or unique provenance/release/legal/security evidence. |
 | 2. Figma/UI reconciliation | partial | Existing repository-owned implementation and visual evidence exist; remaining semantic conflicts or owner approvals remain explicit. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, records bounded explicit outcomes, and is pushed on content `master` at `73e7867`; content suite is 146/146. |
 | 4. Eight-track content audit | complete | Readiness report `32e2003df80b8b62bce17c76c29465a452910ca8027ec707faaa6a8bdcf93a5a` verifies all eight structural validators pass; the report was rechecked after content head `631b278`. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
@@ -69,9 +69,10 @@ reconcile only affected narrative documents; replace stale launch-plan history;
 and supersede contradictory active assumptions. Verify contract parsing, focused
 tests, documentation references, and both clean/pushed heads.
 
-The first non-blocked task after this slice is internal account/entitlement and
-release hardening; cleanup remains a mandatory gate before each later release
-slice.
+The first non-blocked task after this slice is the independent QA of the
+owner-owned EAS/signing hardening already present in the worktree, followed by
+the next account/entitlement slice if that review finds no internal defect.
+Cleanup remains a mandatory gate before each later release slice.
 
 ### 1. Evidence and artifact cleanup — mandatory
 
