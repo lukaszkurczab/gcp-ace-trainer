@@ -14,8 +14,8 @@ The app checkout also contained a clean, user-owned local `main` ahead of its
 pushed head. It is preserved and will be pushed with verified reconciliation work;
 the pushed ref is the release baseline until that verification completes.
 
-**Current pushed canonical heads:** app `main` at `e39f29c`;
-content `master` at `631b278`.
+**Current pushed canonical heads:** app `origin/main`; content `origin/master`.
+Both refs are independently fetched and verified at each handoff.
 
 ## Locked launch decisions
 
