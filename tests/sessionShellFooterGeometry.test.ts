@@ -11,6 +11,8 @@ test("SessionShell reserves its fixed action-footer height after scrollable feed
   assert.match(shell, /footerVariant=\{layout === "practice" \? "session" : "simulation"\}/);
   const screen = readFileSync("src/components/Screen.tsx", "utf8");
   assert.match(screen, /footerVariant\?: "default" \| "review" \| "session" \| "simulation" \| "sticky"/);
-  assert.match(screen, /footerSession:\s*\{[\s\S]*justifyContent:\s*"flex-end"[\s\S]*minHeight:\s*228[\s\S]*gap:\s*spacing\.sm/);
-  assert.match(screen, /footerSimulation:\s*\{[\s\S]*justifyContent:\s*"flex-end"[\s\S]*minHeight:\s*361[\s\S]*gap:\s*spacing\.sm/);
+  assert.match(screen, /footerSession:\s*\{[\s\S]*justifyContent:\s*"flex-end"[\s\S]*minHeight:\s*228[\s\S]*gap:\s*spacing\.sm[\s\S]*paddingVertical:\s*spacing\.lg/);
+  assert.match(screen, /footerSimulation:\s*\{[\s\S]*justifyContent:\s*"flex-end"[\s\S]*minHeight:\s*361[\s\S]*gap:\s*spacing\.sm[\s\S]*paddingVertical:\s*spacing\.lg/);
+  assert.match(shell, /progressTrack:\s*\{[\s\S]*borderRadius:\s*2[\s\S]*height:\s*4/);
+  assert.match(shell, /progressFill:\s*\{[\s\S]*borderRadius:\s*2[\s\S]*height:\s*4/);
 });

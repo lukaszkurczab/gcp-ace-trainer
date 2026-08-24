@@ -101,11 +101,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     justifyContent: "flex-end",
     minHeight: 228,
     gap: spacing.sm,
+    paddingVertical: spacing.lg,
   },
   footerSimulation: {
     justifyContent: "flex-end",
     minHeight: 361,
     gap: spacing.sm,
+    paddingVertical: spacing.lg,
   },
   footerSticky: {
     borderColor: effects.subtleBorder,

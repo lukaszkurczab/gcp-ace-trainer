@@ -130,10 +130,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   progressFill: {
     backgroundColor: palette.primary,
+    borderRadius: 2,
     height: 4,
   },
   progressTrack: {
     backgroundColor: palette.surface,
+    borderRadius: 2,
     height: 4,
     marginHorizontal: -spacing.xl,
     overflow: "hidden",
