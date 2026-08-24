@@ -416,6 +416,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     lineHeight: 16,
+    textTransform: "uppercase",
   },
   modeList: {
     borderColor: palette.border,

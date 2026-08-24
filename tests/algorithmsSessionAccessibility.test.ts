@@ -172,7 +172,7 @@ test("Practice Hub geometry follows live Figma while keeping canonical mode owne
   assert.match(practiceHub, /heroActions:\s*\{[\s\S]*?gap:\s*spacing\.lg/);
   assert.match(practiceHub, /cardRail:\s*\{[\s\S]*?height:\s*44[\s\S]*?top:\s*19/);
   assert.match(practiceHub, /sectionHeader:\s*\{[\s\S]*?paddingTop:\s*6/);
-  assert.match(practiceHub, /sectionTitle:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"700"[\s\S]*?lineHeight:\s*16/);
+  assert.match(practiceHub, /sectionTitle:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"700"[\s\S]*?lineHeight:\s*16[\s\S]*?textTransform:\s*"uppercase"/);
   assert.doesNotMatch(practiceHub, /<SectionHeader/);
   assert.doesNotMatch(practiceHub, /<Icon color=\{palette\.primary\} name="chevron-right" size=\{16\}/);
   assert.match(practiceHub, /modeList:\s*\{[\s\S]*?borderRadius:\s*18[\s\S]*?backgroundColor:\s*palette\.elevatedSurface/);
