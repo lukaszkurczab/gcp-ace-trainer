@@ -52,7 +52,7 @@ app SHA because each plan update creates a new documentation commit.
 | --- | --- | --- |
 | 0. Strategic reconciliation | complete | Contract, tests, current-only decision register and affected docs are reconciled and pushed to canonical heads. |
 | 1. Evidence and artifact cleanup | complete | The current-only decision-register rule, affected content count-gate narrative cleanup, and removal of the unreferenced resolved RC-003 decision packet are complete. Retained directives/reports are explicitly non-authoritative or unique provenance/release/legal/security evidence. |
-| 2. Figma/UI reconciliation | in_progress | Owner has declared `Page 1` and `Patternly Library` final visual authority in channel `hgz70ud2`; implementation targets 99% fidelity. Missing screens/states are explainable work, not blockers; buildable states are implemented from existing canonical patterns. |
+| 2. Figma/UI reconciliation | in_progress | Owner has declared `Page 1` and `Patternly Library` final visual authority in channel `hgz70ud2`; implementation targets 99% fidelity. The first Progress evidence-state slice is implemented and tested; missing screens/states remain explainable work, not blockers. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, records bounded explicit outcomes, and is pushed on content `master` at `73e7867`; content suite is 146/146. |
 | 4. Eight-track content audit | complete | Readiness report `32e2003df80b8b62bce17c76c29465a452910ca8027ec707faaa6a8bdcf93a5a` verifies all eight structural validators pass; the current content head is `0463a2b` after a test-only stale-evidence assertion repair. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
@@ -81,9 +81,14 @@ the existing `QA / G01-G13 acceptance / canonical instances`,
 has now explicitly approved `Page 1` and `Patternly Library` as final visual
 authority and set a 99% fidelity target. Missing screens/states remain
 explainable implementation work, not launch blockers; only buildable,
-contract-compatible states are added. App verification after the owner NDK/signing push is `npm test` 579/579,
-`npm run typecheck` pass, and `npm run launch:readiness` `not_ready` with a
-clean application repository. Content verification is `npm test` 146/146
+contract-compatible states are added. The first application-code parity slice
+now covers the Algorithms Progress `no_evidence`, `building`, and `established`
+evidence states, the effectiveness trend, track evidence, and recent activity
+hierarchy using current-package local attempts only. Focused tests, full app
+verification, and typecheck are `npm test` 580/580 and `npm run typecheck` pass;
+no device screenshot or EAS artifact is claimed. `npm run launch:readiness`
+remains `not_ready` with a clean application repository. Content verification
+is `npm test` 146/146
 (the local Console test required host loopback permission). No source banks,
 runtime contracts, or external evidence were changed in this checkpoint.
 
@@ -134,12 +139,21 @@ models, and routes, implement it directly without parallel architecture. A
 Figma-only metric or provider/account/commercial behavior remains unexplained
 until its real contract exists, rather than becoming fabricated product truth.
 
-Current next code slice: Progress/Activity state parity. Align the existing
-Progress, Activity, and Goal Cadence surfaces to the approved geometry, copy,
-and state hierarchy using existing models/components. Acceptance requires no
-new route, metric, account command, or commercial contract; recorded evidence
-semantics remain truthful; focused and full app tests pass; and the plan is
-updated with the checked-in implementation and QA evidence.
+The current completed code slice is the Algorithms Progress evidence-state
+parity implementation in `src/features/home/tabs/ProgressTab.tsx` and
+`src/features/home/tabs/progressTabModel.ts`, with projection coverage in
+`tests/homeProgressProjections.test.ts` and visual-shell coverage in
+`tests/visualShell.test.ts`. It adds no route, persistence, metric source,
+account command, or commercial contract. Sparse states explicitly withhold
+effectiveness and trend values until recorded response thresholds are met;
+established values are derived from the exact current content package.
+
+Next code slice: Activity populated/empty/filtered-empty parity. Align the
+existing Activity screen to the G07 canonical rows and empty-state geometry
+using its current durable session read model, with no new navigation or data
+authority. Acceptance requires exact current-track filtering, truthful
+completed/ended/time-expired status copy, 200% text coverage, focused tests,
+and a fresh plan checkpoint.
 
 ### 3. Content Review Console V1
 

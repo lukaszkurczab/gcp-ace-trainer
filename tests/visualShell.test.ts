@@ -280,6 +280,10 @@ test("Progress follows the current Figma section copy and 200% text contract", (
   const textNodes = [...progress.matchAll(/<Text\b[^>]*>/g)].map((match) => match[0]);
 
   assert.match(progress, /t\("Recent activity"\)/);
+  assert.match(progress, /t\("Across this track"\)/);
+  assert.match(progress, /t\("Effectiveness trend"\)/);
+  assert.match(progress, /Evidence is building/);
+  assert.match(progress, /<Svg[\s\S]*<Polyline/);
   assert.equal(textNodes.length > 0, true);
   assert.equal(textNodes.every((node) => node.includes("maxFontSizeMultiplier={2}")), true);
 });

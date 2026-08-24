@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Svg, { Circle, Line, Polyline } from "react-native-svg";
 
-import { Badge, Button, Card, Icon, IconTile, ProgressBar, type IconName } from "../../../components";
+import { Button, Card, Icon, IconTile, ProgressBar, type IconName } from "../../../components";
 import type { GoalRecord, ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
@@ -10,7 +11,11 @@ import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
 import { radius, shadows, spacing, typography } from "../../../theme";
 import { runtimeSelectors } from "../../../testing/runtimeSelectors";
-import { buildProgressTabModel, type ProgressAction, type ProgressTabActivityItem } from "./progressTabModel";
+import {
+  buildProgressTabModel,
+  type ProgressAction,
+  type ProgressTabActivityItem,
+} from "./progressTabModel";
 
 type ProgressTabProps = {
   activeTrack: TrackDisplay;
@@ -52,13 +57,16 @@ export function ProgressTab({
   const focusAction = model.algorithmsProgress?.priority.primaryAction ?? model.reviewAction;
   const focusActionLabel = model.algorithmsProgress ? "Open Practice" : model.reviewActionLabel;
   const hasFocusEvidence = focus?.showProgress === true || model.performanceScores.length > 0;
+  const algorithmEvidenceState = model.algorithmsProgress?.evidenceSummary.state;
+  const compactProgressLayout = !model.hasData || (algorithmEvidenceState !== undefined && algorithmEvidenceState !== "established");
+  const showNeedsAttention = !model.algorithmsProgress || algorithmEvidenceState !== "building" || model.reviewQueueCount > 0;
   const weekValue = model.activitySummary.value;
   const progressRatio = focusProgress > 0 ? Math.min(1, focusProgress / 100) : weekValue > 0 ? 1 : 0;
 
   return (
     <View style={styles.root} testID={runtimeSelectors.progress.root()}>
       <View style={styles.header}>
-        <Text maxFontSizeMultiplier={2} style={[styles.screenTitle, !model.hasData ? styles.emptyProgressScreenTitle : null]}>{t("Progress")}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.screenTitle, compactProgressLayout ? styles.emptyProgressScreenTitle : null]}>{t("Progress")}</Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`${t("Change track")}: ${t(activeTrack.shortTitle)}`}
@@ -71,9 +79,9 @@ export function ProgressTab({
         </Pressable>
       </View>
 
-      <View style={[styles.weekSection, !model.hasData ? styles.emptyWeekSection : null]}>
+      <View style={[styles.weekSection, compactProgressLayout ? styles.emptyWeekSection : null]}>
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("This week")}</Text>
-        <Card style={[styles.weekCard, !model.hasData ? styles.emptyWeekCard : null]}>
+        <Card style={[styles.weekCard, compactProgressLayout ? styles.emptyWeekCard : null]}>
           <View style={styles.weekHeader}>
             <View style={styles.weekCopy}>
               <Text maxFontSizeMultiplier={2} style={styles.weekTitle}>{t(formatWeekTitle(weekValue))}</Text>
@@ -105,7 +113,19 @@ export function ProgressTab({
             <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Current focus")}</Text>
             <Card style={styles.focusCard}>
               <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{t(focusTitle)}</Text>
-              {focus ? (
+              {focus && model.algorithmsProgress ? (
+                <>
+                  <Text maxFontSizeMultiplier={2} style={styles.focusStatus}>{t(model.algorithmsProgress.evidenceSummary.currentFocus.label)}</Text>
+                  {model.algorithmsProgress.evidenceSummary.currentFocus.percent !== undefined ? (
+                    <>
+                      <Text maxFontSizeMultiplier={2} style={styles.focusPercent}>{`${model.algorithmsProgress.evidenceSummary.currentFocus.percent}%`}</Text>
+                      <Text maxFontSizeMultiplier={2} style={styles.focusEvidenceDetail}>{t(model.algorithmsProgress.evidenceSummary.currentFocus.detail)}</Text>
+                    </>
+                  ) : (
+                    <Text maxFontSizeMultiplier={2} style={styles.focusEvidenceDetail}>{t(model.algorithmsProgress.evidenceSummary.currentFocus.detail)}</Text>
+                  )}
+                </>
+              ) : focus ? (
                 <>
                   <Text maxFontSizeMultiplier={2} style={styles.focusStatus}>{t(focus.statusLabel)}</Text>
                   <Text maxFontSizeMultiplier={2} style={styles.focusEvidenceDetail}>{`${t("Items practiced")}: ${focus.practicedLabel}`}</Text>
@@ -123,40 +143,51 @@ export function ProgressTab({
             </Card>
           </View>
 
-          <View style={styles.section}>
-            <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Needs attention")}</Text>
-            {model.reviewQueueCount > 0 ? (
-              <Card style={styles.attentionCard}>
-                <View style={styles.attentionTitleRow}>
-                  <View style={styles.attentionDot} />
-                  <Text maxFontSizeMultiplier={2} style={styles.attentionTitle}>{t("Review due")}</Text>
-                </View>
-                <Text maxFontSizeMultiplier={2} style={styles.attentionDetail}>{t(model.reviewQueueCopy)}</Text>
-                {model.reviewAction && onProgressAction ? (
-                  <Button labelStyle={styles.attentionActionLabel} onPress={() => onProgressAction(model.reviewAction!)} variant="ghost">
-                    {t(model.reviewActionLabel)}
-                  </Button>
-                ) : null}
-              </Card>
-            ) : (
-              <Card style={styles.emptyAttentionCard}>
-                <Text maxFontSizeMultiplier={2} style={styles.attentionTitle}>{t("Nothing needs attention")}</Text>
-                <Text maxFontSizeMultiplier={2} style={styles.attentionDetail}>{t("Keep practicing to build local evidence for this track.")}</Text>
-              </Card>
-            )}
-          </View>
+          {model.algorithmsProgress?.evidenceSummary.state === "building" ? (
+            <Card style={styles.evidenceBuildingCard}>
+              <Text maxFontSizeMultiplier={2} style={styles.evidenceBuildingTitle}>{t("Evidence is building")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.evidenceBuildingDetail}>{t(model.algorithmsProgress.evidenceSummary.buildingCopy ?? "More practice is needed before recurring patterns can be identified.")}</Text>
+            </Card>
+          ) : null}
 
-          <ActivitySection items={model.activity} onOpenActivity={onOpenActivity} trackFamily={activeTrack.familyId} />
+          {showNeedsAttention ? <View style={styles.section}>
+              <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Needs attention")}</Text>
+              {model.reviewQueueCount > 0 ? (
+                <Card style={styles.attentionCard}>
+                  <View style={styles.attentionTitleRow}>
+                    <View style={styles.attentionDot} />
+                    <Text maxFontSizeMultiplier={2} style={styles.attentionTitle}>{t("Review due")}</Text>
+                  </View>
+                  <Text maxFontSizeMultiplier={2} style={styles.attentionDetail}>{t(model.reviewQueueCopy)}</Text>
+                  {model.reviewAction && onProgressAction ? (
+                    <Button labelStyle={styles.attentionActionLabel} onPress={() => onProgressAction(model.reviewAction!)} variant="ghost">
+                      {t(model.reviewActionLabel)}
+                    </Button>
+                  ) : null}
+                </Card>
+              ) : (
+                <Card style={styles.emptyAttentionCard}>
+                  <Text maxFontSizeMultiplier={2} style={styles.attentionTitle}>{t("Nothing needs attention")}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.attentionDetail}>{t("Keep practicing to build local evidence for this track.")}</Text>
+                </Card>
+              )}
+            </View> : null}
 
           {model.algorithmsProgress ? (
             <AlgorithmsEvidenceSection
+              activity={model.activity}
               model={model.algorithmsProgress}
+              onOpenActivity={onOpenActivity}
               onProgressAction={onProgressAction}
+              trackFamily={activeTrack.familyId}
               showDiagnostics={showDiagnostics}
               setShowDiagnostics={setShowDiagnostics}
             />
           ) : (
-            <PerformanceEvidenceSection scores={model.performanceScores} trackFamily={activeTrack.familyId} />
+            <>
+              <ActivitySection items={model.activity} onOpenActivity={onOpenActivity} trackFamily={activeTrack.familyId} />
+              <PerformanceEvidenceSection scores={model.performanceScores} trackFamily={activeTrack.familyId} />
+            </>
           )}
         </>
       )}
@@ -220,39 +251,48 @@ function activityTone(outcome: ProgressTabActivityItem["outcome"]): "danger" | "
 }
 
 function AlgorithmsEvidenceSection({
+  activity,
   model,
+  onOpenActivity,
   onProgressAction,
   setShowDiagnostics,
   showDiagnostics,
+  trackFamily,
 }: Readonly<{
+  activity: readonly ProgressTabActivityItem[];
   model: NonNullable<ReturnType<typeof buildProgressTabModel>["algorithmsProgress"]>;
+  onOpenActivity?: () => void;
   onProgressAction?: (action: ProgressAction) => void;
   setShowDiagnostics: (value: (current: boolean) => boolean) => void;
   showDiagnostics: boolean;
+  trackFamily: string;
 }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
-  const [showAllRoadmapNodes, setShowAllRoadmapNodes] = useState(false);
-  const roadmapNodes = showAllRoadmapNodes ? model.roadmapSummary.allNodes : model.roadmapSummary.nodes;
+  const [showAllTrackNodes, setShowAllTrackNodes] = useState(false);
+  const trackNodes = showAllTrackNodes ? model.trackNodes : model.trackNodes.slice(0, 4);
   return (
     <View style={styles.section}>
-      <View style={styles.sectionHeading}>
-        <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Learning map")}</Text>
-        <Badge label={t("Local evidence")} tone="neutral" />
-      </View>
-      <Card style={styles.evidenceCard}>
-        {roadmapNodes.map((node) => (
-          <View key={node.id} style={styles.roadmapRow} testID={runtimeSelectors.progress.node(node.id)}>
-            <View style={styles.roadmapCopy}>
-              <Text maxFontSizeMultiplier={2} style={styles.roadmapTitle}>{t(node.title)}</Text>
-              {node.showProgress ? <ProgressBar progress={node.progressPercent / 100} tone="primary" /> : null}
+      <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Effectiveness trend")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.trendCopy}>{t(model.effectivenessTrend.copy)}</Text>
+      {model.effectivenessTrend.available ? <TrendChart points={model.effectivenessTrend.points} /> : null}
+
+      <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Across this track")}</Text>
+      <View style={styles.trackEvidenceCard}>
+        {trackNodes.map((node, index) => (
+          <View key={node.id} style={[styles.trackEvidenceRow, index === trackNodes.length - 1 ? styles.trackEvidenceRowLast : null]} testID={runtimeSelectors.progress.node(node.id)}>
+            <View style={styles.trackEvidenceCopy}>
+              <Text maxFontSizeMultiplier={2} style={styles.trackEvidenceTitle}>{t(node.title)}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.trackEvidenceDetail}>{t(node.detail)}</Text>
             </View>
-            <Badge label={t(node.label)} tone={node.tone === "muted" ? "neutral" : node.tone} />
+            <Text maxFontSizeMultiplier={2} style={styles.trackEvidenceChevron}>›</Text>
           </View>
         ))}
-        {model.roadmapSummary.allNodes.length > model.roadmapSummary.nodes.length ? <Button onPress={() => setShowAllRoadmapNodes((current) => !current)} variant="ghost">{t(showAllRoadmapNodes ? "Show roadmap summary" : model.roadmapSummary.showAllActionLabel)}</Button> : null}
-        {model.priority.primaryAction && onProgressAction ? <Button onPress={() => onProgressAction(model.priority.primaryAction)} variant="ghost">{t(model.priority.primaryActionLabel)}</Button> : null}
-      </Card>
+      </View>
+      {model.trackNodes.length > trackNodes.length ? <Button onPress={() => setShowAllTrackNodes((current) => !current)} variant="ghost">{t(showAllTrackNodes ? "Show fewer track areas" : "View all track evidence")}</Button> : null}
+
+      <ActivitySection items={activity} onOpenActivity={onOpenActivity} trackFamily={trackFamily} />
+
       <View style={styles.diagnosticsCard}>
         <View style={styles.diagnosticsHeader}>
           <View style={styles.diagnosticsCopy}>
@@ -269,6 +309,43 @@ function AlgorithmsEvidenceSection({
       </View>
     </View>
   );
+}
+
+function TrendChart({ points }: Readonly<{
+  points: readonly number[];
+}>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
+  return (
+    <View accessible accessibilityLabel={`Effectiveness trend: ${points.join(", ")} percent`} style={styles.trendChart}>
+          <View style={styles.trendReferenceLineTop} />
+          <View style={styles.trendReferenceLineMiddle} />
+          <Svg height={130} viewBox="0 0 290 130" width="100%">
+            <Polyline fill="none" points={formatTrendPoints(points)} stroke="#1e293b" strokeWidth={2} />
+            {points.map((point, index) => {
+              const coordinate = trendPointCoordinate(point, index, points.length);
+              return <Circle key={`${point}-${index}`} cx={coordinate.x} cy={coordinate.y} fill="#34b564" r={3} />;
+            })}
+          </Svg>
+          <View style={styles.trendAxisLabels}>
+            <Text maxFontSizeMultiplier={2} style={styles.trendAxisLabel}>{t("Earlier")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.trendAxisLabel}>{t("Recent")}</Text>
+          </View>
+    </View>
+  );
+}
+
+function formatTrendPoints(points: readonly number[]): string {
+  return points.map((point, index) => {
+    const coordinate = trendPointCoordinate(point, index, points.length);
+    return `${coordinate.x},${coordinate.y}`;
+  }).join(" ");
+}
+
+function trendPointCoordinate(value: number, index: number, count: number): { x: number; y: number } {
+  const x = count <= 1 ? 145 : 8 + (index * 274) / (count - 1);
+  const y = 112 - (Math.max(0, Math.min(100, value)) * 88) / 100;
+  return { x, y };
 }
 
 function PerformanceEvidenceSection({ scores, trackFamily }: Readonly<{ scores: readonly { correct: number; detail?: string; id: string; label: string; percent: number; total: number }[]; trackFamily: string }>) {
@@ -339,6 +416,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   focusPercent: { color: palette.textPrimary, fontSize: 36, fontWeight: "700", lineHeight: 40 },
   focusEmpty: { ...typography.small, color: palette.textSecondary },
   focusActionLabel: { color: palette.primary, fontSize: 14, fontWeight: "600", lineHeight: 18 },
+  evidenceBuildingCard: { ...shadows.none, backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: 6, paddingHorizontal: spacing.lg, paddingVertical: 14 },
+  evidenceBuildingTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
+  evidenceBuildingDetail: { color: palette.textSecondary, fontSize: 13, lineHeight: 19 },
   attentionCard: { ...shadows.none, backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: 6, paddingHorizontal: spacing.lg, paddingVertical: 14 },
   emptyAttentionCard: { ...shadows.none, backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: 6, paddingHorizontal: spacing.lg, paddingVertical: 14 },
   attentionTitleRow: { alignItems: "center", flexDirection: "row", gap: 6 },
@@ -357,6 +437,19 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   diagnosticsSubtitle: { ...typography.caption, color: palette.textMuted },
   diagnosticsDetails: { borderColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, gap: spacing.sm, paddingTop: spacing.md },
   diagnosticsText: { ...typography.small, color: palette.textSecondary },
+  trackEvidenceCard: { backgroundColor: palette.surface, borderRadius: 14, overflow: "hidden" },
+  trackEvidenceRow: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: spacing.sm, minHeight: 72, paddingHorizontal: 14, paddingVertical: 12 },
+  trackEvidenceRowLast: { borderBottomWidth: 0 },
+  trackEvidenceCopy: { flex: 1, gap: 4, minWidth: 0 },
+  trackEvidenceTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
+  trackEvidenceDetail: { color: palette.textSecondary, fontSize: 12, lineHeight: 18 },
+  trackEvidenceChevron: { color: palette.primary, fontSize: 28, lineHeight: 34 },
+  trendCopy: { color: palette.primary, fontSize: 13, lineHeight: 18 },
+  trendChart: { backgroundColor: palette.surface, borderRadius: 12, minHeight: 130, overflow: "hidden", paddingHorizontal: 16, paddingTop: 8 },
+  trendReferenceLineTop: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, left: 40, position: "absolute", right: 16, top: 42 },
+  trendReferenceLineMiddle: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, left: 40, position: "absolute", right: 16, top: 86 },
+  trendAxisLabels: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 24, paddingBottom: 8 },
+  trendAxisLabel: { color: palette.primary, fontSize: 10, lineHeight: 12 },
   evidenceRow: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.sm, padding: spacing.lg },
   evidenceRowHeader: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   evidenceDetail: { ...typography.caption, color: palette.textSecondary },

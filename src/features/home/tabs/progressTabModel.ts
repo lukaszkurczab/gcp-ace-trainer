@@ -59,6 +59,37 @@ export type ProgressTabPerformanceScore = {
   total: number;
 };
 
+export type AlgorithmProgressEvidenceState = "no_evidence" | "building" | "established";
+
+export type AlgorithmProgressEvidenceSummary = {
+  buildingCopy?: string;
+  currentFocus: {
+    detail: string;
+    label: "No evidence yet" | "Building evidence" | "Recent effectiveness";
+    percent?: number;
+    responseCount: number;
+    state: AlgorithmProgressEvidenceState;
+  };
+  state: AlgorithmProgressEvidenceState;
+};
+
+export type AlgorithmProgressEffectivenessTrend = {
+  available: boolean;
+  copy: string;
+  points: readonly number[];
+  responseCount: number;
+};
+
+export type AlgorithmProgressTrackNode = {
+  detail: string;
+  effectivenessPercent?: number;
+  id: string;
+  isFocus: boolean;
+  responseCount: number;
+  state: AlgorithmProgressEvidenceState;
+  title: string;
+};
+
 export type LearningPriorityModel = {
   detail: string;
   label: string;
@@ -124,9 +155,12 @@ export type ProgressDiagnosticsModel = {
 export type AlgorithmsProgressScreenModel = {
   currentFocus: CurrentFocusModel;
   diagnostics: ProgressDiagnosticsModel;
+  evidenceSummary: AlgorithmProgressEvidenceSummary;
+  effectivenessTrend: AlgorithmProgressEffectivenessTrend;
   nextTopic: AvailableTopicModel | null;
   priority: LearningPriorityModel;
   roadmapSummary: RoadmapSummaryModel;
+  trackNodes: readonly AlgorithmProgressTrackNode[];
 };
 
 export type ProgressTabModel = {
@@ -350,6 +384,7 @@ function buildAlgorithmsProgressTabModel(
   const dueReviewCount = dueReviewItems.length;
   const currentAttempts = trainingAttempts.filter((attempt) =>
     attempt.trackId === CODING_INTERVIEW_TRACK_ID &&
+    attempt.item.trackId === CODING_INTERVIEW_TRACK_ID &&
     attempt.item.contentVersion === packageResolution.package.contentVersion &&
     contentPackagePinsEqual(attempt.item.packagePin, packageResolution.package.packagePin) &&
     packageItems.some((item) => item.id === attempt.item.itemId),
@@ -360,7 +395,7 @@ function buildAlgorithmsProgressTabModel(
     packageContentVersion: packageResolution.package.contentVersion,
     packageItems,
     packagePin: packageResolution.package.packagePin,
-    trainingAttempts,
+    trainingAttempts: currentAttempts,
   });
 
   return {
@@ -530,6 +565,12 @@ function buildAlgorithmsProgressScreenModel(input: {
       nodes: buildRoadmapSummary(input.facts.nodeProgress, focusIndex),
       showAllActionLabel: "View all roadmap nodes",
     },
+    ...buildAlgorithmEvidenceModel({
+      facts: input.facts,
+      focusNode,
+      packageItems: input.packageItems,
+      trainingAttempts: input.trainingAttempts,
+    }),
     diagnostics: {
       collapsedByDefault: true,
       hideActionLabel: "Hide details",
@@ -548,6 +589,138 @@ function buildAlgorithmsProgressScreenModel(input: {
       title: "Why this recommendation?",
     },
   };
+}
+
+const ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW = 20;
+const ALGORITHM_NODE_EFFECTIVENESS_MIN_RESPONSES = 10;
+const ALGORITHM_TREND_MIN_RESPONSES = 20;
+const ALGORITHM_TREND_WINDOW = 40;
+const ALGORITHM_TREND_POINT_COUNT = 4;
+
+function buildAlgorithmEvidenceModel(input: {
+  facts: ReturnType<typeof buildAlgorithmProgressFacts>;
+  focusNode: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number];
+  packageItems: readonly AlgorithmQuestion[];
+  trainingAttempts: readonly TrainingAttempt[];
+}): Pick<AlgorithmsProgressScreenModel, "effectivenessTrend" | "evidenceSummary" | "trackNodes"> {
+  const attemptsByNode = groupScoredAlgorithmAttemptsByNode(input.trainingAttempts, input.packageItems);
+  const focusAttempts = attemptsByNode.get(input.focusNode.nodeId) ?? [];
+  const focusWindow = takeLatestAttempts(focusAttempts, ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW);
+  const focusState = getEvidenceState(focusAttempts.length, ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW);
+  const focusPercent = focusState === "established" ? calculateEffectiveness(focusWindow) : undefined;
+  const scoredAttempts = sortAttemptsChronologically([...attemptsByNode.values()].flat());
+  const trendWindow = takeLatestAttempts(scoredAttempts, ALGORITHM_TREND_WINDOW);
+  const trendAvailable = scoredAttempts.length >= ALGORITHM_TREND_MIN_RESPONSES;
+
+  return {
+    evidenceSummary: {
+      ...(focusState === "building"
+        ? { buildingCopy: "More practice is needed before recurring patterns can be identified." }
+        : {}),
+      currentFocus: {
+        detail: focusState === "established"
+          ? `Last ${focusWindow.length} responses`
+          : focusState === "building"
+            ? `${focusAttempts.length} scored responses`
+            : "No evidence yet",
+        label: focusState === "established"
+          ? "Recent effectiveness"
+          : focusState === "building"
+            ? "Building evidence"
+            : "No evidence yet",
+        ...(focusPercent === undefined ? {} : { percent: focusPercent }),
+        responseCount: focusState === "established" ? focusWindow.length : focusAttempts.length,
+        state: focusState,
+      },
+      state: focusState,
+    },
+    effectivenessTrend: {
+      available: trendAvailable,
+      copy: trendAvailable
+        ? `Last ${trendWindow.length} scored responses`
+        : "More scored responses are needed before a trend can be shown.",
+      points: trendAvailable ? buildEffectivenessTrendPoints(trendWindow) : [],
+      responseCount: trendAvailable ? trendWindow.length : scoredAttempts.length,
+    },
+    trackNodes: input.facts.nodeProgress.map((node) => {
+      const nodeAttempts = attemptsByNode.get(node.nodeId) ?? [];
+      const nodeState = getEvidenceState(nodeAttempts.length, ALGORITHM_NODE_EFFECTIVENESS_MIN_RESPONSES);
+      const nodeWindow = takeLatestAttempts(nodeAttempts, ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW);
+      const effectivenessPercent = nodeState === "established" ? calculateEffectiveness(nodeWindow) : undefined;
+      return {
+        detail: formatTrackNodeEvidence(nodeState, nodeAttempts.length, effectivenessPercent, nodeWindow.length),
+        ...(effectivenessPercent === undefined ? {} : { effectivenessPercent }),
+        id: node.nodeId,
+        isFocus: node.nodeId === input.focusNode.nodeId,
+        responseCount: nodeAttempts.length,
+        state: nodeState,
+        title: node.label,
+      };
+    }),
+  };
+}
+
+function groupScoredAlgorithmAttemptsByNode(
+  attempts: readonly TrainingAttempt[],
+  packageItems: readonly AlgorithmQuestion[],
+): Map<string, TrainingAttempt[]> {
+  const itemById = new Map(packageItems.map((item) => [item.id, item]));
+  const attemptsByNode = new Map<string, TrainingAttempt[]>();
+
+  for (const attempt of sortAttemptsChronologically(attempts)) {
+    if (attempt.result.maxPoints <= 0) continue;
+    const nodeId = itemById.get(attempt.item.itemId)?.taxonomy.roadmapNodeId;
+    if (!nodeId) continue;
+    const nodeAttempts = attemptsByNode.get(nodeId) ?? [];
+    nodeAttempts.push(attempt);
+    attemptsByNode.set(nodeId, nodeAttempts);
+  }
+
+  return attemptsByNode;
+}
+
+function sortAttemptsChronologically(attempts: readonly TrainingAttempt[]): TrainingAttempt[] {
+  return [...attempts].sort((left, right) =>
+    left.answeredAt.localeCompare(right.answeredAt) || left.id.localeCompare(right.id),
+  );
+}
+
+function takeLatestAttempts(attempts: readonly TrainingAttempt[], count: number): TrainingAttempt[] {
+  return sortAttemptsChronologically(attempts).slice(-count);
+}
+
+function getEvidenceState(
+  responseCount: number,
+  establishedResponseCount: number,
+): AlgorithmProgressEvidenceState {
+  if (responseCount === 0) return "no_evidence";
+  return responseCount >= establishedResponseCount ? "established" : "building";
+}
+
+function calculateEffectiveness(attempts: readonly TrainingAttempt[]): number | undefined {
+  const maxPoints = attempts.reduce((total, attempt) => total + attempt.result.maxPoints, 0);
+  if (maxPoints <= 0) return undefined;
+  const earnedPoints = attempts.reduce((total, attempt) => total + attempt.result.earnedPoints, 0);
+  return Math.round((earnedPoints / maxPoints) * 100);
+}
+
+function buildEffectivenessTrendPoints(attempts: readonly TrainingAttempt[]): number[] {
+  return Array.from({ length: ALGORITHM_TREND_POINT_COUNT }, (_, index) => {
+    const start = Math.floor((index * attempts.length) / ALGORITHM_TREND_POINT_COUNT);
+    const end = Math.floor(((index + 1) * attempts.length) / ALGORITHM_TREND_POINT_COUNT);
+    return calculateEffectiveness(attempts.slice(start, end)) ?? 0;
+  });
+}
+
+function formatTrackNodeEvidence(
+  state: AlgorithmProgressEvidenceState,
+  responseCount: number,
+  effectivenessPercent: number | undefined,
+  windowCount: number,
+): string {
+  if (state === "no_evidence") return "No evidence yet";
+  if (state === "building") return `Building evidence · ${responseCount} responses`;
+  return `${effectivenessPercent ?? 0}% · ${windowCount === ALGORITHM_FOCUS_EFFECTIVENESS_WINDOW ? `Last ${windowCount} responses` : `${windowCount} responses`}`;
 }
 
 function buildLearningPriority(input: {

@@ -62,6 +62,20 @@ function algorithmAttempt(
   };
 }
 
+function repeatedAlgorithmAttempts(count: number, result: "correct" | "incorrect" = "correct"): TrainingAttempt[] {
+  return Array.from({ length: count }, (_, index) => {
+    const timestamp = new Date(Date.parse(NOW) + index * 60_000).toISOString();
+    const attempt = algorithmAttempt(result);
+    return {
+      ...attempt,
+      answeredAt: timestamp,
+      committedAt: timestamp,
+      id: `attempt-${result}-${index}`,
+      occurrenceId: `occurrence-${index}`,
+    };
+  });
+}
+
 function dueAlgorithmReview(
   attempt: TrainingAttempt,
   options: Readonly<{ id?: string; persistent?: boolean }> = {},
@@ -353,4 +367,52 @@ test("Algorithms Progress keeps due review copy scoped to the bundled package Fr
   assert.match(model.priority.detail, /2 items are due from earlier .* practice/i);
   assert.equal(first.taxonomy.roadmapNodeId, second.taxonomy.roadmapNodeId);
   assert.equal(model.roadmapSummary.allNodes.length, 1);
+});
+
+test("Algorithms Progress maps Figma evidence states to recorded attempts only", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const empty = buildProgressTabModel({
+    activeTrackId: "coding-interview-dsa-problem-solving",
+    analytics: buildAnalyticsData([], []),
+    attempts: [],
+    practiceHistory: [],
+    trainingAttempts: [],
+  }).algorithmsProgress;
+
+  assert.ok(empty);
+  assert.equal(empty.evidenceSummary.state, "no_evidence");
+  assert.equal(empty.evidenceSummary.currentFocus.percent, undefined);
+  assert.equal(empty.effectivenessTrend.available, false);
+  assert.deepEqual(empty.effectivenessTrend.points, []);
+
+  const sparse = buildProgressTabModel({
+    activeTrackId: "coding-interview-dsa-problem-solving",
+    analytics: buildAnalyticsData([], []),
+    attempts: [],
+    practiceHistory: [],
+    trainingAttempts: repeatedAlgorithmAttempts(5),
+  }).algorithmsProgress;
+
+  assert.ok(sparse);
+  assert.equal(sparse.evidenceSummary.state, "building");
+  assert.equal(sparse.evidenceSummary.currentFocus.percent, undefined);
+  assert.equal(sparse.evidenceSummary.buildingCopy, "More practice is needed before recurring patterns can be identified.");
+  assert.equal(sparse.effectivenessTrend.available, false);
+  assert.equal(sparse.trackNodes.find((node) => node.isFocus)?.detail, "Building evidence · 5 responses");
+
+  const established = buildProgressTabModel({
+    activeTrackId: "coding-interview-dsa-problem-solving",
+    analytics: buildAnalyticsData([], []),
+    attempts: [],
+    practiceHistory: [],
+    trainingAttempts: repeatedAlgorithmAttempts(20),
+  }).algorithmsProgress;
+
+  assert.ok(established);
+  assert.equal(established.evidenceSummary.state, "established");
+  assert.equal(established.evidenceSummary.currentFocus.percent, 100);
+  assert.equal(established.evidenceSummary.currentFocus.detail, "Last 20 responses");
+  assert.equal(established.effectivenessTrend.available, true);
+  assert.deepEqual(established.effectivenessTrend.points, [100, 100, 100, 100]);
+  assert.equal(established.trackNodes.find((node) => node.isFocus)?.detail, "100% · Last 20 responses");
 });
