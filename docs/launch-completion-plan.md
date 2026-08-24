@@ -55,9 +55,9 @@ Both refs are independently fetched and verified at each handoff.
 | 2. Figma/UI reconciliation | partial | Existing repository-owned implementation and visual evidence exist; remaining semantic conflicts or owner approvals remain explicit. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, records bounded explicit outcomes, and is pushed on content `master` at `73e7867`; content suite is 146/146. |
 | 4. Eight-track content audit | complete | Readiness report `32e2003df80b8b62bce17c76c29465a452910ca8027ec707faaa6a8bdcf93a5a` verifies all eight structural validators pass; the report was rechecked after content head `631b278`. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
-| 5. Account, identity, sync, adoption, deletion | partial | Local and server foundations exist; app tests/typecheck pass, but release-compatible provider, failure, deletion and cross-device evidence remains to be closed. |
-| 6. Commercial entitlement | planned | SKU-neutral fixed/recurring entitlement chain is implemented and verified without inventing store/provider evidence. |
-| 7. Provider, privacy, security, operations | planned | External configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery gates are evidenced. |
+| 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
+| 6. Commercial entitlement | planned | No provider-neutral entitlement runtime is currently composed. The fixed/recurring chain remains an implementation task after the provider/backend input contract exists; no store/provider evidence is claimed. |
+| 7. Provider, privacy, security, operations | planned | Production configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery evidence remains absent and requires the corresponding external gates. |
 | 8. QA, signing, stores, GO/NO-GO | partial | Owner-owned EAS/signing hardening passes the five focused local tests; actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable external gates. |
 
 ## Execution stages
@@ -71,9 +71,9 @@ tests, documentation references, and both clean/pushed heads.
 
 The independent QA of the owner-owned EAS/signing hardening is complete locally
 with gaps: focused invariants pass, but no delegated report or EAS artifact exists.
-The next non-blocked internal slice is account/entitlement hardening only if it
-can remain provider-neutral; cleanup remains a mandatory gate before each later
-release slice.
+No further account/entitlement implementation is safe at the current boundary
+without inventing the missing provider/backend input contract. Cleanup remains a
+mandatory gate before each later release slice.
 
 ### 1. Evidence and artifact cleanup — mandatory
 
@@ -156,17 +156,21 @@ source-only report, and the required external release evidence is absent.
 Close the guest-first adoption preview, deterministic reconciliation, identity
 provider/recovery, local durability, bounded sync, conflict, sign-out, deletion,
 retention, and no-resurrection paths. Every unavailable provider or configuration
-state is visible and fail-closed. Verify with focused tests and release-compatible
-flows; no production provider evidence is fabricated.
+state is visible and fail-closed. The current build has the explicit unavailable
+state and local durability boundary, but the provider-composed adoption/sync/
+deletion path is not present. Continue only when its real provider/backend
+contract is available; no production provider evidence is fabricated.
 
 ### 6. Commercial entitlement
 
 Implement and verify one account-bound entitlement independent of storefront SKU
-shape. Support fixed-duration and recurring access through the same
-store → RevenueCat → backend projection → bounded device cache chain. Keep exact
-SKU names, prices, promotions, product availability, and provider configuration at
-the owner/provider gate. Verify Free, purchase, restore, cross-platform, offline
-grace, downgrade, deletion/billing independence, and package authorization.
+shape once the provider/backend input contract is available. Support fixed-duration
+and recurring access through the same store → RevenueCat → backend projection →
+bounded device cache chain. Keep exact SKU names, prices, promotions, product
+availability, and provider configuration at the owner/provider gate. Verify Free,
+purchase, restore, cross-platform, offline grace, downgrade, deletion/billing
+independence, and package authorization. Do not create speculative adapters or
+placeholder entitlement code before that boundary exists.
 
 ### 7. Provider, privacy, security, operations
 
