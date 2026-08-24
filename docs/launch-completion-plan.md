@@ -16,7 +16,7 @@ _Audyt: 2026-08-23. To jest jedyny aktywny dokument kolejności prac i statusu. 
 
 | Obszar          | Fakt                                                                                                                                                                                                                                                                                                                                                        | Dowód i granica                                                                                                                                                                                                                                                     |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App             | app source baseline: `c327b58`; `origin/main` nie został zmieniony w tym tasku                                                                                                                                                                                                                                                                               | Current local `npm run qa:static` passed recovery inventory 287/116/563, 572/572 tests, typecheck, content-boundary, and runtime-privacy-boundary. Historical remote CI evidence is not current-head proof. |
+| App             | app source baseline: `1c9457b`; `origin/main` nie został zmieniony w tym tasku                                                                                                                                                                                                                                                                               | Current local `npm run qa:static` passed recovery inventory 287/116/563, 572/572 tests, typecheck, content-boundary, and runtime-privacy-boundary. Historical remote CI evidence is not current-head proof. |
 | Content         | master i origin/master: 12b99c78e03ec6c58964d7f83d11d1b50af08467                                                                                                                                                                                                                                                                                            | Exact-SHA [CI 32388398769](https://github.com/lukaszkurczab/patternly-content/actions/runs/32388398769) success; lokalnie zmiana GOV-01 ma 143/143 testów, authoring 10/10 i 838 source JSON. Exact-SHA dla tej zmiany pending.                                     |
 | Worktree        | App przed audytem miał user change .gitignore dodający .maestro.                                                                                                                                                                                                                                                                                            | Nie przypisywać go temu planowi. Plan i oba AGENTS.md są lokalnymi zmianami audytu.                                                                                                                                                                                 |
 | Release gate    | `npm run release:gate` pozostaje `not_ready`.                                                                                                                                                                                                                                                                                                               | Lock i lokalne artefakty obejmują 8 tracków; otwarte są dirty app checkout, 6 external evidence, 8 human content approvals, 8 publishing admissions i 8 runtime admissions. `physical-device-matrix` jest opcjonalny i nie blokuje launchu.                         |
@@ -24,7 +24,7 @@ _Audyt: 2026-08-23. To jest jedyny aktywny dokument kolejności prac i statusu. 
 | Platform/EAS    | Expo 57.0.11 / React Native 0.86.2; iOS 16.4/iPhone-only; Android min 28, target/compile 36; portrait; Light/Dark/System.                                                                                                                                                                                                                                   | Production EAS ma requireCommit, autoIncrement i fail-closed signing. Plugin Androida wymaga czterech PATTERNLY*ANDROID_RELEASE*\*; credentials/project ID nie istnieją w repo.                                                                                     |
 | AWS T1 audit    | 2 568 pozycji, 137 source JSON, 21 node; source audit przechodzi.                                                                                                                                                                                                                                                                                           | `audit:aws-workbook-source` przechodzi, ale `validate:track` kończy się SOURCE_COMMIT_UNAVAILABLE; wykryto także rozjazd wersji envelope oraz tylko 4 itemy Free-node i 20 itemów diagnostic-eligible.                                                              |
 | Figma authority | Current connector session `ksxw21cw` zweryfikował file/page/library oraz Practice Hub `55:993`, Practice Setup `55:2172`, Practice preparing `68:549`, Practice Question Shell `68:569` / `68:603` / `68:637` / `68:719` / `68:844`, Home `55:445`, Progress `842:9563` / `842:10949`, Goal & cadence `842:11569` / `842:11693`, Activity `842:11192` / `842:11410` / `842:11466`, Select Track `42:422` / `42:478` / `42:539` / `42:604` / `42:642`, Answer Review `81:538` i shared Button `141:817`; design context i screenshoty są dostępne.                                                                                                                                                                                                                        | [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md). Dostęp do connectora nie jest owner approval ani full parity; physical-device evidence jest opcjonalne i nie blokuje launchu.                                                              |
-| Maestro         | Historyczne capture'y z SHA `19b6601` zostały wykonane na iOS 18.6 simulator; Debug visual-shell przeszedł 6/6 Dark i 6/6 Light, a embedded Release-compatible flow również 6/6 Dark i 6/6 Light. Current code SHA `c327b58` nie ma świeżego capture'u. Read-only discovery znalazł sparowany iPhone 11, ale jest zablokowany (`kAMDMobileImageMounterDeviceLocked`), więc DDI services są niedostępne; Android nie ma urządzenia. | Historyczne capture'y mają Expo overlay; simulator nie jest signed distribution, a Figma, store/provider i owner approval nadal brak. Fizyczne urządzenie nie jest wymagane do tego launchu. [QA-02 report](reports/launch-qa-02-current-head-ios-simulator-2026-08-21.md) |
+| Maestro         | Historyczne capture'y z SHA `19b6601` zostały wykonane na iOS 18.6 simulator; Debug visual-shell przeszedł 6/6 Dark i 6/6 Light, a embedded Release-compatible flow również 6/6 Dark i 6/6 Light. Current code SHA `1c9457b` nie ma świeżego capture'u. Read-only discovery znalazł sparowany iPhone 11, ale jest zablokowany (`kAMDMobileImageMounterDeviceLocked`), więc DDI services są niedostępne; Android nie ma urządzenia. | Historyczne capture'y mają Expo overlay; simulator nie jest signed distribution, a Figma, store/provider i owner approval nadal brak. Fizyczne urządzenie nie jest wymagane do tego launchu. [QA-02 report](reports/launch-qa-02-current-head-ios-simulator-2026-08-21.md) |
 
 ### Confirmed facts vs assumptions
 
@@ -865,6 +865,64 @@ Focused Home/visual-shell checks przeszły `15/15`, a bieżące
 `npm run qa:static` przeszło recovery `287/116/563`, `572/572` testów,
 TypeScript, content-boundary i runtime-privacy-boundary. Capture Light/Dark
 na current head oraz Product Owner approval nadal są otwarte.
+
+## Addendum — DES-005-C: Practice expanded-details wrapper
+
+Audyt bieżącego kanału `ksxw21cw` na Figma `68:719` oraz source SHA
+`c327b58` rozdzielił dwa fakty, które wcześniej były zapisane zbyt szeroko.
+`DetailsDisclosure` ma już canonicalny wiersz 48 px, padding 4/12 px,
+chevron 18 px i poprawny `accessibilityState.expanded`. Natomiast
+`PracticeFeedbackBlock` nie ma zewnętrznego elevated panelu obejmującego
+disclosure oraz rozwinięty dokument: obecny `container` układa reason card,
+disclosure i dokument wyłącznie przez gap 12 px. Figma pokazuje reason card
+osobno oraz panel details z border 1 px, radius 12 px, paddingiem 16 px i
+wewnętrznym gapem 12 px.
+
+Pierwszy następny task implementacyjny to `DES-005-C — Practice
+expanded-details wrapper`:
+
+- zmienić wyłącznie canonical owner `PracticeFeedbackBlock`, zachowując
+  `DetailsDisclosure` i `AlgorithmFeedbackDocumentBlock` jako jedyne istniejące
+  ownery tych fragmentów;
+- opakować disclosure i opcjonalny dokument w jeden panel oparty o istniejące
+  tokeny design systemu (`surface/elevated`, border, radius, spacing), bez
+  surowych kolorów Figma;
+- zostawić reason panel poza tym wrapperem oraz zachować feedback, scoring,
+  copy, route, lifecycle, persistence i accessibility bez zmian;
+- zweryfikować collapsed/expanded, Light/Dark, 200% text i brak clippingu;
+- uruchomić focused Practice/session/accessibility/visual checks, typecheck,
+  `git diff --check` i pełne `npm run qa:static`.
+
+Nie implementować Figma-only komendy, nowego result labela, drugiego renderera
+details ani alternatywnego stanu. Jeśli collapsed-state lub mapowanie panelu
+na token nie wynika z bieżącej authority, zatrzymać zmianę i zapisać decyzję,
+zamiast dopowiadać semantykę. Runtime Light/Dark capture pozostaje osobnym
+blocking evidence gate z powodu niedostępnego Maestro/CoreSimulator.
+
+Ten addendum jest dokumentacyjny; w tej pętli nie zmieniono kodu produkcyjnego.
+
+## Addendum — DES-005-C implementation convergence
+
+Commit `1c9457b` domyka źródłową geometrię Practice expanded-details:
+collapsed `Details` pozostaje samodzielnym wierszem 48 px, a po rozwinięciu
+disclosure i rich document są w jednym panelu opartym o istniejące tokeny
+`elevatedSurface`, `border`, `radius.lg`, `spacing.lg` i `spacing.md`.
+Reason card pozostaje poza wrapperem. Nie dodano raw Figma colors, drugiego
+renderera ani zmian feedbacku, scoringu, route, lifecycle, persistence lub
+komend.
+
+Pozostaje jawny konflikt stanów: Figma `68:637` (immediate feedback default)
+nie pokazuje wiersza Details, natomiast kanoniczny kontrakt after-answer oraz
+istniejące M1/M2 runtime selectors wymagają osiągalnego rich feedback details.
+Nie usunięto tej ścieżki po cichu. Przed podniesieniem statusu ponad `partial`
+właściciel musi rozstrzygnąć, czy `68:637` reprezentuje wariant bez disclosure,
+czy referencja jest niepełna względem pełnego after-answer flow.
+
+Focused Practice/session/accessibility i M1/M2 checks przeszły `23/23`,
+`npm run typecheck` oraz pełne `npm run qa:static` przeszły: recovery
+`287/116/563`, `572/572` testów, TypeScript, content-boundary i
+runtime-privacy-boundary. Runtime Light/Dark capture oraz Product Owner
+approval nadal są otwarte.
 
 ## 8. Kryterium końcowe
 

@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `c327b58`
+Current source SHA at packet update: `1c9457b`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -95,13 +95,13 @@ Only the repository plan statuses are used below.
 |---|---|---|
 | Canonical route graph and screen owners | `done` | `RootNavigator` has one owner for Home, Activity, Settings, Practice Hub, Practice Setup, active Practice, summaries, simulation, and review. Source ownership and route tests pass. This proves architecture, not pixel parity. |
 | Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commits `7e9b200`, `e257af4`, `2eb6c65`, `992d5bb`, and `f3afd92` align the shared Button state matrix, Bottom Navigation separator, Screen Header context typography, Screen Header base geometry, and Screen Shell default spacing to Figma `141:817`, `140:875`, `140:881`, and `830:7457`; current slices still require runtime comparison across all states and themes. |
-| Home, Progress, and Activity source slices | `partial` | Commits through `c327b58` align documented source geometry and typography against live nodes, including the Home recent-activity single row, Progress 16 px content inset, Progress no-evidence state geometry, Activity and Goal Glow-UL variants, and exact 40 px filtered-empty inset. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
+| Home, Progress, and Activity source slices | `partial` | Commits through `1c9457b` align documented source geometry and typography against live nodes, including the Home recent-activity single row, Progress 16 px content inset, Progress no-evidence state geometry, Activity and Goal Glow-UL variants, and exact 40 px filtered-empty inset. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract, `6f8b0c6` aligns the Coding row icon container/icon/chevron geometry from `232:1716`, and `a6d05c6` aligns the section-label inset/typography and removes the fixture-only hero-action chevron. The current source does not render the Figma fixture's `Independent Practice` / `Coding Interview` rows; that fixture-versus-contract discrepancy is recorded separately, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
 | Current Practice preparing-state visual parity | `partial` | `0a7e8c3` reuses the canonical async-state owner for the preparing card, status row, typography, spacer, and item terminology from `68:549`; the Figma-only `Leave practice` command remains unresolved because the preparing phase has no safe lifecycle/command owner. Fresh runtime pixel comparison remains blocked. |
 | Current Practice Question Shell/footer visual parity | `partial` | `86e32d9` adds a Practice-only `session` footer variant with 228 px minimum height, bottom alignment, and 8 px action gap from `68:569`/`68:603`; `7e9b200` aligns the shared Button pressed/disabled state matrix from `141:817`. Simulation keeps its existing footer owner. Fresh runtime pixel comparison remains blocked. |
-| Current Practice feedback surface parity | `partial` | `0341424` removes the redundant visible result label after revalidation of `68:637`/`68:719`/`68:844`; `536b19b` aligns `REASON` to 12/16 and rich-details body text to 13/20. Correctness remains expressed by the canonical answer-option state and reason/details surfaces, with the runtime result selector kept on the visible reason panel. Expanded-details geometry and fresh runtime pixel comparison remain open. |
+| Current Practice feedback surface parity | `partial` | `0341424` removes the redundant visible result label; `536b19b` aligns `REASON` to 12/16 and rich-details body text to 13/20; `1c9457b` maps collapsed Details to the standalone row and expanded Details to the Figma outer panel. The runtime result selector remains on the visible reason panel. Figma `68:637` does not show a Details row in its immediate-feedback default while the canonical after-answer contract and existing runtime selectors still expose it, so state binding remains an explicit conflict; fresh runtime pixel comparison remains open. |
 | Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
 | Runtime screenshot and pixel evidence | `blocking` | Existing captures prove selected previous slices only. Current Activity-route capture and several same-head state comparisons remain unverified because `maestro` is unavailable and CoreSimulatorService refused the simulator connection. |
@@ -1519,3 +1519,81 @@ Focused Home/visual-shell checks passed `15/15`; current local
 TypeScript, content-boundary, and runtime-privacy-boundary. Runtime Light/Dark
 capture and Product Owner approval remain open; this addendum does not claim
 99% parity.
+
+## Addendum — Practice expanded-details geometry audit and implementation packet
+
+The current connector channel `ksxw21cw` was revalidated against live Figma
+node `68:719` (`REF-06A · Details expanded`) using both design context and a
+fresh screenshot. The reference has two distinct surfaces: the existing
+reason card remains separate, while the disclosure and its expanded document
+content sit inside one outer elevated panel. That outer panel uses the
+repository-equivalent geometry of `surface/elevated`, a 1 px border, 12 px
+radius, 16 px padding, and a 12 px internal gap. The disclosure row itself is
+48 px high with 4 px horizontal and 12 px vertical padding and an 18 px
+chevron.
+
+Repository inspection at source SHA `c327b58` confirms that
+`src/components/DetailsDisclosure.tsx` already owns the disclosure row and its
+accessibility state correctly. The remaining source gap is in
+`src/features/practice/PracticeFeedbackBlock.tsx`: its `container` currently
+groups reason, disclosure, and expanded document with only a 12 px gap, so it
+does not express the Figma outer details panel. The reason card must remain
+outside that new grouping. `AlgorithmFeedbackDocumentBlock` already owns the
+13/20 rich-details typography recorded in the previous addendum and should not
+be duplicated or restructured.
+
+### Next implementation-ready task: `DES-005-C — Practice expanded-details wrapper`
+
+| Field | Contract |
+|---|---|
+| Objective | Make the canonical Practice feedback owner express the expanded-details grouping from Figma `68:719`, without changing feedback, scoring, navigation, lifecycle, content, or accessibility semantics. |
+| Scope | `PracticeFeedbackBlock`; existing shared tokens; focused Practice/session/accessibility/visual tests; this report and the launch plan. Touch `DetailsDisclosure` only if verification proves a shared row correction is required. |
+| Required geometry | Keep the reason panel separate. Wrap the disclosure and optional document in one owner-bound elevated panel using existing theme tokens for surface, border, radius, padding, and gap. Preserve disclosure row min-height 48, horizontal padding 4, vertical padding 12, and icon size 18. Do not add raw Figma color literals. |
+| Non-goals | No new result label, feedback copy, content schema, scoring rule, route, command, session lifecycle branch, persistence path, or Figma-only action. Do not add a second disclosure/document renderer. |
+| Acceptance | Expanded and collapsed states use one canonical visual owner; `DetailsDisclosure` retains `accessibilityState.expanded`, labels, role, and test selector; reason/result selectors remain reachable; rich content grows without clipping at 200% text; Light/Dark styles resolve through the existing design-system tokens. |
+| Verification | Focused Practice/session/accessibility and visual-shell tests, `npm run typecheck`, `git diff --check`, then full `npm run qa:static`. Runtime Light/Dark screenshot comparison remains a separate evidence gate until CoreSimulator/Maestro is restored. |
+| Stop conditions | If the outer panel's collapsed-state behavior or token mapping is not confirmed by the current Figma authority, stop at source evidence and record the unresolved design decision; do not invent a variant. |
+
+### Working-docs status after this audit
+
+| Work item | Status | Evidence / boundary |
+|---|---|---|
+| Brief, source SHA, current channel, and Figma authority recorded | `done` | Source `c327b58`; connector `ksxw21cw`; file `kZXD7cNBKUU7x0ceTHPFpR`; page `0:1`; library `118:738`; node `68:719` revalidated. |
+| Practice question/feedback source ownership | `partial` | `PracticeSessionSurface` → `PracticeFeedbackBlock` → `DetailsDisclosure` / `AlgorithmFeedbackDocumentBlock` is canonical and test-covered, but the outer expanded-details grouping is not represented in source. |
+| Next implementation slice | `planned` | `DES-005-C` above; smallest coherent change is the owner-local wrapper plus focused verification. |
+| Current-head runtime visual proof | `blocking` | `maestro` is unavailable and CoreSimulatorService refused the local simulator connection; no fresh Light/Dark pixel claim is made. |
+| Product Owner approval for full parity scope | `blocking` | `ksxw21cw` is connector context, not approval evidence. |
+
+This audit is documentation-only. No production source, test, route, or
+content file was changed in this pass. The previous statement that expanded
+details were source-level aligned is narrowed: typography and disclosure-row
+geometry are aligned at source level, while the outer grouping remains an
+implementation gap and the final parity status remains `PARTIAL`.
+
+## Addendum — DES-005-C implementation convergence
+
+Commit `1c9457b` implements the verified geometry slice in the canonical
+`PracticeFeedbackBlock` owner. The collapsed disclosure remains a standalone
+48 px row, matching Figma `68:844`; when opened, the same disclosure and the
+rich document are grouped inside one elevated panel with the existing
+`elevatedSurface`, `border`, `radius.lg`, `spacing.lg`, and `spacing.md`
+tokens, matching the structure of Figma `68:719`. The reason card remains
+outside that wrapper. No raw Figma color, second renderer, result label,
+feedback copy, scoring, route, lifecycle, persistence, or command was added.
+
+The current Figma evidence also records an unresolved state conflict:
+`68:637` (immediate feedback default) contains the reason card and footer but
+no Details row, while the repository's canonical after-answer contract and
+existing M1/M2 audit flows require a reachable Details selector for rich
+feedback. This implementation therefore corrects only the verified geometry
+and does not silently remove or hide the contract-required interaction.
+Resolve this as a Figma/product-state decision before promoting the matrix row
+beyond `PARTIAL`.
+
+Focused Practice/session/accessibility and M1/M2 selector checks passed
+`23/23`; `npm run typecheck` passed; full `npm run qa:static` passed with
+recovery inventory `287/116/563`, `572/572` tests, content boundary, and
+runtime privacy boundary. Current-head Light/Dark capture remains unavailable
+because Maestro is absent and CoreSimulatorService refused the simulator
+connection. Product Owner approval and pixel proof remain open; this does not
+claim 99% parity.
