@@ -20,6 +20,8 @@ type ChoiceRowProps = {
 export function ChoiceRow({ accessibilityLabel, appearancePreview, density = "comfortable", detail, disabled = false, onPress, selected, testID, title }: ChoiceRowProps) {
   const styles = useThemedStyles(createStyles);
   const compact = density === "compact";
+  const radio = <View style={[styles.radio, selected ? styles.radioSelected : styles.radioUnselected]}>{selected ? <View style={styles.dot} /> : null}</View>;
+  const content = <View style={styles.content}><Text maxFontSizeMultiplier={2} style={[styles.title, appearancePreview ? styles.appearanceTitle : null]}>{title}</Text>{!compact ? <Text maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text> : null}</View>;
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
@@ -31,13 +33,8 @@ export function ChoiceRow({ accessibilityLabel, appearancePreview, density = "co
       testID={testID}
     >
       {appearancePreview ? <AppearancePreview mode={appearancePreview} /> : null}
-      <View style={styles.content}>
-        <Text maxFontSizeMultiplier={2} style={[styles.title, appearancePreview ? styles.appearanceTitle : null]}>{title}</Text>
-        {!compact ? <Text maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text> : null}
-      </View>
-      <View style={[styles.radio, selected ? styles.radioSelected : styles.radioUnselected]}>
-        {selected ? <View style={styles.dot} /> : null}
-      </View>
+      {appearancePreview ? content : radio}
+      {appearancePreview ? radio : content}
     </Pressable>
   );
 }
