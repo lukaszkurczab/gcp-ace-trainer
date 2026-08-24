@@ -1992,3 +1992,33 @@ capture gap, but it does not promote any matrix row to `MATCHED`: normalized
 Figma-to-screenshot comparison, all remaining reachable interaction/error
 states, `DESIGN_MISSING`/`CANONICAL_CONFLICT` owner decisions, and Product
 Owner approval remain open.
+
+## Addendum — Simulation confirmation chrome convergence after `239e167`
+
+The current Figma channel `ksxw21cw` supplied confirmation-state context for
+`74:968` (Finish confirmation) and `74:992` (Pause or end), with active and
+recovery comparison context from `74:834` and `74:879`. The frozen simulation
+states use the same question-shell owner but a dedicated 48 px top row,
+20/16 horizontal/vertical chrome padding, 13 px timer/position text, 13 px
+bold mode text, and a `border` progress track beneath the top row.
+
+Commit `239e167` keeps one canonical `SessionShell` renderer and adds the
+explicit `simulationConfirmation` layout projection from the existing
+`SimulationSessionSurface` confirmation state. It shares the existing large
+simulation chrome owner with `simulationSaved`, applies the confirmation
+progress token, and leaves the action-sheet copy, commands, lifecycle,
+content, persistence, and accessibility semantics unchanged. The dead-code
+check found no obsolete route, renderer, or fallback; the previous duplicate
+saved/confirmation style definitions were replaced by one shared owner.
+
+Focused source checks passed `32/32`; full `npm run qa:static` passed recovery
+inventory `287/116/567`, TypeScript, `576/576` tests, content-boundary, and
+runtime-privacy-boundary validation, followed by `git diff --check`.
+
+This slice remains source-level `PARTIAL`, not `MATCHED`. Runtime capture of
+the confirmation state is unverified because the truthful bundled Free UI
+excludes Simulation from its four exposed modes and no durable active
+simulation was available for resume. No fake seed, deep link, or capture-only
+production path was added. Normalized Figma comparison, full confirmation and
+recovery-state capture, Figma/owner approval, and the remaining parity-matrix
+rows remain open.

@@ -1073,6 +1073,30 @@ committed capture flow changed. This closes the current-head 200% capture
 gap, but normalized Figma comparison, remaining route/state coverage, owner
 decisions, signed distribution, and Product Owner approval remain open.
 
+## Addendum — Simulation confirmation chrome convergence after `239e167`
+
+Figma channel `ksxw21cw` supplied confirmation references `74:968` (Finish
+confirmation) and `74:992` (Pause or end), with comparison context from
+`74:834` and `74:879`. Commit `239e167` routes the existing confirmation
+projection through the canonical `SessionShell` using an explicit
+`simulationConfirmation` layout. It shares the large simulation top chrome
+owner with `simulationSaved`: 48 px top row, 20/16 chrome padding, 13 px
+timer/position and mode typography, and the Figma confirmation border token
+for the progress track.
+
+No command, lifecycle, content, persistence, or accessibility semantics
+changed. No alternate renderer, fake seed, deep link, or capture-only
+production path was added. The only removed code was the duplicated saved vs
+confirmation style naming, replaced by one shared large-simulation owner.
+
+Focused checks passed `32/32`; current `npm run qa:static` passed recovery
+inventory `287/116/567`, TypeScript, `576/576` tests, content-boundary, and
+runtime-privacy-boundary validation; `git diff --check` also passed. Runtime
+confirmation capture is still unverified because Simulation is excluded from
+the truthful bundled Free entry modes and no durable active simulation was
+available for resume. The matrix therefore remains `PARTIAL`, with normalized
+Figma comparison, owner approval, and remaining state coverage open.
+
 ## 8. Kryterium końcowe
 
 Nie oznaczać celu jako complete, dopóki aktualne canonical SHA obu repo, exact CI, osiem-trackowy release gate, real content sign-offs, provider/store/signing evidence, approved Figma parity, Maestro/simulator evidence oraz Product Owner GO nie potwierdzają pełnego celu. Signed physical-device matrix nie jest wymagany.
