@@ -18,8 +18,9 @@ baseline; those commits were preserved. The content source banks and inventories
 were not mass-edited.
 
 After the reconciliation push, the owner introduced an uncommitted Android NDK
-prebuild pin slice in the application worktree. It is intentionally excluded from
-the reconciliation commits and is not attributed to this controller.
+and signing-boundary hardening slice in the application worktree. It is
+intentionally excluded from the reconciliation commits and is not attributed to
+this controller.
 
 Pushed and independently re-fetched canonical refs after the follow-up cleanup:
 
@@ -119,9 +120,9 @@ evidence locations.
   store evidence was created. The delegated QA attempt used `gpt-5.6-luna` at
   `max` as required by `AGENTS.md` but returned no report, so the controller
   verdict is `PASS WITH GAPS`, not independent QA approval.
-- Owner NDK slice: focused tests 2/2, full app suite 578/578, and typecheck
-  passed; the files remain uncommitted and the app worktree is dirty, so this is
-  not canonical release evidence or a pushed implementation claim.
+- Owner NDK/signing slice: focused tests 8/8, full app suite 579/579, and
+  typecheck passed; five paths remain uncommitted and the app worktree is dirty,
+  so this is not canonical release evidence or a pushed implementation claim.
 - Content `npm test`: 146 passed after the stale-evidence assertion repair;
   the local Console bind test was run with localhost binding enabled.
 - Content contract test now verifies that the superseded `868a565f` artifact is
