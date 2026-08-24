@@ -50,6 +50,14 @@
       "favicon": "./assets/brand/web/favicon.png",
       "themeColor": "#0C1324",
       "backgroundColor": "#F6F8FB"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "204d9769-4832-4c4a-b932-6359c4ff9dab"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab"
     }
   }
 }
