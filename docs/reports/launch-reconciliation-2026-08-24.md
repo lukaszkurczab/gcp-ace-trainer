@@ -18,9 +18,10 @@ baseline; those commits were preserved. The content source banks and inventories
 were not mass-edited.
 
 After the reconciliation push, the owner introduced an uncommitted Android NDK
-and signing-boundary hardening slice in the application worktree. It is
-intentionally excluded from the reconciliation commits and is not attributed to
-this controller.
+and signing-boundary hardening slice in the application worktree. The current
+signing boundary requires both the EAS credentials file and generated
+`app/eas-build.gradle`. The changes are intentionally excluded from the
+reconciliation commits and are not attributed to this controller.
 
 Pushed and independently re-fetched canonical refs after the follow-up cleanup:
 
@@ -121,7 +122,7 @@ evidence locations.
   `max` as required by `AGENTS.md` but returned no report, so the controller
   verdict is `PASS WITH GAPS`, not independent QA approval.
 - Owner NDK/signing slice: focused tests 8/8, full app suite 579/579, and
-  typecheck passed; five paths remain uncommitted and the app worktree is dirty,
+  typecheck passed; six paths remain uncommitted and the app worktree is dirty,
   so this is not canonical release evidence or a pushed implementation claim.
 - Content `npm test`: 146 passed after the stale-evidence assertion repair;
   the local Console bind test was run with localhost binding enabled.
