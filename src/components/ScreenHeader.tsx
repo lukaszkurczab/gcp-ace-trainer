@@ -68,9 +68,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.sm,
   },
   context: {
-    ...typography.small,
+    ...typography.bodyStrong,
     color: palette.textMuted,
-    fontWeight: "600",
   },
   practiceSetupContext: {
     fontWeight: "500",
