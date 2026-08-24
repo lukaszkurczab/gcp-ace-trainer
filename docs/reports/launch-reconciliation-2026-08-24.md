@@ -21,7 +21,7 @@ Pushed and independently re-fetched canonical refs after the follow-up cleanup:
 
 | Repository | Canonical ref | Verified head |
 | --- | --- | --- |
-| `lukaszkurczab/gcp-ace-trainer` | `main` | `086d0fe` |
+| `lukaszkurczab/gcp-ace-trainer` | `main` | `6597457` |
 | `lukaszkurczab/patternly-content` | `master` | `631b278` |
 
 ## Changed files
