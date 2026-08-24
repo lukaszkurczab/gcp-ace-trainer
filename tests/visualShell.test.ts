@@ -150,6 +150,7 @@ test("the shared header owns accessible back geometry and long-copy reflow witho
   assert.match(activity, /onPress=\{onOpenPractice\}/);
   assert.match(activity, /empty:\s*\{[\s\S]*?paddingBottom:\s*80/);
   assert.match(activity, /emptyActivityState:\s*\{[\s\S]*?gap:\s*16/);
+  assert.match(activity, /filteredEmptyActivityState:\s*\{[\s\S]*?paddingHorizontal:\s*spacing\.xxl/);
   assert.match(activity, /emptyActivityBarTall:\s*\{\s*backgroundColor:\s*palette\.success/);
   assert.match(activity, /emptyActivityTitle:\s*\{[\s\S]*?fontSize:\s*17/);
   assert.match(activity, /row:\s*\{[\s\S]*?borderBottomWidth:\s*1[\s\S]*?gap:\s*10[\s\S]*?minHeight:\s*73/);

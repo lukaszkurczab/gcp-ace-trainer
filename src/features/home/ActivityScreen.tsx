@@ -22,7 +22,7 @@ type ViewState =
 
 export function ActivityScreen({ navigation }: Props) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colorMode, colors: palette, t } = useAppPreferences();
   const [state, setState] = useState<ViewState>({ kind: "loading" });
   const [filter, setFilter] = useState<ActivityFilter>(ALL_ACTIVITY_TRACKS);
   const [filterVisible, setFilterVisible] = useState(false);
@@ -51,15 +51,15 @@ export function ActivityScreen({ navigation }: Props) {
   );
 
   if (state.kind === "loading") {
-    return <Screen edges={["top", "bottom"]}>{header}<LoadingState title={t("Loading activity")} description={t("Reading your durable session history.")} /></Screen>;
+    return <Screen ambient={colorMode === "dark"} ambientVariant="activity" edges={["top", "bottom"]}>{header}<LoadingState title={t("Loading activity")} description={t("Reading your durable session history.")} /></Screen>;
   }
   if (state.kind === "unavailable") {
-    return <Screen edges={["top", "bottom"]}>{header}<EmptyState title={t("Activity unavailable")} description={t(state.reason)} /></Screen>;
+    return <Screen ambient={colorMode === "dark"} ambientVariant="activity" edges={["top", "bottom"]}>{header}<EmptyState title={t("Activity unavailable")} description={t(state.reason)} /></Screen>;
   }
 
   const model = buildActivityModel(state.records, filter);
   return (
-    <Screen edges={["top", "bottom"]} style={styles.screen}>
+    <Screen ambient={colorMode === "dark"} ambientVariant="activity" edges={["top", "bottom"]} style={styles.screen}>
       {header}
       <View style={styles.filter}>
         <Pressable
@@ -147,7 +147,7 @@ function ActivityEmptyState({ filtered, onOpenPractice, onShowAll }: Readonly<{ 
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   return (
-    <View style={styles.emptyActivityState}>
+    <View style={[styles.emptyActivityState, filtered ? styles.filteredEmptyActivityState : null]}>
       <View style={styles.emptyActivityIcon}>
         <View style={styles.emptyActivityBarTall} />
         <View style={styles.emptyActivityBarShort} />
@@ -252,6 +252,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   pressed: { opacity: 0.78 },
   empty: { alignItems: "center", flex: 1, justifyContent: "center", paddingBottom: 80 },
   emptyActivityState: { alignItems: "center", gap: 16, paddingHorizontal: spacing.xl, width: "100%" },
+  filteredEmptyActivityState: { paddingHorizontal: spacing.xxl },
   emptyActivityIcon: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 24, flexDirection: "row", gap: 2, height: 48, justifyContent: "center", width: 48 },
   emptyActivityBarTall: { backgroundColor: palette.success, borderRadius: 2, height: 14, width: 3 },
   emptyActivityBarShort: { backgroundColor: palette.success, borderRadius: 2, height: 8, width: 3 },

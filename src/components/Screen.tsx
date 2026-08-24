@@ -12,6 +12,7 @@ type ScreenProps = {
   children: ReactNode;
   compact?: boolean;
   ambient?: boolean;
+  ambientVariant?: "default" | "activity";
   edges?: Edge[];
   footer?: ReactNode;
   footerVariant?: "default" | "review" | "session" | "simulation" | "sticky";
@@ -20,14 +21,14 @@ type ScreenProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Screen({ ambient = false, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, style }: ScreenProps) {
+export function Screen({ ambient = false, ambientVariant = "default", children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, style }: ScreenProps) {
   const styles = useThemedStyles(createStyles);
   const contentStyle = [styles.content, compact ? styles.contentCompact : null, footer ? styles.contentWithFooter : null, style];
   const content = <View style={contentStyle}>{children}</View>;
 
   return (
     <SafeAreaView edges={edges} style={[styles.safeArea, ambient ? styles.ambientSafeArea : null]}>
-      {ambient ? <AmbientBackdrop /> : null}
+      {ambient ? <AmbientBackdrop variant={ambientVariant} /> : null}
       {header}
       {scroll ? (
         <ScrollView
