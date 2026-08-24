@@ -3,20 +3,24 @@ import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 
 import Topography from "../assets/ambient/topography.svg";
 
-/** Figma Page 1 ambient layers shared by dark Track, Practice, and Activity screens. */
-export function AmbientBackdrop({ variant = "default" }: Readonly<{ variant?: "default" | "activity" }>) {
+/** Figma Page 1 ambient layers shared by dark Track, Practice, Activity, and Goal screens. */
+export function AmbientBackdrop({ variant = "default" }: Readonly<{ variant?: "default" | "activity" | "goal" }>) {
+  const glowId = variant === "goal" ? "ambient-goal-teal" : variant === "activity" ? "ambient-activity-teal" : "ambient-teal";
+  const glowTransform = variant === "goal" ? "matrix(32 0 0 28 224 196)" : variant === "activity" ? "matrix(32 0 0 28 160 140)" : "matrix(16 0 0 14 160 140)";
+  const glowColor = variant === "goal" ? "#20C997" : "#14B7A6";
+  const glowOpacity = variant === "goal" ? 0.06 : variant === "activity" ? 0.04 : 0.05098;
   return (
     <View accessibilityElementsHidden pointerEvents="none" style={[StyleSheet.absoluteFill, styles.canvas]}>
-      <Svg height={280} style={styles.tealGlow} width={320}>
+      <Svg height={280} style={variant === "goal" ? styles.goalGlow : styles.tealGlow} width={320}>
         <Defs>
-          <RadialGradient cx={0} cy={0} gradientTransform={variant === "activity" ? "matrix(32 0 0 28 160 140)" : "matrix(16 0 0 14 160 140)"} id={variant === "activity" ? "ambient-activity-teal" : "ambient-teal"} r={10}>
-            <Stop offset="0" stopColor="#14B7A6" stopOpacity={0.05098} />
-            <Stop offset="1" stopColor="#14B7A6" stopOpacity={0} />
+          <RadialGradient cx={0} cy={0} gradientTransform={glowTransform} id={glowId} r={10}>
+            <Stop offset="0" stopColor={glowColor} stopOpacity={glowOpacity} />
+            <Stop offset="1" stopColor={glowColor} stopOpacity={0} />
           </RadialGradient>
         </Defs>
-        <Rect fill={variant === "activity" ? "url(#ambient-activity-teal)" : "url(#ambient-teal)"} height="280" width="320" />
+        <Rect fill={`url(#${glowId})`} height="280" width="320" />
       </Svg>
-      {variant === "activity" ? null : (
+      {variant === "default" ? (
         <>
           <Svg height={300} style={styles.indigoGlow} width={320}>
             <Defs>
@@ -29,13 +33,14 @@ export function AmbientBackdrop({ variant = "default" }: Readonly<{ variant?: "d
           </Svg>
           <Topography height={260} style={styles.topography} width={300} />
         </>
-      )}
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   canvas: { backgroundColor: "#081328" },
+  goalGlow: { left: 0, position: "absolute", top: 0 },
   tealGlow: { left: -60, position: "absolute", top: -40 },
   indigoGlow: { left: 133, position: "absolute", top: 500 },
   topography: { left: 140, position: "absolute", top: -30 },

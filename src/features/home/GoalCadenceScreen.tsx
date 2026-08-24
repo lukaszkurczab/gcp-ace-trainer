@@ -181,6 +181,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   return (
     <Screen
       ambient
+      ambientVariant="goal"
       edges={["top", "bottom"]}
       footer={(
         <Button

@@ -13,15 +13,19 @@ test("dark Figma ambient layer is shared by Track selection and Practice", () =>
   const topography = source("src/assets/ambient/topography.svg");
 
   assert.match(screen, /ambient\?: boolean/);
-  assert.match(screen, /ambientVariant\?: "default" \| "activity"/);
+  assert.match(screen, /ambientVariant\?: "default" \| "activity" \| "goal"/);
   assert.match(screen, /ambient \? <AmbientBackdrop variant=\{ambientVariant\} \/> : null/);
   assert.match(backdrop, /matrix\(16 0 0 14 160 140\)/);
   assert.match(backdrop, /matrix\(16 0 0 15 160 150\)/);
+  assert.match(backdrop, /matrix\(32 0 0 28 160 140\)/);
+  assert.match(backdrop, /matrix\(32 0 0 28 224 196\)/);
+  assert.match(backdrop, /glowOpacity = variant === "goal" \? 0\.06 : variant === "activity" \? 0\.04/);
   assert.match(backdrop, /backgroundColor: "#081328"/);
   assert.match(backdrop, /Topography/);
   assert.match(selectTrack, /<Screen\s+ambient=\{colorMode === "dark"\}/);
   assert.match(practice, /<Screen ambient=\{colorMode === "dark"\} edges=/);
   assert.match(activity, /<Screen ambient=\{colorMode === "dark"\} ambientVariant="activity"/);
-  assert.match(backdrop, /variant === "activity" \? null/);
+  assert.match(source("src/features/home/GoalCadenceScreen.tsx"), /ambientVariant="goal"/);
+  assert.match(backdrop, /variant === "default" \?/);
   assert.match(topography, /id="contour 4"/);
 });
