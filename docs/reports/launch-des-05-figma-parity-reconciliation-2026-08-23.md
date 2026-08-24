@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `0659a5f`
+Current source SHA at packet update: `f3afd92`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -94,7 +94,7 @@ Only the repository plan statuses are used below.
 | Area | Status | Evidence and boundary |
 |---|---|---|
 | Canonical route graph and screen owners | `done` | `RootNavigator` has one owner for Home, Activity, Settings, Practice Hub, Practice Setup, active Practice, summaries, simulation, and review. Source ownership and route tests pass. This proves architecture, not pixel parity. |
-| Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commits `7e9b200`, `e257af4`, `2eb6c65`, and `992d5bb` align the shared Button state matrix, Bottom Navigation separator, Screen Header base geometry, and Screen Shell default spacing to Figma `141:817`, `140:875`, `140:881`, and `830:7457`; current slices still require runtime comparison across all states and themes. |
+| Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commits `7e9b200`, `e257af4`, `2eb6c65`, `992d5bb`, and `f3afd92` align the shared Button state matrix, Bottom Navigation separator, Screen Header context typography, Screen Header base geometry, and Screen Shell default spacing to Figma `141:817`, `140:875`, `140:881`, and `830:7457`; current slices still require runtime comparison across all states and themes. |
 | Home, Progress, and Activity source slices | `partial` | Commits through `0659a5f` align documented source geometry and typography against live nodes, including the Activity and Goal Glow-UL variants and exact 40 px filtered-empty inset. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract, `6f8b0c6` aligns the Coding row icon container/icon/chevron geometry from `232:1716`, and `a6d05c6` aligns the section-label inset/typography and removes the fixture-only hero-action chevron. The current source does not render the Figma fixture's `Independent Practice` / `Coding Interview` rows; that fixture-versus-contract discrepancy is recorded separately, and fresh runtime pixel comparison remains blocked. |
@@ -1430,6 +1430,24 @@ Focused Activity/ambient/visual-shell checks passed `15/15`; current local
 TypeScript, content-boundary, and runtime-privacy-boundary. Activity remains
 `PARTIAL` pending same-head Light/Dark runtime screenshots and Product Owner
 approval; this addendum does not claim 99% parity.
+
+## Addendum — Shared Screen Header context typography
+
+The current connector channel `ksxw21cw` was revalidated against the shared
+Screen Header `140:881`. Its back/context row uses an accessible 44 px back
+button, an 8 px row gap, and a 14 px semibold context label with an 18 px
+line-height; the title and muted description remain on the existing shared
+title/description tokens.
+
+Commit `f3afd92` changes only the shared `ScreenHeader` context style from
+the generic 14/22 small text token to the existing 14/18 body-strong token.
+The practice-setup medium-weight override remains explicit. No route, title,
+navigation command, safe-area behavior, or accessibility boundary changed.
+
+Focused shell/header checks passed `11/11`; current local `npm run qa:static`
+passed recovery inventory `287/116/563`, `572/572` tests, TypeScript,
+content-boundary, and runtime-privacy-boundary. Runtime Light/Dark capture
+and Product Owner approval remain open; this addendum does not claim 99% parity.
 
 ## Addendum — Goal ambient-layer convergence
 
