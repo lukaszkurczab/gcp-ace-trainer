@@ -260,6 +260,8 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(simulationSummary, /summaryHeaderBar:\s*\{\s*height:\s*52\s*\}/);
   assert.match(simulationSummary, /summaryMetrics:\s*\{\s*gap:\s*spacing\.lg\s*\}/);
   assert.match(simulationSummary, /summarySeparator:\s*\{[\s\S]*?height:\s*1/);
+  assert.match(simulationSummary, /function SummaryStat[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.summaryStatLabel\}>[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.summaryValue\}>/);
+  assert.match(simulationSummary, /function OutcomeStat[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.outcomeLabel\}>[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.outcomeValue\}>/);
   assert.doesNotMatch(simulationSummary, /completion\.earnedPoints|completion\.maxPoints|missedCount/);
   assert.doesNotMatch(simulationSummary, /summaryStats|reviewBanner|configuration\?:/);
 });

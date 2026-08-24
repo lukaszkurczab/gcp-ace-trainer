@@ -185,12 +185,12 @@ function CompletedSurface({ projection, sessionId }: Readonly<{ projection: Simu
 
 function SummaryStat({ label, value }: Readonly<{ label: string; value: string }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.summaryStat}><Text style={styles.summaryStatLabel}>{label}</Text><Text style={styles.summaryValue}>{value}</Text></View>;
+  return <View style={styles.summaryStat}><Text maxFontSizeMultiplier={2} style={styles.summaryStatLabel}>{label}</Text><Text maxFontSizeMultiplier={2} style={styles.summaryValue}>{value}</Text></View>;
 }
 
 function OutcomeStat({ label, tone, value }: Readonly<{ label: string; tone: "danger" | "success" | "warning"; value: number }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.outcomeStat}><View style={[styles.outcomeDot, styles[`${tone}Dot`]]} /><Text style={styles.outcomeLabel}>{label}</Text><Text style={styles.outcomeValue}>{value}</Text></View>;
+  return <View style={styles.outcomeStat}><View style={[styles.outcomeDot, styles[`${tone}Dot`]]} /><Text maxFontSizeMultiplier={2} style={styles.outcomeLabel}>{label}</Text><Text maxFontSizeMultiplier={2} style={styles.outcomeValue}>{value}</Text></View>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
