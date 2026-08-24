@@ -51,7 +51,7 @@ the pushed ref is the release baseline until that verification completes.
 | 1. Evidence and artifact cleanup | in_progress | Decision-register cleanup and removal of the obsolete global content-count gate are complete; the remaining strict deletion audit preserves unique provenance/release/legal/security evidence. |
 | 2. Figma/UI reconciliation | partial | Existing repository-owned implementation and visual evidence exist; remaining semantic conflicts or owner approvals remain explicit. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, records bounded explicit outcomes, and is pushed on content `master` at `73e7867`; content suite is 146/146. |
-| 4. Eight-track content audit | partial | Existing evidence is available; targeted classification is required without reopening the accepted baseline by count. |
+| 4. Eight-track content audit | in_progress | Existing evidence is being rechecked with the eight-track readiness validators and targeted classifications; the accepted baseline remains unchanged and no count gate is being reopened. |
 | 5. Account, identity, sync, adoption, deletion | partial | Local and server foundations exist; release-compatible provider, failure, deletion and cross-device evidence remains to be closed. |
 | 6. Commercial entitlement | planned | SKU-neutral fixed/recurring entitlement chain is implemented and verified without inventing store/provider evidence. |
 | 7. Provider, privacy, security, operations | planned | External configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery gates are evidenced. |
