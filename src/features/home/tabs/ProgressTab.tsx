@@ -8,7 +8,7 @@ import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerView
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
-import { shadows, spacing, typography } from "../../../theme";
+import { radius, shadows, spacing, typography } from "../../../theme";
 import { runtimeSelectors } from "../../../testing/runtimeSelectors";
 import { buildProgressTabModel, type ProgressAction, type ProgressTabActivityItem } from "./progressTabModel";
 
@@ -58,7 +58,7 @@ export function ProgressTab({
   return (
     <View style={styles.root} testID={runtimeSelectors.progress.root()}>
       <View style={styles.header}>
-        <Text maxFontSizeMultiplier={2} style={styles.screenTitle}>{t("Progress")}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.screenTitle, !model.hasData ? styles.emptyProgressScreenTitle : null]}>{t("Progress")}</Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`${t("Change track")}: ${t(activeTrack.shortTitle)}`}
@@ -71,17 +71,15 @@ export function ProgressTab({
         </Pressable>
       </View>
 
-      <View style={styles.weekSection}>
+      <View style={[styles.weekSection, !model.hasData ? styles.emptyWeekSection : null]}>
         <Text style={styles.sectionLabel}>{t("This week")}</Text>
-        <Card style={styles.weekCard}>
+        <Card style={[styles.weekCard, !model.hasData ? styles.emptyWeekCard : null]}>
           <View style={styles.weekHeader}>
             <View style={styles.weekCopy}>
               <Text maxFontSizeMultiplier={2} style={styles.weekTitle}>{t(formatWeekTitle(weekValue))}</Text>
               <Text maxFontSizeMultiplier={2} style={styles.weekDetail}>{t(model.activitySummary.detail)}</Text>
             </View>
-            <View style={styles.miniBar}>
-              <View style={[styles.miniBarFill, { width: `${Math.round(progressRatio * 100)}%` }]} />
-            </View>
+            {model.hasData ? <View style={styles.miniBar}><View style={[styles.miniBarFill, { width: `${Math.round(progressRatio * 100)}%` }]} /></View> : null}
           </View>
           {model.reviewQueueCount > 0 ? <Text style={styles.weekAction}>{t(`${model.reviewQueueCount} review items due`)}</Text> : null}
           {onOpenGoal ? <Pressable accessibilityRole="button" accessibilityLabel={t(goal ? "View learning goal" : "Set a learning goal")} onPress={onOpenGoal} style={({ pressed }) => [styles.weekGoalAction, pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.goal()}><Text style={styles.weekAction}>{t(goal ? "View goal" : "Set a goal")}</Text></Pressable> : null}
@@ -96,7 +94,7 @@ export function ProgressTab({
           <Text maxFontSizeMultiplier={2} style={styles.emptyProgressTitle}>{t("No learning evidence yet")}</Text>
           <Text maxFontSizeMultiplier={2} style={styles.emptyProgressDescription}>{t("Complete a Practice session to begin building Progress.")}</Text>
           {model.algorithmsProgress && onProgressAction ? (
-            <Button onPress={() => onProgressAction(model.algorithmsProgress!.priority.primaryAction)} style={styles.emptyProgressAction}>
+            <Button labelStyle={styles.emptyProgressActionLabel} onPress={() => onProgressAction(model.algorithmsProgress!.priority.primaryAction)} style={styles.emptyProgressAction}>
               {t("Open Practice")}
             </Button>
           ) : null}
@@ -302,12 +300,15 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   pressed: { opacity: 0.78 },
   sectionLabel: { color: palette.primary, fontSize: 12, fontWeight: "600", lineHeight: 19 },
   weekSection: { gap: 10 },
-  emptyProgressState: { alignItems: "center", gap: 16, paddingHorizontal: spacing.lg, paddingTop: 40 },
-  emptyProgressIcon: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 24, height: 48, justifyContent: "center", width: 48 },
+  emptyProgressScreenTitle: { fontSize: 24, fontWeight: "700", lineHeight: 29 },
+  emptyWeekSection: { gap: 8 },
+  emptyProgressState: { alignItems: "center", gap: 16, paddingBottom: 40, paddingHorizontal: spacing.lg, paddingTop: 40 },
+  emptyProgressIcon: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 20, height: 48, justifyContent: "center", width: 48 },
   emptyProgressGlyph: { color: palette.info, fontSize: 24, lineHeight: 29 },
   emptyProgressTitle: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20, textAlign: "center" },
   emptyProgressDescription: { color: palette.textSecondary, fontSize: 14, lineHeight: 20, maxWidth: 280, textAlign: "center" },
-  emptyProgressAction: { minWidth: 144 },
+  emptyProgressAction: { backgroundColor: palette.success, borderColor: palette.success, borderRadius: radius.xxl, minWidth: 0, paddingHorizontal: 24, paddingVertical: 12 },
+  emptyProgressActionLabel: { color: palette.textPrimary, fontSize: 14, fontWeight: "600", lineHeight: 18 },
   sectionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   activityGroup: { gap: spacing.xs },
   activityGroupLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
@@ -319,6 +320,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   activityDetail: { color: palette.textSecondary, fontSize: 12, fontWeight: "400", lineHeight: 18 },
   emptyActivityCard: { backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: spacing.xs, padding: spacing.lg },
   weekCard: { ...shadows.none, backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: 14 },
+  emptyWeekCard: { gap: 4, paddingHorizontal: 14, paddingVertical: 12 },
   weekHeader: { alignItems: "flex-start", flexDirection: "row", gap: 10, justifyContent: "space-between" },
   weekCopy: { flex: 1, gap: spacing.xs },
   weekTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
