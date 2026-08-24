@@ -48,7 +48,7 @@ export function AnswerOption({
       testID={testID}
     >
       <View style={styles.letterBadge}>
-        <Text style={[styles.letterText, correctness]}>{letter}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.letterText, correctness]}>{letter}</Text>
       </View>
       <Text maxFontSizeMultiplier={2} style={[styles.text, state === "correct" || state === "omitted_correct" || state === "incorrect" ? styles.feedbackText : null]}>{text}</Text>
     </Pressable>

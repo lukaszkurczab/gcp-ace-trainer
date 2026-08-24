@@ -29,6 +29,7 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   assert.match(answerOption, /letterText:\s*\{[^}]*fontSize:\s*12[^}]*lineHeight:\s*16/);
   assert.match(answerOption, /<Text maxFontSizeMultiplier=\{2\}/);
   assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*48[\s\S]*?minWidth:\s*48/);
+  assert.match(answerOption, /<Text maxFontSizeMultiplier=\{2\} style=\{\[styles\.letterText, correctness\]\}>\{letter\}<\/Text>/);
   assert.match(practiceControls, /moveButton:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(practiceControls, /valueOption:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(feedback, /<DetailsDisclosure expanded=\{detailsOpen\}/);
