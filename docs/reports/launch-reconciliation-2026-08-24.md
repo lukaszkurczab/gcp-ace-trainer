@@ -94,6 +94,8 @@ evidence locations.
 ## Verification
 
 - App `npm test`: 577 passed.
+- The 577-test suite was rerun after owner commit `03a032c` and the current
+  canonical documentation head; all 577 tests passed.
 - App focused canonical contract suite: 27 passed.
 - App `npm run typecheck`: passed.
 - App `npm run gate:contract-change`: passed again after the cleanup deletion.

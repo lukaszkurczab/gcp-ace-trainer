@@ -195,6 +195,8 @@ The current owner-owned EAS/signing slice is committed on canonical `main` at
 does not prove an EAS-managed signed artifact. The delegated QA attempt used the
 required `gpt-5.6-luna` model at `max` reasoning but returned no report, so the
 controller records local QA as `PASS WITH GAPS`, not independent QA approval.
+The current canonical app head also passes the full suite (577/577) and
+`npm run typecheck`; both canonical worktrees are clean after refetch.
 
 ## Genuine stop gates
 
