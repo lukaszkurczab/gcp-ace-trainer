@@ -107,7 +107,7 @@ Only the repository plan statuses are used below.
 | Current Practice feedback surface parity | `partial` | `0341424` removes the redundant visible result label; `536b19b` aligns `REASON` to 12/16 and rich-details body text to 13/20; `1c9457b` maps collapsed Details to the standalone row and expanded Details to the Figma outer panel. The runtime result selector remains on the visible reason panel. Figma `68:637` does not show a Details row in its immediate-feedback default while the canonical after-answer contract and existing runtime selectors still expose it, so state binding remains an explicit conflict; fresh runtime pixel comparison remains open. |
 | Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
-| Runtime screenshot and pixel evidence | `partial` | Explicit Maestro `2.6.1` capture works on the booted iPhone 16 Pro / iOS 18.6 simulator. Preceding source `bcb0ddd` completed the shared 11-checkpoint visual-shell flow and populated Progress/Activity plus filter-sheet captures in both Dark and Light; a 200% Light Summary slice passes the corrected header/footer and `Back to practice` transition. Sources `1998810` and `1062f76` add value-only timer and shared footer/progress geometry at source level; `c0682ab` fixes the large-text capture flow's Settings scroll step, but fresh 200% capture was still blocked by an unreachable local Expo bundle. The complete reachable-path matrix, full current-head 200% runtime coverage, logical-viewport-normalized pixel comparisons, and owner decisions remain unverified. |
+| Runtime screenshot and pixel evidence | `partial` | Explicit Maestro `2.6.1` capture works on the booted iPhone 16 Pro / iOS 18.6 simulator. The current source `c0682ab` now has fresh 11-checkpoint Light/Dark runtime packs plus complete 11-checkpoint 200% Light/Dark packs; the latest 200% runs include the value-only timer, shared footer/progress geometry, and Settings scroll correction. The complete reachable-path matrix, logical-viewport-normalized pixel comparisons, and owner decisions remain unverified. |
 | Account, authentication, Premium, content trust, and deletion UI | `unknown / needs evidence` | The canonical contract defines boundaries, but the current route graph does not provide matching owners for all Figma surfaces. Owner must decide whether those Figma surfaces are in this parity objective or outside the current launch route graph. |
 | Goals, cadence, focus areas, and Progress effectiveness | `partial` | Goal & cadence now has a canonical per-track record, route, create/active states, Progress entry point, and Figma-matched Goal ambient variants. Figma-only focus-area and effectiveness semantics still have no owner; current-head Light/Dark runtime comparison and Product Owner approval remain open. |
 
@@ -1963,3 +1963,32 @@ Focused session/visual/accessibility checks passed `33/33`; full `npm run qa:sta
 The canonical `.maestro/screenshot-capture/visual-shell/visual-shell-capture.yaml` now calls `scrollUntilVisible` for `settings-your-data` before tapping it. This removes the prior false-positive `Data & privacy` wait at the 200% content size and keeps the capture journey aligned with the real scrollable Settings owner. No production route, selector, or fallback was added. The flow passes Maestro syntax validation and its repository contract test.
 
 This improves evidence tooling only; the current-head runtime capture remains unverified because the local Expo bundle could not be reached from the iOS simulator.
+
+## Addendum — Current-head 200% Light/Dark runtime evidence after `c0682ab`
+
+The current source `c0682ab` was captured at the simulator's
+`accessibility-extra-extra-extra-large` content-size category (the repository
+200% stress contract) on the iPhone 16 Pro / iOS 18.6 simulator
+`00B8F5B5-DF44-4621-8E30-56927604FA96`, using Maestro `2.6.1` and the local
+loopback Expo bundle. Both runs completed all 11 checkpoints of the canonical
+visual-shell flow:
+
+- Light: `/tmp/patternly-capture-visual-shell-200-light-2026-08-24-v5/`
+- Dark: `/tmp/patternly-capture-visual-shell-200-dark-2026-08-24-v2/`
+
+The capture includes track selection, Home, Practice Setup, active session,
+exit sheet, partial Summary, Progress, Settings, blocked Notifications, Data
+& privacy, and Appearance. Visual inspection of the active-session and
+summary frames confirmed the value-only timer, centered top-bar mode label,
+visible session footer actions, metric reflow, and visible Summary footer
+action in both themes. Settings, Notifications, Data & privacy, Appearance,
+and bottom navigation showed no observed clipping in the sampled frames.
+
+The run required only a loopback bridge from IPv4 `127.0.0.1` to Metro's
+IPv6 loopback listener; no LAN or tunnel endpoint was used. The temporary
+capture-preparation flow was deleted after use and no production source or
+committed capture flow changed. This closes the current-head 200% runtime
+capture gap, but it does not promote any matrix row to `MATCHED`: normalized
+Figma-to-screenshot comparison, all remaining reachable interaction/error
+states, `DESIGN_MISSING`/`CANONICAL_CONFLICT` owner decisions, and Product
+Owner approval remain open.

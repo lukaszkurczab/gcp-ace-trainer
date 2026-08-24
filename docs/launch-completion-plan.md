@@ -256,7 +256,7 @@ Nonvisual GOV/CNT/DATA work może biec równolegle z DES-01. UI nie może wyprze
 - **Scope / non-goals:** simulators+phones, Dark/Light/System, 200% text, keyboard, screen reader, reduced motion, network/install/upgrade/restore; rozdzielać screenshot/parity/device/store evidence.
 - **Inputs:** owner-bound approved nodes, current source SHA, signed builds when available, defined device/OS matrix, and [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md).
 - **Acceptance:** absolute outputs/manifests; node→screen/state review; simulator/release-compatible journey bez dev menu; performance/layout budgets mają measured result. Physical-device capture może zostać wykonany opcjonalnie, ale nie może blokować gate’a.
-- **Verification / evidence:** current-head iOS simulator evidence now includes the shared 11-checkpoint visual shell in Dark and Light, populated Progress/Activity and Activity filter-sheet captures in both themes, plus Settings/blocked Notifications large-text stress captures, using explicit Maestro `2.6.1`; outputs are recorded in the launch plan and [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md). Logical-viewport-normalized Figma comparison, current-head 200% runtime capture, signed distribution, screenshot/video/hierarchy acceptance and remaining route/state coverage still require execution. Discovery previously confirmed paired physical iPhone 11, lecz blokada urządzenia (`kAMDMobileImageMounterDeviceLocked`) uniemożliwia DDI/build inspection, a Android nie jest podłączony. Physical iOS/Android pozostają opcjonalne; [raport QA-02](reports/launch-qa-02-current-head-ios-simulator-2026-08-21.md).
+- **Verification / evidence:** current-head iOS simulator evidence now includes the shared 11-checkpoint visual shell in Dark and Light, populated Progress/Activity and Activity filter-sheet captures in both themes, Settings/blocked Notifications large-text stress captures, and complete 11-checkpoint 200% Light/Dark packs, using explicit Maestro `2.6.1`; outputs are recorded in the launch plan and [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md). Logical-viewport-normalized Figma comparison, signed distribution, screenshot/video/hierarchy acceptance and remaining route/state coverage still require execution. Discovery previously confirmed paired physical iPhone 11, lecz blokada urządzenia (`kAMDMobileImageMounterDeviceLocked`) uniemożliwia DDI/build inspection, a Android nie jest podłączony. Physical iOS/Android pozostają opcjonalne; [raport QA-02](reports/launch-qa-02-current-head-ios-simulator-2026-08-21.md).
 - **Ryzyko:** simulator-only confidence, visual match with wrong logic, missing a11y state.
 
 ### REL-01/02/03 — store packet, signed beta, review i GO/NO-GO — planned / external gate
@@ -1053,6 +1053,25 @@ Focused session/visual/accessibility checks passed `33/33`; full `npm run qa:sta
 The canonical `.maestro/screenshot-capture/visual-shell/visual-shell-capture.yaml` now calls `scrollUntilVisible` for `settings-your-data` before tapping it. This removes the prior false-positive `Data & privacy` wait at the 200% content size and keeps the capture journey aligned with the real scrollable Settings owner. No production route, selector, or fallback was added. The flow passes Maestro syntax validation and its repository contract test.
 
 This improves evidence tooling only; the current-head runtime capture remains unverified because the local Expo bundle could not be reached from the iOS simulator.
+
+## Addendum — Current-head 200% Light/Dark runtime evidence after `c0682ab`
+
+The current source `c0682ab` completed the canonical 11-checkpoint visual-shell
+flow at the simulator's `accessibility-extra-extra-extra-large` content-size
+category on the iPhone 16 Pro / iOS 18.6 simulator
+`00B8F5B5-DF44-4621-8E30-56927604FA96`, using Maestro `2.6.1`:
+
+- Light: `/tmp/patternly-capture-visual-shell-200-light-2026-08-24-v5/`
+- Dark: `/tmp/patternly-capture-visual-shell-200-dark-2026-08-24-v2/`
+
+All 11 checkpoints passed in each theme, including active session, partial
+Summary, Settings, blocked Notifications, Data & privacy, and Appearance. The
+sampled frames showed no observed clipping in the corrected timer/top bar,
+session footer, Summary footer, Settings rows, or bottom navigation. The
+temporary preparation flow was deleted after capture; no production source or
+committed capture flow changed. This closes the current-head 200% capture
+gap, but normalized Figma comparison, remaining route/state coverage, owner
+decisions, signed distribution, and Product Owner approval remain open.
 
 ## 8. Kryterium końcowe
 
