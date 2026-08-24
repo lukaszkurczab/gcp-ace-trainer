@@ -99,6 +99,9 @@ evidence locations.
 - App `npm run gate:contract-change`: passed again after the cleanup deletion.
 - App focused contract/gate tests: 38 passed.
 - App `git diff --check`: passed.
+- App `npm run launch:readiness`: internal content lock/source integrity passed;
+  overall status remains `not_ready` because six pre-existing owner-owned
+  EAS/signing paths are dirty and external/admission evidence is absent.
 - Content `npm test`: 146 passed.
 - Content validators: Frontend 1,766, Backend 1,569, OOD 1,413 and AI-901 752
   items; all passed with admission still `not_admitted`/`pending`.
@@ -115,7 +118,9 @@ evidence locations.
 The local/internal Content Review Console V1, eight-track structural audit, and
 mandatory cleanup stage are complete; the accepted content baseline remains
 unchanged. The next non-blocked task is internal account/entitlement and release
-hardening. External/provider admission remains a genuine later gate.
+hardening. At this head, provider composition, runtime/publishing admission,
+immutable full-package evidence, owner-owned signing changes, and external
+release evidence are genuine gates; none is fabricated by this report.
 
 The genuine gates remain exact provider/store SKU and pricing choices, provider and
 production credentials/configuration, domain/legal/privacy, flagged/new content

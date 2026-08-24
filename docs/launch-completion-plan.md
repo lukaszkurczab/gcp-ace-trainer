@@ -55,7 +55,7 @@ content `master` at `631b278`.
 | 2. Figma/UI reconciliation | partial | Existing repository-owned implementation and visual evidence exist; remaining semantic conflicts or owner approvals remain explicit. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, records bounded explicit outcomes, and is pushed on content `master` at `73e7867`; content suite is 146/146. |
 | 4. Eight-track content audit | complete | Readiness report `32e2003df80b8b62bce17c76c29465a452910ca8027ec707faaa6a8bdcf93a5a` verifies all eight structural validators pass; the report was rechecked after content head `631b278`. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
-| 5. Account, identity, sync, adoption, deletion | partial | Local and server foundations exist; release-compatible provider, failure, deletion and cross-device evidence remains to be closed. |
+| 5. Account, identity, sync, adoption, deletion | partial | Local and server foundations exist; app tests/typecheck pass, but release-compatible provider, failure, deletion and cross-device evidence remains to be closed. |
 | 6. Commercial entitlement | planned | SKU-neutral fixed/recurring entitlement chain is implemented and verified without inventing store/provider evidence. |
 | 7. Provider, privacy, security, operations | planned | External configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery gates are evidenced. |
 | 8. QA, signing, stores, GO/NO-GO | planned | Release-compatible test/signing/store evidence and explicit owner GO/NO-GO exist. |
@@ -142,6 +142,12 @@ The current readiness pass is complete: all eight structural validators pass and
 the tracked human-review fields remain existing evidence, not newly fabricated
 approval. The remaining per-track blockers are runtime admission and publishing
 admission, which are genuine external/release gates rather than content defects.
+
+The application release-readiness gate also passes its internal content-lock and
+source-integrity checks. It remains `not_ready` because the worktree contains six
+pre-existing owner-owned EAS/signing changes, the eight tracks have no runtime or
+publishing admission, immutable full-package verification is not evidenced by the
+source-only report, and the required external release evidence is absent.
 
 ### 5. Account, identity, sync, adoption, deletion
 
