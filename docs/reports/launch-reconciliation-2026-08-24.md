@@ -102,6 +102,11 @@ evidence locations.
 - App `npm run launch:readiness`: internal content lock/source integrity passed;
   overall status remains `not_ready` because six pre-existing owner-owned
   EAS/signing paths are dirty and external/admission evidence is absent.
+- Focused owner-owned EAS/signing QA: 5/5 tests passed. This is local
+  configuration/boundary evidence only; no EAS credential, signed artifact, or
+  store evidence was created. The delegated QA attempt used `gpt-5.6-luna` at
+  `max` as required by `AGENTS.md` but returned no report, so the controller
+  verdict is `PASS WITH GAPS`, not independent QA approval.
 - Content `npm test`: 146 passed.
 - Content validators: Frontend 1,766, Backend 1,569, OOD 1,413 and AI-901 752
   items; all passed with admission still `not_admitted`/`pending`.
@@ -117,8 +122,9 @@ evidence locations.
 
 The local/internal Content Review Console V1, eight-track structural audit, and
 mandatory cleanup stage are complete; the accepted content baseline remains
-unchanged. The immediate next internal task is independent QA of the six
-owner-owned EAS/signing changes already in the app worktree. At this head,
+unchanged. Independent QA of the six owner-owned EAS/signing changes is complete
+with gaps; local focused QA passed, but no delegated QA report or EAS artifact
+exists. At this head,
 provider composition, runtime/publishing admission,
 immutable full-package evidence, owner-owned signing changes, and external
 release evidence are genuine gates; none is fabricated by this report.

@@ -58,7 +58,7 @@ Both refs are independently fetched and verified at each handoff.
 | 5. Account, identity, sync, adoption, deletion | partial | Local and server foundations exist; app tests/typecheck pass, but release-compatible provider, failure, deletion and cross-device evidence remains to be closed. |
 | 6. Commercial entitlement | planned | SKU-neutral fixed/recurring entitlement chain is implemented and verified without inventing store/provider evidence. |
 | 7. Provider, privacy, security, operations | planned | External configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery gates are evidenced. |
-| 8. QA, signing, stores, GO/NO-GO | planned | Release-compatible test/signing/store evidence and explicit owner GO/NO-GO exist. |
+| 8. QA, signing, stores, GO/NO-GO | partial | Owner-owned EAS/signing hardening passes the five focused local tests; actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable external gates. |
 
 ## Execution stages
 
@@ -69,10 +69,11 @@ reconcile only affected narrative documents; replace stale launch-plan history;
 and supersede contradictory active assumptions. Verify contract parsing, focused
 tests, documentation references, and both clean/pushed heads.
 
-The first non-blocked task after this slice is the independent QA of the
-owner-owned EAS/signing hardening already present in the worktree, followed by
-the next account/entitlement slice if that review finds no internal defect.
-Cleanup remains a mandatory gate before each later release slice.
+The independent QA of the owner-owned EAS/signing hardening is complete locally
+with gaps: focused invariants pass, but no delegated report or EAS artifact exists.
+The next non-blocked internal slice is account/entitlement hardening only if it
+can remain provider-neutral; cleanup remains a mandatory gate before each later
+release slice.
 
 ### 1. Evidence and artifact cleanup — mandatory
 
@@ -181,6 +182,13 @@ release-compatible flows; verify clean working trees, immutable manifests,
 provenance, signed artifacts, store metadata, privacy/legal surfaces, and the
 whole-product journey. Request explicit owner GO/NO-GO only after all internal
 evidence is complete. Physical-device testing is optional and non-blocking.
+
+The current owner-owned EAS/signing slice is locally verified with
+`tests/easReleaseConfiguration.test.ts` and `tests/releaseSigningBoundary.test.ts`
+(5/5 passing). This proves configuration and no-debug-fallback invariants only; it
+does not prove an EAS-managed signed artifact. The delegated QA attempt used the
+required `gpt-5.6-luna` model at `max` reasoning but returned no report, so the
+controller records local QA as `PASS WITH GAPS`, not independent QA approval.
 
 ## Genuine stop gates
 
