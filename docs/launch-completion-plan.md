@@ -16,7 +16,7 @@ _Audyt: 2026-08-23. To jest jedyny aktywny dokument kolejności prac i statusu. 
 
 | Obszar          | Fakt                                                                                                                                                                                                                                                                                                                                                        | Dowód i granica                                                                                                                                                                                                                                                     |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App             | app source baseline: `e6935c4`; `origin/main` nie został zmieniony w tym tasku                                                                                                                                                                                                                                                                               | Current source passes recovery 287/116/564, TypeScript, 573/573 tests, content-boundary, and runtime-privacy checks. Runtime capture and owner approval remain pending; historical remote CI evidence is not current-head proof. |
+| App             | app source baseline: `9312cf2`; `origin/main` nie został zmieniony w tym tasku                                                                                                                                                                                                                                                                               | Current source passes recovery 287/116/564, TypeScript, 573/573 tests, content-boundary, and runtime-privacy checks. Runtime capture and owner approval remain pending; historical remote CI evidence is not current-head proof. |
 | Content         | master i origin/master: 12b99c78e03ec6c58964d7f83d11d1b50af08467                                                                                                                                                                                                                                                                                            | Exact-SHA [CI 32388398769](https://github.com/lukaszkurczab/patternly-content/actions/runs/32388398769) success; lokalnie zmiana GOV-01 ma 143/143 testów, authoring 10/10 i 838 source JSON. Exact-SHA dla tej zmiany pending.                                     |
 | Worktree        | App przed audytem miał user change .gitignore dodający .maestro.                                                                                                                                                                                                                                                                                            | Nie przypisywać go temu planowi. Plan i oba AGENTS.md są lokalnymi zmianami audytu.                                                                                                                                                                                 |
 | Release gate    | `npm run release:gate` pozostaje `not_ready`.                                                                                                                                                                                                                                                                                                               | Lock i lokalne artefakty obejmują 8 tracków; otwarte są dirty app checkout, 6 external evidence, 8 human content approvals, 8 publishing admissions i 8 runtime admissions. `physical-device-matrix` jest opcjonalny i nie blokuje launchu.                         |
@@ -931,6 +931,23 @@ Focused Practice/session/accessibility i M1/M2 checks przeszły `23/23`,
 `287/116/563`, `572/572` testów, TypeScript, content-boundary i
 runtime-privacy-boundary. Runtime Light/Dark capture oraz Product Owner
 approval nadal są otwarte.
+
+## Addendum — Summary Shell large-text propagation
+
+Current-channel Figma `882:14459` is the 200% stress instance of the shared
+`Pattern / Summary Shell` (`750:6109` / `750:6107`). The existing simulation
+summary already owned the shell geometry, completion semantics, footer buttons,
+and large-text contract for its title, mode, and section label, but its
+`Answered`, `Active time`, and outcome label/value text nodes did not set the
+same `maxFontSizeMultiplier={2}` used by the other summary and shared-shell
+text. Commit `9312cf2` closes that source-level accessibility/parity gap in
+the existing `SummaryStat` and `OutcomeStat` owners.
+
+No summary copy, result model, navigation command, button geometry, or Figma-
+only metric was added. Focused visual-shell checks and `npm run typecheck`
+passed; current-head full QA, Light/Dark runtime capture, and Product Owner
+approval remain the required evidence gates. This is not a `MATCHED` or 99%
+claim without current-head runtime pixel evidence.
 
 ## 8. Kryterium końcowe
 
