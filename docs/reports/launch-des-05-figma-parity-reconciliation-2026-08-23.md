@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `9312cf2`
+Current source SHA at packet update: `03fff7a`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -320,14 +320,14 @@ for semantic migration until that decision exists.
 - Live Figma design context and screenshots: pass for the current file/page/
   library and the node set recorded above, including the revalidations in the
   addenda.
-- `npm run typecheck`: pass at current source SHA `9312cf2`.
+- `npm run typecheck`: pass at current source SHA `03fff7a`.
 - Latest focused Practice Hub/Question Shell/accessibility checks: 26/26 pass; latest focused
   Activity checks: 35/35 pass; latest focused Progress/Home/review/visual
   checks: 36/36 pass.
-- Full `npm run qa:static`: pass at source commit `9312cf2`, with recovery
+- Full `npm run qa:static`: pass at source commit `03fff7a`, with recovery
   inventory 287/116/564 and 573/573 tests, TypeScript, content boundary, and
   runtime privacy boundary.
-- Working tree: source commit `9312cf2` is clean; this report and the launch
+- Working tree: source commit `03fff7a` is clean; this report and the launch
   plan contain the current documentation addendum.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
@@ -1771,10 +1771,11 @@ nodes were the remaining source-level gap: `Answered`, `Active time`, and the
 the same `maxFontSizeMultiplier={2}` used by the surrounding summary.
 
 Commit `9312cf2` adds that multiplier to the existing `SummaryStat` and
-`OutcomeStat` owners. It does not change completion semantics, result data,
-copy, route, navigation, button geometry, or add any Figma-only metric. This
-keeps one summary renderer and makes the stress-state text contract explicit
-for the whole reachable summary.
+`OutcomeStat` owners. Commit `03fff7a` then aligns the metric row with Figma's
+flexible label, fixed spacer, and right-aligned value reflow. These changes do
+not alter completion semantics, result data, copy, route, navigation, button
+geometry, or add any Figma-only metric. The result remains one summary
+renderer with an explicit stress-state text contract.
 
 Focused visual-shell checks and `npm run typecheck` pass at this slice. The
 current-head full QA, Light/Dark/200% runtime pixel capture, and Product Owner
