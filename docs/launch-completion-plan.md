@@ -58,7 +58,7 @@ Both refs are independently fetched and verified at each handoff.
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
 | 6. Commercial entitlement | planned | No provider-neutral entitlement runtime is currently composed. The fixed/recurring chain remains an implementation task after the provider/backend input contract exists; no store/provider evidence is claimed. |
 | 7. Provider, privacy, security, operations | planned | Production configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery evidence remains absent and requires the corresponding external gates. |
-| 8. QA, signing, stores, GO/NO-GO | partial | Owner-owned EAS/signing hardening passes the five focused local tests; actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable external gates. |
+| 8. QA, signing, stores, GO/NO-GO | partial | Owner commit `03a032c` containing the EAS/signing hardening is on canonical `main` and passes the five focused local tests; actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable external gates. |
 
 ## Execution stages
 
@@ -146,10 +146,11 @@ approval. The remaining per-track blockers are runtime admission and publishing
 admission, which are genuine external/release gates rather than content defects.
 
 The application release-readiness gate also passes its internal content-lock and
-source-integrity checks. It remains `not_ready` because the worktree contains six
-pre-existing owner-owned EAS/signing changes, the eight tracks have no runtime or
-publishing admission, immutable full-package verification is not evidenced by the
-source-only report, and the required external release evidence is absent.
+source-integrity checks. The owner-owned EAS/signing changes are now committed on
+canonical `main` at `03a032c` and the worktree is clean. The gate remains `not_ready`
+because actual EAS-managed signing/build evidence, eight-track runtime/publishing
+admission, immutable full-package verification, and required external release
+evidence are absent.
 
 ### 5. Account, identity, sync, adoption, deletion
 
@@ -187,7 +188,8 @@ provenance, signed artifacts, store metadata, privacy/legal surfaces, and the
 whole-product journey. Request explicit owner GO/NO-GO only after all internal
 evidence is complete. Physical-device testing is optional and non-blocking.
 
-The current owner-owned EAS/signing slice is locally verified with
+The current owner-owned EAS/signing slice is committed on canonical `main` at
+`03a032c` and locally verified with
 `tests/easReleaseConfiguration.test.ts` and `tests/releaseSigningBoundary.test.ts`
 (5/5 passing). This proves configuration and no-debug-fallback invariants only; it
 does not prove an EAS-managed signed artifact. The delegated QA attempt used the

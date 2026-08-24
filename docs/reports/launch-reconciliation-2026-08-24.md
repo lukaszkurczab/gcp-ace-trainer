@@ -100,8 +100,9 @@ evidence locations.
 - App focused contract/gate tests: 38 passed.
 - App `git diff --check`: passed.
 - App `npm run launch:readiness`: internal content lock/source integrity passed;
-  overall status remains `not_ready` because six pre-existing owner-owned
-  EAS/signing paths are dirty and external/admission evidence is absent.
+  current app worktree is clean at the owner-pushed `03a032c` EAS/signing commit;
+  overall status remains `not_ready` because external/admission evidence is
+  absent.
 - Focused owner-owned EAS/signing QA: 5/5 tests passed. This is local
   configuration/boundary evidence only; no EAS credential, signed artifact, or
   store evidence was created. The delegated QA attempt used `gpt-5.6-luna` at
@@ -128,7 +129,7 @@ exists. Source inspection also confirms that account/entitlement runtime provide
 composition is not present; adding speculative adapters would contradict the
 provider boundary. At this head,
 provider composition, runtime/publishing admission,
-immutable full-package evidence, owner-owned signing changes, and external
+immutable full-package evidence, actual EAS signing/build evidence, and external
 release evidence are genuine gates; none is fabricated by this report.
 
 The genuine gates remain exact provider/store SKU and pricing choices, provider and
