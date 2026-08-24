@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `bcb0ddd`
+Current source SHA at packet update: `1998810`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -107,7 +107,7 @@ Only the repository plan statuses are used below.
 | Current Practice feedback surface parity | `partial` | `0341424` removes the redundant visible result label; `536b19b` aligns `REASON` to 12/16 and rich-details body text to 13/20; `1c9457b` maps collapsed Details to the standalone row and expanded Details to the Figma outer panel. The runtime result selector remains on the visible reason panel. Figma `68:637` does not show a Details row in its immediate-feedback default while the canonical after-answer contract and existing runtime selectors still expose it, so state binding remains an explicit conflict; fresh runtime pixel comparison remains open. |
 | Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
-| Runtime screenshot and pixel evidence | `partial` | Explicit Maestro `2.6.1` capture now works on the booted iPhone 16 Pro / iOS 18.6 simulator. Current source `bcb0ddd` completed the shared 11-checkpoint visual-shell flow and populated Progress/Activity plus filter-sheet captures in both Dark and Light; a current-head 200% Light Summary slice now passes the corrected header/footer and `Back to practice` transition. The Settings/blocked Notifications large-text stress captures are from the preceding source. The complete reachable-path matrix, full current-head 200% runtime coverage, logical-viewport-normalized pixel comparisons, and owner decisions remain unverified. |
+| Runtime screenshot and pixel evidence | `partial` | Explicit Maestro `2.6.1` capture works on the booted iPhone 16 Pro / iOS 18.6 simulator. Preceding source `bcb0ddd` completed the shared 11-checkpoint visual-shell flow and populated Progress/Activity plus filter-sheet captures in both Dark and Light; a 200% Light Summary slice passes the corrected header/footer and `Back to practice` transition. Latest source `1998810` adds value-only session timer projection at source level, but its fresh 200% capture was blocked by an unreachable local Expo bundle. The complete reachable-path matrix, full current-head 200% runtime coverage, logical-viewport-normalized pixel comparisons, and owner decisions remain unverified. |
 | Account, authentication, Premium, content trust, and deletion UI | `unknown / needs evidence` | The canonical contract defines boundaries, but the current route graph does not provide matching owners for all Figma surfaces. Owner must decide whether those Figma surfaces are in this parity objective or outside the current launch route graph. |
 | Goals, cadence, focus areas, and Progress effectiveness | `partial` | Goal & cadence now has a canonical per-track record, route, create/active states, Progress entry point, and Figma-matched Goal ambient variants. Figma-only focus-area and effectiveness semantics still have no owner; current-head Light/Dark runtime comparison and Product Owner approval remain open. |
 
@@ -1943,3 +1943,11 @@ flow coverage gap, not a product-route change. The current source was verified
 with `npm run qa:static`: recovery `287/116/565`, TypeScript, `574/574` tests,
 content boundary, and runtime privacy boundary. Full current-head 200% route
 coverage, normalized Figma comparison, and Product Owner approval remain open.
+
+## Addendum — Session top-bar timer label convergence after `1998810`
+
+The live Figma authority for the shared Question Shell (`kZXD7cNBKUU7x0ceTHPFpR`, node `68:569`, connector `ksxw21cw`) specifies a three-column top bar whose left slot renders the timer value (`00:00`), while spoken context remains separate. The current active-session 200% evidence exposed that the three practice callers were passing `Active time 00:00` into the visual slot, consuming the space needed by the centered mode label.
+
+Commit `1998810` changes only the visual projection for Algorithms, Design Interview, and Certification practice timers to the value-only format. The existing `accessibilityLabel` retains `Active foreground time …`, so this is a geometry/parity correction with no lifecycle, timer, copy-semantic, or navigation change. A source contract test now protects the split between visual value and spoken context. No obsolete owner, duplicate renderer, fallback, or compatibility path was added or removed.
+
+Verification passed: recovery inventory `287/116/566`, TypeScript, `575/575` tests, content boundary, runtime privacy boundary, and `git diff --check`. A fresh 200% simulator capture was attempted, but the local Expo bundle was unreachable from the iOS simulator (`Failed to load app from http://127.0.0.1:8100`); therefore this slice makes no current-head runtime-pixel claim. Direct current-head Light/Dark/200% capture, normalized Figma comparison, full reachable-state matrix, owner decisions, and Product Owner approval remain open.
