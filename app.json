@@ -26,6 +26,7 @@
           }
         }
       ],
+      "./plugins/withAndroidNdkVersion",
       "./plugins/withPrivacyBoundary",
       "./plugins/withAndroidReleaseSigningBoundary"
     ],

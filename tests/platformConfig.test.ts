@@ -19,6 +19,8 @@ test("Expo platform configuration declares the supported phone-only native matri
   );
   assert.ok(buildProperties, "Expo Build Properties must own native target levels.");
 
+  assert.ok(app.plugins.includes("./plugins/withAndroidNdkVersion"), "Android NDK version must be pinned in the canonical Expo prebuild.");
+
   const [_, properties] = buildProperties;
   assert.deepEqual(properties.ios, { deploymentTarget: "16.4" });
   assert.deepEqual(properties.android, {

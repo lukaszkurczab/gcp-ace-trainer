@@ -54,6 +54,7 @@ test("generated Android release signing cannot fall back to the debug keystore",
   const transformed = injectAndroidReleaseSigning(generatedGradle);
   assert.match(transformed, /PATTERNLY_RELEASE_SIGNING_BOUNDARY/u);
   assert.match(transformed, /rootProject\.file\("\.\.\/credentials\.json"\)/u);
+  assert.match(transformed, /rootProject\.file\("app\/eas-build\.gradle"\)/u);
   assert.match(transformed, /!patternlyReleaseSigningAvailable && !patternlyEasSigningAvailable/u);
   assert.match(transformed, /signingConfig patternlyReleaseSigningAvailable \? signingConfigs\.release : null/u);
   const buildTypes = transformed.slice(transformed.indexOf("    buildTypes {"));

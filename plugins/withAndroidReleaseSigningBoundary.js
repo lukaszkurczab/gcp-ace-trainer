@@ -12,17 +12,22 @@ const RELEASE_SIGNING_PROPERTIES = Object.freeze([
 function injectAndroidReleaseSigning(source) {
   if (source.includes("PATTERNLY_RELEASE_SIGNING_BOUNDARY")) return source;
 
+  const androidBlockMarker = "android {\n";
+  const androidBlockIndex = source.indexOf(androidBlockMarker);
+  if (androidBlockIndex < 0) {
+    throw new Error("Patternly Android block was not found.");
+  }
+
+  const declarations = `// PATTERNLY_RELEASE_SIGNING_BOUNDARY\ndef patternlyReleaseStoreFile = findProperty("PATTERNLY_ANDROID_RELEASE_STORE_FILE") ?: System.getenv("PATTERNLY_ANDROID_RELEASE_STORE_FILE")\ndef patternlyReleaseStorePassword = findProperty("PATTERNLY_ANDROID_RELEASE_STORE_PASSWORD") ?: System.getenv("PATTERNLY_ANDROID_RELEASE_STORE_PASSWORD")\ndef patternlyReleaseKeyAlias = findProperty("PATTERNLY_ANDROID_RELEASE_KEY_ALIAS") ?: System.getenv("PATTERNLY_ANDROID_RELEASE_KEY_ALIAS")\ndef patternlyReleaseKeyPassword = findProperty("PATTERNLY_ANDROID_RELEASE_KEY_PASSWORD") ?: System.getenv("PATTERNLY_ANDROID_RELEASE_KEY_PASSWORD")\ndef patternlyReleaseSigningAvailable = [patternlyReleaseStoreFile, patternlyReleaseStorePassword, patternlyReleaseKeyAlias, patternlyReleaseKeyPassword].every { value -> value != null && value.toString().trim() }\n// EAS injects its managed keystore through credentials.json and eas-build.gradle after Expo prebuild has generated this file.\ndef patternlyEasCredentialsFile = rootProject.file("../credentials.json")\ndef patternlyEasBuildGradle = rootProject.file("app/eas-build.gradle")\ndef patternlyEasSigningAvailable = patternlyEasCredentialsFile.isFile() && patternlyEasBuildGradle.isFile()\n`;
+  let transformed = `${source.slice(0, androidBlockIndex)}${declarations}${source.slice(androidBlockIndex)}`;
   const signingConfigsMarker = "    signingConfigs {\n";
-  const signingConfigsIndex = source.indexOf(signingConfigsMarker);
+  const signingConfigsIndex = transformed.indexOf(signingConfigsMarker, androidBlockIndex + declarations.length);
   if (signingConfigsIndex < 0) {
     throw new Error("Patternly Android signingConfigs block was not found.");
   }
 
-  const declarations = `    // PATTERNLY_RELEASE_SIGNING_BOUNDARY\n    def patternlyReleaseStoreFile = findProperty("PATTERNLY_ANDROID_RELEASE_STORE_FILE") ?: System.getenv("PATTERNLY_ANDROID_RELEASE_STORE_FILE")\n    def patternlyReleaseStorePassword = findProperty("PATTERNLY_ANDROID_RELEASE_STORE_PASSWORD") ?: System.getenv("PATTERNLY_ANDROID_RELEASE_STORE_PASSWORD")\n    def patternlyReleaseKeyAlias = findProperty("PATTERNLY_ANDROID_RELEASE_KEY_ALIAS") ?: System.getenv("PATTERNLY_ANDROID_RELEASE_KEY_ALIAS")\n    def patternlyReleaseKeyPassword = findProperty("PATTERNLY_ANDROID_RELEASE_KEY_PASSWORD") ?: System.getenv("PATTERNLY_ANDROID_RELEASE_KEY_PASSWORD")\n    def patternlyReleaseSigningAvailable = [patternlyReleaseStoreFile, patternlyReleaseStorePassword, patternlyReleaseKeyAlias, patternlyReleaseKeyPassword].every { value -> value != null && value.toString().trim() }\n    // EAS injects its managed keystore through credentials.json and eas-build.gradle after Expo prebuild has generated this file.\n    def patternlyEasCredentialsFile = rootProject.file("../credentials.json")\n    def patternlyEasSigningAvailable = patternlyEasCredentialsFile.isFile()\n`;
-  let transformed = `${source.slice(0, signingConfigsIndex)}${declarations}${source.slice(signingConfigsIndex)}`;
-
   const signingConfigsEndMarker = "    }\n    buildTypes {";
-  const signingConfigsEndIndex = transformed.indexOf(signingConfigsEndMarker, signingConfigsIndex + declarations.length);
+  const signingConfigsEndIndex = transformed.indexOf(signingConfigsEndMarker, signingConfigsIndex);
   if (signingConfigsEndIndex < 0) {
     throw new Error("Patternly Android signingConfigs block end was not found.");
   }
