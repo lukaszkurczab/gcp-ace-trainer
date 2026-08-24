@@ -6,21 +6,12 @@ dated 2026-08-24. This file owns execution order and repository status only.
 
 **As of:** 2026-08-25
 
-**Starting pushed app head:** `2668022f2211453cb5a715bb0da5f1473fb3c119` on `origin/main`
-
-**Starting pushed content head:** `7fcf28d159c19e6b5d1c7e63828ae943ca3ce7e3` on `origin/master`
-
-The app checkout also contained a clean, user-owned local `main` ahead of its
-pushed head. It is preserved and will be pushed with verified reconciliation work;
-the pushed ref is the release baseline until that verification completes.
-
 **Current pushed canonical heads:** app `origin/main`; content `origin/master`.
 Both refs are independently fetched and verified at each handoff.
 
-At the 2026-08-25 controller checkpoint, the fetched refs are app
-`ea4ad79ebd91e227ddfff90c0d31f7d676e47024` and content
-`0463a2b03aba950d21ef1d5c5e01860db54d3fe4`. The app and content worktrees are
-clean after verification.
+At the 2026-08-25 controller checkpoint, both canonical worktrees were clean
+after independent fetch-and-match verification. Exact commit IDs remain in Git
+history and the readiness output; this plan avoids a self-referential SHA.
 
 Exact commit IDs belong to the fetched canonical refs and are recorded in the
 controller handoff evidence; this plan intentionally avoids a self-referential
@@ -78,8 +69,8 @@ reconcile only affected narrative documents; replace stale launch-plan history;
 and supersede contradictory active assumptions. Verify contract parsing, focused
 tests, documentation references, and both clean/pushed heads.
 
-The independent QA of the owner-owned EAS/signing hardening is complete locally
-with gaps: focused invariants pass, but no delegated report or EAS artifact exists.
+Controller QA of the owner-owned EAS/signing hardening is complete locally with
+gaps: focused invariants pass, but no delegated QA report or EAS artifact exists.
 No further account/entitlement implementation is safe at the current boundary
 without inventing the missing provider/backend input contract. Cleanup remains a
 mandatory gate before each later release slice.
