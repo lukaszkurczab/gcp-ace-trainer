@@ -57,4 +57,5 @@ test("simulation finish confirmation uses the Figma action-required copy and rev
   const surface = readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8");
   assert.match(surface, /accessibilityLabel=\{t\(dismiss\.label\)\}/);
   assert.match(surface, /confirmationTitle:\s*\{[^}]*fontSize:\s*22[^}]*fontWeight:\s*"600"[^}]*letterSpacing:\s*-0\.3[^}]*lineHeight:\s*28/);
+  assert.match(surface, /layout=\{projection\.confirmation \? "simulationConfirmation"/);
 });

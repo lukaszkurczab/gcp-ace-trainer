@@ -38,7 +38,7 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
     <View style={styles.root} testID={runtimeIdentity ? runtimeSelectors.simulation.root(runtimeIdentity.sessionId) : undefined}>
       <SessionShell
         actionBar={actionBar}
-        layout={savedResponse ? "simulationSaved" : "simulation"}
+        layout={projection.confirmation ? "simulationConfirmation" : savedResponse ? "simulationSaved" : "simulation"}
         modeLabel={projection.modeLabel}
         onPositionPress={projection.state === "editable" ? () => setNavigatorVisible(true) : undefined}
         position={projection.position}

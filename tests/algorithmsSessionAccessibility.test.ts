@@ -43,7 +43,7 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   assert.match(feedback, /styles\.detailsSection/);
   assert.match(feedback, /\) : detailsDisclosure/);
   assert.doesNotMatch(feedback, /detailsSection:\s*\{[^}]*\bheight\s*:/);
-  assert.match(simulation, /layout=\{savedResponse \? "simulationSaved" : "simulation"\}/);
+  assert.match(simulation, /layout=\{projection\.confirmation \? "simulationConfirmation" : savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(simulation, /variant=\{savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.doesNotMatch(surfaces, /hitSlop/);
   assert.doesNotMatch(surfaces, /(?:moveButton|valueOption|detailsToggle|position):\s*\{[^}]*(?:height|width):\s*(?:32|36|40)\b/);

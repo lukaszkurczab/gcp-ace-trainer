@@ -342,14 +342,14 @@ test("simulation active shell uses the Figma question and action-footer variant"
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
   const screen = source("src/features/simulation/AlgorithmsInterviewSimulationScreen.tsx");
 
-  assert.match(shell, /layout\?: "practice" \| "simulation"/);
+  assert.match(shell, /layout\?: "practice" \| "simulation" \| "simulationSaved" \| "simulationConfirmation"/);
   assert.match(shell, /onPositionPress\?: \(\) => void/);
   assert.match(shell, /header=\{/);
   assert.match(shell, /sessionContent:\s*\{\s*gap:\s*spacing\.md,?\s*\}/);
   assert.match(shell, /progressTrackSimulation:\s*\{\s*backgroundColor:\s*palette\.surfaceInput/);
   assert.match(simulation, /operationNotice \? <SimulationRecoverySurface/);
   assert.doesNotMatch(simulation, /footerVariant=\{operationNotice/);
-  assert.match(simulation, /layout=\{savedResponse \? "simulationSaved" : "simulation"\}/);
+  assert.match(simulation, /layout=\{projection\.confirmation \? "simulationConfirmation" : savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(simulation, /variant=\{savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(simulation, /simulationPrompt: \{[\s\S]*fontSize: 22[\s\S]*lineHeight: 28/);
   assert.match(simulation, /actionBar: \{[\s\S]*width: "100%"/);
