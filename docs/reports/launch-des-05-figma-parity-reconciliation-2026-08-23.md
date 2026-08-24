@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `8c0a9b8`
+Current source SHA at packet update: `0db6c20`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -95,7 +95,7 @@ Only the repository plan statuses are used below.
 |---|---|---|
 | Canonical route graph and screen owners | `done` | `RootNavigator` has one owner for Home, Activity, Settings, Practice Hub, Practice Setup, active Practice, summaries, simulation, and review. Source ownership and route tests pass. This proves architecture, not pixel parity. |
 | Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commits `7e9b200`, `e257af4`, `2eb6c65`, `992d5bb`, and `f3afd92` align the shared Button state matrix, Bottom Navigation separator, Screen Header context typography, Screen Header base geometry, and Screen Shell default spacing to Figma `141:817`, `140:875`, `140:881`, and `830:7457`; current slices still require runtime comparison across all states and themes. |
-| Home, Progress, and Activity source slices | `partial` | Commits through `8c0a9b8` align documented source geometry and typography against live nodes, including the Progress 16 px content inset, Activity and Goal Glow-UL variants, and exact 40 px filtered-empty inset. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
+| Home, Progress, and Activity source slices | `partial` | Commits through `0db6c20` align documented source geometry and typography against live nodes, including the Progress 16 px content inset, Progress no-evidence state geometry, Activity and Goal Glow-UL variants, and exact 40 px filtered-empty inset. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract, `6f8b0c6` aligns the Coding row icon container/icon/chevron geometry from `232:1716`, and `a6d05c6` aligns the section-label inset/typography and removes the fixture-only hero-action chevron. The current source does not render the Figma fixture's `Independent Practice` / `Coding Interview` rows; that fixture-versus-contract discrepancy is recorded separately, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
@@ -1485,3 +1485,21 @@ Focused Progress/Home/visual-shell checks passed `22/22`; current local
 TypeScript, content-boundary, and runtime-privacy-boundary. Runtime Light/Dark
 capture and Product Owner approval remain open; this addendum does not claim
 99% parity.
+
+## Addendum — Progress no-evidence visual geometry convergence
+
+The current connector channel `ksxw21cw` was revalidated against the Progress
+no-evidence frame `842:10949`. The state uses a compact 24 px/700 title, an
+empty weekly card with 14 px horizontal and 12 px vertical padding, 4 px card
+rhythm, no progress bar, a 48 px icon with 20 px radius, and a 40 px vertical
+empty-state inset. Its Open Practice CTA uses the existing Button owner with
+the Figma success/pill treatment.
+
+Commit `0db6c20` applies these state-specific styles only when the canonical
+Progress model has no evidence. The repository-owned copy and action remain
+truthful; no synthetic session target, goal value, route, or fallback was
+introduced. Focused Progress/Home/visual-shell checks passed `26/26`; current
+local `npm run qa:static` passed recovery inventory `287/116/563`, `572/572`
+tests, TypeScript, content-boundary, and runtime-privacy-boundary. Runtime
+Light/Dark capture and Product Owner approval remain open; this addendum does
+not claim 99% parity.
