@@ -123,20 +123,50 @@ channel for:
 - **Verification:** owner-bound decision record linked to exact Figma nodes.
 - **Report target:** parity report and Product Owner decision register.
 
-## First next task
+## Initial next task (completed by the addendum below)
 
 Execute `DES-005-D1` before another geometry patch. The shared owners already
 contain the safe token-level convergence found in the current Figma context;
 the highest-value missing evidence is now current-head runtime truth across the
-reachable shell. If a capture reveals a real source delta, implement it in a
-separate canonical slice with a focused test and rerun the pack.
+reachable shell. This initial task is recorded as completed by the runtime
+evidence addendum below. If comparison reveals a real source delta, implement
+it in a separate canonical slice with a focused test and rerun the pack.
 
 ## Unverified areas and risks
 
-- Current-head screenshot packs for this exact HEAD were not captured in this
-  documentation-only handoff.
+- The original handoff was documentation-only; the current-head shell pack is
+  now recorded in the evidence artifact referenced by the addendum below.
 - Normalized Figma comparison and Product Owner approval remain absent.
 - Simulation confirmation remains unreachable through the bundled Free entry
   contract and must not be made reachable with fake data.
 - Full app/product launch blockers outside UI parity are intentionally not
   reclassified by this packet.
+
+## Addendum — DES-005-D1 current-head runtime evidence after `c7c1f9e`
+
+The capture task now has a reproducible visual-shell evidence pack for the
+current repository HEAD `c7c1f9e51d92246a1c76eec65683028775ad1f46` on iPhone 16
+Pro / iOS 18.6 (`00B8F5B5-DF44-4621-8E30-56927604FA96`) with Maestro 2.6.1
+and the local Metro loopback. The canonical 11-checkpoint visual-shell flow
+passed in all four requested variants:
+
+- Light, standard content size: 11/11
+- Dark, standard content size: 11/11
+- Light, `accessibility-extra-extra-extra-large` 200% stress: 11/11
+- Dark, `accessibility-extra-extra-extra-large` 200% stress: 11/11
+
+The manifest and coverage matrix are in
+`artifacts/maestro-screen-capture/des005d-current-head-2026-08-24/`; the
+original full-screen PNGs remain in the four recorded `/tmp` roots. The pack
+covers Track selection, Home, Practice Setup, active session, exit sheet,
+partial Summary, Progress, Settings, Notifications, Data & privacy, and
+Appearance. Activity and the remaining app-wide route/state branches are not
+silently treated as covered by this shell pack.
+
+The temporary active-track precondition was capture-only and deleted after
+the run. No production source, route, selector, backend contract, persistence
+behavior, or committed canonical flow changed. This completes runtime capture
+evidence for the scoped shell lane, but it does not promote any matrix row to
+`MATCHED`: normalized Figma comparison, Activity/full reachable-state
+coverage, Figma-only semantic owner decisions, and Product Owner approval
+remain open. `DES-005-D2` is now the next implementation-ready task.

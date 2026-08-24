@@ -1113,11 +1113,36 @@ both remain explicit `CANONICAL_CONFLICT`/`DESIGN_MISSING` decisions. No new
 metrics, routes, seed sessions, or no-op actions are permitted to close the
 visual gap.
 
-The first next task is `DES-005-D1` capture evidence. It must record exact
+The initial next task was `DES-005-D1` capture evidence. It had to record exact
 source SHA, route/state/theme/device/profile, reproducible flow, missing-state
-classification, and screenshot manifest. Current-head capture, normalized
-Figma comparison, and Product Owner approval remain open; this handoff does
-not claim `MATCHED` or 99% parity.
+classification, and screenshot manifest. Normalized Figma comparison and
+Product Owner approval remain open; this handoff does not claim `MATCHED` or
+99% parity. The capture requirement is completed by the addendum below;
+`DES-005-D2` is now next.
+
+## Addendum — DES-005-D1 current-head runtime evidence after `c7c1f9e`
+
+The visual-shell evidence pack now covers the current repository HEAD
+`c7c1f9e51d92246a1c76eec65683028775ad1f46` on iPhone 16 Pro / iOS 18.6
+(`00B8F5B5-DF44-4621-8E30-56927604FA96`) with Maestro 2.6.1 and local Metro
+loopback. The canonical 11-checkpoint flow passed 11/11 in Light and Dark at
+standard content size and 11/11 in both themes at the simulator's
+`accessibility-extra-extra-extra-large` 200% stress category.
+
+Evidence metadata, the 44-screenshot manifest, run report, coverage matrix,
+and explicit blockers are in
+`artifacts/maestro-screen-capture/des005d-current-head-2026-08-24/`. The
+pack covers Track selection, Home, Practice Setup, active session, exit sheet,
+partial Summary, Progress, Settings, Notifications, Data & privacy, and
+Appearance. Activity and the remaining route/state branches remain uncovered
+by this scoped pack. The temporary active-track precondition was deleted and
+no production source or committed canonical flow changed.
+
+This closes the current-head runtime capture gate for the scoped shell lane,
+not the parity objective: normalized Figma comparison, Activity/full
+reachable-state evidence, Figma-only semantic owner decisions, and Product
+Owner approval remain open. `DES-005-D2` is the next implementation-ready
+task.
 
 ## 8. Kryterium końcowe
 
