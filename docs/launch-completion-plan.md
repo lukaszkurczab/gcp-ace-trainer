@@ -50,7 +50,7 @@ the pushed ref is the release baseline until that verification completes.
 | 0. Strategic reconciliation | complete | Contract, tests, current-only decision register and affected docs are reconciled and pushed to canonical heads. |
 | 1. Evidence and artifact cleanup | in_progress | Decision-register cleanup and removal of the obsolete global content-count gate are complete; the remaining strict deletion audit preserves unique provenance/release/legal/security evidence. |
 | 2. Figma/UI reconciliation | partial | Existing repository-owned implementation and visual evidence exist; remaining semantic conflicts or owner approvals remain explicit. |
-| 3. Content Review Console V1 | planned | Local console renders real source items, surfaces advisory risks/coverage, tracks fingerprints, and records explicit human outcomes. |
+| 3. Content Review Console V1 | in_progress | Local CLI/localhost console now renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, and records bounded explicit outcomes; independent QA and canonical push remain. |
 | 4. Eight-track content audit | partial | Existing evidence is available; targeted classification is required without reopening the accepted baseline by count. |
 | 5. Account, identity, sync, adoption, deletion | partial | Local and server foundations exist; release-compatible provider, failure, deletion and cross-device evidence remains to be closed. |
 | 6. Commercial entitlement | planned | SKU-neutral fixed/recurring entitlement chain is implemented and verified without inventing store/provider evidence. |
