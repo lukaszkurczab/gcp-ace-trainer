@@ -1,5 +1,4 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
 
 import {
   loadCanonicalProductContract,
@@ -21,8 +20,6 @@ const canonicalContractCompanionPaths = [
   "tests/canonicalProductContract.test.ts",
 ] as const;
 
-const productOwnerDecisionRegisterPath = "docs/product-owner-decision-register.md";
-const productOwnerDesignNeutralPlatformMigrationDecision = "PO-057";
 const productOwnerDesignNeutralPlatformMigrationCommit = "a5eb8ac14b3753bd443486d94853468183605ad7";
 const approvedDesignNeutralPlatformMigrationPaths = [
   "src/components/SettingsBottomSheet.tsx",
@@ -164,16 +161,16 @@ function isExactAbsoluteFillMigration(diff: string | undefined): boolean {
 }
 
 /**
- * PO-057 is a closed historical exception for the React Native 0.86 API removal.
- * It deliberately recognizes only the complete, exact five-file token migration.
+ * The exact historical commit is a closed maintenance classification for the
+ * React Native 0.86 API removal. It deliberately recognizes only the complete,
+ * exact five-file token migration; the active owner decision register is not a
+ * dependency because implemented decisions belong to the real architecture and
+ * its evidence.
  */
 function approvedDesignNeutralPlatformMigrationPathsFor(input: ContractChangeGateInput): ReadonlySet<string> {
-  const decisionIsDocumented = readFileSync(productOwnerDecisionRegisterPath, "utf8").includes(
-    `## ${productOwnerDesignNeutralPlatformMigrationDecision} —`,
-  );
   const isExactHistoricalCommit = input.commitIds?.length === 1
     && input.commitIds[0] === productOwnerDesignNeutralPlatformMigrationCommit;
-  if (!decisionIsDocumented || !isExactHistoricalCommit || !input.sourceDiffs) return new Set();
+  if (!isExactHistoricalCommit || !input.sourceDiffs) return new Set();
 
   const matchesCompleteApprovedMigration = approvedDesignNeutralPlatformMigrationPaths.every((path) =>
     input.changedPaths.includes(path) && isExactAbsoluteFillMigration(input.sourceDiffs![path]),

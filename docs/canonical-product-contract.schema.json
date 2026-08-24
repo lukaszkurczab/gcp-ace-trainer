@@ -98,6 +98,20 @@
       }
     }
   },
+  "allOf": [
+    {
+      "properties": {
+        "commercialEntitlement": {
+          "type": "object",
+          "properties": {
+            "premiumProducts": {
+              "const": ["fixedDuration30Day", "fixedDuration90Day", "recurring"]
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "requirementTestCoverage": {
       "type": "object",

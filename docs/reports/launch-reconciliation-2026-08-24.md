@@ -57,9 +57,11 @@ Content repository:
 - AI mock interviewer and paid external testing/review assumptions are excluded.
 - The mandatory cleanup stage and its preservation criteria are in the active plan.
 
-The current register marks contradictory earlier portions of PO-037 and PO-046 as
-partly superseded by PO-064; historical evidence remains identifiable rather than
-being silently rewritten.
+The decision register was corrected after review: it now contains only unresolved
+owner choices and genuine external gates. Resolved, implemented, superseded, and
+historical decision entries and their alternatives were removed from the active
+register; unique release/provenance/legal/security evidence remains in its proper
+evidence locations.
 
 ## Verification
 

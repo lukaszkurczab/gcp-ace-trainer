@@ -407,6 +407,7 @@ test("defines the strategic reconciliation content, session, console, commerce, 
   assert.match(requirements.get("CONTENT-COVERAGE-QUALITY-001") ?? "", /No global question-count threshold/);
   assert.match(requirements.get("SESSION-PROFILE-LENGTH-001") ?? "", /resolved supported subset/);
   assert.match(requirements.get("CONTENT-REVIEW-CONSOLE-001") ?? "", /local\/internal repository-owned/);
+  assert.match(requirements.get("COMMERCIAL-ENTITLEMENT-001") ?? "", /fixed non-renewing 30-day access/);
   assert.deepEqual(contract.commercialEntitlement.premiumProducts, ["fixedDuration30Day", "fixedDuration90Day", "recurring"]);
   assert.match(requirements.get("PREMIUM-ENTITLEMENT-SOURCES-001") ?? "", /SKU-neutral/);
   assert.match(requirements.get("SOLO-FOUNDER-OPERATING-001") ?? "", /no paid testers, coaches, reviewers/);
@@ -793,6 +794,7 @@ test("rejects every superseded Directive 2 product model", () => {
     ["account required before learning", validContract.replace("guestAndFree:\n  guestIdentity: localInstallation\n  installationRecord: opaqueInstallationIdAndLocalDatasetIdGuestBoundBeforeRecovery\n  firebaseAnonymousAuthentication: prohibited\n  firstLearningValueRequiresAccount: false", "guestAndFree:\n  guestIdentity: localInstallation\n  installationRecord: opaqueInstallationIdAndLocalDatasetIdGuestBoundBeforeRecovery\n  firebaseAnonymousAuthentication: prohibited\n  firstLearningValueRequiresAccount: true"), /guest contract/],
     ["guest data silently discarded", validContract.replace("silentMergeOrDiscard: prohibited", "silentMergeOrDiscard: allowed"), /guest contract/],
     ["guest purchase", validContract.replace("guestPurchase: prohibited", "guestPurchase: allowed"), /commercial contract/],
+    ["monthly and annual-only entitlement", validContract.replace("premiumProducts: [fixedDuration30Day, fixedDuration90Day, recurring]", "premiumProducts: [monthly, annual]"), /must be equal to constant|commercial contract/],
     ["guest Premium package download", validContract.replace("premiumPackageDownload, uninstallRecovery", "uninstallRecovery"), /guest contract/],
     ["local RevenueCat authority", validContract.replace("paidDownloadAuthority: patternlyBackendEntitlementOnly", "paidDownloadAuthority: localRevenueCatSdk"), /commercial contract/],
     ["track slots", validContract.replace("trackSlots: prohibited", "trackSlots: threeActiveTracks"), /commercial contract/],

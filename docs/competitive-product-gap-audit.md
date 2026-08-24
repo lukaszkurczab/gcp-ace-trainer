@@ -4,6 +4,10 @@
 > for Directive 2. It does not define the current product, launch scope, status,
 > or implementation sequence.
 
+> **Current supersession:** the 2026-08-24 owner directive explicitly excludes an
+> AI tutor/mock interviewer from launch. The current Premium entitlement and
+> launch scope are defined by the canonical product contract, not this audit.
+
 Status date: 2026-07-31  
 Application evidence commit: `4a2c2ab`  
 Decision at the evidence date: `CATEGORY BASELINE REVIEWED / PRODUCT COMPLETION NO-GO`

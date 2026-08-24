@@ -18,10 +18,10 @@ type TrackDescriptor = {
 };
 ```
 
-Families remain internal. A registry descriptor exists only for a shipping
-track with a complete free vertical and core loop. Ten-track density evidence
-uses separate design/test fixtures and never creates an incomplete registry
-record or unavailable product path.
+Families remain internal. A registry descriptor exists only for one of the eight
+launch tracks with a complete free vertical and core loop. Post-launch authoring
+briefs may remain in their source catalogue, but density evidence never creates an
+incomplete registry record or unavailable product path.
 
 ## Guest, account and identity
 

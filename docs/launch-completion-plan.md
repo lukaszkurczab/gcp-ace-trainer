@@ -80,9 +80,17 @@ Audit both repositories and remove only artifacts that satisfy all of these:
 5. Git history is sufficient for provenance.
 
 Remove obsolete evidence, directives, finished-task notes, duplicate reports and
-dead artifacts. Preserve the canonical contract, decision register, design
-authority, current plan, active assets/licenses, and unique immutable evidence.
-Run reference searches and focused repository tests before and after deletion.
+dead artifacts. The `product-owner-decision-register.md` is cleaned under a
+stronger rule: it is not a history log. Delete every resolved, implemented,
+superseded, historical, duplicate, or option-matrix entry. When an owner decision
+is made, remove its question, uncertainty, and rejected alternatives. When the
+decision is implemented, remove it from the register entirely and rely on the real
+contract, architecture, manifest, or evidence. Keep only unresolved owner choices
+and genuine external gates. Preserve unique provenance/release/legal/security
+evidence in its proper evidence location, not by keeping it as a decision entry.
+Preserve the canonical contract, current plan, design authority, active
+assets/licenses, and unique immutable evidence. Run reference searches and focused
+repository tests before and after deletion.
 
 ### 2. Figma/UI reconciliation
 

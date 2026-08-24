@@ -127,7 +127,7 @@ requirements:
   - id: DESIGN-REFERENCE-REGISTRY-001
     statement: Actual visual work may be approved only by the Product Owner, Figma is temporary design-phase authority, and repository-owned tokens, assets, production components, Storybook, tests, and baselines become operational authority after verified handoff without a production Figma or Storybook dependency.
   - id: COMMERCIAL-ENTITLEMENT-001
-    statement: Patternly provides permanent Free access and one account-bound Premium entitlement for all Premium content through one monthly and one annual product, with no tiers or track slots and with store, RevenueCat, backend, and bounded-device-cache authority kept distinct.
+    statement: Patternly provides permanent Free access and one account-bound SKU-neutral Premium entitlement for all Premium content through fixed non-renewing 30-day access, fixed non-renewing 90-day access, and discounted recurring access, with no tiers or track slots and with store, RevenueCat, backend, and bounded-device-cache authority kept distinct.
   - id: GUEST-FREE-001
     statement: A local-installation guest reaches meaningful bundled free-node learning without registration, cannot purchase or download Premium, and adopts progress only through preview, explicit confirmation, deterministic reconciliation, and a finish-or-abandon active-session boundary.
   - id: GUEST-INSTALLATION-001
