@@ -65,7 +65,7 @@ docs/
 Hierarchia autorytetu jest jednoznaczna:
 
 1. `canonical-product-contract.yaml` — normatywne zachowanie produktu i polityki przekrojowe;
-2. `product-owner-decision-register.md` — decyzje właściciela, uzasadnienie i historia supersession;
+2. `product-owner-decision-register.md` — wyłącznie bieżące, nierozstrzygnięte decyzje właściciela i zewnętrzne gate'y; nie jest historią;
 3. dokumenty `00`–`13` oraz `15`–`17` — narracyjni/domain owners, którzy nie mogą nadpisać kontraktu;
 4. ADR-y — historia lub aktywne decyzje techniczne, nigdy product authority ani sequencing;
 5. `launch-completion-plan.md` — jedyne aktywne źródło implementation order i repository status;

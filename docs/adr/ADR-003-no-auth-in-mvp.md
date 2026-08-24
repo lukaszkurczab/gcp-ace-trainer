@@ -9,8 +9,7 @@ Data: 2026-06-26
 > required for Premium, sync, restore and cross-device continuity. The replacement
 > account/data architecture is now normative in
 > [`../canonical-product-contract.yaml`](../canonical-product-contract.yaml)
-> and traced in
-> [`../product-owner-decision-register.md`](../product-owner-decision-register.md). This ADR must
+> and reflected by the implemented account/data architecture. This ADR must
 > not be used to omit account work or to describe the historical local-only
 > scope as the public-launch target or to add an account wall before first value.
 

@@ -74,7 +74,7 @@ Figma is temporary visual authority during the one-time active design phase. Onl
 Authority is ordered as follows:
 
 1. `canonical-product-contract.yaml` — normative product behavior and cross-cutting policy;
-2. `product-owner-decision-register.md` — direct owner decisions, rationale and supersession history;
+2. `product-owner-decision-register.md` — only unresolved owner choices and genuine external gates; it is not a decision history;
 3. documents `00`–`13` and `15`–`17` — narrative owners that elaborate the contract without overriding it;
 4. ADRs — technical history or current technical decisions, never product or execution authority;
 5. `launch-completion-plan.md` — the sole active implementation-order and repository-status authority;
