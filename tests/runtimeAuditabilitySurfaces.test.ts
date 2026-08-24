@@ -45,7 +45,7 @@ test("Home uses the approved compact presentation without changing recommendatio
   assert.match(home, /overviewFill:\s*\{[\s\S]*?backgroundColor:\s*palette\.primary/);
   assert.match(home, /focusActionLabel:\s*\{[\s\S]*?color:\s*palette\.primary[\s\S]*?lineHeight:\s*18/);
   assert.match(home, /startButton:[\s\S]*?minHeight:\s*49/);
-  assert.match(home, /activityCompletionLabel\(attempt\.answeredAt, t\)/);
+  assert.match(home, /activityCompletionLabel\(recentAttempt\.answeredAt, t\)/);
   assert.doesNotMatch(home, /attempt\.result\.kind/);
   assert.match(home, /<Button[\s\S]*?testID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)/);
   assert.match(home, /<Text style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);

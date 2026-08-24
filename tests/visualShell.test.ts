@@ -206,6 +206,10 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(homeTab, /overviewValue:\s*\{[\s\S]*\.\.\.typography\.bodyStrong/);
   assert.match(homeTab, /currentFocusTitle:[\s\S]*?fontSize:\s*15[\s\S]*?fontWeight:\s*"500"[\s\S]*?lineHeight:\s*18/);
   assert.match(homeTab, /activityDetail:[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"400"/);
+  assert.match(homeTab, /<View style=\{styles\.activityRow\}>[\s\S]*?recentAttempt\.modeId[\s\S]*?runtimeSelectors\.home\.activity\(\)/);
+  assert.doesNotMatch(homeTab, /activityList/);
+  assert.match(homeTab, /activityRow:\s*\{[\s\S]*?justifyContent:\s*"space-between"[\s\S]*?minHeight:\s*44/);
+  assert.match(homeTab, /activityAction:\s*\{[\s\S]*?flexShrink:\s*0[\s\S]*?minHeight:\s*44/);
   assert.match(homeTab, /secondaryActionText:[\s\S]*?color:\s*palette\.primary[\s\S]*?lineHeight:\s*18/);
   assert.match(homeTab, /activityActionText:[\s\S]*?color:\s*palette\.primary[\s\S]*?lineHeight:\s*18/);
   assert.match(button, /labelStyle\?: StyleProp<TextStyle>/);

@@ -80,6 +80,7 @@ export function HomeTab({
   const recentAttempts = trainingAttempts
     .filter((attempt) => attempt.trackId === activeTrack.id && attempt.sessionId !== activeSession?.id)
     .sort((left, right) => right.answeredAt.localeCompare(left.answeredAt));
+  const recentAttempt = recentAttempts[0];
   const overview = buildOverviewMetrics(activeTrack.id, reviewQueueItems, trainingAttempts, activeSession?.id);
 
   return (
@@ -189,28 +190,24 @@ export function HomeTab({
       </View>
       <View style={styles.detailSection}>
         <Text style={styles.sectionLabel}>{t("Recent activity")}</Text>
-        {recentAttempts.length > 0 ? (
-          <View style={styles.activityList}>
-            {recentAttempts.slice(0, 1).map((attempt) => (
-              <View key={attempt.id} style={styles.activityRow}>
-                <View style={styles.activityCopy}>
-                  <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(modeLabel(attempt.modeId))}</Text>
-                  <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{activityCompletionLabel(attempt.answeredAt, t)}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <Text maxFontSizeMultiplier={2} style={styles.activityEmpty}>{t("No activity yet")}</Text>
-        )}
-        <Pressable
-          accessibilityRole="button"
-          onPress={onOpenActivity}
-          style={({ pressed }) => [styles.activityAction, pressed ? styles.pressed : null]}
-          testID={runtimeSelectors.home.activity()}
-        >
-          <Text style={styles.activityActionText}>{t("View activity")}</Text>
-        </Pressable>
+        <View style={styles.activityRow}>
+          {recentAttempt ? (
+            <View style={styles.activityCopy}>
+              <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(modeLabel(recentAttempt.modeId))}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{activityCompletionLabel(recentAttempt.answeredAt, t)}</Text>
+            </View>
+          ) : (
+            <Text maxFontSizeMultiplier={2} style={styles.activityEmpty}>{t("No activity yet")}</Text>
+          )}
+          <Pressable
+            accessibilityRole="button"
+            onPress={onOpenActivity}
+            style={({ pressed }) => [styles.activityAction, pressed ? styles.pressed : null]}
+            testID={runtimeSelectors.home.activity()}
+          >
+            <Text style={styles.activityActionText}>{t("View activity")}</Text>
+          </Pressable>
+        </View>
       </View>
     </>
   );
@@ -452,13 +449,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
-  activityList: {
-    gap: 0,
-  },
   activityRow: {
+    alignItems: "center",
     flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
     minHeight: 44,
-    paddingVertical: spacing.xs,
   },
   activityCopy: {
     flex: 1,
@@ -482,9 +478,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   activityAction: {
     alignItems: "center",
-    alignSelf: "flex-start",
-    flexDirection: "row",
-    gap: spacing.xs,
+    flexShrink: 0,
     minHeight: 44,
     paddingHorizontal: spacing.xs,
   },
