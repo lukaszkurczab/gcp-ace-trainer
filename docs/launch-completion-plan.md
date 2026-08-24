@@ -14,7 +14,7 @@ The app checkout also contained a clean, user-owned local `main` ahead of its
 pushed head. It is preserved and will be pushed with verified reconciliation work;
 the pushed ref is the release baseline until that verification completes.
 
-**Current pushed canonical heads:** app `main` at `b5343ef`;
+**Current pushed canonical heads:** app `main` at `086d0fe`;
 content `master` at `631b278`.
 
 ## Locked launch decisions
@@ -69,7 +69,9 @@ reconcile only affected narrative documents; replace stale launch-plan history;
 and supersede contradictory active assumptions. Verify contract parsing, focused
 tests, documentation references, and both clean/pushed heads.
 
-The first non-blocked task after this slice is Stage 1 cleanup.
+The first non-blocked task after this slice is internal account/entitlement and
+release hardening; cleanup remains a mandatory gate before each later release
+slice.
 
 ### 1. Evidence and artifact cleanup — mandatory
 
@@ -94,6 +96,15 @@ evidence in its proper evidence location, not by keeping it as a decision entry.
 Preserve the canonical contract, current plan, design authority, active
 assets/licenses, and unique immutable evidence. Run reference searches and focused
 repository tests before and after deletion.
+
+The current cleanup audit removed the unreferenced resolved decision packet
+`docs/po-questions/rc-003-certification-exam-interaction-policy.md`. The decision
+is implemented in the canonical contract and runtime/tests, so its question,
+alternatives, and recommendation no longer belong in the repository's active
+decision surfaces. The five input directives remain because they are the unique
+owner/provenance package and `docs/README.md` marks them historical and
+non-authoritative; no duplicate report or evidence artifact met the deletion
+criteria.
 
 ### 2. Figma/UI reconciliation
 

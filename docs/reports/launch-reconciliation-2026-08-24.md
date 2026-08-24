@@ -21,7 +21,7 @@ Pushed and independently re-fetched canonical refs after the follow-up cleanup:
 
 | Repository | Canonical ref | Verified head |
 | --- | --- | --- |
-| `lukaszkurczab/gcp-ace-trainer` | `main` | `b5343ef` |
+| `lukaszkurczab/gcp-ace-trainer` | `main` | `086d0fe` |
 | `lukaszkurczab/patternly-content` | `master` | `631b278` |
 
 ## Changed files
@@ -63,6 +63,11 @@ Content repository:
   report was rechecked after the documentation-only content head `631b278`.
 - Five affected AWS checkpoint/audit narratives were reconciled so their counts
   remain provenance without implying a node floor or global count gate.
+- The unreferenced resolved decision packet
+  `docs/po-questions/rc-003-certification-exam-interaction-policy.md` was removed;
+  its implemented policy is owned by the canonical contract, runtime, and tests.
+  The retained directive package and reports remain non-authoritative or unique
+  provenance, so no additional deletion was justified.
 
 ## Reconciled authority
 
@@ -91,7 +96,7 @@ evidence locations.
 - App `npm test`: 577 passed.
 - App focused canonical contract suite: 27 passed.
 - App `npm run typecheck`: passed.
-- App `npm run gate:contract-change`: passed.
+- App `npm run gate:contract-change`: passed again after the cleanup deletion.
 - App focused contract/gate tests: 38 passed.
 - App `git diff --check`: passed.
 - Content `npm test`: 146 passed.
@@ -107,11 +112,10 @@ evidence locations.
 
 ## Next task and gates
 
-The targeted Stage 1 cleanup is complete for the decision register and the
-obsolete global content-count gate. The local/internal Content Review Console V1
-and the eight-track structural audit are complete; the accepted content baseline
-remains unchanged. The next non-blocked task is the remaining Stage 1 deletion
-audit.
+The local/internal Content Review Console V1, eight-track structural audit, and
+mandatory cleanup stage are complete; the accepted content baseline remains
+unchanged. The next non-blocked task is internal account/entitlement and release
+hardening. External/provider admission remains a genuine later gate.
 
 The genuine gates remain exact provider/store SKU and pricing choices, provider and
 production credentials/configuration, domain/legal/privacy, flagged/new content
