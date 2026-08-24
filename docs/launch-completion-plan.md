@@ -4,7 +4,7 @@
 `docs/product-owner-decision-register.md`, and the owner directive/manual actions
 dated 2026-08-24. This file owns execution order and repository status only.
 
-**As of:** 2026-08-24
+**As of:** 2026-08-25
 
 **Starting pushed app head:** `2668022f2211453cb5a715bb0da5f1473fb3c119` on `origin/main`
 
@@ -16,6 +16,11 @@ the pushed ref is the release baseline until that verification completes.
 
 **Current pushed canonical heads:** app `origin/main`; content `origin/master`.
 Both refs are independently fetched and verified at each handoff.
+
+At the 2026-08-25 controller checkpoint, the fetched refs are app
+`ea4ad79ebd91e227ddfff90c0d31f7d676e47024` and content
+`0463a2b03aba950d21ef1d5c5e01860db54d3fe4`. The app and content worktrees are
+clean after verification.
 
 Exact commit IDs belong to the fetched canonical refs and are recorded in the
 controller handoff evidence; this plan intentionally avoids a self-referential
@@ -56,13 +61,13 @@ app SHA because each plan update creates a new documentation commit.
 | --- | --- | --- |
 | 0. Strategic reconciliation | complete | Contract, tests, current-only decision register and affected docs are reconciled and pushed to canonical heads. |
 | 1. Evidence and artifact cleanup | complete | The current-only decision-register rule, affected content count-gate narrative cleanup, and removal of the unreferenced resolved RC-003 decision packet are complete. Retained directives/reports are explicitly non-authoritative or unique provenance/release/legal/security evidence. |
-| 2. Figma/UI reconciliation | partial | Existing repository-owned implementation and visual evidence exist; remaining semantic conflicts or owner approvals remain explicit. |
+| 2. Figma/UI reconciliation | partial | Channel `hgz70ud2` is reachable and current QA/canonical-instance sections are evidenced; repository-owned visual contracts pass, but Figma semantic approval and any material conflict resolution remain owner gates. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, records bounded explicit outcomes, and is pushed on content `master` at `73e7867`; content suite is 146/146. |
 | 4. Eight-track content audit | complete | Readiness report `32e2003df80b8b62bce17c76c29465a452910ca8027ec707faaa6a8bdcf93a5a` verifies all eight structural validators pass; the current content head is `0463a2b` after a test-only stale-evidence assertion repair. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
 | 6. Commercial entitlement | planned | No provider-neutral entitlement runtime is currently composed. The fixed/recurring chain remains an implementation task after the provider/backend input contract exists; no store/provider evidence is claimed. |
 | 7. Provider, privacy, security, operations | planned | Production configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery evidence remains absent and requires the corresponding external gates. |
-| 8. QA, signing, stores, GO/NO-GO | partial | Owner commits `03a032c` (signing boundary) and `15b00af` (EAS project/update initialization) are on canonical `main`; an additional uncommitted Android NDK/signing-boundary slice now guards the EAS credentials/build-gradle pair, passes local tests, but makes the app worktree dirty. Actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable gates. |
+| 8. QA, signing, stores, GO/NO-GO | partial | Owner commits `03a032c`, `15b00af`, and `ea4ad79` are on canonical `main`; the Android NDK/signing-boundary slice is now pushed and the app worktree is clean. Actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable gates. |
 
 ## Execution stages
 
@@ -78,6 +83,16 @@ with gaps: focused invariants pass, but no delegated report or EAS artifact exis
 No further account/entitlement implementation is safe at the current boundary
 without inventing the missing provider/backend input contract. Cleanup remains a
 mandatory gate before each later release slice.
+
+The current controller checkpoint joined Figma channel `hgz70ud2` and verified
+the existing `QA / G01-G13 acceptance / canonical instances`,
+`QA / G07 canonical screen owners`, and bottom-navigation QA sections. This is
+design evidence only; it does not fabricate Product Owner approval. App
+verification after the owner NDK/signing push is `npm test` 579/579,
+`npm run typecheck` pass, and `npm run launch:readiness` `not_ready` with a
+clean application repository. Content verification is `npm test` 146/146
+(the local Console test required host loopback permission). No source banks,
+runtime contracts, or external evidence were changed in this checkpoint.
 
 ### 1. Evidence and artifact cleanup — mandatory
 
@@ -152,8 +167,8 @@ approval. The remaining per-track blockers are runtime admission and publishing
 admission, which are genuine external/release gates rather than content defects.
 
 The application release-readiness gate also passes its internal content-lock and
-source-integrity checks. The owner-owned EAS/signing changes are now committed on
-canonical `main` at `03a032c` and the worktree is clean. The gate remains `not_ready`
+source-integrity checks. The latest owner-owned EAS/NDK/signing changes are
+committed on canonical `main` at `ea4ad79` and the worktree is clean. The gate remains `not_ready`
 because actual EAS-managed signing/build evidence, eight-track runtime/publishing
 admission, immutable full-package verification, and required external release
 evidence are absent.
@@ -195,24 +210,18 @@ whole-product journey. Request explicit owner GO/NO-GO only after all internal
 evidence is complete. Physical-device testing is optional and non-blocking.
 
 The current owner-owned EAS/signing slice is committed on canonical `main` at
-`03a032c`, with EAS project/update initialization in `15b00af`, and locally verified with
+`ea4ad79`, with EAS project/update initialization in `15b00af`, and locally verified with
 `tests/easReleaseConfiguration.test.ts` and `tests/releaseSigningBoundary.test.ts`
-(5/5 passing). This proves configuration and no-debug-fallback invariants only; it
+(8/8 focused invariants passing). The full app suite is 579/579 and typecheck passes.
+This proves configuration and no-debug-fallback invariants only; it
 does not prove an EAS-managed signed artifact. The delegated QA attempt used the
 required `gpt-5.6-luna` model at `max` reasoning but returned no report, so the
 controller records local QA as `PASS WITH GAPS`, not independent QA approval.
-An owner-owned, uncommitted Android NDK and signing-boundary hardening slice is
-present in `app.json`, `plugins/withAndroidNdkVersion.js`,
-`plugins/withAndroidReleaseSigningBoundary.js`, `tests/platformConfig.test.ts`,
-`tests/releaseSigningBoundary.test.ts`, and `tests/androidNdkVersion.test.ts`.
 The signing boundary now requires both the EAS credentials file and generated
-`app/eas-build.gradle`. Its focused tests pass 8/8, the full app suite passes
-579/579, and typecheck passes. The controller has not staged, committed, or
-pushed this slice. The current canonical app head also passes the
-previous full suite (577/577) and `npm run typecheck`; content `0463a2b` passes
-its full suite (146/146) with the local Console bind test run under the required
-localhost-enabled environment. The app worktree is intentionally dirty due to
-owner changes; content remains clean.
+`app/eas-build.gradle`; the Android NDK pin is covered by
+`tests/androidNdkVersion.test.ts`. Content `0463a2b` passes its full suite
+(146/146) with the local Console bind test run under the required
+localhost-enabled environment. Both canonical worktrees are clean.
 
 ## Genuine stop gates
 
@@ -226,8 +235,6 @@ Stop only for:
 - Apple, Google, RevenueCat, EAS, signing, store, domain, legal, privacy,
   provider credentials, Firebase/backend/IAM/billing/deploy, or production config;
 - runtime admission or publishing admission for any launch track;
-- owner resolution of the uncommitted Android NDK working-tree slice before a
-  clean canonical release verification can be claimed;
 - organic beta-user recruitment/feedback;
 - final owner review and explicit GO/NO-GO.
 
