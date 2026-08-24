@@ -17,22 +17,34 @@ The app working head already contained user-owned commits ahead of the pushed
 baseline; those commits were preserved. The content source banks and inventories
 were not mass-edited.
 
+Pushed and independently re-fetched canonical refs after the follow-up cleanup:
+
+| Repository | Canonical ref | Verified head |
+| --- | --- | --- |
+| `lukaszkurczab/gcp-ace-trainer` | `main` | `04b85e272c1dcf0d9196974ddb1f4d72332138bc` |
+| `lukaszkurczab/patternly-content` | `master` | `92d3207c364391d0bc99e8a2a9dde606362c3975` |
+
 ## Changed files
 
 Application repository:
 
 - `docs/canonical-product-contract.yaml`
+- `docs/canonical-product-contract.schema.json`
 - `scripts/validateCanonicalProductContract.ts`
+- `scripts/enforceContractChangeGate.ts`
 - `tests/canonicalProductContract.test.ts`
 - `docs/product-owner-decision-register.md`
 - `docs/launch-completion-plan.md`
-- `docs/00-overview.md`, `docs/01-product-definition.md`,
+- `docs/README.md`, `docs/00-overview.md`, `docs/01-product-definition.md`,
   `docs/03-navigation-and-flows.md`, `docs/07-content-guidelines.md`,
   `docs/09-security-and-privacy.md`, `docs/10-roadmap.md`,
   `docs/11-implementation-guidelines.md`, `docs/12-testing-strategy.md`,
   `docs/13-risk-register.md`, `docs/15-certification-track-learning-system.md`,
   `docs/16-coding-interview-learning-system.md`,
-  `docs/17-training-runtime-and-interaction-spec.md`
+  `docs/17-training-runtime-and-interaction-spec.md`,
+  `docs/adr/ADR-003-no-auth-in-mvp.md`,
+  `docs/competitive-product-gap-audit.md`,
+  `docs/reports/launch-reconciliation-2026-08-24.md`
 
 Content repository:
 
@@ -40,6 +52,10 @@ Content repository:
 - `docs/manual-publishing-handoff.md`
 - `docs/audits/aws-saa-c03-n12-checkpoint.md`
 - `docs/gcp-ace-authoring-audit-and-plan.md`
+- active validators/manifests/author outputs for Frontend, Backend and OOD;
+  the AI-901 audit; affected Design evidence ledgers; and the focused frontend
+  test. These now retain counts as operational facts without a global `>120`
+  admission rule.
 
 ## Reconciled authority
 
@@ -69,16 +85,20 @@ evidence locations.
 - App focused canonical contract suite: 27 passed.
 - App `npm run typecheck`: passed.
 - App `npm run gate:contract-change`: passed.
+- App focused contract/gate tests: 38 passed.
 - App `git diff --check`: passed.
 - Content `npm test`: 143 passed.
-- No question source, inventory, package, or release artifact was changed in this
-  reconciliation.
+- Content validators: Frontend 1,766, Backend 1,569, OOD 1,413 and AI-901 752
+  items; all passed with admission still `not_admitted`/`pending`.
+- Content `git diff --check`: passed; no source bank, inventory, package, release
+  lock, human-approval evidence, or Content Review Console path was changed.
 
 ## Next task and gates
 
-The first non-blocked task is Stage 1: audit and remove obsolete evidence,
-directives, finished-task notes, duplicate reports, and dead artifacts in both
-repositories using the five-part deletion test in `docs/launch-completion-plan.md`.
+The targeted Stage 1 cleanup is complete for the decision register and the
+obsolete global content-count gate. The next non-blocked task is the remaining
+Stage 1 deletion audit, followed by the local/internal Content Review Console V1;
+the accepted content baseline remains unchanged.
 
 The genuine gates remain exact provider/store SKU and pricing choices, provider and
 production credentials/configuration, domain/legal/privacy, flagged/new content
