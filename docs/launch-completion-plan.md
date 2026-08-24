@@ -256,7 +256,7 @@ Nonvisual GOV/CNT/DATA work może biec równolegle z DES-01. UI nie może wyprze
 - **Scope / non-goals:** simulators+phones, Dark/Light/System, 200% text, keyboard, screen reader, reduced motion, network/install/upgrade/restore; rozdzielać screenshot/parity/device/store evidence.
 - **Inputs:** owner-bound approved nodes, current source SHA, signed builds when available, defined device/OS matrix, and [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md).
 - **Acceptance:** absolute outputs/manifests; node→screen/state review; simulator/release-compatible journey bez dev menu; performance/layout budgets mają measured result. Physical-device capture może zostać wykonany opcjonalnie, ale nie może blokować gate’a.
-- **Verification / evidence:** current-head iOS simulator evidence now includes the shared 11-checkpoint visual shell in Dark and Light, plus Settings/blocked Notifications large-text stress captures, using explicit Maestro `2.6.1`; outputs are recorded in the launch plan and [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md). Logical-viewport-normalized Figma comparison, signed distribution, screenshot/video/hierarchy acceptance and remaining route/state coverage still require execution. Discovery previously confirmed paired physical iPhone 11, lecz blokada urządzenia (`kAMDMobileImageMounterDeviceLocked`) uniemożliwia DDI/build inspection, a Android nie jest podłączony. Physical iOS/Android pozostają opcjonalne; [raport QA-02](reports/launch-qa-02-current-head-ios-simulator-2026-08-21.md).
+- **Verification / evidence:** current-head iOS simulator evidence now includes the shared 11-checkpoint visual shell in Dark and Light, populated Progress/Activity and Activity filter-sheet captures in both themes, plus Settings/blocked Notifications large-text stress captures, using explicit Maestro `2.6.1`; outputs are recorded in the launch plan and [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md). Logical-viewport-normalized Figma comparison, current-head 200% runtime capture, signed distribution, screenshot/video/hierarchy acceptance and remaining route/state coverage still require execution. Discovery previously confirmed paired physical iPhone 11, lecz blokada urządzenia (`kAMDMobileImageMounterDeviceLocked`) uniemożliwia DDI/build inspection, a Android nie jest podłączony. Physical iOS/Android pozostają opcjonalne; [raport QA-02](reports/launch-qa-02-current-head-ios-simulator-2026-08-21.md).
 - **Ryzyko:** simulator-only confidence, visual match with wrong logic, missing a11y state.
 
 ### REL-01/02/03 — store packet, signed beta, review i GO/NO-GO — planned / external gate
@@ -992,6 +992,27 @@ runtime evidence packs, not normalized Figma comparisons and not `MATCHED`
 decisions. Current-head 200% runtime capture, the full reachable-state matrix,
 `DESIGN_MISSING`/`CANONICAL_CONFLICT` owner decisions, and Product Owner
 approval remain open.
+
+## Addendum — Current-head populated Activity evidence after `8b2dd0e`
+
+Using the existing canonical Practice flow, a real ten-item session was paused,
+resumed, and completed before entering Progress and Activity. The capture-only
+preparation flow used existing commands and selectors; it changed no production
+source and no committed Maestro flow. On the same iPhone 16 Pro / iOS 18.6
+simulator and Maestro `2.6.1`, the populated Progress Activity section, the
+populated Activity route, and the Activity filter sheet were captured in both
+themes:
+
+- Dark: `/tmp/patternly-capture-activity-dark-2026-08-24-current/`
+- Light: `/tmp/patternly-capture-activity-light-2026-08-24-current/`
+
+The Light populated Activity route was visually inspected: the Progress header,
+track filter, completed Custom Practice row, title/details hierarchy, icon tile,
+chevron, and bottom safe area are present without observed clipping. This
+closes the previous local tooling block for these populated states, but the
+Activity matrix remains `PARTIAL`: normalized comparison, empty and filtered-empty
+runtime states, current-head 200% capture, and Product Owner approval remain
+open. No obsolete Activity owner or alternate state path was found or removed.
 
 ## 8. Kryterium końcowe
 
