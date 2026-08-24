@@ -21,8 +21,8 @@ Pushed and independently re-fetched canonical refs after the follow-up cleanup:
 
 | Repository | Canonical ref | Verified head |
 | --- | --- | --- |
-| `lukaszkurczab/gcp-ace-trainer` | `main` | independently fetched `origin/main` |
-| `lukaszkurczab/patternly-content` | `master` | independently fetched `origin/master` |
+| `lukaszkurczab/gcp-ace-trainer` | `main` | `1a3ef82563906dfd327cd469b84b259cc78f9718` |
+| `lukaszkurczab/patternly-content` | `master` | `0463a2b03aba950d21ef1d5c5e01860db54d3fe4` |
 
 ## Changed files
 
@@ -63,6 +63,10 @@ Content repository:
   report was rechecked after the documentation-only content head `631b278`.
 - Five affected AWS checkpoint/audit narratives were reconciled so their counts
   remain provenance without implying a node floor or global count gate.
+- The stale content readiness assertion that expected superseded immutable
+  evidence was corrected in `tests/contentWorkflowContract.test.mjs`; the
+  current fail-closed source-only state is now the tested contract. No source
+  bank or release artifact was changed.
 - The unreferenced resolved decision packet
   `docs/po-questions/rc-003-certification-exam-interaction-policy.md` was removed;
   its implemented policy is owned by the canonical contract, runtime, and tests.
@@ -111,7 +115,10 @@ evidence locations.
   store evidence was created. The delegated QA attempt used `gpt-5.6-luna` at
   `max` as required by `AGENTS.md` but returned no report, so the controller
   verdict is `PASS WITH GAPS`, not independent QA approval.
-- Content `npm test`: 146 passed.
+- Content `npm test`: 146 passed after the stale-evidence assertion repair;
+  the local Console bind test was run with localhost binding enabled.
+- Content contract test now verifies that the superseded `868a565f` artifact is
+  reported as `not_verified_by_source-only-report` rather than current evidence.
 - Content validators: Frontend 1,766, Backend 1,569, OOD 1,413 and AI-901 752
   items; all passed with admission still `not_admitted`/`pending`.
 - Coding Interview technical validation passed after regenerating source-bound

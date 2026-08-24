@@ -17,6 +17,9 @@ the pushed ref is the release baseline until that verification completes.
 **Current pushed canonical heads:** app `origin/main`; content `origin/master`.
 Both refs are independently fetched and verified at each handoff.
 
+**Latest verified commit IDs:** app `1a3ef82563906dfd327cd469b84b259cc78f9718`;
+content `0463a2b03aba950d21ef1d5c5e01860db54d3fe4`.
+
 ## Locked launch decisions
 
 - Launch contains exactly these eight learner-visible tracks:
@@ -54,7 +57,7 @@ Both refs are independently fetched and verified at each handoff.
 | 1. Evidence and artifact cleanup | complete | The current-only decision-register rule, affected content count-gate narrative cleanup, and removal of the unreferenced resolved RC-003 decision packet are complete. Retained directives/reports are explicitly non-authoritative or unique provenance/release/legal/security evidence. |
 | 2. Figma/UI reconciliation | partial | Existing repository-owned implementation and visual evidence exist; remaining semantic conflicts or owner approvals remain explicit. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, records bounded explicit outcomes, and is pushed on content `master` at `73e7867`; content suite is 146/146. |
-| 4. Eight-track content audit | complete | Readiness report `32e2003df80b8b62bce17c76c29465a452910ca8027ec707faaa6a8bdcf93a5a` verifies all eight structural validators pass; the report was rechecked after content head `631b278`. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
+| 4. Eight-track content audit | complete | Readiness report `32e2003df80b8b62bce17c76c29465a452910ca8027ec707faaa6a8bdcf93a5a` verifies all eight structural validators pass; the current content head is `0463a2b` after a test-only stale-evidence assertion repair. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
 | 6. Commercial entitlement | planned | No provider-neutral entitlement runtime is currently composed. The fixed/recurring chain remains an implementation task after the provider/backend input contract exists; no store/provider evidence is claimed. |
 | 7. Provider, privacy, security, operations | planned | Production configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery evidence remains absent and requires the corresponding external gates. |
@@ -106,7 +109,9 @@ alternatives, and recommendation no longer belong in the repository's active
 decision surfaces. The five input directives remain because they are the unique
 owner/provenance package and `docs/README.md` marks them historical and
 non-authoritative; no duplicate report or evidence artifact met the deletion
-criteria.
+criteria. A stale content contract assertion that treated superseded immutable
+evidence as current was corrected in `patternly-content@0463a2b`; source banks,
+readiness artifacts, and release admissions were not regenerated or expanded.
 
 ### 2. Figma/UI reconciliation
 
@@ -195,8 +200,10 @@ The current owner-owned EAS/signing slice is committed on canonical `main` at
 does not prove an EAS-managed signed artifact. The delegated QA attempt used the
 required `gpt-5.6-luna` model at `max` reasoning but returned no report, so the
 controller records local QA as `PASS WITH GAPS`, not independent QA approval.
-The current canonical app head also passes the full suite (577/577) and
-`npm run typecheck`; both canonical worktrees are clean after refetch.
+The current canonical app head `1a3ef82` also passes the full suite (577/577) and
+`npm run typecheck`; content `0463a2b` passes its full suite (146/146) with the
+local Console bind test run under the required localhost-enabled environment.
+Both canonical worktrees are clean after refetch.
 
 ## Genuine stop gates
 
