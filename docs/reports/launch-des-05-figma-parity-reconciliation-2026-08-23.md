@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `4f918ad`
+Current source SHA at packet update: `2bc34df`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -1655,3 +1655,23 @@ existing edit command remains visible and truthful until the Product Owner
 decides whether the Figma frame is read-only, represents an already-editing
 variant, or omits the edit affordance from the approved state set. No source
 change was made for this conflict.
+
+## Addendum — Practice Hub section-label casing convergence
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`55:993` (`03A · Practice · Coding · Review available`). The section label is
+rendered as the uppercase `MORE WAYS TO PRACTICE` contract, while the canonical
+`PracticeHubScreen` owner supplied the same copy in sentence case.
+
+Commit `2bc34df` changes only the existing `sectionTitle` style to use
+`textTransform: "uppercase"` and extends the existing Practice Hub geometry
+sentinel. Mode ownership, the four bundled Coding Free modes, unavailable
+states, commands, lifecycle, persistence, accessibility, and the Figma-only
+rows remain unchanged. No duplicate owner or copy branch was introduced.
+
+Focused Practice/accessibility/visual-shell checks passed `30/30`; `npm run
+typecheck`, `git diff --check`, and full `npm run qa:static` passed with recovery
+inventory `287/116/564`, `573/573` tests, content boundary, and runtime privacy
+boundary. This is source-level convergence, not a `MATCHED` or 99% claim:
+current-head Light/Dark/200% runtime capture and Product Owner approval remain
+open.
