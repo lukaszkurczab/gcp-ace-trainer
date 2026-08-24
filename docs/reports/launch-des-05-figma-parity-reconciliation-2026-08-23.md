@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `2bc34df`
+Current source SHA at packet update: `92fe971`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -1697,3 +1697,24 @@ Page-1 metadata also contains account, authentication, premium, and content
 delivery frames, but the current `RootNavigator` does not expose those routes.
 They remain outside the reachable-path parity matrix until a canonical route
 owner exists; no Figma-only route was added.
+
+## Addendum — Progress goal action-copy convergence
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`842:9564` (09A Established Evidence). The existing Progress goal entry already
+uses the canonical `onOpenGoal` command and opens `GoalCadenceScreen`; its source
+label was `View goal`, while the Figma state labels the existing-goal action
+`Manage goal`.
+
+Commit `92fe971` changes only that visible label and its accessibility label:
+existing goals now expose `Manage goal` / `Manage learning goal`, while the
+no-goal state exposes `Set a goal` / `Set a learning goal`. Polish translations
+were added through the existing translation boundary. Route, goal model,
+persistence, editing command, and navigation semantics are unchanged; no
+synthetic metrics or Figma-only action was introduced.
+
+Focused Goal/visual/runtime-audit checks passed `17/17`; the current full
+`npm run qa:static` passed recovery inventory `287/116/564`, `573/573` tests,
+TypeScript, content boundary, and runtime privacy boundary. This is a
+source-level label convergence, not a `MATCHED` or 99% claim: current-head
+Light/Dark/200% runtime capture and Product Owner approval remain open.
