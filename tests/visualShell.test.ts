@@ -196,7 +196,9 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(home, /<Screen[\s\S]*<AppShellHeader \/>/);
   assert.match(homeTab, /isReviewRecommendation[\s\S]*?Review due items before they become stale\./);
   assert.match(home, /activeTab === "home" \? styles\.homeScreenContent/);
+  assert.match(home, /activeTab === "progress" \? styles\.progressScreenContent/);
   assert.match(home, /homeScreenContent:\s*\{[\s\S]*?gap:\s*18[\s\S]*?paddingTop:\s*12/);
+  assert.match(home, /progressScreenContent:\s*\{[\s\S]*?paddingTop:\s*16/);
   assert.match(homeTab, /decisionCard:[\s\S]*?gap:\s*spacing\.lg[\s\S]*?overflow:\s*"hidden"/);
   assert.match(homeTab, /decisionTitle:[\s\S]*?letterSpacing:\s*-0\.3/);
   assert.match(homeTab, /sectionLabel:[\s\S]*?fontSize:\s*13/);

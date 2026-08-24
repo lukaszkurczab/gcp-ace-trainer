@@ -266,7 +266,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       <Screen
         key={activeTab}
         edges={["top"]}
-        style={[styles.screenContent, activeTab === "home" ? styles.homeScreenContent : null]}
+        style={[styles.screenContent, activeTab === "home" ? styles.homeScreenContent : null, activeTab === "progress" ? styles.progressScreenContent : null]}
       >
         {activeTab === "home" ? (
           <HomeTab
@@ -336,5 +336,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   homeScreenContent: {
     gap: 18,
     paddingTop: 12,
+  },
+  progressScreenContent: {
+    paddingTop: 16,
   },
 });
