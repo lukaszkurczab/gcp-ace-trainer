@@ -27,7 +27,6 @@ statusu. Ten rejestr wskazuje wyłącznie pozostałe decyzje/gate'y właściciel
 | Gate | Status | Pozostały wybór lub autoryzacja | Blokuje |
 | --- | --- | --- | --- |
 | Flagged/new content review | `owner-decision-required` | Outcome dla nowych lub materialnie zmienionych elementów: approved, needs change albo rejected. | Tylko odpowiadający item/release. |
-| Figma semantic approval | `owner-decision-required` | Owner approval wyłącznie dla nierozstrzygniętej semantyki lub realnego konfliktu z kontraktem. Geometria nie otwiera nowej decyzji. | Odpowiadający UI slice. |
 | Commerce offer | `owner-decision-required` | Dokładne SKU, ceny, recurring period, product names i promocje. | Store/provider setup. |
 | Store/provider release setup | `external-gate` | Apple, Google, RevenueCat, EAS, signing, store products i produkcyjna konfiguracja. | Commerce/release evidence. |
 | Backend/provider operations | `external-gate` | Firebase, backend, App Check, IAM, deploy, billing, retention i recovery configuration. | Production operations. |
@@ -35,6 +34,18 @@ statusu. Ten rejestr wskazuje wyłącznie pozostałe decyzje/gate'y właściciel
 | Legal/privacy | `owner-decision-required` | Final legal/privacy review and required disclosures. | Public release. |
 | Organic beta feedback | `owner-decision-required` | Organic tester recruitment and feedback, without paid research. | Adoption confidence only. |
 | Final release decision | `owner-decision-required` | Explicit owner GO/NO-GO after internal and external evidence is complete. | Launch. |
+
+## Bieżąca decyzja właściciela w implementacji
+
+| Decision | Status | Obowiązująca reguła | Zakres implementacji |
+| --- | --- | --- | --- |
+| Final Figma visual authority | `owner-decided-implementation-in-progress` | `Page 1` oraz `Patternly Library` są finalną referencją wizualną. Cel implementacji to 99% zgodności. Brakujący ekran lub stan nie jest blockerem; należy go wyjaśnić, a jeśli da się go zbudować z istniejących wzorców, zbudować bez tworzenia równoległej architektury. | Canonical app UI, states, tests i evidence parity. |
+
+Ta decyzja nie otwiera ponownie ustalonego product contractu. Nie wolno dodawać
+nowych tras, modeli danych, metryk, komend konta ani komend komercyjnych tylko
+dlatego, że pojawiają się w wizualnym materiale. Po zakończeniu implementacji
+jej realnym właścicielem będą kod, testy i checked-in visual evidence; wpis
+zostanie wtedy usunięty zgodnie z zasadą current-only cleanup.
 
 Brak wpisu dla ustalonego scope'u, baseline'u contentu, profile-specific session
 lengths, Content Review Console boundary, product positioning, Premium modelu,

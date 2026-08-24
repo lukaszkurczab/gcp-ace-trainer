@@ -52,7 +52,7 @@ app SHA because each plan update creates a new documentation commit.
 | --- | --- | --- |
 | 0. Strategic reconciliation | complete | Contract, tests, current-only decision register and affected docs are reconciled and pushed to canonical heads. |
 | 1. Evidence and artifact cleanup | complete | The current-only decision-register rule, affected content count-gate narrative cleanup, and removal of the unreferenced resolved RC-003 decision packet are complete. Retained directives/reports are explicitly non-authoritative or unique provenance/release/legal/security evidence. |
-| 2. Figma/UI reconciliation | partial | Channel `hgz70ud2` is reachable and current QA/canonical-instance sections are evidenced; repository-owned visual contracts pass, but Figma semantic approval and any material conflict resolution remain owner gates. |
+| 2. Figma/UI reconciliation | in_progress | Owner has declared `Page 1` and `Patternly Library` final visual authority in channel `hgz70ud2`; implementation targets 99% fidelity. Missing screens/states are explainable work, not blockers; buildable states are implemented from existing canonical patterns. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, records bounded explicit outcomes, and is pushed on content `master` at `73e7867`; content suite is 146/146. |
 | 4. Eight-track content audit | complete | Readiness report `32e2003df80b8b62bce17c76c29465a452910ca8027ec707faaa6a8bdcf93a5a` verifies all eight structural validators pass; the current content head is `0463a2b` after a test-only stale-evidence assertion repair. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
@@ -77,9 +77,11 @@ mandatory gate before each later release slice.
 
 The current controller checkpoint joined Figma channel `hgz70ud2` and verified
 the existing `QA / G01-G13 acceptance / canonical instances`,
-`QA / G07 canonical screen owners`, and bottom-navigation QA sections. This is
-design evidence only; it does not fabricate Product Owner approval. App
-verification after the owner NDK/signing push is `npm test` 579/579,
+`QA / G07 canonical screen owners`, and bottom-navigation QA sections. The owner
+has now explicitly approved `Page 1` and `Patternly Library` as final visual
+authority and set a 99% fidelity target. Missing screens/states remain
+explainable implementation work, not launch blockers; only buildable,
+contract-compatible states are added. App verification after the owner NDK/signing push is `npm test` 579/579,
 `npm run typecheck` pass, and `npm run launch:readiness` `not_ready` with a
 clean application repository. Content verification is `npm test` 146/146
 (the local Console test required host loopback permission). No source banks,
@@ -122,11 +124,22 @@ readiness artifacts, and release admissions were not regenerated or expanded.
 
 ### 2. Figma/UI reconciliation
 
-Reconcile only affected UI behavior and geometry against the canonical contract.
-Practice Setup must expose the resolved profile-specific session capability. Do
-not invent routes, metrics, unavailable content, Figma approvals, or semantic
-product decisions. Geometry differences default to the canonical product truth;
-stop only for a real unresolved owner approval or material semantic conflict.
+Reconcile affected UI behavior and geometry against the canonical contract and
+the final `Page 1` / `Patternly Library` visual authority. The implementation
+target is 99% fidelity. Practice Setup must expose the resolved profile-specific
+session capability. Do not invent routes, metrics, unavailable content, or
+semantic product decisions from visual material. Missing screens/states are
+explainable gaps; if a state is buildable from existing canonical components,
+models, and routes, implement it directly without parallel architecture. A
+Figma-only metric or provider/account/commercial behavior remains unexplained
+until its real contract exists, rather than becoming fabricated product truth.
+
+Current next code slice: Progress/Activity state parity. Align the existing
+Progress, Activity, and Goal Cadence surfaces to the approved geometry, copy,
+and state hierarchy using existing models/components. Acceptance requires no
+new route, metric, account command, or commercial contract; recorded evidence
+semantics remain truthful; focused and full app tests pass; and the plan is
+updated with the checked-in implementation and QA evidence.
 
 ### 3. Content Review Console V1
 
@@ -221,7 +234,6 @@ local/internal tooling, evidence manifests, and draft provider instructions.
 Stop only for:
 
 - owner review of flagged/new content;
-- unresolved Figma owner approval or material semantic conflict;
 - exact pricing, SKU, recurring period, product name, or promotion choice;
 - Apple, Google, RevenueCat, EAS, signing, store, domain, legal, privacy,
   provider credentials, Firebase/backend/IAM/billing/deploy, or production config;
