@@ -252,7 +252,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   pressed: { opacity: 0.78 },
   empty: { alignItems: "center", flex: 1, justifyContent: "center", paddingBottom: 80 },
   emptyActivityState: { alignItems: "center", gap: 16, paddingHorizontal: spacing.xl, width: "100%" },
-  filteredEmptyActivityState: { paddingHorizontal: spacing.xxl },
+  filteredEmptyActivityState: { paddingHorizontal: 40 },
   emptyActivityIcon: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 24, flexDirection: "row", gap: 2, height: 48, justifyContent: "center", width: 48 },
   emptyActivityBarTall: { backgroundColor: palette.success, borderRadius: 2, height: 14, width: 3 },
   emptyActivityBarShort: { backgroundColor: palette.success, borderRadius: 2, height: 8, width: 3 },
