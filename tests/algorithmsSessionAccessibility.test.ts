@@ -33,6 +33,8 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   assert.match(practiceControls, /moveButton:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(practiceControls, /valueOption:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(feedback, /<DetailsDisclosure expanded=\{detailsOpen\}/);
+  assert.match(feedback, /<Text maxFontSizeMultiplier=\{2\} style=\{\[styles\.reasonLabel/);
+  assert.match(feedback, /maxFontSizeMultiplier=\{2\} style=\{styles\.reason\}/);
   assert.match(detailsDisclosure, /toggle:\s*\{[^}]*minHeight:\s*48/);
   assert.match(detailsDisclosure, /label:\s*\{[^}]*color:\s*palette\.textSecondary/);
   assert.match(feedback, /details:\s*\{[^}]*borderTopColor:\s*palette\.border[^}]*paddingTop:\s*spacing\.md/);
@@ -237,7 +239,7 @@ test("rich feedback renders semantic blocks with accessible code, headings, list
 
   assert.match(document, /accessibilityRole="header"/);
   assert.match(document, /accessibilityLabel=\{`Code sample in \$\{block\.language\}`\}/);
-  assert.match(document, /<Text selectable style=\{styles\.code\}>/);
+  assert.match(document, /<Text maxFontSizeMultiplier=\{2\} selectable style=\{styles\.code\}>/);
   assert.match(document, /accessibilityLabel=\{block\.alt\}/);
   assert.match(document, /CALLOUT_LABEL\[block\.kind\]/);
   assert.match(document, /resolveTextAsset\(item, block\.assetId\)/);

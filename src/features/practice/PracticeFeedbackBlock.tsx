@@ -19,8 +19,8 @@ export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ fee
   return (
     <View style={styles.container} testID={runtimeSelectors.session.feedback(itemId)}>
       <View style={styles.reasonPanel} testID={runtimeSelectors.session.result(itemId, feedback.result)}>
-        <Text style={[styles.reasonLabel, detailsOpen ? styles.reasonLabelExpanded : null]}>{t("Reason")}</Text>
-        <Text accessibilityLabel={`${t("Verified answer explanation.")} ${feedback.reason}`} style={styles.reason} testID={runtimeSelectors.session.reason(itemId)}>{feedback.reason}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.reasonLabel, detailsOpen ? styles.reasonLabelExpanded : null]}>{t("Reason")}</Text>
+        <Text accessibilityLabel={`${t("Verified answer explanation.")} ${feedback.reason}`} maxFontSizeMultiplier={2} style={styles.reason} testID={runtimeSelectors.session.reason(itemId)}>{feedback.reason}</Text>
       </View>
       {detailsOpen ? (
         <View style={styles.detailsSection}>

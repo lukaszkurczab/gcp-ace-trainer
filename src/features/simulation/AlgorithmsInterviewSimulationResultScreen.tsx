@@ -163,7 +163,7 @@ function AlgorithmsInterviewSimulationReviewSurface({ navigation, sessionId }: R
       {current ? (
         <>
           <View style={styles.questionBlock}>
-            <Text style={styles.questionEyebrow}>{t("Question").toUpperCase()}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.questionEyebrow}>{t("Question").toUpperCase()}</Text>
             <Text maxFontSizeMultiplier={2} style={styles.question}>{current.prompt}</Text>
           </View>
           {current.interaction.renderer.kind === "choice" ? (

@@ -281,6 +281,7 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   assert.match(sharedReviewShell, /filterRow:\s*\{[\s\S]*paddingHorizontal:\s*spacing\.xl[\s\S]*paddingVertical:\s*spacing\.sm/);
   assert.match(review, /<AnswerOption/);
   assert.match(review, /<ReviewFeedbackBlock/);
+  assert.match(review, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.questionEyebrow\}/);
   assert.match(review, /<ReviewNavigator/);
   assert.match(review, /<ReviewUnavailableSurface/);
   assert.match(sharedUnavailableSurface, /name="warning"/);
