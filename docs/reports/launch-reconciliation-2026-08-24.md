@@ -21,8 +21,8 @@ Pushed and independently re-fetched canonical refs after the follow-up cleanup:
 
 | Repository | Canonical ref | Verified head |
 | --- | --- | --- |
-| `lukaszkurczab/gcp-ace-trainer` | `main` | `a454265f8921a9069d6cc1239fe27ab8fc61a8cb` |
-| `lukaszkurczab/patternly-content` | `master` | `0463a2b03aba950d21ef1d5c5e01860db54d3fe4` |
+| `lukaszkurczab/gcp-ace-trainer` | `main` | independently fetched `origin/main` |
+| `lukaszkurczab/patternly-content` | `master` | independently fetched `origin/master` |
 
 ## Changed files
 
@@ -106,8 +106,8 @@ evidence locations.
 - App focused contract/gate tests: 38 passed.
 - App `git diff --check`: passed.
 - App `npm run launch:readiness`: internal content lock/source integrity passed;
-  current app worktree is clean at `a454265` after owner commits `03a032c`
-  (signing boundary) and `15b00af` (EAS project/update initialization);
+  current app worktree is clean after owner commits `03a032c` (signing boundary)
+  and `15b00af` (EAS project/update initialization);
   overall status remains `not_ready` because external/admission evidence is
   absent.
 - Focused owner-owned EAS/signing QA: 5/5 tests passed. This is local
