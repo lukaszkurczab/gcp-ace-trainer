@@ -24,7 +24,7 @@ _Audyt: 2026-08-23. To jest jedyny aktywny dokument kolejności prac i statusu. 
 | Platform/EAS    | Expo 57.0.11 / React Native 0.86.2; iOS 16.4/iPhone-only; Android min 28, target/compile 36; portrait; Light/Dark/System.                                                                                                                                                                                                                                   | Production EAS ma requireCommit, autoIncrement i fail-closed signing. Plugin Androida wymaga czterech PATTERNLY*ANDROID_RELEASE*\*; credentials/project ID nie istnieją w repo.                                                                                     |
 | AWS T1 audit    | 2 568 pozycji, 137 source JSON, 21 node; source audit przechodzi.                                                                                                                                                                                                                                                                                           | `audit:aws-workbook-source` przechodzi, ale `validate:track` kończy się SOURCE_COMMIT_UNAVAILABLE; wykryto także rozjazd wersji envelope oraz tylko 4 itemy Free-node i 20 itemów diagnostic-eligible.                                                              |
 | Figma authority | Current connector session `ksxw21cw` zweryfikował file/page/library oraz Practice Hub `55:993`, Practice Setup `55:2172`, Practice preparing `68:549`, Practice Question Shell `68:569` / `68:603` / `68:637` / `68:719` / `68:844`, Home `55:445`, Progress `842:9563` / `842:10949`, Goal & cadence `842:11569` / `842:11693`, Activity `842:11192` / `842:11410` / `842:11466`, Select Track `42:422` / `42:478` / `42:539` / `42:604` / `42:642`, Answer Review `81:538` i shared Button `141:817`; design context i screenshoty są dostępne.                                                                                                                                                                                                                        | [DES-005 reconciliation](reports/launch-des-05-figma-parity-reconciliation-2026-08-23.md). Dostęp do connectora nie jest owner approval ani full parity; physical-device evidence jest opcjonalne i nie blokuje launchu.                                                              |
-| Maestro         | Explicitny binary `2.6.1` z `/Users/lukaszkurczab/.maestro/bin/maestro` wykonał current-head capture na iPhone 16 Pro / iOS 18.6 (`00B8F5B5-DF44-4621-8E30-56927604FA96`) dla pełnego 11-checkpoint visual shell w Dark i Light oraz dla Settings/Notifications w dużym tekście. | Dowody pozostają poza worktree: `/tmp/patternly-capture-visual-shell-dark-2026-08-24-v3/`, `/tmp/patternly-capture-visual-shell-light-2026-08-24/`, `/tmp/patternly-capture-current-head-dark-2026-08-24/`, `/tmp/patternly-capture-current-head-large-text-2026-08-24/`, `/tmp/patternly-capture-current-head-large-text-dark-2026-08-24/`. Pełna macierz wszystkich reachable states, normalized Figma comparison, Android, signed/distribution rendering i owner approval nadal są otwarte; Android nie ma urządzenia. |
+| Maestro         | Explicitny binary `2.6.1` z `/Users/lukaszkurczab/.maestro/bin/maestro` wykonał current-head capture dla source `8b2dd0e` na iPhone 16 Pro / iOS 18.6 (`00B8F5B5-DF44-4621-8E30-56927604FA96`) dla pełnego 11-checkpoint visual shell w Dark i Light oraz dla Settings/Notifications w dużym tekście na wcześniejszym source. | Dowody pozostają poza worktree: bieżące `/tmp/patternly-capture-visual-shell-dark-2026-08-24-current/` i `/tmp/patternly-capture-visual-shell-light-2026-08-24-current/`, wcześniejsze `/tmp/patternly-capture-current-head-dark-2026-08-24/`, `/tmp/patternly-capture-current-head-large-text-2026-08-24/`, `/tmp/patternly-capture-current-head-large-text-dark-2026-08-24/`. Pełna macierz wszystkich reachable states, current-head 200% runtime capture, normalized Figma comparison, Android, signed/distribution rendering i owner approval nadal są otwarte; Android nie ma urządzenia. |
 
 ### Confirmed facts vs assumptions
 
@@ -972,6 +972,26 @@ boundary. It is a source-level stress-contract improvement, not a `MATCHED` or
 99% claim: normalized Figma comparison, the complete current-head reachable
 state matrix, `DESIGN_MISSING`/`CANONICAL_CONFLICT` owner decisions, and
 Product Owner approval remain open.
+
+## Addendum — Current-head visual-shell capture after `8b2dd0e`
+
+After the source slice, the unchanged canonical flow
+`.maestro/screenshot-capture/visual-shell/visual-shell.yaml` completed all 11
+checkpoints in both themes on the explicit iPhone 16 Pro / iOS 18.6 simulator
+`00B8F5B5-DF44-4621-8E30-56927604FA96`, using Maestro `2.6.1`:
+
+- Dark: `/tmp/patternly-capture-visual-shell-dark-2026-08-24-current/`
+- Light: `/tmp/patternly-capture-visual-shell-light-2026-08-24-current/`
+
+The capture-only preparation flow changed the active track before entering the
+canonical journey so the existing track-selection footer was genuinely
+reachable; it did not change production source or the committed capture flow.
+The Light Progress capture was visually inspected and showed no new clipping
+in the empty-state copy, action, or bottom navigation. These are current-head
+runtime evidence packs, not normalized Figma comparisons and not `MATCHED`
+decisions. Current-head 200% runtime capture, the full reachable-state matrix,
+`DESIGN_MISSING`/`CANONICAL_CONFLICT` owner decisions, and Product Owner
+approval remain open.
 
 ## 8. Kryterium końcowe
 

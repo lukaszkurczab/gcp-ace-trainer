@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `2b19f81`
+Current source SHA at packet update: `8b2dd0e`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -107,7 +107,7 @@ Only the repository plan statuses are used below.
 | Current Practice feedback surface parity | `partial` | `0341424` removes the redundant visible result label; `536b19b` aligns `REASON` to 12/16 and rich-details body text to 13/20; `1c9457b` maps collapsed Details to the standalone row and expanded Details to the Figma outer panel. The runtime result selector remains on the visible reason panel. Figma `68:637` does not show a Details row in its immediate-feedback default while the canonical after-answer contract and existing runtime selectors still expose it, so state binding remains an explicit conflict; fresh runtime pixel comparison remains open. |
 | Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
-| Runtime screenshot and pixel evidence | `partial` | Explicit Maestro `2.6.1` capture now works on the booted iPhone 16 Pro / iOS 18.6 simulator. Current source `2b19f81` completed the shared 11-checkpoint visual-shell flow in both Dark and Light, plus Settings/blocked Notifications large-text stress captures. The complete reachable-path matrix, logical-viewport-normalized pixel comparisons, and owner decisions remain unverified. |
+| Runtime screenshot and pixel evidence | `partial` | Explicit Maestro `2.6.1` capture now works on the booted iPhone 16 Pro / iOS 18.6 simulator. Current source `8b2dd0e` completed the shared 11-checkpoint visual-shell flow in both Dark and Light; the Settings/blocked Notifications large-text stress captures are from the preceding source. The complete reachable-path matrix, current-head 200% runtime capture, logical-viewport-normalized pixel comparisons, and owner decisions remain unverified. |
 | Account, authentication, Premium, content trust, and deletion UI | `unknown / needs evidence` | The canonical contract defines boundaries, but the current route graph does not provide matching owners for all Figma surfaces. Owner must decide whether those Figma surfaces are in this parity objective or outside the current launch route graph. |
 | Goals, cadence, focus areas, and Progress effectiveness | `partial` | Goal & cadence now has a canonical per-track record, route, create/active states, Progress entry point, and Figma-matched Goal ambient variants. Figma-only focus-area and effectiveness semantics still have no owner; current-head Light/Dark runtime comparison and Product Owner approval remain open. |
 
@@ -1882,3 +1882,23 @@ content boundary, and runtime privacy boundary. This is source-level
 convergence, not a `MATCHED` or 99% claim: current-head normalized Figma
 comparison, full reachable-state capture, `DESIGN_MISSING`/
 `CANONICAL_CONFLICT` owner decisions, and Product Owner approval remain open.
+
+## Addendum — Current-head visual-shell capture after `8b2dd0e`
+
+After the source slice, the unchanged canonical flow
+`.maestro/screenshot-capture/visual-shell/visual-shell.yaml` completed all 11
+checkpoints in both themes on the explicit iPhone 16 Pro / iOS 18.6 simulator
+`00B8F5B5-DF44-4621-8E30-56927604FA96`, using Maestro `2.6.1`:
+
+- Dark: `/tmp/patternly-capture-visual-shell-dark-2026-08-24-current/`
+- Light: `/tmp/patternly-capture-visual-shell-light-2026-08-24-current/`
+
+The capture-only preparation flow changed the active track before entering the
+canonical journey so the existing track-selection footer was genuinely
+reachable; it did not change production source or the committed capture flow.
+The Light Progress capture was visually inspected and showed no new clipping
+in the empty-state copy, action, or bottom navigation. These are current-head
+runtime evidence packs, not normalized Figma comparisons and not `MATCHED`
+decisions. Current-head 200% runtime capture, the full reachable-state matrix,
+`DESIGN_MISSING`/`CANONICAL_CONFLICT` owner decisions, and Product Owner
+approval remain open.
