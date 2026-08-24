@@ -1639,3 +1639,19 @@ Focused visual/accessibility/session/Goal checks passed `44/44`; full
 TypeScript, content boundary, and runtime privacy boundary. This is design
 system convergence, not a `MATCHED` or 99% claim: current-head Light/Dark/200%
 runtime capture and Product Owner approval remain open.
+
+## Addendum — Goal active edit-affordance conflict
+
+The fresh screenshot for Figma `842:11693` shows the Active state with a
+read-only summary, a centered `Pause goal` action, and a `Save changes` sticky
+footer; it does not show an `Edit goal` affordance. The canonical repository
+still owns an explicit `Edit goal` command that creates the draft used by the
+existing Goal form and `persistGoal` path. Removing that command would make the
+persisted goal fields unreachable, while turning the Figma `Save changes`
+button into a no-op would create fake interaction.
+
+This is therefore a `CANONICAL_CONFLICT`, not a safe visual deletion. The
+existing edit command remains visible and truthful until the Product Owner
+decides whether the Figma frame is read-only, represents an already-editing
+variant, or omits the edit affordance from the approved state set. No source
+change was made for this conflict.
