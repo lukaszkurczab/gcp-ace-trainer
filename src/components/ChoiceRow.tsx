@@ -31,12 +31,12 @@ export function ChoiceRow({ accessibilityLabel, appearancePreview, density = "co
       testID={testID}
     >
       {appearancePreview ? <AppearancePreview mode={appearancePreview} /> : null}
-      <View style={[styles.radio, selected ? styles.radioSelected : styles.radioUnselected]}>
-        {selected ? <View style={styles.dot} /> : null}
-      </View>
       <View style={styles.content}>
         <Text maxFontSizeMultiplier={2} style={[styles.title, appearancePreview ? styles.appearanceTitle : null]}>{title}</Text>
         {!compact ? <Text maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text> : null}
+      </View>
+      <View style={[styles.radio, selected ? styles.radioSelected : styles.radioUnselected]}>
+        {selected ? <View style={styles.dot} /> : null}
       </View>
     </Pressable>
   );

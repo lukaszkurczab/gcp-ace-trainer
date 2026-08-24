@@ -77,6 +77,7 @@ test("appearance choices use the Figma preview variants without changing languag
   assert.match(choiceRow, /previewLightSurface/);
   assert.match(choiceRow, /previewDarkSurface/);
   assert.match(choiceRow, /height:\s*48,[\s\S]*?width:\s*60/);
+  assert.match(choiceRow, /<View style=\{styles\.content\}>[\s\S]*?<\/View>\s*<View style=\{\[styles\.radio,/);
 });
 
 test("settings bottom sheets use the Figma elevated shell and modal accessibility boundary", () => {
