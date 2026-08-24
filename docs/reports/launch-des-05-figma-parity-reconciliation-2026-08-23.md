@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `92fe971`
+Current source SHA at packet update: `ec888d9`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -133,7 +133,7 @@ permission to invent a replacement UI.
 | Activity | `Activity` | Populated, empty, filtered-empty, filter selection | Light / Dark | `842:11192`, `842:11410`, `842:11466`; row patterns `830:7642`, `830:8898` | `ActivityScreen`, `ScreenHeader`, `ListRow`, `EmptyState`, sheet primitives | `PARTIAL` | Restore capture tooling and compare populated, empty, filtered-empty, filter-sheet, and large-text states. |
 | Settings root | `Home` → Settings tab | Canonical app, learning, data/privacy, developer rows and app identity | Light / Dark | `822:7687`, `830:8182`, `830:9422` | `SettingsTab`, `SettingsGroup`, `ListRow`, `IconTile`, `ScreenHeader` | `PARTIAL` | Capture the current canonical row set; do not add rows merely because they appear in the Figma fixture. |
 | Settings fixture-only rows | Settings design reference | Account, sync, plan, help rows absent from current commands; Goal & cadence is owned from Progress | Light / Dark | `830:8182`, `830:9422` | No canonical route/command owner for these Settings rows | `CANONICAL_CONFLICT` | Resolve scope with the owner; no account or commercial semantics may be created from this fixture alone. |
-| Appearance settings | `AppearanceSettings` | Light, Dark, System selection and preview | Light / Dark / System | No current route-bound approved node | `AppearanceSettingsScreen`, `SettingsDialog`, `ScreenHeader` | `DESIGN_MISSING` | Supply a route-bound Figma state set covering selection, preview, and persistence feedback. |
+| Appearance settings | `AppearanceSettings` | Light, Dark, System selection and preview | Light / Dark / System | Shared component `882:14452`; no current route-bound approved screen | `AppearanceSettingsScreen`, `PreferenceSelectionScreen`, `ChoiceRow`, `ScreenHeader` | `DESIGN_MISSING` | Supply a route-bound Figma state set covering selection, preview, and persistence feedback; shared row geometry is source-aligned but does not close the screen-state gap. |
 | Notifications | `NotificationSettings` | Permission checking, undetermined, denied, granted, editor sheet, invalid time, save/disable failure | Light / Dark | `92:865`, `92:889`, `92:914` | `NotificationSettingsScreen`, `ScreenHeader`, `SettingsDialog`, `Button` | `PARTIAL` | Capture all permission/editor/error states at current SHA and bind native prompt boundaries separately. |
 | Data, legal, diagnostics | `YourData`, `LegalInformation`, `BackendDiagnostics` | Local-data contract, legal links, configured developer verification, unavailable/error states | Light / Dark | No current route-bound approved node | `ScreenHeader`, `Screen`, `EmptyState`, `Button` | `DESIGN_MISSING` | Obtain route-bound design states after the account/data/legal contract is owner-approved; do not copy Figma-only account surfaces. |
 | Track selection | `SelectTrack`, Home/Practice no-track branch | First choice, returning unchanged, returning with changed selection | Light / Dark | `42:422`, `42:478`, `42:539` | `SelectTrackScreen`, `Screen`, `AmbientBackdrop`, `Button` | `PARTIAL` | Capture onboarding and both returning states; validate eight-track rendering against the approved launch scope. |
@@ -1733,3 +1733,24 @@ Focused Goal/visual/runtime-audit checks passed `17/17`; the current full
 TypeScript, content boundary, and runtime privacy boundary. This is a
 source-level label convergence, not a `MATCHED` or 99% claim: current-head
 Light/Dark/200% runtime capture and Product Owner approval remain open.
+
+## Addendum — ChoiceRow radio placement convergence
+
+The current connector channel `ksxw21cw` was revalidated against the shared
+Figma `Pattern / Appearance Choice` component `619:5237` and its 200% stress
+instance `882:14452`. The reference order is preview, flexible copy, then the
+20 px radio control at the trailing edge. The canonical `ChoiceRow` previously
+rendered the radio between the preview and copy, which moved the control away
+from the right edge in every caller.
+
+Commit `ec888d9` moves only the existing radio node after the copy in the
+shared owner. Appearance selection, Goal & cadence, and compact Practice Setup
+therefore share the corrected visual order; selected state, values, commands,
+persistence, accessibility role/state, and large-text behavior remain
+unchanged. No duplicate row owner or route-specific layout was introduced.
+
+Focused settings/visual/goal checks passed `21/21`; TypeScript and
+`git diff --check` passed. The full current-head QA, Light/Dark/200% runtime
+capture, and Product Owner approval remain open. The Appearance route remains
+`DESIGN_MISSING` for full route-bound state coverage even though its shared row
+geometry now has Figma evidence.
