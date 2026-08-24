@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `ec888d9`
+Current source SHA at packet update: `e6935c4`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -1743,14 +1743,18 @@ instance `882:14452`. The reference order is preview, flexible copy, then the
 rendered the radio between the preview and copy, which moved the control away
 from the right edge in every caller.
 
-Commit `ec888d9` moves only the existing radio node after the copy in the
-shared owner. Appearance selection, Goal & cadence, and compact Practice Setup
-therefore share the corrected visual order; selected state, values, commands,
-persistence, accessibility role/state, and large-text behavior remain
-unchanged. No duplicate row owner or route-specific layout was introduced.
+Commit `ec888d9` moves the existing radio node after the copy for the
+Appearance-preview variant. Revalidation against compact `Choice Row` in
+Figma `55:2172` then confirmed that ordinary and compact rows keep the radio
+before the copy; `e6935c4` makes that distinction explicit in the shared owner.
+Appearance, Goal & cadence, and compact Practice Setup therefore retain their
+respective Figma orders. Selected state, values, commands, persistence,
+accessibility role/state, and large-text behavior remain unchanged. No
+duplicate row owner or route-specific layout was introduced.
 
-Focused settings/visual/goal checks passed `21/21`; TypeScript and
-`git diff --check` passed. The full current-head QA, Light/Dark/200% runtime
-capture, and Product Owner approval remain open. The Appearance route remains
-`DESIGN_MISSING` for full route-bound state coverage even though its shared row
-geometry now has Figma evidence.
+Focused settings/visual/goal checks passed `21/21`; current source
+`e6935c4` also passed recovery inventory `287/116/564`, `573/573` tests,
+TypeScript, content boundary, and runtime privacy boundary. The Light/Dark/200%
+runtime capture and Product Owner approval remain open. The Appearance route
+remains `DESIGN_MISSING` for full route-bound state coverage even though its
+shared row geometry now has Figma evidence.
