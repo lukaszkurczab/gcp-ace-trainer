@@ -53,10 +53,12 @@ test("release signing boundary is part of the canonical Expo config", () => {
 test("generated Android release signing cannot fall back to the debug keystore", () => {
   const transformed = injectAndroidReleaseSigning(generatedGradle);
   assert.match(transformed, /PATTERNLY_RELEASE_SIGNING_BOUNDARY/u);
+  assert.match(transformed, /rootProject\.file\("\.\.\/credentials\.json"\)/u);
+  assert.match(transformed, /!patternlyReleaseSigningAvailable && !patternlyEasSigningAvailable/u);
   assert.match(transformed, /signingConfig patternlyReleaseSigningAvailable \? signingConfigs\.release : null/u);
   const buildTypes = transformed.slice(transformed.indexOf("    buildTypes {"));
   assert.doesNotMatch(buildTypes, /release \{[\s\S]*?signingConfig signingConfigs\.debug/u);
-  assert.match(transformed, /Patternly release signing is unavailable/u);
+  assert.match(transformed, /run the build through EAS with managed Android credentials/u);
   for (const property of RELEASE_SIGNING_PROPERTIES) assert.match(transformed, new RegExp(property, "u"));
 });
 

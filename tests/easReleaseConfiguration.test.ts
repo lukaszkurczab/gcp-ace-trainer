@@ -10,7 +10,7 @@ const app = JSON.parse(readFileSync("app.json", "utf8")).expo as {
 };
 const eas = JSON.parse(readFileSync("eas.json", "utf8")) as {
   cli: { version: string; appVersionSource: string; requireCommit: boolean };
-  build: Record<string, { developmentClient?: boolean; distribution: string; channel: string; autoIncrement?: boolean }>;
+  build: Record<string, { developmentClient?: boolean; distribution: string; android?: { buildType?: string }; channel: string; autoIncrement?: boolean }>;
 };
 const easIgnore = readFileSync(".easignore", "utf8");
 
@@ -25,7 +25,7 @@ test("EAS release configuration has explicit version, runtime, and channel polic
 
   assert.deepEqual(eas.build, {
     development: { developmentClient: true, distribution: "internal", channel: "development" },
-    preview: { distribution: "internal", channel: "preview" },
+    preview: { distribution: "internal", android: { buildType: "apk" }, channel: "preview" },
     production: { distribution: "store", channel: "production", autoIncrement: true },
   });
 });
@@ -34,7 +34,7 @@ test("EAS source archives exclude generated native output, artifacts, and creden
   for (const entry of ["node_modules/", ".expo/", "dist/", "web-build/", "android/", "ios/", "artifacts/"]) {
     assert.match(easIgnore, new RegExp(`^${entry.replace(/[./]/g, "\\$&")}$`, "mu"));
   }
-  for (const pattern of ["*.jks", "*.p8", "*.p12", "*.key", "*.mobileprovision", ".env", ".env.*"]) {
+  for (const pattern of ["*.jks", "*.p8", "*.p12", "*.key", "*.mobileprovision", "credentials.json", ".env", ".env.*"]) {
     assert.match(easIgnore, new RegExp(`^${pattern.replace(/[.*]/g, "\\$&")}$`, "mu"));
   }
   assert.doesNotMatch(easIgnore, /PATTERNLY_[A-Z0-9_]+=|BEGIN (?:PRIVATE|OPENSSH) KEY/u);
