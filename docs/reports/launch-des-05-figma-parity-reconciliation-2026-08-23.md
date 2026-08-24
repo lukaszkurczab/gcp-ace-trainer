@@ -1676,6 +1676,21 @@ boundary. This is source-level convergence, not a `MATCHED` or 99% claim:
 current-head Light/Dark/200% runtime capture and Product Owner approval remain
 open.
 
+## Addendum — Certification exam screen design boundary
+
+The current connector channel `ksxw21cw` was checked against Figma `74:1464`,
+named `EXAM PRACTICE`. This node is a compact specification card, not an
+approved route-bound 393×852 screen: it lists profile-owned facts such as
+question count, duration, timer semantics, navigator, flagging, and the
+explicit statement `No official exam result`.
+
+The reachable repository routes `Exam` and `ExamReview` therefore remain
+`DESIGN_MISSING` for parity purposes. The card cannot safely supply their
+layout, and reusing Simulation or Answer Review as a substitute would invent a
+screen/state mapping. No source change was made; an approved route-bound
+Certification screen and outcome reference are still required before this
+lane can move beyond its current matrix status.
+
 ## Addendum — Practice Hub unavailable-row reconciliation
 
 Live Figma `55:1139` confirms that the unavailable review state is a variant
