@@ -14,6 +14,9 @@ The app checkout also contained a clean, user-owned local `main` ahead of its
 pushed head. It is preserved and will be pushed with verified reconciliation work;
 the pushed ref is the release baseline until that verification completes.
 
+**Current pushed canonical heads:** app `main` at `3535fb2ad6952efd6ffcf6ea88145f9915926f4e`;
+content `master` at `876e61316257b29929b961e2a7bdaac173d63ab9`.
+
 ## Locked launch decisions
 
 - Launch contains exactly these eight learner-visible tracks:
@@ -51,7 +54,7 @@ the pushed ref is the release baseline until that verification completes.
 | 1. Evidence and artifact cleanup | in_progress | Decision-register cleanup and removal of the obsolete global content-count gate are complete; the remaining strict deletion audit preserves unique provenance/release/legal/security evidence. |
 | 2. Figma/UI reconciliation | partial | Existing repository-owned implementation and visual evidence exist; remaining semantic conflicts or owner approvals remain explicit. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, records bounded explicit outcomes, and is pushed on content `master` at `73e7867`; content suite is 146/146. |
-| 4. Eight-track content audit | in_progress | Existing evidence is being rechecked with the eight-track readiness validators and targeted classifications; the accepted baseline remains unchanged and no count gate is being reopened. |
+| 4. Eight-track content audit | complete | Readiness report `32e2003df80b8b62bce17c76c29465a452910ca8027ec707faaa6a8bdcf93a5a` verifies all eight structural validators pass after source-bound Coding Interview evidence was regenerated and pushed at `876e613`; no bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
 | 5. Account, identity, sync, adoption, deletion | partial | Local and server foundations exist; release-compatible provider, failure, deletion and cross-device evidence remains to be closed. |
 | 6. Commercial entitlement | planned | SKU-neutral fixed/recurring entitlement chain is implemented and verified without inventing store/provider evidence. |
 | 7. Provider, privacy, security, operations | planned | External configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery gates are evidenced. |
@@ -124,6 +127,11 @@ defect is confirmed, make the smallest source correction, create a new immutable
 release/package identity, and preserve provenance. Do not mass-edit banks or add
 count-driven content.
 
+The current readiness pass is complete: all eight structural validators pass and
+the tracked human-review fields remain existing evidence, not newly fabricated
+approval. The remaining per-track blockers are runtime admission and publishing
+admission, which are genuine external/release gates rather than content defects.
+
 ### 5. Account, identity, sync, adoption, deletion
 
 Close the guest-first adoption preview, deterministic reconciliation, identity
@@ -167,6 +175,7 @@ Stop only for:
 - exact pricing, SKU, recurring period, product name, or promotion choice;
 - Apple, Google, RevenueCat, EAS, signing, store, domain, legal, privacy,
   provider credentials, Firebase/backend/IAM/billing/deploy, or production config;
+- runtime admission or publishing admission for any launch track;
 - organic beta-user recruitment/feedback;
 - final owner review and explicit GO/NO-GO.
 

@@ -21,8 +21,8 @@ Pushed and independently re-fetched canonical refs after the follow-up cleanup:
 
 | Repository | Canonical ref | Verified head |
 | --- | --- | --- |
-| `lukaszkurczab/gcp-ace-trainer` | `main` | `04b85e272c1dcf0d9196974ddb1f4d72332138bc` |
-| `lukaszkurczab/patternly-content` | `master` | `92d3207c364391d0bc99e8a2a9dde606362c3975` |
+| `lukaszkurczab/gcp-ace-trainer` | `main` | `3535fb2ad6952efd6ffcf6ea88145f9915926f4e` |
+| `lukaszkurczab/patternly-content` | `master` | `876e61316257b29929b961e2a7bdaac173d63ab9` |
 
 ## Changed files
 
@@ -56,6 +56,10 @@ Content repository:
   the AI-901 audit; affected Design evidence ledgers; and the focused frontend
   test. These now retain counts as operational facts without a global `>120`
   admission rule.
+- `scripts/review/content-review-console.mjs`, its outcome schema, focused tests,
+  and the local reviewer package command.
+- Coding Interview source-bound technical and simulation evidence regenerated
+  after the Console package change, plus the eight-track readiness report.
 
 ## Reconciled authority
 
@@ -87,18 +91,24 @@ evidence locations.
 - App `npm run gate:contract-change`: passed.
 - App focused contract/gate tests: 38 passed.
 - App `git diff --check`: passed.
-- Content `npm test`: 143 passed.
+- Content `npm test`: 146 passed.
 - Content validators: Frontend 1,766, Backend 1,569, OOD 1,413 and AI-901 752
   items; all passed with admission still `not_admitted`/`pending`.
-- Content `git diff --check`: passed; no source bank, inventory, package, release
-  lock, human-approval evidence, or Content Review Console path was changed.
+- Coding Interview technical validation passed after regenerating source-bound
+  evidence at content `876e613`.
+- Eight-track readiness generation passed with all eight structural validators
+  passing; every track still reports only `runtime_admission_not_granted` and
+  `publishing_admission_not_granted` as blockers.
+- Content `git diff --check`: passed; no source bank, inventory, release lock,
+  human-approval evidence, or provider/store admission was fabricated.
 
 ## Next task and gates
 
 The targeted Stage 1 cleanup is complete for the decision register and the
-obsolete global content-count gate. The next non-blocked task is the remaining
-Stage 1 deletion audit, followed by the local/internal Content Review Console V1;
-the accepted content baseline remains unchanged.
+obsolete global content-count gate. The local/internal Content Review Console V1
+and the eight-track structural audit are complete; the accepted content baseline
+remains unchanged. The next non-blocked task is the remaining Stage 1 deletion
+audit.
 
 The genuine gates remain exact provider/store SKU and pricing choices, provider and
 production credentials/configuration, domain/legal/privacy, flagged/new content
