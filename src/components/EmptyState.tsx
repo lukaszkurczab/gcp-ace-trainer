@@ -17,8 +17,8 @@ export function EmptyState({ actionLabel, description, onActionPress, title }: E
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.title}>{title}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.description}>{description}</Text>
       {actionLabel && onActionPress ? <Button onPress={onActionPress} style={styles.action}>{actionLabel}</Button> : null}
     </View>
   );

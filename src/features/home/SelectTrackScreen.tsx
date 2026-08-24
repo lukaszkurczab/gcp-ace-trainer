@@ -101,7 +101,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
           <View style={[styles.footerContent, largeText ? styles.actionsLargeText : null]}>
             {onboarding || selectedTrackId === activeTrackId ? (
               <View style={[styles.selectedSummary, largeText ? styles.progressHeaderLargeText : null]}>
-                <Text style={styles.selectedLabel}>{t("Selected")}</Text>
+                <Text maxFontSizeMultiplier={2} style={styles.selectedLabel}>{t("Selected")}</Text>
                 <Text maxFontSizeMultiplier={2} style={styles.selectedValue}>
                   {t(selectedTrack?.shortTitle ?? "Coding Interview")}
                 </Text>
@@ -185,7 +185,7 @@ function TrackChoiceCard({ disabled, largeText, onPress, selected, title, track 
       <Text maxFontSizeMultiplier={2} style={styles.trackDescription}>{t(track.description)}</Text>
       <View style={styles.freeBadge}>
         <View style={[styles.freeDot, selected ? styles.freeDotSelected : null]} />
-        <Text style={styles.freeLabel}>{t(freeStart)}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.freeLabel}>{t(freeStart)}</Text>
       </View>
     </Pressable>
   );

@@ -130,7 +130,7 @@ function QuestionCard({ question }: Readonly<{ question: PracticeQuestionPresent
       <Text maxFontSizeMultiplier={2} style={styles.prompt}>{question.prompt}</Text>
       {question.constraints?.length ? (
         <View style={styles.constraints}>
-          {question.constraints.map((constraint) => <Text key={constraint} style={styles.constraint}>• {constraint}</Text>)}
+          {question.constraints.map((constraint) => <Text key={constraint} maxFontSizeMultiplier={2} style={styles.constraint}>• {constraint}</Text>)}
         </View>
       ) : null}
     </View>
@@ -146,7 +146,7 @@ function PreparingNotice() {
         <View accessible accessibilityLabel={t("Preparing session")} style={styles.asyncIcon}>
           <Icon color={palette.textSecondary} name="rotate-ccw" size={24} />
         </View>
-        <Text style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
       </View>
       <Text maxFontSizeMultiplier={2} style={styles.asyncTitle}>{t("Preparing practice")}</Text>
       <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Preparing the session plan and first item.")}</Text>
@@ -164,7 +164,7 @@ function CompletingNotice() {
         <View accessible accessibilityLabel={t("Finishing this session…")} style={styles.asyncIcon}>
           <Icon color={palette.textSecondary} name="rotate-ccw" size={24} />
         </View>
-        <Text style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
       </View>
       <Text maxFontSizeMultiplier={2} style={styles.asyncTitle}>{t("Finishing this session…")}</Text>
       <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Saving your answers and preparing your summary.")}</Text>
@@ -177,7 +177,7 @@ function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
   const operationFailure = notice.tone === "error";
-  return <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, operationFailure ? styles.noticeError : notice.tone === "success" ? styles.noticeSuccess : null]}>{operationFailure ? <Icon color={palette.warning} name="alert-triangle" size={20} /> : null}<Text style={[styles.noticeText, operationFailure ? styles.noticeErrorText : null]}>{notice.message}</Text></View>;
+  return <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, operationFailure ? styles.noticeError : notice.tone === "success" ? styles.noticeSuccess : null]}>{operationFailure ? <Icon color={palette.warning} name="alert-triangle" size={20} /> : null}<Text maxFontSizeMultiplier={2} style={[styles.noticeText, operationFailure ? styles.noticeErrorText : null]}>{notice.message}</Text></View>;
 }
 
 function ActionBar(props: PracticeSessionSurfaceProps) {
@@ -220,8 +220,8 @@ function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readon
         <Pressable accessibilityLabel={t("Keep learning")} accessibilityRole="button" onPress={onDismiss} style={styles.modalDismissArea} />
         <View accessibilityViewIsModal style={styles.exitModalStack}>
           <View style={styles.exitSurface}>
-            <Text style={styles.exitTitle}>{t("Pause or end this session?")}</Text>
-            <Text style={styles.noticeText}>{t(copy.description)}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.exitTitle}>{t("Pause or end this session?")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.noticeText}>{t(copy.description)}</Text>
             <View style={styles.exitSheetActions}>
               <Button onPress={onDismiss} testID={sessionId ? runtimeSelectors.session.keepLearning(sessionId) : undefined}>{t("Keep learning")}</Button>
               <Button onPress={onLeave} testID={sessionId ? runtimeSelectors.session.leaveAndResume(sessionId) : undefined} variant="secondary">{t("Pause and resume later")}</Button>

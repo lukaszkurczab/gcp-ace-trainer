@@ -90,9 +90,9 @@ export function ExamReviewScreen({ navigation, route }: Props) {
       <Text testID={runtimeSelectors.examReview.root(route.params.sessionId)} />
       {rows.map((row) => (
         <Card key={row.id} style={styles.card}>
-          <Text style={row.correct ? styles.correct : styles.incorrect}>{t(row.correct ? "Correct" : "Review")}</Text>
-          <Text style={styles.question}>{row.question}</Text>
-          <Text style={styles.explanation}>{row.reason}</Text>
+          <Text maxFontSizeMultiplier={2} style={row.correct ? styles.correct : styles.incorrect}>{t(row.correct ? "Correct" : "Review")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.question}>{row.question}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.explanation}>{row.reason}</Text>
         </Card>
       ))}
       <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} testID={runtimeSelectors.examReview.backToPractice(route.params.sessionId)}>{t("Back to practice")}</Button>

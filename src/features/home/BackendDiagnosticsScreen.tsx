@@ -111,15 +111,15 @@ export function BackendDiagnosticsScreen() {
   return (
     <Screen>
       <View style={styles.container} testID="backend-e2e-screen">
-        <InfoBlock body={text.body} icon={<Text style={styles.icon}>↔</Text>} testID="backend-e2e-status" title={title} tone={tone} />
+        <InfoBlock body={text.body} icon={<Text maxFontSizeMultiplier={2} style={styles.icon}>↔</Text>} testID="backend-e2e-status" title={title} tone={tone} />
         <View style={styles.results}>
           {runState.results.map((result) => (
-            <Text key={result.id} style={result.status === "passed" ? styles.passed : styles.failed} testID={`backend-e2e-check-${result.id}`}>
+            <Text key={result.id} maxFontSizeMultiplier={2} style={result.status === "passed" ? styles.passed : styles.failed} testID={`backend-e2e-check-${result.id}`}>
               {result.status === "passed" ? "✓" : "!"} {result.label}{result.code ? ` [${result.code}]` : ""}
             </Text>
           ))}
         </View>
-        {runState.status === "passed" ? <Text style={styles.summary} testID="backend-e2e-summary">{text.summary}</Text> : null}
+        {runState.status === "passed" ? <Text maxFontSizeMultiplier={2} style={styles.summary} testID="backend-e2e-summary">{text.summary}</Text> : null}
         <Button loading={runState.status === "running"} onPress={() => { void runChecks(); }} testID="backend-e2e-rerun" variant="secondary">{text.rerun}</Button>
       </View>
     </Screen>

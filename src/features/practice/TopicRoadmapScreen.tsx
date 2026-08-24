@@ -127,8 +127,8 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
         <AppShellHeader backAction={{ onPress: returnToPracticeHub }} />
 
         <View style={styles.intro}>
-          <Text style={styles.title}>{t("Choose topic")}</Text>
-          <Text style={styles.subtitle}>
+          <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Choose topic")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.subtitle}>
             {t("Select a topic to practice in")} {t(activeTrack.title)}. {t("Patternly may still suggest areas based on your answers.")}
           </Text>
         </View>
@@ -288,10 +288,10 @@ function RoadmapNode({
           size={large ? 30 : 25}
         />
       </View>
-      <Text numberOfLines={2} style={styles.nodeTitle}>
+      <Text maxFontSizeMultiplier={2} numberOfLines={2} style={styles.nodeTitle}>
         {topic.title}
       </Text>
-      <Text style={[styles.nodeLabel, getLabelStyle(topic, selected, styles)]}>
+      <Text maxFontSizeMultiplier={2} style={[styles.nodeLabel, getLabelStyle(topic, selected, styles)]}>
         {t(formatNodeLabel(topic))}
       </Text>
     </Pressable>

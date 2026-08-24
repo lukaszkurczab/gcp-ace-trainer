@@ -78,7 +78,7 @@ test("canonical session surfaces expose deterministic state and do not group int
   assert.match(practiceSurface, /name="alert-triangle"/);
   assert.match(practiceSurface, /noticeError:\s*\{[\s\S]*?backgroundColor:\s*palette\.elevatedSurface[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
   assert.match(practiceSurface, /props\.phase === "completing" \? <CompletingNotice \/> : null/);
-  assert.match(practiceSurface, /<View style=\{styles\.asyncStatusRow\}>\s*<View accessible accessibilityLabel=\{t\("Finishing this session…"\)\} style=\{styles\.asyncIcon\}>[\s\S]*?name="rotate-ccw"[\s\S]*?<Text style=\{styles\.asyncStatusLabel\}>\{t\("LOADING"\)\}<\/Text>/);
+  assert.match(practiceSurface, /<View style=\{styles\.asyncStatusRow\}>\s*<View accessible accessibilityLabel=\{t\("Finishing this session…"\)\} style=\{styles\.asyncIcon\}>[\s\S]*?name="rotate-ccw"[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.asyncStatusLabel\}>\{t\("LOADING"\)\}<\/Text>/);
   assert.match(practiceSurface, /function PreparingNotice\(\)[\s\S]*?styles\.asyncState[\s\S]*?Preparing the session plan and first item\./);
   assert.match(practiceSurface, /asyncIcon:\s*\{[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?borderRadius:\s*radius\.lg[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
   assert.match(practiceSurface, /asyncStatusLabel:\s*\{[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"600"[\s\S]*?lineHeight:\s*16/);
@@ -98,7 +98,7 @@ test("practice exit makes abandonment a single explicit decision in a modal", ()
 
   assert.match(practiceSurface, /<Modal animationType="fade" onRequestClose=\{onDismiss\} transparent visible>/);
   assert.match(practiceSurface, /<Pressable accessibilityLabel=\{t\("Keep learning"\)\} accessibilityRole="button" onPress=\{onDismiss\} style=\{styles\.modalDismissArea\} \/>/);
-  assert.match(practiceSurface, /<Text style=\{styles\.exitTitle\}>\{t\("Pause or end this session\?"\)\}<\/Text>/);
+  assert.match(practiceSurface, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.exitTitle\}>\{t\("Pause or end this session\?"\)\}<\/Text>/);
   assert.match(practiceSurface, /<View accessibilityViewIsModal style=\{styles\.exitModalStack\}>[\s\S]*?<View style=\{styles\.exitSheetActions\}>[\s\S]*?Keep learning[\s\S]*?Pause and resume later[\s\S]*?<\/View>[\s\S]*?<View style=\{styles\.exitDestructiveAction\}>[\s\S]*?variant="destructive"/);
   assert.match(practiceSurface, /exitDestructiveAction:\s*\{[\s\S]*?backgroundColor:\s*palette\.background[\s\S]*?paddingHorizontal:\s*spacing\.xl/);
   assert.match(practiceSurface, /<Button onPress=\{onLeave\} testID=\{sessionId \? runtimeSelectors\.session\.leaveAndResume\(sessionId\) : undefined\} variant="secondary">\{t\("Pause and resume later"\)\}<\/Button>/);

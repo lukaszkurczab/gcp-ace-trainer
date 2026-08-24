@@ -57,7 +57,7 @@ export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, posi
             <Text maxFontSizeMultiplier={2} style={styles.unansweredSummary}>{`${validPositions.filter((position) => position.state !== "answered").length} ${t("unanswered")}`}</Text>
           </View>
           {feedback ? <NavigatorFeedbackBanner feedback={feedback} onRetry={() => void select(feedback.occurrenceId)} /> : null}
-          {savingOccurrenceId ? <View accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.saving}><Text style={styles.savingText}>{t("Saving response…")}</Text></View> : null}
+          {savingOccurrenceId ? <View accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.saving}><Text maxFontSizeMultiplier={2} style={styles.savingText}>{t("Saving response…")}</Text></View> : null}
           <ScrollView contentContainerStyle={styles.grid} style={styles.gridScroll}>
             {validPositions.map((position, index) => <NavigatorCell columns={columns} disabled={Boolean(savingOccurrenceId) || feedback?.kind === "save_failed"} frozen={feedback?.kind === "save_failed"} index={index} key={position.occurrenceId} onPress={() => void select(position.occurrenceId)} position={position} />)}
           </ScrollView>
@@ -75,12 +75,12 @@ function NavigatorFeedbackBanner({ feedback, onRetry }: Readonly<{ feedback: Exc
     return <View style={styles.saveFailureStack}>
       <View accessible accessibilityLabel={t("Couldn't save this response. Your current answer is still here.")} accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.operationNotice}>
         <Icon color={palette.warning} name="alert-triangle" size={20} />
-        <Text style={styles.operationNoticeText}>{t("Couldn't save this response. Your current answer is still here.")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.operationNoticeText}>{t("Couldn't save this response. Your current answer is still here.")}</Text>
       </View>
       <Button onPress={onRetry} style={styles.fullWidthAction}>{t("Try again")}</Button>
     </View>;
   }
-  return <View style={[styles.feedback, styles.feedbackWarning]}><View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.feedbackMessage}><Text style={styles.feedbackText}>{t("Complete the response before leaving this question.")}</Text></View></View>;
+  return <View style={[styles.feedback, styles.feedbackWarning]}><View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.feedbackMessage}><Text maxFontSizeMultiplier={2} style={styles.feedbackText}>{t("Complete the response before leaving this question.")}</Text></View></View>;
 }
 
 export function useReducedMotion(): boolean {
@@ -100,7 +100,7 @@ function NavigatorCell({ columns, disabled, frozen = false, index, onPress, posi
   const isAnswered = position.state === "answered";
   const isCurrent = position.state === "current";
   const effectiveDisabled = disabled || frozen;
-  return <Pressable accessibilityLabel={t(navigatorCellLabel(position, index, frozen))} accessibilityRole="button" accessibilityState={{ disabled: effectiveDisabled, selected: frozen ? false : isCurrent }} disabled={effectiveDisabled} onPress={onPress} style={({ pressed }) => [styles.cell, { height: columns === 5 ? 56 : 48, width: columns === 5 ? 56 : 48 }, frozen ? styles.frozenCell : null, !frozen && isAnswered ? styles.answeredCell : null, !frozen && isCurrent ? styles.currentCell : null, pressed && !effectiveDisabled ? styles.pressedCell : null]}><Text style={[styles.cellText, frozen ? styles.frozenCellText : null, !frozen && isCurrent ? styles.currentCellText : null]}>{index + 1}</Text><Text accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.stateMarker}>{navigatorStateLabel(position, frozen)}</Text></Pressable>;
+  return <Pressable accessibilityLabel={t(navigatorCellLabel(position, index, frozen))} accessibilityRole="button" accessibilityState={{ disabled: effectiveDisabled, selected: frozen ? false : isCurrent }} disabled={effectiveDisabled} onPress={onPress} style={({ pressed }) => [styles.cell, { height: columns === 5 ? 56 : 48, width: columns === 5 ? 56 : 48 }, frozen ? styles.frozenCell : null, !frozen && isAnswered ? styles.answeredCell : null, !frozen && isCurrent ? styles.currentCell : null, pressed && !effectiveDisabled ? styles.pressedCell : null]}><Text maxFontSizeMultiplier={2} style={[styles.cellText, frozen ? styles.frozenCellText : null, !frozen && isCurrent ? styles.currentCellText : null]}>{index + 1}</Text><Text maxFontSizeMultiplier={2} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.stateMarker}>{navigatorStateLabel(position, frozen)}</Text></Pressable>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

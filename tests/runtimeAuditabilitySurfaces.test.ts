@@ -9,7 +9,7 @@ test("passive runtime selectors are attached to visible content rather than cont
   const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
 
   assert.match(home, /<Card variant="layered" style=\{styles\.decisionCard\}>/);
-  assert.match(home, /<Text style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
+  assert.match(home, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
   assert.match(home, /onPress=\{isRecommendationSettingsAction \? onOpenSettings : onChooseTopic\}/);
   assert.match(home, /t\(isRecommendationSettingsAction \? "Manage settings" : "Choose another topic"\)/);
   assert.match(home, /hasActiveSession \? null : \(/);
@@ -48,7 +48,7 @@ test("Home uses the approved compact presentation without changing recommendatio
   assert.match(home, /activityCompletionLabel\(recentAttempt\.answeredAt, t\)/);
   assert.doesNotMatch(home, /attempt\.result\.kind/);
   assert.match(home, /<Button[\s\S]*?testID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)/);
-  assert.match(home, /<Text style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
+  assert.match(home, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
   assert.match(home, /onChooseTopic/);
 });
 
@@ -66,7 +66,7 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.match(summary, /runtimeSelectors\.summary\.root\(sessionId\)/);
   assert.match(progress, /screenTitle:[\s\S]*?fontSize:\s*30[\s\S]*?lineHeight:\s*36/);
   assert.match(progress, /root:\s*\{\s*gap:\s*28\s*\}/);
-  assert.match(progress, /<View style=\{\[styles\.weekSection,[\s\S]*?<Text style=\{styles\.sectionLabel\}>/);
+  assert.match(progress, /<View style=\{\[styles\.weekSection,[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionLabel\}>/);
   assert.match(progress, /weekSection:\s*\{\s*gap:\s*10\s*\}/);
   assert.match(progress, /!model\.hasData \? \([\s\S]*?No learning evidence yet[\s\S]*?Open Practice/);
   assert.match(progress, /emptyProgressScreenTitle:\s*\{[\s\S]*?fontSize:\s*24[\s\S]*?fontWeight:\s*"700"[\s\S]*?lineHeight:\s*29/);

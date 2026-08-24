@@ -86,7 +86,7 @@ export function HomeTab({
   return (
     <>
       <View style={styles.pageIntro}>
-        <Text style={styles.pageTitle}>{t("Home")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.pageTitle}>{t("Home")}</Text>
         <Pressable
           accessibilityRole="button"
           onPress={onChangeTrack}
@@ -101,11 +101,11 @@ export function HomeTab({
             <View style={styles.trackIconContainer}>
               <Icon color={palette.accentTeal} name={isCodingInterviewTrack ? "code-brackets" : "cloud"} size={12} />
             </View>
-            <Text style={styles.focusTitle} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>
+            <Text maxFontSizeMultiplier={2} style={styles.focusTitle} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>
               {t(activeTrack.shortTitle)}
             </Text>
           </View>
-          <Text style={styles.changeTrack}>{t("Change")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.changeTrack}>{t("Change")}</Text>
         </Pressable>
       </View>
 
@@ -122,6 +122,7 @@ export function HomeTab({
           </View>
           <View style={styles.decisionCopy}>
             <Text
+              maxFontSizeMultiplier={2}
               style={styles.decisionTitle}
               testID={resumeSessionId
                 ? runtimeSelectors.resume.title(resumeSessionId)
@@ -130,6 +131,7 @@ export function HomeTab({
               {t(decisionTitle)}
             </Text>
             <Text
+              maxFontSizeMultiplier={2}
               style={styles.decisionDetail}
               testID={resumeSessionId
                 ? runtimeSelectors.resume.status(resumeSessionId)
@@ -162,13 +164,13 @@ export function HomeTab({
             onPress={isRecommendationSettingsAction ? onOpenSettings : onChooseTopic}
             style={({ pressed }) => [styles.secondaryAction, pressed ? styles.pressed : null]}
           >
-            <Text style={styles.secondaryActionText}>{t(isRecommendationSettingsAction ? "Manage settings" : "Choose another topic")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.secondaryActionText}>{t(isRecommendationSettingsAction ? "Manage settings" : "Choose another topic")}</Text>
             {isRecommendationSettingsAction ? null : <Icon color={palette.accentPurple} name="chevron-right" size={18} />}
           </Pressable>
         )}
       </Card>
       <View style={styles.overviewSection} testID="home-overview">
-        <Text style={styles.sectionLabel}>{t("Overview")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Overview")}</Text>
         {overview.map((metric, index) => (
           <View key={metric.label} style={[styles.overviewRow, index < overview.length - 1 ? styles.overviewRowDivider : null]} accessibilityLabel={`${t(metric.label)}: ${t(metric.value)}`}>
             <Text maxFontSizeMultiplier={2} style={styles.overviewLabel}>{t(metric.label)}</Text>
@@ -182,14 +184,14 @@ export function HomeTab({
         ))}
       </View>
       <View style={styles.detailSection}>
-        <Text style={styles.sectionLabel}>{t("Current focus")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Current focus")}</Text>
         <View style={[styles.focusRow, largeText ? styles.focusRowLargeText : null]}>
           <Text maxFontSizeMultiplier={2} style={styles.currentFocusTitle}>{formatPracticeTopicTitle(model.heroTitle, t)}</Text>
           <Button labelStyle={styles.focusActionLabel} onPress={onChooseTopic} variant="ghost">{t("Open Practice")}</Button>
         </View>
       </View>
       <View style={styles.detailSection}>
-        <Text style={styles.sectionLabel}>{t("Recent activity")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Recent activity")}</Text>
         <View style={styles.activityRow}>
           {recentAttempt ? (
             <View style={styles.activityCopy}>
@@ -205,7 +207,7 @@ export function HomeTab({
             style={({ pressed }) => [styles.activityAction, pressed ? styles.pressed : null]}
             testID={runtimeSelectors.home.activity()}
           >
-            <Text style={styles.activityActionText}>{t("View activity")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.activityActionText}>{t("View activity")}</Text>
           </Pressable>
         </View>
       </View>

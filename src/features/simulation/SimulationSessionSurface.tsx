@@ -46,7 +46,7 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
         progress={projection.progress}
         timer={projection.timer}
       >
-        {projection.state !== "editable" ? <Text style={styles.title}>{projection.title}</Text> : null}
+        {projection.state !== "editable" ? <Text maxFontSizeMultiplier={2} style={styles.title}>{projection.title}</Text> : null}
         {savedResponse ? <SavedQuestionContext onNavigator={() => setNavigatorVisible(true)} /> : null}
         {savedResponse ? <SavedStatus /> : null}
         {projection.notice && projection.state !== "editable" ? <Notice notice={projection.notice} /> : null}
@@ -93,7 +93,7 @@ function Action({ action, fullWidth = false, sessionId }: Readonly<{ action: Sim
 
 function Notice({ notice }: Readonly<{ notice: NonNullable<SimulationSurfaceProjection["notice"]> }>) {
   const styles = useThemedStyles(createStyles);
-  return <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, styles[notice.tone]]}><Text style={styles.noticeText}>{notice.message}</Text></View>;
+  return <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, styles[notice.tone]]}><Text maxFontSizeMultiplier={2} style={styles.noticeText}>{notice.message}</Text></View>;
 }
 
 function SavedQuestionContext({ onNavigator }: Readonly<{ onNavigator: () => void }>) {
@@ -115,7 +115,7 @@ function Question({ itemId, locked, onChange, question, sessionId, variant }: Re
     <Card style={styles.questionCard} testID={itemId ? runtimeSelectors.simulation.question(itemId) : undefined}>
       {variant ? <Text maxFontSizeMultiplier={2} style={[styles.questionLabel, variant === "simulationSaved" ? styles.savedQuestionLabel : null]}>{t("QUESTION")}</Text> : null}
       <Text maxFontSizeMultiplier={2} style={[styles.prompt, variant === "simulation" ? styles.simulationPrompt : null, variant === "simulationSaved" ? styles.savedPrompt : null]}>{question.prompt}</Text>
-      {question.code ? <Text accessibilityLabel={t("Code sample")} style={styles.code}>{question.code}</Text> : null}
+      {question.code ? <Text maxFontSizeMultiplier={2} accessibilityLabel={t("Code sample")} style={styles.code}>{question.code}</Text> : null}
       <ResponseControl control={question.control} disabled={locked || !onChange} itemId={itemId} onChange={onChange} sessionId={sessionId} variant={variant} />
     </Card>
   );
@@ -129,9 +129,9 @@ function ResponseControl({ control, disabled, itemId, onChange, sessionId, varia
     return <View style={[styles.controls, variant === "simulation" ? styles.simulationControls : null, variant === "simulationSaved" ? styles.savedControls : null]}>{control.options.map((option, index) => <AnswerOption accessibilityLabel={option.label} accessibilityRole={role} accessibilityState={{ checked: option.selected }} disabled={disabled} key={option.id} letter={String.fromCharCode(65 + index)} onPress={() => onChange?.({ kind: "choice", optionId: option.id, selected: !option.selected })} state={option.selected ? "selected" : "default"} testID={simulationOptionSelector(itemId, option.id)} text={option.label} />)}</View>;
   }
   if (control.kind === "ordering") {
-    return <View style={[styles.controls, variant === "simulation" ? styles.simulationControls : null, variant === "simulationSaved" ? styles.savedControls : null]}>{control.elements.map((element, index) => <View key={element.id} style={styles.orderRow} testID={simulationOptionSelector(itemId, element.id)}><Text style={styles.orderLabel}>{`${index + 1}. ${element.label}`}</Text><View style={styles.orderActions}><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "up")} disabled={disabled || index === 0} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "up" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:up`) : undefined} variant="secondary">{t("Up")}</Button><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "down")} disabled={disabled || index === control.elements.length - 1} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "down" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:down`) : undefined} variant="secondary">{t("Down")}</Button></View></View>)}</View>;
+    return <View style={[styles.controls, variant === "simulation" ? styles.simulationControls : null, variant === "simulationSaved" ? styles.savedControls : null]}>{control.elements.map((element, index) => <View key={element.id} style={styles.orderRow} testID={simulationOptionSelector(itemId, element.id)}><Text maxFontSizeMultiplier={2} style={styles.orderLabel}>{`${index + 1}. ${element.label}`}</Text><View style={styles.orderActions}><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "up")} disabled={disabled || index === 0} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "up" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:up`) : undefined} variant="secondary">{t("Up")}</Button><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "down")} disabled={disabled || index === control.elements.length - 1} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "down" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:down`) : undefined} variant="secondary">{t("Down")}</Button></View></View>)}</View>;
   }
-  return <View style={[styles.controls, variant === "simulation" ? styles.simulationControls : null, variant === "simulationSaved" ? styles.savedControls : null]}>{control.dimensions.map((dimension) => <View key={dimension.id} style={styles.dimension}><Text style={styles.dimensionLabel}>{dimension.label}</Text><View style={styles.valueRow}>{dimension.values.map((value) => { const selected = dimension.selectedValue === value; return <Button accessibilityLabel={complexityValueAccessibilityLabel(dimension.label, value)} accessibilityRole="radio" accessibilityState={{ checked: selected }} disabled={disabled} key={value} onPress={() => onChange?.({ dimensionId: dimension.id, kind: "complexity", value })} testID={simulationOptionSelector(itemId, value)} variant={selected ? "primary" : "secondary"}>{value}</Button>; })}</View></View>)}</View>;
+  return <View style={[styles.controls, variant === "simulation" ? styles.simulationControls : null, variant === "simulationSaved" ? styles.savedControls : null]}>{control.dimensions.map((dimension) => <View key={dimension.id} style={styles.dimension}><Text maxFontSizeMultiplier={2} style={styles.dimensionLabel}>{dimension.label}</Text><View style={styles.valueRow}>{dimension.values.map((value) => { const selected = dimension.selectedValue === value; return <Button accessibilityLabel={complexityValueAccessibilityLabel(dimension.label, value)} accessibilityRole="radio" accessibilityState={{ checked: selected }} disabled={disabled} key={value} onPress={() => onChange?.({ dimensionId: dimension.id, kind: "complexity", value })} testID={simulationOptionSelector(itemId, value)} variant={selected ? "primary" : "secondary"}>{value}</Button>; })}</View></View>)}</View>;
 }
 
 function simulationOptionSelector(itemId: string | undefined, optionId: string): string | undefined {

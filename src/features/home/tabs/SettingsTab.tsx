@@ -173,7 +173,7 @@ function SettingsNavigationRow({ detail, icon, onPress, testID, title, value }: 
       onPress={onPress}
       testID={testID}
       title={title}
-      trailing={<View style={styles.preferenceMeta}>{value ? <Text style={styles.preferenceValue}>{value}</Text> : null}<Icon color={colors.listRow.icon} name="chevron-right" size={20} /></View>}
+        trailing={<View style={styles.preferenceMeta}>{value ? <Text maxFontSizeMultiplier={2} style={styles.preferenceValue}>{value}</Text> : null}<Icon color={colors.listRow.icon} name="chevron-right" size={20} /></View>}
       variant="grouped"
     />
   );

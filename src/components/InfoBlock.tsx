@@ -22,8 +22,8 @@ export function InfoBlock({ body, icon, style, testID, title, tone = "neutral" }
     <View style={[styles.base, styles[tone], style]} testID={testID}>
       {icon ? <View style={styles.icon}>{icon}</View> : null}
       <View style={styles.copy}>
-        <Text style={[styles.title, styles[`${tone}Title`]]}>{title}</Text>
-        <Text style={styles.body}>{body}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.title, styles[`${tone}Title`]]}>{title}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.body}>{body}</Text>
       </View>
     </View>
   );

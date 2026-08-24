@@ -244,7 +244,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(session, /return \([\s\S]*<Screen[\s\S]*footer=/);
   assert.match(result, /<Screen/);
   assert.match(rootNavigator, /name=\{ROUTES\.ALGORITHMS_PRACTICE_SUMMARY\}[\s\S]*?options=\{\{ headerShown: false, title: t\("Session result"\) \}\}/);
-  assert.match(result, /<Text style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
+  assert.match(result, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
   assert.match(result, /eyebrow:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"700"[\s\S]*?lineHeight:\s*16/);
   assert.match(result, /statsCard:\s*\{\s*gap:\s*spacing\.md\s*\}/);
   assert.match(result, /summaryStat:\s*\{[\s\S]*?borderBottomWidth:\s*1[\s\S]*?paddingBottom:\s*spacing\.md/);
@@ -267,6 +267,15 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(simulationSummary, /function OutcomeStat[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.outcomeLabel\}>[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.outcomeValue\}>/);
   assert.doesNotMatch(simulationSummary, /completion\.earnedPoints|completion\.maxPoints|missedCount/);
   assert.doesNotMatch(simulationSummary, /summaryStats|reviewBanner|configuration\?:/);
+});
+
+test("Progress follows the current Figma section copy and 200% text contract", () => {
+  const progress = source("src/features/home/tabs/ProgressTab.tsx");
+  const textNodes = [...progress.matchAll(/<Text\b[^>]*>/g)].map((match) => match[0]);
+
+  assert.match(progress, /t\("Recent activity"\)/);
+  assert.equal(textNodes.length > 0, true);
+  assert.equal(textNodes.every((node) => node.includes("maxFontSizeMultiplier={2}")), true);
 });
 
 test("simulation review owns the Figma review shell and keeps navigator outcomes explicit", () => {

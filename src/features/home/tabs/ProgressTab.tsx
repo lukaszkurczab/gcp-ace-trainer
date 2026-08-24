@@ -72,7 +72,7 @@ export function ProgressTab({
       </View>
 
       <View style={[styles.weekSection, !model.hasData ? styles.emptyWeekSection : null]}>
-        <Text style={styles.sectionLabel}>{t("This week")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("This week")}</Text>
         <Card style={[styles.weekCard, !model.hasData ? styles.emptyWeekCard : null]}>
           <View style={styles.weekHeader}>
             <View style={styles.weekCopy}>
@@ -81,15 +81,15 @@ export function ProgressTab({
             </View>
             {model.hasData ? <View style={styles.miniBar}><View style={[styles.miniBarFill, { width: `${Math.round(progressRatio * 100)}%` }]} /></View> : null}
           </View>
-          {model.reviewQueueCount > 0 ? <Text style={styles.weekAction}>{t(`${model.reviewQueueCount} review items due`)}</Text> : null}
-          {onOpenGoal ? <Pressable accessibilityRole="button" accessibilityLabel={t(goal ? "Manage learning goal" : "Set a learning goal")} onPress={onOpenGoal} style={({ pressed }) => [styles.weekGoalAction, pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.goal()}><Text style={styles.weekAction}>{t(goal ? "Manage goal" : "Set a goal")}</Text></Pressable> : null}
+          {model.reviewQueueCount > 0 ? <Text maxFontSizeMultiplier={2} style={styles.weekAction}>{t(`${model.reviewQueueCount} review items due`)}</Text> : null}
+          {onOpenGoal ? <Pressable accessibilityRole="button" accessibilityLabel={t(goal ? "Manage learning goal" : "Set a learning goal")} onPress={onOpenGoal} style={({ pressed }) => [styles.weekGoalAction, pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.goal()}><Text maxFontSizeMultiplier={2} style={styles.weekAction}>{t(goal ? "Manage goal" : "Set a goal")}</Text></Pressable> : null}
         </Card>
       </View>
 
       {!model.hasData ? (
         <View style={styles.emptyProgressState}>
           <View style={styles.emptyProgressIcon}>
-            <Text style={styles.emptyProgressGlyph}>⫶</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.emptyProgressGlyph}>⫶</Text>
           </View>
           <Text maxFontSizeMultiplier={2} style={styles.emptyProgressTitle}>{t("No learning evidence yet")}</Text>
           <Text maxFontSizeMultiplier={2} style={styles.emptyProgressDescription}>{t("Complete a Practice session to begin building Progress.")}</Text>
@@ -102,7 +102,7 @@ export function ProgressTab({
       ) : (
         <>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("Current focus")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Current focus")}</Text>
             <Card style={styles.focusCard}>
               <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{t(focusTitle)}</Text>
               {focus ? (
@@ -124,14 +124,14 @@ export function ProgressTab({
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("Needs attention")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Needs attention")}</Text>
             {model.reviewQueueCount > 0 ? (
               <Card style={styles.attentionCard}>
                 <View style={styles.attentionTitleRow}>
                   <View style={styles.attentionDot} />
-                  <Text style={styles.attentionTitle}>{t("Review due")}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.attentionTitle}>{t("Review due")}</Text>
                 </View>
-                <Text style={styles.attentionDetail}>{t(model.reviewQueueCopy)}</Text>
+                <Text maxFontSizeMultiplier={2} style={styles.attentionDetail}>{t(model.reviewQueueCopy)}</Text>
                 {model.reviewAction && onProgressAction ? (
                   <Button labelStyle={styles.attentionActionLabel} onPress={() => onProgressAction(model.reviewAction!)} variant="ghost">
                     {t(model.reviewActionLabel)}
@@ -140,8 +140,8 @@ export function ProgressTab({
               </Card>
             ) : (
               <Card style={styles.emptyAttentionCard}>
-                <Text style={styles.attentionTitle}>{t("Nothing needs attention")}</Text>
-                <Text style={styles.attentionDetail}>{t("Keep practicing to build local evidence for this track.")}</Text>
+                <Text maxFontSizeMultiplier={2} style={styles.attentionTitle}>{t("Nothing needs attention")}</Text>
+                <Text maxFontSizeMultiplier={2} style={styles.attentionDetail}>{t("Keep practicing to build local evidence for this track.")}</Text>
               </Card>
             )}
           </View>
@@ -171,10 +171,10 @@ function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ item
   return (
     <View style={styles.section} testID={runtimeSelectors.progress.activitySection()}>
       <View style={styles.sectionHeading}>
-        <Text style={styles.sectionTitle}>{t("Activity")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Recent activity")}</Text>
         {onOpenActivity ? (
           <Pressable accessibilityRole="button" onPress={onOpenActivity} style={({ pressed }) => [pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.activity()}>
-            <Text style={styles.activityLink}>{t("View activity")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.activityLink}>{t("View activity")}</Text>
           </Pressable>
         ) : null}
       </View>
@@ -183,7 +183,7 @@ function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ item
         if (groupItems.length === 0) return null;
         return (
           <View key={group} style={styles.activityGroup}>
-            <Text style={styles.activityGroupLabel}>{t(group)}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.activityGroupLabel}>{t(group)}</Text>
             <View style={styles.activityRows}>
               {groupItems.map((item, index) => (
                 <View key={item.id} style={[styles.activityRow, index === groupItems.length - 1 ? styles.activityRowLast : null]}>
@@ -199,8 +199,8 @@ function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ item
         );
       }) : (
         <Card style={styles.emptyActivityCard}>
-          <Text style={styles.activityTitle}>{t("No activity yet")}</Text>
-          <Text style={styles.activityDetail}>{t("Complete a practice item to see local activity here.")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t("No activity yet")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{t("Complete a practice item to see local activity here.")}</Text>
         </Card>
       )}
     </View>
@@ -237,14 +237,14 @@ function AlgorithmsEvidenceSection({
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeading}>
-        <Text style={styles.sectionTitle}>{t("Learning map")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Learning map")}</Text>
         <Badge label={t("Local evidence")} tone="neutral" />
       </View>
       <Card style={styles.evidenceCard}>
         {roadmapNodes.map((node) => (
           <View key={node.id} style={styles.roadmapRow} testID={runtimeSelectors.progress.node(node.id)}>
             <View style={styles.roadmapCopy}>
-              <Text style={styles.roadmapTitle}>{t(node.title)}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.roadmapTitle}>{t(node.title)}</Text>
               {node.showProgress ? <ProgressBar progress={node.progressPercent / 100} tone="primary" /> : null}
             </View>
             <Badge label={t(node.label)} tone={node.tone === "muted" ? "neutral" : node.tone} />
@@ -256,15 +256,15 @@ function AlgorithmsEvidenceSection({
       <View style={styles.diagnosticsCard}>
         <View style={styles.diagnosticsHeader}>
           <View style={styles.diagnosticsCopy}>
-            <Text style={styles.diagnosticsTitle}>{t(model.diagnostics.title)}</Text>
-            <Text style={styles.diagnosticsSubtitle}>{t(model.diagnostics.subtitle)}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.diagnosticsTitle}>{t(model.diagnostics.title)}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.diagnosticsSubtitle}>{t(model.diagnostics.subtitle)}</Text>
           </View>
           <Button onPress={() => setShowDiagnostics((current) => !current)} variant="ghost">{t(showDiagnostics ? model.diagnostics.hideActionLabel : model.diagnostics.showActionLabel)}</Button>
         </View>
         {showDiagnostics ? <View style={styles.diagnosticsDetails}>
-          <Text style={styles.diagnosticsText}>{`${t("Attempt outcomes")}: ${formatDiagnosticFacts(model.diagnostics.outcomeSummary)}`}</Text>
-          <Text style={styles.diagnosticsText}>{`${t("Detected mistake patterns")}: ${model.diagnostics.mistakePatterns.length ? model.diagnostics.mistakePatterns.join(" · ") : t("No repeated mistake patterns detected yet.")}`}</Text>
-          <Text style={styles.diagnosticsText}>{`${t("Roadmap state")}: ${formatDiagnosticFacts(model.diagnostics.roadmapFacts)}`}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.diagnosticsText}>{`${t("Attempt outcomes")}: ${formatDiagnosticFacts(model.diagnostics.outcomeSummary)}`}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.diagnosticsText}>{`${t("Detected mistake patterns")}: ${model.diagnostics.mistakePatterns.length ? model.diagnostics.mistakePatterns.join(" · ") : t("No repeated mistake patterns detected yet.")}`}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.diagnosticsText}>{`${t("Roadmap state")}: ${formatDiagnosticFacts(model.diagnostics.roadmapFacts)}`}</Text>
         </View> : null}
       </View>
     </View>
@@ -276,8 +276,8 @@ function PerformanceEvidenceSection({ scores, trackFamily }: Readonly<{ scores: 
   const { t } = useAppPreferences();
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t("Performance evidence")}</Text>
-      {scores.length > 0 ? scores.map((score) => <Card key={score.id} style={styles.evidenceRow}><View style={styles.evidenceRowHeader}><IconTile name={trackFamily === "certification" ? "cloud" : "route"} tone="info" /><View style={styles.roadmapCopy}><Text style={styles.roadmapTitle}>{t(score.label)}</Text><Text style={styles.evidenceDetail}>{t(score.detail ?? `${score.correct}/${score.total} correct`)}</Text></View><Text style={styles.evidencePercent}>{score.percent}%</Text></View><ProgressBar progress={score.percent / 100} tone="primary" /></Card>) : <Card style={styles.emptyEvidenceCard}><Text style={styles.roadmapTitle}>{t("No evidence yet")}</Text><Text style={styles.evidenceDetail}>{t("Complete a focused session to build track-aware evidence here.")}</Text></Card>}
+      <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Performance evidence")}</Text>
+      {scores.length > 0 ? scores.map((score) => <Card key={score.id} style={styles.evidenceRow}><View style={styles.evidenceRowHeader}><IconTile name={trackFamily === "certification" ? "cloud" : "route"} tone="info" /><View style={styles.roadmapCopy}><Text maxFontSizeMultiplier={2} style={styles.roadmapTitle}>{t(score.label)}</Text><Text maxFontSizeMultiplier={2} style={styles.evidenceDetail}>{t(score.detail ?? `${score.correct}/${score.total} correct`)}</Text></View><Text maxFontSizeMultiplier={2} style={styles.evidencePercent}>{score.percent}%</Text></View><ProgressBar progress={score.percent / 100} tone="primary" /></Card>) : <Card style={styles.emptyEvidenceCard}><Text maxFontSizeMultiplier={2} style={styles.roadmapTitle}>{t("No evidence yet")}</Text><Text maxFontSizeMultiplier={2} style={styles.evidenceDetail}>{t("Complete a focused session to build track-aware evidence here.")}</Text></Card>}
     </View>
   );
 }

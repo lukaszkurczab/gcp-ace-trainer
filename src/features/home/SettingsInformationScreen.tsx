@@ -63,7 +63,7 @@ export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, scr
         visible={activeTopic !== null}
       >
         <View style={styles.detail}>
-          {activeTopic?.paragraphs.map((paragraph) => <Text key={paragraph} style={styles.paragraph}>{paragraph}</Text>)}
+          {activeTopic?.paragraphs.map((paragraph) => <Text key={paragraph} maxFontSizeMultiplier={2} style={styles.paragraph}>{paragraph}</Text>)}
         </View>
       </SettingsBottomSheet>
     </Screen>

@@ -16,7 +16,7 @@ export function Badge({ label, tone = "neutral" }: BadgeProps) {
   const styles = useThemedStyles(createStyles);
   return (
     <View style={[styles.badge, styles[tone]]}>
-      <Text style={[styles.label, styles[`${tone}Label`]]}>{label}</Text>
+      <Text maxFontSizeMultiplier={2} style={[styles.label, styles[`${tone}Label`]]}>{label}</Text>
     </View>
   );
 }

@@ -186,7 +186,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     <View style={styles.shell} testID={runtimeSelectors.practice.hubRoot()}>
       <Screen ambient={colorMode === "dark"} edges={["top"]} style={styles.screenContent}>
         <View style={styles.pageIntro}>
-          <Text style={styles.pageTitle}>{t("Practice")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.pageTitle}>{t("Practice")}</Text>
           <Pressable
             accessibilityRole="button"
             onPress={() => navigation.navigate(ROUTES.SELECT_TRACK)}
@@ -194,13 +194,13 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           >
             <View style={styles.trackContextCopy}>
               <IconTile name={isCodingInterviewTrack || isDesignInterviewTrack ? "code-brackets" : "cloud"} size={22} tone="primary" />
-              <Text style={styles.trackContextTitle}>{t(activeTrack.shortTitle)}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.trackContextTitle}>{t(activeTrack.shortTitle)}</Text>
             </View>
-            <Text style={styles.changeTrack}>{t("Change")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.changeTrack}>{t("Change")}</Text>
           </Pressable>
           <View accessibilityLabel={topicDetail} style={styles.topicContext}>
             <View style={styles.topicDot} />
-            <Text style={styles.topicContextText}>{formatPracticeTopicTitle(topic.title, t)}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.topicContextText}>{formatPracticeTopicTitle(topic.title, t)}</Text>
           </View>
         </View>
 
@@ -208,11 +208,11 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           <View style={styles.cardRail} />
           <View style={styles.heroText}>
             <View style={[styles.heroHeading, largeText ? styles.heroHeadingLargeText : null]}>
-              <Text style={styles.heroTitle}>
+              <Text maxFontSizeMultiplier={2} style={styles.heroTitle}>
                 {t(primaryMode.title)}
               </Text>
             </View>
-            <Text style={styles.heroDetail}>
+            <Text maxFontSizeMultiplier={2} style={styles.heroDetail}>
               {t(primaryMode.detail)}
             </Text>
           </View>
@@ -240,6 +240,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               testID={runtimeSelectors.practice.openSetup()}
             >
               <Text
+                maxFontSizeMultiplier={2}
                 style={styles.settingsActionText}
                 testID={isCodingInterviewTrack ? runtimeSelectors.practice.customEntry() : undefined}
               >
@@ -251,7 +252,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t("More ways to practice")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("More ways to practice")}</Text>
           </View>
           <View style={styles.modeList}>
             {modes.map((mode, index) => (

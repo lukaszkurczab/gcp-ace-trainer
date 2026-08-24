@@ -200,7 +200,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       <View style={styles.header}>
         <View style={styles.headerContext}>
           <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={() => navigation.goBack()} />
-          <Text style={styles.context}>{t("Progress")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.context}>{t("Progress")}</Text>
         </View>
         <View style={styles.titleBlock}>
           <View style={styles.titleRow}>
@@ -212,7 +212,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           </View>
           {editing ? <Text maxFontSizeMultiplier={2} style={styles.description}>{t("Set a learning rhythm for this track.")}</Text> : (
             <View style={styles.statusRow}>
-              <View style={[styles.statusBadge, goal?.status === "paused" ? styles.pausedBadge : null]}><Text style={styles.statusBadgeLabel}>{t(goal?.status === "paused" ? "Paused" : "Active")}</Text></View>
+              <View style={[styles.statusBadge, goal?.status === "paused" ? styles.pausedBadge : null]}><Text maxFontSizeMultiplier={2} style={styles.statusBadgeLabel}>{t(goal?.status === "paused" ? "Paused" : "Active")}</Text></View>
             </View>
           )}
         </View>
@@ -266,7 +266,7 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
   return (
     <View style={styles.form} testID={runtimeSelectors.goal.root()}>
       <View style={styles.formSection}>
-        <Text style={styles.sectionTitle}>{t("Goal")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Goal")}</Text>
         <View style={styles.choiceGroup}>
           {templates.map((goalType) => {
             const copy = GOAL_COPY[goalType];
@@ -286,7 +286,7 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
       </View>
 
       <View style={styles.formSection}>
-        <Text style={styles.sectionTitle}>{t("Target date")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Target date")}</Text>
         <View style={styles.dateField}>
           <TextInput
             accessibilityLabel={t("Target date")}
@@ -301,23 +301,23 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
       </View>
 
       <View style={styles.formSection} testID={runtimeSelectors.goal.cadence()}>
-        <Text style={styles.sectionTitle}>{t("Weekly cadence")}</Text>
-        <Text style={styles.sectionSubtitle}>{t("Sessions per week")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Weekly cadence")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionSubtitle}>{t("Sessions per week")}</Text>
         <View style={styles.stepper}>
           <Pressable accessibilityLabel={t("Decrease sessions per week")} accessibilityRole="button" disabled={weeklySessionTarget <= 1} onPress={() => onSetWeeklyTarget(Math.max(1, weeklySessionTarget - 1))} style={styles.stepperButton}>
-            <Text style={styles.stepperGlyph}>−</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.stepperGlyph}>−</Text>
           </Pressable>
-          <Text accessibilityLabel={`${t("Sessions per week")}: ${weeklySessionTarget}`} style={styles.stepperValue}>{String(weeklySessionTarget)}</Text>
+          <Text maxFontSizeMultiplier={2} accessibilityLabel={`${t("Sessions per week")}: ${weeklySessionTarget}`} style={styles.stepperValue}>{String(weeklySessionTarget)}</Text>
           <Pressable accessibilityLabel={t("Increase sessions per week")} accessibilityRole="button" disabled={weeklySessionTarget >= 7} onPress={() => onSetWeeklyTarget(Math.min(7, weeklySessionTarget + 1))} style={styles.stepperButton}>
-            <Text style={styles.stepperGlyph}>+</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.stepperGlyph}>+</Text>
           </Pressable>
         </View>
       </View>
 
       <View style={styles.formSection}>
         <View style={styles.sectionCopy}>
-          <Text style={styles.sectionTitle}>{t("Preferred days")}</Text>
-          <Text style={styles.sectionSubtitle}>{t("Optional — select when you prefer to practice")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Preferred days")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.sectionSubtitle}>{t("Optional — select when you prefer to practice")}</Text>
         </View>
         <View style={styles.daysRow}>
           {GOAL_DAY_IDS.map((day) => {
@@ -332,7 +332,7 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
                 style={[styles.dayButton, selected ? styles.dayButtonSelected : styles.dayButtonUnselected]}
                 testID={runtimeSelectors.goal.day(day)}
               >
-                <Text style={[styles.dayLabel, selected ? styles.dayLabelSelected : null]}>{DAY_SHORT_LABELS[day]}</Text>
+                <Text maxFontSizeMultiplier={2} style={[styles.dayLabel, selected ? styles.dayLabelSelected : null]}>{DAY_SHORT_LABELS[day]}</Text>
               </Pressable>
             );
           })}
@@ -341,8 +341,8 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
 
       <Pressable accessibilityRole="button" onPress={onOpenNotifications} style={styles.reminderRow}>
         <View style={styles.reminderCopy}>
-          <Text style={styles.reminderTitle}>{t("Reminders")}</Text>
-          <Text style={styles.reminderDetail}>{t("Managed in notification settings")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.reminderTitle}>{t("Reminders")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{t("Managed in notification settings")}</Text>
         </View>
         <Icon color={palette.textSecondary} name="chevron-right" size={18} />
       </Pressable>
@@ -370,26 +370,26 @@ function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onToggle
         <SummaryRow label={t("Sessions/week")} value={String(goal.weeklySessionTarget)} />
         <View style={styles.summaryDivider} />
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>{t("Preferred days")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.summaryLabel}>{t("Preferred days")}</Text>
           {goal.preferredDays.length ? (
             <View style={styles.dayBadges}>
               {goal.preferredDays.map((day) => (
                 <View key={day} style={styles.dayBadge}>
-                  <Text style={styles.dayBadgeLabel}>{DAY_SHORT_LABELS[day]}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.dayBadgeLabel}>{DAY_SHORT_LABELS[day]}</Text>
                 </View>
               ))}
             </View>
-          ) : <Text style={styles.summaryValue}>{t("No preferred days")}</Text>}
+          ) : <Text maxFontSizeMultiplier={2} style={styles.summaryValue}>{t("No preferred days")}</Text>}
         </View>
         <View style={styles.summaryDivider} />
         <View style={styles.summaryReminderRow}>
-          <Text style={[styles.summaryLabel, styles.summaryReminderLabel]}>{t("Reminders")}</Text>
-          <Pressable accessibilityRole="button" onPress={onOpenNotifications}><Text style={styles.summaryLink}>{t("Notification settings")}</Text></Pressable>
+          <Text maxFontSizeMultiplier={2} style={[styles.summaryLabel, styles.summaryReminderLabel]}>{t("Reminders")}</Text>
+          <Pressable accessibilityRole="button" onPress={onOpenNotifications}><Text maxFontSizeMultiplier={2} style={styles.summaryLink}>{t("Notification settings")}</Text></Pressable>
         </View>
       </View>
-      <Pressable accessibilityRole="button" onPress={onEdit} style={styles.centerAction}><Text style={styles.centerActionLabel}>{t("Edit goal")}</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={onEdit} style={styles.centerAction}><Text maxFontSizeMultiplier={2} style={styles.centerActionLabel}>{t("Edit goal")}</Text></Pressable>
       <Pressable accessibilityRole="button" onPress={onTogglePause} style={styles.centerAction}>
-        <Text style={styles.centerActionLabel}>{t(goal.status === "paused" ? "Resume goal" : "Pause goal")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.centerActionLabel}>{t(goal.status === "paused" ? "Resume goal" : "Pause goal")}</Text>
       </Pressable>
     </View>
   );
@@ -397,7 +397,7 @@ function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onToggle
 
 function SummaryRow({ label, value }: Readonly<{ label: string; value: string }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.summaryRow}><Text style={styles.summaryLabel}>{label}</Text><Text style={styles.summaryValue}>{value}</Text></View>;
+  return <View style={styles.summaryRow}><Text maxFontSizeMultiplier={2} style={styles.summaryLabel}>{label}</Text><Text maxFontSizeMultiplier={2} style={styles.summaryValue}>{value}</Text></View>;
 }
 
 function formatGoalDate(value: string, locale: "en" | "pl"): string {

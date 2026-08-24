@@ -36,15 +36,15 @@ export function ResultScreen({ navigation, route }: Props) {
   const noAnswersSubmitted = answeredCount === 0;
   return <Screen style={styles.screen}>
     <Card style={styles.card}>
-      <Text style={styles.title}>{t(noAnswersSubmitted ? "Session ended without answers" : certification ? "Session complete" : "Exam complete")}</Text>
-      <Text style={styles.status}>{t("Status")}: {t(noAnswersSubmitted ? "No answers submitted" : "Completed")}</Text>
-      <Text style={styles.score}>{String(details.correctCount ?? 0)} {t("correct")}</Text>
-      <Text style={styles.detail}>{t("Points")}: {String(details.pointsEarned ?? 0)} / {String(details.maxPoints ?? 0)}</Text>
-      <Text style={styles.detail}>{t("Requested")}: {session.requestedLength} · {t("Questions")}: {session.actualLength}</Text>
-      <Text style={styles.detail}>{t("Answered")}: {answeredCount} · {t("Unanswered")}: {result.unansweredOccurrenceIds.length}</Text>
-      <Text style={styles.detail}>{t("Active time")}: {formatElapsed(session.activeForegroundMs)}</Text>
-      <Text style={styles.detail}>{t("Mode")}: {formatMode(session.modeId)}</Text>
-      <Text style={styles.detail}>{t("Domains")}: {formatDomains(session.configurationSnapshot.sectionPresentation)}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.title}>{t(noAnswersSubmitted ? "Session ended without answers" : certification ? "Session complete" : "Exam complete")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.status}>{t("Status")}: {t(noAnswersSubmitted ? "No answers submitted" : "Completed")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.score}>{String(details.correctCount ?? 0)} {t("correct")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Points")}: {String(details.pointsEarned ?? 0)} / {String(details.maxPoints ?? 0)}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Requested")}: {session.requestedLength} · {t("Questions")}: {session.actualLength}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Answered")}: {answeredCount} · {t("Unanswered")}: {result.unansweredOccurrenceIds.length}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Active time")}: {formatElapsed(session.activeForegroundMs)}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Mode")}: {formatMode(session.modeId)}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Domains")}: {formatDomains(session.configurationSnapshot.sectionPresentation)}</Text>
     </Card>
     <Button onPress={() => navigation.navigate(ROUTES.EXAM_REVIEW, { sessionId: route.params.sessionId })} testID={runtimeSelectors.summary.reviewAnswers(route.params.sessionId)}>{t("Review answers")}</Button>
     <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">{t("Back to practice")}</Button>

@@ -54,8 +54,8 @@ export function PracticeResponseControls({
       <View style={styles.stack}>
         {control.elements.map((element, index) => (
           <View key={element.id} style={styles.orderRow} testID={itemId ? runtimeSelectors.session.option(itemId, element.id) : undefined}>
-            <Text style={styles.orderIndex}>{index + 1}</Text>
-            <Text style={styles.optionText}>{element.text}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.orderIndex}>{index + 1}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.optionText}>{element.text}</Text>
             {editable ? (
               <View style={styles.orderActions}>
                 <OrderingMove disabled={index === 0} direction="up" elementLabel={element.text} index={index} onPress={() => onOrderingMove(element.id, "up")} total={control.elements.length} />
@@ -72,7 +72,7 @@ export function PracticeResponseControls({
     <View style={styles.stack}>
       {control.dimensions.map((dimension) => (
         <View key={dimension.id} style={styles.dimension}>
-          <Text style={styles.dimensionTitle}>{dimension.label ?? humanizeDimension(dimension.id)}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.dimensionTitle}>{dimension.label ?? humanizeDimension(dimension.id)}</Text>
           <View style={styles.valueGrid}>
             {dimension.values.map((value) => {
               const selected = dimension.selectedValue === value;
@@ -87,7 +87,7 @@ export function PracticeResponseControls({
                   style={({ pressed }) => [styles.valueOption, selected ? styles.valueOptionSelected : null, pressed && editable ? styles.pressed : null, !editable ? styles.locked : null]}
                   testID={itemId ? runtimeSelectors.session.complexityValue(itemId, dimension.id, value) : undefined}
                 >
-                  <Text style={[styles.valueText, selected ? styles.selectedText : null]}>{value}</Text>
+                  <Text maxFontSizeMultiplier={2} style={[styles.valueText, selected ? styles.selectedText : null]}>{value}</Text>
                 </Pressable>
               );
             })}
@@ -141,7 +141,7 @@ function OrderingMove({ direction, disabled, elementLabel, index, onPress, total
       onPress={onPress}
       style={[styles.moveButton, disabled ? styles.moveButtonDisabled : null]}
     >
-      <Text style={styles.moveText}>{direction === "up" ? "↑" : "↓"}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.moveText}>{direction === "up" ? "↑" : "↓"}</Text>
     </Pressable>
   );
 }

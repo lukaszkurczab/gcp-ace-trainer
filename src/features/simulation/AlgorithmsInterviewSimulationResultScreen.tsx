@@ -85,7 +85,7 @@ function AlgorithmsInterviewSimulationReviewSurface({ navigation, sessionId }: R
   useFocusEffect(useCallback(() => { void load(); }, [load]));
 
   if (failure) return <Screen><EmptyState title={t("Review unavailable")} description={t(failure)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
-  if (!result) return <Screen><View accessibilityLabel={t("Loading review…")} accessibilityRole="progressbar" style={styles.pending}><Text style={styles.pendingText}>{t("Reading the verified simulation result.")}</Text></View></Screen>;
+  if (!result) return <Screen><View accessibilityLabel={t("Loading review…")} accessibilityRole="progressbar" style={styles.pending}><Text maxFontSizeMultiplier={2} style={styles.pendingText}>{t("Reading the verified simulation result.")}</Text></View></Screen>;
   const answers = filter === "missed" ? result.feedbackItems.filter((item) => item.correctness !== "correct") : result.feedbackItems;
   const currentIndex = answers.length ? Math.min(selectedIndex, answers.length - 1) : 0;
   const current = answers[currentIndex];

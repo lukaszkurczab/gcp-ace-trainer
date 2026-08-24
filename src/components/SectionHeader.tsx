@@ -17,8 +17,8 @@ export function SectionHeader({ action, subtitle, tight = false, title }: Sectio
   return (
     <View style={styles.container}>
       <View style={[styles.copy, tight ? styles.copyTight : null]}>
-        <Text style={[styles.title, tight ? styles.titleTight : null]}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        <Text maxFontSizeMultiplier={2} style={[styles.title, tight ? styles.titleTight : null]}>{title}</Text>
+        {subtitle ? <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
       {action}
     </View>

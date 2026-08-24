@@ -97,7 +97,7 @@ export function MistakesReviewScreen() {
         />
         {model?.warning ? (
           <View style={styles.warningBanner}>
-            <Text style={styles.warningText}>{model.warning}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.warningText}>{model.warning}</Text>
           </View>
         ) : null}
         {model ? (
@@ -208,8 +208,8 @@ function DetailBlock({ label, value }: DetailBlockProps) {
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.detailBlock}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailText}>{value}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.detailLabel}>{label}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.detailText}>{value}</Text>
     </View>
   );
 }

@@ -188,7 +188,7 @@ export function NotificationSettingsScreen({ navigation }: NotificationSettingsS
           style={styles.reminderTimeInput}
           value={reminderTime}
         />
-        {reminderError ? <Text style={styles.reminderError}>{reminderError}</Text> : null}
+        {reminderError ? <Text maxFontSizeMultiplier={2} style={styles.reminderError}>{reminderError}</Text> : null}
         <View style={styles.sheetActions}>
           <Button onPress={() => { void saveReminder(); }}>{text.reminderSave}</Button>
           {notifications.dailyReminder ? (

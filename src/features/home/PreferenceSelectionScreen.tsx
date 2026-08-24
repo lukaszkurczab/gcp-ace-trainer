@@ -52,7 +52,7 @@ export function PreferenceSelectionScreen({
           description={intro}
           title={header.title}
         />
-      ) : <Text style={styles.intro}>{intro}</Text>}
+      ) : <Text maxFontSizeMultiplier={2} style={styles.intro}>{intro}</Text>}
       <View style={styles.choiceGroup} accessibilityRole="radiogroup" accessibilityLabel={sectionTitle}>
         {options.map((option) => {
           const selected = option.value === currentValue;

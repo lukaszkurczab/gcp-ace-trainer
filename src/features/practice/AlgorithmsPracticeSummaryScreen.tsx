@@ -71,10 +71,10 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
           >
             <SummaryStat label={t("Completed items")} value={`${result.answeredOccurrenceIds.length} ${t("of")} ${result.totalOccurrences}`} />
             <SummaryStat label={t("Active time")} value={activeTime} />
-            {result.completionKind !== "completed" ? <Text style={styles.configuration} testID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}>{result.configuration.actualLength} {t("items")} · {t(result.configuration.feedbackTiming === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer")}</Text> : null}
+            {result.completionKind !== "completed" ? <Text maxFontSizeMultiplier={2} style={styles.configuration} testID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}>{result.configuration.actualLength} {t("items")} · {t(result.configuration.feedbackTiming === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer")}</Text> : null}
           </View>
           <View style={styles.outcomeSection}>
-            {result.completionKind === "completed" ? <Text style={styles.sectionTitle}>{t("Outcome distribution")}</Text> : <Text style={styles.sectionTitle}>{t("Results")}</Text>}
+            {result.completionKind === "completed" ? <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Outcome distribution")}</Text> : <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Results")}</Text>}
             {result.score ? (
               <View style={styles.outcomeRow}>
                 <OutcomeStat label={t("Correct")} value={result.score.correctCount} tone="success" />
@@ -82,16 +82,16 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
                 <OutcomeStat label={t("Incorrect")} value={result.score.incorrectCount} tone="danger" />
               </View>
             ) : (
-              <Text style={styles.resultText}>{result.completionKind === "abandoned" ? t("Score is shown only after a completed session.") : t("Verified result details are unavailable.")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.resultText}>{result.completionKind === "abandoned" ? t("Score is shown only after a completed session.") : t("Verified result details are unavailable.")}</Text>
             )}
           </View>
           {result.feedbackItems.length > 0 ? <View style={styles.reviewBanner}><Icon color={styles.reviewBannerText.color} name="clock-check" size={16} /><Text maxFontSizeMultiplier={2} style={styles.reviewBannerText}>{t("Review created")} — {reviewCount} {t("items will return when due.")}</Text></View> : null}
           {showReview && result.feedbackItems.length > 0 ? (
             <View style={styles.feedbackItems}>
-              <Text style={styles.feedbackTitle}>{t("Answer review")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.feedbackTitle}>{t("Answer review")}</Text>
               {result.feedbackItems.map((item) => (
                 <View key={item.occurrenceId} style={styles.feedbackItem} testID={runtimeSelectors.summary.feedbackItem(result.sessionId, item.occurrenceId)}>
-                  <Text style={styles.feedbackPrompt}>{item.ordinal}. {item.prompt}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.feedbackPrompt}>{item.ordinal}. {item.prompt}</Text>
                   <PracticeFeedbackBlock item={item.item} itemId={item.occurrenceId} feedback={{ details: item.details, reason: item.reason, result: item.correctness }} />
                 </View>
               ))}

@@ -32,8 +32,8 @@ export function SettingsDialog({
       <View style={styles.root}>
         <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={onClose} style={styles.backdrop} />
         <View accessibilityViewIsModal style={styles.dialog}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.message}>{message}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.title}>{title}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.message}>{message}</Text>
           <View style={styles.actions}>
             <Button onPress={onPrimaryAction}>{primaryActionLabel}</Button>
             <Button onPress={onClose} variant="secondary">{secondaryActionLabel}</Button>

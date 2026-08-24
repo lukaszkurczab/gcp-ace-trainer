@@ -184,7 +184,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         footerVariant={compactCodingPractice ? "sticky" : "default"}
         footer={compactCodingPractice ? (
           <View style={styles.footerActions}>
-            {setupError ? <Text accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
+            {setupError ? <Text maxFontSizeMultiplier={2} accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
             <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
           </View>
         ) : undefined}
@@ -203,12 +203,13 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
         {!compactCodingPractice ? <View style={styles.intro}>
           <Text
+            maxFontSizeMultiplier={2}
             style={styles.title}
             testID={compactCodingPractice ? runtimeSelectors.practice.customSetupTitle() : undefined}
           >
             {t("Practice setup")}
           </Text>
-          <Text style={styles.subtitle}>
+          <Text maxFontSizeMultiplier={2} style={styles.subtitle}>
             {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : scenarioPractice ? t("Choose one competency. The session uses only its approved scenario questions.") : weakAreaReview ? t("Review only saved weak areas whose review time has arrived.") : mixedPractice ? t("Practice the approved interleaved Cloud question set.") : `${t("Configure the next session for")} ${formatPracticeTopicTitle(topic.title, t)}.`}
           </Text>
         </View> : null}
@@ -238,7 +239,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               />
             ))}
           </View>
-        </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text style={styles.reviewTitle}>{t("40-question Diagnostic Baseline")}</Text><Text style={styles.subtitle}>{t("Fixed Cloud-domain scope, elapsed timer, and feedback after each saved answer.")}</Text></View></Card>}
+        </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("40-question Diagnostic Baseline")}</Text><Text maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Fixed Cloud-domain scope, elapsed timer, and feedback after each saved answer.")}</Text></View></Card>}
 
         {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
           <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>
@@ -265,8 +266,8 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && !algorithmMode ? (
           <Card style={styles.reviewCard}>
             <View style={styles.reviewCopy}>
-              <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
-              <Text style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
             </View>
             {reviewBehaviorCopy.showToggle ? (
               <Pressable
@@ -282,7 +283,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         ) : null}
 
         {!compactCodingPractice ? <View style={styles.actions}>
-          {setupError ? <Text accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
+          {setupError ? <Text maxFontSizeMultiplier={2} accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
           <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
         </View> : null}
       </Screen>
@@ -314,8 +315,8 @@ function SelectableOption({ compact = false, label, meta, onPress, selected, tes
       ]}
       testID={testID}
     >
-      <Text style={[styles.lengthValue, compact ? styles.compactLengthValue : null, selected ? (compact ? styles.compactSelectedText : styles.selectedText) : null]}>{label}</Text>
-      <Text numberOfLines={1} style={[styles.optionMeta, compact ? styles.compactOptionMeta : null, selected && compact ? styles.compactSelectedMeta : null]}>{meta}</Text>
+      <Text maxFontSizeMultiplier={2} style={[styles.lengthValue, compact ? styles.compactLengthValue : null, selected ? (compact ? styles.compactSelectedText : styles.selectedText) : null]}>{label}</Text>
+      <Text maxFontSizeMultiplier={2} numberOfLines={1} style={[styles.optionMeta, compact ? styles.compactOptionMeta : null, selected && compact ? styles.compactSelectedMeta : null]}>{meta}</Text>
     </Pressable>
   );
 }
@@ -348,8 +349,8 @@ function SelectablePanel({ compact = false, detail, label, onPress, selected, te
       testID={testID}
       >
       <View style={styles.panelCopy}>
-        <Text style={[styles.panelTitle, selected ? styles.selectedText : null]}>{label}</Text>
-        <Text style={styles.subtitle}>{detail}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.panelTitle, selected ? styles.selectedText : null]}>{label}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{detail}</Text>
       </View>
       <View style={[styles.radio, selected ? styles.radioSelected : null]}>
         {selected ? <View style={styles.radioDot} /> : null}
@@ -563,5 +564,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
 
 function PracticeSetupSectionHeader({ title, subtitle }: Readonly<{ title: string; subtitle: string }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.compactSectionHeader}><Text style={styles.compactSectionTitle}>{title.toUpperCase()}</Text><Text style={styles.compactSectionSubtitle}>{subtitle}</Text></View>;
+  return <View style={styles.compactSectionHeader}><Text maxFontSizeMultiplier={2} style={styles.compactSectionTitle}>{title.toUpperCase()}</Text><Text maxFontSizeMultiplier={2} style={styles.compactSectionSubtitle}>{subtitle}</Text></View>;
 }
