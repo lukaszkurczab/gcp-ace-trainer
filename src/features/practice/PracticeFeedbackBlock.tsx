@@ -15,14 +15,19 @@ export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ fee
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const detailsDisclosure = <DetailsDisclosure expanded={detailsOpen} onPress={() => setDetailsOpen((current) => !current)} testID={runtimeSelectors.session.detailsToggle(itemId)} />;
   return (
     <View style={styles.container} testID={runtimeSelectors.session.feedback(itemId)}>
       <View style={styles.reasonPanel} testID={runtimeSelectors.session.result(itemId, feedback.result)}>
         <Text style={[styles.reasonLabel, detailsOpen ? styles.reasonLabelExpanded : null]}>{t("Reason")}</Text>
         <Text accessibilityLabel={`${t("Verified answer explanation.")} ${feedback.reason}`} style={styles.reason} testID={runtimeSelectors.session.reason(itemId)}>{feedback.reason}</Text>
       </View>
-      <DetailsDisclosure expanded={detailsOpen} onPress={() => setDetailsOpen((current) => !current)} testID={runtimeSelectors.session.detailsToggle(itemId)} />
-      {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}><AlgorithmFeedbackDocumentBlock document={feedback.details} item={item} /></View> : null}
+      {detailsOpen ? (
+        <View style={styles.detailsSection}>
+          {detailsDisclosure}
+          <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}><AlgorithmFeedbackDocumentBlock document={feedback.details} item={item} /></View>
+        </View>
+      ) : detailsDisclosure}
     </View>
   );
 }
@@ -30,6 +35,7 @@ export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ fee
 const createStyles = (palette: AppColors) => StyleSheet.create({
   container: { gap: spacing.md },
   details: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, gap: spacing.md, paddingTop: spacing.md },
+  detailsSection: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.md, padding: spacing.lg },
   reason: { ...typography.body, color: palette.textSecondary },
   reasonLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   reasonLabelExpanded: { textTransform: "uppercase" },

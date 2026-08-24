@@ -35,6 +35,11 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   assert.match(detailsDisclosure, /toggle:\s*\{[^}]*minHeight:\s*48/);
   assert.match(detailsDisclosure, /label:\s*\{[^}]*color:\s*palette\.textSecondary/);
   assert.match(feedback, /details:\s*\{[^}]*borderTopColor:\s*palette\.border[^}]*paddingTop:\s*spacing\.md/);
+  assert.match(feedback, /detailsSection:\s*\{[^}]*backgroundColor:\s*palette\.elevatedSurface[^}]*borderColor:\s*palette\.border[^}]*borderRadius:\s*radius\.lg[^}]*borderWidth:\s*1[^}]*gap:\s*spacing\.md[^}]*padding:\s*spacing\.lg/);
+  assert.match(feedback, /detailsOpen \?/);
+  assert.match(feedback, /styles\.detailsSection/);
+  assert.match(feedback, /\) : detailsDisclosure/);
+  assert.doesNotMatch(feedback, /detailsSection:\s*\{[^}]*\bheight\s*:/);
   assert.match(simulation, /layout=\{savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(simulation, /variant=\{savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.doesNotMatch(surfaces, /hitSlop/);
