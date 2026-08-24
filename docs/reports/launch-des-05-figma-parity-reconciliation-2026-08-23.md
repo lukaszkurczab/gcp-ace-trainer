@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `03fff7a`
+Current source SHA at packet update: `2b19f81`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -320,14 +320,14 @@ for semantic migration until that decision exists.
 - Live Figma design context and screenshots: pass for the current file/page/
   library and the node set recorded above, including the revalidations in the
   addenda.
-- `npm run typecheck`: pass at current source SHA `03fff7a`.
-- Latest focused Practice Hub/Question Shell/accessibility checks: 26/26 pass; latest focused
-  Activity checks: 35/35 pass; latest focused Progress/Home/review/visual
-  checks: 36/36 pass.
-- Full `npm run qa:static`: pass at source commit `03fff7a`, with recovery
+- `npm run typecheck`: pass at current source SHA `2b19f81`.
+- Latest focused review/accessibility/visual contract checks: 30/30 pass,
+  including Practice Hub, Question Shell, rich feedback, Answer Review, and
+  Simulation Review source owners.
+- Full `npm run qa:static`: pass at source commit `2b19f81`, with recovery
   inventory 287/116/564 and 573/573 tests, TypeScript, content boundary, and
   runtime privacy boundary.
-- Working tree: source commit `03fff7a` is clean; this report and the launch
+- Working tree: source commit `2b19f81` is clean; this report and the launch
   plan contain the current documentation addendum.
 - No graph output was present in the repository; graph orientation was not
   used because direct route/source/document evidence was sufficient.
@@ -1781,3 +1781,29 @@ Focused visual-shell checks and `npm run typecheck` pass at this slice. The
 current-head full QA, Light/Dark/200% runtime pixel capture, and Product Owner
 approval remain open, so this is source-level convergence and not a `MATCHED`
 or 99% claim.
+
+## Addendum — Review Shell 200% text and accent convergence
+
+The current connector channel `ksxw21cw` was revalidated against the Answer
+Review authority `81:538` / `801:7299`, the shared Review Shell `765:6130`,
+and the 200% stress instances `766:5732` (Dark) and `766:5822` (Light).
+Those references keep the review QUESTION/REASON accent at Figma teal
+`#14B8A6`, scale the answer-option letter and review eyebrow with the same
+200% text contract, and allow rich Details paragraphs, headings, lists,
+callouts, and code to grow without replacing their existing semantic owners.
+
+Commit `c7de410` introduces the repository-owned `ambient.reviewTeal` token
+and maps the shared Review feedback/question-eyebrow owners to it; it does
+not change the action-primary token or Practice's distinct `#20C997` accent.
+Commit `917a084` adds the 200% multiplier to the shared AnswerOption letter,
+and commit `2b19f81` completes the same contract for simulation review
+eyebrows, Practice feedback reason text, and the rich feedback document
+renderer. The existing `selectable` code path, answer semantics, review
+marking, details disclosure, navigation, and unavailable states remain
+unchanged.
+
+Focused typecheck and review/accessibility/visual checks passed; the current
+head also passed full `npm run qa:static` with recovery inventory 287/116/564
+and 573/573 tests. This is source-level convergence, not a `MATCHED` or 99%
+claim: current-head Light/Dark/200% runtime pixel capture and Product Owner
+approval remain open.
