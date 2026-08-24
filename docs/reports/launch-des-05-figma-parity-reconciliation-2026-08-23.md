@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `e09ca7d`
+Current source SHA at packet update: `a726705`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -95,7 +95,7 @@ Only the repository plan statuses are used below.
 |---|---|---|
 | Canonical route graph and screen owners | `done` | `RootNavigator` has one owner for Home, Activity, Settings, Practice Hub, Practice Setup, active Practice, summaries, simulation, and review. Source ownership and route tests pass. This proves architecture, not pixel parity. |
 | Shared design-system primitives | `partial` | `Screen`, `Button`, `Card`, `ListRow`, headers, navigation, and session shells are canonical and source-tested. Commits `7e9b200`, `e257af4`, `2eb6c65`, and `992d5bb` align the shared Button state matrix, Bottom Navigation separator, Screen Header base geometry, and Screen Shell default spacing to Figma `141:817`, `140:875`, `140:881`, and `830:7457`; current slices still require runtime comparison across all states and themes. |
-| Home, Progress, and Activity source slices | `partial` | Commits through `e09ca7d` align documented source geometry and typography against live nodes, including the Activity dark Glow-UL and filtered-empty inset. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
+| Home, Progress, and Activity source slices | `partial` | Commits through `a726705` align documented source geometry and typography against live nodes, including the Activity dark Glow-UL and exact 40 px filtered-empty inset. Fresh same-head pixel comparison is still missing for several states; Activity capture is blocked by the local simulator tooling. |
 | PKG-04A Coding Free interaction truth | `done` | `buildPracticeModes` exposes exactly Learn Approach, Guided Practice, Custom Practice, and evidence-conditioned Weak Area Review; the canonical tests assert the mode list. Independent, Recognize, Contrast, and Simulation are excluded from the Free profile as required by `PO-059`/`PO-060`. |
 | Current Practice Hub visual parity | `partial` | `bc09d63` applies the safe geometry facts from `55:993` while preserving the approved Free interaction contract, `6f8b0c6` aligns the Coding row icon container/icon/chevron geometry from `232:1716`, and `a6d05c6` aligns the section-label inset/typography and removes the fixture-only hero-action chevron. The current source does not render the Figma fixture's `Independent Practice` / `Coding Interview` rows; that fixture-versus-contract discrepancy is recorded separately, and fresh runtime pixel comparison remains blocked. |
 | Current Practice Setup visual parity | `partial` | `65aeccd` applies the safe compact segmented-control, choice-row, header, sticky-footer, and spacing facts from `55:2172`. Its Focus areas and `Save settings` semantics are still not represented by the current canonical route/model and were not invented; fresh runtime pixel comparison remains blocked. |
@@ -1418,11 +1418,11 @@ empty). The populated and empty references share the dark Page 1 Glow-UL;
 the filtered-empty state adds a 40 px horizontal content inset while keeping
 the existing two-bar icon and action stack.
 
-Commit `e09ca7d` extends the existing `Screen`/`AmbientBackdrop` owner with
+Commits `e09ca7d` and `a726705` extend the existing `Screen`/`AmbientBackdrop` owner with
 an explicit Activity variant: dark Activity renders only the Figma-matched
 teal Glow-UL, while the established Track/Practice variant keeps its indigo
 glow and topography unchanged. `ActivityEmptyState` applies the existing
-`spacing.xxl` token only to the filtered branch. No activity model, route,
+40 px horizontal inset only to the filtered branch. No activity model, route,
 filter command, session history projection, or fallback path changed.
 
 Focused Activity/ambient/visual-shell checks passed `15/15`; current local
