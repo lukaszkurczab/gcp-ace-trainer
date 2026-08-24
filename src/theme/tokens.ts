@@ -23,6 +23,7 @@ export const ambient = {
   canvas: "#081328",
   goalTeal: "#20C997",
   indigo: "#4F46E5",
+  reviewTeal: "#14B8A6",
   teal: "#14B7A6",
 } as const;
 

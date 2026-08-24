@@ -5,7 +5,7 @@ import { DetailsDisclosure } from "../../components";
 import type { ContentItemRef } from "../../domain";
 import type { AlgorithmFeedbackDocument } from "../../content/contracts";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { colorWithOpacity, effects, spacing, typography, type AppColors } from "../../theme";
+import { ambient, colorWithOpacity, effects, spacing, typography, type AppColors } from "../../theme";
 import { AlgorithmFeedbackDocumentBlock } from "../practice/AlgorithmFeedbackDocumentBlock";
 
 type ReviewFeedbackBlockProps = Readonly<{
@@ -43,7 +43,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   feedback: { gap: spacing.xl },
   reason: { ...typography.body, color: palette.textSecondary, fontWeight: "500" },
   reasonDivider: { backgroundColor: effects.divider, height: StyleSheet.hairlineWidth, width: "100%" },
-  reasonLabel: { ...typography.caption, color: colorWithOpacity(palette.primary, 0.6), fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
+  reasonLabel: { ...typography.caption, color: colorWithOpacity(ambient.reviewTeal, 0.6), fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, textTransform: "uppercase" },
   reasonSection: { gap: spacing.sm },
   reasonSpacer: { height: spacing.xs },
 });

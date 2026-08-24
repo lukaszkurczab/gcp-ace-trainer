@@ -9,7 +9,7 @@ import { AnswerOption, EmptyState, ReviewNavigator, ReviewShell, ReviewUnavailab
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { effects, spacing, typography, type AppColors } from "../../theme";
+import { ambient, effects, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
@@ -210,7 +210,7 @@ const createReviewStyles = (palette: AppColors) => StyleSheet.create({
   pending: { alignItems: "center", justifyContent: "center", minHeight: 180 },
   pendingText: { ...typography.body, color: palette.textSecondary },
   questionBlock: { gap: spacing.xs },
-  questionEyebrow: { color: palette.primary, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 15, opacity: 0.5 },
+  questionEyebrow: { color: ambient.reviewTeal, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 15, opacity: 0.5 },
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   options: { gap: spacing.sm },
   unavailableContent: { alignSelf: "stretch", flex: 1, position: "relative", width: "100%" },

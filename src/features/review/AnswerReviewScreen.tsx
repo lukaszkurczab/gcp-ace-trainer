@@ -11,7 +11,7 @@ import { contentPackagePinsEqual } from "../../domain";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { effects, spacing, typography, type AppColors } from "../../theme";
+import { ambient, effects, spacing, typography, type AppColors } from "../../theme";
 import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/certification";
 import { ReviewFeedbackBlock } from "./ReviewFeedbackBlock";
 
@@ -179,7 +179,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   options: { gap: spacing.sm },
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   questionBlock: { gap: 6 },
-  questionEyebrow: { color: palette.primary, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, opacity: 0.5 },
+  questionEyebrow: { color: ambient.reviewTeal, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, opacity: 0.5 },
   markAction: { marginTop: spacing.xl },
   optionsFeedbackSpacer: { height: 28 },
   questionOptionsSpacer: { height: 22 },

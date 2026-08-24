@@ -20,7 +20,7 @@ test("shared visual effects have one theme-token owner", () => {
     .join("\n");
 
   assert.match(tokens, /export const effects = \{[\s\S]*?reviewScrim:[\s\S]*?subtleBorder:/);
-  assert.match(tokens, /export const ambient = \{[\s\S]*?canvas:[\s\S]*?indigo:/);
+  assert.match(tokens, /export const ambient = \{[\s\S]*?canvas:[\s\S]*?indigo:[\s\S]*?reviewTeal:/);
   assert.doesNotMatch(appSource, /rgba\(/);
   assert.doesNotMatch(appSource, /shadowColor:\s*"#/);
   assert.doesNotMatch(appSource, /backgroundColor:\s*"#081328"/);
@@ -296,6 +296,7 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   assert.match(facade, /controls: feedback\.controls/);
   const reviewFeedback = source("src/features/review/ReviewFeedbackBlock.tsx");
   assert.match(reviewFeedback, /reasonDivider:/);
+  assert.match(reviewFeedback, /colorWithOpacity\(ambient\.reviewTeal, 0\.6\)/);
   assert.match(reviewFeedback, /reason:\s*\{[^}]*\.\.\.typography\.body[^}]*fontWeight:\s*"500"/);
   assert.doesNotMatch(reviewFeedback, /reasonPanel|result:/);
 });
@@ -312,6 +313,7 @@ test("answer review uses the shared Figma review shell and preserves review mark
   assert.match(review, /questionBlock:\s*\{\s*gap:\s*6\s*\}/);
   assert.match(review, /optionsFeedbackSpacer:\s*\{\s*height:\s*28\s*\}/);
   assert.match(review, /<ReviewFeedbackBlock/);
+  assert.match(review, /questionEyebrow:\s*\{[^}]*color:\s*ambient\.reviewTeal/);
   assert.match(sharedReviewShell, /filterShell:/);
   assert.match(sharedReviewShell, /footerVariant="review"/);
   assert.match(sharedReviewShell, /footer:\s*\{[\s\S]*flexDirection:\s*"row"/);
