@@ -294,7 +294,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     retryLabel={exitFailure === "retry_abandon" || exitFailure === "retry_checkpoint" ? "Retry end session" : exitFailure === "recover_abandon" ? "Recover end session" : exitFailure === "recover_operation" ? "Recover timer checkpoint" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Recover completion" : completionFailure.kind === "retry_final_checkpoint" ? "Retry final checkpoint" : "Recover final checkpoint" : canRecover ? "Continue recovery" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}
     runtimeIdentity={{ actualLength: projection.session.actualLength, feedbackTiming: "afterEachAnswer", itemId: projection.question.id, modeId: projection.session.modeId, ordinal: projection.ordinal, roadmapNodeId: projection.question.taxonomy.roadmapNodeId, sessionId: projection.session.id, trackId: projection.session.trackId }}
-    timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.elapsedForegroundMs)}`, label: `${t("Active time")} ${formatElapsed(projection.elapsedForegroundMs)}` }}
+    timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.elapsedForegroundMs)}`, label: formatElapsed(projection.elapsedForegroundMs) }}
   />;
 
   async function refreshAfterCommand(message: string) {

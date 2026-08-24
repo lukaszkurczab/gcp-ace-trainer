@@ -342,7 +342,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
         sessionId: projection.session.id,
         trackId: projection.session.trackId,
       }}
-      timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.elapsedForegroundMs)}`, label: `${t("Active time")} ${formatElapsed(projection.elapsedForegroundMs)}` }}
+      timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.elapsedForegroundMs)}`, label: formatElapsed(projection.elapsedForegroundMs) }}
     />
   );
 }

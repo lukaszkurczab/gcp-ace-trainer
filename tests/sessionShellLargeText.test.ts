@@ -16,6 +16,17 @@ test("SessionShell keeps chrome readable without allowing it to crowd out author
   assert.equal(source.match(/maxFontSizeMultiplier=\{2\}/g)?.length, 3);
 });
 
+test("session timers keep the Figma value-only visual label while retaining spoken context", () => {
+  const practice = readFileSync("src/features/practice/PracticeSessionScreen.tsx", "utf8");
+  const design = readFileSync("src/features/practice/DesignInterviewPracticeScreen.tsx", "utf8");
+  const certification = readFileSync("src/features/practice/CertificationPracticeSessionScreen.tsx", "utf8");
+
+  for (const screen of [practice, design, certification]) {
+    assert.match(screen, /accessibilityLabel:\s*`\$\{t\("Active foreground time"\)\} \$\{[^}]+\}`, label:\s*format/);
+    assert.doesNotMatch(screen, /label:\s*`\$\{t\("Active time"\)\}/);
+  }
+});
+
 test("Practice sessions reset their scroll viewport when the canonical item changes", () => {
   assert.match(practiceSurface, /<SessionShell[\s\S]*key=\{itemId\}/);
 });
