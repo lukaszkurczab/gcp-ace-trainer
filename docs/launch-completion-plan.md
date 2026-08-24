@@ -85,7 +85,7 @@ contract-compatible states are added. The first application-code parity slice
 now covers the Algorithms Progress `no_evidence`, `building`, and `established`
 evidence states, the effectiveness trend, track evidence, and recent activity
 hierarchy using current-package local attempts only. Focused tests, full app
-verification, and typecheck are `npm test` 580/580 and `npm run typecheck` pass;
+verification, and typecheck are `npm test` 581/581 and `npm run typecheck` pass;
 no device screenshot or EAS artifact is claimed. `npm run launch:readiness`
 remains `not_ready` with a clean application repository. Content verification
 is `npm test` 146/146
@@ -151,9 +151,10 @@ effectiveness and trend values until recorded response thresholds are met;
 established values are derived from the exact current content package. Activity
 rows no longer clip long scope/status copy and remain accessible at 200% text.
 
-Next code slice: inspect the remaining buildable G07 Goal cadence and existing
-Settings surfaces for geometry-only deltas. Account, recovery, Premium, report,
-and provider-backed states remain explainable tasks but are not to be fabricated
+The current G07 Goal cadence and existing Settings surfaces were inspected against
+their canonical owners and presentation tests; no additional safe geometry-only
+delta was identified in this checkpoint. Account, recovery, Premium, report, and
+provider-backed states remain explainable tasks but are not to be fabricated
 without their canonical input contracts.
 
 ### 3. Content Review Console V1
@@ -231,7 +232,7 @@ evidence is complete. Physical-device testing is optional and non-blocking.
 The current owner-owned EAS/signing slice is committed on canonical `main` at
 `ea4ad79`, with EAS project/update initialization in `15b00af`, and locally verified with
 `tests/easReleaseConfiguration.test.ts` and `tests/releaseSigningBoundary.test.ts`
-(8/8 focused invariants passing). The full app suite is 579/579 and typecheck passes.
+(8/8 focused invariants passing). The full app suite is 581/581 and typecheck passes.
 This proves configuration and no-debug-fallback invariants only; it
 does not prove an EAS-managed signed artifact. The delegated QA attempt used the
 required `gpt-5.6-luna` model at `max` reasoning but returned no report, so the
