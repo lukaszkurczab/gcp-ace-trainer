@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `1c9457b`
+Current source SHA at packet update: `38af502`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -1597,3 +1597,24 @@ runtime privacy boundary. Current-head Light/Dark capture remains unavailable
 because Maestro is absent and CoreSimulatorService refused the simulator
 connection. Product Owner approval and pixel proof remain open; this does not
 claim 99% parity.
+
+## Addendum — Goal & cadence active geometry convergence
+
+The current connector channel `ksxw21cw` was revalidated against Figma
+`842:11569` (Create) and `842:11693` (Active). Commit `38af502` keeps
+`GoalCadenceScreen` as the single route owner and aligns the existing contract
+with the pushed-header rhythm: an 8 px internal header gap, track context before
+the Active status row, and the existing Create description below the context.
+
+The Active summary now uses the Figma 14 px/14 gap card rhythm with explicit
+separators, 12 px teal labels, 14 px medium values, and preferred-day badges.
+The reminders action remains the existing notification-settings command. No
+goal fields, route, persistence, reminder semantics, pause behavior, or new
+Figma-only action were added; the previous oversized summary-row path was
+removed because it was the competing presentation owner.
+
+Focused Goal/ambient/runtime-audit checks passed `7/7`; `npm run typecheck` and
+full `npm run qa:static` passed with recovery inventory `287/116/563`,
+`572/572` tests, TypeScript, content boundary, and runtime privacy boundary.
+Current-head Light/Dark/200% runtime capture and Product Owner approval remain
+open; this addendum does not claim 99% parity.
