@@ -17,7 +17,7 @@ the pushed ref is the release baseline until that verification completes.
 **Current pushed canonical heads:** app `origin/main`; content `origin/master`.
 Both refs are independently fetched and verified at each handoff.
 
-**Latest verified commit IDs:** app `1a3ef82563906dfd327cd469b84b259cc78f9718`;
+**Latest verified commit IDs:** app `a454265f8921a9069d6cc1239fe27ab8fc61a8cb`;
 content `0463a2b03aba950d21ef1d5c5e01860db54d3fe4`.
 
 ## Locked launch decisions
@@ -200,7 +200,7 @@ The current owner-owned EAS/signing slice is committed on canonical `main` at
 does not prove an EAS-managed signed artifact. The delegated QA attempt used the
 required `gpt-5.6-luna` model at `max` reasoning but returned no report, so the
 controller records local QA as `PASS WITH GAPS`, not independent QA approval.
-The current canonical app head `1a3ef82` also passes the full suite (577/577) and
+The current canonical app head `a454265` also passes the full suite (577/577) and
 `npm run typecheck`; content `0463a2b` passes its full suite (146/146) with the
 local Console bind test run under the required localhost-enabled environment.
 Both canonical worktrees are clean after refetch.

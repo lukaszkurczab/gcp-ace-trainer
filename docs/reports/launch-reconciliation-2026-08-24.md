@@ -21,7 +21,7 @@ Pushed and independently re-fetched canonical refs after the follow-up cleanup:
 
 | Repository | Canonical ref | Verified head |
 | --- | --- | --- |
-| `lukaszkurczab/gcp-ace-trainer` | `main` | `1a3ef82563906dfd327cd469b84b259cc78f9718` |
+| `lukaszkurczab/gcp-ace-trainer` | `main` | `a454265f8921a9069d6cc1239fe27ab8fc61a8cb` |
 | `lukaszkurczab/patternly-content` | `master` | `0463a2b03aba950d21ef1d5c5e01860db54d3fe4` |
 
 ## Changed files
@@ -60,7 +60,7 @@ Content repository:
   and the local reviewer package command.
 - Coding Interview source-bound technical and simulation evidence regenerated
   after the Console package change, plus the eight-track readiness report. The
-  report was rechecked after the documentation-only content head `631b278`.
+  report was rechecked after the current content head `0463a2b`.
 - Five affected AWS checkpoint/audit narratives were reconciled so their counts
   remain provenance without implying a node floor or global count gate.
 - The stale content readiness assertion that expected superseded immutable
@@ -106,8 +106,8 @@ evidence locations.
 - App focused contract/gate tests: 38 passed.
 - App `git diff --check`: passed.
 - App `npm run launch:readiness`: internal content lock/source integrity passed;
-  current app worktree is clean after owner commits `03a032c` (signing boundary)
-  and `15b00af` (EAS project/update initialization);
+  current app worktree is clean at `a454265` after owner commits `03a032c`
+  (signing boundary) and `15b00af` (EAS project/update initialization);
   overall status remains `not_ready` because external/admission evidence is
   absent.
 - Focused owner-owned EAS/signing QA: 5/5 tests passed. This is local
