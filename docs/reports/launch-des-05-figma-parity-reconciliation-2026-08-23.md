@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Repository: `Patternly`
 Workstream: full application refactor and 99% Figma parity across reachable paths
-Current source SHA at packet update: `8b2dd0e`
+Current source SHA at packet update: `bcb0ddd`
 Current user-provided Figma connector channel: `ksxw21cw`
 
 ## Scope and decision boundary
@@ -107,7 +107,7 @@ Only the repository plan statuses are used below.
 | Current Practice feedback surface parity | `partial` | `0341424` removes the redundant visible result label; `536b19b` aligns `REASON` to 12/16 and rich-details body text to 13/20; `1c9457b` maps collapsed Details to the standalone row and expanded Details to the Figma outer panel. The runtime result selector remains on the visible reason panel. Figma `68:637` does not show a Details row in its immediate-feedback default while the canonical after-answer contract and existing runtime selectors still expose it, so state binding remains an explicit conflict; fresh runtime pixel comparison remains open. |
 | Current Select Track visual parity | `partial` | `1c8a8cc` aligns the reachable onboarding, unchanged-returning, and changed-selection state geometry from `42:422`, `42:478`, and `42:539`; `364a832` adds the shared dark ambient/topo layer for Select Track and Practice Hub. The eight-track registry projection and unreachable `42:604`/`42:642` failure states remain explicit scope or route gaps; fresh runtime pixel comparison remains blocked. |
 | Figma authority and approval binding | `blocking` | The current channel is known, but it is not documented as Product Owner approval. The plan also contains stale channel references. A final 99% claim needs an explicit mapping of approved nodes/states to the current launch scope. |
-| Runtime screenshot and pixel evidence | `partial` | Explicit Maestro `2.6.1` capture now works on the booted iPhone 16 Pro / iOS 18.6 simulator. Current source `8b2dd0e` completed the shared 11-checkpoint visual-shell flow and populated Progress/Activity plus filter-sheet captures in both Dark and Light; the Settings/blocked Notifications large-text stress captures are from the preceding source. The complete reachable-path matrix, current-head 200% runtime capture, logical-viewport-normalized pixel comparisons, and owner decisions remain unverified. |
+| Runtime screenshot and pixel evidence | `partial` | Explicit Maestro `2.6.1` capture now works on the booted iPhone 16 Pro / iOS 18.6 simulator. Current source `bcb0ddd` completed the shared 11-checkpoint visual-shell flow and populated Progress/Activity plus filter-sheet captures in both Dark and Light; a current-head 200% Light Summary slice now passes the corrected header/footer and `Back to practice` transition. The Settings/blocked Notifications large-text stress captures are from the preceding source. The complete reachable-path matrix, full current-head 200% runtime coverage, logical-viewport-normalized pixel comparisons, and owner decisions remain unverified. |
 | Account, authentication, Premium, content trust, and deletion UI | `unknown / needs evidence` | The canonical contract defines boundaries, but the current route graph does not provide matching owners for all Figma surfaces. Owner must decide whether those Figma surfaces are in this parity objective or outside the current launch route graph. |
 | Goals, cadence, focus areas, and Progress effectiveness | `partial` | Goal & cadence now has a canonical per-track record, route, create/active states, Progress entry point, and Figma-matched Goal ambient variants. Figma-only focus-area and effectiveness semantics still have no owner; current-head Light/Dark runtime comparison and Product Owner approval remain open. |
 
@@ -1923,3 +1923,23 @@ closes the previous local tooling block for these populated states, but the
 Activity matrix remains `PARTIAL`: normalized comparison, empty and filtered-empty
 runtime states, current-head 200% capture, and Product Owner approval remain
 open. No obsolete Activity owner or alternate state path was found or removed.
+
+## Addendum — Current-head 200% Summary stress convergence after `bcb0ddd`
+
+The current-head 200% Light run exposed a real Summary-shell defect in the
+canonical `AlgorithmsPracticeSummaryScreen`: the outer `Screen` scrolled the
+whole shell, the footer fell below the viewport, and the `LEARN APPROACH` plus
+track label row overlapped. Commit `bcb0ddd` keeps the existing route, result
+model, commands, and copy, but makes the summary shell fill the viewport with
+an inner content scroll, a fixed footer, and a wrapping/shrinking header row.
+No alternate renderer or navigation fallback was added.
+
+After the fix, `/tmp/patternly-capture-visual-shell-200-light-2026-08-24-v3/`
+verified the 200% Light visual-shell path through the partial Summary and
+`Back to practice` → Practice Hub transition. The existing flow then stopped
+at the later Settings/Data & privacy step because its capture-only selector did
+not scroll the 200%-sized `settings-your-data` row into view; this is a capture
+flow coverage gap, not a product-route change. The current source was verified
+with `npm run qa:static`: recovery `287/116/565`, TypeScript, `574/574` tests,
+content boundary, and runtime privacy boundary. Full current-head 200% route
+coverage, normalized Figma comparison, and Product Owner approval remain open.
