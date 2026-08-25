@@ -187,7 +187,7 @@ function AlgorithmsInterviewSimulationReviewSurface({ navigation, sessionId }: R
               })}
             </View>
           ) : null}
-          <ReviewFeedbackBlock item={current.item} feedback={{ details: current.details, reason: current.reason }} />
+          <ReviewFeedbackBlock item={current.item} feedback={{ details: current.details, reason: current.reason }} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
         </>
       ) : <EmptyState title={t("No answers in this view")} description={t("Switch filters to review the full simulation.")} />}
       <ReviewNavigator

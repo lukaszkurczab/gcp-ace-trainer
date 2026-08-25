@@ -34,10 +34,13 @@ export type SyncResponseDto = Readonly<{ applied: readonly ProgressRecordDto[]; 
 export type TracksResponseDto = Readonly<{ tracks: readonly Readonly<{ trackId: string; source: string; status: string; updatedAt: string }>[] }>;
 export type ContentVersionsResponseDto = Readonly<{ versions: readonly Readonly<{ trackId: string; version: string; checksumSha256: string; packageUri: string; publishedAt: string }>[] }>;
 export type ContentReportReasonDto = "incorrect_answer" | "unclear_explanation" | "outdated_content" | "technical_issue" | "other";
-export type CreateContentReportDto = Readonly<{ clientSubmissionId: string; trackId: string; contentVersion: string; itemId: string; reason: ContentReportReasonDto; description: string }>;
-export type ContentReportDto = Readonly<{ id: string; clientSubmissionId: string; trackId: string; contentVersion: string; itemId: string; reason: ContentReportReasonDto; description: string; status: "open" | "in_review" | "resolved" | "closed"; createdAt: string; updatedAt: string }>;
+export type ContentReportContextDto = Readonly<{ releasePackageId: string; trackNode: string | null; modeRoute: "practice_feedback_details" | "answer_review"; locale: "en" | "pl"; appBuild: string; platform: "ios" | "android"; occurredAt: string }>;
+export type ContentReportStatusDto = "open" | "in_review" | "resolved" | "closed";
+export type CreateContentReportDto = Readonly<{ clientSubmissionId: string; trackId: string; contentVersion: string; itemId: string; reason: ContentReportReasonDto; description: string; context: ContentReportContextDto; linkAccount?: boolean; contactEmail?: string }>;
+export type ContentReportDto = Readonly<{ id: string; clientSubmissionId: string; trackId: string; contentVersion: string; itemId: string; reason: ContentReportReasonDto; description: string; context: ContentReportContextDto; linkage: "unlinked" | "account" | "contact" | "account_and_contact"; status: ContentReportStatusDto; createdAt: string; updatedAt: string }>;
 export type CreateContentReportResponseDto = Readonly<{ report: ContentReportDto; duplicate: boolean }>;
 export type AdminContentReportsResponseDto = Readonly<{ reports: readonly ContentReportDto[] }>;
+export type TransitionContentReportResponseDto = Readonly<{ report: ContentReportDto; duplicate: boolean }>;
 export type HealthResponseDto = Readonly<{ status: "ok"; service: "patternly-backend" }>;
 export type ReadyResponseDto = Readonly<{ status: "ready" | "not_ready"; checks: Readonly<{ database: boolean; authentication: boolean }> }>;
 export type OpenApiResponseDto = Readonly<{ openapi: string; paths: Readonly<Record<string, unknown>> }>;
@@ -63,8 +66,9 @@ export type PatternlyApiClient = Readonly<{
   syncProgress: (input: SyncRequestDto) => Promise<SyncResponseDto>;
   getTracks: () => Promise<TracksResponseDto>;
   getContentVersions: () => Promise<ContentVersionsResponseDto>;
-  createContentReport: (input: CreateContentReportDto) => Promise<CreateContentReportResponseDto>;
+  createContentReport: (input: CreateContentReportDto, appCheckToken: string) => Promise<CreateContentReportResponseDto>;
   getAdminContentReports: () => Promise<AdminContentReportsResponseDto>;
+  transitionAdminContentReport: (clientSubmissionId: string, status: ContentReportStatusDto) => Promise<TransitionContentReportResponseDto>;
 }>;
 
 export function createPatternlyApiClient(input: Readonly<{
@@ -85,9 +89,10 @@ export function createPatternlyApiClient(input: Readonly<{
   const fetchImplementation = input.fetchImplementation ?? fetch;
   const timeoutMs = input.timeoutMs ?? 10_000;
 
-  async function requestJson<T>(path: string, method: "GET" | "POST", body?: unknown, requiresAuthentication = true): Promise<T> {
-    const token = requiresAuthentication ? await input.getIdToken() : null;
-    if (requiresAuthentication && !token) throw new PatternlyApiClientError("authentication_required");
+  type AuthenticationMode = "none" | "optional" | "required";
+  async function requestJson<T>(path: string, method: "GET" | "POST" | "PATCH", body?: unknown, authentication: AuthenticationMode = "required", extraHeaders: Readonly<Record<string, string>> = {}): Promise<T> {
+    const token = authentication === "none" ? null : await input.getIdToken();
+    if (authentication === "required" && !token) throw new PatternlyApiClientError("authentication_required");
     const url = new URL(path, origin);
     const publicPath = path === "/health" || path === "/ready" || path === "/openapi.json";
     if (url.origin !== origin.origin || (!path.startsWith("/v1/") && !publicPath)) throw new PatternlyApiClientError("client_unconfigured");
@@ -99,7 +104,7 @@ export function createPatternlyApiClient(input: Readonly<{
         method,
         signal: controller.signal,
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-        headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) },
+        headers: { ...extraHeaders, ...(token ? { authorization: `Bearer ${token}` } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) },
       });
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
@@ -122,17 +127,18 @@ export function createPatternlyApiClient(input: Readonly<{
 
   return Object.freeze({
     availability: "available" as const,
-    getHealth: () => requestJson<HealthResponseDto>("/health", "GET", undefined, false),
-    getReady: () => requestJson<ReadyResponseDto>("/ready", "GET", undefined, false),
-    getOpenApi: () => requestJson<OpenApiResponseDto>("/openapi.json", "GET", undefined, false),
+    getHealth: () => requestJson<HealthResponseDto>("/health", "GET", undefined, "none"),
+    getReady: () => requestJson<ReadyResponseDto>("/ready", "GET", undefined, "none"),
+    getOpenApi: () => requestJson<OpenApiResponseDto>("/openapi.json", "GET", undefined, "none"),
     getMe: () => requestJson<MeResponseDto>("/v1/me", "GET"),
     getEntitlements: () => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET"),
     getProgress: () => requestJson<ProgressResponseDto>("/v1/progress", "GET"),
     syncProgress: (body: SyncRequestDto) => requestJson<SyncResponseDto>("/v1/progress/sync", "POST", body),
     getTracks: () => requestJson<TracksResponseDto>("/v1/tracks", "GET"),
     getContentVersions: () => requestJson<ContentVersionsResponseDto>("/v1/content/versions", "GET"),
-    createContentReport: (body) => requestJson<CreateContentReportResponseDto>("/v1/content/reports", "POST", body),
+    createContentReport: (body, appCheckToken) => requestJson<CreateContentReportResponseDto>("/v1/content/reports", "POST", body, "optional", { "x-firebase-appcheck": appCheckToken }),
     getAdminContentReports: () => requestJson<AdminContentReportsResponseDto>("/v1/admin/content-reports", "GET"),
+    transitionAdminContentReport: (clientSubmissionId, status) => requestJson<TransitionContentReportResponseDto>(`/v1/admin/content-reports/${clientSubmissionId}`, "PATCH", { status }),
   });
 }
 

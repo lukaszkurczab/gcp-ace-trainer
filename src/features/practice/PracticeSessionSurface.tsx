@@ -116,7 +116,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
         </View>
       ) : controls ? <View style={styles.questionAndResponse}>{controls}</View> : null}
       {props.notice && props.phase !== "completing" ? <DurabilityNotice notice={props.notice} /> : null}
-      {visibleFeedback && props.feedbackItem && itemId ? <PracticeFeedbackBlock feedback={visibleFeedback} item={props.feedbackItem} itemId={itemId} /> : null}
+      {visibleFeedback && props.feedbackItem && itemId ? <PracticeFeedbackBlock feedback={visibleFeedback} item={props.feedbackItem} itemId={itemId} reportSurface={{ modeRoute: "practice_feedback_details", trackNode: props.runtimeIdentity?.roadmapNodeId ?? null }} /> : null}
       {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} sessionId={props.runtimeIdentity?.sessionId} trackId={props.runtimeIdentity?.trackId} /> : null}
     </SessionShell>
   );

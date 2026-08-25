@@ -14,12 +14,15 @@ whole-product discovery audit.
 
 - App: React Native/Expo in this repository. Guest/local-first learning works
   on the booted iPhone 17, iOS 26.4 simulator. `npm run typecheck` and the
-  full application suite (593 tests) passed on 2026-08-25.
-- Backend: `../patternly-backend` is Fastify + PostgreSQL/Drizzle. Existing API
-  serves identity mapping, entitlement/progress projections and versioned sync.
-  On 2026-08-25 it gained a content-report migration, authenticated submission,
-  deduplication and a server-protected administrator listing; backend typecheck,
-  11 tests, OpenAPI generation and frontend-client consistency check passed.
+  full application suite (600 tests) passed on 2026-08-25.
+- Backend: `../patternly-backend` is Fastify + Firebase Admin SDK/Firestore.
+  The API serves identity mapping, entitlement/progress projections and
+  versioned sync through the backend only. On 2026-08-25 Task 1 replaced the
+  PostgreSQL/Drizzle persistence path, added transactional CAS/idempotency,
+  App Check and the account-unlinked report boundary. Task 2 adds the
+  report outbox, server-owned triage state machine, and authenticated queue
+  read; 11 Firebase Emulator Suite tests pass. Production TTL/PITR and
+  deployment evidence remain external gates.
 - Website: a new local Git repository `../patternly-web` has a static Polish
   product surface and an administrator entry. It is not deployed and contains
   no client-side privilege grant or simulated user data.
@@ -46,15 +49,14 @@ whole-product discovery audit.
 
 ## Non-negotiable corrections before continuation
 
-1. **Report privacy contradiction.** The canonical contract requires reports to
-   be account-unlinked by default, opt-in for account/contact attachment, with
-   bounded context, retention, offline states and audit controls. The new
-   backend requires an account and stores `user_id`. Treat it as a partial
-   backend slice that must be corrected, not as a completed report feature.
-2. **Required Firestore rewrite.** The owner selected Firestore as the sole
-   production store. Backend source is still PostgreSQL/Drizzle. Replace that
-   implementation in Task 1; do not retain a PostgreSQL adapter, dual-write,
-   compatibility route or second data authority.
+1. **Report privacy boundary.** Task 1 now enforces account-unlinked reports
+   by default, explicit account/contact attachment, bounded context and
+   redaction of learner response data. Task 2 still owns the learner report
+   flow and administrator triage surface.
+2. **Firestore rewrite.** Task 1 now makes Firestore the sole backend store and
+   removes PostgreSQL/Drizzle code, migrations, dependencies and obsolete
+   tests. No adapter, dual-write, compatibility route or second data authority
+   remains.
 3. **No production account or billing composition.** The app has no Firebase
    sign-in UI/provider composition, adoption/sync bridge, deletion service,
    RevenueCat purchase/restore integration or production public environment.
@@ -73,7 +75,7 @@ Scores measure launch readiness of the stage, not code volume. A score below
 | Stage | Status | Score | Evidence-based assessment and required change |
 | --- | --- | ---: | --- |
 | 0. Strategic reconciliation | `done` | 0.90 | Eight-track scope, guest-first model, identity/Premium contracts and Firestore as the sole account/report store are now explicit. Task 1 implements this decision without reopening scope. |
-| 1. Evidence and artifact cleanup | `partial` | 0.76 | Historical material is labelled and the active decision register is reduced. PostgreSQL code and artifacts are now known obsolete under the Firestore decision and must be deleted in Task 1 after replacement tests pass. |
+| 1. Evidence and artifact cleanup | `partial` | 0.76 | Historical material is labelled and the active decision register is reduced. Task 1 deletes the obsolete PostgreSQL/Drizzle implementation and records the Firestore/report-boundary evidence; production TTL/PITR and deployment evidence remain external gates. |
 | 2. Figma/UI reconciliation | `partial` | 0.71 | Core UI work and prior tests exist, but fresh iPhone 17 evidence covers only track selection. The capture flow contains a deterministic false expectation, and the first selection viewport is overly long/dense. Repair capture and make only evidence-backed UI changes in Task 7. |
 | 3. Content Review Console V1 | `done` | 0.87 | Local source-authoritative console and full content evidence are recorded. Keep it isolated from learner reports and do not create a second content authority. |
 | 4. Eight-track content audit | `done` | 0.86 | Accepted immutable eight-track release and validators exist. Semantic defects remain corrected only when demonstrated; learner report delivery belongs to Task 2, not a renewed mass content audit. |
@@ -87,15 +89,19 @@ Scores measure launch readiness of the stage, not code volume. A score below
 - Strategic scope reconciliation, mandatory content-baseline cleanup, Content
   Review Console V1 and the eight-track structural audit are complete; do not
   schedule a repeat audit.
-- The local static public surface and backend report foundation exist; do not
-  recreate them. Repair their stated gaps in place.
+- The local static public surface, backend report foundation, learner report
+  flow, and administrator queue read exist; do not recreate them. Repair
+  their stated gaps in place.
+- Task 1 and Task 2 are complete implementation slices. Task 3 is the next
+  active task; visual/browser evidence that could not run locally is recorded
+  in the Task 2 report rather than being treated as a false pass.
 - Historical route, competition and earlier readiness audits remain evidence
   only. They must not be used to resurrect old sequencing or a second launch
   contract.
 
 ## Execution queue
 
-### Task 1 — replace PostgreSQL backend logic with Firestore and repair report privacy
+### Task 1 — replace PostgreSQL backend logic with Firestore and repair report privacy (completed 2026-08-25)
 
 - **Goal:** make Firestore the one real backend authority and correct the
   account-linked report implementation before any feature is layered on top.
@@ -119,7 +125,7 @@ Scores measure launch readiness of the stage, not code volume. A score below
   automatic data excludes response, prompt, feedback, email and account ID;
   App Check plus backend rate limiting protects submission; TTL/retention,
   de-identification, audit states and seven-day PITR runbook are real; client
-  states are queued/retry/failed/accepted without false success.
+  states are queued/retrying/failed/accepted without false success.
 - **Verification:** contract parser and negative tests; Firebase Emulator Suite
   integration tests for identity, CAS conflict, idempotency, deletion and report
   redaction; client typecheck; reference search proving no PostgreSQL/Drizzle or
@@ -132,13 +138,13 @@ Scores measure launch readiness of the stage, not code volume. A score below
   document explicitly. Do not preserve PostgreSQL as a rollback path.
 - **Report target:** `docs/reports/launch-101-firestore-and-report-boundary.md`.
 
-### Task 2 — deliver learner report flow and administrator triage
+### Task 2 — deliver learner report flow and administrator triage (completed implementation 2026-08-25)
 
 - **Goal:** make per-item trust reporting usable and privacy-correct from
   feedback/details and Answer Review through resolution workflow.
 - **Scope:** app report entry/form/local outbox/status/retry; backend corrected
   report API and status transitions; `patternly-web/admin` real authentication
-  entry and read-only open-report queue after production config exists.
+  entry and read-only open/in-review queue after production config exists.
 - **Non-goals:** content auto-editing, free-form administrator commands,
   content-source mutation from the web panel or hidden status changes.
 - **Inputs:** completed Task 1 API, stable package/item identity, owner admin
@@ -147,10 +153,14 @@ Scores measure launch readiness of the stage, not code volume. A score below
   surfaces; stable item/release context is attached without learner content;
   retry is idempotent; each user-visible terminal state is truthful; admin
   access is verified by backend, not page code; the sole configured admin can
-  view and transition reports with an audit record.
+  view the queue and the backend exposes only monotonic, audited transitions;
+  the static web surface remains read-only.
 - **Verification:** UI tests for form and offline branches; API authorization
   and transition tests; iOS Maestro screenshots; web browser smoke using a
-  non-admin denial and admin acceptance.
+  non-admin denial and admin acceptance. Local automated verification is
+  recorded in `docs/reports/launch-102-content-reports-and-admin.md`; the
+  browser smoke remains unavailable when the in-app browser connection cannot
+  be established.
 - **Required evidence:** screenshots, sanitized audit trail, and source
   correction/release linkage for one controlled report.
 - **Risks:** do not ship the current account-linked implementation as a privacy

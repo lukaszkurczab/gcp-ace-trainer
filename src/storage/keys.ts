@@ -18,5 +18,6 @@ export const STORAGE_KEYS = {
   goal: (trackId: string) => `${PREFIX}goal:${trackId}`,
   NOTIFICATION_SETTINGS: `${PREFIX}notification-settings`,
   ACTIVE_JOURNAL: `${PREFIX}journal:active`,
+  CONTENT_REPORT_OUTBOX: `${PREFIX}content-report-outbox`,
 } as const;
 export const STORAGE_NAMESPACE = PREFIX;

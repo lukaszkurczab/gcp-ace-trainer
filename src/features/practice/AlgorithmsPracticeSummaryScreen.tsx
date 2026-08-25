@@ -92,7 +92,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
               {result.feedbackItems.map((item) => (
                 <View key={item.occurrenceId} style={styles.feedbackItem} testID={runtimeSelectors.summary.feedbackItem(result.sessionId, item.occurrenceId)}>
                   <Text maxFontSizeMultiplier={2} style={styles.feedbackPrompt}>{item.ordinal}. {item.prompt}</Text>
-                  <PracticeFeedbackBlock item={item.item} itemId={item.occurrenceId} feedback={{ details: item.details, reason: item.reason, result: item.correctness }} />
+                  <PracticeFeedbackBlock item={item.item} itemId={item.occurrenceId} feedback={{ details: item.details, reason: item.reason, result: item.correctness }} reportSurface={{ modeRoute: "practice_feedback_details", trackNode: null }} />
                 </View>
               ))}
             </View>

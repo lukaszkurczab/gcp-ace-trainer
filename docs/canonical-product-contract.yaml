@@ -172,6 +172,8 @@ requirements:
     statement: Native package verification uses platform-supported SHA-256, canonical RFC 4648 base64, strict UTF-8, and deterministic gzip decoding; malformed package bytes fail closed before package-local content is exposed, without a Node-only runtime dependency in the mobile bundle.
   - id: ANALYTICS-REPORTS-001
     statement: Firebase Analytics and Crashlytics are fail-closed behind privacy and consent, events use a closed redacted vocabulary, and content reports are account-unlinked by default with bounded context, explicit linking consent, retention, and offline retry states.
+  - id: ANALYTICS-REPORTS-002
+    statement: Learner content reports use one local outbox with the exact queued, retrying, failed, and accepted states; retries preserve the client submission identity and backend triage transitions are monotonic and audited.
   - id: BACKUP-RESTORE-001
     statement: Production Firestore targets seven-day point-in-time recovery for disaster recovery only, with a restore runbook, sanitized drill, deletion-tombstone reconciliation, and an absolute prohibition on deleted-account resurrection.
   - id: PLATFORM-RELEASE-001
@@ -465,6 +467,10 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: defines package analytics report backup and platform semantics
       requirementIds: [CONTENT-PACKAGES-001, ANALYTICS-REPORTS-001, BACKUP-RESTORE-001, PLATFORM-RELEASE-001]
+    - id: content-reports-outbox-and-triage
+      testPath: tests/canonicalProductContract.test.ts
+      testName: content reports use exact local outbox states
+      requirementIds: [ANALYTICS-REPORTS-002]
     - id: content-packages-verifier-resolver
       testPath: tests/contentPackageResolver.test.ts
       testName: CONTENT-PACKAGE-RESOLVER-001 verifies exact bundled node packages and resolves only closed profile modes
@@ -653,7 +659,7 @@ analyticsAndReports:
     ordinaryRawRetentionDays: 30
     importantRetention: untilFixReleasedPlus30Days
     identifiableRawMaximumDays: 180
-    offlineStates: [queued, retry, failed, accepted]
+    offlineStates: [queued, retrying, failed, accepted]
 backupAndRestore:
   firestorePitrDays: 7
   purpose: disasterRecoveryNotUserAccountRecovery
@@ -1117,6 +1123,14 @@ designReferences:
     - sourcePathPrefix: src/features/practice/
       designReferenceId: pkg-04a-free-package-interactions
     - sourcePathPrefix: src/features/review/AnswerReviewScreen.tsx
+      designReferenceId: pkg-04a-free-package-interactions
+    - sourcePathPrefix: src/features/review/ReviewFeedbackBlock.tsx
+      designReferenceId: pkg-04a-free-package-interactions
+    - sourcePathPrefix: src/features/reports/
+      designReferenceId: pkg-04a-free-package-interactions
+    - sourcePathPrefix: src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx
+      designReferenceId: pkg-04a-free-package-interactions
+    - sourcePathPrefix: src/preferences/
       designReferenceId: pkg-04a-free-package-interactions
     - sourcePathPrefix: src/features/exam/ExamReviewScreen.tsx
       designReferenceId: pkg-04a-free-package-interactions

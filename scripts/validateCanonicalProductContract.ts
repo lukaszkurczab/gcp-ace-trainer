@@ -878,7 +878,7 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
     || reports.ordinaryRawRetentionDays !== 30
     || reports.importantRetention !== "untilFixReleasedPlus30Days"
     || reports.identifiableRawMaximumDays !== 180
-    || !hasExactValues(reports.offlineStates as readonly string[], ["queued", "retry", "failed", "accepted"])) {
+    || !hasExactValues(reports.offlineStates as readonly string[], ["queued", "retrying", "failed", "accepted"])) {
     throw new CanonicalProductContractValidationError("Canonical analytics and report contract must fail closed and prohibit automatic private learning or identity attachments");
   }
 

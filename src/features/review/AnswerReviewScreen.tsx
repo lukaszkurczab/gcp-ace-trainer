@@ -161,7 +161,7 @@ function AnswerReviewContent({ answer, disabled, needsReview, onToggle }: Readon
         ))}
       </View>
       <View style={styles.optionsFeedbackSpacer} />
-      {answer.isAnswered ? <ReviewFeedbackBlock feedback={answer.questionSnapshot.feedback} item={answer.item} /> : <Text maxFontSizeMultiplier={2} style={styles.unanswered}>{t("Unanswered")}</Text>}
+      {answer.isAnswered ? <ReviewFeedbackBlock feedback={answer.questionSnapshot.feedback} item={answer.item} reportSurface={{ modeRoute: "answer_review", trackNode: answer.questionSnapshot.domain }} /> : <Text maxFontSizeMultiplier={2} style={styles.unanswered}>{t("Unanswered")}</Text>}
       <Button disabled={disabled} onPress={onToggle} style={styles.markAction} variant="ghost">{t(needsReview ? "Marked Needs Review" : "Mark Needs Review")}</Button>
     </View>
   );

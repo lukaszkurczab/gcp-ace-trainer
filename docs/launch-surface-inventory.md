@@ -125,7 +125,7 @@ and grouping are set in the account/data contract and visual-shell tasks.
 | Sync/backup state and conflict resolution | `blocking` | Required if accounts own remote learning data; show offline, pending, conflict, failure and retry states explicitly. |
 | Study Activity / session history | `blocking` | Chronological durable sessions with mode/configuration, completion kind and links back to the exact result/review; empty, filtered and unavailable states. |
 | Content information / trust | `blocking` | Active content release, honest reviewed/published date, certification source basis/checked date, independent-product disclaimer and report path. |
-| Report a content problem | `blocking` | Available from feedback/details and answer review; carries stable item/release context and exposes queued, sent, failed and retry states. |
+| Report a content problem | `blocking` | Available from feedback/details and answer review; carries stable item/release context and exposes queued, retrying, failed and accepted states. |
 | Learning goal / cadence | `planned` | Add only if goal type, optional target date or weekly cadence changes recommendations/reminders; no streak or fake readiness. |
 | Privacy policy | `blocking` | Public URL plus in-app access matching actual account, learning, diagnostic and third-party data behaviour. |
 | Terms / account consent | `planned` | Present only the agreements required by the chosen account model, with version and acceptance semantics. |

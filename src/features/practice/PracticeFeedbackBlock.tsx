@@ -9,9 +9,10 @@ import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { AlgorithmFeedbackDocumentBlock } from "./AlgorithmFeedbackDocumentBlock";
 import type { ContentItemRef } from "../../domain";
+import { ContentReportSheet, type ContentReportSurfaceContext } from "../reports/ContentReportSheet";
 
 
-export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ feedback: PracticeFeedback; item: ContentItemRef; itemId: string }>) {
+export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }: Readonly<{ feedback: PracticeFeedback; item: ContentItemRef; itemId: string; reportSurface: ContentReportSurfaceContext }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -25,7 +26,7 @@ export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ fee
       {detailsOpen ? (
         <View style={styles.detailsSection}>
           {detailsDisclosure}
-          <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}><AlgorithmFeedbackDocumentBlock document={feedback.details} item={item} /></View>
+          <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}><AlgorithmFeedbackDocumentBlock document={feedback.details} item={item} /><ContentReportSheet item={item} surface={reportSurface} /></View>
         </View>
       ) : detailsDisclosure}
     </View>

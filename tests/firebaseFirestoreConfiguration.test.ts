@@ -37,7 +37,10 @@ test("Firebase configuration exposes the deny-all rules and the one semantic acc
         { fieldPath: "id", order: "ASCENDING" },
       ],
     }],
-    fieldOverrides: [],
+    fieldOverrides: [
+      { collectionGroup: "contentReports", fieldPath: "expiresAt", ttl: true },
+      { collectionGroup: "rateLimitBuckets", fieldPath: "expiresAt", ttl: true },
+    ],
   });
   assert.equal(read("firestore.rules"), CANONICAL_DENY_ALL_RULES);
 });

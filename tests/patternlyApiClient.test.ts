@@ -57,6 +57,36 @@ test("generated client uses typed REST paths, bearer auth, timeout and bounded e
   await assert.rejects(failing.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "server_error" && error.status === 409 && error.serverCode === "version_conflict");
 });
 
+test("content reports send App Check and keep bearer identity optional", async () => {
+  let observedHeaders: HeadersInit | undefined;
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => null,
+    fetchImplementation: async (_url, init) => {
+      observedHeaders = init?.headers;
+      return new Response(JSON.stringify({ report: {}, duplicate: false }), { status: 201 });
+    },
+  });
+  await client.createContentReport({
+    clientSubmissionId: "7f61e3f3-f23e-467c-b92a-9b8fd0514f25",
+    trackId: "coding-interview-dsa-problem-solving",
+    contentVersion: "2026.08.25",
+    itemId: "two-sum-001",
+    reason: "unclear_explanation",
+    description: "The explanation does not identify why the invariant is safe.",
+    context: {
+      releasePackageId: "patternly-launch-2026-08-25-01",
+      trackNode: "complexity_and_constraints",
+      modeRoute: "practice_feedback_details",
+      locale: "en",
+      appBuild: "0.1.0",
+      platform: "ios",
+      occurredAt: "2026-08-25T10:00:00.000Z",
+    },
+  }, "app-check-token");
+  assert.deepEqual(observedHeaders, { "x-firebase-appcheck": "app-check-token", "content-type": "application/json" });
+});
+
 test("local-safe environment stays explicitly unavailable", () => {
   assert.equal(LOCAL_SAFE_PUBLIC_ENVIRONMENT.kind, "unconfigured");
 });

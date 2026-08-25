@@ -81,17 +81,15 @@ versioned under `/v1`.
 
 ## Subsequent source reconciliation — 2026-08-25
 
-- `patternly-backend` now contains a PostgreSQL-backed `content_reports` table,
-  `/v1/content/reports`, and an administrator-only report list. Its test suite
-  verifies validation, retry deduplication and the server-side administrator
-  boundary.
-- This is not report-feature completion: the active product contract requires
-  account-unlinked reporting by default, explicit link consent, offline
-  delivery states, retention/de-identification and audit controls. The current
-  implementation instead requires an account and stores `user_id`; the active
-  plan treats that contradiction as a repair task.
-- Backend source uses PostgreSQL/Drizzle for user, progress, entitlement and
-  report records. Several narrative and contract references still name
-  Firestore/PITR. They require an explicit canonical storage decision and
-  synchronized contract/parser/test update; this historical audit does not
-  silently resolve it.
+- Task 1 replaced the PostgreSQL/Drizzle persistence path with Firebase Admin
+  Firestore and kept the mobile data boundary on backend HTTP. Task 2 now
+  provides account-unlinked-by-default report submission, bounded context,
+  App Check, rate limiting, local retry states, and server-side administrator
+  triage with an audit subcollection.
+- The administrator web surface reads the queue through the API only. Firebase
+  Authentication configuration and App Check provider composition remain
+  deployment/application gates; no client-side privilege or direct Firestore
+  path was introduced.
+- The original audit conclusions above remain historical evidence. The current
+  implementation is recorded in `docs/reports/launch-101-firestore-and-report-boundary.md`
+  and `docs/reports/launch-102-content-reports-and-admin.md`.

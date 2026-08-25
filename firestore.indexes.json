@@ -15,5 +15,8 @@
       ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    { "collectionGroup": "contentReports", "fieldPath": "expiresAt", "ttl": true },
+    { "collectionGroup": "rateLimitBuckets", "fieldPath": "expiresAt", "ttl": true }
+  ]
 }

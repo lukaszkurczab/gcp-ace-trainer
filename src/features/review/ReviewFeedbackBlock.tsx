@@ -7,14 +7,16 @@ import type { AlgorithmFeedbackDocument } from "../../content/contracts";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { ambient, colorWithOpacity, effects, spacing, typography, type AppColors } from "../../theme";
 import { AlgorithmFeedbackDocumentBlock } from "../practice/AlgorithmFeedbackDocumentBlock";
+import { ContentReportSheet, type ContentReportSurfaceContext } from "../reports/ContentReportSheet";
 
 type ReviewFeedbackBlockProps = Readonly<{
   feedback: Readonly<{ details: AlgorithmFeedbackDocument; reason: string }>;
   item: ContentItemRef;
+  reportSurface: ContentReportSurfaceContext;
 }>;
 
 /** Figma review feedback: a plain reason section and an expandable details disclosure. */
-export function ReviewFeedbackBlock({ feedback, item }: ReviewFeedbackBlockProps) {
+export function ReviewFeedbackBlock({ feedback, item, reportSurface }: ReviewFeedbackBlockProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -29,7 +31,7 @@ export function ReviewFeedbackBlock({ feedback, item }: ReviewFeedbackBlockProps
       <View style={[styles.detailsSection, detailsOpen ? styles.detailsSectionExpanded : null]}>
         {detailsOpen ? <View style={styles.detailsDivider} /> : null}
         <DetailsDisclosure expanded={detailsOpen} onPress={() => setDetailsOpen((current) => !current)} />
-        {detailsOpen ? <View style={styles.details}><AlgorithmFeedbackDocumentBlock document={feedback.details} item={item} /></View> : null}
+        {detailsOpen ? <View style={styles.details}><AlgorithmFeedbackDocumentBlock document={feedback.details} item={item} /><ContentReportSheet item={item} surface={reportSurface} /></View> : null}
       </View>
     </View>
   );

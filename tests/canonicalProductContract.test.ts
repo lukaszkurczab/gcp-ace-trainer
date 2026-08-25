@@ -142,6 +142,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["CONTENT-PACKAGE-FAMILY-DISPATCH-001", ["free-package-runtime-cutover"]],
       ["CONTENT-PACKAGE-NATIVE-RUNTIME-001", ["content-package-native-runtime"]],
       ["ANALYTICS-REPORTS-001", ["canonical-packages-operations-platform"]],
+      ["ANALYTICS-REPORTS-002", ["content-reports-outbox-and-triage"]],
       ["BACKUP-RESTORE-001", ["canonical-packages-operations-platform"]],
       ["PLATFORM-RELEASE-001", ["canonical-packages-operations-platform"]],
       ["BRAND-DESIGN-AUTHORITY-001", ["canonical-brand-design-authority"]],
@@ -440,6 +441,11 @@ test("defines package analytics report backup and platform semantics", () => {
   assert.equal(contract.platformRelease.physicalDeviceEvidence, "optionalNonBlocking");
 });
 
+test("content reports use exact local outbox states", () => {
+  const reports = loadCanonicalProductContract().analyticsAndReports.contentReports as { offlineStates: readonly string[] };
+  assert.deepEqual(reports.offlineStates, ["queued", "retrying", "failed", "accepted"]);
+});
+
 test("defines one brand owner approval and repository handoff semantics", () => {
   const design = loadCanonicalProductContract().designAuthority;
   assert.equal(design.brand, "onePatternlyBrand");
@@ -588,6 +594,10 @@ test("locks the Product Owner-approved Free-package interaction reference and it
       { sourcePathPrefix: "src/content/application/ContentPreparationGate.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/practice/", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/review/AnswerReviewScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
+      { sourcePathPrefix: "src/features/review/ReviewFeedbackBlock.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
+      { sourcePathPrefix: "src/features/reports/", designReferenceId: "pkg-04a-free-package-interactions" },
+      { sourcePathPrefix: "src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
+      { sourcePathPrefix: "src/preferences/", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/exam/ExamReviewScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/exam/ResultScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/home/HomeScreen.tsx", designReferenceId: "figma-02a-home-coding-ready" },

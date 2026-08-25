@@ -183,6 +183,7 @@ test("Screen and SessionShell remain the only general and active-session page ow
   assert.deepEqual(safeAreaOwners, []);
   assert.deepEqual(scrollViewOwners, [
     "src/features/practice/AlgorithmsPracticeSummaryScreen.tsx",
+    "src/features/reports/ContentReportSheet.tsx",
     "src/features/simulation/SimulationSessionSurface.tsx",
     "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",
   ]);
