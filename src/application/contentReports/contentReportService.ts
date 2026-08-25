@@ -95,6 +95,5 @@ function toApiInput(input: ContentReportInput): CreateContentReportDto {
 
 function reportErrorCode(error: unknown): string {
   if (error instanceof PatternlyApiClientError) return error.serverCode ?? error.code;
-  if (error instanceof Error && error.message.trim()) return error.message;
   return "transport_failed";
 }

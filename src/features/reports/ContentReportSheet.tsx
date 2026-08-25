@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { readContentReportTransport, retryContentReport, submitContentReportFromConfiguredRuntime } from "../../application/contentReports";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import type { ContentReportInput, ContentReportModeRoute, ContentReportOutboxEntry, ContentReportReason } from "../../domain";
 import type { ContentItemRef } from "../../domain";
 import { Button } from "../../components";
@@ -55,7 +56,7 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
       setEntry(result.entry);
       if (result.status === "accepted") setDescription("");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : t("The report could not be saved locally."));
+      setError(describeOperationalFailure(cause, t("The report could not be saved locally.")));
     } finally {
       setPending(false);
     }
@@ -70,7 +71,7 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
       const result = await retryContentReport(entry.input.clientSubmissionId, runtime.kind === "available" ? runtime.transport : undefined);
       setEntry(result.entry);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : t("The report could not be retried."));
+      setError(describeOperationalFailure(cause, t("The report could not be retried.")));
     } finally {
       setPending(false);
     }

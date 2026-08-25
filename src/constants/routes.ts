@@ -5,6 +5,7 @@ export const ROUTES = {
   LEGAL_INFORMATION: "LegalInformation",
   NOTIFICATION_SETTINGS: "NotificationSettings",
   YOUR_DATA: "YourData",
+  ACCOUNT_ENTRY: "AccountEntry",
   BACKEND_DIAGNOSTICS: "BackendDiagnostics",
   SELECT_TRACK: "select_track",
   GOAL_CADENCE: "GoalCadence",

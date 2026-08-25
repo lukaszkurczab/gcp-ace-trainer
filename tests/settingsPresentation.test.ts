@@ -9,11 +9,12 @@ const preferenceSelection = readFileSync("src/features/home/PreferenceSelectionS
 const appearanceSettings = readFileSync("src/features/home/AppearanceSettingsScreen.tsx", "utf8");
 const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
-test("Settings exposes five participant navigation actions and one explicit backend verification action", () => {
+test("Settings exposes account and participant navigation actions plus one backend verification action", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
-  assert.equal(navigationRows.length, 6);
+  assert.equal(navigationRows.length, 7);
 
   for (const callback of [
+    "onOpenAccount",
     "onOpenAppearance",
     "onOpenLegalInformation",
     "onOpenNotifications",

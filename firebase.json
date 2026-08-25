@@ -1,4 +1,13 @@
 {
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Patternly",
+        "supportEmail": "lukasz.kurczab@gmail.com"
+      }
+    }
+  },
   "firestore": {
     "indexes": "firestore.indexes.json",
     "rules": "firestore.rules"

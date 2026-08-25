@@ -9,6 +9,7 @@ import { isPatternlyBackendE2eConfigured } from "../../../infrastructure/clients
 
 type SettingsTabProps = {
   onOpenAppearance: () => void;
+  onOpenAccount: () => void;
   onOpenBackendDiagnostics: () => void;
   onOpenLegalInformation: () => void;
   onOpenNotifications: () => void;
@@ -21,6 +22,8 @@ const copy = {
   en: {
     appearance: "Appearance",
     appearanceDetail: "Choose the theme used on this device.",
+    account: "Account",
+    accountDetail: "Sign in for Premium, sync, or restore. Guest learning stays local until you choose to bind it.",
     appSettings: "Settings",
     settingsDescription: "Manage your app, practice, and privacy preferences.",
     app: "App",
@@ -43,6 +46,8 @@ const copy = {
   pl: {
     appearance: "Wygląd",
     appearanceDetail: "Wybierz motyw używany na tym urządzeniu.",
+    account: "Konto",
+    accountDetail: "Zaloguj się do Premium, synchronizacji lub odtwarzania. Nauka gościa pozostaje lokalna do czasu świadomego powiązania.",
     appSettings: "Ustawienia",
     settingsDescription: "Zarządzaj preferencjami aplikacji, ćwiczeń i prywatności.",
     app: "Aplikacja",
@@ -66,6 +71,7 @@ const copy = {
 
 export function SettingsTab({
   onOpenAppearance,
+  onOpenAccount,
   onOpenBackendDiagnostics,
   onOpenLegalInformation,
   onOpenNotifications,
@@ -96,6 +102,7 @@ export function SettingsTab({
 
       <View style={styles.content}>
         <SettingsGroup dividers title={text.app} titleGap={0}>
+          <SettingsNavigationRow detail={text.accountDetail} icon="user" onPress={onOpenAccount} testID="settings-account" title={text.account} />
           <SettingsNavigationRow
             detail={text.appearanceDetail}
             icon="moon-half"

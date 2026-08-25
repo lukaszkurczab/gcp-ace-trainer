@@ -17,7 +17,7 @@ export type ConfiguredPublicEnvironment = Readonly<{
 
 export type PublicEnvironment =
   | Readonly<{ kind: "configured"; value: ConfiguredPublicEnvironment }>
-  | Readonly<{ kind: "unconfigured"; reason: "no_public_environment_configuration" }>;
+  | Readonly<{ kind: "unconfigured"; reason: "invalid_public_environment" | "no_public_environment_configuration" }>;
 
 const REQUIRED_KEYS = [
   "apiOrigin",

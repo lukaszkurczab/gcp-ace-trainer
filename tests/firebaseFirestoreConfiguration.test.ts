@@ -22,10 +22,21 @@ test("Firebase configuration exposes the deny-all rules and the one semantic acc
       production: "patternly-app-production",
     },
   });
-  assert.deepEqual(JSON.parse(read("firebase.json")), {
-    firestore: {
-      indexes: "firestore.indexes.json",
-      rules: "firestore.rules",
+  const firebaseConfig = JSON.parse(read("firebase.json")) as {
+    auth?: { providers?: { emailPassword?: boolean; googleSignIn?: { oAuthBrandDisplayName?: string; supportEmail?: string } } };
+    firestore?: { indexes?: string; rules?: string };
+  };
+  assert.deepEqual(firebaseConfig.firestore, {
+    indexes: "firestore.indexes.json",
+    rules: "firestore.rules",
+  });
+  assert.deepEqual(firebaseConfig.auth, {
+    providers: {
+      emailPassword: true,
+      googleSignIn: {
+        oAuthBrandDisplayName: "Patternly",
+        supportEmail: "lukasz.kurczab@gmail.com",
+      },
     },
   });
   assert.deepEqual(JSON.parse(read("firestore.indexes.json")), {

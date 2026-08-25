@@ -57,11 +57,12 @@ whole-product discovery audit.
    removes PostgreSQL/Drizzle code, migrations, dependencies and obsolete
    tests. No adapter, dual-write, compatibility route or second data authority
    remains.
-3. **No production account or billing composition.** The app has no Firebase
-   sign-in UI/provider composition, adoption/sync bridge, deletion service,
-   RevenueCat purchase/restore integration or production public environment.
-   Existing local-unavailable text is truthful for the current binary but is not
-   launch completion.
+3. **No production account or billing evidence.** The app now has a
+   guest-preserving Firebase sign-in composition and account-entry surface, but
+   no provider configuration, signed native verification, adoption/sync bridge,
+   deletion service, RevenueCat purchase/restore integration or production
+   public environment exists. The account surface remains explicitly
+   unavailable when its configuration gate is absent.
 4. **No legally complete public sale surface.** The seller's name is known, but
    no publishable address, support contact, legal/tax status, public domain,
    approved consumer documents or payment setup is available. Do not publish
@@ -79,7 +80,7 @@ Scores measure launch readiness of the stage, not code volume. A score below
 | 2. Figma/UI reconciliation | `partial` | 0.71 | Core UI work and prior tests exist, but fresh iPhone 17 evidence covers only track selection. The capture flow contains a deterministic false expectation, and the first selection viewport is overly long/dense. Repair capture and make only evidence-backed UI changes in Task 7. |
 | 3. Content Review Console V1 | `done` | 0.87 | Local source-authoritative console and full content evidence are recorded. Keep it isolated from learner reports and do not create a second content authority. |
 | 4. Eight-track content audit | `done` | 0.86 | Accepted immutable eight-track release and validators exist. Semantic defects remain corrected only when demonstrated; learner report delivery belongs to Task 2, not a renewed mass content audit. |
-| 5. Account, identity, sync, adoption, deletion | `partial` | 0.24 | Contract/backend foundations exist, but no composed app identity, adoption, remote sync, recovery, sign-out or verified deletion path exists. Tasks 3–5 replace this stage with independently testable vertical slices. |
+| 5. Account, identity, sync, adoption, deletion | `partial` | 0.39 | Task 3 now composes guest-preserving Firebase identity entry, backend token verification and explicit failure states. Provider configuration, signed native evidence, adoption, remote sync, recovery-code lifecycle and verified deletion remain. Tasks 4–5 are still required. |
 | 6. Commercial entitlement | `partial` | 0.31 | Pure entitlement model and Poland price basis exist. No store catalog, purchase, restore, backend reconciliation, package authorization or consumer checkout evidence exists. Task 6 is required. |
 | 7. Provider, privacy, security, operations | `blocking` | 0.22 | No public origins, Firebase/App Check/IAM, deploy, retention/restore implementation, legal data or approved disclosures. Task 1 resolves architecture; Task 8 collects real external evidence. |
 | 8. QA, signing, stores, GO/NO-GO | `partial` | 0.43 | Local tests and simulator evidence exist; no signed iOS/Android artifacts, store records, complete screenshots, legal/public links or final smoke exist. Tasks 7–9 are required. |
@@ -92,9 +93,11 @@ Scores measure launch readiness of the stage, not code volume. A score below
 - The local static public surface, backend report foundation, learner report
   flow, and administrator queue read exist; do not recreate them. Repair
   their stated gaps in place.
-- Task 1 and Task 2 are complete implementation slices. Task 3 is the next
-  active task; visual/browser evidence that could not run locally is recorded
-  in the Task 2 report rather than being treated as a false pass.
+- Task 1 and Task 2 are complete implementation slices. Task 3's code slice and
+  Firebase sandbox baseline are delivered: the project, Web/Android/iOS apps,
+  Email/Password Auth and native service-file prebuild are verified. Google,
+  Apple, App Check, public-origin configuration, signed-native evidence and
+  required user-visible screenshots remain external gates before Task 4.
 - Historical route, competition and earlier readiness audits remain evidence
   only. They must not be used to resurrect old sequencing or a second launch
   contract.
@@ -169,6 +172,14 @@ Scores measure launch readiness of the stage, not code volume. A score below
 
 ### Task 3 — compose identity and account entry vertical slice
 
+- **Current implementation status (2026-08-25):** the app and backend code
+  slice is implemented and locally verified. The existing
+  `patternly-app-sandbox` project now has registered Web/Android/iOS apps,
+  deployed Email/Password and Google Sign-In, matching native service files,
+  a verified Expo prebuild and an existing production EAS Android keystore.
+  Android Play Integrity registration, public origins, signed Android flow and
+  sanitized screenshots remain external gates. Apple/iOS release evidence is
+  deferred because the owner does not yet have Apple Developer access.
 - **Goal:** give a guest a real, secure path to register/sign in with the
   agreed methods without changing local learning before consent.
 - **Scope:** Firebase client composition, public environment validation,

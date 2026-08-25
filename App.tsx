@@ -6,12 +6,15 @@ import { RootNavigator } from "./src/navigation/RootNavigator";
 import { ContentPreparationGate } from "./src/content/application/ContentPreparationGate";
 import { AppPreferencesProvider, useAppPreferences } from "./src/preferences";
 import { buildNavigationTheme } from "./src/theme/navigationTheme";
+import { PatternlyAccountProvider } from "./src/application/account/AccountSessionProvider";
 
 export default function App() {
   return (
     <SafeAreaProvider>
       <AppPreferencesProvider>
-        <AppNavigation />
+        <PatternlyAccountProvider>
+          <AppNavigation />
+        </PatternlyAccountProvider>
       </AppPreferencesProvider>
     </SafeAreaProvider>
   );

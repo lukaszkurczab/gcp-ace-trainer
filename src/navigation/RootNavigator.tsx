@@ -12,6 +12,7 @@ import { LegalInformationScreen } from "../features/home/LegalInformationScreen"
 import { NotificationSettingsScreen } from "../features/home/NotificationSettingsScreen";
 import { YourDataScreen } from "../features/home/YourDataScreen";
 import { BackendDiagnosticsScreen } from "../features/home/BackendDiagnosticsScreen";
+import { AccountEntryScreen } from "../features/account/AccountEntryScreen";
 import { SelectTrackScreen } from "../features/home/SelectTrackScreen";
 import { GoalCadenceScreen } from "../features/home/GoalCadenceScreen";
 import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
@@ -72,6 +73,11 @@ export function RootNavigator() {
         name={ROUTES.BACKEND_DIAGNOSTICS}
         component={BackendDiagnosticsScreen}
         options={{ title: "Backend diagnostics" }}
+      />
+      <Stack.Screen
+        name={ROUTES.ACCOUNT_ENTRY}
+        component={AccountEntryScreen}
+        options={{ headerShown: false, title: t("Account") }}
       />
       <Stack.Screen
         name={ROUTES.LEGAL_INFORMATION}

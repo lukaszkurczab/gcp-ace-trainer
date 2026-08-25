@@ -37,12 +37,12 @@ const copy = {
           },
           {
             detailTitle: "Account, sync, and deletion",
-            icon: "cloud",
-            summary: "Not connected in this build; learning records remain local.",
-            title: "Account unavailable",
+            icon: "user",
+            summary: "Account entry is separate from local learning and remote sync.",
+            title: "Account binding is explicit",
             paragraphs: [
-              "The authenticated account transport requires an explicit Patternly environment, identity provider, and App Check composition. This build has no composed provider, so it does not sync learning data.",
-              "Account deletion is available only after authenticated, recent re-authentication through that provider. This local-only state does not claim that a remote account exists or has been deleted.",
+              "Patternly exposes account entry only when the public environment, Firebase identity provider, and native App Check composition are explicitly configured. Creating or signing into an account does not automatically bind or upload local learning records.",
+              "Account deletion and cross-device synchronization are separate product surfaces and are not part of this account-entry slice. No local-only state claims that a remote account exists or has been deleted.",
             ],
           },
           {
@@ -106,12 +106,12 @@ const copy = {
           },
           {
             detailTitle: "Konto, synchronizacja i usunięcie",
-            icon: "cloud",
-            summary: "Niepodłączone w tej wersji; dane o nauce pozostają lokalnie.",
-            title: "Konto niedostępne",
+            icon: "user",
+            summary: "Wejście do konta jest odrębne od lokalnej nauki i zdalnej synchronizacji.",
+            title: "Powiązanie konta jest jawne",
             paragraphs: [
-              "Uwierzytelniony transport konta wymaga jawnego środowiska Patternly, dostawcy tożsamości i konfiguracji App Check. Ta wersja nie ma złożonego dostawcy, więc nie synchronizuje danych o nauce.",
-              "Usunięcie konta jest dostępne wyłącznie po uwierzytelnieniu i ponownym uwierzytelnieniu w wymaganym, świeżym czasie przez tego dostawcę. Ten lokalny stan nie udaje, że istnieje zdalne konto ani że zostało usunięte.",
+              "Patternly pokazuje wejście do konta tylko wtedy, gdy jawnie skonfigurowano publiczne środowisko, dostawcę tożsamości Firebase i natywną konfigurację App Check. Utworzenie konta lub logowanie nie wiąże automatycznie lokalnych danych o nauce ani ich nie wysyła.",
+              "Usunięcie konta i synchronizacja między urządzeniami są odrębnymi powierzchniami produktu i nie należą do tego wycinka wejścia do konta. Żaden stan lokalny nie udaje istnienia ani usunięcia zdalnego konta.",
             ],
           },
           {

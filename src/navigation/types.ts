@@ -11,6 +11,7 @@ export type RootStackParamList = {
   [ROUTES.LEGAL_INFORMATION]: undefined;
   [ROUTES.NOTIFICATION_SETTINGS]: undefined;
   [ROUTES.YOUR_DATA]: undefined;
+  [ROUTES.ACCOUNT_ENTRY]: { initialMode?: "entry" | "register" | "signIn" | "recovery" | "resetPassword" } | undefined;
   [ROUTES.BACKEND_DIAGNOSTICS]: undefined;
   [ROUTES.SELECT_TRACK]: undefined;
   [ROUTES.GOAL_CADENCE]: { trackId?: TrackId } | undefined;

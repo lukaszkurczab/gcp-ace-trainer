@@ -305,6 +305,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         ) : null}
         {activeTab === "settings" ? (
           <SettingsTab
+            onOpenAccount={() => navigation.navigate(ROUTES.ACCOUNT_ENTRY)}
             onOpenAppearance={() => navigation.navigate(ROUTES.APPEARANCE_SETTINGS)}
             onOpenBackendDiagnostics={() => navigation.navigate(ROUTES.BACKEND_DIAGNOSTICS)}
             onOpenLegalInformation={() => navigation.navigate(ROUTES.LEGAL_INFORMATION)}

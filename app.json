@@ -13,6 +13,8 @@
     "newArchEnabled": true,
     "plugins": [
       "expo-notifications",
+      "@react-native-firebase/app",
+      "@react-native-firebase/app-check",
       [
         "expo-build-properties",
         {
@@ -36,10 +38,12 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.lkurczab.patternly",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.lkurczab.patternly",
+      "googleServicesFile": "./google-services.json",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/brand/app-icon/patternly-app-icon-foreground.png",

@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "958691314582",
+    "project_id": "patternly-app-sandbox",
+    "storage_bucket": "patternly-app-sandbox.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:958691314582:android:04623582ba94e72be4ebb7",
+        "android_client_info": {
+          "package_name": "com.lkurczab.patternly"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "958691314582-q190v93f7is6p5d2jtuahgotspoahuc9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqyHsS1tEeonfVdYyJpkUlyOYhE7PVaFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "958691314582-q190v93f7is6p5d2jtuahgotspoahuc9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "958691314582-54p23quols1hh4c2i1hpte8j0ggbpuor.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.lkurczab.patternly"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
