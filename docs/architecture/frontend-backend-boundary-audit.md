@@ -1,5 +1,9 @@
 # Frontend/backend boundary audit
 
+> **Historical architecture evidence, reconciled 2026-08-25:** this audit
+> preserves the 2026-08-21 cutover findings. `launch-completion-plan.md` owns
+> the current implementation order and records later source changes.
+
 Date: 2026-08-21
 
 ## Decision
@@ -23,7 +27,7 @@ sync operation is requested.
 | `src/storage/**` | MMKV-backed local records, drafts, attempts and review queue | FE_ONLY | Keep local state and device-only fields local | MMKV, domain codecs | High | No |
 | `src/infrastructure/content/**` | Bundled and immutable package resolution/integrity checks | FE_ONLY + SHARED_CONTRACT | Keep runtime resolver in FE; consume release lock and content package metadata | `patternly-content`, release lock | Medium | No |
 | `src/features/**`, navigation and `App.tsx` | UI, navigation and interaction state | FE_ONLY | Keep in app repository | Local application state | Medium | No |
-| `src/infrastructure/clients/PatternlyApiClientAdapter.ts` | Generated REST transport DTOs and auth-token injection | SHARED_CONTRACT | Generated from backend OpenAPI; keep only approved transport boundary | Backend OpenAPI | High if hand-edited or duplicated | No |
+| `src/infrastructure/clients/PatternlyApiClientAdapter.ts` | REST transport DTOs and auth-token injection | SHARED_CONTRACT | Keep synchronized with backend OpenAPI; CI verifies every versioned endpoint is represented | Backend OpenAPI | High if duplicated or allowed to drift | No |
 | `src/infrastructure/clients/publicEnvironment.ts` | Closed public API/origin configuration | SHARED_CONTRACT | Keep FE validation; backend validates private environment separately | Runtime configuration | High for wrong environment | No |
 | `server/src/authentication.ts` | Firebase token verification and request auth | BE_ONLY | Replaced by `patternly-backend/src/infrastructure/firebase/**` and auth request boundary | Firebase Admin SDK | High | No |
 | `server/src/accountService.ts` | Firestore account dataset, snapshots, adoption and sync | OBSOLETE | Remove from FE repository; canonical backend uses PostgreSQL progress mutations and versioned rows | PostgreSQL/Drizzle | High during cutover | No |
@@ -74,4 +78,20 @@ versioned under `/v1`.
 - Old server removal and full application regression: complete; the old
   Firestore server, deployment files and server-only tests were removed from
   the frontend repository.
-- GitHub repository creation/push: blocked by invalid existing `gh` token.
+
+## Subsequent source reconciliation — 2026-08-25
+
+- `patternly-backend` now contains a PostgreSQL-backed `content_reports` table,
+  `/v1/content/reports`, and an administrator-only report list. Its test suite
+  verifies validation, retry deduplication and the server-side administrator
+  boundary.
+- This is not report-feature completion: the active product contract requires
+  account-unlinked reporting by default, explicit link consent, offline
+  delivery states, retention/de-identification and audit controls. The current
+  implementation instead requires an account and stores `user_id`; the active
+  plan treats that contradiction as a repair task.
+- Backend source uses PostgreSQL/Drizzle for user, progress, entitlement and
+  report records. Several narrative and contract references still name
+  Firestore/PITR. They require an explicit canonical storage decision and
+  synchronized contract/parser/test update; this historical audit does not
+  silently resolve it.

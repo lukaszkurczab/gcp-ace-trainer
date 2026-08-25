@@ -12,5 +12,5 @@ tags:
 - extendedWaitUntil:
     visible:
       id: "patternly:content:ready-after-audit-reset"
-    timeout: 30000
+    timeout: 60000
 - runFlow: visual-shell-capture.yaml

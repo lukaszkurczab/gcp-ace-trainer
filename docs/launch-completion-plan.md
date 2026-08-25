@@ -1,290 +1,366 @@
 # Patternly — launch completion plan
 
-**Authority:** `docs/canonical-product-contract.yaml`,
-`docs/product-owner-decision-register.md`, and the owner directive/manual actions
-dated 2026-08-24. This file owns execution order and repository status only.
+**Authority:** `docs/canonical-product-contract.yaml` defines product behavior;
+this document is the sole active execution order and repository-status source.
+`product-owner-decision-register.md` contains only missing owner inputs and
+external gates.
 
-**As of:** 2026-08-25
+**Reconciled:** 2026-08-25. This plan is a handoff for an implementation agent.
+It already contains the relevant current-source, test and iPhone 17 evidence;
+the agent must perform bounded verification for its assigned task, not repeat a
+whole-product discovery audit.
 
-**Current pushed canonical heads:** app `origin/main`; content `origin/master`.
-Both refs are independently fetched and verified at each handoff.
+## Confirmed working context
 
-At the 2026-08-25 controller checkpoint, both canonical worktrees were clean
-after independent fetch-and-match verification. Exact commit IDs remain in Git
-history and the readiness output; this plan avoids a self-referential SHA.
+- App: React Native/Expo in this repository. Guest/local-first learning works
+  on the booted iPhone 17, iOS 26.4 simulator. `npm run typecheck` and the
+  full application suite (593 tests) passed on 2026-08-25.
+- Backend: `../patternly-backend` is Fastify + PostgreSQL/Drizzle. Existing API
+  serves identity mapping, entitlement/progress projections and versioned sync.
+  On 2026-08-25 it gained a content-report migration, authenticated submission,
+  deduplication and a server-protected administrator listing; backend typecheck,
+  11 tests, OpenAPI generation and frontend-client consistency check passed.
+- Website: a new local Git repository `../patternly-web` has a static Polish
+  product surface and an administrator entry. It is not deployed and contains
+  no client-side privilege grant or simulated user data.
+- Owner inputs already fixed: one administrator is
+  `lukasz.kurczab@gmail.com`; login methods are email/password, Apple, Google
+  and recovery codes; seller is Łukasz Kurczab; Poland price basis is 49 zł / 30
+  days, 119 zł / 90 days, 199 zł / renewing year; Poland is the sole initial
+  territory; support/privacy contact is `lukasz.kurczab@gmail.com`; ordinary
+  report and deletion-proof retention is 30 days unless law requires longer;
+  App Check plus backend rate limiting protects anonymous reports; work remains
+  local.
+- Proposed production origin architecture is `learnpatternly.com` with API at
+  `api.learnpatternly.com` and auth redirects at `auth.learnpatternly.com`.
+  It is not registered or legally cleared. Market search found several existing
+  unrelated Patternly products, so registration requires availability and
+  trademark review before public use.
+- iOS visual evidence: the fresh dark iPhone 17 track-selection screenshot is
+  at `artifacts/maestro-screen-capture/current-head/2026-08-25-iphone17/maestro-output-final/screenshots/artifacts/maestro-screen-capture/current-head/2026-08-25-iphone17/screenshots-final/visual-shell__core__005__track-selection-ready__dark__ios-26.4-iphone-17.png`.
+  It confirms a working app and shows a long, dense first track-selection
+  viewport. The shared Maestro journey then fails because it expects a Continue
+  footer after reselecting the already active Coding track; that footer is
+  correctly hidden by current UI logic. The reset wait was corrected from 30 to
+  60 seconds after evidence showed the marker appears just after the old limit.
 
-Exact commit IDs belong to the fetched canonical refs and are recorded in the
-controller handoff evidence; this plan intentionally avoids a self-referential
-app SHA because each plan update creates a new documentation commit.
+## Non-negotiable corrections before continuation
 
-## Locked launch decisions
+1. **Report privacy contradiction.** The canonical contract requires reports to
+   be account-unlinked by default, opt-in for account/contact attachment, with
+   bounded context, retention, offline states and audit controls. The new
+   backend requires an account and stores `user_id`. Treat it as a partial
+   backend slice that must be corrected, not as a completed report feature.
+2. **Required Firestore rewrite.** The owner selected Firestore as the sole
+   production store. Backend source is still PostgreSQL/Drizzle. Replace that
+   implementation in Task 1; do not retain a PostgreSQL adapter, dual-write,
+   compatibility route or second data authority.
+3. **No production account or billing composition.** The app has no Firebase
+   sign-in UI/provider composition, adoption/sync bridge, deletion service,
+   RevenueCat purchase/restore integration or production public environment.
+   Existing local-unavailable text is truthful for the current binary but is not
+   launch completion.
+4. **No legally complete public sale surface.** The seller's name is known, but
+   no publishable address, support contact, legal/tax status, public domain,
+   approved consumer documents or payment setup is available. Do not publish
+   purchase actions or claim legal readiness.
 
-- Launch contains exactly these eight learner-visible tracks:
-  `coding-interview-dsa-problem-solving`, `backend-system-design-interview`,
-  `frontend-system-design-interview`, `object-oriented-design-interview`,
-  `aws-certified-solutions-architect-associate`,
-  `google-cloud-associate-cloud-engineer`,
-  `microsoft-azure-administrator-associate-az-104`, and
-  `microsoft-azure-ai-fundamentals-ai-901`.
-- The current eight-track banks are the accepted final launch baseline. No mass
-  reduction, mass expansion, or exhaustive re-review is authorized.
-- There is no global `>120 questions/node` readiness rule. Content changes are
-  targeted and evidence-driven; counts are operational evidence only.
-- A family/mode capability envelope is narrowed by the versioned track, package,
-  and Free profile. The UI renders the resolved profile and explicitly reports
-  requested versus actual length when shortening is allowed.
-- Patternly is decision practice and remediation, not a question bank. Its loop is
-  recognition → decision/mechanism → explained correctness and alternatives →
-  varied practice → repeated-mistake remediation → revisit → transfer.
-- Premium is one SKU-neutral account entitlement for fixed 30-day, fixed 90-day,
-  and discounted recurring access. Exact products, prices, and promotions remain
-  provider/owner gates.
-- The local/internal Content Review Console is a review aid over source files;
-  source remains authoritative, automated signals are advisory, and human outcomes
-  are explicit. No cloud, remote database, production auth, secrets, auto-rewrite,
-  self-approval, or second content authority.
-- There is no AI mock interviewer and no assumed paid tester, coach, reviewer,
-  agency, or permanent paid Figma dependency.
+## Stage assessment
 
-## Current status
+Scores measure launch readiness of the stage, not code volume. A score below
+`0.80` **requires stage repair/change** before that stage may be called complete.
 
-| Stage | Status | Exit evidence |
-| --- | --- | --- |
-| 0. Strategic reconciliation | complete | Contract, tests, current-only decision register and affected docs are reconciled and pushed to canonical heads. |
-| 1. Evidence and artifact cleanup | complete | The current-only decision-register rule, affected content count-gate narrative cleanup, and removal of the unreferenced resolved RC-003 decision packet are complete. Retained directives/reports are explicitly non-authoritative or unique provenance/release/legal/security evidence. |
-| 2. Figma/UI reconciliation | in_progress | Owner has declared `Page 1` and `Patternly Library` final visual authority; the connector channel is ephemeral and is not a release-gate input. Implementation targets 99% fidelity. Progress, Activity, Goal cadence, and Settings parity corrections are implemented and tested; missing screens/states remain explainable work, not blockers. |
-| 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, and records bounded explicit outcomes. Full content verification is 146/146 with the local bind test run under the required loopback-enabled environment; no approval is fabricated. |
-| 4. Eight-track content audit | complete | Immutable release `patternly-launch-2026-08-25-01` contains all eight current Free-node packages with exact provenance; app bundle lock `patternly-app-content-0021` and generated package projection are synchronized. Package/inventory verification is 14/14; all eight tracks have recorded immutable-artifact, runtime, and publishing admission. The full content suite is 146/146. No bank expansion or count gate was introduced. |
-| 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
-| 6. Commercial entitlement | partial | The provider-neutral Premium domain model now represents one entitlement, the fixed 30-day/fixed 90-day/recurring offer kinds, and active/grace/expired/revoked/refunded states with fail-closed access checks. Store, RevenueCat, backend projection, exact prices/SKUs, and production evidence remain external/provider work. |
-| 7. Provider, privacy, security, operations | planned | Production configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery evidence remains absent and requires the corresponding external gates. |
-| 8. QA, signing, stores, GO/NO-GO | partial | The Android NDK/signing-boundary slice remains locally verified. App tests are 593/593 and typecheck passes. Actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable gates. |
+| Stage | Status | Score | Evidence-based assessment and required change |
+| --- | --- | ---: | --- |
+| 0. Strategic reconciliation | `done` | 0.90 | Eight-track scope, guest-first model, identity/Premium contracts and Firestore as the sole account/report store are now explicit. Task 1 implements this decision without reopening scope. |
+| 1. Evidence and artifact cleanup | `partial` | 0.76 | Historical material is labelled and the active decision register is reduced. PostgreSQL code and artifacts are now known obsolete under the Firestore decision and must be deleted in Task 1 after replacement tests pass. |
+| 2. Figma/UI reconciliation | `partial` | 0.71 | Core UI work and prior tests exist, but fresh iPhone 17 evidence covers only track selection. The capture flow contains a deterministic false expectation, and the first selection viewport is overly long/dense. Repair capture and make only evidence-backed UI changes in Task 7. |
+| 3. Content Review Console V1 | `done` | 0.87 | Local source-authoritative console and full content evidence are recorded. Keep it isolated from learner reports and do not create a second content authority. |
+| 4. Eight-track content audit | `done` | 0.86 | Accepted immutable eight-track release and validators exist. Semantic defects remain corrected only when demonstrated; learner report delivery belongs to Task 2, not a renewed mass content audit. |
+| 5. Account, identity, sync, adoption, deletion | `partial` | 0.24 | Contract/backend foundations exist, but no composed app identity, adoption, remote sync, recovery, sign-out or verified deletion path exists. Tasks 3–5 replace this stage with independently testable vertical slices. |
+| 6. Commercial entitlement | `partial` | 0.31 | Pure entitlement model and Poland price basis exist. No store catalog, purchase, restore, backend reconciliation, package authorization or consumer checkout evidence exists. Task 6 is required. |
+| 7. Provider, privacy, security, operations | `blocking` | 0.22 | No public origins, Firebase/App Check/IAM, deploy, retention/restore implementation, legal data or approved disclosures. Task 1 resolves architecture; Task 8 collects real external evidence. |
+| 8. QA, signing, stores, GO/NO-GO | `partial` | 0.43 | Local tests and simulator evidence exist; no signed iOS/Android artifacts, store records, complete screenshots, legal/public links or final smoke exist. Tasks 7–9 are required. |
 
-## Execution stages
+## Work already removed from the active queue
 
-### 0. Strategic reconciliation — current slice
+- Strategic scope reconciliation, mandatory content-baseline cleanup, Content
+  Review Console V1 and the eight-track structural audit are complete; do not
+  schedule a repeat audit.
+- The local static public surface and backend report foundation exist; do not
+  recreate them. Repair their stated gaps in place.
+- Historical route, competition and earlier readiness audits remain evidence
+  only. They must not be used to resurrect old sequencing or a second launch
+  contract.
 
-Update the canonical contract and its coverage tests; update the owner register;
-reconcile only affected narrative documents; replace stale launch-plan history;
-and supersede contradictory active assumptions. Verify contract parsing, focused
-tests, documentation references, and both clean/pushed heads.
+## Execution queue
 
-Controller QA of the owner-owned EAS/signing hardening is complete locally with
-gaps: focused invariants pass, but no delegated QA report or EAS artifact exists.
-The provider-neutral Premium domain slice is now implemented and locally
-verified; provider/store/backend integration remains unsafe without the real
-input contract and is therefore an external gate. Cleanup remains a mandatory
-gate before each later release slice.
+### Task 1 — replace PostgreSQL backend logic with Firestore and repair report privacy
 
-The current controller checkpoint verified the owner-confirmed Figma reference
-and the existing `QA / G01-G13 acceptance / canonical instances`,
-`QA / G07 canonical screen owners`, and bottom-navigation QA sections. The owner
-has now explicitly approved `Page 1` and `Patternly Library` as final visual
-authority and set a 99% fidelity target. Missing screens/states remain
-explainable implementation work, not launch blockers; only buildable,
-contract-compatible states are added. The current application parity slice
-covers the Algorithms Progress `no_evidence`, `building`, and `established`
-evidence states, the effectiveness trend, track evidence, recent activity
-hierarchy, Goal cadence edit-only save behavior, and Settings copy without
-account semantics using current-package local attempts only. The provider-neutral
-Premium entitlement domain slice now exists without provider/store coupling; its
-focused tests cover the canonical offer kinds and projection states. Progress evidence
-rows remain informational because no Track Evidence route exists; the local
-show-more control is the supported expansion. Focused tests, full app
-verification, and typecheck are `npm test` 593/593 and `npm run typecheck` pass;
-no device screenshot or EAS artifact is claimed. The subsequent internal
-admission evidence records all eight runtime and publishing admissions against
-the exact application commit. `npm run launch:readiness` remains `not_ready`
-only for the external release evidence listed below. Content verification for
-the new immutable release is package/inventory 14/14 and the full content suite
-is 146/146 with the local Console bind test run under the required loopback-
-enabled environment. No source banks or external evidence were changed in this
-checkpoint.
+- **Goal:** make Firestore the one real backend authority and correct the
+  account-linked report implementation before any feature is layered on top.
+- **Scope:** rewrite `patternly-backend` user, progress, entitlement, content
+  version and report persistence using Firebase Admin Firestore; replace
+  PostgreSQL/Drizzle bootstrap, schema, stores, migrations, dependencies,
+  deployment configuration and tests; update only the app transport contracts
+  required by the new canonical API.
+- **Non-goals:** account UI, generic analytics, content editing, report console
+  expansion, billing or deployment.
+- **Inputs:** owner Firestore decision; contract requirements
+  `ANALYTICS-REPORTS-001` and `BACKUP-RESTORE-001`; current Fastify API
+  contracts; Firebase project/App Check configuration through the secure
+  deployment channel.
+- **Acceptance criteria:** Firestore is the only account/progress/entitlement/
+  content-version/report authority; all PostgreSQL/Drizzle code, migrations,
+  dependencies, configuration and obsolete tests are deleted; backend keeps
+  explicit idempotency and compare-and-swap semantics through Firestore
+  transactions; no mobile client gets direct Firestore access; report submission
+  is account-unlinked by default with optional explicit identity/contact link;
+  automatic data excludes response, prompt, feedback, email and account ID;
+  App Check plus backend rate limiting protects submission; TTL/retention,
+  de-identification, audit states and seven-day PITR runbook are real; client
+  states are queued/retry/failed/accepted without false success.
+- **Verification:** contract parser and negative tests; Firebase Emulator Suite
+  integration tests for identity, CAS conflict, idempotency, deletion and report
+  redaction; client typecheck; reference search proving no PostgreSQL/Drizzle or
+  direct client Firestore path remains; PITR/TTL configuration check in sandbox.
+- **Required evidence:** Firestore collection/field contract, emulator test
+  output, App Check/rate-limit design, TTL/PITR configuration checklist and a
+  short architecture report under `docs/reports/`.
+- **Risks:** Firestore transaction callbacks can rerun and must have no side
+  effects; account deletion has no SQL cascade and must delete every owned
+  document explicitly. Do not preserve PostgreSQL as a rollback path.
+- **Report target:** `docs/reports/launch-101-firestore-and-report-boundary.md`.
 
-### 1. Evidence and artifact cleanup — mandatory
+### Task 2 — deliver learner report flow and administrator triage
 
-Audit both repositories and remove only artifacts that satisfy all of these:
+- **Goal:** make per-item trust reporting usable and privacy-correct from
+  feedback/details and Answer Review through resolution workflow.
+- **Scope:** app report entry/form/local outbox/status/retry; backend corrected
+  report API and status transitions; `patternly-web/admin` real authentication
+  entry and read-only open-report queue after production config exists.
+- **Non-goals:** content auto-editing, free-form administrator commands,
+  content-source mutation from the web panel or hidden status changes.
+- **Inputs:** completed Task 1 API, stable package/item identity, owner admin
+  identity and web repo.
+- **Acceptance criteria:** report originates from both required learning
+  surfaces; stable item/release context is attached without learner content;
+  retry is idempotent; each user-visible terminal state is truthful; admin
+  access is verified by backend, not page code; the sole configured admin can
+  view and transition reports with an audit record.
+- **Verification:** UI tests for form and offline branches; API authorization
+  and transition tests; iOS Maestro screenshots; web browser smoke using a
+  non-admin denial and admin acceptance.
+- **Required evidence:** screenshots, sanitized audit trail, and source
+  correction/release linkage for one controlled report.
+- **Risks:** do not ship the current account-linked implementation as a privacy
+  workaround; do not put Firebase credentials in static source.
+- **Report target:** `docs/reports/launch-102-content-reports-and-admin.md`.
 
-1. no runtime, build, test, or active-document dependency;
-2. no inbound active reference;
-3. no unique immutable release, provenance, legal, security, or owner-decision
-   evidence;
-4. no current owner decision depends on it; and
-5. Git history is sufficient for provenance.
+### Task 3 — compose identity and account entry vertical slice
 
-Remove obsolete evidence, directives, finished-task notes, duplicate reports and
-dead artifacts. The `product-owner-decision-register.md` is cleaned under a
-stronger rule: it is not a history log. Delete every resolved, implemented,
-superseded, historical, duplicate, or option-matrix entry. When an owner decision
-is made, remove its question, uncertainty, and rejected alternatives. When the
-decision is implemented, remove it from the register entirely and rely on the real
-contract, architecture, manifest, or evidence. Keep only unresolved owner choices
-and genuine external gates. Preserve unique provenance/release/legal/security
-evidence in its proper evidence location, not by keeping it as a decision entry.
-Preserve the canonical contract, current plan, design authority, active
-assets/licenses, and unique immutable evidence. Run reference searches and focused
-repository tests before and after deletion.
+- **Goal:** give a guest a real, secure path to register/sign in with the
+  agreed methods without changing local learning before consent.
+- **Scope:** Firebase client composition, public environment validation,
+  account entry/register/sign-in/verification/recovery surfaces and backend
+  identity mapping.
+- **Non-goals:** adoption merge execution, remote progress sync, purchase,
+  deletion or fabricated provider success in unconfigured builds.
+- **Inputs:** existing identity contract, Firebase project/App Check origins,
+  Terms version and public links from owner/external gates.
+- **Acceptance criteria:** email/password, Apple and Google paths are real;
+  recovery uses the agreed contract; invalid/duplicate/rate-limited/offline/
+  revoked cases are explicit and non-enumerating; credentials and tokens stay
+  out of logs/storage; guest learning stays available before account binding.
+- **Verification:** provider sandbox tests, unit negative cases, app typecheck,
+  iOS flows for each user-visible state and backend token-verification tests.
+- **Required evidence:** sanitized provider configuration checklist and
+  screenshots of success/failure states.
+- **Risks:** no production URLs or account claims may be invented locally.
+- **Report target:** `docs/reports/launch-103-identity-entry.md`.
 
-The current cleanup audit removed the unreferenced resolved decision packet
-`docs/po-questions/rc-003-certification-exam-interaction-policy.md`. The decision
-is implemented in the canonical contract and runtime/tests, so its question,
-alternatives, and recommendation no longer belong in the repository's active
-decision surfaces. The five input directives remain because they are the unique
-owner/provenance package and `docs/README.md` marks them historical and
-non-authoritative; no duplicate report or evidence artifact met the deletion
-criteria. A stale content contract assertion that treated superseded immutable
-evidence as current was corrected while the new immutable package release was
-synchronized; source banks were not regenerated or expanded. The current-only
-PO register retains only unresolved gates and the active Figma implementation
-authority; it does not accumulate history or implemented architecture.
+### Task 4 — account adoption and incremental sync
 
-### 2. Figma/UI reconciliation
+- **Goal:** move an authenticated learner from one local dataset to one
+  revisioned remote account dataset without silent loss or duplicated state.
+- **Scope:** local installation binding, preview/confirmation, compact outbox,
+  progress projection, conflict UI and sign-out precondition.
+- **Non-goals:** cross-device active-session resume, last-write-wins merge,
+  a second persistence model or background sync promise.
+- **Inputs:** completed Task 3 identity and Task 1 Firestore rewrite;
+  existing backend CAS sync endpoints and merge contract.
+- **Acceptance criteria:** empty/local/remote/both/divergent and active-session
+  cases have deterministic previewed outcomes; confirmed mutations are
+  idempotent and CAS-protected; conflict preserves last verified states;
+  offline/pending/retry status is visible; device-only records never sync.
+- **Verification:** backend conflict/idempotency tests, local journal recovery
+  tests, two-simulator bounded scenario, iOS screenshots and import/reference
+  checks for duplicate storage paths.
+- **Required evidence:** preview transcript fixtures and before/after remote
+  projections without personal data.
+- **Risks:** forcing a merge or discarding guest data is launch-blocking.
+- **Report target:** `docs/reports/launch-104-adoption-sync.md`.
 
-Reconcile affected UI behavior and geometry against the canonical contract and
-the final `Page 1` / `Patternly Library` visual authority. The implementation
-target is 99% fidelity. Practice Setup must expose the resolved profile-specific
-session capability. Do not invent routes, metrics, unavailable content, or
-semantic product decisions from visual material. Missing screens/states are
-explainable gaps; if a state is buildable from existing canonical components,
-models, and routes, implement it directly without parallel architecture. A
-Figma-only metric or provider/account/commercial behavior remains unexplained
-until its real contract exists, rather than becoming fabricated product truth.
+### Task 5 — recovery, sign-out and verified account deletion
 
-The current completed code slices are the Algorithms Progress evidence-state
-parity implementation in `src/features/home/tabs/ProgressTab.tsx` and
-`src/features/home/tabs/progressTabModel.ts`, plus Activity variable-height row
-parity in `src/features/home/ActivityScreen.tsx`. Projection coverage is in
-`tests/homeProgressProjections.test.ts`, activity behavior in
-`tests/activityModel.test.ts`, and visual-shell coverage in
-`tests/visualShell.test.ts`. They add no route, persistence, metric source,
-account command, or commercial contract. Sparse states explicitly withhold
-effectiveness and trend values until recorded response thresholds are met;
-established values are derived from the exact current content package. Activity
-rows no longer clip long scope/status copy and remain accessible at 200% text.
+- **Goal:** complete secure account lifecycle and public deletion path after
+  identity and sync exist.
+- **Scope:** recent reauthentication, recovery-code lifecycle, session
+  revocation, sign-out, in-app deletion, public possession-verified deletion,
+  server tombstone/proof, local cleanup and restore reconciliation.
+- **Non-goals:** pretending store subscription cancellation or provider-data
+  deletion is performed by Patternly.
+- **Inputs:** completed Tasks 1, 3 and 4; public domain/email sender; actual
+  retention and database recovery policy.
+- **Acceptance criteria:** all destructive actions explain scope and failure;
+  reauth is enforced; deletion is verifiably remote and local; stale sessions
+  and restore cannot resurrect account data; public flow is non-enumerating;
+  subscription management remains separate.
+- **Verification:** integration tests, provider sandbox deletion/revocation,
+  restore/tombstone drill, iOS destructive-state screenshots and public-web
+  test with sanitized mail evidence.
+- **Required evidence:** retention/deletion runbook and deletion proof format.
+- **Risks:** irreversible provider calls require real configuration and must not
+  be tested against a production account.
+- **Report target:** `docs/reports/launch-105-deletion-recovery.md`.
 
-The current parity slice also removes the non-functional Track Evidence
-chevron, hides Goal cadence `Save changes` until edit mode, and removes account
-semantics from Settings copy. Each change has a focused presentation assertion;
-no new route, persistence model, or visual-only product contract was introduced.
+### Task 6 — commercial entitlement, purchase and restore
 
-The current G07 Goal cadence and existing Settings surfaces were inspected against
-their canonical owners and presentation tests; no additional safe geometry-only
-delta was identified in this checkpoint. Account, recovery, Premium, report, and
-provider-backed states remain explainable tasks but are not to be fabricated
-without their canonical input contracts.
+- **Goal:** connect the fixed Premium offers to one account-bound entitlement
+  through store → RevenueCat → backend → bounded device cache.
+- **Scope:** Polish store catalog/products, purchase/restore/manage
+  subscription UI, RevenueCat webhook/reconciliation, backend authorization and
+  Premium package access.
+- **Non-goals:** custom web checkout, tiers, track slots, client-side purchase
+  authority or a non-production offer that looks purchasable.
+- **Inputs:** Tasks 1 and 3, App Store/Play/RevenueCat records, product IDs and
+  consumer documentation from owner gates.
+- **Acceptance criteria:** 49/119/199 PLN offer semantics map exactly once;
+  guest purchase is impossible; purchase/restore/cancel/refund/expiry/grace are
+  explicit; backend is authorization authority; deletion does not promise a
+  refund or cancellation; no Premium package downloads without entitlement.
+- **Verification:** sandbox purchases and restore on both platforms, webhook
+  replay/idempotency tests, cross-device entitlement test, offline-grace test
+  and pricing/store metadata review.
+- **Required evidence:** sanitized catalog mapping, receipt/webhook traces and
+  platform screenshots.
+- **Risks:** price/tax/promotion behavior in stores can differ by territory;
+  do not infer it from the static website.
+- **Report target:** `docs/reports/launch-106-premium-commerce.md`.
 
-### 3. Content Review Console V1
+### Task 7 — repair visual evidence and close concrete iOS UX gaps
 
-Build the smallest local/internal console in `patternly-content`. It must navigate
-track → node → mental unit, search/filter real items, render prompt/answer/scoring/
-Reason/Details/distractor explanations, show taxonomy/provenance/source identity,
-surface advisory risk and coverage, navigate to risks, and record
-`approved|needs_change|rejected` with note, exact identity, and fingerprint.
-Changed content invalidates prior review. Support diff, keyboard use, and bounded
-batch operations. Source files remain the only content authority.
+- **Goal:** make iPhone 17 visual verification reproducible and address only
+  evidenced UI defects.
+- **Scope:** Maestro visual-shell journey, screenshot manifest and focused
+  selection-screen density/first-viewport correction if confirmed by review.
+- **Non-goals:** a second broad UX audit, new product metrics, visual invention
+  outside final design authority or a navigation rewrite.
+- **Inputs:** current iPhone 17 screenshot, fixed reset wait, current
+  SelectTrack behavior and final design authority.
+- **Acceptance criteria:** capture flow does not expect an action hidden by its
+  own selected/active state; it produces the declared dark and light checkpoints
+  on iPhone 17; any density fix preserves selection semantics, 200% type and
+  accessibility labels.
+- **Verification:** repeatable Maestro runs without concurrent driver conflict,
+  screenshot manifest, visual comparison and focused UI tests.
+- **Required evidence:** before/after screenshot pair and failed-command root
+  cause if a checkpoint remains unavailable.
+- **Risks:** changing the UI merely to satisfy an automation selector is
+  prohibited.
+- **Report target:** `docs/reports/launch-107-ios-visual-evidence.md`.
 
-The first local/internal implementation is `scripts/review/content-review-console.mjs`.
-It has no cloud, auth, or automatic approval path; no review outcome is created
-until a reviewer supplies an identity, note, and explicit disposition.
+### Task 8 — public web, legal and operational readiness
 
-### 4. Eight-track content audit
+- **Goal:** turn the local web surface into truthful public legal/support/auth/
+  deletion origins only after factual seller and provider data exists.
+- **Scope:** `patternly-web`, public environment configuration, legal/privacy/
+  Terms/support/deletion pages, Firebase web login/admin shell, domain/DNS/
+  sender and backend deployment/runbooks.
+- **Non-goals:** publishing now, inventing a business address, legal advice
+  without factual data, exposing the administrator email in public UI or client
+  privilege checks.
+- **Inputs:** remaining owner questionnaire, Tasks 1–5, production origins,
+  legal review and deployment credentials.
+- **Acceptance criteria:** every public URL resolves over the professional
+  domain; documents describe the actual binary and processors; consumer terms
+  present required seller/contact/price/contract/digital-content information;
+  public deletion flow is reachable; admin rejects non-admin server-side;
+  deployment/backup/incident runbooks use Firestore and its configured PITR.
+- **Verification:** browser/accessibility checks, link crawl, Firebase auth
+  redirect test, server authorization test, legal-owner review, deployment
+  readiness and recovery drill.
+- **Required evidence:** published URL list, sanitized configuration checklist,
+  legal approval record and runbook drill results.
+- **Risks:** no personal address, terms or privacy policy may be fabricated.
+- **Report target:** `docs/reports/launch-108-public-operations.md`.
 
-Audit current banks with targeted classification:
-`no_action`, `advisory`, `needs_human_review`, `confirmed_change_required`, or
-`blocking_content_defect`. A missing classification is not a reason to add items.
-Review new/materially changed items through the human outcome path. If a real
-defect is confirmed, make the smallest source correction, create a new immutable
-release/package identity, and preserve provenance. Do not mass-edit banks or add
-count-driven content.
+### Task 9 — signed artifacts, store packet and final release gate
 
-The current readiness pass is complete: all eight structural validators pass and
-the tracked human-review fields remain existing evidence, not newly fabricated
-approval. The eight immutable packages are pinned to release
-`patternly-launch-2026-08-25-01`, sourced from artifact commit
-`6a6fd729b9d45086aa5d4f6cf27ec48ef664811c`, with package provenance synchronized
-into the app. All eight tracks now have recorded runtime and publishing
-admission; the remaining launch gates are external release evidence rather than
-content defects.
+- **Goal:** produce and assess real iOS/Android store candidates.
+- **Scope:** signing, EAS/Android release artifacts, store metadata/screenshots,
+  signed-artifact smoke and explicit owner GO/NO-GO.
+- **Non-goals:** new product capabilities or substituting simulator evidence for
+  signed candidates.
+- **Inputs:** all preceding tasks and external store/provider/legal gates.
+- **Acceptance criteria:** no debug-signing path; artifacts install and identify
+  correctly; store privacy/support/legal URLs work; core guest/account/Premium/
+  deletion/report journeys are truthful; metadata and screenshots match the
+  candidate; every launch stage scores at least 0.80.
+- **Verification:** signing inspection, TestFlight/Play internal testing,
+  release smoke, final readiness command and clean-tree checks.
+- **Required evidence:** build IDs/checksums, store validation records,
+  screenshot set and owner GO/NO-GO.
+- **Risks:** development-client and local backend evidence cannot replace store
+  artifact evidence.
+- **Report target:** `docs/reports/launch-109-final-release-gate.md`.
 
-The application release-readiness gate also passes its internal content-lock and
-source-integrity checks. The latest owner-owned EAS/NDK/signing changes remain
-committed on canonical `main`; the current handoff also synchronizes the new
-immutable content lock and generated package projection. The gate remains
-`not_ready` because actual EAS-managed signing/build evidence and the five
-remaining external release evidence classes are absent. Owner-approved Figma
-authority is not one of those classes and never requires a connector/session
-evidence file. Immutable package verification and eight-track runtime/publishing
-admission are now recorded internally.
+## First next task
 
-### 5. Account, identity, sync, adoption, deletion
+Execute **Task 1 — replace PostgreSQL backend logic with Firestore and repair
+report privacy**.
+It is first because current partially implemented report code conflicts with the
+active privacy contract and the backend still contradicts the now-confirmed
+Firestore architecture. Account, deletion, retention and operations work would
+be unsafe to build before the replacement is complete.
 
-Close the guest-first adoption preview, deterministic reconciliation, identity
-provider/recovery, local durability, bounded sync, conflict, sign-out, deletion,
-retention, and no-resurrection paths. Every unavailable provider or configuration
-state is visible and fail-closed. The current build has the explicit unavailable
-state and local durability boundary, but the provider-composed adoption/sync/
-deletion path is not present. Continue only when its real provider/backend
-contract is available; no production provider evidence is fabricated.
+## Owner questionnaire — information still needed
 
-### 6. Commercial entitlement
+Answer only the unknown fields; no new product audit is required.
 
-The pure provider-neutral entitlement contract is implemented in
-`src/domain/entitlements/premiumEntitlement.ts`: it owns one account-bound
-Premium projection, the three contract-level offer kinds, five documented
-states, and an explicit active/grace access predicate. It deliberately owns no
-store product IDs, prices, provider adapters, persistence, or UI. The remaining
-store → RevenueCat → backend projection → bounded device cache chain requires
-the real provider/backend input contract. Verify Free, purchase, restore,
-cross-platform, offline grace, downgrade, deletion/billing independence, and
-package authorization only at that provider boundary; do not fabricate it with
-local authority.
+1. **Public seller address:** What publishable address can appear alongside
+   Łukasz Kurczab and `lukasz.kurczab@gmail.com`? Confirm the legal/tax review
+   before first paid sale without a registered business.
+2. **Domain clearance:** May the owner register `learnpatternly.com` after an
+   availability and trademark check, or should a different brand/domain be
+   selected because of the existing unrelated Patternly products?
+3. **Firebase/admin:** Confirm whether backend production configuration may set
+   `ADMINISTRATOR_EMAIL=lukasz.kurczab@gmail.com`; provide Firebase project and
+   the responsible account only through the secure deployment channel, never in
+   chat or Git.
+4. **Store accounts:** Are Apple Developer, App Store Connect, Google Play,
+   RevenueCat and EAS already available? For each available service, identify
+   only the owner/operator and current state; never send secrets or tokens.
 
-### 7. Provider, privacy, security, operations
+## Verification performed for this reconciliation
 
-Close only with real evidence for Firebase/backend/App Check/IAM/deploy/billing/
-retention, domains/DNS/email/public URLs, provider credentials, legal/privacy,
-secrets, logging, recovery, and operational runbooks. Draft instructions and
-local checks are not production evidence.
+- Read active contract, owner register, current launch plan, security narrative,
+  frontend/backend audit and historical evidence index.
+- Inspected current backend schemas/routes/stores/tests and current mobile
+  client/environment/report registry.
+- Ran backend `npm run typecheck`, `npm test`, `npm run openapi:generate` and
+  `npm run frontend:client:check`: passed (11 backend tests).
+- Ran app `npm run typecheck`: passed.
+- Ran the current iPhone 17 Maestro visual shell. Reset marker works with a
+  60-second limit; capture then fails at the stale Continue expectation
+  described above. No user-facing implementation change was made to hide it.
 
-### 8. QA, signing, stores, GO/NO-GO
+## Remaining risks and unverified areas
 
-Run contract, architecture, type, unit, integration, UI, accessibility, and
-release-compatible flows; verify clean working trees, immutable manifests,
-provenance, signed artifacts, store metadata, privacy/legal surfaces, and the
-whole-product journey. Request explicit owner GO/NO-GO only after all internal
-evidence is complete. Physical-device testing is optional and non-blocking.
-
-The current owner-owned EAS/signing slice is committed on canonical `main`, with
-EAS project/update initialization, and locally verified with
-`tests/easReleaseConfiguration.test.ts` and `tests/releaseSigningBoundary.test.ts`
-(8/8 focused invariants passing). The full app suite is 593/593 and typecheck passes.
-This proves configuration and no-debug-fallback invariants only; it
-does not prove an EAS-managed signed artifact. The COM-INT-01 worker used the
-required `gpt-5.6-luna` model at `max` reasoning; its focused slice passed 16/16,
-and the attempted post-fix delegated QA runs returned no report, so the
-controller records local QA as `PASS WITH GAPS`, not independent QA approval.
-The signing boundary now requires both the EAS credentials file and generated
-`app/eas-build.gradle`; the Android NDK pin is covered by
-`tests/androidNdkVersion.test.ts`. The new content release passes package and
-inventory verification 14/14 and the full content suite passes 146/146 with the
-local Console bind test run under the required loopback-enabled environment.
-Both canonical worktrees must be clean before the next admission-evidence
-command.
-
-## Genuine stop gates
-
-Continue through routine cleanup, implementation, deletion, tests, architecture,
-local/internal tooling, evidence manifests, and draft provider instructions.
-Stop only for:
-
-- owner review of flagged/new content;
-- exact pricing, SKU, recurring period, product name, or promotion choice;
-- Apple, Google, RevenueCat, EAS, signing, store, domain, legal, privacy,
-  provider credentials, Firebase/backend/IAM/billing/deploy, or production config;
-- organic beta-user recruitment/feedback;
-- final owner review and explicit GO/NO-GO.
-
-No stage may fabricate provider, store, human-review, legal, or production
-evidence. Owner-approved Figma authority is a product decision recorded in the
-canonical decision/contract surfaces, not evidence bound to an ephemeral
-connector ID.
+- No real Firebase, Firestore, App Check, Apple/Google auth,
+  RevenueCat, store catalog, signed artifact, public domain, legal review or
+  consumer documents are evidenced.
+- No final visual audit exists beyond the captured track-selection checkpoint;
+  Task 7 must produce the rest rather than re-auditing unrelated routes.
+- The local website and backend changes are uncommitted at this handoff. The
+  next agent must preserve them, inspect the diff and report them accurately.

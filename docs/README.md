@@ -73,7 +73,11 @@ Hierarchia autorytetu jest jednoznaczna:
 
 `docs/directives/` zawiera zweryfikowaną pięcioplikową paczkę wejściową Product Ownera i historyczny zakres trzech zakończonych faz kontrolnych. Decyzje właścicielskie zostały przeniesione do canonical contract, rejestru PO i narrative owners; dyrektywy wejściowe nie są drugim normatywnym kontraktem ani execution planem.
 
-`launch-surface-inventory.md`, `competitive-product-gap-audit.md` oraz `launch-readiness-audit.md` są oznaczonymi, historycznymi wejściami dowodowymi. Nie są bieżącym źródłem produktu, statusu, gate'ów ani kolejności wykonania.
+`launch-surface-inventory.md`, `competitive-product-gap-audit.md`,
+`launch-readiness-audit.md` oraz
+`architecture/frontend-backend-boundary-audit.md` są oznaczonymi, historycznymi
+wejściami dowodowymi. Nie są bieżącym źródłem produktu, statusu, gate'ów ani
+kolejności wykonania.
 
 Figma jest przejściowym visual authority wyłącznie podczas aktywnej fazy
 designu i tylko Product Owner może zatwierdzić realną pracę wizualną. Po

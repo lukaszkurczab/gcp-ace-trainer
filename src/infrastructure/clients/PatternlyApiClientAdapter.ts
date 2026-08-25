@@ -1,6 +1,6 @@
 /**
- * Generated from patternly-backend/openapi/patternly-v1.json.
- * Regenerate with the backend client-generation script; do not edit DTOs by hand.
+ * Synchronized with patternly-backend/openapi/patternly-v1.json.
+ * Backend CI verifies that every versioned API path is represented here.
  */
 
 export type ProgressMutationDto = Readonly<{
@@ -33,6 +33,11 @@ export type ProgressResponseDto = Readonly<{ records: readonly ProgressRecordDto
 export type SyncResponseDto = Readonly<{ applied: readonly ProgressRecordDto[]; duplicates: readonly string[]; conflicts: readonly Readonly<{ mutationId: string; code: "version_conflict"; current: ProgressRecordDto | null }>[] }>;
 export type TracksResponseDto = Readonly<{ tracks: readonly Readonly<{ trackId: string; source: string; status: string; updatedAt: string }>[] }>;
 export type ContentVersionsResponseDto = Readonly<{ versions: readonly Readonly<{ trackId: string; version: string; checksumSha256: string; packageUri: string; publishedAt: string }>[] }>;
+export type ContentReportReasonDto = "incorrect_answer" | "unclear_explanation" | "outdated_content" | "technical_issue" | "other";
+export type CreateContentReportDto = Readonly<{ clientSubmissionId: string; trackId: string; contentVersion: string; itemId: string; reason: ContentReportReasonDto; description: string }>;
+export type ContentReportDto = Readonly<{ id: string; clientSubmissionId: string; trackId: string; contentVersion: string; itemId: string; reason: ContentReportReasonDto; description: string; status: "open" | "in_review" | "resolved" | "closed"; createdAt: string; updatedAt: string }>;
+export type CreateContentReportResponseDto = Readonly<{ report: ContentReportDto; duplicate: boolean }>;
+export type AdminContentReportsResponseDto = Readonly<{ reports: readonly ContentReportDto[] }>;
 export type HealthResponseDto = Readonly<{ status: "ok"; service: "patternly-backend" }>;
 export type ReadyResponseDto = Readonly<{ status: "ready" | "not_ready"; checks: Readonly<{ database: boolean; authentication: boolean }> }>;
 export type OpenApiResponseDto = Readonly<{ openapi: string; paths: Readonly<Record<string, unknown>> }>;
@@ -58,6 +63,8 @@ export type PatternlyApiClient = Readonly<{
   syncProgress: (input: SyncRequestDto) => Promise<SyncResponseDto>;
   getTracks: () => Promise<TracksResponseDto>;
   getContentVersions: () => Promise<ContentVersionsResponseDto>;
+  createContentReport: (input: CreateContentReportDto) => Promise<CreateContentReportResponseDto>;
+  getAdminContentReports: () => Promise<AdminContentReportsResponseDto>;
 }>;
 
 export function createPatternlyApiClient(input: Readonly<{
@@ -124,6 +131,8 @@ export function createPatternlyApiClient(input: Readonly<{
     syncProgress: (body: SyncRequestDto) => requestJson<SyncResponseDto>("/v1/progress/sync", "POST", body),
     getTracks: () => requestJson<TracksResponseDto>("/v1/tracks", "GET"),
     getContentVersions: () => requestJson<ContentVersionsResponseDto>("/v1/content/versions", "GET"),
+    createContentReport: (body) => requestJson<CreateContentReportResponseDto>("/v1/content/reports", "POST", body),
+    getAdminContentReports: () => requestJson<AdminContentReportsResponseDto>("/v1/admin/content-reports", "GET"),
   });
 }
 

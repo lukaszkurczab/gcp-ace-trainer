@@ -1,54 +1,53 @@
 # Patternly — bieżący rejestr decyzji właściciela produktu
 
-## Zakres i zasada cleanupu
+Ten dokument zawiera wyłącznie dane lub zgody, których nie można bezpiecznie
+wywnioskować z repozytorium. Zachowanie produktu definiuje
+`canonical-product-contract.yaml`; kolejność pracy i status definiuje
+`launch-completion-plan.md`.
 
-Ten dokument nie jest archiwum decyzji, dziennikiem rozmów ani katalogiem
-odrzuconych opcji. Zawiera wyłącznie decyzje właściciela, które nadal wymagają
-wyboru, autoryzacji albo zewnętrznego gate'u.
+## Decyzje już przekazane
 
-- Gdy decyzja zostaje podjęta, pytanie, alternatywy i wątpliwość znikają z tego
-  rejestru.
-- Gdy decyzja zostaje zastąpiona, poprzedni wpis znika; nie utrzymujemy
-  `superseded` kopii ani historycznych tabel w aktywnym rejestrze.
-- Gdy decyzja została zaimplementowana i jest już realną architekturą,
-  zachowuje ją kod, kontrakt, manifest albo evidence — nie ten rejestr.
-- Unikalne provenance/release/legal/security evidence pozostaje w swoim
-  właściwym repozytorium evidence, ale nie jest przez to decyzją właściciela.
-- Każdy cleanup musi usunąć z rejestru wpisy resolved, implemented, historical,
-  superseded, duplicate oraz wszystkie macierze opcji, które nie prowadzą już do
-  bieżącego wyboru.
+- Publiczna strona powstaje w lokalnym repozytorium `patternly-web`; nie jest
+  teraz publikowana ani wypychana do zdalnego GitHub.
+- Jedynym administratorem ma być konto `lukasz.kurczab@gmail.com`. Backend musi
+  sprawdzać to po stronie serwera po zweryfikowaniu tożsamości — sama strona nie
+  może nadawać uprawnienia.
+- Modele tożsamości pozostają zgodne z kontraktem: email/hasło, Apple, Google i
+  kody odzyskiwania.
+- Sprzedawcą podanym przez właściciela jest Łukasz Kurczab. To nie jest jeszcze
+  komplet danych wymaganych do sprzedaży konsumenckiej.
+- Kontaktem wsparcia i prywatności ma być `lukasz.kurczab@gmail.com`. Właściciel
+  zatwierdza finalne dokumenty konsumenckie i prywatności.
+- Pierwszym rynkiem jest Polska. Zwykła retencja zgłoszeń treści i dowodów
+  usunięcia wynosi 30 dni, chyba że bezwzględnie obowiązujące prawo wymaga
+  dłuższego okresu.
+- Ochroną zgłoszeń niepowiązanych z kontem jest Firebase App Check wraz z
+  backendowym rate limitingiem.
+- Właściciel wybrał Cloud Firestore jako jedyny produkcyjny magazyn danych kont,
+  synchronizacji i raportów. Firebase Authentication i App Check pozostają
+  granicami tożsamości/ochrony. Obecny backend PostgreSQL ma zostać przepisany
+  na Firestore, a nie przykryty adapterem lub utrzymywany równolegle.
+- Roboczą architekturą publicznych originów jest `learnpatternly.com`: strona,
+  polityka, regulamin, pomoc i usuwanie pod główną domeną, API pod
+  `api.learnpatternly.com`, a redirecty uwierzytelniania pod
+  `auth.learnpatternly.com`. Domena nie została kupiona ani sprawdzona w rejestrze
+  znaków towarowych; nie wolno jej publikować przed tymi kontrolami.
+- Jako polska baza cenowa do wdrożenia przyjęto: Premium 30 dni — 49 zł brutto,
+  Premium 90 dni — 119 zł brutto oraz Premium roczny odnawialny — 199 zł brutto
+  rocznie. Free pozostaje bezpłatny. Konkretne identyfikatory produktów i
+  waluty poza Polską są konfiguracją sklepów, nie nową decyzją produktową.
 
-`docs/canonical-product-contract.yaml` jest autorytetem dla ustalonego zachowania
-produktu. `docs/launch-completion-plan.md` jest autorytetem kolejności prac i
-statusu. Ten rejestr wskazuje wyłącznie pozostałe decyzje/gate'y właściciela.
+## Otwarte dane właściciela i zewnętrzne gate’y
 
-## Aktualne decyzje wymagające właściciela lub zewnętrznego gate'u
-
-| Gate | Status | Pozostały wybór lub autoryzacja | Blokuje |
+| Gate | Status | Niezbędny wkład | Blokuje |
 | --- | --- | --- | --- |
-| Flagged/new content review | `owner-decision-required` | Outcome dla nowych lub materialnie zmienionych elementów: approved, needs change albo rejected. | Tylko odpowiadający item/release. |
-| Commerce offer | `owner-decision-required` | Dokładne SKU, ceny, recurring period, product names i promocje. | Store/provider setup. |
-| Store/provider release setup | `external-gate` | Apple, Google, RevenueCat, EAS, signing, store products i produkcyjna konfiguracja. | Commerce/release evidence. |
-| Backend/provider operations | `external-gate` | Firebase, backend, App Check, IAM, deploy, billing, retention i recovery configuration. | Production operations. |
-| Public origins | `external-gate` | Domain, DNS, email sender i public URLs. | Public/auth/legal release surfaces. |
-| Legal/privacy | `owner-decision-required` | Final legal/privacy review and required disclosures. | Public release. |
-| Organic beta feedback | `owner-decision-required` | Organic tester recruitment and feedback, without paid research. | Adoption confidence only. |
-| Final release decision | `owner-decision-required` | Explicit owner GO/NO-GO after internal and external evidence is complete. | Launch. |
+| Dane sprzedawcy | `owner-decision-required` | Publiczny adres do publikacji oraz potwierdzenie prawnej formy sprzedaży. Właściciel zamierza działać bez rejestrowanej działalności do chwili prawnego obowiązku; przed sprzedażą wymaga to weryfikacji prawnej i podatkowej. | Regulamin, politykę prywatności, checkout i publiczną publikację. |
+| Treść prawna i podatkowa | `owner-decision-required` | Właściciel zatwierdza finalny regulamin, prywatność, reklamacje i zasady treści cyfrowych po uzupełnieniu adresu oraz weryfikacji prawnej. | Sprzedaż konsumencką w PL/UE i deklaracje sklepowe. |
+| Domeny i nadawca | `external-gate` | Rejestracja i kontrola znaku dla `learnpatternly.com`, DNS, originy auth/support/privacy/deletion i domena nadawcy. | Linki produkcyjne, Apple/Google auth i publiczne dokumenty. |
+| Firebase i operacje backendu | `external-gate` | Projekt Firebase, Firestore, App Check, konto usługowe/IAM, wdrożenie, monitoring, retencja, PITR i odzyskiwanie. | Logowanie, synchronizację, admin, raporty i usuwanie kont. |
+| Sklepy i billing | `unknown / needs evidence` | Należy ustalić, czy istnieją już konta Apple Developer, App Store Connect, Google Play, RevenueCat i EAS. Są to portale/konta potrzebne do podpisu, publikacji oraz testu zakupu/restore; nie wolno przekazywać sekretów ani tokenów w dokumentacji. | Premium i kandydaty do publikacji. |
+| Finalna decyzja wydania | `owner-decision-required` | Jednoznaczne GO/NO-GO po wszystkich dowodach wewnętrznych i zewnętrznych. | Publiczny launch. |
 
-## Bieżąca decyzja właściciela w implementacji
-
-| Decision | Status | Obowiązująca reguła | Zakres implementacji |
-| --- | --- | --- | --- |
-| Final Figma visual authority | `owner-decided-implementation-in-progress` | `Page 1` oraz `Patternly Library` są finalną referencją wizualną. Cel implementacji to 99% zgodności. Brakujący ekran lub stan nie jest blockerem; należy go wyjaśnić, a jeśli da się go zbudować z istniejących wzorców, zbudować bez tworzenia równoległej architektury. | Canonical app UI, states, tests i evidence parity. |
-
-Ta decyzja nie otwiera ponownie ustalonego product contractu. Nie wolno dodawać
-nowych tras, modeli danych, metryk, komend konta ani komend komercyjnych tylko
-dlatego, że pojawiają się w wizualnym materiale. Po zakończeniu implementacji
-jej realnym właścicielem będą kod, testy i checked-in visual evidence; wpis
-zostanie wtedy usunięty zgodnie z zasadą current-only cleanup.
-
-Brak wpisu dla ustalonego scope'u, baseline'u contentu, profile-specific session
-lengths, Content Review Console boundary, product positioning, Premium modelu,
-braku AI mock interview, solo operating modelu albo cleanup rule nie oznacza
-braku decyzji. Te rzeczy są już zakodowane w kontrakcie, architekturze i planie;
-nie wolno ponownie otwierać ich jako pytań właściciela.
+Nie otwieramy ponownie ustalonego scope'u ośmiu ścieżek, guest-first Free,
+braku AI mock interview ani modeli Premium. Brak wpisu nie jest brakiem decyzji:
+pozostałe ustalenia należą do kontraktu i kodu.
