@@ -54,7 +54,7 @@ app SHA because each plan update creates a new documentation commit.
 | 1. Evidence and artifact cleanup | complete | The current-only decision-register rule, affected content count-gate narrative cleanup, and removal of the unreferenced resolved RC-003 decision packet are complete. Retained directives/reports are explicitly non-authoritative or unique provenance/release/legal/security evidence. |
 | 2. Figma/UI reconciliation | in_progress | Owner has declared `Page 1` and `Patternly Library` final visual authority in channel `hgz70ud2`; implementation targets 99% fidelity. Progress, Activity, Goal cadence, and Settings parity corrections are implemented and tested; missing screens/states remain explainable work, not blockers. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, and records bounded explicit outcomes. The console bind test is locally restricted by sandbox loopback permissions; no approval is fabricated. |
-| 4. Eight-track content audit | complete | Immutable release `patternly-launch-2026-08-25-01` contains all eight current Free-node packages with exact provenance; app bundle lock `patternly-app-content-0021` and generated package projection are synchronized. Package/inventory verification is 14/14; the full content suite is 145/146 with one environment-only `listen EPERM` Console test. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
+| 4. Eight-track content audit | complete | Immutable release `patternly-launch-2026-08-25-01` contains all eight current Free-node packages with exact provenance; app bundle lock `patternly-app-content-0021` and generated package projection are synchronized. Package/inventory verification is 14/14; all eight tracks have recorded immutable-artifact, runtime, and publishing admission. The full content suite is 145/146 with one environment-only `listen EPERM` Console test. No bank expansion or count gate was introduced. |
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
 | 6. Commercial entitlement | planned | No provider-neutral entitlement runtime is currently composed. The fixed/recurring chain remains an implementation task after the provider/backend input contract exists; no store/provider evidence is claimed. |
 | 7. Provider, privacy, security, operations | planned | Production configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery evidence remains absent and requires the corresponding external gates. |
@@ -89,12 +89,14 @@ account semantics using current-package local attempts only. Progress evidence
 rows remain informational because no Track Evidence route exists; the local
 show-more control is the supported expansion. Focused tests, full app
 verification, and typecheck are `npm test` 584/584 and `npm run typecheck` pass;
-no device screenshot or EAS artifact is claimed. `npm run launch:readiness`
-remains `not_ready` with a clean application repository after the handoff
-commit. Content verification for the new immutable release is package/inventory
-14/14; the full suite is 145/146 because the local Console bind test is denied
-host loopback permission in this environment. No source banks or external
-evidence were changed in this checkpoint.
+no device screenshot or EAS artifact is claimed. The subsequent internal
+admission evidence records all eight runtime and publishing admissions against
+the exact application commit. `npm run launch:readiness` remains `not_ready`
+only for the external release evidence listed below. Content verification for
+the new immutable release is package/inventory 14/14; the full suite is 145/146
+because the local Console bind test is denied host loopback permission in this
+environment. No source banks or external evidence were changed in this
+checkpoint.
 
 ### 1. Evidence and artifact cleanup — mandatory
 
@@ -197,17 +199,17 @@ the tracked human-review fields remain existing evidence, not newly fabricated
 approval. The eight immutable packages are pinned to release
 `patternly-launch-2026-08-25-01`, sourced from artifact commit
 `6a6fd729b9d45086aa5d4f6cf27ec48ef664811c`, with package provenance synchronized
-into the app. The remaining per-track blockers are runtime admission and
-publishing admission, which are genuine release gates rather than content
-defects.
+into the app. All eight tracks now have recorded runtime and publishing
+admission; the remaining launch gates are external release evidence rather than
+content defects.
 
 The application release-readiness gate also passes its internal content-lock and
 source-integrity checks. The latest owner-owned EAS/NDK/signing changes remain
 committed on canonical `main`; the current handoff also synchronizes the new
-immutable content lock and generated package projection. The gate remains `not_ready`
-because actual EAS-managed signing/build evidence, eight-track runtime/publishing
-admission, immutable full-package verification, and required external release
-evidence are absent.
+immutable content lock and generated package projection. The gate remains
+`not_ready` because actual EAS-managed signing/build evidence and the required
+external release evidence are absent. Immutable package verification and
+eight-track runtime/publishing admission are now recorded internally.
 
 ### 5. Account, identity, sync, adoption, deletion
 
