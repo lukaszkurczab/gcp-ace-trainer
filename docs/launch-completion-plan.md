@@ -52,7 +52,7 @@ app SHA because each plan update creates a new documentation commit.
 | --- | --- | --- |
 | 0. Strategic reconciliation | complete | Contract, tests, current-only decision register and affected docs are reconciled and pushed to canonical heads. |
 | 1. Evidence and artifact cleanup | complete | The current-only decision-register rule, affected content count-gate narrative cleanup, and removal of the unreferenced resolved RC-003 decision packet are complete. Retained directives/reports are explicitly non-authoritative or unique provenance/release/legal/security evidence. |
-| 2. Figma/UI reconciliation | in_progress | Owner has declared `Page 1` and `Patternly Library` final visual authority in channel `hgz70ud2`; implementation targets 99% fidelity. Progress, Activity, Goal cadence, and Settings parity corrections are implemented and tested; missing screens/states remain explainable work, not blockers. |
+| 2. Figma/UI reconciliation | in_progress | Owner has declared `Page 1` and `Patternly Library` final visual authority; the connector channel is ephemeral and is not a release-gate input. Implementation targets 99% fidelity. Progress, Activity, Goal cadence, and Settings parity corrections are implemented and tested; missing screens/states remain explainable work, not blockers. |
 | 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, and records bounded explicit outcomes. Full content verification is 146/146 with the local bind test run under the required loopback-enabled environment; no approval is fabricated. |
 | 4. Eight-track content audit | complete | Immutable release `patternly-launch-2026-08-25-01` contains all eight current Free-node packages with exact provenance; app bundle lock `patternly-app-content-0021` and generated package projection are synchronized. Package/inventory verification is 14/14; all eight tracks have recorded immutable-artifact, runtime, and publishing admission. The full content suite is 146/146. No bank expansion or count gate was introduced. |
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
@@ -76,8 +76,8 @@ verified; provider/store/backend integration remains unsafe without the real
 input contract and is therefore an external gate. Cleanup remains a mandatory
 gate before each later release slice.
 
-The current controller checkpoint joined Figma channel `hgz70ud2` and verified
-the existing `QA / G01-G13 acceptance / canonical instances`,
+The current controller checkpoint verified the owner-confirmed Figma reference
+and the existing `QA / G01-G13 acceptance / canonical instances`,
 `QA / G07 canonical screen owners`, and bottom-navigation QA sections. The owner
 has now explicitly approved `Page 1` and `Patternly Library` as final visual
 authority and set a 99% fidelity target. Missing screens/states remain
@@ -210,9 +210,11 @@ The application release-readiness gate also passes its internal content-lock and
 source-integrity checks. The latest owner-owned EAS/NDK/signing changes remain
 committed on canonical `main`; the current handoff also synchronizes the new
 immutable content lock and generated package projection. The gate remains
-`not_ready` because actual EAS-managed signing/build evidence and the required
-external release evidence are absent. Immutable package verification and
-eight-track runtime/publishing admission are now recorded internally.
+`not_ready` because actual EAS-managed signing/build evidence and the five
+remaining external release evidence classes are absent. Owner-approved Figma
+authority is not one of those classes and never requires a connector/session
+evidence file. Immutable package verification and eight-track runtime/publishing
+admission are now recorded internally.
 
 ### 5. Account, identity, sync, adoption, deletion
 
@@ -282,5 +284,7 @@ Stop only for:
 - organic beta-user recruitment/feedback;
 - final owner review and explicit GO/NO-GO.
 
-No stage may claim provider, store, Figma, human-review, legal, or production
-evidence that has not actually occurred.
+No stage may fabricate provider, store, human-review, legal, or production
+evidence. Owner-approved Figma authority is a product decision recorded in the
+canonical decision/contract surfaces, not evidence bound to an ephemeral
+connector ID.

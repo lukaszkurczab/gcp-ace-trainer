@@ -83,7 +83,6 @@ function evidenceRecord(id, applicationCommit, evidenceSha256 = undefined) {
 }
 
 const requiredExternalEvidenceIds = [
-  "design-authority",
   "security-and-privacy",
   "provider-and-operations",
   "signing-and-builds",
@@ -112,6 +111,8 @@ test("launch readiness report is deterministic and exposes the unresolved releas
   assert.equal(externalBlockers.length, requiredExternalEvidenceIds.length);
   assert.deepEqual(externalBlockers.map((blocker) => blocker.evidenceId).sort(), [...requiredExternalEvidenceIds].sort());
   assert.equal(report.contentReleaseLock.status, "valid");
+  assert.equal(report.externalEvidence.some((evidence) => evidence.id === "design-authority"), false);
+  assert.equal(report.blockers.some((blocker) => blocker.evidenceId === "design-authority"), false);
   assert.equal(report.externalEvidence.find((evidence) => evidence.id === "signing-and-builds")?.status, "not_evidenced");
   assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing" && blocker.evidenceId === "signing-and-builds"));
   assert.equal(report.blockers.some((blocker) => [
@@ -207,24 +208,24 @@ test("launch readiness admits external evidence only when its envelope is bound 
   const evidenceRoot = mkdtempSync(join(tmpdir(), "patternly-release-evidence-"));
   try {
     const applicationCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
-    const path = join(evidenceRoot, "design-authority.json");
+    const path = join(evidenceRoot, "signing-and-builds.json");
     mkdirSync(evidenceRoot, { recursive: true });
     writeFileSync(path, JSON.stringify({
       schemaVersion: "patternly-release-evidence-v1",
-      id: "design-authority",
+      id: "signing-and-builds",
       status: "verified",
       evidenceSha256: "a".repeat(64),
     }));
     let report = JSON.parse(runWithEvidenceRoot(evidenceRoot).output);
-    assert.equal(report.externalEvidence.find((evidence) => evidence.id === "design-authority")?.status, "invalid");
+    assert.equal(report.externalEvidence.find((evidence) => evidence.id === "signing-and-builds")?.status, "invalid");
 
-    writeFileSync(path, JSON.stringify(evidenceRecord("design-authority", applicationCommit)));
+    writeFileSync(path, JSON.stringify(evidenceRecord("signing-and-builds", applicationCommit)));
     report = JSON.parse(runWithEvidenceRoot(evidenceRoot).output);
-    assert.equal(report.externalEvidence.find((evidence) => evidence.id === "design-authority")?.status, "verified");
+    assert.equal(report.externalEvidence.find((evidence) => evidence.id === "signing-and-builds")?.status, "verified");
 
-    writeFileSync(path, JSON.stringify(evidenceRecord("design-authority", applicationCommit, "b".repeat(64))));
+    writeFileSync(path, JSON.stringify(evidenceRecord("signing-and-builds", applicationCommit, "b".repeat(64))));
     report = JSON.parse(runWithEvidenceRoot(evidenceRoot).output);
-    assert.equal(report.externalEvidence.find((evidence) => evidence.id === "design-authority")?.status, "invalid");
+    assert.equal(report.externalEvidence.find((evidence) => evidence.id === "signing-and-builds")?.status, "invalid");
   } finally {
     rmSync(evidenceRoot, { recursive: true, force: true });
   }

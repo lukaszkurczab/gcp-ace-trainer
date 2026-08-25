@@ -11,8 +11,10 @@ const evidenceRoot = resolve(process.env.PATTERNLY_RELEASE_EVIDENCE_ROOT ?? "evi
 const releaseLockPath = resolve(process.env.PATTERNLY_RELEASE_LOCK_PATH ?? "integration/contracts/content-release/release.lock.json");
 const releaseGate = process.argv.includes("--enforce");
 
+// Design authority is an owner decision represented by the canonical contract
+// and decision register. Figma connector/session identifiers are ephemeral and
+// must never become release evidence or a launch blocker.
 const externalEvidence = [
-  "design-authority",
   "security-and-privacy",
   "provider-and-operations",
   "signing-and-builds",
