@@ -1,68 +1,68 @@
 {
   "schemaVersion": 2,
   "repository": "lukaszkurczab/patternly-content",
-  "bundleId": "patternly-app-content-0020",
+  "bundleId": "patternly-app-content-0021",
   "artifacts": [
     {
-      "releaseId": "patternly-launch-2026-08-21-02",
-      "producerCommit": "b02907ca181fed93d50075478c13a2c6c9c2bdf0",
-      "sourceRepositoryCommit": "868a565f638286d45b5e5cef1acd1a7bf97fc38d",
+      "releaseId": "patternly-launch-2026-08-25-01",
+      "producerCommit": "dc02b8021d14f573d9a033f8f5f3117b45087438",
+      "sourceRepositoryCommit": "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c",
       "trackId": "coding-interview-dsa-problem-solving",
       "contentVersion": "coding-interview-dsa-problem-solving-0004",
       "checksumSha256": "2e894561a314cc724c1c28180fc132125bb6e43968fdf935dc292bc8a3da5402"
     },
     {
-      "releaseId": "patternly-launch-2026-08-21-02",
-      "producerCommit": "b02907ca181fed93d50075478c13a2c6c9c2bdf0",
-      "sourceRepositoryCommit": "868a565f638286d45b5e5cef1acd1a7bf97fc38d",
+      "releaseId": "patternly-launch-2026-08-25-01",
+      "producerCommit": "dc02b8021d14f573d9a033f8f5f3117b45087438",
+      "sourceRepositoryCommit": "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c",
       "trackId": "backend-system-design-interview",
       "contentVersion": "backend-system-design-interview-candidate-v2026.08.15",
       "checksumSha256": "a4270cb2cdfa26981c57f6041997449bd16ed9b403198deb30d4d9daf595a63a"
     },
     {
-      "releaseId": "patternly-launch-2026-08-21-02",
-      "producerCommit": "b02907ca181fed93d50075478c13a2c6c9c2bdf0",
-      "sourceRepositoryCommit": "868a565f638286d45b5e5cef1acd1a7bf97fc38d",
+      "releaseId": "patternly-launch-2026-08-25-01",
+      "producerCommit": "dc02b8021d14f573d9a033f8f5f3117b45087438",
+      "sourceRepositoryCommit": "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c",
       "trackId": "object-oriented-design-interview",
       "contentVersion": "object-oriented-design-interview-candidate-v2026.08.15",
       "checksumSha256": "1e6f4bbe2d78420ae2874969dc9d6ff5142c2cfbe43302fd2959c1f203b09e3d"
     },
     {
-      "releaseId": "patternly-launch-2026-08-21-02",
-      "producerCommit": "b02907ca181fed93d50075478c13a2c6c9c2bdf0",
-      "sourceRepositoryCommit": "868a565f638286d45b5e5cef1acd1a7bf97fc38d",
+      "releaseId": "patternly-launch-2026-08-25-01",
+      "producerCommit": "dc02b8021d14f573d9a033f8f5f3117b45087438",
+      "sourceRepositoryCommit": "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c",
       "trackId": "frontend-system-design-interview",
       "contentVersion": "frontend-system-design-interview-candidate-v2026.08.15",
       "checksumSha256": "38b8301dda80e83bfbb98a9e59257a82d99ff9b410d884b6c4e647eefe6ba7a3"
     },
     {
-      "releaseId": "patternly-launch-2026-08-21-02",
-      "producerCommit": "b02907ca181fed93d50075478c13a2c6c9c2bdf0",
-      "sourceRepositoryCommit": "868a565f638286d45b5e5cef1acd1a7bf97fc38d",
+      "releaseId": "patternly-launch-2026-08-25-01",
+      "producerCommit": "dc02b8021d14f573d9a033f8f5f3117b45087438",
+      "sourceRepositoryCommit": "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c",
       "trackId": "google-cloud-associate-cloud-engineer",
       "contentVersion": "google-cloud-associate-cloud-engineer-authoring-v2026.08.11",
       "checksumSha256": "732f915e43542ca1318bf32aafd1f2cfab77012eb3c8d236a362a92a993740e4"
     },
     {
-      "releaseId": "patternly-launch-2026-08-21-02",
-      "producerCommit": "b02907ca181fed93d50075478c13a2c6c9c2bdf0",
-      "sourceRepositoryCommit": "868a565f638286d45b5e5cef1acd1a7bf97fc38d",
+      "releaseId": "patternly-launch-2026-08-25-01",
+      "producerCommit": "dc02b8021d14f573d9a033f8f5f3117b45087438",
+      "sourceRepositoryCommit": "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c",
       "trackId": "aws-certified-solutions-architect-associate",
       "contentVersion": "aws-certified-solutions-architect-associate-authoring-v2026.08.15",
       "checksumSha256": "6dbf49191e1082349bf1a12ecf042690957a2c9ba1564ea06394adc1a8a90095"
     },
     {
-      "releaseId": "patternly-launch-2026-08-21-02",
-      "producerCommit": "b02907ca181fed93d50075478c13a2c6c9c2bdf0",
-      "sourceRepositoryCommit": "868a565f638286d45b5e5cef1acd1a7bf97fc38d",
+      "releaseId": "patternly-launch-2026-08-25-01",
+      "producerCommit": "dc02b8021d14f573d9a033f8f5f3117b45087438",
+      "sourceRepositoryCommit": "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c",
       "trackId": "microsoft-azure-administrator-associate-az-104",
       "contentVersion": "microsoft-azure-administrator-associate-az-104-authoring-v2026.08.15",
       "checksumSha256": "968386e75c9abd4b54401e9876dadba6c0dbd01003aea8cfcad3a8d7027569ec"
     },
     {
-      "releaseId": "patternly-launch-2026-08-21-02",
-      "producerCommit": "b02907ca181fed93d50075478c13a2c6c9c2bdf0",
-      "sourceRepositoryCommit": "868a565f638286d45b5e5cef1acd1a7bf97fc38d",
+      "releaseId": "patternly-launch-2026-08-25-01",
+      "producerCommit": "dc02b8021d14f573d9a033f8f5f3117b45087438",
+      "sourceRepositoryCommit": "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c",
       "trackId": "microsoft-azure-ai-fundamentals-ai-901",
       "contentVersion": "microsoft-azure-ai-fundamentals-ai-901-authoring-v2026.08.15",
       "checksumSha256": "474f1a403baf502abe10980ff4d7563493664ef1bad7859e2d0fb0ff65fb92c4"

@@ -285,7 +285,6 @@ function AlgorithmsEvidenceSection({
               <Text maxFontSizeMultiplier={2} style={styles.trackEvidenceTitle}>{t(node.title)}</Text>
               <Text maxFontSizeMultiplier={2} style={styles.trackEvidenceDetail}>{t(node.detail)}</Text>
             </View>
-            <Text maxFontSizeMultiplier={2} style={styles.trackEvidenceChevron}>›</Text>
           </View>
         ))}
       </View>
@@ -443,7 +442,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   trackEvidenceCopy: { flex: 1, gap: 4, minWidth: 0 },
   trackEvidenceTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
   trackEvidenceDetail: { color: palette.textSecondary, fontSize: 12, lineHeight: 18 },
-  trackEvidenceChevron: { color: palette.primary, fontSize: 28, lineHeight: 34 },
   trendCopy: { color: palette.primary, fontSize: 13, lineHeight: 18 },
   trendChart: { backgroundColor: palette.surface, borderRadius: 12, minHeight: 130, overflow: "hidden", paddingHorizontal: 16, paddingTop: 8 },
   trendReferenceLineTop: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, left: 40, position: "absolute", right: 16, top: 42 },

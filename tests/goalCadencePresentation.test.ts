@@ -32,3 +32,10 @@ test("Progress owns the goal entry point for the active track", () => {
   assert.match(progress, /testID=\{runtimeSelectors\.progress\.goal\(\)\}/);
   assert.match(progress, /goal \? "Manage goal" : "Set a goal"/);
 });
+
+test("active goal summary only exposes Save while editing", () => {
+  assert.match(screen, /footer=\{editing \? \([\s\S]*?\) : null\}/);
+  assert.match(screen, /\{t\(goal \? "Save changes" : "Save goal"\)\}/);
+  assert.match(screen, /onEdit=\{\(\) => \{ setDraft/);
+  assert.match(screen, /onTogglePause=\{\(\) => \{ void togglePause\(\); \}\}/);
+});

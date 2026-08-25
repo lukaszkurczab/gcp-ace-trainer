@@ -79,14 +79,14 @@ export type ProductionTrackArtifactEvidence = Readonly<{
 
 /** Actual pinned whole-track artifacts. They are not free-node package proof. */
 export const CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE: readonly ProductionTrackArtifactEvidence[] = Object.freeze([
-  Object.freeze({ trackId: "backend-system-design-interview", bundledReleaseId: "patternly-launch-2026-08-21-02" }),
-  Object.freeze({ trackId: "coding-interview-dsa-problem-solving", bundledReleaseId: "patternly-launch-2026-08-21-02" }),
-  Object.freeze({ trackId: "frontend-system-design-interview", bundledReleaseId: "patternly-launch-2026-08-21-02" }),
-  Object.freeze({ trackId: "google-cloud-associate-cloud-engineer", bundledReleaseId: "patternly-launch-2026-08-21-02" }),
-  Object.freeze({ trackId: "microsoft-azure-administrator-associate-az-104", bundledReleaseId: "patternly-launch-2026-08-21-02" }),
-  Object.freeze({ trackId: "microsoft-azure-ai-fundamentals-ai-901", bundledReleaseId: "patternly-launch-2026-08-21-02" }),
-  Object.freeze({ trackId: "aws-certified-solutions-architect-associate", bundledReleaseId: "patternly-launch-2026-08-21-02" }),
-  Object.freeze({ trackId: "object-oriented-design-interview", bundledReleaseId: "patternly-launch-2026-08-21-02" }),
+  Object.freeze({ trackId: "backend-system-design-interview", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
+  Object.freeze({ trackId: "coding-interview-dsa-problem-solving", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
+  Object.freeze({ trackId: "frontend-system-design-interview", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
+  Object.freeze({ trackId: "google-cloud-associate-cloud-engineer", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
+  Object.freeze({ trackId: "microsoft-azure-administrator-associate-az-104", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
+  Object.freeze({ trackId: "microsoft-azure-ai-fundamentals-ai-901", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
+  Object.freeze({ trackId: "aws-certified-solutions-architect-associate", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
+  Object.freeze({ trackId: "object-oriented-design-interview", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
 ]);
 
 export type ProductionTrackAdmissionEvaluation = Readonly<{
@@ -166,6 +166,6 @@ async function validFreeNodePackageEvidence(registration: TrackRegistration, des
       "microsoft-azure-ai-fundamentals-ai-901": "d410642d188c36fe8a2531e9ed11f5878003dc0b22706bd24cf609e4ea744951",
       "object-oriented-design-interview": "19ab6bfa3f6b5423a1517eff36f273b55676fb25ec78bc465965d21feea6f9a5",
     };
-    return manifest.bundleKind === "bundled_free_node" && manifest.packageVersion === packageFact.packageVersion && manifest.payloadSchemaVersion === "bundled-free-node-payload-v2" && typeof manifest.profileId === "string" && manifest.profileVersion === "1" && provenance?.releaseId === "patternly-launch-2026-08-21-02" && provenance.sourceRepositoryCommit === "868a565f638286d45b5e5cef1acd1a7bf97fc38d" && provenance.profileSourceRepositoryCommit === "99b52d4137edb52b24adc014edf905a5844ae97d" && provenance.trackBriefCanonicalSha256 === expectedTrackBriefCanonicalSha256[registration.id];
+    return manifest.bundleKind === "bundled_free_node" && manifest.packageVersion === packageFact.packageVersion && manifest.payloadSchemaVersion === "bundled-free-node-payload-v2" && typeof manifest.profileId === "string" && manifest.profileVersion === "1" && provenance?.releaseId === "patternly-launch-2026-08-25-01" && provenance.sourceRepositoryCommit === "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c" && provenance.profileSourceRepositoryCommit === "496b9ce9507b5432f4fd70129ff0617ff81ef880" && provenance.trackBriefCanonicalSha256 === expectedTrackBriefCanonicalSha256[registration.id];
   } catch { return false; }
 }

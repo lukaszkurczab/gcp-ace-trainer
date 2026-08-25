@@ -8,7 +8,7 @@ import type { DesignQuestion } from "../src/tracks/design-interview";
 import { getTracks } from "../src/domain";
 
 const NOW = "2026-08-21T10:00:00.000Z";
-const RELEASE_ID = "patternly-launch-2026-08-21-02";
+const RELEASE_ID = "patternly-launch-2026-08-25-01";
 
 test("runtime admission proves exact package resolution and one valid lifecycle step for all eight tracks", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();

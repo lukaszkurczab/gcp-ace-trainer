@@ -52,13 +52,13 @@ app SHA because each plan update creates a new documentation commit.
 | --- | --- | --- |
 | 0. Strategic reconciliation | complete | Contract, tests, current-only decision register and affected docs are reconciled and pushed to canonical heads. |
 | 1. Evidence and artifact cleanup | complete | The current-only decision-register rule, affected content count-gate narrative cleanup, and removal of the unreferenced resolved RC-003 decision packet are complete. Retained directives/reports are explicitly non-authoritative or unique provenance/release/legal/security evidence. |
-| 2. Figma/UI reconciliation | in_progress | Owner has declared `Page 1` and `Patternly Library` final visual authority in channel `hgz70ud2`; implementation targets 99% fidelity. The first Progress evidence-state slice is implemented and tested; missing screens/states remain explainable work, not blockers. |
-| 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, records bounded explicit outcomes, and is pushed on content `master` at `73e7867`; content suite is 146/146. |
-| 4. Eight-track content audit | complete | Readiness report `32e2003df80b8b62bce17c76c29465a452910ca8027ec707faaa6a8bdcf93a5a` verifies all eight structural validators pass; the current content head is `0463a2b` after a test-only stale-evidence assertion repair. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
+| 2. Figma/UI reconciliation | in_progress | Owner has declared `Page 1` and `Patternly Library` final visual authority in channel `hgz70ud2`; implementation targets 99% fidelity. Progress, Activity, Goal cadence, and Settings parity corrections are implemented and tested; missing screens/states remain explainable work, not blockers. |
+| 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, and records bounded explicit outcomes. The console bind test is locally restricted by sandbox loopback permissions; no approval is fabricated. |
+| 4. Eight-track content audit | complete | Immutable release `patternly-launch-2026-08-25-01` contains all eight current Free-node packages with exact provenance; app bundle lock `patternly-app-content-0021` and generated package projection are synchronized. Package/inventory verification is 14/14; the full content suite is 145/146 with one environment-only `listen EPERM` Console test. No bank expansion or count gate was introduced. Runtime and publishing admission remain not granted. |
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
 | 6. Commercial entitlement | planned | No provider-neutral entitlement runtime is currently composed. The fixed/recurring chain remains an implementation task after the provider/backend input contract exists; no store/provider evidence is claimed. |
 | 7. Provider, privacy, security, operations | planned | Production configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery evidence remains absent and requires the corresponding external gates. |
-| 8. QA, signing, stores, GO/NO-GO | partial | Owner commits `03a032c`, `15b00af`, and `ea4ad79` are on canonical `main`; the Android NDK/signing-boundary slice is now pushed and the app worktree is clean. Actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable gates. |
+| 8. QA, signing, stores, GO/NO-GO | partial | The Android NDK/signing-boundary slice remains locally verified. App tests are 584/584 and typecheck passes. Actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable gates. |
 
 ## Execution stages
 
@@ -81,16 +81,20 @@ the existing `QA / G01-G13 acceptance / canonical instances`,
 has now explicitly approved `Page 1` and `Patternly Library` as final visual
 authority and set a 99% fidelity target. Missing screens/states remain
 explainable implementation work, not launch blockers; only buildable,
-contract-compatible states are added. The first application-code parity slice
-now covers the Algorithms Progress `no_evidence`, `building`, and `established`
-evidence states, the effectiveness trend, track evidence, and recent activity
-hierarchy using current-package local attempts only. Focused tests, full app
-verification, and typecheck are `npm test` 581/581 and `npm run typecheck` pass;
+contract-compatible states are added. The current application parity slice
+covers the Algorithms Progress `no_evidence`, `building`, and `established`
+evidence states, the effectiveness trend, track evidence, recent activity
+hierarchy, Goal cadence edit-only save behavior, and Settings copy without
+account semantics using current-package local attempts only. Progress evidence
+rows remain informational because no Track Evidence route exists; the local
+show-more control is the supported expansion. Focused tests, full app
+verification, and typecheck are `npm test` 584/584 and `npm run typecheck` pass;
 no device screenshot or EAS artifact is claimed. `npm run launch:readiness`
-remains `not_ready` with a clean application repository. Content verification
-is `npm test` 146/146
-(the local Console test required host loopback permission). No source banks,
-runtime contracts, or external evidence were changed in this checkpoint.
+remains `not_ready` with a clean application repository after the handoff
+commit. Content verification for the new immutable release is package/inventory
+14/14; the full suite is 145/146 because the local Console bind test is denied
+host loopback permission in this environment. No source banks or external
+evidence were changed in this checkpoint.
 
 ### 1. Evidence and artifact cleanup — mandatory
 
@@ -124,8 +128,10 @@ decision surfaces. The five input directives remain because they are the unique
 owner/provenance package and `docs/README.md` marks them historical and
 non-authoritative; no duplicate report or evidence artifact met the deletion
 criteria. A stale content contract assertion that treated superseded immutable
-evidence as current was corrected in `patternly-content@0463a2b`; source banks,
-readiness artifacts, and release admissions were not regenerated or expanded.
+evidence as current was corrected while the new immutable package release was
+synchronized; source banks were not regenerated or expanded. The current-only
+PO register retains only unresolved gates and the active Figma implementation
+authority; it does not accumulate history or implemented architecture.
 
 ### 2. Figma/UI reconciliation
 
@@ -150,6 +156,11 @@ account command, or commercial contract. Sparse states explicitly withhold
 effectiveness and trend values until recorded response thresholds are met;
 established values are derived from the exact current content package. Activity
 rows no longer clip long scope/status copy and remain accessible at 200% text.
+
+The current parity slice also removes the non-functional Track Evidence
+chevron, hides Goal cadence `Save changes` until edit mode, and removes account
+semantics from Settings copy. Each change has a focused presentation assertion;
+no new route, persistence model, or visual-only product contract was introduced.
 
 The current G07 Goal cadence and existing Settings surfaces were inspected against
 their canonical owners and presentation tests; no additional safe geometry-only
@@ -183,12 +194,17 @@ count-driven content.
 
 The current readiness pass is complete: all eight structural validators pass and
 the tracked human-review fields remain existing evidence, not newly fabricated
-approval. The remaining per-track blockers are runtime admission and publishing
-admission, which are genuine external/release gates rather than content defects.
+approval. The eight immutable packages are pinned to release
+`patternly-launch-2026-08-25-01`, sourced from artifact commit
+`6a6fd729b9d45086aa5d4f6cf27ec48ef664811c`, with package provenance synchronized
+into the app. The remaining per-track blockers are runtime admission and
+publishing admission, which are genuine release gates rather than content
+defects.
 
 The application release-readiness gate also passes its internal content-lock and
-source-integrity checks. The latest owner-owned EAS/NDK/signing changes are
-committed on canonical `main` at `ea4ad79` and the worktree is clean. The gate remains `not_ready`
+source-integrity checks. The latest owner-owned EAS/NDK/signing changes remain
+committed on canonical `main`; the current handoff also synchronizes the new
+immutable content lock and generated package projection. The gate remains `not_ready`
 because actual EAS-managed signing/build evidence, eight-track runtime/publishing
 admission, immutable full-package verification, and required external release
 evidence are absent.
@@ -229,19 +245,21 @@ provenance, signed artifacts, store metadata, privacy/legal surfaces, and the
 whole-product journey. Request explicit owner GO/NO-GO only after all internal
 evidence is complete. Physical-device testing is optional and non-blocking.
 
-The current owner-owned EAS/signing slice is committed on canonical `main` at
-`ea4ad79`, with EAS project/update initialization in `15b00af`, and locally verified with
+The current owner-owned EAS/signing slice is committed on canonical `main`, with
+EAS project/update initialization, and locally verified with
 `tests/easReleaseConfiguration.test.ts` and `tests/releaseSigningBoundary.test.ts`
-(8/8 focused invariants passing). The full app suite is 581/581 and typecheck passes.
+(8/8 focused invariants passing). The full app suite is 584/584 and typecheck passes.
 This proves configuration and no-debug-fallback invariants only; it
 does not prove an EAS-managed signed artifact. The delegated QA attempt used the
 required `gpt-5.6-luna` model at `max` reasoning but returned no report, so the
 controller records local QA as `PASS WITH GAPS`, not independent QA approval.
 The signing boundary now requires both the EAS credentials file and generated
 `app/eas-build.gradle`; the Android NDK pin is covered by
-`tests/androidNdkVersion.test.ts`. Content `0463a2b` passes its full suite
-(146/146) with the local Console bind test run under the required
-localhost-enabled environment. Both canonical worktrees are clean.
+`tests/androidNdkVersion.test.ts`. The new content release passes package and
+inventory verification 14/14; the content suite is 145/146 in the sandbox
+because its local Console bind test cannot listen on loopback. That test remains
+unverified here rather than being represented as an approval. Both canonical
+worktrees must be clean before the next admission-evidence command.
 
 ## Genuine stop gates
 

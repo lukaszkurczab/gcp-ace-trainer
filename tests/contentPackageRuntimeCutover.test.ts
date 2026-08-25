@@ -101,7 +101,7 @@ test("all eight launch tracks resolve an exact Free package and prepare through 
     const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(registration.id, registration.familyId);
     assert.equal(resolved.package.trackId, registration.id);
     assert.equal(resolved.package.familyId, registration.familyId);
-    assert.equal(resolved.package.packagePin.contentReleaseId, "patternly-launch-2026-08-21-02");
+    assert.equal(resolved.package.packagePin.contentReleaseId, "patternly-launch-2026-08-25-01");
     const mode = resolved.profile.primaryEntry.modeId;
     const requestedLength = resolved.profile.getMode(mode).defaultRequestedLength;
     const request = registration.familyId === "coding_interview"
@@ -111,7 +111,7 @@ test("all eight launch tracks resolve an exact Free package and prepare through 
         : { sessionId: `admission:${registration.id}`, requestedLength };
     const prepared = await resolved.runtime.prepare({ trackId: registration.id, modeId: mode, request, attempts: [], reviews: [], now: "2026-08-21T10:00:00.000Z" });
     assert.equal(prepared.session.trackId, registration.id);
-    assert.equal(prepared.session.packagePin.contentReleaseId, "patternly-launch-2026-08-21-02");
+    assert.equal(prepared.session.packagePin.contentReleaseId, "patternly-launch-2026-08-25-01");
     assert.ok(prepared.session.actualLength > 0);
   }
 });

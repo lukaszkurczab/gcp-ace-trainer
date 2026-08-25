@@ -183,7 +183,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       ambient
       ambientVariant="goal"
       edges={["top", "bottom"]}
-      footer={(
+      footer={editing ? (
         <Button
           disabled={saving}
           loading={saving}
@@ -191,9 +191,9 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           style={styles.footerButton}
           testID={runtimeSelectors.goal.save()}
         >
-          {t(editing ? goal ? "Save changes" : "Save goal" : "Save changes")}
+          {t(goal ? "Save changes" : "Save goal")}
         </Button>
-      )}
+      ) : null}
       footerVariant="sticky"
       style={styles.screenContent}
     >

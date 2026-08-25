@@ -49,6 +49,12 @@ test("grouped settings rows follow the Figma 200% text geometry", () => {
   assert.match(settingsGroup, /dividedRows:[\s\S]*?gap:\s*0/);
 });
 
+test("Settings description reflects app and practice preferences without account semantics", () => {
+  assert.match(settingsTab, /settingsDescription: "Manage your app, practice, and privacy preferences\."/);
+  assert.match(settingsTab, /settingsDescription: "Zarządzaj preferencjami aplikacji, ćwiczeń i prywatności\."/);
+  assert.doesNotMatch(settingsTab, /settingsDescription: "[^"]*(?:account|kontem)[^"]*"/);
+});
+
 test("Settings app identity follows the Figma footer geometry", () => {
   assert.match(settingsTab, /footer: \{[\s\S]*?gap: spacing\.xxs,[\s\S]*?paddingHorizontal: spacing\.lg \}/);
   assert.match(settingsTab, /footerTitle: \{ color: palette\.textPrimary, fontSize: 13, fontWeight: "600", lineHeight: 16 \}/);
