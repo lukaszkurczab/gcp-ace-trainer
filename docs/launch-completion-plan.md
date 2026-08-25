@@ -53,12 +53,12 @@ app SHA because each plan update creates a new documentation commit.
 | 0. Strategic reconciliation | complete | Contract, tests, current-only decision register and affected docs are reconciled and pushed to canonical heads. |
 | 1. Evidence and artifact cleanup | complete | The current-only decision-register rule, affected content count-gate narrative cleanup, and removal of the unreferenced resolved RC-003 decision packet are complete. Retained directives/reports are explicitly non-authoritative or unique provenance/release/legal/security evidence. |
 | 2. Figma/UI reconciliation | in_progress | Owner has declared `Page 1` and `Patternly Library` final visual authority in channel `hgz70ud2`; implementation targets 99% fidelity. Progress, Activity, Goal cadence, and Settings parity corrections are implemented and tested; missing screens/states remain explainable work, not blockers. |
-| 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, and records bounded explicit outcomes. The console bind test is locally restricted by sandbox loopback permissions; no approval is fabricated. |
-| 4. Eight-track content audit | complete | Immutable release `patternly-launch-2026-08-25-01` contains all eight current Free-node packages with exact provenance; app bundle lock `patternly-app-content-0021` and generated package projection are synchronized. Package/inventory verification is 14/14; all eight tracks have recorded immutable-artifact, runtime, and publishing admission. The full content suite is 145/146 with one environment-only `listen EPERM` Console test. No bank expansion or count gate was introduced. |
+| 3. Content Review Console V1 | complete | Local CLI/localhost console renders real source items, navigates track/node/mental-unit coverage, exposes advisory risks and fingerprints, and records bounded explicit outcomes. Full content verification is 146/146 with the local bind test run under the required loopback-enabled environment; no approval is fabricated. |
+| 4. Eight-track content audit | complete | Immutable release `patternly-launch-2026-08-25-01` contains all eight current Free-node packages with exact provenance; app bundle lock `patternly-app-content-0021` and generated package projection are synchronized. Package/inventory verification is 14/14; all eight tracks have recorded immutable-artifact, runtime, and publishing admission. The full content suite is 146/146. No bank expansion or count gate was introduced. |
 | 5. Account, identity, sync, adoption, deletion | partial | Guest/local-first behavior and explicit unavailable account states exist; adoption, sync, deletion, recovery and cross-device provider evidence remain unimplemented or unevidenced. |
-| 6. Commercial entitlement | planned | No provider-neutral entitlement runtime is currently composed. The fixed/recurring chain remains an implementation task after the provider/backend input contract exists; no store/provider evidence is claimed. |
+| 6. Commercial entitlement | partial | The provider-neutral Premium domain model now represents one entitlement, the fixed 30-day/fixed 90-day/recurring offer kinds, and active/grace/expired/revoked/refunded states with fail-closed access checks. Store, RevenueCat, backend projection, exact prices/SKUs, and production evidence remain external/provider work. |
 | 7. Provider, privacy, security, operations | planned | Production configuration, privacy/legal, retention, domain, sender, IAM, billing and recovery evidence remains absent and requires the corresponding external gates. |
-| 8. QA, signing, stores, GO/NO-GO | partial | The Android NDK/signing-boundary slice remains locally verified. App tests are 584/584 and typecheck passes. Actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable gates. |
+| 8. QA, signing, stores, GO/NO-GO | partial | The Android NDK/signing-boundary slice remains locally verified. App tests are 593/593 and typecheck passes. Actual EAS-managed signing/build, store evidence, and owner GO/NO-GO remain unavailable gates. |
 
 ## Execution stages
 
@@ -71,9 +71,10 @@ tests, documentation references, and both clean/pushed heads.
 
 Controller QA of the owner-owned EAS/signing hardening is complete locally with
 gaps: focused invariants pass, but no delegated QA report or EAS artifact exists.
-No further account/entitlement implementation is safe at the current boundary
-without inventing the missing provider/backend input contract. Cleanup remains a
-mandatory gate before each later release slice.
+The provider-neutral Premium domain slice is now implemented and locally
+verified; provider/store/backend integration remains unsafe without the real
+input contract and is therefore an external gate. Cleanup remains a mandatory
+gate before each later release slice.
 
 The current controller checkpoint joined Figma channel `hgz70ud2` and verified
 the existing `QA / G01-G13 acceptance / canonical instances`,
@@ -85,17 +86,19 @@ contract-compatible states are added. The current application parity slice
 covers the Algorithms Progress `no_evidence`, `building`, and `established`
 evidence states, the effectiveness trend, track evidence, recent activity
 hierarchy, Goal cadence edit-only save behavior, and Settings copy without
-account semantics using current-package local attempts only. Progress evidence
+account semantics using current-package local attempts only. The provider-neutral
+Premium entitlement domain slice now exists without provider/store coupling; its
+focused tests cover the canonical offer kinds and projection states. Progress evidence
 rows remain informational because no Track Evidence route exists; the local
 show-more control is the supported expansion. Focused tests, full app
-verification, and typecheck are `npm test` 584/584 and `npm run typecheck` pass;
+verification, and typecheck are `npm test` 593/593 and `npm run typecheck` pass;
 no device screenshot or EAS artifact is claimed. The subsequent internal
 admission evidence records all eight runtime and publishing admissions against
 the exact application commit. `npm run launch:readiness` remains `not_ready`
 only for the external release evidence listed below. Content verification for
-the new immutable release is package/inventory 14/14; the full suite is 145/146
-because the local Console bind test is denied host loopback permission in this
-environment. No source banks or external evidence were changed in this
+the new immutable release is package/inventory 14/14 and the full content suite
+is 146/146 with the local Console bind test run under the required loopback-
+enabled environment. No source banks or external evidence were changed in this
 checkpoint.
 
 ### 1. Evidence and artifact cleanup — mandatory
@@ -223,14 +226,16 @@ contract is available; no production provider evidence is fabricated.
 
 ### 6. Commercial entitlement
 
-Implement and verify one account-bound entitlement independent of storefront SKU
-shape once the provider/backend input contract is available. Support fixed-duration
-and recurring access through the same store → RevenueCat → backend projection →
-bounded device cache chain. Keep exact SKU names, prices, promotions, product
-availability, and provider configuration at the owner/provider gate. Verify Free,
-purchase, restore, cross-platform, offline grace, downgrade, deletion/billing
-independence, and package authorization. Do not create speculative adapters or
-placeholder entitlement code before that boundary exists.
+The pure provider-neutral entitlement contract is implemented in
+`src/domain/entitlements/premiumEntitlement.ts`: it owns one account-bound
+Premium projection, the three contract-level offer kinds, five documented
+states, and an explicit active/grace access predicate. It deliberately owns no
+store product IDs, prices, provider adapters, persistence, or UI. The remaining
+store → RevenueCat → backend projection → bounded device cache chain requires
+the real provider/backend input contract. Verify Free, purchase, restore,
+cross-platform, offline grace, downgrade, deletion/billing independence, and
+package authorization only at that provider boundary; do not fabricate it with
+local authority.
 
 ### 7. Provider, privacy, security, operations
 
@@ -250,18 +255,19 @@ evidence is complete. Physical-device testing is optional and non-blocking.
 The current owner-owned EAS/signing slice is committed on canonical `main`, with
 EAS project/update initialization, and locally verified with
 `tests/easReleaseConfiguration.test.ts` and `tests/releaseSigningBoundary.test.ts`
-(8/8 focused invariants passing). The full app suite is 584/584 and typecheck passes.
+(8/8 focused invariants passing). The full app suite is 593/593 and typecheck passes.
 This proves configuration and no-debug-fallback invariants only; it
-does not prove an EAS-managed signed artifact. The delegated QA attempt used the
-required `gpt-5.6-luna` model at `max` reasoning but returned no report, so the
+does not prove an EAS-managed signed artifact. The COM-INT-01 worker used the
+required `gpt-5.6-luna` model at `max` reasoning; its focused slice passed 16/16,
+and the attempted post-fix delegated QA runs returned no report, so the
 controller records local QA as `PASS WITH GAPS`, not independent QA approval.
 The signing boundary now requires both the EAS credentials file and generated
 `app/eas-build.gradle`; the Android NDK pin is covered by
 `tests/androidNdkVersion.test.ts`. The new content release passes package and
-inventory verification 14/14; the content suite is 145/146 in the sandbox
-because its local Console bind test cannot listen on loopback. That test remains
-unverified here rather than being represented as an approval. Both canonical
-worktrees must be clean before the next admission-evidence command.
+inventory verification 14/14 and the full content suite passes 146/146 with the
+local Console bind test run under the required loopback-enabled environment.
+Both canonical worktrees must be clean before the next admission-evidence
+command.
 
 ## Genuine stop gates
 
@@ -273,7 +279,6 @@ Stop only for:
 - exact pricing, SKU, recurring period, product name, or promotion choice;
 - Apple, Google, RevenueCat, EAS, signing, store, domain, legal, privacy,
   provider credentials, Firebase/backend/IAM/billing/deploy, or production config;
-- runtime admission or publishing admission for any launch track;
 - organic beta-user recruitment/feedback;
 - final owner review and explicit GO/NO-GO.
 

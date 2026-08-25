@@ -103,20 +103,31 @@ test("launch readiness report is deterministic and exposes the unresolved releas
   assert.ok(["clean", "dirty"].includes(report.applicationRepository.status));
   assert.match(report.applicationRepository.headCommit, /^[a-f0-9]{40}$/u);
   assert.match(report.contentReadiness.headCommit, /^[a-f0-9]{40}$/u);
-  assert.equal(report.blockers.some((blocker) => blocker.kind === "application_worktree_dirty"), report.applicationRepository.status === "dirty");
+  assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing"].includes(blocker.kind)), true);
+  assert.deepEqual(
+    report.blockers.filter((blocker) => blocker.kind === "application_worktree_dirty").map((blocker) => blocker.kind),
+    report.applicationRepository.status === "dirty" ? ["application_worktree_dirty"] : [],
+  );
+  const externalBlockers = report.blockers.filter((blocker) => blocker.kind === "external_release_evidence_missing");
+  assert.equal(externalBlockers.length, requiredExternalEvidenceIds.length);
+  assert.deepEqual(externalBlockers.map((blocker) => blocker.evidenceId).sort(), [...requiredExternalEvidenceIds].sort());
   assert.equal(report.contentReleaseLock.status, "valid");
   assert.equal(report.externalEvidence.find((evidence) => evidence.id === "signing-and-builds")?.status, "not_evidenced");
   assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing" && blocker.evidenceId === "signing-and-builds"));
-  assert.ok(report.blockers.some((blocker) => blocker.kind === "unreadable_content_readiness_report")
-    || report.blockers.some((blocker) => blocker.trackId === "microsoft-azure-administrator-associate-az-104"
-      && [
-        "canonical_source_not_ready",
-        "free_node_package_missing",
-        "immutable_full_package_missing",
-        "publishing_admission_missing",
-        "runtime_admission_missing",
-        "technical_validation_not_admitted",
-      ].includes(blocker.kind)));
+  assert.equal(report.blockers.some((blocker) => [
+    "unreadable_content_readiness_report",
+    "invalid_content_readiness_report",
+    "content_readiness_worktree_dirty",
+    "content_readiness_source_commit_unavailable",
+    "content_readiness_scope_mismatch",
+    "missing_track_readiness",
+    "canonical_source_not_ready",
+    "free_node_package_missing",
+    "immutable_full_package_missing",
+    "publishing_admission_missing",
+    "runtime_admission_missing",
+    "technical_validation_not_admitted",
+  ].includes(blocker.kind)), false);
   assert.equal(report.blockers.some((blocker) => blocker.kind === "human_editorial_approval_missing"), false);
   assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing"));
 });
