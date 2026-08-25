@@ -42,7 +42,39 @@ const copy = {
     check: "Check verification",
     signOut: "Sign out",
     accountReady: "Account identity verified",
-    accountReadyDescription: "Your identity is verified by Firebase and the Patternly backend. Local learning has not been changed or uploaded.",
+    accountReadyDescription: "Your identity is verified. Local learning is shown below before any account binding or upload.",
+    adoptionPreview: "Review account adoption",
+    adoptionPreviewDescription: "Nothing is bound or uploaded until you confirm this exact preview.",
+    preserve: "Keep",
+    upload: "Upload",
+    restore: "Restore",
+    deduplicated: "Already identical",
+    decisions: "Needs your decision",
+    keepGuest: "Keep this device",
+    keepAccount: "Keep account",
+    confirmAdoption: "Confirm adoption",
+    retrySync: "Retry sync",
+    syncing: "Syncing account data",
+    syncComplete: "Account data is synchronized",
+    syncCompleteDescription: "The allowlisted account facts are synchronized. Active sessions and recovery journals remain device-only.",
+    pending: "Pending account changes",
+    pendingDescription: "Your verified local changes are retained and will not be discarded. Retry when connected.",
+    conflict: "Account data conflict",
+    conflictDescription: "The remote revision changed or records disagree. Choose a side in the preview before retrying.",
+    dataFailure: "Account data is unavailable",
+    dataFailureDescription: "No success was recorded. Local verified data remains on this device.",
+    activeSessionBlocked: "Finish or abandon the active session before adoption.",
+    journalBlocked: "Recover the interrupted learning operation before adoption.",
+    pendingSyncRequiresNetwork: "Sync pending changes before signing out.",
+    journalRecoveryFailure: "Recover the interrupted learning operation before signing out.",
+    localDeletionFailure: "Local account data could not be cleared. You remain signed in.",
+    remoteFailure: "The account service did not confirm this operation.",
+    account_revision_conflict: "The account changed on another device. Review the new preview.",
+    version_conflict: "A record changed on another device. Review the new preview.",
+    adoption_conflict: "Some records need an explicit choice.",
+    active_session_sync_deferred: "Sync waits until the active session is finished.",
+    journal_recovery_required: "Recover the interrupted learning operation before syncing.",
+    account_data_unavailable: "Account data is unavailable right now.",
     backendUnavailable: "Backend unavailable",
     backendUnavailableDescription: "Firebase accepted the identity, but Patternly could not verify the account right now. Try again when the backend is available.",
     revokedSession: "Session revoked",
@@ -85,7 +117,39 @@ const copy = {
     check: "Sprawdź weryfikację",
     signOut: "Wyloguj",
     accountReady: "Tożsamość konta zweryfikowana",
-    accountReadyDescription: "Tożsamość potwierdziły Firebase i backend Patternly. Lokalna nauka nie została zmieniona ani wysłana.",
+    accountReadyDescription: "Tożsamość jest potwierdzona. Poniżej zobaczysz dane lokalne przed każdym powiązaniem lub wysłaniem.",
+    adoptionPreview: "Sprawdź powiązanie danych",
+    adoptionPreviewDescription: "Nic nie zostanie powiązane ani wysłane bez potwierdzenia tego podglądu.",
+    preserve: "Zachowaj",
+    upload: "Wyślij",
+    restore: "Odtwórz",
+    deduplicated: "Już identyczne",
+    decisions: "Wymaga decyzji",
+    keepGuest: "Zachowaj to urządzenie",
+    keepAccount: "Zachowaj konto",
+    confirmAdoption: "Potwierdź powiązanie",
+    retrySync: "Spróbuj synchronizacji ponownie",
+    syncing: "Synchronizowanie danych konta",
+    syncComplete: "Dane konta są zsynchronizowane",
+    syncCompleteDescription: "Allowlista faktów konta jest zsynchronizowana. Aktywne sesje i dzienniki odzyskiwania pozostają tylko na urządzeniu.",
+    pending: "Oczekujące zmiany konta",
+    pendingDescription: "Potwierdzone lokalne zmiany pozostają na urządzeniu i nie zostaną usunięte. Spróbuj po połączeniu.",
+    conflict: "Konflikt danych konta",
+    conflictDescription: "Zdalna rewizja się zmieniła albo rekordy się różnią. Przed ponowieniem wybierz stronę w podglądzie.",
+    dataFailure: "Dane konta są niedostępne",
+    dataFailureDescription: "Nie potwierdzono sukcesu. Zweryfikowane dane lokalne pozostają na urządzeniu.",
+    activeSessionBlocked: "Przed powiązaniem zakończ albo jawnie porzuć aktywną sesję.",
+    journalBlocked: "Przed powiązaniem odzyskaj przerwaną operację nauki.",
+    pendingSyncRequiresNetwork: "Przed wylogowaniem zsynchronizuj oczekujące zmiany.",
+    journalRecoveryFailure: "Przed wylogowaniem odzyskaj przerwaną operację nauki.",
+    localDeletionFailure: "Nie udało się wyczyścić lokalnych danych konta. Konto pozostaje zalogowane.",
+    remoteFailure: "Usługa konta nie potwierdziła tej operacji.",
+    account_revision_conflict: "Konto zmieniło się na innym urządzeniu. Sprawdź nowy podgląd.",
+    version_conflict: "Rekord zmienił się na innym urządzeniu. Sprawdź nowy podgląd.",
+    adoption_conflict: "Niektóre rekordy wymagają jawnego wyboru.",
+    active_session_sync_deferred: "Synchronizacja poczeka na zakończenie aktywnej sesji.",
+    journal_recovery_required: "Przed synchronizacją odzyskaj przerwaną operację nauki.",
+    account_data_unavailable: "Dane konta są teraz niedostępne.",
     backendUnavailable: "Backend jest niedostępny",
     backendUnavailableDescription: "Firebase przyjął tożsamość, ale Patternly nie może teraz potwierdzić konta. Spróbuj ponownie, gdy backend będzie dostępny.",
     revokedSession: "Sesja unieważniona",
@@ -157,7 +221,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   if (account.state.kind === "loading") return <Screen><ScreenHeader title={text.account} /><InfoBlock body={text.accountDescription} title={text.account} /></Screen>;
   if (account.state.kind === "unavailable") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.account} /><InfoBlock body={text.unavailableDescription} title={text.unavailable} testID="account-unavailable" tone="warning" /></Screen>;
   if (account.state.kind === "verificationPending") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.verification} /><InfoBlock body={text.verificationDescription} title={text.verification} testID="account-verification-pending" /><Text style={styles.email}>{account.state.user.email ?? email}</Text>{renderFeedback(feedback, text)}<Button loading={false} onPress={() => void account.resendVerification().then(setResult(setFeedback))} testID="account-resend-verification" variant="primary">{text.resend}</Button><Button onPress={() => void account.refreshVerification().then(setResult(setFeedback))} testID="account-check-verification" variant="secondary">{text.check}</Button><Button onPress={() => void account.signOut()} testID="account-sign-out" variant="ghost">{text.signOut}</Button></Screen>;
-  if (account.state.kind === "authenticated") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.account} /><InfoBlock body={text.accountReadyDescription} title={text.accountReady} testID="account-authenticated" tone="success" /><Button onPress={() => void account.signOut()} testID="account-sign-out" variant="secondary">{text.signOut}</Button></Screen>;
+  if (account.state.kind === "authenticated") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.account} /><InfoBlock body={text.accountReadyDescription} title={text.accountReady} testID="account-authenticated" tone="success" /><AccountDataPanel accountData={account.state.accountData} onConfirm={(resolutions) => void account.confirmAdoption(resolutions).then(setResult(setFeedback))} onRetry={() => void account.retryAccountSync().then(setResult(setFeedback))} text={text} />{feedback ? renderFeedback(feedback, text) : null}<Button onPress={() => void account.signOut().then(setResult(setFeedback))} testID="account-sign-out" variant="secondary">{text.signOut}</Button></Screen>;
   if (account.state.kind === "backendUnavailable") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.account} /><InfoBlock body={text.backendUnavailableDescription} title={text.backendUnavailable} testID="account-backend-unavailable" tone="warning" /><Button onPress={() => void account.refreshVerification().then(setResult(setFeedback))} testID="account-retry-backend" variant="primary">{text.check}</Button><Button onPress={() => void account.signOut()} testID="account-sign-out" variant="ghost">{text.signOut}</Button></Screen>;
   if (account.state.kind === "revokedSession") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.account} /><InfoBlock body={text.revokedSessionDescription} title={text.revokedSession} testID="account-revoked-session" tone="warning" /><Button onPress={() => void account.signOut()} testID="account-sign-out" variant="primary">{text.signOut}</Button></Screen>;
 
@@ -186,6 +250,22 @@ function renderFeedback(feedback: Feedback | null, text: AccountCopy) {
   if (feedback.kind === "success") return <InfoBlock body={text.accountDescription} title={text.account} tone="success" />;
   const message = text[feedback.failure];
   return <InfoBlock body={message} title={text.invalid} testID={`account-feedback-${feedback.failure}`} tone="warning" />;
+}
+
+function AccountDataPanel({ accountData, onConfirm, onRetry, text }: Readonly<{ accountData: import("../../application/account/accountDataService").AccountDataSession; onConfirm: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[]) => void; onRetry: () => void; text: AccountCopy }>) {
+  const [resolutions, setResolutions] = useState<Record<string, "keep_guest" | "keep_account">>({});
+  if (accountData.status === "previewReady" && accountData.preview) {
+    const plan = accountData.preview.plan;
+    const complete = plan.conflictRecordIds.every((id) => resolutions[id] !== undefined);
+    return <Card testID="account-adoption-preview" style={{ gap: spacing.md }}><Text maxFontSizeMultiplier={2} style={{ ...typography.bodyStrong }}>{text.adoptionPreview}</Text><Text maxFontSizeMultiplier={2} style={{ ...typography.small }}>{text.adoptionPreviewDescription}</Text><Text maxFontSizeMultiplier={2}>{`${text.preserve}: ${plan.localRecordCount} · ${text.upload}: ${plan.uploadRecordIds.length} · ${text.restore}: ${plan.restoreRecordIds.length} · ${text.deduplicated}: ${plan.deduplicatedRecordIds.length}`}</Text>{plan.conflictRecordIds.length > 0 ? <View style={{ gap: spacing.sm }}><Text maxFontSizeMultiplier={2} style={{ ...typography.bodyStrong }}>{`${text.decisions}: ${plan.conflictRecordIds.length}`}</Text>{plan.conflictRecordIds.map((id) => <View key={id} style={{ gap: spacing.xs }}><Text maxFontSizeMultiplier={2}>{id}</Text><View style={{ flexDirection: "row", gap: spacing.sm }}><Button onPress={() => setResolutions((current) => ({ ...current, [id]: "keep_guest" }))} variant={resolutions[id] === "keep_guest" ? "primary" : "secondary"}>{text.keepGuest}</Button><Button onPress={() => setResolutions((current) => ({ ...current, [id]: "keep_account" }))} variant={resolutions[id] === "keep_account" ? "primary" : "secondary"}>{text.keepAccount}</Button></View></View>)}</View> : null}<Button disabled={!complete} onPress={() => onConfirm(plan.conflictRecordIds.map((conflictId) => ({ conflictId, resolution: resolutions[conflictId]! })))} testID="account-adoption-confirm" variant="primary">{text.confirmAdoption}</Button></Card>;
+  }
+  if (accountData.status === "synced") return <InfoBlock body={text.syncCompleteDescription} title={text.syncComplete} testID="account-sync-synced" tone="success" />;
+  if (accountData.status === "offlinePending") return <Card testID="account-sync-pending" style={{ gap: spacing.md }}><InfoBlock body={text.pendingDescription} title={text.pending} tone="warning" /><Button onPress={onRetry} testID="account-sync-retry" variant="primary">{text.retrySync}</Button></Card>;
+  if (accountData.activeSessionBlocked || accountData.lastFailureCode === "active_session_adoption_blocked") return <InfoBlock body={text.activeSessionBlocked} title={text.adoptionPreview} testID="account-adoption-active-session" tone="warning" />;
+  if (accountData.lastFailureCode === "journal_recovery_required") return <InfoBlock body={text.journalBlocked} title={text.adoptionPreview} testID="account-adoption-journal" tone="warning" />;
+  if (accountData.status === "conflict") return <Card testID="account-sync-conflict" style={{ gap: spacing.md }}><InfoBlock body={text.conflictDescription} title={text.conflict} tone="warning" /><Button onPress={onRetry} testID="account-sync-retry" variant="primary">{text.retrySync}</Button></Card>;
+  if (accountData.status === "failed") return <Card testID="account-sync-failed" style={{ gap: spacing.md }}><InfoBlock body={text.dataFailureDescription} title={text.dataFailure} tone="warning" /><Button onPress={onRetry} testID="account-sync-retry" variant="primary">{text.retrySync}</Button></Card>;
+  return <InfoBlock body={text.syncing} title={text.syncing} testID="account-syncing" />;
 }
 
 function setResult(setFeedback: (feedback: Feedback) => void) {

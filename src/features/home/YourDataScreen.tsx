@@ -38,21 +38,21 @@ const copy = {
           {
             detailTitle: "Account, sync, and deletion",
             icon: "user",
-            summary: "Account entry is separate from local learning and remote sync.",
+            summary: "Account binding is explicit and previewed before data moves.",
             title: "Account binding is explicit",
             paragraphs: [
               "Patternly exposes account entry only when the public environment, Firebase identity provider, and native App Check composition are explicitly configured. Creating or signing into an account does not automatically bind or upload local learning records.",
-              "Account deletion and cross-device synchronization are separate product surfaces and are not part of this account-entry slice. No local-only state claims that a remote account exists or has been deleted.",
+              "After an authenticated preview and your confirmation, Patternly can synchronize the current track and compact completed learning facts. Active sessions, drafts, positions, timers, and recovery journals stay on this device.",
             ],
           },
           {
             detailTitle: "Where learning data goes",
             icon: "cloud",
-            summary: "Current learning records do not need a Patternly backend or cloud sync.",
-            title: "No current sync",
+            summary: "Only the declared account-owned learning facts can sync.",
+            title: "Explicit account sync",
             paragraphs: [
-              "The current product does not transmit learning records, answers, scores, review evidence, simulation drafts, or recommendations to a Patternly backend.",
-              "Analytics, remote backups, export, import, and cross-device restoration are not part of the current product contract.",
+              "The sync allowlist contains the current track, terminal session summaries, completed-session results, attempts, and review-queue entries. Active sessions, drafts, current positions, timers, mutation journals, settings, and notification preferences never sync.",
+              "A local commit is retained before remote acknowledgement. Pending, conflict, failure, and retry states remain visible; sign-out is blocked while unsynchronized data exists.",
             ],
           },
         ],
@@ -63,10 +63,10 @@ const copy = {
           {
             detailTitle: "Loss and recovery",
             icon: "alert-triangle",
-            summary: "There is no account-based recovery if the app or device is lost.",
+            summary: "Account adoption preserves data only after explicit confirmation.",
             title: "Local-only limits",
             paragraphs: [
-              "Uninstalling the app, losing or replacing the device, or resetting learning state may remove local learning data. Patternly cannot restore it through an account or cloud history.",
+              "Uninstalling the app, losing or replacing the device, or resetting learning state may remove device-only data such as an active session or draft. Confirmed account-owned records can be restored through the explicit adoption flow.",
               "Patternly configures learning records to be excluded from automatic operating-system backups and device transfers. It offers no backup or restore path; copies outside the app's control cannot be guaranteed absent.",
             ],
           },
@@ -107,21 +107,21 @@ const copy = {
           {
             detailTitle: "Konto, synchronizacja i usunięcie",
             icon: "user",
-            summary: "Wejście do konta jest odrębne od lokalnej nauki i zdalnej synchronizacji.",
+            summary: "Powiązanie konta wymaga podglądu i potwierdzenia.",
             title: "Powiązanie konta jest jawne",
             paragraphs: [
               "Patternly pokazuje wejście do konta tylko wtedy, gdy jawnie skonfigurowano publiczne środowisko, dostawcę tożsamości Firebase i natywną konfigurację App Check. Utworzenie konta lub logowanie nie wiąże automatycznie lokalnych danych o nauce ani ich nie wysyła.",
-              "Usunięcie konta i synchronizacja między urządzeniami są odrębnymi powierzchniami produktu i nie należą do tego wycinka wejścia do konta. Żaden stan lokalny nie udaje istnienia ani usunięcia zdalnego konta.",
+              "Po uwierzytelnieniu i Twoim potwierdzeniu Patternly może synchronizować aktywny tor oraz zwarte fakty ukończonej nauki. Aktywne sesje, szkice, pozycje, timery i dzienniki odzyskiwania pozostają tylko na tym urządzeniu.",
             ],
           },
           {
             detailTitle: "Dokąd trafiają dane o nauce",
             icon: "cloud",
-            summary: "Obecne rekordy nauki nie potrzebują backendu Patternly ani synchronizacji z chmurą.",
-            title: "Brak obecnej synchronizacji",
+            summary: "Synchronizują się tylko zadeklarowane fakty danych konta.",
+            title: "Jawna synchronizacja konta",
             paragraphs: [
-              "Obecny produkt nie przesyła rekordów nauki, odpowiedzi, wyników, dowodów powtórek, szkiców symulacji ani rekomendacji do backendu Patternly.",
-              "Analityka, zdalne backupy, eksport, import i przywracanie historii między urządzeniami nie są częścią obecnego kontraktu produktu.",
+              "Allowlista synchronizacji obejmuje aktywny tor, terminalne podsumowania sesji, wyniki ukończonych sesji, podejścia i wpisy kolejki powtórek. Aktywne sesje, szkice, pozycje, timery, dzienniki mutacji, ustawienia i powiadomienia nigdy nie są wysyłane.",
+              "Lokalny zapis jest zachowany przed potwierdzeniem zdalnym. Oczekiwanie, konflikt, błąd i ponowienie są widoczne; wylogowanie blokują niesynchronizowane dane.",
             ],
           },
         ],
@@ -132,10 +132,10 @@ const copy = {
           {
             detailTitle: "Utrata i odzyskiwanie",
             icon: "alert-triangle",
-            summary: "Nie ma odzyskiwania opartego na koncie, gdy aplikacja lub urządzenie zostanie utracone.",
+            summary: "Adopcja konta zachowuje dane dopiero po jawnym potwierdzeniu.",
             title: "Granice lokalnego zapisu",
             paragraphs: [
-              "Odinstalowanie aplikacji, utrata lub wymiana urządzenia albo reset stanu nauki mogą usunąć lokalne dane o nauce. Patternly nie może ich odtworzyć przez konto ani historię w chmurze.",
+              "Odinstalowanie aplikacji, utrata lub wymiana urządzenia albo reset nauki mogą usunąć dane tylko urządzenia, takie jak aktywna sesja lub szkic. Potwierdzone rekordy konta mogą zostać odtworzone przez jawny przepływ adopcji.",
               "Patternly konfiguruje wykluczenie rekordów nauki z automatycznych backupów systemu i transferów między urządzeniami. Nie oferuje backupu ani przywracania; nie może zagwarantować braku kopii poza kontrolą aplikacji.",
             ],
           },

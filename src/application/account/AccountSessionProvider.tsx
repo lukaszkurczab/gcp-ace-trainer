@@ -5,8 +5,9 @@ import { PatternlyApiClientError, createPatternlyApiClient, type MeResponseDto }
 import { composePatternlyNativeAppCheck } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
+import { confirmAccountDataAdoption, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, type AccountDataSession } from "./accountDataService";
 
-export type AccountFailure = "backendUnavailable" | "duplicate" | "expiredAction" | "invalid" | "invalidCredential" | "offline" | "passwordMismatch" | "providerUnavailable" | "rateLimited" | "revokedSession" | "unverifiedIdentity";
+export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "expiredAction" | "invalid" | "invalidCredential" | "journalRecoveryFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "remoteFailure" | "revokedSession" | "unverifiedIdentity";
 export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "recoveryAccepted" | "verificationPending" }>;
 
 export type AccountState =
@@ -14,7 +15,7 @@ export type AccountState =
   | Readonly<{ kind: "unavailable"; reason: "firebase_unconfigured" | "public_environment_unconfigured" | "public_environment_invalid" }>
   | Readonly<{ kind: "signedOut" }>
   | Readonly<{ kind: "verificationPending"; user: FirebaseAuthUserSnapshot }>
-  | Readonly<{ kind: "authenticated"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot }>
+  | Readonly<{ kind: "authenticated"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "backendUnavailable" | "revokedSession"; user: FirebaseAuthUserSnapshot }>;
 
 export type AccountSessionContextValue = Readonly<{
@@ -27,6 +28,8 @@ export type AccountSessionContextValue = Readonly<{
   signIn: (email: string, password: string) => Promise<AccountCommandResult>;
   signInWithApple: () => Promise<AccountCommandResult>;
   signInWithGoogle: (idToken: string) => Promise<AccountCommandResult>;
+  confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[] ) => Promise<AccountCommandResult>;
+  retryAccountSync: () => Promise<AccountCommandResult>;
   signOut: () => Promise<AccountCommandResult>;
   state: AccountState;
 }>;
@@ -148,7 +151,28 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     }),
     signInWithApple: () => runWithAuth(async (auth, api) => finalizeVerification(auth, api, await auth.signInWithApple())),
     signInWithGoogle: (idToken) => runWithAuth(async (auth, api) => finalizeVerification(auth, api, await auth.signInWithGoogle(idToken))),
-    signOut: () => runWithAuth(async (auth) => { await auth.signOut(); setState({ kind: "signedOut" }); return { kind: "success", next: "authenticated" }; }),
+    confirmAdoption: (resolutions) => runWithAuth(async (auth, api) => {
+      const current = auth.getSnapshot();
+      if (!current || state.kind !== "authenticated" || !state.accountData.preview) return { kind: "failure", failure: "conflict" };
+      const next = await confirmAccountDataAdoption(api, state.backendUser.id, state.accountData.preview, resolutions);
+      setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
+      return next.status === "synced" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "conflict" };
+    }),
+    retryAccountSync: () => runWithAuth(async (auth, api) => {
+      const current = auth.getSnapshot();
+      if (!current || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
+      const next = await retryAccountDataSync(api, state.backendUser.id);
+      setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
+      return next.status === "synced" || next.status === "previewReady" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "remoteFailure" };
+    }),
+    signOut: () => runWithAuth(async (auth, api) => {
+      const user = auth.getSnapshot();
+      if (user && state.kind === "authenticated") {
+        const prepared = await prepareAccountSignOut(api, state.backendUser.id);
+        if (!prepared.ok) return { kind: "failure", failure: prepared.failure };
+      }
+      await auth.signOut(); setState({ kind: "signedOut" }); return { kind: "success", next: "authenticated" };
+    }),
     state,
   }), [apiClient, runWithAuth, state]);
 
@@ -173,7 +197,8 @@ async function finalizeVerification(auth: FirebaseAuthClient, api: ReturnType<ty
   if (!user || !api) return { kind: "failure", failure: "providerUnavailable" };
   try {
     const response = await api.getMe();
-    setState?.({ kind: "authenticated", backendUser: response.user, user });
+    const accountData = await loadAccountDataSession(api, response.user.id);
+    setState?.({ kind: "authenticated", backendUser: response.user, user, accountData });
     return { kind: "success", next: "authenticated" };
   } catch (error) {
     const failure = classifyAccountFailure(error);

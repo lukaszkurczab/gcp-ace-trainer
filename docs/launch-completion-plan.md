@@ -14,7 +14,7 @@ whole-product discovery audit.
 
 - App: React Native/Expo in this repository. Guest/local-first learning works
   on the booted iPhone 17, iOS 26.4 simulator. `npm run typecheck` and the
-  full application suite (600 tests) passed on 2026-08-25.
+  full application suite (606 tests) passed on 2026-08-25.
 - Backend: `../patternly-backend` is Fastify + Firebase Admin SDK/Firestore.
   The API serves identity mapping, entitlement/progress projections and
   versioned sync through the backend only. On 2026-08-25 Task 1 replaced the
@@ -58,11 +58,12 @@ whole-product discovery audit.
    tests. No adapter, dual-write, compatibility route or second data authority
    remains.
 3. **No production account or billing evidence.** The app now has a
-   guest-preserving Firebase sign-in composition and account-entry surface, but
-   no provider configuration, signed native verification, adoption/sync bridge,
-   deletion service, RevenueCat purchase/restore integration or production
-   public environment exists. The account surface remains explicitly
-   unavailable when its configuration gate is absent.
+   guest-preserving Firebase sign-in composition, account-entry surface, and
+   local adoption/incremental-sync implementation, but no provider
+   configuration, signed native verification, deletion service, RevenueCat
+   purchase/restore integration or production public environment exists. The
+   account surface remains explicitly unavailable when its configuration gate is
+   absent.
 4. **No legally complete public sale surface.** The seller's name is known, but
    no publishable address, support contact, legal/tax status, public domain,
    approved consumer documents or payment setup is available. Do not publish
@@ -80,7 +81,7 @@ Scores measure launch readiness of the stage, not code volume. A score below
 | 2. Figma/UI reconciliation | `partial` | 0.71 | Core UI work and prior tests exist, but fresh iPhone 17 evidence covers only track selection. The capture flow contains a deterministic false expectation, and the first selection viewport is overly long/dense. Repair capture and make only evidence-backed UI changes in Task 7. |
 | 3. Content Review Console V1 | `done` | 0.87 | Local source-authoritative console and full content evidence are recorded. Keep it isolated from learner reports and do not create a second content authority. |
 | 4. Eight-track content audit | `done` | 0.86 | Accepted immutable eight-track release and validators exist. Semantic defects remain corrected only when demonstrated; learner report delivery belongs to Task 2, not a renewed mass content audit. |
-| 5. Account, identity, sync, adoption, deletion | `partial` | 0.39 | Task 3 now composes guest-preserving Firebase identity entry, backend token verification and explicit failure states. Provider configuration, signed native evidence, adoption, remote sync, recovery-code lifecycle and verified deletion remain. Tasks 4–5 are still required. |
+| 5. Account, identity, sync, adoption, deletion | `partial` | 0.58 | Tasks 3–4 now cover guest-preserving Firebase identity entry, backend token verification, explicit adoption preview/confirmation, revisioned incremental sync, and sign-out preconditions. Provider configuration, signed native evidence, recovery-code lifecycle and verified deletion remain in Task 5 and external gates. |
 | 6. Commercial entitlement | `partial` | 0.31 | Pure entitlement model and Poland price basis exist. No store catalog, purchase, restore, backend reconciliation, package authorization or consumer checkout evidence exists. Task 6 is required. |
 | 7. Provider, privacy, security, operations | `blocking` | 0.22 | No public origins, Firebase/App Check/IAM, deploy, retention/restore implementation, legal data or approved disclosures. Task 1 resolves architecture; Task 8 collects real external evidence. |
 | 8. QA, signing, stores, GO/NO-GO | `partial` | 0.43 | Local tests and simulator evidence exist; no signed iOS/Android artifacts, store records, complete screenshots, legal/public links or final smoke exist. Tasks 7–9 are required. |
@@ -97,7 +98,7 @@ Scores measure launch readiness of the stage, not code volume. A score below
   Firebase sandbox baseline are delivered: the project, Web/Android/iOS apps,
   Email/Password Auth and native service-file prebuild are verified. Google,
   Apple, App Check, public-origin configuration, signed-native evidence and
-  required user-visible screenshots remain external gates before Task 4.
+  required user-visible screenshots remain external gates.
 - Historical route, competition and earlier readiness audits remain evidence
   only. They must not be used to resurrect old sequencing or a second launch
   contract.
@@ -185,8 +186,8 @@ Scores measure launch readiness of the stage, not code volume. A score below
 - **Scope:** Firebase client composition, public environment validation,
   account entry/register/sign-in/verification/recovery surfaces and backend
   identity mapping.
-- **Non-goals:** adoption merge execution, remote progress sync, purchase,
-  deletion or fabricated provider success in unconfigured builds.
+- **Non-goals:** purchase, deletion or fabricated provider success in
+  unconfigured builds.
 - **Inputs:** existing identity contract, Firebase project/App Check origins,
   Terms version and public links from owner/external gates.
 - **Acceptance criteria:** email/password, Apple and Google paths are real;
@@ -200,7 +201,15 @@ Scores measure launch readiness of the stage, not code volume. A score below
 - **Risks:** no production URLs or account claims may be invented locally.
 - **Report target:** `docs/reports/launch-103-identity-entry.md`.
 
-### Task 4 — account adoption and incremental sync
+### Task 4 — account adoption and incremental sync (completed implementation 2026-08-25)
+
+- **Current implementation status (2026-08-25):** the canonical local
+  repository, explicit adoption preview/confirmation, revisioned incremental
+  sync, conflict UI, outbox recovery, and sign-out precondition are implemented
+  and locally verified. Backend emulator and deterministic fixture evidence is
+  green. Full iOS account-adoption UI evidence remains unverified because the
+  existing RC preflight stopped before the account surface; see
+  `docs/reports/launch-104-adoption-sync.md`.
 
 - **Goal:** move an authenticated learner from one local dataset to one
   revisioned remote account dataset without silent loss or duplicated state.
@@ -215,8 +224,10 @@ Scores measure launch readiness of the stage, not code volume. A score below
   idempotent and CAS-protected; conflict preserves last verified states;
   offline/pending/retry status is visible; device-only records never sync.
 - **Verification:** backend conflict/idempotency tests, local journal recovery
-  tests, two-simulator bounded scenario, iOS screenshots and import/reference
-  checks for duplicate storage paths.
+  tests, deterministic PII-free preview fixtures and import/reference checks
+  for duplicate storage paths. The two-simulator bounded scenario and iOS
+  account-adoption screenshots remain unverified; the existing iOS RC
+  preflight attempt is recorded in the Task 4 report.
 - **Required evidence:** preview transcript fixtures and before/after remote
   projections without personal data.
 - **Risks:** forcing a merge or discarding guest data is launch-blocking.

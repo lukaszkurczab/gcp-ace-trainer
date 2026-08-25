@@ -6,22 +6,27 @@
 export type ProgressMutationDto = Readonly<{
   mutationId: string;
   kind: "node" | "item";
+  recordType: "active_track" | "training_session_summary" | "training_session_result" | "training_attempt" | "review_queue_entry";
   trackId: string;
   targetId: string;
   expectedVersion: number | null;
+  fingerprint: string;
   state: Readonly<Record<string, unknown>>;
 }>;
 
 export type SyncRequestDto = Readonly<{
+  expectedAccountRevision: number;
   deviceId?: string | null;
   mutations: readonly ProgressMutationDto[];
 }>;
 
 export type ProgressRecordDto = Readonly<{
   kind: "node" | "item";
+  recordType: ProgressMutationDto["recordType"];
   trackId: string;
   targetId: string;
   version: number;
+  fingerprint: string;
   state: Readonly<Record<string, unknown>>;
   lastMutationId: string;
   updatedAt: string;
@@ -29,8 +34,15 @@ export type ProgressRecordDto = Readonly<{
 
 export type MeResponseDto = Readonly<{ user: Readonly<{ id: string; createdAt: string; identity: Readonly<{ provider: string; subject: string; email: string | null; emailVerified: boolean }> }> }>;
 export type EntitlementsResponseDto = Readonly<{ entitlements: readonly Readonly<{ entitlement: string; status: string; source: string; expiresAt: string | null; updatedAt: string }>[] }>;
-export type ProgressResponseDto = Readonly<{ records: readonly ProgressRecordDto[] }>;
-export type SyncResponseDto = Readonly<{ applied: readonly ProgressRecordDto[]; duplicates: readonly string[]; conflicts: readonly Readonly<{ mutationId: string; code: "version_conflict"; current: ProgressRecordDto | null }>[] }>;
+export type ProgressResponseDto = Readonly<{ accountRevision: number; records: readonly ProgressRecordDto[] }>;
+export type SyncResponseDto = Readonly<{ accountRevision: number; applied: readonly ProgressRecordDto[]; duplicates: readonly string[]; conflicts: readonly Readonly<{ mutationId: string; code: "version_conflict"; current: ProgressRecordDto | null }>[]; accountRevisionConflict?: Readonly<{ code: "account_revision_conflict"; currentAccountRevision: number }> }>;
+export type GuestMergeRecordDto = Readonly<{ fingerprint: string; recordId: string; recordType: ProgressMutationDto["recordType"]; state: Readonly<Record<string, unknown>>; trackId: string; version: number }>;
+export type GuestMergeSnapshotDto = Readonly<{ guestSnapshotVersion: number; guestUserId: string; records: readonly GuestMergeRecordDto[]; activeSession: boolean; pendingJournal: boolean }>;
+export type GuestMergePreviewDto = Readonly<{ accountSnapshotVersion: number; accountUserId: string; conflicts: readonly Readonly<{ accountVersion: number; conflictId: string; guestVersion: number; recordId: string; recordType: GuestMergeRecordDto["recordType"] }>[]; fingerprint: string; guestSnapshotVersion: number; guestUserId: string; operationId: string; protocolVersion: 1 }>;
+export type AdoptionPlanDto = Readonly<{ caseId: "emptyLocalEmptyRemote" | "populatedLocalEmptyRemote" | "emptyLocalPopulatedRemote" | "populatedLocalPopulatedRemote" | "divergentRecord" | "blocked"; localRecordCount: number; remoteRecordCount: number; uploadRecordIds: readonly string[]; restoreRecordIds: readonly string[]; deduplicatedRecordIds: readonly string[]; conflictRecordIds: readonly string[]; blockingReason: "active_session" | "journal_recovery" | null }>;
+export type AdoptionPreviewResponseDto = Readonly<{ preview: GuestMergePreviewDto; plan: AdoptionPlanDto; remoteRecords: readonly GuestMergeRecordDto[] }>;
+export type AdoptionConfirmationDto = Readonly<{ operationId: string; previewFingerprint: string; protocolVersion: 1; resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" | "manual_required" }>[] }>;
+export type AdoptionExecutionResponseDto = Readonly<{ accountRevision: number; operationId: string; mutationIds: readonly string[]; records: readonly GuestMergeRecordDto[] }>;
 export type TracksResponseDto = Readonly<{ tracks: readonly Readonly<{ trackId: string; source: string; status: string; updatedAt: string }>[] }>;
 export type ContentVersionsResponseDto = Readonly<{ versions: readonly Readonly<{ trackId: string; version: string; checksumSha256: string; packageUri: string; publishedAt: string }>[] }>;
 export type ContentReportReasonDto = "incorrect_answer" | "unclear_explanation" | "outdated_content" | "technical_issue" | "other";
@@ -64,6 +76,8 @@ export type PatternlyApiClient = Readonly<{
   getEntitlements: () => Promise<EntitlementsResponseDto>;
   getProgress: () => Promise<ProgressResponseDto>;
   syncProgress: (input: SyncRequestDto) => Promise<SyncResponseDto>;
+  previewAccountAdoption: (input: GuestMergeSnapshotDto) => Promise<AdoptionPreviewResponseDto>;
+  confirmAccountAdoption: (input: Readonly<{ deviceId: string; snapshot: GuestMergeSnapshotDto; confirmation: AdoptionConfirmationDto }>) => Promise<AdoptionExecutionResponseDto>;
   getTracks: () => Promise<TracksResponseDto>;
   getContentVersions: () => Promise<ContentVersionsResponseDto>;
   createContentReport: (input: CreateContentReportDto, appCheckToken: string) => Promise<CreateContentReportResponseDto>;
@@ -134,6 +148,8 @@ export function createPatternlyApiClient(input: Readonly<{
     getEntitlements: () => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET"),
     getProgress: () => requestJson<ProgressResponseDto>("/v1/progress", "GET"),
     syncProgress: (body: SyncRequestDto) => requestJson<SyncResponseDto>("/v1/progress/sync", "POST", body),
+    previewAccountAdoption: (body: GuestMergeSnapshotDto) => requestJson<AdoptionPreviewResponseDto>("/v1/account-data/adoption/preview", "POST", body),
+    confirmAccountAdoption: (body) => requestJson<AdoptionExecutionResponseDto>("/v1/account-data/adoption/confirm", "POST", body),
     getTracks: () => requestJson<TracksResponseDto>("/v1/tracks", "GET"),
     getContentVersions: () => requestJson<ContentVersionsResponseDto>("/v1/content/versions", "GET"),
     createContentReport: (body, appCheckToken) => requestJson<CreateContentReportResponseDto>("/v1/content/reports", "POST", body, "optional", { "x-firebase-appcheck": appCheckToken }),

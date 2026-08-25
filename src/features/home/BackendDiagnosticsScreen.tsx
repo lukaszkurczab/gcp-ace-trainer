@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { Button, InfoBlock, Screen } from "../../components";
+import { accountDataRecordFingerprint } from "../../application/account/accountDataService";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { readPatternlyBackendRuntime } from "../../infrastructure/clients/patternlyBackendRuntime";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -18,6 +19,8 @@ const requiredPaths = [
   "/v1/entitlements",
   "/v1/progress",
   "/v1/progress/sync",
+  "/v1/account-data/adoption/preview",
+  "/v1/account-data/adoption/confirm",
   "/v1/tracks",
   "/v1/content/versions",
 ] as const;
@@ -75,21 +78,24 @@ export function BackendDiagnosticsScreen() {
       kind: "item" as const,
       trackId: "coding-interview-dsa-problem-solving",
       targetId,
+      recordType: "training_attempt" as const,
       expectedVersion: null,
+      fingerprint: accountDataRecordFingerprint({ recordId: targetId, recordType: "training_attempt", state: { source: "ios_simulator", check: "backend_paths" }, trackId: "coding-interview-dsa-problem-solving" }),
       state: { source: "ios_simulator", check: "backend_paths" },
     };
+    const beforeSync = await client.getProgress();
     await run("sync-apply", text.syncApply, async () => {
-      const response = await client.syncProgress({ mutations: [mutation] });
+      const response = await client.syncProgress({ expectedAccountRevision: beforeSync.accountRevision, mutations: [mutation] });
       if (response.applied.length !== 1 || response.duplicates.length !== 0 || response.conflicts.length !== 0) throw new PatternlyApiClientError("invalid_response");
     });
     await run("sync-duplicate", text.syncDuplicate, async () => {
-      const response = await client.syncProgress({ mutations: [mutation] });
+      const response = await client.syncProgress({ expectedAccountRevision: beforeSync.accountRevision, mutations: [mutation] });
       if (response.applied.length !== 0 || response.duplicates.length !== 1 || response.duplicates[0] !== mutationId) throw new PatternlyApiClientError("invalid_response");
     });
     await run("sync-conflict", text.syncConflict, async () => {
-      const conflictMutation = { ...mutation, expectedVersion: 0, mutationId: `${mutationId}-conflict` };
+      const conflictMutation = { ...mutation, expectedVersion: 0, mutationId: `${mutationId}-conflict`, fingerprint: accountDataRecordFingerprint({ recordId: targetId, recordType: "training_attempt", state: { source: "ios_simulator", check: "backend_paths" }, trackId: "coding-interview-dsa-problem-solving" }) };
       try {
-        await client.syncProgress({ mutations: [conflictMutation] });
+        await client.syncProgress({ expectedAccountRevision: beforeSync.accountRevision + 1, mutations: [conflictMutation] });
       } catch (error) {
         if (error instanceof PatternlyApiClientError && error.status === 409 && error.serverCode === "version_conflict") return;
         throw error;

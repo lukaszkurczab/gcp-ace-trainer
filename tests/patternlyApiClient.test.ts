@@ -41,7 +41,7 @@ test("generated client uses typed REST paths, bearer auth, timeout and bounded e
     },
   });
   await client.getProgress();
-  await client.syncProgress({ mutations: [] });
+  await client.syncProgress({ expectedAccountRevision: 0, mutations: [] });
   await client.getReady();
   await client.getOpenApi();
   assert.deepEqual(calls.map((call) => [call.method, call.url]), [

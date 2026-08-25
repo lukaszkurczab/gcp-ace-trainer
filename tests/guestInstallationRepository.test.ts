@@ -21,7 +21,7 @@ test("provisions one validated guest installation and preserves it across repeat
   assert.deepEqual(first, { kind: "ready", activeSessionId: null });
   assert.deepEqual(second, { kind: "ready", activeSessionId: null });
   assert.equal(calls, 1);
-  assert.deepEqual(await getGuestInstallation(), { ...firstIdentity, bindingState: "guest" });
+  assert.deepEqual(await getGuestInstallation(), { ...firstIdentity, accountId: null, bindingState: "guest" });
 });
 
 test("corrupt or unsupported guest installation records block without replacement", async () => {
@@ -41,8 +41,8 @@ test("corrupt or unsupported guest installation records block without replacemen
 
 test("guest installation blocks coercible identifiers and non-v4 UUID records", async () => {
   for (const record of [
-    { installationId: [firstIdentity.installationId], localDatasetId: firstIdentity.localDatasetId, bindingState: "guest" },
-    { installationId: "11111111-1111-1111-8111-111111111111", localDatasetId: firstIdentity.localDatasetId, bindingState: "guest" },
+    { installationId: [firstIdentity.installationId], localDatasetId: firstIdentity.localDatasetId, bindingState: "guest", accountId: null },
+    { installationId: "11111111-1111-1111-8111-111111111111", localDatasetId: firstIdentity.localDatasetId, bindingState: "guest", accountId: null },
   ]) {
     installKeyValueStorageForTests(new MemoryKeyValueStorage());
     writeCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, record);
@@ -55,7 +55,7 @@ test("guest installation blocks coercible identifiers and non-v4 UUID records", 
 test("valid later binding states are preserved without adopting or regenerating an installation", async () => {
   for (const bindingState of ["adoption_pending", "account_bound"] as const) {
     installKeyValueStorageForTests(new MemoryKeyValueStorage());
-    writeCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, { ...firstIdentity, bindingState });
+    writeCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, { ...firstIdentity, accountId: bindingState === "account_bound" ? "55555555-5555-4555-8555-555555555555" : null, bindingState });
     let identityCalls = 0;
     const result = await bootstrapApplication(
       async () => undefined,
@@ -65,7 +65,7 @@ test("valid later binding states are preserved without adopting or regenerating 
     );
     assert.deepEqual(result, { kind: "ready", activeSessionId: null });
     assert.equal(identityCalls, 0);
-    assert.deepEqual(await getGuestInstallation(), { ...firstIdentity, bindingState });
+    assert.deepEqual(await getGuestInstallation(), { ...firstIdentity, accountId: bindingState === "account_bound" ? "55555555-5555-4555-8555-555555555555" : null, bindingState });
   }
 });
 
