@@ -19,6 +19,8 @@ export const STORAGE_KEYS = {
   NOTIFICATION_SETTINGS: `${PREFIX}notification-settings`,
   ACTIVE_JOURNAL: `${PREFIX}journal:active`,
   ACCOUNT_SYNC: `${PREFIX}account-sync`,
+  ACCOUNT_SIGN_OUT: `${PREFIX}account-sign-out`,
+  ACCOUNT_DELETION: `${PREFIX}account-deletion`,
   CONTENT_REPORT_OUTBOX: `${PREFIX}content-report-outbox`,
 } as const;
 export const STORAGE_NAMESPACE = PREFIX;

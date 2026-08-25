@@ -22,7 +22,13 @@ test("Expo platform configuration declares the supported phone-only native matri
   assert.ok(app.plugins.includes("./plugins/withAndroidNdkVersion"), "Android NDK version must be pinned in the canonical Expo prebuild.");
 
   const [_, properties] = buildProperties;
-  assert.deepEqual(properties.ios, { deploymentTarget: "16.4" });
+  assert.deepEqual(properties.ios, {
+    deploymentTarget: "16.4",
+    extraPods: [
+      { name: "GoogleUtilities", modular_headers: true },
+      { name: "RecaptchaInterop", modular_headers: true },
+    ],
+  });
   assert.deepEqual(properties.android, {
     minSdkVersion: 28,
     targetSdkVersion: 36,

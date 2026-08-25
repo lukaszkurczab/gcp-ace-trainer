@@ -22,13 +22,25 @@ import {
   type AccountSyncState,
   type SyncableRecordType,
 } from "../../storage/repositories/accountDataRepository";
+import {
+  beginAccountDeletion,
+  beginAccountSignOut,
+  clearAccountDeletionState,
+  clearAccountSignOutState,
+  getAccountDeletionState,
+  getAccountSignOutState,
+  markAccountDeletionComplete,
+  updateAccountDeletionState,
+  updateAccountSignOutState,
+} from "../../storage/repositories/accountLifecycleRepository";
 import { bindGuestInstallationToAccount, clearGuestAccountBinding, getGuestInstallation, markGuestInstallationAdoptionPending } from "../../storage/repositories/guestInstallationRepository";
 import { getActiveMutationJournal } from "../../storage/repositories/mutationJournalRepository";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
 export { accountDataRecordFingerprint } from "../../storage/repositories/accountDataRepository";
 
 export type AccountDataSession = Readonly<{
-  status: "initialSyncRequired" | "previewReady" | "syncing" | "synced" | "offlinePending" | "conflict" | "failed";
+  status: "initialSyncRequired" | "previewReady" | "syncing" | "synced" | "offlinePending" | "conflict" | "failed" | "signOutPending" | "remoteDeletionPending" | "localCleanupPending";
   preview: AdoptionPreviewResponseDto | null;
   lastSuccessfulSyncAt: string | null;
   pendingMutationCount: number;
@@ -37,7 +49,8 @@ export type AccountDataSession = Readonly<{
   activeSessionBlocked: boolean;
 }>;
 
-export type AccountSignOutResult = Readonly<{ ok: true } | { ok: false; failure: "journalRecoveryFailure" | "pendingSyncRequiresNetwork" | "conflict" | "localDeletionFailure" | "remoteFailure" }>;
+export type AccountSignOutResult = Readonly<{ ok: true } | { ok: false; failure: "journalRecoveryFailure" | "pendingSyncRequiresNetwork" | "conflict" | "localDeletionFailure" | "remoteFailure" | "signOutPending" }>;
+export type AccountDeletionResult = Readonly<{ ok: true; proofId: string } | { ok: false; failure: "journalRecoveryFailure" | "pendingSyncRequiresNetwork" | "conflict" | "remoteDeletionPending" | "localCleanupFailure" | "reauthenticationRequired" }>;
 
 const nowIso = () => new Date().toISOString();
 
@@ -121,22 +134,95 @@ export async function retryAccountDataSync(api: PatternlyApiClient, accountId: s
 }
 
 export async function prepareAccountSignOut(api: PatternlyApiClient, accountId: string): Promise<AccountSignOutResult> {
+  const pending = getAccountSignOutState() ?? beginAccountSignOut(accountId);
   try {
     if (await getActiveMutationJournal()) return { ok: false, failure: "journalRecoveryFailure" };
     const installation = await getGuestInstallation();
-    if (!installation || installation.accountId !== accountId) return { ok: true };
+    if (!installation || installation.accountId !== accountId) {
+      await api.revokeSessions(pending.operationId);
+      clearAccountSignOutState();
+      return { ok: true };
+    }
     const state = await getAccountSyncState();
     if (state.outbox.length > 0 || state.status === "offlinePending" || state.status === "conflict") {
       const synced = await synchronizeBoundAccount(api, accountId);
       if (synced.status === "conflict") return { ok: false, failure: "conflict" };
       if (synced.status !== "synced") return { ok: false, failure: "pendingSyncRequiresNetwork" };
     }
+    await api.revokeSessions(pending.operationId);
+    updateAccountSignOutState(pending, { status: "remoteRevoked", lastFailureCode: null });
     await clearAccountOwnedLocalData();
     await clearGuestAccountBinding();
+    clearAccountSignOutState();
     return { ok: true };
   } catch (error) {
-    if (classifyDataFailure(error) === "offline") return { ok: false, failure: "pendingSyncRequiresNetwork" };
+    const failure = classifyDataFailure(error);
+    updateAccountSignOutState(pending, { status: pending.status === "remoteRevoked" ? "localCleanupPending" : "pending", lastFailureCode: failure });
+    if (failure === "offline") return { ok: false, failure: "pendingSyncRequiresNetwork" };
+    if (failure === "session_revocation_pending") return { ok: false, failure: "signOutPending" };
     return { ok: false, failure: "localDeletionFailure" };
+  }
+}
+
+export async function completeRemoteRevokedSignOut(): Promise<boolean> {
+  const pending = getAccountSignOutState();
+  if (!pending || pending.status !== "remoteRevoked") return false;
+  try {
+    await clearAccountOwnedLocalData();
+    await clearGuestAccountBinding();
+    clearAccountSignOutState();
+    return true;
+  } catch {
+    updateAccountSignOutState(pending, { status: "localCleanupPending", lastFailureCode: "localDeletionFailure" });
+    return false;
+  }
+}
+
+export async function deleteBoundAccount(api: PatternlyApiClient, accountId: string, uid: string): Promise<AccountDeletionResult> {
+  const pending = getAccountDeletionState() ?? beginAccountDeletion(accountId, uid);
+  try {
+    if (await getActiveMutationJournal()) {
+      updateAccountDeletionState(pending, { status: "failed", lastFailureCode: "journal_recovery_required" });
+      return { ok: false, failure: "journalRecoveryFailure" };
+    }
+    const installation = await getGuestInstallation();
+    if (!installation || installation.accountId !== accountId) throw new Error("account_binding_mismatch");
+    let proofId = pending.proofId;
+    let operationId = pending.operationId;
+    if (pending.status !== "remoteDeleted" && pending.status !== "localCleanupPending") {
+      const synced = await synchronizeBoundAccount(api, accountId);
+      if (synced.status === "conflict") return { ok: false, failure: "conflict" };
+      if (synced.status !== "synced") return { ok: false, failure: "pendingSyncRequiresNetwork" };
+      const remote = await api.deleteAccount(pending.operationId);
+      proofId = remote.proofId;
+      operationId = remote.operationId;
+      updateAccountDeletionState(pending, { status: "remoteDeleted", proofId, lastFailureCode: null });
+    }
+    if (!proofId) throw new Error("remote_deletion_pending");
+    const proof = await api.getDeletionProof(proofId);
+    if (proof.status !== "deleted" || proof.operationId !== operationId) throw new Error("remote_deletion_pending");
+    try {
+      await clearAccountOwnedLocalData();
+      await clearGuestAccountBinding();
+    } catch {
+      updateAccountDeletionState(pending, { status: "localCleanupPending", proofId, lastFailureCode: "local_cleanup_failure" });
+      return { ok: false, failure: "localCleanupFailure" };
+    }
+    markAccountDeletionComplete(getAccountDeletionState() ?? { ...pending, proofId });
+    return { ok: true, proofId };
+  } catch (error) {
+    const failure = classifyDataFailure(error);
+    if (failure === "revokedSession" && pending.status !== "complete") {
+      const status = await api.getDeletionOperationStatus(pending.operationId, sha256Utf8(uid)).catch(() => null);
+      if (status?.proofId && (status.status === "remote_deleted" || status.status === "complete")) {
+        updateAccountDeletionState(pending, { status: "remoteDeleted", proofId: status.proofId, lastFailureCode: null });
+        return deleteBoundAccount(api, accountId, uid);
+      }
+    }
+    updateAccountDeletionState(pending, { status: failure === "remote_deletion_pending" ? "remotePending" : "failed", lastFailureCode: failure });
+    if (failure === "offline") return { ok: false, failure: "pendingSyncRequiresNetwork" };
+    if (failure === "account_revision_conflict" || failure === "version_conflict" || failure === "adoption_conflict") return { ok: false, failure: "conflict" };
+    return { ok: false, failure: "remoteDeletionPending" };
   }
 }
 
@@ -190,6 +276,10 @@ function classifyDataFailure(error: unknown): string {
   if (isApiError(error)) {
     if (error.serverCode === "account_revision_conflict" || error.serverCode === "version_conflict") return error.serverCode;
     if (error.serverCode === "merge_preview_mismatch" || error.serverCode === "adoption_conflict") return "adoption_conflict";
+    if (error.serverCode === "session_revocation_pending") return "session_revocation_pending";
+    if (error.serverCode === "remote_deletion_pending") return "remote_deletion_pending";
+    if (error.serverCode === "recent_reauthentication_required") return "reauthentication_required";
+    if (error.status === 401 || error.serverCode === "account_deleted") return "revokedSession";
     if (error.code === "transport_failed" || error.code === "request_timeout") return "offline";
     return error.serverCode ?? error.code;
   }

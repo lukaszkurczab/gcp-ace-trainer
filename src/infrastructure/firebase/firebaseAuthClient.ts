@@ -4,12 +4,15 @@ import {
   connectAuthEmulator,
   confirmPasswordReset,
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
   getAuth,
   initializeAuth,
   onAuthStateChanged,
   OAuthProvider,
   sendEmailVerification,
   sendPasswordResetEmail,
+  reauthenticateWithCredential,
+  signInWithCustomToken,
   signInWithCredential,
   signInWithEmailAndPassword,
   signOut,
@@ -29,6 +32,7 @@ export type FirebaseAuthUserSnapshot = Readonly<{
 export type FirebaseAuthClient = Readonly<{
   applyActionCode: (code: string) => Promise<void>;
   confirmPasswordReset: (code: string, password: string) => Promise<void>;
+  reauthenticateWithPassword: (password: string) => Promise<void>;
   getIdToken: () => Promise<string | null>;
   getSnapshot: () => FirebaseAuthUserSnapshot | null;
   onUserChanged: (listener: (user: FirebaseAuthUserSnapshot | null) => void) => () => void;
@@ -38,6 +42,7 @@ export type FirebaseAuthClient = Readonly<{
   signIn: (email: string, password: string) => Promise<FirebaseAuthUserSnapshot>;
   signInWithApple: () => Promise<FirebaseAuthUserSnapshot>;
   signInWithGoogle: (idToken: string) => Promise<FirebaseAuthUserSnapshot>;
+  signInWithRecoveryToken: (customToken: string) => Promise<FirebaseAuthUserSnapshot>;
   signOut: () => Promise<void>;
   refreshVerification: () => Promise<FirebaseAuthUserSnapshot | null>;
 }>;
@@ -106,6 +111,12 @@ export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClien
   return Object.freeze({
     applyActionCode: async (code: string) => { await applyActionCode(auth, code); if (current) await current.reload(); },
     confirmPasswordReset: async (code: string, password: string) => { await confirmPasswordReset(auth, code, password); },
+    reauthenticateWithPassword: async (password: string) => {
+      const user = requireUser();
+      if (!user.email) throw new Error("auth/reauthentication-provider-unavailable");
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, password));
+      await user.getIdToken(true);
+    },
     getIdToken: async () => current ? current.getIdToken() : null,
     getSnapshot: () => current ? snapshot(current) : null,
     onUserChanged: (listener) => { listeners.add(listener); listener(current ? snapshot(current) : null); return () => { listeners.delete(listener); }; },
@@ -126,6 +137,10 @@ export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClien
     signInWithGoogle: async (idToken: string) => {
       if (idToken.length === 0) throw new Error("auth/provider-unavailable");
       return afterCredential((await signInWithCredential(auth, OAuthProviderCredential.google(idToken))).user);
+    },
+    signInWithRecoveryToken: async (customToken: string) => {
+      if (!customToken) throw new Error("auth/provider-unavailable");
+      return afterCredential((await signInWithCustomToken(auth, customToken)).user);
     },
     signOut: async () => { await signOut(auth); current = null; },
     refreshVerification: async () => { if (!current) return null; await current.reload(); return snapshot(current); },

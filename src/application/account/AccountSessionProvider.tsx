@@ -5,10 +5,12 @@ import { PatternlyApiClientError, createPatternlyApiClient, type MeResponseDto }
 import { composePatternlyNativeAppCheck } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
-import { confirmAccountDataAdoption, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, type AccountDataSession } from "./accountDataService";
+import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, type AccountDataSession } from "./accountDataService";
+import { getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
-export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "expiredAction" | "invalid" | "invalidCredential" | "journalRecoveryFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "remoteFailure" | "revokedSession" | "unverifiedIdentity";
-export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "recoveryAccepted" | "verificationPending" }>;
+export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "expiredAction" | "invalid" | "invalidCredential" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity";
+export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "signedOut"; recoveryCodes?: readonly string[] }>;
 
 export type AccountState =
   | Readonly<{ kind: "loading" }>
@@ -16,6 +18,8 @@ export type AccountState =
   | Readonly<{ kind: "signedOut" }>
   | Readonly<{ kind: "verificationPending"; user: FirebaseAuthUserSnapshot }>
   | Readonly<{ kind: "authenticated"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
+  | Readonly<{ kind: "signingOut"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
+  | Readonly<{ kind: "deleting"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "backendUnavailable" | "revokedSession"; user: FirebaseAuthUserSnapshot }>;
 
 export type AccountSessionContextValue = Readonly<{
@@ -30,6 +34,9 @@ export type AccountSessionContextValue = Readonly<{
   signInWithGoogle: (idToken: string) => Promise<AccountCommandResult>;
   confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[] ) => Promise<AccountCommandResult>;
   retryAccountSync: () => Promise<AccountCommandResult>;
+  deleteAccount: (password: string) => Promise<AccountCommandResult>;
+  issueRecoveryCodes: (password: string) => Promise<AccountCommandResult>;
+  consumeRecoveryCode: (code: string) => Promise<AccountCommandResult>;
   signOut: () => Promise<AccountCommandResult>;
   state: AccountState;
 }>;
@@ -168,10 +175,63 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     signOut: () => runWithAuth(async (auth, api) => {
       const user = auth.getSnapshot();
       if (user && state.kind === "authenticated") {
+        setState({ kind: "signingOut", backendUser: state.backendUser, user, accountData: state.accountData });
         const prepared = await prepareAccountSignOut(api, state.backendUser.id);
-        if (!prepared.ok) return { kind: "failure", failure: prepared.failure };
+        if (!prepared.ok) {
+          setState({ kind: "authenticated", backendUser: state.backendUser, user, accountData: { ...state.accountData, status: prepared.failure === "signOutPending" ? "signOutPending" : state.accountData.status, lastFailureCode: prepared.failure } });
+          return { kind: "failure", failure: prepared.failure === "signOutPending" ? "signOutPending" : prepared.failure };
+        }
       }
-      await auth.signOut(); setState({ kind: "signedOut" }); return { kind: "success", next: "authenticated" };
+      try {
+        await auth.signOut();
+      } catch {
+        setState({ kind: "revokedSession", user: auth.getSnapshot() ?? user ?? { uid: "unknown", email: null, emailVerified: false, provider: "password" } });
+        return { kind: "failure", failure: "revokedSession" };
+      }
+      setState({ kind: "signedOut" }); return { kind: "success", next: "signedOut" };
+    }),
+    deleteAccount: (password) => runWithAuth(async (auth, api) => {
+      const user = auth.getSnapshot();
+      if (!user || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
+      if (user.provider !== "password" || password.length < 8) return { kind: "failure", failure: "reauthenticationRequired" };
+      setState({ kind: "deleting", backendUser: state.backendUser, user, accountData: state.accountData });
+      try {
+        await auth.reauthenticateWithPassword(password);
+      } catch (error) {
+        setState({ kind: "authenticated", backendUser: state.backendUser, user, accountData: state.accountData });
+        const failure = classifyAccountFailure(error);
+        return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
+      }
+      const result = await deleteBoundAccount(api, state.backendUser.id, user.uid);
+      if (!result.ok) {
+        setState({ kind: "authenticated", backendUser: state.backendUser, user, accountData: { ...state.accountData, status: result.failure === "remoteDeletionPending" ? "remoteDeletionPending" : result.failure === "localCleanupFailure" ? "localCleanupPending" : state.accountData.status, lastFailureCode: result.failure } });
+        return { kind: "failure", failure: result.failure };
+      }
+      try {
+        await auth.signOut();
+      } catch {
+        setState({ kind: "revokedSession", user: auth.getSnapshot() ?? user });
+        return { kind: "failure", failure: "revokedSession" };
+      }
+      setState({ kind: "signedOut" });
+      return { kind: "success", next: "signedOut" };
+    }),
+    issueRecoveryCodes: (password) => runWithAuth(async (auth, api) => {
+      const user = auth.getSnapshot();
+      if (!user || state.kind !== "authenticated" || user.provider !== "password" || password.length < 8) return { kind: "failure", failure: "reauthenticationRequired" };
+      try {
+        await auth.reauthenticateWithPassword(password);
+        const issued = await api.issueRecoveryCodes();
+        return { kind: "success", next: "recoveryCodesIssued", recoveryCodes: issued.codes };
+      } catch (error) {
+        return { kind: "failure", failure: classifyAccountFailure(error) === "invalidCredential" ? "reauthenticationRequired" : classifyAccountFailure(error) };
+      }
+    }),
+    consumeRecoveryCode: (code) => runWithAuth(async (auth, api) => {
+      if (!/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/u.test(code.trim().toUpperCase())) return { kind: "failure", failure: "invalid" };
+      const token = await api.consumeRecoveryCode(code.trim().toUpperCase());
+      const user = await auth.signInWithRecoveryToken(token.customToken);
+      return finalizeVerification(auth, api, user, setState);
     }),
     state,
   }), [apiClient, runWithAuth, state]);
@@ -186,6 +246,25 @@ export function usePatternlyAccount(): AccountSessionContextValue {
 }
 
 async function reconcileAuthenticatedUser(auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>, user: FirebaseAuthUserSnapshot, setState: (state: AccountState) => void): Promise<void> {
+  const deletion = getAccountDeletionState();
+  if (deletion?.accountUidHash === sha256Utf8(user.uid)) {
+    if (deletion.status === "complete") {
+      await auth.signOut();
+      setState({ kind: "signedOut" });
+      return;
+    }
+    const recovered = await deleteBoundAccount(api, deletion.accountId, user.uid);
+    if (recovered.ok) {
+      await auth.signOut();
+      setState({ kind: "signedOut" });
+      return;
+    }
+  }
+  if (await completeRemoteRevokedSignOut()) {
+    await auth.signOut();
+    setState({ kind: "signedOut" });
+    return;
+  }
   if (user.provider === "password" && !user.emailVerified) {
     setState({ kind: "verificationPending", user });
     return;
@@ -209,6 +288,7 @@ async function finalizeVerification(auth: FirebaseAuthClient, api: ReturnType<ty
 
 export function classifyAccountFailure(error: unknown): AccountFailure {
   if (error instanceof PatternlyApiClientError) {
+    if (error.serverCode === "recent_reauthentication_required") return "reauthenticationRequired";
     if (error.status === 401 || error.serverCode === "account_deleted" || error.serverCode === "authentication_required") return "revokedSession";
     if (error.status !== undefined && error.status >= 500) return "backendUnavailable";
     if (error.code === "transport_failed" || error.code === "request_timeout") return "offline";
@@ -221,6 +301,7 @@ export function classifyAccountFailure(error: unknown): AccountFailure {
   if (["auth/too-many-requests", "auth/quota-exceeded"].includes(code)) return "rateLimited";
   if (["auth/network-request-failed", "auth/timeout"].includes(code)) return "offline";
   if (["auth/user-token-expired", "auth/invalid-user-token", "auth/user-disabled", "auth/user-not-found"].includes(code)) return "revokedSession";
+  if (["auth/requires-recent-login", "auth/reauthentication-provider-unavailable"].includes(code)) return "reauthenticationRequired";
   if (["auth/operation-not-allowed", "auth/app-not-authorized", "auth/invalid-api-key", "auth/invalid-app-id", "auth/provider-unavailable", "auth/apple-unavailable"].includes(code)) return "providerUnavailable";
   if (["auth/wrong-password", "auth/invalid-credential", "auth/email-already-in-use"].includes(code)) return "invalidCredential";
   return "providerUnavailable";

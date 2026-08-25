@@ -15,3 +15,4 @@ export * from "./foregroundTimerRepository";
 export * from "./goalRepository";
 export * from "./contentReportOutboxRepository";
 export * from "./accountDataRepository";
+export * from "./accountLifecycleRepository";

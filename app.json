@@ -13,13 +13,30 @@
     "newArchEnabled": true,
     "plugins": [
       "expo-notifications",
-      "@react-native-firebase/app",
+      [
+        "@react-native-firebase/app",
+        {
+          "ios": {
+            "disableSPM": true
+          }
+        }
+      ],
       "@react-native-firebase/app-check",
       [
         "expo-build-properties",
         {
           "ios": {
-            "deploymentTarget": "16.4"
+            "deploymentTarget": "16.4",
+            "extraPods": [
+              {
+                "name": "GoogleUtilities",
+                "modular_headers": true
+              },
+              {
+                "name": "RecaptchaInterop",
+                "modular_headers": true
+              }
+            ]
           },
           "android": {
             "minSdkVersion": 28,
