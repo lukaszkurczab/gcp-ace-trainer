@@ -11,13 +11,31 @@ import { contentPackageRuntimeOwner } from "../../application/contentPackageRunt
 
 const CONTENT_PREPARATION_TIMEOUT_MS = 15_000;
 
+export type ContentPreparationPhase =
+  | "opening-storage"
+  | "recovering-learning-state"
+  | "verifying-content"
+  | "resuming-session";
+
+const PREPARATION_PHASE_COPY: Readonly<Record<ContentPreparationPhase, string>> = {
+  "opening-storage": "Opening local learning data…",
+  "recovering-learning-state": "Checking saved learning state…",
+  "verifying-content": "Verifying installed learning content…",
+  "resuming-session": "Restoring your active session…",
+};
+
+function preparationTimeoutReason(phase: ContentPreparationPhase): string {
+  const description = PREPARATION_PHASE_COPY[phase].slice(0, -1);
+  return `Content preparation timed out while ${description.charAt(0).toLowerCase()}${description.slice(1)}. Retry to validate the installed content.`;
+}
+
 export type ContentPreparationState =
-  | { kind: "loading" }
+  | { kind: "loading"; phase: ContentPreparationPhase }
   | { kind: "ready" }
-  | { kind: "blocking"; reason: string };
+  | { kind: "blocking"; phase: ContentPreparationPhase; reason: string };
 
 export function ContentPreparationGate({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<ContentPreparationState>({ kind: "loading" });
+  const [state, setState] = useState<ContentPreparationState>({ kind: "loading", phase: "opening-storage" });
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
   const [auditResetReady, setAuditResetReady] = useState(false);
   const [auditCommandListenerReady, setAuditCommandListenerReady] = useState(false);
@@ -32,7 +50,13 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     let settled = false;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     let lifecycle: ReturnType<typeof composeTrainingLifecycleUseCases> | null = null;
+    let currentPhase: ContentPreparationPhase = "opening-storage";
     lifecycleReady.current = false;
+
+    const setPhase = (phase: ContentPreparationPhase) => {
+      currentPhase = phase;
+      if (live && !settled) setState({ kind: "loading", phase });
+    };
 
     const complete = (nextState: ContentPreparationState) => {
       if (!live || settled) return;
@@ -48,7 +72,8 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     timeoutId = setTimeout(() => {
       complete({
         kind: "blocking",
-        reason: "Content preparation timed out. Retry to validate the installed content.",
+        phase: currentPhase,
+        reason: preparationTimeoutReason(currentPhase),
       });
     }, CONTENT_PREPARATION_TIMEOUT_MS);
 
@@ -56,8 +81,12 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
       const initialUrl = __DEV__ && !initialUrlHandled.current ? await Linking.getInitialURL() : null;
       initialUrlHandled.current = true;
       return bootstrapApplication(
-        () => contentPackageRuntimeOwner.verifyBundledPackages(),
+        () => {
+          setPhase("verifying-content");
+          return contentPackageRuntimeOwner.verifyBundledPackages();
+        },
         async () => {
+          setPhase("resuming-session");
           if (!lifecycle) throw new Error("Training lifecycle composition was not installed.");
           const session = await lifecycle.resumeActiveSession();
           if (session.configurationSnapshot.timer === "countdownForeground" || session.configurationSnapshot.timer === "elapsedForeground") {
@@ -65,6 +94,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
           }
         },
         async () => {
+          setPhase("recovering-learning-state");
           lifecycle = composeTrainingLifecycleUseCases();
           lifecycleReady.current = true;
           const queuedUrl = pendingRuntimeAuditabilityUrl.current;
@@ -74,9 +104,9 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         },
       );
     })().then((result) => {
-      complete(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", reason: result.reason });
+      complete(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", phase: currentPhase, reason: result.reason });
     }).catch((error) => {
-      complete({ kind: "blocking", reason: describeOperationalFailure(error, "Application bootstrap failed.") });
+      complete({ kind: "blocking", phase: currentPhase, reason: describeOperationalFailure(error, "Application bootstrap failed.") });
     });
     return () => {
       live = false;
@@ -104,10 +134,10 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         const result = await handleRuntimeAuditabilityUrl(url);
         if (!live || result.kind !== "reset_learning_state") return;
         auditResetAwaitingBootstrap.current = true;
-        setState({ kind: "loading" });
+        setState({ kind: "loading", phase: "opening-storage" });
         setBootstrapRevision((revision) => revision + 1);
       } catch (error) {
-        if (live) setState({ kind: "blocking", reason: describeOperationalFailure(error, "Development reset failed.") });
+        if (live) setState({ kind: "blocking", phase: "opening-storage", reason: describeOperationalFailure(error, "Development reset failed.") });
       } finally {
         resetInFlight.current = false;
       }
@@ -120,7 +150,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const body = state.kind === "ready"
     ? <View style={{ flex: 1 }} testID={auditResetReady ? runtimeSelectors.content.readyAfterAuditReset() : runtimeSelectors.content.ready()}>{children}</View>
     : state.kind === "loading"
-      ? <Screen edges={["top", "bottom"]} scroll={false}><LoadingState title="Preparing content…" variant="startup" /></Screen>
-      : <Screen><EmptyState actionLabel="Retry" description={state.reason} onActionPress={() => { setState({ kind: "loading" }); setBootstrapRevision((revision) => revision + 1); }} title="Application unavailable" /></Screen>;
+      ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.preparing(state.phase)}><Screen edges={["top", "bottom"]} scroll={false}><LoadingState description={PREPARATION_PHASE_COPY[state.phase]} title="Preparing content…" variant="startup" /></Screen></View>
+      : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen><EmptyState actionLabel="Retry" description={state.reason} onActionPress={() => { setState({ kind: "loading", phase: "opening-storage" }); setBootstrapRevision((revision) => revision + 1); }} title="Application unavailable" /></Screen></View>;
   return <View style={{ flex: 1 }} testID={auditCommandListenerReady ? runtimeSelectors.content.auditCommandListener() : undefined}>{body}</View>;
 }

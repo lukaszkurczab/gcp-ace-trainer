@@ -20,6 +20,8 @@ type ItemId = ContentItemRef["itemId"];
 
 export const runtimeSelectors = Object.freeze({
   content: Object.freeze({
+    preparing: (phase: string) => selector("content", "preparing", phase),
+    unavailable: () => selector("content", "unavailable"),
     ready: () => selector("content", "ready"),
     readyAfterAuditReset: () => selector("content", "ready-after-audit-reset"),
     auditCommandListener: () => selector("content", "audit-command-listener", "ready"),

@@ -64,6 +64,8 @@ test("complexity selectors encode authored notation without weakening the select
 test("runtime selectors keep distinct runtime entities distinct", () => {
   const selectors = new Set([
     runtimeSelectors.home.trackCard("coding-interview-dsa-problem-solving"),
+    runtimeSelectors.content.preparing("verifying-content"),
+    runtimeSelectors.content.unavailable(),
     runtimeSelectors.content.ready(),
     runtimeSelectors.content.readyAfterAuditReset(),
     runtimeSelectors.practice.modeCard("coding-interview-guided-practice"),
@@ -91,7 +93,7 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.simulation.navigator("coding-interview-dsa-problem-solving:coding-interview-simulation:2:occurrence:1"),
   ]);
 
-  assert.equal(selectors.size, 26);
+  assert.equal(selectors.size, 28);
 });
 
 test("runtime selector factories reject values that cannot be represented in the contract", () => {

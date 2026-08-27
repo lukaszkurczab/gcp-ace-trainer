@@ -72,7 +72,7 @@ test("exactly the sixteen inventoried generic pending branches use LoadingState"
   assert.deepEqual(consumers, [...genericPendingPaths].sort());
   for (const path of genericPendingPaths) assert.match(source(path), /<LoadingState\b/, path);
 
-  assert.match(source(genericPendingPaths[0]), /state\.kind === "loading"[\s\S]*?<LoadingState title="Preparing content…"/);
+  assert.match(source(genericPendingPaths[0]), /state\.kind === "loading"[\s\S]*?<LoadingState[\s\S]*?title="Preparing content…"/);
   assert.match(source("src/features/home/HomeScreen.tsx"), /if \(!hasLoadedActiveTrack\) return <Screen[\s\S]*?<LoadingState/);
   assert.match(source("src/features/practice/AlgorithmsScopeSelectionScreen.tsx"), /state\.kind === "loading"[\s\S]*?<LoadingState/);
   assert.match(source("src/features/practice/AlgorithmsPracticeSummaryScreen.tsx"), /state\.kind === "loading"[\s\S]*?<LoadingState/);
