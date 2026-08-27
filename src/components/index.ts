@@ -15,6 +15,7 @@ export * from "./InfoBlock";
 export * from "./ListRow";
 export * from "./LoadingState";
 export * from "./ProgressBar";
+export * from "./PublicLinkRow";
 export * from "./ReviewShell";
 export * from "./ReviewNavigator";
 export * from "./ReviewUnavailableSurface";

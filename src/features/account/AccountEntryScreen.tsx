@@ -3,11 +3,11 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Linking, Platform, StyleSheet, Text, TextInput, View, type StyleProp, type TextStyle } from "react-native";
 import * as Google from "expo-auth-session/providers/google";
 
-import { Button, Card, InfoBlock, Screen, ScreenHeader } from "../../components";
+import { Button, Card, InfoBlock, PublicLinkRow, Screen, ScreenHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
 import { usePatternlyAccount, type AccountCommandResult, type AccountFailure } from "../../application/account/AccountSessionProvider";
-import { readFirebaseClientConfiguration } from "../../infrastructure/firebase/publicConfig";
+import { readFirebaseClientConfiguration, readPublicLegalLinksFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { spacing, typography, type AppColors } from "../../theme";
 
@@ -48,6 +48,12 @@ const copy = {
     deleteAccount: "Delete account",
     deleteAccountDescription: "This permanently removes Patternly account data from Firestore and account-owned local records. Store subscriptions and provider records are separate.",
     confirmDeletion: "Delete permanently",
+    publicDeletionLink: "Public account-deletion request",
+    publicDeletionLinkDetail: "Open the configured public request path.",
+    publicDeletionLinkUnavailable: "No validated public deletion URL is configured; this link is disabled in this local build.",
+    publicDeletionLinkInvalid: "The public environment configuration is invalid; this link is disabled.",
+    publicDeletionLinkOpenFailedTitle: "Public deletion link unavailable",
+    publicDeletionLinkOpenFailed: "The configured public deletion link could not be opened on this device.",
     deleting: "Deleting account",
     deletionPending: "Account deletion pending",
     deletionPendingDescription: "Deletion is not confirmed complete. Keep this account bound and retry; no success is shown until the server proof and local cleanup verify.",
@@ -142,6 +148,12 @@ const copy = {
     deleteAccount: "Usuń konto",
     deleteAccountDescription: "Ta operacja trwale usuwa dane konta Patternly z Firestore i account-owned dane lokalne. Subskrypcje sklepu i dane providerów są osobne.",
     confirmDeletion: "Usuń trwale",
+    publicDeletionLink: "Publiczne żądanie usunięcia konta",
+    publicDeletionLinkDetail: "Otwórz skonfigurowaną publiczną ścieżkę żądania.",
+    publicDeletionLinkUnavailable: "Nie skonfigurowano zweryfikowanego publicznego URL usunięcia konta; ten link jest wyłączony w tej lokalnej wersji.",
+    publicDeletionLinkInvalid: "Konfiguracja publicznego środowiska jest nieprawidłowa; ten link jest wyłączony.",
+    publicDeletionLinkOpenFailedTitle: "Publiczny link usunięcia jest niedostępny",
+    publicDeletionLinkOpenFailed: "Nie udało się otworzyć skonfigurowanego publicznego linku usunięcia na tym urządzeniu.",
     deleting: "Usuwanie konta",
     deletionPending: "Usuwanie konta oczekuje",
     deletionPendingDescription: "Usunięcie nie jest potwierdzone jako zakończone. Pozostaw konto powiązane i spróbuj ponownie; sukces pokażemy dopiero po weryfikacji proof i lokalnego czyszczenia.",
@@ -263,7 +275,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   if (account.state.kind === "loading") return <Screen><ScreenHeader title={text.account} /><InfoBlock body={text.accountDescription} title={text.account} /></Screen>;
   if (account.state.kind === "unavailable") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.account} /><InfoBlock body={text.unavailableDescription} title={text.unavailable} testID="account-unavailable" tone="warning" /></Screen>;
   if (account.state.kind === "verificationPending") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.verification} /><InfoBlock body={text.verificationDescription} title={text.verification} testID="account-verification-pending" /><Text style={styles.email}>{account.state.user.email ?? email}</Text>{renderFeedback(feedback, text)}<Button loading={false} onPress={() => void account.resendVerification().then(setResult(setFeedback))} testID="account-resend-verification" variant="primary">{text.resend}</Button><Button onPress={() => void account.refreshVerification().then(setResult(setFeedback))} testID="account-check-verification" variant="secondary">{text.check}</Button><Button onPress={() => void account.signOut()} testID="account-sign-out" variant="ghost">{text.signOut}</Button></Screen>;
-  if (account.state.kind === "authenticated") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.account} /><InfoBlock body={text.accountReadyDescription} title={text.accountReady} testID="account-authenticated" tone="success" /><AccountDataPanel accountData={account.state.accountData} onConfirm={(resolutions) => void account.confirmAdoption(resolutions).then(setResult(setFeedback))} onRetry={() => void account.retryAccountSync().then(setResult(setFeedback))} text={text} />{feedback ? renderFeedback(feedback, text) : null}{recoveryCodes ? <Card testID="account-recovery-codes" style={{ gap: spacing.md }}><Text maxFontSizeMultiplier={2} style={{ ...typography.bodyStrong }}>{text.recoveryCodes}</Text><Text maxFontSizeMultiplier={2} style={{ ...typography.small }}>{text.recoveryCodesDescription}</Text><Text selectable maxFontSizeMultiplier={2}>{recoveryCodes.join("\n")}</Text></Card> : <Card style={{ gap: spacing.md }} testID="account-recovery-codes-panel"><Text maxFontSizeMultiplier={2} style={{ ...typography.bodyStrong }}>{text.recoveryCodes}</Text><TextInput autoCapitalize="none" autoComplete="password" onChangeText={setRecoveryPassword} placeholder={text.password} placeholderTextColor={styles.placeholder.color as string} secureTextEntry style={styles.input} testID="account-recovery-reauth-password" value={recoveryPassword} /><Button onPress={() => void account.issueRecoveryCodes(recoveryPassword).then((result) => { if (result.kind === "success") setRecoveryCodes(result.recoveryCodes ?? []); setFeedback(result); })} testID="account-recovery-codes-submit" variant="secondary">{text.issueRecoveryCodes}</Button></Card>}<Card style={{ gap: spacing.md }} testID="account-delete-panel"><Text maxFontSizeMultiplier={2} style={{ ...typography.bodyStrong }}>{text.deleteAccount}</Text><Text maxFontSizeMultiplier={2} style={{ ...typography.small }}>{text.deleteAccountDescription}</Text><TextInput autoCapitalize="none" autoComplete="password" onChangeText={setDeletionPassword} placeholder={text.password} placeholderTextColor={styles.placeholder.color as string} secureTextEntry style={styles.input} testID="account-delete-reauth-password" value={deletionPassword} /><Button onPress={() => void account.deleteAccount(deletionPassword).then(setResult(setFeedback))} testID="account-delete-submit" variant="secondary">{text.confirmDeletion}</Button></Card><Button onPress={() => void account.signOut().then(setResult(setFeedback))} testID="account-sign-out" variant="secondary">{text.signOut}</Button></Screen>;
+  if (account.state.kind === "authenticated") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.account} /><InfoBlock body={text.accountReadyDescription} title={text.accountReady} testID="account-authenticated" tone="success" /><AccountDataPanel accountData={account.state.accountData} onConfirm={(resolutions) => void account.confirmAdoption(resolutions).then(setResult(setFeedback))} onRetry={() => void account.retryAccountSync().then(setResult(setFeedback))} text={text} />{feedback ? renderFeedback(feedback, text) : null}{recoveryCodes ? <Card testID="account-recovery-codes" style={{ gap: spacing.md }}><Text maxFontSizeMultiplier={2} style={{ ...typography.bodyStrong }}>{text.recoveryCodes}</Text><Text maxFontSizeMultiplier={2} style={{ ...typography.small }}>{text.recoveryCodesDescription}</Text><Text selectable maxFontSizeMultiplier={2}>{recoveryCodes.join("\n")}</Text></Card> : <Card style={{ gap: spacing.md }} testID="account-recovery-codes-panel"><Text maxFontSizeMultiplier={2} style={{ ...typography.bodyStrong }}>{text.recoveryCodes}</Text><TextInput autoCapitalize="none" autoComplete="password" onChangeText={setRecoveryPassword} placeholder={text.password} placeholderTextColor={styles.placeholder.color as string} secureTextEntry style={styles.input} testID="account-recovery-reauth-password" value={recoveryPassword} /><Button onPress={() => void account.issueRecoveryCodes(recoveryPassword).then((result) => { if (result.kind === "success") setRecoveryCodes(result.recoveryCodes ?? []); setFeedback(result); })} testID="account-recovery-codes-submit" variant="secondary">{text.issueRecoveryCodes}</Button></Card>}<Card style={{ gap: spacing.md }} testID="account-delete-panel"><Text maxFontSizeMultiplier={2} style={{ ...typography.bodyStrong }}>{text.deleteAccount}</Text><Text maxFontSizeMultiplier={2} style={{ ...typography.small }}>{text.deleteAccountDescription}</Text><PublicDeletionLink text={text} /><TextInput autoCapitalize="none" autoComplete="password" onChangeText={setDeletionPassword} placeholder={text.password} placeholderTextColor={styles.placeholder.color as string} secureTextEntry style={styles.input} testID="account-delete-reauth-password" value={deletionPassword} /><Button onPress={() => void account.deleteAccount(deletionPassword).then(setResult(setFeedback))} testID="account-delete-submit" variant="secondary">{text.confirmDeletion}</Button></Card><Button onPress={() => void account.signOut().then(setResult(setFeedback))} testID="account-sign-out" variant="secondary">{text.signOut}</Button></Screen>;
   if (account.state.kind === "signingOut") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.signOut} /><InfoBlock body={text.signOutPendingDescription} title={text.signOutPending} testID="account-sign-out-pending" tone="warning" /></Screen>;
   if (account.state.kind === "deleting") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.deleteAccount} /><InfoBlock body={text.deletionPendingDescription} title={text.deleting} testID="account-deletion-pending" tone="warning" /></Screen>;
   if (account.state.kind === "backendUnavailable") return <Screen><ScreenHeader backAction={{ onPress: navigation.goBack }} title={text.account} /><InfoBlock body={text.backendUnavailableDescription} title={text.backendUnavailable} testID="account-backend-unavailable" tone="warning" /><Button onPress={() => void account.refreshVerification().then(setResult(setFeedback))} testID="account-retry-backend" variant="primary">{text.check}</Button><Button onPress={() => void account.signOut()} testID="account-sign-out" variant="ghost">{text.signOut}</Button></Screen>;
@@ -294,6 +306,38 @@ function renderFeedback(feedback: Feedback | null, text: AccountCopy) {
   if (feedback.kind === "success") return <InfoBlock body={text.accountDescription} title={text.account} tone="success" />;
   const message = text[feedback.failure];
   return <InfoBlock body={message} title={text.invalid} testID={`account-feedback-${feedback.failure}`} tone="warning" />;
+}
+
+function PublicDeletionLink({ text }: Readonly<{ text: AccountCopy }>) {
+  const publicLinks = readPublicLegalLinksFromRuntime();
+  const [openFailure, setOpenFailure] = useState(false);
+  const available = publicLinks.kind === "configured";
+  const url = available ? publicLinks.value.publicDeletionUrl : null;
+
+  const openPublicDeletionLink = async () => {
+    if (!url) return;
+    setOpenFailure(false);
+    try {
+      await Linking.openURL(url);
+    } catch {
+      setOpenFailure(true);
+    }
+  };
+
+  return (
+    <View style={{ gap: spacing.sm }}>
+      {available ? null : <InfoBlock body={publicLinks.reason === "invalid_public_environment" ? text.publicDeletionLinkInvalid : text.publicDeletionLinkUnavailable} title={text.publicDeletionLink} testID="account-public-deletion-unavailable" tone="warning" />}
+      {openFailure ? <InfoBlock body={text.publicDeletionLinkOpenFailed} title={text.publicDeletionLinkOpenFailedTitle} testID="account-public-deletion-open-failed" tone="warning" /> : null}
+      <PublicLinkRow
+        available={available}
+        detail={available ? text.publicDeletionLinkDetail : text.publicDeletionLinkUnavailable}
+        icon="trash"
+        onPress={() => { void openPublicDeletionLink(); }}
+        testID="account-public-deletion-link"
+        title={text.publicDeletionLink}
+      />
+    </View>
+  );
 }
 
 function AccountDataPanel({ accountData, onConfirm, onRetry, text }: Readonly<{ accountData: import("../../application/account/accountDataService").AccountDataSession; onConfirm: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[]) => void; onRetry: () => void; text: AccountCopy }>) {

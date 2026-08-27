@@ -1,4 +1,11 @@
-import type { PublicEnvironment } from "../clients/publicEnvironment";
+import type { ConfiguredPublicEnvironment, PublicEnvironment } from "../clients/publicEnvironment";
+import { developmentLoopbackHost } from "../developmentEndpoints";
+
+export type PublicLegalLinks = Readonly<Pick<ConfiguredPublicEnvironment, "privacyUrl" | "termsUrl" | "supportUrl" | "publicDeletionUrl">>;
+
+export type PublicLegalLinksResult =
+  | Readonly<{ kind: "configured"; value: PublicLegalLinks }>
+  | Readonly<{ kind: "unavailable"; reason: "invalid_public_environment" | "no_public_environment_configuration" }>;
 
 export type FirebaseClientConfiguration = Readonly<{
   apiKey: string;
@@ -75,3 +82,37 @@ export function readPublicEnvironmentFromRuntime(): PublicEnvironment {
   }
 }
 
+/**
+ * The Firebase Auth Emulator is a local development-E2E dependency only.
+ * Never hand it to the normal account composition in an installed build:
+ * `EXPO_PUBLIC_*` values are compiled into the bundle.
+ */
+export function readDevelopmentFirebaseAuthEmulatorOrigin(): string | undefined {
+  if (typeof __DEV__ === "undefined" || !__DEV__) return undefined;
+  if (process.env.EXPO_PUBLIC_PATTERNLY_BACKEND_E2E !== "true") return undefined;
+  const value = process.env.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN;
+  if (!value) return undefined;
+  try {
+    const origin = new URL(value);
+    return origin.protocol === "http:" && origin.hostname === developmentLoopbackHost && origin.pathname === "/" && origin.search === "" && origin.hash === "" ? origin.origin : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function readPublicLegalLinksFromRuntime(): PublicLegalLinksResult {
+  const environment = readPublicEnvironmentFromRuntime();
+  if (environment.kind !== "configured") {
+    return Object.freeze({ kind: "unavailable", reason: environment.reason });
+  }
+
+  return Object.freeze({
+    kind: "configured",
+    value: Object.freeze({
+      privacyUrl: environment.value.privacyUrl,
+      publicDeletionUrl: environment.value.publicDeletionUrl,
+      supportUrl: environment.value.supportUrl,
+      termsUrl: environment.value.termsUrl,
+    }),
+  });
+}

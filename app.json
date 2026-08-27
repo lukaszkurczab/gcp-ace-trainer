@@ -10,9 +10,17 @@
     "icon": "./assets/brand/app-icon/patternly-app-icon.png",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "plugins": [
       "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/app-icon/patternly-app-icon-foreground.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#0C1324"
+        }
+      ],
       [
         "@react-native-firebase/app",
         {
@@ -27,6 +35,8 @@
         {
           "ios": {
             "deploymentTarget": "16.4",
+            "buildReactNativeFromSource": true,
+            "usePrecompiledModules": false,
             "extraPods": [
               {
                 "name": "GoogleUtilities",
@@ -47,6 +57,7 @@
       ],
       "./plugins/withAndroidNdkVersion",
       "./plugins/withPrivacyBoundary",
+      "./plugins/withAndroidSandboxVariant",
       "./plugins/withAndroidReleaseSigningBoundary"
     ],
     "assetBundlePatterns": [
@@ -56,7 +67,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.lkurczab.patternly",
       "buildNumber": "1",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "appleTeamId": "4KJFN6SXMH"
     },
     "android": {
       "package": "com.lkurczab.patternly",

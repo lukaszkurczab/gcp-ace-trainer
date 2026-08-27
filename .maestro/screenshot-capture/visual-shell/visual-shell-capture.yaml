@@ -6,19 +6,65 @@ tags:
 ---
 # The resetless release entry point and the development reset entry point share
 # exactly this learner journey; only their preparation boundary differs.
+# Returning selection hides the footer when the selected track is already
+# active, so establish a non-Coding active track before the evidence choice.
 - runFlow:
     when:
       visible: "Choose a track"
     commands:
-      - tapOn: "Go back"
+      - scrollUntilVisible:
+          element:
+            id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
+          direction: DOWN
+          centerElement: true
+          timeout: 30000
+          visibilityPercentage: 50
+      - tapOn:
+          id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
+      - scrollUntilVisible:
+          element:
+            id: "patternly:home:select-track:continue"
+          direction: DOWN
+          centerElement: true
+          timeout: 30000
+      - tapOn:
+          id: "patternly:home:select-track:continue"
       - extendedWaitUntil:
           visible:
-            id: "patternly:home:change-track"
+            id: "patternly:home:track-card:google-cloud-associate-cloud-engineer"
           timeout: 30000
 - extendedWaitUntil:
     visible:
       id: "patternly:home:change-track"
     timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    commands:
+      - tapOn:
+          id: "patternly:home:change-track"
+      - scrollUntilVisible:
+          element:
+            id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
+          direction: DOWN
+          centerElement: true
+          timeout: 30000
+          visibilityPercentage: 50
+      - tapOn:
+          id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
+      - scrollUntilVisible:
+          element:
+            id: "patternly:home:select-track:continue"
+          direction: DOWN
+          centerElement: true
+          timeout: 30000
+      - tapOn:
+          id: "patternly:home:select-track:continue"
+      - extendedWaitUntil:
+          visible:
+            id: "patternly:home:track-card:google-cloud-associate-cloud-engineer"
+          timeout: 30000
 - tapOn:
     id: "patternly:home:change-track"
 - scrollUntilVisible:
@@ -39,13 +85,10 @@ tags:
     timeout: 30000
 - tapOn:
     id: "patternly:home:select-track:continue"
-- scrollUntilVisible:
-    element:
+- extendedWaitUntil:
+    visible:
       id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
-    direction: DOWN
-    centerElement: false
     timeout: 30000
-    visibilityPercentage: 20
 - assertVisible:
     id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
 

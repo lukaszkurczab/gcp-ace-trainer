@@ -14,5 +14,13 @@ test("visual shell has one shared journey and an explicit production-ready prepa
   assert.match(releaseFlow, /- runFlow: visual-shell-capture\.yaml/);
   assert.equal((captureFlow.match(/- takeScreenshot:/g) ?? []).length, 11);
   assert.doesNotMatch(captureFlow, /audit\/reset-learning-state|ready-after-audit-reset/);
+  assert.match(captureFlow, /select-track:google-cloud-associate-cloud-engineer[\s\S]*?select-track:continue[\s\S]*?track-card:google-cloud-associate-cloud-engineer/);
+  const codingSelection = captureFlow.indexOf('id: "patternly:home:select-track:coding-interview-dsa-problem-solving"', captureFlow.indexOf("track-selection-ready"));
+  const codingCommit = captureFlow.indexOf('id: "patternly:home:select-track:continue"', codingSelection);
+  const codingHomeCard = captureFlow.indexOf('id: "patternly:home:track-card:coding-interview-dsa-problem-solving"', codingCommit);
+  assert.ok(codingSelection >= 0, "capture must select Coding before committing it");
+  assert.ok(codingCommit > codingSelection, "capture must commit Coding through the footer action");
+  assert.ok(codingHomeCard > codingCommit, "capture must verify the persisted Coding Home card after commit");
+  assert.match(captureFlow.slice(codingSelection, codingHomeCard), /scrollUntilVisible:[\s\S]*?select-track:continue[\s\S]*?- tapOn:\s*\n    id: "patternly:home:select-track:continue"/);
   assert.match(captureFlow, /id: "settings-your-data"[\s\S]*?direction: DOWN[\s\S]*?visibilityPercentage: 50[\s\S]*?tapOn:\s*\n    id: "settings-your-data"/);
 });

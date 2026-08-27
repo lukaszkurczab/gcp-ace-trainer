@@ -21,6 +21,7 @@ import {
 } from "firebase/auth";
 import type { FirebaseClientConfiguration } from "./publicConfig";
 import { createSecureAuthPersistence } from "./secureAuthPersistence";
+import { developmentLoopbackHost } from "../developmentEndpoints";
 
 export type FirebaseAuthUserSnapshot = Readonly<{
   email: string | null;
@@ -67,7 +68,7 @@ function firebaseAuth(app: FirebaseApp, emulatorOrigin: string | undefined): Aut
   }
   if (emulatorOrigin) {
     const emulator = new URL(emulatorOrigin);
-    if (emulator.protocol !== "http:" || emulator.hostname !== "127.0.0.1") throw new Error("auth_emulator_unconfigured");
+    if (emulator.protocol !== "http:" || emulator.hostname !== developmentLoopbackHost) throw new Error("auth_emulator_unconfigured");
     try { connectAuthEmulator(auth, emulator.origin, { disableWarnings: true }); } catch (error) {
       if (firebaseAuthErrorCode(error) !== "auth/emulator-config-failed") throw error;
     }

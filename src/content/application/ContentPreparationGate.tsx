@@ -96,7 +96,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const body = state.kind === "ready"
     ? <View style={{ flex: 1 }} testID={auditResetReady ? runtimeSelectors.content.readyAfterAuditReset() : runtimeSelectors.content.ready()}>{children}</View>
     : state.kind === "loading"
-      ? <Screen><LoadingState title="Preparing content…" /></Screen>
+      ? <Screen edges={["top", "bottom"]} scroll={false}><LoadingState title="Preparing content…" variant="startup" /></Screen>
       : <Screen><EmptyState title="Application unavailable" description={state.reason} /></Screen>;
   return <View style={{ flex: 1 }} testID={auditCommandListenerReady ? runtimeSelectors.content.auditCommandListener() : undefined}>{body}</View>;
 }

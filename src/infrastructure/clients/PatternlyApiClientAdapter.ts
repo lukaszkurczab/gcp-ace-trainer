@@ -3,6 +3,8 @@
  * Backend CI verifies that every versioned API path is represented here.
  */
 
+import { developmentLoopbackHost } from "../developmentEndpoints";
+
 export type ProgressMutationDto = Readonly<{
   mutationId: string;
   kind: "node" | "item";
@@ -108,7 +110,7 @@ export function createPatternlyApiClient(input: Readonly<{
   const origin = new URL(input.apiOrigin);
   const localSimulatorOrigin = input.allowLocalHttpForSimulator === true
     && origin.protocol === "http:"
-    && origin.hostname === "127.0.0.1"
+    && origin.hostname === developmentLoopbackHost
     && origin.pathname === "/"
     && origin.search === ""
     && origin.hash === "";
@@ -188,7 +190,7 @@ export function createFirebaseEmulatorIdTokenProvider(input: Readonly<{
   return async () => {
     if (cachedToken) return cachedToken;
     const origin = new URL(input.authEmulatorOrigin);
-    if (origin.protocol !== "http:" || origin.hostname !== "127.0.0.1") throw new PatternlyApiClientError("client_unconfigured");
+    if (origin.protocol !== "http:" || origin.hostname !== developmentLoopbackHost) throw new PatternlyApiClientError("client_unconfigured");
     let response: Response;
     try {
       response = await fetch(`${origin.origin}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=patternly-ios-simulator`, {

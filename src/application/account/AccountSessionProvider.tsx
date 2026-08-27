@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { PatternlyApiClientError, createPatternlyApiClient, type MeResponseDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { composePatternlyNativeAppCheck } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
-import { readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
+import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, type AccountDataSession } from "./accountDataService";
 import { getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
@@ -72,7 +72,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     try {
       auth = createFirebaseAuthClient({
         authActionOrigin: publicEnvironment.value.authActionOrigin,
-        authEmulatorOrigin: process.env.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN,
+        authEmulatorOrigin: readDevelopmentFirebaseAuthEmulatorOrigin(),
         config: firebaseConfiguration.value,
       });
       const client = createPatternlyApiClient({ apiOrigin: publicEnvironment.value.apiOrigin, getIdToken: auth.getIdToken });

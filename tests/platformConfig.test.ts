@@ -24,6 +24,8 @@ test("Expo platform configuration declares the supported phone-only native matri
   const [_, properties] = buildProperties;
   assert.deepEqual(properties.ios, {
     deploymentTarget: "16.4",
+    buildReactNativeFromSource: true,
+    usePrecompiledModules: false,
     extraPods: [
       { name: "GoogleUtilities", modular_headers: true },
       { name: "RecaptchaInterop", modular_headers: true },

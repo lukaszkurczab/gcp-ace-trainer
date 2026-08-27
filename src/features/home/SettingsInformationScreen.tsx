@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { Icon, IconTile, InfoBlock, ListRow, Screen, ScreenHeader, SettingsBottomSheet, SettingsGroup, type IconName } from "../../components";
@@ -22,11 +22,12 @@ type SettingsInformationScreenProps = Readonly<{
   closeLabel: string;
   infoBody: string;
   infoTitle: string;
+  supplementalContent?: ReactNode;
   screenHeader?: Readonly<{ context: string; onBack: () => void; title: string }>;
   sections: readonly InformationSection[];
 }>;
 
-export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, screenHeader, sections }: SettingsInformationScreenProps) {
+export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, screenHeader, sections, supplementalContent }: SettingsInformationScreenProps) {
   const styles = useThemedStyles(createStyles);
   const [activeTopic, setActiveTopic] = useState<InformationTopic | null>(null);
 
@@ -55,6 +56,7 @@ export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, scr
           ))}
         </SettingsGroup>
       ))}
+      {supplementalContent}
       <SettingsBottomSheet
         closeLabel={closeLabel}
         intro={activeTopic?.summary ?? ""}

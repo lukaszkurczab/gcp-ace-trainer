@@ -1,3 +1,8 @@
+import { useState } from "react";
+import { Linking } from "react-native";
+
+import { InfoBlock, PublicLinkRow, SettingsGroup } from "../../components";
+import { readPublicLegalLinksFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { SettingsInformationScreen, type InformationSection } from "./SettingsInformationScreen";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ROUTES } from "../../constants/routes";
@@ -10,6 +15,21 @@ const copy = {
     infoBody: "Patternly is an independent learning tool. This screen explains the current privacy, security, and study-use boundaries.",
     infoTitle: "Privacy and study use",
     legal: "Legal information",
+    publicLinksTitle: "Public legal links",
+    publicLinksUnavailableTitle: "Public legal links unavailable",
+    publicLinksUnconfiguredDescription: "This local build has no validated public environment, so privacy, terms, support, and public account-deletion links are disabled.",
+    publicLinksInvalidDescription: "The public environment configuration is invalid, so privacy, terms, support, and public account-deletion links are disabled.",
+    publicLinkOpenFailedTitle: "Public link unavailable",
+    publicLinkOpenFailedDescription: "The configured public link could not be opened on this device.",
+    publicLinkUnavailableDetail: "Unavailable in this local build.",
+    privacyLink: "Privacy policy",
+    privacyLinkDetail: "Open the configured public privacy policy.",
+    termsLink: "Terms",
+    termsLinkDetail: "Open the configured public terms.",
+    supportLink: "Support",
+    supportLinkDetail: "Open the configured public support destination.",
+    publicDeletionLink: "Public account-deletion request",
+    publicDeletionLinkDetail: "Open the configured public request path.",
     settings: "Settings",
     sections: [
       {
@@ -69,6 +89,21 @@ const copy = {
     infoBody: "Patternly jest niezależnym narzędziem do nauki. Ten ekran wyjaśnia obecne granice prywatności, bezpieczeństwa i korzystania z materiałów.",
     infoTitle: "Prywatność i korzystanie z materiałów",
     legal: "Informacje prawne",
+    publicLinksTitle: "Publiczne linki prawne",
+    publicLinksUnavailableTitle: "Publiczne linki prawne są niedostępne",
+    publicLinksUnconfiguredDescription: "Ta lokalna wersja nie ma zweryfikowanego publicznego środowiska, więc linki do prywatności, warunków, pomocy i publicznego żądania usunięcia konta są wyłączone.",
+    publicLinksInvalidDescription: "Konfiguracja publicznego środowiska jest nieprawidłowa, więc linki do prywatności, warunków, pomocy i publicznego żądania usunięcia konta są wyłączone.",
+    publicLinkOpenFailedTitle: "Publiczny link jest niedostępny",
+    publicLinkOpenFailedDescription: "Nie udało się otworzyć skonfigurowanego publicznego linku na tym urządzeniu.",
+    publicLinkUnavailableDetail: "Niedostępne w tej lokalnej wersji.",
+    privacyLink: "Polityka prywatności",
+    privacyLinkDetail: "Otwórz skonfigurowaną publiczną politykę prywatności.",
+    termsLink: "Warunki",
+    termsLinkDetail: "Otwórz skonfigurowane publiczne warunki.",
+    supportLink: "Pomoc",
+    supportLinkDetail: "Otwórz skonfigurowane publiczne miejsce pomocy.",
+    publicDeletionLink: "Publiczne żądanie usunięcia konta",
+    publicDeletionLinkDetail: "Otwórz skonfigurowaną publiczną ścieżkę żądania.",
     settings: "Ustawienia",
     sections: [
       {
@@ -130,5 +165,42 @@ type LegalInformationScreenProps = NativeStackScreenProps<RootStackParamList, ty
 export function LegalInformationScreen({ navigation }: LegalInformationScreenProps) {
   const { locale } = useAppPreferences();
   const text = copy[locale];
-  return <SettingsInformationScreen closeLabel={text.close} infoBody={text.infoBody} infoTitle={text.infoTitle} screenHeader={{ context: text.settings, onBack: () => navigation.goBack(), title: text.legal }} sections={text.sections} />;
+  const publicLinks = readPublicLegalLinksFromRuntime();
+  const [openFailure, setOpenFailure] = useState(false);
+  const available = publicLinks.kind === "configured";
+  const links = [
+    { detail: available ? text.privacyLinkDetail : text.publicLinkUnavailableDetail, icon: "shield-check" as const, title: text.privacyLink, testID: "legal-link-privacy", url: available ? publicLinks.value.privacyUrl : null },
+    { detail: available ? text.termsLinkDetail : text.publicLinkUnavailableDetail, icon: "book-open" as const, title: text.termsLink, testID: "legal-link-terms", url: available ? publicLinks.value.termsUrl : null },
+    { detail: available ? text.supportLinkDetail : text.publicLinkUnavailableDetail, icon: "mail" as const, title: text.supportLink, testID: "legal-link-support", url: available ? publicLinks.value.supportUrl : null },
+    { detail: available ? text.publicDeletionLinkDetail : text.publicLinkUnavailableDetail, icon: "trash" as const, title: text.publicDeletionLink, testID: "legal-link-public-deletion", url: available ? publicLinks.value.publicDeletionUrl : null },
+  ];
+
+  const openPublicLink = async (url: string) => {
+    setOpenFailure(false);
+    try {
+      await Linking.openURL(url);
+    } catch {
+      setOpenFailure(true);
+    }
+  };
+
+  const supplementalContent = (
+    <SettingsGroup title={text.publicLinksTitle}>
+      {available ? null : <InfoBlock body={publicLinks.reason === "invalid_public_environment" ? text.publicLinksInvalidDescription : text.publicLinksUnconfiguredDescription} title={text.publicLinksUnavailableTitle} testID="legal-links-unavailable" tone="warning" />}
+      {openFailure ? <InfoBlock body={text.publicLinkOpenFailedDescription} title={text.publicLinkOpenFailedTitle} testID="legal-link-open-failed" tone="warning" /> : null}
+      {links.map((link) => (
+        <PublicLinkRow
+          available={link.url !== null}
+          detail={link.detail}
+          icon={link.icon}
+          key={link.testID}
+          onPress={() => { if (link.url) void openPublicLink(link.url); }}
+          testID={link.testID}
+          title={link.title}
+        />
+      ))}
+    </SettingsGroup>
+  );
+
+  return <SettingsInformationScreen closeLabel={text.close} infoBody={text.infoBody} infoTitle={text.infoTitle} screenHeader={{ context: text.settings, onBack: () => navigation.goBack(), title: text.legal }} sections={text.sections} supplementalContent={supplementalContent} />;
 }
