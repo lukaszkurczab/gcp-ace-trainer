@@ -7,7 +7,8 @@ import { AppShellHeader, Button, Card, ChoiceRow, EmptyState, LoadingState, Scre
 import { ROUTES } from "../../constants/routes";
 import { CODING_INTERVIEW_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
-import { goBackOrHome, type RootStackParamList } from "../../navigation";
+import { goBackOrHome } from "../../navigation/goBackOrHome";
+import type { RootStackParamList } from "../../navigation/types";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { radius, spacing, typography } from "../../theme";

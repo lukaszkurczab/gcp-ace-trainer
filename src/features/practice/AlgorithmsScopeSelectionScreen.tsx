@@ -7,7 +7,8 @@ import { loadAlgorithmsDeclaredScopeOptions } from "../../application/learningRe
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { ROUTES } from "../../constants/routes";
 import { CODING_INTERVIEW_TRACK_ID } from "../../domain";
-import { goBackOrHome, type RootStackParamList } from "../../navigation";
+import { goBackOrHome } from "../../navigation/goBackOrHome";
+import type { RootStackParamList } from "../../navigation/types";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { spacing } from "../../theme";
 import { useAppPreferences } from "../../preferences";

@@ -19,7 +19,8 @@ import {
 import { ROUTES } from "../../constants/routes";
 import { contentPackagePinsEqual, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
-import { goBackOrHome, type RootStackParamList } from "../../navigation";
+import { goBackOrHome } from "../../navigation/goBackOrHome";
+import type { RootStackParamList } from "../../navigation/types";
 import {
   loadActiveTrackId as getActiveTrackId,
   loadTrainingAttempts as getTrainingAttempts,

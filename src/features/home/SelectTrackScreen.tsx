@@ -18,8 +18,8 @@ import {
   type TrackDisplay,
   type TrackId,
 } from "../../domain";
-import type { RootStackParamList } from "../../navigation";
-import { goBackOrHome } from "../../navigation";
+import { goBackOrHome } from "../../navigation/goBackOrHome";
+import type { RootStackParamList } from "../../navigation/types";
 import { loadActiveTrackId as getActiveTrackId, selectActiveTrack as saveActiveTrackId } from "../../application/learningReadModels";
 import { colorWithOpacity, spacing, typography } from "../../theme";
 import type { AppColors } from "../../theme";
