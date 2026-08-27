@@ -167,7 +167,7 @@ if (applicationRepository.status === "unavailable") blockers.push({ kind: "appli
 if (applicationRepository.status === "dirty") blockers.push({ kind: "application_worktree_dirty", changedPathCount: applicationRepository.changedPathCount });
 let launchTrackIds = [];
 try {
-  const contract = YAML.parse(readFileSync(resolve(root, "docs/canonical-product-contract.yaml"), "utf8"));
+  const contract = YAML.parse(readFileSync(resolve(root, "../docs/canonical-product-contract.yaml"), "utf8"));
   launchTrackIds = contract?.learningProducts?.launchTrackScope;
   if (!Array.isArray(launchTrackIds) || launchTrackIds.length !== 8 || launchTrackIds.some((id) => typeof id !== "string") || uniqueSorted(launchTrackIds).length !== 8) {
     blockers.push({ kind: "invalid_launch_scope_contract" });

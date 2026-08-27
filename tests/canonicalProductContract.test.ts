@@ -4,7 +4,7 @@ import test from "node:test";
 
 import { canStartCanonicalSimulationMutation, CanonicalProductContractValidationError, CanonicalUserFacingTaskReadinessError, getCanonicalRequirementTestCoverage, isDeclaredCanonicalSessionTransition, loadCanonicalProductContract, parseCanonicalProductContract, resolveCanonicalUserFacingTaskDesignReference } from "../scripts/validateCanonicalProductContract";
 
-const validContract = readFileSync("docs/canonical-product-contract.yaml", "utf8");
+const validContract = readFileSync("../docs/canonical-product-contract.yaml", "utf8");
 test("parses the canonical product contract", () => {
   const contract = loadCanonicalProductContract();
   assert.equal(contract.version, 2);
@@ -14,19 +14,19 @@ test("parses the canonical product contract", () => {
 
 test("keeps mode matrices and fixed configuration values out of narrative docs", () => {
   const narrativeDocs = [
-    "docs/03-navigation-and-flows.md",
-    "docs/00-overview.md",
-    "docs/04-data-model.md",
-    "docs/05-design-system.md",
-    "docs/06-branding-and-style-direction.md",
-    "docs/08-storage-and-offline.md",
-    "docs/11-implementation-guidelines.md",
-    "docs/12-testing-strategy.md",
-    "docs/15-certification-track-learning-system.md",
-    "docs/16-coding-interview-learning-system.md",
-    "docs/17-training-runtime-and-interaction-spec.md",
-    "docs/designs/README.md",
-    "docs/designs/product-direction-options/DESIGN.md",
+    "../docs/03-navigation-and-flows.md",
+    "../docs/00-overview.md",
+    "../docs/04-data-model.md",
+    "../docs/05-design-system.md",
+    "../docs/06-branding-and-style-direction.md",
+    "../docs/08-storage-and-offline.md",
+    "../docs/11-implementation-guidelines.md",
+    "../docs/12-testing-strategy.md",
+    "../docs/15-certification-track-learning-system.md",
+    "../docs/16-coding-interview-learning-system.md",
+    "../docs/17-training-runtime-and-interaction-spec.md",
+    "../docs/designs/README.md",
+    "../docs/designs/product-direction-options/DESIGN.md",
   ];
   const removedMatrixConstructs = [
     /\|\s*Mode\s*\|\s*Default length\s*\|/,

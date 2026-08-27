@@ -4,7 +4,10 @@ import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseDocument } from "yaml";
 
-import schema from "../docs/canonical-product-contract.schema.json";
+import schema from "../../docs/canonical-product-contract.schema.json";
+
+const workspaceRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const documentationRoot = resolve(workspaceRoot, "docs");
 
 export type CanonicalCodingInterviewModeId =
   | "coding-interview-learn-approach"
@@ -1077,10 +1080,9 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
     throw new CanonicalProductContractValidationError(`Canonical design reference UI ownership names an unknown reference: ${ownershipWithUnknownReference.designReferenceId}`);
   }
 
-  const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-  const designRoot = resolve(repositoryRoot, "docs/designs");
+  const designRoot = resolve(documentationRoot, "designs");
   const escapedPattern = designReferences.find((reference) => {
-    const path = resolve(repositoryRoot, reference.patternPath);
+    const path = resolve(workspaceRoot, reference.patternPath);
     const relativePath = relative(designRoot, path);
     return relativePath === "" || relativePath === ".." || relativePath.startsWith("../") || relativePath.startsWith("..\\") || isAbsolute(relativePath);
   });
@@ -1089,7 +1091,7 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   }
 
   const missingPattern = designReferences.find((reference) => {
-    const path = resolve(repositoryRoot, reference.patternPath);
+    const path = resolve(workspaceRoot, reference.patternPath);
     return !existsSync(path) || !statSync(path).isFile();
   });
   if (missingPattern) {
@@ -1179,6 +1181,6 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
 }
 
 export function loadCanonicalProductContract(): CanonicalProductContract {
-  const contractPath = resolve(dirname(fileURLToPath(import.meta.url)), "../docs/canonical-product-contract.yaml");
+  const contractPath = resolve(documentationRoot, "canonical-product-contract.yaml");
   return parseCanonicalProductContract(readFileSync(contractPath, "utf8"));
 }
