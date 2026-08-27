@@ -45,34 +45,72 @@ export function redactPersistedAuthUser(value: unknown): PersistedBlob | null {
   });
 }
 
-export function createSecureAuthPersistence(store: SecureStoreLike = getSecureStore()): Persistence {
-  const persistence = {
-    type: "LOCAL" as const,
-    _isAvailable: async () => true,
-    _set: async (_key: string, value: unknown) => {
+type SecureAuthPersistenceValue = Record<string, unknown> | string;
+
+type SecureAuthPersistenceInstance = Persistence & {
+  _isAvailable(): Promise<boolean>;
+  _set(key: string, value: SecureAuthPersistenceValue): Promise<void>;
+  _get<T extends SecureAuthPersistenceValue>(key: string): Promise<T | null>;
+  _remove(key: string): Promise<void>;
+  _addListener(key: string, listener: (value: unknown) => void): void;
+  _removeListener(key: string, listener: (value: unknown) => void): void;
+};
+
+type SecureAuthPersistenceConstructor = {
+  new (): SecureAuthPersistenceInstance;
+  readonly type: "LOCAL";
+};
+
+/**
+ * Firebase Auth for React Native expects persistence entries to be class
+ * constructors and instantiates them internally. Keep the SecureStore
+ * dependency in the class closure while retaining the existing redaction
+ * policy for the persisted Firebase user record.
+ */
+export function createSecureAuthPersistence(
+  store: SecureStoreLike = getSecureStore(),
+): SecureAuthPersistenceConstructor {
+  return class SecureAuthPersistence {
+    static readonly type = "LOCAL" as const;
+    readonly type = "LOCAL" as const;
+
+    async _isAvailable(): Promise<boolean> {
+      return true;
+    }
+
+    async _set(_key: string, value: SecureAuthPersistenceValue): Promise<void> {
       const redacted = redactPersistedAuthUser(value);
       if (!redacted) {
         await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
         return;
       }
       await store.setItemAsync(AUTH_USER_STORAGE_KEY, JSON.stringify(redacted));
-    },
-    _get: async <T>() => {
+    }
+
+    async _get<T extends SecureAuthPersistenceValue>(_key: string): Promise<T | null> {
       const stored = await store.getItemAsync(AUTH_USER_STORAGE_KEY);
-      if (!stored) return null as T | null;
+      if (!stored) return null;
       try {
         const parsed: unknown = JSON.parse(stored);
         return (redactPersistedAuthUser(parsed) ?? null) as T | null;
       } catch {
         await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
-        return null as T | null;
+        return null;
       }
-    },
-    _remove: async (_key: string) => { await store.deleteItemAsync(AUTH_USER_STORAGE_KEY); },
-    _addListener: (_key: string, _listener: (value: unknown) => void) => undefined,
-    _removeListener: (_key: string, _listener: (value: unknown) => void) => undefined,
+    }
+
+    async _remove(_key: string): Promise<void> {
+      await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+    }
+
+    _addListener(_key: string, _listener: (value: unknown) => void): void {
+      return undefined;
+    }
+
+    _removeListener(_key: string, _listener: (value: unknown) => void): void {
+      return undefined;
+    }
   };
-  return persistence as Persistence;
 }
 
 export { AUTH_USER_STORAGE_KEY };

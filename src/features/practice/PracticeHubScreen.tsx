@@ -63,8 +63,6 @@ type PracticeHubData = {
   hasReviewEvidence: boolean;
 };
 
-const TAB_BAR_RESERVED_HEIGHT = 128;
-
 export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { colorMode, colors: palette, t } = useAppPreferences();
@@ -290,7 +288,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   screenContent: {
     gap: 18,
-    paddingBottom: TAB_BAR_RESERVED_HEIGHT,
   },
   pageIntro: {
     gap: 18,

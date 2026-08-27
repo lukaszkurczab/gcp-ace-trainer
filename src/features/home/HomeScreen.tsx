@@ -71,8 +71,6 @@ type ShellData = {
   trainingAttempts: TrainingAttempt[];
 };
 
-const TAB_BAR_RESERVED_HEIGHT = 128;
-
 type HomeShellTab = Exclude<ShellTab, "practice">;
 
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
@@ -266,7 +264,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       <Screen
         key={activeTab}
         edges={["top"]}
-        style={[styles.screenContent, activeTab === "home" ? styles.homeScreenContent : null, activeTab === "progress" ? styles.progressScreenContent : null]}
+        style={[activeTab === "home" ? styles.homeScreenContent : null, activeTab === "progress" ? styles.progressScreenContent : null]}
       >
         {activeTab === "home" ? (
           <HomeTab
@@ -330,9 +328,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {
     backgroundColor: palette.background,
     flex: 1,
-  },
-  screenContent: {
-    paddingBottom: TAB_BAR_RESERVED_HEIGHT,
   },
   homeScreenContent: {
     gap: 18,

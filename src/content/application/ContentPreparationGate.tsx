@@ -9,6 +9,8 @@ import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditabil
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 
+const CONTENT_PREPARATION_TIMEOUT_MS = 15_000;
+
 export type ContentPreparationState =
   | { kind: "loading" }
   | { kind: "ready" }
@@ -27,8 +29,29 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let live = true;
+    let settled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     let lifecycle: ReturnType<typeof composeTrainingLifecycleUseCases> | null = null;
     lifecycleReady.current = false;
+
+    const complete = (nextState: ContentPreparationState) => {
+      if (!live || settled) return;
+      settled = true;
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      setState(nextState);
+      if (nextState.kind === "ready" && auditResetAwaitingBootstrap.current) {
+        auditResetAwaitingBootstrap.current = false;
+        setAuditResetReady(true);
+      }
+    };
+
+    timeoutId = setTimeout(() => {
+      complete({
+        kind: "blocking",
+        reason: "Content preparation timed out. Retry to validate the installed content.",
+      });
+    }, CONTENT_PREPARATION_TIMEOUT_MS);
+
     void (async () => {
       const initialUrl = __DEV__ && !initialUrlHandled.current ? await Linking.getInitialURL() : null;
       initialUrlHandled.current = true;
@@ -51,14 +74,15 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         },
       );
     })().then((result) => {
-      if (!live) return;
-      setState(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", reason: result.reason });
-      if (result.kind === "ready" && auditResetAwaitingBootstrap.current) {
-        auditResetAwaitingBootstrap.current = false;
-        setAuditResetReady(true);
-      }
+      complete(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", reason: result.reason });
+    }).catch((error) => {
+      complete({ kind: "blocking", reason: describeOperationalFailure(error, "Application bootstrap failed.") });
     });
-    return () => { live = false; };
+    return () => {
+      live = false;
+      settled = true;
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
   }, [bootstrapRevision]);
 
   useEffect(() => {
@@ -97,6 +121,6 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     ? <View style={{ flex: 1 }} testID={auditResetReady ? runtimeSelectors.content.readyAfterAuditReset() : runtimeSelectors.content.ready()}>{children}</View>
     : state.kind === "loading"
       ? <Screen edges={["top", "bottom"]} scroll={false}><LoadingState title="Preparing content…" variant="startup" /></Screen>
-      : <Screen><EmptyState title="Application unavailable" description={state.reason} /></Screen>;
+      : <Screen><EmptyState actionLabel="Retry" description={state.reason} onActionPress={() => { setState({ kind: "loading" }); setBootstrapRevision((revision) => revision + 1); }} title="Application unavailable" /></Screen>;
   return <View style={{ flex: 1 }} testID={auditCommandListenerReady ? runtimeSelectors.content.auditCommandListener() : undefined}>{body}</View>;
 }

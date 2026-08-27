@@ -4,6 +4,7 @@
     "strict": true,
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node"]
   }
 }

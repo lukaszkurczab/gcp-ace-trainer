@@ -2,7 +2,6 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import YAML from "yaml";
 
 const root = process.cwd();
 const applicationRoot = resolve(process.env.PATTERNLY_APPLICATION_ROOT ?? root);
@@ -11,9 +10,8 @@ const evidenceRoot = resolve(process.env.PATTERNLY_RELEASE_EVIDENCE_ROOT ?? "evi
 const releaseLockPath = resolve(process.env.PATTERNLY_RELEASE_LOCK_PATH ?? "integration/contracts/content-release/release.lock.json");
 const releaseGate = process.argv.includes("--enforce");
 
-// Design authority is an owner decision represented by the canonical contract
-// and decision register. Figma connector/session identifiers are ephemeral and
-// must never become release evidence or a launch blocker.
+// Design authority is an owner decision. Figma connector/session identifiers are
+// ephemeral and must never become release evidence or a launch blocker.
 const externalEvidence = [
   "security-and-privacy",
   "provider-and-operations",
@@ -165,19 +163,12 @@ const applicationRepository = repositoryStatus(applicationRoot);
 const applicationCommit = applicationHeadCommit();
 if (applicationRepository.status === "unavailable") blockers.push({ kind: "application_repository_unavailable", error: applicationRepository.error });
 if (applicationRepository.status === "dirty") blockers.push({ kind: "application_worktree_dirty", changedPathCount: applicationRepository.changedPathCount });
-let launchTrackIds = [];
-try {
-  const contract = YAML.parse(readFileSync(resolve(root, "../docs/canonical-product-contract.yaml"), "utf8"));
-  launchTrackIds = contract?.learningProducts?.launchTrackScope;
-  if (!Array.isArray(launchTrackIds) || launchTrackIds.length !== 8 || launchTrackIds.some((id) => typeof id !== "string") || uniqueSorted(launchTrackIds).length !== 8) {
-    blockers.push({ kind: "invalid_launch_scope_contract" });
-    launchTrackIds = [];
-  } else {
-    launchTrackIds = uniqueSorted(launchTrackIds);
-  }
-} catch (error) {
-  blockers.push({ kind: "unreadable_launch_scope_contract", error: readableError(error) });
-}
+const contentReleaseLock = inspectReleaseLock();
+const lockedTrackIds = contentReleaseLock.trackIds;
+if (contentReleaseLock.status === "unavailable") blockers.push({ kind: "unreadable_content_release_lock", error: contentReleaseLock.error });
+if (contentReleaseLock.status === "invalid") blockers.push({ kind: "invalid_content_release_lock", errors: contentReleaseLock.errors });
+if (contentReleaseLock.status === "valid" && lockedTrackIds.length !== 8) blockers.push({ kind: "invalid_content_release_scope", actual: lockedTrackIds });
+const launchTrackIds = contentReleaseLock.status === "valid" && lockedTrackIds.length === 8 ? lockedTrackIds : [];
 
 let readiness = null;
 try {
@@ -195,11 +186,6 @@ if (contentRepository.status === "unavailable") blockers.push({ kind: "content_r
 if (contentRepository.status === "dirty") blockers.push({ kind: "content_readiness_worktree_dirty", changedPathCount: contentRepository.changedPathCount });
 const contentSourceCommit = contentSourceCommitStatus(readiness?.sourceCommit);
 if (contentSourceCommit.status === "invalid" || contentSourceCommit.status === "unreachable") blockers.push({ kind: "content_readiness_source_commit_unavailable", sourceCommit: readiness?.sourceCommit ?? null, actual: contentSourceCommit.status });
-
-const contentReleaseLock = inspectReleaseLock();
-const lockedTrackIds = contentReleaseLock.trackIds;
-if (contentReleaseLock.status === "unavailable") blockers.push({ kind: "unreadable_content_release_lock", error: contentReleaseLock.error });
-if (contentReleaseLock.status === "invalid") blockers.push({ kind: "invalid_content_release_lock", errors: contentReleaseLock.errors });
 
 if (readiness) {
   const reportScope = uniqueSorted(readiness.launchTrackIds);

@@ -14,5 +14,8 @@ test("bootstrap has one themed branded loading surface with no synthetic complet
   assert.match(loadingState, /<PatternlyMark[\s\S]*treatment=\{colorMode === "dark" \? "mint" : "navy"\}/);
   assert.match(loadingState, /<StatusBar[\s\S]*style=\{colorMode === "dark" \? "light" : "dark"\}/);
   assert.match(loadingState, /accessibilityRole="progressbar"[\s\S]*accessibilityState=\{\{ busy: true \}\}/);
-  assert.doesNotMatch(`${gate}\n${loadingState}`, /setTimeout|setInterval|delay\s*:/);
+  assert.match(gate, /CONTENT_PREPARATION_TIMEOUT_MS\s*=\s*15_000/);
+  assert.match(gate, /setTimeout\([\s\S]*?Content preparation timed out/);
+  assert.match(gate, /<EmptyState actionLabel="Retry"[\s\S]*?onActionPress=/);
+  assert.doesNotMatch(`${gate}\n${loadingState}`, /setInterval|delay\s*:/);
 });

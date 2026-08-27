@@ -46,11 +46,12 @@ test("public environment and Firebase client configuration fail closed", () => {
 
 test("secure auth persistence stores only a Firebase refresh-token-shaped record", async () => {
   let stored: string | null = null;
-  const persistence = createSecureAuthPersistence({
+  const Persistence = createSecureAuthPersistence({
     deleteItemAsync: async () => { stored = null; },
     getItemAsync: async () => stored,
     setItemAsync: async (_key, value) => { stored = value; },
-  }) as unknown as { _get: <T>() => Promise<T | null>; _set: (key: string, value: unknown) => Promise<void> };
+  });
+  const persistence = new Persistence();
   const input = {
     accessToken: "synthetic-short-lived-value",
     displayName: "Patternly Test",
@@ -63,13 +64,15 @@ test("secure auth persistence stores only a Firebase refresh-token-shaped record
   };
   const redacted = redactPersistedAuthUser(input);
   assert.ok(redacted);
+  if (!redacted) throw new Error("expected_redacted_auth_user");
   assert.equal("accessToken" in redacted, false);
   assert.equal("accessToken" in (redacted.stsTokenManager as Record<string, unknown>), false);
   assert.equal((redacted.stsTokenManager as Record<string, unknown>).expirationTime, 0);
+  assert.equal(Persistence.type, "LOCAL");
   await persistence._set("firebase:authUser:patternly", input);
   assert.ok(stored);
   assert.doesNotMatch(stored, /accessToken/u);
-  const restored = await persistence._get<Record<string, unknown>>();
+  const restored = await persistence._get<Record<string, unknown>>("firebase:authUser:patternly");
   assert.equal(restored?.uid, "firebase-user-1");
   assert.equal((restored?.stsTokenManager as Record<string, unknown>).refreshToken, "synthetic-refresh-value");
 });

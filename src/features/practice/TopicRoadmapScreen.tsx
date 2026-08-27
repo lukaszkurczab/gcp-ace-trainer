@@ -48,7 +48,6 @@ type RoadmapReadState =
   | Readonly<{ kind: "ready"; requestKey: RoadmapRequestKey; activeTrackId: TrackId | null; trainingAttempts: readonly TrainingAttempt[] }>
   | Readonly<{ kind: "unavailable"; requestKey: RoadmapRequestKey; reason: string }>;
 
-const TAB_BAR_RESERVED_HEIGHT = 112;
 const DOT_COLUMNS = 18;
 const DOT_ROWS = 56;
 
@@ -123,7 +122,7 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
 
   return (
     <View style={styles.shell}>
-      <Screen edges={["top"]} style={styles.screenContent}>
+      <Screen edges={["top"]}>
         <AppShellHeader backAction={{ onPress: returnToPracticeHub }} />
 
         <View style={styles.intro}>
@@ -383,9 +382,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {
     backgroundColor: palette.background,
     flex: 1,
-  },
-  screenContent: {
-    paddingBottom: TAB_BAR_RESERVED_HEIGHT,
   },
   intro: {
     gap: spacing.sm,

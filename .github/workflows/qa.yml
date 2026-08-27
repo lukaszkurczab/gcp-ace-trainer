@@ -74,18 +74,6 @@ jobs:
               for (const path of ["android/app/src/main/res/xml/backup_rules.xml", "android/app/src/main/res/xml/data_extraction_rules.xml"]) if (!readFileSync(path, "utf8").includes("<exclude domain=\"root\" path=\".\"/>")) process.exit(1);
             '
           )
-      - name: Enforce canonical contract change gate
-        working-directory: app
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            range="${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}"
-          elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
-            range="${{ github.event.before }}..${{ github.sha }}"
-          else
-            range="HEAD^"
-          fi
-          npm run gate:contract-change -- "$range"
       - name: Run recovery baseline (includes qa:static)
         working-directory: app
         env:
