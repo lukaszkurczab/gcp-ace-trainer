@@ -1,5 +1,6 @@
 import type { ConfiguredPublicEnvironment, PublicEnvironment } from "../clients/publicEnvironment";
 import { developmentLoopbackHost } from "../developmentEndpoints";
+import { isPatternlySmokeRuntime } from "../runtime/runtimeMode";
 
 export type PublicLegalLinks = Readonly<Pick<ConfiguredPublicEnvironment, "privacyUrl" | "termsUrl" | "supportUrl" | "publicDeletionUrl">>;
 
@@ -71,6 +72,7 @@ export function readFirebaseClientConfiguration(): FirebaseClientConfigurationRe
 }
 
 export function readPublicEnvironmentFromRuntime(): PublicEnvironment {
+  if (isPatternlySmokeRuntime()) return Object.freeze({ kind: "unconfigured", reason: "no_public_environment_configuration" });
   const encoded = process.env.EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT;
   if (!encoded) return Object.freeze({ kind: "unconfigured", reason: "no_public_environment_configuration" });
   try {
@@ -88,7 +90,7 @@ export function readPublicEnvironmentFromRuntime(): PublicEnvironment {
  * `EXPO_PUBLIC_*` values are compiled into the bundle.
  */
 export function readDevelopmentFirebaseAuthEmulatorOrigin(): string | undefined {
-  if (typeof __DEV__ === "undefined" || !__DEV__) return undefined;
+  if (typeof __DEV__ === "undefined" || !__DEV__ || !isPatternlySmokeRuntime()) return undefined;
   if (process.env.EXPO_PUBLIC_PATTERNLY_BACKEND_E2E !== "true") return undefined;
   const value = process.env.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN;
   if (!value) return undefined;

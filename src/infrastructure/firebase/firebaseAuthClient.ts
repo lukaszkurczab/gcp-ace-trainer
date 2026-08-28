@@ -93,12 +93,6 @@ function actionSettings(origin: string): Readonly<{ handleCodeInApp: true; url: 
 export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClientConfiguration; authActionOrigin: string; authEmulatorOrigin?: string }>): FirebaseAuthClient {
   const auth = firebaseAuth(firebaseApp(input.config), input.authEmulatorOrigin);
   let current: User | null = auth.currentUser;
-  const listeners = new Set<(user: FirebaseAuthUserSnapshot | null) => void>();
-  onAuthStateChanged(auth, (user) => {
-    current = user;
-    const next = user ? snapshot(user) : null;
-    for (const listener of listeners) listener(next);
-  });
 
   const requireUser = (): User => {
     if (!current) throw new Error("auth/signed-out");
@@ -120,7 +114,10 @@ export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClien
     },
     getIdToken: async () => current ? current.getIdToken() : null,
     getSnapshot: () => current ? snapshot(current) : null,
-    onUserChanged: (listener) => { listeners.add(listener); listener(current ? snapshot(current) : null); return () => { listeners.delete(listener); }; },
+    onUserChanged: (listener) => onAuthStateChanged(auth, (user) => {
+      current = user;
+      listener(user ? snapshot(user) : null);
+    }),
     register: async (email: string, password: string) => afterCredential((await createUserWithEmailAndPassword(auth, email, password)).user),
     resendVerification: async () => { await sendEmailVerification(requireUser(), actionSettings(input.authActionOrigin)); },
     requestPasswordRecovery: async (email: string) => { await sendPasswordResetEmail(auth, email, actionSettings(input.authActionOrigin)); },

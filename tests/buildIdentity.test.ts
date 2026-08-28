@@ -5,6 +5,25 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const { createExpoConfig } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: Record<string, unknown> } };
+
+const smokeEnvironment = {
+  EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug",
+  EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug",
+  EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY: "key",
+  EXPO_PUBLIC_PATTERNLY_FIREBASE_APP_ID: "1:1:android:test",
+  EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_DOMAIN: "patternly-app-sandbox.firebaseapp.com",
+  EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID: "patternly-app-sandbox",
+  EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID: "android-client",
+  EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID: "ios-client",
+  EXPO_PUBLIC_PATTERNLY_GOOGLE_WEB_CLIENT_ID: "web-client",
+  GOOGLE_SERVICE_INFO_PLIST: "./GoogleService-Info.plist",
+  GOOGLE_SERVICES_JSON: "./google-services.json",
+  PATTERNLY_RUNTIME_MODE: "smoke",
+};
 
 const APP_ID = "com.lkurczab.patternly";
 const DEV_CLIENT_SCHEME = "exp+patternly";
@@ -31,7 +50,7 @@ function filesUnder(directory: string, extension: string): string[] {
 }
 
 test("Expo and npm expose one canonical Patternly identity", () => {
-  const app = JSON.parse(read("app.json")).expo;
+  const app = createExpoConfig(smokeEnvironment).expo as Record<string, any>;
   const packageManifest = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 

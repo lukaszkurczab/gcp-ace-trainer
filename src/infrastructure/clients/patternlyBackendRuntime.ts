@@ -3,6 +3,7 @@ import {
   createPatternlyApiClient,
   type PatternlyApiClient,
 } from "./PatternlyApiClientAdapter";
+import { isPatternlySmokeRuntime } from "../runtime/runtimeMode";
 
 export type PatternlyBackendRuntimeConfig = Readonly<{
   apiOrigin: string;
@@ -18,7 +19,7 @@ export type PatternlyBackendRuntime =
 
 export function readPatternlyBackendRuntime(): PatternlyBackendRuntime {
   if (process.env.EXPO_PUBLIC_PATTERNLY_BACKEND_E2E !== "true") return Object.freeze({ kind: "disabled" });
-  if (typeof __DEV__ !== "undefined" && !__DEV__) return Object.freeze({ kind: "invalid", reason: "e2e_requires_development" });
+  if (typeof __DEV__ === "undefined" || !__DEV__ || !isPatternlySmokeRuntime()) return Object.freeze({ kind: "invalid", reason: "e2e_requires_development" });
   const apiOrigin = process.env.EXPO_PUBLIC_PATTERNLY_API_ORIGIN;
   const authEmulatorOrigin = process.env.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN;
   const email = process.env.EXPO_PUBLIC_PATTERNLY_E2E_EMAIL;

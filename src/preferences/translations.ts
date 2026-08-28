@@ -5,6 +5,8 @@ const polish: Readonly<Record<string, string>> = {
   "Practice": "Ćwiczenia",
   "Progress": "Postęp",
   "Settings": "Ustawienia",
+  "Restoring session": "Przywracanie sesji",
+  "Checking saved sign-in.": "Sprawdzanie zapamiętanego logowania.",
   "Notifications": "Powiadomienia",
   "Appearance": "Wygląd",
   "Language": "Język",

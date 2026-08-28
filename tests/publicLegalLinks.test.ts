@@ -7,9 +7,11 @@ import { readDevelopmentFirebaseAuthEmulatorOrigin, readPublicLegalLinksFromRunt
 const PUBLIC_ENVIRONMENT_KEY = "EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT";
 const BACKEND_E2E_KEY = "EXPO_PUBLIC_PATTERNLY_BACKEND_E2E";
 const AUTH_EMULATOR_KEY = "EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN";
+const RUNTIME_MODE_KEY = "EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE";
 const originalEnvironment = process.env[PUBLIC_ENVIRONMENT_KEY];
 const originalBackendE2e = process.env[BACKEND_E2E_KEY];
 const originalAuthEmulator = process.env[AUTH_EMULATOR_KEY];
+const originalRuntimeMode = process.env[RUNTIME_MODE_KEY];
 const developmentFlag = globalThis as typeof globalThis & { __DEV__?: boolean };
 const originalDevelopment = developmentFlag.__DEV__;
 
@@ -20,6 +22,8 @@ afterEach(() => {
   else process.env[BACKEND_E2E_KEY] = originalBackendE2e;
   if (originalAuthEmulator === undefined) delete process.env[AUTH_EMULATOR_KEY];
   else process.env[AUTH_EMULATOR_KEY] = originalAuthEmulator;
+  if (originalRuntimeMode === undefined) delete process.env[RUNTIME_MODE_KEY];
+  else process.env[RUNTIME_MODE_KEY] = originalRuntimeMode;
   if (originalDevelopment === undefined) delete developmentFlag.__DEV__;
   else developmentFlag.__DEV__ = originalDevelopment;
 });
@@ -37,6 +41,7 @@ test("Firebase Auth Emulator is unavailable outside explicit development E2E", (
 
 test("Firebase Auth Emulator requires the canonical local development origin", () => {
   developmentFlag.__DEV__ = true;
+  process.env[RUNTIME_MODE_KEY] = "smoke";
   process.env[BACKEND_E2E_KEY] = "true";
   process.env[AUTH_EMULATOR_KEY] = "https://sandbox.patternly.invalid";
   assert.equal(readDevelopmentFirebaseAuthEmulatorOrigin(), undefined);

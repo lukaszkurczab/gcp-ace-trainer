@@ -5,7 +5,7 @@ const { assetExts, sourceExts } = config.resolver;
 
 config.transformer = {
   ...config.transformer,
-  babelTransformerPath: require.resolve("./metro-sandbox-endpoint-transformer"),
+  babelTransformerPath: require.resolve("react-native-svg-transformer/expo"),
 };
 config.resolver = {
   ...config.resolver,

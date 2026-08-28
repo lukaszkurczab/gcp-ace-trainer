@@ -29,6 +29,7 @@ const genericPendingPaths = [
   "src/features/practice/TopicRoadmapScreen.tsx",
   "src/features/review/AnswerReviewScreen.tsx",
   "src/features/review/MistakesReviewScreen.tsx",
+  "src/navigation/RootNavigator.tsx",
 ] as const;
 
 test("LoadingState is the one accessible and reflowing generic pending primitive", () => {
@@ -64,7 +65,7 @@ test("EmptyState is the centered retained-content/unavailable status primitive",
   assert.doesNotMatch(emptyState, /backgroundColor: palette\.elevatedSurface|borderRadius: radius/);
 });
 
-test("exactly the sixteen inventoried generic pending branches use LoadingState", () => {
+test("exactly the seventeen inventoried generic pending branches use LoadingState", () => {
   const consumers = tsxFiles("src")
     .filter((path) => /<LoadingState\b/.test(source(path)))
     .sort();

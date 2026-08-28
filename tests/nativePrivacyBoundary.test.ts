@@ -11,7 +11,7 @@ const {
 } = require("../plugins/withPrivacyBoundary.js");
 
 test("release-native configuration excludes canonical learning storage from backup and unneeded ingress", () => {
-  const appConfig = read("app.json");
+  const appConfig = read("app.config.js");
   const plugin = read("plugins/withPrivacyBoundary.js");
 
   assert.match(appConfig, /"\.\/plugins\/withPrivacyBoundary"/);

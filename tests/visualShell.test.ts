@@ -54,7 +54,6 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "ACTIVITY",
     "APPEARANCE_SETTINGS",
     "YOUR_DATA",
-    "ACCOUNT_ENTRY",
     "LEGAL_INFORMATION",
     "NOTIFICATION_SETTINGS",
     "SELECT_TRACK",
@@ -67,6 +66,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "PRACTICE_SESSION",
     "ALGORITHMS_PRACTICE_SUMMARY",
     "ALGORITHMS_INTERVIEW_SIMULATION",
+    "ACCOUNT_ENTRY",
   ]);
 
   for (const path of [

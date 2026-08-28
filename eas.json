@@ -6,22 +6,27 @@
     "requireCommit": true
   },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "channel": "development"
-    },
-    "preview": {
+    "sandbox": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       },
-      "channel": "preview"
+      "channel": "sandbox",
+      "environment": "preview",
+      "env": {
+        "PATTERNLY_RUNTIME_MODE": "sandbox",
+        "EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE": "sandbox"
+      }
     },
-    "production": {
+    "release": {
       "distribution": "store",
       "channel": "production",
-      "autoIncrement": true
+      "autoIncrement": true,
+      "environment": "production",
+      "env": {
+        "PATTERNLY_RUNTIME_MODE": "release",
+        "EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE": "release"
+      }
     }
   }
 }
