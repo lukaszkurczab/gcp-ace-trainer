@@ -3,6 +3,7 @@ const PREFIX = "patternly:canonical:v1:";
 export const STORAGE_KEYS = {
   METADATA: `${PREFIX}metadata`,
   GUEST_INSTALLATION: `${PREFIX}guest-installation`,
+  GUEST_ACCESS: `${PREFIX}guest-access`,
   ACTIVE_TRACK: `${PREFIX}active-track`,
   ACTIVE_TRAINING_SESSION: `${PREFIX}active-training-session`,
   ACTIVE_TRAINING_SESSION_DRAFT: `${PREFIX}active-training-session-draft`,

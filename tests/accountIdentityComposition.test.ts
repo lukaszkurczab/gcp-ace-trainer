@@ -78,18 +78,18 @@ test("secure auth persistence stores only a Firebase refresh-token-shaped record
   assert.equal((restored?.stsTokenManager as Record<string, unknown>).refreshToken, "synthetic-refresh-value");
 });
 
-test("startup waits for persisted auth resolution before choosing login or Home", () => {
+test("startup waits for persisted auth resolution before choosing the entry screen or Home", () => {
   const authClient = readFileSync("src/infrastructure/firebase/firebaseAuthClient.ts", "utf8");
   const rootNavigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
 
   assert.match(authClient, /onUserChanged: \(listener\) => onAuthStateChanged\(auth, \(user\) => \{\s*current = user;\s*listener\(user \? snapshot\(user\) : null\);/);
   assert.doesNotMatch(authClient, /onUserChanged:[^\n]*listener\(current \? snapshot\(current\) : null\)/);
   assert.match(rootNavigator, /state\.kind === "loading"[\s\S]*?<LoadingState[^>]*title=\{t\("Restoring session"\)\}/);
-  assert.match(rootNavigator, /applicationSessionReady = state\.kind === "authenticated" \|\| state\.kind === "signingOut" \|\| state\.kind === "deleting"/);
+  assert.match(rootNavigator, /applicationSessionReady = state\.kind === "authenticated" \|\| state\.kind === "guest" \|\| state\.kind === "signingOut" \|\| state\.kind === "deleting"/);
   assert.match(rootNavigator, /initialRouteName=\{applicationSessionReady \? ROUTES\.HOME : ROUTES\.ACCOUNT_ENTRY\}/);
   assert.match(rootNavigator, /key=\{applicationSessionReady \? "application" : "account"\}/);
   assert.match(rootNavigator, /applicationSessionReady \? \([\s\S]*?<Stack\.Group>[\s\S]*?name=\{ROUTES\.HOME\}[\s\S]*?<\/Stack\.Group>[\s\S]*?\) : null/);
-  assert.match(rootNavigator, /name=\{ROUTES\.ACCOUNT_ENTRY\}[\s\S]*?initialParams=\{\{ initialMode: "signIn" \}\}/);
+  assert.match(rootNavigator, /name=\{ROUTES\.ACCOUNT_ENTRY\}[\s\S]*?initialParams=\{\{ initialMode: "entry" \}\}/);
 });
 
 test("App Check has an explicit unavailable state and never fabricates a token", async () => {

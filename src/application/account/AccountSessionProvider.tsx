@@ -9,6 +9,7 @@ import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAc
 import { getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
+import { grantGuestAccess, hasGuestAccess, revokeGuestAccess } from "../../storage/repositories/guestAccessRepository";
 
 export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "expiredAction" | "invalid" | "invalidCredential" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity";
 export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "signedOut"; recoveryCodes?: readonly string[] }>;
@@ -17,6 +18,7 @@ export type AccountState =
   | Readonly<{ kind: "loading" }>
   | Readonly<{ kind: "unavailable"; reason: "firebase_unconfigured" | "public_environment_unconfigured" | "public_environment_invalid" }>
   | Readonly<{ kind: "signedOut" }>
+  | Readonly<{ kind: "guest" }>
   | Readonly<{ kind: "verificationPending"; user: FirebaseAuthUserSnapshot }>
   | Readonly<{ kind: "authenticated"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "signingOut"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
@@ -34,6 +36,7 @@ export type AccountSessionContextValue = Readonly<{
   signInWithApple: () => Promise<AccountCommandResult>;
   signInWithGoogle: (idToken: string) => Promise<AccountCommandResult>;
   confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[] ) => Promise<AccountCommandResult>;
+  continueAsGuest: () => void;
   retryAccountSync: () => Promise<AccountCommandResult>;
   deleteAccount: (password: string) => Promise<AccountCommandResult>;
   issueRecoveryCodes: (password: string) => Promise<AccountCommandResult>;
@@ -51,14 +54,15 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
 
   useEffect(() => {
     const smokeRuntime = isPatternlySmokeRuntime();
+    const guestAccess = hasGuestAccess();
     const publicEnvironment = readPublicEnvironmentFromRuntime();
     if (!smokeRuntime && publicEnvironment.kind !== "configured") {
-      setState({ kind: "unavailable", reason: publicEnvironment.reason === "invalid_public_environment" ? "public_environment_invalid" : "public_environment_unconfigured" });
+      setState(guestAccess ? { kind: "guest" } : { kind: "unavailable", reason: publicEnvironment.reason === "invalid_public_environment" ? "public_environment_invalid" : "public_environment_unconfigured" });
       return undefined;
     }
     const firebaseConfiguration = readFirebaseClientConfiguration();
     if (firebaseConfiguration.kind !== "configured") {
-      setState({ kind: "unavailable", reason: "firebase_unconfigured" });
+      setState(guestAccess ? { kind: "guest" } : { kind: "unavailable", reason: "firebase_unconfigured" });
       return undefined;
     }
     const androidProvider = process.env.EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER;
@@ -80,7 +84,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         ? apiOrigin
         : publicEnvironment.kind === "configured" ? publicEnvironment.value.authActionOrigin : undefined;
       if (!apiOrigin || !authActionOrigin || (smokeRuntime && !authEmulatorOrigin)) {
-        setState({ kind: "unavailable", reason: "public_environment_unconfigured" });
+        setState(guestAccess ? { kind: "guest" } : { kind: "unavailable", reason: "public_environment_unconfigured" });
         return undefined;
       }
       auth = createFirebaseAuthClient({
@@ -93,7 +97,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       setApiClient(client);
       const unsubscribe = auth.onUserChanged((user) => {
         if (!user) {
-          setState({ kind: "signedOut" });
+          setState(hasGuestAccess() ? { kind: "guest" } : { kind: "signedOut" });
           return;
         }
         void reconcileAuthenticatedUser(auth, client, user, setState);
@@ -111,6 +115,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   }, [apiClient, authClient]);
 
   const value = useMemo<AccountSessionContextValue>(() => ({
+    continueAsGuest: () => {
+      grantGuestAccess();
+      setState({ kind: "guest" });
+    },
     applyVerificationCode: (code) => runWithAuth(async (auth) => {
       if (!code.trim()) return { kind: "failure", failure: "invalid" };
       await auth.applyActionCode(code.trim());
@@ -201,6 +209,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         setState({ kind: "revokedSession", user: auth.getSnapshot() ?? user ?? { uid: "unknown", email: null, emailVerified: false, provider: "password" } });
         return { kind: "failure", failure: "revokedSession" };
       }
+      revokeGuestAccess();
       setState({ kind: "signedOut" }); return { kind: "success", next: "signedOut" };
     }),
     deleteAccount: (password) => runWithAuth(async (auth, api) => {
@@ -290,6 +299,7 @@ async function finalizeVerification(auth: FirebaseAuthClient, api: ReturnType<ty
   try {
     const response = await api.getMe();
     const accountData = await loadAccountDataSession(api, response.user.id);
+    revokeGuestAccess();
     setState?.({ kind: "authenticated", backendUser: response.user, user, accountData });
     return { kind: "success", next: "authenticated" };
   } catch (error) {

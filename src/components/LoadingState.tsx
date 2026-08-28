@@ -30,19 +30,23 @@ export function LoadingState({ description, title, variant = "default" }: Loadin
         {startup ? (
           <>
             <View style={styles.startupBrand}>
-              <View style={styles.startupMarkFrame}>
-                <PatternlyMark
-                  accessibilityLabel="Patternly logo"
-                  decorative={false}
-                  size={104}
-                  testID="patternly-startup-mark"
-                  treatment={colorMode === "dark" ? "mint" : "navy"}
-                />
-              </View>
+              <PatternlyMark
+                accessibilityLabel="Patternly logo"
+                decorative={false}
+                size={104}
+                testID="patternly-startup-mark"
+                treatment={colorMode === "dark" ? "white" : "mint"}
+              />
               <Text maxFontSizeMultiplier={2} style={styles.startupName}>Patternly</Text>
             </View>
             <View style={styles.startupStatus}>
-              <ActivityIndicator accessibilityElementsHidden color={colors.primary} importantForAccessibility="no" size="small" />
+              <View
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+                style={[styles.startupProgressTrack, colorMode === "dark" ? styles.startupProgressTrackDark : null]}
+              >
+                <View style={styles.startupProgressFill} />
+              </View>
               <View style={styles.startupCopy}>
                 <Text maxFontSizeMultiplier={2} style={styles.startupTitle}>{title}</Text>
                 {description ? <Text maxFontSizeMultiplier={2} style={styles.startupDescription}>{description}</Text> : null}
@@ -90,38 +94,44 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   startupContent: {
     alignItems: "center",
     flex: 1,
-    gap: spacing.xxxl,
-    justifyContent: "center",
+    paddingTop: 108,
     width: "100%",
   },
   startupBrand: {
     alignItems: "center",
-    gap: spacing.lg,
-  },
-  startupMarkFrame: {
-    alignItems: "center",
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
-    borderRadius: radius.xxl,
-    borderWidth: 1,
-    height: 136,
-    justifyContent: "center",
-    width: 136,
+    gap: spacing.xl,
   },
   startupName: {
-    ...typography.title,
+    ...typography.display,
     color: palette.textPrimary,
-    letterSpacing: -0.4,
+    letterSpacing: -0.8,
   },
   startupStatus: {
-    alignItems: "center",
-    gap: spacing.md,
-    maxWidth: 320,
+    alignItems: "stretch",
+    gap: spacing.xxxl,
+    marginTop: 58,
+    maxWidth: 453,
     minWidth: 0,
+    width: "62.5%",
+  },
+  startupProgressTrack: {
+    backgroundColor: "#D3D9E2",
+    borderRadius: radius.pill,
+    height: 4,
+    overflow: "hidden",
     width: "100%",
   },
+  startupProgressTrackDark: {
+    backgroundColor: "#3A4860",
+  },
+  startupProgressFill: {
+    backgroundColor: palette.primary,
+    borderRadius: radius.pill,
+    height: "100%",
+    width: "42%",
+  },
   startupCopy: {
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: spacing.sm,
     minWidth: 0,
     width: "100%",
@@ -130,13 +140,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     ...typography.processingTitle,
     color: palette.textPrimary,
     flexShrink: 1,
-    textAlign: "center",
+    textAlign: "left",
   },
   startupDescription: {
     ...typography.processingDescription,
     color: palette.textSecondary,
     flexShrink: 1,
-    textAlign: "center",
+    textAlign: "left",
   },
   description: {
     ...typography.processingDescription,

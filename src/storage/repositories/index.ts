@@ -2,6 +2,7 @@ export * from "./activeTrackRepository";
 export * from "./canonicalRepositories";
 export * from "./storageMetadataRepository";
 export * from "./guestInstallationRepository";
+export * from "./guestAccessRepository";
 export * from "./reviewQueueRepository";
 export * from "./settingsRepository";
 export * from "./notificationSettingsRepository";

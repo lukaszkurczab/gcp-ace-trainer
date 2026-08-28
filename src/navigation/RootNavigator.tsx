@@ -38,7 +38,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export function RootNavigator() {
   const { colors, t } = useAppPreferences();
   const { state } = usePatternlyAccount();
-  const applicationSessionReady = state.kind === "authenticated" || state.kind === "signingOut" || state.kind === "deleting";
+  const applicationSessionReady = state.kind === "authenticated" || state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting";
 
   if (state.kind === "loading") {
     return (
@@ -185,7 +185,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.ACCOUNT_ENTRY}
         component={AccountEntryScreen}
-        initialParams={{ initialMode: "signIn" }}
+        initialParams={{ initialMode: "entry" }}
         options={{ headerShown: false, title: t("Account") }}
       />
     </Stack.Navigator>

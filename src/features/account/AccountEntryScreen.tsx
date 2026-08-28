@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Linking, Platform, StyleSheet, Text, TextInput, View, type StyleProp, type TextStyle } from "react-native";
+import { Linking, Platform, Pressable, StyleSheet, Text, TextInput, View, type StyleProp, type TextStyle } from "react-native";
 import type { Edge } from "react-native-safe-area-context";
 import * as Google from "expo-auth-session/providers/google";
+import { StatusBar } from "expo-status-bar";
 
-import { Button, Card, InfoBlock, PublicLinkRow, Screen, ScreenHeader } from "../../components";
+import { Button, Card, Icon, InfoBlock, PublicLinkRow, Screen, ScreenHeader } from "../../components";
+import { PatternlyMark } from "../../components/PatternlyMark";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
 import { usePatternlyAccount, type AccountCommandResult, type AccountFailure } from "../../application/account/AccountSessionProvider";
 import { readFirebaseClientConfiguration, readPublicLegalLinksFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { spacing, typography, type AppColors } from "../../theme";
+import { colors as themeColors, spacing, typography, type AppColors } from "../../theme";
 
 type AccountEntryProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ACCOUNT_ENTRY>;
 type AccountMode = NonNullable<NonNullable<RootStackParamList[typeof ROUTES.ACCOUNT_ENTRY]>["initialMode"]>;
@@ -20,6 +22,13 @@ const copy = {
   en: {
     account: "Account",
     accountDescription: "Sign in to continue to Patternly, or create an account if you do not have one yet.",
+    welcomeTitle: "Focused practice for technical skills",
+    welcomeDescription: "Build durable skills through focused practice, review, and evidence from your own work.",
+    continueWithoutAccount: "Continue without an account",
+    guestDescription: "Your learning stays on this device until you connect an account.",
+    enterEmail: "Enter your email",
+    enterPassword: "Enter your password",
+    or: "or",
     unavailable: "Account entry unavailable",
     unavailableDescription: "This build has no complete Firebase, local backend, public-origin, or provider configuration. Sign-in cannot continue until the configuration is available.",
     register: "Create account",
@@ -120,6 +129,13 @@ const copy = {
   pl: {
     account: "Konto",
     accountDescription: "Zaloguj się, aby przejść do Patternly, lub utwórz konto, jeśli jeszcze go nie masz.",
+    welcomeTitle: "Skupiona praktyka umiejętności technicznych",
+    welcomeDescription: "Buduj trwałe umiejętności przez praktykę, powtórki i dowody z własnej pracy.",
+    continueWithoutAccount: "Kontynuuj bez konta",
+    guestDescription: "Nauka zostanie na tym urządzeniu, dopóki nie połączysz konta.",
+    enterEmail: "Wpisz e-mail",
+    enterPassword: "Wpisz hasło",
+    or: "lub",
     unavailable: "Logowanie jest niedostępne",
     unavailableDescription: "Ta wersja nie ma pełnej konfiguracji Firebase, lokalnego backendu, publicznych originów lub dostawcy. Logowanie nie może być kontynuowane do czasu udostępnienia konfiguracji.",
     register: "Utwórz konto",
@@ -283,15 +299,92 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   if (account.state.kind === "backendUnavailable") return <Screen edges={screenEdges}><ScreenHeader backAction={backAction} title={text.account} /><InfoBlock body={text.backendUnavailableDescription} title={text.backendUnavailable} testID="account-backend-unavailable" tone="warning" /><Button onPress={() => void account.refreshVerification().then(setResult(setFeedback))} testID="account-retry-backend" variant="primary">{text.check}</Button><Button onPress={() => void account.signOut()} testID="account-sign-out" variant="ghost">{text.signOut}</Button></Screen>;
   if (account.state.kind === "revokedSession") return <Screen edges={screenEdges}><ScreenHeader backAction={backAction} title={text.account} /><InfoBlock body={text.revokedSessionDescription} title={text.revokedSession} testID="account-revoked-session" tone="warning" /><Button onPress={() => void account.signOut()} testID="account-sign-out" variant="primary">{text.signOut}</Button></Screen>;
 
-  return <Screen edges={screenEdges}><ScreenHeader backAction={backAction} title={mode === "register" ? text.register : mode === "signIn" ? text.signIn : mode === "recovery" ? text.forgotPassword : mode === "resetPassword" ? text.resetPassword : text.account} description={mode === "entry" ? text.accountDescription : undefined} />{renderFeedback(feedback, text)}{mode === "entry" ? <EntryActions onApple={Platform.OS === "ios" ? () => void account.signInWithApple().then(setResult(setFeedback)) : undefined} onGoogle={() => { if (!googleRequest) { setFeedback({ kind: "failure", failure: "providerUnavailable" }); return; } void promptGoogle(); }} onRegister={() => { setFeedback(null); setMode("register"); }} onSignIn={() => { setFeedback(null); setMode("signIn"); }} text={text} /> : null}{mode === "register" ? <CredentialsForm buttonLabel={text.create} confirmation={confirmation} email={email} inputStyle={styles.input} onConfirmationChange={setConfirmation} onEmailChange={setEmail} onPasswordChange={setPassword} onSubmit={() => { if (password !== confirmation) { setFeedback({ kind: "failure", failure: "passwordMismatch" }); return; } void account.register(email, password).then(setResult(setFeedback)); }} password={password} placeholderTextColor={styles.placeholder.color as string} text={text} testID="account-register-submit" /> : null}{mode === "signIn" ? <CredentialsForm buttonLabel={text.signIn} email={email} forgotPasswordLabel={text.forgotPassword} inputStyle={styles.input} onEmailChange={setEmail} onForgotPassword={() => { setFeedback(null); setMode("recovery"); }} onPasswordChange={setPassword} onSubmit={() => void account.signIn(email, password).then(setResult(setFeedback))} password={password} placeholderTextColor={styles.placeholder.color as string} text={text} testID="account-sign-in-submit" /> : null}{mode === "recovery" ? <RecoveryForm code={recoveryCode} descriptionStyle={styles.formDescription} email={email} inputStyle={styles.input} onCodeChange={setRecoveryCode} onConsume={() => void account.consumeRecoveryCode(recoveryCode).then(setResult(setFeedback))} onEmailChange={setEmail} onSubmit={() => void account.requestPasswordRecovery(email).then(setResult(setFeedback))} placeholderTextColor={styles.placeholder.color as string} text={text} /> : null}{mode === "resetPassword" ? <ResetPasswordForm confirmation={confirmation} descriptionStyle={styles.formDescription} inputStyle={styles.input} onConfirmationChange={setConfirmation} onPasswordChange={setPassword} onSubmit={() => { if (password !== confirmation) { setFeedback({ kind: "failure", failure: "passwordMismatch" }); return; } void account.confirmPasswordReset(resetCode, password).then(setResult(setFeedback)); }} password={password} placeholderTextColor={styles.placeholder.color as string} text={text} /> : null}{mode === "signIn" ? <Button onPress={() => setMode("register")} testID="account-entry-register" variant="ghost">{text.needAccount}</Button> : mode === "register" ? <Button onPress={() => setMode("signIn")} testID="account-entry-sign-in" variant="ghost">{text.alreadyHaveAccount}</Button> : mode !== "entry" ? <Button onPress={() => setMode("entry")} testID="account-entry-home" variant="ghost">{text.account}</Button> : null}</Screen>;
+  if (mode === "entry") {
+    return <WelcomeScreen
+      onContinueAsGuest={account.continueAsGuest}
+      onRegister={() => { setFeedback(null); setMode("register"); }}
+      onSignIn={() => { setFeedback(null); setMode("signIn"); }}
+      text={text}
+    />;
+  }
+
+  if (mode === "signIn") {
+    return <Screen ambient edges={screenEdges} style={styles.authScreen}>
+      <View style={styles.authPanel}>
+        {backAction ? <ScreenHeader backAction={backAction} title={text.signIn} /> : <Text maxFontSizeMultiplier={2} style={styles.authTitle}>{text.signIn}</Text>}
+        {renderFeedback(feedback, text)}
+        <SignInForm
+          email={email}
+          inputStyle={styles.authInput}
+          onEmailChange={setEmail}
+          onPasswordChange={setPassword}
+          onSubmit={() => void account.signIn(email, password).then(setResult(setFeedback))}
+          password={password}
+          placeholderTextColor={styles.placeholder.color as string}
+          text={text}
+        />
+        <View style={styles.authLinks}>
+          <Button labelStyle={styles.textActionLabel} onPress={() => setMode("recovery")} variant="ghost">{text.forgotPassword}</Button>
+          <Button labelStyle={styles.textActionLabel} onPress={() => setMode("register")} testID="account-entry-register" variant="ghost">{text.register}</Button>
+        </View>
+        <Divider label={text.or} />
+        {Platform.OS === "ios" ? <ProviderButton icon="apple" onPress={() => void account.signInWithApple().then(setResult(setFeedback))} text={text.continueWithApple} /> : null}
+        <ProviderButton icon="google" onPress={() => { if (!googleRequest) { setFeedback({ kind: "failure", failure: "providerUnavailable" }); return; } void promptGoogle(); }} text={text.continueWithGoogle} />
+      </View>
+    </Screen>;
+  }
+
+  return <Screen edges={screenEdges}><ScreenHeader backAction={backAction} title={mode === "register" ? text.register : mode === "recovery" ? text.forgotPassword : mode === "resetPassword" ? text.resetPassword : text.account} />{renderFeedback(feedback, text)}{mode === "register" ? <CredentialsForm buttonLabel={text.create} confirmation={confirmation} email={email} inputStyle={styles.input} onConfirmationChange={setConfirmation} onEmailChange={setEmail} onPasswordChange={setPassword} onSubmit={() => { if (password !== confirmation) { setFeedback({ kind: "failure", failure: "passwordMismatch" }); return; } void account.register(email, password).then(setResult(setFeedback)); }} password={password} placeholderTextColor={styles.placeholder.color as string} text={text} testID="account-register-submit" /> : null}{mode === "recovery" ? <RecoveryForm code={recoveryCode} descriptionStyle={styles.formDescription} email={email} inputStyle={styles.input} onCodeChange={setRecoveryCode} onConsume={() => void account.consumeRecoveryCode(recoveryCode).then(setResult(setFeedback))} onEmailChange={setEmail} onSubmit={() => void account.requestPasswordRecovery(email).then(setResult(setFeedback))} placeholderTextColor={styles.placeholder.color as string} text={text} /> : null}{mode === "resetPassword" ? <ResetPasswordForm confirmation={confirmation} descriptionStyle={styles.formDescription} inputStyle={styles.input} onConfirmationChange={setConfirmation} onPasswordChange={setPassword} onSubmit={() => { if (password !== confirmation) { setFeedback({ kind: "failure", failure: "passwordMismatch" }); return; } void account.confirmPasswordReset(resetCode, password).then(setResult(setFeedback)); }} password={password} placeholderTextColor={styles.placeholder.color as string} text={text} /> : null}<Button onPress={() => setMode("entry")} testID="account-entry-home" variant="ghost">{text.account}</Button></Screen>;
 }
 
-function EntryActions({ onApple, onGoogle, onRegister, onSignIn, text }: Readonly<{ onApple?: () => void; onGoogle: () => void; onRegister: () => void; onSignIn: () => void; text: AccountCopy }>) {
-  return <View style={{ gap: spacing.md }}><Button onPress={onRegister} testID="account-register" variant="primary">{text.register}</Button><Button onPress={onSignIn} testID="account-sign-in" variant="secondary">{text.signIn}</Button>{onApple ? <Button onPress={onApple} testID="account-apple" variant="secondary">{text.continueWithApple}</Button> : null}<Button onPress={onGoogle} testID="account-google" variant="secondary">{text.continueWithGoogle}</Button></View>;
+function WelcomeScreen({ onContinueAsGuest, onRegister, onSignIn, text }: Readonly<{ onContinueAsGuest: () => void; onRegister: () => void; onSignIn: () => void; text: AccountCopy }>) {
+  const styles = useThemedStyles(createStyles);
+  return <Screen backgroundColor={themeColors.dark.background} edges={["top", "bottom"]} scroll={false} style={styles.welcomeScreen}>
+    <StatusBar style="light" />
+    <View style={styles.welcomeHero}>
+      <PatternlyMark size={88} treatment="white" />
+      <Text maxFontSizeMultiplier={2} style={styles.welcomeBrand}>Patternly</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.welcomeTitle}>{text.welcomeTitle}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.welcomeDescription}>{text.welcomeDescription}</Text>
+    </View>
+    <View style={styles.welcomeActions}>
+      <EntryButton onPress={onSignIn} testID="account-sign-in" text={text.signIn} variant="primary" />
+      <EntryButton onPress={onRegister} testID="account-register" text={text.register} variant="secondary" />
+      <EntryButton onPress={onContinueAsGuest} testID="account-guest" text={text.continueWithoutAccount} variant="guest" />
+      <Text maxFontSizeMultiplier={2} style={styles.guestDescription}>{text.guestDescription}</Text>
+    </View>
+  </Screen>;
 }
 
-function CredentialsForm({ buttonLabel, confirmation, email, forgotPasswordLabel, inputStyle, onConfirmationChange, onEmailChange, onForgotPassword, onPasswordChange, onSubmit, password, placeholderTextColor, text, testID }: Readonly<{ buttonLabel: string; confirmation?: string; email: string; forgotPasswordLabel?: string; inputStyle: StyleProp<TextStyle>; onConfirmationChange?: (value: string) => void; onEmailChange: (value: string) => void; onForgotPassword?: () => void; onPasswordChange: (value: string) => void; onSubmit: () => void; password: string; placeholderTextColor: string; text: AccountCopy; testID: string }>) {
-  return <Card style={{ gap: spacing.md }}><TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" onChangeText={onEmailChange} placeholder={text.email} placeholderTextColor={placeholderTextColor} secureTextEntry={false} style={inputStyle} testID="account-email" value={email} /><TextInput autoCapitalize="none" autoComplete="password" onChangeText={onPasswordChange} placeholder={text.password} placeholderTextColor={placeholderTextColor} secureTextEntry style={inputStyle} testID="account-password" value={password} />{confirmation !== undefined && onConfirmationChange ? <TextInput autoCapitalize="none" autoComplete="password" onChangeText={onConfirmationChange} placeholder={text.confirmPassword} placeholderTextColor={placeholderTextColor} secureTextEntry style={inputStyle} testID="account-password-confirmation" value={confirmation} /> : null}<Button onPress={onSubmit} testID={testID} variant="primary">{buttonLabel}</Button>{forgotPasswordLabel && onForgotPassword ? <Button onPress={onForgotPassword} testID="account-forgot-password" variant="ghost">{forgotPasswordLabel}</Button> : null}</Card>;
+function EntryButton({ onPress, testID, text, variant }: Readonly<{ onPress: () => void; testID: string; text: string; variant: "primary" | "secondary" | "guest" }>) {
+  const styles = useThemedStyles(createStyles);
+  const variantStyle = variant === "primary" ? styles.entryButtonPrimary : variant === "secondary" ? styles.entryButtonSecondary : styles.entryButtonGuest;
+  const labelStyle = variant === "primary" ? styles.entryButtonPrimaryLabel : variant === "secondary" ? styles.entryButtonSecondaryLabel : styles.entryButtonGuestLabel;
+  return <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.entryButton, variantStyle, pressed ? styles.entryButtonPressed : null]} testID={testID}><Text maxFontSizeMultiplier={2} style={[styles.entryButtonLabel, labelStyle]}>{text}</Text></Pressable>;
+}
+
+function SignInForm({ email, inputStyle, onEmailChange, onPasswordChange, onSubmit, password, placeholderTextColor, text }: Readonly<{ email: string; inputStyle: StyleProp<TextStyle>; onEmailChange: (value: string) => void; onPasswordChange: (value: string) => void; onSubmit: () => void; password: string; placeholderTextColor: string; text: AccountCopy }>) {
+  const styles = useThemedStyles(createStyles);
+  const [visible, setVisible] = useState(false);
+  return <View style={styles.signInForm}>
+    <View style={styles.fieldGroup}><Text maxFontSizeMultiplier={2} style={styles.fieldLabel}>{text.email}</Text><TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" onChangeText={onEmailChange} placeholder={text.enterEmail} placeholderTextColor={placeholderTextColor} style={inputStyle} testID="account-email" value={email} /></View>
+    <View style={styles.fieldGroup}><Text maxFontSizeMultiplier={2} style={styles.fieldLabel}>{text.password}</Text><View><TextInput autoCapitalize="none" autoComplete="password" onChangeText={onPasswordChange} placeholder={text.enterPassword} placeholderTextColor={placeholderTextColor} secureTextEntry={!visible} style={[inputStyle, styles.passwordInput]} testID="account-password" value={password} /><Pressable accessibilityLabel={visible ? "Hide password" : "Show password"} accessibilityRole="button" hitSlop={8} onPress={() => setVisible((current) => !current)} style={styles.visibilityButton}><Icon color={styles.icon.color as string} name={visible ? "eye-off" : "eye"} size={24} /></Pressable></View></View>
+    <Button onPress={onSubmit} testID="account-sign-in-submit" variant="primary">{text.signIn}</Button>
+  </View>;
+}
+
+function Divider({ label }: Readonly<{ label: string }>) {
+  const styles = useThemedStyles(createStyles);
+  return <View style={styles.divider}><View style={styles.dividerLine} /><Text maxFontSizeMultiplier={2} style={styles.dividerLabel}>{label}</Text><View style={styles.dividerLine} /></View>;
+}
+
+function ProviderButton({ icon, onPress, text }: Readonly<{ icon: "apple" | "google"; onPress: () => void; text: string }>) {
+  const styles = useThemedStyles(createStyles);
+  return <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.providerButton, pressed ? styles.providerPressed : null]}><View style={styles.providerIcon}>{icon === "apple" ? <Icon color={styles.icon.color as string} name="apple" size={26} /> : <Text style={styles.googleGlyph}>G</Text>}</View><Text maxFontSizeMultiplier={2} style={styles.providerLabel}>{text}</Text></Pressable>;
+}
+
+function CredentialsForm({ buttonLabel, confirmation, email, inputStyle, onConfirmationChange, onEmailChange, onPasswordChange, onSubmit, password, placeholderTextColor, text, testID }: Readonly<{ buttonLabel: string; confirmation?: string; email: string; inputStyle: StyleProp<TextStyle>; onConfirmationChange?: (value: string) => void; onEmailChange: (value: string) => void; onPasswordChange: (value: string) => void; onSubmit: () => void; password: string; placeholderTextColor: string; text: AccountCopy; testID: string }>) {
+  return <Card style={{ gap: spacing.md }}><TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" onChangeText={onEmailChange} placeholder={text.email} placeholderTextColor={placeholderTextColor} secureTextEntry={false} style={inputStyle} testID="account-email" value={email} /><TextInput autoCapitalize="none" autoComplete="password" onChangeText={onPasswordChange} placeholder={text.password} placeholderTextColor={placeholderTextColor} secureTextEntry style={inputStyle} testID="account-password" value={password} />{confirmation !== undefined && onConfirmationChange ? <TextInput autoCapitalize="none" autoComplete="password" onChangeText={onConfirmationChange} placeholder={text.confirmPassword} placeholderTextColor={placeholderTextColor} secureTextEntry style={inputStyle} testID="account-password-confirmation" value={confirmation} /> : null}<Button onPress={onSubmit} testID={testID} variant="primary">{buttonLabel}</Button></Card>;
 }
 
 function RecoveryForm({ code, descriptionStyle, email, inputStyle, onCodeChange, onConsume, onEmailChange, onSubmit, placeholderTextColor, text }: Readonly<{ code: string; descriptionStyle: StyleProp<TextStyle>; email: string; inputStyle: StyleProp<TextStyle>; onCodeChange: (value: string) => void; onConsume: () => void; onEmailChange: (value: string) => void; onSubmit: () => void; placeholderTextColor: string; text: AccountCopy }>) {
@@ -366,6 +459,42 @@ function setResult(setFeedback: (feedback: Feedback) => void) {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  authScreen: { paddingTop: 50 },
+  authPanel: { gap: spacing.xl },
+  authTitle: { ...typography.display, color: palette.textPrimary, fontSize: 42, lineHeight: 50, letterSpacing: -0.8 },
+  signInForm: { gap: spacing.lg },
+  fieldGroup: { gap: spacing.sm },
+  fieldLabel: { color: palette.textMuted, fontSize: 14, fontWeight: "600", lineHeight: 20 },
+  authInput: { backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: 16, borderWidth: 1, color: palette.textPrimary, fontSize: 16, lineHeight: 22, minHeight: 54, paddingHorizontal: spacing.lg },
+  passwordInput: { paddingRight: 56 },
+  visibilityButton: { alignItems: "center", height: 44, justifyContent: "center", position: "absolute", right: spacing.sm, top: 5, width: 44 },
+  icon: { color: palette.textPrimary },
+  authLinks: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", marginHorizontal: -spacing.sm },
+  textActionLabel: { color: palette.primary, fontSize: 14, fontWeight: "500", textDecorationLine: "underline" },
+  divider: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
+  dividerLine: { backgroundColor: palette.border, flex: 1, height: 1 },
+  dividerLabel: { color: palette.textSecondary, fontSize: 13, lineHeight: 18 },
+  providerButton: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 16, borderWidth: 1, flexDirection: "row", justifyContent: "center", minHeight: 60, paddingHorizontal: spacing.xl, position: "relative" },
+  providerIcon: { alignItems: "center", height: 32, justifyContent: "center", left: spacing.lg, position: "absolute", width: 32 },
+  providerLabel: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 22 },
+  providerPressed: { opacity: 0.78 },
+  googleGlyph: { color: "#4285F4", fontSize: 27, fontWeight: "700", lineHeight: 32 },
+  welcomeScreen: { justifyContent: "space-between", paddingBottom: 34, paddingTop: 120 },
+  welcomeHero: { alignItems: "center", gap: spacing.lg },
+  welcomeBrand: { color: themeColors.dark.textPrimary, fontSize: 36, fontWeight: "700", letterSpacing: -0.6, lineHeight: 44 },
+  welcomeTitle: { color: themeColors.dark.textPrimary, fontSize: 30, fontWeight: "700", lineHeight: 38, marginTop: spacing.xl, textAlign: "center" },
+  welcomeDescription: { color: themeColors.dark.textSecondary, fontSize: 16, lineHeight: 24, textAlign: "center" },
+  welcomeActions: { gap: spacing.md },
+  entryButton: { alignItems: "center", borderRadius: 16, borderWidth: 1, justifyContent: "center", minHeight: 56, paddingHorizontal: spacing.xl, paddingVertical: spacing.lg },
+  entryButtonPrimary: { backgroundColor: themeColors.dark.primary, borderColor: themeColors.dark.primary },
+  entryButtonSecondary: { backgroundColor: themeColors.dark.surface, borderColor: themeColors.dark.border },
+  entryButtonGuest: { backgroundColor: "transparent", borderColor: "transparent", minHeight: 44, paddingVertical: spacing.sm },
+  entryButtonPressed: { opacity: 0.78 },
+  entryButtonLabel: { fontSize: 16, fontWeight: "600", lineHeight: 22, textAlign: "center" },
+  entryButtonPrimaryLabel: { color: themeColors.dark.onPrimary },
+  entryButtonSecondaryLabel: { color: themeColors.dark.textPrimary },
+  entryButtonGuestLabel: { color: themeColors.dark.primary },
+  guestDescription: { color: themeColors.dark.textMuted, fontSize: 12, lineHeight: 18, textAlign: "center" },
   email: { ...typography.bodyStrong, color: palette.textPrimary },
   formDescription: { ...typography.small, color: palette.textSecondary },
   input: { backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: 10, borderWidth: 1, color: palette.textPrimary, minHeight: 48, paddingHorizontal: 14 },

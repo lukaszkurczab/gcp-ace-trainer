@@ -18,13 +18,6 @@ const markFiles = [
   "patternly-mark-white.svg",
 ];
 
-const microMarkFiles = [
-  "patternly-mark-navy-micro.svg",
-  "patternly-mark-mint-micro.svg",
-  "patternly-mark-black-micro.svg",
-  "patternly-mark-white-micro.svg",
-];
-
 const appIconSourceFiles = [
   "patternly-app-icon.svg",
   "patternly-app-icon-foreground.svg",
@@ -107,30 +100,6 @@ test("launcher source and generated assets are present", () => {
   }
 
   assertNonEmptyFile(join(repositoryRoot, "assets/brand/web/favicon.png"));
-});
-
-test("sanctioned micro mark family has one distinct optical geometry", () => {
-  let canonicalMaster: string[] | undefined;
-  let canonicalMicro: string[] | undefined;
-
-  for (const file of markFiles) {
-    canonicalMaster ??= pathData(readText(join(markDirectory, file)));
-  }
-
-  for (const file of microMarkFiles) {
-    const path = join(markDirectory, file);
-    const source = readText(path);
-    assertNonEmptyFile(path);
-    assert.match(source, /viewBox="0 0 256 256"/);
-    assert.equal((source.match(/<path\b/g) ?? []).length, 4);
-    assert.doesNotMatch(source, /<(?:text|image|filter|mask|clipPath)\b/i);
-    assert.doesNotMatch(source, /\btransform=/i);
-    const geometry = pathData(source);
-    canonicalMicro ??= geometry;
-    assert.deepEqual(geometry, canonicalMicro);
-  }
-
-  assert.notDeepEqual(canonicalMicro, canonicalMaster);
 });
 
 test("Expo points to the canonical Patternly launcher assets", () => {

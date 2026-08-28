@@ -9,6 +9,7 @@ import { AmbientBackdrop } from "./AmbientBackdrop";
 
 
 type ScreenProps = {
+  backgroundColor?: string;
   children: ReactNode;
   compact?: boolean;
   ambient?: boolean;
@@ -21,13 +22,13 @@ type ScreenProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Screen({ ambient = false, ambientVariant = "default", children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, style }: ScreenProps) {
+export function Screen({ ambient = false, ambientVariant = "default", backgroundColor, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, style }: ScreenProps) {
   const styles = useThemedStyles(createStyles);
   const contentStyle = [styles.content, compact ? styles.contentCompact : null, footer ? styles.contentWithFooter : null, style];
   const content = <View style={contentStyle}>{children}</View>;
 
   return (
-    <SafeAreaView edges={edges} style={[styles.safeArea, ambient ? styles.ambientSafeArea : null]}>
+    <SafeAreaView edges={edges} style={[styles.safeArea, backgroundColor ? { backgroundColor } : null, ambient ? styles.ambientSafeArea : null]}>
       {ambient ? <AmbientBackdrop variant={ambientVariant} /> : null}
       {header}
       {scroll ? (
