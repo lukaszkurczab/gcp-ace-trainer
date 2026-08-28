@@ -13,7 +13,7 @@ type ScreenProps = {
   children: ReactNode;
   compact?: boolean;
   ambient?: boolean;
-  ambientVariant?: "default" | "activity" | "goal";
+  ambientVariant?: "default" | "activity" | "goal" | "auth";
   edges?: Edge[];
   footer?: ReactNode;
   footerVariant?: "default" | "review" | "session" | "simulation" | "sticky";

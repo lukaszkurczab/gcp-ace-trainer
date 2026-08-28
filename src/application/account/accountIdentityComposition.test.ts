@@ -45,6 +45,27 @@ test("public environment and Firebase client configuration fail closed", () => {
   assert.equal(parseFirebaseClientConfiguration(firebaseConfiguration).kind, "configured");
 });
 
+test("sign-in keeps guest access visible and uses the approved Google logo asset", () => {
+  const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  assert.match(screen, /ambientVariant="auth"/);
+  assert.match(screen, /testID="account-sign-in-guest"/);
+  assert.match(screen, /onPress=\{account\.continueAsGuest\}/);
+  assert.match(screen, /import GoogleIcon from "\.\.\/\.\.\/assets\/icons\/google\.svg"/);
+  assert.match(screen, /<GoogleIcon height=\{18\} width=\{18\} \/>/);
+  assert.match(screen, /googleProviderButton:[\s\S]*?backgroundColor: "#FFFFFF"[\s\S]*?borderColor: "#747775"/);
+  assert.match(screen, /centeredInput: \{ textAlignVertical: "center" \}/);
+  assert.match(screen, /<Icon color="#1F1F1F" name="apple" size=\{26\} \/>/);
+  assert.match(screen, /authPrimaryButton:[\s\S]*?backgroundColor: themeColors\.dark\.primary/);
+  assert.match(screen, /authTitle:[\s\S]*?color: themeColors\.dark\.textPrimary/);
+});
+
+test("a guest transition resets navigation into the application session", () => {
+  const app = readFileSync("App.tsx", "utf8");
+  assert.match(app, /const \{ state \} = usePatternlyAccount\(\)/);
+  assert.match(app, /<NavigationContainer key=\{sessionKey\} theme=\{navigationTheme\}>/);
+  assert.match(app, /state\.kind === "authenticated" \|\| state\.kind === "guest"/);
+});
+
 test("secure auth persistence stores only a Firebase refresh-token-shaped record", async () => {
   let stored: string | null = null;
   const Persistence = createSecureAuthPersistence({

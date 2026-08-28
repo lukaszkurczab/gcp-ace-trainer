@@ -13,7 +13,7 @@ test("dark Figma ambient layer is shared by Track selection and Practice", () =>
   const topography = source("src/assets/ambient/topography.svg");
 
   assert.match(screen, /ambient\?: boolean/);
-  assert.match(screen, /ambientVariant\?: "default" \| "activity" \| "goal"/);
+  assert.match(screen, /ambientVariant\?: "default" \| "activity" \| "goal" \| "auth"/);
   assert.match(screen, /ambient \? <AmbientBackdrop variant=\{ambientVariant\} \/> : null/);
   assert.match(backdrop, /matrix\(16 0 0 14 160 140\)/);
   assert.match(backdrop, /matrix\(16 0 0 15 160 150\)/);
@@ -27,5 +27,9 @@ test("dark Figma ambient layer is shared by Track selection and Practice", () =>
   assert.match(activity, /<Screen ambient=\{colorMode === "dark"\} ambientVariant="activity"/);
   assert.match(source("src/features/home/GoalCadenceScreen.tsx"), /ambientVariant="goal"/);
   assert.match(backdrop, /variant === "default" \?/);
+  assert.match(backdrop, /if \(variant === "auth"\)/);
+  assert.match(backdrop, /<SignalPulse delay=\{400\} direction="down" length=\{154\} x=\{14\} y=\{60\} \/>/);
+  assert.match(backdrop, /<Line stroke=\{effects\.authSignal\} strokeWidth=\{1\} x1=\{14\} x2=\{14\} y1=\{60\} y2=\{166\}/);
+  assert.match(backdrop, /useNativeDriver: true/);
   assert.match(topography, /id="contour 4"/);
 });

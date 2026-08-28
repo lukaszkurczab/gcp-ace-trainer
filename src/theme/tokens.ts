@@ -5,6 +5,10 @@ export const brand = {
 } as const;
 
 export const effects = {
+  authSignal: "rgba(72, 108, 255, 0.18)",
+  authSignalBright: "rgba(118, 146, 255, 0.95)",
+  authSignalGlow: "rgba(72, 108, 255, 0.22)",
+  authSignalTrail: "rgba(72, 108, 255, 0.08)",
   divider: "rgba(255, 255, 255, 0.06)",
   ghostPressed: "rgba(255, 255, 255, 0.08)",
   handle: "rgba(255, 255, 255, 0.12)",

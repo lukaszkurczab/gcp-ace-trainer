@@ -16,6 +16,7 @@ import {
 import type { Edge } from "react-native-safe-area-context";
 import * as Google from "expo-auth-session/providers/google";
 import { StatusBar } from "expo-status-bar";
+import GoogleIcon from "../../assets/icons/google.svg";
 
 import {
   Button,
@@ -68,6 +69,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   welcomeTitle: t("welcomeTitle"),
   welcomeDescription: t("welcomeDescription"),
   continueWithoutAccount: t("continueWithoutAccount"),
+  emailFormatError: t("emailFormatError"),
+  signInCredentialsError: t("signInCredentialsError"),
+  signInProblem: t("signInProblem"),
   enterEmail: t("enterEmail"),
   enterPassword: t("enterPassword"),
   or: t("or"),
@@ -511,7 +515,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
 
   if (mode === "signIn") {
     return (
-      <Screen ambient edges={screenEdges} style={styles.authScreen}>
+      <Screen ambient ambientVariant="auth" edges={screenEdges} style={styles.authScreen}>
         <View style={styles.authPanel}>
           {backAction ? (
             <ScreenHeader backAction={backAction} title={text.signIn} />
@@ -520,17 +524,23 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
               {text.signIn}
             </Text>
           )}
-          {renderFeedback(feedback, text)}
           <SignInForm
             email={email}
+            feedback={feedback}
             inputStyle={styles.authInput}
-            onEmailChange={setEmail}
-            onPasswordChange={setPassword}
+            onEmailChange={(value) => {
+              setFeedback(null);
+              setEmail(value);
+            }}
+            onPasswordChange={(value) => {
+              setFeedback(null);
+              setPassword(value);
+            }}
             onSubmit={() =>
               void account.signIn(email, password).then(setResult(setFeedback))
             }
             password={password}
-            placeholderTextColor={styles.placeholder.color as string}
+            placeholderTextColor={styles.authPlaceholder.color as string}
             text={text}
           />
           <View style={styles.authLinks}>
@@ -574,6 +584,14 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             }}
             text={text.continueWithGoogle}
           />
+          <Button
+            labelStyle={styles.guestActionLabel}
+            onPress={account.continueAsGuest}
+            testID="account-sign-in-guest"
+            variant="ghost"
+          >
+            {text.continueWithoutAccount}
+          </Button>
         </View>
       </Screen>
     );
@@ -773,6 +791,7 @@ function EntryButton({
 
 function SignInForm({
   email,
+  feedback,
   inputStyle,
   onEmailChange,
   onPasswordChange,
@@ -782,6 +801,7 @@ function SignInForm({
   text,
 }: Readonly<{
   email: string;
+  feedback: Feedback | null;
   inputStyle: StyleProp<TextStyle>;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
@@ -792,6 +812,8 @@ function SignInForm({
 }>) {
   const styles = useThemedStyles(createStyles);
   const [visible, setVisible] = useState(false);
+  const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalid" && !hasValidEmailFormat(email);
+  const credentialsError = feedback?.kind === "failure" && (feedback.failure === "invalidCredential" || (feedback.failure === "invalid" && !invalidEmail));
   return (
     <View style={styles.signInForm}>
       <View style={styles.fieldGroup}>
@@ -805,10 +827,11 @@ function SignInForm({
           onChangeText={onEmailChange}
           placeholder={text.enterEmail}
           placeholderTextColor={placeholderTextColor}
-          style={inputStyle}
+          style={[inputStyle, styles.centeredInput, invalidEmail ? styles.authInputError : null]}
           testID="account-email"
           value={email}
         />
+        {invalidEmail ? <Text style={styles.fieldError} testID="account-email-error">{text.emailFormatError}</Text> : null}
       </View>
       <View style={styles.fieldGroup}>
         <Text maxFontSizeMultiplier={2} style={styles.fieldLabel}>
@@ -822,7 +845,7 @@ function SignInForm({
             placeholder={text.enterPassword}
             placeholderTextColor={placeholderTextColor}
             secureTextEntry={!visible}
-            style={[inputStyle, styles.passwordInput]}
+            style={[inputStyle, styles.centeredInput, styles.passwordInput, credentialsError ? styles.authInputError : null]}
             testID="account-password"
             value={password}
           />
@@ -840,9 +863,12 @@ function SignInForm({
             />
           </Pressable>
         </View>
+        {credentialsError ? <Text style={styles.fieldError} testID="account-password-error">{text.signInCredentialsError}</Text> : null}
       </View>
       <Button
+        labelStyle={styles.authPrimaryLabel}
         onPress={onSubmit}
+        style={styles.authPrimaryButton}
         testID="account-sign-in-submit"
         variant="primary"
       >
@@ -875,17 +901,18 @@ function ProviderButton({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
+      accessibilityLabel={text}
       style={({ pressed }) => [
         styles.providerButton,
+        icon === "google" ? styles.googleProviderButton : null,
         pressed ? styles.providerPressed : null,
       ]}
+      testID={`account-provider-${icon}`}
     >
       <View style={styles.providerIcon}>
         {icon === "apple" ? (
-          <Icon color={styles.icon.color as string} name="apple" size={26} />
-        ) : (
-          <Text style={styles.googleGlyph}>G</Text>
-        )}
+          <Icon color="#1F1F1F" name="apple" size={26} />
+        ) : <GoogleIcon height={18} width={18} />}
       </View>
       <Text maxFontSizeMultiplier={2} style={styles.providerLabel}>
         {text}
@@ -1112,7 +1139,7 @@ function renderFeedback(feedback: Feedback | null, text: AccountCopy) {
   return (
     <InfoBlock
       body={message}
-      title={text.invalid}
+      title={text.signInProblem}
       testID={`account-feedback-${feedback.failure}`}
       tone="warning"
     />
@@ -1380,36 +1407,54 @@ function setResult(setFeedback: (feedback: Feedback) => void) {
   return (result: AccountCommandResult) => setFeedback(result);
 }
 
+function hasValidEmailFormat(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email.trim());
+}
+
 const createStyles = (palette: AppColors) =>
   StyleSheet.create({
-    authScreen: { paddingTop: 50 },
-    authPanel: { gap: spacing.xl },
+    authScreen: { paddingTop: spacing.md },
+    authPanel: { gap: spacing.md },
     authTitle: {
       ...typography.display,
-      color: palette.textPrimary,
-      fontSize: 42,
-      lineHeight: 50,
+      color: themeColors.dark.textPrimary,
+      fontSize: 38,
+      lineHeight: 44,
       letterSpacing: -0.8,
     },
-    signInForm: { gap: spacing.lg },
-    fieldGroup: { gap: spacing.sm },
+    signInForm: { gap: spacing.md },
+    fieldGroup: { gap: spacing.xs },
     fieldLabel: {
-      color: palette.textMuted,
+      color: themeColors.dark.textSecondary,
       fontSize: 14,
       fontWeight: "600",
       lineHeight: 20,
     },
     authInput: {
-      backgroundColor: palette.surfaceInput,
-      borderColor: palette.border,
+      backgroundColor: themeColors.dark.surface,
+      borderColor: themeColors.dark.borderStrong,
       borderRadius: 16,
       borderWidth: 1,
-      color: palette.textPrimary,
+      color: themeColors.dark.textPrimary,
       fontSize: 16,
       lineHeight: 22,
-      minHeight: 54,
+      height: 52,
       paddingHorizontal: spacing.lg,
+      paddingVertical: 0,
     },
+    centeredInput: { textAlignVertical: "center" },
+    authInputError: { borderColor: themeColors.dark.danger },
+    fieldError: {
+      color: themeColors.dark.danger,
+      fontSize: 12,
+      lineHeight: 16,
+    },
+    authPlaceholder: { color: themeColors.dark.textMuted },
+    authPrimaryButton: {
+      backgroundColor: themeColors.dark.primary,
+      borderColor: themeColors.dark.primary,
+    },
+    authPrimaryLabel: { color: themeColors.dark.onPrimary },
     passwordInput: { paddingRight: 56 },
     visibilityButton: {
       alignItems: "center",
@@ -1420,7 +1465,7 @@ const createStyles = (palette: AppColors) =>
       top: 5,
       width: 44,
     },
-    icon: { color: palette.textPrimary },
+    icon: { color: themeColors.dark.textPrimary },
     authLinks: {
       alignItems: "center",
       flexDirection: "row",
@@ -1428,15 +1473,15 @@ const createStyles = (palette: AppColors) =>
       marginHorizontal: -spacing.sm,
     },
     textActionLabel: {
-      color: palette.primary,
+      color: themeColors.dark.primary,
       fontSize: 14,
       fontWeight: "500",
       textDecorationLine: "underline",
     },
     divider: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
-    dividerLine: { backgroundColor: palette.border, flex: 1, height: 1 },
+    dividerLine: { backgroundColor: themeColors.dark.borderStrong, flex: 1, height: 1 },
     dividerLabel: {
-      color: palette.textSecondary,
+      color: themeColors.dark.textSecondary,
       fontSize: 13,
       lineHeight: 18,
     },
@@ -1448,9 +1493,13 @@ const createStyles = (palette: AppColors) =>
       borderWidth: 1,
       flexDirection: "row",
       justifyContent: "center",
-      minHeight: 60,
+      minHeight: 52,
       paddingHorizontal: spacing.xl,
       position: "relative",
+    },
+    googleProviderButton: {
+      backgroundColor: "#FFFFFF",
+      borderColor: "#747775",
     },
     providerIcon: {
       alignItems: "center",
@@ -1461,17 +1510,17 @@ const createStyles = (palette: AppColors) =>
       width: 32,
     },
     providerLabel: {
-      color: palette.textPrimary,
+      color: "#1F1F1F",
       fontSize: 16,
       fontWeight: "600",
       lineHeight: 22,
     },
     providerPressed: { opacity: 0.78 },
-    googleGlyph: {
-      color: "#4285F4",
-      fontSize: 27,
-      fontWeight: "700",
-      lineHeight: 32,
+    guestActionLabel: {
+      color: themeColors.dark.textSecondary,
+      fontSize: 14,
+      fontWeight: "600",
+      textDecorationLine: "underline",
     },
     welcomeScreen: {
       justifyContent: "space-between",
@@ -1542,8 +1591,10 @@ const createStyles = (palette: AppColors) =>
       borderRadius: 10,
       borderWidth: 1,
       color: palette.textPrimary,
-      minHeight: 48,
+      height: 52,
       paddingHorizontal: 14,
+      paddingVertical: 0,
+      textAlignVertical: "center",
     },
     placeholder: { color: palette.textMuted },
   });
