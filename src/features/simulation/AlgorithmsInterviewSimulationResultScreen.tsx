@@ -10,7 +10,7 @@ import { AnswerOption, EmptyState, ReviewNavigator, ReviewShell, ReviewUnavailab
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { ambient, effects, spacing, typography, type AppColors } from "../../theme";
+import { spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
@@ -211,11 +211,11 @@ const createReviewStyles = (palette: AppColors) => StyleSheet.create({
   pending: { alignItems: "center", justifyContent: "center", minHeight: 180 },
   pendingText: { ...typography.body, color: palette.textSecondary },
   questionBlock: { gap: spacing.xs },
-  questionEyebrow: { color: ambient.reviewTeal, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 15, opacity: 0.5 },
+  questionEyebrow: { color: palette.ambient.review, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 15, opacity: 0.5 },
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   options: { gap: spacing.sm },
   unavailableContent: { alignSelf: "stretch", flex: 1, position: "relative", width: "100%" },
-  unavailableSurface: { alignItems: "center", backgroundColor: effects.unavailableSurface, borderColor: effects.subtleBorder, borderRadius: 18, borderWidth: 1, gap: spacing.lg, left: 20, paddingHorizontal: spacing.xxxl, paddingVertical: 28, position: "absolute", top: 185, width: 353 },
+  unavailableSurface: { alignItems: "center", backgroundColor: palette.effects.unavailableSurface, borderColor: palette.effects.subtleBorder, borderRadius: 18, borderWidth: 1, gap: spacing.lg, left: 20, paddingHorizontal: spacing.xxxl, paddingVertical: 28, position: "absolute", top: 185, width: 353 },
 });
 
 function messageFor(error: unknown): string { return describeOperationalFailure(error, "The session result is not available because verification did not complete."); }

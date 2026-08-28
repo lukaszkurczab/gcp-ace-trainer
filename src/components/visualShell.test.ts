@@ -23,11 +23,22 @@ test("shared visual effects have one theme-token owner", () => {
     .map(source)
     .join("\n");
 
-  assert.match(tokens, /export const effects = \{[\s\S]*?reviewScrim:[\s\S]*?subtleBorder:/);
-  assert.match(tokens, /export const ambient = \{[\s\S]*?canvas:[\s\S]*?indigo:[\s\S]*?reviewTeal:/);
+  assert.match(tokens, /light:\s*\{[\s\S]*?ambient:\s*\{[\s\S]*?canvas:[\s\S]*?effects:\s*\{[\s\S]*?reviewScrim:[\s\S]*?subtleBorder:/);
+  assert.match(tokens, /dark:\s*\{[\s\S]*?ambient:\s*\{[\s\S]*?canvas:[\s\S]*?effects:\s*\{[\s\S]*?reviewScrim:[\s\S]*?subtleBorder:/);
   assert.doesNotMatch(appSource, /rgba\(/);
   assert.doesNotMatch(appSource, /shadowColor:\s*"#/);
   assert.doesNotMatch(appSource, /backgroundColor:\s*"#081328"/);
+});
+
+test("screens and components resolve colors exclusively through the active theme", () => {
+  const presentationSource = ["src/components", "src/features", "src/navigation"]
+    .flatMap(sourceFiles)
+    .map(source)
+    .join("\n");
+
+  assert.doesNotMatch(presentationSource, /#[0-9a-f]{3,8}\b/i);
+  assert.doesNotMatch(presentationSource, /rgba?\(/i);
+  assert.doesNotMatch(presentationSource, /(?:themeColors|colors)\.(?:dark|light)\b/);
 });
 
 test("all branded navigation headers use the one AppShellHeader path", () => {
@@ -332,7 +343,7 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   assert.match(facade, /controls: feedback\.controls/);
   const reviewFeedback = source("src/features/review/ReviewFeedbackBlock.tsx");
   assert.match(reviewFeedback, /reasonDivider:/);
-  assert.match(reviewFeedback, /colorWithOpacity\(ambient\.reviewTeal, 0\.6\)/);
+  assert.match(reviewFeedback, /colorWithOpacity\(palette\.ambient\.review, 0\.6\)/);
   assert.match(reviewFeedback, /reason:\s*\{[^}]*\.\.\.typography\.body[^}]*fontWeight:\s*"500"/);
   assert.doesNotMatch(reviewFeedback, /reasonPanel|result:/);
 });
@@ -349,7 +360,7 @@ test("answer review uses the shared Figma review shell and preserves review mark
   assert.match(review, /questionBlock:\s*\{\s*gap:\s*6\s*\}/);
   assert.match(review, /optionsFeedbackSpacer:\s*\{\s*height:\s*28\s*\}/);
   assert.match(review, /<ReviewFeedbackBlock/);
-  assert.match(review, /questionEyebrow:\s*\{[^}]*color:\s*ambient\.reviewTeal/);
+  assert.match(review, /questionEyebrow:\s*\{[^}]*color:\s*palette\.ambient\.review/);
   assert.match(sharedReviewShell, /filterShell:/);
   assert.match(sharedReviewShell, /footerVariant="review"/);
   assert.match(sharedReviewShell, /footer:\s*\{[\s\S]*flexDirection:\s*"row"/);
@@ -396,8 +407,8 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
   assert.match(choiceRow, /density\?:\s*"comfortable" \| "compact"/);
   assert.match(choiceRow, /compactRow:\s*\{[\s\S]*?minHeight:\s*48/);
   assert.match(screen, /footerVariant\?:\s*"default" \| "review" \| "session" \| "simulation" \| "sticky"/);
-  assert.match(screen, /import \{ effects, spacing \} from "\.\.\/theme"/);
-  assert.match(screen, /footerSticky:\s*\{[\s\S]*?borderColor: effects\.subtleBorder/);
+  assert.match(screen, /import \{ spacing \} from "\.\.\/theme"/);
+  assert.match(screen, /footerSticky:\s*\{[\s\S]*?borderColor: palette\.effects\.subtleBorder/);
   assert.match(screenHeader, /variant\?: "default" \| "activity" \| "practiceSetup"/);
   assert.match(screenHeader, /practiceSetupDescription:\s*\{[\s\S]*?fontSize:\s*13\.5[\s\S]*?lineHeight:\s*19/);
   assert.doesNotMatch(setup, /Focus areas|Save settings/);

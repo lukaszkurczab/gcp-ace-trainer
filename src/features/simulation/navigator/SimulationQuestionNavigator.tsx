@@ -5,7 +5,7 @@ import { AccessibilityInfo, Modal, Pressable, ScrollView, StyleSheet, Text, View
 import { Button, Icon, IconButton } from "../../../components";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
-import { effects, radius, spacing, typography } from "../../../theme";
+import { radius, spacing, typography } from "../../../theme";
 import type { SimulationNavigatorPosition, SimulationNavigatorSelectionResult } from "../simulationProjection";
 import { hasCanonicalSimulationNavigator } from "../simulationViewModel";
 import { navigatorCellLabel, navigatorGridColumns, navigatorStateLabel } from "./navigatorPresentation";
@@ -107,7 +107,7 @@ function NavigatorCell({ columns, disabled, frozen = false, index, onPress, posi
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   answeredCell: { borderColor: palette.primary, borderWidth: 1.5 },
-  backdrop: { backgroundColor: effects.reviewScrim, flex: 1, justifyContent: "flex-end" },
+  backdrop: { backgroundColor: palette.effects.reviewScrim, flex: 1, justifyContent: "flex-end" },
   cell: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, justifyContent: "center", overflow: "hidden", position: "relative" },
   cellText: { color: palette.textPrimary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   currentCell: { backgroundColor: palette.primary, borderColor: palette.primary },

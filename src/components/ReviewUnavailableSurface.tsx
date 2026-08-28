@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-na
 
 import { Icon } from "./Icon";
 import { useThemedStyles } from "../preferences";
-import { effects, spacing, type AppColors } from "../theme";
+import { spacing, type AppColors } from "../theme";
 
 type ReviewUnavailableSurfaceProps = {
   description: string;
@@ -26,8 +26,8 @@ export function ReviewUnavailableSurface({ description, style, title }: ReviewUn
 const createStyles = (palette: AppColors) => StyleSheet.create({
   surface: {
     alignItems: "center",
-    backgroundColor: effects.unavailableSurface,
-    borderColor: effects.subtleBorder,
+    backgroundColor: palette.effects.unavailableSurface,
+    borderColor: palette.effects.subtleBorder,
     borderRadius: 18,
     gap: spacing.lg,
     paddingHorizontal: spacing.xxxl,
@@ -42,7 +42,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   icon: {
     alignItems: "center",
-    backgroundColor: effects.unavailableIconSurface,
+    backgroundColor: palette.effects.unavailableIconSurface,
     borderRadius: 24,
     height: 48,
     justifyContent: "center",

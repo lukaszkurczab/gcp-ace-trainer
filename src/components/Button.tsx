@@ -11,7 +11,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import { effects, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography } from "../theme";
 import { useAppPreferences, useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
@@ -117,7 +117,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     backgroundColor: palette.elevatedSurface,
   },
   ghostPressed: {
-    backgroundColor: effects.ghostPressed,
+    backgroundColor: palette.effects.ghostPressed,
   },
   destructivePressed: {
     backgroundColor: palette.danger,

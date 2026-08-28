@@ -24,7 +24,7 @@ export default function App() {
 function AppNavigation() {
   const preferences = useAppPreferences();
   const { state } = usePatternlyAccount();
-  const navigationTheme = buildNavigationTheme(preferences.colors);
+  const navigationTheme = buildNavigationTheme(preferences.colors, preferences.colorMode);
   const sessionKey = state.kind === "authenticated" || state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting"
     ? "application-session"
     : "account-entry";

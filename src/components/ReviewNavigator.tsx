@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { AccessibilityInfo, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { useAppPreferences, useThemedStyles } from "../preferences";
-import { effects, radius, spacing, type AppColors } from "../theme";
+import { radius, spacing, type AppColors } from "../theme";
 import { IconButton } from "./IconButton";
 
 export type ReviewNavigatorItem = Readonly<{ answered: boolean; id: string; ordinal: number }>;
@@ -72,13 +72,13 @@ function useReducedMotion(): boolean {
 const createStyles = (palette: AppColors) => StyleSheet.create({
   activeCellText: { color: palette.onPrimary },
   answeredCell: { backgroundColor: palette.primary, borderColor: palette.primary },
-  backdrop: { backgroundColor: effects.reviewScrim, flex: 1, justifyContent: "flex-end" },
+  backdrop: { backgroundColor: palette.effects.reviewScrim, flex: 1, justifyContent: "flex-end" },
   cell: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, height: 48, justifyContent: "center" },
   cellText: { color: palette.textSecondary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   currentCell: { backgroundColor: palette.primary, borderColor: palette.primary },
   dismissArea: { ...StyleSheet.absoluteFill },
   grid: { alignContent: "flex-start", columnGap: 9, flexDirection: "row", flexWrap: "wrap", paddingBottom: spacing.xl, paddingHorizontal: spacing.xl, paddingTop: spacing.sm, rowGap: spacing.sm },
-  handle: { alignSelf: "center", backgroundColor: effects.handle, borderRadius: 2, height: 4, marginVertical: 10, width: 36 },
+  handle: { alignSelf: "center", backgroundColor: palette.effects.handle, borderRadius: 2, height: 4, marginVertical: 10, width: 36 },
   header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingHorizontal: spacing.xl },
   sheet: { backgroundColor: palette.elevatedSurface, borderColor: palette.borderStrong, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderWidth: 1, gap: spacing.sm, maxHeight: "86%", paddingBottom: spacing.lg },
   summary: { paddingHorizontal: spacing.xl, paddingTop: spacing.xs },

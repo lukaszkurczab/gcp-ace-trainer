@@ -28,7 +28,7 @@ import {
 import { getTrackDisplay, isRegisteredTrackId, type TrackId } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { effects, colorWithOpacity, radius, spacing, typography, type AppColors } from "../../theme";
+import { colorWithOpacity, radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 type GoalCadenceScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.GOAL_CADENCE>;
@@ -209,7 +209,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
             <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Goal & cadence")}</Text>
           </View>
           <View style={styles.trackContext}>
-            <View style={[styles.trackDot, { backgroundColor: track.accentColor }]} />
+            <View style={styles.trackDot} />
             <Text maxFontSizeMultiplier={2} style={styles.trackLabel}>{t(track.shortTitle)}</Text>
           </View>
           {editing ? <Text maxFontSizeMultiplier={2} style={styles.description}>{t("Set a learning rhythm for this track.")}</Text> : (
@@ -415,8 +415,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   titleRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
   title: { color: palette.textPrimary, fontSize: 22, fontWeight: "700", lineHeight: 27 },
   trackContext: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
-  trackDot: { borderRadius: radius.pill, height: 8, width: 8 },
   trackLabel: { ...typography.small, color: palette.textSecondary, fontWeight: "500" },
+  trackDot: { backgroundColor: palette.primary, borderRadius: radius.pill, height: spacing.sm, width: spacing.sm },
   description: { ...typography.small, color: palette.primary, lineHeight: 19 },
   statusBadge: { backgroundColor: palette.success, borderRadius: radius.md, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
   pausedBadge: { backgroundColor: palette.warning },
@@ -444,9 +444,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   reminderCopy: { flex: 1, gap: spacing.xs },
   reminderTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   reminderDetail: { ...typography.small, color: palette.textSecondary },
-  summaryCard: { backgroundColor: palette.surface, borderColor: effects.subtleBorder, borderRadius: 14, borderWidth: 1, gap: 14, padding: spacing.lg },
+  summaryCard: { backgroundColor: palette.surface, borderColor: palette.effects.subtleBorder, borderRadius: 14, borderWidth: 1, gap: 14, padding: spacing.lg },
   summaryRow: { gap: spacing.xs },
-  summaryDivider: { backgroundColor: effects.divider, height: StyleSheet.hairlineWidth, width: "100%" },
+  summaryDivider: { backgroundColor: palette.effects.divider, height: StyleSheet.hairlineWidth, width: "100%" },
   summaryLabel: { color: palette.primary, fontSize: 12, fontWeight: "400", lineHeight: 15 },
   summaryValue: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
   dayBadges: { flexDirection: "row", gap: 6 },

@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { ROUTES } from "../../constants/routes";
 import { MAIN_TAB_ITEMS } from "../home/shellModel";
 import type { ShellTab } from "../home/types";
-import { useAppPreferences } from "../../preferences";
 
 type BottomNavigationTarget = {
   navigate: (name: string, params?: object) => void;

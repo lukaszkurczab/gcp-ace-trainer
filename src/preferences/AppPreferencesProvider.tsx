@@ -60,7 +60,7 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
   }, [persist, settings]);
 
   const colorMode: ColorMode = settings.appearance === "system"
-    ? systemColorScheme === "light" ? "light" : "dark"
+    ? systemColorScheme === "dark" ? "dark" : "light"
     : settings.appearance;
   const locale: AppLocale = settings.language === "system" ? resolveSystemLocale() : settings.language;
 

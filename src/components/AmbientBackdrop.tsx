@@ -3,7 +3,8 @@ import { AccessibilityInfo, Animated, Easing, StyleSheet, View, useWindowDimensi
 import Svg, { Defs, Polyline, RadialGradient, Rect, Stop } from "react-native-svg";
 
 import Topography from "../assets/ambient/topography.svg";
-import { ambient, effects } from "../theme";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
 
 type AmbientPoint = Readonly<{ x: number; y: number }>;
 type AmbientRoute = Readonly<{ id: string; points: readonly AmbientPoint[] }>;
@@ -28,11 +29,12 @@ const TRAIL_OFFSETS = [0.018, 0.034, 0.052, 0.072, 0.094] as const;
 
 /** Figma Page 1 ambient layers shared by dark Track, Practice, Activity, and Goal screens. */
 export function AmbientBackdrop({ variant = "default" }: Readonly<{ variant?: "default" | "activity" | "goal" | "auth" }>) {
+  const styles = useThemedStyles(createStyles);
   if (variant === "auth") return <AuthAmbientBackdrop />;
 
   const glowId = variant === "goal" ? "ambient-goal-teal" : variant === "activity" ? "ambient-activity-teal" : "ambient-teal";
   const glowTransform = variant === "goal" ? "matrix(32 0 0 28 224 196)" : variant === "activity" ? "matrix(32 0 0 28 160 140)" : "matrix(16 0 0 14 160 140)";
-  const glowColor = variant === "goal" ? ambient.goalTeal : ambient.teal;
+  const glowColor = variant === "goal" ? styles.goalGlowColor.color : styles.tealGlowColor.color;
   const glowOpacity = variant === "goal" ? 0.06 : variant === "activity" ? 0.04 : 0.05098;
   return (
     <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={[StyleSheet.absoluteFill, styles.canvas]}>
@@ -50,8 +52,8 @@ export function AmbientBackdrop({ variant = "default" }: Readonly<{ variant?: "d
           <Svg height={300} style={styles.indigoGlow} width={320}>
             <Defs>
               <RadialGradient cx={0} cy={0} gradientTransform="matrix(16 0 0 15 160 150)" id="ambient-indigo" r={10}>
-                <Stop offset="0" stopColor={ambient.indigo} stopOpacity={0.039216} />
-                <Stop offset="1" stopColor={ambient.indigo} stopOpacity={0} />
+                <Stop offset="0" stopColor={styles.indigoGlowColor.color} stopOpacity={0.039216} />
+                <Stop offset="1" stopColor={styles.indigoGlowColor.color} stopOpacity={0} />
               </RadialGradient>
             </Defs>
             <Rect fill="url(#ambient-indigo)" height="300" width="320" />
@@ -64,6 +66,7 @@ export function AmbientBackdrop({ variant = "default" }: Readonly<{ variant?: "d
 }
 
 function AuthAmbientBackdrop() {
+  const styles = useThemedStyles(createStyles);
   const { height, width } = useWindowDimensions();
   const reduceMotion = useReducedMotion();
   const routes = useMemo(() => AUTH_ROUTES.map((route) => measureRoute(route, width, height)), [height, width]);
@@ -113,7 +116,7 @@ function AuthAmbientBackdrop() {
     <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={[StyleSheet.absoluteFill, styles.canvas]}>
       <Svg height={height} style={styles.authRoutes} width={width}>
         {routes.map((route) => (
-          <Polyline fill="none" key={route.id} points={route.points.map((point) => `${point.x},${point.y}`).join(" ")} stroke={effects.authSignal} strokeLinejoin="round" strokeWidth={1} />
+          <Polyline fill="none" key={route.id} points={route.points.map((point) => `${point.x},${point.y}`).join(" ")} stroke={styles.authRoute.color} strokeLinejoin="round" strokeWidth={1} />
         ))}
       </Svg>
       {reduceMotion === false ? <RouteSignal opacity={opacity} progress={progress} route={activeRoute} /> : null}
@@ -144,6 +147,7 @@ function SignalMark({ opacity, progress, route, trail = false }: Readonly<{
   route: MeasuredRoute;
   trail?: boolean;
 }>) {
+  const styles = useThemedStyles(createStyles);
   const translateX = progress.interpolate({ extrapolate: "clamp", inputRange: [...route.progress], outputRange: route.points.map((point) => point.x) });
   const translateY = progress.interpolate({ extrapolate: "clamp", inputRange: [...route.progress], outputRange: route.points.map((point) => point.y) });
   return (
@@ -172,13 +176,17 @@ function useReducedMotion(): boolean | null {
   return reduceMotion;
 }
 
-const styles = StyleSheet.create({
-  canvas: { backgroundColor: ambient.canvas },
+const createStyles = (palette: AppColors) => StyleSheet.create({
+  canvas: { backgroundColor: palette.ambient.canvas },
+  goalGlowColor: { color: palette.ambient.goal },
+  tealGlowColor: { color: palette.ambient.teal },
+  indigoGlowColor: { color: palette.ambient.indigo },
+  authRoute: { color: palette.effects.authSignal },
   authRoutes: { left: 0, position: "absolute", top: 0 },
   authSignalContainer: { height: 18, left: -9, position: "absolute", top: -9, width: 18 },
-  authSignal: { backgroundColor: effects.authSignalBright, borderColor: effects.authSignalTrail, borderRadius: 3, borderWidth: 2, height: 5, left: 7, position: "absolute", top: 7, width: 5 },
-  authSignalGlow: { backgroundColor: effects.authSignalGlow, borderRadius: 9, height: 18, width: 18 },
-  authSignalTrail: { backgroundColor: effects.authSignalBright, borderRadius: 1.5, height: 3, left: -1.5, position: "absolute", top: -1.5, width: 3 },
+  authSignal: { backgroundColor: palette.effects.authSignalBright, borderColor: palette.effects.authSignalTrail, borderRadius: 3, borderWidth: 2, height: 5, left: 7, position: "absolute", top: 7, width: 5 },
+  authSignalGlow: { backgroundColor: palette.effects.authSignalGlow, borderRadius: 9, height: 18, width: 18 },
+  authSignalTrail: { backgroundColor: palette.effects.authSignalBright, borderRadius: 1.5, height: 3, left: -1.5, position: "absolute", top: -1.5, width: 3 },
   goalGlow: { left: 0, position: "absolute", top: 0 },
   tealGlow: { left: -60, position: "absolute", top: -40 },
   indigoGlow: { left: 133, position: "absolute", top: 500 },

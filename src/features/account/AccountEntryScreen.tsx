@@ -41,7 +41,6 @@ import {
 } from "../../infrastructure/firebase/publicConfig";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import {
-  colors as themeColors,
   spacing,
   typography,
   type AppColors,
@@ -700,16 +699,17 @@ function WelcomeScreen({
   text: AccountCopy;
 }>) {
   const styles = useThemedStyles(createStyles);
+  const { colorMode, colors } = useAppPreferences();
   return (
     <Screen
-      backgroundColor={themeColors.dark.background}
+      backgroundColor={colors.background}
       edges={["top", "bottom"]}
       scroll={false}
       style={styles.welcomeScreen}
     >
-      <StatusBar style="light" />
+      <StatusBar style={colorMode === "dark" ? "light" : "dark"} />
       <View style={styles.welcomeHero}>
-        <PatternlyMark size={88} treatment="white" />
+        <PatternlyMark size={88} treatment={colorMode === "dark" ? "white" : "navy"} />
         <Text maxFontSizeMultiplier={2} style={styles.welcomeBrand}>
           Patternly
         </Text>
@@ -897,6 +897,7 @@ function ProviderButton({
   text,
 }: Readonly<{ icon: "apple" | "google"; onPress: () => void; text: string }>) {
   const styles = useThemedStyles(createStyles);
+  const { colors } = useAppPreferences();
   return (
     <Pressable
       accessibilityRole="button"
@@ -911,7 +912,7 @@ function ProviderButton({
     >
       <View style={styles.providerIcon}>
         {icon === "apple" ? (
-          <Icon color="#1F1F1F" name="apple" size={26} />
+          <Icon color={colors.provider.appleIcon} name="apple" size={26} />
         ) : <GoogleIcon height={18} width={18} />}
       </View>
       <Text maxFontSizeMultiplier={2} style={styles.providerLabel}>
@@ -1417,7 +1418,7 @@ const createStyles = (palette: AppColors) =>
     authPanel: { alignSelf: "stretch", gap: spacing.md },
     authTitle: {
       ...typography.display,
-      color: themeColors.dark.textPrimary,
+      color: palette.textPrimary,
       fontSize: 38,
       lineHeight: 44,
       letterSpacing: -0.8,
@@ -1425,17 +1426,17 @@ const createStyles = (palette: AppColors) =>
     signInForm: { gap: spacing.md },
     fieldGroup: { gap: spacing.xs },
     fieldLabel: {
-      color: themeColors.dark.textSecondary,
+      color: palette.textSecondary,
       fontSize: 14,
       fontWeight: "600",
       lineHeight: 20,
     },
     authInput: {
-      backgroundColor: themeColors.dark.surface,
-      borderColor: themeColors.dark.borderStrong,
+      backgroundColor: palette.surface,
+      borderColor: palette.borderStrong,
       borderRadius: 16,
       borderWidth: 1,
-      color: themeColors.dark.textPrimary,
+      color: palette.textPrimary,
       fontSize: 16,
       lineHeight: 22,
       height: 52,
@@ -1443,18 +1444,18 @@ const createStyles = (palette: AppColors) =>
       paddingVertical: 0,
     },
     centeredInput: { textAlignVertical: "center" },
-    authInputError: { borderColor: themeColors.dark.danger },
+    authInputError: { borderColor: palette.danger },
     fieldError: {
-      color: themeColors.dark.danger,
+      color: palette.danger,
       fontSize: 12,
       lineHeight: 16,
     },
-    authPlaceholder: { color: themeColors.dark.textMuted },
+    authPlaceholder: { color: palette.textMuted },
     authPrimaryButton: {
-      backgroundColor: themeColors.dark.primary,
-      borderColor: themeColors.dark.primary,
+      backgroundColor: palette.primary,
+      borderColor: palette.primary,
     },
-    authPrimaryLabel: { color: themeColors.dark.onPrimary },
+    authPrimaryLabel: { color: palette.onPrimary },
     passwordInput: { paddingRight: 56 },
     visibilityButton: {
       alignItems: "center",
@@ -1465,7 +1466,7 @@ const createStyles = (palette: AppColors) =>
       top: 5,
       width: 44,
     },
-    icon: { color: themeColors.dark.textPrimary },
+    icon: { color: palette.textPrimary },
     authLinks: {
       alignItems: "center",
       flexDirection: "row",
@@ -1473,15 +1474,15 @@ const createStyles = (palette: AppColors) =>
       marginHorizontal: -spacing.sm,
     },
     textActionLabel: {
-      color: themeColors.dark.primary,
+      color: palette.primary,
       fontSize: 14,
       fontWeight: "500",
       textDecorationLine: "underline",
     },
     divider: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
-    dividerLine: { backgroundColor: themeColors.dark.borderStrong, flex: 1, height: 1 },
+    dividerLine: { backgroundColor: palette.borderStrong, flex: 1, height: 1 },
     dividerLabel: {
-      color: themeColors.dark.textSecondary,
+      color: palette.textSecondary,
       fontSize: 13,
       lineHeight: 18,
     },
@@ -1498,8 +1499,8 @@ const createStyles = (palette: AppColors) =>
       position: "relative",
     },
     googleProviderButton: {
-      backgroundColor: "#FFFFFF",
-      borderColor: "#747775",
+      backgroundColor: palette.provider.brandedSurface,
+      borderColor: palette.provider.brandedBorder,
     },
     providerIcon: {
       alignItems: "center",
@@ -1510,14 +1511,14 @@ const createStyles = (palette: AppColors) =>
       width: 32,
     },
     providerLabel: {
-      color: "#1F1F1F",
+      color: palette.provider.brandedLabel,
       fontSize: 16,
       fontWeight: "600",
       lineHeight: 22,
     },
     providerPressed: { opacity: 0.78 },
     guestActionLabel: {
-      color: themeColors.dark.textSecondary,
+      color: palette.textSecondary,
       fontSize: 14,
       fontWeight: "600",
       textDecorationLine: "underline",
@@ -1529,14 +1530,14 @@ const createStyles = (palette: AppColors) =>
     },
     welcomeHero: { alignItems: "center", gap: spacing.lg },
     welcomeBrand: {
-      color: themeColors.dark.textPrimary,
+      color: palette.textPrimary,
       fontSize: 36,
       fontWeight: "700",
       letterSpacing: -0.6,
       lineHeight: 44,
     },
     welcomeTitle: {
-      color: themeColors.dark.textPrimary,
+      color: palette.textPrimary,
       fontSize: 30,
       fontWeight: "700",
       lineHeight: 38,
@@ -1544,7 +1545,7 @@ const createStyles = (palette: AppColors) =>
       textAlign: "center",
     },
     welcomeDescription: {
-      color: themeColors.dark.textSecondary,
+      color: palette.textSecondary,
       fontSize: 16,
       lineHeight: 24,
       textAlign: "center",
@@ -1560,12 +1561,12 @@ const createStyles = (palette: AppColors) =>
       paddingVertical: spacing.lg,
     },
     entryButtonPrimary: {
-      backgroundColor: themeColors.dark.primary,
-      borderColor: themeColors.dark.primary,
+      backgroundColor: palette.primary,
+      borderColor: palette.primary,
     },
     entryButtonSecondary: {
-      backgroundColor: themeColors.dark.surface,
-      borderColor: themeColors.dark.border,
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
     },
     entryButtonGuest: {
       backgroundColor: "transparent",
@@ -1580,9 +1581,9 @@ const createStyles = (palette: AppColors) =>
       lineHeight: 22,
       textAlign: "center",
     },
-    entryButtonPrimaryLabel: { color: themeColors.dark.onPrimary },
-    entryButtonSecondaryLabel: { color: themeColors.dark.textPrimary },
-    entryButtonGuestLabel: { color: themeColors.dark.primary },
+    entryButtonPrimaryLabel: { color: palette.onPrimary },
+    entryButtonSecondaryLabel: { color: palette.textPrimary },
+    entryButtonGuestLabel: { color: palette.primary },
     email: { ...typography.bodyStrong, color: palette.textPrimary },
     formDescription: { ...typography.small, color: palette.textSecondary },
     input: {

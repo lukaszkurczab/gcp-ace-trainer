@@ -12,7 +12,7 @@ import { contentPackagePinsEqual } from "../../domain";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { ambient, effects, spacing, typography, type AppColors } from "../../theme";
+import { spacing, typography, type AppColors } from "../../theme";
 import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/certification";
 import { ReviewFeedbackBlock } from "./ReviewFeedbackBlock";
 
@@ -180,10 +180,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   options: { gap: spacing.sm },
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   questionBlock: { gap: 6 },
-  questionEyebrow: { color: ambient.reviewTeal, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, opacity: 0.5 },
+  questionEyebrow: { color: palette.ambient.review, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 13, opacity: 0.5 },
   markAction: { marginTop: spacing.xl },
   optionsFeedbackSpacer: { height: 28 },
   questionOptionsSpacer: { height: 22 },
-  unavailableContent: { alignItems: "center", backgroundColor: effects.unavailableSurface, borderColor: effects.subtleBorder, borderRadius: 18, gap: spacing.lg, marginTop: 101, paddingHorizontal: spacing.xxxl, paddingVertical: 28 },
+  unavailableContent: { alignItems: "center", backgroundColor: palette.effects.unavailableSurface, borderColor: palette.effects.subtleBorder, borderRadius: 18, gap: spacing.lg, marginTop: 101, paddingHorizontal: spacing.xxxl, paddingVertical: 28 },
   unanswered: { ...typography.bodyStrong, color: palette.textMuted },
 });

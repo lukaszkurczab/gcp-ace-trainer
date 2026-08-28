@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
 
-import { effects, spacing } from "../theme";
+import { spacing } from "../theme";
 import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 import { AmbientBackdrop } from "./AmbientBackdrop";
@@ -92,7 +92,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     padding: spacing.md
   },
   footerReview: {
-    borderColor: effects.divider,
+    borderColor: palette.effects.divider,
     gap: 0,
     paddingBottom: spacing.xxxl,
     paddingHorizontal: spacing.xl,
@@ -111,7 +111,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   footerSticky: {
-    borderColor: effects.subtleBorder,
+    borderColor: palette.effects.subtleBorder,
     paddingBottom: spacing.xl,
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,

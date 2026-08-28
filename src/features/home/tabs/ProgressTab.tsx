@@ -316,16 +316,17 @@ function TrendChart({ points }: Readonly<{
   points: readonly number[];
 }>) {
   const styles = useThemedStyles(createStyles);
+  const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
   return (
     <View accessible accessibilityLabel={`Effectiveness trend: ${points.join(", ")} percent`} style={styles.trendChart}>
           <View style={styles.trendReferenceLineTop} />
           <View style={styles.trendReferenceLineMiddle} />
           <Svg height={130} viewBox="0 0 290 130" width="100%">
-            <Polyline fill="none" points={formatTrendPoints(points)} stroke="#1e293b" strokeWidth={2} />
+            <Polyline fill="none" points={formatTrendPoints(points)} stroke={colors.progress.chartLine} strokeWidth={2} />
             {points.map((point, index) => {
               const coordinate = trendPointCoordinate(point, index, points.length);
-              return <Circle key={`${point}-${index}`} cx={coordinate.x} cy={coordinate.y} fill="#34b564" r={3} />;
+              return <Circle key={`${point}-${index}`} cx={coordinate.x} cy={coordinate.y} fill={colors.progress.chartPoint} r={3} />;
             })}
           </Svg>
           <View style={styles.trendAxisLabels}>

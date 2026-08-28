@@ -52,11 +52,12 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.match(screen, /onPress=\{account\.continueAsGuest\}/);
   assert.match(screen, /import GoogleIcon from "\.\.\/\.\.\/assets\/icons\/google\.svg"/);
   assert.match(screen, /<GoogleIcon height=\{18\} width=\{18\} \/>/);
-  assert.match(screen, /googleProviderButton:[\s\S]*?backgroundColor: "#FFFFFF"[\s\S]*?borderColor: "#747775"/);
+  assert.match(screen, /googleProviderButton:[\s\S]*?backgroundColor: palette\.provider\.brandedSurface[\s\S]*?borderColor: palette\.provider\.brandedBorder/);
   assert.match(screen, /centeredInput: \{ textAlignVertical: "center" \}/);
-  assert.match(screen, /<Icon color="#1F1F1F" name="apple" size=\{26\} \/>/);
-  assert.match(screen, /authPrimaryButton:[\s\S]*?backgroundColor: themeColors\.dark\.primary/);
-  assert.match(screen, /authTitle:[\s\S]*?color: themeColors\.dark\.textPrimary/);
+  assert.match(screen, /<Icon color=\{colors\.provider\.appleIcon\} name="apple" size=\{26\} \/>/);
+  assert.match(screen, /authPrimaryButton:[\s\S]*?backgroundColor: palette\.primary/);
+  assert.match(screen, /authTitle:[\s\S]*?color: palette\.textPrimary/);
+  assert.doesNotMatch(screen, /themeColors\.(?:dark|light)|#[0-9a-f]{3,8}/i);
 });
 
 test("a guest transition resets navigation into the application session", () => {

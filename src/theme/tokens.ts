@@ -4,31 +4,6 @@ export const brand = {
   warmWhite: "#F6F8FB",
 } as const;
 
-export const effects = {
-  authSignal: "rgba(72, 108, 255, 0.18)",
-  authSignalBright: "rgba(118, 146, 255, 0.95)",
-  authSignalGlow: "rgba(72, 108, 255, 0.22)",
-  authSignalTrail: "rgba(72, 108, 255, 0.08)",
-  divider: "rgba(255, 255, 255, 0.06)",
-  ghostPressed: "rgba(255, 255, 255, 0.08)",
-  handle: "rgba(255, 255, 255, 0.12)",
-  reviewScrim: "rgba(2, 6, 23, 0.56)",
-  scrim: "rgba(0, 0, 0, 0.48)",
-  shadowColor: "#000000",
-  sessionScrim: "rgba(0, 0, 0, 0.56)",
-  subtleBorder: "rgba(255, 255, 255, 0.05)",
-  unavailableIconSurface: "rgba(30, 41, 59, 0.5)",
-  unavailableSurface: "rgba(14, 22, 40, 0.6)",
-} as const;
-
-export const ambient = {
-  canvas: "#081328",
-  goalTeal: "#20C997",
-  indigo: "#4F46E5",
-  reviewTeal: "#14B8A6",
-  teal: "#14B7A6",
-} as const;
-
 export const colors = {
   light: {
     background: "#F0F2F5",
@@ -112,6 +87,40 @@ export const colors = {
       border: "#E3EAE9",
       handle: "#E3EAE9",
     },
+    ambient: {
+      canvas: "#F0F2F5",
+      goal: "#0F766E",
+      indigo: "#7C3AED",
+      review: "#0F766E",
+      teal: "#0F766E",
+    },
+    effects: {
+      authSignal: "rgba(15, 118, 110, 0.18)",
+      authSignalBright: "rgba(15, 118, 110, 0.95)",
+      authSignalGlow: "rgba(15, 118, 110, 0.18)",
+      authSignalTrail: "rgba(15, 118, 110, 0.08)",
+      divider: "rgba(19, 32, 51, 0.10)",
+      ghostPressed: "rgba(15, 118, 110, 0.08)",
+      handle: "rgba(19, 32, 51, 0.18)",
+      reviewScrim: "rgba(19, 32, 51, 0.42)",
+      scrim: "rgba(19, 32, 51, 0.42)",
+      sessionScrim: "rgba(19, 32, 51, 0.48)",
+      shadow: "#132033",
+      subtleBorder: "rgba(19, 32, 51, 0.08)",
+      unavailableIconSurface: "rgba(217, 226, 236, 0.72)",
+      unavailableSurface: "rgba(249, 251, 254, 0.94)",
+    },
+    provider: {
+      appleIcon: "#1F1F1F",
+      brandedBorder: "#747775",
+      brandedLabel: "#1F1F1F",
+      brandedSurface: "#FFFFFF",
+    },
+    progress: {
+      chartLine: "#1E293B",
+      chartPoint: "#15803D",
+      loadingTrack: "#D3D9E2",
+    },
   },
   dark: {
     background: "#081328",
@@ -194,6 +203,40 @@ export const colors = {
       surface: "#0F172A",
       border: "#1E293B",
       handle: "#1E293B",
+    },
+    ambient: {
+      canvas: "#081328",
+      goal: "#20C997",
+      indigo: "#4F46E5",
+      review: "#14B8A6",
+      teal: "#14B7A6",
+    },
+    effects: {
+      authSignal: "rgba(72, 108, 255, 0.18)",
+      authSignalBright: "rgba(118, 146, 255, 0.95)",
+      authSignalGlow: "rgba(72, 108, 255, 0.22)",
+      authSignalTrail: "rgba(72, 108, 255, 0.08)",
+      divider: "rgba(255, 255, 255, 0.06)",
+      ghostPressed: "rgba(255, 255, 255, 0.08)",
+      handle: "rgba(255, 255, 255, 0.12)",
+      reviewScrim: "rgba(2, 6, 23, 0.56)",
+      scrim: "rgba(0, 0, 0, 0.48)",
+      sessionScrim: "rgba(0, 0, 0, 0.56)",
+      shadow: "#000000",
+      subtleBorder: "rgba(255, 255, 255, 0.05)",
+      unavailableIconSurface: "rgba(30, 41, 59, 0.5)",
+      unavailableSurface: "rgba(14, 22, 40, 0.6)",
+    },
+    provider: {
+      appleIcon: "#F1F5F9",
+      brandedBorder: "#334155",
+      brandedLabel: "#F1F5F9",
+      brandedSurface: "#0E1B31",
+    },
+    progress: {
+      chartLine: "#AAB6C8",
+      chartPoint: "#34B564",
+      loadingTrack: "#3A4860",
     },
   },
 } as const;

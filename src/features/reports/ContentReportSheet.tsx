@@ -8,7 +8,7 @@ import type { ContentReportInput, ContentReportModeRoute, ContentReportOutboxEnt
 import type { ContentItemRef } from "../../domain";
 import { Button } from "../../components";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { effects, radius, spacing, typography, type AppColors } from "../../theme";
+import { radius, spacing, typography, type AppColors } from "../../theme";
 
 export type ContentReportSurfaceContext = Readonly<{ modeRoute: ContentReportModeRoute; trackNode: string | null }>;
 
@@ -114,6 +114,7 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
 }
 
 function ReportStatus({ entry }: Readonly<{ entry: ContentReportOutboxEntry }>) {
+  const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const message = entry.status === "accepted"
     ? t("Report accepted. Thank you.")
@@ -122,10 +123,8 @@ function ReportStatus({ entry }: Readonly<{ entry: ContentReportOutboxEntry }>) 
       : entry.status === "retrying"
         ? t("Retrying report…")
         : t("Report was not accepted. You can retry it.");
-  return <Text accessibilityLiveRegion="polite" maxFontSizeMultiplier={2} style={entry.status === "accepted" ? stylesForStatus.accepted : stylesForStatus.pending}>{message}</Text>;
+  return <Text accessibilityLiveRegion="polite" maxFontSizeMultiplier={2} style={entry.status === "accepted" ? styles.statusAccepted : styles.statusPending}>{message}</Text>;
 }
-
-const stylesForStatus = StyleSheet.create({ accepted: { color: "#5EE8C5", fontSize: 14, lineHeight: 21 }, pending: { color: "#A9BBC9", fontSize: 14, lineHeight: 21 } });
 
 function buildInput(item: ContentItemRef, surface: ContentReportSurfaceContext, reason: ContentReportReason, description: string, locale: "en" | "pl", platform: "ios" | "android"): Omit<ContentReportInput, "clientSubmissionId"> {
   return {
@@ -147,7 +146,7 @@ function buildInput(item: ContentItemRef, surface: ContentReportSurfaceContext, 
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  backdrop: { backgroundColor: effects.scrim, flex: 1, justifyContent: "flex-end" },
+  backdrop: { backgroundColor: palette.effects.scrim, flex: 1, justifyContent: "flex-end" },
   content: { gap: spacing.lg, paddingBottom: spacing.xxxl, paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
   description: { ...typography.body, color: palette.textSecondary },
   dismissArea: { flex: 1 },
@@ -157,10 +156,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   placeholder: { color: palette.textMuted },
   privacy: { ...typography.caption, color: palette.textMuted },
   reasonOption: { borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, minHeight: 44, justifyContent: "center", paddingHorizontal: spacing.md },
-  reasonOptionSelected: { backgroundColor: effects.ghostPressed, borderColor: palette.primary },
+  reasonOptionSelected: { backgroundColor: palette.effects.ghostPressed, borderColor: palette.primary },
   reasonOptionText: { ...typography.body, color: palette.textPrimary },
   reasons: { gap: spacing.sm },
   sheet: { backgroundColor: palette.background, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, maxHeight: "92%" },
+  statusAccepted: { ...typography.body, color: palette.success },
+  statusPending: { ...typography.body, color: palette.textSecondary },
   title: { ...typography.title, color: palette.textPrimary },
   trigger: { alignSelf: "flex-start", marginTop: spacing.sm, paddingHorizontal: 0 },
 });

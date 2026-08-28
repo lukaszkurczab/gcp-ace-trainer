@@ -1,7 +1,7 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "./Button";
-import { effects, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography } from "../theme";
 import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
@@ -46,7 +46,7 @@ export function SettingsDialog({
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   root: { alignItems: "center", flex: 1, justifyContent: "center", padding: spacing.lg },
-  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: effects.scrim },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: palette.effects.scrim },
   dialog: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.md, maxWidth: 440, padding: spacing.lg, width: "100%" },
   title: { ...typography.heading, color: palette.textPrimary },
   message: { ...typography.small, color: palette.textSecondary },

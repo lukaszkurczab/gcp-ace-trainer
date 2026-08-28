@@ -43,7 +43,7 @@ export function LoadingState({ description, title, variant = "default" }: Loadin
               <View
                 accessibilityElementsHidden
                 importantForAccessibility="no"
-                style={[styles.startupProgressTrack, colorMode === "dark" ? styles.startupProgressTrackDark : null]}
+                style={styles.startupProgressTrack}
               >
                 <View style={styles.startupProgressFill} />
               </View>
@@ -115,14 +115,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     width: "62.5%",
   },
   startupProgressTrack: {
-    backgroundColor: "#D3D9E2",
+    backgroundColor: palette.progress.loadingTrack,
     borderRadius: radius.pill,
     height: 4,
     overflow: "hidden",
     width: "100%",
-  },
-  startupProgressTrackDark: {
-    backgroundColor: "#3A4860",
   },
   startupProgressFill: {
     backgroundColor: palette.primary,

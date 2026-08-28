@@ -20,7 +20,8 @@ test("dark Figma ambient layer is shared by Track selection and Practice", () =>
   assert.match(backdrop, /matrix\(32 0 0 28 160 140\)/);
   assert.match(backdrop, /matrix\(32 0 0 28 224 196\)/);
   assert.match(backdrop, /glowOpacity = variant === "goal" \? 0\.06 : variant === "activity" \? 0\.04/);
-  assert.match(backdrop, /backgroundColor: ambient\.canvas/);
+  assert.match(backdrop, /backgroundColor: palette\.ambient\.canvas/);
+  assert.match(backdrop, /useThemedStyles\(createStyles\)/);
   assert.match(backdrop, /Topography/);
   assert.match(selectTrack, /<Screen\s+ambient=\{colorMode === "dark"\}/);
   assert.match(practice, /<Screen ambient=\{colorMode === "dark"\} edges=/);
