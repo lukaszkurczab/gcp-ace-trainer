@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, AppState, StyleSheet } from "react-native";
 
@@ -63,7 +64,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     return <DesignInterviewPracticeScreen navigation={navigation} route={route} />;
   }
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [state, setState] = useState<ViewState | null>(null);
   const [localResponse, setLocalResponse] = useState<PracticeLocalResponse>(null);
   const [submissionError, setSubmissionError] = useState<string | null>(null);

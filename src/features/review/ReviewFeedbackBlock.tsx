@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
 import { DetailsDisclosure } from "../../components";
@@ -18,7 +19,7 @@ type ReviewFeedbackBlockProps = Readonly<{
 /** Figma review feedback: a plain reason section and an expandable details disclosure. */
 export function ReviewFeedbackBlock({ feedback, item, reportSurface }: ReviewFeedbackBlockProps) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [detailsOpen, setDetailsOpen] = useState(false);
   return (
     <View style={styles.feedback}>

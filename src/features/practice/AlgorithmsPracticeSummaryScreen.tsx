@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -25,7 +26,7 @@ type ViewState =
 /** Renders only the immutable completed-session result addressed by the route. */
 export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [state, setState] = useState<ViewState>({ kind: "loading" });
   const [showReview, setShowReview] = useState(false);
   const sessionId = route.params.sessionId;

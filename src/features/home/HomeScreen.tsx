@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
@@ -75,7 +76,7 @@ type HomeShellTab = Exclude<ShellTab, "practice">;
 
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [activeTab, setActiveTab] = useState<HomeShellTab>("home");
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [hasLoadedActiveTrack, setHasLoadedActiveTrack] = useState(false);

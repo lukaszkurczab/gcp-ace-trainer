@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 
@@ -29,7 +30,7 @@ type ExamReviewReadState =
 
 export function ExamReviewScreen({ navigation, route }: Props) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const requestKey = route.params.sessionId;
   const [readState, setReadState] = useState<ExamReviewReadState>({ kind: "pending", requestKey });
 

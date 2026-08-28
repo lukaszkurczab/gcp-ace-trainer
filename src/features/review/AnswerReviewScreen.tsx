@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -19,7 +20,7 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ANSWER_REV
 
 export function AnswerReviewScreen({ navigation, route }: Props) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [attempt, setAttempt] = useState<CertificationExamSummaryViewModel | null>(null);
   const [hasLoadedReviewData, setHasLoadedReviewData] = useState(false);
   const [reviewIds, setReviewIds] = useState<Set<string>>(new Set());
@@ -135,7 +136,7 @@ export function AnswerReviewScreen({ navigation, route }: Props) {
 
 function AnswerReviewContent({ answer, disabled, needsReview, onToggle }: Readonly<{ answer: CertificationAnswerViewModel; disabled: boolean; needsReview: boolean; onToggle: () => void }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const selected = new Set(answer.selectedOptionIds);
   const correct = new Set(answer.correctOptionIds);
   return (

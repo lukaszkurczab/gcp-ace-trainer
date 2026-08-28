@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -53,7 +54,8 @@ function getTrackIconName(trackId: TrackId): IconName {
 export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelected }: SelectTrackScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
-  const { colorMode, colors: palette, t } = useAppPreferences();
+  const { colorMode, colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const largeText = fontScale >= 1.3;
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>(CODING_INTERVIEW_TRACK_ID);
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
@@ -153,7 +155,8 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
 
 function TrackChoiceCard({ disabled, largeText, onPress, selected, title, track }: Readonly<{ disabled?: boolean; largeText: boolean; onPress: () => void; selected: boolean; title: string; track: TrackDisplay }>) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const coding = track.id === CODING_INTERVIEW_TRACK_ID;
   const cloud = track.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID;
   const icon = getTrackIconName(track.id);

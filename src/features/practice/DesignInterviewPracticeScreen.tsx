@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
 
@@ -51,7 +52,7 @@ type ExitFailure = "pause" | "retry_abandon" | "retry_checkpoint" | "recover_aba
 
 /** Design Interview runner. The renderer handles all authored interaction types through the shared durable session surface. */
 export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [projection, setProjection] = useState<DesignInterviewPracticeProjection | null>(null);
   const [localResponse, setLocalResponse] = useState<PracticeLocalResponse>(null);
   const [error, setError] = useState<string | null>(null);
@@ -303,7 +304,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
 }
 
 function Unavailable({ navigation, title, description }: Readonly<{ navigation: Props["navigation"]; title: string; description: string }>) {
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t(title)} description={t(description)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
 }
 

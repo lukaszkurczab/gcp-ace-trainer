@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { readContentReportTransport, retryContentReport, submitContentReportFromConfiguredRuntime } from "../../application/contentReports";
@@ -21,7 +22,8 @@ const REASON_LABELS: Readonly<Record<ContentReportReason, string>> = {
 
 export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentItemRef; surface: ContentReportSurfaceContext }>) {
   const styles = useThemedStyles(createStyles);
-  const { locale, t } = useAppPreferences();
+  const { locale } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [visible, setVisible] = useState(false);
   const [reason, setReason] = useState<ContentReportReason>("unclear_explanation");
   const [description, setDescription] = useState("");
@@ -112,7 +114,7 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
 }
 
 function ReportStatus({ entry }: Readonly<{ entry: ContentReportOutboxEntry }>) {
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const message = entry.status === "accepted"
     ? t("Report accepted. Thank you.")
     : entry.status === "queued"

@@ -32,7 +32,9 @@ import {
   type AlgorithmQuestion,
 } from "../src/tracks/coding-interview";
 import { contentPackageRuntimeOwner } from "../src/application/contentPackageRuntimeOwner";
-import { translate } from "../src/preferences/translations";
+import i18n from "../src/i18n";
+
+const translate = (locale: "en" | "pl", value: string): string => i18n.t(value, { lng: locale });
 
 function codingPackage() {
   const resolution = contentPackageRuntimeOwner.getPreparedDiscovery("coding-interview-dsa-problem-solving");

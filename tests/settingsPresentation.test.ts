@@ -51,9 +51,12 @@ test("grouped settings rows follow the Figma 200% text geometry", () => {
 });
 
 test("Settings description reflects app and practice preferences without account semantics", () => {
-  assert.match(settingsTab, /settingsDescription: "Manage your app, practice, and privacy preferences\."/);
-  assert.match(settingsTab, /settingsDescription: "Zarządzaj preferencjami aplikacji, ćwiczeń i prywatności\."/);
-  assert.doesNotMatch(settingsTab, /settingsDescription: "[^"]*(?:account|kontem)[^"]*"/);
+  const settingsEn = readFileSync("src/locales/en/settings.json", "utf8");
+  const settingsPl = readFileSync("src/locales/pl/settings.json", "utf8");
+  assert.match(settingsEn, /"settingsDescription": "Manage your app, practice, and privacy preferences\."/);
+  assert.match(settingsPl, /"settingsDescription": "Zarządzaj preferencjami aplikacji, ćwiczeń i prywatności\."/);
+  assert.doesNotMatch(settingsEn, /"settingsDescription": "[^"]*account[^"]*"/);
+  assert.doesNotMatch(settingsPl, /"settingsDescription": "[^"]*kontem[^"]*"/);
 });
 
 test("Settings app identity follows the Figma footer geometry", () => {

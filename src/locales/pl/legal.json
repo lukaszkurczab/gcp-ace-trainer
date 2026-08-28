@@ -1,0 +1,74 @@
+{
+  "close": "Zamknij",
+  "infoBody": "Patternly jest niezależnym narzędziem do nauki. Ten ekran wyjaśnia obecne granice prywatności, bezpieczeństwa i korzystania z materiałów.",
+  "infoTitle": "Prywatność i korzystanie z materiałów",
+  "legal": "Informacje prawne",
+  "publicLinksTitle": "Publiczne linki prawne",
+  "publicLinksUnavailableTitle": "Publiczne linki prawne są niedostępne",
+  "publicLinksUnconfiguredDescription": "Ta lokalna wersja nie ma zweryfikowanego publicznego środowiska, więc linki do prywatności, warunków, pomocy i publicznego żądania usunięcia konta są wyłączone.",
+  "publicLinksInvalidDescription": "Konfiguracja publicznego środowiska jest nieprawidłowa, więc linki do prywatności, warunków, pomocy i publicznego żądania usunięcia konta są wyłączone.",
+  "publicLinkOpenFailedTitle": "Publiczny link jest niedostępny",
+  "publicLinkOpenFailedDescription": "Nie udało się otworzyć skonfigurowanego publicznego linku na tym urządzeniu.",
+  "publicLinkUnavailableDetail": "Niedostępne w tej lokalnej wersji.",
+  "privacyLink": "Polityka prywatności",
+  "privacyLinkDetail": "Otwórz skonfigurowaną publiczną politykę prywatności.",
+  "termsLink": "Warunki",
+  "termsLinkDetail": "Otwórz skonfigurowane publiczne warunki.",
+  "supportLink": "Pomoc",
+  "supportLinkDetail": "Otwórz skonfigurowane publiczne miejsce pomocy.",
+  "publicDeletionLink": "Publiczne żądanie usunięcia konta",
+  "publicDeletionLinkDetail": "Otwórz skonfigurowaną publiczną ścieżkę żądania.",
+  "settings": "Ustawienia",
+  "sections": [
+    {
+      "title": "Prywatność i bezpieczeństwo",
+      "topics": [
+        {
+          "detailTitle": "Lokalny zapis i bezpieczeństwo",
+          "icon": "shield-check",
+          "summary": "Dane o nauce pozostają w lokalnym zapisie aplikacji; nie deklarujemy szyfrowania.",
+          "title": "Lokalny zapis",
+          "paragraphs": [
+            "Patternly używa jednej kanonicznej granicy lokalnego zapisu. Ekrany i runtime nauki nie odczytują tego zapisu bezpośrednio.",
+            "Lokalny zapis sam w sobie nie gwarantuje szyfrowania, ochrony na przejętym urządzeniu ani nieodwracalnego usunięcia. Patternly nie opisuje obecnych danych lokalnych jako zaszyfrowanych."
+          ]
+        },
+        {
+          "detailTitle": "Granice ochrony",
+          "icon": "alert-triangle",
+          "summary": "Rekordy nauki nie są odpornymi na manipulację poświadczeniami ani oficjalnym wynikiem egzaminu.",
+          "title": "Przed czym to nie chroni",
+          "paragraphs": [
+            "Patternly nie deklaruje ochrony danych przed odblokowanym lub przejętym urządzeniem, dostępem na poziomie systemu, rootem lub jailbreakiem, backupami, narzędziami debugowania ani analizą nośnika pamięci.",
+            "Kontrole spójności chronią własne rekordy nauki aplikacji przed duplikatami i częściowymi wynikami. Nie stanowią ochrony przed oszustwem ani niezależnego dowodu kompetencji."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Korzystanie z Patternly",
+      "topics": [
+        {
+          "detailTitle": "Nauka, nie certyfikacja",
+          "icon": "book-open",
+          "summary": "Wyniki są osobistym dowodem ćwiczeń, a nie oficjalnym wynikiem certyfikacji czy egzaminu.",
+          "title": "Niezależna nauka",
+          "paragraphs": [
+            "Treści Patternly służą do niezależnej nauki. Wyniki są osobistym dowodem ćwiczeń, a nie odpornymi na manipulację poświadczeniami, oficjalnymi rekordami egzaminu ani niezależnie weryfikowalnym potwierdzeniem kompetencji.",
+            "Przegląd i walidacja treści wspierają jakość edukacyjną oraz legalne pochodzenie. Nie czynią Patternly oficjalnym źródłem certyfikacji ani rekomendowanym dostawcą szkolenia."
+          ]
+        },
+        {
+          "detailTitle": "Usuwanie i reset",
+          "icon": "trash",
+          "summary": "Zweryfikowany reset stanu nauki usuwa obsługiwane lokalne rekordy i nie można go cofnąć.",
+          "title": "Granice resetu",
+          "paragraphs": [
+            "Reset stanu nauki logicznie usuwa obsługiwane kanoniczne rekordy nauki, takie jak sesje, podejścia, elementy powtórek, dowody postępu, aktywne szkice i oczekujące mutacje nauki, gdy pozwala na to kontrakt zapisu.",
+            "Nie jest to bezpieczne usuwanie forensyczne i nie może obiecywać usunięcia z kopii utworzonych przed obecną polityką bez backupu, kopii systemowych poza kontrolą aplikacji ani pozostałości w pamięci flash. Preferencje niezwiązane z nauką mogą pozostać, dopóki nie istnieje osobno zdefiniowany pełny reset."
+          ]
+        }
+      ]
+    }
+  ]
+}

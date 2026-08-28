@@ -1,0 +1,74 @@
+{
+  "close": "Close",
+  "infoBody": "Patternly is an independent learning tool. This screen explains the current privacy, security, and study-use boundaries.",
+  "infoTitle": "Privacy and study use",
+  "legal": "Legal information",
+  "publicLinksTitle": "Public legal links",
+  "publicLinksUnavailableTitle": "Public legal links unavailable",
+  "publicLinksUnconfiguredDescription": "This local build has no validated public environment, so privacy, terms, support, and public account-deletion links are disabled.",
+  "publicLinksInvalidDescription": "The public environment configuration is invalid, so privacy, terms, support, and public account-deletion links are disabled.",
+  "publicLinkOpenFailedTitle": "Public link unavailable",
+  "publicLinkOpenFailedDescription": "The configured public link could not be opened on this device.",
+  "publicLinkUnavailableDetail": "Unavailable in this local build.",
+  "privacyLink": "Privacy policy",
+  "privacyLinkDetail": "Open the configured public privacy policy.",
+  "termsLink": "Terms",
+  "termsLinkDetail": "Open the configured public terms.",
+  "supportLink": "Support",
+  "supportLinkDetail": "Open the configured public support destination.",
+  "publicDeletionLink": "Public account-deletion request",
+  "publicDeletionLinkDetail": "Open the configured public request path.",
+  "settings": "Settings",
+  "sections": [
+    {
+      "title": "Privacy and security",
+      "topics": [
+        {
+          "detailTitle": "Local storage and security",
+          "icon": "shield-check",
+          "summary": "Learning data stays in local app storage, with no encryption claim.",
+          "title": "Local storage",
+          "paragraphs": [
+            "Patternly uses one canonical local storage boundary. Screens and learning runtimes do not access that storage directly.",
+            "Local storage does not by itself guarantee encryption, protection on a compromised device, or irrecoverable deletion. Patternly does not describe the current local data as encrypted."
+          ]
+        },
+        {
+          "detailTitle": "Limits of protection",
+          "icon": "alert-triangle",
+          "summary": "Learning records are not tamper-proof credentials or official examination records.",
+          "title": "What this does not protect against",
+          "paragraphs": [
+            "Patternly does not claim to protect data from an unlocked or compromised device, operating-system-level access, root or jailbreak access, backups, debug tooling, or forensic storage access.",
+            "Consistency checks protect the app's own learning records from duplicated or partial outcomes. They do not provide anti-cheat protection or independent proof of competence."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Using Patternly",
+      "topics": [
+        {
+          "detailTitle": "Practice evidence, not certification",
+          "icon": "book-open",
+          "summary": "Results are personal practice evidence, not official certification or exam results.",
+          "title": "Independent study use",
+          "paragraphs": [
+            "Patternly content is for independent study. Learning results are personal practice evidence and are not tamper-proof credentials, official examination records, or independently verifiable proof of competence.",
+            "Content review and validation support educational quality and lawful provenance. They do not make Patternly an official certification source or an endorsed training provider."
+          ]
+        },
+        {
+          "detailTitle": "Deletion and reset",
+          "icon": "trash",
+          "summary": "A verified learning-state reset removes supported local learning records; it cannot be undone.",
+          "title": "Reset limits",
+          "paragraphs": [
+            "A learning-state reset logically removes supported canonical learning records such as sessions, attempts, review items, progress evidence, active drafts, and pending learning mutations where the storage contract permits it.",
+            "It is not forensic secure erasure and cannot promise deletion from copies created before the current no-backup policy, operating-system copies outside the app's control, or flash-memory remnants. Non-learning preferences may remain unless a separately defined full reset exists."
+          ]
+        }
+      ]
+    }
+  ]
+}

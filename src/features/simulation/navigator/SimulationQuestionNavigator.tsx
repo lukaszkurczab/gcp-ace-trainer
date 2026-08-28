@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AccessibilityInfo, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { Button, Icon, IconButton } from "../../../components";
@@ -22,7 +23,7 @@ type SimulationQuestionNavigatorProps = Readonly<{
 export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, positions, visible }: SimulationQuestionNavigatorProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [feedback, setFeedback] = useState<NavigatorFeedback>(null);
   const [savingOccurrenceId, setSavingOccurrenceId] = useState<string | null>(null);
   const reduceMotion = useReducedMotion();
@@ -69,7 +70,8 @@ export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, posi
 
 function NavigatorFeedbackBanner({ feedback, onRetry }: Readonly<{ feedback: Exclude<NavigatorFeedback, null>; onRetry: () => void }>) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const saveFailed = feedback.kind === "save_failed";
   if (saveFailed) {
     return <View style={styles.saveFailureStack}>
@@ -96,7 +98,7 @@ export function useReducedMotion(): boolean {
 
 function NavigatorCell({ columns, disabled, frozen = false, index, onPress, position }: Readonly<{ columns: number; disabled: boolean; frozen?: boolean; index: number; onPress: () => void; position: SimulationNavigatorPosition }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const isAnswered = position.state === "answered";
   const isCurrent = position.state === "current";
   const effectiveDisabled = disabled || frozen;

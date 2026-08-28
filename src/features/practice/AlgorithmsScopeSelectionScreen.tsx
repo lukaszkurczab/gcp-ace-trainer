@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 
@@ -22,7 +23,8 @@ type State =
   | Readonly<{ kind: "unavailable"; reason: string }>;
 
 export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
-  const { colors, t } = useAppPreferences();
+  const { colors } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [state, setState] = useState<State>({ kind: "loading" });
   const modeTitle = getAlgorithmMode(route.params.modeId).title;
 

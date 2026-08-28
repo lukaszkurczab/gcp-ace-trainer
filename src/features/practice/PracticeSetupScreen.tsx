@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -54,7 +55,7 @@ type PracticeSetupReadState =
 
 export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenProps) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const requestKey: PracticeSetupRequestKey = route.params?.trackId ?? STORED_TRACK_REQUEST_KEY;
   const [readState, setReadState] = useState<PracticeSetupReadState>({ kind: "pending", requestKey });
   const [sessionLength, setSessionLength] = useState<PracticeSessionLength>(

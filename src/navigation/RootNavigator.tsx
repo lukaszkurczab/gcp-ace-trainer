@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { StyleSheet } from "react-native";
 
 import { AppShellHeader, LoadingState, Screen } from "../components";
@@ -36,7 +37,8 @@ import type { RootStackParamList } from "./types";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
-  const { colors, t } = useAppPreferences();
+  const { colors } = useAppPreferences();
+  const { t } = useTranslation("common");
   const { state } = usePatternlyAccount();
   const applicationSessionReady = state.kind === "authenticated" || state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting";
 

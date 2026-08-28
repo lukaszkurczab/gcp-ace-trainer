@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { Icon, IconTile, ListRow, ScreenHeader, SettingsGroup, type IconName } from "../../../components";
 import type { StorageIssue } from "../../../application/learningReadModels";
@@ -18,56 +19,7 @@ type SettingsTabProps = {
   storageIssues: readonly StorageIssue[];
 };
 
-const copy = {
-  en: {
-    appearance: "Appearance",
-    appearanceDetail: "Choose the theme used on this device.",
-    account: "Account",
-    accountDetail: "Manage your account, synchronization, restore, and sign-out options.",
-    appSettings: "Settings",
-    settingsDescription: "Manage your app, practice, and privacy preferences.",
-    app: "App",
-    data: "Your data",
-    dataDetail: "View the local data contract for this app.",
-    dataPrivacy: "Data & privacy",
-    developerVerification: "Developer verification",
-    backendDiagnostics: "Backend diagnostics",
-    backendDiagnosticsDetail: "Run every local backend path on this simulator.",
-    learning: "Learning",
-    legal: "Legal information",
-    legalDetail: "Privacy and study-use information.",
-    notifications: "Notifications",
-    notificationsDetail: "Set permission and daily practice reminders.",
-    practiceSettings: "Practice settings",
-    practiceSettingsDetail: "20 items · After each answer",
-    storageDegraded: "Local data degraded",
-    storageStatus: "Storage status",
-  },
-  pl: {
-    appearance: "Wygląd",
-    appearanceDetail: "Wybierz motyw używany na tym urządzeniu.",
-    account: "Konto",
-    accountDetail: "Zarządzaj kontem, synchronizacją, odtwarzaniem i wylogowaniem.",
-    appSettings: "Ustawienia",
-    settingsDescription: "Zarządzaj preferencjami aplikacji, ćwiczeń i prywatności.",
-    app: "Aplikacja",
-    data: "Twoje dane",
-    dataDetail: "Zobacz lokalny kontrakt danych tej aplikacji.",
-    dataPrivacy: "Dane i prywatność",
-    developerVerification: "Weryfikacja deweloperska",
-    backendDiagnostics: "Diagnostyka backendu",
-    backendDiagnosticsDetail: "Uruchom wszystkie lokalne ścieżki backendu na tym symulatorze.",
-    learning: "Nauka",
-    legal: "Informacje prawne",
-    legalDetail: "Prywatność i informacje o korzystaniu z materiałów.",
-    notifications: "Powiadomienia",
-    notificationsDetail: "Ustaw zgodę i codzienne przypomnienie o ćwiczeniach.",
-    practiceSettings: "Ustawienia ćwiczeń",
-    practiceSettingsDetail: "20 elementów · Po każdej odpowiedzi",
-    storageDegraded: "Problem z danymi lokalnymi",
-    storageStatus: "Stan danych",
-  },
-} as const;
+
 
 export function SettingsTab({
   onOpenAppearance,
@@ -81,7 +33,31 @@ export function SettingsTab({
 }: SettingsTabProps) {
   const styles = useThemedStyles(createStyles);
   const { appearance, locale } = useAppPreferences();
-  const text = copy[locale];
+  const { t } = useTranslation("settings");
+  const text = {
+  appearance: t("appearance"),
+  appearanceDetail: t("appearanceDetail"),
+  account: t("account"),
+  accountDetail: t("accountDetail"),
+  appSettings: t("appSettings"),
+  settingsDescription: t("settingsDescription"),
+  app: t("app"),
+  data: t("data"),
+  dataDetail: t("dataDetail"),
+  dataPrivacy: t("dataPrivacy"),
+  developerVerification: t("developerVerification"),
+  backendDiagnostics: t("backendDiagnostics"),
+  backendDiagnosticsDetail: t("backendDiagnosticsDetail"),
+  learning: t("learning"),
+  legal: t("legal"),
+  legalDetail: t("legalDetail"),
+  notifications: t("notifications"),
+  notificationsDetail: t("notificationsDetail"),
+  practiceSettings: t("practiceSettings"),
+  practiceSettingsDetail: t("practiceSettingsDetail"),
+  storageDegraded: t("storageDegraded"),
+  storageStatus: t("storageStatus"),
+  };
   const latestStorageIssue = storageIssues[0] ?? null;
   const backendDiagnosticsConfigured = isPatternlyBackendE2eConfigured();
 

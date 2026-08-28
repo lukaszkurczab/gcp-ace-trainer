@@ -1,0 +1,69 @@
+{
+  "close": "Zamknij",
+  "data": "Dane",
+  "dataPrivacy": "Dane i prywatność",
+  "infoBody": "Patternly zapisuje dane o nauce lokalnie na tym urządzeniu, aby prowadzić sesje, powtórki i bezpiecznie odzyskać jedną aktywną sesję.",
+  "infoTitle": "Twoje dane o nauce",
+  "sections": [
+    {
+      "title": "Szybkie odpowiedzi",
+      "topics": [
+        {
+          "detailTitle": "Co zapisuje Patternly",
+          "icon": "database",
+          "summary": "Rekordy nauki i ustawienia potrzebne do działania aplikacji.",
+          "title": "Zapisywane lokalnie",
+          "paragraphs": [
+            "Patternly zapisuje ustawienia aplikacji, aktywne i ukończone sesje, podejścia, wyniki, elementy powtórek, dowody postępu, dane wejściowe rekomendacji oraz szkic jednej aktywnej sesji potrzebny do bezpiecznego wznowienia.",
+            "Przechowuje również trwałe rekordy potrzebne do weryfikacji zapisów i odzyskania przerwanej operacji nauki."
+          ]
+        },
+        {
+          "detailTitle": "Czego Patternly nie wymaga",
+          "icon": "shield-check",
+          "summary": "Bez konta, profilu tożsamości, historii w chmurze i niepowiązanych danych urządzenia.",
+          "title": "Nie zbieramy",
+          "paragraphs": [
+            "Patternly nie wymaga konta, imienia, adresu e-mail, danych logowania ani profilu tożsamości.",
+            "Nie wymaga lokalizacji, kontaktów, zdjęć, mikrofonu, kamery, danych zdrowotnych, identyfikatorów reklamowych, samoocen ani syntetycznych metryk gotowości i opanowania materiału."
+          ]
+        },
+        {
+          "detailTitle": "Konto, synchronizacja i usunięcie",
+          "icon": "user",
+          "summary": "Powiązanie konta wymaga podglądu i potwierdzenia.",
+          "title": "Powiązanie konta jest jawne",
+          "paragraphs": [
+            "Patternly pokazuje wejście do konta tylko wtedy, gdy jawnie skonfigurowano publiczne środowisko, dostawcę tożsamości Firebase i natywną konfigurację App Check. Utworzenie konta lub logowanie nie wiąże automatycznie lokalnych danych o nauce ani ich nie wysyła.",
+            "Po uwierzytelnieniu i Twoim potwierdzeniu Patternly może synchronizować aktywny tor oraz zwarte fakty ukończonej nauki. Aktywne sesje, szkice, pozycje, timery i dzienniki odzyskiwania pozostają tylko na tym urządzeniu."
+          ]
+        },
+        {
+          "detailTitle": "Dokąd trafiają dane o nauce",
+          "icon": "cloud",
+          "summary": "Synchronizują się tylko zadeklarowane fakty danych konta.",
+          "title": "Jawna synchronizacja konta",
+          "paragraphs": [
+            "Allowlista synchronizacji obejmuje aktywny tor, terminalne podsumowania sesji, wyniki ukończonych sesji, podejścia i wpisy kolejki powtórek. Aktywne sesje, szkice, pozycje, timery, dzienniki mutacji, ustawienia i powiadomienia nigdy nie są wysyłane.",
+            "Lokalny zapis jest zachowany przed potwierdzeniem zdalnym. Oczekiwanie, konflikt, błąd i ponowienie są widoczne; wylogowanie blokują niesynchronizowane dane."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Przechowywanie danych",
+      "topics": [
+        {
+          "detailTitle": "Utrata i odzyskiwanie",
+          "icon": "alert-triangle",
+          "summary": "Adopcja konta zachowuje dane dopiero po jawnym potwierdzeniu.",
+          "title": "Granice lokalnego zapisu",
+          "paragraphs": [
+            "Odinstalowanie aplikacji, utrata lub wymiana urządzenia albo reset nauki mogą usunąć dane tylko urządzenia, takie jak aktywna sesja lub szkic. Potwierdzone rekordy konta mogą zostać odtworzone przez jawny przepływ adopcji.",
+            "Patternly konfiguruje wykluczenie rekordów nauki z automatycznych backupów systemu i transferów między urządzeniami. Nie oferuje backupu ani przywracania; nie może zagwarantować braku kopii poza kontrolą aplikacji."
+          ]
+        }
+      ]
+    }
+  ]
+}

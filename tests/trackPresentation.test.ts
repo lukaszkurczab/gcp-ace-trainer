@@ -5,7 +5,9 @@ import test from "node:test";
 import { getTrackDisplay } from "../src/domain";
 import { buildReviewQueueScreenModel } from "../src/features/review/reviewQueueModel";
 import { formatReviewTaxonomyLabel } from "../src/features/review/reviewQueuePresentation";
-import { translate } from "../src/preferences/translations";
+import i18n from "../src/i18n";
+
+const translate = (locale: "en" | "pl", value: string): string => i18n.t(value, { lng: locale });
 
 test("track presentation exposes only the concrete Google Cloud track", () => {
   const track = getTrackDisplay("google-cloud-associate-cloud-engineer");

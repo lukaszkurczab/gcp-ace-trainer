@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
 import {
@@ -40,7 +41,7 @@ type CompletionFailure = Exclude<Awaited<ReturnType<typeof completeCertification
 
 /** Certification practice runner backed solely by the generic lifecycle facade. */
 export function CertificationPracticeSessionScreen({ navigation, route }: Props) {
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [projection, setProjection] = useState<CertificationPracticeProjection | null>(null);
   const [selection, setSelection] = useState<PracticeChoiceSelection | null>(null);
   const [selectionError, setSelectionError] = useState<string | null>(null);

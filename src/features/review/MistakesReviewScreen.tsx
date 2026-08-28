@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -27,7 +28,8 @@ import type { AppColors } from "../../theme";
 
 export function MistakesReviewScreen() {
   const styles = useThemedStyles(createStyles);
-  const { locale, t } = useAppPreferences();
+  const { locale } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [model, setModel] = useState<ReviewQueueScreenModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [readError, setReadError] = useState<string | null>(null);
@@ -180,7 +182,8 @@ type ReviewQueueDetailProps = {
 
 function ReviewQueueDetail({ row }: ReviewQueueDetailProps) {
   const styles = useThemedStyles(createStyles);
-  const { locale, t } = useAppPreferences();
+  const { locale } = useAppPreferences();
+  const { t } = useTranslation("common");
   return (
     <Card>
       <SectionHeader

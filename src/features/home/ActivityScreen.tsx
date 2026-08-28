@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -22,7 +23,8 @@ type ViewState =
 
 export function ActivityScreen({ navigation }: Props) {
   const styles = useThemedStyles(createStyles);
-  const { colorMode, colors: palette, t } = useAppPreferences();
+  const { colorMode, colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [state, setState] = useState<ViewState>({ kind: "loading" });
   const [filter, setFilter] = useState<ActivityFilter>(ALL_ACTIVITY_TRACKS);
   const [filterVisible, setFilterVisible] = useState(false);
@@ -145,7 +147,7 @@ export function ActivityScreen({ navigation }: Props) {
 
 function ActivityEmptyState({ filtered, onOpenPractice, onShowAll }: Readonly<{ filtered: boolean; onOpenPractice: () => void; onShowAll: () => void }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   return (
     <View style={[styles.emptyActivityState, filtered ? styles.filteredEmptyActivityState : null]}>
       <View style={styles.emptyActivityIcon}>
@@ -168,7 +170,8 @@ function ActivityEmptyState({ filtered, onOpenPractice, onShowAll }: Readonly<{ 
 
 function ActivityRow({ item, last, onPress }: Readonly<{ item: ActivityItem; last: boolean; onPress: () => void }>) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   return (
     <Pressable
       accessibilityLabel={`${t(item.modeTitle)}, ${t(item.trackTitle)}`}

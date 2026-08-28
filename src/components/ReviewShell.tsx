@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useAppPreferences, useThemedStyles } from "../preferences";
@@ -47,7 +48,7 @@ export function ReviewShell({
   contentVariant = "default",
 }: ReviewShellProps) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   return (
     <Screen
       edges={["top", "bottom"]}

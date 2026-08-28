@@ -2,6 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import "./src/i18n";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 import { ContentPreparationGate } from "./src/content/application/ContentPreparationGate";
 import { AppPreferencesProvider, useAppPreferences } from "./src/preferences";

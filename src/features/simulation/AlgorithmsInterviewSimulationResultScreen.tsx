@@ -1,4 +1,5 @@
 import { useFocusEffect, type NavigationProp } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -69,7 +70,7 @@ function AlgorithmsInterviewSimulationResultSurface({ navigation, sessionId }: R
 
 function AlgorithmsInterviewSimulationReviewSurface({ navigation, sessionId }: Readonly<{ navigation: NavigationProp<RootStackParamList>; sessionId: string }>) {
   const styles = useThemedStyles(createReviewStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [result, setResult] = useState<AlgorithmsSessionResultProjection | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "missed">("all");

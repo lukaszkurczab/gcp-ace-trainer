@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "./Icon";
 import { useAppPreferences, useThemedStyles } from "../preferences";
@@ -12,7 +13,7 @@ type DetailsDisclosureProps = {
 
 export function DetailsDisclosure({ expanded, onPress, testID }: DetailsDisclosureProps) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   return (
     <Pressable
       accessibilityLabel={t(expanded ? "Hide answer details" : "Show answer details")}

@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { spacing, typography } from "../theme";
 import { useAppPreferences, useThemedStyles } from "../preferences";
@@ -21,7 +22,7 @@ type ScreenHeaderProps = Readonly<{
 /** Figma Patternly Library Screen Header: local context, title, and optional description. */
 export function ScreenHeader({ backAction, context, contextTone = "muted", description, title, titleTestID, variant = "default" }: ScreenHeaderProps) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
 
   return (
     <View style={[styles.container, variant === "activity" ? styles.activityContainer : null, variant === "practiceSetup" ? styles.practiceSetupContainer : null]}>

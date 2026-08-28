@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -87,7 +88,7 @@ function SimulationRecoverySurface({ actions, operationNotice, sessionId }: Read
 
 function Action({ action, fullWidth = false, sessionId }: Readonly<{ action: SimulationAction; fullWidth?: boolean; sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   return <Button accessibilityLabel={action.accessibilityLabel ? t(action.accessibilityLabel) : undefined} disabled={action.disabled} loading={action.loading} onPress={action.onPress} style={fullWidth ? styles.fullWidthAction : undefined} testID={sessionId && action.id ? runtimeSelectors.simulation.action(sessionId, action.id) : undefined} variant={action.variant}>{t(action.label)}</Button>;
 }
 
@@ -98,19 +99,19 @@ function Notice({ notice }: Readonly<{ notice: NonNullable<SimulationSurfaceProj
 
 function SavedQuestionContext({ onNavigator }: Readonly<{ onNavigator: () => void }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   return <View style={styles.savedQuestionContext}><Text maxFontSizeMultiplier={2} style={styles.savedQuestionContextLabel}>{t("Question")}</Text><View style={styles.savedQuestionContextSpacer} /><Pressable accessibilityLabel={t("Open question navigator")} accessibilityRole="button" onPress={onNavigator} style={styles.savedNavigator}><Icon color={styles.savedNavigatorLabel.color} name="grid" size={14} /><Text maxFontSizeMultiplier={2} style={styles.savedNavigatorLabel}>{t("Navigator")}</Text></Pressable></View>;
 }
 
 function SavedStatus() {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   return <View accessible accessibilityLabel={t("Saved")} style={styles.savedStatus}><View accessibilityElementsHidden style={styles.savedStatusDot} /><Text maxFontSizeMultiplier={2} style={styles.savedStatusLabel}>{t("Saved")}</Text></View>;
 }
 
 function Question({ itemId, locked, onChange, question, sessionId, variant }: Readonly<{ itemId?: string; locked: boolean; onChange?: (change: SimulationResponseChange) => void; question: NonNullable<SimulationSurfaceProjection["question"]>; sessionId?: string; variant?: "simulation" | "simulationSaved" }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   return (
     <Card style={styles.questionCard} testID={itemId ? runtimeSelectors.simulation.question(itemId) : undefined}>
       {variant ? <Text maxFontSizeMultiplier={2} style={[styles.questionLabel, variant === "simulationSaved" ? styles.savedQuestionLabel : null]}>{t("QUESTION")}</Text> : null}
@@ -123,7 +124,7 @@ function Question({ itemId, locked, onChange, question, sessionId, variant }: Re
 
 function ResponseControl({ control, disabled, itemId, onChange, sessionId, variant }: Readonly<{ control: SimulationResponseControl; disabled: boolean; itemId?: string; onChange?: (change: SimulationResponseChange) => void; sessionId?: string; variant?: "simulation" | "simulationSaved" }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   if (control.kind === "choice") {
     const role = control.selectionMode === "single" ? "radio" : "checkbox";
     return <View style={[styles.controls, variant === "simulation" ? styles.simulationControls : null, variant === "simulationSaved" ? styles.savedControls : null]}>{control.options.map((option, index) => <AnswerOption accessibilityLabel={option.label} accessibilityRole={role} accessibilityState={{ checked: option.selected }} disabled={disabled} key={option.id} letter={String.fromCharCode(65 + index)} onPress={() => onChange?.({ kind: "choice", optionId: option.id, selected: !option.selected })} state={option.selected ? "selected" : "default"} testID={simulationOptionSelector(itemId, option.id)} text={option.label} />)}</View>;
@@ -142,7 +143,7 @@ function simulationOptionSelector(itemId: string | undefined, optionId: string):
 
 function ConfirmationActionSheet({ confirmation, sessionId }: Readonly<{ confirmation: NonNullable<SimulationSurfaceProjection["confirmation"]>; sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const reduceMotion = useReducedMotion();
   const dismiss = confirmation.dismiss ?? confirmation.secondary;
   return <Modal animationType={reduceMotion ? "none" : "slide"} onRequestClose={dismiss.onPress} statusBarTranslucent transparent visible><View style={styles.confirmationRoot}><Pressable accessibilityLabel={t(dismiss.label)} accessibilityRole="button" onPress={dismiss.onPress} style={styles.confirmationBackdrop} /><View accessibilityViewIsModal style={styles.confirmationStack}><View style={styles.confirmationSheet}><Text maxFontSizeMultiplier={2} style={styles.confirmationTitle}>{t(confirmation.title)}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t(confirmation.description)}</Text><Action action={confirmation.primary} fullWidth sessionId={sessionId} /><Action action={confirmation.secondary} fullWidth sessionId={sessionId} /></View>{confirmation.destructive ? <View style={styles.confirmationDestructive}><Action action={confirmation.destructive} fullWidth sessionId={sessionId} /></View> : null}</View></View></Modal>;
@@ -150,7 +151,7 @@ function ConfirmationActionSheet({ confirmation, sessionId }: Readonly<{ confirm
 
 function CompletedSurface({ projection, sessionId }: Readonly<{ projection: SimulationSurfaceProjection; sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const completion = projection.completion!;
   return (
     <View style={styles.root} testID={sessionId ? runtimeSelectors.summary.root(sessionId) : undefined}>

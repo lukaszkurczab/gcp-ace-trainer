@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
@@ -66,7 +67,8 @@ type PracticeHubData = {
 
 export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps) {
   const styles = useThemedStyles(createStyles);
-  const { colorMode, colors: palette, t } = useAppPreferences();
+  const { colorMode, colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);

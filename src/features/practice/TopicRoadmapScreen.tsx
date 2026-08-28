@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -53,7 +54,7 @@ const DOT_ROWS = 56;
 
 export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProps) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const requestKey: RoadmapRequestKey = route.params?.trackId ?? STORED_TRACK_REQUEST_KEY;
   const [readState, setReadState] = useState<RoadmapReadState>({ kind: "pending", requestKey });
   const [selectedTopicId, setSelectedTopicId] = useState(route.params?.topicId);
@@ -259,7 +260,8 @@ function RoadmapNode({
   topic,
 }: RoadmapNodeProps) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const iconName = getTopicIcon(topic, activeTrackId);
 
   return (

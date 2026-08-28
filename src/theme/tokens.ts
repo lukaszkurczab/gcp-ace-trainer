@@ -1,10 +1,9 @@
 export const brand = {
   nightNavy: "#0C1324",
   mint: "#5EEAD4",
-  warmWhite: "#F6F8FB"
+  warmWhite: "#F6F8FB",
 } as const;
 
-/** Shared visual effects whose values are independent of the active color mode. */
 export const effects = {
   divider: "rgba(255, 255, 255, 0.06)",
   ghostPressed: "rgba(255, 255, 255, 0.08)",
@@ -18,7 +17,6 @@ export const effects = {
   unavailableSurface: "rgba(14, 22, 40, 0.6)",
 } as const;
 
-/** Figma Page 1 ambient colors shared by the dark application shells. */
 export const ambient = {
   canvas: "#081328",
   goalTeal: "#20C997",
@@ -62,33 +60,33 @@ export const colors = {
       active: "#0F766E",
       pressedSurface: "#F3F7F6",
       textPrimary: "#102433",
-      textMuted: "#7A8B95"
+      textMuted: "#7A8B95",
     },
     iconButton: {
       border: "#E3EAE9",
       icon: "#102433",
-      pressedSurface: "#F1F5F9"
+      pressedSurface: "#F1F5F9",
     },
     listRow: {
       icon: "#102433",
       iconSurface: "#F7FAF9",
       surface: "#FBFDFC",
       textPrimary: "#102433",
-      textSecondary: "#506472"
+      textSecondary: "#506472",
     },
     choice: {
       active: "#0F766E",
       border: "#E3EAE9",
       surface: "#FBFDFC",
       textPrimary: "#102433",
-      textSecondary: "#506472"
+      textSecondary: "#506472",
     },
     processing: {
       icon: "#102433",
       iconSurface: "#F3F7F6",
       statusBorder: "#287A4B",
       textPrimary: "#102433",
-      textSecondary: "#506472"
+      textSecondary: "#506472",
     },
     appearancePreview: {
       darkCanvas: "#081328",
@@ -99,21 +97,19 @@ export const colors = {
       darkSecondaryBar: "#A2AEBF",
       lightPrimaryBar: "#1A1F2E",
       lightSecondaryBar: "#4D596B",
-      accent: "#20C997"
+      accent: "#20C997",
     },
     emptyState: {
       textPrimary: "#102433",
-      textMuted: "#7A8B95"
+      textMuted: "#7A8B95",
     },
     bottomSheet: {
       surface: "#F7FAF9",
       border: "#E3EAE9",
-      handle: "#E3EAE9"
-    }
+      handle: "#E3EAE9",
+    },
   },
   dark: {
-    // Figma authority: Page 1 and Patternly Library dark-mode contracts.
-    // Keep brand.nightNavy above unchanged because it is also the app-mark color.
     background: "#081328",
     surface: "#0E1B31",
     surfaceInput: "#0B1529",
@@ -147,33 +143,33 @@ export const colors = {
       active: "#20C997",
       pressedSurface: "#0F172A",
       textPrimary: "#F1F5F9",
-      textMuted: "#738198"
+      textMuted: "#738198",
     },
     iconButton: {
       border: "#1E293B",
       icon: "#F1F5F9",
-      pressedSurface: "#0F172A"
+      pressedSurface: "#0F172A",
     },
     listRow: {
       icon: "#F1F5F9",
       iconSurface: "#0F172A",
       surface: "#0E1B31",
       textPrimary: "#F1F5F9",
-      textSecondary: "#AAB6C8"
+      textSecondary: "#AAB6C8",
     },
     choice: {
       active: "#20C997",
       border: "#1E293B",
       surface: "#0E1B31",
       textPrimary: "#F1F5F9",
-      textSecondary: "#AAB6C8"
+      textSecondary: "#AAB6C8",
     },
     processing: {
       icon: "#F1F5F9",
       iconSurface: "#081328",
       statusBorder: "#34B564",
       textPrimary: "#F1F5F9",
-      textSecondary: "#AAB6C8"
+      textSecondary: "#AAB6C8",
     },
     appearancePreview: {
       darkCanvas: "#081328",
@@ -184,18 +180,18 @@ export const colors = {
       darkSecondaryBar: "#A2AEBF",
       lightPrimaryBar: "#1A1F2E",
       lightSecondaryBar: "#4D596B",
-      accent: "#20C997"
+      accent: "#20C997",
     },
     emptyState: {
       textPrimary: "#F1F5F9",
-      textMuted: "#738198"
+      textMuted: "#738198",
     },
     bottomSheet: {
       surface: "#0F172A",
       border: "#1E293B",
-      handle: "#1E293B"
-    }
-  }
+      handle: "#1E293B",
+    },
+  },
 } as const;
 
 export function colorWithOpacity(hexColor: string, opacity = 1): string {
@@ -215,7 +211,7 @@ export const spacing = {
   lg: 16,
   xl: 20,
   xxl: 24,
-  xxxl: 32
+  xxxl: 32,
 } as const;
 
 export const radius = {
@@ -227,106 +223,106 @@ export const radius = {
   xxl: 24,
   button: 14,
   sheet: 14,
-  pill: 999
+  pill: 999,
 } as const;
 
 export const typography = {
   display: {
     fontSize: 34,
     lineHeight: 40,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   title: {
     fontSize: 28,
     lineHeight: 34,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   heading: {
     fontSize: 20,
     lineHeight: 28,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   body: {
     fontSize: 14,
     lineHeight: 22,
-    fontWeight: "400"
+    fontWeight: "400",
   },
   bodyStrong: {
     fontSize: 14,
     lineHeight: 18,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   button: {
     fontSize: 15,
     lineHeight: 18,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   small: {
     fontSize: 14,
     lineHeight: 22,
-    fontWeight: "400"
+    fontWeight: "400",
   },
   caption: {
     fontSize: 11,
     lineHeight: 15,
-    fontWeight: "500"
+    fontWeight: "500",
   },
   navigationLabel: {
     fontSize: 11,
     lineHeight: 15,
-    fontWeight: "400"
+    fontWeight: "400",
   },
   listRowTitle: {
     fontSize: 14,
     lineHeight: 17,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   listRowDetail: {
     fontSize: 11,
     lineHeight: 15.4,
-    fontWeight: "400"
+    fontWeight: "400",
   },
   processingTitle: {
     fontSize: 22,
     lineHeight: 28,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   processingDescription: {
     fontSize: 14,
     lineHeight: 22,
-    fontWeight: "400"
+    fontWeight: "400",
   },
   statusTitle: {
     fontSize: 14,
     lineHeight: 17,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   statusDescription: {
     fontSize: 14,
     lineHeight: 22,
-    fontWeight: "400"
-  }
+    fontWeight: "400",
+  },
 } as const;
 
 export const shadows = {
   none: {
     shadowOpacity: 0,
-    elevation: 0
+    elevation: 0,
   },
   card: {
     shadowColor: "#020617",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.05,
     shadowRadius: 16,
-    elevation: 1
+    elevation: 1,
   },
   elevated: {
     shadowColor: "#020617",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08,
     shadowRadius: 24,
-    elevation: 3
-  }
+    elevation: 3,
+  },
 } as const;
 
 export type ColorMode = keyof typeof colors;

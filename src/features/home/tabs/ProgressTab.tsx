@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Polyline } from "react-native-svg";
 
@@ -48,7 +49,8 @@ export function ProgressTab({
   trainingAttempts = [],
 }: ProgressTabProps) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const model = buildProgressTabModel({ activeTrackId: activeTrack.id, analytics, attempts, cloudProgress, practiceHistory, reviewQueueItems, trainingAttempts });
   const focus = model.algorithmsProgress?.currentFocus;
@@ -197,7 +199,7 @@ export function ProgressTab({
 
 function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ items: readonly ProgressTabActivityItem[]; onOpenActivity?: () => void; trackFamily: string }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const groups = ["Today", "Yesterday", "This week", "Earlier"] as const;
   return (
     <View style={styles.section} testID={runtimeSelectors.progress.activitySection()}>
@@ -268,7 +270,7 @@ function AlgorithmsEvidenceSection({
   trackFamily: string;
 }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [showAllTrackNodes, setShowAllTrackNodes] = useState(false);
   const trackNodes = showAllTrackNodes ? model.trackNodes : model.trackNodes.slice(0, 4);
   return (
@@ -314,7 +316,7 @@ function TrendChart({ points }: Readonly<{
   points: readonly number[];
 }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   return (
     <View accessible accessibilityLabel={`Effectiveness trend: ${points.join(", ")} percent`} style={styles.trendChart}>
           <View style={styles.trendReferenceLineTop} />
@@ -349,7 +351,7 @@ function trendPointCoordinate(value: number, index: number, count: number): { x:
 
 function PerformanceEvidenceSection({ scores, trackFamily }: Readonly<{ scores: readonly { correct: number; detail?: string; id: string; label: string; percent: number; total: number }[]; trackFamily: string }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   return (
     <View style={styles.section}>
       <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Performance evidence")}</Text>

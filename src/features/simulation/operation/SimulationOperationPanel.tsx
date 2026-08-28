@@ -1,4 +1,5 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { Button, Icon } from "../../../components";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
@@ -14,7 +15,8 @@ export function isSimulationOperationNotice(operation: SimulationOperationPresen
 /** Renders only the normalized operation state and CTA facts supplied by the screen projection. */
 export function SimulationOperationPanel({ operation }: SimulationOperationPanelProps) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const notice = isSimulationOperationNotice(operation);
   const pending = operation.kind === "saving-response" || operation.kind === "finalizing";
   const failed = operation.kind === "save-failed" || operation.kind === "finalization-recovery-required";

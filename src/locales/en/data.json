@@ -1,0 +1,69 @@
+{
+  "close": "Close",
+  "data": "Data",
+  "dataPrivacy": "Data & privacy",
+  "infoBody": "Patternly stores learning data locally on this device to run sessions, review progress, and recover one active session.",
+  "infoTitle": "Your learning data",
+  "sections": [
+    {
+      "title": "Quick answers",
+      "topics": [
+        {
+          "detailTitle": "What Patternly stores",
+          "icon": "database",
+          "summary": "Learning records and the settings needed to run the app.",
+          "title": "Stored locally",
+          "paragraphs": [
+            "Patternly stores application settings, active and completed sessions, attempts, results, review items, progress evidence, recommendation inputs, and the one active-session draft required to resume safely.",
+            "It also keeps the durable records required to verify writes and recover an interrupted learning operation."
+          ]
+        },
+        {
+          "detailTitle": "What Patternly does not require",
+          "icon": "shield-check",
+          "summary": "No account, identity profile, cloud history, or unrelated device data.",
+          "title": "Not collected",
+          "paragraphs": [
+            "Patternly does not require an account, name, email address, authentication credentials, or an identity profile.",
+            "It does not require location, contacts, photos, microphone, camera, health data, advertising identifiers, self-assessments, or synthetic readiness and mastery metrics."
+          ]
+        },
+        {
+          "detailTitle": "Account, sync, and deletion",
+          "icon": "user",
+          "summary": "Account binding is explicit and previewed before data moves.",
+          "title": "Account binding is explicit",
+          "paragraphs": [
+            "Patternly exposes account entry only when the public environment, Firebase identity provider, and native App Check composition are explicitly configured. Creating or signing into an account does not automatically bind or upload local learning records.",
+            "After an authenticated preview and your confirmation, Patternly can synchronize the current track and compact completed learning facts. Active sessions, drafts, positions, timers, and recovery journals stay on this device."
+          ]
+        },
+        {
+          "detailTitle": "Where learning data goes",
+          "icon": "cloud",
+          "summary": "Only the declared account-owned learning facts can sync.",
+          "title": "Explicit account sync",
+          "paragraphs": [
+            "The sync allowlist contains the current track, terminal session summaries, completed-session results, attempts, and review-queue entries. Active sessions, drafts, current positions, timers, mutation journals, settings, and notification preferences never sync.",
+            "A local commit is retained before remote acknowledgement. Pending, conflict, failure, and retry states remain visible; sign-out is blocked while unsynchronized data exists."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Keeping your data",
+      "topics": [
+        {
+          "detailTitle": "Loss and recovery",
+          "icon": "alert-triangle",
+          "summary": "Account adoption preserves data only after explicit confirmation.",
+          "title": "Local-only limits",
+          "paragraphs": [
+            "Uninstalling the app, losing or replacing the device, or resetting learning state may remove device-only data such as an active session or draft. Confirmed account-owned records can be restored through the explicit adoption flow.",
+            "Patternly configures learning records to be excluded from automatic operating-system backups and device transfers. It offers no backup or restore path; copies outside the app's control cannot be guaranteed absent."
+          ]
+        }
+      ]
+    }
+  ]
+}

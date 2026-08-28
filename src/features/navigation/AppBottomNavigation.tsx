@@ -1,4 +1,5 @@
 import { BottomTabBar } from "../../components";
+import { useTranslation } from "react-i18next";
 import { ROUTES } from "../../constants/routes";
 import { MAIN_TAB_ITEMS } from "../home/shellModel";
 import type { ShellTab } from "../home/types";
@@ -19,7 +20,7 @@ export function AppBottomNavigation({
   navigation,
   onHomeTabChange,
 }: AppBottomNavigationProps) {
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   function handleChange(tab: ShellTab) {
     if (tab === "practice") {
       navigation.navigate(ROUTES.PRACTICE_HUB);

@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { colorWithOpacity, spacing, typography } from "../theme";
@@ -19,7 +20,8 @@ type AppShellHeaderProps = {
 
 export function AppShellHeader({ backAction, context, placement = "inline" }: AppShellHeaderProps) {
   const styles = useThemedStyles(createStyles);
-  const { colorMode, colors: palette, t } = useAppPreferences();
+  const { colorMode, colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const header = (
     <View style={[styles.header, placement === "stack" ? styles.stackHeader : null]}>
       <View style={styles.brandRow}>

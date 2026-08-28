@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
 import { DetailsDisclosure } from "../../components";
@@ -14,7 +15,7 @@ import { ContentReportSheet, type ContentReportSurfaceContext } from "../reports
 
 export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }: Readonly<{ feedback: PracticeFeedback; item: ContentItemRef; itemId: string; reportSurface: ContentReportSurfaceContext }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [detailsOpen, setDetailsOpen] = useState(false);
   const detailsDisclosure = <DetailsDisclosure expanded={detailsOpen} onPress={() => setDetailsOpen((current) => !current)} testID={runtimeSelectors.session.detailsToggle(itemId)} />;
   return (

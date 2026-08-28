@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useColorScheme } from "react-native";
 
+import i18n from "../i18n";
+
 import {
   DEFAULT_APP_SETTINGS,
   loadAppSettings,
@@ -10,7 +12,6 @@ import {
   type Settings,
 } from "../application/appPreferences";
 import { colors, type AppColors, type ColorMode } from "../theme";
-import { translate } from "./translations";
 
 export type AppLocale = "en" | "pl";
 
@@ -23,7 +24,6 @@ type AppPreferencesContextValue = Readonly<{
   ready: boolean;
   setAppearance: (appearance: AppearancePreference) => Promise<void>;
   setLanguage: (language: LanguagePreference) => Promise<void>;
-  t: (value: string) => string;
 }>;
 
 const AppPreferencesContext = createContext<AppPreferencesContextValue | null>(null);
@@ -64,6 +64,10 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
     : settings.appearance;
   const locale: AppLocale = settings.language === "system" ? resolveSystemLocale() : settings.language;
 
+  useEffect(() => {
+    void i18n.changeLanguage(locale);
+  }, [locale]);
+
   const value = useMemo<AppPreferencesContextValue>(() => ({
     appearance: settings.appearance,
     colorMode,
@@ -73,7 +77,6 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
     ready,
     setAppearance,
     setLanguage,
-    t: (valueToTranslate) => translate(locale, valueToTranslate),
   }), [colorMode, locale, ready, setAppearance, setLanguage, settings.appearance, settings.language]);
 
   return <AppPreferencesContext.Provider value={value}>{children}</AppPreferencesContext.Provider>;

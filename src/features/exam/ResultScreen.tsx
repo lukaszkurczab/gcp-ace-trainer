@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 import { getTrainingLifecycleUseCases } from "../../application/trainingLifecycle";
@@ -18,7 +19,7 @@ type Summary = Readonly<{
 
 export function ResultScreen({ navigation, route }: Props) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [summary, setSummary] = useState<Summary | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {

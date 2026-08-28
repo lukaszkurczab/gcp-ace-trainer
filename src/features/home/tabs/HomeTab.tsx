@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { Button, Card, Icon } from "../../../components";
 import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
@@ -48,7 +49,8 @@ export function HomeTab({
   trainingAttempts,
 }: HomeTabProps) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
   const model = buildHomeTabModel({ activeSession, activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts });

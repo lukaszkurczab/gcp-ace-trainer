@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { CertificationExamExpiredError, finalizeCertificationExam, getCertificationExamProjection, navigateCertificationExamTo, resumeExpectedCertificationExam, saveCertificationExamResponse, startCertificationExam, toggleCertificationExamFlag, type CertificationExamProjection } from "../../application/certification";
@@ -15,7 +16,7 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.EXAM>;
 
 /** Canonical Cloud exam runner; navigation and responses are durably persisted through the shared lifecycle. */
 export function ExamScreen({ navigation, route }: Props) {
-  const styles = useThemedStyles(createStyles); const { t } = useAppPreferences();
+  const styles = useThemedStyles(createStyles); const { t } = useTranslation("common");
   const [projection, setProjection] = useState<CertificationExamProjection | null>(null); const [error, setError] = useState<string | null>(null); const [navigatorVisible, setNavigatorVisible] = useState(false); const [finishVisible, setFinishVisible] = useState(false);
   const refresh = async () => {
     try { setProjection(await getCertificationExamProjection()); }

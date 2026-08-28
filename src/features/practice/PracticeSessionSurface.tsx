@@ -1,4 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { Button, Icon } from "../../components";
 import type { ContentItemRef, TrackId } from "../../domain";
@@ -139,7 +140,8 @@ function QuestionCard({ question }: Readonly<{ question: PracticeQuestionPresent
 
 function PreparingNotice() {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   return (
     <View accessibilityLabel={t("Preparing session")} style={styles.asyncState}>
       <View style={styles.asyncStatusRow}>
@@ -157,7 +159,8 @@ function PreparingNotice() {
 
 function CompletingNotice() {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   return (
     <View style={styles.asyncState}>
       <View style={styles.asyncStatusRow}>
@@ -182,7 +185,7 @@ function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
 
 function ActionBar(props: PracticeSessionSurfaceProps) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   if (props.exit.kind !== "none") return null;
   if (props.phase === "completing") return <View style={styles.completingActions} />;
   return (
@@ -212,7 +215,7 @@ function primaryActionTestID(props: PracticeSessionSurfaceProps): string | undef
 
 function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readonly<{ onAbandon: () => void; onDismiss: () => void; onLeave: () => void; sessionId?: string; trackId?: TrackId }>) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const copy = exitCopy(trackId);
   return (
     <Modal animationType="fade" onRequestClose={onDismiss} transparent visible>

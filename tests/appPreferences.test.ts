@@ -10,7 +10,7 @@ import {
   MemoryKeyValueStorage,
   installKeyValueStorageForTests,
 } from "../src/infrastructure/storage/mmkvClient";
-import { translate } from "../src/preferences/translations";
+import i18n from "../src/i18n";
 import { getSettings } from "../src/storage/repositories/settingsRepository";
 
 beforeEach(() => {
@@ -22,15 +22,15 @@ test("app preferences default to English content locale and device appearance", 
   assert.equal(DEFAULT_APP_SETTINGS.language, "en");
 });
 
-test("current study product normalizes an old Polish preference to the English content locale", async () => {
+test("app preferences retain an explicitly selected Polish locale", async () => {
   await updateAppSettings({ appearance: "dark", language: "pl" });
 
   assert.deepEqual(await getSettings(), { appearance: "dark", language: "pl" });
-  assert.deepEqual(await loadAppSettings(), { appearance: "dark", language: "en" });
+  assert.deepEqual(await loadAppSettings(), { appearance: "dark", language: "pl" });
 });
 
-test("translations use Polish chrome and preserve educational content without a UI translation", () => {
-  assert.equal(translate("pl", "Settings"), "Ustawienia");
-  assert.equal(translate("en", "Settings"), "Settings");
-  assert.equal(translate("pl", "Unmapped learning prompt"), "Unmapped learning prompt");
+test("translations resolve common UI copy through i18next", () => {
+  assert.equal(i18n.t("Settings", { lng: "pl" }), "Ustawienia");
+  assert.equal(i18n.t("Settings", { lng: "en" }), "Settings");
+  assert.equal(i18n.t("Unmapped learning prompt", { lng: "pl" }), "Unmapped learning prompt");
 });

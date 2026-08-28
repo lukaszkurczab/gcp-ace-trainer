@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -62,7 +63,8 @@ const DAY_SHORT_LABELS: Readonly<Record<GoalDay, string>> = {
 
 export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, locale, t } = useAppPreferences();
+  const { colors: palette, locale } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [trackId, setTrackId] = useState<TrackId | null>(null);
   const [goal, setGoal] = useState<GoalRecord | null>(null);
   const [draft, setDraft] = useState<GoalRecord | null>(null);

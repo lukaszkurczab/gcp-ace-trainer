@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import notificationCopy from "../../locales/en/notifications.json";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -21,62 +23,7 @@ import {
 import { useAppPreferences, useNotificationSettings, useThemedStyles, type AppLocale } from "../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../theme";
 
-const copy = {
-  en: {
-    close: "Close",
-    dailyReminder: "Daily reminder",
-    disableReminder: "Turn off reminder",
-    notificationBody: "Choose one focused Patternly practice session.",
-    notificationTitle: "Time to practise",
-    openDeviceSettings: "Open device settings",
-    permissionDenied: "Notifications are blocked",
-    permissionDeniedDetail: "Allow notifications in device settings to use reminders.",
-    permissionGranted: "Notifications allowed",
-    permissionGrantedDetail: "Patternly can show local practice reminders.",
-    permissionPending: "Checking notification permission",
-    permissionSection: "Permission",
-    permissionRequest: "Enable notifications",
-    permissionUndeterminedDetail: "Allow local notifications before setting a reminder.",
-    reminderOff: "Off",
-    reminderBlocked: "Blocked",
-    reminderSave: "Save reminder",
-    reminderTimeInvalid: "Use a valid 24-hour time, for example 20:00.",
-    reminderTimePlaceholder: "20:00",
-    reminderNote: "One daily reminder on this device.",
-    reminderSection: "Practice reminder",
-    settings: "Settings",
-    notifications: "Notifications",
-    sheetIntro: "Choose when Patternly should remind you to practise.",
-    sheetTitle: "Daily reminder",
-  },
-  pl: {
-    close: "Zamknij",
-    dailyReminder: "Codzienne przypomnienie",
-    disableReminder: "Wyłącz przypomnienie",
-    notificationBody: "Wybierz jedną skupioną sesję ćwiczeń w Patternly.",
-    notificationTitle: "Czas na ćwiczenia",
-    openDeviceSettings: "Otwórz ustawienia urządzenia",
-    permissionDenied: "Powiadomienia są zablokowane",
-    permissionDeniedDetail: "Zezwól na powiadomienia w ustawieniach urządzenia, aby korzystać z przypomnień.",
-    permissionGranted: "Powiadomienia są dozwolone",
-    permissionGrantedDetail: "Patternly może wyświetlać lokalne przypomnienia o ćwiczeniach.",
-    permissionPending: "Sprawdzanie uprawnienia do powiadomień",
-    permissionSection: "Uprawnienia",
-    permissionRequest: "Włącz powiadomienia",
-    permissionUndeterminedDetail: "Zezwól na lokalne powiadomienia przed ustawieniem przypomnienia.",
-    reminderOff: "Wyłączone",
-    reminderBlocked: "Zablokowane",
-    reminderSave: "Zapisz przypomnienie",
-    reminderTimeInvalid: "Podaj prawidłową godzinę w formacie 24-godzinnym, np. 20:00.",
-    reminderTimePlaceholder: "20:00",
-    reminderNote: "Jedno codzienne przypomnienie na tym urządzeniu.",
-    reminderSection: "Przypomnienie o ćwiczeniach",
-    settings: "Ustawienia",
-    notifications: "Powiadomienia",
-    sheetIntro: "Ustaw codzienną godzinę jednej skupionej sesji ćwiczeń.",
-    sheetTitle: "Codzienne przypomnienie",
-  },
-} as const;
+
 
 type NotificationSettingsScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.NOTIFICATION_SETTINGS>;
 
@@ -87,7 +34,34 @@ export function NotificationSettingsScreen({ navigation }: NotificationSettingsS
   const [reminderError, setReminderError] = useState<string | null>(null);
   const [reminderSheetVisible, setReminderSheetVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState("20:00");
-  const text = copy[locale];
+  const { t } = useTranslation("notifications");
+  const text = {
+  close: t("close"),
+  dailyReminder: t("dailyReminder"),
+  disableReminder: t("disableReminder"),
+  notificationBody: t("notificationBody"),
+  notificationTitle: t("notificationTitle"),
+  openDeviceSettings: t("openDeviceSettings"),
+  permissionDenied: t("permissionDenied"),
+  permissionDeniedDetail: t("permissionDeniedDetail"),
+  permissionGranted: t("permissionGranted"),
+  permissionGrantedDetail: t("permissionGrantedDetail"),
+  permissionPending: t("permissionPending"),
+  permissionSection: t("permissionSection"),
+  permissionRequest: t("permissionRequest"),
+  permissionUndeterminedDetail: t("permissionUndeterminedDetail"),
+  reminderOff: t("reminderOff"),
+  reminderBlocked: t("reminderBlocked"),
+  reminderSave: t("reminderSave"),
+  reminderTimeInvalid: t("reminderTimeInvalid"),
+  reminderTimePlaceholder: t("reminderTimePlaceholder"),
+  reminderNote: t("reminderNote"),
+  reminderSection: t("reminderSection"),
+  settings: t("settings"),
+  notifications: t("notifications"),
+  sheetIntro: t("sheetIntro"),
+  sheetTitle: t("sheetTitle"),
+  };
   const reminderBlocked = notifications.permission === "denied";
 
   useEffect(() => {
@@ -233,7 +207,7 @@ function PermissionCard({ detail, icon, iconColor, onOpenSettings, openSettingsL
 
 function permissionPresentation(
   permission: ReturnType<typeof useNotificationSettings>["permission"],
-  text: (typeof copy)[AppLocale],
+  text: Record<keyof typeof notificationCopy, string>,
 ): Readonly<{
   detail: string;
   icon: "alert-triangle" | "settings" | "shield-check";

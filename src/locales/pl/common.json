@@ -1,6 +1,4 @@
-import type { AppLocale } from "./AppPreferencesProvider";
-
-const polish: Readonly<Record<string, string>> = {
+{
   "Home": "Start",
   "Practice": "Ćwiczenia",
   "Progress": "Postęp",
@@ -400,9 +398,5 @@ const polish: Readonly<Record<string, string>> = {
   "Thursday": "Czwartek",
   "Friday": "Piątek",
   "Saturday": "Sobota",
-  "Sunday": "Niedziela",
-};
-
-export function translate(locale: AppLocale, value: string): string {
-  return locale === "pl" ? polish[value] ?? value : value;
+  "Sunday": "Niedziela"
 }

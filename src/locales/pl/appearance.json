@@ -1,0 +1,12 @@
+{
+  "appearance": "Wygląd",
+  "intro": "Wybierz wygląd Patternly na tym urządzeniu.",
+  "options": "Wygląd",
+  "settings": "Ustawienia",
+  "system": "System",
+  "systemDetail": "Użyj wyglądu urządzenia.",
+  "light": "Jasny",
+  "lightDetail": "Zawsze używaj jasnego motywu.",
+  "dark": "Ciemny",
+  "darkDetail": "Zawsze używaj ciemnego motywu."
+}

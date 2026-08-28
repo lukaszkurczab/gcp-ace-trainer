@@ -1,0 +1,12 @@
+{
+  "appearance": "Appearance",
+  "intro": "Choose how Patternly looks on this device.",
+  "options": "Appearance",
+  "settings": "Settings",
+  "system": "System",
+  "systemDetail": "Follow your device appearance.",
+  "light": "Light",
+  "lightDetail": "Always use the light theme.",
+  "dark": "Dark",
+  "darkDetail": "Always use the dark theme."
+}

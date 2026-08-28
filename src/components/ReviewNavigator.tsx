@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AccessibilityInfo, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { useAppPreferences, useThemedStyles } from "../preferences";
@@ -19,7 +20,7 @@ type ReviewNavigatorProps = Readonly<{
 export function ReviewNavigator({ currentOrdinal, items, onClose, onSelect, visible }: ReviewNavigatorProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
-  const { t } = useAppPreferences();
+  const { t } = useTranslation("common");
   const reduceMotion = useReducedMotion();
   const columns = fontScale >= 1.8 ? 3 : fontScale >= 1.3 ? 4 : 6;
   const answeredCount = items.filter((item) => item.answered).length;
