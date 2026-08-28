@@ -9,3 +9,13 @@ export function readPatternlyRuntimeMode(): PatternlyRuntimeMode | undefined {
 export function isPatternlySmokeRuntime(): boolean {
   return readPatternlyRuntimeMode() === "smoke";
 }
+
+/**
+ * Sandbox and local development builds may expose controls that simulate an
+ * account entitlement. Release builds must always use the account-backed
+ * entitlement path instead.
+ */
+export function isPatternlyPremiumTestingRuntime(): boolean {
+  const mode = readPatternlyRuntimeMode();
+  return mode === "sandbox" || mode === "smoke";
+}

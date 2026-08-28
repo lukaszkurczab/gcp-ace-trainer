@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +8,8 @@ import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../pre
 import type { AppearancePreference } from "../../../application/appPreferences";
 import { spacing, typography, type AppColors } from "../../../theme";
 import { isPatternlyBackendE2eConfigured } from "../../../infrastructure/clients/patternlyBackendRuntime";
+import { isPatternlyPremiumTestingRuntime } from "../../../infrastructure/runtime/runtimeMode";
+import { hasPremiumTestingAccess, setPremiumTestingAccess } from "../../../storage/repositories";
 
 type SettingsTabProps = {
   onOpenAppearance: () => void;
@@ -48,6 +51,10 @@ export function SettingsTab({
   developerVerification: t("developerVerification"),
   backendDiagnostics: t("backendDiagnostics"),
   backendDiagnosticsDetail: t("backendDiagnosticsDetail"),
+  premiumTesting: t("premiumTesting"),
+  premiumTestingDetail: t("premiumTestingDetail"),
+  premiumTestingEnabled: t("premiumTestingEnabled"),
+  premiumTestingDisabled: t("premiumTestingDisabled"),
   learning: t("learning"),
   legal: t("legal"),
   legalDetail: t("legalDetail"),
@@ -60,6 +67,18 @@ export function SettingsTab({
   };
   const latestStorageIssue = storageIssues[0] ?? null;
   const backendDiagnosticsConfigured = isPatternlyBackendE2eConfigured();
+  const premiumTestingAvailable = isPatternlyPremiumTestingRuntime();
+  const [premiumTestingEnabled, setPremiumTestingEnabled] = useState(false);
+
+  useEffect(() => {
+    if (premiumTestingAvailable) setPremiumTestingEnabled(hasPremiumTestingAccess());
+  }, [premiumTestingAvailable]);
+
+  function togglePremiumTestingAccess(): void {
+    const next = !premiumTestingEnabled;
+    setPremiumTestingAccess(next);
+    setPremiumTestingEnabled(next);
+  }
 
   return (
     <View style={styles.page} testID="settings-screen">
@@ -111,15 +130,27 @@ export function SettingsTab({
           <SettingsNavigationRow detail={text.legalDetail} icon="shield-check" onPress={onOpenLegalInformation} testID="settings-legal-information" title={text.legal} />
         </SettingsGroup>
 
-        {backendDiagnosticsConfigured ? (
+        {backendDiagnosticsConfigured || premiumTestingAvailable ? (
           <SettingsGroup dividers title={text.developerVerification}>
-            <SettingsNavigationRow
-              detail={text.backendDiagnosticsDetail}
-              icon="server-stack"
-              onPress={onOpenBackendDiagnostics}
-              testID="settings-backend-diagnostics"
-              title={text.backendDiagnostics}
-            />
+            {backendDiagnosticsConfigured ? (
+              <SettingsNavigationRow
+                detail={text.backendDiagnosticsDetail}
+                icon="server-stack"
+                onPress={onOpenBackendDiagnostics}
+                testID="settings-backend-diagnostics"
+                title={text.backendDiagnostics}
+              />
+            ) : null}
+            {premiumTestingAvailable ? (
+              <SettingsNavigationRow
+                detail={text.premiumTestingDetail}
+                icon="sparkle"
+                onPress={togglePremiumTestingAccess}
+                testID="settings-premium-testing"
+                title={text.premiumTesting}
+                value={premiumTestingEnabled ? text.premiumTestingEnabled : text.premiumTestingDisabled}
+              />
+            ) : null}
           </SettingsGroup>
         ) : null}
       </View>
