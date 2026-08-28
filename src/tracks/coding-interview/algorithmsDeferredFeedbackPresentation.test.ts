@@ -1,0 +1,178 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+  getAlgorithmsPracticeProjection,
+  getAlgorithmsPracticeResultProjection,
+  getAlgorithmsPracticeSummaryProjection,
+} from "../../application/coding-interview";
+import {
+  ForegroundSessionTimerFacade,
+  installForegroundSessionTimerFacade,
+  installTrainingLifecycleUseCases,
+  type TrainingLifecycleUseCases,
+} from "../../application/trainingLifecycle";
+import { getCodingPackageTestCatalog } from "../../testing/contentPackageRuntimeTestSupport";
+import { prepareBundledTestPackages } from "../../testing/contentPackageRuntimeTestSupport";
+import {
+  createFamilyEnvelope,
+  createForegroundTimerState,
+  createTrainingAttempt,
+  createTrainingSession,
+  createTrainingSessionResult,
+  getTrackRegistration,
+  type TrainingAttempt,
+  type TrainingSession,
+} from "../../domain";
+import {
+  addTrainingAttempt,
+  getActiveTrainingSession,
+  saveTrainingSession,
+} from "../../storage/repositories";
+import {
+  isAlgorithmChoiceQuestion,
+  submitAlgorithmInteraction,
+  type AlgorithmResponse,
+} from "./";
+import { installMemoryStorage } from "../../testing/journalTestSupport";
+
+const NOW = "2026-07-22T08:00:00.000Z";
+
+function deferredSession(status: "active" | "completed" | "abandoned"): Readonly<{ attempt: TrainingAttempt<AlgorithmResponse>; session: TrainingSession }> {
+  const catalog = getCodingPackageTestCatalog();
+  const question = catalog.getItems().find(isAlgorithmChoiceQuestion);
+  if (!question) throw new Error("Deferred feedback fixture requires a choice question.");
+  const item = catalog.toContentItemRef(question);
+  const response: AlgorithmResponse = { kind: "choice", selectedOptionIds: question.interaction.acceptedOptionIds };
+  const submitted = submitAlgorithmInteraction({ question, response });
+  const session = createTrainingSession({
+    id: "deferred-practice",
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-custom-practice",
+    configurationSnapshot: {
+      answerChanges: "beforeSubmit",
+      feedbackMode: "atSessionEnd",
+      kind: "algorithmsPractice",
+      navigation: "sequential",
+      submission: "perItem",
+      timer: "elapsedForeground",
+    },
+    requestedLength: 10,
+    actualLength: 1,
+    currentItemIndex: 0,
+    itemOrder: [{ occurrenceId: "deferred-practice:occurrence:0", item }],
+    optionOrderByOccurrence: { "deferred-practice:occurrence:0": question.interaction.options.map((option) => option.id) },
+    conditionalReinsertSlots: [],
+    activeForegroundMs: 0,
+    contentVersion: item.contentVersion, packagePin: item.packagePin,
+    taxonomyVersion: "algorithms-taxonomy-v2",
+    planFingerprint: "a".repeat(64),
+    status,
+    startedAt: NOW,
+    ...(status === "completed" || status === "abandoned" ? { completedAt: NOW } : {}),
+  });
+  const attempt = createTrainingAttempt({
+    id: "deferred-practice:attempt:0",
+    sessionId: session.id,
+    trackId: session.trackId,
+    modeId: session.modeId,
+    occurrenceId: session.itemOrder[0]!.occurrenceId,
+    item,
+    response,
+    result: submitted.score.result,
+    reviewEvidence: {
+      sourceItem: item,
+      taxonomyOrSkillRefs: [{ axisId: "mental_unit", nodeId: question.taxonomy.primaryMentalUnitId, role: "primary" }],
+    },
+    answeredAt: NOW,
+    committedAt: NOW,
+  });
+  return { attempt, session };
+}
+
+test("deferred-feedback practice projection withholds correctness and authored feedback after a durable per-item attempt", async () => {
+  await prepareBundledTestPackages();
+  installMemoryStorage();
+  const { attempt, session } = deferredSession("active");
+  await saveTrainingSession(session);
+  await addTrainingAttempt(attempt);
+  installTrainingLifecycleUseCases({
+    async checkpointForegroundTime() { return session; },
+    async getPendingMutationProjection() { return null; },
+    async getPracticeOperationState() { return { family: "practice", kind: "feedback" } as const; },
+  } as unknown as TrainingLifecycleUseCases);
+  let timerState: ReturnType<typeof createForegroundTimerState> | null = null;
+  const timer = new ForegroundSessionTimerFacade({
+    repository: {
+      async getActive() { return timerState; },
+      async save(candidate, expected) {
+        assert.equal(expected, timerState?.checkpointRevision ?? null);
+        timerState = createForegroundTimerState({ ...candidate, checkpointRevision: (timerState?.checkpointRevision ?? 0) + 1 });
+        return timerState;
+      },
+    },
+    lifecycle: {
+      async checkpointForegroundTime() { return session; },
+    } as unknown as TrainingLifecycleUseCases,
+    tracks: { getTrackRegistration },
+    monotonicClock: { now: () => 0 },
+    wallClock: { now: () => NOW },
+    schedule: () => 0 as unknown as ReturnType<typeof setInterval>,
+    cancel: () => undefined,
+    finalize: async () => undefined,
+  });
+  installForegroundSessionTimerFacade(timer);
+  await timer.initialize(session);
+
+  const projection = await getAlgorithmsPracticeProjection();
+  assert.equal(projection.response?.value.kind, "choice");
+  assert.equal(projection.feedback, null);
+});
+
+test("deferred-feedback summary reads timing, length, and authored feedback from completed durable records", async () => {
+  await prepareBundledTestPackages();
+  installMemoryStorage();
+  const { attempt, session } = deferredSession("completed");
+  const result = createTrainingSessionResult({
+    id: `${session.id}:result`,
+    sessionId: session.id,
+    trackId: session.trackId,
+    totalOccurrences: 1,
+    answeredOccurrenceIds: [attempt.occurrenceId],
+    unansweredOccurrenceIds: [],
+    completedAt: NOW,
+    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: { correctCount: 1, partialCount: 0, incorrectCount: 0, pointsEarned: attempt.result.earnedPoints, maxPoints: attempt.result.maxPoints } }),
+  });
+  await saveTrainingSession(session);
+  await addTrainingAttempt(attempt);
+  assert.equal(await getActiveTrainingSession(), null);
+  installTrainingLifecycleUseCases({
+    async loadSummary() { return result; },
+    async queryHistory() { return [session]; },
+  } as unknown as TrainingLifecycleUseCases);
+
+  const projection = await getAlgorithmsPracticeResultProjection(session.id);
+  assert.deepEqual(projection.configuration, { actualLength: 1, feedbackTiming: "atSessionEnd", requestedLength: 10 });
+  assert.equal(projection.feedbackItems.length, 1);
+  assert.equal(projection.feedbackItems[0]?.correctness, "correct");
+  assert.ok(projection.feedbackItems[0]?.reason.length);
+  assert.ok(projection.feedbackItems[0]?.details.blocks.length);
+});
+
+test("explicitly ended practice exposes a partial summary without inventing a completed score", async () => {
+  await prepareBundledTestPackages();
+  installMemoryStorage();
+  const { attempt, session } = deferredSession("abandoned");
+  await saveTrainingSession(session);
+  await addTrainingAttempt(attempt);
+  installTrainingLifecycleUseCases({
+    async loadSessionRecord() { return session; },
+  } as unknown as TrainingLifecycleUseCases);
+
+  const projection = await getAlgorithmsPracticeSummaryProjection(session.id);
+  assert.equal(projection.completionKind, "abandoned");
+  assert.equal(projection.answeredOccurrenceIds.length, 1);
+  assert.equal(projection.unansweredOccurrenceIds.length, 0);
+  assert.equal(projection.score, null);
+  assert.deepEqual(projection.feedbackItems, []);
+});

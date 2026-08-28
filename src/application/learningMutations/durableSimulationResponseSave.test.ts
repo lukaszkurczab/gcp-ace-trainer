@@ -1,0 +1,300 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+  getAlgorithmsSimulationProjection,
+  enterAlgorithmsSimulationForeground,
+  finalizeAlgorithmsSimulation,
+  resumeAlgorithmsSimulationEditingAfterSaveFailure,
+  recoverAlgorithmsSimulationSaveAndContinue,
+  saveAlgorithmsSimulationResponse,
+  saveAlgorithmsSimulationResponseAndContinue,
+  saveAlgorithmsSimulationResponseAndNavigate,
+  startAlgorithmsSession,
+} from "../coding-interview";
+import { composeTrainingLifecycleUseCases } from "../bootstrap";
+import { getActiveForegroundTimer, getActiveTrainingSession, getActiveTrainingSessionDraft, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions } from "../../storage/repositories";
+import { STORAGE_KEYS } from "../../storage/keys";
+import {
+  isAlgorithmChoiceQuestion,
+  isAlgorithmComplexityQuestion,
+  isAlgorithmOrderingQuestion,
+  ALGORITHM_MODE_IDS,
+  type AlgorithmQuestion,
+  type AlgorithmResponse,
+} from "../../tracks/coding-interview";
+import { installMemoryStorage } from "../../testing/journalTestSupport";
+import { createCodingFullTrackTestRuntime, FULL_TRACK_SIMULATION_PROFILE_ID } from "../../testing/fullTrackRuntimeTestSupport";
+
+const NOW = "2026-07-23T10:00:00.000Z";
+const FULL_TRACK_SIMULATION_ENTRY = Object.freeze({ modeId: ALGORITHM_MODE_IDS.interviewSimulation, profileId: FULL_TRACK_SIMULATION_PROFILE_ID, requestedLength: 40 as const });
+
+function completeResponseFor(item: AlgorithmQuestion): AlgorithmResponse {
+  if (isAlgorithmChoiceQuestion(item)) return { kind: "choice", selectedOptionIds: item.interaction.acceptedOptionIds };
+  if (isAlgorithmOrderingQuestion(item)) return { kind: "ordering", orderedSubgoalIds: item.interaction.canonicalOrder };
+  if (isAlgorithmComplexityQuestion(item)) {
+    return {
+      kind: "complexity",
+      selectedValuesByDimension: Object.fromEntries(item.interaction.checkedDimensions.map((dimension) => [dimension, item.interaction.acceptedValuesByDimension[dimension]![0]!])),
+    };
+  }
+  throw new Error("Unsupported Algorithms simulation item.");
+}
+
+test("Algorithms Interview Simulation saves one response durably across lifecycle reload", async () => {
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
+  installMemoryStorage();
+  const clock = { now: () => NOW };
+  composeTrainingLifecycleUseCases({ packages, wallClock: clock });
+
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
+
+  await saveAlgorithmsSimulationResponse({ occurrenceId: occurrence.occurrenceId, response });
+  assert.equal((await getActiveTrainingSessionDraft())?.revision, 2);
+
+  const reloadedLifecycle = composeTrainingLifecycleUseCases({ packages, wallClock: clock });
+  assert.equal((await reloadedLifecycle.resumeActiveSession()).id, started.session.id);
+  const reloadedDraft = await getActiveTrainingSessionDraft();
+  const reloadedProjection = await getAlgorithmsSimulationProjection();
+
+  assert.equal(reloadedDraft?.revision, 2);
+  assert.deepEqual(reloadedDraft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+  assert.equal(reloadedProjection.durableDraftRevision, 2);
+  assert.equal(reloadedProjection.navigator[0]?.answered, true);
+});
+test("Algorithms save-and-continue is one application command for the active non-final occurrence", async () => {
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
+
+  const continued = await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
+  assert.equal(continued.position.current, 2);
+  assert.equal((await getActiveTrainingSessionDraft())?.responsesByOccurrenceId[occurrence.occurrenceId] !== undefined, true);
+});
+
+test("two concurrent Algorithms save-and-continue commands share one durable save and one advance", async () => {
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
+
+  const [first, second] = await Promise.all([
+    saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response }),
+    saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response }),
+  ]);
+  const draft = await getActiveTrainingSessionDraft();
+
+  assert.equal(first.position.current, 2);
+  assert.equal(second.position.current, 2);
+  assert.equal(draft?.revision, 2);
+  assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+});
+
+test("concurrent timer checkpoint and save-and-continue retain the draft revision and next position", async () => {
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
+  const started = await startAlgorithmsSession({ modeId: entry.modeId, requestedLength: entry.requestedLength, scope: { simulationProfileId: entry.profileId } });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
+
+  await Promise.all([enterAlgorithmsSimulationForeground(), saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response })]);
+  const [draft, projection] = await Promise.all([getActiveTrainingSessionDraft(), getAlgorithmsSimulationProjection()]);
+  assert.equal(draft?.revision, 2);
+  assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+  assert.equal(projection.position.current, 2);
+});
+
+test("Algorithms save-and-continue verifies its durable response revision before publishing occurrence two", async () => {
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
+
+  const projection = await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
+  const draft = await getActiveTrainingSessionDraft();
+
+  assert.equal(projection.position.current, 2);
+  assert.equal(projection.durableDraftRevision, 2);
+  assert.equal(draft?.revision, 2);
+  assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+});
+
+test("Algorithms save-and-jump durably saves a changed response before publishing the requested occurrence", async () => {
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
+
+  const jumped = await saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId: occurrence.occurrenceId, response, targetIndex: 4 });
+  const draft = await getActiveTrainingSessionDraft();
+
+  assert.equal(jumped.position.current, 5);
+  assert.equal(jumped.durableDraftRevision, 2);
+  assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+
+  await assert.rejects(() => saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId: occurrence.occurrenceId, response, targetIndex: started.session.itemOrder.length }));
+  assert.equal((await getActiveTrainingSessionDraft())?.revision, 2);
+});
+
+test("a non-durable simulation save failure can explicitly resume local editing without a durable write", async () => {
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
+  const storage = installMemoryStorage();
+  const lifecycle = composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
+  const started = await startAlgorithmsSession({ modeId: entry.modeId, requestedLength: entry.requestedLength, scope: { simulationProfileId: entry.profileId } });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
+
+  storage.resetCounters();
+  storage.setFailurePlan({ kind: "fail_on_key_write_occurrence", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, occurrence: 1 });
+  await assert.rejects(() => saveAlgorithmsSimulationResponse({ occurrenceId: occurrence.occurrenceId, response }));
+  assert.equal((await lifecycle.getSimulationOperationState(started.session)).kind, "save_failed");
+  assert.equal((await getActiveTrainingSessionDraft())?.revision, 1);
+
+  storage.setFailurePlan(null);
+  await resumeAlgorithmsSimulationEditingAfterSaveFailure();
+  assert.equal((await lifecycle.getSimulationOperationState(started.session)).kind, "editable");
+  assert.equal((await getActiveTrainingSessionDraft())?.revision, 1);
+});
+
+test("Algorithms simulation relaunch after its first answer preserves draft, position, timer checkpoint, and one active session", async () => {
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
+  await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
+  const timerBeforeRelaunch = await getActiveForegroundTimer();
+
+  const relaunchedLifecycle = composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+  const resumed = await relaunchedLifecycle.resumeActiveSession();
+  const projection = await getAlgorithmsSimulationProjection();
+  const [draft, timerAfterRelaunch, active, sessions] = await Promise.all([
+    getActiveTrainingSessionDraft(), getActiveForegroundTimer(), getActiveTrainingSession(), getTrainingSessions(),
+  ]);
+
+  assert.equal(resumed.id, started.session.id);
+  assert.equal(projection.position.current, 2);
+  assert.equal(draft?.revision, 2);
+  assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+  assert.equal(timerAfterRelaunch?.sessionId, started.session.id);
+  assert.equal(timerAfterRelaunch?.checkpointRevision, timerBeforeRelaunch?.checkpointRevision);
+  assert.equal(active?.id, started.session.id);
+  assert.deepEqual(sessions.value.filter((session) => session.status === "active").map((session) => session.id), [started.session.id]);
+});
+
+test("Algorithms Interview Simulation finalizes its complete immutable forty-occurrence plan", async () => {
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  for (const occurrence of started.session.itemOrder.slice(0, -1)) {
+    const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
+    await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
+  }
+  const finalOccurrence = started.session.itemOrder.at(-1)!;
+  await saveAlgorithmsSimulationResponse({
+    occurrenceId: finalOccurrence.occurrenceId,
+    response: completeResponseFor(catalog.getItemById(finalOccurrence.item.itemId)),
+  });
+  await finalizeAlgorithmsSimulation();
+
+  const [attempts, result, active, draft] = await Promise.all([
+    getTrainingAttempts(), getTrainingSessionResult(started.session.id), getActiveTrainingSession(), getActiveTrainingSessionDraft(),
+  ]);
+  const sessionAttempts = attempts.value.filter((attempt) => attempt.sessionId === started.session.id);
+
+  assert.equal(started.session.itemOrder.length, 40);
+  assert.equal(sessionAttempts.length, 40);
+  assert.equal(new Set(sessionAttempts.map((attempt) => attempt.occurrenceId)).size, 40);
+  assert.deepEqual(result?.answeredOccurrenceIds, started.session.itemOrder.map((occurrence) => occurrence.occurrenceId));
+  assert.deepEqual(result?.unansweredOccurrenceIds, []);
+  assert.equal(active, null);
+  assert.equal(draft, null);
+});
+
+test("Algorithms save-and-continue recovery advances a durable response without a second draft revision", async () => {
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
+  const storage = installMemoryStorage();
+  const lifecycle = composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
+  storage.resetCounters();
+  storage.setFailurePlan({ kind: "fail_on_key_write_occurrence", key: STORAGE_KEYS.trainingSession(started.session.id), occurrence: 2 });
+
+  await assert.rejects(() => saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response }));
+  const durableAfterFailure = await getActiveTrainingSessionDraft();
+  assert.equal(durableAfterFailure?.revision, 2);
+  assert.deepEqual(durableAfterFailure?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+  assert.equal((await lifecycle.getSimulationOperationState(started.session)).kind, "save_and_continue_advance_recovery");
+
+  storage.setFailurePlan(null);
+  const recovered = await recoverAlgorithmsSimulationSaveAndContinue({ occurrenceId: occurrence.occurrenceId });
+  const durableAfterRecovery = await getActiveTrainingSessionDraft();
+
+  assert.equal(recovered.position.current, 2);
+  assert.equal(durableAfterRecovery?.revision, 2);
+  assert.deepEqual(durableAfterRecovery?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+});
