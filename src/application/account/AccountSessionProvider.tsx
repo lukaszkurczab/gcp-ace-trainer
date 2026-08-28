@@ -8,6 +8,7 @@ import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfigurat
 import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, type AccountDataSession } from "./accountDataService";
 import { getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
+import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
 
 export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "expiredAction" | "invalid" | "invalidCredential" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity";
 export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "signedOut"; recoveryCodes?: readonly string[] }>;
@@ -49,8 +50,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const [apiClient, setApiClient] = useState<ReturnType<typeof createPatternlyApiClient> | null>(null);
 
   useEffect(() => {
+    const smokeRuntime = isPatternlySmokeRuntime();
     const publicEnvironment = readPublicEnvironmentFromRuntime();
-    if (publicEnvironment.kind !== "configured") {
+    if (!smokeRuntime && publicEnvironment.kind !== "configured") {
       setState({ kind: "unavailable", reason: publicEnvironment.reason === "invalid_public_environment" ? "public_environment_invalid" : "public_environment_unconfigured" });
       return undefined;
     }
@@ -70,12 +72,23 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     }
     let auth: FirebaseAuthClient;
     try {
+      const authEmulatorOrigin = readDevelopmentFirebaseAuthEmulatorOrigin();
+      const apiOrigin = smokeRuntime
+        ? process.env.EXPO_PUBLIC_PATTERNLY_API_ORIGIN
+        : publicEnvironment.kind === "configured" ? publicEnvironment.value.apiOrigin : undefined;
+      const authActionOrigin = smokeRuntime
+        ? apiOrigin
+        : publicEnvironment.kind === "configured" ? publicEnvironment.value.authActionOrigin : undefined;
+      if (!apiOrigin || !authActionOrigin || (smokeRuntime && !authEmulatorOrigin)) {
+        setState({ kind: "unavailable", reason: "public_environment_unconfigured" });
+        return undefined;
+      }
       auth = createFirebaseAuthClient({
-        authActionOrigin: publicEnvironment.value.authActionOrigin,
-        authEmulatorOrigin: readDevelopmentFirebaseAuthEmulatorOrigin(),
+        authActionOrigin,
+        authEmulatorOrigin,
         config: firebaseConfiguration.value,
       });
-      const client = createPatternlyApiClient({ apiOrigin: publicEnvironment.value.apiOrigin, getIdToken: auth.getIdToken });
+      const client = createPatternlyApiClient({ allowLocalHttpForSimulator: smokeRuntime, apiOrigin, getIdToken: auth.getIdToken });
       setAuthClient(auth);
       setApiClient(client);
       const unsubscribe = auth.onUserChanged((user) => {
