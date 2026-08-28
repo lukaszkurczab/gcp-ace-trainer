@@ -1413,8 +1413,8 @@ function hasValidEmailFormat(email: string): boolean {
 
 const createStyles = (palette: AppColors) =>
   StyleSheet.create({
-    authScreen: { paddingTop: spacing.md },
-    authPanel: { gap: spacing.md },
+    authScreen: { justifyContent: "center" },
+    authPanel: { alignSelf: "stretch", gap: spacing.md },
     authTitle: {
       ...typography.display,
       color: themeColors.dark.textPrimary,

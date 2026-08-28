@@ -27,9 +27,27 @@ test("dark Figma ambient layer is shared by Track selection and Practice", () =>
   assert.match(activity, /<Screen ambient=\{colorMode === "dark"\} ambientVariant="activity"/);
   assert.match(source("src/features/home/GoalCadenceScreen.tsx"), /ambientVariant="goal"/);
   assert.match(backdrop, /variant === "default" \?/);
-  assert.match(backdrop, /if \(variant === "auth"\)/);
-  assert.match(backdrop, /<SignalPulse delay=\{400\} direction="down" length=\{154\} x=\{14\} y=\{60\} \/>/);
-  assert.match(backdrop, /<Line stroke=\{effects\.authSignal\} strokeWidth=\{1\} x1=\{14\} x2=\{14\} y1=\{60\} y2=\{166\}/);
+});
+
+test("auth ambient uses one responsive route-bound signal with reduced-motion support", () => {
+  const backdrop = source("src/components/AmbientBackdrop.tsx");
+  const account = source("src/features/account/AccountEntryScreen.tsx");
+
+  assert.match(account, /<Screen ambient ambientVariant="auth"/);
+  assert.match(backdrop, /type AmbientRoute/);
+  assert.match(backdrop, /const AUTH_ROUTES: readonly AmbientRoute\[\]/);
+  assert.match(backdrop, /AUTH_ROUTES\.map\(\(route\) => measureRoute\(route, width, height\)\)/);
+  assert.match(backdrop, /<Polyline[\s\S]*points=\{route\.points/);
+  assert.match(backdrop, /<RouteSignal opacity=\{opacity\} progress=\{progress\} route=\{activeRoute\}/);
+  assert.match(backdrop, /TRAIL_OFFSETS\.map/);
+  assert.match(backdrop, /route\.progress/);
+  assert.match(backdrop, /AccessibilityInfo\.isReduceMotionEnabled\(\)/);
+  assert.match(backdrop, /AccessibilityInfo\.addEventListener\("reduceMotionChanged", setReduceMotion\)/);
+  assert.match(backdrop, /reduceMotion === false \? <RouteSignal/);
+  assert.match(backdrop, /pointerEvents="none"/);
+  assert.match(backdrop, /importantForAccessibility="no-hide-descendants"/);
+  assert.match(backdrop, /useWindowDimensions\(\)/);
   assert.match(backdrop, /useNativeDriver: true/);
-  assert.match(topography, /id="contour 4"/);
+  assert.doesNotMatch(backdrop, /Math\.random|height=\{880\}|width=\{360\}|<SignalPulse|<Line /);
+  assert.equal((backdrop.match(/<RouteSignal /g) ?? []).length, 1);
 });
