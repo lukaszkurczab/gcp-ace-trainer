@@ -84,6 +84,7 @@ export function HomeTab({
     .sort((left, right) => right.answeredAt.localeCompare(left.answeredAt));
   const recentAttempt = recentAttempts[0];
   const overview = buildOverviewMetrics(activeTrack.id, reviewQueueItems, trainingAttempts, activeSession?.id);
+  const isFirstUse = !hasActiveSession && trainingAttempts.length === 0 && reviewQueueItems.length === 0;
 
   return (
     <>
@@ -160,7 +161,7 @@ export function HomeTab({
         >
           {t(decisionLabel)}
         </Button>
-        {hasActiveSession ? null : (
+        {hasActiveSession || isFirstUse ? null : (
           <Pressable
             accessibilityRole="button"
             onPress={isRecommendationSettingsAction ? onOpenSettings : onChooseTopic}
@@ -171,7 +172,18 @@ export function HomeTab({
           </Pressable>
         )}
       </Card>
-      <View style={styles.overviewSection} testID="home-overview">
+      {isFirstUse ? (
+        <View style={styles.firstUseState}>
+          <View style={styles.firstUseIcon}>
+            <Icon color={palette.accentTeal} name="route" size={20} />
+          </View>
+          <View style={styles.firstUseCopy}>
+            <Text maxFontSizeMultiplier={2} style={styles.firstUseTitle}>{t("Your learning starts here")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.firstUseDetail}>{t("Complete your first session to see progress and activity here.")}</Text>
+          </View>
+        </View>
+      ) : null}
+      {!isFirstUse ? <View style={styles.overviewSection} testID="home-overview">
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Overview")}</Text>
         {overview.map((metric, index) => (
           <View key={metric.label} style={[styles.overviewRow, index < overview.length - 1 ? styles.overviewRowDivider : null]} accessibilityLabel={`${t(metric.label)}: ${t(metric.value)}`}>
@@ -184,15 +196,15 @@ export function HomeTab({
             </View>
           </View>
         ))}
-      </View>
-      <View style={styles.detailSection}>
+      </View> : null}
+      {!isFirstUse ? <View style={styles.detailSection}>
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Current focus")}</Text>
         <View style={[styles.focusRow, largeText ? styles.focusRowLargeText : null]}>
           <Text maxFontSizeMultiplier={2} style={styles.currentFocusTitle}>{formatPracticeTopicTitle(model.heroTitle, t)}</Text>
           <Button labelStyle={styles.focusActionLabel} onPress={onChooseTopic} variant="ghost">{t("Open Practice")}</Button>
         </View>
-      </View>
-      <View style={styles.detailSection}>
+      </View> : null}
+      {!isFirstUse ? <View style={styles.detailSection}>
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Recent activity")}</Text>
         <View style={styles.activityRow}>
           {recentAttempt ? (
@@ -212,7 +224,7 @@ export function HomeTab({
             <Text maxFontSizeMultiplier={2} style={styles.activityActionText}>{t("View activity")}</Text>
           </Pressable>
         </View>
-      </View>
+      </View> : null}
     </>
   );
 }
@@ -355,6 +367,27 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
   },
+  firstUseState: {
+    alignItems: "flex-start",
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
+  firstUseIcon: {
+    alignItems: "center",
+    backgroundColor: colorWithOpacity(palette.accentTeal, 0.08),
+    borderRadius: 12,
+    height: 40,
+    justifyContent: "center",
+    width: 40,
+  },
+  firstUseCopy: { flex: 1, gap: spacing.xxs, minWidth: 0 },
+  firstUseTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  firstUseDetail: { ...typography.body, color: palette.textSecondary },
   overviewSection: {
     gap: 2,
   },

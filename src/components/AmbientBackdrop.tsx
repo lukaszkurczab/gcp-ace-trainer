@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View, useWindowDimensions } from "react-native";
-import Svg, { Defs, Polyline, RadialGradient, Rect, Stop } from "react-native-svg";
+import Svg, { Polyline } from "react-native-svg";
 
-import Topography from "../assets/ambient/topography.svg";
 import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
@@ -16,65 +15,39 @@ const AUTH_ROUTES: readonly AmbientRoute[] = [
   { id: "left-lower", points: [{ x: -0.025, y: 0.4 }, { x: 0.04, y: 0.4 }, { x: 0.04, y: 0.56 }, { x: 0.13, y: 0.56 }, { x: 0.13, y: 0.62 }] },
   { id: "right-middle", points: [{ x: 1.025, y: 0.34 }, { x: 0.96, y: 0.34 }, { x: 0.96, y: 0.52 }, { x: 0.87, y: 0.52 }, { x: 0.87, y: 0.58 }] },
   { id: "right-lower", points: [{ x: 1.025, y: 0.83 }, { x: 0.72, y: 0.83 }, { x: 0.72, y: 0.91 }, { x: 0.6, y: 0.91 }] },
+  { id: "top-center", points: [{ x: 0.34, y: -0.02 }, { x: 0.34, y: 0.08 }, { x: 0.47, y: 0.08 }, { x: 0.47, y: 0.2 }] },
+  { id: "center-left", points: [{ x: -0.025, y: 0.7 }, { x: 0.2, y: 0.7 }, { x: 0.2, y: 0.63 }, { x: 0.39, y: 0.63 }] },
+  { id: "center-right", points: [{ x: 1.025, y: 0.67 }, { x: 0.82, y: 0.67 }, { x: 0.82, y: 0.74 }, { x: 0.63, y: 0.74 }] },
+  { id: "bottom-left", points: [{ x: 0.08, y: 1.02 }, { x: 0.08, y: 0.91 }, { x: 0.28, y: 0.91 }, { x: 0.28, y: 0.82 }] },
+  { id: "bottom-right", points: [{ x: 0.93, y: 1.02 }, { x: 0.93, y: 0.94 }, { x: 0.78, y: 0.94 }, { x: 0.78, y: 0.86 }, { x: 0.55, y: 0.86 }] },
 ] as const;
 
-const SIGNAL_SEQUENCE = [
-  { gap: 2400, routeIndex: 0, traversal: 2200 },
-  { gap: 3200, routeIndex: 3, traversal: 2500 },
-  { gap: 2800, routeIndex: 1, traversal: 2100 },
-  { gap: 3600, routeIndex: 4, traversal: 2400 },
-  { gap: 2600, routeIndex: 2, traversal: 2700 },
+const ROUTE_VARIANTS = [
+  [0, 1, 2, 3],
+  [4, 5, 6, 7],
+  [0, 2, 4, 6],
+  [1, 3, 5, 8],
+  [2, 5, 7, 9],
+  [0, 3, 8, 9],
 ] as const;
+
 const TRAIL_OFFSETS = [0.018, 0.034, 0.052, 0.072, 0.094] as const;
 
-/** Figma Page 1 ambient layers shared by dark Track, Practice, Activity, and Goal screens. */
 export function AmbientBackdrop({ variant = "default" }: Readonly<{ variant?: "default" | "activity" | "goal" | "auth" }>) {
-  const styles = useThemedStyles(createStyles);
-  if (variant === "auth") return <AuthAmbientBackdrop />;
-
-  const glowId = variant === "goal" ? "ambient-goal-teal" : variant === "activity" ? "ambient-activity-teal" : "ambient-teal";
-  const glowTransform = variant === "goal" ? "matrix(32 0 0 28 224 196)" : variant === "activity" ? "matrix(32 0 0 28 160 140)" : "matrix(16 0 0 14 160 140)";
-  const glowColor = variant === "goal" ? styles.goalGlowColor.color : styles.tealGlowColor.color;
-  const glowOpacity = variant === "goal" ? 0.06 : variant === "activity" ? 0.04 : 0.05098;
-  return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={[StyleSheet.absoluteFill, styles.canvas]}>
-      <Svg height={280} style={variant === "goal" ? styles.goalGlow : styles.tealGlow} width={320}>
-        <Defs>
-          <RadialGradient cx={0} cy={0} gradientTransform={glowTransform} id={glowId} r={10}>
-            <Stop offset="0" stopColor={glowColor} stopOpacity={glowOpacity} />
-            <Stop offset="1" stopColor={glowColor} stopOpacity={0} />
-          </RadialGradient>
-        </Defs>
-        <Rect fill={`url(#${glowId})`} height="280" width="320" />
-      </Svg>
-      {variant === "default" ? (
-        <>
-          <Svg height={300} style={styles.indigoGlow} width={320}>
-            <Defs>
-              <RadialGradient cx={0} cy={0} gradientTransform="matrix(16 0 0 15 160 150)" id="ambient-indigo" r={10}>
-                <Stop offset="0" stopColor={styles.indigoGlowColor.color} stopOpacity={0.039216} />
-                <Stop offset="1" stopColor={styles.indigoGlowColor.color} stopOpacity={0} />
-              </RadialGradient>
-            </Defs>
-            <Rect fill="url(#ambient-indigo)" height="300" width="320" />
-          </Svg>
-          <Topography height={260} style={styles.topography} width={300} />
-        </>
-      ) : null}
-    </View>
-  );
+  return <AuthAmbientBackdrop transparent={variant !== "auth"} />;
 }
 
-function AuthAmbientBackdrop() {
+function AuthAmbientBackdrop({ transparent = false }: Readonly<{ transparent?: boolean }>) {
   const styles = useThemedStyles(createStyles);
   const { height, width } = useWindowDimensions();
   const reduceMotion = useReducedMotion();
-  const routes = useMemo(() => AUTH_ROUTES.map((route) => measureRoute(route, width, height)), [height, width]);
-  const [sequenceIndex, setSequenceIndex] = useState(0);
+  const variant = useMemo(() => ROUTE_VARIANTS[randomIndex(ROUTE_VARIANTS.length)]!, []);
+  const routes = useMemo(() => variant.map((index) => measureRoute(AUTH_ROUTES[index]!, width, height)), [height, variant, width]);
+  const [routeIndex, setRouteIndex] = useState(() => randomRouteIndex());
   const progress = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
-  const sequenceIndexRef = useRef(0);
+  const routeIndexRef = useRef(routeIndex);
 
   useEffect(() => {
     if (reduceMotion !== false) {
@@ -85,16 +58,17 @@ function AuthAmbientBackdrop() {
     }
     let cancelled = false;
     const runNext = () => {
-      const sequence = SIGNAL_SEQUENCE[sequenceIndexRef.current]!;
+      const gap = randomBetween(2200, 3800);
+      const traversal = randomBetween(2000, 2900);
       progress.setValue(0);
       opacity.setValue(0);
       const animation = Animated.sequence([
-        Animated.delay(sequence.gap),
+        Animated.delay(gap),
         Animated.parallel([
-          Animated.timing(progress, { duration: sequence.traversal, easing: Easing.inOut(Easing.sin), toValue: 1, useNativeDriver: true }),
+          Animated.timing(progress, { duration: traversal, easing: Easing.inOut(Easing.sin), toValue: 1, useNativeDriver: true }),
           Animated.sequence([
             Animated.timing(opacity, { duration: 180, toValue: 1, useNativeDriver: true }),
-            Animated.delay(sequence.traversal - 480),
+            Animated.delay(traversal - 480),
             Animated.timing(opacity, { duration: 300, toValue: 0, useNativeDriver: true }),
           ]),
         ]),
@@ -102,8 +76,8 @@ function AuthAmbientBackdrop() {
       animationRef.current = animation;
       animation.start(({ finished }) => {
         if (!finished || cancelled) return;
-        sequenceIndexRef.current = (sequenceIndexRef.current + 1) % SIGNAL_SEQUENCE.length;
-        setSequenceIndex(sequenceIndexRef.current);
+        routeIndexRef.current = randomRouteIndex(routeIndexRef.current);
+        setRouteIndex(routeIndexRef.current);
         runNext();
       });
     };
@@ -111,9 +85,9 @@ function AuthAmbientBackdrop() {
     return () => { cancelled = true; animationRef.current?.stop(); };
   }, [opacity, progress, reduceMotion]);
 
-  const activeRoute = routes[SIGNAL_SEQUENCE[sequenceIndex]!.routeIndex]!;
+  const activeRoute = routes[routeIndex]!;
   return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={[StyleSheet.absoluteFill, styles.canvas]}>
+    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={[StyleSheet.absoluteFill, transparent ? styles.routeCanvas : styles.canvas]}>
       <Svg height={height} style={styles.authRoutes} width={width}>
         {routes.map((route) => (
           <Polyline fill="none" key={route.id} points={route.points.map((point) => `${point.x},${point.y}`).join(" ")} stroke={styles.authRoute.color} strokeLinejoin="round" strokeWidth={1} />
@@ -122,6 +96,21 @@ function AuthAmbientBackdrop() {
       {reduceMotion === false ? <RouteSignal opacity={opacity} progress={progress} route={activeRoute} /> : null}
     </View>
   );
+}
+
+function randomRouteIndex(excludedIndex?: number): number {
+  if (ROUTE_VARIANTS[0].length < 2) return 0;
+  let index = randomIndex(ROUTE_VARIANTS[0].length);
+  while (index === excludedIndex) index = randomIndex(ROUTE_VARIANTS[0].length);
+  return index;
+}
+
+function randomIndex(length: number): number {
+  return Math.floor(Math.random() * length);
+}
+
+function randomBetween(min: number, max: number): number {
+  return Math.round(min + Math.random() * (max - min));
 }
 
 function RouteSignal({ opacity, progress, route }: Readonly<{ opacity: Animated.Value; progress: Animated.Value; route: MeasuredRoute }>) {
@@ -178,17 +167,11 @@ function useReducedMotion(): boolean | null {
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   canvas: { backgroundColor: palette.ambient.canvas },
-  goalGlowColor: { color: palette.ambient.goal },
-  tealGlowColor: { color: palette.ambient.teal },
-  indigoGlowColor: { color: palette.ambient.indigo },
+  routeCanvas: { backgroundColor: "transparent" },
   authRoute: { color: palette.effects.authSignal },
   authRoutes: { left: 0, position: "absolute", top: 0 },
   authSignalContainer: { height: 18, left: -9, position: "absolute", top: -9, width: 18 },
   authSignal: { backgroundColor: palette.effects.authSignalBright, borderColor: palette.effects.authSignalTrail, borderRadius: 3, borderWidth: 2, height: 5, left: 7, position: "absolute", top: 7, width: 5 },
   authSignalGlow: { backgroundColor: palette.effects.authSignalGlow, borderRadius: 9, height: 18, width: 18 },
   authSignalTrail: { backgroundColor: palette.effects.authSignalBright, borderRadius: 1.5, height: 3, left: -1.5, position: "absolute", top: -1.5, width: 3 },
-  goalGlow: { left: 0, position: "absolute", top: 0 },
-  tealGlow: { left: -60, position: "absolute", top: -40 },
-  indigoGlow: { left: 133, position: "absolute", top: 500 },
-  topography: { left: 140, position: "absolute", top: -30 },
 });

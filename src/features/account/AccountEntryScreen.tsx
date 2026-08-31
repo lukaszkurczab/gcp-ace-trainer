@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import accountCopy from "../../locales/en/account.json";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -91,8 +91,13 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   consumeRecoveryCode: t("consumeRecoveryCode"),
   recoveryCode: t("recoveryCode"),
   recoveryDescription: t("recoveryDescription"),
+  recoveryCodeOption: t("recoveryCodeOption"),
+  recoveryCodeDescription: t("recoveryCodeDescription"),
+  backToEmailRecovery: t("backToEmailRecovery"),
   recoveryAccepted: t("recoveryAccepted"),
   recoveryAcceptedDescription: t("recoveryAcceptedDescription"),
+  resetPasswordComplete: t("resetPasswordComplete"),
+  resetPasswordCompleteDescription: t("resetPasswordCompleteDescription"),
   verification: t("verification"),
   verificationDescription: t("verificationDescription"),
   resend: t("resend"),
@@ -160,7 +165,11 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   revokedSession: t("revokedSession"),
   revokedSessionDescription: t("revokedSessionDescription"),
   resetPassword: t("resetPassword"),
+  resetPasswordDescription: t("resetPasswordDescription"),
   reset: t("reset"),
+  backToSignIn: t("backToSignIn"),
+  showPassword: t("showPassword"),
+  hidePassword: t("hidePassword"),
   passwordMismatch: t("passwordMismatch"),
   invalid: t("invalid"),
   duplicate: t("duplicate"),
@@ -182,6 +191,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const [confirmation, setConfirmation] = useState("");
   const [resetCode, setResetCode] = useState("");
   const [recoveryCode, setRecoveryCode] = useState("");
+  const [recoveryMethod, setRecoveryMethod] = useState<"email" | "code">("email");
   const [deletionPassword, setDeletionPassword] = useState("");
   const [recoveryPassword, setRecoveryPassword] = useState("");
   const [recoveryCodes, setRecoveryCodes] = useState<readonly string[] | null>(
@@ -191,6 +201,13 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const backAction = navigation.canGoBack()
     ? { onPress: () => navigation.goBack() }
     : undefined;
+  const continueWithoutAccount = () => {
+    if (account.state.kind === "guest" && navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    account.continueAsGuest();
+  };
   const firebaseConfig = useMemo(() => readFirebaseClientConfiguration(), []);
   const [googleRequest, googleResponse, promptGoogle] =
     Google.useIdTokenAuthRequest(
@@ -257,26 +274,23 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const screenEdges: Edge[] = ["top", "bottom"];
   if (account.state.kind === "unavailable")
     return (
-      <Screen edges={screenEdges}>
-        <ScreenHeader backAction={backAction} title={text.account} />
-        <InfoBlock
-          body={text.unavailableDescription}
-          title={text.unavailable}
-          testID="account-unavailable"
-          tone="warning"
-        />
-      </Screen>
+      <AuthStatusScreen
+        action={{ label: text.continueWithoutAccount, onPress: continueWithoutAccount, testID: "account-unavailable-guest" }}
+        backAction={backAction}
+        body={text.unavailableDescription}
+        testID="account-unavailable"
+        title={text.unavailable}
+      />
     );
   if (account.state.kind === "verificationPending")
     return (
-      <Screen edges={screenEdges}>
-        <ScreenHeader backAction={backAction} title={text.verification} />
-        <InfoBlock
-          body={text.verificationDescription}
-          title={text.verification}
-          testID="account-verification-pending"
-        />
-        <Text style={styles.email}>{account.state.user.email ?? email}</Text>
+      <AuthStatusScreen
+        backAction={backAction}
+        body={text.verificationDescription}
+        detail={account.state.user.email ?? email}
+        testID="account-verification-pending"
+        title={text.verification}
+      >
         {renderFeedback(feedback, text)}
         <Button
           loading={false}
@@ -304,7 +318,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         >
           {text.signOut}
         </Button>
-      </Screen>
+      </AuthStatusScreen>
     );
   if (account.state.kind === "authenticated")
     return (
@@ -449,14 +463,12 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     );
   if (account.state.kind === "backendUnavailable")
     return (
-      <Screen edges={screenEdges}>
-        <ScreenHeader backAction={backAction} title={text.account} />
-        <InfoBlock
-          body={text.backendUnavailableDescription}
-          title={text.backendUnavailable}
-          testID="account-backend-unavailable"
-          tone="warning"
-        />
+      <AuthStatusScreen
+        backAction={backAction}
+        body={text.backendUnavailableDescription}
+        testID="account-backend-unavailable"
+        title={text.backendUnavailable}
+      >
         <Button
           onPress={() =>
             void account.refreshVerification().then(setResult(setFeedback))
@@ -473,18 +485,16 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         >
           {text.signOut}
         </Button>
-      </Screen>
+      </AuthStatusScreen>
     );
   if (account.state.kind === "revokedSession")
     return (
-      <Screen edges={screenEdges}>
-        <ScreenHeader backAction={backAction} title={text.account} />
-        <InfoBlock
-          body={text.revokedSessionDescription}
-          title={text.revokedSession}
-          testID="account-revoked-session"
-          tone="warning"
-        />
+      <AuthStatusScreen
+        backAction={backAction}
+        body={text.revokedSessionDescription}
+        testID="account-revoked-session"
+        title={text.revokedSession}
+      >
         <Button
           onPress={() => void account.signOut()}
           testID="account-sign-out"
@@ -492,13 +502,13 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         >
           {text.signOut}
         </Button>
-      </Screen>
+      </AuthStatusScreen>
     );
 
   if (mode === "entry") {
     return (
       <WelcomeScreen
-        onContinueAsGuest={account.continueAsGuest}
+        onContinueAsGuest={continueWithoutAccount}
         onRegister={() => {
           setFeedback(null);
           setMode("register");
@@ -516,13 +526,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     return (
       <Screen ambient ambientVariant="auth" edges={screenEdges} style={styles.authScreen}>
         <View style={styles.authPanel}>
-          {backAction ? (
-            <ScreenHeader backAction={backAction} title={text.signIn} />
-          ) : (
-            <Text maxFontSizeMultiplier={2} style={styles.authTitle}>
-              {text.signIn}
-            </Text>
-          )}
+          <Text maxFontSizeMultiplier={2} style={styles.authTitle}>
+            {text.signIn}
+          </Text>
           <SignInForm
             email={email}
             feedback={feedback}
@@ -585,7 +591,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           />
           <Button
             labelStyle={styles.guestActionLabel}
-            onPress={account.continueAsGuest}
+            onPress={continueWithoutAccount}
             testID="account-sign-in-guest"
             variant="ghost"
           >
@@ -596,30 +602,58 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     );
   }
 
-  return (
-    <Screen edges={screenEdges}>
-      <ScreenHeader
+  const modeTitle = mode === "register"
+    ? text.register
+    : mode === "recovery"
+      ? recoveryMethod === "code" ? text.consumeRecoveryCode : text.forgotPassword
+      : mode === "resetPassword"
+        ? text.resetPassword
+        : text.account;
+  const modeDescription = mode === "recovery"
+    ? recoveryMethod === "code" ? text.recoveryCodeDescription : text.recoveryDescription
+    : mode === "resetPassword"
+      ? text.resetPasswordDescription
+      : null;
+
+  if (mode === "recovery" && feedback?.kind === "success" && feedback.next === "recoveryAccepted")
+    return (
+      <AuthStatusScreen
+        action={{ label: text.backToSignIn, onPress: () => { setFeedback(null); setMode("signIn"); }, testID: "account-recovery-back-to-sign-in" }}
         backAction={backAction}
-        title={
-          mode === "register"
-            ? text.register
-            : mode === "recovery"
-              ? text.forgotPassword
-              : mode === "resetPassword"
-                ? text.resetPassword
-                : text.account
-        }
+        body={text.recoveryAcceptedDescription}
+        testID="account-recovery-accepted"
+        title={text.recoveryAccepted}
       />
-      {renderFeedback(feedback, text)}
+    );
+  if (mode === "resetPassword" && feedback?.kind === "success")
+    return (
+      <AuthStatusScreen
+        action={{ label: text.signIn, onPress: () => { setFeedback(null); setMode("signIn"); }, testID: "account-reset-back-to-sign-in" }}
+        backAction={backAction}
+        body={text.resetPasswordCompleteDescription}
+        testID="account-reset-complete"
+        title={text.resetPasswordComplete}
+      />
+    );
+
+  return (
+    <Screen ambient ambientVariant="auth" edges={screenEdges} style={styles.authScreen}>
+      <View style={styles.authPanel}>
+        <Text maxFontSizeMultiplier={2} style={styles.authTitle}>{modeTitle}</Text>
+        {modeDescription ? (
+          <Text maxFontSizeMultiplier={2} style={styles.authDescription}>{modeDescription}</Text>
+        ) : null}
+      {mode === "register" && isRegisterFieldFailure(feedback) ? null : renderFeedback(feedback, text)}
       {mode === "register" ? (
         <CredentialsForm
           buttonLabel={text.create}
           confirmation={confirmation}
           email={email}
-          inputStyle={styles.input}
-          onConfirmationChange={setConfirmation}
-          onEmailChange={setEmail}
-          onPasswordChange={setPassword}
+          feedback={feedback}
+          inputStyle={styles.authInput}
+          onConfirmationChange={(value) => { setFeedback(null); setConfirmation(value); }}
+          onEmailChange={(value) => { setFeedback(null); setEmail(value); }}
+          onPasswordChange={(value) => { setFeedback(null); setPassword(value); }}
           onSubmit={() => {
             if (password !== confirmation) {
               setFeedback({ kind: "failure", failure: "passwordMismatch" });
@@ -628,7 +662,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             void account.register(email, password).then(setResult(setFeedback));
           }}
           password={password}
-          placeholderTextColor={styles.placeholder.color as string}
+          placeholderTextColor={styles.authPlaceholder.color as string}
           text={text}
           testID="account-register-submit"
         />
@@ -636,32 +670,35 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       {mode === "recovery" ? (
         <RecoveryForm
           code={recoveryCode}
-          descriptionStyle={styles.formDescription}
           email={email}
-          inputStyle={styles.input}
-          onCodeChange={setRecoveryCode}
+          feedback={feedback}
+          inputStyle={styles.authInput}
+          method={recoveryMethod}
+          onCodeChange={(value) => { setFeedback(null); setRecoveryCode(value); }}
           onConsume={() =>
             void account
               .consumeRecoveryCode(recoveryCode)
               .then(setResult(setFeedback))
           }
-          onEmailChange={setEmail}
+          onEmailChange={(value) => { setFeedback(null); setEmail(value); }}
+          onSelectCode={() => { setFeedback(null); setRecoveryMethod("code"); }}
+          onSelectEmail={() => { setFeedback(null); setRecoveryMethod("email"); }}
           onSubmit={() =>
             void account
               .requestPasswordRecovery(email)
               .then(setResult(setFeedback))
           }
-          placeholderTextColor={styles.placeholder.color as string}
+          placeholderTextColor={styles.authPlaceholder.color as string}
           text={text}
         />
       ) : null}
       {mode === "resetPassword" ? (
         <ResetPasswordForm
           confirmation={confirmation}
-          descriptionStyle={styles.formDescription}
-          inputStyle={styles.input}
-          onConfirmationChange={setConfirmation}
-          onPasswordChange={setPassword}
+          feedback={feedback}
+          inputStyle={styles.authInput}
+          onConfirmationChange={(value) => { setFeedback(null); setConfirmation(value); }}
+          onPasswordChange={(value) => { setFeedback(null); setPassword(value); }}
           onSubmit={() => {
             if (password !== confirmation) {
               setFeedback({ kind: "failure", failure: "passwordMismatch" });
@@ -672,7 +709,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
               .then(setResult(setFeedback));
           }}
           password={password}
-          placeholderTextColor={styles.placeholder.color as string}
+          placeholderTextColor={styles.authPlaceholder.color as string}
           text={text}
         />
       ) : null}
@@ -681,8 +718,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         testID="account-entry-home"
         variant="ghost"
       >
-        {text.account}
+        {mode === "register" ? text.alreadyHaveAccount : text.backToSignIn}
       </Button>
+      </View>
     </Screen>
   );
 }
@@ -739,6 +777,44 @@ function WelcomeScreen({
           text={text.continueWithoutAccount}
           variant="guest"
         />
+      </View>
+    </Screen>
+  );
+}
+
+function AuthStatusScreen({
+  action,
+  backAction,
+  body,
+  children,
+  detail,
+  testID,
+  title,
+}: Readonly<{
+  action?: Readonly<{ label: string; onPress: () => void; testID: string }>;
+  backAction?: Readonly<{ onPress: () => void }>;
+  body: string;
+  children?: ReactNode;
+  detail?: string;
+  testID: string;
+  title: string;
+}>) {
+  const styles = useThemedStyles(createStyles);
+  return (
+    <Screen ambient ambientVariant="auth" edges={["top", "bottom"]} style={styles.authScreen}>
+      {backAction ? <ScreenHeader backAction={backAction} title="" /> : null}
+      <View style={styles.authPanel} testID={testID}>
+        <View style={styles.statusCopy}>
+          <Text maxFontSizeMultiplier={2} style={styles.authTitle}>{title}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.authDescription}>{body}</Text>
+          {detail ? <Text maxFontSizeMultiplier={2} style={styles.statusDetail}>{detail}</Text> : null}
+        </View>
+        {children}
+        {action ? (
+          <Button onPress={action.onPress} testID={action.testID} variant="primary">
+            {action.label}
+          </Button>
+        ) : null}
       </View>
     </Screen>
   );
@@ -831,7 +907,7 @@ function SignInForm({
           testID="account-email"
           value={email}
         />
-        {invalidEmail ? <Text style={styles.fieldError} testID="account-email-error">{text.emailFormatError}</Text> : null}
+        {invalidEmail ? <Text accessibilityLabel={`${text.email}. ${text.emailFormatError}`} accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.fieldError} testID="account-email-error">{text.emailFormatError}</Text> : null}
       </View>
       <View style={styles.fieldGroup}>
         <Text maxFontSizeMultiplier={2} style={styles.fieldLabel}>
@@ -850,7 +926,7 @@ function SignInForm({
             value={password}
           />
           <Pressable
-            accessibilityLabel={visible ? "Hide password" : "Show password"}
+            accessibilityLabel={visible ? text.hidePassword : text.showPassword}
             accessibilityRole="button"
             hitSlop={8}
             onPress={() => setVisible((current) => !current)}
@@ -863,7 +939,7 @@ function SignInForm({
             />
           </Pressable>
         </View>
-        {credentialsError ? <Text style={styles.fieldError} testID="account-password-error">{text.signInCredentialsError}</Text> : null}
+        {credentialsError ? <Text accessibilityLabel={`${text.password}. ${text.signInCredentialsError}`} accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.fieldError} testID="account-password-error">{text.signInCredentialsError}</Text> : null}
       </View>
       <Button
         labelStyle={styles.authPrimaryLabel}
@@ -905,7 +981,6 @@ function ProviderButton({
       accessibilityLabel={text}
       style={({ pressed }) => [
         styles.providerButton,
-        icon === "google" ? styles.googleProviderButton : null,
         pressed ? styles.providerPressed : null,
       ]}
       testID={`account-provider-${icon}`}
@@ -926,6 +1001,7 @@ function CredentialsForm({
   buttonLabel,
   confirmation,
   email,
+  feedback,
   inputStyle,
   onConfirmationChange,
   onEmailChange,
@@ -939,6 +1015,7 @@ function CredentialsForm({
   buttonLabel: string;
   confirmation?: string;
   email: string;
+  feedback: Feedback | null;
   inputStyle: StyleProp<TextStyle>;
   onConfirmationChange?: (value: string) => void;
   onEmailChange: (value: string) => void;
@@ -949,120 +1026,143 @@ function CredentialsForm({
   text: AccountCopy;
   testID: string;
 }>) {
+  const styles = useThemedStyles(createStyles);
+  const passwordMismatch = feedback?.kind === "failure" && feedback.failure === "passwordMismatch";
+  const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalid" && !hasValidEmailFormat(email);
+  const emailError = invalidEmail
+    ? text.emailFormatError
+    : feedback?.kind === "failure" && feedback.failure === "duplicate"
+      ? text.duplicate
+      : undefined;
+  const passwordError = feedback?.kind === "failure" && (feedback.failure === "invalidCredential" || (feedback.failure === "invalid" && !invalidEmail))
+    ? text.invalid
+    : undefined;
   return (
-    <Card style={{ gap: spacing.md }}>
-      <TextInput
-        autoCapitalize="none"
-        autoComplete="email"
-        keyboardType="email-address"
-        onChangeText={onEmailChange}
-        placeholder={text.email}
-        placeholderTextColor={placeholderTextColor}
-        secureTextEntry={false}
-        style={inputStyle}
-        testID="account-email"
-        value={email}
-      />
-      <TextInput
-        autoCapitalize="none"
-        autoComplete="password"
-        onChangeText={onPasswordChange}
-        placeholder={text.password}
-        placeholderTextColor={placeholderTextColor}
-        secureTextEntry
-        style={inputStyle}
-        testID="account-password"
-        value={password}
-      />
+    <View style={styles.authForm}>
+      <FormField error={emailError} errorTestID="account-register-email-error" label={text.email}>
+        <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" onChangeText={onEmailChange} placeholder={text.enterEmail} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput, emailError ? styles.authInputError : null]} testID="account-email" value={email} />
+      </FormField>
+      <AuthPasswordInput error={passwordError} errorTestID="account-register-password-error" inputStyle={inputStyle} onChangeText={onPasswordChange} placeholder={text.enterPassword} placeholderTextColor={placeholderTextColor} testID="account-password" text={text} value={password} />
       {confirmation !== undefined && onConfirmationChange ? (
-        <TextInput
-          autoCapitalize="none"
-          autoComplete="password"
-          onChangeText={onConfirmationChange}
-          placeholder={text.confirmPassword}
-          placeholderTextColor={placeholderTextColor}
-          secureTextEntry
-          style={inputStyle}
-          testID="account-password-confirmation"
-          value={confirmation}
-        />
+        <AuthPasswordInput error={passwordMismatch ? text.passwordMismatch : undefined} errorTestID="account-password-confirmation-error" inputStyle={inputStyle} label={text.confirmPassword} onChangeText={onConfirmationChange} placeholder={text.confirmPassword} placeholderTextColor={placeholderTextColor} testID="account-password-confirmation" text={text} value={confirmation} />
       ) : null}
-      <Button onPress={onSubmit} testID={testID} variant="primary">
+      <Button labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID={testID} variant="primary">
         {buttonLabel}
       </Button>
-    </Card>
+    </View>
+  );
+}
+
+function FormField({
+  children,
+  error,
+  errorTestID,
+  label,
+}: Readonly<{ children: ReactNode; error?: string; errorTestID?: string; label: string }>) {
+  const styles = useThemedStyles(createStyles);
+  return (
+    <View style={styles.fieldGroup}>
+      <Text maxFontSizeMultiplier={2} style={styles.fieldLabel}>{label}</Text>
+      {children}
+      {error ? <Text accessibilityLabel={`${label}. ${error}`} accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.fieldError} testID={errorTestID}>{error}</Text> : null}
+    </View>
+  );
+}
+
+function AuthPasswordInput({
+  autoComplete = "password",
+  error,
+  errorTestID,
+  inputStyle,
+  label,
+  onChangeText,
+  placeholder,
+  placeholderTextColor,
+  testID,
+  text,
+  value,
+}: Readonly<{
+  autoComplete?: "password" | "password-new";
+  error?: string;
+  errorTestID?: string;
+  inputStyle: StyleProp<TextStyle>;
+  label?: string;
+  onChangeText: (value: string) => void;
+  placeholder: string;
+  placeholderTextColor: string;
+  testID: string;
+  text: AccountCopy;
+  value: string;
+}>) {
+  const styles = useThemedStyles(createStyles);
+  const [visible, setVisible] = useState(false);
+  return (
+    <FormField error={error} errorTestID={errorTestID} label={label ?? text.password}>
+      <View>
+        <TextInput autoCapitalize="none" autoComplete={autoComplete} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={placeholderTextColor} secureTextEntry={!visible} style={[inputStyle, styles.centeredInput, styles.passwordInput, error ? styles.authInputError : null]} testID={testID} value={value} />
+        <Pressable accessibilityLabel={visible ? text.hidePassword : text.showPassword} accessibilityRole="button" hitSlop={8} onPress={() => setVisible((current) => !current)} style={styles.visibilityButton}>
+          <Icon color={styles.icon.color as string} name={visible ? "eye-off" : "eye"} size={24} />
+        </Pressable>
+      </View>
+    </FormField>
   );
 }
 
 function RecoveryForm({
   code,
-  descriptionStyle,
   email,
+  feedback,
   inputStyle,
+  method,
   onCodeChange,
   onConsume,
   onEmailChange,
+  onSelectCode,
+  onSelectEmail,
   onSubmit,
   placeholderTextColor,
   text,
 }: Readonly<{
   code: string;
-  descriptionStyle: StyleProp<TextStyle>;
   email: string;
+  feedback: Feedback | null;
   inputStyle: StyleProp<TextStyle>;
+  method: "email" | "code";
   onCodeChange: (value: string) => void;
   onConsume: () => void;
   onEmailChange: (value: string) => void;
+  onSelectCode: () => void;
+  onSelectEmail: () => void;
   onSubmit: () => void;
   placeholderTextColor: string;
   text: AccountCopy;
 }>) {
+  const styles = useThemedStyles(createStyles);
+  const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalid" && !hasValidEmailFormat(email);
+  if (method === "code")
+    return (
+      <View style={styles.authForm}>
+        <FormField label={text.recoveryCode}>
+          <TextInput autoCapitalize="characters" autoCorrect={false} onChangeText={onCodeChange} placeholder={text.recoveryCode} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput]} testID="account-recovery-code" value={code} />
+        </FormField>
+        <Button labelStyle={styles.authPrimaryLabel} onPress={onConsume} style={styles.authPrimaryButton} testID="account-recovery-code-submit" variant="primary">{text.consumeRecoveryCode}</Button>
+        <Button labelStyle={styles.textActionLabel} onPress={onSelectEmail} testID="account-recovery-email-option" variant="ghost">{text.backToEmailRecovery}</Button>
+      </View>
+    );
   return (
-    <Card style={{ gap: spacing.md }}>
-      <Text style={descriptionStyle}>{text.recoveryDescription}</Text>
-      <TextInput
-        autoCapitalize="none"
-        autoComplete="email"
-        keyboardType="email-address"
-        onChangeText={onEmailChange}
-        placeholder={text.email}
-        placeholderTextColor={placeholderTextColor}
-        secureTextEntry={false}
-        style={inputStyle}
-        testID="account-recovery-email"
-        value={email}
-      />
-      <Button
-        onPress={onSubmit}
-        testID="account-recovery-submit"
-        variant="primary"
-      >
-        {text.sendRecovery}
-      </Button>
-      <TextInput
-        autoCapitalize="characters"
-        onChangeText={onCodeChange}
-        placeholder={text.recoveryCode}
-        placeholderTextColor={placeholderTextColor}
-        secureTextEntry
-        style={inputStyle}
-        testID="account-recovery-code"
-        value={code}
-      />
-      <Button
-        onPress={onConsume}
-        testID="account-recovery-code-submit"
-        variant="secondary"
-      >
-        {text.consumeRecoveryCode}
-      </Button>
-    </Card>
+    <View style={styles.authForm}>
+      <FormField error={invalidEmail ? text.emailFormatError : undefined} label={text.email}>
+        <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" onChangeText={onEmailChange} placeholder={text.enterEmail} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput, invalidEmail ? styles.authInputError : null]} testID="account-recovery-email" value={email} />
+      </FormField>
+      <Button labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID="account-recovery-submit" variant="primary">{text.sendRecovery}</Button>
+      <Button labelStyle={styles.textActionLabel} onPress={onSelectCode} testID="account-recovery-code-option" variant="ghost">{text.recoveryCodeOption}</Button>
+    </View>
   );
 }
 
 function ResetPasswordForm({
   confirmation,
-  descriptionStyle,
+  feedback,
   inputStyle,
   onConfirmationChange,
   onPasswordChange,
@@ -1072,7 +1172,7 @@ function ResetPasswordForm({
   text,
 }: Readonly<{
   confirmation: string;
-  descriptionStyle: StyleProp<TextStyle>;
+  feedback: Feedback | null;
   inputStyle: StyleProp<TextStyle>;
   onConfirmationChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
@@ -1081,39 +1181,14 @@ function ResetPasswordForm({
   placeholderTextColor: string;
   text: AccountCopy;
 }>) {
+  const styles = useThemedStyles(createStyles);
+  const passwordMismatch = feedback?.kind === "failure" && feedback.failure === "passwordMismatch";
   return (
-    <Card style={{ gap: spacing.md }}>
-      <Text style={descriptionStyle}>{text.resetPassword}</Text>
-      <TextInput
-        autoCapitalize="none"
-        autoComplete="password-new"
-        onChangeText={onPasswordChange}
-        placeholder={text.password}
-        placeholderTextColor={placeholderTextColor}
-        secureTextEntry
-        style={inputStyle}
-        testID="account-reset-password"
-        value={password}
-      />
-      <TextInput
-        autoCapitalize="none"
-        autoComplete="password-new"
-        onChangeText={onConfirmationChange}
-        placeholder={text.confirmPassword}
-        placeholderTextColor={placeholderTextColor}
-        secureTextEntry
-        style={inputStyle}
-        testID="account-reset-password-confirmation"
-        value={confirmation}
-      />
-      <Button
-        onPress={onSubmit}
-        testID="account-reset-submit"
-        variant="primary"
-      >
-        {text.reset}
-      </Button>
-    </Card>
+    <View style={styles.authForm}>
+      <AuthPasswordInput autoComplete="password-new" inputStyle={inputStyle} onChangeText={onPasswordChange} placeholder={text.password} placeholderTextColor={placeholderTextColor} testID="account-reset-password" text={text} value={password} />
+      <AuthPasswordInput autoComplete="password-new" error={passwordMismatch ? text.passwordMismatch : undefined} inputStyle={inputStyle} label={text.confirmPassword} onChangeText={onConfirmationChange} placeholder={text.confirmPassword} placeholderTextColor={placeholderTextColor} testID="account-reset-password-confirmation" text={text} value={confirmation} />
+      <Button labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID="account-reset-submit" variant="primary">{text.reset}</Button>
+    </View>
   );
 }
 
@@ -1408,6 +1483,15 @@ function setResult(setFeedback: (feedback: Feedback) => void) {
   return (result: AccountCommandResult) => setFeedback(result);
 }
 
+function isRegisterFieldFailure(feedback: Feedback | null): boolean {
+  return feedback?.kind === "failure" && (
+    feedback.failure === "duplicate" ||
+    feedback.failure === "invalid" ||
+    feedback.failure === "invalidCredential" ||
+    feedback.failure === "passwordMismatch"
+  );
+}
+
 function hasValidEmailFormat(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email.trim());
 }
@@ -1416,12 +1500,23 @@ const createStyles = (palette: AppColors) =>
   StyleSheet.create({
     authScreen: { justifyContent: "center" },
     authPanel: { alignSelf: "stretch", gap: spacing.md },
+    authForm: { gap: spacing.md },
     authTitle: {
       ...typography.display,
       color: palette.textPrimary,
       fontSize: 38,
       lineHeight: 44,
       letterSpacing: -0.8,
+    },
+    authDescription: {
+      color: palette.textSecondary,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+    statusCopy: { gap: spacing.md },
+    statusDetail: {
+      ...typography.bodyStrong,
+      color: palette.textPrimary,
     },
     signInForm: { gap: spacing.md },
     fieldGroup: { gap: spacing.xs },
@@ -1488,8 +1583,8 @@ const createStyles = (palette: AppColors) =>
     },
     providerButton: {
       alignItems: "center",
-      backgroundColor: palette.surface,
-      borderColor: palette.border,
+      backgroundColor: palette.provider.brandedSurface,
+      borderColor: palette.provider.brandedBorder,
       borderRadius: 16,
       borderWidth: 1,
       flexDirection: "row",
@@ -1497,10 +1592,6 @@ const createStyles = (palette: AppColors) =>
       minHeight: 52,
       paddingHorizontal: spacing.xl,
       position: "relative",
-    },
-    googleProviderButton: {
-      backgroundColor: palette.provider.brandedSurface,
-      borderColor: palette.provider.brandedBorder,
     },
     providerIcon: {
       alignItems: "center",
@@ -1584,8 +1675,6 @@ const createStyles = (palette: AppColors) =>
     entryButtonPrimaryLabel: { color: palette.onPrimary },
     entryButtonSecondaryLabel: { color: palette.textPrimary },
     entryButtonGuestLabel: { color: palette.primary },
-    email: { ...typography.bodyStrong, color: palette.textPrimary },
-    formDescription: { ...typography.small, color: palette.textSecondary },
     input: {
       backgroundColor: palette.surfaceInput,
       borderColor: palette.border,

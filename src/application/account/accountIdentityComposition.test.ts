@@ -49,14 +49,19 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
   assert.match(screen, /ambientVariant="auth"/);
   assert.match(screen, /testID="account-sign-in-guest"/);
-  assert.match(screen, /onPress=\{account\.continueAsGuest\}/);
+  assert.match(screen, /onPress=\{continueWithoutAccount\}/);
+  assert.match(screen, /account\.state\.kind === "guest" && navigation\.canGoBack\(\)[\s\S]*?navigation\.goBack\(\);[\s\S]*?account\.continueAsGuest\(\);/);
   assert.match(screen, /import GoogleIcon from "\.\.\/\.\.\/assets\/icons\/google\.svg"/);
   assert.match(screen, /<GoogleIcon height=\{18\} width=\{18\} \/>/);
-  assert.match(screen, /googleProviderButton:[\s\S]*?backgroundColor: palette\.provider\.brandedSurface[\s\S]*?borderColor: palette\.provider\.brandedBorder/);
+  assert.match(screen, /providerButton:[\s\S]*?backgroundColor: palette\.provider\.brandedSurface[\s\S]*?borderColor: palette\.provider\.brandedBorder/);
   assert.match(screen, /centeredInput: \{ textAlignVertical: "center" \}/);
   assert.match(screen, /<Icon color=\{colors\.provider\.appleIcon\} name="apple" size=\{26\} \/>/);
   assert.match(screen, /authPrimaryButton:[\s\S]*?backgroundColor: palette\.primary/);
   assert.match(screen, /authTitle:[\s\S]*?color: palette\.textPrimary/);
+  assert.match(screen, /errorTestID="account-password-confirmation-error"/);
+  assert.match(screen, /mode === "register" && isRegisterFieldFailure\(feedback\) \? null : renderFeedback\(feedback, text\)/);
+  assert.match(screen, /errorTestID="account-register-email-error"/);
+  assert.match(screen, /errorTestID="account-register-password-error"/);
   assert.doesNotMatch(screen, /themeColors\.(?:dark|light)|#[0-9a-f]{3,8}/i);
 });
 
@@ -107,7 +112,7 @@ test("startup waits for persisted auth resolution before choosing the entry scre
   assert.match(authClient, /onUserChanged: \(listener\) => onAuthStateChanged\(auth, \(user\) => \{\s*current = user;\s*listener\(user \? snapshot\(user\) : null\);/);
   assert.doesNotMatch(authClient, /onUserChanged:[^\n]*listener\(current \? snapshot\(current\) : null\)/);
   assert.match(rootNavigator, /state\.kind === "loading"[\s\S]*?<LoadingState[^>]*title=\{t\("Restoring session"\)\}/);
-  assert.match(rootNavigator, /applicationSessionReady = state\.kind === "authenticated" \|\| state\.kind === "guest" \|\| state\.kind === "signingOut" \|\| state\.kind === "deleting"/);
+  assert.match(rootNavigator, /applicationSessionReady = state\.kind === "guest" \|\| state\.kind === "signingOut" \|\| state\.kind === "deleting" \|\| \(state\.kind === "authenticated" && state\.accountData\.status === "synced"\)/);
   assert.match(rootNavigator, /initialRouteName=\{applicationSessionReady \? ROUTES\.HOME : ROUTES\.ACCOUNT_ENTRY\}/);
   assert.match(rootNavigator, /key=\{applicationSessionReady \? "application" : "account"\}/);
   assert.match(rootNavigator, /applicationSessionReady \? \([\s\S]*?<Stack\.Group>[\s\S]*?name=\{ROUTES\.HOME\}[\s\S]*?<\/Stack\.Group>[\s\S]*?\) : null/);

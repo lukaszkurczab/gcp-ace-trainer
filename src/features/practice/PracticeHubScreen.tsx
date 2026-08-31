@@ -67,7 +67,7 @@ type PracticeHubData = {
 
 export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps) {
   const styles = useThemedStyles(createStyles);
-  const { colorMode, colors: palette } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
   const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
@@ -185,7 +185,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
 
   return (
     <View style={styles.shell} testID={runtimeSelectors.practice.hubRoot()}>
-      <Screen ambient={colorMode === "dark"} edges={["top"]} style={styles.screenContent}>
+      <Screen edges={["top"]} style={styles.screenContent}>
         <View style={styles.pageIntro}>
           <Text maxFontSizeMultiplier={2} style={styles.pageTitle}>{t("Practice")}</Text>
           <Pressable

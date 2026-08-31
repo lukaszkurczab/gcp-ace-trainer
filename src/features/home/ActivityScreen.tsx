@@ -23,7 +23,7 @@ type ViewState =
 
 export function ActivityScreen({ navigation }: Props) {
   const styles = useThemedStyles(createStyles);
-  const { colorMode, colors: palette } = useAppPreferences();
+  const { colors: palette } = useAppPreferences();
   const { t } = useTranslation("common");
   const [state, setState] = useState<ViewState>({ kind: "loading" });
   const [filter, setFilter] = useState<ActivityFilter>(ALL_ACTIVITY_TRACKS);
@@ -53,15 +53,15 @@ export function ActivityScreen({ navigation }: Props) {
   );
 
   if (state.kind === "loading") {
-    return <Screen ambient={colorMode === "dark"} ambientVariant="activity" edges={["top", "bottom"]}>{header}<LoadingState title={t("Loading activity")} description={t("Reading your durable session history.")} /></Screen>;
+    return <Screen ambientVariant="activity" edges={["top", "bottom"]}>{header}<LoadingState title={t("Loading activity")} description={t("Reading your durable session history.")} /></Screen>;
   }
   if (state.kind === "unavailable") {
-    return <Screen ambient={colorMode === "dark"} ambientVariant="activity" edges={["top", "bottom"]}>{header}<EmptyState title={t("Activity unavailable")} description={t(state.reason)} /></Screen>;
+    return <Screen ambientVariant="activity" edges={["top", "bottom"]}>{header}<EmptyState title={t("Activity unavailable")} description={t(state.reason)} /></Screen>;
   }
 
   const model = buildActivityModel(state.records, filter);
   return (
-    <Screen ambient={colorMode === "dark"} ambientVariant="activity" edges={["top", "bottom"]} style={styles.screen}>
+    <Screen ambientVariant="activity" edges={["top", "bottom"]} style={styles.screen}>
       {header}
       <View style={styles.filter}>
         <Pressable

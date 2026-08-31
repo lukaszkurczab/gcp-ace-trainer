@@ -22,7 +22,7 @@ type ScreenProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Screen({ ambient = false, ambientVariant = "default", backgroundColor, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, style }: ScreenProps) {
+export function Screen({ ambient = true, ambientVariant = "default", backgroundColor, children, compact = false, edges = ["bottom"], footer, footerVariant = "default", header, scroll = true, style }: ScreenProps) {
   const styles = useThemedStyles(createStyles);
   const contentStyle = [styles.content, compact ? styles.contentCompact : null, footer ? styles.contentWithFooter : null, style];
   const content = <View style={contentStyle}>{children}</View>;

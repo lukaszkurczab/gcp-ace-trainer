@@ -40,7 +40,7 @@ export function RootNavigator() {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
   const { state } = usePatternlyAccount();
-  const applicationSessionReady = state.kind === "authenticated" || state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting";
+  const applicationSessionReady = state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting" || (state.kind === "authenticated" && state.accountData.status === "synced");
 
   if (state.kind === "loading") {
     return (

@@ -38,10 +38,12 @@ test("track cards use the canonical Figma icon mapping for every active track", 
 test("track selection mirrors the Figma returning and switching footer states", () => {
   assert.match(source, /const \[activeTrackId, setActiveTrackId\]/);
   assert.match(source, /const showFooter = !loaded \|\| onboarding \|\| selectedTrackId !== activeTrackId/);
-  assert.match(source, /onboarding \? "Continue" : "Use this track"/);
+  assert.match(source, /onboarding \? "Start track" : "Use this track"/);
   assert.match(source, /placement="back"/);
   assert.match(source, /footerVariant="sticky"/);
   assert.match(source, /footerContent:\s*\{\s*gap: 14[\s\S]*?paddingBottom: spacing\.xs/);
-  assert.match(source, /trackList:\s*\{\s*gap: spacing\.md\s*\}/);
-  assert.match(source, /trackSubtitle:\s*\{\s*color: palette\.textMuted[\s\S]*?fontSize: 11[\s\S]*?fontWeight: "400"[\s\S]*?lineHeight: 15\.4/);
+  assert.match(source, /trackList:\s*\{\s*gap: spacing\.sm\s*\}/);
+  assert.match(source, /title=\{t\(track\.shortTitle\)\}/);
+  assert.match(source, /accessibilityLabel=\{\[title, t\(track\.description\)\]\.join\("\. "\)\}/);
+  assert.match(source, /trackCard:\s*\{[\s\S]*?minHeight: 68/);
 });

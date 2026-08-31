@@ -80,6 +80,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<HomeShellTab>("home");
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [hasLoadedActiveTrack, setHasLoadedActiveTrack] = useState(false);
+  const [shellReload, setShellReload] = useState(0);
   const [shellReadError, setShellReadError] = useState<string | null>(null);
   const [data, setData] = useState<ShellData>({
     algorithmsDashboard: null,
@@ -161,7 +162,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       return () => {
         isActive = false;
       };
-    }, []),
+    }, [shellReload]),
   );
 
   const analytics = useMemo(
@@ -175,7 +176,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       <SelectTrackScreen
         navigation={navigation}
         onboarding
-        onTrackSelected={setActiveTrackId}
+        onTrackSelected={(trackId) => {
+          setActiveTrackId(trackId);
+          setShellReload((reload) => reload + 1);
+        }}
       />
     );
   }
