@@ -673,7 +673,17 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       style={styles.authScreen}
     >
       <View style={styles.authPanel}>
-        <Text maxFontSizeMultiplier={2} style={styles.authTitle}>{modeTitle}</Text>
+        <Text
+          maxFontSizeMultiplier={2}
+          style={[
+            styles.authTitle,
+            mode === "recovery" && recoveryMethod === "code"
+              ? styles.recoveryCodeTitle
+              : null,
+          ]}
+        >
+          {modeTitle}
+        </Text>
         {modeDescription ? (
           <Text maxFontSizeMultiplier={2} style={styles.authDescription}>{modeDescription}</Text>
         ) : null}
@@ -1566,6 +1576,12 @@ const createStyles = (palette: AppColors) =>
       fontSize: 38,
       lineHeight: 44,
       letterSpacing: -0.8,
+    },
+    recoveryCodeTitle: {
+      flexShrink: 1,
+      fontSize: 34,
+      lineHeight: 40,
+      maxWidth: "100%",
     },
     authDescription: {
       color: palette.textSecondary,

@@ -11,6 +11,15 @@ export function isPatternlySmokeRuntime(): boolean {
 }
 
 /**
+ * Email/password verification is skipped only in the explicit local smoke
+ * runtime. Every remotely configured, release, missing, or unknown runtime
+ * keeps the identity requirement.
+ */
+export function requiresVerifiedPasswordIdentity(runtimeMode: PatternlyRuntimeMode | undefined): boolean {
+  return runtimeMode !== "smoke";
+}
+
+/**
  * Sandbox and local development builds may expose controls that simulate an
  * account entitlement. Release builds must always use the account-backed
  * entitlement path instead.

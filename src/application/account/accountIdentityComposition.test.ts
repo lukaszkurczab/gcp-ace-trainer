@@ -2,12 +2,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { classifyAccountFailure, isNonEnumeratingRecoveryError } from "./AccountSessionProvider";
+import { classifyAccountFailure, isNonEnumeratingRecoveryError, planPasswordVerificationCommand, requiresPasswordEmailVerification } from "./AccountSessionProvider";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { parseFirebaseClientConfiguration } from "../../infrastructure/firebase/publicConfig";
 import { createSecureAuthPersistence, redactPersistedAuthUser } from "../../infrastructure/firebase/secureAuthPersistence";
+import { requiresVerifiedPasswordIdentity } from "../../infrastructure/runtime/runtimeMode";
 
 const publicEnvironment = {
   apiOrigin: "https://api.patternly.example",
@@ -45,6 +46,54 @@ test("public environment and Firebase client configuration fail closed", () => {
   assert.equal(parseFirebaseClientConfiguration(firebaseConfiguration).kind, "configured");
 });
 
+test("only the explicit local smoke runtime finalizes every password-identity command without verification side effects", () => {
+  const unverifiedPassword = { email: "learner@example.com", emailVerified: false, provider: "password", uid: "password-user" } as const;
+  const verifiedPassword = { ...unverifiedPassword, emailVerified: true } as const;
+  const unverifiedGoogle = { ...unverifiedPassword, provider: "google" } as const;
+
+  assert.equal(requiresVerifiedPasswordIdentity("smoke"), false);
+  assert.equal(requiresVerifiedPasswordIdentity("sandbox"), true);
+  assert.equal(requiresVerifiedPasswordIdentity("release"), true);
+  assert.equal(requiresVerifiedPasswordIdentity(undefined), true);
+  assert.equal(requiresVerifiedPasswordIdentity("unknown" as never), true);
+
+  const commands = ["register", "signIn", "resend", "persisted", "refresh"] as const;
+  const expectedVerificationActions = {
+    persisted: "none",
+    refresh: "none",
+    register: "resend",
+    resend: "resend",
+    signIn: "signOut",
+  } as const;
+
+  for (const command of commands) {
+    assert.equal(requiresPasswordEmailVerification("smoke", unverifiedPassword), false, `${command}: local smoke continues without email verification`);
+    assert.deepEqual(planPasswordVerificationCommand(command, "smoke", unverifiedPassword), { kind: "finalize" }, `${command}: local smoke finalizes with neither resend nor sign-out`);
+
+    assert.equal(requiresPasswordEmailVerification("sandbox", unverifiedPassword), true, `${command}: sandbox requires email verification`);
+    assert.deepEqual(planPasswordVerificationCommand(command, "sandbox", unverifiedPassword), { kind: "verificationPending", action: expectedVerificationActions[command] }, `${command}: sandbox keeps its verification behavior`);
+
+    assert.equal(requiresPasswordEmailVerification("release", unverifiedPassword), true, `${command}: release requires email verification`);
+    assert.deepEqual(planPasswordVerificationCommand(command, "release", unverifiedPassword), { kind: "verificationPending", action: expectedVerificationActions[command] }, `${command}: release keeps its verification behavior`);
+    assert.equal(requiresPasswordEmailVerification(undefined, unverifiedPassword), true, `${command}: missing runtime fails closed`);
+  }
+  assert.equal(requiresPasswordEmailVerification("sandbox", verifiedPassword), false);
+  assert.equal(requiresPasswordEmailVerification("sandbox", unverifiedGoogle), false);
+});
+
+test("account adoption copy describes data reconciliation, not email verification", () => {
+  const en = JSON.parse(readFileSync("src/locales/en/account.json", "utf8")) as Record<string, string>;
+  const pl = JSON.parse(readFileSync("src/locales/pl/account.json", "utf8")) as Record<string, string>;
+
+  assert.deepEqual(Object.keys(pl).sort(), Object.keys(en).sort());
+  assert.equal(en.accountReady, "Existing account data found");
+  assert.ok(typeof en.accountReadyDescription === "string");
+  assert.match(en.accountReadyDescription, /choose how to continue/u);
+  assert.equal(pl.accountReady, "Znaleziono dane istniejącego konta");
+  assert.ok(typeof pl.accountReadyDescription === "string");
+  assert.match(pl.accountReadyDescription, /wybierz sposób kontynuacji/u);
+});
+
 test("sign-in keeps guest access visible and uses the approved Google logo asset", () => {
   const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
   assert.match(screen, /ambientVariant="auth"/);
@@ -66,6 +115,8 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.match(screen, /<Icon color=\{colors\.provider\.appleIcon\} name="apple" size=\{26\} \/>/);
   assert.match(screen, /authPrimaryButton:[\s\S]*?backgroundColor: palette\.primary/);
   assert.match(screen, /authTitle:[\s\S]*?color: palette\.textPrimary/);
+  assert.match(screen, /mode === "recovery" && recoveryMethod === "code"[\s\S]*?styles\.recoveryCodeTitle/);
+  assert.match(screen, /recoveryCodeTitle:\s*\{[\s\S]*?flexShrink:\s*1[\s\S]*?fontSize:\s*34[\s\S]*?lineHeight:\s*40[\s\S]*?maxWidth:\s*"100%"/);
   assert.match(screen, /errorTestID="account-password-confirmation-error"/);
   assert.match(screen, /mode === "register" && isRegisterFieldFailure\(feedback\) \? null : renderFeedback\(feedback, text\)/);
   assert.match(screen, /errorTestID="account-register-email-error"/);

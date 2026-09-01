@@ -8,11 +8,15 @@ import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfigurat
 import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, type AccountDataSession } from "./accountDataService";
 import { getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
+import { readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
 import { grantGuestAccess, hasGuestAccess, revokeGuestAccess } from "../../storage/repositories/guestAccessRepository";
 
 export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "expiredAction" | "invalid" | "invalidCredential" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity";
 export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "signedOut"; recoveryCodes?: readonly string[] }>;
+export type PasswordVerificationCommand = "register" | "signIn" | "resend" | "persisted" | "refresh";
+export type PasswordVerificationPlan =
+  | Readonly<{ kind: "finalize" }>
+  | Readonly<{ kind: "verificationPending"; action: "none" | "resend" | "signOut" }>;
 
 export type AccountState =
   | Readonly<{ kind: "loading" }>
@@ -51,9 +55,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const [state, setState] = useState<AccountState>({ kind: "loading" });
   const [authClient, setAuthClient] = useState<FirebaseAuthClient | null>(null);
   const [apiClient, setApiClient] = useState<ReturnType<typeof createPatternlyApiClient> | null>(null);
+  const [runtimeMode] = useState<PatternlyRuntimeMode | undefined>(readPatternlyRuntimeMode);
 
   useEffect(() => {
-    const smokeRuntime = isPatternlySmokeRuntime();
+    const smokeRuntime = runtimeMode === "smoke";
     const guestAccess = hasGuestAccess();
     const publicEnvironment = readPublicEnvironmentFromRuntime();
     if (!smokeRuntime && publicEnvironment.kind !== "configured") {
@@ -100,14 +105,14 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           setState(hasGuestAccess() ? { kind: "guest" } : { kind: "signedOut" });
           return;
         }
-        void reconcileAuthenticatedUser(auth, client, user, setState);
+        void reconcileAuthenticatedUser(auth, client, runtimeMode, user, setState);
       });
       return unsubscribe;
     } catch {
       setState({ kind: "unavailable", reason: "firebase_unconfigured" });
       return undefined;
     }
-  }, []);
+  }, [runtimeMode]);
 
   const runWithAuth = useCallback(async (operation: (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>) => Promise<AccountCommandResult>): Promise<AccountCommandResult> => {
     if (!authClient || !apiClient) return { kind: "failure", failure: "providerUnavailable" };
@@ -143,34 +148,45 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     refreshVerification: () => runWithAuth(async (auth, api) => {
       const user = await auth.refreshVerification();
       if (!user) return { kind: "failure", failure: "revokedSession" };
-      if (!user.emailVerified) {
+      const plan = planPasswordVerificationCommand("refresh", runtimeMode, user);
+      if (plan.kind === "verificationPending") {
         setState({ kind: "verificationPending", user });
         return { kind: "failure", failure: "unverifiedIdentity" };
       }
       return finalizeVerification(auth, api);
     }),
-    register: (email, password) => runWithAuth(async (auth) => {
+    register: (email, password) => runWithAuth(async (auth, api) => {
       if (!isValidEmail(email) || !isValidPassword(password)) return { kind: "failure", failure: "invalid" };
+      let user: FirebaseAuthUserSnapshot;
       try {
-        await auth.register(email.trim().toLowerCase(), password);
+        user = await auth.register(email.trim().toLowerCase(), password);
       } catch (error) {
         if (firebaseAuthErrorCode(error) === "auth/email-already-in-use") return { kind: "failure", failure: "duplicate" };
         throw error;
       }
+      const plan = planPasswordVerificationCommand("register", runtimeMode, user);
+      if (plan.kind === "finalize") {
+        return finalizeVerification(auth, api, user, setState);
+      }
       await auth.resendVerification();
-      const user = auth.getSnapshot();
-      if (!user) return { kind: "failure", failure: "providerUnavailable" };
       setState({ kind: "verificationPending", user });
       return { kind: "success", next: "verificationPending" };
     }),
-    resendVerification: () => runWithAuth(async (auth) => {
+    resendVerification: () => runWithAuth(async (auth, api) => {
+      const user = auth.getSnapshot();
+      if (!user) return { kind: "failure", failure: "providerUnavailable" };
+      const plan = planPasswordVerificationCommand("resend", runtimeMode, user);
+      if (plan.kind === "finalize") {
+        return finalizeVerification(auth, api, user, setState);
+      }
       await auth.resendVerification();
       return { kind: "success", next: "verificationPending" };
     }),
     signIn: (email, password) => runWithAuth(async (auth, api) => {
       if (!isValidEmail(email) || password.length === 0) return { kind: "failure", failure: "invalid" };
       const user = await auth.signIn(email.trim().toLowerCase(), password);
-      if (user.provider === "password" && !user.emailVerified) {
+      const plan = planPasswordVerificationCommand("signIn", runtimeMode, user);
+      if (plan.kind === "verificationPending") {
         await auth.signOut();
         setState({ kind: "signedOut" });
         return { kind: "failure", failure: "unverifiedIdentity" };
@@ -256,7 +272,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return finalizeVerification(auth, api, user, setState);
     }),
     state,
-  }), [apiClient, runWithAuth, state]);
+  }), [apiClient, runWithAuth, runtimeMode, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }
@@ -267,7 +283,7 @@ export function usePatternlyAccount(): AccountSessionContextValue {
   return context;
 }
 
-async function reconcileAuthenticatedUser(auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>, user: FirebaseAuthUserSnapshot, setState: (state: AccountState) => void): Promise<void> {
+async function reconcileAuthenticatedUser(auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>, runtimeMode: PatternlyRuntimeMode | undefined, user: FirebaseAuthUserSnapshot, setState: (state: AccountState) => void): Promise<void> {
   const deletion = getAccountDeletionState();
   if (deletion?.accountUidHash === sha256Utf8(user.uid)) {
     if (deletion.status === "complete") {
@@ -287,11 +303,27 @@ async function reconcileAuthenticatedUser(auth: FirebaseAuthClient, api: ReturnT
     setState({ kind: "signedOut" });
     return;
   }
-  if (user.provider === "password" && !user.emailVerified) {
+  if (planPasswordVerificationCommand("persisted", runtimeMode, user).kind === "verificationPending") {
     setState({ kind: "verificationPending", user });
     return;
   }
   await finalizeVerification(auth, api, user, setState);
+}
+
+export function requiresPasswordEmailVerification(runtimeMode: PatternlyRuntimeMode | undefined, user: FirebaseAuthUserSnapshot): boolean {
+  return user.provider === "password" && !user.emailVerified && requiresVerifiedPasswordIdentity(runtimeMode);
+}
+
+/**
+ * Keeps every password-identity entry point on one explicit decision: local
+ * smoke can finalize an unverified password user, while all other runtimes
+ * remain on the verification path.
+ */
+export function planPasswordVerificationCommand(command: PasswordVerificationCommand, runtimeMode: PatternlyRuntimeMode | undefined, user: FirebaseAuthUserSnapshot): PasswordVerificationPlan {
+  if (!requiresPasswordEmailVerification(runtimeMode, user)) return { kind: "finalize" };
+  if (command === "register" || command === "resend") return { kind: "verificationPending", action: "resend" };
+  if (command === "signIn") return { kind: "verificationPending", action: "signOut" };
+  return { kind: "verificationPending", action: "none" };
 }
 
 async function finalizeVerification(auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient> | null, user = auth.getSnapshot(), setState?: (state: AccountState) => void): Promise<AccountCommandResult> {

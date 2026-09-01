@@ -144,11 +144,11 @@ test("bottom navigation preserves one-line visual labels while keeping every tab
   assert.match(bottomNavigation, /tabButtonPressed/);
 });
 
-test("bottom navigation uses the Figma surface-overlay separator in both themes", () => {
+test("bottom navigation uses theme-appropriate separators without altering the light overlay", () => {
   const tokens = source("src/theme/tokens.ts");
   const bottomNavigation = source("src/components/BottomTabBar.tsx");
   assert.match(tokens, /light:[\s\S]*?navigation:\s*\{[\s\S]*?border:\s*"#F1F5F9"/);
-  assert.match(tokens, /dark:[\s\S]*?navigation:\s*\{[\s\S]*?border:\s*"#F1F5F9"/);
+  assert.match(tokens, /dark:[\s\S]*?navigation:\s*\{[\s\S]*?border:\s*"#1E293B"/);
   assert.match(bottomNavigation, /borderColor:\s*palette\.navigation\.border/);
 });
 
