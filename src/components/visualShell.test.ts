@@ -252,6 +252,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(button, /destructiveDisabled:\s*\{[\s\S]*backgroundColor:\s*palette\.danger[\s\S]*borderColor:\s*palette\.danger/);
   assert.match(button, /ghostDisabledLabel:\s*\{[\s\S]*color:\s*palette\.textSecondary[\s\S]*opacity:\s*0\.55/);
   assert.match(button, /isDisabled \? disabledStyle : null/);
+  assert.match(button, /style,\s*isDisabled \? disabledStyle : null/);
   assert.match(button, /isDisabled \? disabledLabelStyle : null/);
   assert.match(home, /if \(!hasLoadedActiveTrack\) return <Screen edges=\{\["top"\]\} scroll=\{false\}><AppShellHeader \/><LoadingState/);
   assert.match(settings, /<PreferenceSelectionScreen/);

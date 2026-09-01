@@ -168,6 +168,10 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   resetPasswordDescription: t("resetPasswordDescription"),
   reset: t("reset"),
   backToSignIn: t("backToSignIn"),
+  acceptTermsPrefix: t("acceptTermsPrefix"),
+  termsOfService: t("termsOfService"),
+  privacyPolicy: t("privacyPolicy"),
+  and: t("and"),
   showPassword: t("showPassword"),
   hidePassword: t("hidePassword"),
   passwordMismatch: t("passwordMismatch"),
@@ -189,6 +193,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [resetCode, setResetCode] = useState("");
   const [recoveryCode, setRecoveryCode] = useState("");
   const [recoveryMethod, setRecoveryMethod] = useState<"email" | "code">("email");
@@ -207,6 +212,11 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       return;
     }
     account.continueAsGuest();
+  };
+  const beginRegistration = () => {
+    setFeedback(null);
+    setAcceptedTerms(false);
+    setMode("register");
   };
   const firebaseConfig = useMemo(() => readFirebaseClientConfiguration(), []);
   const [googleRequest, googleResponse, promptGoogle] =
@@ -509,10 +519,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     return (
       <WelcomeScreen
         onContinueAsGuest={continueWithoutAccount}
-        onRegister={() => {
-          setFeedback(null);
-          setMode("register");
-        }}
+        onRegister={beginRegistration}
         onSignIn={() => {
           setFeedback(null);
           setMode("signIn");
@@ -524,7 +531,23 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
 
   if (mode === "signIn") {
     return (
-      <Screen ambient ambientVariant="auth" edges={screenEdges} style={styles.authScreen}>
+      <Screen
+        ambient
+        ambientVariant="auth"
+        edges={screenEdges}
+        footer={
+          <Button
+            labelStyle={styles.guestActionLabel}
+            onPress={continueWithoutAccount}
+            testID="account-sign-in-guest"
+            variant="ghost"
+          >
+            {text.continueWithoutAccount}
+          </Button>
+        }
+        footerVariant="sticky"
+        style={styles.authScreen}
+      >
         <View style={styles.authPanel}>
           <Text maxFontSizeMultiplier={2} style={styles.authTitle}>
             {text.signIn}
@@ -558,7 +581,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             </Button>
             <Button
               labelStyle={styles.textActionLabel}
-              onPress={() => setMode("register")}
+              onPress={beginRegistration}
               testID="account-entry-register"
               variant="ghost"
             >
@@ -589,14 +612,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             }}
             text={text.continueWithGoogle}
           />
-          <Button
-            labelStyle={styles.guestActionLabel}
-            onPress={continueWithoutAccount}
-            testID="account-sign-in-guest"
-            variant="ghost"
-          >
-            {text.continueWithoutAccount}
-          </Button>
         </View>
       </Screen>
     );
@@ -637,7 +652,26 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     );
 
   return (
-    <Screen ambient ambientVariant="auth" edges={screenEdges} style={styles.authScreen}>
+    <Screen
+      ambient
+      ambientVariant="auth"
+      edges={screenEdges}
+      footer={
+        <Button
+          labelStyle={styles.textActionLabel}
+          onPress={() => {
+            setFeedback(null);
+            setMode("signIn");
+          }}
+          testID="account-back-to-sign-in"
+          variant="ghost"
+        >
+          {mode === "register" ? text.alreadyHaveAccount : text.backToSignIn}
+        </Button>
+      }
+      footerVariant="sticky"
+      style={styles.authScreen}
+    >
       <View style={styles.authPanel}>
         <Text maxFontSizeMultiplier={2} style={styles.authTitle}>{modeTitle}</Text>
         {modeDescription ? (
@@ -646,11 +680,13 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       {mode === "register" && isRegisterFieldFailure(feedback) ? null : renderFeedback(feedback, text)}
       {mode === "register" ? (
         <CredentialsForm
+          acceptedTerms={acceptedTerms}
           buttonLabel={text.create}
           confirmation={confirmation}
           email={email}
           feedback={feedback}
           inputStyle={styles.authInput}
+          onAcceptedTermsChange={setAcceptedTerms}
           onConfirmationChange={(value) => { setFeedback(null); setConfirmation(value); }}
           onEmailChange={(value) => { setFeedback(null); setEmail(value); }}
           onPasswordChange={(value) => { setFeedback(null); setPassword(value); }}
@@ -713,13 +749,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           text={text}
         />
       ) : null}
-      <Button
-        onPress={() => setMode("entry")}
-        testID="account-entry-home"
-        variant="ghost"
-      >
-        {mode === "register" ? text.alreadyHaveAccount : text.backToSignIn}
-      </Button>
       </View>
     </Screen>
   );
@@ -998,11 +1027,13 @@ function ProviderButton({
 }
 
 function CredentialsForm({
+  acceptedTerms,
   buttonLabel,
   confirmation,
   email,
   feedback,
   inputStyle,
+  onAcceptedTermsChange,
   onConfirmationChange,
   onEmailChange,
   onPasswordChange,
@@ -1012,11 +1043,13 @@ function CredentialsForm({
   text,
   testID,
 }: Readonly<{
+  acceptedTerms?: boolean;
   buttonLabel: string;
   confirmation?: string;
   email: string;
   feedback: Feedback | null;
   inputStyle: StyleProp<TextStyle>;
+  onAcceptedTermsChange?: (accepted: boolean) => void;
   onConfirmationChange?: (value: string) => void;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
@@ -1046,9 +1079,27 @@ function CredentialsForm({
       {confirmation !== undefined && onConfirmationChange ? (
         <AuthPasswordInput error={passwordMismatch ? text.passwordMismatch : undefined} errorTestID="account-password-confirmation-error" inputStyle={inputStyle} label={text.confirmPassword} onChangeText={onConfirmationChange} placeholder={text.confirmPassword} placeholderTextColor={placeholderTextColor} testID="account-password-confirmation" text={text} value={confirmation} />
       ) : null}
-      <Button labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID={testID} variant="primary">
+      {acceptedTerms !== undefined && onAcceptedTermsChange ? <TermsAcceptance accepted={acceptedTerms} onChange={onAcceptedTermsChange} text={text} /> : null}
+      <Button disabled={acceptedTerms === false} labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID={testID} variant="primary">
         {buttonLabel}
       </Button>
+    </View>
+  );
+}
+
+function TermsAcceptance({ accepted, onChange, text }: Readonly<{ accepted: boolean; onChange: (accepted: boolean) => void; text: AccountCopy }>) {
+  const styles = useThemedStyles(createStyles);
+  const publicLinks = readPublicLegalLinksFromRuntime();
+  const links = publicLinks.kind === "configured" ? publicLinks.value : null;
+  return (
+    <View style={styles.termsCheckboxRow}>
+      <Pressable accessibilityLabel={`${text.acceptTermsPrefix} ${text.termsOfService} ${text.and} ${text.privacyPolicy}`} accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} hitSlop={8} onPress={() => onChange(!accepted)} style={styles.termsCheckboxControl} testID="account-register-terms-checkbox">
+        <View style={[styles.termsCheckbox, accepted ? styles.termsCheckboxChecked : null]}>{accepted ? <Icon color={styles.termsCheckboxIcon.color as string} name="check" size={16} /> : null}</View>
+      </Pressable>
+      <View style={styles.termsLinks}>
+        <Text maxFontSizeMultiplier={2} style={styles.termsCopy}>{text.acceptTermsPrefix}</Text>
+        {links ? <><Pressable accessibilityRole="link" onPress={() => void Linking.openURL(links.termsUrl)} testID="account-register-terms-link"><Text maxFontSizeMultiplier={2} style={styles.termsLink}>{text.termsOfService}</Text></Pressable><Text maxFontSizeMultiplier={2} style={styles.termsCopy}>{text.and}</Text><Pressable accessibilityRole="link" onPress={() => void Linking.openURL(links.privacyUrl)} testID="account-register-privacy-link"><Text maxFontSizeMultiplier={2} style={styles.termsLink}>{text.privacyPolicy}</Text></Pressable></> : <Text maxFontSizeMultiplier={2} style={styles.termsCopy}>{`${text.termsOfService} ${text.and} ${text.privacyPolicy}`}</Text>}
+      </View>
     </View>
   );
 }
@@ -1100,7 +1151,7 @@ function AuthPasswordInput({
     <FormField error={error} errorTestID={errorTestID} label={label ?? text.password}>
       <View>
         <TextInput autoCapitalize="none" autoComplete={autoComplete} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={placeholderTextColor} secureTextEntry={!visible} style={[inputStyle, styles.centeredInput, styles.passwordInput, error ? styles.authInputError : null]} testID={testID} value={value} />
-        <Pressable accessibilityLabel={visible ? text.hidePassword : text.showPassword} accessibilityRole="button" hitSlop={8} onPress={() => setVisible((current) => !current)} style={styles.visibilityButton}>
+        <Pressable accessibilityLabel={visible ? text.hidePassword : text.showPassword} accessibilityRole="button" hitSlop={8} onPress={() => setVisible((current) => !current)} style={styles.visibilityButton} testID={`${testID}-visibility`}>
           <Icon color={styles.icon.color as string} name={visible ? "eye-off" : "eye"} size={24} />
         </Pressable>
       </View>
@@ -1501,6 +1552,14 @@ const createStyles = (palette: AppColors) =>
     authScreen: { justifyContent: "center" },
     authPanel: { alignSelf: "stretch", gap: spacing.md },
     authForm: { gap: spacing.md },
+    termsCheckboxRow: { alignItems: "flex-start", flexDirection: "row", gap: spacing.sm },
+    termsCheckboxControl: { paddingTop: 1 },
+    termsCheckbox: { alignItems: "center", borderColor: palette.borderStrong, borderRadius: 5, borderWidth: 1, height: 22, justifyContent: "center", width: 22 },
+    termsCheckboxChecked: { backgroundColor: palette.primary, borderColor: palette.primary },
+    termsCheckboxIcon: { color: palette.onPrimary },
+    termsCopy: { color: palette.textSecondary, fontSize: 13, lineHeight: 18 },
+    termsLinks: { flex: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
+    termsLink: { color: palette.primary, fontSize: 13, lineHeight: 18, textDecorationLine: "underline" },
     authTitle: {
       ...typography.display,
       color: palette.textPrimary,

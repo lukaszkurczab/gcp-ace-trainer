@@ -50,6 +50,14 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.match(screen, /ambientVariant="auth"/);
   assert.match(screen, /testID="account-sign-in-guest"/);
   assert.match(screen, /onPress=\{continueWithoutAccount\}/);
+  assert.match(screen, /footerVariant="sticky"/);
+  assert.match(screen, /testID="account-back-to-sign-in"/);
+  assert.match(screen, /setMode\("signIn"\)/);
+  assert.match(screen, /testID="account-register-terms-checkbox"/);
+  assert.match(screen, /accessibilityRole="checkbox"/);
+  assert.match(screen, /disabled=\{acceptedTerms === false\}/);
+  assert.match(screen, /testID="account-register-terms-link"/);
+  assert.match(screen, /testID="account-register-privacy-link"/);
   assert.match(screen, /account\.state\.kind === "guest" && navigation\.canGoBack\(\)[\s\S]*?navigation\.goBack\(\);[\s\S]*?account\.continueAsGuest\(\);/);
   assert.match(screen, /import GoogleIcon from "\.\.\/\.\.\/assets\/icons\/google\.svg"/);
   assert.match(screen, /<GoogleIcon height=\{18\} width=\{18\} \/>/);

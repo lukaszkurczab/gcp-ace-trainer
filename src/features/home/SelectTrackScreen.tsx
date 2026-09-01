@@ -60,19 +60,30 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>(CODING_INTERVIEW_TRACK_ID);
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadRevision, setLoadRevision] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      void getActiveTrackId().then((trackId) => {
-        if (!active) return;
-        setActiveTrackId(trackId ?? null);
-        setSelectedTrackId(trackId ?? CODING_INTERVIEW_TRACK_ID);
-        setLoaded(true);
-      });
+      setLoaded(false);
+      setLoadError(null);
+      void getActiveTrackId()
+        .then((trackId) => {
+          if (!active) return;
+          setActiveTrackId(trackId ?? null);
+          setSelectedTrackId(trackId ?? CODING_INTERVIEW_TRACK_ID);
+          setLoaded(true);
+        })
+        .catch(() => {
+          if (!active) return;
+          setLoadError("We couldn't load your saved track. Check your connection and try again.");
+          setLoaded(true);
+        });
       return () => { active = false; };
-    }, []),
+    }, [loadRevision]),
   );
 
   async function commitSelection() {
@@ -80,19 +91,22 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
     const track = getTrackDisplays().find((candidate) => candidate.id === selectedTrackId);
     if (!track || track.status === "archived") return;
     setIsSaving(true);
+    setSaveError(null);
     try {
       await saveActiveTrackId(track.id);
       setActiveTrackId(track.id);
       onTrackSelected?.(track.id);
       if (onTrackSelected) return;
       navigation.navigate(ROUTES.HOME, { initialTab: "home" });
+    } catch {
+      setSaveError("We couldn't save that track. Your choice is still selected. Try again.");
     } finally {
       setIsSaving(false);
     }
   }
 
   const selectedTrack = getTrackDisplays().find((track) => track.id === selectedTrackId);
-  const showFooter = !loaded || onboarding || selectedTrackId !== activeTrackId;
+  const showFooter = !loadError && (!loaded || onboarding || selectedTrackId !== activeTrackId);
 
   return (
     <View style={styles.shell} testID="patternly:home:select-track:root">
@@ -108,6 +122,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
                 </Text>
               </View>
             ) : null}
+            {saveError ? <Text accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.saveError} testID="patternly:home:select-track:save-error">{t(saveError)}</Text> : null}
             <Button
               disabled={!loaded || isSaving || (!onboarding && selectedTrackId === activeTrackId)}
               loading={isSaving}
@@ -123,31 +138,45 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
         style={[styles.screenContent, !onboarding ? styles.returningScreenContent : null]}
       >
         {!onboarding ? <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} placement="back" /> : null}
-        <View style={styles.intro}>
-          <Text maxFontSizeMultiplier={2} style={styles.title}>{t(onboarding ? "Welcome to Patternly" : "Tracks")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{t(onboarding ? "Start with one track. You can switch whenever your goal changes." : "Choose the track you want to practice now.")}</Text>
-          {onboarding ? <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Available tracks")}</Text> : null}
-          {!onboarding ? (
-            <View style={styles.safetyBadge}>
-              <Icon color={colorWithOpacity(palette.textMuted, 0.5)} name="shield-alert" size={14} />
-              <Text maxFontSizeMultiplier={2} style={styles.safetyText}>{t("Changing the current track does not remove existing progress.")}</Text>
+        {loadError ? (
+          <View accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.unavailableState} testID="patternly:home:select-track:unavailable">
+            <Text maxFontSizeMultiplier={2} style={styles.unavailableTitle}>{t("Track selection unavailable")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.unavailableDescription}>{t(loadError)}</Text>
+            <Button onPress={() => setLoadRevision((revision) => revision + 1)} style={styles.retryButton} testID="patternly:home:select-track:retry">
+              {t("Try again")}
+            </Button>
+          </View>
+        ) : (
+          <>
+            <View style={styles.intro}>
+              <Text maxFontSizeMultiplier={2} style={styles.title}>{t(onboarding ? "Welcome to Patternly" : "Tracks")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{t(onboarding ? "Start with one track. You can switch whenever your goal changes." : "Choose the track you want to practice now.")}</Text>
+              {onboarding ? <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Available tracks")}</Text> : null}
+              {!onboarding ? (
+                <View style={styles.safetyBadge}>
+                  <Icon color={colorWithOpacity(palette.textMuted, 0.5)} name="shield-alert" size={14} />
+                  <Text maxFontSizeMultiplier={2} style={styles.safetyText}>{t("Changing the current track does not remove existing progress.")}</Text>
+                </View>
+              ) : null}
             </View>
-          ) : null}
-        </View>
-
-        <View style={styles.trackList}>
-          {getTrackDisplays().map((track) => (
-            <TrackChoiceCard
-              key={track.id}
-              largeText={largeText}
-              disabled={isSaving}
-              onPress={() => setSelectedTrackId(track.id)}
-              selected={track.id === selectedTrackId}
-              track={track}
-              title={t(track.shortTitle)}
-            />
-          ))}
-        </View>
+            <View style={styles.trackList}>
+              {getTrackDisplays().map((track) => (
+                <TrackChoiceCard
+                  key={track.id}
+                  largeText={largeText}
+                  disabled={isSaving}
+                  onPress={() => {
+                    setSelectedTrackId(track.id);
+                    setSaveError(null);
+                  }}
+                  selected={track.id === selectedTrackId}
+                  track={track}
+                  title={t(track.shortTitle)}
+                />
+              ))}
+            </View>
+          </>
+        )}
       </Screen>
     </View>
   );
@@ -192,6 +221,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   intro: { gap: spacing.sm },
   title: { color: palette.textPrimary, fontSize: 29, fontWeight: "600", lineHeight: 35 },
   subtitle: { color: palette.textSecondary, fontSize: 14, lineHeight: 20 },
+  unavailableState: { alignItems: "center", gap: spacing.lg, paddingHorizontal: spacing.lg, paddingVertical: spacing.xxxl },
+  unavailableTitle: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", lineHeight: 28, textAlign: "center" },
+  unavailableDescription: { color: palette.textSecondary, fontSize: 14, lineHeight: 20, textAlign: "center" },
+  retryButton: { alignSelf: "stretch" },
   sectionLabel: { color: palette.textMuted, fontSize: 13, fontWeight: "600", lineHeight: 18, paddingTop: spacing.sm },
   safetyBadge: { alignItems: "center", flexDirection: "row", gap: 6, paddingVertical: spacing.xs },
   safetyText: { color: colorWithOpacity(palette.textMuted, 0.5), fontSize: 12, lineHeight: 15.4 },
@@ -221,6 +254,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   radioDot: { backgroundColor: palette.primary, borderRadius: 4, height: 8, width: 8 },
   pressed: { opacity: 0.8 },
   footerContent: { gap: 14, paddingBottom: spacing.xs },
+  saveError: { color: palette.danger, fontSize: 13, lineHeight: 18 },
   actionsLargeText: { flexDirection: "column" },
   actionButton: { flex: 1 },
   actionButtonLargeText: { flex: 0, width: "100%" },

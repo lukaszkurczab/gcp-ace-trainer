@@ -151,7 +151,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           }
         } catch (error) {
           if (isActive) {
-            setShellReadError(describeOperationalFailure(error, "Patternly data is unavailable."));
+            setShellReadError("We couldn't load your Patternly data. Check your connection and try again.");
             setHasLoadedActiveTrack(true);
           }
         }
@@ -170,7 +170,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     [data.attempts, data.practiceHistory],
   );
   if (!hasLoadedActiveTrack) return <Screen edges={["top"]} scroll={false}><AppShellHeader /><LoadingState title={t("Loading Patternly…")} /></Screen>;
-  if (shellReadError) return <Screen edges={["top"]} scroll={false}><AppShellHeader /><EmptyState title={t("Patternly is unavailable")} description={t(shellReadError)} /></Screen>;
+  if (shellReadError) return <Screen edges={["top"]} scroll={false}><AppShellHeader /><EmptyState actionLabel={t("Try again")} description={t(shellReadError)} onActionPress={() => setShellReload((reload) => reload + 1)} title={t("Patternly is unavailable")} /></Screen>;
   if (!activeTrackId) {
     return (
       <SelectTrackScreen

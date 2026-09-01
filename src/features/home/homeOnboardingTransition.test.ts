@@ -10,6 +10,12 @@ test("choosing the first track reloads Home data for that selected track", () =>
   assert.match(source, /onTrackSelected=\{\(trackId\) => \{\s*setActiveTrackId\(trackId\);\s*setShellReload\(\(reload\) => reload \+ 1\);/);
 });
 
+test("a failed Home shell read keeps the learner in a retryable state on the canonical load path", () => {
+  assert.match(source, /setShellReadError\("We couldn't load your Patternly data\. Check your connection and try again\."\);/);
+  assert.match(source, /<EmptyState actionLabel=\{t\("Try again"\)\} description=\{t\(shellReadError\)\} onActionPress=\{\(\) => setShellReload\(\(reload\) => reload \+ 1\)\} title=\{t\("Patternly is unavailable"\)} \/>/);
+  assert.match(source, /useFocusEffect\([\s\S]*?\}, \[shellReload\]\),/);
+});
+
 test("the first Home visit replaces repeated empty metrics with one honest next-step state", () => {
   const homeTab = readFileSync("src/features/home/tabs/HomeTab.tsx", "utf8");
 

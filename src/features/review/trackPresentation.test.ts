@@ -194,7 +194,7 @@ test("dynamic track titles cross the translation boundary and long header copy c
 
   assert.match(homeScreen, /activeTrack=\{activeTrack\}/);
   assert.match(homeTab, /\{t\(activeTrack\.shortTitle\)\}/);
-  assert.match(selectTrackScreen, /title=\{t\(track\.title\)\}/);
+  assert.match(selectTrackScreen, /title=\{t\(track\.shortTitle\)\}/);
   assert.match(
     appShellHeader,
     /brandRow:\s*\{[\s\S]*?flex:\s*1,[\s\S]*?minWidth:\s*0,/,

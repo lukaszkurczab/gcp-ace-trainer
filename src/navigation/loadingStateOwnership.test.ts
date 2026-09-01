@@ -108,8 +108,8 @@ test("pending data is distinct from true empty and onboarding outcomes", () => {
 
 test("the six read owners end rejected reads in explicit unavailable EmptyStates", () => {
   const home = source("src/features/home/HomeScreen.tsx");
-  assert.match(home, /catch \(error\) \{[\s\S]*?if \(isActive\) \{[\s\S]*?setShellReadError\(describeOperationalFailure\(error, "Patternly data is unavailable\."\)\);[\s\S]*?setHasLoadedActiveTrack\(true\)/);
-  assert.match(home, /if \(shellReadError\)[\s\S]*?<EmptyState title=\{t\("Patternly is unavailable"\)\}/);
+  assert.match(home, /catch \(error\) \{[\s\S]*?if \(isActive\) \{[\s\S]*?setShellReadError\("We couldn't load your Patternly data\. Check your connection and try again\."\);[\s\S]*?setHasLoadedActiveTrack\(true\)/);
+  assert.match(home, /if \(shellReadError\)[\s\S]*?<EmptyState actionLabel=\{t\("Try again"\)\}[\s\S]*?onActionPress=\{\(\) => setShellReload\(\(reload\) => reload \+ 1\)\}[\s\S]*?title=\{t\("Patternly is unavailable"\)\}/);
   assert.notEqual(home.indexOf("if (shellReadError)"), -1);
   assert.ok(home.indexOf("if (shellReadError)") < home.indexOf("if (!activeTrackId)"));
 

@@ -37,7 +37,7 @@ test("track cards use the canonical Figma icon mapping for every active track", 
 
 test("track selection mirrors the Figma returning and switching footer states", () => {
   assert.match(source, /const \[activeTrackId, setActiveTrackId\]/);
-  assert.match(source, /const showFooter = !loaded \|\| onboarding \|\| selectedTrackId !== activeTrackId/);
+  assert.match(source, /const showFooter = !loadError && \(!loaded \|\| onboarding \|\| selectedTrackId !== activeTrackId\)/);
   assert.match(source, /onboarding \? "Start track" : "Use this track"/);
   assert.match(source, /placement="back"/);
   assert.match(source, /footerVariant="sticky"/);

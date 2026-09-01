@@ -62,8 +62,8 @@ export function Button({
         styles.base,
         styles[variant],
         pressed && !isDisabled ? [styles.pressed, styles[`${variant}Pressed`]] : null,
+        style,
         isDisabled ? disabledStyle : null,
-        style
       ]}
       testID={testID}
     >
