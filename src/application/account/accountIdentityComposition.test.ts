@@ -86,12 +86,10 @@ test("account adoption copy describes data reconciliation, not email verificatio
   const pl = JSON.parse(readFileSync("src/locales/pl/account.json", "utf8")) as Record<string, string>;
 
   assert.deepEqual(Object.keys(pl).sort(), Object.keys(en).sort());
-  assert.equal(en.accountReady, "Existing account data found");
-  assert.ok(typeof en.accountReadyDescription === "string");
-  assert.match(en.accountReadyDescription, /choose how to continue/u);
-  assert.equal(pl.accountReady, "Znaleziono dane istniejącego konta");
-  assert.ok(typeof pl.accountReadyDescription === "string");
-  assert.match(pl.accountReadyDescription, /wybierz sposób kontynuacji/u);
+  assert.equal(en.accountReady, "Your Patternly account");
+  assert.match(en.adoptionPreviewDescription ?? "", /Nothing changes until you confirm/u);
+  assert.equal(pl.accountReady, "Twoje konto Patternly");
+  assert.match(pl.adoptionPreviewDescription ?? "", /Nic się nie zmieni, dopóki nie potwierdzisz/u);
 });
 
 test("sign-in keeps guest access visible and uses the approved Google logo asset", () => {
@@ -118,9 +116,19 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.match(screen, /mode === "recovery" && recoveryMethod === "code"[\s\S]*?styles\.recoveryCodeTitle/);
   assert.match(screen, /recoveryCodeTitle:\s*\{[\s\S]*?flexShrink:\s*1[\s\S]*?fontSize:\s*34[\s\S]*?lineHeight:\s*40[\s\S]*?maxWidth:\s*"100%"/);
   assert.match(screen, /errorTestID="account-password-confirmation-error"/);
-  assert.match(screen, /mode === "register" && isRegisterFieldFailure\(feedback\) \? null : renderFeedback\(feedback, text\)/);
+  assert.match(screen, /mode === "register" && isRegisterFieldFailure\(feedback\) \? null : isAuthFieldFailure\(mode, recoveryMethod, feedback\) \? null : renderFeedback\(feedback, text\)/);
   assert.match(screen, /errorTestID="account-register-email-error"/);
   assert.match(screen, /errorTestID="account-register-password-error"/);
+  assert.match(screen, /errorTestID="account-recovery-code-error"/);
+  assert.match(screen, /errorTestID="account-recovery-email-error"/);
+  assert.match(screen, /errorTestID="account-reset-password-error"/);
+  assert.match(screen, /useWindowDimensions/);
+  assert.match(screen, /function AuthText\(\{ maxFontSizeMultiplier = 2/);
+  assert.match(screen, /<Text key=\{fontScale\} maxFontSizeMultiplier=\{maxFontSizeMultiplier\}/);
+  assert.doesNotMatch(screen, /AUTH_HEADING_MAX_FONT_SCALE|maxFontSizeMultiplier=\{1\.35\}/);
+  assert.match(screen, /termsUnavailable.*account-terms-unavailable|account-terms-unavailable.*termsUnavailable/);
+  assert.match(screen, /providerContent:[\s\S]*?minWidth: 0/);
+  assert.doesNotMatch(screen, /providerIcon:[\s\S]*?position: "absolute"/);
   assert.doesNotMatch(screen, /themeColors\.(?:dark|light)|#[0-9a-f]{3,8}/i);
 });
 
@@ -184,7 +192,9 @@ test("App Check has an explicit unavailable state and never fabricates a token",
 });
 
 test("account failures expose explicit provider, network, expiry, and revoked-session states", () => {
-  assert.equal(classifyAccountFailure({ code: "auth/invalid-email", message: "private provider detail" }), "invalid");
+  assert.equal(classifyAccountFailure({ code: "auth/invalid-email", message: "private provider detail" }), "invalidEmail");
+  assert.equal(classifyAccountFailure({ code: "auth/argument-error", message: "private provider detail" }), "invalid");
+  assert.equal(classifyAccountFailure({ code: "auth/weak-password", message: "private provider detail" }), "weakPassword");
   assert.equal(classifyAccountFailure({ code: "auth/email-already-in-use", message: "private provider detail" }), "invalidCredential");
   assert.equal(classifyAccountFailure({ code: "auth/too-many-requests", message: "private provider detail" }), "rateLimited");
   assert.equal(classifyAccountFailure({ code: "auth/network-request-failed", message: "private provider detail" }), "offline");
@@ -194,6 +204,8 @@ test("account failures expose explicit provider, network, expiry, and revoked-se
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("transport_failed")), "offline");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 401, "authentication_required")), "revokedSession");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 503)), "backendUnavailable");
+  assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 400, "recovery_code_invalid")), "invalidRecoveryCode");
+  assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 400, "recovery_code_used")), "recoveryCodeUsed");
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/user-not-found", message: "private provider detail" }), true);
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/invalid-credential", message: "private provider detail" }), true);
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/too-many-requests", message: "private provider detail" }), false);

@@ -9,6 +9,7 @@ import {
   type StyleProp,
   type TextStyle,
   type ViewStyle,
+  useWindowDimensions,
 } from "react-native";
 
 import { radius, spacing, typography } from "../theme";
@@ -68,9 +69,14 @@ export function Button({
       testID={testID}
     >
       {loading ? <ActivityIndicator color={getActivityColor(variant, palette, isDisabled)} size="small" style={styles.spinner} /> : null}
-      <Text maxFontSizeMultiplier={2} style={[styles.label, styles[`${variant}Label`], labelStyle, isDisabled ? disabledLabelStyle : null]}>{children}</Text>
+      <ButtonLabel style={[styles.label, styles[`${variant}Label`], labelStyle, isDisabled ? disabledLabelStyle : null]}>{children}</ButtonLabel>
     </Pressable>
   );
+}
+
+function ButtonLabel({ children, style }: Readonly<{ children: ReactNode; style: StyleProp<TextStyle> }>) {
+  const { fontScale } = useWindowDimensions();
+  return <Text maxFontSizeMultiplier={2} key={fontScale} style={style}>{children}</Text>;
 }
 
 function getActivityColor(variant: ButtonVariant, palette: AppColors, isDisabled: boolean): string {
@@ -160,7 +166,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textPrimary
   },
   primaryDisabledLabel: {
-    color: palette.textPrimary,
+    color: palette.textMuted,
   },
   secondaryDisabledLabel: {
     color: palette.textMuted,

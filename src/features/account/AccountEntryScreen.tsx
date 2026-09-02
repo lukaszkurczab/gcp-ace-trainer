@@ -11,7 +11,9 @@ import {
   TextInput,
   View,
   type StyleProp,
+  type TextProps,
   type TextStyle,
+  useWindowDimensions,
 } from "react-native";
 import type { Edge } from "react-native-safe-area-context";
 import * as Google from "expo-auth-session/providers/google";
@@ -56,10 +58,17 @@ type AccountMode = NonNullable<
 type Feedback = AccountCommandResult;
 
 
-type AccountCopy = Record<keyof typeof accountCopy, string>;
+type AccountCopy = Record<keyof typeof accountCopy | "invalidEmail", string>;
+
+function AuthText({ maxFontSizeMultiplier = 2, ...props }: TextProps) {
+  const { fontScale } = useWindowDimensions();
+  return <Text key={fontScale} maxFontSizeMultiplier={maxFontSizeMultiplier} {...props} />;
+}
 
 export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale >= 1.3;
   const { locale } = useAppPreferences();
   const { t } = useTranslation("account");
   const text = {
@@ -175,13 +184,19 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   showPassword: t("showPassword"),
   hidePassword: t("hidePassword"),
   passwordMismatch: t("passwordMismatch"),
+  termsRequired: t("termsRequired"),
+  termsUnavailable: t("termsUnavailable"),
+  weakPassword: t("weakPassword"),
   invalid: t("invalid"),
+  invalidEmail: t("emailFormatError"),
   duplicate: t("duplicate"),
   rateLimited: t("rateLimited"),
   offline: t("offline"),
   expiredAction: t("expiredAction"),
   providerUnavailable: t("providerUnavailable"),
   invalidCredential: t("invalidCredential"),
+  invalidRecoveryCode: t("invalidRecoveryCode"),
+  recoveryCodeUsed: t("recoveryCodeUsed"),
   unverifiedIdentity: t("unverifiedIdentity"),
   };
   const account = usePatternlyAccount();
@@ -203,6 +218,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     null,
   );
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [accountFeedback, setAccountFeedback] = useState<Feedback | null>(null);
+  const [recoveryFeedback, setRecoveryFeedback] = useState<Feedback | null>(null);
+  const [deletionFeedback, setDeletionFeedback] = useState<Feedback | null>(null);
   const backAction = navigation.canGoBack()
     ? { onPress: () => navigation.goBack() }
     : undefined;
@@ -345,49 +363,52 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           onConfirm={(resolutions) =>
             void account
               .confirmAdoption(resolutions)
-              .then(setResult(setFeedback))
+              .then(setResult(setAccountFeedback))
           }
           onRetry={() =>
-            void account.retryAccountSync().then(setResult(setFeedback))
+            void account.retryAccountSync().then(setResult(setAccountFeedback))
           }
           text={text}
         />
-        {feedback ? renderFeedback(feedback, text) : null}
+        {accountFeedback ? renderFeedback(accountFeedback, text, text.account) : null}
         {recoveryCodes ? (
           <Card testID="account-recovery-codes" style={{ gap: spacing.md }}>
-            <Text
-              maxFontSizeMultiplier={2}
-              style={{ ...typography.bodyStrong }}
+            <AuthText
+              style={styles.accountHeading}
             >
               {text.recoveryCodes}
-            </Text>
-            <Text maxFontSizeMultiplier={2} style={{ ...typography.small }}>
+            </AuthText>
+            <AuthText style={styles.accountBody}>
               {text.recoveryCodesDescription}
-            </Text>
-            <Text selectable maxFontSizeMultiplier={2}>
+            </AuthText>
+            <AuthText selectable style={styles.accountCode}>
               {recoveryCodes.join("\n")}
-            </Text>
+            </AuthText>
           </Card>
         ) : (
           <Card
             style={{ gap: spacing.md }}
             testID="account-recovery-codes-panel"
           >
-            <Text
-              maxFontSizeMultiplier={2}
-              style={{ ...typography.bodyStrong }}
-            >
+            <AuthText style={styles.accountHeading}>
               {text.recoveryCodes}
-            </Text>
-            <TextInput
-              autoCapitalize="none"
-              autoComplete="password"
-              onChangeText={setRecoveryPassword}
+            </AuthText>
+            {recoveryFeedback && !isReauthenticationFailure(recoveryFeedback)
+              ? renderFeedback(recoveryFeedback, text, text.recoveryCodes)
+              : null}
+            <AuthPasswordInput
+              error={isReauthenticationFailure(recoveryFeedback) ? text.reauthenticationRequired : undefined}
+              errorTestID="account-recovery-reauth-password-error"
+              inputStyle={styles.input}
+              label={text.password}
+              onChangeText={(value) => {
+                setRecoveryPassword(value);
+                setRecoveryFeedback(null);
+              }}
               placeholder={text.password}
               placeholderTextColor={styles.placeholder.color as string}
-              secureTextEntry
-              style={styles.input}
               testID="account-recovery-reauth-password"
+              text={text}
               value={recoveryPassword}
             />
             <Button
@@ -395,9 +416,21 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
                 void account
                   .issueRecoveryCodes(recoveryPassword)
                   .then((result) => {
-                    if (result.kind === "success")
-                      setRecoveryCodes(result.recoveryCodes ?? []);
-                    setFeedback(result);
+                    if (
+                      result.kind === "success" &&
+                      result.next === "recoveryCodesIssued" &&
+                      result.recoveryCodes &&
+                      result.recoveryCodes.length > 0
+                    ) {
+                      setRecoveryCodes(result.recoveryCodes);
+                      setRecoveryFeedback(null);
+                      return;
+                    }
+                    setRecoveryFeedback(
+                      result.kind === "failure"
+                        ? result
+                        : { kind: "failure", failure: "remoteFailure" },
+                    );
                   })
               }
               testID="account-recovery-codes-submit"
@@ -408,29 +441,36 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           </Card>
         )}
         <Card style={{ gap: spacing.md }} testID="account-delete-panel">
-          <Text maxFontSizeMultiplier={2} style={{ ...typography.bodyStrong }}>
+          <AuthText style={styles.accountHeading}>
             {text.deleteAccount}
-          </Text>
-          <Text maxFontSizeMultiplier={2} style={{ ...typography.small }}>
+          </AuthText>
+          <AuthText style={styles.accountBody}>
             {text.deleteAccountDescription}
-          </Text>
+          </AuthText>
           <PublicDeletionLink text={text} />
-          <TextInput
-            autoCapitalize="none"
-            autoComplete="password"
-            onChangeText={setDeletionPassword}
+          {deletionFeedback && !isReauthenticationFailure(deletionFeedback)
+            ? renderFeedback(deletionFeedback, text, text.deleteAccount)
+            : null}
+          <AuthPasswordInput
+            error={isReauthenticationFailure(deletionFeedback) ? text.reauthenticationRequired : undefined}
+            errorTestID="account-delete-reauth-password-error"
+            inputStyle={styles.input}
+            label={text.password}
+            onChangeText={(value) => {
+              setDeletionPassword(value);
+              setDeletionFeedback(null);
+            }}
             placeholder={text.password}
             placeholderTextColor={styles.placeholder.color as string}
-            secureTextEntry
-            style={styles.input}
             testID="account-delete-reauth-password"
+            text={text}
             value={deletionPassword}
           />
           <Button
             onPress={() =>
               void account
                 .deleteAccount(deletionPassword)
-                .then(setResult(setFeedback))
+                .then(setResult(setDeletionFeedback))
             }
             testID="account-delete-submit"
             variant="secondary"
@@ -439,7 +479,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           </Button>
         </Card>
         <Button
-          onPress={() => void account.signOut().then(setResult(setFeedback))}
+          onPress={() => void account.signOut().then(setResult(setAccountFeedback))}
           testID="account-sign-out"
           variant="secondary"
         >
@@ -546,12 +586,12 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           </Button>
         }
         footerVariant="sticky"
-        style={styles.authScreen}
+        style={[styles.authScreen, largeText ? styles.authScreenLargeText : null]}
       >
-        <View style={styles.authPanel}>
-          <Text maxFontSizeMultiplier={2} style={styles.authTitle}>
+        <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null]}>
+          <AuthText style={styles.authTitle}>
             {text.signIn}
-          </Text>
+          </AuthText>
           <SignInForm
             email={email}
             feedback={feedback}
@@ -571,7 +611,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             placeholderTextColor={styles.authPlaceholder.color as string}
             text={text}
           />
-          <View style={styles.authLinks}>
+          <View style={[styles.authLinks, largeText ? styles.authLinksLargeText : null]}>
             <Button
               labelStyle={styles.textActionLabel}
               onPress={() => setMode("recovery")}
@@ -633,9 +673,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   if (mode === "recovery" && feedback?.kind === "success" && feedback.next === "recoveryAccepted")
     return (
       <AuthStatusScreen
-        action={{ label: text.backToSignIn, onPress: () => { setFeedback(null); setMode("signIn"); }, testID: "account-recovery-back-to-sign-in" }}
         backAction={backAction}
         body={text.recoveryAcceptedDescription}
+        footerAction={{ label: text.backToSignIn, onPress: () => { setFeedback(null); setMode("signIn"); }, testID: "account-recovery-back-to-sign-in" }}
         testID="account-recovery-accepted"
         title={text.recoveryAccepted}
       />
@@ -670,11 +710,10 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         </Button>
       }
       footerVariant="sticky"
-      style={styles.authScreen}
+      style={[styles.authScreen, largeText ? styles.authScreenLargeText : null]}
     >
-      <View style={styles.authPanel}>
-        <Text
-          maxFontSizeMultiplier={2}
+      <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null]}>
+        <AuthText
           style={[
             styles.authTitle,
             mode === "recovery" && recoveryMethod === "code"
@@ -683,11 +722,11 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           ]}
         >
           {modeTitle}
-        </Text>
+        </AuthText>
         {modeDescription ? (
-          <Text maxFontSizeMultiplier={2} style={styles.authDescription}>{modeDescription}</Text>
+          <AuthText style={styles.authDescription}>{modeDescription}</AuthText>
         ) : null}
-      {mode === "register" && isRegisterFieldFailure(feedback) ? null : renderFeedback(feedback, text)}
+      {mode === "register" && isRegisterFieldFailure(feedback) ? null : isAuthFieldFailure(mode, recoveryMethod, feedback) ? null : renderFeedback(feedback, text)}
       {mode === "register" ? (
         <CredentialsForm
           acceptedTerms={acceptedTerms}
@@ -776,26 +815,28 @@ function WelcomeScreen({
   text: AccountCopy;
 }>) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale >= 1.3;
   const { colorMode, colors } = useAppPreferences();
   return (
     <Screen
       backgroundColor={colors.background}
       edges={["top", "bottom"]}
-      scroll={false}
-      style={styles.welcomeScreen}
+      scroll={largeText}
+      style={[styles.welcomeScreen, largeText ? styles.welcomeScreenLargeText : null]}
     >
       <StatusBar style={colorMode === "dark" ? "light" : "dark"} />
       <View style={styles.welcomeHero}>
         <PatternlyMark size={88} treatment={colorMode === "dark" ? "white" : "navy"} />
-        <Text maxFontSizeMultiplier={2} style={styles.welcomeBrand}>
+        <AuthText style={styles.welcomeBrand}>
           Patternly
-        </Text>
-        <Text maxFontSizeMultiplier={2} style={styles.welcomeTitle}>
+        </AuthText>
+        <AuthText style={styles.welcomeTitle}>
           {text.welcomeTitle}
-        </Text>
-        <Text maxFontSizeMultiplier={2} style={styles.welcomeDescription}>
+        </AuthText>
+        <AuthText style={styles.welcomeDescription}>
           {text.welcomeDescription}
-        </Text>
+        </AuthText>
       </View>
       <View style={styles.welcomeActions}>
         <EntryButton
@@ -827,6 +868,7 @@ function AuthStatusScreen({
   body,
   children,
   detail,
+  footerAction,
   testID,
   title,
 }: Readonly<{
@@ -835,18 +877,28 @@ function AuthStatusScreen({
   body: string;
   children?: ReactNode;
   detail?: string;
+  footerAction?: Readonly<{ label: string; onPress: () => void; testID: string }>;
   testID: string;
   title: string;
 }>) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale >= 1.3;
   return (
-    <Screen ambient ambientVariant="auth" edges={["top", "bottom"]} style={styles.authScreen}>
+    <Screen
+      ambient
+      ambientVariant="auth"
+      edges={["top", "bottom"]}
+      footer={footerAction ? <Button onPress={footerAction.onPress} testID={footerAction.testID} variant="ghost">{footerAction.label}</Button> : undefined}
+      footerVariant={footerAction ? "sticky" : undefined}
+      style={[styles.authScreen, largeText ? styles.authScreenLargeText : null]}
+    >
       {backAction ? <ScreenHeader backAction={backAction} title="" /> : null}
-      <View style={styles.authPanel} testID={testID}>
+      <View style={[styles.authPanel, largeText ? styles.authPanelLargeText : null]} testID={testID}>
         <View style={styles.statusCopy}>
-          <Text maxFontSizeMultiplier={2} style={styles.authTitle}>{title}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.authDescription}>{body}</Text>
-          {detail ? <Text maxFontSizeMultiplier={2} style={styles.statusDetail}>{detail}</Text> : null}
+          <AuthText style={styles.authTitle}>{title}</AuthText>
+          <AuthText style={styles.authDescription}>{body}</AuthText>
+          {detail ? <AuthText style={styles.statusDetail}>{detail}</AuthText> : null}
         </View>
         {children}
         {action ? (
@@ -894,12 +946,9 @@ function EntryButton({
       ]}
       testID={testID}
     >
-      <Text
-        maxFontSizeMultiplier={2}
-        style={[styles.entryButtonLabel, labelStyle]}
-      >
+      <AuthText style={[styles.entryButtonLabel, labelStyle]}>
         {text}
-      </Text>
+      </AuthText>
     </Pressable>
   );
 }
@@ -927,18 +976,21 @@ function SignInForm({
 }>) {
   const styles = useThemedStyles(createStyles);
   const [visible, setVisible] = useState(false);
-  const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalid" && !hasValidEmailFormat(email);
+  const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalidEmail";
   const credentialsError = feedback?.kind === "failure" && (feedback.failure === "invalidCredential" || (feedback.failure === "invalid" && !invalidEmail));
+  const showGlobalFeedback = feedback?.kind === "failure" && !invalidEmail && !credentialsError;
   return (
     <View style={styles.signInForm}>
+      {showGlobalFeedback ? renderFeedback(feedback, text) : null}
       <View style={styles.fieldGroup}>
-        <Text maxFontSizeMultiplier={2} style={styles.fieldLabel}>
+        <AuthText style={styles.fieldLabel}>
           {text.email}
-        </Text>
+        </AuthText>
         <TextInput
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
+          maxFontSizeMultiplier={2}
           onChangeText={onEmailChange}
           placeholder={text.enterEmail}
           placeholderTextColor={placeholderTextColor}
@@ -946,17 +998,18 @@ function SignInForm({
           testID="account-email"
           value={email}
         />
-        {invalidEmail ? <Text accessibilityLabel={`${text.email}. ${text.emailFormatError}`} accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.fieldError} testID="account-email-error">{text.emailFormatError}</Text> : null}
+        {invalidEmail ? <AuthText accessibilityLabel={`${text.email}. ${text.invalidEmail}`} accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.fieldError} testID="account-email-error">{text.invalidEmail}</AuthText> : null}
       </View>
       <View style={styles.fieldGroup}>
-        <Text maxFontSizeMultiplier={2} style={styles.fieldLabel}>
+        <AuthText style={styles.fieldLabel}>
           {text.password}
-        </Text>
-        <View>
+        </AuthText>
+        <View style={styles.passwordField}>
           <TextInput
             autoCapitalize="none"
             autoComplete="password"
             onChangeText={onPasswordChange}
+            maxFontSizeMultiplier={2}
             placeholder={text.enterPassword}
             placeholderTextColor={placeholderTextColor}
             secureTextEntry={!visible}
@@ -978,7 +1031,7 @@ function SignInForm({
             />
           </Pressable>
         </View>
-        {credentialsError ? <Text accessibilityLabel={`${text.password}. ${text.signInCredentialsError}`} accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.fieldError} testID="account-password-error">{text.signInCredentialsError}</Text> : null}
+        {credentialsError ? <AuthText accessibilityLabel={`${text.password}. ${text.signInCredentialsError}`} accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.fieldError} testID="account-password-error">{text.signInCredentialsError}</AuthText> : null}
       </View>
       <Button
         labelStyle={styles.authPrimaryLabel}
@@ -998,9 +1051,9 @@ function Divider({ label }: Readonly<{ label: string }>) {
   return (
     <View style={styles.divider}>
       <View style={styles.dividerLine} />
-      <Text maxFontSizeMultiplier={2} style={styles.dividerLabel}>
+      <AuthText style={styles.dividerLabel}>
         {label}
-      </Text>
+      </AuthText>
       <View style={styles.dividerLine} />
     </View>
   );
@@ -1024,14 +1077,16 @@ function ProviderButton({
       ]}
       testID={`account-provider-${icon}`}
     >
-      <View style={styles.providerIcon}>
-        {icon === "apple" ? (
-          <Icon color={colors.provider.appleIcon} name="apple" size={26} />
-        ) : <GoogleIcon height={18} width={18} />}
+      <View style={styles.providerContent}>
+        <View style={styles.providerIcon}>
+          {icon === "apple" ? (
+            <Icon color={colors.provider.appleIcon} name="apple" size={26} />
+          ) : <GoogleIcon height={18} width={18} />}
+        </View>
+        <AuthText style={styles.providerLabel}>
+          {text}
+        </AuthText>
       </View>
-      <Text maxFontSizeMultiplier={2} style={styles.providerLabel}>
-        {text}
-      </Text>
     </Pressable>
   );
 }
@@ -1071,21 +1126,23 @@ function CredentialsForm({
 }>) {
   const styles = useThemedStyles(createStyles);
   const passwordMismatch = feedback?.kind === "failure" && feedback.failure === "passwordMismatch";
-  const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalid" && !hasValidEmailFormat(email);
+  const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalidEmail";
   const emailError = invalidEmail
-    ? text.emailFormatError
+    ? text.invalidEmail
     : feedback?.kind === "failure" && feedback.failure === "duplicate"
       ? text.duplicate
       : undefined;
-  const passwordError = feedback?.kind === "failure" && (feedback.failure === "invalidCredential" || (feedback.failure === "invalid" && !invalidEmail))
-    ? text.invalid
+  const passwordError = feedback?.kind === "failure" && feedback.failure === "weakPassword"
+    ? text.weakPassword
+    : feedback?.kind === "failure" && (feedback.failure === "invalidCredential" || (feedback.failure === "invalid" && !invalidEmail))
+      ? text.invalid
     : undefined;
   return (
     <View style={styles.authForm}>
       <FormField error={emailError} errorTestID="account-register-email-error" label={text.email}>
-        <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" onChangeText={onEmailChange} placeholder={text.enterEmail} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput, emailError ? styles.authInputError : null]} testID="account-email" value={email} />
+          <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" maxFontSizeMultiplier={2} onChangeText={onEmailChange} placeholder={text.enterEmail} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput, emailError ? styles.authInputError : null]} testID="account-email" value={email} />
       </FormField>
-      <AuthPasswordInput error={passwordError} errorTestID="account-register-password-error" inputStyle={inputStyle} onChangeText={onPasswordChange} placeholder={text.enterPassword} placeholderTextColor={placeholderTextColor} testID="account-password" text={text} value={password} />
+          <AuthPasswordInput error={passwordError} errorTestID="account-register-password-error" inputStyle={inputStyle} onChangeText={onPasswordChange} placeholder={text.enterPassword} placeholderTextColor={placeholderTextColor} testID="account-password" text={text} value={password} />
       {confirmation !== undefined && onConfirmationChange ? (
         <AuthPasswordInput error={passwordMismatch ? text.passwordMismatch : undefined} errorTestID="account-password-confirmation-error" inputStyle={inputStyle} label={text.confirmPassword} onChangeText={onConfirmationChange} placeholder={text.confirmPassword} placeholderTextColor={placeholderTextColor} testID="account-password-confirmation" text={text} value={confirmation} />
       ) : null}
@@ -1102,14 +1159,18 @@ function TermsAcceptance({ accepted, onChange, text }: Readonly<{ accepted: bool
   const publicLinks = readPublicLegalLinksFromRuntime();
   const links = publicLinks.kind === "configured" ? publicLinks.value : null;
   return (
-    <View style={styles.termsCheckboxRow}>
-      <Pressable accessibilityLabel={`${text.acceptTermsPrefix} ${text.termsOfService} ${text.and} ${text.privacyPolicy}`} accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} hitSlop={8} onPress={() => onChange(!accepted)} style={styles.termsCheckboxControl} testID="account-register-terms-checkbox">
-        <View style={[styles.termsCheckbox, accepted ? styles.termsCheckboxChecked : null]}>{accepted ? <Icon color={styles.termsCheckboxIcon.color as string} name="check" size={16} /> : null}</View>
-      </Pressable>
-      <View style={styles.termsLinks}>
-        <Text maxFontSizeMultiplier={2} style={styles.termsCopy}>{text.acceptTermsPrefix}</Text>
-        {links ? <><Pressable accessibilityRole="link" onPress={() => void Linking.openURL(links.termsUrl)} testID="account-register-terms-link"><Text maxFontSizeMultiplier={2} style={styles.termsLink}>{text.termsOfService}</Text></Pressable><Text maxFontSizeMultiplier={2} style={styles.termsCopy}>{text.and}</Text><Pressable accessibilityRole="link" onPress={() => void Linking.openURL(links.privacyUrl)} testID="account-register-privacy-link"><Text maxFontSizeMultiplier={2} style={styles.termsLink}>{text.privacyPolicy}</Text></Pressable></> : <Text maxFontSizeMultiplier={2} style={styles.termsCopy}>{`${text.termsOfService} ${text.and} ${text.privacyPolicy}`}</Text>}
+    <View style={styles.termsAcceptance}>
+      <View style={styles.termsCheckboxRow}>
+        <Pressable accessibilityLabel={`${text.acceptTermsPrefix} ${text.termsOfService} ${text.and} ${text.privacyPolicy}`} accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} hitSlop={8} onPress={() => onChange(!accepted)} style={styles.termsCheckboxControl} testID="account-register-terms-checkbox">
+          <View style={[styles.termsCheckbox, accepted ? styles.termsCheckboxChecked : null]}>{accepted ? <Icon color={styles.termsCheckboxIcon.color as string} name="check" size={16} /> : null}</View>
+        </Pressable>
+        <View style={styles.termsLinks}>
+          <AuthText style={styles.termsCopy}>{text.acceptTermsPrefix}</AuthText>
+          {links ? <><Pressable accessibilityRole="link" onPress={() => void Linking.openURL(links.termsUrl)} style={styles.termsLinkPressable} testID="account-register-terms-link"><AuthText style={styles.termsLink}>{text.termsOfService}</AuthText></Pressable><AuthText style={styles.termsCopy}>{text.and}</AuthText><Pressable accessibilityRole="link" onPress={() => void Linking.openURL(links.privacyUrl)} style={styles.termsLinkPressable} testID="account-register-privacy-link"><AuthText style={styles.termsLink}>{text.privacyPolicy}</AuthText></Pressable></> : <AuthText style={styles.termsCopy}>{`${text.termsOfService} ${text.and} ${text.privacyPolicy}`}</AuthText>}
+        </View>
       </View>
+      {!links ? <AuthText style={styles.termsUnavailable} testID="account-terms-unavailable">{text.termsUnavailable}</AuthText> : null}
+      {!accepted ? <AuthText accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.termsRequired} testID="account-register-terms-error">{text.termsRequired}</AuthText> : null}
     </View>
   );
 }
@@ -1123,9 +1184,9 @@ function FormField({
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.fieldGroup}>
-      <Text maxFontSizeMultiplier={2} style={styles.fieldLabel}>{label}</Text>
+      <AuthText style={styles.fieldLabel}>{label}</AuthText>
       {children}
-      {error ? <Text accessibilityLabel={`${label}. ${error}`} accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.fieldError} testID={errorTestID}>{error}</Text> : null}
+      {error ? <AuthText accessibilityLabel={`${label}. ${error}`} accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.fieldError} testID={errorTestID}>{error}</AuthText> : null}
     </View>
   );
 }
@@ -1159,8 +1220,8 @@ function AuthPasswordInput({
   const [visible, setVisible] = useState(false);
   return (
     <FormField error={error} errorTestID={errorTestID} label={label ?? text.password}>
-      <View>
-        <TextInput autoCapitalize="none" autoComplete={autoComplete} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={placeholderTextColor} secureTextEntry={!visible} style={[inputStyle, styles.centeredInput, styles.passwordInput, error ? styles.authInputError : null]} testID={testID} value={value} />
+      <View style={styles.passwordField}>
+        <TextInput autoCapitalize="none" autoComplete={autoComplete} maxFontSizeMultiplier={2} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={placeholderTextColor} secureTextEntry={!visible} style={[inputStyle, styles.centeredInput, styles.passwordInput, error ? styles.authInputError : null]} testID={testID} value={value} />
         <Pressable accessibilityLabel={visible ? text.hidePassword : text.showPassword} accessibilityRole="button" hitSlop={8} onPress={() => setVisible((current) => !current)} style={styles.visibilityButton} testID={`${testID}-visibility`}>
           <Icon color={styles.icon.color as string} name={visible ? "eye-off" : "eye"} size={24} />
         </Pressable>
@@ -1199,12 +1260,13 @@ function RecoveryForm({
   text: AccountCopy;
 }>) {
   const styles = useThemedStyles(createStyles);
-  const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalid" && !hasValidEmailFormat(email);
+  const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalidEmail";
+  const invalidRecoveryCode = feedback?.kind === "failure" && (feedback.failure === "invalidRecoveryCode" || feedback.failure === "recoveryCodeUsed");
   if (method === "code")
     return (
       <View style={styles.authForm}>
-        <FormField label={text.recoveryCode}>
-          <TextInput autoCapitalize="characters" autoCorrect={false} onChangeText={onCodeChange} placeholder={text.recoveryCode} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput]} testID="account-recovery-code" value={code} />
+        <FormField error={invalidRecoveryCode ? feedback?.failure === "recoveryCodeUsed" ? text.recoveryCodeUsed : text.invalidRecoveryCode : undefined} errorTestID="account-recovery-code-error" label={text.recoveryCode}>
+          <TextInput autoCapitalize="characters" autoCorrect={false} maxFontSizeMultiplier={2} onChangeText={onCodeChange} placeholder={text.recoveryCode} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput, invalidRecoveryCode ? styles.authInputError : null]} testID="account-recovery-code" value={code} />
         </FormField>
         <Button labelStyle={styles.authPrimaryLabel} onPress={onConsume} style={styles.authPrimaryButton} testID="account-recovery-code-submit" variant="primary">{text.consumeRecoveryCode}</Button>
         <Button labelStyle={styles.textActionLabel} onPress={onSelectEmail} testID="account-recovery-email-option" variant="ghost">{text.backToEmailRecovery}</Button>
@@ -1212,8 +1274,8 @@ function RecoveryForm({
     );
   return (
     <View style={styles.authForm}>
-      <FormField error={invalidEmail ? text.emailFormatError : undefined} label={text.email}>
-        <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" onChangeText={onEmailChange} placeholder={text.enterEmail} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput, invalidEmail ? styles.authInputError : null]} testID="account-recovery-email" value={email} />
+        <FormField error={invalidEmail ? text.invalidEmail : undefined} errorTestID="account-recovery-email-error" label={text.email}>
+        <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" maxFontSizeMultiplier={2} onChangeText={onEmailChange} placeholder={text.enterEmail} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput, invalidEmail ? styles.authInputError : null]} testID="account-recovery-email" value={email} />
       </FormField>
       <Button labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID="account-recovery-submit" variant="primary">{text.sendRecovery}</Button>
       <Button labelStyle={styles.textActionLabel} onPress={onSelectCode} testID="account-recovery-code-option" variant="ghost">{text.recoveryCodeOption}</Button>
@@ -1244,16 +1306,21 @@ function ResetPasswordForm({
 }>) {
   const styles = useThemedStyles(createStyles);
   const passwordMismatch = feedback?.kind === "failure" && feedback.failure === "passwordMismatch";
+  const weakPassword = feedback?.kind === "failure" && feedback.failure === "weakPassword";
   return (
     <View style={styles.authForm}>
-      <AuthPasswordInput autoComplete="password-new" inputStyle={inputStyle} onChangeText={onPasswordChange} placeholder={text.password} placeholderTextColor={placeholderTextColor} testID="account-reset-password" text={text} value={password} />
-      <AuthPasswordInput autoComplete="password-new" error={passwordMismatch ? text.passwordMismatch : undefined} inputStyle={inputStyle} label={text.confirmPassword} onChangeText={onConfirmationChange} placeholder={text.confirmPassword} placeholderTextColor={placeholderTextColor} testID="account-reset-password-confirmation" text={text} value={confirmation} />
+      <AuthPasswordInput autoComplete="password-new" error={weakPassword ? text.weakPassword : undefined} errorTestID="account-reset-password-error" inputStyle={inputStyle} onChangeText={onPasswordChange} placeholder={text.password} placeholderTextColor={placeholderTextColor} testID="account-reset-password" text={text} value={password} />
+      <AuthPasswordInput autoComplete="password-new" error={passwordMismatch ? text.passwordMismatch : undefined} errorTestID="account-reset-password-confirmation-error" inputStyle={inputStyle} label={text.confirmPassword} onChangeText={onConfirmationChange} placeholder={text.confirmPassword} placeholderTextColor={placeholderTextColor} testID="account-reset-password-confirmation" text={text} value={confirmation} />
       <Button labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID="account-reset-submit" variant="primary">{text.reset}</Button>
     </View>
   );
 }
 
-function renderFeedback(feedback: Feedback | null, text: AccountCopy) {
+function renderFeedback(
+  feedback: Feedback | null,
+  text: AccountCopy,
+  title = text.signInProblem,
+) {
   if (!feedback) return null;
   if (feedback.kind === "success" && feedback.next === "recoveryAccepted")
     return (
@@ -1276,7 +1343,7 @@ function renderFeedback(feedback: Feedback | null, text: AccountCopy) {
   return (
     <InfoBlock
       body={message}
-      title={text.signInProblem}
+      title={title}
       testID={`account-feedback-${feedback.failure}`}
       tone="warning"
     />
@@ -1355,6 +1422,7 @@ function AccountDataPanel({
   onRetry: () => void;
   text: AccountCopy;
 }>) {
+  const styles = useThemedStyles(createStyles);
   const [resolutions, setResolutions] = useState<
     Record<string, "keep_guest" | "keep_account">
   >({});
@@ -1365,24 +1433,23 @@ function AccountDataPanel({
     );
     return (
       <Card testID="account-adoption-preview" style={{ gap: spacing.md }}>
-        <Text maxFontSizeMultiplier={2} style={{ ...typography.bodyStrong }}>
+        <AuthText style={styles.accountHeading}>
           {text.adoptionPreview}
-        </Text>
-        <Text maxFontSizeMultiplier={2} style={{ ...typography.small }}>
+        </AuthText>
+        <AuthText style={styles.accountBody}>
           {text.adoptionPreviewDescription}
-        </Text>
-        <Text
-          maxFontSizeMultiplier={2}
-        >{`${text.preserve}: ${plan.localRecordCount} · ${text.upload}: ${plan.uploadRecordIds.length} · ${text.restore}: ${plan.restoreRecordIds.length} · ${text.deduplicated}: ${plan.deduplicatedRecordIds.length}`}</Text>
+        </AuthText>
+        <AuthText
+          style={styles.accountBody}
+        >{`${text.preserve}: ${plan.localRecordCount} · ${text.upload}: ${plan.uploadRecordIds.length} · ${text.restore}: ${plan.restoreRecordIds.length} · ${text.deduplicated}: ${plan.deduplicatedRecordIds.length}`}</AuthText>
         {plan.conflictRecordIds.length > 0 ? (
           <View style={{ gap: spacing.sm }}>
-            <Text
-              maxFontSizeMultiplier={2}
-              style={{ ...typography.bodyStrong }}
-            >{`${text.decisions}: ${plan.conflictRecordIds.length}`}</Text>
+            <AuthText
+              style={styles.accountHeading}
+            >{`${text.decisions}: ${plan.conflictRecordIds.length}`}</AuthText>
             {plan.conflictRecordIds.map((id) => (
               <View key={id} style={{ gap: spacing.xs }}>
-                <Text maxFontSizeMultiplier={2}>{id}</Text>
+                <AuthText style={styles.accountCode}>{id}</AuthText>
                 <View style={{ flexDirection: "row", gap: spacing.sm }}>
                   <Button
                     onPress={() =>
@@ -1544,32 +1611,69 @@ function setResult(setFeedback: (feedback: Feedback) => void) {
   return (result: AccountCommandResult) => setFeedback(result);
 }
 
+function isReauthenticationFailure(feedback: Feedback | null): boolean {
+  return feedback?.kind === "failure" && feedback.failure === "reauthenticationRequired";
+}
+
 function isRegisterFieldFailure(feedback: Feedback | null): boolean {
   return feedback?.kind === "failure" && (
     feedback.failure === "duplicate" ||
-    feedback.failure === "invalid" ||
+    feedback.failure === "invalidEmail" ||
     feedback.failure === "invalidCredential" ||
-    feedback.failure === "passwordMismatch"
+    feedback.failure === "passwordMismatch" ||
+    feedback.failure === "weakPassword"
   );
 }
 
-function hasValidEmailFormat(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email.trim());
+function isAuthFieldFailure(
+  mode: AccountMode,
+  recoveryMethod: "email" | "code",
+  feedback: Feedback | null,
+): boolean {
+  if (feedback?.kind !== "failure") return false;
+  if (mode === "recovery") {
+    return recoveryMethod === "code"
+      ? feedback.failure === "invalidRecoveryCode" || feedback.failure === "recoveryCodeUsed"
+      : feedback.failure === "invalidEmail";
+  }
+  if (mode === "resetPassword") {
+    return feedback.failure === "passwordMismatch" || feedback.failure === "weakPassword";
+  }
+  return false;
 }
 
 const createStyles = (palette: AppColors) =>
   StyleSheet.create({
+    accountHeading: {
+      ...typography.bodyStrong,
+      color: palette.textPrimary,
+    },
+    accountBody: {
+      ...typography.small,
+      color: palette.textSecondary,
+    },
+    accountCode: {
+      color: palette.textPrimary,
+      fontSize: 14,
+      lineHeight: 22,
+    },
     authScreen: { justifyContent: "center" },
-    authPanel: { alignSelf: "stretch", gap: spacing.md },
-    authForm: { gap: spacing.md },
-    termsCheckboxRow: { alignItems: "flex-start", flexDirection: "row", gap: spacing.sm },
-    termsCheckboxControl: { paddingTop: 1 },
+    authScreenLargeText: { justifyContent: "flex-start", paddingTop: spacing.md },
+    authPanel: { alignSelf: "stretch", gap: spacing.md, minWidth: 0 },
+    authPanelLargeText: { gap: spacing.lg },
+    authForm: { gap: spacing.md, minWidth: 0 },
+    termsAcceptance: { gap: spacing.xs, minWidth: 0 },
+    termsCheckboxRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minWidth: 0 },
+    termsCheckboxControl: { alignItems: "center", justifyContent: "center", minHeight: 44, minWidth: 44 },
     termsCheckbox: { alignItems: "center", borderColor: palette.borderStrong, borderRadius: 5, borderWidth: 1, height: 22, justifyContent: "center", width: 22 },
     termsCheckboxChecked: { backgroundColor: palette.primary, borderColor: palette.primary },
     termsCheckboxIcon: { color: palette.onPrimary },
-    termsCopy: { color: palette.textSecondary, fontSize: 13, lineHeight: 18 },
-    termsLinks: { flex: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
-    termsLink: { color: palette.primary, fontSize: 13, lineHeight: 18, textDecorationLine: "underline" },
+    termsCopy: { color: palette.textSecondary, flexShrink: 1, fontSize: 13, lineHeight: 20 },
+    termsLinks: { flex: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, minWidth: 0 },
+    termsLinkPressable: { alignSelf: "flex-start", flexShrink: 1, maxWidth: "100%" },
+    termsLink: { color: palette.primary, flexShrink: 1, fontSize: 13, lineHeight: 20, textDecorationLine: "underline" },
+    termsUnavailable: { color: palette.textSecondary, flexShrink: 1, fontSize: 13, lineHeight: 20 },
+    termsRequired: { color: palette.danger, fontSize: 12, lineHeight: 17, marginLeft: 44 + spacing.sm },
     authTitle: {
       ...typography.display,
       color: palette.textPrimary,
@@ -1585,6 +1689,7 @@ const createStyles = (palette: AppColors) =>
     },
     authDescription: {
       color: palette.textSecondary,
+      flexShrink: 1,
       fontSize: 15,
       lineHeight: 22,
     },
@@ -1597,6 +1702,7 @@ const createStyles = (palette: AppColors) =>
     fieldGroup: { gap: spacing.xs },
     fieldLabel: {
       color: palette.textSecondary,
+      flexShrink: 1,
       fontSize: 14,
       fontWeight: "600",
       lineHeight: 20,
@@ -1608,10 +1714,9 @@ const createStyles = (palette: AppColors) =>
       borderWidth: 1,
       color: palette.textPrimary,
       fontSize: 16,
-      lineHeight: 22,
-      height: 52,
+      minHeight: 52,
       paddingHorizontal: spacing.lg,
-      paddingVertical: 0,
+      paddingVertical: spacing.md,
     },
     centeredInput: { textAlignVertical: "center" },
     authInputError: { borderColor: palette.danger },
@@ -1627,13 +1732,14 @@ const createStyles = (palette: AppColors) =>
     },
     authPrimaryLabel: { color: palette.onPrimary },
     passwordInput: { paddingRight: 56 },
+    passwordField: { minWidth: 0, position: "relative" },
     visibilityButton: {
       alignItems: "center",
-      height: 44,
+      bottom: 0,
       justifyContent: "center",
       position: "absolute",
       right: spacing.sm,
-      top: 5,
+      top: 0,
       width: 44,
     },
     icon: { color: palette.textPrimary },
@@ -1642,6 +1748,12 @@ const createStyles = (palette: AppColors) =>
       flexDirection: "row",
       justifyContent: "space-between",
       marginHorizontal: -spacing.sm,
+    },
+    authLinksLargeText: {
+      alignItems: "stretch",
+      flexDirection: "column",
+      gap: spacing.xs,
+      marginHorizontal: 0,
     },
     textActionLabel: {
       color: palette.primary,
@@ -1666,14 +1778,20 @@ const createStyles = (palette: AppColors) =>
       justifyContent: "center",
       minHeight: 52,
       paddingHorizontal: spacing.xl,
-      position: "relative",
+    },
+    providerContent: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.sm,
+      justifyContent: "center",
+      maxWidth: "100%",
+      minWidth: 0,
     },
     providerIcon: {
       alignItems: "center",
+      flexShrink: 0,
       height: 32,
       justifyContent: "center",
-      left: spacing.lg,
-      position: "absolute",
       width: 32,
     },
     providerLabel: {
@@ -1681,6 +1799,8 @@ const createStyles = (palette: AppColors) =>
       fontSize: 16,
       fontWeight: "600",
       lineHeight: 22,
+      flexShrink: 1,
+      textAlign: "center",
     },
     providerPressed: { opacity: 0.78 },
     guestActionLabel: {
@@ -1693,6 +1813,12 @@ const createStyles = (palette: AppColors) =>
       justifyContent: "space-between",
       paddingBottom: 34,
       paddingTop: 120,
+    },
+    welcomeScreenLargeText: {
+      gap: spacing.xxxl,
+      justifyContent: "flex-start",
+      paddingBottom: spacing.lg,
+      paddingTop: spacing.xl,
     },
     welcomeHero: { alignItems: "center", gap: spacing.lg },
     welcomeBrand: {
@@ -1712,6 +1838,7 @@ const createStyles = (palette: AppColors) =>
     },
     welcomeDescription: {
       color: palette.textSecondary,
+      flexShrink: 1,
       fontSize: 16,
       lineHeight: 24,
       textAlign: "center",
@@ -1742,6 +1869,7 @@ const createStyles = (palette: AppColors) =>
     },
     entryButtonPressed: { opacity: 0.78 },
     entryButtonLabel: {
+      flexShrink: 1,
       fontSize: 16,
       fontWeight: "600",
       lineHeight: 22,

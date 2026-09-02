@@ -207,7 +207,10 @@ test("Screen and SessionShell remain the only general and active-session page ow
   assert.match(screen, /content:\s*\{[\s\S]*?gap:\s*spacing\.xl/);
   assert.match(screen, /contentCompact:\s*\{[\s\S]*?gap:\s*spacing\.md/);
   assert.match(screen, /content:\s*\{[\s\S]*?paddingTop:\s*spacing\.xl/);
-  assert.match(screen, /footer:\s*\{[\s\S]*?paddingVertical:\s*spacing\.xl/);
+  assert.match(screen, /footer:\s*\{[\s\S]*?paddingVertical:\s*spacing\.lg/);
+  assert.match(screen, /footerSticky:\s*\{[\s\S]*?paddingBottom:\s*spacing\.md[\s\S]*?paddingTop:\s*spacing\.md/);
+  assert.match(screen, /footerSession:\s*\{[\s\S]*?minHeight:\s*228/);
+  assert.match(screen, /footerSimulation:\s*\{[\s\S]*?minHeight:\s*361/);
   assert.match(screen, /header\?: ReactNode/);
   assert.match(header, /placement === "stack"[\s\S]*<SafeAreaView edges=\{\["top"\]\}/);
   assert.doesNotMatch(source("src/features/coding-interview/session/SessionShell.tsx"), /SafeAreaView|ScrollView/);

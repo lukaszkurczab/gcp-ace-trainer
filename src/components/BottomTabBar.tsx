@@ -33,7 +33,7 @@ export function BottomTabBar<TId extends string>({
   return (
     <View
       accessibilityRole="tablist"
-      style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 34) }]}
+      style={[styles.tabBar, { paddingBottom: insets.bottom }]}
       testID={testID}
     >
       {items.map((item) => {
@@ -99,13 +99,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
-    gap: spacing.xs,
-    minHeight: 60,
+    gap: spacing.xxs,
+    minHeight: 44,
     paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.sm,
+    paddingVertical: 0,
   },
   tabButtonActive: {
-    minHeight: 66,
+    minHeight: 48,
   },
   tabButtonPressed: {
     backgroundColor: palette.navigation.pressedSurface,

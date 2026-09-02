@@ -1,4 +1,5 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { AccessibilityInfo, ActivityIndicator, Animated, Easing, StyleSheet, Text, View, type LayoutChangeEvent } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
 import { useAppPreferences, useThemedStyles } from "../preferences";
@@ -15,6 +16,40 @@ export function LoadingState({ description, title, variant = "default" }: Loadin
   const styles = useThemedStyles(createStyles);
   const { colorMode, colors } = useAppPreferences();
   const startup = variant === "startup";
+  const reduceMotion = useReducedMotion();
+  const progress = useRef(new Animated.Value(0)).current;
+  const [trackWidth, setTrackWidth] = useState(0);
+
+  useEffect(() => {
+    progress.stopAnimation();
+    progress.setValue(0);
+    if (!startup || reduceMotion !== false) return;
+    const animation = Animated.loop(
+      Animated.timing(progress, {
+        duration: 1400,
+        easing: Easing.linear,
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+    );
+    animation.start();
+    return () => {
+      animation.stop();
+      progress.stopAnimation();
+      progress.setValue(0);
+    };
+  }, [progress, reduceMotion, startup]);
+
+  const segmentWidth = trackWidth > 0 ? Math.min(Math.max(trackWidth * 0.34, 56), 128) : 84;
+  const segmentTranslateX = progress.interpolate({
+    extrapolate: "clamp",
+    inputRange: [0, 1],
+    outputRange: [-segmentWidth, trackWidth],
+  });
+  const segmentTransform = reduceMotion === false
+    ? [{ translateX: segmentTranslateX }]
+    : [{ translateX: Math.max((trackWidth - segmentWidth) / 2, 0) }];
+  const handleTrackLayout = (event: LayoutChangeEvent) => setTrackWidth(event.nativeEvent.layout.width);
 
   return (
     <>
@@ -43,9 +78,10 @@ export function LoadingState({ description, title, variant = "default" }: Loadin
               <View
                 accessibilityElementsHidden
                 importantForAccessibility="no"
+                onLayout={handleTrackLayout}
                 style={styles.startupProgressTrack}
               >
-                <View style={styles.startupProgressFill} />
+                <Animated.View style={[styles.startupProgressFill, { transform: segmentTransform, width: segmentWidth }]} />
               </View>
               <View style={styles.startupCopy}>
                 <Text maxFontSizeMultiplier={2} style={styles.startupTitle}>{title}</Text>
@@ -67,6 +103,17 @@ export function LoadingState({ description, title, variant = "default" }: Loadin
       </View>
     </>
   );
+}
+
+function useReducedMotion(): boolean | null {
+  const [reduceMotion, setReduceMotion] = useState<boolean | null>(null);
+  useEffect(() => {
+    let subscribed = true;
+    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => { if (subscribed) setReduceMotion(enabled); });
+    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduceMotion);
+    return () => { subscribed = false; subscription.remove(); };
+  }, []);
+  return reduceMotion;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
@@ -125,7 +172,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     backgroundColor: palette.primary,
     borderRadius: radius.pill,
     height: "100%",
-    width: "42%",
   },
   startupCopy: {
     alignItems: "flex-start",

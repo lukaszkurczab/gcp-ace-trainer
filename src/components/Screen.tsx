@@ -86,7 +86,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderTopWidth: 1,
     gap: spacing.md,
     paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.xl
+    paddingVertical: spacing.lg
   },
   footerCompact: {
     padding: spacing.md
@@ -112,8 +112,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   footerSticky: {
     borderColor: palette.effects.subtleBorder,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.md,
     paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.md,
   },
 });
