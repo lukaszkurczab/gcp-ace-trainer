@@ -81,15 +81,41 @@ test("only the explicit local smoke runtime finalizes every password-identity co
   assert.equal(requiresPasswordEmailVerification("sandbox", unverifiedGoogle), false);
 });
 
-test("account adoption copy describes data reconciliation, not email verification", () => {
+test("account entry copy makes the destructive choice and code acknowledgement explicit", () => {
   const en = JSON.parse(readFileSync("src/locales/en/account.json", "utf8")) as Record<string, string>;
   const pl = JSON.parse(readFileSync("src/locales/pl/account.json", "utf8")) as Record<string, string>;
 
   assert.deepEqual(Object.keys(pl).sort(), Object.keys(en).sort());
-  assert.equal(en.accountReady, "Your Patternly account");
-  assert.match(en.adoptionPreviewDescription ?? "", /Nothing changes until you confirm/u);
-  assert.equal(pl.accountReady, "Twoje konto Patternly");
-  assert.match(pl.adoptionPreviewDescription ?? "", /Nic się nie zmieni, dopóki nie potwierdzisz/u);
+  assert.equal(en.accountEntryContinue, "Continue");
+  assert.match(en.discardGuestDataDescription ?? "", /Guest progress will be removed/u);
+  assert.match(en.discardGuestDataDescription ?? "", /account.?s progress/u);
+  assert.match(en.recoveryCodesDescription ?? "", /10 single-use codes/u);
+  assert.match(en.recoveryCodesSaveRequired ?? "", /before continuing/u);
+  assert.equal(pl.accountEntryContinue, "Dalej");
+  assert.match(pl.discardGuestDataDescription ?? "", /Postęp gościa zostanie usunięty/u);
+  assert.match(pl.discardGuestDataDescription ?? "", /Dane konta pozostaną bez zmian/u);
+  assert.match(pl.recoveryCodesDescription ?? "", /10 jednorazowych kodów/u);
+});
+
+test("account entry owns one terminal choice and keeps synced account controls separate", () => {
+  const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+
+  assert.match(screen, /accountData\.status === "synced"/);
+  assert.match(screen, /accountData\.status === "previewReady"/);
+  assert.match(screen, /testID="account-entry-choice"/);
+  assert.match(screen, /testID="account-keep-progress-toggle"/);
+  assert.match(screen, /testID="account-copy-recovery-codes"/);
+  assert.match(screen, /testID="account-entry-continue"/);
+  assert.match(screen, /testID="account-recovery-codes-saved-checkbox"/);
+  assert.match(screen, /account\.discardGuestData\(\)/);
+  assert.match(screen, /account\.confirmAdoption\(resolutions\)/);
+  assert.doesNotMatch(screen, /testID="account-authenticated"/);
+  assert.doesNotMatch(screen, /testID="account-adoption-confirm"/);
+  assert.doesNotMatch(screen, /text\.(?:preserve|upload|restore|deduplicated|decisions|keepGuest\b|keepAccount\b|confirmAdoption\b)/);
+  assert.match(provider, /issueRecoveryCodes: \(password\?: string\)/);
+  assert.match(provider, /discardGuestData: \(\) => runWithAuth/);
+  assert.match(provider, /const issued = await api\.issueRecoveryCodes\(\)/);
 });
 
 test("sign-in keeps guest access visible and uses the approved Google logo asset", () => {

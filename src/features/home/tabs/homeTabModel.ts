@@ -42,7 +42,6 @@ export type HomeRecommendationModel = {
 
 export type HomeTabModel = {
   focusTitle: string;
-  heroEyebrow: string;
   heroSubtitle: PracticeTopicDetail;
   heroTitle: PracticeTopicTitle;
   primaryLabel: string;
@@ -63,14 +62,15 @@ export function buildHomeTabModel(input: BuildHomeTabModelInput): HomeTabModel {
   const topic = getCurrentPracticeTopic(input.activeTrack, input.trainingAttempts);
   const certificationResume = buildCertificationResumeRecommendation(input);
   const recommendations = certificationResume ? [certificationResume] : buildAlgorithmsRecommendations(input);
-  const hasProgress = recommendations.length > 0;
+  const hasProgress = input.trainingAttempts.some((attempt) => attempt.trackId === input.activeTrack.id)
+    || (input.activeSession?.status === "active" && input.activeSession.trackId === input.activeTrack.id);
+  const learningLabel = hasProgress ? "Continue learning" : "Start learning";
 
   return {
     focusTitle: input.activeTrack.title,
-    heroEyebrow: "Continue learning",
     heroSubtitle: topic.detail,
     heroTitle: topic.title,
-    primaryLabel: hasProgress ? "Continue learning" : "Start learning",
+    primaryLabel: learningLabel,
     recommendations,
     topicId: topic.id,
   };

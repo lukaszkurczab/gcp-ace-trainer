@@ -16,6 +16,7 @@ import ClipboardIcon from "../assets/icons/clipboard.svg";
 import CloudIcon from "../assets/icons/cloud.svg";
 import ClockCheckIcon from "../assets/icons/clock-check.svg";
 import CodeBracketsIcon from "../assets/icons/code-brackets.svg";
+import CopyIcon from "../assets/icons/copy.svg";
 import CpuIcon from "../assets/icons/cpu.svg";
 import DatabaseIcon from "../assets/icons/database.svg";
 import DevicePhoneIcon from "../assets/icons/device-phone.svg";
@@ -62,6 +63,7 @@ export type IconName =
   | "cloud"
   | "clock-check"
   | "code-brackets"
+  | "copy"
   | "cpu"
   | "database"
   | "device-phone"
@@ -110,6 +112,7 @@ const icons: Record<IconName, ComponentType<SvgProps>> = {
   "circle-slash": CircleSlashIcon,
   close: CloseIcon,
   clipboard: ClipboardIcon,
+  copy: CopyIcon,
   cloud: CloudIcon,
   "clock-check": ClockCheckIcon,
   "code-brackets": CodeBracketsIcon,

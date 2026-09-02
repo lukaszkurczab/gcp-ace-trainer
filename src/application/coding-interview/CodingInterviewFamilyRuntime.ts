@@ -363,7 +363,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
     if (recognition && this.isModeAvailable(ALGORITHM_MODE_IDS.recognizePatterns, 10)) return Object.freeze({ explanation: `Practice recognizing when to use ${learnerMentalUnitLabel(recognition)}.`, modeId: ALGORITHM_MODE_IDS.recognizePatterns, reason: "recognize_patterns", targetMentalUnitId: recognition });
     const targetMentalUnitId = this.catalog.getItems()[0]?.taxonomy.primaryMentalUnitId;
     if (targetMentalUnitId && this.isModeAvailable(ALGORITHM_MODE_IDS.independentPractice, 10)) return Object.freeze({ explanation: "Choose a topic for independent practice.", modeId: ALGORITHM_MODE_IDS.independentPractice, reason: "independent_practice", targetMentalUnitId });
-    if (targetMentalUnitId && this.isModeAvailable(ALGORITHM_MODE_IDS.guidedPractice, 10)) return Object.freeze({ explanation: `Continue with guided practice for ${learnerMentalUnitLabel(targetMentalUnitId)}.`, modeId: ALGORITHM_MODE_IDS.guidedPractice, reason: "guided_practice", targetMentalUnitId });
+    if (targetMentalUnitId && this.isModeAvailable(ALGORITHM_MODE_IDS.guidedPractice, 10)) return Object.freeze({ explanation: `Practice ${learnerMentalUnitLabel(targetMentalUnitId)} with guidance.`, modeId: ALGORITHM_MODE_IDS.guidedPractice, reason: "guided_practice", targetMentalUnitId });
     return Object.freeze({ explanation: "No executable Algorithms practice mode is available in this package.", modeId: ALGORITHM_MODE_IDS.learnApproach, reason: "learn_approach" });
   }
 

@@ -1,7 +1,8 @@
 import { isRegisteredTrackId, type TrainingAttempt, type TrainingSession, type TrainingSessionResult, type ReviewQueueEntry } from "../../domain";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { STORAGE_KEYS } from "../keys";
+import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { getGuestInstallation } from "./guestInstallationRepository";
 import { getActiveMutationJournal } from "./mutationJournalRepository";
@@ -10,7 +11,7 @@ import { clearActiveTrackId, saveActiveTrackId } from "./activeTrackRepository";
 import { addReviewQueueItems, clearReviewQueueItems, getReviewQueueItems } from "./reviewQueueRepository";
 import { clearTrainingAttempts, getTrainingAttempts, addTrainingAttempt } from "./trainingAttemptRepository";
 import { getTrainingSessionResult, saveTrainingSessionResult } from "./trainingSessionResultRepository";
-import { clearTrainingSessions, getTrainingSessions, saveTrainingSession } from "./trainingSessionRepository";
+import { clearTrainingSessions, getActiveTrainingSessionId, getTrainingSessions, saveTrainingSession } from "./trainingSessionRepository";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionResult } from "./trainingModelGuards";
 
 export const ACCOUNT_DATA_PROTOCOL_VERSION = 1 as const;
@@ -47,9 +48,14 @@ export type AccountSyncState = Readonly<{
   lastFailureCode: string | null;
   acknowledged: Readonly<Record<string, AccountAcknowledgedRecord>>;
   outbox: readonly AccountOutboxEntry[];
-  materialization: Readonly<{ operationId: string; previewFingerprint: string }> | null;
+  materialization: AccountMaterialization | null;
   pendingConfirmation: Readonly<{ operationId: string; previewFingerprint: string; resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[] }> | null;
 }>;
+
+export type AccountMaterialization = Readonly<
+  | { operationId: string; previewFingerprint: string }
+  | { kind: "discardGuest"; accountId: string }
+>;
 
 export type AccountAcknowledgedRecord = Readonly<{ fingerprint: string; recordId: string; recordType: SyncableRecordType; remoteVersion: number; trackId: string }>;
 export type AccountOutboxEntry = Readonly<AccountDataRecord & { mutationId: string; expectedVersion: number | null; attemptCount: number; lastErrorCode: string | null; status: "pending" | "retrying" | "failed" }>;
@@ -60,7 +66,12 @@ function isSyncableRecordType(value: unknown): value is SyncableRecordType { ret
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 function isAccountSyncState(value: unknown): value is AccountSyncState {
   if (!isRecord(value) || value.protocolVersion !== ACCOUNT_DATA_PROTOCOL_VERSION || (value.accountId !== null && typeof value.accountId !== "string") || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || !Number.isSafeInteger(value.remoteAccountRevision) || !Array.isArray(value.outbox) || !isRecord(value.acknowledged)) return false;
-  return value.outbox.every(isOutboxEntry) && Object.values(value.acknowledged).every(isAcknowledgedRecord) && (value.materialization === null || (isRecord(value.materialization) && typeof value.materialization.operationId === "string" && typeof value.materialization.previewFingerprint === "string")) && (value.pendingConfirmation === null || (isRecord(value.pendingConfirmation) && typeof value.pendingConfirmation.operationId === "string" && typeof value.pendingConfirmation.previewFingerprint === "string" && Array.isArray(value.pendingConfirmation.resolutions) && value.pendingConfirmation.resolutions.every((resolution) => isRecord(resolution) && typeof resolution.conflictId === "string" && (resolution.resolution === "keep_guest" || resolution.resolution === "keep_account"))));
+  return value.outbox.every(isOutboxEntry) && Object.values(value.acknowledged).every(isAcknowledgedRecord) && (value.materialization === null || isAccountMaterialization(value.materialization)) && (value.pendingConfirmation === null || (isRecord(value.pendingConfirmation) && typeof value.pendingConfirmation.operationId === "string" && typeof value.pendingConfirmation.previewFingerprint === "string" && Array.isArray(value.pendingConfirmation.resolutions) && value.pendingConfirmation.resolutions.every((resolution) => isRecord(resolution) && typeof resolution.conflictId === "string" && (resolution.resolution === "keep_guest" || resolution.resolution === "keep_account"))));
+}
+function isAccountMaterialization(value: unknown): value is AccountMaterialization {
+  if (!isRecord(value)) return false;
+  if ("kind" in value) return value.kind === "discardGuest" && typeof value.accountId === "string" && value.accountId.trim().length > 0;
+  return typeof value.operationId === "string" && value.operationId.trim().length > 0 && typeof value.previewFingerprint === "string" && value.previewFingerprint.trim().length > 0;
 }
 function isAcknowledgedRecord(value: unknown): value is AccountAcknowledgedRecord { return isRecord(value) && typeof value.fingerprint === "string" && typeof value.recordId === "string" && isSyncableRecordType(value.recordType) && Number.isSafeInteger(value.remoteVersion) && typeof value.trackId === "string"; }
 function isOutboxEntry(value: unknown): value is AccountOutboxEntry {
@@ -127,9 +138,13 @@ function makeRecord(recordType: SyncableRecordType, recordId: string, trackId: s
 
 export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSyncState> {
   const installation = await getGuestInstallation();
-  const state = await getAccountSyncState();
+  let state = await getAccountSyncState();
+  if (state.materialization) return state;
   if (!installation?.accountId || state.accountId !== installation.accountId) return state;
   const snapshot = await buildAccountDataSnapshot();
+  const latestState = await getAccountSyncState();
+  if (latestState.materialization || latestState.accountId !== installation.accountId) return latestState;
+  state = latestState;
   const outbox = [...state.outbox];
   const byKey = new Map(outbox.map((entry) => [accountDataRecordKey(entry), entry]));
   for (const record of snapshot.records) {
@@ -172,13 +187,43 @@ export function setAccountSyncState(input: Partial<AccountSyncState> & Pick<Acco
   return saveAccountSyncState({ ...current, ...input, pendingMutationCount: input.outbox?.length ?? current.outbox.length });
 }
 
-export async function markAccountMaterializationPending(operationId: string, previewFingerprint: string): Promise<AccountSyncState> {
+export async function markAccountMaterializationPending(operationId: string, previewFingerprint: string, accountId: string): Promise<AccountSyncState> {
+  if (!accountId.trim()) throw new Error("account_id_required");
   const current = await getAccountSyncState();
-  return saveAccountSyncState({ ...current, materialization: { operationId, previewFingerprint }, status: "syncing" });
+  if (current.accountId !== null && current.accountId !== accountId) throw new Error("account_binding_mismatch");
+  return saveAccountSyncState({ ...current, accountId, materialization: { operationId, previewFingerprint }, pendingConfirmation: null, status: "syncing" });
+}
+
+export async function markGuestDiscardMaterializationPending(accountId: string): Promise<AccountSyncState> {
+  if (!accountId.trim()) throw new Error("account_id_required");
+  const current = await getAccountSyncState();
+  if (current.accountId !== null && current.accountId !== accountId) throw new Error("account_binding_mismatch");
+  if (current.pendingConfirmation !== null) throw new Error("account_adoption_pending");
+  if (current.materialization && (!("kind" in current.materialization) || current.materialization.kind !== "discardGuest" || current.materialization.accountId !== accountId)) {
+    throw new Error("account_materialization_in_progress");
+  }
+  return saveAccountSyncState({ ...current, accountId, materialization: { kind: "discardGuest", accountId }, status: "syncing", pendingConfirmation: null });
+}
+
+export function assertValidAccountDataRecords(records: unknown): asserts records is readonly AccountDataRecord[] {
+  if (!Array.isArray(records)) throw new Error("account_data_records_invalid");
+  for (const record of records) {
+    if (!isAccountDataRecord(record) || !record.recordId.trim() || !isRegisteredTrackId(record.trackId)) throw new Error("account_data_record_invalid");
+    if (record.fingerprint !== accountDataRecordFingerprint(record)) throw new Error("account_data_fingerprint_invalid");
+    if (isDeletedAccountDataRecord(record)) continue;
+    const state = record.state;
+    if (state.trackId !== record.trackId) throw new Error("account_data_track_invalid");
+    if (record.recordType === "active_track" && record.recordId !== "current") throw new Error("account_data_track_invalid");
+    if (record.recordType === "training_session_summary" && (!isTrainingSession(state) || state.status === "active" || state.id !== record.recordId)) throw new Error("account_data_session_invalid");
+    if (record.recordType === "training_session_result" && (!isTrainingSessionResult(state) || state.sessionId !== record.recordId)) throw new Error("account_data_result_invalid");
+    if (record.recordType === "training_attempt" && (!isTrainingAttempt(state) || state.id !== record.recordId)) throw new Error("account_data_attempt_invalid");
+    if (record.recordType === "review_queue_entry" && (!isReviewQueueEntry(state) || state.id !== record.recordId)) throw new Error("account_data_review_invalid");
+  }
 }
 
 export async function applyRemoteAccountData(records: readonly AccountDataRecord[]): Promise<void> {
-  if ((await getTrainingSessions()).value.some((session) => session.status === "active")) throw new Error("active_session_adoption_blocked");
+  assertValidAccountDataRecords(records);
+  if (await getActiveTrainingSessionId()) throw new Error("active_session_adoption_blocked");
   await clearActiveTrackId();
   await clearTrainingSessions();
   await clearTrainingAttempts();
@@ -214,6 +259,30 @@ export async function finishAccountMaterialization(records: readonly AccountData
   const acknowledged = Object.fromEntries(records.map((record) => [accountDataRecordKey(record), { fingerprint: record.fingerprint, recordId: record.recordId, recordType: record.recordType, remoteVersion: record.version, trackId: record.trackId }]));
   const current = await getAccountSyncState();
   return saveAccountSyncState({ ...current, accountId, status: "synced", remoteAccountRevision, lastSuccessfulSyncAt: syncedAt, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged, outbox: Object.freeze([]), materialization: null, pendingConfirmation: null });
+}
+
+/** Clears only local guest-owned learning and pending report data. The account sync marker is retained for recovery. */
+export async function clearGuestOwnedLocalData(): Promise<void> {
+  const fixedKeys: ReadonlySet<string> = new Set([
+    STORAGE_KEYS.ACTIVE_TRACK,
+    STORAGE_KEYS.ACTIVE_TRAINING_SESSION,
+    STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT,
+    STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER,
+    STORAGE_KEYS.TRAINING_SESSION_INDEX,
+    STORAGE_KEYS.TRAINING_ATTEMPT_INDEX,
+    STORAGE_KEYS.REVIEW_INDEX,
+    STORAGE_KEYS.CONTENT_REPORT_OUTBOX,
+  ]);
+  const recordPrefixes = [
+    `${STORAGE_NAMESPACE}training-session:`,
+    `${STORAGE_NAMESPACE}training-session-result:`,
+    `${STORAGE_NAMESPACE}training-attempt:`,
+    `${STORAGE_NAMESPACE}review-entry:`,
+    `${STORAGE_NAMESPACE}goal:`,
+  ];
+  for (const key of getKeyValueStorage().getAllKeys()) {
+    if (fixedKeys.has(key) || recordPrefixes.some((prefix) => key.startsWith(prefix))) removeCanonicalValue(key);
+  }
 }
 
 export async function clearAccountOwnedLocalData(): Promise<void> {

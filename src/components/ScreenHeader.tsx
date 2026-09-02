@@ -1,8 +1,8 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { spacing, typography } from "../theme";
-import { useAppPreferences, useThemedStyles } from "../preferences";
+import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 import { IconButton } from "./IconButton";
 
@@ -22,6 +22,7 @@ type ScreenHeaderProps = Readonly<{
 /** Figma Patternly Library Screen Header: local context, title, and optional description. */
 export function ScreenHeader({ backAction, context, contextTone = "muted", description, title, titleTestID, variant = "default" }: ScreenHeaderProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   const { t } = useTranslation("common");
 
   return (
@@ -35,12 +36,12 @@ export function ScreenHeader({ backAction, context, contextTone = "muted", descr
               onPress={backAction.onPress}
             />
           ) : null}
-          {context ? <Text maxFontSizeMultiplier={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null, variant === "practiceSetup" ? styles.practiceSetupContext : null]}>{context}</Text> : null}
+          {context ? <Text key={fontScale} maxFontSizeMultiplier={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null, variant === "practiceSetup" ? styles.practiceSetupContext : null]}>{context}</Text> : null}
         </View>
       ) : null}
       <View style={[styles.copy, variant === "practiceSetup" ? styles.practiceSetupCopy : null]}>
-        <Text maxFontSizeMultiplier={2} style={[styles.title, variant === "activity" ? styles.activityTitle : null]} testID={titleTestID}>{title}</Text>
-        {description ? <Text maxFontSizeMultiplier={2} style={[styles.description, variant === "practiceSetup" ? styles.practiceSetupDescription : null]}>{description}</Text> : null}
+        <Text key={fontScale} maxFontSizeMultiplier={2} style={[styles.title, variant === "activity" ? styles.activityTitle : null]} testID={titleTestID}>{title}</Text>
+        {description ? <Text key={fontScale} maxFontSizeMultiplier={2} style={[styles.description, variant === "practiceSetup" ? styles.practiceSetupDescription : null]}>{description}</Text> : null}
       </View>
     </View>
   );

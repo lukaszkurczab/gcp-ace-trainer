@@ -144,6 +144,11 @@ test("Home recommendation icons follow the Figma ready, review-due, and active-s
   const ready = buildHomeTabModel({ ...common, algorithmsDashboard: readyDashboard, activeSession: null });
   assert.equal(ready.recommendations[0]?.icon, "cpu");
   assert.equal(ready.recommendations[0]?.primaryLabel, "Start session");
+  assert.equal(ready.primaryLabel, "Start learning");
+  const returning = buildHomeTabModel({ ...common, algorithmsDashboard: readyDashboard, trainingAttempts: [attempt()] });
+  assert.equal(returning.primaryLabel, "Continue learning");
+  const otherTrack = buildHomeTabModel({ ...common, algorithmsDashboard: readyDashboard, trainingAttempts: [{ ...attempt(), trackId: "google-cloud-associate-cloud-engineer" }] });
+  assert.equal(otherTrack.primaryLabel, "Start learning");
 
   const reviewDashboard = await dashboard({ reviews: [review({ dueAt: "2026-07-20T11:00:00.000Z", id: "home-review" })] });
   const reviewDue = buildHomeTabModel({ ...common, algorithmsDashboard: reviewDashboard, activeSession: null });
@@ -153,6 +158,7 @@ test("Home recommendation icons follow the Figma ready, review-due, and active-s
   const activeDashboard = await runtime().queryDashboard({ activeSession: activeSession(), attempts: [], now: NOW, reviews: [], trackId: activeTrack.id });
   const active = buildHomeTabModel({ ...common, algorithmsDashboard: activeDashboard, activeSession: activeSession() });
   assert.equal(active.recommendations[0]?.icon, "play");
+  assert.equal(active.primaryLabel, "Continue learning");
 });
 
 test("Algorithms dashboard starts recognition only with its one declared set", async () => {

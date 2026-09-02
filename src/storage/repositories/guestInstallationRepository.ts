@@ -66,6 +66,8 @@ export async function bindGuestInstallationToAccount(accountId: string): Promise
   if (!accountId.trim()) throw new Error("account_id_required");
   const current = await getGuestInstallation();
   if (!current) throw new Error("guest_installation_required");
+  if (current.accountId !== null && current.accountId !== accountId) throw new Error("account_binding_mismatch");
+  if (current.accountId === accountId && current.bindingState === "account_bound") return current;
   const next = { ...current, accountId, bindingState: "account_bound" as const };
   writeCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, next);
   const verified = await getGuestInstallation();

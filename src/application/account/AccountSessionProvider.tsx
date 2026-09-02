@@ -5,7 +5,7 @@ import { PatternlyApiClientError, createPatternlyApiClient, type MeResponseDto }
 import { composePatternlyNativeAppCheck } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
-import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, type AccountDataSession } from "./accountDataService";
+import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, type AccountDataSession } from "./accountDataService";
 import { getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
@@ -43,8 +43,9 @@ export type AccountSessionContextValue = Readonly<{
   continueAsGuest: () => void;
   retryAccountSync: () => Promise<AccountCommandResult>;
   deleteAccount: (password: string) => Promise<AccountCommandResult>;
-  issueRecoveryCodes: (password: string) => Promise<AccountCommandResult>;
+  issueRecoveryCodes: (password?: string) => Promise<AccountCommandResult>;
   consumeRecoveryCode: (code: string) => Promise<AccountCommandResult>;
+  discardGuestData: () => Promise<AccountCommandResult>;
   signOut: () => Promise<AccountCommandResult>;
   state: AccountState;
 }>;
@@ -202,6 +203,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const current = auth.getSnapshot();
       if (!current || state.kind !== "authenticated" || !state.accountData.preview) return { kind: "failure", failure: "conflict" };
       const next = await confirmAccountDataAdoption(api, state.backendUser.id, state.accountData.preview, resolutions);
+      if (auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
       return next.status === "synced" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "conflict" };
     }),
@@ -209,6 +211,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const current = auth.getSnapshot();
       if (!current || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
       const next = await retryAccountDataSync(api, state.backendUser.id);
+      if (auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
       return next.status === "synced" || next.status === "previewReady" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "remoteFailure" };
     }),
@@ -259,13 +262,16 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     }),
     issueRecoveryCodes: (password) => runWithAuth(async (auth, api) => {
       const user = auth.getSnapshot();
-      if (!user || state.kind !== "authenticated" || user.provider !== "password" || password.length < 8) return { kind: "failure", failure: "reauthenticationRequired" };
+      if (!user || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
+      if (password !== undefined && (user.provider !== "password" || password.length < 8)) return { kind: "failure", failure: "reauthenticationRequired" };
       try {
-        await auth.reauthenticateWithPassword(password);
+        if (password !== undefined) await auth.reauthenticateWithPassword(password);
         const issued = await api.issueRecoveryCodes();
+        if (auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
         return { kind: "success", next: "recoveryCodesIssued", recoveryCodes: issued.codes };
       } catch (error) {
-        return { kind: "failure", failure: classifyAccountFailure(error) === "invalidCredential" ? "reauthenticationRequired" : classifyAccountFailure(error) };
+        const failure = classifyAccountFailure(error);
+        return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
       }
     }),
     consumeRecoveryCode: (code) => runWithAuth(async (auth, api) => {
@@ -273,6 +279,21 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const token = await api.consumeRecoveryCode(code.trim().toUpperCase());
       const user = await auth.signInWithRecoveryToken(token.customToken);
       return finalizeVerification(auth, api, user, setState);
+    }),
+    discardGuestData: () => runWithAuth(async (auth, api) => {
+      const current = auth.getSnapshot();
+      if (!current || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
+      const next = await discardGuestDataAndLoadAccount(api, state.backendUser.id);
+      if (auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
+      if (next.status === "synced") {
+        revokeGuestAccess();
+        setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
+        return { kind: "success", next: "authenticated" };
+      }
+      setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
+      if (next.lastFailureCode === "offline") return { kind: "failure", failure: "offline" };
+      if (next.status === "conflict") return { kind: "failure", failure: "conflict" };
+      return { kind: "failure", failure: "remoteFailure" };
     }),
     state,
   }), [apiClient, runWithAuth, runtimeMode, state]);
