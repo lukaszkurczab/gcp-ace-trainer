@@ -4,6 +4,7 @@ import { join } from "node:path";
 import test from "node:test";
 
 const source = (path: string) => readFileSync(path, "utf8");
+const escapeForRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 function tsxFiles(root: string): string[] {
   return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
@@ -20,6 +21,7 @@ const genericPendingPaths = [
   "src/features/home/HomeScreen.tsx",
   "src/features/home/ActivityScreen.tsx",
   "src/features/home/GoalCadenceScreen.tsx",
+  "src/features/practice/AlgorithmsPracticeReviewScreen.tsx",
   "src/features/practice/AlgorithmsPracticeSummaryScreen.tsx",
   "src/features/practice/AlgorithmsScopeSelectionScreen.tsx",
   "src/features/practice/CertificationPracticeSessionScreen.tsx",
@@ -65,7 +67,7 @@ test("EmptyState is the centered retained-content/unavailable status primitive",
   assert.doesNotMatch(emptyState, /backgroundColor: palette\.elevatedSurface|borderRadius: radius/);
 });
 
-test("exactly the seventeen inventoried generic pending branches use LoadingState", () => {
+test("exactly the eighteen inventoried generic pending branches use LoadingState", () => {
   const consumers = tsxFiles("src")
     .filter((path) => /<LoadingState\b/.test(source(path)))
     .sort();
@@ -76,9 +78,9 @@ test("exactly the seventeen inventoried generic pending branches use LoadingStat
   assert.match(source(genericPendingPaths[0]), /state\.kind === "loading"[\s\S]*?<LoadingState[\s\S]*?title="Preparing content…"/);
   assert.match(source("src/features/home/HomeScreen.tsx"), /if \(!hasLoadedActiveTrack\) return <Screen[\s\S]*?<LoadingState/);
   assert.match(source("src/features/practice/AlgorithmsScopeSelectionScreen.tsx"), /state\.kind === "loading"[\s\S]*?<LoadingState/);
-  assert.match(source("src/features/practice/AlgorithmsPracticeSummaryScreen.tsx"), /state\.kind === "loading"[\s\S]*?<LoadingState/);
+  assert.match(source("src/features/practice/AlgorithmsPracticeSummaryScreen.tsx"), /readState\.requestKey !== requestKey \|\| readState\.kind === "pending"[\s\S]*?<LoadingState/);
   assert.match(source("src/features/practice/CertificationPracticeSessionScreen.tsx"), /if \(!projection\) return <Screen[\s\S]*?<LoadingState/);
-  assert.match(source("src/features/exam/ResultScreen.tsx"), /if \(!summary\) return <Screen><LoadingState/);
+  assert.match(source("src/features/exam/ResultScreen.tsx"), /readState\.requestKey !== requestKey \|\| readState\.kind === "pending"[\s\S]*?<LoadingState/);
   assert.match(source("src/features/exam/ExamReviewScreen.tsx"), /readState\.requestKey !== requestKey \|\| readState\.kind === "pending"[\s\S]*?<LoadingState/);
   assert.match(source("src/features/exam/ExamScreen.tsx"), /if \(!projection\) return <Screen><LoadingState/);
   assert.match(source("src/features/review/MistakesReviewScreen.tsx"), /\{loading \? \(\s*<LoadingState/);
@@ -113,12 +115,12 @@ test("the six read owners end rejected reads in explicit unavailable EmptyStates
   assert.notEqual(home.indexOf("if (shellReadError)"), -1);
   assert.ok(home.indexOf("if (shellReadError)") < home.indexOf("if (!activeTrackId)"));
 
-  for (const [path, defaultMessage, finishPending, unavailableTitle] of [
-    ["src/features/practice/PracticeHubScreen.tsx", "Practice data is unavailable.", "setHasLoadedData(true)", "Practice is unavailable"],
-    ["src/features/review/MistakesReviewScreen.tsx", "Review queue data is unavailable.", "setLoading(false)", "Review queue is unavailable"],
+  for (const [path, defaultArgument, finishPending, unavailableTitle] of [
+    ["src/features/practice/PracticeHubScreen.tsx", "t(\"We couldn’t load your practice options.\")", "setHasLoadedData(true)", "Practice is unavailable"],
+    ["src/features/review/MistakesReviewScreen.tsx", "\"Review queue data is unavailable.\"", "setLoading(false)", "Review queue is unavailable"],
   ] as const) {
     const file = source(path);
-    assert.match(file, new RegExp(`catch \\(error\\) \\{[\\s\\S]*?describeOperationalFailure\\(error, "${defaultMessage.replace(".", "\\.")}\"\\)[\\s\\S]*?${finishPending.replace(/[()]/g, "\\$&")}`), `${path} ends rejected pending state`);
+    assert.match(file, new RegExp(`catch \\(error\\) \\{[\\s\\S]*?describeOperationalFailure\\(error, ${escapeForRegExp(defaultArgument)}\\)[\\s\\S]*?${finishPending.replace(/[()]/g, "\\$&")}`), `${path} ends rejected pending state`);
     assert.match(file, new RegExp(`<EmptyState[\\s\\S]*?title=\\{t\\("${unavailableTitle}"\\)\\}`), `${path} renders unavailable EmptyState`);
   }
 });
@@ -135,8 +137,8 @@ test("resolved track reads apply null without overriding explicit route authorit
     assert.doesNotMatch(file, /if \(nextTrackId\)|if \(savedTrackId\) setActiveTrackId/);
     assert.match(file, /const requestKey:[^=]+ = route\.params\?\.trackId \?\? STORED_TRACK_REQUEST_KEY/);
   }
-  assert.match(roadmap, /useCallback\(\(\) => \{[\s\S]*?\}, \[requestKey\]\)/);
-  assert.match(setup, /useCallback\(\(\) => \{[\s\S]*?\}, \[requestKey\]\)/);
+  assert.match(roadmap, /useCallback\(\(\) => \{[\s\S]*?\}, \[requestKey, t\]\)/);
+  assert.match(setup, /useCallback\(\(\) => \{[\s\S]*?\}, \[requestKey, t\]\)/);
 });
 
 test("route-keyed read states block A under B and publish only their captured request", () => {
@@ -174,6 +176,32 @@ test("route-keyed read states block A under B and publish only their captured re
     assert.ok(guard < file.indexOf('if (readState.kind === "unavailable")'), `${path} mismatch guard precedes error rendering`);
     assert.ok(guard < file.indexOf("const { activeTrackId"), `${path} mismatch guard precedes ready derivation`);
   }
+
+  const result = source("src/features/exam/ResultScreen.tsx");
+  assert.match(result, /type ResultReadState =[\s\S]*?kind: "pending"; requestKey: string[\s\S]*?kind: "ready"; requestKey: string; summary:[\s\S]*?kind: "unavailable"; requestKey: string; reason:/);
+  assert.match(result, /const requestKey = route\.params\.sessionId/);
+  assert.match(result, /const capturedRequestKey = requestKey;[\s\S]*?setReadState\(\{ kind: "pending", requestKey: capturedRequestKey \}\)/);
+  assert.match(result, /kind: "ready", requestKey: capturedRequestKey, summary:/);
+  assert.match(result, /kind: "unavailable", requestKey: capturedRequestKey, reason:/);
+  assert.match(result, /return \(\) => \{ live = false; \}/);
+  const resultGuard = result.indexOf('if (readState.requestKey !== requestKey || readState.kind === "pending")');
+  assert.ok(resultGuard >= 0);
+  assert.ok(resultGuard < result.indexOf('if (readState.kind === "unavailable")'));
+  assert.ok(resultGuard < result.indexOf("const summary = readState.summary"));
+
+  const algorithmsSummary = source("src/features/practice/AlgorithmsPracticeSummaryScreen.tsx");
+  assert.match(algorithmsSummary, /type SummaryReadState =[\s\S]*?kind: "pending"; requestKey: string[\s\S]*?kind: "ready"; requestKey: string; result:[\s\S]*?kind: "unavailable"; reason: string; requestKey: string/);
+  assert.match(algorithmsSummary, /const requestKey = route\.params\.sessionId/);
+  assert.match(algorithmsSummary, /const capturedRequestKey = requestKey;[\s\S]*?setReadState\(\{ kind: "pending", requestKey: capturedRequestKey \}\)/);
+  assert.match(algorithmsSummary, /getAlgorithmsPracticeSummaryProjection\(capturedRequestKey\)/);
+  assert.match(algorithmsSummary, /kind: "ready", requestKey: capturedRequestKey, result/);
+  assert.match(algorithmsSummary, /kind: "unavailable", requestKey: capturedRequestKey, reason:/);
+  assert.match(algorithmsSummary, /setShowReview\(false\)/);
+  assert.match(algorithmsSummary, /return \(\) => \{ live = false; \}/);
+  const algorithmsGuard = algorithmsSummary.indexOf('if (readState.requestKey !== requestKey || readState.kind === "pending")');
+  assert.ok(algorithmsGuard >= 0);
+  assert.ok(algorithmsGuard < algorithmsSummary.indexOf('if (readState.kind === "unavailable")'));
+  assert.ok(algorithmsGuard < algorithmsSummary.indexOf("const { result } = readState"));
 });
 
 test("queue reads clear stale resolved data before pending or unavailable", () => {

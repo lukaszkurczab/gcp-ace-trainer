@@ -27,6 +27,7 @@ type M2Manifest = Readonly<{
 
 const manifest = JSON.parse(readFileSync(".maestro/m2-custom-10-at-session-end.expected-session.json", "utf8")) as M2Manifest;
 const flow = readFileSync(".maestro/m2-custom-10-at-session-end.yaml", "utf8");
+const reviewFlow = readFileSync(".maestro/coding-practice-result-review.yaml", "utf8");
 
 test("M2 Custom 10 at session end derives real item, option, and outcome identities from the pinned Algorithms package", async () => {
   await prepareBundledTestPackages();
@@ -76,6 +77,7 @@ test("M2 Custom 10 at session end derives real item, option, and outcome identit
 });
 
 test("M2 flow uses stable selectors for Custom setup, deferred feedback, summary review, progress, and completed-session relaunch", () => {
+  assert.match(readFileSync(".gitignore", "utf8"), /^!\.maestro\/coding-practice-result-review\.yaml$/m);
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.practice.customEntry()}"`)));
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.practice.openSetup()}"`)));
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.practice.customSetupTitle()}"`)));
@@ -88,13 +90,16 @@ test("M2 flow uses stable selectors for Custom setup, deferred feedback, summary
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.summary.backToPractice(sessionId)}"`)));
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.progress.root()}"`)));
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.resume.card(sessionId)}"`)));
+  assert.equal(count(flow, "- runFlow: coding-practice-result-review.yaml"), 1);
+  assert.match(reviewFlow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.summary.root(sessionId)}"`)));
+  assert.equal(count(reviewFlow, runtimeSelectors.practice.startSession()), 0);
 
   for (const item of manifest.items) {
     for (const optionId of item.selectedOptionIds) {
       assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.option(item.itemId, optionId)}"`)));
     }
     assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.submit(item.itemId)}"`)));
-    assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.continue(item.itemId)}"`)));
+    assert.doesNotMatch(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.continue(item.itemId)}"`)));
   }
 
   for (const item of manifest.items.slice(0, -1)) {
@@ -109,10 +114,20 @@ test("M2 flow uses stable selectors for Custom setup, deferred feedback, summary
 
   for (const ordinal of manifest.summaryReviewOrdinals) {
     const feedbackItemId = `${sessionId}:occurrence:${ordinal - 1}`;
-    assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.reason(feedbackItemId)}"`)));
-    assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.detailsToggle(feedbackItemId)}"`)));
-    assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.details(feedbackItemId)}"`)));
+    assert.match(reviewFlow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.summary.feedbackItem(sessionId, feedbackItemId)}"`)));
+    assert.match(reviewFlow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.practiceReview.root(sessionId, feedbackItemId)}"`)));
+    assert.match(reviewFlow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.reason(feedbackItemId)}"`)));
+    assert.match(reviewFlow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.detailsToggle(feedbackItemId)}"`)));
+    assert.match(reviewFlow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.details(feedbackItemId)}"`)));
   }
+
+  for (const ordinal of [1, 10]) {
+    const feedbackItemId = `${sessionId}:occurrence:${ordinal - 1}`;
+    assert.match(reviewFlow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.summary.feedbackItem(sessionId, feedbackItemId)}"`)));
+  }
+  assert.match(reviewFlow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.practiceReview.previous()}"\n    enabled: false`)));
+  assert.match(reviewFlow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.practiceReview.next()}"\n    enabled: false`)));
+  assert.doesNotMatch(reviewFlow, /- tapOn:\n    id: "patternly:session:submit:/);
 
   const hub = readFileSync("src/features/practice/PracticeHubScreen.tsx", "utf8");
   const setup = readFileSync("src/features/practice/PracticeSetupScreen.tsx", "utf8");
@@ -126,4 +141,8 @@ test("M2 flow uses stable selectors for Custom setup, deferred feedback, summary
 
 function escapeForRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function count(value: string, needle: string): number {
+  return value.split(needle).length - 1;
 }

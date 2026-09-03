@@ -9,9 +9,9 @@ const preferenceSelection = readFileSync("src/features/home/PreferenceSelectionS
 const appearanceSettings = readFileSync("src/features/home/AppearanceSettingsScreen.tsx", "utf8");
 const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
-test("Settings exposes account and participant navigation actions plus one backend verification action", () => {
+test("Settings exposes account and participant navigation actions plus conditional developer verification actions", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
-  assert.equal(navigationRows.length, 7);
+  assert.equal(navigationRows.length, 8);
 
   for (const callback of [
     "onOpenAccount",
@@ -25,6 +25,7 @@ test("Settings exposes account and participant navigation actions plus one backe
   }
   assert.match(settingsTab, /testID="settings-backend-diagnostics"/);
   assert.match(settingsTab, /backendDiagnosticsConfigured \? \(/);
+  assert.match(settingsTab, /premiumTestingAvailable \? \([\s\S]*?testID="settings-premium-testing"/);
 });
 
 test("Settings keeps the backend verification group explicitly development-only", () => {

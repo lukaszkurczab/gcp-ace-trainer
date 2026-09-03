@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AnswerOption, type AnswerOptionState } from "../../components";
@@ -107,13 +108,14 @@ function ChoiceOption({ editable, index, itemId, onPress, option, role }: Readon
   role: "checkbox" | "radio";
 }>) {
   const selected = option.state === "selected" || option.state === "correct" || option.state === "incorrect" || option.state === "omitted_correct";
+  const { t } = useTranslation("common");
   const correctness = practiceOptionCorrectnessValue(option.state);
 
   return <AnswerOption
     accessibilityLabel={option.text}
     accessibilityRole={role}
     accessibilityState={{ checked: selected, disabled: !editable }}
-    accessibilityValue={correctness ? { text: correctness } : undefined}
+    accessibilityValue={correctness ? { text: t(correctness) } : undefined}
     disabled={!editable}
     letter={String.fromCharCode(65 + index)}
     onPress={onPress}
@@ -131,10 +133,11 @@ function OrderingMove({ direction, disabled, elementLabel, index, onPress, total
   onPress: () => void;
   total: number;
 }>) {
+  const { t } = useTranslation("common");
   const styles = useThemedStyles(createStyles);
   return (
     <Pressable
-      accessibilityLabel={orderingMoveAccessibilityLabel(elementLabel, index, total, direction)}
+      accessibilityLabel={orderingMoveAccessibilityLabel(elementLabel, index, total, direction, t)}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}

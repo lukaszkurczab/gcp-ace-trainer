@@ -43,6 +43,7 @@ test("PKG-04A makes exact package pins and closed profiles the only runtime cont
     "certification",
   );
   assert.deepEqual(certification.profile.modes.map((mode) => mode.modeId), [
+    "certification-diagnostic-baseline",
     "certification-focus-practice",
     "certification-weak-area-review",
     "certification-quick-review",
@@ -68,8 +69,8 @@ test("Free Practice entry points use the approved primary modes and never route 
 
   assert.match(hub, /isCodingInterviewTrack[\s\S]*ALGORITHM_MODE_IDS\.learnApproach[\s\S]*"certification-focus-practice"/);
   assert.match(hub, /isDesignInterviewTrack[\s\S]*packageProfile\.primaryEntry\.modeId/);
-  assert.doesNotMatch(hub, /mode: "certification-diagnostic-baseline"/);
-  assert.match(hub, /mode: "certification-focus-practice"/);
+  assert.match(hub, /resolvedMode === "certification-diagnostic-baseline"/);
+  assert.match(hub, /mode:\s*isDesignInterviewTrack \? packageProfile\.primaryEntry\.modeId as PracticeSessionMode : "certification-focus-practice"/);
   assert.match(hub, /topicId: topic\.id, trackId: activeTrack\.id/);
   assert.match(setup, /focusTopicId \?\? packageProfile\.freeNodeId/);
   assert.equal(hub.includes("route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId"), true);

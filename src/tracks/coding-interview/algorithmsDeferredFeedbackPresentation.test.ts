@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   getAlgorithmsPracticeProjection,
   getAlgorithmsPracticeResultProjection,
+  getAlgorithmsPracticeReviewProjection,
   getAlgorithmsPracticeSummaryProjection,
 } from "../../application/coding-interview";
 import {
@@ -175,4 +176,5 @@ test("explicitly ended practice exposes a partial summary without inventing a co
   assert.equal(projection.unansweredOccurrenceIds.length, 0);
   assert.equal(projection.score, null);
   assert.deepEqual(projection.feedbackItems, []);
+  await assert.rejects(getAlgorithmsPracticeReviewProjection(session.id, attempt.occurrenceId), /completed practice session/);
 });

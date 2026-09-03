@@ -11,9 +11,20 @@ async function profile() {
   return contentPackageRuntimeOwner.getPreparedDiscovery("google-cloud-associate-cloud-engineer").profile;
 }
 
-test("Certification Diagnostic Baseline is excluded from the bundled Free package and direct entry fails", async () => {
+test("Certification Diagnostic Baseline is the exact 40-item package-declared secondary mode", async () => {
   const value = await profile();
-  assert.throws(() => value.getMode("certification-diagnostic-baseline"), /unavailable in package/u);
+  const mode = value.getMode("certification-diagnostic-baseline");
+  const configuration = value.getConfiguration("certification-diagnostic-baseline");
+  const itemIds = configuration.selection.itemIds;
+  assert.equal(mode.availability, "immediate");
+  assert.deepEqual(mode.requestedLengths, [40]);
+  assert.equal(mode.defaultRequestedLength, 40);
+  assert.equal(configuration.requestedLengths[0], 40);
+  assert.equal(configuration.defaultRequestedLength, 40);
+  assert.equal(configuration.reinsertPolicy, "disabled");
+  assert.ok(Array.isArray(itemIds));
+  assert.equal(itemIds.length, 40);
+  assert.equal(new Set(itemIds).size, 40);
 });
 
 test("Certification Focus Practice is the bundled Free package primary entry and remains node-local", async () => {

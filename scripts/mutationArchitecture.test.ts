@@ -184,7 +184,7 @@ test("Certification presentation reads materialized feedback without owning fami
   assert.match(runtime, /result: scoreCertificationQuestion\(question, response\)/);
   assert.match(facade, /const feedback = materializedAttempt \? Object\.freeze\(\{ result: materializedAttempt\.result\.kind, reason: question\.feedback\.reason, details: question\.feedback\.details \}\) : null/);
   assert.match(screen, /const feedback = projection\.feedback/);
-  assert.doesNotMatch(screen, /correctOptionIds|question\.feedback|const result = submitted|feedback[^;]*selected/);
+  assert.doesNotMatch(screen, /correctOptionIds|question\.feedback|const result = submitted|\bfeedback\b[^\n;]*\bselected\b/);
 });
 
 test("Certification durable Practice state has one exact projection, recovery command, and shared notice mapper", () => {
@@ -209,16 +209,16 @@ test("Certification durable Practice state has one exact projection, recovery co
   assert.match(certification, /setSelection\(\(current\) => reconcilePracticeChoiceSelection\(\{[\s\S]*?durableSelectedOptionIds: next\.response\?\.value\.selectedOptionIds \?\? null,[\s\S]*?occurrenceId: next\.occurrenceId,[\s\S]*?sessionId: next\.session\.id/);
   assert.match(certification, /"error" in projection\.operation && projection\.operation\.error\.allowedAction === "recover"/);
   assert.match(certification, /if \(!editable\) return;/);
-  assert.match(certification, /if \(!canRecover\) return;/);
+  assert.match(certification, /if \(!canRecover(?: \|\| recoveryInFlight\.current)?\) return;/);
   assert.match(certification, /if \(!canAdvance\) return;/);
   const advanceRetry = certification.slice(certification.indexOf('if (projection.operation.kind === "advance_failed")'), certification.indexOf("if (projection.ordinal === projection.total)"));
   assert.match(advanceRetry, /advanceCertificationPracticeSession\(\)/);
   assert.doesNotMatch(advanceRetry, /submitCertificationPracticeResponse|completeCertificationPracticeSession/);
-  assert.match(certification, /catch \{ await refreshAfterCommand\("The answer state could not be refreshed\."\); return; \}/);
+  assert.match(certification, /catch \{ await refreshAfterCommand\("We couldn't open the next question\. Try again\."\); return; \}/);
   const endSession = certification.slice(certification.indexOf("const endSession = async () =>"), certification.indexOf("const recoverAbandonment"));
   assert.match(endSession, /result\.kind === "retry_same_command"[\s\S]*?result\.retry === "foreground_checkpoint" \? "retry_checkpoint" : "retry_abandon"/);
   assert.match(endSession, /result\.kind === "recovery_required"[\s\S]*?result\.recovery === "abandonment" \? "recover_abandon" : "recover_operation"/);
-  assert.match(endSession, /catch \(cause\) \{[\s\S]*?setError\(describeOperationalFailure\(cause, "The session end state could not be verified\."\)\);[\s\S]*?\}/);
+  assert.match(endSession, /catch \(cause\) \{[\s\S]*?setError\(describeOperationalFailure\(cause, t\("We couldn't end the session\. Try again\."\)\)\);[\s\S]*?\}/);
   assert.doesNotMatch(endSession, /catch[^}]*setExitFailure/);
   const preAbandonmentRecovery = facade.slice(facade.indexOf("export async function recoverCertificationPreAbandonmentCheckpoint"), facade.indexOf("async function abandonCertificationSessionAfterTimerLeave"));
   const recoverIndex = preAbandonmentRecovery.indexOf("await lifecycle.recoverActiveTrainingOperation()");

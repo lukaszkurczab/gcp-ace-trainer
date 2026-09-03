@@ -149,14 +149,16 @@ test("Independent Practice direct entry fails because it is excluded from the bu
   );
 });
 
-test("Certification resume routes preserve exact immutable configuration for the three package modes", () => {
+test("Certification resume routes preserve exact immutable configuration for package modes", () => {
   const routes = [
+    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationDiagnosticBaseline" }, id: "diagnostic", modeId: "certification-diagnostic-baseline", requestedLength: 40 })),
     buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, domain: GCP_FREE_NODE_ID, kind: "certificationFocusPractice" }, id: "focus", modeId: "certification-focus-practice", requestedLength: 20 })),
     buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationWeakAreaReview" }, id: "weak", modeId: "certification-weak-area-review", requestedLength: 20 })),
     buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationQuickReview", maximumLength: 10 }, id: "quick", modeId: "certification-quick-review", requestedLength: 10 })),
   ];
 
   assert.deepEqual(routes.map((route) => ({ competencyId: route.competencyId, expectedSessionId: route.expectedSessionId, mode: route.mode, sessionLength: route.sessionLength, topicId: route.topicId })), [
+    { competencyId: undefined, expectedSessionId: "diagnostic", mode: "certification-diagnostic-baseline", sessionLength: 40, topicId: "" },
     { competencyId: undefined, expectedSessionId: "focus", mode: "certification-focus-practice", sessionLength: 20, topicId: GCP_FREE_NODE_ID },
     { competencyId: undefined, expectedSessionId: "weak", mode: "certification-weak-area-review", sessionLength: 20, topicId: "" },
     { competencyId: undefined, expectedSessionId: "quick", mode: "certification-quick-review", sessionLength: 10, topicId: "" },
@@ -165,7 +167,7 @@ test("Certification resume routes preserve exact immutable configuration for the
 
 test("Certification resume rejects stale, cross-track, exam, and non-active sessions explicitly", () => {
   const staleFocus = certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice" }, id: "stale-focus", modeId: "certification-focus-practice", requestedLength: 10 });
-    assert.throws(() => buildCertificationPracticeResumeRoute(staleFocus), /immutable installed node/);
+  assert.throws(() => buildCertificationPracticeResumeRoute(staleFocus), /immutable topic and length/);
   assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationSimulation" }, id: "exam", modeId: "certification-exam-simulation", requestedLength: 50 })), /ordinary Certification session/);
   assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice", domain: "operations" }, id: "cross-track", modeId: "certification-focus-practice", requestedLength: 10, trackId: "coding-interview-dsa-problem-solving" })), /Certification package/);
   assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice", domain: "operations" }, id: "completed", modeId: "certification-focus-practice", requestedLength: 10, status: "completed" })), /Only an active/);

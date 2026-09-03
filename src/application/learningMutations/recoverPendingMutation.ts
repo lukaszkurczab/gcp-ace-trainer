@@ -1,3 +1,4 @@
+import { markAccountDataPending } from "../../storage/repositories/accountDataRepository";
 import { clearMutationJournal, getActiveMutationJournal, updateMutationJournalPhase } from "../../storage/repositories/mutationJournalRepository";
 import { materializeMutation } from "./mutationMaterializer";
 import { verifyMutation } from "./mutationVerifier";
@@ -26,6 +27,7 @@ export async function recoverPendingMutation(): Promise<void> {
   }
   if (record.status === "verified_pending_clear") {
     try {
+      await markAccountDataPending();
       await clearMutationJournal(record.commandIdentity.fingerprint);
     } catch (error) {
       throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error);

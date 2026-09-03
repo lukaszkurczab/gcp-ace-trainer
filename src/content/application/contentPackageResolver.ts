@@ -17,7 +17,12 @@ import { BUNDLED_CONTENT_PACKAGE_TRUST_INDEX } from "./bundledContentPackageTrus
 
 /** Resolves only immutable whole-node package bytes; it has no lifecycle or cache ownership. */
 export class ContentPackageResolver {
-  constructor(private readonly sources: readonly ContentPackageSource[], private readonly runtime: ContentPackageRuntime, private readonly trustIndex: readonly ContentPackageTrustRecord[] = BUNDLED_CONTENT_PACKAGE_TRUST_INDEX) {}
+  constructor(
+    private readonly sources: readonly ContentPackageSource[],
+    private readonly runtime: ContentPackageRuntime,
+    private readonly trustIndex: readonly ContentPackageTrustRecord[] = BUNDLED_CONTENT_PACKAGE_TRUST_INDEX,
+    private readonly retainedSources: readonly ContentPackageSource[] = [],
+  ) {}
 
   async resolveForPreparation(request: ContentPackageRequest): Promise<VerifiedContentPackage> {
     const candidates = this.sources.filter((candidate) => candidate.trackId === request.trackId);
@@ -36,7 +41,7 @@ export class ContentPackageResolver {
   }
 
   async resolveExact(pin: ContentPackagePin, appVersion: string): Promise<VerifiedContentPackage> {
-    const sameVersion = this.sources.filter((candidate) => candidate.packageVersion === pin.packageVersion);
+    const sameVersion = [...this.sources, ...this.retainedSources].filter((candidate) => candidate.packageVersion === pin.packageVersion);
     if (sameVersion.length === 0) fail("package_pin_not_found", `No exact package version exists for ${pin.packageIdentity}.`);
     const source = sameVersion.find((candidate) => candidate.packageSha256 === pin.packageIdentity);
     if (!source) fail("package_pin_mismatch", `No exact outer-byte package identity exists for ${pin.packageVersion}.`);
@@ -48,8 +53,8 @@ export class ContentPackageResolver {
   }
 }
 
-export function createContentPackageResolver(sources: readonly ContentPackageSource[], runtime: ContentPackageRuntime, trustIndex: readonly ContentPackageTrustRecord[] = BUNDLED_CONTENT_PACKAGE_TRUST_INDEX): ContentPackageResolver {
-  return new ContentPackageResolver(sources, runtime, trustIndex);
+export function createContentPackageResolver(sources: readonly ContentPackageSource[], runtime: ContentPackageRuntime, trustIndex: readonly ContentPackageTrustRecord[] = BUNDLED_CONTENT_PACKAGE_TRUST_INDEX, retainedSources: readonly ContentPackageSource[] = []): ContentPackageResolver {
+  return new ContentPackageResolver(sources, runtime, trustIndex, retainedSources);
 }
 
 async function verify(source: ContentPackageSource, appVersion: string, runtime: ContentPackageRuntime, trustIndex: readonly ContentPackageTrustRecord[], expectedFamilyId?: ContentPackageFamilyId, expectedFreeNodeId?: string): Promise<VerifiedContentPackage> {
@@ -85,7 +90,7 @@ async function verify(source: ContentPackageSource, appVersion: string, runtime:
   validateFamilyItems(payload.items, familyId);
   validateNodeLocalTaxonomy(payload.taxonomy, payload.items, familyId, manifest);
   const assets = await verifiedAssets(payload.assets, runtime);
-  const profile = verifiedProfile(payload.freeNodeExperienceProfile, payload.modeStructures, manifest, source.profileModes, familyId);
+  const profile = verifiedProfile(payload.freeNodeExperienceProfile, payload.modeStructures, manifest, source.profileModes, familyId, itemIds as string[]);
   // The outer-byte checksum is the only package identity: manifest fields are
   // validated as package contents, never promoted into an identity alias.
   const pin = Object.freeze({ packageIdentity: source.packageSha256, packageVersion: manifest.packageVersion, contentReleaseId: manifest.provenance.releaseId });
@@ -124,7 +129,7 @@ function validAlgorithmInteraction(value: Record<string, unknown>): boolean {
   return value.type === "complexity" && Array.isArray(value.checkedDimensions) && value.checkedDimensions.length > 0 && record(value.availableValuesByDimension) && record(value.acceptedValuesByDimension);
 }
 
-function verifiedProfile(value: Record<string, unknown>, modeStructures: unknown, manifest: Record<string, unknown>, sourceModes: readonly string[], familyId: ContentPackageFamilyId) {
+function verifiedProfile(value: Record<string, unknown>, modeStructures: unknown, manifest: Record<string, unknown>, sourceModes: readonly string[], familyId: ContentPackageFamilyId, packageItemIds: readonly string[]) {
   const keys = ["familyId", "freeNodeId", "modes", "primaryEntry", "profileId", "profileVersion", "schemaVersion", "trackId"];
   exactKeys(value, keys, "package_profile_invalid");
   if (value.schemaVersion !== "patternly-free-node-experience-profile-v1" || value.trackId !== manifest.trackId || value.familyId !== manifest.familyId || value.freeNodeId !== manifest.freeNodeId || value.profileId !== manifest.profileId || value.profileVersion !== manifest.profileVersion || !Array.isArray(value.modes) || !record(value.primaryEntry) || !nonEmpty(value.primaryEntry.modeId) || !positive(value.primaryEntry.requestedLength)) fail("package_profile_invalid", "Package profile identity is invalid.");
@@ -134,6 +139,7 @@ function verifiedProfile(value: Record<string, unknown>, modeStructures: unknown
     if (!record(mode) || !nonEmpty(mode.modeId) || !nonEmpty(mode.blueprintModeId) || (mode.availability !== "immediate" && mode.availability !== "evidence_conditioned") || !Array.isArray(mode.requestedLengths) || !mode.requestedLengths.every(positive) || !positive(mode.defaultRequestedLength) || !mode.requestedLengths.includes(mode.defaultRequestedLength)) fail("package_profile_invalid", "Package profile mode is invalid.");
     const structure = structures.find((candidate) => record(candidate) && candidate.modeId === mode.modeId);
     if (!structure || structure.blueprintModeId !== mode.blueprintModeId || structure.availability !== mode.availability || structure.defaultRequestedLength !== mode.defaultRequestedLength || !sameNumbers(structure.requestedLengths, mode.requestedLengths) || !record(structure.selection) || structure.selection.freeNodeId !== manifest.freeNodeId || structure.selection.itemSource !== "package_items" || structure.selection.requireUniqueItemIds !== true) fail("package_profile_invalid", "Profile mode does not match its node-local mode structure.");
+    if (familyId === "certification" && mode.modeId === "certification-diagnostic-baseline") validateCertificationDiagnosticMode(mode, structure, manifest.freeNodeId as string, packageItemIds);
     validateCanonicalRunnerMode(familyId, mode, structure);
     return Object.freeze({ modeId: mode.modeId, blueprintModeId: mode.blueprintModeId, availability: mode.availability, requestedLengths: Object.freeze([...mode.requestedLengths]), defaultRequestedLength: mode.defaultRequestedLength });
   });
@@ -158,6 +164,17 @@ function verifiedProfile(value: Record<string, unknown>, modeStructures: unknown
     return Object.freeze({ configurationId: structure.configurationId, configurationVersion: structure.configurationVersion, modeId: structure.modeId, blueprintModeId: structure.blueprintModeId, availability: structure.availability, requestedLengths: Object.freeze([...structure.requestedLengths]), defaultRequestedLength: structure.defaultRequestedLength, reinsertPolicy: structure.reinsertPolicy, ...(structure.feedbackOptions === undefined ? {} : { feedbackOptions: Object.freeze([...structure.feedbackOptions]) }), selection: cloneFreeze(structure.selection) });
   });
   return Object.freeze({ profileId: value.profileId as string, profileVersion: value.profileVersion as string, primaryEntry: Object.freeze({ modeId: value.primaryEntry.modeId, requestedLength: value.primaryEntry.requestedLength }), modes: Object.freeze(modes), configurations: Object.freeze(configurations) });
+}
+
+function validateCertificationDiagnosticMode(mode: Record<string, unknown>, structure: Record<string, unknown>, freeNodeId: string, packageItemIds: readonly string[]): void {
+  if (mode.blueprintModeId !== "certification-diagnostic-baseline" || mode.availability !== "immediate" || !sameNumbers(mode.requestedLengths, [40]) || mode.defaultRequestedLength !== 40 || structure.blueprintModeId !== "certification-diagnostic-baseline" || structure.availability !== "immediate" || !sameNumbers(structure.requestedLengths, [40]) || structure.defaultRequestedLength !== 40 || structure.reinsertPolicy !== "disabled" || !record(structure.selection)) {
+    fail("package_profile_invalid", "Certification Diagnostic Baseline must be an immediate fixed 40-item configuration.");
+  }
+  const selection = structure.selection;
+  exactKeys(selection, ["freeNodeId", "itemSource", "requireUniqueItemIds", "kind", "itemIds"], "package_profile_invalid");
+  if (selection.freeNodeId !== freeNodeId || selection.itemSource !== "package_items" || selection.requireUniqueItemIds !== true || selection.kind !== "exact_free_node" || !Array.isArray(selection.itemIds) || selection.itemIds.length !== 40 || !selection.itemIds.every(nonEmpty) || new Set(selection.itemIds).size !== 40 || !selection.itemIds.every((itemId: string) => packageItemIds.includes(itemId))) {
+    fail("package_profile_invalid", "Certification Diagnostic Baseline must declare 40 unique package item IDs in exact order.");
+  }
 }
 
 function validateCanonicalRunnerMode(familyId: ContentPackageFamilyId, mode: Record<string, unknown>, structure: Record<string, unknown>): void {

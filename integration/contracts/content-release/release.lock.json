@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "repository": "lukaszkurczab/patternly-content",
-  "bundleId": "patternly-app-content-0021",
+  "bundleId": "patternly-app-content-0022",
   "artifacts": [
     {
       "releaseId": "patternly-launch-2026-08-25-01",
@@ -37,7 +37,7 @@
     },
     {
       "releaseId": "patternly-launch-2026-08-25-01",
-      "producerCommit": "dc02b8021d14f573d9a033f8f5f3117b45087438",
+      "producerCommit": "93100908aed4de0a78c5543820a7d6d2987ed502",
       "sourceRepositoryCommit": "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c",
       "trackId": "google-cloud-associate-cloud-engineer",
       "contentVersion": "google-cloud-associate-cloud-engineer-authoring-v2026.08.11",
@@ -66,6 +66,19 @@
       "trackId": "microsoft-azure-ai-fundamentals-ai-901",
       "contentVersion": "microsoft-azure-ai-fundamentals-ai-901-authoring-v2026.08.15",
       "checksumSha256": "474f1a403baf502abe10980ff4d7563493664ef1bad7859e2d0fb0ff65fb92c4"
+    }
+  ],
+  "retainedArtifacts": [
+    {
+      "releaseId": "patternly-launch-2026-08-25-01",
+      "producerCommit": "dc02b8021d14f573d9a033f8f5f3117b45087438",
+      "sourceRepositoryCommit": "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c",
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "contentVersion": "google-cloud-associate-cloud-engineer-authoring-v2026.08.11",
+      "packageVersion": "google-cloud-associate-cloud-engineer-free-node-0004",
+      "minimumAppVersion": "0.1.0",
+      "checksumSha256": "732f915e43542ca1318bf32aafd1f2cfab77012eb3c8d236a362a92a993740e4",
+      "packageSha256": "50e1e1c734c0fc8dc48020f464165933727664817001ed56231babed9ef53778"
     }
   ]
 }

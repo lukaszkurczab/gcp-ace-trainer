@@ -47,6 +47,25 @@ export type PracticeLocalResponse =
   | Readonly<{ kind: "complexity"; selectedValuesByDimension: Readonly<Record<string, string>> }>
   | null;
 
+export type PracticeLocalResponseState = Readonly<{
+  occurrenceId: string;
+  response: Exclude<PracticeLocalResponse, null>;
+  sessionId: string;
+}>;
+
+export function reconcilePracticeLocalResponse(input: Readonly<{
+  current: PracticeLocalResponseState | null;
+  durableResponse: PracticeLocalResponse;
+  editable: boolean;
+  occurrenceId: string;
+  sessionId: string;
+}>): PracticeLocalResponseState | null {
+  const owner = { occurrenceId: input.occurrenceId, sessionId: input.sessionId };
+  if (input.durableResponse !== null) return Object.freeze({ ...owner, response: input.durableResponse });
+  if (input.editable && input.current?.occurrenceId === input.occurrenceId && input.current.sessionId === input.sessionId) return input.current;
+  return null;
+}
+
 export type PracticeNotice = Readonly<{
   message: string;
   tone: "neutral" | "error" | "success";
@@ -79,21 +98,21 @@ export function formatPracticeElapsedTime(milliseconds: number): string {
 export function noticeForPracticeOperation(operation: PracticeDurableOperationState): PracticeNotice | undefined {
   if (operation.kind === "submitting_before_journal") return { tone: "neutral", message: "Saving your answer…" };
   if (operation.kind === "submit_journal_failed") return { tone: "error", message: "We couldn't save your response. Your current answer is still here." };
-  if (operation.kind === "commit_pending" || operation.kind === "commit_materialization_failed" || operation.kind === "commit_verification_failed" || operation.kind === "verified_pending_clear") return { tone: "error", message: "Your response is immutable because a durable command exists. Recovery must replay that exact command." };
-  if (operation.kind === "recovery_required") return { tone: "error", message: "A previous session update must be recovered before another answer can be submitted." };
+  if (operation.kind === "commit_pending" || operation.kind === "commit_materialization_failed" || operation.kind === "commit_verification_failed" || operation.kind === "verified_pending_clear") return { tone: "error", message: "Your answer is saved on this device. Restore this question to continue." };
+  if (operation.kind === "recovery_required") return { tone: "error", message: "Restore the session before submitting another answer." };
   if (operation.kind === "advancing") return { tone: "neutral", message: "Opening the next question…" };
-  if (operation.kind === "advance_failed") return { tone: "error", message: "Your answer remains committed. Retry opening the next question." };
+  if (operation.kind === "advance_failed") return { tone: "error", message: "Your answer is saved. Try opening the next question again." };
   if (operation.kind === "completing") return { tone: "neutral", message: "Finishing this session…" };
   if (operation.kind === "completion_failed") return operation.error.allowedAction === "recover"
-    ? { tone: "error", message: "The Finish command is durable and must be recovered before opening the result." }
-    : { tone: "error", message: "The Finish command was not durably recorded. Retry Finish session." };
+    ? { tone: "error", message: "We couldn't finish the session yet. Restore the session result before opening it." }
+    : { tone: "error", message: "We couldn't finish the session. Try again." };
   return undefined;
 }
 
 export function noticeForPracticeCompletionCheckpoint(kind: "recover" | "retry"): PracticeNotice {
   return kind === "recover"
-    ? { tone: "error", message: "The final timer checkpoint is durable. Recover it, then Finish the session again." }
-    : { tone: "error", message: "The final timer checkpoint was not durable. Retry it, then Finish the session again." };
+    ? { tone: "error", message: "We couldn't finish updating the session time. Restore it, then finish the session again." }
+    : { tone: "error", message: "We couldn't save the session time. Try again, then finish the session." };
 }
 
 /**
@@ -176,16 +195,17 @@ export function resolvePracticeLocalResponse(
 }
 
 export function getPracticePrimaryAction(input: Readonly<{
+  feedbackTiming: "afterEachAnswer" | "atSessionEnd";
   hasLocalResponse: boolean;
   isFinalPosition: boolean;
   phase: PracticeSurfacePhase;
 }>): Readonly<{ enabled: boolean; label: string; loading: boolean }> | null {
   if (input.phase === "unanswered") {
-    return Object.freeze({ enabled: input.hasLocalResponse, label: "Check answer", loading: false });
+    return Object.freeze({ enabled: input.hasLocalResponse, label: input.feedbackTiming === "atSessionEnd" ? "Submit answer" : "Check answer", loading: false });
   }
-  if (input.phase === "submitting_before_journal") return Object.freeze({ enabled: false, label: "Checking answer…", loading: true });
+  if (input.phase === "submitting_before_journal") return Object.freeze({ enabled: false, label: input.feedbackTiming === "atSessionEnd" ? "Saving your answer…" : "Checking answer…", loading: true });
   if (input.phase === "submit_journal_failed") return Object.freeze({ enabled: input.hasLocalResponse, label: "Try again", loading: false });
-  if (input.phase === "commit_pending") return Object.freeze({ enabled: false, label: "Finishing the update…", loading: true });
+  if (input.phase === "commit_pending") return Object.freeze({ enabled: false, label: "Saving your answer…", loading: true });
   if (input.phase === "advancing") return Object.freeze({ enabled: false, label: "Loading next question…", loading: true });
   if (input.phase === "feedback") return Object.freeze({ enabled: true, label: input.isFinalPosition ? "Finish session" : "Next", loading: false });
   if (input.phase === "advance_failed") return Object.freeze({ enabled: true, label: "Try again", loading: false });

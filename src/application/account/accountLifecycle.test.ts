@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
 import { PatternlyApiClientError, type PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
+import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { deleteBoundAccount, prepareAccountSignOut } from "./accountDataService";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
@@ -48,6 +49,15 @@ beforeEach(async () => {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   await provisionGuestInstallation({ async create() { return { installationId: "66666666-6666-4666-8666-666666666666", localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
   await bindGuestInstallationToAccount(accountId);
+});
+
+test("account sync preserves known validation failures without persisting arbitrary error messages", async () => {
+  for (const [message, expected] of [["account_data_fingerprint_invalid", "account_data_fingerprint_invalid"], ["sensitive unexpected detail", "remoteFailure"]]) {
+    const result = await loadAccountDataSession(api({ getProgress: async () => { throw message === "account_data_fingerprint_invalid" ? new AccountDataFailure(message) : new Error(message); } }), accountId);
+    assert.equal(result.lastFailureCode, expected);
+    assert.equal((await getAccountSyncState()).lastFailureCode, expected);
+  }
+  assert.equal((await loadAccountDataSession(api(), accountId)).status, "synced");
 });
 
 test("sign-out keeps the account bound and exposes a durable pending state when revocation fails", async () => {
@@ -104,15 +114,18 @@ test("deletion retries after a revoked or stale session and leaves a verified lo
 });
 
 // The discard path uses the real repositories and injected durable storage faults.
-import { createTrainingSession } from "../../domain";
+import { completeTrainingSession, createTrainingSession, createTrainingSessionDraft } from "../../domain";
 import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { discardGuestDataAndLoadAccount, loadAccountDataSession } from "./accountDataService";
 import { clearGuestAccountBinding } from "../../storage/repositories/guestInstallationRepository";
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
-import { saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
+import { getActiveTrainingSession, saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
+import { clearActiveTrainingSessionDraft, getActiveTrainingSessionDraft, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
 import { buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, saveAccountSyncState } from "../../storage/repositories/accountDataRepository";
+import { persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
+import { attempt as journalAttempt, journal as makeJournal, session as journalSession } from "../../testing/journalTestSupport";
 
 const guestTrack = "coding-interview-dsa-problem-solving" as const;
 async function prepareGuest() {
@@ -129,6 +142,151 @@ function guestSession(status: "active" | "abandoned") {
     status, startedAt: "2026-01-01T00:00:00.000Z",
   });
 }
+
+function resumableSession() {
+  return createTrainingSession({
+    id: "resumable-session", trackId: guestTrack, modeId: "guided",
+    configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "practice", submission: "manualOrForegroundTimeout" },
+    requestedLength: 1, actualLength: 1, currentItemIndex: 0,
+    itemOrder: [{ occurrenceId: "resumable-occurrence", item: { trackId: guestTrack, itemId: "two-sum-001", contentVersion: "test", packagePin: TEST_CONTENT_PACKAGE_PIN } }],
+    optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "test", packagePin: TEST_CONTENT_PACKAGE_PIN,
+    status: "active", startedAt: "2026-01-01T00:00:00.000Z",
+  });
+}
+
+async function persistResumableAnswer(session: ReturnType<typeof resumableSession>) {
+  return persistTrainingSessionDraft(createTrainingSessionDraft({
+    sessionId: session.id, trackId: session.trackId,
+    responsesByOccurrenceId: { "resumable-occurrence": { selectedOptionIds: ["option-a"] } },
+    flaggedOccurrenceIds: [], updatedAt: "2026-01-01T00:01:00.000Z",
+  }), null);
+}
+
+function remoteRecords(snapshot: Awaited<ReturnType<typeof buildAccountDataSnapshot>>) {
+  return snapshot.records.map((record) => ({
+    ...record,
+    kind: record.recordType === "training_attempt" || record.recordType === "review_queue_entry" ? "item" as const : "node" as const,
+    targetId: record.recordId,
+    lastMutationId: `remote-${record.recordId}`,
+    updatedAt: "2026-01-01T00:02:00.000Z",
+  }));
+}
+
+test("bound restart exposes a projection for a locally saved session without remote reads or writes", async () => {
+  await prepareGuest();
+  await bindGuestInstallationToAccount(accountId);
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  const active = resumableSession();
+  await saveTrainingSession(active);
+  const draft = await persistResumableAnswer(active);
+  const beforeState = await getAccountSyncState();
+  let reads = 0;
+  let uploads = 0;
+  const forbidden = async (): Promise<never> => { throw new Error("remote account data must not be touched while resuming"); };
+  const result = await loadAccountDataSession(api({
+    getProgress: async () => { reads++; return forbidden(); },
+    syncProgress: async () => { uploads++; return forbidden(); },
+  }), accountId);
+
+  assert.equal(result.status, "resumeRequired");
+  assert.equal(result.activeSessionBlocked, true);
+  assert.equal(reads, 0);
+  assert.equal(uploads, 0);
+  assert.deepEqual(await getActiveTrainingSession(), active);
+  assert.deepEqual(await getActiveTrainingSessionDraft(), draft);
+  assert.deepEqual((await getAccountSyncState()).outbox, beforeState.outbox);
+  assert.equal((await getAccountSyncState()).status, "synced");
+});
+
+test("resume requires matching installation and account-state bindings", async () => {
+  await prepareGuest();
+  await bindGuestInstallationToAccount(accountId);
+  const active = resumableSession();
+  await saveTrainingSession(active);
+  let remoteCalls = 0;
+  const forbidden = async (): Promise<never> => { remoteCalls++; throw new Error("remote account data must not be touched with an unbound sync state"); };
+  const result = await loadAccountDataSession(api({ getProgress: forbidden, syncProgress: forbidden }), accountId);
+
+  assert.equal(result.status, "failed");
+  assert.equal(result.lastFailureCode, "account_binding_mismatch");
+  assert.equal(result.activeSessionBlocked, true);
+  assert.equal(remoteCalls, 0);
+  assert.deepEqual(await getActiveTrainingSession(), active);
+});
+
+test("a pending learning journal blocks bound account sync without clearing the journal", async () => {
+  const storage = await prepareGuest();
+  await bindGuestInstallationToAccount(accountId);
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  const active = journalSession();
+  await saveTrainingSession(active);
+  await persistMutationJournal(makeJournal([
+    { kind: "put_attempt", record: journalAttempt() },
+    { kind: "put_session", record: active },
+  ]));
+  let remoteCalls = 0;
+  const forbidden = async (): Promise<never> => { remoteCalls++; throw new Error("pending journal must block remote account data"); };
+  const result = await loadAccountDataSession(api({ getProgress: forbidden, syncProgress: forbidden }), accountId);
+
+  assert.equal(result.status, "failed");
+  assert.equal(result.lastFailureCode, "journal_recovery_required");
+  assert.equal(result.activeSessionBlocked, true);
+  assert.equal(remoteCalls, 0);
+  assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), true);
+  assert.deepEqual(await getActiveTrainingSession(), active);
+});
+
+test("a deferred upload state resumes locally and syncs idempotently after finalization", async () => {
+  await prepareGuest();
+  await bindGuestInstallationToAccount(accountId);
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  const beforeSession = resumableSession();
+  const pendingOutbox = await ensureAccountOutboxFromLocalDataset();
+  assert.equal(pendingOutbox.outbox.length, 1);
+  await saveTrainingSession(beforeSession);
+  const draft = await persistResumableAnswer(beforeSession);
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "failed", lastFailureCode: "active_session_sync_deferred", remoteAccountRevision: 4 });
+
+  let allowRemote = false;
+  let reads = 0;
+  let uploads = 0;
+  let uploadedExpectedRevision: number | null = null;
+  const client = api({
+    syncProgress: async (input) => {
+      uploads++;
+      uploadedExpectedRevision = input.expectedAccountRevision;
+      if (!allowRemote) throw new Error("deferred active session must not upload");
+      return { accountRevision: 5, applied: [], duplicates: input.mutations.map((mutation) => mutation.mutationId), conflicts: [] };
+    },
+    getProgress: async () => {
+      reads++;
+      if (!allowRemote) throw new Error("deferred active session must not read");
+      return { accountRevision: 5, records: remoteRecords(await buildAccountDataSnapshot()) };
+    },
+  });
+
+  const resumed = await loadAccountDataSession(client, accountId);
+  assert.equal(resumed.status, "resumeRequired");
+  assert.equal(reads, 0);
+  assert.equal(uploads, 0);
+  assert.deepEqual(await getActiveTrainingSession(), beforeSession);
+  assert.deepEqual(await getActiveTrainingSessionDraft(), draft);
+  assert.deepEqual((await getAccountSyncState()).outbox, pendingOutbox.outbox);
+
+  allowRemote = true;
+  await saveTrainingSession(completeTrainingSession(beforeSession, "2026-01-01T00:03:00.000Z"));
+  await clearActiveTrainingSessionDraft(beforeSession.id);
+  const synced = await loadAccountDataSession(client, accountId);
+
+  assert.equal(synced.status, "synced");
+  assert.equal(uploads, 1);
+  assert.equal(reads, 1);
+  assert.equal(uploadedExpectedRevision, 4);
+  assert.equal(await getActiveTrainingSession(), null);
+  assert.equal(await getActiveTrainingSessionDraft(), null);
+  assert.equal((await getAccountSyncState()).remoteAccountRevision, 5);
+  assert.equal((await getAccountSyncState()).outbox.length, 0);
+});
 
 test("discard deletes guest records and goals but preserves device preferences and performs no remote writes", async () => {
   const storage = await prepareGuest();
@@ -279,4 +437,31 @@ test("unreadable mutation journal blocks discard before deleting guest data", as
   assert.equal(reads, 0);
   assert.equal(await getActiveTrackId(), guestTrack);
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), true);
+});
+
+
+test("sign-out discovers locally committed answers before clearing account data even when the outbox has not been built", async () => {
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  const { commitMutation } = await import("../learningMutations/commitMutation");
+  await commitMutation(makeJournal([
+    { kind: "put_attempt", record: journalAttempt() },
+    { kind: "put_session", record: journalSession() },
+  ]));
+  assert.equal((await getAccountSyncState()).outbox.length, 0);
+  await saveTrainingSession(journalSession("completed"));
+  let uploads = 0;
+  let revocations = 0;
+  const result = await prepareAccountSignOut(api({
+    syncProgress: async (input) => {
+      uploads++;
+      assert.ok(input.mutations.some((entry) => entry.recordType === "training_attempt"));
+      throw new Error("offline");
+    },
+    revokeSessions: async () => { revocations++; throw new Error("must not revoke before sync"); },
+  }), accountId);
+  assert.equal(result.ok, false);
+  assert.equal(uploads, 1);
+  assert.equal(revocations, 0);
+  assert.equal((await getGuestInstallation())?.accountId, accountId);
+  assert.ok((await getAccountSyncState()).outbox.some((entry) => entry.recordType === "training_attempt"));
 });

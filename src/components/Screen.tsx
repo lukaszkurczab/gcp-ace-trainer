@@ -100,9 +100,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   footerSession: {
     justifyContent: "flex-end",
-    minHeight: 228,
     gap: spacing.sm,
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.md,
   },
   footerSimulation: {
     justifyContent: "flex-end",

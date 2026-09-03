@@ -3,7 +3,7 @@ import type { MutationJournalRecord } from "../../storage/repositories/mutationJ
 import { materializeMutation } from "./mutationMaterializer";
 import { verifyMutation } from "./mutationVerifier";
 import { MutationCommitFailure } from "../mutationBoundary";
-import { ensureAccountOutboxFromLocalDataset } from "../../storage/repositories/accountDataRepository";
+import { markAccountDataPending } from "../../storage/repositories/accountDataRepository";
 
 export async function commitMutation(record: MutationJournalRecord): Promise<void> {
   let prepared: MutationJournalRecord;
@@ -13,8 +13,6 @@ export async function commitMutation(record: MutationJournalRecord): Promise<voi
   catch (error) { throw new MutationCommitFailure("materialization", "journal_durable", error); }
   try { await verifyMutation(prepared); await updateMutationJournalPhase(prepared, "verified_pending_clear"); }
   catch (error) { throw new MutationCommitFailure("verification", "materialized", error); }
-  try { await clearMutationJournal(prepared.commandIdentity.fingerprint); }
-  catch (error) { throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error); }
-  try { await ensureAccountOutboxFromLocalDataset(); }
+  try { await markAccountDataPending(); await clearMutationJournal(prepared.commandIdentity.fingerprint); }
   catch (error) { throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error); }
 }

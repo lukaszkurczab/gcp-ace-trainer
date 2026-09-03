@@ -37,12 +37,13 @@ import {
 } from "../../storage/repositories/accountLifecycleRepository";
 import { bindGuestInstallationToAccount, clearGuestAccountBinding, getGuestInstallation, markGuestInstallationAdoptionPending } from "../../storage/repositories/guestInstallationRepository";
 import { getActiveMutationJournal } from "../../storage/repositories/mutationJournalRepository";
+import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
 export { accountDataRecordFingerprint } from "../../storage/repositories/accountDataRepository";
 
 export type AccountDataSession = Readonly<{
-  status: "initialSyncRequired" | "previewReady" | "syncing" | "synced" | "offlinePending" | "conflict" | "failed" | "signOutPending" | "remoteDeletionPending" | "localCleanupPending";
+  status: "initialSyncRequired" | "previewReady" | "syncing" | "synced" | "resumeRequired" | "offlinePending" | "conflict" | "failed" | "signOutPending" | "remoteDeletionPending" | "localCleanupPending";
   preview: AdoptionPreviewResponseDto | null;
   lastSuccessfulSyncAt: string | null;
   pendingMutationCount: number;
@@ -55,6 +56,14 @@ export type AccountSignOutResult = Readonly<{ ok: true } | { ok: false; failure:
 export type AccountDeletionResult = Readonly<{ ok: true; proofId: string } | { ok: false; failure: "journalRecoveryFailure" | "pendingSyncRequiresNetwork" | "conflict" | "remoteDeletionPending" | "localCleanupFailure" | "reauthenticationRequired" }>;
 
 const nowIso = () => new Date().toISOString();
+
+const CLASSIFIABLE_ACCOUNT_DATA_FAILURE_CODES: readonly string[] = [
+  "account_sync_state_invalid", "guest_installation_required", "account_binding_mismatch",
+  "account_adoption_pending", "account_materialization_in_progress", "active_session_adoption_blocked",
+  "account_data_records_invalid", "account_data_record_invalid", "account_data_fingerprint_invalid",
+  "account_data_track_invalid", "account_data_session_invalid", "account_data_result_invalid",
+  "account_data_attempt_invalid", "account_data_review_invalid",
+];
 
 let accountDataOperationLane: Promise<void> = Promise.resolve();
 
@@ -72,13 +81,14 @@ export function loadAccountDataSession(api: PatternlyApiClient, accountId: strin
 async function loadAccountDataSessionUnlocked(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession> {
   try {
     const initialInstallation = await getGuestInstallation();
-    if (!initialInstallation) throw new Error("guest_installation_required");
-    if (initialInstallation.accountId !== null && initialInstallation.accountId !== accountId) throw new Error("account_binding_mismatch");
+    if (!initialInstallation) throw new AccountDataFailure("guest_installation_required");
+    if (initialInstallation.accountId !== null && initialInstallation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
     const state = await getAccountSyncState();
-    if (state.accountId !== null && state.accountId !== accountId) throw new Error("account_binding_mismatch");
+    if (state.accountId !== null && state.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
     if (state.materialization) {
       const targetAccountId = materializationTargetAccountId(state);
-      if (targetAccountId !== accountId) throw new Error("account_binding_mismatch");
+      if (targetAccountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+      if (state.pendingConfirmation !== null) return explicitFailureSession(state, "account_adoption_pending", false);
       const remote = await api.getProgress();
       return await materializeRemoteAccountData(accountId, remote.records, remote.accountRevision, "kind" in state.materialization && state.materialization.kind === "discardGuest");
     }
@@ -86,6 +96,8 @@ async function loadAccountDataSessionUnlocked(api: PatternlyApiClient, accountId
     const pendingConfirmation = await getAccountSyncState();
     if (pendingConfirmation.pendingConfirmation && installation.accountId === null) {
       const snapshot = await buildAccountDataSnapshot();
+      const blocked = learningSyncGuardSession(pendingConfirmation, snapshot, false);
+      if (blocked) return blocked;
       const confirmation: AdoptionConfirmationDto = {
         operationId: pendingConfirmation.pendingConfirmation.operationId,
         previewFingerprint: pendingConfirmation.pendingConfirmation.previewFingerprint,
@@ -149,20 +161,20 @@ export function discardGuestDataAndLoadAccount(api: PatternlyApiClient, accountI
 async function discardGuestDataAndLoadAccountUnlocked(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession> {
   try {
     const installation = await getGuestInstallation();
-    if (!installation) throw new Error("guest_installation_required");
+    if (!installation) throw new AccountDataFailure("guest_installation_required");
     const state = await getAccountSyncState();
-    if (state.accountId !== null && state.accountId !== accountId) throw new Error("account_binding_mismatch");
+    if (state.accountId !== null && state.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
     if (state.materialization) {
-      if (!("kind" in state.materialization) || state.materialization.kind !== "discardGuest" || state.materialization.accountId !== accountId) throw new Error("account_materialization_in_progress");
+      if (!("kind" in state.materialization) || state.materialization.kind !== "discardGuest" || state.materialization.accountId !== accountId) throw new AccountDataFailure("account_materialization_in_progress");
       const remote = await api.getProgress();
       return await materializeRemoteAccountData(accountId, remote.records, remote.accountRevision, true);
     }
     if (installation.accountId !== null) {
-      if (installation.accountId !== accountId || state.accountId !== accountId) throw new Error("account_binding_mismatch");
+      if (installation.accountId !== accountId || state.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
       return state.status === "synced" ? sessionFromState(state, false) : await loadAccountDataSessionUnlocked(api, accountId);
     }
-    if (state.pendingConfirmation !== null) throw new Error("account_adoption_pending");
-    if (state.outbox.length > 0) throw new Error("account_outbox_pending");
+    if (state.pendingConfirmation !== null) throw new AccountDataFailure("account_adoption_pending");
+    if (state.outbox.length > 0) throw new AccountDataFailure("account_outbox_pending");
 
     await readDiscardGuards(accountId);
     const remote = await api.getProgress();
@@ -171,10 +183,10 @@ async function discardGuestDataAndLoadAccountUnlocked(api: PatternlyApiClient, a
     await markGuestDiscardMaterializationPending(accountId);
     return await materializeRemoteAccountData(accountId, remote.records, remote.accountRevision, true);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "remoteFailure";
+    const failure = accountDataFailureCode(error) ?? "remoteFailure";
     const state = await getAccountSyncState().catch(() => null);
-    if (isDiscardGuardFailure(message)) return explicitFailureSession(state, message, message === "active_session_adoption_blocked");
-    return failureSession(state ? await recordFailure(state, classifyDataFailure(error)) : null, false);
+    if (isDiscardGuardFailure(failure)) return explicitFailureSession(state, failure, failure === "active_session_adoption_blocked");
+    return failureSession(state ? await recordFailure(state, failure) : null, false);
   }
 }
 
@@ -190,7 +202,7 @@ function materializationTargetAccountId(state: AccountSyncState): string | null 
 
 async function assertMaterializationGuards(accountId: string): Promise<void> {
   await assertMaterializationTarget(accountId);
-  if (await getActiveMutationJournal()) throw new Error("journal_recovery_required");
+  if (await getActiveMutationJournal()) throw new AccountDataFailure("journal_recovery_required");
 }
 
 /**
@@ -200,30 +212,30 @@ async function assertMaterializationGuards(accountId: string): Promise<void> {
  */
 async function assertMaterializationTarget(accountId: string): Promise<void> {
   const installation = await getGuestInstallation();
-  if (!installation) throw new Error("guest_installation_required");
-  if (installation.accountId !== null && installation.accountId !== accountId) throw new Error("account_binding_mismatch");
+  if (!installation) throw new AccountDataFailure("guest_installation_required");
+  if (installation.accountId !== null && installation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
   const state = await getAccountSyncState();
-  if (state.accountId !== accountId || !state.materialization || materializationTargetAccountId(state) !== accountId) throw new Error("account_materialization_target_required");
-  if (state.pendingConfirmation !== null) throw new Error("account_adoption_pending");
+  if (state.accountId !== accountId || !state.materialization || materializationTargetAccountId(state) !== accountId) throw new AccountDataFailure("account_materialization_target_required");
+  if (state.pendingConfirmation !== null) throw new AccountDataFailure("account_adoption_pending");
 }
 
 async function readDiscardGuards(accountId: string): Promise<void> {
   const installation = await getGuestInstallation();
-  if (!installation) throw new Error("guest_installation_required");
-  if (installation.accountId !== null) throw new Error("account_binding_mismatch");
+  if (!installation) throw new AccountDataFailure("guest_installation_required");
+  if (installation.accountId !== null) throw new AccountDataFailure("account_binding_mismatch");
   const state = await getAccountSyncState();
-  if (state.accountId !== null) throw new Error("account_binding_mismatch");
-  if (state.materialization !== null) throw new Error("account_materialization_in_progress");
-  if (state.pendingConfirmation !== null) throw new Error("account_adoption_pending");
-  if (state.outbox.length > 0) throw new Error("account_outbox_pending");
+  if (state.accountId !== null) throw new AccountDataFailure("account_binding_mismatch");
+  if (state.materialization !== null) throw new AccountDataFailure("account_materialization_in_progress");
+  if (state.pendingConfirmation !== null) throw new AccountDataFailure("account_adoption_pending");
+  if (state.outbox.length > 0) throw new AccountDataFailure("account_outbox_pending");
   const snapshot = await buildAccountDataSnapshot();
-  if (snapshot.activeSession) throw new Error("active_session_adoption_blocked");
-  if (snapshot.pendingJournal) throw new Error("journal_recovery_required");
+  if (snapshot.activeSession) throw new AccountDataFailure("active_session_adoption_blocked");
+  if (snapshot.pendingJournal) throw new AccountDataFailure("journal_recovery_required");
   const latestInstallation = await getGuestInstallation();
   const latestState = await getAccountSyncState();
-  if (latestState.accountId !== null && latestState.accountId !== accountId) throw new Error("account_binding_mismatch");
+  if (latestState.accountId !== null && latestState.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
   if (!latestInstallation || latestInstallation.accountId !== null || latestState.accountId !== null || latestState.materialization !== null || latestState.pendingConfirmation !== null || latestState.outbox.length > 0) {
-    throw new Error("account_binding_mismatch");
+    throw new AccountDataFailure("account_binding_mismatch");
   }
 }
 
@@ -266,7 +278,7 @@ async function prepareAccountSignOutUnlocked(api: PatternlyApiClient, accountId:
       clearAccountSignOutState();
       return { ok: true };
     }
-    const state = await getAccountSyncState();
+    const state = await ensureAccountOutboxFromLocalDataset();
     if (state.outbox.length > 0 || state.status === "offlinePending" || state.status === "conflict") {
       const synced = await synchronizeBoundAccount(api, accountId);
       if (synced.status === "conflict") return { ok: false, failure: "conflict" };
@@ -319,7 +331,7 @@ async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: st
       return { ok: false, failure: "journalRecoveryFailure" };
     }
     const installation = await getGuestInstallation();
-    if (!installation || installation.accountId !== accountId) throw new Error("account_binding_mismatch");
+    if (!installation || installation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
     let proofId = pending.proofId;
     let operationId = pending.operationId;
     if (pending.status !== "remoteDeleted" && pending.status !== "localCleanupPending") {
@@ -331,9 +343,9 @@ async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: st
       operationId = remote.operationId;
       updateAccountDeletionState(pending, { status: "remoteDeleted", proofId, lastFailureCode: null });
     }
-    if (!proofId) throw new Error("remote_deletion_pending");
+    if (!proofId) throw new AccountDataFailure("remote_deletion_pending");
     const proof = await api.getDeletionProof(proofId);
-    if (proof.status !== "deleted" || proof.operationId !== operationId) throw new Error("remote_deletion_pending");
+    if (proof.status !== "deleted" || proof.operationId !== operationId) throw new AccountDataFailure("remote_deletion_pending");
     try {
       await clearAccountOwnedLocalData();
       await clearGuestAccountBinding();
@@ -360,9 +372,15 @@ async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: st
 }
 
 async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession> {
+  const initialGuard = await readBoundSyncGuard(accountId);
+  if (initialGuard) return initialGuard;
+
   let state = await ensureAccountOutboxFromLocalDataset();
   state = saveAccountSyncState({ ...state, accountId, status: "syncing", lastFailureCode: null });
   try {
+    const uploadGuard = await readBoundSyncGuard(accountId);
+    if (uploadGuard) return uploadGuard;
+    state = await getAccountSyncState();
     let response: SyncResponseDto | null = null;
     if (state.outbox.length > 0) {
       response = await api.syncProgress({
@@ -371,12 +389,12 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
         mutations: state.outbox.map((entry) => ({ mutationId: entry.mutationId, kind: entry.recordType === "training_attempt" || entry.recordType === "review_queue_entry" ? "item" as const : "node" as const, recordType: entry.recordType, trackId: entry.trackId, targetId: entry.recordId, expectedVersion: entry.expectedVersion, fingerprint: entry.fingerprint, state: entry.state })),
       });
     }
-    const remote = await api.getProgress();
-    const snapshot = await buildAccountDataSnapshot();
-    if (snapshot.activeSession) {
-      const failed = await recordFailure({ ...state, remoteAccountRevision: response?.accountRevision ?? state.remoteAccountRevision }, "active_session_sync_deferred");
-      return failureSession(failed, true);
+    if (response) {
+      state = saveAccountSyncState({ ...await getAccountSyncState(), remoteAccountRevision: response.accountRevision });
     }
+    const materializationGuard = await readBoundSyncGuard(accountId);
+    if (materializationGuard) return materializationGuard;
+    const remote = await api.getProgress();
     const records = toLocalRecords(remote.records);
     await applyRemoteAccountData(records);
     const finished = await finishAccountMaterialization(records, accountId, remote.accountRevision, nowIso());
@@ -388,6 +406,26 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
   }
 }
 
+async function readBoundSyncGuard(accountId: string): Promise<AccountDataSession | null> {
+  const installation = await getGuestInstallation();
+  if (!installation || installation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+  const state = await getAccountSyncState();
+  if (state.accountId !== null && state.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+  if (state.materialization) return explicitFailureSession(state, "account_materialization_in_progress", false);
+  if (state.pendingConfirmation !== null) return explicitFailureSession(state, "account_adoption_pending", false);
+  const snapshot = await buildAccountDataSnapshot();
+  return learningSyncGuardSession(state, snapshot, true, accountId);
+}
+
+function learningSyncGuardSession(state: AccountSyncState, snapshot: AccountDataSnapshot, allowResume: boolean, boundAccountId?: string): AccountDataSession | null {
+  if (snapshot.pendingJournal) return explicitFailureSession(state, "journal_recovery_required", snapshot.activeSession);
+  if (snapshot.activeSession) {
+    if (allowResume && state.accountId !== boundAccountId) return explicitFailureSession(state, "account_binding_mismatch", true);
+    return allowResume ? resumeRequiredSession(state) : explicitFailureSession(state, "active_session_adoption_blocked", true);
+  }
+  return null;
+}
+
 async function recordFailure(state: AccountSyncState, code: string): Promise<AccountSyncState> {
   const status = code === "account_revision_conflict" || code === "version_conflict" || code === "adoption_conflict" ? "conflict" as const : code === "offline" ? "offlinePending" as const : "failed" as const;
   return saveAccountSyncState({ ...state, status, blockingConflictCode: status === "conflict" ? code : state.blockingConflictCode, lastFailureCode: code });
@@ -397,12 +435,16 @@ function sessionFromState(state: AccountSyncState, activeSessionBlocked: boolean
   return Object.freeze({ status: state.status, preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: state.blockingConflictCode, lastFailureCode: state.lastFailureCode, activeSessionBlocked });
 }
 
+function resumeRequiredSession(state: AccountSyncState): AccountDataSession {
+  return Object.freeze({ status: "resumeRequired", preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: state.blockingConflictCode, lastFailureCode: null, activeSessionBlocked: true });
+}
+
 function failureSession(state: AccountSyncState | null, activeSessionBlocked: boolean): AccountDataSession {
   return Object.freeze({ status: state?.status ?? "failed", preview: null, lastSuccessfulSyncAt: state?.lastSuccessfulSyncAt ?? null, pendingMutationCount: state?.pendingMutationCount ?? 0, blockingConflictCode: state?.blockingConflictCode ?? null, lastFailureCode: state?.lastFailureCode ?? "account_data_unavailable", activeSessionBlocked });
 }
 
 function toLocalRecords(records: readonly Readonly<{ fingerprint: string; recordId?: string; recordType: string; state: Readonly<Record<string, unknown>>; trackId: string; targetId?: string; version: number }>[]): readonly AccountDataRecord[] {
-  if (!Array.isArray(records)) throw new Error("account_data_records_invalid");
+  if (!Array.isArray(records)) throw new AccountDataFailure("account_data_records_invalid");
   const localRecords = records.map((record) => ({ fingerprint: record.fingerprint, recordId: record.recordId ?? record.targetId, recordType: record.recordType, state: record.state, trackId: record.trackId, version: record.version }));
   assertValidAccountDataRecords(localRecords);
   return Object.freeze(localRecords.map((record) => Object.freeze(record)));
@@ -419,7 +461,13 @@ function classifyDataFailure(error: unknown): string {
     if (error.code === "transport_failed" || error.code === "request_timeout") return "offline";
     return error.serverCode ?? error.code;
   }
+  const accountDataCode = accountDataFailureCode(error);
+  if (accountDataCode && CLASSIFIABLE_ACCOUNT_DATA_FAILURE_CODES.includes(accountDataCode)) return accountDataCode;
   return "remoteFailure";
+}
+
+function accountDataFailureCode(error: unknown): string | null {
+  return error instanceof AccountDataFailure ? error.code : null;
 }
 
 function isApiError(error: unknown): error is PatternlyApiClientError { return error instanceof PatternlyApiClientError; }

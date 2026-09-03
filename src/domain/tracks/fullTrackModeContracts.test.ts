@@ -33,6 +33,15 @@ test("Certification Diagnostic Baseline uses its immutable 40-item blueprint and
   assert.deepEqual(prepared.session.itemOrder.map((entry) => entry.item.itemId), catalog.getDiagnosticBaseline().itemIds);
   assert.equal(prepared.session.configurationSnapshot.timer, "elapsedForeground");
   assert.equal(prepared.session.configurationSnapshot.feedbackMode, "afterEachAnswer");
+  await runtime.validateResume({ session: prepared.session, draft: null });
+  const swapped = { ...prepared.session, itemOrder: [prepared.session.itemOrder[1]!, prepared.session.itemOrder[0]!, ...prepared.session.itemOrder.slice(2)] };
+  const duplicate = { ...prepared.session, itemOrder: [prepared.session.itemOrder[0]!, prepared.session.itemOrder[0]!, ...prepared.session.itemOrder.slice(2)] };
+  const otherLocalItem = catalog.getItems().find((item) => !catalog.getDiagnosticBaseline().itemIds.includes(item.id));
+  assert.ok(otherLocalItem);
+  const otherLocal = { ...prepared.session, itemOrder: [{ ...prepared.session.itemOrder[0]!, item: catalog.toContentItemRef(otherLocalItem) }, ...prepared.session.itemOrder.slice(1)] };
+  for (const invalid of [swapped, duplicate, otherLocal]) {
+    await assert.rejects(() => runtime.validateResume({ session: invalid, draft: null }), /immutable fixed-session contract/u);
+  }
   await assert.rejects(() => runtime.prepare({ trackId: CERTIFICATION_TRACK_ID, modeId: "certification-diagnostic-baseline", request: { sessionId: "diagnostic-selector", requestedLength: 10 }, attempts: [], reviews: [], now: NOW }), /does not accept selectors/u);
 });
 

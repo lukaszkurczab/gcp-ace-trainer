@@ -29,7 +29,7 @@ test("ambient keeps randomized routes and signals without rectangular glow layer
   const backdrop = source("src/components/AmbientBackdrop.tsx");
   const account = source("src/features/account/AccountEntryScreen.tsx");
 
-  assert.match(account, /<Screen ambient ambientVariant="auth"/);
+  assert.match(account, /<Screen\s+ambient\s+ambientVariant="auth"/);
   assert.match(backdrop, /type AmbientRoute/);
   assert.match(backdrop, /const AUTH_ROUTES: readonly AmbientRoute\[\]/);
   assert.ok((backdrop.match(/id: "[^"]+", points:/g) ?? []).length >= 10);

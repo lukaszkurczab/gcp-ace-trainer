@@ -1,6 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, AppState, StyleSheet } from "react-native";
 
 import {
@@ -42,7 +43,7 @@ import {
   type PracticeSurfacePhase,
 } from "./practiceSessionPresentation";
 import type { PracticeSessionRouteParams } from "./sessionConfig";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
+import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { CertificationPracticeSessionScreen } from "./CertificationPracticeSessionScreen";
 import { DesignInterviewPracticeScreen } from "./DesignInterviewPracticeScreen";
@@ -72,12 +73,14 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const [completionOperation, setCompletionOperation] = useState<Extract<PracticeDurableOperationState, { kind: "completing" | "completion_failed" | "completed" }> | null>(null);
   const [exit, setExit] = useState<"none" | "leave">("none");
   const permitRouteExit = useRef(false);
+  const actionPending = useRef(false);
+  const [pendingPhase, setPendingPhase] = useState<PracticeSurfacePhase | null>(null);
 
   const algorithmsMode = route.params.trackId === CODING_INTERVIEW_TRACK_ID && isAlgorithmModeId(route.params.mode)
     ? route.params.mode
     : null;
   const requestedMode = algorithmsMode as Exclude<typeof ALGORITHM_MODE_IDS[keyof typeof ALGORITHM_MODE_IDS], typeof ALGORITHM_MODE_IDS.interviewSimulation>;
-  const certificationUnavailableDescription = "Certification has no approved bundled artifact yet. Coding Interview sessions remain available.";
+  const certificationUnavailableDescription = "Certification practice is not available yet. Coding Interview sessions remain available.";
 
   useEffect(() => {
     if (!algorithmsMode || algorithmsMode === ALGORITHM_MODE_IDS.interviewSimulation) return;
@@ -100,7 +103,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
         if (!live) return;
         setState(error instanceof ActiveAlgorithmsSessionConflict
           ? { kind: "active_session_conflict", session: error.session }
-          : { kind: "unavailable", reason: describePreparationFailure(error) });
+          : { kind: "unavailable", reason: describePreparationFailure(error, t) });
       });
     return () => {
       live = false;
@@ -136,6 +139,15 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     });
   }, [state?.kind, state?.kind === "session" ? state.projection.session.id : null]);
 
+  useEffect(() => {
+    if (permitRouteExit.current || state?.kind !== "session" || pendingPhase || completionFailure || submissionError) return;
+    if (state.projection.session.configurationSnapshot.feedbackMode === "atSessionEnd" && state.projection.operation.kind === "feedback") {
+      void advanceOrFinish();
+    }
+  // This also continues a locally committed answer after resume or recovery.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, pendingPhase, completionFailure, submissionError]);
+
   useEffect(() => navigation.addListener("beforeRemove", (event) => {
     if (permitRouteExit.current || state?.kind !== "session") return;
     event.preventDefault();
@@ -146,7 +158,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Certification Practice unavailable")} description={t(certificationUnavailableDescription)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   if (algorithmsMode === ALGORITHM_MODE_IDS.interviewSimulation) {
-    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Interview Simulation unavailable")} description={t("Interview Simulation must start from its validated 40-item profile entry. No topic-based substitute session was created.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Interview Simulation unavailable")} description={t("This session cannot be opened as Interview Simulation.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   if (!state) return <PracticeSessionSurface exit={{ kind: "none" }} isFinalPosition={false} onAbandon={noop} onChoicePress={noop} onComplexityValuePress={noop} onConfirmLeave={noop} onDismissExit={noop} onOrderingMove={noop} onRequestLeave={noop} phase="preparing" />;
   if (state.kind === "active_session_conflict") {
@@ -156,11 +168,11 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
         <AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} />
         <EmptyState
           title={t("Finish or leave the active session first")}
-          description={`${t(activeModeLabel)} ${t("is active. Resume it, or explicitly abandon it before starting")} ${t(getAlgorithmMode(algorithmsMode).title)}.`}
-          actionLabel={`${t("Resume")} ${t(activeModeLabel)}`}
+          description={t("{{activeMode}} is active. Resume it or end it before starting {{requestedMode}}.", { activeMode: t(activeModeLabel), requestedMode: t(getAlgorithmMode(algorithmsMode).title) })}
+          actionLabel={t("Resume {{mode}}", { mode: t(activeModeLabel) })}
           onActionPress={() => { void resumeConflictingSession(state.session); }}
         />
-        <Button onPress={() => confirmReplacement(state.session)} variant="destructive">{t("Abandon and start")} {t(getAlgorithmMode(algorithmsMode).title)}</Button>
+        <Button onPress={() => confirmReplacement(state.session)} variant="destructive">{t("End and start {{mode}}", { mode: t(getAlgorithmMode(algorithmsMode).title) })}</Button>
         <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">{t("Back to practice")}</Button>
       </Screen>
     );
@@ -169,7 +181,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const sessionState = state;
   const projection = sessionState.projection;
   const renderedCompletionOperation = completionFailure?.kind === "retry_completion" || completionFailure?.kind === "recover_completion" ? completionFailure.operation : completionOperation;
-  const phase = toPracticeSurfacePhase(renderedCompletionOperation?.kind ?? projection.operation.kind);
+  const phase = renderedCompletionOperation ? toPracticeSurfacePhase(renderedCompletionOperation.kind) : pendingPhase ?? toPracticeSurfacePhase(projection.operation.kind);
   const notice = submissionError
     ? { tone: "error" as const, message: submissionError }
     : completionFailure?.kind === "retry_final_checkpoint"
@@ -180,11 +192,11 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const responseControl = buildPracticeResponseControl({
     choiceSelectionMode: projection.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single",
     feedbackControls: projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" ? projection.feedback?.controls : undefined,
-    localResponse,
+    localResponse: localResponse ?? projection.response?.value ?? null,
     renderer: projection.interaction.renderer,
   });
   const effectiveLocalResponse = resolvePracticeLocalResponse(localResponse, responseControl);
-  const primaryAction = completionFailure ? null : getPracticePrimaryAction({ hasLocalResponse: effectiveLocalResponse !== null, isFinalPosition: projection.position.current === projection.position.total, phase });
+  const primaryAction = completionFailure ? null : getPracticePrimaryAction({ feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode), hasLocalResponse: effectiveLocalResponse !== null, isFinalPosition: projection.position.current === projection.position.total, phase });
 
   async function refresh() {
     const next = await getAlgorithmsPracticeProjection();
@@ -196,29 +208,47 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   }
 
   async function submit() {
-    if (!effectiveLocalResponse || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
+    if (actionPending.current || !effectiveLocalResponse || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
+    actionPending.current = true;
+    setPendingPhase("submitting_before_journal");
     setSubmissionError(null);
-    try { await submitAlgorithmsPracticeResponse(effectiveLocalResponse); }
-    catch (error) { setSubmissionError(describePracticeSubmissionFailure(error)); }
-    await refresh();
+    try {
+      await submitAlgorithmsPracticeResponse(effectiveLocalResponse);
+      await refresh();
+    } catch (error) {
+      setSubmissionError(describePracticeSubmissionFailure(error, t));
+      await refresh();
+    } finally {
+      actionPending.current = false;
+      setPendingPhase(null);
+    }
   }
 
   async function advanceOrFinish() {
-    if (projection.operation.kind !== "feedback" && projection.operation.kind !== "advance_failed") return;
-    if (projection.position.current === projection.position.total) {
-      try {
+    if (actionPending.current || (projection.operation.kind !== "feedback" && projection.operation.kind !== "advance_failed")) return;
+    actionPending.current = true;
+    setSubmissionError(null);
+    setPendingPhase(projection.position.current === projection.position.total ? "completing" : "advancing");
+    try {
+      if (projection.position.current === projection.position.total) {
         await applyCompletionResult(await completeAlgorithmsPracticeSession());
-      } catch (error) { setSubmissionError(describeOperationalFailure(error, "The Finish state could not be verified.")); }
-      return;
+      } else {
+        try { await advanceAlgorithmsPracticeSession(); }
+        catch { /* The immutable committed outcome is described by the projection. */ }
+        await refresh();
+      }
+    } catch (error) {
+    setSubmissionError(describeOperationalFailure(error, t("We couldn't continue the session. Try again.")));
+    } finally {
+      actionPending.current = false;
+      setPendingPhase(null);
     }
-    try { await advanceAlgorithmsPracticeSession(); }
-    catch { /* The immutable committed outcome is described by the projection. */ }
-    await refresh();
   }
 
   async function recover() {
+    setSubmissionError(null);
     try { await recoverAlgorithmsPracticeOperation(); await refresh(); }
-    catch (error) { setSubmissionError(describeOperationalFailure(error, "The answer recovery state could not be verified.")); }
+    catch (error) { setSubmissionError(describeOperationalFailure(error, t("We couldn't restore the session. Try again."))); }
   }
 
   async function applyCompletionResult(result: Awaited<ReturnType<typeof completeAlgorithmsPracticeSession>>) {
@@ -250,7 +280,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
         return;
       }
       await applyCompletionResult(await completeAlgorithmsPracticeSession());
-    } catch (error) { setSubmissionError(describeOperationalFailure(error, "The exact Finish retry could not be verified.")); }
+    } catch (error) { setSubmissionError(describeOperationalFailure(error, t("We couldn't finish the session. Try again."))); }
   }
 
   async function abandon() {
@@ -270,17 +300,18 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     } catch (error) {
       setState(error instanceof ActiveAlgorithmsSessionConflict
         ? { kind: "active_session_conflict", session: error.session }
-        : { kind: "unavailable", reason: describePreparationFailure(error) });
+        : { kind: "unavailable", reason: describePreparationFailure(error, t) });
     }
   }
 
   function confirmReplacement(session: TrainingSession) {
+    const activeMode = isAlgorithmModeId(session.modeId) ? getAlgorithmMode(session.modeId).title : "another learning session";
     Alert.alert(
-      "Abandon active session?",
-      `This ends the active ${isAlgorithmModeId(session.modeId) ? getAlgorithmMode(session.modeId).title : "learning"} session. Your saved answers remain available, but this session cannot be resumed.`,
+      t("End active session?"),
+      t("This ends the active {{mode}} session. You won't be able to resume it. Your saved answers remain available.", { mode: t(activeMode) }),
       [
-        { text: "Keep session", style: "cancel" },
-        { text: `Abandon and start ${getAlgorithmMode(requestedMode).title}`, style: "destructive", onPress: () => { void replaceActiveSession(); } },
+        { text: t("Keep session"), style: "cancel" },
+        { text: t("End and start {{mode}}", { mode: t(getAlgorithmMode(requestedMode).title) }), style: "destructive", onPress: () => { void replaceActiveSession(); } },
       ],
     );
   }
@@ -293,7 +324,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
       const profileId = session.configurationSnapshot.simulationProfileId;
       if (typeof profileId !== "string") {
-        setState({ kind: "unavailable", reason: "The active Interview Simulation profile is unavailable." });
+        setState({ kind: "unavailable", reason: t("This session cannot be opened as Interview Simulation.") });
         return;
       }
       navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId });
@@ -331,7 +362,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
       question={{ constraints: projection.constraints, itemId: projection.item.itemId, prompt: projection.prompt, responseControl }}
-      retryLabel={completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Recover completion" : completionFailure.kind === "retry_final_checkpoint" ? "Retry final checkpoint" : "Recover final checkpoint" : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Continue recovery" : undefined}
+      retryLabel={completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Restore session" : undefined}
       retryVariant={completionFailure || ("error" in projection.operation && projection.operation.error.allowedAction === "recover") ? "primary" : "secondary"}
       runtimeIdentity={{
         itemId: projection.item.itemId,
@@ -413,12 +444,12 @@ function toPracticeSurfacePhase(kind: AlgorithmsPracticeProjection["operation"][
   return kind;
 }
 
-function describePreparationFailure(error: unknown): string {
-  return `${describeOperationalFailure(error, "The session could not be prepared.")} No substitute topic, item, or shortened fixed session was created.`;
+function describePreparationFailure(error: unknown, t: TFunction<"common">): string {
+  return describeOperationalFailure(error, t("The session could not be prepared."));
 }
 
-function describePracticeSubmissionFailure(error: unknown): string {
-  return describeOperationalFailure(error, "Your answer could not be submitted. Select an answer and try again.");
+function describePracticeSubmissionFailure(error: unknown, t: TFunction<"common">): string {
+  return describeOperationalFailure(error, t("We couldn't save your answer. Choose an answer and try again."));
 }
 
 function formatElapsed(milliseconds: number): string {

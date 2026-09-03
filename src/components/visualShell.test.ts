@@ -62,8 +62,8 @@ test("route coverage has one native or inline shell owner and preserves active-s
     .filter((match) => /headerShown:\s*false/.test(match[2] ?? ""))
     .map((match) => match[1]);
 
-  assert.equal(routeIds.length, 24);
-  assert.equal(new Set(routeIds).size, 24);
+  assert.equal(routeIds.length, 25);
+  assert.equal(new Set(routeIds).size, 25);
   assert.deepEqual(headerlessRouteIds, [
     "HOME",
     "ACTIVITY",
@@ -79,6 +79,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "ANSWER_REVIEW",
     "PRACTICE_SETUP",
     "PRACTICE_SESSION",
+    "ALGORITHMS_PRACTICE_REVIEW",
     "ALGORITHMS_PRACTICE_SUMMARY",
     "ALGORITHMS_INTERVIEW_SIMULATION",
     "ACCOUNT_ENTRY",
@@ -198,7 +199,6 @@ test("Screen and SessionShell remain the only general and active-session page ow
 
   assert.deepEqual(safeAreaOwners, []);
   assert.deepEqual(scrollViewOwners, [
-    "src/features/practice/AlgorithmsPracticeSummaryScreen.tsx",
     "src/features/reports/ContentReportSheet.tsx",
     "src/features/simulation/SimulationSessionSurface.tsx",
     "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",
@@ -209,7 +209,8 @@ test("Screen and SessionShell remain the only general and active-session page ow
   assert.match(screen, /content:\s*\{[\s\S]*?paddingTop:\s*spacing\.xl/);
   assert.match(screen, /footer:\s*\{[\s\S]*?paddingVertical:\s*spacing\.lg/);
   assert.match(screen, /footerSticky:\s*\{[\s\S]*?paddingBottom:\s*spacing\.md[\s\S]*?paddingTop:\s*spacing\.md/);
-  assert.match(screen, /footerSession:\s*\{[\s\S]*?minHeight:\s*228/);
+  assert.match(screen, /footerSession:\s*\{[\s\S]*?paddingVertical:\s*spacing\.md/);
+  assert.doesNotMatch(screen, /footerSession:\s*\{[\s\S]*?minHeight:\s*228/);
   assert.match(screen, /footerSimulation:\s*\{[\s\S]*?minHeight:\s*361/);
   assert.match(screen, /header\?: ReactNode/);
   assert.match(header, /placement === "stack"[\s\S]*<SafeAreaView edges=\{\["top"\]\}/);
@@ -265,22 +266,14 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(source("src/features/practice/AlgorithmsScopeSelectionScreen.tsx"), /state\.kind === "unavailable"[\s\S]*?<Screen edges=\{\["top"\]\}><AppShellHeader[\s\S]*?onActionPress=\{\(\) => goBackOrHome\(navigation\)\}/);
   assert.match(session, /return \([\s\S]*<Screen[\s\S]*footer=/);
   assert.match(result, /<Screen/);
-  assert.match(result, /<Screen edges=\{\["top", "bottom"\]\} scroll=\{false\}/);
-  assert.match(result, /<ScrollView contentContainerStyle=\{styles\.summaryContent\}[\s\S]*<\/ScrollView>/);
+  assert.match(result, /<Screen edges=\{\["top", "bottom"\]\}>/);
+  assert.match(result, /<SessionResultOverview/);
+  assert.match(result, /configurationTestID=\{runtimeSelectors\.summary\.configuration\(result\.sessionId, result\.configuration\.actualLength, result\.configuration\.feedbackTiming\)\}/);
+  assert.match(result, /result\.feedbackItems\.map/);
+  assert.match(result, /review=\{feedbackAvailable \?/);
+  assert.match(result, /secondaryNote=\{configurationNote \?/);
+  assert.doesNotMatch(result, /<ScrollView|summaryShell|summaryContent|statsCard|summaryFooter|SummaryStat|reviewBanner/);
   assert.match(rootNavigator, /name=\{ROUTES\.ALGORITHMS_PRACTICE_SUMMARY\}[\s\S]*?options=\{\{ headerShown: false, title: t\("Session result"\) \}\}/);
-  assert.match(result, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
-  assert.match(result, /eyebrow:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"700"[\s\S]*?lineHeight:\s*16/);
-  assert.match(result, /summaryShell:\s*\{[\s\S]*?flex:\s*1/);
-  assert.match(result, /summaryHeaderBar:\s*\{[\s\S]*?flexWrap:\s*"wrap"/);
-  assert.match(result, /summaryMode:\s*\{[\s\S]*?flexShrink:\s*1[\s\S]*?textAlign:\s*"right"/);
-  assert.match(result, /statsCard:\s*\{\s*gap:\s*spacing\.md\s*\}/);
-  assert.match(result, /summaryStat:\s*\{[\s\S]*?borderBottomWidth:\s*1[\s\S]*?paddingBottom:\s*spacing\.md/);
-  assert.match(result, /sectionTitle:\s*\{[\s\S]*?fontSize:\s*10[\s\S]*?fontWeight:\s*"700"[\s\S]*?letterSpacing:\s*1\.2[\s\S]*?lineHeight:\s*12[\s\S]*?textTransform:\s*"uppercase"/);
-  assert.match(result, /outcomeStat:[\s\S]*?gap:\s*10[\s\S]*?padding:\s*spacing\.md/);
-  assert.match(result, /outcomeValue:\s*\{[\s\S]*?fontSize:\s*14[\s\S]*?lineHeight:\s*18/);
-  assert.match(result, /reviewBanner:\s*\{[\s\S]*?gap:\s*10[\s\S]*?padding:\s*14/);
-  assert.match(result, /reviewBannerText:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?lineHeight:\s*18/);
-  assert.match(result, /summaryFooter:\s*\{\s*gap:\s*spacing\.md/);
   assert.doesNotMatch(result, /scoreLine|pointsEarned|points\)/);
   assert.match(simulationSummary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.summaryTitle\}>\{t\(projection\.title\)\}<\/Text>/);
   assert.match(simulationSummary, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionTitle\}>\{t\("Results"\)\}<\/Text>/);
@@ -346,7 +339,8 @@ test("simulation review owns the Figma review shell and keeps navigator outcomes
   assert.match(facade, /interaction: buildAlgorithmInteractionViewModel/);
   assert.match(facade, /controls: feedback\.controls/);
   const reviewFeedback = source("src/features/review/ReviewFeedbackBlock.tsx");
-  assert.match(reviewFeedback, /reasonDivider:/);
+  assert.match(reviewFeedback, /feedbackCard:\s*\{[\s\S]*?borderRadius:\s*radius\.xl[\s\S]*?borderWidth:\s*1/);
+  assert.match(reviewFeedback, /detailsDivider:/);
   assert.match(reviewFeedback, /colorWithOpacity\(palette\.ambient\.review, 0\.6\)/);
   assert.match(reviewFeedback, /reason:\s*\{[^}]*\.\.\.typography\.body[^}]*fontWeight:\s*"500"/);
   assert.doesNotMatch(reviewFeedback, /reasonPanel|result:/);
@@ -401,12 +395,12 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
   assert.equal((setup.match(/\{t\("Back"\)\}/g) ?? []).length, 0);
   assert.match(setup, /<AppShellHeader[\s\S]*backAction=\{\{ onPress: \(\) => goBackOrHome\(navigation\) \}\}/);
   assert.match(setup, /compactCodingPractice = algorithmMode\?\.id === ALGORITHM_MODE_IDS\.customPractice/);
-  assert.match(setup, /footerVariant=\{compactCodingPractice \? "sticky" : "default"\}/);
+  assert.match(setup, /footerVariant=\{compactCodingPractice \|\| focusPractice \? "sticky" : "default"\}/);
   assert.match(setup, /<ScreenHeader[\s\S]*variant="practiceSetup"/);
   assert.match(setup, /<ChoiceRow[\s\S]*density="compact"/);
   assert.match(setup, /compactLengthGrid:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?minHeight:\s*54[\s\S]*?padding:\s*spacing\.xs/);
   assert.match(setup, /compactLengthOption:[\s\S]*?borderRadius:\s*10[\s\S]*?minHeight:\s*44/);
-  assert.match(setup, /compactSelectedMeta:\s*\{\s*color:\s*palette\.primary\s*,?\s*\}/);
+  assert.match(setup, /compactSelectedMeta:\s*\{\s*color:\s*palette\.onPrimary\s*,?\s*\}/);
   assert.match(setup, /compactSectionTitle:[\s\S]*?textTransform:\s*"uppercase"/);
   assert.match(choiceRow, /density\?:\s*"comfortable" \| "compact"/);
   assert.match(choiceRow, /compactRow:\s*\{[\s\S]*?minHeight:\s*48/);
@@ -416,6 +410,6 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
   assert.match(screenHeader, /variant\?: "default" \| "activity" \| "practiceSetup"/);
   assert.match(screenHeader, /practiceSetupDescription:\s*\{[\s\S]*?fontSize:\s*13\.5[\s\S]*?lineHeight:\s*19/);
   assert.doesNotMatch(setup, /Focus areas|Save settings/);
-  assert.match(session, /Your saved answers remain available, but this session cannot be resumed\./);
+  assert.match(session, /This ends the active \{\{mode\}\} session\. You won't be able to resume it\. Your saved answers remain available\./);
   assert.doesNotMatch(session, /durable records stay available/);
 });

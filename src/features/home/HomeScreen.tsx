@@ -1,15 +1,17 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 
 import {
   AppShellHeader,
   EmptyState,
+  InfoBlock,
   LoadingState,
   Screen,
 } from "../../components";
+import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
 import { ROUTES } from "../../constants/routes";
 import {
   CODING_INTERVIEW_TRACK_ID,
@@ -77,6 +79,11 @@ type HomeShellTab = Exclude<ShellTab, "practice">;
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
+  const { t: tAccount } = useTranslation("account");
+  const account = usePatternlyAccount();
+  const accountRef = useRef(account);
+  accountRef.current = account;
+  const accountResumeRequired = account.state.kind === "authenticated" && account.state.accountData.status === "resumeRequired";
   const [activeTab, setActiveTab] = useState<HomeShellTab>("home");
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [hasLoadedActiveTrack, setHasLoadedActiveTrack] = useState(false);
@@ -109,6 +116,14 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
 
       async function loadShellData() {
         try {
+          const accountState = accountRef.current.state;
+          const shouldRetryAccountSync = accountState.kind === "authenticated" && accountState.accountData.status === "resumeRequired";
+          if (shouldRetryAccountSync) {
+            const activeSessionForSync = await loadActiveTrainingSession();
+            if (!activeSessionForSync) {
+              await accountRef.current.retryAccountSync();
+            }
+          }
           const savedTrackId = await getActiveTrackId();
           const [
             savedAttempts,
@@ -272,23 +287,33 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         style={[activeTab === "home" ? styles.homeScreenContent : null, activeTab === "progress" ? styles.progressScreenContent : null]}
       >
         {activeTab === "home" ? (
-          <HomeTab
-            activeSession={data.activeSession}
-            activeTrack={activeTrack}
-            analytics={analytics}
-            algorithmsDashboard={data.algorithmsDashboard}
-            dashboardError={data.algorithmsDashboardError}
-            onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
-            onChooseTopic={() => navigation.navigate(ROUTES.TOPIC_ROADMAP, {
-              trackId: activeTrack.id,
-            })}
-            onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
-            onOpenSettings={() => setActiveTab("settings")}
-            onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
-            onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
-            reviewQueueItems={data.reviewQueueItems}
-            trainingAttempts={data.trainingAttempts}
-          />
+          <>
+            {accountResumeRequired ? (
+              <InfoBlock
+                body={tAccount("resumeRequiredDescription")}
+                testID="home-account-resume-required"
+                title={tAccount("resumeRequired")}
+                tone="warning"
+              />
+            ) : null}
+            <HomeTab
+              activeSession={data.activeSession}
+              activeTrack={activeTrack}
+              analytics={analytics}
+              algorithmsDashboard={data.algorithmsDashboard}
+              dashboardError={data.algorithmsDashboardError}
+              onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
+              onChooseTopic={() => navigation.navigate(ROUTES.TOPIC_ROADMAP, {
+                trackId: activeTrack.id,
+              })}
+              onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
+              onOpenSettings={() => setActiveTab("settings")}
+              onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
+              onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
+              reviewQueueItems={data.reviewQueueItems}
+              trainingAttempts={data.trainingAttempts}
+            />
+          </>
         ) : null}
         {activeTab === "progress" ? (
           <ProgressTab

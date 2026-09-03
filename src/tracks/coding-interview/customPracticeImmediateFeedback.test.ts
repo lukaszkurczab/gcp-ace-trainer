@@ -97,8 +97,12 @@ test("Custom Practice afterEachAnswer journals each submitted response, exposes 
   assert.equal((await getTrainingAttempts()).value.length, 10);
   assert.equal(await getActiveTrainingSession(), null);
 
+  storage.resetCounters();
   const reloaded = await getAlgorithmsPracticeSummaryProjection(prepared.session.id);
   assert.equal(reloaded.sessionId, first.value.session.id);
+  assert.equal(reloaded.modeId, prepared.session.modeId);
   assert.equal(reloaded.totalOccurrences, first.value.result.totalOccurrences);
-  assert.deepEqual(reloaded.feedbackItems, []);
+  assert.equal(reloaded.feedbackItems.length, prepared.session.actualLength);
+  assert.ok(reloaded.feedbackItems.every((item) => item.reason.length > 0));
+  assert.equal(storage.operations.filter((operation) => operation.kind !== "read").length, 0);
 });

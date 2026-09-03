@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { radius, spacing, typography } from "../theme";
 import { useAppPreferences, useThemedStyles } from "../preferences";
@@ -19,9 +19,10 @@ type ChoiceRowProps = {
 /** Canonical radio row from Figma's Choice Group pattern. */
 export function ChoiceRow({ accessibilityLabel, appearancePreview, density = "comfortable", detail, disabled = false, onPress, selected, testID, title }: ChoiceRowProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   const compact = density === "compact";
   const radio = <View style={[styles.radio, selected ? styles.radioSelected : styles.radioUnselected]}>{selected ? <View style={styles.dot} /> : null}</View>;
-  const content = <View style={styles.content}><Text maxFontSizeMultiplier={2} style={[styles.title, appearancePreview ? styles.appearanceTitle : null]}>{title}</Text>{!compact ? <Text maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text> : null}</View>;
+  const content = <View style={styles.content}><Text key={`choice-row-title-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.title, appearancePreview ? styles.appearanceTitle : null]}>{title}</Text>{!compact ? <Text key={`choice-row-detail-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text> : null}</View>;
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}

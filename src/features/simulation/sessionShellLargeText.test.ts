@@ -7,7 +7,12 @@ const practiceSurface = readFileSync("src/features/practice/PracticeSessionSurfa
 const buttonSource = readFileSync("src/components/Button.tsx", "utf8");
 
 test("SessionShell keeps the Figma top bar in one row at large text", () => {
-  assert.doesNotMatch(source, /useWindowDimensions|fontScale >= 1\.3|topBarLargeText|topSlotLargeText/);
+  assert.match(source, /import \{ Pressable, StyleSheet, Text, View, useWindowDimensions \} from "react-native";/);
+  assert.equal((source.match(/const \{ fontScale \} = useWindowDimensions\(\);/g) ?? []).length, 2);
+  assert.deepEqual(
+    [...source.matchAll(/key=\{`([^`]+)`\}/g)].map((match) => match[1]),
+    ["timer:${fontScale}", "mode:${fontScale}", "position:${fontScale}"],
+  );
   assert.match(source, /topBar:\s*\{[\s\S]*flexDirection:\s*"row"[\s\S]*minHeight:\s*16/);
   assert.match(source, /topBar:\s*\{[\s\S]*paddingHorizontal:\s*spacing\.xl/);
 });

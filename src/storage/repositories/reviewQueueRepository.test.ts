@@ -78,6 +78,28 @@ test("still rejects a same package durable ID replacement and immutable evidence
   assert.deepEqual((await getReviewQueueItems()).value, [first]);
 });
 
+test("rejects a same durable ID across packages within one batch before writing", async () => {
+  const oldReview = review("review:gcp:batch", "attempt:gcp:0004", "session:gcp:0004", oldItem);
+  const currentReview = review("review:gcp:batch", "attempt:gcp:0006", "session:gcp:0006", currentItem);
+
+  await assert.rejects(
+    () => addReviewQueueItems([oldReview, currentReview]),
+    /conflicting immutable evidence/,
+  );
+  assert.deepEqual((await getReviewQueueItems()).value, []);
+});
+
+test("rejects an immutable source attempt rewrite for one durable ID within a batch before writing", async () => {
+  const first = review("review:gcp:batch", "attempt:gcp:one", "session:gcp:batch", currentItem);
+  const conflicting = { ...first, sourceAttemptId: "attempt:gcp:two" };
+
+  await assert.rejects(
+    () => addReviewQueueItems([first, conflicting]),
+    /conflicting immutable evidence/,
+  );
+  assert.deepEqual((await getReviewQueueItems()).value, []);
+});
+
 test("replays a pending journal after a cross package review write failure without duplicating either review", async () => {
   const oldReview = review("review:gcp:0004", "attempt:gcp:0004", "session:gcp:0004", oldItem);
   await addReviewQueueItems([oldReview]);

@@ -99,7 +99,7 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
               </View>
               <Text maxFontSizeMultiplier={2} style={styles.label}>{t("Description")}</Text>
               <TextInput accessibilityLabel={t("Report description")} editable={!pending} maxLength={2_000} multiline onChangeText={setDescription} placeholder={t("Describe the issue without including your answer.")} placeholderTextColor={styles.placeholder.color as string} style={styles.input} testID={`content-report-input-${item.itemId}`} value={description} />
-              <Text maxFontSizeMultiplier={2} style={styles.privacy}>{t("Reports are anonymous by default and protected by App Check. They are sent only through Patternly's backend.")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.privacy}>{t("Reports are anonymous by default and sent to Patternly.")}</Text>
               {entry ? <ReportStatus entry={entry} /> : null}
               {error ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.error}>{error}</Text> : null}
               <Button disabled={pending} loading={pending} onPress={() => void submit()} testID={`content-report-submit-${item.itemId}`}>{t("Send report")}</Button>
@@ -119,7 +119,7 @@ function ReportStatus({ entry }: Readonly<{ entry: ContentReportOutboxEntry }>) 
   const message = entry.status === "accepted"
     ? t("Report accepted. Thank you.")
     : entry.status === "queued"
-      ? t("Report saved locally. Sending is unavailable until a secure backend connection is configured.")
+      ? t("Your report is saved on this device. Sending is currently unavailable.")
       : entry.status === "retrying"
         ? t("Retrying report…")
         : t("Report was not accepted. You can retry it.");

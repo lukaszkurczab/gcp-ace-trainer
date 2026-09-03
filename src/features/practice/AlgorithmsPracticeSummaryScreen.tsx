@@ -1,125 +1,119 @@
-import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type TextStyle } from "react-native";
 
 import {
   getAlgorithmsPracticeSummaryProjection,
   type AlgorithmsSessionResultProjection,
 } from "../../application/coding-interview";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { Button, EmptyState, Icon, LoadingState, Screen } from "../../components";
+import { EmptyState, Icon, LoadingState, Screen, SessionResultOverview } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { radius, spacing, typography, type AppColors } from "../../theme";
+import { useThemedStyles } from "../../preferences";
+import { spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
-import { PracticeFeedbackBlock } from "./PracticeFeedbackBlock";
+import { getAlgorithmMode } from "../../tracks/coding-interview/domain";
+import { normalizeSessionResultDetails } from "../exam/sessionResultPresentation";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_PRACTICE_SUMMARY>;
-type ViewState =
-  | Readonly<{ kind: "loading" }>
-  | Readonly<{ kind: "ready"; result: AlgorithmsSessionResultProjection }>
-  | Readonly<{ kind: "unavailable"; reason: string }>;
+type SummaryReadState =
+  | Readonly<{ kind: "pending"; requestKey: string }>
+  | Readonly<{ kind: "ready"; requestKey: string; result: AlgorithmsSessionResultProjection }>
+  | Readonly<{ kind: "unavailable"; reason: string; requestKey: string }>;
 
 /** Renders only the immutable completed-session result addressed by the route. */
 export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
-  const [state, setState] = useState<ViewState>({ kind: "loading" });
+  const requestKey = route.params.sessionId;
+  const [readState, setReadState] = useState<SummaryReadState>({ kind: "pending", requestKey });
   const [showReview, setShowReview] = useState(false);
-  const sessionId = route.params.sessionId;
-  const load = useCallback(async () => {
-    try {
-      setState({ kind: "ready", result: await getAlgorithmsPracticeSummaryProjection(sessionId) });
-    } catch (error) {
-      setState({ kind: "unavailable", reason: describeOperationalFailure(error, "The completed session result is unavailable.") });
+  useEffect(() => {
+    const capturedRequestKey = requestKey;
+    let live = true;
+    setReadState({ kind: "pending", requestKey: capturedRequestKey });
+    setShowReview(false);
+
+    async function loadData() {
+      try {
+        const result = await getAlgorithmsPracticeSummaryProjection(capturedRequestKey);
+        if (live) setReadState({ kind: "ready", requestKey: capturedRequestKey, result });
+      } catch (error) {
+        if (live) setReadState({ kind: "unavailable", requestKey: capturedRequestKey, reason: describeOperationalFailure(error, t("We couldn’t load the session result.")) });
+      }
     }
-  }, [sessionId]);
 
-  useFocusEffect(useCallback(() => { void load(); }, [load]));
+    void loadData();
+    return () => { live = false; };
+  }, [requestKey, t]);
 
-  if (state.kind === "loading") {
-    return <Screen><LoadingState title={t("Loading session result")} description={t("Reading the verified completed-session result.")} /></Screen>;
+  if (readState.requestKey !== requestKey || readState.kind === "pending") {
+    return <Screen><LoadingState title={t("Loading session result")} /></Screen>;
   }
-  if (state.kind === "unavailable") {
-    return <Screen><EmptyState title={t("Session result unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  if (readState.kind === "unavailable") {
+    return <Screen><EmptyState title={t("Session result unavailable")} description={t(readState.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
 
-  const { result } = state;
-  const activeTime = formatElapsed(result.elapsedForegroundMs);
-  const resultStateLabel = result.completionKind === "completed" ? "Session complete" : "Session ended early";
-  const resultTitle = result.completionKind === "completed" ? "Session complete" : "Partial summary";
-  const reviewCount = result.score
-    ? result.score.partialCount + result.score.incorrectCount
-    : result.feedbackItems.filter((item) => item.correctness !== "correct").length;
+  const { result } = readState;
+  const answeredCount = result.answeredOccurrenceIds.length;
+  const totalOccurrences = result.configuration.actualLength;
+  const unansweredCount = result.unansweredOccurrenceIds.length;
+  const coverageIsConsistent = result.totalOccurrences === totalOccurrences && answeredCount + unansweredCount === totalOccurrences;
+  const normalizedDetails = coverageIsConsistent ? normalizeSessionResultDetails(result.score, answeredCount) : { points: null, score: null };
+  const feedbackAvailable = result.feedbackItems.length > 0;
+  const configurationNote = result.completionKind === "abandoned"
+    ? `${result.configuration.actualLength} ${t("items")} · ${t(result.configuration.feedbackTiming === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer")}`
+    : undefined;
+  const reviewContent = feedbackAvailable ? (
+    <View style={styles.feedbackItems}>
+      <ResultText selectable style={styles.feedbackTitle}>{t("Answer review")}</ResultText>
+      {result.feedbackItems.map((item) => (
+        <Pressable
+          accessibilityRole="button"
+          key={item.occurrenceId}
+          onPress={() => navigation.navigate(ROUTES.ALGORITHMS_PRACTICE_REVIEW, { sessionId: result.sessionId, occurrenceId: item.occurrenceId })}
+          style={({ pressed }) => [styles.feedbackItem, pressed ? styles.pressed : null]}
+          testID={runtimeSelectors.summary.feedbackItem(result.sessionId, item.occurrenceId)}
+        >
+          <View style={styles.rowCopy}>
+            <ResultText style={styles.feedbackPrompt}>{item.ordinal}. {item.prompt}</ResultText>
+            <ResultText style={[styles.resultLabel, styles[item.correctness]]}>{t(item.correctness === "correct" ? "Correct" : item.correctness === "partial" ? "Partial" : "Incorrect")}</ResultText>
+          </View>
+          <Icon color={styles.feedbackPrompt.color} name="chevron-right" size={20} />
+        </Pressable>
+      ))}
+    </View>
+  ) : undefined;
+
   return (
-    <Screen edges={["top", "bottom"]} scroll={false} style={styles.screen}>
-      <View style={styles.summaryShell}>
-        <View accessibilityLabel={t(resultStateLabel)} style={styles.summaryHeaderBar}>
-          <Text maxFontSizeMultiplier={2} style={styles.eyebrow}>{t("Learn approach")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.summaryMode}>{t("Coding Interview")}</Text>
-        </View>
-        <ScrollView contentContainerStyle={styles.summaryContent} showsVerticalScrollIndicator={false} style={styles.summaryContentScroll}>
-          <View style={styles.summaryHeader}>
-            <Text maxFontSizeMultiplier={2} style={styles.resultTitle} testID={runtimeSelectors.summary.root(result.sessionId)}>{t(resultTitle)}</Text>
-            <Text maxFontSizeMultiplier={2} style={styles.resultDescription}>{t(result.completionKind === "completed" ? "Your performance record has been analyzed and logged." : "This session ended before every item was completed.")}</Text>
-          </View>
-          <View
-            style={styles.statsCard}
-            testID={result.completionKind === "completed" ? runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming) : undefined}
-          >
-            <SummaryStat label={t("Completed items")} value={`${result.answeredOccurrenceIds.length} ${t("of")} ${result.totalOccurrences}`} />
-            <SummaryStat label={t("Active time")} value={activeTime} />
-            {result.completionKind !== "completed" ? <Text maxFontSizeMultiplier={2} style={styles.configuration} testID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}>{result.configuration.actualLength} {t("items")} · {t(result.configuration.feedbackTiming === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer")}</Text> : null}
-          </View>
-          <View style={styles.outcomeSection}>
-            {result.completionKind === "completed" ? <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Outcome distribution")}</Text> : <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Results")}</Text>}
-            {result.score ? (
-              <View style={styles.outcomeRow}>
-                <OutcomeStat label={t("Correct")} value={result.score.correctCount} tone="success" />
-                <OutcomeStat label={t("Partial")} value={result.score.partialCount} tone="danger" />
-                <OutcomeStat label={t("Incorrect")} value={result.score.incorrectCount} tone="danger" />
-              </View>
-            ) : (
-              <Text maxFontSizeMultiplier={2} style={styles.resultText}>{result.completionKind === "abandoned" ? t("Score is shown only after a completed session.") : t("Verified result details are unavailable.")}</Text>
-            )}
-          </View>
-          {result.feedbackItems.length > 0 ? <View style={styles.reviewBanner}><Icon color={styles.reviewBannerText.color} name="clock-check" size={16} /><Text maxFontSizeMultiplier={2} style={styles.reviewBannerText}>{t("Review created")} — {reviewCount} {t("items will return when due.")}</Text></View> : null}
-          {showReview && result.feedbackItems.length > 0 ? (
-            <View style={styles.feedbackItems}>
-              <Text maxFontSizeMultiplier={2} style={styles.feedbackTitle}>{t("Answer review")}</Text>
-              {result.feedbackItems.map((item) => (
-                <View key={item.occurrenceId} style={styles.feedbackItem} testID={runtimeSelectors.summary.feedbackItem(result.sessionId, item.occurrenceId)}>
-                  <Text maxFontSizeMultiplier={2} style={styles.feedbackPrompt}>{item.ordinal}. {item.prompt}</Text>
-                  <PracticeFeedbackBlock item={item.item} itemId={item.occurrenceId} feedback={{ details: item.details, reason: item.reason, result: item.correctness }} reportSurface={{ modeRoute: "practice_feedback_details", trackNode: null }} />
-                </View>
-              ))}
-            </View>
-          ) : null}
-        </ScrollView>
-        <View style={styles.summaryFooter}>
-          {result.feedbackItems.length > 0 ? (
-            <Button onPress={() => setShowReview((current) => !current)} testID={runtimeSelectors.summary.reviewAnswers(result.sessionId)} variant="primary">
-              {t(showReview ? "Hide answer review" : "Review answers")}
-            </Button>
-          ) : null}
-          <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} testID={runtimeSelectors.summary.backToPractice(result.sessionId)} variant="secondary">{t("Back to practice")}</Button>
-        </View>
-      </View>
+    <Screen edges={["top", "bottom"]}>
+      <SessionResultOverview
+        activeTime={formatElapsed(result.elapsedForegroundMs)}
+        answeredCount={answeredCount}
+        backTestID={runtimeSelectors.summary.backToPractice(result.sessionId)}
+        completion={result.completionKind === "completed" ? "completed" : "endedEarly"}
+        configurationTestID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}
+        context={{ modeLabel: t(getAlgorithmMode(result.modeId).title), trackLabel: t("Coding Interview") }}
+        onBack={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
+        points={normalizedDetails.points ?? undefined}
+        requestedCount={result.configuration.requestedLength}
+        review={feedbackAvailable ? { content: reviewContent, expanded: showReview, onPress: () => setShowReview((current) => !current), testID: runtimeSelectors.summary.reviewAnswers(result.sessionId) } : undefined}
+        rootTestID={runtimeSelectors.summary.root(result.sessionId)}
+        score={normalizedDetails.score}
+        secondaryNote={configurationNote ? { text: configurationNote } : undefined}
+        totalOccurrences={totalOccurrences}
+        unansweredCount={unansweredCount}
+      />
     </Screen>
   );
 }
 
-function SummaryStat({ label, value }: Readonly<{ label: string; value: string }>) {
-  const styles = useThemedStyles(createStyles);
-  return <View style={styles.summaryStat}><Text maxFontSizeMultiplier={2} style={styles.summaryStatLabel}>{label}</Text><Text maxFontSizeMultiplier={2} style={styles.summaryStatValue}>{value}</Text></View>;
-}
-
-function OutcomeStat({ label, tone, value }: Readonly<{ label: string; tone: "danger" | "success"; value: number }>) {
-  const styles = useThemedStyles(createStyles);
-  return <View style={styles.outcomeStat}><View style={[styles.outcomeDot, styles[`${tone}Dot`]]} /><Text maxFontSizeMultiplier={2} style={styles.outcomeLabel}>{label}</Text><Text maxFontSizeMultiplier={2} style={styles.outcomeValue}>{value}</Text></View>;
+function ResultText({ children, selectable = false, style }: Readonly<{ children: ReactNode; selectable?: boolean; style?: StyleProp<TextStyle> }>) {
+  const { fontScale } = useWindowDimensions();
+  return <Text key={fontScale} maxFontSizeMultiplier={2} selectable={selectable} style={style}>{children}</Text>;
 }
 
 function formatElapsed(milliseconds: number): string {
@@ -129,36 +123,14 @@ function formatElapsed(milliseconds: number): string {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  screen: { paddingBottom: 0, paddingHorizontal: 0, paddingTop: 0 },
-  summaryShell: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.xxl, borderWidth: 1, flex: 1, overflow: "hidden" },
-  summaryHeaderBar: { alignItems: "flex-start", borderBottomColor: palette.border, borderBottomWidth: 1, columnGap: spacing.md, flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", minHeight: 52, paddingHorizontal: spacing.xl, paddingVertical: 18, rowGap: spacing.xs },
-  summaryHeader: { gap: spacing.sm },
-  summaryMode: { color: palette.textSecondary, flexShrink: 1, fontSize: 13, fontWeight: "600", lineHeight: 16, textAlign: "right" },
-  eyebrow: { color: palette.textPrimary, flexShrink: 1, fontSize: 13, fontWeight: "700", lineHeight: 16, textTransform: "uppercase" },
-  summaryContent: { gap: 28, padding: spacing.xxl },
-  summaryContentScroll: { flex: 1 },
-  resultDescription: { ...typography.body, color: palette.textSecondary },
-  statsCard: { gap: spacing.md },
-  summaryStat: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: 1, flexDirection: "row", justifyContent: "space-between", paddingBottom: spacing.md },
-  summaryStatLabel: { ...typography.small, color: palette.textSecondary },
-  summaryStatValue: { ...typography.bodyStrong, color: palette.textPrimary },
-  configuration: { ...typography.caption, color: palette.textMuted },
-  outcomeSection: { gap: spacing.md },
-  sectionTitle: { color: palette.textSecondary, fontSize: 10, fontWeight: "700", letterSpacing: 1.2, lineHeight: 12, textTransform: "uppercase" },
-  outcomeRow: { gap: spacing.sm },
-  outcomeStat: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 10, flexDirection: "row", gap: 10, padding: spacing.md },
-  outcomeDot: { borderRadius: 4, height: 8, width: 8 },
-  successDot: { backgroundColor: palette.success },
-  dangerDot: { backgroundColor: palette.danger },
-  outcomeLabel: { ...typography.body, color: palette.textPrimary, flex: 1 },
-  outcomeValue: { color: palette.textPrimary, fontSize: 14, fontWeight: "600", lineHeight: 18 },
-  reviewBanner: { alignItems: "flex-start", backgroundColor: palette.success, borderColor: palette.border, borderRadius: 10, borderWidth: 1, flexDirection: "row", gap: 10, padding: 14 },
-  reviewBannerText: { color: palette.onPrimary, flex: 1, fontSize: 13, lineHeight: 18 },
-  summaryFooter: { gap: spacing.md, padding: spacing.xl },
-  feedbackItem: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, gap: spacing.md, paddingTop: spacing.lg },
+  feedbackItem: { alignItems: "center", borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: spacing.md, minHeight: 64, paddingVertical: spacing.lg },
+  rowCopy: { flex: 1, gap: spacing.sm },
+  pressed: { opacity: 0.7 },
+  resultLabel: { ...typography.small, fontWeight: "600" },
+  correct: { color: palette.success },
+  partial: { color: palette.warning },
+  incorrect: { color: palette.danger },
   feedbackItems: { gap: spacing.lg },
   feedbackPrompt: { ...typography.bodyStrong, color: palette.textPrimary },
   feedbackTitle: { ...typography.bodyStrong, color: palette.textPrimary },
-  resultText: { ...typography.body, color: palette.textSecondary },
-  resultTitle: { color: palette.textPrimary, fontSize: 32, fontWeight: "400", letterSpacing: -1, lineHeight: 39 },
 });

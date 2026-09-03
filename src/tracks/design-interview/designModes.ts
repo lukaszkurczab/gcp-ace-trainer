@@ -14,3 +14,13 @@ export function assertDesignInterviewModeId(value: string): DesignInterviewModeI
   if (!isDesignInterviewModeId(value)) throw new Error(`Unknown Design Interview mode ${value}.`);
   return value;
 }
+
+const DESIGN_MODE_TITLES: Readonly<Record<DesignInterviewModeId, string>> = Object.freeze({
+  "design-interview-learn-framework": "Learn the framework",
+  "design-interview-tradeoff-practice": "Tradeoff practice",
+  "design-interview-weak-area-review": "Weak Area Review",
+});
+
+export function getDesignModeTitle(modeId: string): string {
+  return DESIGN_MODE_TITLES[assertDesignInterviewModeId(modeId)];
+}

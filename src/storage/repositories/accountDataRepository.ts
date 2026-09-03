@@ -13,6 +13,7 @@ import { clearTrainingAttempts, getTrainingAttempts, addTrainingAttempt } from "
 import { getTrainingSessionResult, saveTrainingSessionResult } from "./trainingSessionResultRepository";
 import { clearTrainingSessions, getActiveTrainingSessionId, getTrainingSessions, saveTrainingSession } from "./trainingSessionRepository";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionResult } from "./trainingModelGuards";
+import { AccountDataFailure } from "../errors";
 
 export const ACCOUNT_DATA_PROTOCOL_VERSION = 1 as const;
 export const SYNCABLE_RECORD_TYPES = ["active_track", "training_session_summary", "training_session_result", "training_attempt", "review_queue_entry"] as const;
@@ -88,19 +89,23 @@ export function accountDataRecordKey(record: Pick<AccountDataRecord, "recordType
 export function accountDataRecordFingerprint(record: Readonly<{ recordId: string; recordType: SyncableRecordType; state: Readonly<Record<string, unknown>>; trackId: string }>): string { return sha256Utf8(canonicalSerialize({ recordId: record.recordId, recordType: record.recordType, state: record.state, trackId: record.trackId })); }
 export function isDeletedAccountDataRecord(record: Pick<AccountDataRecord, "state">): boolean { return record.state.deleted === true; }
 
+function accountMutationId(accountId: string, record: Pick<AccountDataRecord, "recordType" | "recordId" | "fingerprint">, expectedVersion: number | null): string {
+  return `mutation_${sha256Utf8(canonicalSerialize({ accountId, key: accountDataRecordKey(record), expectedVersion, fingerprint: record.fingerprint }))}`;
+}
+
 export async function getAccountSyncState(): Promise<AccountSyncState> {
   return readCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, isAccountSyncState) ?? emptyState();
 }
 
 export function saveAccountSyncState(state: AccountSyncState): AccountSyncState {
-  if (!isAccountSyncState(state)) throw new Error("account_sync_state_invalid");
+  if (!isAccountSyncState(state)) throw new AccountDataFailure("account_sync_state_invalid");
   const saved = writeCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, state);
   return saved.payload;
 }
 
 export async function buildAccountDataSnapshot(): Promise<AccountDataSnapshot> {
   const installation = await getGuestInstallation();
-  if (!installation) throw new Error("guest_installation_required");
+  if (!installation) throw new AccountDataFailure("guest_installation_required");
   const state = await getAccountSyncState();
   const records = await readLocalAccountDataRecords(state);
   const datasetFingerprint = sha256Utf8(canonicalSerialize(records));
@@ -136,11 +141,30 @@ function makeRecord(recordType: SyncableRecordType, recordId: string, trackId: s
   return Object.freeze({ fingerprint, recordId, recordType, state: Object.freeze(copied), trackId, version: acknowledged?.remoteVersion ?? 0 });
 }
 
+/** Local commits only mark pending work; account synchronization builds the outbox. */
+export async function markAccountDataPending(): Promise<void> {
+  const installation = await getGuestInstallation();
+  if (!installation?.accountId) return;
+  const state = await getAccountSyncState();
+  if (state.accountId !== installation.accountId || state.materialization) return;
+  if (state.status === "synced") saveAccountSyncState({ ...state, status: "offlinePending" });
+}
+
 export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSyncState> {
   const installation = await getGuestInstallation();
   let state = await getAccountSyncState();
   if (state.materialization) return state;
-  if (!installation?.accountId || state.accountId !== installation.accountId) return state;
+  const boundAccountId = installation?.accountId;
+  if (!boundAccountId || state.accountId !== boundAccountId) return state;
+  if (state.lastFailureCode === "mutation_id_reuse" && state.outbox.length > 0) {
+    const repairedOutbox = state.outbox.map((entry) => Object.freeze({
+      ...entry,
+      mutationId: accountMutationId(boundAccountId, entry, entry.expectedVersion),
+      status: "pending" as const,
+      lastErrorCode: null,
+    }));
+    state = saveAccountSyncState({ ...state, outbox: Object.freeze(repairedOutbox), pendingMutationCount: repairedOutbox.length });
+  }
   const snapshot = await buildAccountDataSnapshot();
   const latestState = await getAccountSyncState();
   if (latestState.materialization || latestState.accountId !== installation.accountId) return latestState;
@@ -151,7 +175,8 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
     const key = accountDataRecordKey(record);
     const acknowledged = state.acknowledged[key];
     if (acknowledged?.fingerprint === record.fingerprint || byKey.get(key)?.fingerprint === record.fingerprint) continue;
-    const entry: AccountOutboxEntry = Object.freeze({ ...record, mutationId: `mutation_${sha256Utf8(`${installation.accountId}:${key}:${record.fingerprint}`)}`, expectedVersion: acknowledged?.remoteVersion ?? null, attemptCount: byKey.get(key)?.attemptCount ?? 0, lastErrorCode: null, status: "pending" });
+    const expectedVersion = acknowledged?.remoteVersion ?? null;
+    const entry: AccountOutboxEntry = Object.freeze({ ...record, mutationId: accountMutationId(boundAccountId, record, expectedVersion), expectedVersion, attemptCount: byKey.get(key)?.attemptCount ?? 0, lastErrorCode: null, status: "pending" });
     const existingIndex = outbox.findIndex((candidate) => accountDataRecordKey(candidate) === key);
     if (existingIndex >= 0) outbox[existingIndex] = entry;
     else outbox.push(entry);
@@ -161,21 +186,21 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
   for (const acknowledged of Object.values(state.acknowledged)) {
     const key = accountDataRecordKey(acknowledged);
     if (currentKeys.has(key) || byKey.has(key)) continue;
-    const tombstone: AccountOutboxEntry = Object.freeze({
+    const tombstone: Omit<AccountOutboxEntry, "mutationId"> = Object.freeze({
       fingerprint: accountDataRecordFingerprint({ recordId: acknowledged.recordId, recordType: acknowledged.recordType, state: { deleted: true }, trackId: acknowledged.trackId }),
       recordId: acknowledged.recordId,
       recordType: acknowledged.recordType,
       state: Object.freeze({ deleted: true }),
       trackId: acknowledged.trackId,
       version: acknowledged.remoteVersion,
-      mutationId: `mutation_${sha256Utf8(`${installation.accountId}:${key}:deleted`)}`,
       expectedVersion: acknowledged.remoteVersion,
       attemptCount: 0,
       lastErrorCode: null,
       status: "pending",
     });
-    outbox.push(tombstone);
-    byKey.set(key, tombstone);
+    const tombstoneWithMutationId: AccountOutboxEntry = Object.freeze({ ...tombstone, mutationId: accountMutationId(boundAccountId, tombstone, tombstone.expectedVersion) });
+    outbox.push(tombstoneWithMutationId);
+    byKey.set(key, tombstoneWithMutationId);
   }
   const next = { ...state, status: outbox.length > 0 ? "offlinePending" as const : state.status, pendingMutationCount: outbox.length, outbox: Object.freeze(outbox) };
   saveAccountSyncState(next);
@@ -188,42 +213,42 @@ export function setAccountSyncState(input: Partial<AccountSyncState> & Pick<Acco
 }
 
 export async function markAccountMaterializationPending(operationId: string, previewFingerprint: string, accountId: string): Promise<AccountSyncState> {
-  if (!accountId.trim()) throw new Error("account_id_required");
+  if (!accountId.trim()) throw new AccountDataFailure("account_id_required");
   const current = await getAccountSyncState();
-  if (current.accountId !== null && current.accountId !== accountId) throw new Error("account_binding_mismatch");
+  if (current.accountId !== null && current.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
   return saveAccountSyncState({ ...current, accountId, materialization: { operationId, previewFingerprint }, pendingConfirmation: null, status: "syncing" });
 }
 
 export async function markGuestDiscardMaterializationPending(accountId: string): Promise<AccountSyncState> {
-  if (!accountId.trim()) throw new Error("account_id_required");
+  if (!accountId.trim()) throw new AccountDataFailure("account_id_required");
   const current = await getAccountSyncState();
-  if (current.accountId !== null && current.accountId !== accountId) throw new Error("account_binding_mismatch");
-  if (current.pendingConfirmation !== null) throw new Error("account_adoption_pending");
+  if (current.accountId !== null && current.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+  if (current.pendingConfirmation !== null) throw new AccountDataFailure("account_adoption_pending");
   if (current.materialization && (!("kind" in current.materialization) || current.materialization.kind !== "discardGuest" || current.materialization.accountId !== accountId)) {
-    throw new Error("account_materialization_in_progress");
+    throw new AccountDataFailure("account_materialization_in_progress");
   }
   return saveAccountSyncState({ ...current, accountId, materialization: { kind: "discardGuest", accountId }, status: "syncing", pendingConfirmation: null });
 }
 
 export function assertValidAccountDataRecords(records: unknown): asserts records is readonly AccountDataRecord[] {
-  if (!Array.isArray(records)) throw new Error("account_data_records_invalid");
+  if (!Array.isArray(records)) throw new AccountDataFailure("account_data_records_invalid");
   for (const record of records) {
-    if (!isAccountDataRecord(record) || !record.recordId.trim() || !isRegisteredTrackId(record.trackId)) throw new Error("account_data_record_invalid");
-    if (record.fingerprint !== accountDataRecordFingerprint(record)) throw new Error("account_data_fingerprint_invalid");
+    if (!isAccountDataRecord(record) || !record.recordId.trim() || !isRegisteredTrackId(record.trackId)) throw new AccountDataFailure("account_data_record_invalid");
+    if (record.fingerprint !== accountDataRecordFingerprint(record)) throw new AccountDataFailure("account_data_fingerprint_invalid");
     if (isDeletedAccountDataRecord(record)) continue;
     const state = record.state;
-    if (state.trackId !== record.trackId) throw new Error("account_data_track_invalid");
-    if (record.recordType === "active_track" && record.recordId !== "current") throw new Error("account_data_track_invalid");
-    if (record.recordType === "training_session_summary" && (!isTrainingSession(state) || state.status === "active" || state.id !== record.recordId)) throw new Error("account_data_session_invalid");
-    if (record.recordType === "training_session_result" && (!isTrainingSessionResult(state) || state.sessionId !== record.recordId)) throw new Error("account_data_result_invalid");
-    if (record.recordType === "training_attempt" && (!isTrainingAttempt(state) || state.id !== record.recordId)) throw new Error("account_data_attempt_invalid");
-    if (record.recordType === "review_queue_entry" && (!isReviewQueueEntry(state) || state.id !== record.recordId)) throw new Error("account_data_review_invalid");
+    if (state.trackId !== record.trackId) throw new AccountDataFailure("account_data_track_invalid");
+    if (record.recordType === "active_track" && record.recordId !== "current") throw new AccountDataFailure("account_data_track_invalid");
+    if (record.recordType === "training_session_summary" && (!isTrainingSession(state) || state.status === "active" || state.id !== record.recordId)) throw new AccountDataFailure("account_data_session_invalid");
+    if (record.recordType === "training_session_result" && (!isTrainingSessionResult(state) || state.id !== record.recordId)) throw new AccountDataFailure("account_data_result_invalid");
+    if (record.recordType === "training_attempt" && (!isTrainingAttempt(state) || state.id !== record.recordId)) throw new AccountDataFailure("account_data_attempt_invalid");
+    if (record.recordType === "review_queue_entry" && (!isReviewQueueEntry(state) || state.id !== record.recordId)) throw new AccountDataFailure("account_data_review_invalid");
   }
 }
 
 export async function applyRemoteAccountData(records: readonly AccountDataRecord[]): Promise<void> {
   assertValidAccountDataRecords(records);
-  if (await getActiveTrainingSessionId()) throw new Error("active_session_adoption_blocked");
+  if (await getActiveTrainingSessionId()) throw new AccountDataFailure("active_session_adoption_blocked");
   await clearActiveTrackId();
   await clearTrainingSessions();
   await clearTrainingAttempts();
@@ -231,25 +256,25 @@ export async function applyRemoteAccountData(records: readonly AccountDataRecord
   for (const record of records.filter((candidate) => !isDeletedAccountDataRecord(candidate))) {
     if (record.recordType === "active_track") {
       const trackId = record.state.trackId;
-      if (typeof trackId !== "string" || !isRegisteredTrackId(trackId)) throw new Error("account_data_track_invalid");
+      if (typeof trackId !== "string" || !isRegisteredTrackId(trackId)) throw new AccountDataFailure("account_data_track_invalid");
       await saveActiveTrackId(trackId);
     }
     if (record.recordType === "training_session_summary") {
-      if (!isTrainingSession(record.state)) throw new Error("account_data_session_invalid");
+      if (!isTrainingSession(record.state)) throw new AccountDataFailure("account_data_session_invalid");
       await saveTrainingSession(record.state);
     }
     if (record.recordType === "training_session_result") {
-      if (!isTrainingSessionResult(record.state)) throw new Error("account_data_result_invalid");
+      if (!isTrainingSessionResult(record.state)) throw new AccountDataFailure("account_data_result_invalid");
       await saveTrainingSessionResult(record.state);
     }
     if (record.recordType === "training_attempt") {
-      if (!isTrainingAttempt(record.state)) throw new Error("account_data_attempt_invalid");
+      if (!isTrainingAttempt(record.state)) throw new AccountDataFailure("account_data_attempt_invalid");
       await addTrainingAttempt(record.state);
     }
   }
   const reviews: ReviewQueueEntry[] = [];
   for (const record of records.filter((candidate) => candidate.recordType === "review_queue_entry" && !isDeletedAccountDataRecord(candidate))) {
-    if (!isReviewQueueEntry(record.state)) throw new Error("account_data_review_invalid");
+    if (!isReviewQueueEntry(record.state)) throw new AccountDataFailure("account_data_review_invalid");
     reviews.push(record.state);
   }
   if (reviews.length > 0) await addReviewQueueItems(reviews);

@@ -2,7 +2,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { AppShellHeader, Button, Card, ChoiceRow, EmptyState, LoadingState, Screen, ScreenHeader, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
@@ -34,7 +34,7 @@ import {
   type PracticeSessionLength,
 } from "./sessionConfig";
 import { getPracticeReviewBehaviorCopy } from "./practiceSetupModel";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
+import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
@@ -45,7 +45,6 @@ type PracticeSetupScreenProps = NativeStackScreenProps<
   typeof ROUTES.PRACTICE_SETUP
 >;
 
-const sessionLengths: readonly PracticeSessionLength[] = [10, 20, 40];
 const STORED_TRACK_REQUEST_KEY = "stored-track" as const;
 type PracticeSetupRequestKey = TrackId | typeof STORED_TRACK_REQUEST_KEY;
 type PracticeSetupReadState =
@@ -56,6 +55,7 @@ type PracticeSetupReadState =
 export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
   const requestKey: PracticeSetupRequestKey = route.params?.trackId ?? STORED_TRACK_REQUEST_KEY;
   const [readState, setReadState] = useState<PracticeSetupReadState>({ kind: "pending", requestKey });
   const [sessionLength, setSessionLength] = useState<PracticeSessionLength>(
@@ -97,7 +97,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
             setReadState({
               kind: "unavailable",
               requestKey: capturedRequestKey,
-              reason: describeOperationalFailure(error, "Practice setup data is unavailable."),
+              reason: describeOperationalFailure(error, t("We couldn’t load the session settings.")),
             });
           }
         }
@@ -108,7 +108,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
       return () => {
         isActive = false;
       };
-    }, [requestKey]),
+    }, [requestKey, t]),
   );
 
   if (readState.requestKey !== requestKey || readState.kind === "pending") return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><LoadingState title={t("Preparing practice")} /></Screen>;
@@ -117,7 +117,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   if (!resolvedTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(resolvedTrackId);
   const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
-  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><EmptyState title={t("Practice setup is unavailable")} description={t("This topic is not available in the installed Free package.")} /></Screen>;
+  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><EmptyState title={t("Practice setup is unavailable")} description={t("This topic is not included in your free content.")} /></Screen>;
   const selectedMode = (route.params?.mode ?? packageProfile.primaryEntry.modeId) as PracticeSessionMode;
   packageProfile.getMode(selectedMode);
   const certificationTrack = activeTrack.familyId === "certification";
@@ -151,8 +151,8 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
   function startSession() {
     const mode = selectedMode;
-    if (focusPractice && !selectedFocusTopicId) {
-      setSetupError("Choose the installed Free node before starting Focus Practice.");
+    if (focusPractice && selectedFocusTopicId !== packageProfile.freeNodeId) {
+      setSetupError("Choose an available topic to start practicing.");
       return;
     }
     if (scenarioPractice && !scenarioCompetencyId) {
@@ -169,11 +169,11 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               reviewSource: route.params?.reviewSource,
               sessionLength: configuredSessionLength,
             }
-            : diagnosticBaseline || focusPractice || scenarioPractice || weakAreaReview || mixedPractice || designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
+            : diagnosticBaseline ? {} : focusPractice || scenarioPractice || weakAreaReview || mixedPractice || designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         competencyId: scenarioPractice ? scenarioCompetencyId! : undefined,
         mode,
         source: "practiceSetup",
-        topicId: focusPractice ? selectedFocusTopicId! : weakAreaReview || mixedPractice ? "" : topic.id,
+        topicId: diagnosticBaseline ? packageProfile.freeNodeId : focusPractice ? selectedFocusTopicId! : weakAreaReview || mixedPractice ? "" : topic.id,
         trackId: activeTrack.id,
       }),
     );
@@ -183,10 +183,10 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     <View style={styles.shell} testID={runtimeSelectors.practice.setupRoot()}>
       <Screen
         edges={["top", "bottom"]}
-        footerVariant={compactCodingPractice ? "sticky" : "default"}
-        footer={compactCodingPractice ? (
+        footerVariant={compactCodingPractice || focusPractice ? "sticky" : "default"}
+        footer={compactCodingPractice || focusPractice ? (
           <View style={styles.footerActions}>
-            {setupError ? <Text maxFontSizeMultiplier={2} accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
+            {setupError ? <Text key={`practice-setup-footer-error-${fontScale}`} maxFontSizeMultiplier={2} accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
             <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
           </View>
         ) : undefined}
@@ -194,7 +194,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         {compactCodingPractice ? <ScreenHeader
           backAction={{ onPress: () => goBackOrHome(navigation) }}
           context={t("Practice")}
-          description={t("Adjust your default practice. Session size and feedback apply across tracks.")}
+          description={t("Choose the length and feedback timing for this session.")}
           title={t("Practice settings")}
           titleTestID={runtimeSelectors.practice.customSetupTitle()}
           variant="practiceSetup"
@@ -205,31 +205,32 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
         {!compactCodingPractice ? <View style={styles.intro}>
           <Text
+            key={`practice-setup-intro-title-${fontScale}`}
             maxFontSizeMultiplier={2}
             style={styles.title}
             testID={compactCodingPractice ? runtimeSelectors.practice.customSetupTitle() : undefined}
           >
             {t("Practice setup")}
           </Text>
-          <Text maxFontSizeMultiplier={2} style={styles.subtitle}>
-            {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : scenarioPractice ? t("Choose one competency. The session uses only its approved scenario questions.") : weakAreaReview ? t("Review only saved weak areas whose review time has arrived.") : mixedPractice ? t("Practice the approved interleaved Cloud question set.") : `${t("Configure the next session for")} ${formatPracticeTopicTitle(topic.title, t)}.`}
+          <Text key={`practice-setup-intro-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>
+            {diagnosticBaseline ? t("Check your knowledge of {{topic}} with 40 questions.", { topic: formatPracticeTopicTitle(topic.title, t) }) : focusPractice ? t("Practice questions from one topic.") : scenarioPractice ? t("Choose the skill you want to practice.") : weakAreaReview ? t("Review questions that are ready to revisit.") : mixedPractice ? t("Practice a mix of topics in one session.") : t("Set up your session for {{topic}}.", { topic: formatPracticeTopicTitle(topic.title, t) })}
           </Text>
         </View> : null}
 
         {focusPractice ? <View style={styles.section}>
-          <SectionHeader title={t("Cloud domain")} subtitle={t("Required for Focus Practice")} tight />
-          {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} detail={formatPracticeTopicDetail(focusTopic.detail, t)} label={focusTopic.title} onPress={() => { setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={selectedFocusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
+          <SectionHeader title={t("Topic")} subtitle={t("Choose a topic for this session.")} tight />
+          {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} disabled={focusTopic.status === "locked"} detail={focusTopic.status === "locked" ? `${t("Unavailable")}. ${formatPracticeTopicDetail(focusTopic.detail, t)}` : formatPracticeTopicDetail(focusTopic.detail, t)} label={focusTopic.title} onPress={() => { setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={selectedFocusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
         </View> : null}
 
         {scenarioPractice ? <View style={styles.section}>
-          <SectionHeader title={t("Competency")} subtitle={t("Required for Scenario Practice")} tight />
-          {scenarioCompetencies.map((competency) => <SelectablePanel key={competency.id} detail={t(`${competency.scenarioItemIds.length} approved scenario questions`)} label={t(competency.label)} onPress={() => { setScenarioCompetencyId(competency.id); setSetupError(null); }} selected={scenarioCompetencyId === competency.id} testID={runtimeSelectors.practice.scenarioCompetency(competency.id)} />)}
+          <SectionHeader title={t("Competency")} subtitle={t("Choose a skill for this session.")} tight />
+          {scenarioCompetencies.map((competency) => <SelectablePanel key={competency.id} detail={t("Questions: {{count}}", { count: competency.scenarioItemIds.length })} label={t(competency.label)} onPress={() => { setScenarioCompetencyId(competency.id); setSetupError(null); }} selected={scenarioCompetencyId === competency.id} testID={runtimeSelectors.practice.scenarioCompetency(competency.id)} />)}
         </View> : null}
 
         {!diagnosticBaseline ? <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>
-          {compactCodingPractice ? <PracticeSetupSectionHeader title={t("Session length")} subtitle={t("Number of items in your primary practice session.")} /> : <SectionHeader title={t("Session length")} tight />}
+          {compactCodingPractice ? <PracticeSetupSectionHeader title={t("Session length")} subtitle={t("Number of questions in this session.")} /> : <SectionHeader title={t("Session length")} tight />}
           <View style={[styles.lengthGrid, compactCodingPractice ? styles.compactLengthGrid : null]}>
-            {(algorithmMode?.profile.supportedLengths ?? selectedPackageMode.requestedLengths ?? (weakAreaReview ? [10, 20] : sessionLengths)).map((length) => (
+            {selectedPackageMode.requestedLengths.map((length) => (
               <SelectableOption
                 compact={compactCodingPractice}
                 key={length}
@@ -241,14 +242,16 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               />
             ))}
           </View>
-        </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("40-question Diagnostic Baseline")}</Text><Text maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Fixed Cloud-domain scope, elapsed timer, and feedback after each saved answer.")}</Text></View></Card>}
+        </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text key={`practice-setup-diagnostic-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Diagnostic Baseline")}</Text><Text key={`practice-setup-diagnostic-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("40 questions on this topic. No time limit. Explanations after each answer.")}</Text></View></Card>}
 
-        {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
+        {designMode ? <Text key={`design-feedback-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Feedback is shown after each answer.")}</Text> : null}
+
+        {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && !designMode && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
           <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>
-            {compactCodingPractice ? <PracticeSetupSectionHeader title={t("Feedback mode")} subtitle={t("Choose when authored feedback becomes available.")} /> : <SectionHeader title={t("Feedback mode")} tight />}
+            {compactCodingPractice ? <PracticeSetupSectionHeader title={t("Feedback mode")} subtitle={t("Choose when to see feedback on your answers.")} /> : <SectionHeader title={t("Feedback mode")} tight />}
             <SelectablePanel
               compact={compactCodingPractice}
-              detail={t("Correctness and explanation are shown after every item.")}
+              detail={t("See whether your answer is correct and read the explanation.")}
               label={t("After each answer")}
               onPress={() => setFeedbackMode("afterEachAnswer")}
               selected={feedbackMode === "afterEachAnswer"}
@@ -256,7 +259,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
             />
             <SelectablePanel
               compact={compactCodingPractice}
-              detail={t("Correctness is hidden until the final summary and review.")}
+              detail={t("See your results and explanations when the session ends.")}
               label={t("At session end")}
               onPress={() => setFeedbackMode("atSessionEnd")}
               selected={feedbackMode === "atSessionEnd"}
@@ -265,11 +268,11 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         ) : null}
 
-        {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && !algorithmMode ? (
+        {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && !algorithmMode && !designMode ? (
           <Card style={styles.reviewCard}>
             <View style={styles.reviewCopy}>
-              <Text maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
-              <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
+              <Text key={`practice-setup-review-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
+              <Text key={`practice-setup-review-detail-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
             </View>
             {reviewBehaviorCopy.showToggle ? (
               <Pressable
@@ -284,8 +287,8 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </Card>
         ) : null}
 
-        {!compactCodingPractice ? <View style={styles.actions}>
-          {setupError ? <Text maxFontSizeMultiplier={2} accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
+        {!compactCodingPractice && !focusPractice ? <View style={styles.actions}>
+          {setupError ? <Text key={`practice-setup-actions-error-${fontScale}`} maxFontSizeMultiplier={2} accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
           <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
         </View> : null}
       </Screen>
@@ -304,6 +307,7 @@ type SelectableOptionProps = {
 
 function SelectableOption({ compact = false, label, meta, onPress, selected, testID }: SelectableOptionProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   return (
     <Pressable
       accessibilityRole="button"
@@ -317,14 +321,15 @@ function SelectableOption({ compact = false, label, meta, onPress, selected, tes
       ]}
       testID={testID}
     >
-      <Text maxFontSizeMultiplier={2} style={[styles.lengthValue, compact ? styles.compactLengthValue : null, selected ? (compact ? styles.compactSelectedText : styles.selectedText) : null]}>{label}</Text>
-      <Text maxFontSizeMultiplier={2} numberOfLines={1} style={[styles.optionMeta, compact ? styles.compactOptionMeta : null, selected && compact ? styles.compactSelectedMeta : null]}>{meta}</Text>
+      <Text key={`practice-setup-session-length-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.lengthValue, compact ? styles.compactLengthValue : null, selected ? (compact ? styles.compactSelectedText : styles.selectedText) : null]}>{label}</Text>
+      <Text key={`practice-setup-session-length-meta-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.optionMeta, compact ? styles.compactOptionMeta : null, selected && compact ? styles.compactSelectedMeta : null]}>{meta}</Text>
     </Pressable>
   );
 }
 
 type SelectablePanelProps = {
   compact?: boolean;
+  disabled?: boolean;
   detail: string;
   label: string;
   onPress: () => void;
@@ -332,16 +337,18 @@ type SelectablePanelProps = {
   testID: string;
 };
 
-function SelectablePanel({ compact = false, detail, label, onPress, selected, testID }: SelectablePanelProps) {
+function SelectablePanel({ compact = false, disabled = false, detail, label, onPress, selected, testID }: SelectablePanelProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   if (compact) {
-    return <ChoiceRow accessibilityLabel={`${label}. ${detail}`} density="compact" detail={detail} onPress={onPress} selected={selected} testID={testID} title={label} />;
+    return <ChoiceRow accessibilityLabel={`${label}. ${detail}`} density="compact" detail={detail} disabled={disabled} onPress={onPress} selected={selected} testID={testID} title={label} />;
   }
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={compact ? `${label}. ${detail}` : undefined}
-      accessibilityState={{ selected }}
+      accessibilityState={{ disabled, selected }}
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.panel,
@@ -351,8 +358,8 @@ function SelectablePanel({ compact = false, detail, label, onPress, selected, te
       testID={testID}
       >
       <View style={styles.panelCopy}>
-        <Text maxFontSizeMultiplier={2} style={[styles.panelTitle, selected ? styles.selectedText : null]}>{label}</Text>
-        <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{detail}</Text>
+        <Text key={`practice-setup-panel-title-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.panelTitle, selected ? styles.selectedText : null]}>{label}</Text>
+        <Text key={`practice-setup-panel-detail-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{detail}</Text>
       </View>
       <View style={[styles.radio, selected ? styles.radioSelected : null]}>
         {selected ? <View style={styles.radioDot} /> : null}
@@ -469,10 +476,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textPrimary,
   },
   compactSelectedText: {
-    color: palette.textPrimary,
+    color: palette.onPrimary,
   },
   compactSelectedMeta: {
-    color: palette.primary,
+    color: palette.onPrimary,
   },
   optionMeta: {
     ...typography.caption,
@@ -566,5 +573,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
 
 function PracticeSetupSectionHeader({ title, subtitle }: Readonly<{ title: string; subtitle: string }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.compactSectionHeader}><Text maxFontSizeMultiplier={2} style={styles.compactSectionTitle}>{title.toUpperCase()}</Text><Text maxFontSizeMultiplier={2} style={styles.compactSectionSubtitle}>{subtitle}</Text></View>;
+  const { fontScale } = useWindowDimensions();
+  return <View style={styles.compactSectionHeader}><Text key={`practice-setup-section-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.compactSectionTitle}>{title.toUpperCase()}</Text><Text key={`practice-setup-section-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.compactSectionSubtitle}>{subtitle}</Text></View>;
 }

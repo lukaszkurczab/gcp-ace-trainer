@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import test from "node:test";
@@ -90,47 +90,88 @@ const requiredExternalEvidenceIds = [
   "product-owner-go",
 ];
 
+function createAdmittedContentRoot({ unapprovedTrackId = null } = {}) {
+  const contentRoot = mkdtempSync(join(tmpdir(), "patternly-release-gate-content-admitted-"));
+  const releaseLock = JSON.parse(readFileSync(join(root, "integration", "contracts", "content-release", "release.lock.json"), "utf8"));
+  execFileSync("git", ["init", "-q"], { cwd: contentRoot });
+  writeFileSync(join(contentRoot, "source.txt"), "admitted source\n");
+  execFileSync("git", ["add", "source.txt"], { cwd: contentRoot });
+  execFileSync("git", ["-c", "user.name=release-gate-test", "-c", "user.email=release-gate-test@example.com", "commit", "-qm", "source"], { cwd: contentRoot });
+  const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: contentRoot, encoding: "utf8" }).trim();
+  const launchTrackIds = releaseLock.artifacts.map((artifact) => artifact.trackId);
+  mkdirSync(join(contentRoot, "evidence", "readiness"), { recursive: true });
+  writeFileSync(join(contentRoot, "evidence", "readiness", "eight-track-launch-readiness.json"), JSON.stringify({
+    schemaVersion: "eight-track-launch-readiness-v1",
+    sourceCommit,
+    launchTrackIds,
+    tracks: launchTrackIds.map((trackId) => ({
+      trackId,
+      sourceFileCount: 1,
+      canonicalItemCount: 1,
+      structuralValidation: { result: "passed" },
+      humanReview: trackId === unapprovedTrackId ? "unapproved" : "approved",
+      bundledFreeNodePackage: { presence: "present" },
+      immutableArtifact: { presence: "verified" },
+      publishingAdmission: "admitted",
+      runtimeAdmission: "admitted",
+    })),
+  }));
+  execFileSync("git", ["add", "evidence/readiness/eight-track-launch-readiness.json"], { cwd: contentRoot });
+  execFileSync("git", ["-c", "user.name=release-gate-test", "-c", "user.email=release-gate-test@example.com", "commit", "-qm", "readiness"], { cwd: contentRoot });
+  return contentRoot;
+}
+
 test("launch readiness report is deterministic and exposes the unresolved release blockers", () => {
-  const first = run();
-  const second = run();
-  assert.equal(first.status, 0);
-  assert.equal(first.output, second.output);
-  const report = JSON.parse(first.output);
-  assert.equal(report.schemaVersion, "patternly-launch-readiness-v1");
-  assert.equal(report.status, "not_ready");
-  assert.equal(report.launchTrackIds.length, 8);
-  assert.ok(["clean", "dirty"].includes(report.applicationRepository.status));
-  assert.match(report.applicationRepository.headCommit, /^[a-f0-9]{40}$/u);
-  assert.match(report.contentReadiness.headCommit, /^[a-f0-9]{40}$/u);
-  assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing"].includes(blocker.kind)), true);
-  assert.deepEqual(
-    report.blockers.filter((blocker) => blocker.kind === "application_worktree_dirty").map((blocker) => blocker.kind),
-    report.applicationRepository.status === "dirty" ? ["application_worktree_dirty"] : [],
-  );
-  const externalBlockers = report.blockers.filter((blocker) => blocker.kind === "external_release_evidence_missing");
-  assert.equal(externalBlockers.length, requiredExternalEvidenceIds.length);
-  assert.deepEqual(externalBlockers.map((blocker) => blocker.evidenceId).sort(), [...requiredExternalEvidenceIds].sort());
-  assert.equal(report.contentReleaseLock.status, "valid");
-  assert.equal(report.externalEvidence.some((evidence) => evidence.id === "design-authority"), false);
-  assert.equal(report.blockers.some((blocker) => blocker.evidenceId === "design-authority"), false);
-  assert.equal(report.externalEvidence.find((evidence) => evidence.id === "signing-and-builds")?.status, "not_evidenced");
-  assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing" && blocker.evidenceId === "signing-and-builds"));
-  assert.equal(report.blockers.some((blocker) => [
-    "unreadable_content_readiness_report",
-    "invalid_content_readiness_report",
-    "content_readiness_worktree_dirty",
-    "content_readiness_source_commit_unavailable",
-    "content_readiness_scope_mismatch",
-    "missing_track_readiness",
-    "canonical_source_not_ready",
-    "free_node_package_missing",
-    "immutable_full_package_missing",
-    "publishing_admission_missing",
-    "runtime_admission_missing",
-    "technical_validation_not_admitted",
-  ].includes(blocker.kind)), false);
-  assert.equal(report.blockers.some((blocker) => blocker.kind === "human_editorial_approval_missing"), false);
-  assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing"));
+  const contentRoot = createAdmittedContentRoot();
+  try {
+    const first = runWithContentRoot(contentRoot);
+    const second = runWithContentRoot(contentRoot);
+    assert.equal(first.status, 0);
+    assert.equal(first.output, second.output);
+    const report = JSON.parse(first.output);
+    assert.equal(report.schemaVersion, "patternly-launch-readiness-v1");
+    assert.equal(report.status, "not_ready");
+    assert.equal(report.launchTrackIds.length, 8);
+    assert.ok(["clean", "dirty"].includes(report.applicationRepository.status));
+    assert.match(report.applicationRepository.headCommit, /^[a-f0-9]{40}$/u);
+    assert.match(report.contentReadiness.headCommit, /^[a-f0-9]{40}$/u);
+    assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing"].includes(blocker.kind)), true);
+    assert.deepEqual(
+      report.blockers.filter((blocker) => blocker.kind === "application_worktree_dirty").map((blocker) => blocker.kind),
+      report.applicationRepository.status === "dirty" ? ["application_worktree_dirty"] : [],
+    );
+    const externalBlockers = report.blockers.filter((blocker) => blocker.kind === "external_release_evidence_missing");
+    assert.equal(externalBlockers.length, requiredExternalEvidenceIds.length);
+    assert.deepEqual(externalBlockers.map((blocker) => blocker.evidenceId).sort(), [...requiredExternalEvidenceIds].sort());
+    assert.equal(report.contentReleaseLock.status, "valid");
+    assert.equal(report.contentReadiness.repository, "clean");
+    assert.equal(report.contentReadiness.sourceCommitStatus, "reachable");
+    assert.equal(report.externalEvidence.some((evidence) => evidence.id === "design-authority"), false);
+    assert.equal(report.blockers.some((blocker) => blocker.evidenceId === "design-authority"), false);
+    assert.equal(report.externalEvidence.find((evidence) => evidence.id === "signing-and-builds")?.status, "not_evidenced");
+    assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing" && blocker.evidenceId === "signing-and-builds"));
+    assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing"));
+  } finally {
+    rmSync(contentRoot, { recursive: true, force: true });
+  }
+});
+
+test("launch readiness reports a missing editorial approval from a clean content checkout", () => {
+  const trackId = "coding-interview-dsa-problem-solving";
+  const contentRoot = createAdmittedContentRoot({ unapprovedTrackId: trackId });
+  try {
+    const result = runWithContentRoot(contentRoot);
+    assert.equal(result.status, 0);
+    const report = JSON.parse(result.output);
+    assert.equal(report.contentReadiness.repository, "clean");
+    assert.equal(report.contentReadiness.sourceCommitStatus, "reachable");
+    assert.deepEqual(
+      report.blockers.filter((blocker) => blocker.kind === "human_editorial_approval_missing"),
+      [{ kind: "human_editorial_approval_missing", trackId, actual: "unapproved" }],
+    );
+  } finally {
+    rmSync(contentRoot, { recursive: true, force: true });
+  }
 });
 
 test("release gate fails while the readiness report contains blockers", () => {

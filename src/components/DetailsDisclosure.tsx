@@ -1,8 +1,8 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "./Icon";
-import { useAppPreferences, useThemedStyles } from "../preferences";
+import { useThemedStyles } from "../preferences";
 import { spacing, typography, type AppColors } from "../theme";
 
 type DetailsDisclosureProps = {
@@ -13,6 +13,7 @@ type DetailsDisclosureProps = {
 
 export function DetailsDisclosure({ expanded, onPress, testID }: DetailsDisclosureProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   const { t } = useTranslation("common");
   return (
     <Pressable
@@ -23,7 +24,7 @@ export function DetailsDisclosure({ expanded, onPress, testID }: DetailsDisclosu
       style={styles.toggle}
       testID={testID}
     >
-      <Text maxFontSizeMultiplier={2} style={styles.label}>{t("Details")}</Text>
+      <Text key={`details:${fontScale}`} maxFontSizeMultiplier={2} style={styles.label}>{t("Details")}</Text>
       <Icon color={styles.icon.color} name={expanded ? "chevron-up" : "chevron-down"} size={18} />
     </Pressable>
   );
@@ -39,13 +40,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   toggle: {
     alignItems: "center",
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
-    borderWidth: 1,
     flexDirection: "row",
+    gap: spacing.sm,
     justifyContent: "space-between",
     minHeight: 48,
     paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
   },
 });

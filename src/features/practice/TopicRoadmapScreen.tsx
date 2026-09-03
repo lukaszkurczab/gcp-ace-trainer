@@ -85,7 +85,7 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
             setReadState({
               kind: "unavailable",
               requestKey: capturedRequestKey,
-              reason: describeOperationalFailure(error, "Topic roadmap data is unavailable."),
+              reason: describeOperationalFailure(error, t("We couldn’t load the topic list.")),
             });
           }
         }
@@ -96,7 +96,7 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
       return () => {
         isActive = false;
       };
-    }, [requestKey]),
+    }, [requestKey, t]),
   );
 
   useEffect(() => {
@@ -129,7 +129,7 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
         <View style={styles.intro}>
           <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Choose topic")}</Text>
           <Text maxFontSizeMultiplier={2} style={styles.subtitle}>
-            {t("Select a topic to practice in")} {t(activeTrack.title)}. {t("Patternly may still suggest areas based on your answers.")}
+            {t("Select a topic to practice in")} {t(activeTrack.title)}. {t("Your answers help us suggest what to practice next.")}
           </Text>
         </View>
 

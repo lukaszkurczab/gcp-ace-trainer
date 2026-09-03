@@ -2,7 +2,7 @@ import { CodingInterviewFamilyRuntime } from "./coding-interview/CodingInterview
 import { CertificationFamilyRuntime } from "./certification/CertificationFamilyRuntime";
 import { DesignInterviewFamilyRuntime } from "./design-interview/DesignInterviewFamilyRuntime";
 import type { TrainingFamilyRuntime } from "./trainingLifecycle";
-import { GENERATED_FREE_NODE_PACKAGES } from "../content/bundled/generatedFreeNodePackages";
+import { GENERATED_FREE_NODE_PACKAGES, GENERATED_RETAINED_FREE_NODE_PACKAGES } from "../content/bundled/generatedFreeNodePackages";
 import {
   ContentPackageResolver,
   createCertificationPackageRuntimeCatalog,
@@ -25,7 +25,7 @@ export type ResolvedPackageRuntime = Readonly<{
 
 /** The sole authority that turns verified package bytes into the existing family lifecycle runtime. */
 export class ContentPackageRuntimeOwner {
-  private readonly resolver = new ContentPackageResolver(GENERATED_FREE_NODE_PACKAGES, contentPackageRuntime);
+  private readonly resolver = new ContentPackageResolver(GENERATED_FREE_NODE_PACKAGES, contentPackageRuntime, undefined, GENERATED_RETAINED_FREE_NODE_PACKAGES);
   private readonly exact = new Map<string, Promise<ResolvedPackageRuntime>>();
   private readonly resolvedExact = new Map<string, ResolvedPackageRuntime>();
   private readonly discovered = new Map<string, ResolvedPackageRuntime>();

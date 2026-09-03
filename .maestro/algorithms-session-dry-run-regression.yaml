@@ -44,6 +44,7 @@ tags:
     visible:
       id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
     timeout: 10000
-- assertVisible: "Partial summary"
-- assertVisible: "0 answered · 20 unanswered"
-- assertVisible: "Score is shown only after a completed session."
+- assertVisible: "Session ended without answers"
+- assertVisible: "Answered"
+- assertVisible: "0 / 20"
+- assertVisible: "No answers were submitted."

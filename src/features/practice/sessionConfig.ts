@@ -1,4 +1,4 @@
-import { CODING_INTERVIEW_TRACK_ID, type ContentItemRef, type TrackId, type TrainingSession } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, getTrackRegistration, type ContentItemRef, type TrackId, type TrainingSession } from "../../domain";
 import {
   ALGORITHM_MODE_IDS,
   getAlgorithmSessionNodeById,
@@ -7,7 +7,7 @@ import {
   type AlgorithmModeId,
 } from "../../tracks/coding-interview";
 import type { AlgorithmSelectionScope } from "../../tracks/coding-interview/algorithmSessionSelection";
-import { CERTIFICATION_PRACTICE_MODE_IDS, getCertificationMode, isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
+import { CERTIFICATION_PRACTICE_MODE_IDS, isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../tracks/design-interview";
 
@@ -120,7 +120,6 @@ export function buildPracticeSessionConfig(
     throw new Error(`Unknown Certification practice mode id: ${mode}`);
   }
 
-  const definition = getCertificationMode(mode);
   const packageMode = packageProfile.getMode(mode);
   if (mode === "certification-diagnostic-baseline") {
     if (input.sessionLength !== undefined || input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Diagnostic Baseline does not render or accept optional setup controls.");
@@ -164,57 +163,56 @@ export function buildCertificationPracticeResumeRoute(session: TrainingSession):
   if (session.status !== "active") throw new Error("Only an active Certification Practice session can be resumed.");
   if (!isCertificationPracticeModeId(session.modeId)) throw new Error("Certification Practice resume requires an ordinary Certification session.");
   if (!session.id.trim()) throw new Error("Certification Practice resume requires an exact session identity.");
-  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(session.trackId).profile;
-  if (packageProfile.familyId !== "certification") throw new Error("Certification Practice resume requires a Certification package.");
-  const packageMode = packageProfile.getMode(session.modeId);
+  if (getTrackRegistration(session.trackId).familyId !== "certification") throw new Error("Certification Practice resume requires a Certification package.");
   assertOrdinaryCertificationConfiguration(session);
-
-  const exact = (params: PracticeSessionRouteParams): PracticeSessionRouteParams => Object.freeze({
-    ...params,
-    expectedSessionId: session.id,
-  });
 
   if (session.modeId === "certification-diagnostic-baseline") {
     if (session.configurationSnapshot.kind !== "certificationDiagnosticBaseline" || session.requestedLength !== 40 || session.actualLength !== 40) {
       throw new Error("Certification Diagnostic Baseline resume requires its immutable 40-item configuration.");
     }
-    return exact(buildPracticeSessionConfig({ mode: session.modeId, source: "home", topicId: "", trackId: session.trackId }));
+    return exactCertificationResumeRoute({ feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: 40, source: "home", topicId: "", trackId: session.trackId }, session.id);
   }
+
+  const exact = (params: PracticeSessionRouteParams): PracticeSessionRouteParams => exactCertificationResumeRoute(params, session.id);
 
   if (session.modeId === "certification-focus-practice") {
     const domain = session.configurationSnapshot.domain;
-    if (session.configurationSnapshot.kind !== "certificationFocusPractice" || typeof domain !== "string" || domain !== packageProfile.freeNodeId || !packageMode.requestedLengths.includes(session.requestedLength)) {
-      throw new Error("Certification Focus Practice resume requires its immutable installed node and supported length.");
+    if (session.configurationSnapshot.kind !== "certificationFocusPractice" || typeof domain !== "string" || !domain.trim()) {
+      throw new Error("Certification Focus Practice resume requires its immutable topic and length.");
     }
-    return exact(buildPracticeSessionConfig({ mode: session.modeId, sessionLength: session.requestedLength as PracticeSessionLength, source: "home", topicId: domain, trackId: session.trackId }));
+    return exact({ feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: domain, trackId: session.trackId });
   }
 
   if (session.modeId === "certification-scenario-practice") {
     const competencyId = session.configurationSnapshot.competencyId;
-    if (session.configurationSnapshot.kind !== "certificationScenarioPractice" || typeof competencyId !== "string" || !competencyId.trim() || !packageMode.requestedLengths.includes(session.requestedLength)) {
-      throw new Error("Certification Scenario Practice resume requires its immutable competency and supported length.");
+    if (session.configurationSnapshot.kind !== "certificationScenarioPractice" || typeof competencyId !== "string" || !competencyId.trim()) {
+      throw new Error("Certification Scenario Practice resume requires its immutable competency and length.");
     }
-    return exact(buildPracticeSessionConfig({ competencyId, mode: session.modeId, sessionLength: session.requestedLength as PracticeSessionLength, source: "home", topicId: "", trackId: session.trackId }));
+    return exact({ competencyId, feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: "", trackId: session.trackId });
   }
 
   if (session.modeId === "certification-weak-area-review") {
-    if (session.configurationSnapshot.kind !== "certificationWeakAreaReview" || !packageMode.requestedLengths.includes(session.requestedLength)) {
-      throw new Error("Certification Weak Area Review resume requires its immutable supported length.");
+    if (session.configurationSnapshot.kind !== "certificationWeakAreaReview") {
+      throw new Error("Certification Weak Area Review resume requires its immutable length.");
     }
-    return exact(buildPracticeSessionConfig({ mode: session.modeId, sessionLength: session.requestedLength as PracticeSessionLength, source: "home", topicId: "", trackId: session.trackId }));
+    return exact({ feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: "", trackId: session.trackId });
   }
 
   if (session.modeId === "certification-mixed-practice") {
-    if (session.configurationSnapshot.kind !== "certificationMixedPractice" || !packageMode.requestedLengths.includes(session.requestedLength)) {
-      throw new Error("Certification Mixed Practice resume requires its immutable supported length.");
+    if (session.configurationSnapshot.kind !== "certificationMixedPractice") {
+      throw new Error("Certification Mixed Practice resume requires its immutable length.");
     }
-    return exact(buildPracticeSessionConfig({ mode: session.modeId, sessionLength: session.requestedLength as PracticeSessionLength, source: "home", topicId: "", trackId: session.trackId }));
+    return exact({ feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: "", trackId: session.trackId });
   }
 
-  if (session.configurationSnapshot.kind !== "certificationQuickReview" || session.configurationSnapshot.maximumLength !== packageMode.defaultRequestedLength || session.requestedLength !== packageMode.defaultRequestedLength) {
+  if (session.configurationSnapshot.kind !== "certificationQuickReview" || typeof session.configurationSnapshot.maximumLength !== "number" || session.requestedLength !== session.configurationSnapshot.maximumLength) {
     throw new Error("Certification Quick Review resume requires its immutable package configuration.");
   }
-  return exact(buildPracticeSessionConfig({ mode: session.modeId, source: "home", topicId: "", trackId: session.trackId }));
+  return exact({ feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: "", trackId: session.trackId });
+}
+
+function exactCertificationResumeRoute(params: PracticeSessionRouteParams, sessionId: string): PracticeSessionRouteParams {
+  return Object.freeze({ ...params, expectedSessionId: sessionId });
 }
 
 /** Reconstructs only an exact active Design Interview route from its durable immutable snapshot. */

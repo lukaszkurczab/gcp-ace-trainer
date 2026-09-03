@@ -97,13 +97,14 @@ test("Algorithms Independent Practice keeps its canonical title in the Polish pr
   assert.equal(translate("pl", "Independent Practice"), "Samodzielne ćwiczenia");
 });
 
-test("Certification practice hub exposes exactly Focus, Weak, and Quick from the bundled Free package", () => {
+test("Certification practice hub keeps Focus primary and exposes the declared Diagnostic, Weak, and Quick modes", () => {
   const modes = buildPracticeModes(getTrackDisplay("google-cloud-associate-cloud-engineer"));
 
   assert.deepEqual(
     modes.map(({ mode, title }) => ({ mode, title })),
     [
       { mode: "certification-focus-practice", title: "Focus Practice" },
+      { mode: "certification-diagnostic-baseline", title: "Diagnostic Baseline" },
       { mode: "certification-weak-area-review", title: "Weak Area Review" },
       { mode: "certification-quick-review", title: "Quick Review" },
     ],
@@ -123,11 +124,11 @@ test("Certification practice presentation composes the concrete Google Cloud nam
 
   assert.equal(
     formatPracticeTopicDetail(topic.detail, (value) => translate("en", value)),
-    "Scenario practice across the track domains: Google Cloud ACE",
+    "Practice this topic in Google Cloud ACE",
   );
   assert.equal(
     formatPracticeTopicDetail(topic.detail, (value) => translate("pl", value)),
-    "Ćwiczenia scenariuszowe w obszarach ścieżki: Google Cloud ACE",
+    "Ćwicz ten temat w ścieżce Google Cloud ACE",
   );
   assert.equal(
     formatPracticeTopicTitle(topic.title, (value) => translate("pl", value)),
@@ -160,7 +161,7 @@ test("Algorithms practice topic and statistics compose through Polish translatio
 
   assert.equal(
     formatPracticeTopicDetail(topic.detail, pl),
-    "Ćwiczenia z rozwiązywania problemów algorytmicznych według mapy tematów.",
+    "Ćwicz rozwiązywanie problemów algorytmicznych.",
   );
   assert.equal(formatPracticeStatsTitle(stats, pl), "Rozmowa techniczna — Statystyki");
   assert.equal(

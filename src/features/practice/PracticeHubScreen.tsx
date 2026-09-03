@@ -111,7 +111,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           }
         } catch (error) {
           if (isActive) {
-            setReadError(describeOperationalFailure(error, "Practice data is unavailable."));
+            setReadError(describeOperationalFailure(error, t("We couldn’t load your practice options.")));
             setHasLoadedData(true);
           }
         }
@@ -122,7 +122,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       return () => {
         isActive = false;
       };
-    }, []),
+    }, [t]),
   );
 
   if (!hasLoadedData) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><LoadingState title={t("Preparing practice")} /></Screen>;
@@ -130,7 +130,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(activeTrackId);
   const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
-  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><EmptyState title={t("Practice is unavailable")} description={t("This topic is not available in the installed Free package.")} /></Screen>;
+  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><EmptyState title={t("Practice is unavailable")} description={t("This topic is not included in your free content.")} /></Screen>;
   const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
   const isDesignInterviewTrack = activeTrack.familyId === "design_interview";
   const topic = resolvePracticeTopic({
@@ -140,8 +140,9 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   });
   const modes = buildPracticeModes(activeTrack, data.hasReviewEvidence);
   const primaryMode = modes[0]!;
+  const secondaryModes = modes.filter((mode) => mode.mode !== primaryMode.mode);
   const topicDetail = formatPracticeTopicDetail(topic.detail, t);
-  function startSession(mode?: PracticeSessionMode | CertificationModeId) {
+  function startSession(mode?: PracticeSessionMode | CertificationModeId, source: "practiceHub" | "modeShortcut" = mode === undefined ? "practiceHub" : "modeShortcut") {
     const resolvedMode = mode ?? (
       isCodingInterviewTrack
         ? ALGORITHM_MODE_IDS.learnApproach
@@ -149,8 +150,21 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           ? packageProfile.primaryEntry.modeId as PracticeSessionMode
           : "certification-focus-practice"
     );
+    if (isCodingInterviewTrack && resolvedMode === ALGORITHM_MODE_IDS.customPractice) {
+      navigation.navigate(ROUTES.PRACTICE_SETUP, {
+        mode: resolvedMode,
+        source,
+        topicId: topic.id,
+        trackId: activeTrack.id,
+      });
+      return;
+    }
     if (isDesignInterviewTrack) {
-      navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode as PracticeSessionMode, source: mode === undefined ? "practiceHub" : "modeShortcut", topicId: topic.id, trackId: activeTrack.id }));
+      navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode as PracticeSessionMode, source, topicId: topic.id, trackId: activeTrack.id }));
+      return;
+    }
+    if (activeTrack.familyId === "certification" && resolvedMode === "certification-diagnostic-baseline") {
+      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source: "modeShortcut", topicId: packageProfile.freeNodeId, trackId: activeTrack.id });
       return;
     }
     if (activeTrack.familyId === "certification" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
@@ -176,7 +190,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       buildPracticeSessionConfig({
         mode: practiceMode,
         reviewSource: getGeneralPracticeReviewSource(practiceMode),
-        source: mode === undefined ? "practiceHub" : "modeShortcut",
+        source,
         topicId: topic.id,
         trackId: activeTrack.id,
       }),
@@ -226,17 +240,21 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             </Button>
             <Pressable
               accessibilityRole="button"
-              onPress={() =>
+              onPress={() => {
+                if (isCodingInterviewTrack) {
+                  startSession(ALGORITHM_MODE_IDS.customPractice, "practiceHub");
+                  return;
+                }
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    ...(isCodingInterviewTrack ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : isDesignInterviewTrack ? { mode: packageProfile.primaryEntry.modeId as PracticeSessionMode } : { mode: "certification-focus-practice" as const }),
+                    mode: isDesignInterviewTrack ? packageProfile.primaryEntry.modeId as PracticeSessionMode : "certification-focus-practice",
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,
                   }),
-                )
-              }
+                );
+              }}
               style={({ pressed }) => [styles.settingsAction, pressed ? styles.settingsActionPressed : null]}
               testID={runtimeSelectors.practice.openSetup()}
             >
@@ -256,13 +274,13 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("More ways to practice")}</Text>
           </View>
           <View style={styles.modeList}>
-            {modes.map((mode, index) => (
+            {secondaryModes.map((mode, index) => (
               <ListRow
                 detail={t(mode.unavailableReason ?? mode.detail)}
                 key={mode.mode}
                 leading={<IconTile iconSize={24} name={mode.icon} size={32} tone={mode.enabled ? (isCodingInterviewTrack ? "settings" : mode.tone) : "muted"} />}
                 onPress={mode.enabled ? () => startSession(mode.mode) : undefined}
-                style={[styles.modeRow, index === modes.length - 1 ? styles.modeRowLast : null, mode.enabled ? null : styles.disabledRow]}
+                style={[styles.modeRow, index === secondaryModes.length - 1 ? styles.modeRowLast : null, mode.enabled ? null : styles.disabledRow]}
                 testID={runtimeSelectors.practice.modeCard(mode.mode)}
                 title={t(mode.title)}
                 trailing={

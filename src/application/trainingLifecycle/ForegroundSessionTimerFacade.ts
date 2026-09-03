@@ -202,9 +202,10 @@ export class ForegroundSessionTimerFacade {
         running: false,
       }), null);
     }
-    if (state.accumulatedForegroundMs !== session.activeForegroundMs) {
+    if (state.accumulatedForegroundMs < session.activeForegroundMs) {
       throw new Error("Persisted foreground timer and session aggregate disagree.");
     }
+    if (state.accumulatedForegroundMs > session.activeForegroundMs) await this.sync(state);
     const timer = ForegroundSessionTimer.restore({
       state,
       port: { save: this.dependencies.repository.save },

@@ -6,7 +6,6 @@ export * from "./guestAccessRepository";
 export * from "./reviewQueueRepository";
 export * from "./settingsRepository";
 export * from "./notificationSettingsRepository";
-export * from "./premiumTestingRepository";
 export * from "./result";
 export * from "./mutationJournalRepository";
 export * from "./trainingAttemptRepository";

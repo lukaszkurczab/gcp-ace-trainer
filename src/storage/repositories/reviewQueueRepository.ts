@@ -8,6 +8,7 @@ const isIds = (value: unknown): value is string[] => Array.isArray(value) && val
 function reviewQueueItemIdentity(entry: Pick<ReviewQueueEntry, "trackId" | "sourceItem">): string {
   return canonicalSerialize({
     trackId: entry.trackId,
+    sourceItemTrackId: entry.sourceItem.trackId,
     itemId: entry.sourceItem.itemId,
     contentVersion: entry.sourceItem.contentVersion,
     packagePin: entry.sourceItem.packagePin,
@@ -21,7 +22,7 @@ export async function addReviewQueueItems(items: ReviewQueueEntry[]): Promise<St
     const identity = reviewQueueItemIdentity(item);
     const existingByIdentity = byIdentity.get(identity);
     if (existingByIdentity && existingByIdentity.id !== item.id) throw new Error(`Review item ${item.sourceItem.itemId} must retain its durable review identity.`);
-    const existing = current.find((entry) => entry.id === item.id);
+    const existing = [...byIdentity.values()].find((entry) => entry.id === item.id);
     if (existing) {
       const immutableExisting = { id: existing.id, trackId: existing.trackId, sourceAttemptId: existing.sourceAttemptId, sourceSessionId: existing.sourceSessionId, sourceItem: existing.sourceItem, taxonomyOrSkillRefs: existing.taxonomyOrSkillRefs, createdAt: existing.createdAt };
       const immutableNext = { id: item.id, trackId: item.trackId, sourceAttemptId: item.sourceAttemptId, sourceSessionId: item.sourceSessionId, sourceItem: item.sourceItem, taxonomyOrSkillRefs: item.taxonomyOrSkillRefs, createdAt: item.createdAt };

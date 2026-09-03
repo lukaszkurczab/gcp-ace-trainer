@@ -7,9 +7,9 @@ import type { StorageIssue } from "../../../application/learningReadModels";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
 import type { AppearancePreference } from "../../../application/appPreferences";
 import { spacing, typography, type AppColors } from "../../../theme";
+import { hasPremiumTestingAccess, setPremiumTestingAccess } from "../../../application/premiumTesting";
 import { isPatternlyBackendE2eConfigured } from "../../../infrastructure/clients/patternlyBackendRuntime";
 import { isPatternlyPremiumTestingRuntime } from "../../../infrastructure/runtime/runtimeMode";
-import { hasPremiumTestingAccess, setPremiumTestingAccess } from "../../../storage/repositories";
 
 type SettingsTabProps = {
   onOpenAppearance: () => void;

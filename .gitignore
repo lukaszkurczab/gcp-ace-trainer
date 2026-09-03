@@ -9,6 +9,7 @@ web-build/
 !.maestro/
 .maestro/*
 !.maestro/backend-ios-simulator-e2e.yaml
+!.maestro/coding-practice-result-review.yaml
 !.maestro/screenshot-capture/
 .maestro/screenshot-capture/*
 !.maestro/screenshot-capture/visual-shell/

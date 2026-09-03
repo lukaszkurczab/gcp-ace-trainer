@@ -41,8 +41,6 @@ tags:
     id: "patternly:session:reason:alg-complexity-amortized-001"
 - assertNotVisible:
     id: "patternly:session:details:alg-complexity-amortized-001"
-- tapOn:
-    id: "patternly:session:continue:alg-complexity-amortized-001"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-002"
@@ -58,8 +56,6 @@ tags:
     id: "patternly:session:reason:alg-complexity-amortized-002"
 - assertNotVisible:
     id: "patternly:session:details:alg-complexity-amortized-002"
-- tapOn:
-    id: "patternly:session:continue:alg-complexity-amortized-002"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-003"
@@ -75,8 +71,6 @@ tags:
     id: "patternly:session:reason:alg-complexity-amortized-003"
 - assertNotVisible:
     id: "patternly:session:details:alg-complexity-amortized-003"
-- tapOn:
-    id: "patternly:session:continue:alg-complexity-amortized-003"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-004"
@@ -92,8 +86,6 @@ tags:
     id: "patternly:session:reason:alg-complexity-amortized-004"
 - assertNotVisible:
     id: "patternly:session:details:alg-complexity-amortized-004"
-- tapOn:
-    id: "patternly:session:continue:alg-complexity-amortized-004"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-005"
@@ -109,8 +101,6 @@ tags:
     id: "patternly:session:reason:alg-complexity-amortized-005"
 - assertNotVisible:
     id: "patternly:session:details:alg-complexity-amortized-005"
-- tapOn:
-    id: "patternly:session:continue:alg-complexity-amortized-005"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-006"
@@ -126,8 +116,6 @@ tags:
     id: "patternly:session:reason:alg-complexity-amortized-006"
 - assertNotVisible:
     id: "patternly:session:details:alg-complexity-amortized-006"
-- tapOn:
-    id: "patternly:session:continue:alg-complexity-amortized-006"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-007"
@@ -143,8 +131,6 @@ tags:
     id: "patternly:session:reason:alg-complexity-amortized-007"
 - assertNotVisible:
     id: "patternly:session:details:alg-complexity-amortized-007"
-- tapOn:
-    id: "patternly:session:continue:alg-complexity-amortized-007"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-008"
@@ -160,8 +146,6 @@ tags:
     id: "patternly:session:reason:alg-complexity-amortized-008"
 - assertNotVisible:
     id: "patternly:session:details:alg-complexity-amortized-008"
-- tapOn:
-    id: "patternly:session:continue:alg-complexity-amortized-008"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-009"
@@ -177,8 +161,6 @@ tags:
     id: "patternly:session:reason:alg-complexity-amortized-009"
 - assertNotVisible:
     id: "patternly:session:details:alg-complexity-amortized-009"
-- tapOn:
-    id: "patternly:session:continue:alg-complexity-amortized-009"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-010"
@@ -188,8 +170,6 @@ tags:
     id: "patternly:session:option:alg-complexity-amortized-010:amortized_each"
 - tapOn:
     id: "patternly:session:submit:alg-complexity-amortized-010"
-- tapOn:
-    id: "patternly:session:continue:alg-complexity-amortized-010"
 - extendedWaitUntil:
     visible:
       id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
@@ -199,54 +179,7 @@ tags:
 - assertNotVisible:
     id: "patternly:session:question:alg-complexity-amortized-011"
 
-- scrollUntilVisible:
-    element:
-      id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
-    direction: UP
-    centerElement: true
-- assertVisible:
-    id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
-- scrollUntilVisible:
-    element:
-      id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
-    direction: DOWN
-    centerElement: true
-- tapOn:
-    id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
-- assertVisible:
-    id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
-- scrollUntilVisible:
-    element:
-      id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
-    direction: DOWN
-    centerElement: true
-- assertVisible:
-    id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
-- scrollUntilVisible:
-    element:
-      id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
-    direction: DOWN
-    centerElement: true
-- tapOn:
-    id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
-- assertVisible:
-    id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
-- scrollUntilVisible:
-    element:
-      id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
-    direction: DOWN
-    centerElement: true
-- assertVisible:
-    id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
-- scrollUntilVisible:
-    element:
-      id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
-    direction: DOWN
-    centerElement: true
-- tapOn:
-    id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
-- assertVisible:
-    id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+- runFlow: coding-practice-result-review.yaml
 
 - tapOn:
     id: "patternly:summary:back-to-practice:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"

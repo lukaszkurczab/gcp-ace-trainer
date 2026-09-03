@@ -5,7 +5,9 @@ const root = process.cwd();
 const failures = [];
 const sourceRoot = join(root, "src");
 function walk(directory) { return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => entry.isDirectory() ? walk(join(directory, entry.name)) : [join(directory, entry.name)]); }
-const sourcePaths = walk(sourceRoot).filter((path) => /\.(ts|tsx)$/.test(path));
+const sourcePaths = walk(sourceRoot)
+  .filter((path) => /\.(ts|tsx)$/.test(path))
+  .filter((path) => !/\.test\.(?:[cm]?[jt]sx?)$/.test(path));
 const source = sourcePaths.map((path) => readFileSync(path, "utf8")).join("\n");
 const contentSource = sourcePaths.filter((path) => !path.endsWith("src/infrastructure/clients/PatternlyApiClientAdapter.ts")).map((path) => readFileSync(path, "utf8")).join("\n");
 for (const path of ["src/tracks/coding-interview/content", "src/features/questions/defaultQuestionBank.ts", "data/question-bank"]) if (existsSync(join(root, path))) failures.push(`Production content remains in application: ${path}`);

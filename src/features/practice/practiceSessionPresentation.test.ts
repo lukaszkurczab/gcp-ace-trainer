@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import i18n from "../../i18n";
 import {
   allowsPracticeFeedback,
   allowsPracticeResponseEditing,
@@ -9,6 +10,7 @@ import {
   isPracticeActionPending,
   noticeForPracticeOperation,
   practiceOptionCorrectnessValue,
+  reconcilePracticeLocalResponse,
   reconcilePracticeChoiceSelection,
   resolvePracticeLocalResponse,
 } from "./practiceSessionPresentation";
@@ -32,15 +34,23 @@ test("Practice presentation permits response edits before a journal exists", () 
 });
 
 test("Practice action model separates final feedback from the durable Finish command", () => {
-  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: false, isFinalPosition: false, phase: "unanswered" }), { enabled: false, label: "Check answer", loading: false });
-  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "submitting_before_journal" }), { enabled: false, label: "Checking answer…", loading: true });
-  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "submit_journal_failed" }), { enabled: true, label: "Try again", loading: false });
-  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "commit_pending" }), { enabled: false, label: "Finishing the update…", loading: true });
-  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "feedback" }), { enabled: true, label: "Next", loading: false });
-  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: true, phase: "feedback" }), { enabled: true, label: "Finish session", loading: false });
-  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "advance_failed" }), { enabled: true, label: "Try again", loading: false });
-  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: false, isFinalPosition: true, phase: "completing" }), { enabled: false, label: "Finishing session…", loading: true });
-  assert.equal(getPracticePrimaryAction({ hasLocalResponse: false, isFinalPosition: true, phase: "completion_failed" }), null);
+  const feedbackTiming = "afterEachAnswer" as const;
+  assert.deepEqual(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: false, isFinalPosition: false, phase: "unanswered" }), { enabled: false, label: "Check answer", loading: false });
+  assert.deepEqual(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: true, isFinalPosition: false, phase: "submitting_before_journal" }), { enabled: false, label: "Checking answer…", loading: true });
+  assert.deepEqual(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: true, isFinalPosition: false, phase: "submit_journal_failed" }), { enabled: true, label: "Try again", loading: false });
+  assert.deepEqual(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: true, isFinalPosition: false, phase: "commit_pending" }), { enabled: false, label: "Saving your answer…", loading: true });
+  assert.deepEqual(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: true, isFinalPosition: false, phase: "feedback" }), { enabled: true, label: "Next", loading: false });
+  assert.deepEqual(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: true, isFinalPosition: true, phase: "feedback" }), { enabled: true, label: "Finish session", loading: false });
+  assert.deepEqual(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: true, isFinalPosition: false, phase: "advance_failed" }), { enabled: true, label: "Try again", loading: false });
+  assert.deepEqual(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: false, isFinalPosition: true, phase: "completing" }), { enabled: false, label: "Finishing session…", loading: true });
+  assert.equal(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: false, isFinalPosition: true, phase: "completion_failed" }), null);
+});
+
+test("Deferred feedback keeps the submit CTA and saving status aligned", () => {
+  const feedbackTiming = "atSessionEnd" as const;
+  assert.deepEqual(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: true, isFinalPosition: false, phase: "unanswered" }), { enabled: true, label: "Submit answer", loading: false });
+  assert.deepEqual(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: true, isFinalPosition: false, phase: "submitting_before_journal" }), { enabled: false, label: "Saving your answer…", loading: true });
+  assert.equal(getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: true, isFinalPosition: false, phase: "feedback" })?.label, "Next");
 });
 
 test("Practice pending phases retain a stable unsafe-action lock", () => {
@@ -55,14 +65,33 @@ test("Practice operation notice mapping remains one family-neutral interpretatio
   const cases: readonly [PracticeDurableOperationState, { tone: "neutral" | "error" | "success"; message: string } | undefined][] = [
     [{ family: "practice", kind: "submitting_before_journal" }, { tone: "neutral", message: "Saving your answer…" }],
     [{ family: "practice", kind: "submit_journal_failed", error: error("submit_again") }, { tone: "error", message: "We couldn't save your response. Your current answer is still here." }],
-    [{ family: "practice", kind: "commit_materialization_failed", error: error("recover") }, { tone: "error", message: "Your response is immutable because a durable command exists. Recovery must replay that exact command." }],
-    [{ family: "practice", kind: "recovery_required", error: error("recover") }, { tone: "error", message: "A previous session update must be recovered before another answer can be submitted." }],
+    [{ family: "practice", kind: "commit_materialization_failed", error: error("recover") }, { tone: "error", message: "Your answer is saved on this device. Restore this question to continue." }],
+    [{ family: "practice", kind: "recovery_required", error: error("recover") }, { tone: "error", message: "Restore the session before submitting another answer." }],
     [{ family: "practice", kind: "advancing" }, { tone: "neutral", message: "Opening the next question…" }],
-    [{ family: "practice", kind: "advance_failed", error: { ...error("retry_same_command"), operation: "practice_advance" } }, { tone: "error", message: "Your answer remains committed. Retry opening the next question." }],
-    [{ family: "practice", kind: "verified_pending_clear", error: error("recover") }, { tone: "error", message: "Your response is immutable because a durable command exists. Recovery must replay that exact command." }],
+    [{ family: "practice", kind: "advance_failed", error: { ...error("retry_same_command"), operation: "practice_advance" } }, { tone: "error", message: "Your answer is saved. Try opening the next question again." }],
+    [{ family: "practice", kind: "verified_pending_clear", error: error("recover") }, { tone: "error", message: "Your answer is saved on this device. Restore this question to continue." }],
     [{ family: "practice", kind: "feedback" }, undefined],
   ];
   for (const [operation, expected] of cases) assert.deepEqual(noticeForPracticeOperation(operation), expected, operation.kind);
+});
+
+test("Durable recovery notices stay learner-facing in English and Polish", () => {
+  const durableNotice = noticeForPracticeOperation({
+    family: "practice",
+    kind: "commit_materialization_failed",
+    error: { operation: "practice_submit", durableState: "journal_durable", retrySafety: "recovery_only", allowedAction: "recover", prohibitedFallback: "No fallback." },
+  });
+  assert.ok(durableNotice);
+  assert.equal(i18n.t(durableNotice.message, { lng: "en" }), "Your answer is saved on this device. Restore this question to continue.");
+  assert.equal(i18n.t(durableNotice.message, { lng: "pl" }), "Twoja odpowiedź jest zapisana na tym urządzeniu. Przywróć pytanie, aby kontynuować.");
+
+  const failureMessage = "Your answer is still saved on this device. We couldn't restore this question yet. Try recovery again.";
+  assert.equal(i18n.t(failureMessage, { lng: "en" }), failureMessage);
+  assert.equal(i18n.t(failureMessage, { lng: "pl" }), "Twoja odpowiedź nadal jest zapisana na tym urządzeniu. Nie udało się jeszcze przywrócić tego pytania. Spróbuj ponownie je odzyskać.");
+  for (const locale of ["en", "pl"] as const) {
+    assert.doesNotMatch(i18n.t(durableNotice.message, { lng: locale }), /LOCAL_OPERATION_FAILED|JOURNAL_/);
+    assert.doesNotMatch(i18n.t(failureMessage, { lng: locale }), /LOCAL_OPERATION_FAILED|JOURNAL_/);
+  }
 });
 
 test("Practice local choice selection survives only the same editable occurrence", () => {
@@ -85,6 +114,35 @@ test("Practice local choice selection survives only the same editable occurrence
     sessionId: "session-1",
   });
   assert.deepEqual(nextUnansweredOccurrence, { sessionId: "session-1", occurrenceId: "occurrence-2", selectedOptionIds: [] });
+});
+
+test("Scoped local response preserves all authored control types for the same editable occurrence", () => {
+  const responses = [
+    { kind: "choice", selectedOptionIds: ["A"] },
+    { kind: "ordering", orderedSubgoalIds: ["first", "second"] },
+    { kind: "complexity", selectedValuesByDimension: { latency: "low" } },
+  ] as const;
+  for (const response of responses) {
+    const current = Object.freeze({ occurrenceId: "occurrence-1", response, sessionId: "session-1" });
+    const reconciled = reconcilePracticeLocalResponse({ current, durableResponse: null, editable: true, occurrenceId: "occurrence-1", sessionId: "session-1" });
+    assert.equal(reconciled, current);
+    assert.deepEqual(reconciled?.response, response);
+  }
+});
+
+test("Scoped local response resets when the session or occurrence identity changes", () => {
+  const current = Object.freeze({ occurrenceId: "occurrence-1", response: { kind: "choice" as const, selectedOptionIds: ["A"] }, sessionId: "session-1" });
+  assert.equal(reconcilePracticeLocalResponse({ current, durableResponse: null, editable: true, occurrenceId: "occurrence-2", sessionId: "session-1" }), null);
+  assert.equal(reconcilePracticeLocalResponse({ current, durableResponse: null, editable: true, occurrenceId: "occurrence-1", sessionId: "session-2" }), null);
+  assert.equal(reconcilePracticeLocalResponse({ current, durableResponse: null, editable: false, occurrenceId: "occurrence-1", sessionId: "session-1" }), null);
+});
+
+test("Scoped durable response is authoritative over an unsent local response", () => {
+  const current = Object.freeze({ occurrenceId: "occurrence-1", response: { kind: "choice" as const, selectedOptionIds: ["A"] }, sessionId: "session-1" });
+  const stored = { kind: "choice" as const, selectedOptionIds: ["B"] };
+  assert.deepEqual(reconcilePracticeLocalResponse({ current, durableResponse: stored, editable: true, occurrenceId: "occurrence-1", sessionId: "session-1" }), {
+    occurrenceId: "occurrence-1", response: stored, sessionId: "session-1",
+  });
 });
 
 test("Practice durable choice response wins and response-less locked state clears", () => {

@@ -22,6 +22,7 @@ export * from "./ReviewUnavailableSurface";
 export * from "./Screen";
 export * from "./ScreenHeader";
 export * from "./SectionHeader";
+export * from "./SessionResultOverview";
 export * from "./SettingsGroup";
 export * from "./SettingsBottomSheet";
 export * from "./SettingsDialog";

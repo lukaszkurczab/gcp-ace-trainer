@@ -1,4 +1,6 @@
+import { PracticeQuestionCard } from "./PracticeQuestionCard";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { Button, Icon } from "../../components";
@@ -83,7 +85,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   const itemId = props.runtimeIdentity?.itemId ?? props.question?.itemId;
   const controls = props.question && props.phase !== "preparing" && props.phase !== "completing" ? (
     <>
-      <QuestionCard question={props.question} />
+      <PracticeQuestionCard question={props.question} />
       <PracticeResponseControls
         control={props.question.responseControl}
         editable={editable}
@@ -123,21 +125,6 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   );
 }
 
-function QuestionCard({ question }: Readonly<{ question: PracticeQuestionPresentation }>) {
-  const styles = useThemedStyles(createStyles);
-  return (
-    <View style={styles.questionCard} testID={runtimeSelectors.session.question(question.itemId)}>
-      <Text maxFontSizeMultiplier={2} style={styles.questionLabel}>{"QUESTION"}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.prompt}>{question.prompt}</Text>
-      {question.constraints?.length ? (
-        <View style={styles.constraints}>
-          {question.constraints.map((constraint) => <Text key={constraint} maxFontSizeMultiplier={2} style={styles.constraint}>• {constraint}</Text>)}
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
 function PreparingNotice() {
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
@@ -151,7 +138,7 @@ function PreparingNotice() {
         <Text maxFontSizeMultiplier={2} style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
       </View>
       <Text maxFontSizeMultiplier={2} style={styles.asyncTitle}>{t("Preparing practice")}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Preparing the session plan and first item.")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Preparing your questions.")}</Text>
       <View accessible={false} style={styles.asyncSpacer} />
     </View>
   );
@@ -170,7 +157,7 @@ function CompletingNotice() {
       <Text maxFontSizeMultiplier={2} style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
       </View>
       <Text maxFontSizeMultiplier={2} style={styles.asyncTitle}>{t("Finishing this session…")}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Saving your answers and preparing your summary.")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Preparing your summary.")}</Text>
       <View accessible={false} style={styles.asyncSpacer} />
     </View>
   );
@@ -179,8 +166,10 @@ function CompletingNotice() {
 function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
   const operationFailure = notice.tone === "error";
-  return <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, operationFailure ? styles.noticeError : notice.tone === "success" ? styles.noticeSuccess : null]}>{operationFailure ? <Icon color={palette.warning} name="alert-triangle" size={20} /> : null}<Text maxFontSizeMultiplier={2} style={[styles.noticeText, operationFailure ? styles.noticeErrorText : null]}>{notice.message}</Text></View>;
+  const message = t(notice.message);
+  return <View accessible accessibilityLabel={message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, operationFailure ? styles.noticeError : notice.tone === "success" ? styles.noticeSuccess : null]}>{operationFailure ? <Icon color={palette.warning} name="alert-triangle" size={20} /> : null}<Text maxFontSizeMultiplier={2} style={[styles.noticeText, operationFailure ? styles.noticeErrorText : null]}>{message}</Text></View>;
 }
 
 function ActionBar(props: PracticeSessionSurfaceProps) {
@@ -201,7 +190,7 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
         </Button>
       ) : null}
       {props.onRetry && props.retryLabel ? <Button onPress={props.onRetry} variant={props.retryVariant ?? "secondary"}>{t(props.retryLabel)}</Button> : null}
-      {props.allowLeave !== false && props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "completion_failed" && props.phase !== "abandoning" && props.phase !== "abandonment_failed_before_journal" && props.phase !== "abandonment_recovery_required" ? <Button onPress={props.onRequestLeave} testID={props.runtimeIdentity ? runtimeSelectors.session.leave(props.runtimeIdentity.sessionId) : undefined} variant="ghost">{t("Leave session")}</Button> : null}
+      {props.allowLeave !== false && props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "completion_failed" && props.phase !== "abandoning" && props.phase !== "abandonment_failed_before_journal" && props.phase !== "abandonment_recovery_required" ? <Button onPress={props.onRequestLeave} style={styles.leaveAction} testID={props.runtimeIdentity ? runtimeSelectors.session.leave(props.runtimeIdentity.sessionId) : undefined} variant="ghost">{t("Leave session")}</Button> : null}
     </View>
   );
 }
@@ -216,6 +205,7 @@ function primaryActionTestID(props: PracticeSessionSurfaceProps): string | undef
 function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readonly<{ onAbandon: () => void; onDismiss: () => void; onLeave: () => void; sessionId?: string; trackId?: TrackId }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
+  const insets = useSafeAreaInsets();
   const copy = exitCopy(trackId);
   return (
     <Modal animationType="fade" onRequestClose={onDismiss} transparent visible>
@@ -230,7 +220,7 @@ function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readon
               <Button onPress={onLeave} testID={sessionId ? runtimeSelectors.session.leaveAndResume(sessionId) : undefined} variant="secondary">{t("Pause and resume later")}</Button>
             </View>
           </View>
-          <View style={styles.exitDestructiveAction}>
+          <View style={[styles.exitDestructiveAction, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]}>
             <Button onPress={onAbandon} testID={sessionId ? runtimeSelectors.session.abandon(sessionId) : undefined} variant="destructive">{t(copy.destructiveLabel)}</Button>
           </View>
         </View>
@@ -240,9 +230,8 @@ function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readon
 }
 
 function exitCopy(trackId: TrackId | undefined): Readonly<{ description: string; destructiveLabel: string }> {
-  if (trackId === "coding-interview-dsa-problem-solving") return Object.freeze({ description: "Pause to resume later, or end the session and view a partial summary. Saved answers remain available.", destructiveLabel: "End and view summary" });
-  if (trackId === "google-cloud-associate-cloud-engineer") return Object.freeze({ description: "Pause keeps this exact session available to resume later. End session makes it non-resumable and returns to Practice.", destructiveLabel: "End session" });
-  if (trackId === "backend-system-design-interview" || trackId === "frontend-system-design-interview" || trackId === "object-oriented-design-interview") return Object.freeze({ description: "Pause keeps this exact Design Interview session available to resume later. End session makes it non-resumable and returns to Practice.", destructiveLabel: "End session" });
+  if (trackId === "coding-interview-dsa-problem-solving") return Object.freeze({ description: "Pause to continue later, or end the session to see a partial summary. Saved answers remain available.", destructiveLabel: "End and view summary" });
+  if (trackId === "google-cloud-associate-cloud-engineer" || trackId === "backend-system-design-interview" || trackId === "frontend-system-design-interview" || trackId === "object-oriented-design-interview") return Object.freeze({ description: "Pause to continue later. If you end the session, you will return to Practice and cannot resume it.", destructiveLabel: "End session" });
   throw new Error("Practice exit requires an exact supported track identity.");
 }
 
@@ -258,13 +247,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   asyncSpacer: { height: 50, minHeight: 50, width: 1 },
   asyncTitle: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", lineHeight: 28 },
   completingActions: { minHeight: 48 },
-  constraint: { ...typography.small, color: palette.textSecondary },
-  constraints: { gap: spacing.xs },
   exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.button, borderTopRightRadius: radius.button, borderWidth: 1, elevation: 8, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: palette.effects.shadow, shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, width: "100%" },
   exitModalStack: { width: "100%" },
   exitSheetActions: { gap: spacing.sm },
-  exitDestructiveAction: { backgroundColor: palette.background, paddingHorizontal: spacing.xl, paddingBottom: spacing.sm, width: "100%" },
+  exitDestructiveAction: { backgroundColor: palette.background, paddingHorizontal: spacing.xl, width: "100%" },
   exitTitle: { ...typography.heading, color: palette.textPrimary },
+  leaveAction: { minHeight: 48, paddingVertical: spacing.sm },
   notice: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },
   noticeError: { alignItems: "center", backgroundColor: palette.elevatedSurface, borderColor: palette.warning, borderRadius: radius.lg, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
   noticeErrorText: { color: palette.warning, flex: 1 },
@@ -272,8 +260,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   noticeText: { ...typography.small, color: palette.textSecondary },
   modalBackdrop: { backgroundColor: palette.effects.sessionScrim, flex: 1, justifyContent: "flex-end" },
   modalDismissArea: { ...StyleSheet.absoluteFill },
-  questionLabel: { ...typography.caption, color: palette.primary, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
-  prompt: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", letterSpacing: -0.3, lineHeight: 28 },
-  questionCard: { gap: spacing.md },
   questionAndResponse: { gap: spacing.md },
 });

@@ -7,16 +7,20 @@ function fail(message) { failures.push(message); }
 function walk(directory) { return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => entry.isDirectory() ? walk(join(directory, entry.name)) : [join(directory, entry.name)]); }
 function text(paths) { return paths.map((path) => readFileSync(path, "utf8")).join("\n"); }
 
-const sourcePaths = walk(join(root, "src")).filter((path) => /\.(?:ts|tsx)$/.test(path));
+const isTestSourcePath = (path) => /\.test\.(?:[cm]?[jt]sx?)$/.test(path);
+const allSourcePaths = walk(join(root, "src")).filter((path) => /\.(?:ts|tsx)$/.test(path));
+const excludedTestSupportPaths = new Set([join(root, "src/testing/journalTestSupport.ts")]);
+const sourcePaths = allSourcePaths.filter((path) => !isTestSourcePath(path) && !excludedTestSupportPaths.has(path));
 const generatedPackagePath = join(root, "src/content/bundled/generatedFreeNodePackages.ts");
 const sourceCodePaths = sourcePaths.filter((path) => path !== generatedPackagePath);
 const activeSource = text(sourceCodePaths);
 const guardPath = join(root, "src/storage/repositories/trainingModelGuards.ts");
 const activeSourceWithoutDenyList = text(sourceCodePaths.filter((path) => path !== guardPath));
-const kernel = text(walk(join(root, "src/domain/learning")));
-const registry = text(walk(join(root, "src/domain/tracks")));
-const algorithms = text(walk(join(root, "src/tracks/coding-interview")));
-const certification = text(walk(join(root, "src/tracks/certification")));
+const pathsUnder = (directory) => sourcePaths.filter((path) => path.startsWith(`${directory}/`));
+const kernel = text(pathsUnder(join(root, "src/domain/learning")));
+const registry = text(pathsUnder(join(root, "src/domain/tracks")));
+const algorithms = text(pathsUnder(join(root, "src/tracks/coding-interview")));
+const certification = text(pathsUnder(join(root, "src/tracks/certification")));
 
 for (const path of ["src/types/question.ts", "src/types/attempt.ts", "src/tracks/trackAdapters.ts", "src/tracks/types.ts"]) {
   if (existsSync(join(root, path))) fail(`replaced owner still exists: ${path}`);
@@ -48,6 +52,9 @@ for (const path of sourcePaths) {
   const source = readFileSync(path, "utf8");
   if (/infrastructure\/storage\/mmkvClient/.test(source) && !/src\/storage\/repositories\//.test(path)) {
     fail(`only repository implementations may import the MMKV client: ${path}`);
+  }
+  if (/(?:from\s+|import\s*\()\s*["'](?:[^"']*\/)?journalTestSupport["']/.test(source)) {
+    fail(`runtime source imports test-only support: ${path}`);
   }
 }
 for (const path of ["src/storage/storageCodec.ts", "src/storage/repositories/certificationExamRepository.ts", "src/content/cache", "src/content/source"]) {
@@ -104,7 +111,9 @@ if (/algorithmContent|questionBank|AlgorithmQuestion|CertificationQuestion/.test
 if (/certification/.test(algorithms)) fail("Algorithms imports Certification.");
 if (/tracks\/coding-interview/.test(certification)) fail("Certification imports Algorithms.");
 
-const testPaths = walk(join(root, "tests")).filter((path) => path.endsWith(".test.ts"));
+const testPaths = ["src", "scripts"]
+  .flatMap((directory) => walk(join(root, directory)))
+  .filter(isTestSourcePath);
 const testSource = text(testPaths);
 if (testPaths.length === 0) fail("no active tests are present.");
 if (/\.(?:skip|only)\s*\(/.test(testSource)) fail("a skipped or exclusive test is present.");

@@ -63,12 +63,15 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown",
   let active = session ?? (kind === "countdown" ? simulationSession(duration) : practiceSession());
   let scheduled: (() => void) | null = null;
   let cancelCount = 0;
+  let saveCount = 0;
   let resumeCount = 0;
   let finalizations = 0;
+  let checkpointError: Error | null = null;
   let durableAtFinalization: ForegroundTimerState | null = null;
   const checkpoints: number[] = [];
   const lifecycle = {
     checkpointForegroundTime: async (elapsed: number) => {
+      if (checkpointError) throw checkpointError;
       checkpoints.push(elapsed);
       active = createTrainingSession({ ...active, activeForegroundMs: elapsed });
       return active;
@@ -80,6 +83,7 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown",
     repository: {
       async getActive() { return state; },
       async save(candidate, expected) {
+        saveCount += 1;
         assert.equal(expected, state?.checkpointRevision ?? null);
         state = createForegroundTimerState({ ...candidate, checkpointRevision: (state?.checkpointRevision ?? 0) + 1 });
         return state;
@@ -98,6 +102,10 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown",
     getActiveSession: () => active,
     setNow(value: number) { now = value; },
     getState: () => state,
+    setState(value: ForegroundTimerState | null) { state = value; },
+    setActiveSession(value: TrainingSession) { active = value; },
+    failCheckpoint(error: Error) { checkpointError = error; },
+    getSaveCount: () => saveCount,
     getCancelCount: () => cancelCount,
     getResumeCount: () => resumeCount,
     getFinalizations: () => finalizations,
@@ -360,4 +368,65 @@ test("missing persisted timer on resume is a typed application recovery failure"
     assert.equal(error.code, "timer_recovery_failure");
     return true;
   });
+});
+
+test("resume repairs a durable timer checkpoint that precedes the session aggregate", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  const persisted = f.getState()!;
+  f.setState(createForegroundTimerState({ ...persisted, accumulatedForegroundMs: 500 }));
+
+  const restarted = f.create();
+  await restarted.restoreForResume(f.getActiveSession());
+
+  assert.equal(f.getActiveSession().activeForegroundMs, 500);
+  assert.deepEqual(f.checkpoints, [500]);
+  assert.equal((await restarted.projection(f.getActiveSession())).elapsedForegroundMs, 500);
+});
+
+test("repeated resume of a repaired timer does not write another session checkpoint", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  const persisted = f.getState()!;
+  f.setState(createForegroundTimerState({ ...persisted, accumulatedForegroundMs: 500 }));
+
+  const restarted = f.create();
+  await restarted.restoreForResume(f.getActiveSession());
+  const savesAfterRepair = f.getSaveCount();
+  const resumedAgain = f.create();
+  await resumedAgain.restoreForResume(f.getActiveSession());
+
+  assert.deepEqual(f.checkpoints, [500]);
+  assert.equal(f.getSaveCount(), savesAfterRepair);
+});
+
+test("resume rejects a durable timer checkpoint that is behind the session aggregate", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  f.setActiveSession(createTrainingSession({ ...f.getActiveSession(), activeForegroundMs: 500 }));
+  const persisted = f.getState()!;
+  f.setState(createForegroundTimerState({ ...persisted, accumulatedForegroundMs: 400 }));
+
+  await assert.rejects(() => f.create().restoreForResume(f.getActiveSession()), (error: unknown) => {
+    assert.ok(error instanceof ForegroundSessionTimerRecoveryError);
+    assert.match(error.message, /recovery is required/);
+    return true;
+  });
+  assert.deepEqual(f.checkpoints, []);
+});
+
+test("a failed durable timer repair remains a blocking recovery error", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  const persisted = f.getState()!;
+  f.setState(createForegroundTimerState({ ...persisted, accumulatedForegroundMs: 500 }));
+  f.failCheckpoint(new Error("checkpoint unavailable"));
+
+  await assert.rejects(() => f.create().restoreForResume(f.getActiveSession()), (error: unknown) => {
+    assert.ok(error instanceof ForegroundSessionTimerRecoveryError);
+    assert.match(error.message, /recovery is required/);
+    return true;
+  });
+  assert.equal(f.getActiveSession().activeForegroundMs, 0);
+  assert.deepEqual(f.checkpoints, []);
 });

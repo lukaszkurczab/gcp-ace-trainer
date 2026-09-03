@@ -6,7 +6,7 @@ import { join, relative, resolve } from "node:path";
 import test from "node:test";
 
 import { contentPackageRuntimeOwner } from "../application/contentPackageRuntimeOwner";
-import { GENERATED_FREE_NODE_PACKAGES } from "./bundled/generatedFreeNodePackages";
+import { GENERATED_FREE_NODE_PACKAGES, GENERATED_RETAINED_FREE_NODE_PACKAGES } from "./bundled/generatedFreeNodePackages";
 import { prepareBundledTestPackages } from "../testing/contentPackageRuntimeTestSupport";
 
 const frontendRoot = process.cwd();
@@ -34,10 +34,29 @@ test("every bundled Free-node package exactly matches its producer artifact and 
   }
 });
 
+test("the retained GCP package resolves only by its exact old pin while discovery stays on current bytes", async () => {
+  await prepareBundledTestPackages();
+  const retained = GENERATED_RETAINED_FREE_NODE_PACKAGES.find((candidate) => candidate.trackId === "google-cloud-associate-cloud-engineer");
+  const current = GENERATED_FREE_NODE_PACKAGES.find((candidate) => candidate.trackId === "google-cloud-associate-cloud-engineer");
+  assert.ok(retained);
+  assert.ok(current);
+  const exact = await contentPackageRuntimeOwner.resolveExact({
+    packageIdentity: retained.packageSha256,
+    packageVersion: retained.packageVersion,
+    contentReleaseId: retained.manifest.provenance.releaseId,
+  });
+  assert.equal(exact.package.packagePin.packageIdentity, retained.packageSha256);
+  assert.equal(exact.package.packagePin.packageVersion, retained.packageVersion);
+  assert.equal(exact.profile.modes.some((mode) => mode.modeId === "certification-diagnostic-baseline"), false);
+  const discovered = await contentPackageRuntimeOwner.resolveForDiscovery("google-cloud-associate-cloud-engineer", "certification");
+  assert.equal(discovered.package.packagePin.packageIdentity, current.packageSha256);
+  assert.equal(discovered.package.packagePin.packageVersion, current.packageVersion);
+});
+
 test("CI reads the current per-artifact content lock instead of retired aggregate lock fields", () => {
   const workflow = readFileSync(join(frontendRoot, ".github", "workflows", "qa.yml"), "utf8");
   assert.match(workflow, /lock\.schemaVersion !== 2/u);
-  assert.match(workflow, /aws-certified-solutions-architect-associate.*backend-system-design-interview.*coding-interview-dsa-problem-solving.*frontend-system-design-interview.*google-cloud-associate-cloud-engineer.*microsoft-azure-administrator-associate-az-104.*microsoft-azure-ai-fundamentals-ai-901.*object-oriented-design-interview/su);
+  assert.match(workflow, /coding-interview-dsa-problem-solving.*backend-system-design-interview.*object-oriented-design-interview.*frontend-system-design-interview.*google-cloud-associate-cloud-engineer.*aws-certified-solutions-architect-associate.*microsoft-azure-administrator-associate-az-104.*microsoft-azure-ai-fundamentals-ai-901/su);
   assert.match(workflow, /lock\.artifacts\.at\(-1\)\.producerCommit/u);
   assert.doesNotMatch(workflow, /algorithms,cloud-certification/u);
   assert.doesNotMatch(workflow, /lock\.producerCommit/u);

@@ -36,12 +36,12 @@ export function ScreenHeader({ backAction, context, contextTone = "muted", descr
               onPress={backAction.onPress}
             />
           ) : null}
-          {context ? <Text key={fontScale} maxFontSizeMultiplier={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null, variant === "practiceSetup" ? styles.practiceSetupContext : null]}>{context}</Text> : null}
+          {context ? <Text key={`context:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null, variant === "practiceSetup" ? styles.practiceSetupContext : null]}>{context}</Text> : null}
         </View>
       ) : null}
       <View style={[styles.copy, variant === "practiceSetup" ? styles.practiceSetupCopy : null]}>
-        <Text key={fontScale} maxFontSizeMultiplier={2} style={[styles.title, variant === "activity" ? styles.activityTitle : null]} testID={titleTestID}>{title}</Text>
-        {description ? <Text key={fontScale} maxFontSizeMultiplier={2} style={[styles.description, variant === "practiceSetup" ? styles.practiceSetupDescription : null]}>{description}</Text> : null}
+        <Text key={`title:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.title, variant === "activity" ? styles.activityTitle : null]} testID={titleTestID}>{title}</Text>
+        {description ? <Text key={`description:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.description, variant === "practiceSetup" ? styles.practiceSetupDescription : null]}>{description}</Text> : null}
       </View>
     </View>
   );

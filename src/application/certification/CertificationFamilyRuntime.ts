@@ -24,6 +24,7 @@ import {
   CERTIFICATION_MODE_IDS,
   createCertificationReviewEntry,
   getCertificationMode,
+  getCertificationQuestionMaxPoints,
   scoreCertificationQuestion,
   type CertificationDomain,
   type CertificationResponse,
@@ -151,7 +152,8 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     if (input.session.modeId === "certification-exam-simulation") throw new Error("Cloud exam simulation uses simulation finalization.");
     const sessionAttempts = input.attempts.filter((attempt) => attempt.sessionId === input.session.id);
     if (sessionAttempts.length !== input.session.actualLength || new Set(sessionAttempts.map((attempt) => attempt.occurrenceId)).size !== input.session.actualLength) throw new Error("Cloud practice finalization requires one durable attempt per occurrence.");
-    return Object.freeze({ session: completeTrainingSession(input.session, input.now), result: resultFor(input.session, sessionAttempts, input.now) });
+    const maxPoints = input.session.itemOrder.reduce((sum, occurrence) => sum + getCertificationQuestionMaxPoints(this.catalog.getItemById(occurrence.item.itemId)), 0);
+    return Object.freeze({ session: completeTrainingSession(input.session, input.now), result: resultFor(input.session, sessionAttempts, input.now, maxPoints) });
   }
 
   async finalizeSimulation(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<SimulationFinalization> {
@@ -176,7 +178,8 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       else if (prior) mutations.push(Object.freeze({ kind: "remove", entry: prior, transitionAttemptId: attempt.id }));
     }
     const session = completeTrainingSession(input.session, input.now);
-    return Object.freeze({ session, attempts: Object.freeze(attempts), reviewMutations: Object.freeze(mutations), frozenDraft: input.draft, result: resultFor(input.session, attempts, input.now) });
+    const maxPoints = input.session.itemOrder.reduce((sum, occurrence) => sum + getCertificationQuestionMaxPoints(this.catalog.getItemById(occurrence.item.itemId)), 0);
+    return Object.freeze({ session, attempts: Object.freeze(attempts), reviewMutations: Object.freeze(mutations), frozenDraft: input.draft, result: resultFor(input.session, attempts, input.now, maxPoints) });
   }
 
   async validateDraftCommand(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void> {
@@ -272,7 +275,13 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
   private assertSession(session: TrainingSession): void {
     if (session.trackId !== this.catalog.getTrackId() || session.contentVersion !== this.catalog.getContentVersion() || !contentPackagePinsEqual(session.packagePin, this.catalog.getPackagePin()) || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !CERTIFICATION_MODE_IDS.includes(session.modeId as typeof CERTIFICATION_MODE_IDS[number])) throw new Error("Certification session does not match its validated immutable artifact.");
     if (session.modeId === "certification-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0 || session.configurationSnapshot.simulationPolicyId !== "patternly-certification-simulation-v1" || session.configurationSnapshot.simulationPolicyVersion !== "1" || session.configurationSnapshot.feedbackMode !== "atSessionEnd" || new Set(session.itemOrder.map((occurrence) => occurrence.item.itemId)).size !== session.actualLength)) throw new Error("Cloud exam simulation does not match its immutable Patternly interaction policy.");
-    if (session.modeId === "certification-diagnostic-baseline" && (session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none")) throw new Error("Certification Diagnostic Baseline does not match its immutable fixed-session contract.");
+    if (session.modeId === "certification-diagnostic-baseline") {
+      const diagnostic = this.catalog.getDiagnosticBaseline();
+      const itemIds = session.itemOrder.map((occurrence) => occurrence.item.itemId);
+      if (session.actualLength !== 40 || session.requestedLength !== 40 || itemIds.length !== 40 || new Set(itemIds).size !== 40 || itemIds.some((itemId, index) => itemId !== diagnostic.itemIds[index]) || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none") {
+        throw new Error("Certification Diagnostic Baseline does not match its immutable fixed-session contract.");
+      }
+    }
     if (session.modeId === "certification-focus-practice") {
       const focusPractice = this.catalog.getFocusPractice();
       const domains = new Set(session.itemOrder.map((occurrence) => { const question = this.catalog.getItemById(occurrence.item.itemId); return question.nodeId ?? question.domain; }));
@@ -396,8 +405,7 @@ function updateCertificationReviewEntry(entry: ReviewQueueEntry, attempt: Traini
   const consecutiveAfterDueSuccesses = sameSessionCorrection ? entry.consecutiveAfterDueSuccesses : entry.consecutiveAfterDueSuccesses + 1;
   return consecutiveAfterDueSuccesses >= 2 ? undefined : { ...entry, consecutiveAfterDueSuccesses, lastReviewedAt: attempt.committedAt };
 }
-function resultFor(session: TrainingSession, attempts: readonly TrainingAttempt<unknown>[], completedAt: string) {
+function resultFor(session: TrainingSession, attempts: readonly TrainingAttempt<unknown>[], completedAt: string, maxPoints: number) {
   const pointsEarned = attempts.reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0);
-  const maxPoints = session.actualLength;
   return createTrainingSessionResult({ id: `${session.id}:result`, sessionId: session.id, trackId: session.trackId, totalOccurrences: session.actualLength, answeredOccurrenceIds: attempts.map((attempt) => attempt.occurrenceId), unansweredOccurrenceIds: session.itemOrder.filter((occurrence) => !attempts.some((attempt) => attempt.occurrenceId === occurrence.occurrenceId)).map((occurrence) => occurrence.occurrenceId), completedAt, evidence: createFamilyEnvelope({ familyId: "certification", details: { pointsEarned, maxPoints, correctCount: attempts.filter((attempt) => attempt.result.kind === "correct").length, partialCount: attempts.filter((attempt) => attempt.result.kind === "partial").length, incorrectCount: attempts.filter((attempt) => attempt.result.kind === "incorrect").length } }) });
 }

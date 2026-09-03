@@ -33,22 +33,22 @@ export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
     void loadAlgorithmsDeclaredScopeOptions({ modeId: route.params.modeId, targetMentalUnitId: route.params.targetMentalUnitId })
       .then((options) => {
         if (!active) return;
-        setState(options.length > 0 ? { kind: "ready", options } : { kind: "unavailable", reason: "No declared practice scope is available for this recommendation." });
+        setState(options.length > 0 ? { kind: "ready", options } : { kind: "unavailable", reason: "No topics are available for this practice mode." });
       })
-      .catch((error) => { if (active) setState({ kind: "unavailable", reason: describeOperationalFailure(error, "Declared practice scopes are unavailable.") }); });
+      .catch((error) => { if (active) setState({ kind: "unavailable", reason: describeOperationalFailure(error, t("We couldn’t load the available topics.")) }); });
     return () => { active = false; };
-  }, [route.params.modeId, route.params.targetMentalUnitId]);
+  }, [route.params.modeId, route.params.targetMentalUnitId, t]);
 
   if (state.kind === "unavailable") {
     return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Coding Interview")} /><EmptyState title={t("Practice scope unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => goBackOrHome(navigation)} /></Screen>;
   }
-  if (state.kind === "loading") return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Coding Interview")} /><LoadingState title={t("Loading practice scopes")} description={t("Reading the declared content scopes.")} /></Screen>;
+  if (state.kind === "loading") return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Coding Interview")} /><LoadingState title={t("Loading topics…")} /></Screen>;
   const codingInterviewTrackId = CODING_INTERVIEW_TRACK_ID;
 
   return (
     <Screen scroll edges={["top"]} style={{ gap: spacing.lg }}>
       <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Coding Interview")} />
-      <SectionHeader title={`${t("Choose a scope for")} ${t(modeTitle)}`} subtitle={t("Choose a topic. Questions mix the skills in that topic without hints.")} />
+      <SectionHeader title={t("Choose a topic for {{mode}}", { mode: t(modeTitle) })} subtitle={t("Choose a topic. Questions mix the skills in that topic without hints.")} />
       <View style={{ gap: spacing.sm }}>
         {state.options.map((option) => (
           <ListRow

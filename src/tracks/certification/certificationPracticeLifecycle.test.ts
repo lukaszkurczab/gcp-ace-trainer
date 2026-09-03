@@ -618,3 +618,65 @@ test("ordinary Certification facade owns timer start, response and final checkpo
   if (restarted.kind === "ready") await abandonCertificationSession(restarted.projection.session.id);
   assert.equal(await getActiveForegroundTimer(), null);
 });
+
+test("Certification Diagnostic runs its pinned 40-item plan through durable save, restart, and result", async () => {
+  await prepareBundledTestPackages();
+  installMemoryStorage();
+  const clock = new MutableClock("2026-07-24T13:00:00.000Z");
+  let identitySequence = 0;
+  const sessionId = "certification-diagnostic-40";
+  const compose = () => composeTrainingLifecycleUseCases({
+    wallClock: clock,
+    sessionIds: { async create() { identitySequence += 1; return sessionId; } },
+  });
+  compose();
+
+  const opened = await openCertificationPracticeSession({ modeId: "certification-diagnostic-baseline" });
+  assert.equal(opened.kind, "ready");
+  if (opened.kind !== "ready") return;
+  assert.equal(opened.projection.session.actualLength, 40);
+  assert.equal(opened.projection.session.requestedLength, 40);
+  assert.equal(opened.projection.session.configurationSnapshot.timer, "elapsedForeground");
+  assert.equal(opened.projection.session.configurationSnapshot.feedbackMode, "afterEachAnswer");
+  assert.equal(opened.projection.session.configurationSnapshot.timerDeadlineAt, undefined);
+  assert.equal(opened.projection.session.packagePin.packageVersion.endsWith("-0006"), true);
+  assert.equal(new Set(opened.projection.session.itemOrder.map((occurrence) => occurrence.item.itemId)).size, 40);
+
+  await submitCertificationPracticeResponse(correctResponse(opened.projection.question));
+  const saved = await loadActiveTrainingSession();
+  assert.ok(saved);
+  assert.equal(saved?.id, sessionId);
+  assert.equal((await getTrainingAttempts()).value.length, 1);
+
+  compose();
+  const resumedSession = await resumeActiveTrainingSession();
+  assert.equal(resumedSession.id, sessionId);
+  const resumed = await openCertificationPracticeSession({ modeId: "certification-diagnostic-baseline", expectedSessionId: sessionId });
+  assert.equal(resumed.kind, "ready");
+  if (resumed.kind !== "ready") return;
+  assert.equal(resumed.projection.ordinal, 1);
+  assert.equal(resumed.projection.total, 40);
+  assert.equal(resumed.projection.response?.source, "materialized");
+
+  let projection = resumed.projection;
+  while (projection.ordinal < projection.total) {
+    await advanceCertificationPracticeSession();
+    projection = await getCertificationPracticeProjection();
+    await submitCertificationPracticeResponse(correctResponse(projection.question));
+    projection = await getCertificationPracticeProjection();
+  }
+  assert.equal(projection.ordinal, 40);
+  assert.equal(projection.operation.kind, "feedback");
+  assert.equal((await getTrainingAttempts()).value.filter((attempt) => attempt.sessionId === sessionId).length, 40);
+
+  const completed = await completeCertificationPracticeSession();
+  assert.equal(completed.kind, "verified");
+  if (completed.kind !== "verified") return;
+  assert.equal(completed.value.session.id, sessionId);
+  assert.equal(completed.value.result.totalOccurrences, 40);
+  assert.equal(completed.value.result.answeredOccurrenceIds.length, 40);
+  assert.equal(completed.value.result.unansweredOccurrenceIds.length, 0);
+  assert.equal((await getTrainingSessionResult(sessionId))?.totalOccurrences, 40);
+  assert.equal(await loadActiveTrainingSession(), null);
+  assert.equal(identitySequence, 1);
+});

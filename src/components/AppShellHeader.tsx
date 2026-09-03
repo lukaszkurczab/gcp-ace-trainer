@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -20,6 +20,7 @@ type AppShellHeaderProps = {
 
 export function AppShellHeader({ backAction, context, placement = "inline" }: AppShellHeaderProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   const { colorMode, colors: palette } = useAppPreferences();
   const { t } = useTranslation("common");
   const header = (
@@ -36,8 +37,8 @@ export function AppShellHeader({ backAction, context, placement = "inline" }: Ap
           <PatternlyMark decorative size={30} treatment={colorMode === "dark" ? "mint" : "navy"} />
         </View>
         <View style={styles.headerCopy}>
-          <Text maxFontSizeMultiplier={2} style={styles.brandTitle}>Patternly</Text>
-          {context ? <Text maxFontSizeMultiplier={2} style={styles.headerMeta}>{context}</Text> : null}
+          <Text key={`app-shell-brand-${fontScale}`} maxFontSizeMultiplier={2} style={styles.brandTitle}>Patternly</Text>
+          {context ? <Text key={`app-shell-context-${fontScale}`} maxFontSizeMultiplier={2} style={styles.headerMeta}>{context}</Text> : null}
         </View>
       </View>
     </View>
@@ -56,7 +57,7 @@ export function AppShellHeader({ backAction, context, placement = "inline" }: Ap
         >
           <Icon color={palette.textSecondary} name="chevron-left" size={16} />
         </Pressable>
-        <Text maxFontSizeMultiplier={2} style={styles.backLabel}>Patternly</Text>
+        <Text key={`app-shell-back-${fontScale}`} maxFontSizeMultiplier={2} style={styles.backLabel}>Patternly</Text>
       </View>
     );
   }

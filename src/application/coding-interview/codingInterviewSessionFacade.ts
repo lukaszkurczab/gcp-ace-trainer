@@ -69,6 +69,7 @@ export type AlgorithmsSimulationScreenProjection =
   | Readonly<{ kind: "unavailable"; operation: Extract<SimulationDurableOperationState, { error: unknown }> }>;
 
 export type AlgorithmsSessionResultProjection = Readonly<{
+  modeId: string;
   completionKind: "abandoned" | "completed";
   sessionId: string;
   totalOccurrences: number;
@@ -82,6 +83,7 @@ export type AlgorithmsSessionResultProjection = Readonly<{
     requestedLength: number;
   }>;
   feedbackItems: readonly Readonly<{
+    constraints: readonly string[];
     correctness: "correct" | "partial" | "incorrect";
     details: AlgorithmFeedbackDocument;
     interaction: ReturnType<typeof buildAlgorithmInteractionViewModel>;
@@ -448,6 +450,7 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
   const feedbackTiming = feedbackTimingFromSession(session);
   return Object.freeze({
     completionKind: "completed",
+    modeId: session.modeId,
     sessionId: result.sessionId,
     totalOccurrences: result.totalOccurrences,
     answeredOccurrenceIds: Object.freeze([...result.answeredOccurrenceIds]),
@@ -459,11 +462,21 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
       feedbackTiming,
       requestedLength: session.requestedLength,
     }),
-    feedbackItems: feedbackTiming === "atSessionEnd"
-      ? await completedFeedbackItems(session, attempts.value)
-      : Object.freeze([]),
+    feedbackItems: await completedFeedbackItems(session, attempts.value),
     score: resultScore(result.evidence.details),
   });
+}
+
+/** Reads a completed practice occurrence without starting or mutating a session. */
+export async function getAlgorithmsPracticeReviewProjection(sessionId: string, occurrenceId: string): Promise<AlgorithmsSessionResultProjection> {
+  const result = await getAlgorithmsPracticeSummaryProjection(sessionId);
+  if (result.sessionId !== sessionId || result.completionKind !== "completed" || result.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
+    throw new Error("Answer review requires this completed practice session.");
+  }
+  if (!result.feedbackItems.some((item) => item.occurrenceId === occurrenceId)) {
+    throw new Error("This question does not belong to the completed practice result.");
+  }
+  return result;
 }
 
 export async function getAlgorithmsPracticeSummaryProjection(sessionId: string): Promise<AlgorithmsSessionResultProjection> {
@@ -480,6 +493,7 @@ export async function getAlgorithmsPracticeSummaryProjection(sessionId: string):
   const answered = new Set(answeredOccurrenceIds);
   return Object.freeze({
     completionKind: "abandoned",
+    modeId: session.modeId,
     sessionId: session.id,
     totalOccurrences: session.actualLength,
     answeredOccurrenceIds: Object.freeze(answeredOccurrenceIds),
@@ -560,6 +574,7 @@ async function completedFeedbackItems(session: TrainingSession, attempts: readon
       attempt: attempt as import("../../domain").TrainingAttempt<AlgorithmResponse>,
     });
     return [Object.freeze({
+      constraints: Object.freeze([...(question.constraints ?? [])]),
       correctness: feedback.correctness,
       details: feedback.details,
       interaction: buildAlgorithmInteractionViewModel(

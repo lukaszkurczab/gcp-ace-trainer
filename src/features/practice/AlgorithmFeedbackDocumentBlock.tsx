@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SvgXml } from "react-native-svg";
 
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
@@ -25,12 +26,14 @@ export function AlgorithmFeedbackDocumentBlock({ document, item }: Readonly<{ do
 }
 
 function FeedbackBlock({ block, index, item, styles }: Readonly<{ block: AlgorithmFeedbackBlock; index: number; item: ContentItemRef; styles: ReturnType<typeof createStyles> }>) {
-  if (block.type === "paragraph") return <Text maxFontSizeMultiplier={2} style={styles.paragraph}>{block.text}</Text>;
-  if (block.type === "heading") return <Text accessibilityRole="header" maxFontSizeMultiplier={2} style={block.level === 2 ? styles.headingTwo : styles.headingThree}>{block.text}</Text>;
-  if (block.type === "bullet_list" || block.type === "ordered_list") return <View accessibilityLabel={`${block.type === "bullet_list" ? "Bullet" : "Numbered"} list`} style={styles.list}>{block.items.map((item, itemIndex) => <View key={`${index}-${itemIndex}`} style={styles.listRow}><Text maxFontSizeMultiplier={2} style={styles.listMarker}>{block.type === "bullet_list" ? "•" : `${itemIndex + 1}.`}</Text><Text maxFontSizeMultiplier={2} style={styles.listText}>{item}</Text></View>)}</View>;
-  if (block.type === "code") return <View accessible accessibilityLabel={`Code sample in ${block.language}`} style={styles.codeShell}><Text maxFontSizeMultiplier={2} style={styles.codeLanguage}>{block.language}</Text><Text maxFontSizeMultiplier={2} selectable style={styles.code}>{tokenizeFeedbackCode(block.language, block.code).map((token, tokenIndex) => <Text key={`${index}-${tokenIndex}`} maxFontSizeMultiplier={2} style={styles[`code${token.kind[0]!.toUpperCase()}${token.kind.slice(1)}` as keyof ReturnType<typeof createStyles>]}>{token.text}</Text>)}</Text></View>;
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  if (block.type === "paragraph") return <Text key={`paragraph:${fontScale}`} maxFontSizeMultiplier={2} style={styles.paragraph}>{block.text}</Text>;
+  if (block.type === "heading") return <Text key={`heading:${fontScale}`} accessibilityRole="header" maxFontSizeMultiplier={2} style={block.level === 2 ? styles.headingTwo : styles.headingThree}>{block.text}</Text>;
+  if (block.type === "bullet_list" || block.type === "ordered_list") return <View accessibilityLabel={t(block.type === "bullet_list" ? "Bullet list" : "Numbered list")} style={styles.list}>{block.items.map((item, itemIndex) => <View key={`${index}-${itemIndex}`} style={styles.listRow}><Text key={`marker:${fontScale}`} maxFontSizeMultiplier={2} style={styles.listMarker}>{block.type === "bullet_list" ? "•" : `${itemIndex + 1}.`}</Text><Text key={`list-text:${fontScale}`} maxFontSizeMultiplier={2} style={styles.listText}>{item}</Text></View>)}</View>;
+  if (block.type === "code") return <View accessible accessibilityLabel={t("Code sample in {{language}}", { language: block.language })} style={styles.codeShell}><Text key={`language:${fontScale}`} maxFontSizeMultiplier={2} style={styles.codeLanguage}>{block.language}</Text><Text key={`code:${fontScale}`} maxFontSizeMultiplier={2} selectable style={styles.code}>{tokenizeFeedbackCode(block.language, block.code).map((token, tokenIndex) => <Text key={`${fontScale}-${index}-${tokenIndex}`} maxFontSizeMultiplier={2} style={styles[`code${token.kind[0]!.toUpperCase()}${token.kind.slice(1)}` as keyof ReturnType<typeof createStyles>]}>{token.text}</Text>)}</Text></View>;
   if (block.type === "image") return <View accessible accessibilityLabel={block.alt} style={styles.image}><SvgXml height="100%" width="100%" xml={contentPackageRuntimeOwner.resolveTextAsset(item, block.assetId).text} /></View>;
-  return <View accessible accessibilityLabel={`${CALLOUT_LABEL[block.kind]}. ${block.title ? `${block.title}. ` : ""}${block.text}`} style={styles.callout}><Text maxFontSizeMultiplier={2} style={styles.calloutKind}>{CALLOUT_LABEL[block.kind]}</Text>{block.title ? <Text maxFontSizeMultiplier={2} style={styles.calloutTitle}>{block.title}</Text> : null}<Text maxFontSizeMultiplier={2} style={styles.calloutText}>{block.text}</Text></View>;
+  return <View accessible accessibilityLabel={`${t(CALLOUT_LABEL[block.kind])}. ${block.title ? `${block.title}. ` : ""}${block.text}`} style={styles.callout}><Text key={`callout-kind:${fontScale}`} maxFontSizeMultiplier={2} style={styles.calloutKind}>{t(CALLOUT_LABEL[block.kind])}</Text>{block.title ? <Text key={`callout-title:${fontScale}`} maxFontSizeMultiplier={2} style={styles.calloutTitle}>{block.title}</Text> : null}<Text key={`callout-text:${fontScale}`} maxFontSizeMultiplier={2} style={styles.calloutText}>{block.text}</Text></View>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

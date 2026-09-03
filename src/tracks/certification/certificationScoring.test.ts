@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildCertificationExamSummaries, scoreCertificationQuestion } from "./";
+import { buildCertificationExamSummaries, getCertificationQuestionMaxPoints, scoreCertificationQuestion } from "./";
 import { makeCompletedExamProjectionInputs, makeQuestion } from "../../testing/fixtures";
 
 test("Certification single-choice scores correct, incorrect, and unanswered responses", () => {
@@ -12,6 +12,7 @@ test("Certification single-choice scores correct, incorrect, and unanswered resp
 
 test("Certification multiple-choice distinguishes exact, proper subset, and wrong-option responses", () => {
   const question = makeQuestion({ type: "multiple", correctOptionIds: ["a", "c"] });
+  assert.equal(getCertificationQuestionMaxPoints(question), 2);
   assert.equal(scoreCertificationQuestion(question, { kind: "option_selection", selectedOptionIds: ["c", "a"] }).kind, "correct");
   assert.equal(scoreCertificationQuestion(question, { kind: "option_selection", selectedOptionIds: ["a"] }).kind, "partial");
   assert.equal(scoreCertificationQuestion(question, { kind: "option_selection", selectedOptionIds: ["a", "b"] }).kind, "incorrect");

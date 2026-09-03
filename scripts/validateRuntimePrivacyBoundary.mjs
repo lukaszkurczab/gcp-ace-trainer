@@ -28,7 +28,7 @@ export function validateRuntimePrivacyBoundary(root = process.cwd()) {
   ]);
   const failures = [];
 
-  for (const path of walk(sourceRoot).filter((candidate) => /\.(ts|tsx)$/.test(candidate) && !excludedSourceFiles.has(candidate))) {
+  for (const path of walk(sourceRoot).filter((candidate) => /\.(ts|tsx)$/.test(candidate) && !/\.test\.(?:[cm]?[jt]sx?)$/.test(candidate) && !excludedSourceFiles.has(candidate))) {
     const source = readFileSync(path, "utf8");
     const displayPath = relative(root, path);
     for (const [label, pattern] of [

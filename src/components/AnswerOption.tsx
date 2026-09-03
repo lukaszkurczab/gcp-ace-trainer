@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View, type AccessibilityState, type AccessibilityValue } from "react-native";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions, type AccessibilityState, type AccessibilityValue } from "react-native";
 
 import { useThemedStyles } from "../preferences";
 import { radius, spacing, typography } from "../theme";
@@ -33,6 +33,7 @@ export function AnswerOption({
   text,
 }: AnswerOptionProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   const selected = state !== "default";
   const correctness = state === "correct" || state === "omitted_correct" ? styles.letterCorrect : state === "incorrect" ? styles.letterIncorrect : state === "selected" ? styles.letterSelected : null;
 
@@ -48,9 +49,9 @@ export function AnswerOption({
       testID={testID}
     >
       <View style={styles.letterBadge}>
-        <Text maxFontSizeMultiplier={2} style={[styles.letterText, correctness]}>{letter}</Text>
+        <Text key={`letter:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.letterText, correctness]}>{letter}</Text>
       </View>
-      <Text maxFontSizeMultiplier={2} style={[styles.text, state === "correct" || state === "omitted_correct" || state === "incorrect" ? styles.feedbackText : null]}>{text}</Text>
+      <Text key={`answer:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.text, state === "correct" || state === "omitted_correct" || state === "incorrect" ? styles.feedbackText : null]}>{text}</Text>
     </Pressable>
   );
 }

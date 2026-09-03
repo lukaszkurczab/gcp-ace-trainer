@@ -49,9 +49,11 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const [conflict, setConflict] = useState<TrainingSession | null>(null);
   const [completionFailure, setCompletionFailure] = useState<CompletionFailure | null>(null);
   const [completionOperation, setCompletionOperation] = useState<Extract<PracticeDurableOperationState, { kind: "completing" | "completion_failed" | "completed" }> | null>(null);
+  const [recoveryFailure, setRecoveryFailure] = useState<string | null>(null);
   const [exit, setExit] = useState<"none" | "leave">("none");
   const [exitFailure, setExitFailure] = useState<"pause" | "retry_abandon" | "retry_checkpoint" | "recover_abandon" | "recover_operation" | null>(null);
   const permitRouteExit = useRef(false);
+  const recoveryInFlight = useRef(false);
   const mode = isCertificationPracticeModeId(route.params.mode) ? route.params.mode : null;
 
   const applyProjection = (next: CertificationPracticeProjection) => {
@@ -75,6 +77,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     let foregroundEntered = false;
     setCompletionFailure(null);
     setCompletionOperation(null);
+    setRecoveryFailure(null);
     void (async () => {
       try {
     const opened = await openCertificationPracticeSession(mode === "certification-diagnostic-baseline" || mode === "certification-quick-review" ? { modeId: mode, trackId: route.params.trackId, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-scenario-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, competency: route.params.competencyId, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, source: route.params.source, expectedSessionId: route.params.expectedSessionId });
@@ -82,7 +85,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
         await enterCertificationPracticeForeground();
         foregroundEntered = true;
         if (live) applyProjection(opened.projection);
-      } catch (cause) { if (live) setError(describeOperationalFailure(cause, "Cloud practice is unavailable.")); }
+      } catch (cause) { if (live) setError(describeOperationalFailure(cause, t("Cloud practice is unavailable."))); }
     })();
     return () => {
       live = false;
@@ -95,7 +98,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     const listener = AppState.addEventListener("change", (state) => {
       void (state === "active" ? enterCertificationPracticeForeground() : leaveCertificationPracticeForeground())
         .then(refresh)
-        .catch((cause: unknown) => setError(describeOperationalFailure(cause, "Cloud practice timer is unavailable.")));
+        .catch((cause: unknown) => setError(describeOperationalFailure(cause, t("Cloud practice timer is unavailable."))));
     });
     return () => listener.remove();
   }, [projection?.session.id]);
@@ -110,7 +113,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     if (!projection) return;
     return subscribeCertificationPracticeProjectionRefresh((event) => {
       if (event.sessionId !== projection.session.id) return;
-      void refresh().catch((cause: unknown) => setError(describeOperationalFailure(cause, "Cloud practice timer is unavailable.")));
+      void refresh().catch((cause: unknown) => setError(describeOperationalFailure(cause, t("Cloud practice timer is unavailable."))));
     });
   }, [projection?.session.id]);
 
@@ -121,7 +124,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     });
   }, [projection?.session.id]);
 
-  if (!mode) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Certification Practice unavailable")} description={t("This route is not a canonical Certification practice mode.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  if (!mode) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Certification Practice unavailable")} description={t("This practice mode is unavailable.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (conflict) {
     const ordinaryCertification = getTrackRegistration(conflict.trackId).familyId === "certification" && isCertificationPracticeModeId(conflict.modeId);
     const certificationExam = getTrackRegistration(conflict.trackId).familyId === "certification" && conflict.modeId === "certification-exam-simulation";
@@ -130,10 +133,10 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
       else if (certificationExam) navigation.replace(ROUTES.EXAM, { expectedSessionId: conflict.id });
       else navigation.navigate(ROUTES.HOME);
     };
-    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Another session is active")} description={t("Continue the exact active session or return to Practice. The active session will not be replaced.")} actionLabel={t(ordinaryCertification ? "Continue active practice" : certificationExam ? "Continue active exam" : "Go home")} onActionPress={continueActive} /><Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">{t("Back to practice")}</Button></Screen>;
+    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Another session is active")} description={t("Resume your active session, or return to Practice.")} actionLabel={t(ordinaryCertification ? "Continue active practice" : certificationExam ? "Continue active exam" : "Go home")} onActionPress={continueActive} /><Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">{t("Back to practice")}</Button></Screen>;
   }
   if (error) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Cloud Practice unavailable")} description={t(error)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
-  if (!projection) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><LoadingState title={t("Preparing immutable Cloud session…")} /></Screen>;
+  if (!projection) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><LoadingState title={t("Preparing session")} /></Screen>;
   const multiple = projection.question.type === "multiple";
   const feedback = projection.feedback;
   const renderedCompletionOperation = completionFailure?.kind === "retry_completion" || completionFailure?.kind === "recover_completion" ? completionFailure.operation : completionOperation;
@@ -144,16 +147,18 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
       : renderedCompletionOperation?.kind ?? projection.operation.kind;
   const editable = !exitFailure && !completionFailure && allowsPracticeResponseEditing(projection.operation.kind);
   const operationNotice = noticeForPracticeOperation(renderedCompletionOperation ?? projection.operation);
-  const notice = selectionError
-    ? { message: selectionError, tone: "error" as const }
+  const notice = recoveryFailure
+    ? { message: recoveryFailure, tone: "error" as const }
+    : selectionError
+      ? { message: selectionError, tone: "error" as const }
     : exitFailure === "pause"
-      ? { message: "The session could not be paused. It remains active; try leaving again.", tone: "error" as const }
+      ? { message: t("The session could not be paused. It remains active; try leaving again."), tone: "error" as const }
       : exitFailure === "retry_abandon" || exitFailure === "retry_checkpoint"
-        ? { message: exitFailure === "retry_checkpoint" ? "The timer checkpoint was not durably recorded. Retry the same end command." : "The end command was not durably recorded. Retry the same end command.", tone: "error" as const }
+        ? { message: t(exitFailure === "retry_checkpoint" ? "We couldn't save the session time. Try again to end the session." : "We couldn't end the session. Try again."), tone: "error" as const }
       : exitFailure === "recover_abandon"
-          ? { message: "The end command is durable and must be recovered before leaving.", tone: "error" as const }
+          ? { message: t("We couldn't end the session yet. Restore the session to continue."), tone: "error" as const }
           : exitFailure === "recover_operation"
-            ? { message: "The timer checkpoint is durable and must be recovered before ending this session.", tone: "error" as const }
+            ? { message: t("We couldn't finish updating the session time. Restore it before ending the session."), tone: "error" as const }
           : completionFailure?.kind === "retry_final_checkpoint"
             ? noticeForPracticeCompletionCheckpoint("retry")
             : completionFailure?.kind === "recover_final_checkpoint"
@@ -169,39 +174,46 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   });
   const refreshAfterCommand = async (message: string) => {
     try { await refresh(); }
-    catch (cause) { setError(describeOperationalFailure(cause, message)); }
+    catch (cause) { setError(describeOperationalFailure(cause, t(message))); }
   };
   const submit = async () => {
     if (!editable) return;
-    if (!selected.length) { setSelectionError("Select an answer before submitting."); return; }
+    if (!selected.length) { setSelectionError(t("Choose an answer before submitting.")); return; }
     try { await submitCertificationPracticeResponse({ kind: "option_selection", selectedOptionIds: selected }); }
-    catch { await refreshAfterCommand("The answer state could not be refreshed."); return; }
-    await refreshAfterCommand("The answer state could not be refreshed.");
+    catch { await refreshAfterCommand("We couldn't display your answer. Try again."); return; }
+    await refreshAfterCommand("We couldn't display your answer. Try again.");
   };
   const next = async () => {
     if (!canAdvance) return;
     if (projection.operation.kind === "advance_failed") {
       try { await advanceCertificationPracticeSession(); }
-      catch { await refreshAfterCommand("The next-question state could not be refreshed."); return; }
-      await refreshAfterCommand("The next-question state could not be refreshed.");
+      catch { await refreshAfterCommand("We couldn't open the next question. Try again."); return; }
+      await refreshAfterCommand("We couldn't open the next question. Try again.");
       return;
     }
     if (projection.ordinal === projection.total) {
       try {
         await applyCompletionResult(await completeCertificationPracticeSession());
       }
-      catch (cause) { setSelectionError(describeOperationalFailure(cause, "The Finish state could not be verified.")); }
+      catch (cause) { setSelectionError(describeOperationalFailure(cause, t("We couldn't finish the session. Try again."))); }
       return;
     }
     try { await advanceCertificationPracticeSession(); }
-    catch { await refreshAfterCommand("The next-question state could not be refreshed."); return; }
-    await refreshAfterCommand("The next-question state could not be refreshed.");
+    catch { await refreshAfterCommand("We couldn't open the next question. Try again."); return; }
+    await refreshAfterCommand("We couldn't open the next question. Try again.");
   };
   const recover = async () => {
-    if (!canRecover) return;
-    try { await recoverCertificationPracticeOperation(); }
-    catch { await refreshAfterCommand("The recovery state could not be refreshed."); return; }
-    await refreshAfterCommand("The recovery state could not be refreshed.");
+    if (!canRecover || recoveryInFlight.current) return;
+    recoveryInFlight.current = true;
+    try {
+      await recoverCertificationPracticeOperation();
+      await refresh();
+      setRecoveryFailure(null);
+    } catch {
+      setRecoveryFailure(t("Your answer is still saved on this device. We couldn't restore this question yet. Try recovery again."));
+    } finally {
+      recoveryInFlight.current = false;
+    }
   };
   const applyCompletionResult = async (result: Awaited<ReturnType<typeof completeCertificationPracticeSession>>) => {
     if (result.kind !== "verified") { setCompletionFailure(result); return; }
@@ -229,7 +241,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
         return;
       }
       await applyCompletionResult(await completeCertificationPracticeSession());
-    } catch (cause) { setSelectionError(describeOperationalFailure(cause, "The exact Finish retry could not be verified.")); }
+    } catch (cause) { setSelectionError(describeOperationalFailure(cause, t("We couldn't finish the session. Try again."))); }
   };
   const leaveRunner = () => {
     permitRouteExit.current = true;
@@ -253,7 +265,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
       permitRouteExit.current = true;
       navigation.replace(ROUTES.PRACTICE_HUB);
     } catch (cause) {
-      setError(describeOperationalFailure(cause, "The session end state could not be verified."));
+      setError(describeOperationalFailure(cause, t("We couldn't end the session. Try again.")));
     }
   };
   const recoverAbandonment = async () => {
@@ -266,7 +278,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     try { await recoverCertificationPreAbandonmentCheckpoint(projection.session.id); }
     catch { setExitFailure("recover_operation"); return; }
     setExitFailure(null);
-    await refreshAfterCommand("The recovered timer state could not be refreshed.");
+    await refreshAfterCommand("We couldn't display the updated session time. Try again.");
   };
   const retryCheckpointAndEnd = async () => {
     try {
@@ -275,7 +287,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
       if (result.kind === "recovery_required") { setExitFailure(result.recovery === "abandonment" ? "recover_abandon" : "recover_operation"); return; }
       permitRouteExit.current = true;
       navigation.replace(ROUTES.PRACTICE_HUB);
-    } catch (cause) { setError(describeOperationalFailure(cause, "The timer retry state could not be verified.")); }
+    } catch (cause) { setError(describeOperationalFailure(cause, t("We couldn't save the session time. Try again."))); }
   };
   const retry = exitFailure === "retry_abandon"
     ? endSession
@@ -292,9 +304,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
         : undefined;
   const primaryAction = completionFailure
     ? undefined
-    : editable
-    ? { enabled: selected.length > 0, label: "Submit answer", loading: false }
-    : getPracticePrimaryAction({ hasLocalResponse: false, isFinalPosition: projection.ordinal === projection.total, phase }) ?? undefined;
+    : getPracticePrimaryAction({ feedbackTiming: "afterEachAnswer", hasLocalResponse: editable ? selected.length > 0 : false, isFinalPosition: projection.ordinal === projection.total, phase }) ?? undefined;
   return <PracticeSessionSurface
     allowLeave={!completionFailure}
     exit={{ kind: exit }}
@@ -316,8 +326,8 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} ${t("of")} ${projection.total}` }}
     primaryAction={primaryAction}
     progress={projection.ordinal / projection.total}
-    question={{ constraints: [t(projection.question.domain.replaceAll("_", " "))], itemId: projection.question.id, prompt: projection.question.question, responseControl: { kind: "choice", options: projection.question.options.map((option) => ({ id: option.id, state: selected.includes(option.id) ? "selected" : "neutral", text: option.text })), selectionMode: multiple ? "multiple" : "single" } }}
-    retryLabel={exitFailure === "retry_abandon" || exitFailure === "retry_checkpoint" ? "Retry end session" : exitFailure === "recover_abandon" ? "Recover end session" : exitFailure === "recover_operation" ? "Recover timer checkpoint" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Recover completion" : completionFailure.kind === "retry_final_checkpoint" ? "Retry final checkpoint" : "Recover final checkpoint" : canRecover ? "Continue recovery" : undefined}
+    question={{ itemId: projection.question.id, prompt: projection.question.question, responseControl: { kind: "choice", options: projection.question.options.map((option) => ({ id: option.id, state: selected.includes(option.id) ? "selected" : "neutral", text: option.text })), selectionMode: multiple ? "multiple" : "single" } }}
+    retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : canRecover ? "Restore session" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}
     runtimeIdentity={{ actualLength: projection.session.actualLength, feedbackTiming: "afterEachAnswer", itemId: projection.question.id, modeId: projection.session.modeId, ordinal: projection.ordinal, roadmapNodeId: projection.question.domain, sessionId: projection.session.id, trackId: projection.session.trackId }}
     timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatPracticeElapsedTime(projection.elapsedForegroundMs)}`, label: formatPracticeElapsedTime(projection.elapsedForegroundMs) }}

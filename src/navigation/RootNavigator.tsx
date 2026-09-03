@@ -22,6 +22,7 @@ import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
 import { PracticeHubScreen } from "../features/practice/PracticeHubScreen";
 import { AlgorithmsScopeSelectionScreen } from "../features/practice/AlgorithmsScopeSelectionScreen";
 import { PracticeSessionScreen } from "../features/practice/PracticeSessionScreen";
+import { AlgorithmsPracticeReviewScreen } from "../features/practice/AlgorithmsPracticeReviewScreen";
 import { AlgorithmsPracticeSummaryScreen } from "../features/practice/AlgorithmsPracticeSummaryScreen";
 import { PracticeSetupScreen } from "../features/practice/PracticeSetupScreen";
 import { ResultScreen } from "../features/exam/ResultScreen";
@@ -40,7 +41,7 @@ export function RootNavigator() {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
   const { state } = usePatternlyAccount();
-  const applicationSessionReady = state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting" || (state.kind === "authenticated" && state.accountData.status === "synced");
+  const applicationSessionReady = state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting" || (state.kind === "authenticated" && state.accountData.status === "synced") || (state.kind === "authenticated" && state.accountData.status === "resumeRequired");
 
   if (state.kind === "loading") {
     return (
@@ -156,6 +157,11 @@ export function RootNavigator() {
             name={ROUTES.PRACTICE_SESSION}
             component={PracticeSessionScreen}
             options={{ headerShown: false, title: t("Practice Session") }}
+          />
+          <Stack.Screen
+            name={ROUTES.ALGORITHMS_PRACTICE_REVIEW}
+            component={AlgorithmsPracticeReviewScreen}
+            options={{ headerShown: false, title: t("Answer review") }}
           />
           <Stack.Screen
             name={ROUTES.ALGORITHMS_PRACTICE_SUMMARY}

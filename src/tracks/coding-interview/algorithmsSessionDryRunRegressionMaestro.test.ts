@@ -25,9 +25,10 @@ test("dry-run regression ends early into a truthful partial summary", () => {
   assert.match(flow, new RegExp(escape(runtimeSelectors.session.leave(sessionId))));
   assert.match(flow, new RegExp(escape(runtimeSelectors.session.abandon(sessionId))));
   assert.match(flow, new RegExp(escape(runtimeSelectors.summary.root(sessionId))));
-  assert.match(flow, /assertVisible: "Partial summary"/);
-  assert.match(flow, /assertVisible: "0 answered · 20 unanswered"/);
-  assert.match(flow, /assertVisible: "Score is shown only after a completed session\."/);
+  assert.match(flow, /assertVisible: "Session ended without answers"/);
+  assert.match(flow, /assertVisible: "Answered"/);
+  assert.ok(flow.includes('assertVisible: "0 / 20"'));
+  assert.match(flow, /assertVisible: "No answers were submitted\."/);
 });
 
 function count(value: string, needle: string): number {

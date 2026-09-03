@@ -9,8 +9,14 @@ function walk(directory) {
   ));
 }
 
-const sourcePaths = walk(join(root, "src")).filter((path) => /\.(?:ts|tsx)$/.test(path));
-const testPaths = walk(join(root, "tests")).filter((path) => path.endsWith(".test.ts"));
+const isTestSourcePath = (path) => /\.test\.(?:[cm]?[jt]sx?)$/.test(path);
+const excludedTestSupportPaths = new Set([join(root, "src/testing/journalTestSupport.ts")]);
+const sourcePaths = walk(join(root, "src"))
+  .filter((path) => /\.(?:ts|tsx)$/.test(path))
+  .filter((path) => !isTestSourcePath(path) && !excludedTestSupportPaths.has(path));
+const testPaths = ["src", "scripts"]
+  .flatMap((directory) => walk(join(root, directory)))
+  .filter(isTestSourcePath);
 const testCaseCount = testPaths.reduce(
   (count, path) => count + (readFileSync(path, "utf8").match(/\btest\s*\(\s*["']/g)?.length ?? 0),
   0,

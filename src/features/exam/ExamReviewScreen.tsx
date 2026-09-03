@@ -1,26 +1,34 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { loadTrainingAttempts } from "../../application/learningReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
-import { Button, Card, EmptyState, LoadingState, Screen } from "../../components";
+import { Button, EmptyState, LoadingState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
+import { getTrackDisplay, type AttemptResultKind, type ContentItemRef, type TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
+import { useThemedStyles } from "../../preferences";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { spacing, typography, type AppColors } from "../../theme";
 import type { CertificationQuestion } from "../../tracks/certification";
+import type { DesignQuestion } from "../../tracks/design-interview";
+import { PracticeFeedbackBlock } from "../practice/PracticeFeedbackBlock";
+import type { PracticeFeedback } from "../practice/practiceSessionPresentation";
+import type { ContentReportSurfaceContext } from "../reports/ContentReportSheet";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.EXAM_REVIEW>;
 
 type ReviewRow = Readonly<{
   id: string;
-  question: string;
-  correct: boolean;
-  reason: string;
+  occurrenceId: string;
+  item: ContentItemRef;
+  prompt: string;
+  result: AttemptResultKind;
+  feedback: PracticeFeedback;
+  reportSurface: ContentReportSurfaceContext;
 }>;
 
 type ExamReviewReadState =
@@ -28,9 +36,49 @@ type ExamReviewReadState =
   | Readonly<{ kind: "ready"; requestKey: string; rows: readonly ReviewRow[] }>
   | Readonly<{ kind: "unavailable"; requestKey: string; reason: string }>;
 
+function buildReviewRow(attempt: TrainingAttempt, prompt: string, feedback: Pick<PracticeFeedback, "details" | "reason">): ReviewRow {
+  const result = attempt.result.kind;
+  return {
+    id: attempt.id,
+    occurrenceId: attempt.occurrenceId,
+    item: attempt.item,
+    prompt,
+    result,
+    feedback: { details: feedback.details, reason: feedback.reason, result },
+    reportSurface: { modeRoute: "answer_review", trackNode: null },
+  };
+}
+
+async function resolveReviewRow(attempt: TrainingAttempt): Promise<ReviewRow> {
+  const itemTrackId = attempt.item.trackId;
+  if (attempt.trackId !== itemTrackId) throw new Error("Review attempt track does not match its immutable item.");
+  const familyId = getTrackDisplay(itemTrackId).familyId;
+  switch (familyId) {
+    case "certification": {
+      const question = await contentPackageRuntimeOwner.resolveItem<CertificationQuestion>(attempt.item);
+      return buildReviewRow(attempt, question.question, question.feedback);
+    }
+    case "design_interview": {
+      const question = await contentPackageRuntimeOwner.resolveItem<DesignQuestion>(attempt.item);
+      return buildReviewRow(attempt, question.prompt, question.feedback);
+    }
+    case "coding_interview":
+      throw new Error("Coding Interview attempts use their dedicated review surface.");
+    default:
+      throw new Error(`Review is unavailable for unsupported track family ${familyId}.`);
+  }
+}
+
+function reviewResultLabel(result: AttemptResultKind): "Correct" | "Partial" | "Incorrect" {
+  if (result === "correct") return "Correct";
+  if (result === "partial") return "Partial";
+  return "Incorrect";
+}
+
 export function ExamReviewScreen({ navigation, route }: Props) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
   const requestKey = route.params.sessionId;
   const [readState, setReadState] = useState<ExamReviewReadState>({ kind: "pending", requestKey });
 
@@ -44,15 +92,7 @@ export function ExamReviewScreen({ navigation, route }: Props) {
         if (!live) return;
         const rows = await Promise.all(value
           .filter((attempt) => attempt.sessionId === capturedRequestKey)
-          .map(async (attempt) => {
-            const question = await contentPackageRuntimeOwner.resolveItem<CertificationQuestion>(attempt.item);
-            return {
-              id: attempt.id,
-              question: question.question,
-              correct: attempt.result.kind === "correct",
-              reason: question.feedback.reason,
-            };
-          }));
+          .map((attempt) => resolveReviewRow(attempt)));
         if (!live) return;
         setReadState({ kind: "ready", requestKey: capturedRequestKey, rows });
       })
@@ -61,12 +101,12 @@ export function ExamReviewScreen({ navigation, route }: Props) {
         setReadState({
           kind: "unavailable",
           requestKey: capturedRequestKey,
-          reason: describeOperationalFailure(error, "Exam review data is unavailable."),
+          reason: describeOperationalFailure(error, t("We couldn’t load your answers.")),
         });
       });
 
     return () => { live = false; };
-  }, [requestKey]);
+  }, [requestKey, t]);
 
   if (readState.requestKey !== requestKey || readState.kind === "pending") {
     return <Screen><LoadingState title={t("Loading review…")} /></Screen>;
@@ -75,7 +115,7 @@ export function ExamReviewScreen({ navigation, route }: Props) {
     return (
       <Screen>
         <EmptyState
-          title={t("Exam review is unavailable")}
+          title={t("Answer review is unavailable")}
           description={t(readState.reason)}
           actionLabel={t("Back to practice")}
           onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
@@ -84,17 +124,17 @@ export function ExamReviewScreen({ navigation, route }: Props) {
     );
   }
   const rows = readState.rows;
-  if (!rows.length) return <Screen><EmptyState title={t("No submitted answers")} description={t("This exam was finalized without answered questions.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  if (!rows.length) return <Screen><EmptyState title={t("No submitted answers")} description={t("No answers were submitted in this session.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
 
   return (
     <Screen style={styles.screen}>
       <Text testID={runtimeSelectors.examReview.root(route.params.sessionId)} />
       {rows.map((row) => (
-        <Card key={row.id} style={styles.card}>
-          <Text maxFontSizeMultiplier={2} style={row.correct ? styles.correct : styles.incorrect}>{t(row.correct ? "Correct" : "Review")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.question}>{row.question}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.explanation}>{row.reason}</Text>
-        </Card>
+        <View key={row.id} style={styles.row}>
+          <Text key={`result:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.result, row.result === "correct" ? styles.correct : row.result === "partial" ? styles.partial : styles.incorrect]}>{t(reviewResultLabel(row.result))}</Text>
+          <Text key={`prompt:${fontScale}`} maxFontSizeMultiplier={2} style={styles.prompt}>{row.prompt}</Text>
+          <PracticeFeedbackBlock feedback={row.feedback} item={row.item} itemId={row.occurrenceId} reportSurface={row.reportSurface} />
+        </View>
       ))}
       <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} testID={runtimeSelectors.examReview.backToPractice(route.params.sessionId)}>{t("Back to practice")}</Button>
     </Screen>
@@ -102,10 +142,11 @@ export function ExamReviewScreen({ navigation, route }: Props) {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  screen: { gap: spacing.md },
-  card: { gap: spacing.sm },
+  screen: { gap: spacing.lg },
+  row: { gap: spacing.md },
+  result: { ...typography.small, fontWeight: "600" },
   correct: { ...typography.small, color: palette.success },
+  partial: { ...typography.small, color: palette.warning },
   incorrect: { ...typography.small, color: palette.danger },
-  question: { ...typography.bodyStrong, color: palette.textPrimary },
-  explanation: { ...typography.body, color: palette.textSecondary },
+  prompt: { ...typography.bodyStrong, color: palette.textPrimary },
 });

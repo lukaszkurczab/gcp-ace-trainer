@@ -171,6 +171,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   conflictDescription: t("conflictDescription"),
   dataFailure: t("dataFailure"),
   dataFailureDescription: t("dataFailureDescription"),
+  resumeRequired: t("resumeRequired"),
+  resumeRequiredDescription: t("resumeRequiredDescription"),
   activeSessionBlocked: t("activeSessionBlocked"),
   journalBlocked: t("journalBlocked"),
   pendingSyncRequiresNetwork: t("pendingSyncRequiresNetwork"),
@@ -180,7 +182,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   account_revision_conflict: t("account_revision_conflict"),
   version_conflict: t("version_conflict"),
   adoption_conflict: t("adoption_conflict"),
-  active_session_sync_deferred: t("active_session_sync_deferred"),
   journal_recovery_required: t("journal_recovery_required"),
   account_data_unavailable: t("account_data_unavailable"),
   backendUnavailable: t("backendUnavailable"),
@@ -1258,7 +1259,6 @@ function WelcomeScreen({
     <Screen
       backgroundColor={colors.background}
       edges={["top", "bottom"]}
-      scroll={largeText}
       style={[styles.welcomeScreen, largeText ? styles.welcomeScreenLargeText : null]}
     >
       <StatusBar style={colorMode === "dark" ? "light" : "dark"} />
@@ -1843,6 +1843,19 @@ function AccountDataPanel({
   retryDisabled?: boolean;
   text: AccountCopy;
 }>) {
+  if (accountData.status === "resumeRequired")
+    return (
+      <Card testID="account-sync-resume-required" style={{ gap: spacing.md }}>
+        <InfoBlock
+          body={text.resumeRequiredDescription}
+          title={text.resumeRequired}
+          tone="warning"
+        />
+        <Button disabled={retryDisabled} loading={retryDisabled} onPress={onRetry} testID="account-sync-retry" variant="primary">
+          {text.retrySync}
+        </Button>
+      </Card>
+    );
   if (accountData.status === "offlinePending")
     return (
       <Card testID="account-sync-pending" style={{ gap: spacing.md }}>
@@ -1885,8 +1898,7 @@ function AccountDataPanel({
     );
   if (
     accountData.activeSessionBlocked ||
-    accountData.lastFailureCode === "active_session_adoption_blocked" ||
-    accountData.lastFailureCode === "active_session_sync_deferred"
+    accountData.lastFailureCode === "active_session_adoption_blocked"
   )
     return (
       <Card testID="account-adoption-active-session" style={{ gap: spacing.md }}>

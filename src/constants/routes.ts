@@ -18,6 +18,7 @@ export const ROUTES = {
   ANSWER_REVIEW: "AnswerReview",
   PRACTICE_SETUP: "PracticeSetup",
   PRACTICE_SESSION: "PracticeSession",
+  ALGORITHMS_PRACTICE_REVIEW: "AlgorithmsPracticeReview",
   ALGORITHMS_PRACTICE_SUMMARY: "AlgorithmsPracticeSummary",
   ALGORITHMS_INTERVIEW_SIMULATION: "AlgorithmsInterviewSimulation",
   ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY: "AlgorithmsInterviewSimulationSummary",

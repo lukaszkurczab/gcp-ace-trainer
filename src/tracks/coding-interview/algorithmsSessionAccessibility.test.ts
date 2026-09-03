@@ -1,18 +1,22 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import i18n from "../../i18n";
 
 import {
   complexityValueAccessibilityLabel,
   orderingMoveAccessibilityLabel,
 } from "../../features/coding-interview/session/sessionAccessibility";
 
+const translate = (key: string, values?: Record<string, string | number>) => i18n.t(key, { ...values, lng: "en" });
+
 const source = (path: string) => readFileSync(path, "utf8");
 
 test("session control labels identify the dimension, ordering position, and command", () => {
-  assert.equal(orderingMoveAccessibilityLabel("Partition around the pivot", 2, 5, "up"), "Move Partition around the pivot, position 3 of 5, up");
-  assert.equal(orderingMoveAccessibilityLabel("Merge the runs", 4, 5, "down"), "Move Merge the runs, position 5 of 5, down");
+  assert.equal(orderingMoveAccessibilityLabel("Partition around the pivot", 2, 5, "up", translate), "Move Partition around the pivot, position 3 of 5, up");
+  assert.equal(orderingMoveAccessibilityLabel("Merge the runs", 4, 5, "down", translate), "Move Merge the runs, position 5 of 5, down");
   assert.equal(complexityValueAccessibilityLabel("Worst case time", "O(n log n)"), "Worst case time: O(n log n)");
+  assert.equal(orderingMoveAccessibilityLabel("Podziel tablicę", 0, 3, "down", (key, values) => i18n.t(key, { ...values, lng: "pl" })), "Przesuń Podziel tablicę, pozycja 1 z 3, w dół");
 });
 
 test("interactive Algorithms session controls use real 48-point minimum geometry without hit-area substitutes", () => {
@@ -27,21 +31,21 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   assert.match(answerOption, /option: \{[^}]*borderWidth:\s*1\.5[^}]*minHeight:\s*54[^}]*padding:/);
   assert.match(answerOption, /letterBadge:\s*\{[^}]*minHeight:\s*24[^}]*minWidth:\s*24/);
   assert.match(answerOption, /letterText:\s*\{[^}]*fontSize:\s*12[^}]*lineHeight:\s*16/);
-  assert.match(answerOption, /<Text maxFontSizeMultiplier=\{2\}/);
+  assert.match(answerOption, /<Text(?:\s+key=\{[^>]*\})?\s+maxFontSizeMultiplier=\{2\}/);
   assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*48[\s\S]*?minWidth:\s*48/);
-  assert.match(answerOption, /<Text maxFontSizeMultiplier=\{2\} style=\{\[styles\.letterText, correctness\]\}>\{letter\}<\/Text>/);
+  assert.match(answerOption, /<Text(?:\s+key=\{[^>]*\})?\s+maxFontSizeMultiplier=\{2\}\s+style=\{\[styles\.letterText, correctness\]\}>\{letter\}<\/Text>/);
   assert.match(practiceControls, /moveButton:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(practiceControls, /valueOption:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(feedback, /<DetailsDisclosure expanded=\{detailsOpen\}/);
-  assert.match(feedback, /<Text maxFontSizeMultiplier=\{2\} style=\{\[styles\.reasonLabel/);
+  assert.match(feedback, /<Text key=\{`reason-label:\$\{fontScale\}`\} maxFontSizeMultiplier=\{2\} style=\{styles\.reasonLabel\}/);
   assert.match(feedback, /maxFontSizeMultiplier=\{2\} style=\{styles\.reason\}/);
   assert.match(detailsDisclosure, /toggle:\s*\{[^}]*minHeight:\s*48/);
   assert.match(detailsDisclosure, /label:\s*\{[^}]*color:\s*palette\.textSecondary/);
-  assert.match(feedback, /details:\s*\{[^}]*borderTopColor:\s*palette\.border[^}]*paddingTop:\s*spacing\.md/);
-  assert.match(feedback, /detailsSection:\s*\{[^}]*backgroundColor:\s*palette\.elevatedSurface[^}]*borderColor:\s*palette\.border[^}]*borderRadius:\s*radius\.lg[^}]*borderWidth:\s*1[^}]*gap:\s*spacing\.md[^}]*padding:\s*spacing\.lg/);
+  assert.match(feedback, /feedbackCard:\s*\{[^}]*backgroundColor:\s*palette\.surface[^}]*borderColor:\s*palette\.border[^}]*borderRadius:\s*radius\.xl[^}]*borderWidth:\s*1[^}]*gap:\s*spacing\.md[^}]*padding:\s*spacing\.lg/);
+  assert.match(feedback, /detailsDivider:\s*\{[^}]*backgroundColor:\s*palette\.border[^}]*height:\s*StyleSheet\.hairlineWidth/);
+  assert.match(feedback, /details:\s*\{[^}]*gap:\s*spacing\.md[^}]*paddingTop:\s*spacing\.xs/);
   assert.match(feedback, /detailsOpen \?/);
   assert.match(feedback, /styles\.detailsSection/);
-  assert.match(feedback, /\) : detailsDisclosure/);
   assert.doesNotMatch(feedback, /detailsSection:\s*\{[^}]*\bheight\s*:/);
   assert.match(simulation, /layout=\{projection\.confirmation \? "simulationConfirmation" : savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(simulation, /variant=\{savedResponse \? "simulationSaved" : "simulation"\}/);
@@ -68,18 +72,18 @@ test("canonical session surfaces expose deterministic state and do not group int
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
 
   assert.match(button, /accessibilityState=\{\{ \.\.\.accessibilityState, busy: loading, disabled: isDisabled \}\}/);
-  assert.match(practice, /orderingMoveAccessibilityLabel\(elementLabel, index, total, direction\)/);
+  assert.match(practice, /orderingMoveAccessibilityLabel\(elementLabel, index, total, direction, t\)/);
   assert.match(practice, /accessibilityLabel=\{option\.text\}/);
   assert.match(practice, /accessibilityState=\{\{ checked: selected, disabled: !editable \}\}/);
-  assert.match(practice, /accessibilityValue=\{correctness \? \{ text: correctness \} : undefined\}/);
+  assert.match(practice, /accessibilityValue=\{correctness \? \{ text: t\(correctness\) \} : undefined\}/);
   assert.match(simulation, /accessibilityLabel=\{option\.label\} accessibilityRole=\{role\} accessibilityState=\{\{ checked: option\.selected \}\}/);
   assert.match(simulation, /accessibilityRole="radio" accessibilityState=\{\{ checked: selected \}\}/);
-  assert.match(practiceSurface, /accessible accessibilityLabel=\{notice\.message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
+  assert.match(practiceSurface, /const message = t\(notice\.message\);[\s\S]*accessible accessibilityLabel=\{message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
   assert.match(practiceSurface, /name="alert-triangle"/);
   assert.match(practiceSurface, /noticeError:\s*\{[\s\S]*?backgroundColor:\s*palette\.elevatedSurface[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
   assert.match(practiceSurface, /props\.phase === "completing" \? <CompletingNotice \/> : null/);
   assert.match(practiceSurface, /<View style=\{styles\.asyncStatusRow\}>\s*<View accessible accessibilityLabel=\{t\("Finishing this session…"\)\} style=\{styles\.asyncIcon\}>[\s\S]*?name="rotate-ccw"[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.asyncStatusLabel\}>\{t\("LOADING"\)\}<\/Text>/);
-  assert.match(practiceSurface, /function PreparingNotice\(\)[\s\S]*?styles\.asyncState[\s\S]*?Preparing the session plan and first item\./);
+  assert.match(practiceSurface, /function PreparingNotice\(\)[\s\S]*?styles\.asyncState[\s\S]*?Preparing your questions\./);
   assert.match(practiceSurface, /asyncIcon:\s*\{[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?borderRadius:\s*radius\.lg[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
   assert.match(practiceSurface, /asyncStatusLabel:\s*\{[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"600"[\s\S]*?lineHeight:\s*16/);
   assert.match(practiceSurface, /asyncState:\s*\{[\s\S]*?backgroundColor:\s*palette\.surface[\s\S]*?borderRadius:\s*radius\.button[\s\S]*?gap:\s*spacing\.lg[\s\S]*?padding:\s*spacing\.xl/);
@@ -87,7 +91,7 @@ test("canonical session surfaces expose deterministic state and do not group int
   assert.match(simulation, /accessible accessibilityLabel=\{notice\.message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
   assert.match(shell, /accessibilityLabel=\{timer\?\.accessibilityLabel\} accessibilityRole=\{timer \? "timer" : undefined\}/);
   assert.match(shell, /accessibilityLabel=\{position\?\.accessibilityLabel\}/);
-  assert.match(shell, /accessibilityLabel=\{verifiedProgress === null \? undefined : "Session progress"\}/);
+  assert.match(shell, /accessibilityLabel=\{verifiedProgress === null \? undefined : t\("Session progress"\)\}/);
   assert.match(shell, /accessibilityRole=\{verifiedProgress === null \? undefined : "progressbar"\}/);
   assert.doesNotMatch(practice, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.stack\}/);
   assert.doesNotMatch(simulation, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.controls\}/);
@@ -99,12 +103,12 @@ test("practice exit makes abandonment a single explicit decision in a modal", ()
   assert.match(practiceSurface, /<Modal animationType="fade" onRequestClose=\{onDismiss\} transparent visible>/);
   assert.match(practiceSurface, /<Pressable accessibilityLabel=\{t\("Keep learning"\)\} accessibilityRole="button" onPress=\{onDismiss\} style=\{styles\.modalDismissArea\} \/>/);
   assert.match(practiceSurface, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.exitTitle\}>\{t\("Pause or end this session\?"\)\}<\/Text>/);
-  assert.match(practiceSurface, /<View accessibilityViewIsModal style=\{styles\.exitModalStack\}>[\s\S]*?<View style=\{styles\.exitSheetActions\}>[\s\S]*?Keep learning[\s\S]*?Pause and resume later[\s\S]*?<\/View>[\s\S]*?<View style=\{styles\.exitDestructiveAction\}>[\s\S]*?variant="destructive"/);
+  assert.match(practiceSurface, /<View accessibilityViewIsModal style=\{styles\.exitModalStack\}>[\s\S]*?<View style=\{styles\.exitSheetActions\}>[\s\S]*?Keep learning[\s\S]*?Pause and resume later[\s\S]*?<\/View>[\s\S]*?<View style=\{\[styles\.exitDestructiveAction, \{ paddingBottom: Math\.max\(insets\.bottom, spacing\.sm\) \}\]\}>[\s\S]*?variant="destructive"/);
   assert.match(practiceSurface, /exitDestructiveAction:\s*\{[\s\S]*?backgroundColor:\s*palette\.background[\s\S]*?paddingHorizontal:\s*spacing\.xl/);
   assert.match(practiceSurface, /<Button onPress=\{onLeave\} testID=\{sessionId \? runtimeSelectors\.session\.leaveAndResume\(sessionId\) : undefined\} variant="secondary">\{t\("Pause and resume later"\)\}<\/Button>/);
   assert.match(practiceSurface, /<Button onPress=\{onAbandon\} testID=\{sessionId \? runtimeSelectors\.session\.abandon\(sessionId\) : undefined\} variant="destructive">\{t\(copy\.destructiveLabel\)\}<\/Button>/);
   assert.match(practiceSurface, /variant=\{props\.retryVariant \?\? "secondary"\}/);
-  assert.match(practiceSurface, /trackId === "coding-interview-dsa-problem-solving"[\s\S]*?description: "Pause to resume later, or end the session and view a partial summary\. Saved answers remain available\.", destructiveLabel: "End and view summary"/);
+  assert.match(practiceSurface, /trackId === "coding-interview-dsa-problem-solving"[\s\S]*?description: "Pause to continue later, or end the session to see a partial summary\. Saved answers remain available\.", destructiveLabel: "End and view summary"/);
   assert.doesNotMatch(practiceSurface, /abandon_confirmation|onRequestAbandon|AbandonSurface/);
 });
 
@@ -191,7 +195,7 @@ test("Practice Hub geometry follows live Figma while keeping canonical mode owne
 test("Practice Question Shell keeps the Figma prompt-to-answer rhythm", () => {
   const surface = source("src/features/practice/PracticeSessionSurface.tsx");
 
-  assert.match(surface, /questionCard:\s*\{[\s\S]*?gap:\s*spacing\.md/);
+  assert.match(source("src/features/practice/PracticeQuestionCard.tsx"), /questionCard:\s*\{[\s\S]*?gap:\s*spacing\.md/);
   assert.match(surface, /questionAndResponse:\s*\{\s*gap:\s*spacing\.md\s*\}/);
 });
 
@@ -219,16 +223,16 @@ test("practice runtime selectors are derived from the canonical session projecti
   assert.match(surface, /runtimeSelectors\.session\.root\(props\.runtimeIdentity\.sessionId\)/);
   assert.match(surface, /runtimeSelectors\.session\.counter\(props\.runtimeIdentity\.sessionId, props\.runtimeIdentity\.ordinal, props\.runtimeIdentity\.actualLength\)/);
   assert.match(surface, /runtimeSelectors\.session\.configuration\(props\.runtimeIdentity\.sessionId, props\.runtimeIdentity\.actualLength, props\.runtimeIdentity\.feedbackTiming\)/);
-  assert.match(surface, /runtimeSelectors\.session\.question\(question\.itemId\)/);
+  assert.match(source("src/features/practice/PracticeQuestionCard.tsx"), /runtimeSelectors\.session\.question\(question\.itemId\)/);
   assert.match(surface, /runtimeSelectors\.session\.submit\(props\.runtimeIdentity\.itemId\)/);
   assert.match(surface, /runtimeSelectors\.session\.continue\(props\.runtimeIdentity\.itemId\)/);
   assert.match(surface, /runtimeSelectors\.session\.leaveAndResume\(sessionId\)/);
   assert.match(controls, /runtimeSelectors\.session\.option\(itemId, option\.id\)/);
   assert.match(controls, /runtimeSelectors\.session\.complexityValue\(itemId, dimension\.id, value\)/);
   assert.match(feedback, /runtimeSelectors\.session\.result\(itemId, feedback\.result\)/);
-  assert.match(feedback, /accessibilityLabel=\{`\$\{t\("Verified answer explanation\."\)\} \$\{feedback\.reason\}`\}/);
+  assert.match(feedback, /accessibilityLabel=\{`\$\{t\("Answer explanation\."\)\} \$\{feedback\.reason\}`\}/);
   assert.match(feedback, /reasonLabel:\s*\{[^}]*fontSize:\s*12[^}]*lineHeight:\s*16/);
-  assert.match(feedback, /reasonLabelExpanded:\s*\{[^}]*textTransform:\s*"uppercase"/);
+  assert.match(feedback, /feedbackCard:\s*\{[^}]*borderRadius:\s*radius\.xl[^}]*borderWidth:\s*1/);
   assert.doesNotMatch(feedback, /reasonLabel:\s*\{[^}]*typography\.caption/);
   assert.doesNotMatch(`${surface}\n${controls}\n${feedback}`, /accessibilityLabel=\{[^}]*runtimeSelectors/);
 });
@@ -238,8 +242,8 @@ test("rich feedback renders semantic blocks with accessible code, headings, list
   const assets = source("src/application/contentPackageRuntimeOwner.ts");
 
   assert.match(document, /accessibilityRole="header"/);
-  assert.match(document, /accessibilityLabel=\{`Code sample in \$\{block\.language\}`\}/);
-  assert.match(document, /<Text maxFontSizeMultiplier=\{2\} selectable style=\{styles\.code\}>/);
+  assert.match(document, /accessibilityLabel=\{t\("Code sample in \{\{language\}\}", \{ language: block\.language \}\)\}/);
+  assert.match(document, /<Text(?:\s+key=\{[^>]*\})?\s+maxFontSizeMultiplier=\{2\}\s+selectable style=\{styles\.code\}>/);
   assert.match(document, /accessibilityLabel=\{block\.alt\}/);
   assert.match(document, /CALLOUT_LABEL\[block\.kind\]/);
   assert.match(document, /resolveTextAsset\(item, block\.assetId\)/);

@@ -1,5 +1,6 @@
 import { installationIdentity, type GuestInstallationIdentityPort } from "../../infrastructure/identity/installationIdentity";
 import { STORAGE_KEYS } from "../keys";
+import { AccountDataFailure } from "../errors";
 import { readCanonicalJson, writeCanonicalJson } from "./canonicalRecordCodec";
 
 export type GuestInstallation = Readonly<{
@@ -55,7 +56,7 @@ export async function provisionGuestInstallation(identity: GuestInstallationIden
 
 export async function markGuestInstallationAdoptionPending(): Promise<GuestInstallation> {
   const current = await getGuestInstallation();
-  if (!current) throw new Error("guest_installation_required");
+  if (!current) throw new AccountDataFailure("guest_installation_required");
   if (current.bindingState === "account_bound") return current;
   const next = { ...current, bindingState: "adoption_pending" as const };
   writeCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, next);
@@ -63,21 +64,21 @@ export async function markGuestInstallationAdoptionPending(): Promise<GuestInsta
 }
 
 export async function bindGuestInstallationToAccount(accountId: string): Promise<GuestInstallation> {
-  if (!accountId.trim()) throw new Error("account_id_required");
+  if (!accountId.trim()) throw new AccountDataFailure("account_id_required");
   const current = await getGuestInstallation();
-  if (!current) throw new Error("guest_installation_required");
-  if (current.accountId !== null && current.accountId !== accountId) throw new Error("account_binding_mismatch");
+  if (!current) throw new AccountDataFailure("guest_installation_required");
+  if (current.accountId !== null && current.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
   if (current.accountId === accountId && current.bindingState === "account_bound") return current;
   const next = { ...current, accountId, bindingState: "account_bound" as const };
   writeCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, next);
   const verified = await getGuestInstallation();
-  if (!verified || verified.accountId !== accountId || verified.bindingState !== "account_bound") throw new Error("guest_binding_write_unverified");
+  if (!verified || verified.accountId !== accountId || verified.bindingState !== "account_bound") throw new AccountDataFailure("guest_binding_write_unverified");
   return verified;
 }
 
 export async function clearGuestAccountBinding(): Promise<GuestInstallation> {
   const current = await getGuestInstallation();
-  if (!current) throw new Error("guest_installation_required");
+  if (!current) throw new AccountDataFailure("guest_installation_required");
   const next = { ...current, accountId: null, bindingState: "guest" as const };
   writeCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, next);
   return (await getGuestInstallation())!;

@@ -1,55 +1,98 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text } from "react-native";
 import { getTrainingLifecycleUseCases } from "../../application/trainingLifecycle";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { Button, Card, EmptyState, LoadingState, Screen } from "../../components";
+import { EmptyState, LoadingState, Screen, SessionResultOverview } from "../../components";
 import { ROUTES } from "../../constants";
+import { getTrackDisplay } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
+import { formatSessionTopic, normalizeSessionResultDetails } from "./sessionResultPresentation";
+import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+import { getDesignModeTitle, isDesignInterviewModeId } from "../../tracks/design-interview";
+import { getCertificationQuestionMaxPoints, type CertificationQuestion } from "../../tracks/certification";
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.RESULT>;
-const GOOGLE_CLOUD_TRACK_ID = "google-cloud-associate-cloud-engineer";
 type Summary = Readonly<{
+  certificationMaxPoints: number | null;
+  certificationTopicId: string | null;
+  designTopicId: string | null;
   result: Awaited<ReturnType<ReturnType<typeof getTrainingLifecycleUseCases>["loadSummary"]>>;
   session: Awaited<ReturnType<ReturnType<typeof getTrainingLifecycleUseCases>["loadSessionRecord"]>>;
 }>;
+type ResultReadState =
+  | Readonly<{ kind: "pending"; requestKey: string }>
+  | Readonly<{ kind: "ready"; requestKey: string; summary: Summary }>
+  | Readonly<{ kind: "unavailable"; requestKey: string; reason: string }>;
 
 export function ResultScreen({ navigation, route }: Props) {
-  const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const requestKey = route.params.sessionId;
+  const [readState, setReadState] = useState<ResultReadState>({ kind: "pending", requestKey });
   useEffect(() => {
+    const capturedRequestKey = requestKey;
+    let live = true;
+    setReadState({ kind: "pending", requestKey: capturedRequestKey });
     const useCases = getTrainingLifecycleUseCases();
-    void Promise.all([useCases.loadSummary(route.params.sessionId), useCases.loadSessionRecord(route.params.sessionId)])
-      .then(([result, session]) => setSummary({ result, session }))
-      .catch((cause) => setError(describeOperationalFailure(cause, "Session summary unavailable.")));
-  }, [route.params.sessionId]);
-  if (error) return <Screen><EmptyState title={t("Session summary unavailable")} description={t(error)} /></Screen>;
-  if (!summary) return <Screen><LoadingState title={t("Verifying session summary…")} /></Screen>;
+    void Promise.all([useCases.loadSummary(capturedRequestKey), useCases.loadSessionRecord(capturedRequestKey)])
+      .then(async ([result, session]) => {
+        const exact = isDesignInterviewModeId(session.modeId) || session.modeId.startsWith("certification-") || result.evidence.familyId === "certification"
+          ? await contentPackageRuntimeOwner.resolveExact(session.packagePin)
+          : null;
+        if (!live) return;
+        const designTopicId = isDesignInterviewModeId(session.modeId) && exact ? exact.profile.freeNodeId : null;
+        const certificationTopicId = session.modeId === "certification-diagnostic-baseline" && exact ? exact.package.freeNodeId : null;
+        const certificationMaxPoints = result.evidence.familyId === "certification" && exact
+          ? session.itemOrder.reduce((sum, occurrence) => sum + getCertificationQuestionMaxPoints(exact.profile.getItemById(occurrence.item.itemId) as CertificationQuestion), 0)
+          : null;
+        setReadState({ kind: "ready", requestKey: capturedRequestKey, summary: { result, session, designTopicId, certificationTopicId, certificationMaxPoints } });
+      })
+      .catch((cause) => { if (live) setReadState({ kind: "unavailable", requestKey: capturedRequestKey, reason: describeOperationalFailure(cause, t("We couldn’t load the session result.")) }); });
+    return () => { live = false; };
+  }, [requestKey, t]);
+  if (readState.requestKey !== requestKey || readState.kind === "pending") return <Screen><LoadingState title={t("Loading session result")} /></Screen>;
+  if (readState.kind === "unavailable") return <Screen><EmptyState title={t("Session summary unavailable")} description={t(readState.reason)} /></Screen>;
+  const summary = readState.summary;
   const { result, session } = summary;
-  const details = result.evidence.details as Record<string, unknown>;
-  const certification = result.trackId === GOOGLE_CLOUD_TRACK_ID;
+  const design = isDesignInterviewModeId(session.modeId);
   const answeredCount = result.answeredOccurrenceIds.length;
-  const noAnswersSubmitted = answeredCount === 0;
-  return <Screen style={styles.screen}>
-    <Card style={styles.card}>
-      <Text maxFontSizeMultiplier={2} style={styles.title}>{t(noAnswersSubmitted ? "Session ended without answers" : certification ? "Session complete" : "Exam complete")}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.status}>{t("Status")}: {t(noAnswersSubmitted ? "No answers submitted" : "Completed")}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.score}>{String(details.correctCount ?? 0)} {t("correct")}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Points")}: {String(details.pointsEarned ?? 0)} / {String(details.maxPoints ?? 0)}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Requested")}: {session.requestedLength} · {t("Questions")}: {session.actualLength}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Answered")}: {answeredCount} · {t("Unanswered")}: {result.unansweredOccurrenceIds.length}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Active time")}: {formatElapsed(session.activeForegroundMs)}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Mode")}: {formatMode(session.modeId)}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.detail}>{t("Domains")}: {formatDomains(session.configurationSnapshot.sectionPresentation)}</Text>
-    </Card>
-    <Button onPress={() => navigation.navigate(ROUTES.EXAM_REVIEW, { sessionId: route.params.sessionId })} testID={runtimeSelectors.summary.reviewAnswers(route.params.sessionId)}>{t("Review answers")}</Button>
-    <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">{t("Back to practice")}</Button>
-  </Screen>;
+  const actualCount = session.actualLength;
+  const unansweredCount = result.unansweredOccurrenceIds.length;
+  const coverageIsConsistent = result.totalOccurrences === actualCount && answeredCount + unansweredCount === actualCount;
+  const normalizedDetails = coverageIsConsistent
+    ? normalizeSessionResultDetails(result.evidence.details, answeredCount, summary.certificationMaxPoints ?? undefined)
+    : { points: null, score: null };
+  const domainPresentation = design
+    ? formatSessionTopic(session.trackId, summary.designTopicId, t)
+    : session.modeId === "certification-diagnostic-baseline"
+    ? formatSessionTopic(session.trackId, summary.certificationTopicId, t)
+    : session.modeId === "certification-focus-practice"
+    ? formatSessionTopic(session.trackId, session.configurationSnapshot.domain, t)
+    : formatDomains(session.configurationSnapshot.sectionPresentation);
+  const modeLabel = design
+    ? t(getDesignModeTitle(session.modeId))
+    : session.modeId === "certification-diagnostic-baseline"
+    ? t("Diagnostic Baseline")
+    : t(formatMode(session.modeId));
+  return (
+    <Screen>
+      <SessionResultOverview
+        activeTime={formatElapsed(session.activeForegroundMs)}
+        answeredCount={answeredCount}
+        backTestID={runtimeSelectors.summary.backToPractice(route.params.sessionId)}
+        completion="completed"
+        context={{ modeLabel, topicLabel: domainPresentation, trackLabel: t(getTrackDisplay(session.trackId).title) }}
+        onBack={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
+        points={normalizedDetails.points ?? undefined}
+        requestedCount={session.requestedLength}
+        review={{ onPress: () => navigation.navigate(ROUTES.EXAM_REVIEW, { sessionId: route.params.sessionId }), testID: runtimeSelectors.summary.reviewAnswers(route.params.sessionId) }}
+        rootTestID={runtimeSelectors.summary.root(route.params.sessionId)}
+        score={normalizedDetails.score}
+        totalOccurrences={actualCount}
+        unansweredCount={unansweredCount}
+      />
+    </Screen>
+  );
 }
 
 function formatElapsed(milliseconds: number): string {
@@ -65,5 +108,3 @@ function formatDomains(value: unknown): string {
   if (!Array.isArray(value) || value.length === 0 || value.some((entry) => typeof entry !== "string")) return "Not recorded";
   return value.map((entry) => entry.replaceAll("_", " ")).join(", ");
 }
-
-const createStyles = (palette: AppColors) => StyleSheet.create({ screen: { gap: spacing.md }, card: { gap: spacing.sm }, title: { ...typography.heading, color: palette.textPrimary }, status: { ...typography.bodyStrong, color: palette.warning }, score: { ...typography.display, color: palette.primary }, detail: { ...typography.body, color: palette.textSecondary } });

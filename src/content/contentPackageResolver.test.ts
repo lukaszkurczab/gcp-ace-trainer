@@ -8,7 +8,10 @@ import { contentPackageRuntime, createContentPackageResolver, createPackageCatal
 import { createCodingPackageRuntimeCatalog, createCertificationPackageRuntimeCatalog } from "./";
 import { CodingInterviewFamilyRuntime } from "../application/coding-interview/CodingInterviewFamilyRuntime";
 import { CertificationFamilyRuntime } from "../application/certification/CertificationFamilyRuntime";
-import { GENERATED_FREE_NODE_PACKAGES } from "./bundled/generatedFreeNodePackages";
+import { GENERATED_FREE_NODE_PACKAGES, GENERATED_RETAINED_FREE_NODE_PACKAGES } from "./bundled/generatedFreeNodePackages";
+import { moveTrainingSessionToIndex } from "../domain";
+import { getTrainingSessionResult, getTrainingSessions, saveTrainingSession, saveTrainingSessionResult } from "../storage/repositories";
+import { installMemoryStorage } from "../testing/journalTestSupport";
 
 const runtime = contentPackageRuntime;
 
@@ -33,10 +36,29 @@ test("PKG-04A adapts each verified package into a closed family-local catalog/pr
   const certification = createPackageCatalogProfileAdapter(await resolver.resolveForPreparation({ trackId: "google-cloud-associate-cloud-engineer", familyId: "certification", freeNodeId: "organization_projects_policies_services_quotas_and_assets", modeId: "certification-focus-practice", appVersion: "0.1.0" }));
   assert.equal(certification.familyId, "certification");
   assert.deepEqual(certification.modes.map((mode) => [mode.modeId, mode.requestedLengths]), [
+    ["certification-diagnostic-baseline", [40]],
     ["certification-focus-practice", [10, 20, 40]],
     ["certification-weak-area-review", [10, 20]],
     ["certification-quick-review", [10]],
   ]);
+  const diagnosticConfiguration = certification.configurations.find((configuration) => configuration.modeId === "certification-diagnostic-baseline");
+  assert.ok(diagnosticConfiguration);
+  const certificationPackage = await resolver.resolveForPreparation({ trackId: "google-cloud-associate-cloud-engineer", familyId: "certification", freeNodeId: "organization_projects_policies_services_quotas_and_assets", modeId: "certification-diagnostic-baseline", appVersion: "0.1.0" });
+  if (certificationPackage.familyId !== "certification") throw new Error("Expected a Certification package.");
+  const certificationRuntime = createCertificationPackageRuntimeCatalog(certificationPackage);
+  assert.deepEqual(certificationRuntime.getDiagnosticBaseline(), {
+    blueprintId: diagnosticConfiguration.configurationId,
+    blueprintVersion: diagnosticConfiguration.configurationVersion,
+    modeId: "certification-diagnostic-baseline",
+    requestedLength: 40,
+    actualLength: 40,
+    shortening: "prohibited",
+    uniqueItemsRequired: 40,
+    timerKind: "elapsed_foreground",
+    feedbackTiming: "after_each_durable_submit",
+    reinsertPolicy: "disabled",
+    itemIds: diagnosticConfiguration.selection.itemIds,
+  });
   assert.equal(certification.getConfiguration("certification-weak-area-review").selection.emptyEligibility, "unavailable");
   assert.equal(certification.getConfiguration("certification-quick-review").selection.kind, "due_free_node_review_evidence");
   assert.throws(() => certification.getMode("certification-exam-simulation"), /unavailable/);
@@ -86,6 +108,63 @@ test("PKG-04A adapter has no whole-track catalog dependency", () => {
 const sources = GENERATED_FREE_NODE_PACKAGES as readonly ContentPackageSource[];
 const gcpSource = sources.find((source) => source.trackId === "google-cloud-associate-cloud-engineer")!;
 
+test("retained Certification pins remain exact-resolvable for active sessions and results", async () => {
+  const retained = GENERATED_RETAINED_FREE_NODE_PACKAGES.find((source) => source.trackId === "google-cloud-associate-cloud-engineer");
+  assert.ok(retained);
+  const resolver = createContentPackageResolver(sources, runtime, undefined, GENERATED_RETAINED_FREE_NODE_PACKAGES);
+  const discovered = await resolver.resolveForDiscovery("google-cloud-associate-cloud-engineer", "certification", "0.1.0");
+  assert.equal(discovered.packagePin.packageVersion, gcpSource.packageVersion);
+  const pin = { packageIdentity: retained.packageSha256, packageVersion: retained.packageVersion, contentReleaseId: retained.manifest.provenance.releaseId };
+  const resolved = await resolver.resolveExact(pin, "0.1.0");
+  assert.equal(resolved.packagePin.packageVersion, "google-cloud-associate-cloud-engineer-free-node-0004");
+  assert.deepEqual(resolved.profile.modes.map((mode) => mode.modeId), [
+    "certification-focus-practice",
+    "certification-weak-area-review",
+    "certification-quick-review",
+  ]);
+  assert.equal(resolved.profile.modes.some((mode) => mode.modeId === "certification-diagnostic-baseline"), false);
+
+  if (resolved.familyId !== "certification") throw new Error("Expected the retained package to remain a Certification package.");
+  const catalog = createCertificationPackageRuntimeCatalog(resolved);
+  const family = new CertificationFamilyRuntime(catalog, resolved.taxonomyVersion);
+  const prepared = await family.prepare({
+    trackId: resolved.trackId,
+    modeId: "certification-focus-practice",
+    request: { sessionId: "retained-certification-active", requestedLength: 10, domain: resolved.freeNodeId },
+    attempts: [],
+    reviews: [],
+    now: "2026-08-25T09:00:00.000Z",
+  });
+  await family.validateResume({ session: prepared.session, draft: null });
+  installMemoryStorage();
+  await saveTrainingSession(prepared.session);
+  assert.equal((await getTrainingSessions()).value.find((session) => session.id === prepared.session.id)?.packagePin.packageIdentity, retained.packageSha256);
+  let session = prepared.session;
+  const attempts = [] as Awaited<ReturnType<typeof family.submitPractice>>["attempt"][];
+  for (let index = 0; index < session.actualLength; index += 1) {
+    const occurrence = session.itemOrder[session.currentItemIndex]!;
+    const question = catalog.getItemById(occurrence.item.itemId);
+    const submission = await family.submitPractice({
+      session,
+      response: { kind: "option_selection", selectedOptionIds: [...question.correctOptionIds] },
+      attempts,
+      reviews: [],
+      now: "2026-08-25T09:00:00.000Z",
+    });
+    attempts.push(submission.attempt);
+    if (index < session.actualLength - 1) session = moveTrainingSessionToIndex(session, index + 1);
+  }
+  const finalized = await family.finalizePractice({ session, attempts, now: "2026-08-25T09:01:00.000Z" });
+  assert.equal(finalized.session.status, "completed");
+  assert.equal(finalized.session.packagePin.packageIdentity, retained.packageSha256);
+  assert.equal(finalized.result.totalOccurrences, 10);
+  assert.equal(finalized.result.answeredOccurrenceIds.length, 10);
+  assert.equal(finalized.result.unansweredOccurrenceIds.length, 0);
+  await saveTrainingSession(finalized.session);
+  await saveTrainingSessionResult(finalized.result);
+  assert.equal((await getTrainingSessionResult(finalized.result.sessionId))?.trackId, finalized.result.trackId);
+});
+
 test("CONTENT-PACKAGE-RESOLVER-001 verifies exact bundled node packages and resolves only closed profile modes", async () => {
   const resolver = createContentPackageResolver(sources, runtime);
   const coding = await resolver.resolveForPreparation({ trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", freeNodeId: "complexity_and_constraints", modeId: "coding-interview-learn-approach", appVersion: "0.1.0" });
@@ -130,6 +209,9 @@ test("CONTENT-PACKAGE-RESOLVER-001 verifies exact bundled node packages and reso
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "coding-interview-custom-practice").feedbackOptions = ["afterEachAnswer"]; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "coding-interview-weak-area-review").selection.emptyEligibility = "silent_substitute"; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(gcpSource, (payload) => { delete payload.modeStructures.configurations.find((entry: any) => entry.modeId === "certification-quick-review").selection.shortening; }, true), "package_profile_invalid");
+  await assertPackageFailure(repackPayload(gcpSource, (payload) => { delete payload.modeStructures.configurations.find((entry: any) => entry.modeId === "certification-diagnostic-baseline").selection.itemIds; }, true), "package_profile_invalid");
+  await assertPackageFailure(repackPayload(gcpSource, (payload) => { const selection = payload.modeStructures.configurations.find((entry: any) => entry.modeId === "certification-diagnostic-baseline").selection; selection.itemIds = [...selection.itemIds.slice(0, 39), selection.itemIds[0]]; }, true), "package_profile_invalid");
+  await assertPackageFailure(repackPayload(gcpSource, (payload) => { const selection = payload.modeStructures.configurations.find((entry: any) => entry.modeId === "certification-diagnostic-baseline").selection; selection.itemIds[0] = "outside-package"; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "coding-interview-weak-area-review").selection.reviewSources = ["due_queue", "outside"]; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "coding-interview-weak-area-review").selection.sessionMissesMustBeCommitted = false; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(gcpSource, (payload) => { payload.modeStructures.configurations.find((entry: any) => entry.modeId === "certification-quick-review").selection.kind = "free_node_review_evidence"; }, true), "package_profile_invalid");
