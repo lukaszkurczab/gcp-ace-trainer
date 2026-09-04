@@ -66,6 +66,7 @@ const CLASSIFIABLE_ACCOUNT_DATA_FAILURE_CODES: readonly string[] = [
 ];
 
 let accountDataOperationLane: Promise<void> = Promise.resolve();
+const pendingHomeSyncAttempts = new Map<string, Promise<AccountDataSession | null>>();
 
 function withAccountDataOperation<T>(operation: () => Promise<T>): Promise<T> {
   const previous = accountDataOperationLane;
@@ -192,6 +193,52 @@ async function discardGuestDataAndLoadAccountUnlocked(api: PatternlyApiClient, a
 
 export function retryAccountDataSync(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession> {
   return withAccountDataOperation(() => loadAccountDataSessionUnlocked(api, accountId));
+}
+
+/**
+ * Retries only durable learning data left pending by a local terminal commit.
+ * Home can call this whenever it becomes visible; all remote work remains on
+ * the account operation lane and concurrent calls for one account share the
+ * same attempt, including a failed attempt.
+ */
+export function retryPendingAccountDataSync(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession | null> {
+  const existing = pendingHomeSyncAttempts.get(accountId);
+  if (existing) return existing;
+
+  const attempt = withAccountDataOperation(() => retryPendingAccountDataSyncUnlocked(api, accountId));
+  pendingHomeSyncAttempts.set(accountId, attempt);
+  void attempt.then(
+    () => {
+      if (pendingHomeSyncAttempts.get(accountId) === attempt) pendingHomeSyncAttempts.delete(accountId);
+    },
+    () => {
+      if (pendingHomeSyncAttempts.get(accountId) === attempt) pendingHomeSyncAttempts.delete(accountId);
+    },
+  );
+  return attempt;
+}
+
+async function retryPendingAccountDataSyncUnlocked(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession | null> {
+  const installation = await getGuestInstallation();
+  const state = await getAccountSyncState();
+  if (!installation || installation.accountId !== accountId || state.accountId !== accountId) return null;
+  if (state.status !== "offlinePending") return null;
+  if (state.materialization) return explicitFailureSession(state, "account_materialization_in_progress", false);
+  if (state.pendingConfirmation !== null) return explicitFailureSession(state, "account_adoption_pending", false);
+
+  const guard = await readBoundSyncGuard(accountId);
+  if (guard) return guard;
+
+  // Local learning commits do not use the account operation lane. Re-check
+  // durable identity and eligibility immediately before the network path so a
+  // concurrent commit or recovery transition cannot be uploaded by Home.
+  const latestInstallation = await getGuestInstallation();
+  const latestState = await getAccountSyncState();
+  if (!latestInstallation || latestInstallation.accountId !== accountId || latestState.accountId !== accountId) return null;
+  if (latestState.status !== "offlinePending") return null;
+  if (latestState.materialization) return explicitFailureSession(latestState, "account_materialization_in_progress", false);
+  if (latestState.pendingConfirmation !== null) return explicitFailureSession(latestState, "account_adoption_pending", false);
+  return synchronizeBoundAccount(api, accountId);
 }
 
 function materializationTargetAccountId(state: AccountSyncState): string | null {
@@ -379,7 +426,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
   state = saveAccountSyncState({ ...state, accountId, status: "syncing", lastFailureCode: null });
   try {
     const uploadGuard = await readBoundSyncGuard(accountId);
-    if (uploadGuard) return uploadGuard;
+    if (uploadGuard) return preservePendingSyncGuard(accountId, uploadGuard);
     state = await getAccountSyncState();
     let response: SyncResponseDto | null = null;
     if (state.outbox.length > 0) {
@@ -393,17 +440,32 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
       state = saveAccountSyncState({ ...await getAccountSyncState(), remoteAccountRevision: response.accountRevision });
     }
     const materializationGuard = await readBoundSyncGuard(accountId);
-    if (materializationGuard) return materializationGuard;
+    if (materializationGuard) return preservePendingSyncGuard(accountId, materializationGuard);
     const remote = await api.getProgress();
+    const downloadGuard = await readBoundSyncGuard(accountId);
+    if (downloadGuard) return preservePendingSyncGuard(accountId, downloadGuard);
     const records = toLocalRecords(remote.records);
     await applyRemoteAccountData(records);
     const finished = await finishAccountMaterialization(records, accountId, remote.accountRevision, nowIso());
     return sessionFromState(finished, false);
   } catch (error) {
     const failure = classifyDataFailure(error);
+    if (failure === "active_session_adoption_blocked" || failure === "journal_recovery_required") {
+      const guard = await readBoundSyncGuard(accountId);
+      if (guard) return preservePendingSyncGuard(accountId, guard);
+    }
     const failed = await recordFailure(state, failure);
     return failureSession(failed, failure === "offline");
   }
+}
+
+async function preservePendingSyncGuard(accountId: string, guard: AccountDataSession): Promise<AccountDataSession> {
+  if (guard.status !== "resumeRequired" && guard.lastFailureCode !== "journal_recovery_required") return guard;
+  const current = await getAccountSyncState();
+  if (current.accountId !== accountId || current.status !== "syncing") return guard;
+  const pending = saveAccountSyncState({ ...current, status: "offlinePending", lastFailureCode: guard.lastFailureCode });
+  if (guard.status === "resumeRequired") return resumeRequiredSession(pending);
+  return explicitFailureSession(pending, guard.lastFailureCode ?? "journal_recovery_required", guard.activeSessionBlocked);
 }
 
 async function readBoundSyncGuard(accountId: string): Promise<AccountDataSession | null> {

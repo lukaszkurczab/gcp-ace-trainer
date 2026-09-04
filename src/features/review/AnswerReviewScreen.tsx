@@ -4,7 +4,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { AnswerOption, Button, EmptyState, LoadingState, ReviewNavigator, ReviewShell, ReviewUnavailableSurface, type ReviewFilter, Screen } from "../../components";
+import { AnswerOption, Button, EmptyState, ReviewLoadingSkeleton, ReviewNavigator, ReviewShell, ReviewUnavailableSurface, type ReviewFilter, Screen } from "../../components";
 import { setQuestionNeedsReview } from "../../application/certification";
 import { loadExamSummaries as getAttempts, loadReviewQueueItems as getReviewQueueItems } from "../../application/learningReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
@@ -90,7 +90,7 @@ export function AnswerReviewScreen({ navigation, route }: Props) {
   }
 
   if (reviewError) return <Screen><EmptyState title={t("Review unavailable")} description={t(reviewError)} /></Screen>;
-  if (!hasLoadedReviewData) return <Screen><LoadingState title={t("Loading review…")} /></Screen>;
+  if (!hasLoadedReviewData) return <ReviewLoadingSkeleton onBack={() => navigation.goBack()} />;
   if (!attempt) return <Screen><EmptyState title={t("No attempt found")} description={t("Submit an exam before reviewing answers.")} /></Screen>;
 
   return (

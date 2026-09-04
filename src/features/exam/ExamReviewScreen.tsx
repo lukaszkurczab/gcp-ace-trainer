@@ -6,13 +6,13 @@ import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { loadTrainingAttempts } from "../../application/learningReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
-import { Button, EmptyState, LoadingState, Screen } from "../../components";
+import { Button, EmptyState, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
 import { getTrackDisplay, type AttemptResultKind, type ContentItemRef, type TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { useThemedStyles } from "../../preferences";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
-import { spacing, typography, type AppColors } from "../../theme";
+import { radius, spacing, typography, type AppColors } from "../../theme";
 import type { CertificationQuestion } from "../../tracks/certification";
 import type { DesignQuestion } from "../../tracks/design-interview";
 import { PracticeFeedbackBlock } from "../practice/PracticeFeedbackBlock";
@@ -109,7 +109,7 @@ export function ExamReviewScreen({ navigation, route }: Props) {
   }, [requestKey, t]);
 
   if (readState.requestKey !== requestKey || readState.kind === "pending") {
-    return <Screen><LoadingState title={t("Loading review…")} /></Screen>;
+    return <Screen><ExamReviewLoadingSkeleton /></Screen>;
   }
   if (readState.kind === "unavailable") {
     return (
@@ -141,7 +141,57 @@ export function ExamReviewScreen({ navigation, route }: Props) {
   );
 }
 
+export function ExamReviewLoadingSkeleton() {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const motion = useSkeletonGlassMotion();
+
+  return (
+    <View
+      accessibilityLabel={t("Loading review…")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.examReviewLoading}
+    >
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.examReviewLoadingShapes}>
+        {[0, 1, 2].map((row) => (
+          <View key={row} style={styles.examReviewLoadingRow}>
+            <SkeletonShape motion={motion} style={[styles.examReviewLoadingResult, { height: 12 * textScale }]} />
+            <View style={styles.examReviewLoadingPromptGroup}>
+              <SkeletonShape motion={motion} style={[styles.examReviewLoadingPrompt, { height: 18 * textScale }]} />
+              <SkeletonShape motion={motion} style={[styles.examReviewLoadingPromptShort, { height: 18 * textScale }]} />
+            </View>
+            <View style={styles.examReviewLoadingFeedbackCard}>
+              <SkeletonShape motion={motion} style={[styles.examReviewLoadingFeedbackLine, styles.examReviewLoadingFeedbackLineLong, { height: 14 * textScale }]} />
+              <SkeletonShape motion={motion} style={[styles.examReviewLoadingFeedbackLine, styles.examReviewLoadingFeedbackLineMedium, { height: 14 * textScale }]} />
+              <SkeletonShape motion={motion} style={[styles.examReviewLoadingFeedbackLine, styles.examReviewLoadingFeedbackLineShort, { height: 14 * textScale }]} />
+            </View>
+          </View>
+        ))}
+        <SkeletonShape motion={motion} style={styles.examReviewLoadingReturn} />
+      </View>
+    </View>
+  );
+}
+
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  examReviewLoading: { gap: spacing.lg, width: "100%" },
+  examReviewLoadingShapes: { gap: spacing.lg, width: "100%" },
+  examReviewLoadingRow: { gap: spacing.md },
+  examReviewLoadingResult: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill, width: "24%" },
+  examReviewLoadingPromptGroup: { gap: spacing.xs },
+  examReviewLoadingPrompt: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill, width: "92%" },
+  examReviewLoadingPromptShort: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill, width: "67%" },
+  examReviewLoadingFeedbackCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.xl, borderWidth: 1, gap: spacing.md, padding: spacing.lg },
+  examReviewLoadingFeedbackLine: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill },
+  examReviewLoadingFeedbackLineLong: { width: "92%" },
+  examReviewLoadingFeedbackLineMedium: { width: "76%" },
+  examReviewLoadingFeedbackLineShort: { width: "54%" },
+  examReviewLoadingReturn: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.button, minHeight: 48, width: "100%" },
   screen: { gap: spacing.lg },
   row: { gap: spacing.md },
   result: { ...typography.small, fontWeight: "600" },

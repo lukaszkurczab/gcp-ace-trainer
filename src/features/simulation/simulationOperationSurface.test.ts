@@ -35,6 +35,22 @@ test("simulation operation surface renders only declared state actions and never
   assert.doesNotMatch(surface, /actionBarOperation/);
 });
 
+test("navigator jumps retain the current question in an explicit locked presentation", () => {
+  assert.match(screen, /operation\.kind === "navigating"/);
+  assert.match(screen, /operationProjection\(projection, "navigating", navigatingOperation\(\)/);
+  assert.match(screen, /function navigatingOperation\(\): SimulationOperationPresentation/);
+  assert.match(screen, /kind: "navigating", title: "Opening question"/);
+  assert.match(panel, /const pending = operation\.kind === "saving-response" \|\| operation\.kind === "navigating"/);
+  assert.match(panel, /accessibilityRole=\{pending \? "progressbar" : "alert"\}/);
+  assert.match(panel, /accessibilityState=\{pending \? \{ busy: true \} : undefined\}/);
+});
+
+test("button loading decoration stays outside the accessible busy control", () => {
+  const button = readFileSync("src/components/Button.tsx", "utf8");
+  assert.match(button, /loading \? <ActivityIndicator accessibilityElementsHidden[\s\S]*?importantForAccessibility="no"/);
+  assert.match(button, /accessibilityState=\{\{ \.\.\.accessibilityState, busy: loading, disabled: isDisabled \}\}/);
+});
+
 test("simulation pause/end uses one Figma action sheet and keeps the destructive command reachable", () => {
   assert.match(screen, /overlay === "pause_end"/);
   assert.match(screen, /title: "Action required"/);

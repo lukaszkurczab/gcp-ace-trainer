@@ -131,7 +131,7 @@ test("launch readiness report is deterministic and exposes the unresolved releas
     const report = JSON.parse(first.output);
     assert.equal(report.schemaVersion, "patternly-launch-readiness-v1");
     assert.equal(report.status, "not_ready");
-    assert.equal(report.launchTrackIds.length, 8);
+    assert.equal(report.launchTrackIds.length, 9);
     assert.ok(["clean", "dirty"].includes(report.applicationRepository.status));
     assert.match(report.applicationRepository.headCommit, /^[a-f0-9]{40}$/u);
     assert.match(report.contentReadiness.headCommit, /^[a-f0-9]{40}$/u);

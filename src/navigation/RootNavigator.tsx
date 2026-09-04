@@ -176,12 +176,12 @@ export function RootNavigator() {
           <Stack.Screen
             name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY}
             component={AlgorithmsInterviewSimulationSummaryScreen}
-            options={{ title: t("Simulation complete") }}
+            options={{ title: t("Simulation result") }}
           />
           <Stack.Screen
             name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW}
             component={AlgorithmsInterviewSimulationReviewScreen}
-            options={{ title: t("Simulation review") }}
+            options={{ headerShown: false, title: t("Simulation review") }}
           />
           <Stack.Screen
             name={ROUTES.MISTAKES_REVIEW}

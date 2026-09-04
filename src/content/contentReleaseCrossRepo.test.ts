@@ -56,7 +56,7 @@ test("the retained GCP package resolves only by its exact old pin while discover
 test("CI reads the current per-artifact content lock instead of retired aggregate lock fields", () => {
   const workflow = readFileSync(join(frontendRoot, ".github", "workflows", "qa.yml"), "utf8");
   assert.match(workflow, /lock\.schemaVersion !== 2/u);
-  assert.match(workflow, /coding-interview-dsa-problem-solving.*backend-system-design-interview.*object-oriented-design-interview.*frontend-system-design-interview.*google-cloud-associate-cloud-engineer.*aws-certified-solutions-architect-associate.*microsoft-azure-administrator-associate-az-104.*microsoft-azure-ai-fundamentals-ai-901/su);
+  assert.match(workflow, /coding-interview-dsa-problem-solving.*backend-system-design-interview.*object-oriented-design-interview.*frontend-system-design-interview.*google-cloud-associate-cloud-engineer.*aws-certified-solutions-architect-associate.*microsoft-azure-administrator-associate-az-104.*microsoft-azure-ai-fundamentals-ai-901.*claude-certified-architect-professional-certification/su);
   assert.match(workflow, /lock\.artifacts\.at\(-1\)\.producerCommit/u);
   assert.doesNotMatch(workflow, /algorithms,cloud-certification/u);
   assert.doesNotMatch(workflow, /lock\.producerCommit/u);

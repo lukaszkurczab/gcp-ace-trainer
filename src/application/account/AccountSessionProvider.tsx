@@ -5,7 +5,7 @@ import { PatternlyApiClientError, createPatternlyApiClient, type MeResponseDto }
 import { composePatternlyNativeAppCheck } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
-import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, type AccountDataSession } from "./accountDataService";
+import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, retryPendingAccountDataSync, type AccountDataSession } from "./accountDataService";
 import { getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
@@ -42,6 +42,7 @@ export type AccountSessionContextValue = Readonly<{
   confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[] ) => Promise<AccountCommandResult>;
   continueAsGuest: () => void;
   retryAccountSync: () => Promise<AccountCommandResult>;
+  retryPendingAccountSync: () => Promise<AccountCommandResult>;
   deleteAccount: (password: string) => Promise<AccountCommandResult>;
   issueRecoveryCodes: (password?: string) => Promise<AccountCommandResult>;
   consumeRecoveryCode: (code: string) => Promise<AccountCommandResult>;
@@ -214,6 +215,15 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
       return next.status === "synced" || next.status === "previewReady" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "remoteFailure" };
+    }),
+    retryPendingAccountSync: () => runWithAuth(async (auth, api) => {
+      const current = auth.getSnapshot();
+      if (!current || state.kind !== "authenticated" || state.user.uid !== current.uid) return { kind: "failure", failure: "providerUnavailable" };
+      const next = await retryPendingAccountDataSync(api, state.backendUser.id);
+      if (auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
+      if (!next) return { kind: "success", next: "authenticated" };
+      setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
+      return next.status === "synced" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "remoteFailure" };
     }),
     signOut: () => runWithAuth(async (auth, api) => {
       const user = auth.getSnapshot();

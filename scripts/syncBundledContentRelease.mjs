@@ -17,6 +17,7 @@ const expectedTracks = [
   "aws-certified-solutions-architect-associate",
   "microsoft-azure-administrator-associate-az-104",
   "microsoft-azure-ai-fundamentals-ai-901",
+  "claude-certified-architect-professional-certification",
 ];
 
 if (lock?.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || typeof lock.bundleId !== "string" || !Array.isArray(lock.artifacts)) {

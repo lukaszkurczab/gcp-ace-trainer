@@ -16,22 +16,22 @@ import { GENERATED_FREE_NODE_PACKAGES } from "./bundled/generatedFreeNodePackage
 import { contentPackageRuntimeOwner } from "../application/contentPackageRuntimeOwner";
 import { prepareBundledTestPackages } from "../testing/contentPackageRuntimeTestSupport";
 
-test("internal density harness pins exactly eight complete canonical launch content-brief descriptors", () => {
+test("internal density harness pins complete canonical launch content-brief descriptors", () => {
   const descriptors = assertTrackDensityDescriptors(TRACK_DENSITY_DESCRIPTORS);
 
   assert.equal(CANONICAL_TRACK_BRIEF_SOURCE.repository, "patternly-content");
   assert.match(CANONICAL_TRACK_BRIEF_SOURCE.commit, /^[a-f0-9]{40}$/u);
-  assert.deepEqual(LAUNCH_TRACK_IDS, ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901"]);
-  assert.equal(descriptors.length, 8);
-  assert.equal(new Set(descriptors.map((descriptor) => descriptor.trackId)).size, 8);
-  assert.equal(new Set(descriptors.map((descriptor) => descriptor.freeNodeId)).size, 8);
+  assert.deepEqual(LAUNCH_TRACK_IDS, ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901", "claude-certified-architect-professional-certification"]);
+  assert.equal(descriptors.length, 9);
+  assert.equal(new Set(descriptors.map((descriptor) => descriptor.trackId)).size, 9);
+  assert.equal(new Set(descriptors.map((descriptor) => descriptor.freeNodeId)).size, 9);
   assert.deepEqual(new Set(descriptors.map((descriptor) => descriptor.internalFamily)), new Set(["certification", "coding_interview", "design_interview"]));
 
   for (const descriptor of descriptors) {
     const briefPath = `docs/track-briefs/${descriptor.trackId}.json`;
     const briefBytes = execFileSync(
       "git",
-      ["-C", "../patternly-content", "show", `${CANONICAL_TRACK_BRIEF_SOURCE.commit}:${briefPath}`],
+      ["-C", "../patternly-content", "show", `${descriptor.sourceBriefCommit}:${briefPath}`],
       { encoding: "buffer" },
     );
     const brief = JSON.parse(briefBytes.toString()) as Record<string, unknown>;
@@ -52,13 +52,13 @@ test("internal density harness pins exactly eight complete canonical launch cont
 });
 
 test("density harness rejects missing, duplicate, and incomplete descriptors", () => {
-  assert.throws(() => assertTrackDensityDescriptors(TRACK_DENSITY_DESCRIPTORS.slice(1)), /exactly the eight canonical/u);
+  assert.throws(() => assertTrackDensityDescriptors(TRACK_DENSITY_DESCRIPTORS.slice(1)), /exactly the canonical/u);
   assert.throws(
-    () => assertTrackDensityDescriptors([...TRACK_DENSITY_DESCRIPTORS.slice(0, 7), { ...TRACK_DENSITY_DESCRIPTORS[0]! }]),
+    () => assertTrackDensityDescriptors([...TRACK_DENSITY_DESCRIPTORS.slice(0, 8), { ...TRACK_DENSITY_DESCRIPTORS[0]! }]),
     /unique track IDs/u,
   );
   assert.throws(
-    () => assertTrackDensityDescriptors([...TRACK_DENSITY_DESCRIPTORS.slice(0, 7), { ...TRACK_DENSITY_DESCRIPTORS[0]!, trackId: "hashicorp-terraform-associate-004" }]),
+    () => assertTrackDensityDescriptors([...TRACK_DENSITY_DESCRIPTORS.slice(0, 8), { ...TRACK_DENSITY_DESCRIPTORS[0]!, trackId: "hashicorp-terraform-associate-004" }]),
     /not canonical launch scope/u,
   );
   assert.throws(
@@ -79,6 +79,7 @@ test("production admission remains closed until exact immutable Free-node packag
   assert.deepEqual(CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE.map((fact) => fact.trackId).sort(), [
     "aws-certified-solutions-architect-associate",
     "backend-system-design-interview",
+    "claude-certified-architect-professional-certification",
     "coding-interview-dsa-problem-solving",
     "frontend-system-design-interview",
     "google-cloud-associate-cloud-engineer",
@@ -89,6 +90,7 @@ test("production admission remains closed until exact immutable Free-node packag
   assert.deepEqual(evaluations.map((evaluation) => [evaluation.trackId, evaluation.kind]).sort(), [
     ["aws-certified-solutions-architect-associate", "package_evidence_verified_catalogue_gate_pending"],
     ["backend-system-design-interview", "package_evidence_verified_catalogue_gate_pending"],
+    ["claude-certified-architect-professional-certification", "package_evidence_verified_catalogue_gate_pending"],
     ["coding-interview-dsa-problem-solving", "package_evidence_verified_catalogue_gate_pending"],
     ["frontend-system-design-interview", "package_evidence_verified_catalogue_gate_pending"],
     ["google-cloud-associate-cloud-engineer", "package_evidence_verified_catalogue_gate_pending"],
@@ -129,6 +131,7 @@ test("package admission rejects tampered bytes or extracted profile modes withou
     assert.deepEqual(results.map((result) => [result.trackId, result.kind]).sort(), [
       ["aws-certified-solutions-architect-associate", "package_evidence_verified_catalogue_gate_pending"],
       ["backend-system-design-interview", "package_evidence_verified_catalogue_gate_pending"],
+      ["claude-certified-architect-professional-certification", "package_evidence_verified_catalogue_gate_pending"],
       ["coding-interview-dsa-problem-solving", "unverified_free_node_package"],
       ["frontend-system-design-interview", "package_evidence_verified_catalogue_gate_pending"],
       ["google-cloud-associate-cloud-engineer", "package_evidence_verified_catalogue_gate_pending"],

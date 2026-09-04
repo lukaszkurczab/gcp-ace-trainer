@@ -18,14 +18,21 @@ export function SimulationOperationPanel({ operation }: SimulationOperationPanel
   const { colors: palette } = useAppPreferences();
   const { t } = useTranslation("common");
   const notice = isSimulationOperationNotice(operation);
-  const pending = operation.kind === "saving-response" || operation.kind === "finalizing";
+  const pending = operation.kind === "saving-response" || operation.kind === "navigating" || operation.kind === "finalizing";
   const failed = operation.kind === "save-failed" || operation.kind === "finalization-recovery-required";
   if (notice) return <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.notice}><Icon color={palette.warning} name="alert-triangle" size={20} /><Text maxFontSizeMultiplier={2} style={styles.noticeText}>{t(operation.noticeMessage ?? operation.title)}</Text></View>;
   return (
     <View style={[styles.panel, pending ? styles.pending : failed ? styles.failed : styles.warning]}>
-      <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.statusContent}>
+      <View
+        accessible
+        accessibilityLabel={pending ? `${t(operation.title)}. ${t(operation.description)}` : undefined}
+        accessibilityLiveRegion="polite"
+        accessibilityRole={pending ? "progressbar" : "alert"}
+        accessibilityState={pending ? { busy: true } : undefined}
+        style={styles.statusContent}
+      >
         <View style={styles.titleRow}>
-          {pending ? <ActivityIndicator color={palette.primary} size="small" /> : <Icon color={failed ? palette.danger : palette.warning} name={failed ? "alert-triangle" : "shield-check"} size={22} />}
+          {pending ? <ActivityIndicator accessibilityElementsHidden color={palette.primary} importantForAccessibility="no" size="small" /> : <Icon color={failed ? palette.danger : palette.warning} name={failed ? "alert-triangle" : "shield-check"} size={22} />}
           <Text maxFontSizeMultiplier={2} style={styles.title}>{t(operation.title)}</Text>
         </View>
         <Text maxFontSizeMultiplier={2} style={styles.description}>{t(operation.description)}</Text>

@@ -26,8 +26,14 @@ type M2Manifest = Readonly<{
 }>;
 
 const manifest = JSON.parse(readFileSync(".maestro/m2-custom-10-at-session-end.expected-session.json", "utf8")) as M2Manifest;
-const flow = readFileSync(".maestro/m2-custom-10-at-session-end.yaml", "utf8");
-const reviewFlow = readFileSync(".maestro/coding-practice-result-review.yaml", "utf8");
+const flow = readFileSync(".maestro/m2-custom-10-at-session-end.yaml", "utf8").replace(
+  "- runFlow: completed-practice-result-review.yaml",
+  readFileSync(".maestro/completed-practice-result-review.yaml", "utf8"),
+);
+const reviewFlow = [
+  readFileSync(".maestro/coding-practice-result-review.yaml", "utf8"),
+  readFileSync(".maestro/coding-practice-answer-review-details.yaml", "utf8"),
+].join("\n");
 
 test("M2 Custom 10 at session end derives real item, option, and outcome identities from the pinned Algorithms package", async () => {
   await prepareBundledTestPackages();
@@ -91,6 +97,7 @@ test("M2 flow uses stable selectors for Custom setup, deferred feedback, summary
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.progress.root()}"`)));
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.resume.card(sessionId)}"`)));
   assert.equal(count(flow, "- runFlow: coding-practice-result-review.yaml"), 1);
+  assert.equal(count(flow, "- runFlow: coding-practice-answer-review-details.yaml"), 1);
   assert.match(reviewFlow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.summary.root(sessionId)}"`)));
   assert.equal(count(reviewFlow, runtimeSelectors.practice.startSession()), 0);
 

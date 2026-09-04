@@ -1,6 +1,7 @@
 import {
   AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID,
   BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
+  CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID,
   CODING_INTERVIEW_TRACK_ID,
   FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
   GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
@@ -101,6 +102,15 @@ const roadmapIds = {
     "foundry_generative_ai_apps_agents_and_client_interaction",
     "text_speech_and_conversational_ai_solutions",
     "vision_image_generation_and_content_understanding_solutions",
+  ],
+  [CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID]: [
+    "solution_design_and_architecture",
+    "model_prompt_and_context_decisions",
+    "enterprise_tools_retrieval_and_integration",
+    "evaluation_diagnosis_and_optimization",
+    "governance_safety_and_risk_controls",
+    "stakeholder_decisions_and_delivery_lifecycle",
+    "team_workflows_and_operational_enablement",
   ],
   [OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID]: [
     "requirements_use_cases_domain_vocabulary_and_model_boundaries",

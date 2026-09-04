@@ -9,6 +9,7 @@ export const FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID = "frontend-system-design
 export const OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID = "object-oriented-design-interview";
 export const AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID = "aws-certified-solutions-architect-associate";
 export const MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID = "microsoft-azure-ai-fundamentals-ai-901";
+export const CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID = "claude-certified-architect-professional-certification";
 
 const registrationDefinitions = [
   {
@@ -81,6 +82,19 @@ const registrationDefinitions = [
       shortTitle: "Azure AI Fundamentals",
       status: "active",
       title: "Microsoft Azure AI Fundamentals AI-901",
+    },
+  },
+  {
+    id: CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID,
+    familyId: "certification",
+    metadata: {
+      accentColor: "#C2410C",
+      accentMutedColor: "#FFF7ED",
+      description: "Independent practice for designing and operating production Claude systems, from solution architecture and evaluation to governance and delivery.",
+      legalNote: "Independent study content. Not affiliated with or endorsed by Anthropic.",
+      shortTitle: "Claude Architect Professional",
+      status: "active",
+      title: "Claude Certified Architect – Professional",
     },
   },
 ] as const satisfies readonly TrackRegistration[];

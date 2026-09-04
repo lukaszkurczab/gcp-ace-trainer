@@ -68,7 +68,7 @@ export function Button({
       ]}
       testID={testID}
     >
-      {loading ? <ActivityIndicator color={getActivityColor(variant, palette, isDisabled)} size="small" style={styles.spinner} /> : null}
+      {loading ? <ActivityIndicator accessibilityElementsHidden color={getActivityColor(variant, palette, isDisabled)} importantForAccessibility="no" size="small" style={styles.spinner} /> : null}
       <ButtonLabel style={[styles.label, styles[`${variant}Label`], labelStyle, isDisabled ? disabledLabelStyle : null]}>{children}</ButtonLabel>
     </Pressable>
   );

@@ -13,6 +13,7 @@ export const LAUNCH_TRACK_IDS = Object.freeze([
   "aws-certified-solutions-architect-associate",
   "microsoft-azure-administrator-associate-az-104",
   "microsoft-azure-ai-fundamentals-ai-901",
+  "claude-certified-architect-professional-certification",
 ] as const);
 
 export const CANONICAL_TRACK_BRIEF_SOURCE = Object.freeze({
@@ -38,6 +39,7 @@ export type TrackBriefDescriptor = Readonly<{
     contentScopes: readonly string[];
     provenanceRules: readonly string[];
   }>;
+  sourceBriefCommit: string;
   sourceBriefSha256: string;
   launchCommercialGate: "realFreeVerticalAndCompleteCoreLoop";
 }>;
@@ -48,10 +50,10 @@ const certificationModes = ["certification-diagnostic-baseline", "certification-
 const certificationGoals = ["prepare_for_a_certification", "build_foundations", "refresh_and_maintain_skills", "learn_at_own_pace"] as const;
 
 /**
- * A pinned, non-production projection of the eight launch content-owned briefs.
+ * A pinned projection of the canonical launch content-owned briefs.
  * It exists to keep the application registry scalable without presenting
  * descriptors as user-selectable tracks. The SHA-256 values identify the
- * exact canonical brief files at CANONICAL_TRACK_BRIEF_SOURCE.commit.
+ * exact canonical brief files at each descriptor's sourceBriefCommit.
  */
 export const TRACK_DENSITY_DESCRIPTORS: readonly TrackBriefDescriptor[] = Object.freeze([
   descriptor("coding-interview-dsa-problem-solving", "coding_interview", "Build a repeatable way to analyze interview-style data-structure and algorithm problems, choose a legal strategy, justify it, and produce an implementation plan without relying on executable-code judging.", "A software-engineering candidate who knows basic programming and wants structured practice in constraints, patterns, invariants, complexity, edge cases, and implementation planning.", ["roadmap_node", "mental_unit", "pattern_family", "pattern_variant", "problem_archetype", "skill_atom"], "complexity_and_constraints", ["coding-interview-learn-approach", "coding-interview-guided-practice", "coding-interview-custom-practice", "coding-interview-recognize-patterns", "coding-interview-contrast-practice", "coding-interview-weak-area-review", "coding-interview-independent-practice", "coding-interview-simulation"], ["prepare_for_an_interview", "build_foundations", "refresh_and_maintain_skills", "learn_at_own_pace"], ["strategy_selection", "constraint_analysis", "invariant_reasoning", "complexity_reasoning", "implementation_planning", "due_review"], packagePlan("complexity_and_constraints", ["Complete strategy-first free node covering constraints, complexity, approach legality, edge cases, and ordered implementation planning.", "Whole-node packages covering individual pattern families, cross-pattern contrasts, independent transfer, and interview simulation pools."], ["All problems and explanations are independently authored and retain stable item, interaction, taxonomy, and evidence identities.", "External technical facts require attributable sources; the track makes no executable-code or interview-readiness claim."]), "3545467b8ed10da05e60436b60282db26f644e377e369e74a6f68fb9a21c406e"),
@@ -62,20 +64,40 @@ export const TRACK_DENSITY_DESCRIPTORS: readonly TrackBriefDescriptor[] = Object
   descriptor("aws-certified-solutions-architect-associate", "certification", "Practice choosing and explaining AWS architecture decisions under stated reliability, security, performance, operations, and cost constraints without treating practice results as an official certification outcome.", "A cloud practitioner who wants structured scenario practice for associate-level AWS solution architecture and evidence-based review of recurring decision errors.", ["official_exam_domain", "architecture_competency", "scenario_constraint", "service_decision", "skill_atom"], "aws_secure_architecture_foundations", certificationModes, certificationGoals, ["requirements_analysis", "reliability_decisions", "security_decisions", "performance_decisions", "cost_tradeoffs", "due_review"], packagePlan("aws_secure_architecture_foundations", ["Complete cloud-architecture foundations node covering requirement extraction, service-boundary reasoning, and explicit tradeoffs.", "Whole-node packages organized by reviewed exam domains, scenario competencies, remediation needs, and a sourced simulation profile."], ["AWS-specific facts and exam behavior require current attributable AWS public sources before content release.", "Content is independently authored, excludes exam dumps, and does not claim AWS affiliation or an official score."]), "9b7b9a661121ce95e08cafe4ab6af88fac54034089018b2f974c6269f09c2ea6"),
   descriptor("microsoft-azure-administrator-associate-az-104", "certification", "Practice Azure administration decisions across identity, governance, storage, compute, networking, and monitoring while keeping Patternly evidence separate from official certification results.", "An Azure administrator or cloud practitioner who wants scenario-based preparation, precise feedback, and durable review of associate-level administration decisions.", ["official_exam_domain", "administration_competency", "operational_scenario", "resource_decision", "skill_atom"], "entra_identity_lifecycle_and_authentication", certificationModes, certificationGoals, ["identity_governance", "storage_administration", "compute_administration", "networking_administration", "monitoring_recovery", "due_review"], packagePlan("entra_identity_lifecycle_and_authentication", ["Complete Microsoft Entra identity lifecycle and authentication node covering users, groups, licensing, external identities, and self-service password reset.", "Whole-node packages aligned to reviewed exam domains, competency remediation, mixed practice, and a sourced simulation profile."], ["Azure-specific facts and exam behavior require current attributable Microsoft public sources before content release.", "Content is independently authored, excludes exam dumps, and does not claim Microsoft affiliation or an official score."]), "4de8b57e581e57d970701a732e92fb5cc6d5dd5f233ca888a57b0006bba46f55"),
   descriptor("microsoft-azure-ai-fundamentals-ai-901", "certification", "Practice distinguishing foundational AI workload, responsible-use, and Azure service decisions while keeping Patternly learning evidence separate from any official certification outcome.", "A technical or non-technical learner who wants structured foundations practice for identifying AI workload requirements, limits, and responsible solution choices in an Azure context.", ["official_exam_domain", "ai_workload_category", "responsible_use_constraint", "service_capability_decision", "skill_atom"], "responsible_ai_model_foundations_and_deployment_choices", certificationModes, certificationGoals, ["ai_workload_recognition", "responsible_ai_reasoning", "machine_learning_foundations", "vision_language_workloads", "service_boundary_reasoning", "due_review"], packagePlan("responsible_ai_model_foundations_and_deployment_choices", ["Complete AI-workload foundations node covering requirement recognition, capability boundaries, and responsible-use constraints.", "Whole-node packages based on reviewed public objectives, scenario competencies, remediation needs, and a sourced simulation profile."], ["Azure AI and exam-specific facts require current attributable Microsoft public sources before content release.", "Content is independently authored, avoids capability overclaims, excludes exam dumps, and does not claim Microsoft affiliation or an official score."]), "7ccf38a78e8a430b39d2cd0ba4e0f37e93a13e50cba8e05e61261d281fe7fa6f"),
+  descriptor("claude-certified-architect-professional-certification", "certification", "Practice defensible architecture decisions for production Claude systems, from discovery and integration to evaluation, governance, handoff, and operations.", "An experienced solution architect or technical lead preparing for CCAR-P with hands-on experience building and operating LLM systems.", ["official_exam_domain", "architecture_competency", "decision_model", "skill_atom"], "solution_design_and_architecture", certificationModes, certificationGoals, ["architecture_selection", "context_and_model_tradeoffs", "secure_integration", "evaluation_and_diagnosis", "risk_and_governance", "stakeholder_alignment", "operational_enablement", "due_review"], packagePlan("solution_design_and_architecture", ["Complete solution-design node: business constraints, end-to-end boundaries, architecture patterns, orchestration, decomposition, and value evidence.", "Whole-node practice for model/context engineering, enterprise integration, evaluation, governance, stakeholder lifecycle, and team operations."], ["Use the CCAR-P v1.0 blueprint for scope and checked first-party documentation for each tested mechanism.", "Independently authored scenarios do not reproduce exam items or imply Anthropic affiliation.", "Practice feedback uses Patternly scoring; the provider scaled passing score is not a raw percentage or a readiness prediction."]), "6f1463cb914c15943c455ba5bc2413aa656e803754eb8297c1b26818acb1cff9", "e88c08dcd163dab7c7b562ef1f2a26160860d07b"),
 ]);
 
 function packagePlan(bundledFreeNodeId: string, contentScopes: readonly string[], provenanceRules: readonly string[]): TrackBriefDescriptor["packageContentPlan"] {
   return Object.freeze({ bundledFreeNodeId, premiumPackageUnit: "immutableCompressedWholeNodePackage", contentScopes: Object.freeze([...contentScopes]), provenanceRules: Object.freeze([...provenanceRules]) });
 }
 
-function descriptor(trackId: TrackId, internalFamily: TrackFamilyId, jobToBeDone: string, targetLearner: string, taxonomyOutline: readonly string[], freeNodeId: string, validModes: readonly string[], goalTemplates: readonly string[], progressDimensions: readonly string[], packageContentPlan: TrackBriefDescriptor["packageContentPlan"], sourceBriefSha256: string): TrackBriefDescriptor {
-  return Object.freeze({ schemaVersion: "patternly-track-brief-v2", trackId, internalFamily, jobToBeDone, targetLearner, taxonomyOutline: Object.freeze([...taxonomyOutline]), freeNodeId, validModes: Object.freeze([...validModes]), goalTemplates: Object.freeze([...goalTemplates]), progressDimensions: Object.freeze([...progressDimensions]), packageContentPlan, sourceBriefSha256, launchCommercialGate: "realFreeVerticalAndCompleteCoreLoop" });
+function descriptor(trackId: TrackId, internalFamily: TrackFamilyId, jobToBeDone: string, targetLearner: string, taxonomyOutline: readonly string[], freeNodeId: string, validModes: readonly string[], goalTemplates: readonly string[], progressDimensions: readonly string[], packageContentPlan: TrackBriefDescriptor["packageContentPlan"], sourceBriefSha256: string, sourceBriefCommit: string = CANONICAL_TRACK_BRIEF_SOURCE.commit): TrackBriefDescriptor {
+  return Object.freeze({ schemaVersion: "patternly-track-brief-v2", trackId, internalFamily, jobToBeDone, targetLearner, taxonomyOutline: Object.freeze([...taxonomyOutline]), freeNodeId, validModes: Object.freeze([...validModes]), goalTemplates: Object.freeze([...goalTemplates]), progressDimensions: Object.freeze([...progressDimensions]), packageContentPlan, sourceBriefCommit, sourceBriefSha256, launchCommercialGate: "realFreeVerticalAndCompleteCoreLoop" });
 }
 
 export type ProductionTrackArtifactEvidence = Readonly<{
   trackId: TrackId;
   bundledReleaseId: string;
 }>;
+
+type ExpectedFreeNodePackageProvenance = Readonly<{
+  profileSourceRepositoryCommit: string;
+  releaseId: string;
+  sourceRepositoryCommit: string;
+  trackBriefCanonicalSha256: string;
+}>;
+
+const EXPECTED_FREE_NODE_PACKAGE_PROVENANCE: Readonly<Record<string, ExpectedFreeNodePackageProvenance>> = Object.freeze({
+  "aws-certified-solutions-architect-associate": Object.freeze({ profileSourceRepositoryCommit: "496b9ce9507b5432f4fd70129ff0617ff81ef880", releaseId: "patternly-launch-2026-08-25-01", sourceRepositoryCommit: "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c", trackBriefCanonicalSha256: "06e86fd6adcbe7131e97732be5b12faeb0d34bc79700f0709e0d5a620837307d" }),
+  "backend-system-design-interview": Object.freeze({ profileSourceRepositoryCommit: "496b9ce9507b5432f4fd70129ff0617ff81ef880", releaseId: "patternly-launch-2026-08-25-01", sourceRepositoryCommit: "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c", trackBriefCanonicalSha256: "abfd1804061e13e214f0fb193a432e344139d6e5ceb8c2d915bbf03b37fb07d3" }),
+  "coding-interview-dsa-problem-solving": Object.freeze({ profileSourceRepositoryCommit: "496b9ce9507b5432f4fd70129ff0617ff81ef880", releaseId: "patternly-launch-2026-08-25-01", sourceRepositoryCommit: "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c", trackBriefCanonicalSha256: "0d42df31af6665090dbbc1da3c539122d1e6b509a89174044d52dff70e645ce5" }),
+  "frontend-system-design-interview": Object.freeze({ profileSourceRepositoryCommit: "496b9ce9507b5432f4fd70129ff0617ff81ef880", releaseId: "patternly-launch-2026-08-25-01", sourceRepositoryCommit: "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c", trackBriefCanonicalSha256: "ef4893578381f7860c1d0dc701a7b3f9d25764d9afeb0aad9121b539f3c290c7" }),
+  "google-cloud-associate-cloud-engineer": Object.freeze({ profileSourceRepositoryCommit: "3f7e2ca58bbf978e7ebf7c8c2f93722f4a3055a6", releaseId: "patternly-launch-2026-08-25-01", sourceRepositoryCommit: "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c", trackBriefCanonicalSha256: "163d4ee9157dcc2fb684bc9065faf87df3123b6efc7e53a3b8582619d664236d" }),
+  "microsoft-azure-administrator-associate-az-104": Object.freeze({ profileSourceRepositoryCommit: "496b9ce9507b5432f4fd70129ff0617ff81ef880", releaseId: "patternly-launch-2026-08-25-01", sourceRepositoryCommit: "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c", trackBriefCanonicalSha256: "1c33f634c10dda14f6a3833ef4a8c802ac9877b5b44773018a2926fb345e861c" }),
+  "microsoft-azure-ai-fundamentals-ai-901": Object.freeze({ profileSourceRepositoryCommit: "496b9ce9507b5432f4fd70129ff0617ff81ef880", releaseId: "patternly-launch-2026-08-25-01", sourceRepositoryCommit: "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c", trackBriefCanonicalSha256: "d410642d188c36fe8a2531e9ed11f5878003dc0b22706bd24cf609e4ea744951" }),
+  "object-oriented-design-interview": Object.freeze({ profileSourceRepositoryCommit: "496b9ce9507b5432f4fd70129ff0617ff81ef880", releaseId: "patternly-launch-2026-08-25-01", sourceRepositoryCommit: "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c", trackBriefCanonicalSha256: "19ab6bfa3f6b5423a1517eff36f273b55676fb25ec78bc465965d21feea6f9a5" }),
+  "claude-certified-architect-professional-certification": Object.freeze({ profileSourceRepositoryCommit: "e88c08dcd163dab7c7b562ef1f2a26160860d07b", releaseId: "patternly-claude-ccarp-2026-09-03-01", sourceRepositoryCommit: "563d1b06b3c51552f177199091fb28ef53ccf2b8", trackBriefCanonicalSha256: "77ea88dfb6f8254f30a9e54a3cbe5959b19cd0d2b108cf60a5b290e6528febbf" }),
+});
 
 /** Actual pinned whole-track artifacts. They are not free-node package proof. */
 export const CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE: readonly ProductionTrackArtifactEvidence[] = Object.freeze([
@@ -87,6 +109,7 @@ export const CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE: readonly ProductionTrac
   Object.freeze({ trackId: "microsoft-azure-ai-fundamentals-ai-901", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
   Object.freeze({ trackId: "aws-certified-solutions-architect-associate", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
   Object.freeze({ trackId: "object-oriented-design-interview", bundledReleaseId: "patternly-launch-2026-08-25-01" }),
+  Object.freeze({ trackId: "claude-certified-architect-professional-certification", bundledReleaseId: "patternly-claude-ccarp-2026-09-03-01" }),
 ]);
 
 export type ProductionTrackAdmissionEvaluation = Readonly<{
@@ -95,14 +118,14 @@ export type ProductionTrackAdmissionEvaluation = Readonly<{
 }>;
 
 export function assertTrackDensityDescriptors(descriptors: readonly TrackBriefDescriptor[]): readonly TrackBriefDescriptor[] {
-  if (descriptors.length !== LAUNCH_TRACK_IDS.length) throw new Error("Track density descriptors must contain exactly the eight canonical launch track IDs.");
+  if (descriptors.length !== LAUNCH_TRACK_IDS.length) throw new Error("Track density descriptors must contain exactly the canonical launch track IDs.");
   const ids = new Set<string>();
   const freeNodes = new Set<string>();
   for (const descriptor of descriptors) {
     if (!LAUNCH_TRACK_IDS.includes(descriptor.trackId as (typeof LAUNCH_TRACK_IDS)[number])) throw new Error(`Track density descriptor is not canonical launch scope: ${descriptor.trackId}.`);
     if (ids.has(descriptor.trackId)) throw new Error(`Track density descriptors must have unique track IDs: ${descriptor.trackId}.`);
     if (freeNodes.has(descriptor.freeNodeId)) throw new Error(`Track density descriptors must have unique free node IDs: ${descriptor.freeNodeId}.`);
-    if (!nonEmpty(descriptor.jobToBeDone) || !nonEmpty(descriptor.targetLearner) || !nonEmpty(descriptor.freeNodeId) || !sha256(descriptor.sourceBriefSha256) || descriptor.launchCommercialGate !== "realFreeVerticalAndCompleteCoreLoop") throw new Error(`Track density descriptor is incomplete: ${descriptor.trackId}.`);
+    if (!nonEmpty(descriptor.jobToBeDone) || !nonEmpty(descriptor.targetLearner) || !nonEmpty(descriptor.freeNodeId) || !commitSha(descriptor.sourceBriefCommit) || !sha256(descriptor.sourceBriefSha256) || descriptor.launchCommercialGate !== "realFreeVerticalAndCompleteCoreLoop") throw new Error(`Track density descriptor is incomplete: ${descriptor.trackId}.`);
     if (!uniqueNonEmpty(descriptor.taxonomyOutline) || !uniqueNonEmpty(descriptor.validModes) || !uniqueNonEmpty(descriptor.goalTemplates) || !uniqueNonEmpty(descriptor.progressDimensions)) throw new Error(`Track density descriptor has incomplete collections: ${descriptor.trackId}.`);
     ids.add(descriptor.trackId);
     freeNodes.add(descriptor.freeNodeId);
@@ -146,6 +169,7 @@ function uniqueNonEmpty(values: unknown): boolean {
 }
 
 function nonEmpty(value: unknown): value is string { return typeof value === "string" && value.trim().length > 0; }
+function commitSha(value: string): boolean { return /^[a-f0-9]{40}$/u.test(value); }
 function sha256(value: string): boolean { return /^[a-f0-9]{64}$/u.test(value); }
 
 async function validFreeNodePackageEvidence(registration: TrackRegistration, descriptor: TrackBriefDescriptor, packages: readonly typeof GENERATED_FREE_NODE_PACKAGES[number][]): Promise<boolean> {
@@ -156,17 +180,7 @@ async function validFreeNodePackageEvidence(registration: TrackRegistration, des
     const manifest = record.manifest;
     if (record.schemaVersion !== "bundled-free-node-v2" || !manifest || manifest.trackId !== registration.id || manifest.familyId !== registration.familyId || manifest.freeNodeId !== descriptor.freeNodeId || manifest.minimumAppVersion !== "0.1.0" || !Array.isArray(manifest.modeIds) || !manifest.modeIds.every((mode) => typeof mode === "string" && descriptor.validModes.includes(mode)) || !Array.isArray(packageFact.profileModes) || JSON.stringify([...manifest.modeIds].sort()) !== JSON.stringify([...packageFact.profileModes].sort())) return false;
     const provenance = manifest.provenance as Record<string, unknown> | undefined;
-    const expectedTrackBriefCanonicalSha256: Readonly<Record<string, string>> = {
-      "aws-certified-solutions-architect-associate": "06e86fd6adcbe7131e97732be5b12faeb0d34bc79700f0709e0d5a620837307d",
-      "backend-system-design-interview": "abfd1804061e13e214f0fb193a432e344139d6e5ceb8c2d915bbf03b37fb07d3",
-      "coding-interview-dsa-problem-solving": "0d42df31af6665090dbbc1da3c539122d1e6b509a89174044d52dff70e645ce5",
-      "frontend-system-design-interview": "ef4893578381f7860c1d0dc701a7b3f9d25764d9afeb0aad9121b539f3c290c7",
-      "google-cloud-associate-cloud-engineer": "163d4ee9157dcc2fb684bc9065faf87df3123b6efc7e53a3b8582619d664236d",
-      "microsoft-azure-administrator-associate-az-104": "1c33f634c10dda14f6a3833ef4a8c802ac9877b5b44773018a2926fb345e861c",
-      "microsoft-azure-ai-fundamentals-ai-901": "d410642d188c36fe8a2531e9ed11f5878003dc0b22706bd24cf609e4ea744951",
-      "object-oriented-design-interview": "19ab6bfa3f6b5423a1517eff36f273b55676fb25ec78bc465965d21feea6f9a5",
-    };
-    const expectedProfileSourceRepositoryCommit = registration.id === "google-cloud-associate-cloud-engineer" ? "3f7e2ca58bbf978e7ebf7c8c2f93722f4a3055a6" : "496b9ce9507b5432f4fd70129ff0617ff81ef880";
-    return manifest.bundleKind === "bundled_free_node" && manifest.packageVersion === packageFact.packageVersion && manifest.payloadSchemaVersion === "bundled-free-node-payload-v2" && typeof manifest.profileId === "string" && nonEmpty(manifest.profileVersion) && provenance?.releaseId === "patternly-launch-2026-08-25-01" && provenance.sourceRepositoryCommit === "6a6fd729b9d45086aa5d4f6cf27ec48ef664811c" && provenance.profileSourceRepositoryCommit === expectedProfileSourceRepositoryCommit && provenance.trackBriefCanonicalSha256 === expectedTrackBriefCanonicalSha256[registration.id];
+    const expectedProvenance = EXPECTED_FREE_NODE_PACKAGE_PROVENANCE[registration.id];
+    return manifest.bundleKind === "bundled_free_node" && manifest.packageVersion === packageFact.packageVersion && manifest.payloadSchemaVersion === "bundled-free-node-payload-v2" && typeof manifest.profileId === "string" && nonEmpty(manifest.profileVersion) && expectedProvenance !== undefined && provenance?.releaseId === expectedProvenance.releaseId && provenance.sourceRepositoryCommit === expectedProvenance.sourceRepositoryCommit && provenance.profileSourceRepositoryCommit === expectedProvenance.profileSourceRepositoryCommit && provenance.trackBriefCanonicalSha256 === expectedProvenance.trackBriefCanonicalSha256;
   } catch { return false; }
 }

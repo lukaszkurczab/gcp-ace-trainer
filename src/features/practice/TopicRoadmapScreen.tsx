@@ -2,14 +2,15 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import {
   AppShellHeader,
   EmptyState,
   Icon,
-  LoadingState,
   Screen,
+  SkeletonShape,
+  useSkeletonGlassMotion,
   type IconName,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
@@ -51,6 +52,55 @@ type RoadmapReadState =
 
 const DOT_COLUMNS = 18;
 const DOT_ROWS = 56;
+
+export function TopicRoadmapLoadingSkeleton() {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const motion = useSkeletonGlassMotion();
+
+  return (
+    <View
+      accessibilityLabel={t("Loading topic roadmap")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.roadmapLoading}
+      testID="topic-roadmap-loading-skeleton"
+    >
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.roadmapLoadingShapes}>
+        <View style={styles.roadmapLoadingIntro}>
+          <SkeletonShape motion={motion} style={[styles.roadmapLoadingTitle, { height: 20 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.roadmapLoadingSubtitle, { height: 13 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.roadmapLoadingSubtitleShort, { height: 13 * textScale }]} />
+        </View>
+        <View style={styles.roadmapLoadingCanvas}>
+          <View style={styles.roadmapLoadingVerticalConnector} />
+          <View style={styles.roadmapLoadingRows}>
+            {[0, 1, 2, 3, 4].map((row) => {
+              const split = row === 2 || row === 4;
+              const nodeIndexes = split ? [row * 2, row * 2 + 1] : [row];
+              return (
+                <View key={row} style={split ? styles.roadmapLoadingSplitRow : styles.roadmapLoadingCenterRow}>
+                  {split ? <View style={styles.roadmapLoadingHorizontalConnector} /> : null}
+                  {nodeIndexes.map((node) => (
+                    <View key={node} style={[styles.roadmapLoadingNode, split ? styles.roadmapLoadingSplitNode : styles.roadmapLoadingCenterNode, !split && row < 2 ? styles.roadmapLoadingNodeLarge : null]}>
+                      <SkeletonShape motion={motion} style={[styles.roadmapLoadingCircle, !split && row < 2 ? styles.roadmapLoadingCircleLarge : null]} />
+                      <SkeletonShape motion={motion} style={[styles.roadmapLoadingNodeTitle, { height: 14 * textScale }]} />
+                      <SkeletonShape motion={motion} style={[styles.roadmapLoadingNodeLabel, { height: 10 * textScale }]} />
+                    </View>
+                  ))}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
 
 export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProps) {
   const styles = useThemedStyles(createStyles);
@@ -103,7 +153,15 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
     setSelectedTopicId(route.params?.topicId);
   }, [route.params?.topicId]);
 
-  if (readState.requestKey !== requestKey || readState.kind === "pending") return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Topic Roadmap")} /><LoadingState title={t("Preparing practice")} /></Screen>;
+  if (readState.requestKey !== requestKey || readState.kind === "pending") return (
+    <View style={styles.shell}>
+      <Screen edges={["top"]}>
+        <AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Topic Roadmap")} />
+        <TopicRoadmapLoadingSkeleton />
+      </Screen>
+      <AppBottomNavigation activeId="practice" navigation={navigation} />
+    </View>
+  );
   if (readState.kind === "unavailable") return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Topic Roadmap")} /><EmptyState title={t("Topic roadmap is unavailable")} description={t(readState.reason)} /></Screen>;
   const { activeTrackId, trainingAttempts } = readState;
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
@@ -384,6 +442,130 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {
     backgroundColor: palette.background,
     flex: 1,
+  },
+  roadmapLoading: {
+    minWidth: 0,
+    width: "100%",
+  },
+  roadmapLoadingShapes: {
+    gap: spacing.xl,
+    minWidth: 0,
+    width: "100%",
+  },
+  roadmapLoadingIntro: {
+    gap: spacing.sm,
+    minWidth: 0,
+    width: "100%",
+  },
+  roadmapLoadingTitle: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderColor: palette.border,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    maxWidth: 206,
+    width: "58%",
+  },
+  roadmapLoadingSubtitle: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.sm,
+    maxWidth: 420,
+    width: "100%",
+  },
+  roadmapLoadingSubtitleShort: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.sm,
+    maxWidth: 280,
+    width: "70%",
+  },
+  roadmapLoadingCanvas: {
+    backgroundColor: colorWithOpacity(palette.textPrimary, 0.02),
+    borderColor: palette.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    overflow: "hidden",
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.xxl,
+    position: "relative",
+  },
+  roadmapLoadingVerticalConnector: {
+    borderColor: palette.border,
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderStyle: "dashed",
+    bottom: spacing.xxl,
+    left: "50%",
+    opacity: 0.68,
+    position: "absolute",
+    top: spacing.xxl,
+  },
+  roadmapLoadingRows: {
+    gap: spacing.xxxl,
+    position: "relative",
+  },
+  roadmapLoadingCenterRow: {
+    alignItems: "center",
+  },
+  roadmapLoadingSplitRow: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 132,
+    paddingHorizontal: spacing.xl,
+    position: "relative",
+  },
+  roadmapLoadingHorizontalConnector: {
+    borderColor: palette.border,
+    borderStyle: "dashed",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    left: spacing.xxl,
+    opacity: 0.68,
+    position: "absolute",
+    right: spacing.xxl,
+    top: 34,
+  },
+  roadmapLoadingNode: {
+    alignItems: "center",
+    backgroundColor: palette.background,
+    gap: spacing.xs,
+    maxWidth: 144,
+    minWidth: 122,
+    paddingHorizontal: spacing.sm,
+    position: "relative",
+    zIndex: 1,
+  },
+  roadmapLoadingNodeLarge: {
+    maxWidth: 190,
+    width: 190,
+  },
+  roadmapLoadingCenterNode: {
+    width: 144,
+  },
+  roadmapLoadingSplitNode: {
+    flex: 1,
+    minWidth: 0,
+  },
+  roadmapLoadingCircle: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderColor: palette.border,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    height: 56,
+    width: 56,
+  },
+  roadmapLoadingCircleLarge: {
+    height: 66,
+    width: 66,
+  },
+  roadmapLoadingNodeTitle: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.sm,
+    maxWidth: 132,
+    width: "86%",
+  },
+  roadmapLoadingNodeLabel: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.sm,
+    maxWidth: 94,
+    width: "60%",
   },
   intro: {
     gap: spacing.sm,

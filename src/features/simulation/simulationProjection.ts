@@ -9,6 +9,7 @@ export type SimulationSurfaceState =
   | "preparing"
   | "insufficient_content"
   | "editable"
+  | "navigating"
   | "saving"
   | "save_failed"
   | "stale_revision"
@@ -57,7 +58,7 @@ export type SimulationAction = Readonly<{
 export type SimulationOperationPresentation = Readonly<{
   auxiliaryAction?: SimulationAction;
   description: string;
-  kind: "saving-response" | "save-failed" | "response-saved-navigation-failed" | "finalizing" | "finalization-recovery-required";
+  kind: "saving-response" | "save-failed" | "response-saved-navigation-failed" | "navigating" | "finalizing" | "finalization-recovery-required";
   lockMessage: string;
   noticeMessage?: string;
   title: string;
@@ -145,3 +146,12 @@ export type SimulationSurfaceProjection = Readonly<{
   timer?: SessionMetricPresentation;
   title: string;
 }>;
+
+export type SimulationResultResolution = "pending" | "verified" | "scoreless" | "failed";
+
+/** Keeps a completed read with missing verification distinct from an in-flight read. */
+export function resolveSimulationResultResolution(result: Readonly<{ score: unknown }> | null, failure: string | null): SimulationResultResolution {
+  if (failure) return "failed";
+  if (!result) return "pending";
+  return result.score === null || result.score === undefined ? "scoreless" : "verified";
+}

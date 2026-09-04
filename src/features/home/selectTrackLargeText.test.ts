@@ -30,6 +30,7 @@ test("track cards use the canonical Figma icon mapping for every active track", 
   assert.match(source, /\[AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID\]: "cloud"/);
   assert.match(source, /\[MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID\]: "settings"/);
   assert.match(source, /\[MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID\]: "cpu"/);
+  assert.match(source, /\[CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID\]: "sparkle"/);
   assert.match(source, /No canonical icon is registered for track/);
   assert.match(source, /color=\{palette\.primary\} name=\{icon\}/);
   assert.match(source, /trackIcon:\s*\{[\s\S]*?backgroundColor: palette\.surfaceInput[\s\S]*?borderColor: palette\.primary/);

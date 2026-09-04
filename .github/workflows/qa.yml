@@ -26,7 +26,7 @@ jobs:
         run: |
           node -e '
             const lock = require("./integration/contracts/content-release/release.lock.json");
-            const expectedTrackIds = ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901"];
+            const expectedTrackIds = ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901", "claude-certified-architect-professional-certification"];
             const trackIds = Array.isArray(lock.artifacts) ? lock.artifacts.map((artifact) => artifact.trackId) : [];
             if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || trackIds.join(",") !== expectedTrackIds.join(",") || !lock.artifacts.every((artifact) => /^[a-f0-9]{40}$/.test(artifact.producerCommit) && /^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit) && /^[a-z][a-z0-9-]*$/.test(artifact.releaseId))) process.exit(1);
             process.stdout.write(`commit=${lock.artifacts.at(-1).producerCommit}\n`);
@@ -95,7 +95,7 @@ jobs:
         run: |
           node -e '
             const lock = require("./integration/contracts/content-release/release.lock.json");
-            const expectedTrackIds = ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901"];
+            const expectedTrackIds = ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901", "claude-certified-architect-professional-certification"];
             const trackIds = Array.isArray(lock.artifacts) ? lock.artifacts.map((artifact) => artifact.trackId) : [];
             if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || trackIds.join(",") !== expectedTrackIds.join(",") || !lock.artifacts.every((artifact) => /^[a-f0-9]{40}$/.test(artifact.producerCommit) && /^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit) && /^[a-z][a-z0-9-]*$/.test(artifact.releaseId))) process.exit(1);
             process.stdout.write(`commit=${lock.artifacts.at(-1).producerCommit}\n`);

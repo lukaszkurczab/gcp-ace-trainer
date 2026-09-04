@@ -1,9 +1,9 @@
 import { PracticeQuestionCard } from "./PracticeQuestionCard";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
-import { Button, Icon } from "../../components";
+import { Button, Icon, LoadingState, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import type { ContentItemRef, TrackId } from "../../domain";
 import type { SessionMetricPresentation } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
@@ -99,7 +99,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
 
   return (
     <SessionShell
-      actionBar={<ActionBar {...props} />}
+      actionBar={props.phase === "preparing" ? undefined : <ActionBar {...props} />}
       key={itemId}
       modeTestID={props.runtimeIdentity ? runtimeSelectors.session.mode(props.runtimeIdentity.modeId) : undefined}
       modeLabel={props.modeLabel}
@@ -111,7 +111,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
       timer={props.timer}
       timerTestID={props.runtimeIdentity ? runtimeSelectors.session.timer(props.runtimeIdentity.sessionId) : undefined}
     >
-      {props.phase === "preparing" ? <PreparingNotice /> : null}
+      {props.phase === "preparing" ? <PracticeSessionLoadingSkeleton /> : null}
       {props.phase === "completing" ? <CompletingNotice /> : null}
       {props.runtimeIdentity && controls ? (
         <View testID={runtimeSelectors.session.track(props.runtimeIdentity.trackId)}>
@@ -125,42 +125,44 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   );
 }
 
-function PreparingNotice() {
+export function PracticeSessionLoadingSkeleton() {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette } = useAppPreferences();
   const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const largeLayout = fontScale >= 1.8;
+  const motion = useSkeletonGlassMotion();
+
   return (
-    <View accessibilityLabel={t("Preparing session")} style={styles.asyncState}>
-      <View style={styles.asyncStatusRow}>
-        <View accessible accessibilityLabel={t("Preparing session")} style={styles.asyncIcon}>
-          <Icon color={palette.textSecondary} name="rotate-ccw" size={24} />
+    <View
+      accessibilityLabel={t("Preparing session")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.practiceSessionLoading}
+      testID="practice-session-loading-skeleton"
+    >
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.practiceSessionLoadingShapes}>
+        <View style={styles.practiceSessionLoadingQuestion} testID="practice-session-loading-question">
+          <SkeletonShape motion={motion} style={[styles.practiceSessionLoadingLine, styles.practiceSessionLoadingQuestionTitle, { height: 22 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSessionLoadingLine, styles.practiceSessionLoadingQuestionLine, { height: 15 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSessionLoadingLine, styles.practiceSessionLoadingQuestionLineShort, { height: 15 * textScale }]} />
         </View>
-        <Text maxFontSizeMultiplier={2} style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
+        <View style={[styles.practiceSessionLoadingResponse, largeLayout ? styles.practiceSessionLoadingResponseLarge : null]} testID="practice-session-loading-response">
+          <SkeletonShape motion={motion} style={[styles.practiceSessionLoadingLine, styles.practiceSessionLoadingResponseTitle, { height: 16 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSessionLoadingLine, styles.practiceSessionLoadingResponseLine, { height: 15 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSessionLoadingLine, styles.practiceSessionLoadingResponseLineLong, { height: 15 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSessionLoadingLine, styles.practiceSessionLoadingResponseLineShort, { height: 15 * textScale }]} />
+        </View>
       </View>
-      <Text maxFontSizeMultiplier={2} style={styles.asyncTitle}>{t("Preparing practice")}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Preparing your questions.")}</Text>
-      <View accessible={false} style={styles.asyncSpacer} />
     </View>
   );
 }
 
 function CompletingNotice() {
-  const styles = useThemedStyles(createStyles);
-  const { colors: palette } = useAppPreferences();
   const { t } = useTranslation("common");
-  return (
-    <View style={styles.asyncState}>
-      <View style={styles.asyncStatusRow}>
-        <View accessible accessibilityLabel={t("Finishing this session…")} style={styles.asyncIcon}>
-          <Icon color={palette.textSecondary} name="rotate-ccw" size={24} />
-        </View>
-      <Text maxFontSizeMultiplier={2} style={styles.asyncStatusLabel}>{t("LOADING")}</Text>
-      </View>
-      <Text maxFontSizeMultiplier={2} style={styles.asyncTitle}>{t("Finishing this session…")}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.asyncDescription}>{t("Preparing your summary.")}</Text>
-      <View accessible={false} style={styles.asyncSpacer} />
-    </View>
-  );
+  return <LoadingState description={t("Preparing your summary.")} title={t("Finishing this session…")} />;
 }
 
 function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
@@ -239,13 +241,39 @@ function noop() {}
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   actions: { gap: spacing.sm },
-  asyncDescription: { ...typography.body, color: palette.textSecondary },
-  asyncIcon: { alignItems: "center", backgroundColor: palette.surfaceInput, borderRadius: radius.lg, height: 44, justifyContent: "center", width: 44 },
-  asyncStatusLabel: { ...typography.caption, color: palette.textMuted, flex: 1, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
-  asyncStatusRow: { alignItems: "center", flexDirection: "row", gap: spacing.md, width: "100%" },
-  asyncState: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.button, borderWidth: 1, gap: spacing.lg, padding: spacing.xl },
-  asyncSpacer: { height: 50, minHeight: 50, width: 1 },
-  asyncTitle: { color: palette.textPrimary, fontSize: 22, fontWeight: "600", lineHeight: 28 },
+  practiceSessionLoading: { gap: spacing.lg, width: "100%" },
+  practiceSessionLoadingShapes: { gap: spacing.lg, width: "100%" },
+  practiceSessionLoadingQuestion: {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    gap: spacing.sm,
+    padding: spacing.xl,
+  },
+  practiceSessionLoadingResponse: {
+    backgroundColor: palette.surfaceInput,
+    borderColor: palette.border,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    gap: spacing.md,
+    minHeight: 184,
+    padding: spacing.xl,
+  },
+  practiceSessionLoadingResponseLarge: {
+    minHeight: 240,
+  },
+  practiceSessionLoadingLine: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.pill,
+  },
+  practiceSessionLoadingQuestionTitle: { width: "88%" },
+  practiceSessionLoadingQuestionLine: { width: "94%" },
+  practiceSessionLoadingQuestionLineShort: { width: "66%" },
+  practiceSessionLoadingResponseTitle: { width: "48%" },
+  practiceSessionLoadingResponseLine: { width: "74%" },
+  practiceSessionLoadingResponseLineLong: { width: "92%" },
+  practiceSessionLoadingResponseLineShort: { width: "56%" },
   completingActions: { minHeight: 48 },
   exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderTopLeftRadius: radius.button, borderTopRightRadius: radius.button, borderWidth: 1, elevation: 8, gap: spacing.md, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl, shadowColor: palette.effects.shadow, shadowOffset: { height: -4, width: 0 }, shadowOpacity: 0.48, shadowRadius: 12, width: "100%" },
   exitModalStack: { width: "100%" },

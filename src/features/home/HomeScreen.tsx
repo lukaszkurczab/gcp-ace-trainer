@@ -8,7 +8,6 @@ import {
   AppShellHeader,
   EmptyState,
   InfoBlock,
-  LoadingState,
   Screen,
 } from "../../components";
 import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
@@ -45,11 +44,11 @@ import {
   buildCertificationPracticeResumeRoute,
   buildDesignInterviewPracticeResumeRoute,
 } from "../practice/sessionConfig";
-import { HomeTab } from "./tabs/HomeTab";
+import { HomeLoadingSkeleton, HomeTab } from "./tabs/HomeTab";
 import type { HomeRecommendationAction } from "./tabs/homeTabModel";
-import { ProgressTab } from "./tabs/ProgressTab";
+import { ProgressLoadingSkeleton, ProgressTab } from "./tabs/ProgressTab";
 import type { ProgressAction } from "./tabs/progressTabModel";
-import { SettingsTab } from "./tabs/SettingsTab";
+import { SettingsLoadingSkeleton, SettingsTab } from "./tabs/SettingsTab";
 import type { ShellTab } from "./types";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
@@ -84,7 +83,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const accountRef = useRef(account);
   accountRef.current = account;
   const accountResumeRequired = account.state.kind === "authenticated" && account.state.accountData.status === "resumeRequired";
-  const [activeTab, setActiveTab] = useState<HomeShellTab>("home");
+  const [activeTab, setActiveTab] = useState<HomeShellTab>(route.params?.initialTab ?? "home");
+  const initialRouteTabRef = useRef<HomeShellTab | null>(route.params?.initialTab ?? null);
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [hasLoadedActiveTrack, setHasLoadedActiveTrack] = useState(false);
   const [shellReload, setShellReload] = useState(0);
@@ -103,10 +103,21 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   });
 
   useEffect(() => {
+    initialRouteTabRef.current = route.params?.initialTab ?? null;
     if (route.params?.initialTab) {
       setActiveTab(route.params.initialTab);
     }
   }, [route.params?.initialTab]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (activeTab !== "home" || (initialRouteTabRef.current !== null && initialRouteTabRef.current !== "home")) return undefined;
+      const accountState = accountRef.current.state;
+      if (accountState.kind !== "authenticated" || accountState.accountData.status === "resumeRequired") return undefined;
+      void accountRef.current.retryPendingAccountSync();
+      return undefined;
+    }, [activeTab]),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -184,7 +195,20 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     () => buildAnalyticsData(data.attempts, data.practiceHistory),
     [data.attempts, data.practiceHistory],
   );
-  if (!hasLoadedActiveTrack) return <Screen edges={["top"]} scroll={false}><AppShellHeader /><LoadingState title={t("Loading Patternly…")} /></Screen>;
+  if (!hasLoadedActiveTrack) return (
+    <View style={styles.shell}>
+      <Screen
+        edges={["top"]}
+        key={`pending-${activeTab}`}
+        style={[activeTab === "home" ? styles.homeScreenContent : null, activeTab === "progress" ? styles.progressScreenContent : null]}
+      >
+        {activeTab === "home" ? <HomeLoadingSkeleton /> : null}
+        {activeTab === "progress" ? <ProgressLoadingSkeleton /> : null}
+        {activeTab === "settings" ? <SettingsLoadingSkeleton /> : null}
+      </Screen>
+      <AppBottomNavigation activeId={activeTab} navigation={navigation} onHomeTabChange={handleHomeTabChange} />
+    </View>
+  );
   if (shellReadError) return <Screen edges={["top"]} scroll={false}><AppShellHeader /><EmptyState actionLabel={t("Try again")} description={t(shellReadError)} onActionPress={() => setShellReload((reload) => reload + 1)} title={t("Patternly is unavailable")} /></Screen>;
   if (!activeTrackId) {
     return (
@@ -207,6 +231,12 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     }
 
     navigation.navigate(ROUTES.MISTAKES_REVIEW);
+  }
+
+  function handleHomeTabChange(tab: HomeShellTab) {
+    initialRouteTabRef.current = null;
+    setActiveTab(tab);
+    navigation.setParams({ initialTab: tab });
   }
 
   async function handleRecommendationAction(action: HomeRecommendationAction) {
@@ -307,7 +337,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
                 trackId: activeTrack.id,
               })}
               onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
-              onOpenSettings={() => setActiveTab("settings")}
+              onOpenSettings={() => handleHomeTabChange("settings")}
               onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
               onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
               reviewQueueItems={data.reviewQueueItems}
@@ -347,7 +377,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       <AppBottomNavigation
         activeId={activeTab}
         navigation={navigation}
-        onHomeTabChange={setActiveTab}
+        onHomeTabChange={handleHomeTabChange}
       />
     </View>
   );

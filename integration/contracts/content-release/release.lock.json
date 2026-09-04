@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "repository": "lukaszkurczab/patternly-content",
-  "bundleId": "patternly-app-content-0022",
+  "bundleId": "patternly-app-content-0023",
   "artifacts": [
     {
       "releaseId": "patternly-launch-2026-08-25-01",
@@ -66,6 +66,17 @@
       "trackId": "microsoft-azure-ai-fundamentals-ai-901",
       "contentVersion": "microsoft-azure-ai-fundamentals-ai-901-authoring-v2026.08.15",
       "checksumSha256": "474f1a403baf502abe10980ff4d7563493664ef1bad7859e2d0fb0ff65fb92c4"
+    },
+    {
+      "releaseId": "patternly-claude-ccarp-2026-09-03-01",
+      "producerCommit": "cc3efca88be7e01137f10ac69a0643f06b61a350",
+      "sourceRepositoryCommit": "563d1b06b3c51552f177199091fb28ef53ccf2b8",
+      "trackId": "claude-certified-architect-professional-certification",
+      "contentVersion": "ccarp-2026.09.03",
+      "packageVersion": "claude-certified-architect-professional-certification-free-node-0001",
+      "minimumAppVersion": "0.1.0",
+      "checksumSha256": "ebc0c49fecff8a67a2b0ecbd04f8e4eb78d89e0efff83ad7646b3878c2875138",
+      "packageSha256": "4397fa3352504e869f00d830b6c9850652a542aae6e8d57c561be08ec34971c0"
     }
   ],
   "retainedArtifacts": [

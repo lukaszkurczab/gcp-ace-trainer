@@ -10,6 +10,9 @@ web-build/
 .maestro/*
 !.maestro/backend-ios-simulator-e2e.yaml
 !.maestro/coding-practice-result-review.yaml
+!.maestro/coding-practice-answer-review-details.yaml
+!.maestro/completed-practice-result-review.yaml
+!.maestro/home-practice-presentation.yaml
 !.maestro/screenshot-capture/
 .maestro/screenshot-capture/*
 !.maestro/screenshot-capture/visual-shell/

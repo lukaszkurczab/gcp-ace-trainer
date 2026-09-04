@@ -1,0 +1,150 @@
+appId: com.lkurczab.patternly
+name: Patternly — Extended completed answer review details
+tags:
+  - runtime-auditability
+  - practice-review
+---
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
+    direction: DOWN
+    centerElement: false
+- assertVisible:
+    id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
+    direction: DOWN
+    centerElement: false
+    visibilityPercentage: 20
+- assertVisible:
+    id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
+- takeScreenshot: review-question-four
+- tapOn:
+    id: "patternly:practice-review:next"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice-review:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:4"
+    timeout: 10000
+- assertVisible:
+    id: "patternly:session:question:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:4"
+- tapOn:
+    id: "patternly:practice-review:previous"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice-review:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
+    timeout: 10000
+- tapOn:
+    id: "patternly:practice-review:result"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: "patternly:summary:feedback-item:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
+    direction: UP
+- tapOn:
+    id: "patternly:summary:feedback-item:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice-review:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
+    timeout: 10000
+- assertVisible:
+    id: "patternly:practice-review:previous"
+    enabled: false
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
+    direction: DOWN
+    centerElement: false
+- assertVisible:
+    id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
+    direction: DOWN
+    centerElement: false
+    visibilityPercentage: 20
+- assertVisible:
+    id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
+- tapOn:
+    id: "patternly:practice-review:result"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: "patternly:summary:feedback-item:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+    direction: DOWN
+- tapOn:
+    id: "patternly:summary:feedback-item:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice-review:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+    direction: DOWN
+    centerElement: false
+- assertVisible:
+    id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+    direction: DOWN
+    centerElement: false
+    visibilityPercentage: 20
+- assertVisible:
+    id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+- tapOn:
+    id: "patternly:practice-review:result"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: "patternly:summary:feedback-item:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:9"
+    direction: DOWN
+- tapOn:
+    id: "patternly:summary:feedback-item:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:9"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice-review:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:9"
+    timeout: 10000
+- assertVisible:
+    id: "patternly:session:question:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:9"
+- assertVisible:
+    id: "patternly:practice-review:next"
+    enabled: false
+- takeScreenshot: review-last-question
+- tapOn:
+    id: "patternly:practice-review:result"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
+    timeout: 10000

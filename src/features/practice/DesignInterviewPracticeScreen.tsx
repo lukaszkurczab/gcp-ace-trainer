@@ -25,13 +25,13 @@ import {
 } from "../../application/design-interview";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
-import { AppShellHeader, Button, EmptyState, LoadingState, Screen } from "../../components";
+import { AppShellHeader, Button, EmptyState, Screen } from "../../components";
 import type { TrainingSession } from "../../domain";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { getDesignModeTitle, isDesignInterviewModeId, type DesignInterviewModeId } from "../../tracks/design-interview";
 import type { DesignResponse } from "../../tracks/design-interview";
-import { PracticeSessionSurface } from "./PracticeSessionSurface";
+import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./PracticeSessionSurface";
 import {
   allowsPracticeResponseEditing,
   buildPracticeResponseControl,
@@ -159,7 +159,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     </Screen>;
   }
   if (error) return <Unavailable navigation={navigation} title="Design Interview practice unavailable" description={error} />;
-  if (!projection) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><LoadingState title={t("Preparing session")} /></Screen>;
+  if (!projection) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><PracticeSessionLoadingSkeleton /></Screen>;
 
   const renderer = designRenderer(projection);
   const responseForProjection = localResponse?.sessionId === projection.session.id && localResponse.occurrenceId === projection.occurrenceId

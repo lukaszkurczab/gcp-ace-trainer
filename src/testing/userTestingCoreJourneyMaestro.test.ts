@@ -6,7 +6,10 @@ import { runtimeSelectors } from "./runtimeSelectors";
 import { selectAlgorithmSessionPlan } from "../tracks/coding-interview";
 import { getCodingPackageTestCatalog, prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 
-const flow = readFileSync(".maestro/m2-custom-10-at-session-end.yaml", "utf8");
+const flow = readFileSync(".maestro/m2-custom-10-at-session-end.yaml", "utf8").replace(
+  "- runFlow: completed-practice-result-review.yaml",
+  readFileSync(".maestro/completed-practice-result-review.yaml", "utf8"),
+);
 const resumeFlow = readFileSync(".maestro/m4-custom-after-each-answer.yaml", "utf8");
 const manifest = JSON.parse(readFileSync(".maestro/m2-custom-10-at-session-end.expected-session.json", "utf8")) as Readonly<{
   session: Readonly<{ modeId: "coding-interview-custom-practice"; roadmapNodeId: string; sessionId: string }>;

@@ -9,11 +9,11 @@ import {
   type AlgorithmsSessionResultProjection,
 } from "../../application/coding-interview";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { EmptyState, Icon, LoadingState, Screen, SessionResultOverview } from "../../components";
+import { EmptyState, Icon, Screen, SessionResultOverview, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useThemedStyles } from "../../preferences";
-import { spacing, typography, type AppColors } from "../../theme";
+import { radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { getAlgorithmMode } from "../../tracks/coding-interview/domain";
 import { normalizeSessionResultDetails } from "../exam/sessionResultPresentation";
@@ -51,7 +51,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
   }, [requestKey, t]);
 
   if (readState.requestKey !== requestKey || readState.kind === "pending") {
-    return <Screen><LoadingState title={t("Loading session result")} /></Screen>;
+    return <Screen><PracticeResultLoadingSkeleton /></Screen>;
   }
   if (readState.kind === "unavailable") {
     return <Screen><EmptyState title={t("Session result unavailable")} description={t(readState.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
@@ -111,6 +111,64 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
   );
 }
 
+export function PracticeResultLoadingSkeleton() {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const largeLayout = fontScale >= 1.8;
+  const motion = useSkeletonGlassMotion();
+
+  return (
+    <View
+      accessibilityLabel={t("Loading session result")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.practiceResultLoading}
+    >
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.practiceResultLoadingShapes}>
+        <View style={styles.practiceResultLoadingContext}>
+          <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingContextPrimary, { height: 16 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingContextSecondary, { height: 12 * textScale }]} />
+        </View>
+        <View style={styles.practiceResultLoadingHeading}>
+          <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingHeadingLine, { height: 24 * textScale }]} />
+        </View>
+        <View style={styles.practiceResultLoadingScoreCard}>
+          <View style={styles.practiceResultLoadingScoreValue}>
+            <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingScore, { height: 48 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingTotal, { height: 24 * textScale }]} />
+          </View>
+          <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingScoreLabel, { height: 16 * textScale }]} />
+        </View>
+        <View style={styles.practiceResultLoadingOutcomeSection}>
+          <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingSectionLabel, { height: 12 * textScale }]} />
+          <View style={[styles.practiceResultLoadingOutcomeGrid, largeLayout ? styles.practiceResultLoadingOutcomeGridLarge : null]}>
+            {[0, 1, 2, 3].map((outcome) => (
+              <View key={outcome} style={[styles.practiceResultLoadingOutcome, largeLayout ? styles.practiceResultLoadingOutcomeLarge : null, { minHeight: 50 * textScale }]}>
+                <SkeletonShape motion={motion} style={styles.practiceResultLoadingDot} />
+                <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingOutcomeLabel, { height: 14 * textScale }]} />
+                <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingOutcomeValue, { height: 16 * textScale }]} />
+              </View>
+            ))}
+          </View>
+        </View>
+        <View style={styles.practiceResultLoadingMetrics}>
+          {[0, 1].map((metric) => (
+            <View key={metric} style={styles.practiceResultLoadingMetric}>
+              <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingMetricLabel, { height: 16 * textScale }]} />
+              <SkeletonShape motion={motion} style={[styles.practiceResultLoadingLine, styles.practiceResultLoadingMetricValue, { height: 16 * textScale }]} />
+            </View>
+          ))}
+        </View>
+        <SkeletonShape motion={motion} style={[styles.practiceResultLoadingAction, { minHeight: 48 * textScale }]} />
+      </View>
+    </View>
+  );
+}
+
 function ResultText({ children, selectable = false, style }: Readonly<{ children: ReactNode; selectable?: boolean; style?: StyleProp<TextStyle> }>) {
   const { fontScale } = useWindowDimensions();
   return <Text key={fontScale} maxFontSizeMultiplier={2} selectable={selectable} style={style}>{children}</Text>;
@@ -123,6 +181,33 @@ function formatElapsed(milliseconds: number): string {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  practiceResultLoading: { gap: spacing.xxl, width: "100%" },
+  practiceResultLoadingShapes: { gap: spacing.xxl, width: "100%" },
+  practiceResultLoadingLine: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill },
+  practiceResultLoadingContext: { gap: spacing.xs },
+  practiceResultLoadingContextPrimary: { width: "44%" },
+  practiceResultLoadingContextSecondary: { width: "59%" },
+  practiceResultLoadingHeading: { gap: spacing.sm },
+  practiceResultLoadingHeadingLine: { width: "63%" },
+  practiceResultLoadingScoreCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.xxl, borderWidth: 1, gap: spacing.sm, padding: spacing.xxl },
+  practiceResultLoadingScoreValue: { alignItems: "baseline", flexDirection: "row", gap: spacing.sm },
+  practiceResultLoadingScore: { width: "23%" },
+  practiceResultLoadingTotal: { width: "18%" },
+  practiceResultLoadingScoreLabel: { width: "43%" },
+  practiceResultLoadingOutcomeSection: { gap: spacing.md },
+  practiceResultLoadingSectionLabel: { width: "52%" },
+  practiceResultLoadingOutcomeGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  practiceResultLoadingOutcomeGridLarge: { flexDirection: "column" },
+  practiceResultLoadingOutcome: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexBasis: "45%", flexDirection: "row", flexGrow: 1, gap: spacing.sm, minWidth: 140, padding: spacing.md },
+  practiceResultLoadingOutcomeLarge: { flexBasis: "auto", width: "100%" },
+  practiceResultLoadingDot: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.xs, height: 8, width: 8 },
+  practiceResultLoadingOutcomeLabel: { flex: 1, minWidth: 0 },
+  practiceResultLoadingOutcomeValue: { width: "16%" },
+  practiceResultLoadingMetrics: { gap: spacing.xs },
+  practiceResultLoadingMetric: { alignItems: "center", flexDirection: "row", gap: spacing.md, justifyContent: "space-between", minHeight: 44 },
+  practiceResultLoadingMetricLabel: { width: "32%" },
+  practiceResultLoadingMetricValue: { width: "24%" },
+  practiceResultLoadingAction: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.button, width: "100%" },
   feedbackItem: { alignItems: "center", borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: spacing.md, minHeight: 64, paddingVertical: spacing.lg },
   rowCopy: { flex: 1, gap: spacing.sm },
   pressed: { opacity: 0.7 },
@@ -130,7 +215,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   correct: { color: palette.success },
   partial: { color: palette.warning },
   incorrect: { color: palette.danger },
-  feedbackItems: { gap: spacing.lg },
+  feedbackItems: { gap: spacing.xs },
   feedbackPrompt: { ...typography.bodyStrong, color: palette.textPrimary },
   feedbackTitle: { ...typography.bodyStrong, color: palette.textPrimary },
 });

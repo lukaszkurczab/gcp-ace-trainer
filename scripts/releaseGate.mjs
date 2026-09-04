@@ -167,8 +167,8 @@ const contentReleaseLock = inspectReleaseLock();
 const lockedTrackIds = contentReleaseLock.trackIds;
 if (contentReleaseLock.status === "unavailable") blockers.push({ kind: "unreadable_content_release_lock", error: contentReleaseLock.error });
 if (contentReleaseLock.status === "invalid") blockers.push({ kind: "invalid_content_release_lock", errors: contentReleaseLock.errors });
-if (contentReleaseLock.status === "valid" && lockedTrackIds.length !== 8) blockers.push({ kind: "invalid_content_release_scope", actual: lockedTrackIds });
-const launchTrackIds = contentReleaseLock.status === "valid" && lockedTrackIds.length === 8 ? lockedTrackIds : [];
+if (contentReleaseLock.status === "valid" && lockedTrackIds.length !== 9) blockers.push({ kind: "invalid_content_release_scope", actual: lockedTrackIds });
+const launchTrackIds = contentReleaseLock.status === "valid" && lockedTrackIds.length === 9 ? lockedTrackIds : [];
 
 let readiness = null;
 try {

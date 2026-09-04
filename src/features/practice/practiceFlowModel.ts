@@ -52,7 +52,7 @@ export type PracticeTopicTitle =
   | Readonly<{ key: string; kind: "translation-key" }>;
 
 export type PracticeModeModel = {
-  detail: string;
+  detail?: string;
   enabled: boolean;
   icon: IconName;
   mode: PracticeSessionMode | CertificationModeId;
@@ -268,25 +268,25 @@ export function buildPracticeModes(activeTrack: TrackDisplay, hasReviewEvidence 
     case "coding_interview":
       return [
         { detail: "Learn how to solve problems in this topic.", enabled: availability(ALGORITHM_MODE_IDS.learnApproach), icon: "practice", mode: ALGORITHM_MODE_IDS.learnApproach, title: getAlgorithmMode(ALGORITHM_MODE_IDS.learnApproach).title, tone: "primary" },
-        { detail: "Practice this topic with explanations after each answer.", enabled: availability(ALGORITHM_MODE_IDS.guidedPractice), icon: "practice", mode: ALGORITHM_MODE_IDS.guidedPractice, title: getAlgorithmMode(ALGORITHM_MODE_IDS.guidedPractice).title, tone: "success" },
-        { detail: "Set up your session and choose when to see explanations.", enabled: availability(ALGORITHM_MODE_IDS.customPractice), icon: "clipboard", mode: ALGORITHM_MODE_IDS.customPractice, title: getAlgorithmMode(ALGORITHM_MODE_IDS.customPractice).title, tone: "info" },
-        { detail: "Review questions that are ready to revisit.", enabled: availability(ALGORITHM_MODE_IDS.weakAreaReview), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", tone: "danger" },
+        { enabled: availability(ALGORITHM_MODE_IDS.guidedPractice), icon: "practice", mode: ALGORITHM_MODE_IDS.guidedPractice, title: getAlgorithmMode(ALGORITHM_MODE_IDS.guidedPractice).title, tone: "success" },
+        { enabled: availability(ALGORITHM_MODE_IDS.customPractice), icon: "clipboard", mode: ALGORITHM_MODE_IDS.customPractice, title: getAlgorithmMode(ALGORITHM_MODE_IDS.customPractice).title, tone: "info" },
+        { enabled: availability(ALGORITHM_MODE_IDS.weakAreaReview), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", tone: "danger" },
       ];
     case "certification":
       {
         const diagnosticMode = profile.modes.find((mode) => mode.modeId === "certification-diagnostic-baseline");
         return [
           { detail: "Practice questions from this topic.", enabled: availability("certification-focus-practice"), icon: "practice", mode: "certification-focus-practice", title: "Focus Practice", tone: "primary" },
-          ...(diagnosticMode ? [{ detail: "Check your knowledge of this topic with 40 questions.", enabled: availability(diagnosticMode.modeId), icon: "clipboard" as const, mode: diagnosticMode.modeId as CertificationModeId, title: "Diagnostic Baseline", tone: "info" as const }] : []),
-          { detail: "Review questions that are ready to revisit.", enabled: availability("certification-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "certification-weak-area-review", title: "Weak Area Review", tone: "danger" },
-          { detail: "Review a short set of questions that are ready to revisit.", enabled: availability("certification-quick-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "certification-quick-review", title: "Quick Review", tone: "danger" },
+          ...(diagnosticMode ? [{ enabled: availability(diagnosticMode.modeId), icon: "clipboard" as const, mode: diagnosticMode.modeId as CertificationModeId, title: "Knowledge Check", tone: "info" as const }] : []),
+          { enabled: availability("certification-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "certification-weak-area-review", title: "Weak Area Review", tone: "danger" },
+          { enabled: availability("certification-quick-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "certification-quick-review", title: "Quick Review", tone: "danger" },
         ];
       }
     case "design_interview":
       return [
         { detail: "Learn a step-by-step approach to designing a solution.", enabled: availability("design-interview-learn-framework"), icon: "practice", mode: "design-interview-learn-framework", title: getDesignModeTitle("design-interview-learn-framework"), tone: "primary" },
-        { detail: "Practice choosing solutions and weighing architectural tradeoffs.", enabled: availability("design-interview-tradeoff-practice"), icon: "clipboard", mode: "design-interview-tradeoff-practice", title: getDesignModeTitle("design-interview-tradeoff-practice"), tone: "success" },
-        { detail: "Review questions that are ready to revisit.", enabled: availability("design-interview-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "design-interview-weak-area-review", title: getDesignModeTitle("design-interview-weak-area-review"), tone: "danger" },
+        { enabled: availability("design-interview-tradeoff-practice"), icon: "clipboard", mode: "design-interview-tradeoff-practice", title: getDesignModeTitle("design-interview-tradeoff-practice"), tone: "success" },
+        { enabled: availability("design-interview-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "design-interview-weak-area-review", title: getDesignModeTitle("design-interview-weak-area-review"), tone: "danger" },
       ];
   }
 }

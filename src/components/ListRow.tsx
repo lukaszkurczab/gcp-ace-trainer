@@ -15,6 +15,7 @@ type ListRowProps = {
   style?: StyleProp<ViewStyle>;
   testID?: string;
   title: string;
+  titleNumberOfLines?: number;
   trailing?: ReactNode;
   variant?: "card" | "grouped" | "settings";
 };
@@ -28,6 +29,7 @@ export function ListRow({
   style,
   testID,
   title,
+  titleNumberOfLines = 2,
   trailing,
   variant = "card",
 }: ListRowProps) {
@@ -43,7 +45,7 @@ export function ListRow({
       {leading ? <View style={styles.leading}>{leading}</View> : null}
       <View style={[styles.copy, variant === "card" ? null : styles.groupedCopy]}>
         <View style={[styles.titleRow, variant === "grouped" ? styles.groupedTitleRow : null]}>
-          <Text maxFontSizeMultiplier={2} numberOfLines={2} style={[styles.title, variant === "grouped" ? styles.groupedTitle : variant === "settings" ? styles.settingsTitle : null]}>
+          <Text maxFontSizeMultiplier={2} numberOfLines={titleNumberOfLines} style={[styles.title, variant === "grouped" ? styles.groupedTitle : variant === "settings" ? styles.settingsTitle : null]}>
             {title}
           </Text>
           {meta ? <Text maxFontSizeMultiplier={2} style={styles.meta}>{meta}</Text> : null}

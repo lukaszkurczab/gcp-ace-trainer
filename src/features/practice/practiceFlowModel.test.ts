@@ -97,14 +97,14 @@ test("Algorithms Independent Practice keeps its canonical title in the Polish pr
   assert.equal(translate("pl", "Independent Practice"), "Samodzielne ćwiczenia");
 });
 
-test("Certification practice hub keeps Focus primary and exposes the declared Diagnostic, Weak, and Quick modes", () => {
+test("Certification practice hub keeps Focus primary and exposes the declared Knowledge Check, Weak, and Quick modes", () => {
   const modes = buildPracticeModes(getTrackDisplay("google-cloud-associate-cloud-engineer"));
 
   assert.deepEqual(
     modes.map(({ mode, title }) => ({ mode, title })),
     [
       { mode: "certification-focus-practice", title: "Focus Practice" },
-      { mode: "certification-diagnostic-baseline", title: "Diagnostic Baseline" },
+      { mode: "certification-diagnostic-baseline", title: "Knowledge Check" },
       { mode: "certification-weak-area-review", title: "Weak Area Review" },
       { mode: "certification-quick-review", title: "Quick Review" },
     ],

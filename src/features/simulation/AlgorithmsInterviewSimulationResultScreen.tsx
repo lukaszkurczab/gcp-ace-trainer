@@ -1,20 +1,19 @@
-import { useFocusEffect, type NavigationProp } from "@react-navigation/native";
+import type { NavigationProp } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
-import { getAlgorithmsPracticeResultProjection, type AlgorithmsSessionResultProjection } from "../../application/coding-interview";
-import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { AnswerOption, EmptyState, ReviewNavigator, ReviewShell, ReviewUnavailableSurface, Screen } from "../../components";
+import { AnswerOption, EmptyState, ReviewLoadingSkeleton, ReviewNavigator, ReviewShell, ReviewUnavailableSurface, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { spacing, typography, type AppColors } from "../../theme";
+import { useThemedStyles } from "../../preferences";
+import { radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
-import type { SimulationSurfaceProjection } from "./simulationProjection";
+import { resolveSimulationResultResolution, type SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
 import { ReviewFeedbackBlock } from "../review/ReviewFeedbackBlock";
+import { useSimulationResultRead } from "./simulationResultRead";
 
 type SummaryProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY>;
 type ReviewProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW>;
@@ -28,17 +27,14 @@ export function AlgorithmsInterviewSimulationReviewScreen({ navigation, route }:
 }
 
 function AlgorithmsInterviewSimulationResultSurface({ navigation, sessionId }: Readonly<{ navigation: NavigationProp<RootStackParamList>; sessionId: string }>) {
-  const [result, setResult] = useState<AlgorithmsSessionResultProjection | null>(null);
-  const [failure, setFailure] = useState<string | null>(null);
-  const load = useCallback(async () => {
-    setResult(null);
-    setFailure(null);
-    try { setResult(await getAlgorithmsPracticeResultProjection(sessionId)); }
-    catch (error) { setFailure(messageFor(error)); }
-  }, [sessionId]);
-  useFocusEffect(useCallback(() => { void load(); }, [load]));
+  const { retry, state } = useSimulationResultRead(sessionId);
+  const result = state.kind === "ready" ? state.result : null;
+  const failure = state.kind === "error" ? state.reason : null;
+  const resolution = resolveSimulationResultResolution(result, failure);
+  if (state.requestKey !== sessionId) return <SimulationResultLoadingSkeleton />;
+  if (resolution === "pending") return <SimulationResultLoadingSkeleton />;
 
-  const projection: SimulationSurfaceProjection = result?.score
+  const projection: SimulationSurfaceProjection = resolution === "verified" && result?.score
     ? {
         state: "completed",
         title: "Simulation complete",
@@ -55,38 +51,84 @@ function AlgorithmsInterviewSimulationResultSurface({ navigation, sessionId }: R
         },
         actions: { primary: { id: "back-to-practice", label: "Back to practice", onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB), variant: "secondary" } },
       }
-    : failure ? {
+    : {
         state: "verification_failed",
         title: "Verified result unavailable",
-        notice: { tone: "error", message: failure },
-        actions: { primary: { id: "retry", label: "Try again", onPress: () => { void load(); } }, secondary: { id: "back-to-practice", label: "Back to practice", onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB), variant: "secondary" } },
-      } : {
-        state: "preparing",
-        title: "Preparing Interview Simulation result",
-        notice: { tone: "neutral", message: "Reading the verified session result." },
+        notice: { tone: "error", message: failure ?? "The session result is not available because verification did not complete." },
+        actions: { primary: { id: "retry", label: "Try again", onPress: retry }, secondary: { id: "back-to-practice", label: "Back to practice", onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB), variant: "secondary" } },
       };
   return <SimulationSessionSurface projection={projection} />;
+}
+
+/** Keeps result anatomy visible while the verified summary read is in flight. */
+export function SimulationResultLoadingSkeleton() {
+  const styles = useThemedStyles(createResultLoadingStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const largeLayout = fontScale >= 1.8;
+  const motion = useSkeletonGlassMotion();
+  const message = t("Reading the verified session result.");
+
+  return (
+    <Screen edges={["top", "bottom"]} style={styles.screen}>
+      <View
+        accessibilityLabel={`${t("Loading session result")}. ${message}`}
+        accessibilityLiveRegion="polite"
+        accessibilityRole="progressbar"
+        accessibilityState={{ busy: true }}
+        accessible
+        style={styles.content}
+        testID="simulation-result-loading-skeleton"
+      >
+        <Text accessible={false} maxFontSizeMultiplier={2} style={styles.message}>{message}</Text>
+        <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.shapes}>
+          <View style={styles.context} testID="simulation-result-loading-context">
+            <SkeletonShape motion={motion} style={[styles.line, styles.contextLine, { height: 16 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.line, styles.contextLineShort, { height: 13 * textScale }]} />
+          </View>
+          <View style={styles.heading} testID="simulation-result-loading-heading">
+            <SkeletonShape motion={motion} style={[styles.line, styles.headingLine, { height: 25 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.line, styles.headingLineShort, { height: 16 * textScale }]} />
+          </View>
+          <View style={[styles.scoreCard, largeLayout ? styles.scoreCardLarge : null]} testID="simulation-result-loading-score">
+            <SkeletonShape motion={motion} style={[styles.line, styles.scoreLine, { height: 32 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.line, styles.scoreLineShort, { height: 15 * textScale }]} />
+          </View>
+          <View style={styles.outcomes} testID="simulation-result-loading-outcomes">
+            {Array.from({ length: 3 }, (_, index) => <SkeletonShape key={index} motion={motion} style={[styles.line, styles.outcomeLine, { height: 18 * textScale }]} />)}
+          </View>
+          <View style={styles.metrics} testID="simulation-result-loading-metrics">
+            {Array.from({ length: 2 }, (_, index) => <SkeletonShape key={index} motion={motion} style={[styles.line, styles.metricLine, { height: 18 * textScale }]} />)}
+          </View>
+          <View style={styles.actions} testID="simulation-result-loading-actions">
+            <SkeletonShape motion={motion} style={[styles.line, styles.actionLine, { height: 48 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.line, styles.actionLine, { height: 48 * textScale }]} />
+          </View>
+        </View>
+      </View>
+    </Screen>
+  );
 }
 
 function AlgorithmsInterviewSimulationReviewSurface({ navigation, sessionId }: Readonly<{ navigation: NavigationProp<RootStackParamList>; sessionId: string }>) {
   const styles = useThemedStyles(createReviewStyles);
   const { t } = useTranslation("common");
-  const [result, setResult] = useState<AlgorithmsSessionResultProjection | null>(null);
-  const [failure, setFailure] = useState<string | null>(null);
+  const { state } = useSimulationResultRead(sessionId);
   const [filter, setFilter] = useState<"all" | "missed">("all");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [navigatorVisible, setNavigatorVisible] = useState(false);
   const [unavailableOrdinal, setUnavailableOrdinal] = useState<number | null>(null);
-  const load = useCallback(async () => {
-    setResult(null);
-    setFailure(null);
-    try { setResult(await getAlgorithmsPracticeResultProjection(sessionId)); }
-    catch (error) { setFailure(messageFor(error)); }
+  useEffect(() => {
+    setFilter("all");
+    setSelectedIndex(0);
+    setNavigatorVisible(false);
+    setUnavailableOrdinal(null);
   }, [sessionId]);
-  useFocusEffect(useCallback(() => { void load(); }, [load]));
 
-  if (failure) return <Screen><EmptyState title={t("Review unavailable")} description={t(failure)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
-  if (!result) return <Screen><View accessibilityLabel={t("Loading review…")} accessibilityRole="progressbar" style={styles.pending}><Text maxFontSizeMultiplier={2} style={styles.pendingText}>{t("Reading the verified simulation result.")}</Text></View></Screen>;
+  if (state.requestKey !== sessionId || state.kind === "pending") return <ReviewLoadingSkeleton onBack={() => navigation.goBack()} />;
+  if (state.kind === "error") return <Screen><EmptyState title={t("Review unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  const result = state.result;
   const answers = filter === "missed" ? result.feedbackItems.filter((item) => item.correctness !== "correct") : result.feedbackItems;
   const currentIndex = answers.length ? Math.min(selectedIndex, answers.length - 1) : 0;
   const current = answers[currentIndex];
@@ -207,9 +249,31 @@ function formatElapsed(milliseconds: number): string {
   return `${String(Math.floor(totalSeconds / 60)).padStart(2, "0")}:${String(totalSeconds % 60).padStart(2, "0")}`;
 }
 
+const createResultLoadingStyles = (palette: AppColors) => StyleSheet.create({
+  screen: { gap: 0, paddingBottom: 0 },
+  content: { gap: spacing.lg, width: "100%" },
+  message: { ...typography.body, color: palette.textSecondary, flexShrink: 1 },
+  shapes: { gap: spacing.xl, width: "100%" },
+  line: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1 },
+  context: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },
+  contextLine: { width: "54%" },
+  contextLineShort: { width: "30%" },
+  heading: { gap: spacing.sm },
+  headingLine: { width: "68%" },
+  headingLineShort: { width: "42%" },
+  scoreCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.xl, borderWidth: 1, gap: spacing.sm, padding: spacing.xl },
+  scoreCardLarge: { paddingVertical: spacing.xxl },
+  scoreLine: { width: "38%" },
+  scoreLineShort: { width: "24%" },
+  outcomes: { gap: spacing.sm },
+  outcomeLine: { width: "100%" },
+  metrics: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  metricLine: { flex: 1, minWidth: 120 },
+  actions: { gap: spacing.sm },
+  actionLine: { width: "100%" },
+});
+
 const createReviewStyles = (palette: AppColors) => StyleSheet.create({
-  pending: { alignItems: "center", justifyContent: "center", minHeight: 180 },
-  pendingText: { ...typography.body, color: palette.textSecondary },
   questionBlock: { gap: spacing.xs },
   questionEyebrow: { color: palette.ambient.review, fontSize: 11, fontWeight: "600", letterSpacing: 0.8, lineHeight: 15, opacity: 0.5 },
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
@@ -217,5 +281,3 @@ const createReviewStyles = (palette: AppColors) => StyleSheet.create({
   unavailableContent: { alignSelf: "stretch", flex: 1, position: "relative", width: "100%" },
   unavailableSurface: { alignItems: "center", backgroundColor: palette.effects.unavailableSurface, borderColor: palette.effects.subtleBorder, borderRadius: 18, borderWidth: 1, gap: spacing.lg, left: 20, paddingHorizontal: spacing.xxxl, paddingVertical: 28, position: "absolute", top: 185, width: 353 },
 });
-
-function messageFor(error: unknown): string { return describeOperationalFailure(error, "The session result is not available because verification did not complete."); }

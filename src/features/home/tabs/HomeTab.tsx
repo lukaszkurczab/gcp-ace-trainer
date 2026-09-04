@@ -1,12 +1,13 @@
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { Fragment, useState } from "react";
 
-import { Button, Card, Icon } from "../../../components";
+import { Button, Card, Icon, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
 import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
 import type { CodingInterviewDashboard } from "../../../application/coding-interview";
-import { colorWithOpacity, spacing, typography } from "../../../theme";
+import { colorWithOpacity, radius, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import { activityCompletionLabel, modeLabel, relativeDay } from "./activityPresentation";
+import { modeLabel, relativeDay } from "./activityPresentation";
 import { buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
@@ -33,6 +34,74 @@ type HomeTabProps = {
   trainingAttempts: readonly TrainingAttempt[];
 };
 
+type HomeActionKey = "focus" | "activity";
+type HomeActionWidths = Readonly<Record<HomeActionKey, number>>;
+type HomeActionMeasurements = Readonly<{ key: string; widths: HomeActionWidths }>;
+
+export function HomeLoadingSkeleton() {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const largeLayout = fontScale >= 1.8;
+  const motion = useSkeletonGlassMotion();
+
+  return (
+    <View
+      accessibilityLabel={t("Loading Home")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.homeLoading}
+      testID="home-loading-skeleton"
+    >
+      <Text accessible={false} maxFontSizeMultiplier={2} style={styles.pageTitle}>{t("Home")}</Text>
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.homeLoadingShapes}>
+        <View style={styles.homeLoadingTrackContext}>
+          <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingTrackLabel, { height: 15 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingTrackAction, { height: 13 * textScale }]} />
+        </View>
+        <View style={styles.homeLoadingDecisionCard}>
+          <View style={styles.homeLoadingDecisionHeader}>
+            <SkeletonShape motion={motion} style={styles.homeLoadingDecisionIcon} />
+            <View style={styles.homeLoadingDecisionCopy}>
+              <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingDecisionTitle, { height: 20 * textScale }]} />
+              <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingDecisionDetail, { height: 13 * textScale }]} />
+            </View>
+          </View>
+          <SkeletonShape motion={motion} style={[styles.homeLoadingAction, { minHeight: 48 * textScale }]} />
+        </View>
+        <View style={styles.homeLoadingSection}>
+          <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingSectionLabel, { height: 12 * textScale }]} />
+          <View style={styles.homeLoadingOverview}>
+            {[0, 1, 2].map((row) => (
+              <View key={row} style={[styles.homeLoadingOverviewRow, largeLayout ? styles.homeLoadingOverviewRowLarge : null]}>
+                <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingOverviewLabel, { height: 14 * textScale }]} />
+                <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingOverviewValue, { height: 14 * textScale }]} />
+              </View>
+            ))}
+          </View>
+        </View>
+        <View style={styles.homeLoadingSection}>
+          <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingSectionLabelShort, { height: 12 * textScale }]} />
+          <View style={[styles.homeLoadingFocusRow, largeLayout ? styles.homeLoadingFocusRowLarge : null]}>
+            <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingFocusTitle, { height: 16 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingFocusAction, { height: 16 * textScale }]} />
+          </View>
+        </View>
+        <View style={styles.homeLoadingSection}>
+          <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingSectionLabel, { height: 12 * textScale }]} />
+          <View style={styles.homeLoadingActivityRow}>
+            <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingActivityTitle, { height: 15 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.homeLoadingLine, styles.homeLoadingActivityAction, { height: 15 * textScale }]} />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
 export function HomeTab({
   activeTrack,
   activeSession,
@@ -50,9 +119,15 @@ export function HomeTab({
 }: HomeTabProps) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
-  const { t } = useTranslation("common");
-  const { fontScale } = useWindowDimensions();
+  const { i18n, t } = useTranslation("common");
+  const { fontScale, width } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
+  const actionMeasurementKey = `${i18n.resolvedLanguage ?? i18n.language}:${fontScale}:${width}`;
+  const [actionMeasurements, setActionMeasurements] = useState<HomeActionMeasurements>({ key: "", widths: { activity: 0, focus: 0 } });
+  const actionWidths = actionMeasurements.key === actionMeasurementKey
+    ? actionMeasurements.widths
+    : { activity: 0, focus: 0 };
+  const actionWidth = Math.max(actionWidths.focus, actionWidths.activity);
   const model = buildHomeTabModel({ activeSession, activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts });
   const recommendation = model.recommendations[0];
   const hasActiveSession = activeSession?.status === "active" && activeSession.trackId === activeTrack.id;
@@ -86,8 +161,17 @@ export function HomeTab({
   const overview = buildOverviewMetrics(activeTrack.id, reviewQueueItems, trainingAttempts, activeSession?.id);
   const isFirstUse = !hasActiveSession && trainingAttempts.length === 0 && reviewQueueItems.length === 0;
 
+  function recordActionWidth(key: HomeActionKey, width: number): void {
+    setActionMeasurements((current) => {
+      const widths = current.key === actionMeasurementKey ? current.widths : { activity: 0, focus: 0 };
+      return current.key === actionMeasurementKey && widths[key] === width
+        ? current
+        : { key: actionMeasurementKey, widths: { ...widths, [key]: width } };
+    });
+  }
+
   return (
-    <>
+    <Fragment key={fontScale}>
       <View style={styles.pageIntro}>
         <Text maxFontSizeMultiplier={2} style={styles.pageTitle}>{t("Home")}</Text>
         <Pressable
@@ -186,14 +270,9 @@ export function HomeTab({
       {!isFirstUse ? <View style={styles.overviewSection} testID="home-overview">
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Overview")}</Text>
         {overview.map((metric, index) => (
-          <View key={metric.label} style={[styles.overviewRow, index < overview.length - 1 ? styles.overviewRowDivider : null]} accessibilityLabel={`${t(metric.label)}: ${t(metric.value)}`}>
-            <Text maxFontSizeMultiplier={2} style={styles.overviewLabel}>{t(metric.label)}</Text>
-            <View style={styles.overviewValueGroup}>
-              <View style={styles.overviewTrack}>
-                <View style={[styles.overviewFill, { width: `${metric.progress * 100}%` }]} />
-              </View>
-              <Text maxFontSizeMultiplier={2} style={styles.overviewValue}>{t(metric.value)}</Text>
-            </View>
+          <View key={metric.label} style={[styles.overviewRow, largeText ? styles.overviewRowLargeText : null, index < overview.length - 1 ? styles.overviewRowDivider : null]} accessibilityLabel={`${t(metric.label)}: ${t(metric.value)}`}>
+            <Text maxFontSizeMultiplier={2} style={[styles.overviewLabel, largeText ? styles.overviewLabelLargeText : null]}>{t(metric.label)}</Text>
+            <Text maxFontSizeMultiplier={2} style={[styles.overviewValue, largeText ? styles.overviewValueLargeText : null]}>{t(metric.value)}</Text>
           </View>
         ))}
       </View> : null}
@@ -201,35 +280,48 @@ export function HomeTab({
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Current focus")}</Text>
         <View style={[styles.focusRow, largeText ? styles.focusRowLargeText : null]}>
           <Text maxFontSizeMultiplier={2} style={styles.currentFocusTitle}>{formatPracticeTopicTitle(model.heroTitle, t)}</Text>
-          <Button labelStyle={styles.focusActionLabel} onPress={onChooseTopic} variant="ghost">{t("Open Practice")}</Button>
+          <View key={`focus-action-${actionMeasurementKey}`} style={[styles.actionWidthWrapper, actionWidth > 0 ? { width: actionWidth } : null]}>
+            <View onLayout={({ nativeEvent }) => recordActionWidth("focus", nativeEvent.layout.width)} style={styles.measuredControl}>
+              <Button
+                labelStyle={styles.focusActionLabel}
+                onPress={onChooseTopic}
+                style={styles.measuredAction}
+                variant="ghost"
+              >
+                {t("Open Practice")}
+              </Button>
+            </View>
+          </View>
         </View>
       </View> : null}
       {!isFirstUse ? <View style={styles.detailSection}>
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Recent activity")}</Text>
-        <View style={styles.activityRow}>
+        <View style={[styles.activityRow, largeText ? styles.activityRowLargeText : null]}>
           {recentAttempt ? (
             <View style={styles.activityCopy}>
               <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(modeLabel(recentAttempt.modeId))}</Text>
-              <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{activityCompletionLabel(recentAttempt.answeredAt, t)}</Text>
             </View>
           ) : (
             <Text maxFontSizeMultiplier={2} style={styles.activityEmpty}>{t("No activity yet")}</Text>
           )}
-          <Pressable
-            accessibilityRole="button"
-            onPress={onOpenActivity}
-            style={({ pressed }) => [styles.activityAction, pressed ? styles.pressed : null]}
-            testID={runtimeSelectors.home.activity()}
-          >
-            <Text maxFontSizeMultiplier={2} style={styles.activityActionText}>{t("View activity")}</Text>
-          </Pressable>
+          <View key={`activity-action-${actionMeasurementKey}`} style={[styles.actionWidthWrapper, actionWidth > 0 ? { width: actionWidth } : null]}>
+            <Pressable
+              accessibilityRole="button"
+              onLayout={({ nativeEvent }) => recordActionWidth("activity", nativeEvent.layout.width)}
+              onPress={onOpenActivity}
+              style={({ pressed }) => [styles.activityAction, styles.measuredAction, pressed ? styles.pressed : null]}
+              testID={runtimeSelectors.home.activity()}
+            >
+              <Text maxFontSizeMultiplier={2} style={styles.activityActionText}>{t("View activity")}</Text>
+            </Pressable>
+          </View>
         </View>
       </View> : null}
-    </>
+    </Fragment>
   );
 }
 
-type HomeOverviewMetric = Readonly<{ label: string; progress: number; value: string }>;
+type HomeOverviewMetric = Readonly<{ label: string; value: string }>;
 
 function buildOverviewMetrics(
   trackId: TrackDisplay["id"],
@@ -244,9 +336,9 @@ function buildOverviewMetrics(
   const latestAttempt = [...trackAttempts].sort((left, right) => right.answeredAt.localeCompare(left.answeredAt))[0];
 
   return [
-    { label: "This week", progress: Math.min(1, weekAttempts.length / 10), value: weekAttempts.length ? `${weekAttempts.length} answered` : "No activity yet" },
-    { label: "Review", progress: dueReviews ? 1 : 0, value: dueReviews ? `${dueReviews} due` : "Nothing due" },
-    { label: "Last session", progress: latestAttempt ? 1 : 0, value: latestAttempt ? `${modeLabel(latestAttempt.modeId)} · ${relativeDay(latestAttempt.answeredAt)}` : "No activity yet" },
+    { label: "This week", value: weekAttempts.length ? `${weekAttempts.length} answered` : "No activity yet" },
+    { label: "Review", value: dueReviews ? `${dueReviews} due` : "Nothing due" },
+    { label: "Last session", value: latestAttempt ? `${modeLabel(latestAttempt.modeId)} · ${relativeDay(latestAttempt.answeredAt)}` : "No activity yet" },
   ];
 }
 
@@ -258,6 +350,138 @@ function startOfUtcWeek(now: Date): Date {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  homeLoading: {
+    gap: spacing.lg,
+    width: "100%",
+  },
+  homeLoadingShapes: {
+    gap: spacing.xl,
+    width: "100%",
+  },
+  homeLoadingLine: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.pill,
+  },
+  homeLoadingTrackContext: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+  },
+  homeLoadingTrackLabel: {
+    maxWidth: "62%",
+    width: "62%",
+  },
+  homeLoadingTrackAction: {
+    width: "18%",
+  },
+  homeLoadingDecisionCard: {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    gap: spacing.lg,
+    padding: spacing.xl,
+  },
+  homeLoadingDecisionHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  homeLoadingDecisionIcon: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.lg,
+    height: 44,
+    width: 44,
+  },
+  homeLoadingDecisionCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    minWidth: 0,
+  },
+  homeLoadingDecisionTitle: {
+    width: "76%",
+  },
+  homeLoadingDecisionDetail: {
+    width: "58%",
+  },
+  homeLoadingAction: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.button,
+    width: "100%",
+  },
+  homeLoadingSection: {
+    gap: spacing.sm,
+  },
+  homeLoadingSectionLabel: {
+    width: "29%",
+  },
+  homeLoadingSectionLabelShort: {
+    width: "25%",
+  },
+  homeLoadingOverview: {
+    gap: spacing.xs,
+  },
+  homeLoadingOverviewRow: {
+    alignItems: "center",
+    borderBottomColor: palette.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+    minHeight: 42,
+    paddingVertical: spacing.xs,
+  },
+  homeLoadingOverviewRowLarge: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+    gap: spacing.xxs,
+    justifyContent: "center",
+  },
+  homeLoadingOverviewLabel: {
+    maxWidth: "62%",
+    width: "62%",
+  },
+  homeLoadingOverviewValue: {
+    width: "27%",
+  },
+  homeLoadingFocusRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+  },
+  homeLoadingFocusRowLarge: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+    gap: spacing.xs,
+  },
+  homeLoadingFocusTitle: {
+    width: "54%",
+  },
+  homeLoadingFocusAction: {
+    width: "24%",
+  },
+  homeLoadingActivityRow: {
+    alignItems: "center",
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+    minHeight: 64,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  homeLoadingActivityTitle: {
+    maxWidth: "64%",
+    width: "64%",
+  },
+  homeLoadingActivityAction: {
+    width: "22%",
+  },
   pageIntro: {
     gap: 18,
   },
@@ -299,11 +523,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   pressed: {
     opacity: 0.78,
-  },
-  eyebrow: {
-    ...typography.caption,
-    color: palette.textMuted,
-    textTransform: "uppercase",
   },
   decisionCard: {
     backgroundColor: palette.surface,
@@ -405,21 +624,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: 10,
   },
+  overviewRowLargeText: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+    gap: spacing.xxs,
+  },
   overviewRowDivider: {
     borderBottomColor: palette.border,
     borderBottomWidth: 1,
-  },
-  overviewTrack: {
-    backgroundColor: palette.textPrimary,
-    borderRadius: 100,
-    height: 4,
-    overflow: "hidden",
-    width: 40,
-  },
-  overviewFill: {
-    backgroundColor: palette.primary,
-    borderRadius: 100,
-    height: 4,
   },
   overviewLabel: {
     color: palette.textSecondary,
@@ -428,17 +640,18 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     lineHeight: 22,
     minWidth: 0,
   },
-  overviewValueGroup: {
-    alignItems: "center",
-    flexDirection: "row",
-    flexShrink: 1,
-    gap: spacing.sm,
+  overviewLabelLargeText: {
+    flex: 0,
   },
   overviewValue: {
     ...typography.bodyStrong,
     color: palette.textPrimary,
     flexShrink: 1,
     textAlign: "right",
+  },
+  overviewValueLargeText: {
+    alignSelf: "stretch",
+    textAlign: "left",
   },
   secondaryAction: {
     alignItems: "center",
@@ -464,13 +677,23 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     justifyContent: "space-between",
   },
   focusRowLargeText: {
-    alignItems: "flex-start",
+    alignItems: "stretch",
     flexDirection: "column",
+    gap: spacing.sm,
+  },
+  actionWidthWrapper: {
+    alignSelf: "center",
+  },
+  measuredControl: {
+    alignSelf: "center",
+  },
+  measuredAction: {
+    alignSelf: "center",
   },
   focusTitle: {
-    ...typography.bodyStrong,
+    ...typography.heading,
     color: palette.textPrimary,
-    flex: 1,
+    flexShrink: 1,
     minWidth: 0,
   },
   currentFocusTitle: {
@@ -493,6 +716,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     justifyContent: "space-between",
     minHeight: 44,
   },
+  activityRowLargeText: {
+    alignItems: "stretch",
+    flexDirection: "column",
+    gap: spacing.sm,
+  },
   activityCopy: {
     flex: 1,
     gap: spacing.xxs,
@@ -501,12 +729,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textPrimary,
     fontSize: 14,
     fontWeight: "500",
-    lineHeight: 18,
-  },
-  activityDetail: {
-    color: palette.textSecondary,
-    fontSize: 12,
-    fontWeight: "400",
     lineHeight: 18,
   },
   activityEmpty: {

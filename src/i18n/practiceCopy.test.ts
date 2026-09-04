@@ -178,7 +178,7 @@ test("admitted practice mode titles, details, and unavailable reasons are locale
     for (const mode of buildPracticeModes(track)) {
       const context = `${track.id}:${mode.mode}`;
       assertTranslationKey(mode.title, `${context}:title`);
-      assertTranslationKey(mode.detail, `${context}:detail`);
+      if (mode.detail) assertTranslationKey(mode.detail, `${context}:detail`);
       if (mode.unavailableReason) assertTranslationKey(mode.unavailableReason, `${context}:unavailableReason`);
     }
   }

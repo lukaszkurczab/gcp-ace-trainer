@@ -4,7 +4,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
-import { AppShellHeader, Button, Card, ChoiceRow, EmptyState, LoadingState, Screen, ScreenHeader, SectionHeader } from "../../components";
+import { AppShellHeader, Button, Card, ChoiceRow, EmptyState, Screen, ScreenHeader, SectionHeader, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { CODING_INTERVIEW_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
@@ -13,7 +13,8 @@ import type { RootStackParamList } from "../../navigation/types";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { radius, spacing, typography } from "../../theme";
-import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/coding-interview";
+import { ALGORITHM_MODE_IDS, getAlgorithmMode, isAlgorithmModeId } from "../../tracks/coding-interview";
+import { isCertificationPracticeModeId } from "../../tracks/certification";
 import { isDesignInterviewModeId } from "../../tracks/design-interview";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import {
@@ -51,6 +52,133 @@ type PracticeSetupReadState =
   | Readonly<{ kind: "pending"; requestKey: PracticeSetupRequestKey }>
   | Readonly<{ kind: "ready"; requestKey: PracticeSetupRequestKey; activeTrackId: TrackId | null; trainingAttempts: readonly TrainingAttempt[] }>
   | Readonly<{ kind: "unavailable"; requestKey: PracticeSetupRequestKey; reason: string }>;
+
+type PracticeSetupLoadingVariant =
+  | "diagnostic"
+  | "selector"
+  | "lengthOnly"
+  | "design"
+  | "customCoding"
+  | "lengthFeedbackReview"
+  | "unknown";
+
+function resolvePracticeSetupLoadingVariant(mode?: PracticeSessionMode): PracticeSetupLoadingVariant {
+  if (!mode) return "unknown";
+  if (mode === "certification-diagnostic-baseline") return "diagnostic";
+  if (mode === "certification-focus-practice" || mode === "certification-scenario-practice") return "selector";
+  if (mode === ALGORITHM_MODE_IDS.customPractice) return "customCoding";
+  if (isDesignInterviewModeId(mode)) return "design";
+  if (isAlgorithmModeId(mode)) return "lengthOnly";
+  if (isCertificationPracticeModeId(mode) && mode === "certification-quick-review") return "lengthFeedbackReview";
+  if (isCertificationPracticeModeId(mode)) return "lengthOnly";
+  return "unknown";
+}
+
+export function PracticeSetupLoadingSkeleton({ mode }: Readonly<{ mode?: PracticeSessionMode }> = {}) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const largeLayout = fontScale >= 1.8;
+  const motion = useSkeletonGlassMotion();
+  const variant = resolvePracticeSetupLoadingVariant(mode);
+  const compactCodingPractice = variant === "customCoding";
+  const showIntro = variant !== "customCoding" && variant !== "unknown";
+  const showLength = variant !== "diagnostic" && variant !== "unknown";
+  const showSelector = variant === "selector";
+  const showFeedback = variant === "customCoding" || variant === "lengthFeedbackReview";
+  const showReview = variant === "lengthFeedbackReview";
+
+  return (
+    <View
+      accessibilityLabel={t("Loading practice setup")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={[styles.practiceSetupLoading, compactCodingPractice ? styles.practiceSetupLoadingCompact : null]}
+      testID="practice-setup-loading-skeleton"
+    >
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.practiceSetupLoadingShapes}>
+        {showIntro ? <View style={styles.practiceSetupLoadingIntro}>
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingTitle, { height: 21 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingSubtitle, { height: 13 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingSubtitleShort, { height: 13 * textScale }]} />
+        </View> : null}
+
+        {variant === "diagnostic" ? <View style={styles.practiceSetupLoadingDescriptionCard}>
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelTitle, { height: 16 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelDetail, { height: 13 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingDescriptionShort, { height: 13 * textScale }]} />
+        </View> : null}
+
+        {showSelector ? <View style={styles.practiceSetupLoadingSection}>
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingSectionTitle, { height: 12 * textScale }]} />
+          <View style={styles.practiceSetupLoadingPanelList}>
+            {[0, 1].map((selector) => (
+              <View key={selector} style={[styles.practiceSetupLoadingPanel, largeLayout ? styles.practiceSetupLoadingPanelLarge : null]}>
+                <View style={styles.practiceSetupLoadingPanelCopy}>
+                  <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelTitle, { height: 15 * textScale }]} />
+                  <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelDetail, { height: 12 * textScale }]} />
+                </View>
+                <SkeletonShape motion={motion} style={styles.practiceSetupLoadingControl} />
+              </View>
+            ))}
+          </View>
+        </View> : null}
+
+        {showLength ? <View style={[styles.practiceSetupLoadingSection, compactCodingPractice ? styles.practiceSetupLoadingCompactSection : null]}>
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingSectionTitle, { height: 12 * textScale }]} />
+          <View style={[styles.practiceSetupLoadingLengthGrid, compactCodingPractice ? styles.practiceSetupLoadingCompactLengthGrid : null]}>
+            {[0, 1, 2].map((option) => (
+              <View key={option} style={[styles.practiceSetupLoadingLengthOption, compactCodingPractice ? styles.practiceSetupLoadingCompactLengthOption : null, { minHeight: (compactCodingPractice ? 44 : 86) * textScale }]}>
+                <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingLengthValue, { height: 17 * textScale }]} />
+                <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingLengthMeta, { height: 11 * textScale }]} />
+              </View>
+            ))}
+          </View>
+        </View> : null}
+
+        {variant === "design" ? <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingFeedbackStrip, { height: 14 * textScale }]} /> : null}
+
+        {showFeedback ? <View style={[styles.practiceSetupLoadingSection, compactCodingPractice ? styles.practiceSetupLoadingCompactSection : null]}>
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingSectionTitle, { height: 12 * textScale }]} />
+          <View style={styles.practiceSetupLoadingPanelList}>
+            {[0, 1].map((panel) => (
+              <View key={panel} style={[styles.practiceSetupLoadingPanel, compactCodingPractice ? styles.practiceSetupLoadingCompactPanel : null, largeLayout ? styles.practiceSetupLoadingPanelLarge : null]}>
+                <View style={styles.practiceSetupLoadingPanelCopy}>
+                  <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelTitle, { height: 15 * textScale }]} />
+                  <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelDetail, { height: 12 * textScale }]} />
+                </View>
+                <SkeletonShape motion={motion} style={styles.practiceSetupLoadingControl} />
+              </View>
+            ))}
+          </View>
+        </View> : null}
+
+        {showReview ? <View style={styles.practiceSetupLoadingReviewCard}>
+          <View style={styles.practiceSetupLoadingPanelCopy}>
+            <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelTitle, { height: 15 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelDetail, { height: 12 * textScale }]} />
+          </View>
+          <SkeletonShape motion={motion} style={styles.practiceSetupLoadingSwitch} />
+        </View> : null}
+
+        {variant === "unknown" ? <View style={styles.practiceSetupLoadingUnknown}>
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingUnknownTitle, { height: 16 * textScale }]} />
+          <View style={styles.practiceSetupLoadingUnknownCard}>
+            <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingUnknownLine, { height: 15 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingUnknownLineShort, { height: 12 * textScale }]} />
+          </View>
+        </View> : null}
+
+        <View style={styles.practiceSetupLoadingActionSpace}>
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingAction, { minHeight: 48 * textScale }]} />
+        </View>
+      </View>
+    </View>
+  );
+}
 
 export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenProps) {
   const styles = useThemedStyles(createStyles);
@@ -111,7 +239,22 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     }, [requestKey, t]),
   );
 
-  if (readState.requestKey !== requestKey || readState.kind === "pending") return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><LoadingState title={t("Preparing practice")} /></Screen>;
+  if (readState.requestKey !== requestKey || readState.kind === "pending") {
+    const compactCodingPractice = route.params?.mode === ALGORITHM_MODE_IDS.customPractice;
+    return (
+      <Screen edges={["top", "bottom"]}>
+        {compactCodingPractice ? <ScreenHeader
+          backAction={{ onPress: () => goBackOrHome(navigation) }}
+          context={t("Practice")}
+          description={t("Choose the length and feedback timing for this session.")}
+          title={t("Practice settings")}
+          titleTestID={runtimeSelectors.practice.customSetupTitle()}
+          variant="practiceSetup"
+        /> : <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} />}
+        <PracticeSetupLoadingSkeleton mode={route.params?.mode} />
+      </Screen>
+    );
+  }
   if (readState.kind === "unavailable") return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><EmptyState title={t("Practice setup is unavailable")} description={t(readState.reason)} /></Screen>;
   const { activeTrackId: resolvedTrackId, trainingAttempts } = readState;
   if (!resolvedTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
@@ -242,7 +385,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               />
             ))}
           </View>
-        </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text key={`practice-setup-diagnostic-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Diagnostic Baseline")}</Text><Text key={`practice-setup-diagnostic-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("40 questions on this topic. No time limit. Explanations after each answer.")}</Text></View></Card>}
+        </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text key={`practice-setup-diagnostic-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Knowledge Check")}</Text><Text key={`practice-setup-diagnostic-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("40 questions on this topic. No time limit. Explanations after each answer.")}</Text></View></Card>}
 
         {designMode ? <Text key={`design-feedback-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Feedback is shown after each answer.")}</Text> : null}
 
@@ -372,6 +515,216 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {
     backgroundColor: palette.background,
     flex: 1,
+  },
+  practiceSetupLoading: {
+    gap: spacing.xl,
+    minWidth: 0,
+    width: "100%",
+  },
+  practiceSetupLoadingCompact: {
+    gap: spacing.lg,
+  },
+  practiceSetupLoadingShapes: {
+    gap: spacing.xl,
+    minWidth: 0,
+    width: "100%",
+  },
+  practiceSetupLoadingIntro: {
+    gap: spacing.sm,
+    minWidth: 0,
+    width: "100%",
+  },
+  practiceSetupLoadingTitle: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderColor: palette.border,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    maxWidth: 250,
+    width: "68%",
+  },
+  practiceSetupLoadingSubtitle: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.sm,
+    maxWidth: 440,
+    width: "100%",
+  },
+  practiceSetupLoadingSubtitleShort: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.sm,
+    maxWidth: 300,
+    width: "72%",
+  },
+  practiceSetupLoadingSection: {
+    gap: spacing.md,
+  },
+  practiceSetupLoadingCompactSection: {
+    gap: spacing.sm,
+  },
+  practiceSetupLoadingSectionTitle: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.sm,
+    maxWidth: 180,
+    width: "42%",
+  },
+  practiceSetupLoadingDescriptionCard: {
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    gap: spacing.sm,
+    padding: spacing.lg,
+  },
+  practiceSetupLoadingDescriptionShort: {
+    maxWidth: 260,
+    width: "74%",
+  },
+  practiceSetupLoadingLengthGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.md,
+  },
+  practiceSetupLoadingCompactLengthGrid: {
+    backgroundColor: palette.surfaceInput,
+    borderColor: palette.border,
+    borderRadius: radius.button,
+    borderWidth: 1,
+    flexWrap: "nowrap",
+    gap: spacing.xs,
+    minHeight: 54,
+    padding: spacing.xs,
+  },
+  practiceSetupLoadingLengthOption: {
+    alignItems: "center",
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flex: 1,
+    gap: spacing.xs,
+    justifyContent: "center",
+    minWidth: 108,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.md,
+  },
+  practiceSetupLoadingCompactLengthOption: {
+    backgroundColor: "transparent",
+    borderColor: "transparent",
+    borderWidth: 1,
+    gap: spacing.xs,
+    minWidth: 0,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
+  practiceSetupLoadingLine: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.sm,
+  },
+  practiceSetupLoadingLengthValue: {
+    maxWidth: 58,
+    width: "44%",
+  },
+  practiceSetupLoadingLengthMeta: {
+    maxWidth: 72,
+    width: "60%",
+  },
+  practiceSetupLoadingPanelList: {
+    gap: spacing.md,
+  },
+  practiceSetupLoadingPanel: {
+    alignItems: "center",
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 92,
+    padding: spacing.lg,
+  },
+  practiceSetupLoadingPanelLarge: {
+    minHeight: 132,
+  },
+  practiceSetupLoadingCompactPanel: {
+    minHeight: 56,
+    padding: spacing.md,
+  },
+  practiceSetupLoadingPanelCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    minWidth: 0,
+  },
+  practiceSetupLoadingPanelTitle: {
+    maxWidth: 220,
+    width: "72%",
+  },
+  practiceSetupLoadingPanelDetail: {
+    maxWidth: 360,
+    width: "92%",
+  },
+  practiceSetupLoadingFeedbackStrip: {
+    maxWidth: 360,
+    width: "84%",
+  },
+  practiceSetupLoadingControl: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderColor: palette.border,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    height: 28,
+    width: 28,
+  },
+  practiceSetupLoadingReviewCard: {
+    alignItems: "center",
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+    minHeight: 92,
+    padding: spacing.lg,
+  },
+  practiceSetupLoadingSwitch: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.pill,
+    height: 32,
+    width: 56,
+  },
+  practiceSetupLoadingActionSpace: {
+    gap: spacing.md,
+    marginTop: spacing.xl,
+    width: "100%",
+  },
+  practiceSetupLoadingAction: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderColor: palette.border,
+    borderRadius: radius.button,
+    borderWidth: 1,
+    width: "100%",
+  },
+  practiceSetupLoadingUnknown: {
+    gap: spacing.md,
+  },
+  practiceSetupLoadingUnknownTitle: {
+    maxWidth: 230,
+    width: "54%",
+  },
+  practiceSetupLoadingUnknownCard: {
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    gap: spacing.sm,
+    padding: spacing.lg,
+  },
+  practiceSetupLoadingUnknownLine: {
+    maxWidth: 340,
+    width: "88%",
+  },
+  practiceSetupLoadingUnknownLineShort: {
+    maxWidth: 230,
+    width: "64%",
   },
   intro: {
     gap: spacing.sm,

@@ -2,11 +2,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { Button, EmptyState, Icon, LoadingState, Screen, ScreenHeader, SettingsBottomSheet } from "../../components";
+import { Button, EmptyState, Icon, Screen, ScreenHeader, SettingsBottomSheet, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
 import { getTrackDisplays } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
@@ -53,7 +53,7 @@ export function ActivityScreen({ navigation }: Props) {
   );
 
   if (state.kind === "loading") {
-    return <Screen ambientVariant="activity" edges={["top", "bottom"]}>{header}<LoadingState title={t("Loading activity")} description={t("Reading your durable session history.")} /></Screen>;
+    return <Screen ambientVariant="activity" edges={["top", "bottom"]} style={styles.screen}>{header}<ActivityLoadingSkeleton /></Screen>;
   }
   if (state.kind === "unavailable") {
     return <Screen ambientVariant="activity" edges={["top", "bottom"]}>{header}<EmptyState title={t("Activity unavailable")} description={t(state.reason)} /></Screen>;
@@ -145,6 +145,57 @@ export function ActivityScreen({ navigation }: Props) {
   );
 }
 
+export function ActivityLoadingSkeleton() {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const motion = useSkeletonGlassMotion();
+  const activityRows = [
+    [styles.loadingActivityLineLong, styles.loadingActivityLineMedium, styles.loadingActivityLineShort, styles.loadingActivityLineMedium],
+    [styles.loadingActivityLineMedium, styles.loadingActivityLineLong, styles.loadingActivityLineShort, styles.loadingActivityLineMedium],
+    [styles.loadingActivityLineLong, styles.loadingActivityLineMedium, styles.loadingActivityLineShort, styles.loadingActivityLineShort],
+  ];
+
+  return (
+    <View
+      accessibilityLabel={t("Loading activity")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.activityLoading}
+    >
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.activityLoadingShapes}>
+        <View style={styles.loadingFilterShape}>
+          <SkeletonShape motion={motion} style={[styles.loadingFilterLine, { height: 14 * textScale }]} />
+          <SkeletonShape motion={motion} style={styles.loadingFilterActionShape} />
+        </View>
+        <View style={styles.loadingGroups}>
+          {[activityRows.slice(0, 2), activityRows.slice(2)].map((groupRows, groupIndex) => (
+            <View key={groupIndex} style={styles.loadingGroup}>
+              <SkeletonShape motion={motion} style={[styles.loadingGroupLabel, groupIndex === 1 ? styles.loadingGroupLabelShort : null, { height: 12 * textScale }]} />
+              <View style={styles.loadingGroupCard}>
+                {groupRows.map((lineStyles, rowIndex) => (
+                  <View key={rowIndex} style={[styles.loadingActivityRow, groupIndex === 1 || rowIndex === groupRows.length - 1 ? styles.loadingActivityRowLast : null]}>
+                    <SkeletonShape motion={motion} style={styles.loadingActivityIcon} />
+                    <View style={styles.loadingActivityCopy}>
+                      {lineStyles.map((lineStyle, lineIndex) => (
+                        <SkeletonShape key={lineIndex} motion={motion} style={[styles.loadingActivityLine, lineStyle, { height: (lineIndex === 0 ? 14 : 11) * textScale }]} />
+                      ))}
+                    </View>
+                    <SkeletonShape motion={motion} style={styles.loadingActivityChevron} />
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+}
+
 function ActivityEmptyState({ filtered, onOpenPractice, onShowAll }: Readonly<{ filtered: boolean; onOpenPractice: () => void; onShowAll: () => void }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
@@ -233,7 +284,26 @@ function translateDateLabel(label: string, translate: (value: string) => string)
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  activityLoading: { gap: spacing.sm, width: "100%" },
+  activityLoadingShapes: { gap: spacing.sm, width: "100%" },
   screen: { gap: spacing.sm },
+  loadingFilterShape: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", gap: spacing.sm, minHeight: 40, paddingHorizontal: 14 },
+  loadingFilterLine: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill, flex: 1, maxWidth: "55%" },
+  loadingFilterActionShape: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill, height: 18, width: 18 },
+  loadingGroups: { gap: spacing.md, paddingBottom: spacing.lg, paddingTop: spacing.xs },
+  loadingGroup: { gap: spacing.xs },
+  loadingGroupLabel: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill, width: "26%" },
+  loadingGroupLabelShort: { width: "19%" },
+  loadingGroupCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, overflow: "hidden" },
+  loadingActivityRow: { alignItems: "center", borderBottomColor: palette.border, borderBottomWidth: 1, flexDirection: "row", gap: 10, minHeight: 73, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
+  loadingActivityRowLast: { borderBottomWidth: 0 },
+  loadingActivityIcon: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.md, height: 36, width: 36 },
+  loadingActivityCopy: { flex: 1, gap: 2, minWidth: 0 },
+  loadingActivityLine: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill },
+  loadingActivityLineLong: { width: "82%" },
+  loadingActivityLineMedium: { width: "64%" },
+  loadingActivityLineShort: { width: "44%" },
+  loadingActivityChevron: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill, height: 14, width: 14 },
   filter: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", gap: spacing.sm, minHeight: 40, paddingHorizontal: 14 },
   filterTrigger: { flex: 1, minWidth: 0 },
   filterAction: { alignItems: "center", height: 18, justifyContent: "center", width: 18 },

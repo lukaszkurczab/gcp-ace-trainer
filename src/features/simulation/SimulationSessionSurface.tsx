@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
-import { AnswerOption, Button, Card, Icon, Screen } from "../../components";
+import { AnswerOption, Button, Card, Icon, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { radius, spacing, typography } from "../../theme";
 import { complexityValueAccessibilityLabel, orderingMoveAccessibilityLabel } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
@@ -25,6 +25,7 @@ type SimulationSessionSurfaceProps = Readonly<{ projection: SimulationSurfacePro
  */
 export function SimulationSessionSurface({ projection }: SimulationSessionSurfaceProps) {
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
   const [navigatorVisible, setNavigatorVisible] = useState(false);
   const runtimeIdentity = projection.runtimeIdentity;
   if (mayRenderSimulationCompletion(projection)) {
@@ -34,29 +35,69 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
   const actionBar = projection.confirmation || operationNotice ? undefined : projection.actions ? <ActionBar sessionId={runtimeIdentity?.sessionId} {...projection.actions} /> : undefined;
   const interactionLocked = projection.state !== "editable";
   const savedResponse = projection.state === "editable" && projection.notice?.message === "Saved";
+  const preparing = projection.state === "preparing";
 
   return (
     <View style={styles.root} testID={runtimeIdentity ? runtimeSelectors.simulation.root(runtimeIdentity.sessionId) : undefined}>
       <SessionShell
         actionBar={actionBar}
         layout={projection.confirmation ? "simulationConfirmation" : savedResponse ? "simulationSaved" : "simulation"}
-        modeLabel={projection.modeLabel}
+        modeLabel={projection.modeLabel ? t(projection.modeLabel) : undefined}
         onPositionPress={projection.state === "editable" ? () => setNavigatorVisible(true) : undefined}
         position={projection.position}
         positionAccessibilityLabel={projection.position ? `Open question navigator, ${projection.position.label}` : undefined}
         progress={projection.progress}
         timer={projection.timer}
       >
-        {projection.state !== "editable" ? <Text maxFontSizeMultiplier={2} style={styles.title}>{projection.title}</Text> : null}
-        {savedResponse ? <SavedQuestionContext onNavigator={() => setNavigatorVisible(true)} /> : null}
-        {savedResponse ? <SavedStatus /> : null}
-        {projection.notice && projection.state !== "editable" ? <Notice notice={projection.notice} /> : null}
-        {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} variant={savedResponse ? "simulationSaved" : "simulation"} /> : null}
-        {projection.operation && !isSimulationOperationNotice(projection.operation) ? <SimulationOperationPanel operation={projection.operation} /> : null}
+        {preparing ? <SimulationLoadingSkeleton /> : (
+          <>
+            {projection.state !== "editable" ? <Text maxFontSizeMultiplier={2} style={styles.title}>{t(projection.title)}</Text> : null}
+            {savedResponse ? <SavedQuestionContext onNavigator={() => setNavigatorVisible(true)} /> : null}
+            {savedResponse ? <SavedStatus /> : null}
+            {projection.notice && projection.state !== "editable" ? <Notice notice={projection.notice} /> : null}
+            {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} variant={savedResponse ? "simulationSaved" : "simulation"} /> : null}
+            {projection.operation && !isSimulationOperationNotice(projection.operation) ? <SimulationOperationPanel operation={projection.operation} /> : null}
+          </>
+        )}
       </SessionShell>
       {operationNotice ? <SimulationRecoverySurface actions={projection.actions} operationNotice={operationNotice} sessionId={runtimeIdentity?.sessionId} /> : null}
       {projection.state === "editable" && projection.onOccurrencePress ? <SimulationQuestionNavigator onDismiss={() => setNavigatorVisible(false)} onOccurrencePress={projection.onOccurrencePress} positions={projection.navigator} visible={navigatorVisible} /> : null}
       {projection.confirmation ? <ConfirmationActionSheet confirmation={projection.confirmation} sessionId={runtimeIdentity?.sessionId} /> : null}
+    </View>
+  );
+}
+
+/** Reserves the active simulation's question and response anatomy while its projection is preparing. */
+export function SimulationLoadingSkeleton() {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const largeLayout = fontScale >= 1.8;
+  const motion = useSkeletonGlassMotion();
+
+  return (
+    <View
+      accessibilityLabel={t("Preparing Interview Simulation")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.simulationLoading}
+      testID="simulation-loading-skeleton"
+    >
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.simulationLoadingShapes}>
+        <View style={styles.simulationLoadingQuestion} testID="simulation-loading-question">
+          <SkeletonShape motion={motion} style={[styles.simulationLoadingLine, styles.simulationLoadingQuestionLabel, { height: 13 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.simulationLoadingLine, styles.simulationLoadingQuestionLine, { height: 22 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.simulationLoadingLine, styles.simulationLoadingQuestionLineShort, { height: 16 * textScale }]} />
+        </View>
+        <View style={[styles.simulationLoadingResponse, largeLayout ? styles.simulationLoadingResponseLarge : null]} testID="simulation-loading-response">
+          <SkeletonShape motion={motion} style={[styles.simulationLoadingLine, styles.simulationLoadingResponseTitle, { height: 16 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.simulationLoadingLine, styles.simulationLoadingResponseLine, { height: 48 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.simulationLoadingLine, styles.simulationLoadingResponseLine, { height: 48 * textScale }]} />
+        </View>
+      </View>
     </View>
   );
 }
@@ -94,7 +135,9 @@ function Action({ action, fullWidth = false, sessionId }: Readonly<{ action: Sim
 
 function Notice({ notice }: Readonly<{ notice: NonNullable<SimulationSurfaceProjection["notice"]> }>) {
   const styles = useThemedStyles(createStyles);
-  return <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, styles[notice.tone]]}><Text maxFontSizeMultiplier={2} style={styles.noticeText}>{notice.message}</Text></View>;
+  const { t } = useTranslation("common");
+  const message = t(notice.message);
+  return <View accessible accessibilityLabel={message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, styles[notice.tone]]}><Text maxFontSizeMultiplier={2} style={styles.noticeText}>{message}</Text></View>;
 }
 
 function SavedQuestionContext({ onNavigator }: Readonly<{ onNavigator: () => void }>) {
@@ -248,6 +291,17 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   recoveryRegion: { gap: spacing.lg, paddingBottom: spacing.lg, paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
   questionLabel: { color: palette.primary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   root: { flex: 1 },
+  simulationLoading: { gap: spacing.lg, width: "100%" },
+  simulationLoadingShapes: { gap: spacing.lg, width: "100%" },
+  simulationLoadingQuestion: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.xl, borderWidth: 1, gap: spacing.sm, padding: spacing.xl },
+  simulationLoadingResponse: { backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.xl, borderWidth: 1, gap: spacing.md, minHeight: 160, padding: spacing.xl },
+  simulationLoadingResponseLarge: { minHeight: 220 },
+  simulationLoadingLine: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.pill, borderWidth: 1 },
+  simulationLoadingQuestionLabel: { width: "24%" },
+  simulationLoadingQuestionLine: { width: "92%" },
+  simulationLoadingQuestionLineShort: { width: "64%" },
+  simulationLoadingResponseTitle: { width: "48%" },
+  simulationLoadingResponseLine: { width: "100%" },
   success: { backgroundColor: palette.successSoft, borderColor: palette.success },
   title: { ...typography.title, color: palette.textPrimary },
   simulationControls: { gap: 14 },

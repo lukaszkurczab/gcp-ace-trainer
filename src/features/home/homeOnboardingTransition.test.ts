@@ -16,6 +16,15 @@ test("a failed Home shell read keeps the learner in a retryable state on the can
   assert.match(source, /useFocusEffect\([\s\S]*?\}, \[shellReload\]\),/);
 });
 
+test("Home focus retries only eligible pending account data and clears route tab suppression on local navigation", () => {
+  assert.match(source, /useState<HomeShellTab>\(route\.params\?\.initialTab \?\? "home"\)/);
+  assert.match(source, /if \(activeTab !== "home" \|\| \(initialRouteTabRef\.current !== null && initialRouteTabRef\.current !== "home"\)\) return undefined;/);
+  assert.match(source, /if \(accountState\.kind !== "authenticated" \|\| accountState\.accountData\.status === "resumeRequired"\) return undefined;\s*void accountRef\.current\.retryPendingAccountSync\(\);/);
+  assert.match(source, /\}, \[activeTab\]\),/);
+  assert.match(source, /function handleHomeTabChange\(tab: HomeShellTab\) \{\s*initialRouteTabRef\.current = null;\s*setActiveTab\(tab\);/);
+  assert.match(source, /function handleHomeTabChange\(tab: HomeShellTab\) \{[\s\S]*?navigation\.setParams\(\{ initialTab: tab \}\);/);
+});
+
 test("the first Home visit replaces repeated empty metrics with one honest next-step state", () => {
   const homeTab = readFileSync("src/features/home/tabs/HomeTab.tsx", "utf8");
 

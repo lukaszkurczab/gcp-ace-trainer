@@ -19,6 +19,17 @@ test("session control labels identify the dimension, ordering position, and comm
   assert.equal(orderingMoveAccessibilityLabel("Podziel tablicę", 0, 3, "down", (key, values) => i18n.t(key, { ...values, lng: "pl" })), "Przesuń Podziel tablicę, pozycja 1 z 3, w dół");
 });
 
+test("coding review pending keeps SessionShell navigation while using neutral response anatomy", () => {
+  const review = source("src/features/practice/AlgorithmsPracticeReviewScreen.tsx");
+
+  assert.match(review, /export function AlgorithmsPracticeReviewLoadingSkeleton\(\)/);
+  assert.match(review, /<SessionShell headerAction=\{headerAction\} modeLabel=\{t\("Answer review"\)\}><AlgorithmsPracticeReviewLoadingSkeleton \/><\/SessionShell>/);
+  assert.match(review, /accessibilityRole="progressbar"[\s\S]*?accessibilityState=\{\{ busy: true \}\}/);
+  assert.match(review, /algorithms-practice-review-loading-question/);
+  assert.match(review, /algorithms-practice-review-loading-response/);
+  assert.match(review, /algorithms-practice-review-loading-feedback/);
+});
+
 test("interactive Algorithms session controls use real 48-point minimum geometry without hit-area substitutes", () => {
   const answerOption = source("src/components/AnswerOption.tsx");
   const button = source("src/components/Button.tsx");
@@ -82,13 +93,13 @@ test("canonical session surfaces expose deterministic state and do not group int
   assert.match(practiceSurface, /name="alert-triangle"/);
   assert.match(practiceSurface, /noticeError:\s*\{[\s\S]*?backgroundColor:\s*palette\.elevatedSurface[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
   assert.match(practiceSurface, /props\.phase === "completing" \? <CompletingNotice \/> : null/);
-  assert.match(practiceSurface, /<View style=\{styles\.asyncStatusRow\}>\s*<View accessible accessibilityLabel=\{t\("Finishing this session…"\)\} style=\{styles\.asyncIcon\}>[\s\S]*?name="rotate-ccw"[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.asyncStatusLabel\}>\{t\("LOADING"\)\}<\/Text>/);
-  assert.match(practiceSurface, /function PreparingNotice\(\)[\s\S]*?styles\.asyncState[\s\S]*?Preparing your questions\./);
-  assert.match(practiceSurface, /asyncIcon:\s*\{[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?borderRadius:\s*radius\.lg[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
-  assert.match(practiceSurface, /asyncStatusLabel:\s*\{[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"600"[\s\S]*?lineHeight:\s*16/);
-  assert.match(practiceSurface, /asyncState:\s*\{[\s\S]*?backgroundColor:\s*palette\.surface[\s\S]*?borderRadius:\s*radius\.button[\s\S]*?gap:\s*spacing\.lg[\s\S]*?padding:\s*spacing\.xl/);
+  assert.match(practiceSurface, /<LoadingState description=\{t\("Preparing your summary\."\)\} title=\{t\("Finishing this session…"\)\} \/>/);
+  assert.match(practiceSurface, /export function PracticeSessionLoadingSkeleton\(\)[\s\S]*?accessibilityRole="progressbar"[\s\S]*?practiceSessionLoadingQuestion[\s\S]*?practiceSessionLoadingResponse/);
+  assert.match(practiceSurface, /<SkeletonShape motion=\{motion\}/);
+  assert.match(practiceSurface, /accessibilityElementsHidden[\s\S]*?importantForAccessibility="no-hide-descendants"[\s\S]*?pointerEvents="none"/);
+  assert.doesNotMatch(practiceSurface, /asyncIcon|asyncStatusLabel|asyncState|asyncSpacer|rotate-ccw|t\("LOADING"\)/);
   assert.match(practiceSurface, /completingActions:\s*\{\s*minHeight:\s*48\s*\}/);
-  assert.match(simulation, /accessible accessibilityLabel=\{notice\.message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
+  assert.match(simulation, /const message = t\(notice\.message\);[\s\S]*accessible accessibilityLabel=\{message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
   assert.match(shell, /accessibilityLabel=\{timer\?\.accessibilityLabel\} accessibilityRole=\{timer \? "timer" : undefined\}/);
   assert.match(shell, /accessibilityLabel=\{position\?\.accessibilityLabel\}/);
   assert.match(shell, /accessibilityLabel=\{verifiedProgress === null \? undefined : t\("Session progress"\)\}/);
@@ -164,13 +175,12 @@ test("Practice Hub keeps the quiet-layered recommendation readable at large text
   assert.doesNotMatch(practiceHub, /statsHeader|statsMetric/);
 });
 
-test("Practice Hub geometry follows live Figma while keeping canonical mode ownership", () => {
+test("Practice Hub retains its mode layout and canonical ownership", () => {
   const practiceHub = source("src/features/practice/PracticeHubScreen.tsx");
   const listRow = source("src/components/ListRow.tsx");
 
   assert.match(practiceHub, /screenContent:\s*\{[\s\S]*?gap:\s*18/);
   assert.match(practiceHub, /pageIntro:\s*\{[\s\S]*?gap:\s*18/);
-  assert.match(practiceHub, /topicContext:\s*\{[\s\S]*?gap:\s*6/);
   assert.match(practiceHub, /heroCard:\s*\{[\s\S]*?borderColor:\s*colorWithOpacity\(palette\.primary, 0\.28\)[\s\S]*?gap:\s*spacing\.lg[\s\S]*?shadowOpacity:\s*0\.22[\s\S]*?shadowRadius:\s*40/);
   assert.match(practiceHub, /heroText:\s*\{[\s\S]*?gap:\s*6/);
   assert.match(practiceHub, /heroHeading:\s*\{[\s\S]*?minHeight:\s*24/);

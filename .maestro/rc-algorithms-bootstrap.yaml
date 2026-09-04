@@ -6,31 +6,46 @@ tags:
 ---
 - extendedWaitUntil:
     visible:
-      id: "main-tab-bar"
+      id: "account-guest|main-tab-bar|patternly:home:select-track:root"
     timeout: 30000
 - runFlow:
     when:
       visible:
-        id: "patternly:home:change-track"
+        id: "account-guest"
     commands:
       - tapOn:
-          id: "patternly:home:change-track"
-          retryTapIfNoChange: true
-- scrollUntilVisible:
-    element:
-      id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
-    direction: DOWN
-    centerElement: false
+          id: "account-guest"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar|patternly:home:select-track:root"
     timeout: 30000
-    visibilityPercentage: 50
-- tapOn:
-    id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
-- scrollUntilVisible:
-    element:
+- runFlow:
+    when:
+      notVisible:
+        id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "patternly:home:change-track"
+          commands:
+            - tapOn:
+                id: "patternly:home:change-track"
+                retryTapIfNoChange: true
+      - scrollUntilVisible:
+          element:
+            id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+          direction: DOWN
+          centerElement: false
+          timeout: 30000
+          visibilityPercentage: 50
+      - tapOn:
+          id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+      - tapOn:
+          id: "patternly:home:select-track:continue"
+- extendedWaitUntil:
+    visible:
       id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
-    direction: DOWN
-    centerElement: false
     timeout: 30000
-    visibilityPercentage: 20
 - assertVisible:
     id: "patternly:home:track-card:coding-interview-dsa-problem-solving"

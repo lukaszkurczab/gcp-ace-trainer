@@ -4,23 +4,21 @@ import test from "node:test";
 
 const source = (path: string) => readFileSync(path, "utf8");
 
-test("bootstrap has one themed branded loading surface with no synthetic completion", () => {
+test("bootstrap owns one branded phase-aware loading surface with no synthetic completion", () => {
   const gate = source("src/content/application/ContentPreparationGate.tsx");
   const loadingState = source("src/components/LoadingState.tsx");
 
-  assert.equal((gate.match(/variant="startup"/g) ?? []).length, 1);
-  assert.match(gate, /state\.kind === "loading"[\s\S]*?runtimeSelectors\.content\.preparing\(state\.phase\)[\s\S]*?<LoadingState description=\{PREPARATION_PHASE_COPY\[state\.phase\]\} title="Preparing content…" variant="startup" \/>/);
-  assert.match(loadingState, /variant\?: "default" \| "startup"/);
-  assert.match(loadingState, /<PatternlyMark[\s\S]*treatment=\{colorMode === "dark" \? "white" : "mint"\}/);
-  assert.match(loadingState, /Animated\.loop\([\s\S]*Animated\.timing\([\s\S]*useNativeDriver: true/);
-  assert.match(loadingState, /startupProgressTrack:[\s\S]*height: 4/);
-  assert.match(loadingState, /startupProgressFill:\s*\{/);
-  assert.match(loadingState, /<Animated\.View style=\{\[styles\.startupProgressFill,[\s\S]*width: segmentWidth/);
-  assert.match(loadingState, /isReduceMotionEnabled\(\)[\s\S]*reduceMotionChanged/);
-  assert.doesNotMatch(loadingState, /width: "42%"/);
-  assert.match(loadingState, /animation\.start\(\)[\s\S]*animation\.stop\(\)/);
-  assert.match(loadingState, /<StatusBar[\s\S]*style=\{colorMode === "dark" \? "light" : "dark"\}/);
-  assert.match(loadingState, /accessibilityRole="progressbar"[\s\S]*accessibilityState=\{\{ busy: true \}\}/);
+  assert.match(gate, /export function ContentBootstrapLoadingSkeleton\(\{ phase \}/);
+  assert.match(gate, /state\.kind === "loading"[\s\S]*?runtimeSelectors\.content\.preparing\(state\.phase\)[\s\S]*?<ContentBootstrapLoadingSkeleton phase=\{state\.phase\} \/>/);
+  assert.match(gate, /const phaseCopy = t\(PREPARATION_PHASE_COPY\[phase\]\)/);
+  assert.match(gate, /<PatternlyMark decorative size=\{104\} treatment=\{colorMode === "dark" \? "white" : "mint"\} \/>/);
+  assert.match(gate, /<StatusBar style=\{colorMode === "dark" \? "light" : "dark"\} \/>/);
+  assert.match(gate, /accessibilityRole="progressbar"[\s\S]*?accessibilityState=\{\{ busy: true \}\}/);
+  assert.match(gate, /accessible=\{false\}[\s\S]*?accessibilityElementsHidden[\s\S]*?importantForAccessibility="no-hide-descendants"[\s\S]*?pointerEvents="none"/);
+  assert.equal((gate.match(/useSkeletonGlassMotion\(\)/g) ?? []).length, 1);
+  assert.match(gate, /Math\.min\(fontScale, 2\)/);
+  assert.match(gate, /palette\.progress\.loadingTrack/);
+  assert.match(gate, /palette\.border/);
   assert.match(gate, /CONTENT_PREPARATION_TIMEOUT_MS\s*=\s*15_000/);
   assert.match(gate, /setTimeout\([\s\S]*?preparationTimeoutReason\(currentPhase\)/);
   assert.match(gate, /Content preparation timed out while/);
@@ -28,5 +26,16 @@ test("bootstrap has one themed branded loading surface with no synthetic complet
   assert.match(gate, /runtimeSelectors\.content\.unavailable\(\)/);
   assert.match(gate, /setState\(\{ kind: "loading", phase: "opening-storage" \}\)/);
   assert.match(gate, /<EmptyState actionLabel="Retry"[\s\S]*?onActionPress=/);
+  assert.doesNotMatch(`${gate}\n${loadingState}`, /variant="startup"|startupProgress|startupContent|useReducedMotion|Preparing your questions/);
   assert.doesNotMatch(`${gate}\n${loadingState}`, /setInterval|delay\s*:/);
+});
+
+test("generic LoadingState no longer carries the startup animation variant", () => {
+  const loadingState = source("src/components/LoadingState.tsx");
+
+  assert.match(loadingState, /type LoadingStateProps = Readonly<\{[\s\S]*description\?: string;[\s\S]*title: string;/);
+  assert.doesNotMatch(loadingState, /variant|PatternlyMark|StatusBar|Animated|AccessibilityInfo|startup/);
+  assert.match(loadingState, /<SkeletonShape motion=\{motion\} style=\{styles\.statusBand\}/);
+  assert.match(loadingState, /useSkeletonGlassMotion\(\)/);
+  assert.match(loadingState, /accessibilityRole="progressbar"[\s\S]*accessibilityState=\{\{ busy: true \}\}/);
 });

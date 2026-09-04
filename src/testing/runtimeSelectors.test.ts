@@ -28,6 +28,17 @@ test("runtime selectors preserve canonical identities without learner-visible co
   assert.ok(selectors.every((selector) => !/\s/.test(selector)));
 });
 
+test("runtime selectors preserve case-sensitive authored item identities", () => {
+  const itemId = "CCARP-D01-O01-boundary";
+  const question = runtimeSelectors.session.question(itemId);
+  const feedback = runtimeSelectors.session.feedback(itemId);
+
+  assert.equal(question, "patternly:session:question:CCARP-D01-O01-boundary");
+  assert.equal(feedback, "patternly:session:feedback:CCARP-D01-O01-boundary");
+  assert.equal(isRuntimeSelectorId(question), true);
+  assert.notEqual(question, runtimeSelectors.session.question(itemId.toLowerCase()));
+});
+
 test("session metadata selectors expose validated lifecycle values without learner copy", () => {
   const sessionId = "coding-interview-dsa-problem-solving:coding-interview-guided-practice:1";
   const counter = runtimeSelectors.session.counter(sessionId, 3, 10);

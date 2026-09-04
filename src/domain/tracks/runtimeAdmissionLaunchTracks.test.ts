@@ -2,22 +2,23 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+import { GENERATED_FREE_NODE_PACKAGES } from "../../content/bundled/generatedFreeNodePackages";
 import type { AlgorithmQuestion } from "../../tracks/coding-interview/algorithmQuestionTypes";
 import type { CertificationQuestion } from "../../tracks/certification/domain";
 import type { DesignQuestion } from "../../tracks/design-interview";
 import { getTracks } from "..";
 
 const NOW = "2026-08-21T10:00:00.000Z";
-const RELEASE_ID = "patternly-launch-2026-08-25-01";
-
-test("runtime admission proves exact package resolution and one valid lifecycle step for all eight tracks", async () => {
+test("runtime admission proves exact package resolution and one valid lifecycle step for all launch tracks", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
 
   for (const registration of getTracks()) {
+    const source = GENERATED_FREE_NODE_PACKAGES.find((candidate) => candidate.trackId === registration.id);
+    assert.ok(source);
     const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(registration.id, registration.familyId);
     assert.equal(resolved.package.trackId, registration.id);
     assert.equal(resolved.package.familyId, registration.familyId);
-    assert.equal(resolved.package.packagePin.contentReleaseId, RELEASE_ID);
+    assert.equal(resolved.package.packagePin.contentReleaseId, source.manifest.provenance.releaseId);
 
     const modeId = resolved.profile.primaryEntry.modeId;
     const requestedLength = resolved.profile.getMode(modeId).defaultRequestedLength;
@@ -35,7 +36,7 @@ test("runtime admission proves exact package resolution and one valid lifecycle 
       reviews: [],
       now: NOW,
     });
-    assert.equal(prepared.session.packagePin.contentReleaseId, RELEASE_ID);
+    assert.equal(prepared.session.packagePin.contentReleaseId, source.manifest.provenance.releaseId);
     assert.ok(prepared.session.actualLength > 0);
     await resolved.runtime.validateResume({ session: prepared.session, draft: prepared.draft });
     assert.ok(await resolved.runtime.queryDashboard({ activeSession: prepared.session, trackId: registration.id, attempts: [], reviews: [], now: NOW }));

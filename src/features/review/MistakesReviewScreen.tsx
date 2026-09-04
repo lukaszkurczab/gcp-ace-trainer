@@ -1,19 +1,20 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { useCallback, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import {
   Badge,
   Card,
   EmptyState,
   ListRow,
-  LoadingState,
   Screen,
   SectionHeader,
+  SkeletonShape,
+  useSkeletonGlassMotion,
 } from "../../components";
 import { loadActiveTrackId as getActiveTrackId } from "../../application/learningReadModels";
-import { spacing, typography } from "../../theme";
+import { radius, spacing, typography } from "../../theme";
 import {
   buildReviewQueueScreenModel,
   type ReviewQueueRow,
@@ -112,10 +113,7 @@ export function MistakesReviewScreen() {
       </Card>
 
       {loading ? (
-        <LoadingState
-          title={t("Loading review queue")}
-          description={t("Reading local review data for the active track.")}
-        />
+        <MistakesLoadingSkeleton />
       ) : null}
 
       {!loading && readError ? (
@@ -173,6 +171,42 @@ export function MistakesReviewScreen() {
 
       {selectedRow ? <ReviewQueueDetail row={selectedRow} /> : null}
     </Screen>
+  );
+}
+
+export function MistakesLoadingSkeleton() {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const motion = useSkeletonGlassMotion();
+
+  return (
+    <View
+      accessibilityLabel={t("Loading review queue")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.mistakesLoading}
+    >
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.mistakesLoadingShapes}>
+        <View style={styles.mistakesLoadingSection}>
+          <SkeletonShape motion={motion} style={[styles.mistakesLoadingLine, styles.mistakesLoadingSectionTitle, { height: 18 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.mistakesLoadingLine, styles.mistakesLoadingSectionSubtitle, { height: 14 * textScale }]} />
+        </View>
+        {[0, 1, 2].map((row) => (
+          <View key={row} style={styles.mistakesLoadingRow}>
+            <View style={styles.mistakesLoadingCopy}>
+              <SkeletonShape motion={motion} style={[styles.mistakesLoadingLine, styles.mistakesLoadingTitle, { height: 16 * textScale }]} />
+              <SkeletonShape motion={motion} style={[styles.mistakesLoadingLine, row === 1 ? styles.mistakesLoadingDetailShort : styles.mistakesLoadingDetail, { height: 13 * textScale }]} />
+              <SkeletonShape motion={motion} style={[styles.mistakesLoadingLine, styles.mistakesLoadingMeta, { height: 12 * textScale }]} />
+            </View>
+            <SkeletonShape motion={motion} style={[styles.mistakesLoadingBadge, { height: 24 * textScale }]} />
+          </View>
+        ))}
+      </View>
+    </View>
   );
 }
 
@@ -258,6 +292,19 @@ function getStatusTone(status: ReviewQueueRow["status"]): "danger" | "info" | "n
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  mistakesLoading: { gap: spacing.md, width: "100%" },
+  mistakesLoadingShapes: { gap: spacing.md, width: "100%" },
+  mistakesLoadingSection: { gap: spacing.xs },
+  mistakesLoadingLine: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill },
+  mistakesLoadingSectionTitle: { width: "28%" },
+  mistakesLoadingSectionSubtitle: { width: "84%" },
+  mistakesLoadingRow: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", gap: spacing.md, minHeight: 72, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
+  mistakesLoadingCopy: { flex: 1, gap: spacing.xs, minWidth: 0 },
+  mistakesLoadingTitle: { width: "72%" },
+  mistakesLoadingDetail: { width: "84%" },
+  mistakesLoadingDetailShort: { width: "58%" },
+  mistakesLoadingMeta: { width: "48%" },
+  mistakesLoadingBadge: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill, width: "19%" },
   badgeRow: {
     flexDirection: "row",
     flexWrap: "wrap",

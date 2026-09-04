@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Svg, { Circle, Polyline } from "react-native-svg";
 
-import { Button, Card, Icon, IconTile, ProgressBar, type IconName } from "../../../components";
+import { Button, Card, Icon, IconTile, ProgressBar, SkeletonShape, useSkeletonGlassMotion, type IconName } from "../../../components";
 import type { GoalRecord, ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
@@ -32,6 +32,78 @@ type ProgressTabProps = {
   reviewQueueItems?: readonly ReviewQueueEntry[];
   trainingAttempts?: TrainingAttempt[];
 };
+
+export function ProgressLoadingSkeleton() {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const largeLayout = fontScale >= 1.8;
+  const motion = useSkeletonGlassMotion();
+
+  return (
+    <View
+      accessibilityLabel={t("Loading progress")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.progressLoading}
+      testID="progress-loading-skeleton"
+    >
+      <Text accessible={false} maxFontSizeMultiplier={2} style={styles.screenTitle}>{t("Progress")}</Text>
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.progressLoadingShapes}>
+        <View style={styles.progressLoadingTrackSelector}>
+          <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingTrackLabel, { height: 14 * textScale }]} />
+          <SkeletonShape motion={motion} style={styles.progressLoadingChevron} />
+        </View>
+        <View style={styles.progressLoadingWeekSection}>
+          <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingSectionLabel, { height: 12 * textScale }]} />
+          <View style={styles.progressLoadingWeekCard}>
+            <View style={styles.progressLoadingWeekCopy}>
+              <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingWeekTitle, { height: 16 * textScale }]} />
+              <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingWeekDetail, { height: 13 * textScale }]} />
+            </View>
+            <SkeletonShape motion={motion} style={styles.progressLoadingWeekBar} />
+          </View>
+        </View>
+        <View style={styles.progressLoadingSection}>
+          <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingSectionTitle, { height: 16 * textScale }]} />
+          <View style={styles.progressLoadingFocusCard}>
+            <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingFocusTitle, { height: 18 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingFocusStatus, { height: 13 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingFocusValue, { height: 36 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingFocusAction, { height: 16 * textScale }]} />
+          </View>
+        </View>
+        <View style={styles.progressLoadingSection}>
+          <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingSectionTitleShort, { height: 16 * textScale }]} />
+          <View style={[styles.progressLoadingAttentionCard, largeLayout ? styles.progressLoadingAttentionCardLarge : null]}>
+            <SkeletonShape motion={motion} style={styles.progressLoadingDot} />
+            <View style={styles.progressLoadingAttentionCopy}>
+              <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingAttentionTitle, { height: 15 * textScale }]} />
+              <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingAttentionDetail, { height: 13 * textScale }]} />
+            </View>
+          </View>
+        </View>
+        <View style={styles.progressLoadingSection}>
+          <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingSectionTitle, { height: 16 * textScale }]} />
+          <View style={styles.progressLoadingEvidenceCard}>
+            {[0, 1, 2].map((row) => (
+              <View key={row} style={styles.progressLoadingEvidenceRow}>
+                <SkeletonShape motion={motion} style={styles.progressLoadingEvidenceIcon} />
+                <View style={styles.progressLoadingEvidenceCopy}>
+                  <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingEvidenceTitle, { height: 15 * textScale }]} />
+                  <SkeletonShape motion={motion} style={[styles.progressLoadingLine, styles.progressLoadingEvidenceDetail, { height: 12 * textScale }]} />
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
 
 /** Figma 09A-09G progress shell backed by the existing local evidence model. */
 export function ProgressTab({
@@ -371,6 +443,161 @@ function formatWeekTitle(value: number): string {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  progressLoading: {
+    gap: spacing.lg,
+    width: "100%",
+  },
+  progressLoadingShapes: {
+    gap: spacing.xl,
+    width: "100%",
+  },
+  progressLoadingLine: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.pill,
+  },
+  progressLoadingTrackSelector: {
+    alignItems: "center",
+    backgroundColor: palette.surfaceInput,
+    borderColor: palette.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+    minHeight: 40,
+    paddingHorizontal: spacing.md,
+  },
+  progressLoadingTrackLabel: {
+    width: "56%",
+  },
+  progressLoadingChevron: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.pill,
+    height: 14,
+    width: 14,
+  },
+  progressLoadingWeekSection: {
+    gap: spacing.sm,
+  },
+  progressLoadingSectionLabel: {
+    width: "25%",
+  },
+  progressLoadingWeekCard: {
+    backgroundColor: palette.surface,
+    borderRadius: radius.lg,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  progressLoadingWeekCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    minWidth: 0,
+  },
+  progressLoadingWeekTitle: {
+    width: "62%",
+  },
+  progressLoadingWeekDetail: {
+    width: "78%",
+  },
+  progressLoadingWeekBar: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.pill,
+    height: 4,
+    width: "100%",
+  },
+  progressLoadingSection: {
+    gap: spacing.sm,
+  },
+  progressLoadingSectionTitle: {
+    width: "36%",
+  },
+  progressLoadingSectionTitleShort: {
+    width: "30%",
+  },
+  progressLoadingFocusCard: {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
+  progressLoadingFocusTitle: {
+    width: "72%",
+  },
+  progressLoadingFocusStatus: {
+    width: "45%",
+  },
+  progressLoadingFocusValue: {
+    width: "32%",
+  },
+  progressLoadingFocusAction: {
+    width: "28%",
+  },
+  progressLoadingAttentionCard: {
+    alignItems: "center",
+    backgroundColor: palette.surface,
+    borderRadius: radius.lg,
+    flexDirection: "row",
+    gap: spacing.sm,
+    minHeight: 72,
+    padding: spacing.lg,
+  },
+  progressLoadingAttentionCardLarge: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+  },
+  progressLoadingDot: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.xs,
+    height: 8,
+    width: 8,
+  },
+  progressLoadingAttentionCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    minWidth: 0,
+    width: "100%",
+  },
+  progressLoadingAttentionTitle: {
+    width: "36%",
+  },
+  progressLoadingAttentionDetail: {
+    width: "76%",
+  },
+  progressLoadingEvidenceCard: {
+    backgroundColor: palette.surface,
+    borderRadius: radius.lg,
+    overflow: "hidden",
+  },
+  progressLoadingEvidenceRow: {
+    alignItems: "center",
+    borderBottomColor: palette.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 72,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  progressLoadingEvidenceIcon: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.md,
+    height: 32,
+    width: 32,
+  },
+  progressLoadingEvidenceCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    minWidth: 0,
+  },
+  progressLoadingEvidenceTitle: {
+    width: "62%",
+  },
+  progressLoadingEvidenceDetail: {
+    width: "82%",
+  },
   root: { gap: 28 },
   header: { gap: 28 },
   screenTitle: { color: palette.textPrimary, fontSize: 30, fontWeight: "600", letterSpacing: -0.4, lineHeight: 36 },

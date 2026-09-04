@@ -12,10 +12,12 @@ test("registry resolves current tracks in canonical launch order without a defau
     "aws-certified-solutions-architect-associate",
     "microsoft-azure-administrator-associate-az-104",
     "microsoft-azure-ai-fundamentals-ai-901",
+    "claude-certified-architect-professional-certification",
   ]);
   assert.equal(getTrackRegistration("coding-interview-dsa-problem-solving").familyId, "coding_interview");
   assert.equal(getTrackRegistration("google-cloud-associate-cloud-engineer").familyId, "certification");
   assert.equal(getTrackRegistration("microsoft-azure-administrator-associate-az-104").familyId, "certification");
+  assert.equal(getTrackRegistration("claude-certified-architect-professional-certification").familyId, "certification");
   assert.deepEqual(
     {
       shortTitle: getTrackRegistration("google-cloud-associate-cloud-engineer").metadata.shortTitle,
@@ -34,6 +36,16 @@ test("registry resolves current tracks in canonical launch order without a defau
     {
       shortTitle: "Coding Interview",
       title: "Coding Interview: DSA & Problem Solving",
+    },
+  );
+  assert.deepEqual(
+    {
+      shortTitle: getTrackRegistration("claude-certified-architect-professional-certification").metadata.shortTitle,
+      title: getTrackRegistration("claude-certified-architect-professional-certification").metadata.title,
+    },
+    {
+      shortTitle: "Claude Architect Professional",
+      title: "Claude Certified Architect – Professional",
     },
   );
   assert.throws(() => getTrackRegistration("missing"), UnknownTrackError);

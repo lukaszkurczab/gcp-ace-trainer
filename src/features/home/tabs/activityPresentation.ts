@@ -21,13 +21,6 @@ export function relativeDay(timestamp: string, now = new Date()): string {
   return `${difference} days ago`;
 }
 
-export function activityCompletionLabel(timestamp: string, translate: (value: string) => string, now = new Date()): string {
-  const day = relativeDay(timestamp, now);
-  if (day === "Today") return translate("Completed today");
-  if (day === "Yesterday") return translate("Completed yesterday");
-  return `${translate("Completed")} · ${day}`;
-}
-
 export function activityTime(timestamp: string): string {
   const date = new Date(timestamp);
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;

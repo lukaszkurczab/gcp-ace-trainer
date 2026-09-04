@@ -55,6 +55,21 @@ test("all branded navigation headers use the one AppShellHeader path", () => {
   assert.doesNotMatch(rootNavigator, /headerTitleStyle|headerTintColor|headerStyle/);
 });
 
+test("answer review pending uses the shared review shell anatomy without fabricated values", () => {
+  const review = source("src/features/review/AnswerReviewScreen.tsx");
+  const skeleton = source("src/components/ReviewLoadingSkeleton.tsx");
+  const exports = source("src/components/index.ts");
+
+  assert.match(exports, /export \* from "\.\/ReviewLoadingSkeleton"/);
+  assert.match(review, /if \(!hasLoadedReviewData\) return <ReviewLoadingSkeleton onBack=\{\(\) => navigation\.goBack\(\)\} \/>/);
+  assert.match(skeleton, /export function ReviewLoadingSkeleton\(\{ onBack \}/);
+  assert.match(skeleton, /footerVariant="review"/);
+  assert.match(skeleton, /review-loading-filter/);
+  assert.match(skeleton, /review-loading-question/);
+  assert.match(skeleton, /review-loading-feedback/);
+  assert.doesNotMatch(skeleton, /totalOccurrences|missedCount|correct|incorrect|selectedOptionIds/);
+});
+
 test("route coverage has one native or inline shell owner and preserves active-session specialization", () => {
   const rootNavigator = source("src/navigation/RootNavigator.tsx");
   const routeIds = [...rootNavigator.matchAll(/<Stack\.Screen\s+\n?\s*name=\{ROUTES\.([A-Z_]+)\}/g)].map((match) => match[1]);
@@ -82,6 +97,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "ALGORITHMS_PRACTICE_REVIEW",
     "ALGORITHMS_PRACTICE_SUMMARY",
     "ALGORITHMS_INTERVIEW_SIMULATION",
+    "ALGORITHMS_INTERVIEW_SIMULATION_REVIEW",
     "ACCOUNT_ENTRY",
   ]);
 
@@ -238,11 +254,9 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(homeTab, /decisionCard:[\s\S]*?gap:\s*spacing\.lg[\s\S]*?overflow:\s*"hidden"/);
   assert.match(homeTab, /decisionTitle:[\s\S]*?letterSpacing:\s*-0\.3/);
   assert.match(homeTab, /sectionLabel:[\s\S]*?fontSize:\s*13/);
-  assert.match(homeTab, /overviewValueGroup:[\s\S]*?gap:\s*spacing\.sm/);
   assert.match(homeTab, /overviewValue:\s*\{[\s\S]*\.\.\.typography\.bodyStrong/);
   assert.match(homeTab, /currentFocusTitle:[\s\S]*?fontSize:\s*15[\s\S]*?fontWeight:\s*"500"[\s\S]*?lineHeight:\s*18/);
-  assert.match(homeTab, /activityDetail:[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"400"/);
-  assert.match(homeTab, /<View style=\{styles\.activityRow\}>[\s\S]*?recentAttempt\.modeId[\s\S]*?runtimeSelectors\.home\.activity\(\)/);
+  assert.match(homeTab, /<View style=\{\[styles\.activityRow[\s\S]*?recentAttempt\.modeId[\s\S]*?runtimeSelectors\.home\.activity\(\)/);
   assert.doesNotMatch(homeTab, /activityList/);
   assert.match(homeTab, /activityRow:\s*\{[\s\S]*?justifyContent:\s*"space-between"[\s\S]*?minHeight:\s*44/);
   assert.match(homeTab, /activityAction:\s*\{[\s\S]*?flexShrink:\s*0[\s\S]*?minHeight:\s*44/);
@@ -258,7 +272,11 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(button, /isDisabled \? disabledStyle : null/);
   assert.match(button, /style,\s*isDisabled \? disabledStyle : null/);
   assert.match(button, /isDisabled \? disabledLabelStyle : null/);
-  assert.match(home, /if \(!hasLoadedActiveTrack\) return <Screen edges=\{\["top"\]\} scroll=\{false\}><AppShellHeader \/><LoadingState/);
+  assert.match(home, /useState<HomeShellTab>\(route\.params\?\.initialTab \?\? "home"\)/);
+  assert.match(home, /if \(!hasLoadedActiveTrack\) return \([\s\S]*?<HomeLoadingSkeleton \/>[\s\S]*?<ProgressLoadingSkeleton \/>[\s\S]*?<SettingsLoadingSkeleton \/>[\s\S]*?<AppBottomNavigation activeId=\{activeTab\}/);
+  const pendingBranch = home.slice(home.indexOf("if (!hasLoadedActiveTrack)"), home.indexOf("if (shellReadError)"));
+  assert.doesNotMatch(pendingBranch, /scroll=\{false\}/);
+  assert.match(home, /navigation\.setParams\(\{ initialTab: tab \}\)/);
   assert.match(settings, /<PreferenceSelectionScreen/);
   assert.match(preferenceSelection, /<Screen\b/);
   assert.match(rootNavigator, /name=\{ROUTES\.APPEARANCE_SETTINGS\}[\s\S]*?options=\{\{ headerShown: false, title: t\("Appearance"\) \}\}/);

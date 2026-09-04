@@ -5,6 +5,7 @@ import test from "node:test";
 
 import { contentPackageRuntimeOwner } from "../application/contentPackageRuntimeOwner";
 import { contentPackagePinsEqual, getTracks } from "../domain";
+import { GENERATED_FREE_NODE_PACKAGES } from "./bundled/generatedFreeNodePackages";
 
 const REMOVED_RUNTIME_OWNERS = [
   "src/content/catalogRepository.ts",
@@ -96,13 +97,15 @@ test("package-backed Algorithms discovery never recommends an excluded whole-tra
   assert.equal(dashboard.recommendation.action.modeId, "coding-interview-guided-practice");
 });
 
-test("all eight launch tracks resolve an exact Free package and prepare through their canonical family runtime", async () => {
+test("all launch tracks resolve an exact Free package and prepare through their canonical family runtime", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
   for (const registration of getTracks()) {
+    const source = GENERATED_FREE_NODE_PACKAGES.find((candidate) => candidate.trackId === registration.id);
+    assert.ok(source);
     const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(registration.id, registration.familyId);
     assert.equal(resolved.package.trackId, registration.id);
     assert.equal(resolved.package.familyId, registration.familyId);
-    assert.equal(resolved.package.packagePin.contentReleaseId, "patternly-launch-2026-08-25-01");
+    assert.equal(resolved.package.packagePin.contentReleaseId, source.manifest.provenance.releaseId);
     const mode = resolved.profile.primaryEntry.modeId;
     const requestedLength = resolved.profile.getMode(mode).defaultRequestedLength;
     const request = registration.familyId === "coding_interview"
@@ -112,7 +115,7 @@ test("all eight launch tracks resolve an exact Free package and prepare through 
         : { sessionId: `admission:${registration.id}`, requestedLength };
     const prepared = await resolved.runtime.prepare({ trackId: registration.id, modeId: mode, request, attempts: [], reviews: [], now: "2026-08-21T10:00:00.000Z" });
     assert.equal(prepared.session.trackId, registration.id);
-    assert.equal(prepared.session.packagePin.contentReleaseId, "patternly-launch-2026-08-25-01");
+    assert.equal(prepared.session.packagePin.contentReleaseId, source.manifest.provenance.releaseId);
     assert.ok(prepared.session.actualLength > 0);
   }
 });

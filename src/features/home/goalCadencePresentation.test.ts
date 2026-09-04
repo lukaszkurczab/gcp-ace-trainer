@@ -39,3 +39,15 @@ test("active goal summary only exposes Save while editing", () => {
   assert.match(screen, /onEdit=\{\(\) => \{ setDraft/);
   assert.match(screen, /onTogglePause=\{\(\) => \{ void togglePause\(\); \}\}/);
 });
+
+test("goal loading keeps its back action separate from the busy content announcement", () => {
+  assert.match(screen, /export function GoalLoadingSkeleton\(\{ onBack \}/);
+  assert.match(screen, /header=\{\(/);
+  assert.match(screen, /<IconButton/);
+  assert.match(screen, /onPress=\{onBack\}/);
+  assert.match(screen, /accessibilityRole="progressbar"[\s\S]*?accessibilityState=\{\{ busy: true \}\}/);
+  assert.match(screen, /<View accessible=\{false\} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style=\{styles\.loadingShapes\}>/);
+  assert.match(screen, /if \(loading\) return <GoalLoadingSkeleton onBack=\{\(\) => navigation\.goBack\(\)\} \/>/);
+  const pendingBranch = screen.slice(screen.indexOf("if (loading)"), screen.indexOf("if (loadError"));
+  assert.doesNotMatch(pendingBranch, /scroll=\{false\}/);
+});

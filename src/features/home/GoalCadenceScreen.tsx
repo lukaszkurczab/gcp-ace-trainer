@@ -2,7 +2,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 
 import {
   Button,
@@ -10,8 +10,9 @@ import {
   EmptyState,
   Icon,
   IconButton,
-  LoadingState,
   Screen,
+  SkeletonShape,
+  useSkeletonGlassMotion,
 } from "../../components";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { loadActiveTrackId, loadGoal, persistGoal } from "../../application/learningReadModels";
@@ -60,6 +61,63 @@ const DAY_SHORT_LABELS: Readonly<Record<GoalDay, string>> = {
   sat: "Sat",
   sun: "Sun",
 };
+
+export function GoalLoadingSkeleton({ onBack }: Readonly<{ onBack: () => void }>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const largeLayout = fontScale >= 1.8;
+  const motion = useSkeletonGlassMotion();
+
+  return (
+    <Screen
+      ambient
+      ambientVariant="goal"
+      edges={["top", "bottom"]}
+      header={(
+        <View style={styles.loadingHeader}>
+          <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={onBack} />
+          <Text maxFontSizeMultiplier={2} style={styles.loadingContext}>{t("Progress")}</Text>
+        </View>
+      )}
+      style={styles.loadingScreen}
+    >
+      <View
+        accessibilityLabel={t("Loading goal")}
+        accessibilityLiveRegion="polite"
+        accessibilityRole="progressbar"
+        accessibilityState={{ busy: true }}
+        accessible
+        style={styles.loadingRoot}
+        testID="goal-loading-skeleton"
+      >
+        <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.loadingShapes}>
+          <View style={styles.loadingTitleBlock}>
+            <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingTitle, { height: 27 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingTrack, { height: 15 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingDescription, { height: 14 * textScale }]} />
+          </View>
+          <View style={[styles.loadingPanel, largeLayout ? styles.loadingPanelLarge : null]}>
+            <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingSectionTitle, { height: 17 * textScale }]} />
+            {[0, 1, 2].map((row) => (
+              <View key={row} style={styles.loadingRow}>
+                <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingRowTitle, { height: 16 * textScale }]} />
+                <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingRowDetail, { height: 13 * textScale }]} />
+              </View>
+            ))}
+          </View>
+          <View style={styles.loadingPanel}>
+            <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingSectionTitleShort, { height: 17 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingField, { height: 48 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingField, { height: 48 * textScale }]} />
+          </View>
+          <SkeletonShape motion={motion} style={[styles.loadingAction, { minHeight: 48 * textScale }]} />
+        </View>
+      </View>
+    </Screen>
+  );
+}
 
 export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps) {
   const styles = useThemedStyles(createStyles);
@@ -168,7 +226,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     }
   }
 
-  if (loading) return <Screen edges={["top", "bottom"]} scroll={false}><LoadingState title={t("Loading goal")}/></Screen>;
+  if (loading) return <GoalLoadingSkeleton onBack={() => navigation.goBack()} />;
   if (loadError || !track || !current) {
     return (
       <Screen edges={["top", "bottom"]} scroll={false}>
@@ -407,6 +465,25 @@ function formatGoalDate(value: string, locale: "en" | "pl"): string {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  loadingAction: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, width: "100%" },
+  loadingContext: { ...typography.small, color: palette.textSecondary, fontWeight: "500" },
+  loadingDescription: { width: "72%" },
+  loadingField: { backgroundColor: palette.surfaceInput, borderRadius: radius.lg, width: "100%" },
+  loadingHeader: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minHeight: 44, paddingHorizontal: spacing.xl },
+  loadingLine: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1 },
+  loadingPanel: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.md, padding: spacing.lg },
+  loadingPanelLarge: { gap: spacing.lg },
+  loadingRoot: { gap: spacing.xxl },
+  loadingRow: { gap: spacing.xs },
+  loadingRowDetail: { width: "64%" },
+  loadingRowTitle: { width: "82%" },
+  loadingScreen: { gap: spacing.xxl, paddingBottom: spacing.xxl, paddingTop: 28 },
+  loadingSectionTitle: { width: "34%" },
+  loadingSectionTitleShort: { width: "27%" },
+  loadingShapes: { gap: spacing.xl },
+  loadingTitle: { width: "66%" },
+  loadingTitleBlock: { gap: spacing.sm },
+  loadingTrack: { width: "38%" },
   screenContent: { gap: spacing.xxl, paddingBottom: spacing.xxl, paddingTop: 28 },
   header: { gap: spacing.sm },
   headerContext: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minHeight: 44 },

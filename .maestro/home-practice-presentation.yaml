@@ -1,0 +1,37 @@
+appId: com.lkurczab.patternly
+name: Home and Practice presentation
+tags:
+  - screenshot
+  - uiux-evidence
+---
+- tapOn:
+    id: "main-tab-bar-home"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- takeScreenshot: ${SCREENSHOT_ROOT}/home-header-${THEME}-${TEXT_SIZE}
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:activity"
+    direction: DOWN
+    centerElement: false
+- assertVisible: "Recent activity"
+- assertNotVisible: "Completed today"
+- takeScreenshot: ${SCREENSHOT_ROOT}/home-details-${THEME}-${TEXT_SIZE}
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- assertVisible: "Active topic"
+- takeScreenshot: ${SCREENSHOT_ROOT}/practice-header-${THEME}-${TEXT_SIZE}
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:coding-interview-weak-area-review"
+    direction: DOWN
+    centerElement: false
+- assertNotVisible: "Practice this topic with explanations after each answer."
+- assertNotVisible: "Set up your session and choose when to see explanations."
+- takeScreenshot: ${SCREENSHOT_ROOT}/practice-modes-${THEME}-${TEXT_SIZE}

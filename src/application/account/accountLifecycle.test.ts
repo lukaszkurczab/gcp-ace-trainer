@@ -114,14 +114,16 @@ test("deletion retries after a revoked or stale session and leaves a verified lo
 });
 
 // The discard path uses the real repositories and injected durable storage faults.
-import { completeTrainingSession, createTrainingSession, createTrainingSessionDraft } from "../../domain";
+import { completeTrainingSession, createFamilyEnvelope, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult } from "../../domain";
+import { commitSessionCompletion } from "../learningMutations/commitSessionLifecycle";
+import { commitTrainingSessionStart } from "../learningMutations/commitTrainingSessionStart";
 import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../../storage/keys";
-import { discardGuestDataAndLoadAccount, loadAccountDataSession } from "./accountDataService";
+import { discardGuestDataAndLoadAccount, loadAccountDataSession, retryPendingAccountDataSync } from "./accountDataService";
 import { clearGuestAccountBinding } from "../../storage/repositories/guestInstallationRepository";
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
-import { getActiveTrainingSession, saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
+import { clearTrainingSessions, getActiveTrainingSession, saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
 import { clearActiveTrainingSessionDraft, getActiveTrainingSessionDraft, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
 import { buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, saveAccountSyncState } from "../../storage/repositories/accountDataRepository";
 import { persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
@@ -171,6 +173,200 @@ function remoteRecords(snapshot: Awaited<ReturnType<typeof buildAccountDataSnaps
     updatedAt: "2026-01-01T00:02:00.000Z",
   }));
 }
+
+async function prepareBoundSyncedAccount(): Promise<void> {
+  await prepareGuest();
+  await bindGuestInstallationToAccount(accountId);
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+}
+
+async function commitTerminalLearningOutcome() {
+  const active = resumableSession();
+  await saveTrainingSession(active);
+  const completed = completeTrainingSession(active, "2026-01-01T00:03:00.000Z");
+  const result = createTrainingSessionResult({
+    id: `${completed.id}:result`,
+    sessionId: completed.id,
+    trackId: completed.trackId,
+    totalOccurrences: completed.actualLength,
+    answeredOccurrenceIds: completed.itemOrder.map((occurrence) => occurrence.occurrenceId),
+    unansweredOccurrenceIds: [],
+    completedAt: completed.completedAt!,
+    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: { source: "account-lifecycle-test" } }),
+  });
+  await commitSessionCompletion(completed, result, completed.completedAt!);
+  return { active, completed, result };
+}
+
+test("a durable terminal learning commit uploads once when Home retries pending data", async () => {
+  await prepareBoundSyncedAccount();
+  const { completed } = await commitTerminalLearningOutcome();
+  const durable = await buildAccountDataSnapshot();
+  assert.equal(durable.activeSession, false);
+  assert.ok(durable.records.some((record) => record.recordType === "training_session_result" && record.recordId === `${completed.id}:result`));
+  assert.equal((await getAccountSyncState()).status, "offlinePending");
+
+  let uploads = 0;
+  let reads = 0;
+  const client = api({
+    syncProgress: async (input) => {
+      uploads++;
+      assert.ok(input.mutations.some((mutation) => mutation.recordType === "training_session_result"));
+      return { accountRevision: 7, applied: [], duplicates: input.mutations.map((mutation) => mutation.mutationId), conflicts: [] };
+    },
+    getProgress: async () => {
+      reads++;
+      return { accountRevision: 7, records: remoteRecords(await buildAccountDataSnapshot()) };
+    },
+  });
+
+  const first = await retryPendingAccountDataSync(client, accountId);
+  const second = await retryPendingAccountDataSync(client, accountId);
+  assert.equal(first?.status, "synced");
+  assert.equal(second, null);
+  assert.equal(uploads, 1);
+  assert.equal(reads, 1);
+  assert.equal((await getAccountSyncState()).status, "synced");
+  assert.equal((await getAccountSyncState()).outbox.length, 0);
+});
+
+test("concurrent Home retries share one offline attempt and preserve durable pending state", async () => {
+  await prepareBoundSyncedAccount();
+  await commitTerminalLearningOutcome();
+
+  let uploads = 0;
+  let releaseUpload!: () => void;
+  const uploadStarted = new Promise<void>((resolve) => { releaseUpload = resolve; });
+  const client = api({
+    syncProgress: async () => {
+      uploads++;
+      await uploadStarted;
+      throw new PatternlyApiClientError("transport_failed");
+    },
+    getProgress: async () => { throw new Error("offline retry must not continue to a remote read"); },
+  });
+
+  const firstAttempt = retryPendingAccountDataSync(client, accountId);
+  const secondAttempt = retryPendingAccountDataSync(client, accountId);
+  assert.equal(secondAttempt, firstAttempt);
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  assert.equal(uploads, 1);
+  releaseUpload();
+  const [first, second] = await Promise.all([firstAttempt, secondAttempt]);
+  assert.equal(first?.status, "offlinePending");
+  assert.equal(second?.status, "offlinePending");
+  assert.equal((await getAccountSyncState()).status, "offlinePending");
+});
+
+async function assertConcurrentLocalSessionStartKeepsHomeSyncRetryable(phase: "upload" | "download"): Promise<void> {
+  await prepareBoundSyncedAccount();
+  await commitTerminalLearningOutcome();
+
+  let uploads = 0;
+  let releaseNetwork!: () => void;
+  let networkStarted!: () => void;
+  const networkReady = new Promise<void>((resolve) => { networkStarted = resolve; });
+  const networkPaused = new Promise<void>((resolve) => { releaseNetwork = resolve; });
+  const remote = remoteRecords(await buildAccountDataSnapshot());
+  const client = api({
+    syncProgress: async () => {
+      uploads++;
+      if (phase === "upload") {
+        networkStarted();
+        await networkPaused;
+      }
+      return { accountRevision: 7, applied: [], duplicates: [], conflicts: [] };
+    },
+    getProgress: async () => {
+      if (phase === "download") {
+        networkStarted();
+        await networkPaused;
+      }
+      return { accountRevision: 7, records: remote };
+    },
+  });
+
+  const retry = retryPendingAccountDataSync(client, accountId);
+  await networkReady;
+  assert.equal(uploads, 1);
+
+  const nextSession = createTrainingSession({ ...resumableSession(), id: "concurrent-session", configurationSnapshot: { kind: "practice" } });
+  await commitTrainingSessionStart({ session: nextSession, draft: null, createdAt: nextSession.startedAt });
+  releaseNetwork();
+
+  const interrupted = await retry;
+  assert.equal(interrupted?.status, "resumeRequired");
+  assert.equal((await getAccountSyncState()).status, "offlinePending");
+  assert.deepEqual(await getActiveTrainingSession(), nextSession);
+
+  const completed = completeTrainingSession(nextSession, "2026-01-01T00:04:00.000Z");
+  await commitSessionCompletion(completed, createTrainingSessionResult({
+    id: `${completed.id}:result`,
+    sessionId: completed.id,
+    trackId: completed.trackId,
+    totalOccurrences: completed.actualLength,
+    answeredOccurrenceIds: completed.itemOrder.map((occurrence) => occurrence.occurrenceId),
+    unansweredOccurrenceIds: [],
+    completedAt: completed.completedAt!,
+    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: { source: "concurrent-session-test" } }),
+  }), completed.completedAt!);
+
+  const resumed = await retryPendingAccountDataSync(api({
+    syncProgress: async () => { uploads++; return { accountRevision: 8, applied: [], duplicates: [], conflicts: [] }; },
+    getProgress: async () => ({ accountRevision: 8, records: remoteRecords(await buildAccountDataSnapshot()) }),
+  }), accountId);
+  assert.equal(resumed?.status, "synced");
+  assert.equal((await getAccountSyncState()).status, "synced");
+  assert.equal(uploads, 2);
+}
+
+test("a concurrent local session start during upload keeps the interrupted Home sync retryable", async () => {
+  await assertConcurrentLocalSessionStartKeepsHomeSyncRetryable("upload");
+});
+
+test("a concurrent local session start during download keeps the interrupted Home sync retryable", async () => {
+  await assertConcurrentLocalSessionStartKeepsHomeSyncRetryable("download");
+});
+
+test("Home pending retry honors binding, state, and durable recovery guards without remote calls", async () => {
+  let remoteCalls = 0;
+  const forbidden = async (): Promise<never> => { remoteCalls++; throw new Error("Home guard must block remote account data"); };
+  const client = api({ getProgress: forbidden, syncProgress: forbidden });
+
+  await prepareGuest();
+  assert.equal(await retryPendingAccountDataSync(client, accountId), null);
+
+  await prepareBoundSyncedAccount();
+  assert.equal(await retryPendingAccountDataSync(client, accountId), null);
+
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "offlinePending" });
+  await clearGuestAccountBinding();
+  assert.equal(await retryPendingAccountDataSync(client, accountId), null);
+
+  await bindGuestInstallationToAccount(accountId);
+  await saveTrainingSession(resumableSession());
+  const active = await retryPendingAccountDataSync(client, accountId);
+  assert.equal(active?.status, "resumeRequired");
+  await clearTrainingSessions();
+
+  const storage = getKeyValueStorage() as MemoryKeyValueStorage;
+  await persistMutationJournal(makeJournal([
+    { kind: "put_attempt", record: journalAttempt() },
+    { kind: "put_session", record: journalSession() },
+  ]));
+  const journalBlocked = await retryPendingAccountDataSync(client, accountId);
+  assert.equal(journalBlocked?.lastFailureCode, "journal_recovery_required");
+  storage.remove(STORAGE_KEYS.ACTIVE_JOURNAL);
+
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "offlinePending", materialization: { kind: "discardGuest", accountId } });
+  const materializationBlocked = await retryPendingAccountDataSync(client, accountId);
+  assert.equal(materializationBlocked?.lastFailureCode, "account_materialization_in_progress");
+
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "offlinePending", materialization: null, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [] } });
+  const confirmationBlocked = await retryPendingAccountDataSync(client, accountId);
+  assert.equal(confirmationBlocked?.lastFailureCode, "account_adoption_pending");
+  assert.equal(remoteCalls, 0);
+});
 
 test("bound restart exposes a projection for a locally saved session without remote reads or writes", async () => {
   await prepareGuest();

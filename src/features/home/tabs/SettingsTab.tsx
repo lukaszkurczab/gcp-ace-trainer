@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { Icon, IconTile, ListRow, ScreenHeader, SettingsGroup, type IconName } from "../../../components";
+import { Icon, IconTile, ListRow, ScreenHeader, SettingsGroup, SkeletonShape, useSkeletonGlassMotion, type IconName } from "../../../components";
 import type { StorageIssue } from "../../../application/learningReadModels";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
 import type { AppearancePreference } from "../../../application/appPreferences";
-import { spacing, typography, type AppColors } from "../../../theme";
+import { radius, spacing, typography, type AppColors } from "../../../theme";
 import { hasPremiumTestingAccess, setPremiumTestingAccess } from "../../../application/premiumTesting";
 import { isPatternlyBackendE2eConfigured } from "../../../infrastructure/clients/patternlyBackendRuntime";
 import { isPatternlyPremiumTestingRuntime } from "../../../infrastructure/runtime/runtimeMode";
@@ -21,6 +21,52 @@ type SettingsTabProps = {
   onOpenYourData: () => void;
   storageIssues: readonly StorageIssue[];
 };
+
+export function SettingsLoadingSkeleton() {
+  const styles = useThemedStyles(createStyles);
+  const { t: tCommon } = useTranslation("common");
+  const { t } = useTranslation("settings");
+  const { fontScale } = useWindowDimensions();
+  const textScale = Math.min(fontScale, 2);
+  const motion = useSkeletonGlassMotion();
+  const rows = [0, 1, 2, 3, 4, 5];
+
+  return (
+    <View
+      accessibilityLabel={tCommon("Loading settings")}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.settingsLoading}
+      testID="settings-loading-skeleton"
+    >
+      <Text accessible={false} maxFontSizeMultiplier={2} style={styles.settingsLoadingTitle}>{t("appSettings")}</Text>
+      <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.settingsLoadingShapes}>
+        <SkeletonShape motion={motion} style={[styles.settingsLoadingDescription, { height: 14 * textScale }]} />
+        <View style={styles.settingsLoadingGroups}>
+          {[0, 1, 2].map((group) => (
+            <View key={group} style={styles.settingsLoadingGroup}>
+              <SkeletonShape motion={motion} style={[styles.settingsLoadingGroupTitle, { height: 12 * textScale }]} />
+              <View style={styles.settingsLoadingCard}>
+                {rows.slice(group * 2, group * 2 + 2).map((row) => (
+                  <View key={row} style={styles.settingsLoadingRow}>
+                    <SkeletonShape motion={motion} style={styles.settingsLoadingIcon} />
+                    <View style={styles.settingsLoadingRowCopy}>
+                      <SkeletonShape motion={motion} style={[styles.settingsLoadingLine, styles.settingsLoadingRowTitle, { height: 15 * textScale }]} />
+                      <SkeletonShape motion={motion} style={[styles.settingsLoadingLine, styles.settingsLoadingRowDetail, { height: 12 * textScale }]} />
+                    </View>
+                    <SkeletonShape motion={motion} style={styles.settingsLoadingChevron} />
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+}
 
 
 
@@ -200,6 +246,78 @@ function formatStorageIssue(issue: StorageIssue, locale: AppLocale): string {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  settingsLoading: {
+    gap: spacing.lg,
+    width: "100%",
+  },
+  settingsLoadingTitle: {
+    ...typography.title,
+    color: palette.textPrimary,
+  },
+  settingsLoadingShapes: {
+    gap: spacing.lg,
+    width: "100%",
+  },
+  settingsLoadingDescription: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.pill,
+    width: "82%",
+  },
+  settingsLoadingGroups: {
+    gap: spacing.xl,
+  },
+  settingsLoadingGroup: {
+    gap: spacing.sm,
+  },
+  settingsLoadingGroupTitle: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.pill,
+    width: "28%",
+  },
+  settingsLoadingCard: {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  settingsLoadingRow: {
+    alignItems: "center",
+    borderBottomColor: palette.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 72,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  settingsLoadingIcon: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.md,
+    height: 32,
+    width: 32,
+  },
+  settingsLoadingRowCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    minWidth: 0,
+  },
+  settingsLoadingLine: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.pill,
+  },
+  settingsLoadingRowTitle: {
+    width: "62%",
+  },
+  settingsLoadingRowDetail: {
+    width: "86%",
+  },
+  settingsLoadingChevron: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.pill,
+    height: 14,
+    width: 14,
+  },
   page: { gap: spacing.xl },
   content: { gap: spacing.xl },
   preferenceMeta: { alignItems: "center", flexDirection: "row", gap: spacing.xs },
