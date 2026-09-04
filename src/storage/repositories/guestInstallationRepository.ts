@@ -18,7 +18,9 @@ function isGuestInstallation(value: unknown): value is GuestInstallation {
   return typeof installationId === "string"
     && typeof localDatasetId === "string"
     && typeof bindingState === "string"
-    && (accountId === null || typeof accountId === "string")
+    && (bindingState === "account_bound"
+      ? typeof accountId === "string" && accountId.trim().length > 0
+      : accountId === null)
     && UUID_V4.test(installationId)
     && UUID_V4.test(localDatasetId)
     && installationId !== localDatasetId
@@ -29,6 +31,16 @@ let provisioning: Promise<GuestInstallation> | null = null;
 
 export async function getGuestInstallation(): Promise<GuestInstallation | null> {
   return readCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, isGuestInstallation);
+}
+
+/** Synchronous guard for entering local-only mode without exposing an unknown or bound dataset. */
+export function hasUnboundGuestInstallation(): boolean {
+  try {
+    const installation = readCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, isGuestInstallation);
+    return installation !== null && installation.accountId === null;
+  } catch {
+    return false;
+  }
 }
 
 /** Creates one verified local guest identity. Existing, corrupt, or unsupported records are never replaced. */

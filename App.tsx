@@ -13,9 +13,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AppPreferencesProvider>
-        <PatternlyAccountProvider>
-          <AppNavigation />
-        </PatternlyAccountProvider>
+        <ContentPreparationGate>
+          <PatternlyAccountProvider>
+            <AppNavigation />
+          </PatternlyAccountProvider>
+        </ContentPreparationGate>
       </AppPreferencesProvider>
     </SafeAreaProvider>
   );
@@ -30,11 +32,9 @@ function AppNavigation() {
     : "account-entry";
 
   return (
-    <ContentPreparationGate>
-      <NavigationContainer key={sessionKey} theme={navigationTheme}>
-        <StatusBar style={preferences.colorMode === "dark" ? "light" : "dark"} />
-        <RootNavigator />
-      </NavigationContainer>
-    </ContentPreparationGate>
+    <NavigationContainer key={sessionKey} theme={navigationTheme}>
+      <StatusBar style={preferences.colorMode === "dark" ? "light" : "dark"} />
+      <RootNavigator />
+    </NavigationContainer>
   );
 }

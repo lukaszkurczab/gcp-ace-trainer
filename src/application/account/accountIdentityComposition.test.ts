@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { classifyAccountFailure, isNonEnumeratingRecoveryError, planPasswordVerificationCommand, requiresPasswordEmailVerification } from "./AccountSessionProvider";
+import { AUTH_INITIALIZATION_TIMEOUT_MS, classifyAccountFailure, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, planPasswordVerificationCommand, requiresPasswordEmailVerification } from "./AccountSessionProvider";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { parseFirebaseClientConfiguration } from "../../infrastructure/firebase/publicConfig";
-import { createSecureAuthPersistence, redactPersistedAuthUser } from "../../infrastructure/firebase/secureAuthPersistence";
+import { AUTH_USER_STORAGE_KEY, createSecureAuthPersistence, redactPersistedAuthUser } from "../../infrastructure/firebase/secureAuthPersistence";
 import { requiresVerifiedPasswordIdentity } from "../../infrastructure/runtime/runtimeMode";
 
 const publicEnvironment = {
@@ -118,6 +118,30 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.match(provider, /const issued = await api\.issueRecoveryCodes\(\)/);
 });
 
+test("account recovery owns one status message, a truthful retry, and a sign-out exit", () => {
+  const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  const recoveryStart = screen.indexOf("function AccountRecoveryScreen");
+  const recoveryEnd = screen.indexOf("function RadioOption", recoveryStart);
+  const recovery = screen.slice(recoveryStart, recoveryEnd);
+
+  assert.ok(recoveryStart >= 0 && recoveryEnd > recoveryStart);
+  assert.match(recovery, /getAccountRecoveryPresentation\(accountData, text\)/);
+  assert.match(recovery, /const actionFailure = feedback\?\.kind === "failure"/);
+  assert.match(recovery, /<AuthText accessibilityRole="header" style=\{styles\.accountHeading\}>\{presentation\.title\}/);
+  assert.match(recovery, /<AuthText style=\{styles\.accountBody\}>\{presentation\.body\}/);
+  assert.doesNotMatch(recovery, /<InfoBlock/);
+  assert.match(recovery, /status\.retry \? \(/);
+  assert.match(recovery, /loading=\{busyAction === "retry"\}/);
+  assert.match(recovery, /testID="account-sync-retry"/);
+  assert.match(recovery, /loading=\{busyAction === "signOut"\}/);
+  assert.match(recovery, /testID="account-sign-out"/);
+  assert.doesNotMatch(recovery, /AccountDataPanel|retryDisabled|loading=\{retryDisabled\}/);
+  assert.match(screen, /function isRetryFailureCoveredByStatus\(accountData: AccountDataSession, failure: string\)/);
+  assert.match(screen, /conflictDescription/);
+  assert.match(screen, /account\.state\.kind === "guestAccessBlocked" && mode === "entry"/);
+  assert.match(screen, /testID="account-binding-sign-in-notice"/);
+});
+
 test("sign-in keeps guest access visible and uses the approved Google logo asset", () => {
   const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
   assert.match(screen, /ambientVariant="auth"/);
@@ -166,11 +190,11 @@ test("a guest transition resets navigation into the application session", () => 
 });
 
 test("secure auth persistence stores only a Firebase refresh-token-shaped record", async () => {
-  let stored: string | null = null;
+  const stored = new Map<string, string>();
   const Persistence = createSecureAuthPersistence({
-    deleteItemAsync: async () => { stored = null; },
-    getItemAsync: async () => stored,
-    setItemAsync: async (_key, value) => { stored = value; },
+    deleteItemAsync: async (key) => { stored.delete(key); },
+    getItemAsync: async (key) => stored.get(key) ?? null,
+    setItemAsync: async (key, value) => { stored.set(key, value); },
   });
   const persistence = new Persistence();
   const input = {
@@ -179,7 +203,8 @@ test("secure auth persistence stores only a Firebase refresh-token-shaped record
     email: "learner@example.com",
     emailVerified: true,
     isAnonymous: false,
-    providerData: [{ providerId: "password" }],
+    phoneNumber: "+48123456789",
+    providerData: [{ accessToken: "synthetic-short-lived-value", email: "learner@example.com", providerId: "password" }],
     stsTokenManager: { accessToken: "synthetic-short-lived-value", expirationTime: 9999999999999, refreshToken: "synthetic-refresh-value" },
     uid: "firebase-user-1",
   };
@@ -188,19 +213,64 @@ test("secure auth persistence stores only a Firebase refresh-token-shaped record
   if (!redacted) throw new Error("expected_redacted_auth_user");
   assert.equal("accessToken" in redacted, false);
   assert.equal("accessToken" in (redacted.stsTokenManager as Record<string, unknown>), false);
+  assert.equal("accessToken" in ((redacted.providerData as Array<Record<string, unknown>>)[0] ?? {}), false);
   assert.equal((redacted.stsTokenManager as Record<string, unknown>).expirationTime, 0);
   assert.equal(Persistence.type, "LOCAL");
   await persistence._set("firebase:authUser:patternly", input);
-  assert.ok(stored);
-  assert.doesNotMatch(stored, /accessToken/u);
+  const persistedUser = stored.get(AUTH_USER_STORAGE_KEY);
+  assert.ok(persistedUser);
+  assert.doesNotMatch(persistedUser, /accessToken/u);
   const restored = await persistence._get<Record<string, unknown>>("firebase:authUser:patternly");
   assert.equal(restored?.uid, "firebase-user-1");
   assert.equal((restored?.stsTokenManager as Record<string, unknown>).refreshToken, "synthetic-refresh-value");
 });
 
+test("secure auth persistence isolates Firebase metadata from the saved auth user", async () => {
+  const stored = new Map<string, string>();
+  const Persistence = createSecureAuthPersistence({
+    deleteItemAsync: async (key) => { stored.delete(key); },
+    getItemAsync: async (key) => stored.get(key) ?? null,
+    setItemAsync: async (key, value) => { stored.set(key, value); },
+  });
+  const persistence = new Persistence();
+  const authUserKey = "firebase:authUser:public-api-key:patternly";
+  const metadataKey = "firebase:persistence:public-api-key:patternly";
+  const input = {
+    emailVerified: true,
+    isAnonymous: false,
+    stsTokenManager: { refreshToken: "refresh-token" },
+    uid: "firebase-user-2",
+  };
+
+  await persistence._set(authUserKey, input);
+  await persistence._set(metadataKey, "LOCAL");
+  assert.equal((await persistence._get<Record<string, unknown>>(authUserKey))?.uid, "firebase-user-2");
+  assert.equal(await persistence._get<string>(metadataKey), "LOCAL");
+  assert.ok(stored.has(AUTH_USER_STORAGE_KEY));
+  assert.equal(stored.size, 2);
+
+  await persistence._set(metadataKey, {
+    ...input,
+    accessToken: "redirect-short-lived-value",
+    providerData: [{ accessToken: "redirect-short-lived-value", providerId: "google.com" }],
+    stsTokenManager: { accessToken: "redirect-short-lived-value", refreshToken: "redirect-refresh-value" },
+  });
+  const ancillaryEntry = [...stored.entries()].find(([key]) => key !== AUTH_USER_STORAGE_KEY);
+  assert.ok(ancillaryEntry);
+  assert.doesNotMatch(ancillaryEntry?.[1] ?? "", /accessToken/u);
+  assert.equal((await persistence._get<Record<string, unknown>>(metadataKey))?.uid, "firebase-user-2");
+
+  await persistence._remove(metadataKey);
+  assert.equal(await persistence._get<string>(metadataKey), null);
+  assert.ok(stored.has(AUTH_USER_STORAGE_KEY));
+  await persistence._remove(authUserKey);
+  assert.equal(await persistence._get<Record<string, unknown>>(authUserKey), null);
+});
+
 test("startup waits for persisted auth resolution before choosing the entry screen or Home", () => {
   const authClient = readFileSync("src/infrastructure/firebase/firebaseAuthClient.ts", "utf8");
   const rootNavigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
+  const app = readFileSync("App.tsx", "utf8");
 
   assert.match(authClient, /onUserChanged: \(listener\) => onAuthStateChanged\(auth, \(user\) => \{\s*current = user;\s*listener\(user \? snapshot\(user\) : null\);/);
   assert.doesNotMatch(authClient, /onUserChanged:[^\n]*listener\(current \? snapshot\(current\) : null\)/);
@@ -210,6 +280,53 @@ test("startup waits for persisted auth resolution before choosing the entry scre
   assert.match(rootNavigator, /key=\{applicationSessionReady \? "application" : "account"\}/);
   assert.match(rootNavigator, /applicationSessionReady \? \([\s\S]*?<Stack\.Group>[\s\S]*?name=\{ROUTES\.HOME\}[\s\S]*?<\/Stack\.Group>[\s\S]*?\) : null/);
   assert.match(rootNavigator, /name=\{ROUTES\.ACCOUNT_ENTRY\}[\s\S]*?initialParams=\{\{ initialMode: "entry" \}\}/);
+  assert.match(rootNavigator, /testID="account-session-restore-loading"/);
+  assert.match(app, /<AppPreferencesProvider>[\s\S]*?<ContentPreparationGate>[\s\S]*?<PatternlyAccountProvider>[\s\S]*?<AppNavigation/);
+  assert.doesNotMatch(app, /<AppNavigation>[\s\S]*?<ContentPreparationGate>/);
+});
+
+test("account finalization coordinator shares one in-flight and completed result per generation", async () => {
+  let calls = 0;
+  const published: string[] = [];
+  const coordinator = createAccountSessionCoordinator<string>((_token, value) => { published.push(value); });
+  const token = coordinator.begin("account-a");
+  const operation = async () => {
+    calls += 1;
+    await Promise.resolve();
+    return "finalized";
+  };
+  const first = coordinator.run(token, operation);
+  const second = coordinator.run(token, operation);
+  assert.deepEqual(await Promise.all([first, second]), ["finalized", "finalized"]);
+  assert.equal(calls, 1);
+  assert.deepEqual(published, ["finalized"]);
+  assert.equal(await coordinator.run(coordinator.begin("account-a"), operation), "finalized");
+  assert.equal(calls, 1);
+});
+
+test("account finalization coordinator drops late results after invalidation and disposal", async () => {
+  let release: ((value: string) => void) | undefined;
+  const published: string[] = [];
+  const coordinator = createAccountSessionCoordinator<string>((_token, value) => { published.push(value); });
+  const token = coordinator.begin("account-a");
+  const pending = coordinator.run(token, () => new Promise<string>((resolve) => { release = resolve; }));
+  await Promise.resolve();
+  coordinator.invalidate();
+  release?.("stale");
+  assert.equal(await pending, "stale");
+  assert.deepEqual(published, []);
+  coordinator.dispose();
+  const disposedToken = coordinator.begin("account-b");
+  await assert.rejects(coordinator.run(disposedToken, async () => "disposed"), /account_session_generation_stale/u);
+});
+
+test("account restore has a bounded initialization recovery path", () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  assert.equal(AUTH_INITIALIZATION_TIMEOUT_MS, 15_000);
+  assert.match(provider, /reason: "auth_restore_timeout"/);
+  assert.match(provider, /retrySessionRestore/);
+  assert.match(provider, /detachObserver\(\);[\s\S]*?setState\(\{ kind: "unavailable", reason: "auth_restore_timeout" \}\)/);
+  assert.doesNotMatch(provider, /auth\.signOut\(\);[\s\S]*?auth_restore_timeout/);
 });
 
 test("App Check has an explicit unavailable state and never fabricates a token", async () => {

@@ -45,8 +45,8 @@ export function RootNavigator() {
 
   if (state.kind === "loading") {
     return (
-      <Screen edges={["top", "bottom"]} scroll={false} style={styles.sessionLoading}>
-        <LoadingState description={t("Checking saved sign-in.")} title={t("Restoring session")} />
+      <Screen edges={["top", "bottom"]} style={styles.sessionLoading}>
+        <LoadingState description={t("Checking saved sign-in.")} showLogo testID="account-session-restore-loading" title={t("Restoring session")} />
       </Screen>
     );
   }

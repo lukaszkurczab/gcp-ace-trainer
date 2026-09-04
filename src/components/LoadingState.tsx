@@ -1,15 +1,20 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { useThemedStyles } from "../preferences";
+import { useAppPreferences, useThemedStyles } from "../preferences";
 import { spacing, typography, type AppColors } from "../theme";
 import { SkeletonShape, useSkeletonGlassMotion } from "./SkeletonShape";
+import { PatternlyMark } from "./PatternlyMark";
 
 type LoadingStateProps = Readonly<{
   description?: string;
+  descriptionTestID?: string;
+  showLogo?: boolean;
+  testID?: string;
   title: string;
 }>;
 
-export function LoadingState({ description, title }: LoadingStateProps) {
+export function LoadingState({ description, descriptionTestID, showLogo = false, testID, title }: LoadingStateProps) {
+  const { colorMode } = useAppPreferences();
   const styles = useThemedStyles(createStyles);
   const motion = useSkeletonGlassMotion();
 
@@ -21,11 +26,13 @@ export function LoadingState({ description, title }: LoadingStateProps) {
       accessibilityState={{ busy: true }}
       accessible
       style={styles.content}
+      testID={testID}
     >
+      {showLogo ? <PatternlyMark decorative size={72} testID="loading-mark" treatment={colorMode === "dark" ? "white" : "mint"} /> : null}
       <SkeletonShape motion={motion} style={styles.statusBand} />
       <View style={styles.copy}>
         <Text maxFontSizeMultiplier={2} style={styles.title}>{title}</Text>
-        {description ? <Text maxFontSizeMultiplier={2} style={styles.description}>{description}</Text> : null}
+        {description ? <Text maxFontSizeMultiplier={2} style={styles.description} testID={descriptionTestID}>{description}</Text> : null}
       </View>
     </View>
   );
@@ -35,6 +42,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   content: {
     alignItems: "center",
     gap: spacing.md,
+    flex: 1,
+    justifyContent: "center",
     width: "100%",
   },
   statusBand: {

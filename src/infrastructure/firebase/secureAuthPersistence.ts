@@ -1,6 +1,8 @@
 import type { Persistence } from "firebase/auth";
+import { sha256Utf8 } from "../identity/sha256";
 
 const AUTH_USER_STORAGE_KEY = "patternly.auth.user";
+const AUTH_PERSISTENCE_STORAGE_PREFIX = "patternly.auth.persistence.";
 
 type SecureStoreLike = Readonly<{
   deleteItemAsync: (key: string) => Promise<void>;
@@ -31,6 +33,19 @@ export function redactPersistedAuthUser(value: unknown): PersistedBlob | null {
   if (!isRecord(value) || typeof value.uid !== "string" || typeof value.emailVerified !== "boolean" || typeof value.isAnonymous !== "boolean" || !isRecord(value.stsTokenManager)) return null;
   const refreshToken = value.stsTokenManager.refreshToken;
   if (typeof refreshToken !== "string" || refreshToken.length === 0) return null;
+  const providerData = Array.isArray(value.providerData)
+    ? value.providerData
+      .filter(isRecord)
+      .map((provider) => ({
+        ...(typeof provider.providerId === "string" ? { providerId: provider.providerId } : {}),
+        ...(typeof provider.uid === "string" ? { uid: provider.uid } : {}),
+        ...(typeof provider.displayName === "string" ? { displayName: provider.displayName } : {}),
+        ...(typeof provider.email === "string" ? { email: provider.email } : {}),
+        ...(typeof provider.phoneNumber === "string" ? { phoneNumber: provider.phoneNumber } : {}),
+        ...(typeof provider.photoURL === "string" ? { photoURL: provider.photoURL } : {}),
+      }))
+      .filter((provider) => Object.keys(provider).length > 0)
+    : [];
   return Object.freeze({
     uid: value.uid,
     ...(typeof value.email === "string" ? { email: value.email } : {}),
@@ -38,19 +53,18 @@ export function redactPersistedAuthUser(value: unknown): PersistedBlob | null {
     isAnonymous: value.isAnonymous,
     ...(typeof value.displayName === "string" ? { displayName: value.displayName } : {}),
     ...(typeof value.photoURL === "string" ? { photoURL: value.photoURL } : {}),
-    providerData: Array.isArray(value.providerData) ? value.providerData : [],
+    ...(typeof value.phoneNumber === "string" ? { phoneNumber: value.phoneNumber } : {}),
+    providerData,
     ...(typeof value.createdAt === "string" ? { createdAt: value.createdAt } : {}),
     ...(typeof value.lastLoginAt === "string" ? { lastLoginAt: value.lastLoginAt } : {}),
     stsTokenManager: Object.freeze({ refreshToken, expirationTime: 0 }),
   });
 }
 
-type SecureAuthPersistenceValue = Record<string, unknown> | string;
-
 type SecureAuthPersistenceInstance = Persistence & {
   _isAvailable(): Promise<boolean>;
-  _set(key: string, value: SecureAuthPersistenceValue): Promise<void>;
-  _get<T extends SecureAuthPersistenceValue>(key: string): Promise<T | null>;
+  _set(key: string, value: unknown): Promise<void>;
+  _get<T = unknown>(key: string): Promise<T | null>;
   _remove(key: string): Promise<void>;
   _addListener(key: string, listener: (value: unknown) => void): void;
   _removeListener(key: string, listener: (value: unknown) => void): void;
@@ -70,6 +84,16 @@ type SecureAuthPersistenceConstructor = {
 export function createSecureAuthPersistence(
   store: SecureStoreLike = getSecureStore(),
 ): SecureAuthPersistenceConstructor {
+  const isFirebaseAuthUserKey = (key: string): boolean => /^firebase:authUser(?::|$)/u.test(key);
+  const storageKeyForFirebaseKey = (key: string): string => `${AUTH_PERSISTENCE_STORAGE_PREFIX}${sha256Utf8(key)}`;
+
+  const persistableAncillaryValue = (value: unknown): unknown => {
+    const redacted = redactPersistedAuthUser(value);
+    if (redacted) return redacted;
+    if (value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") return value;
+    throw new Error("unsupported_firebase_persistence_value");
+  };
+
   return class SecureAuthPersistence {
     static readonly type = "LOCAL" as const;
     readonly type = "LOCAL" as const;
@@ -78,29 +102,61 @@ export function createSecureAuthPersistence(
       return true;
     }
 
-    async _set(_key: string, value: SecureAuthPersistenceValue): Promise<void> {
-      const redacted = redactPersistedAuthUser(value);
-      if (!redacted) {
-        await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+    async _set(key: string, value: unknown): Promise<void> {
+      if (isFirebaseAuthUserKey(key)) {
+        const redacted = redactPersistedAuthUser(value);
+        if (!redacted) {
+          await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+          return;
+        }
+        await store.setItemAsync(AUTH_USER_STORAGE_KEY, JSON.stringify(redacted));
         return;
       }
-      await store.setItemAsync(AUTH_USER_STORAGE_KEY, JSON.stringify(redacted));
+      const storageKey = storageKeyForFirebaseKey(key);
+      if (value === undefined || value === null) {
+        await store.deleteItemAsync(storageKey);
+        return;
+      }
+      await store.setItemAsync(storageKey, JSON.stringify(persistableAncillaryValue(value)));
     }
 
-    async _get<T extends SecureAuthPersistenceValue>(_key: string): Promise<T | null> {
-      const stored = await store.getItemAsync(AUTH_USER_STORAGE_KEY);
+    async _get<T = unknown>(key: string): Promise<T | null> {
+      if (isFirebaseAuthUserKey(key)) {
+        const stored = await store.getItemAsync(AUTH_USER_STORAGE_KEY);
+        if (!stored) return null;
+        try {
+          const parsed: unknown = JSON.parse(stored);
+          return (redactPersistedAuthUser(parsed) ?? null) as T | null;
+        } catch {
+          await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+          return null;
+        }
+      }
+      const stored = await store.getItemAsync(storageKeyForFirebaseKey(key));
       if (!stored) return null;
       try {
         const parsed: unknown = JSON.parse(stored);
-        return (redactPersistedAuthUser(parsed) ?? null) as T | null;
+        if (isRecord(parsed)) {
+          const redacted = redactPersistedAuthUser(parsed);
+          if (!redacted) {
+            await store.deleteItemAsync(storageKeyForFirebaseKey(key));
+            return null;
+          }
+          return redacted as T;
+        }
+        return parsed as T;
       } catch {
-        await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+        await store.deleteItemAsync(storageKeyForFirebaseKey(key));
         return null;
       }
     }
 
-    async _remove(_key: string): Promise<void> {
-      await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+    async _remove(key: string): Promise<void> {
+      if (isFirebaseAuthUserKey(key)) {
+        await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+        return;
+      }
+      await store.deleteItemAsync(storageKeyForFirebaseKey(key));
     }
 
     _addListener(_key: string, _listener: (value: unknown) => void): void {

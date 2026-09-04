@@ -11,14 +11,17 @@ test("bootstrap owns one branded phase-aware loading surface with no synthetic c
   assert.match(gate, /export function ContentBootstrapLoadingSkeleton\(\{ phase \}/);
   assert.match(gate, /state\.kind === "loading"[\s\S]*?runtimeSelectors\.content\.preparing\(state\.phase\)[\s\S]*?<ContentBootstrapLoadingSkeleton phase=\{state\.phase\} \/>/);
   assert.match(gate, /const phaseCopy = t\(PREPARATION_PHASE_COPY\[phase\]\)/);
-  assert.match(gate, /<PatternlyMark decorative size=\{104\} treatment=\{colorMode === "dark" \? "white" : "mint"\} \/>/);
-  assert.match(gate, /<StatusBar style=\{colorMode === "dark" \? "light" : "dark"\} \/>/);
-  assert.match(gate, /accessibilityRole="progressbar"[\s\S]*?accessibilityState=\{\{ busy: true \}\}/);
-  assert.match(gate, /accessible=\{false\}[\s\S]*?accessibilityElementsHidden[\s\S]*?importantForAccessibility="no-hide-descendants"[\s\S]*?pointerEvents="none"/);
-  assert.equal((gate.match(/useSkeletonGlassMotion\(\)/g) ?? []).length, 1);
-  assert.match(gate, /Math\.min\(fontScale, 2\)/);
-  assert.match(gate, /palette\.progress\.loadingTrack/);
-  assert.match(gate, /palette\.border/);
+  assert.match(gate, /const title = t\("Preparing content…"\);/);
+  assert.match(gate, /<LoadingState[\s\S]*?title=\{title\}/);
+  assert.match(gate, /description=\{phaseCopy\}/);
+  assert.match(gate, /descriptionTestID="content-bootstrap-phase"/);
+  assert.match(gate, /testID="content-bootstrap-loading-skeleton"/);
+  assert.match(gate, /showLogo/);
+  assert.match(loadingState, /accessibilityRole="progressbar"[\s\S]*?accessibilityState=\{\{ busy: true \}\}/);
+  assert.match(loadingState, /<SkeletonShape motion=\{motion\} style=\{styles\.statusBand\}/);
+  assert.equal((loadingState.match(/useSkeletonGlassMotion\(\)/g) ?? []).length, 1);
+  assert.match(loadingState, /palette\.progress\.loadingTrack/);
+  assert.match(loadingState, /palette\.border/);
   assert.match(gate, /CONTENT_PREPARATION_TIMEOUT_MS\s*=\s*15_000/);
   assert.match(gate, /setTimeout\([\s\S]*?preparationTimeoutReason\(currentPhase\)/);
   assert.match(gate, /Content preparation timed out while/);
@@ -26,15 +29,17 @@ test("bootstrap owns one branded phase-aware loading surface with no synthetic c
   assert.match(gate, /runtimeSelectors\.content\.unavailable\(\)/);
   assert.match(gate, /setState\(\{ kind: "loading", phase: "opening-storage" \}\)/);
   assert.match(gate, /<EmptyState actionLabel="Retry"[\s\S]*?onActionPress=/);
-  assert.doesNotMatch(`${gate}\n${loadingState}`, /variant="startup"|startupProgress|startupContent|useReducedMotion|Preparing your questions/);
+  assert.doesNotMatch(`${gate}\n${loadingState}`, /Variant|startupProgress|startupContent|Preparing your questions/);
   assert.doesNotMatch(`${gate}\n${loadingState}`, /setInterval|delay\s*:/);
 });
 
 test("generic LoadingState no longer carries the startup animation variant", () => {
   const loadingState = source("src/components/LoadingState.tsx");
 
-  assert.match(loadingState, /type LoadingStateProps = Readonly<\{[\s\S]*description\?: string;[\s\S]*title: string;/);
-  assert.doesNotMatch(loadingState, /variant|PatternlyMark|StatusBar|Animated|AccessibilityInfo|startup/);
+  assert.match(loadingState, /type LoadingStateProps = Readonly<\{[\s\S]*?description\?: string;[\s\S]*?title: string;/);
+  assert.doesNotMatch(loadingState, /variant=|StatusBar|Animated|AccessibilityInfo|startup/);
+  assert.match(loadingState, /showLogo\?: boolean/);
+  assert.match(loadingState, /<PatternlyMark decorative/);
   assert.match(loadingState, /<SkeletonShape motion=\{motion\} style=\{styles\.statusBand\}/);
   assert.match(loadingState, /useSkeletonGlassMotion\(\)/);
   assert.match(loadingState, /accessibilityRole="progressbar"[\s\S]*accessibilityState=\{\{ busy: true \}\}/);

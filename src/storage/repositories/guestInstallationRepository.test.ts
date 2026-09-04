@@ -4,7 +4,7 @@ import test, { beforeEach } from "node:test";
 import { bootstrapApplication } from "../../application/bootstrap";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../keys";
-import { getGuestInstallation, provisionGuestInstallation } from "./";
+import { bindGuestInstallationToAccount, getGuestInstallation, hasUnboundGuestInstallation, provisionGuestInstallation } from "./";
 import { writeCanonicalJson } from "./canonicalRecordCodec";
 
 const firstIdentity = Object.freeze({ installationId: "11111111-1111-4111-8111-111111111111", localDatasetId: "22222222-2222-4222-8222-222222222222" });
@@ -22,6 +22,19 @@ test("provisions one validated guest installation and preserves it across repeat
   assert.deepEqual(second, { kind: "ready", activeSessionId: null });
   assert.equal(calls, 1);
   assert.deepEqual(await getGuestInstallation(), { ...firstIdentity, accountId: null, bindingState: "guest" });
+});
+
+test("guest access requires an existing unbound installation and rejects retained account data", async () => {
+  assert.equal(hasUnboundGuestInstallation(), false);
+  await provisionGuestInstallation({ async create() { return firstIdentity; } });
+  assert.equal(hasUnboundGuestInstallation(), true);
+  await bindGuestInstallationToAccount("55555555-5555-4555-8555-555555555555");
+  assert.equal(hasUnboundGuestInstallation(), false);
+
+  const storage = new MemoryKeyValueStorage();
+  storage.setString(STORAGE_KEYS.GUEST_INSTALLATION, "{");
+  installKeyValueStorageForTests(storage);
+  assert.equal(hasUnboundGuestInstallation(), false);
 });
 
 test("corrupt or unsupported guest installation records block without replacement", async () => {
@@ -101,4 +114,34 @@ test("guest installation rejects malformed generated identities without writing"
     /Guest installation identity is invalid/,
   );
   assert.equal(await getGuestInstallation(), null);
+});
+
+
+test("bootstrap blocks corrupt guest access before content without replacing it", async () => {
+  const storage = new MemoryKeyValueStorage();
+  storage.setString(STORAGE_KEYS.GUEST_ACCESS, "{");
+  installKeyValueStorageForTests(storage);
+  let prepared = false;
+  const result = await bootstrapApplication(async () => { prepared = true; }, async () => undefined);
+  assert.equal(result.kind, "blocking");
+  assert.equal(prepared, false);
+  assert.equal(storage.getString(STORAGE_KEYS.GUEST_ACCESS), "{");
+});
+
+test("inconsistent installation bindings block bootstrap and guest access without replacement", async () => {
+  for (const pair of [
+    { bindingState: "account_bound", accountId: null },
+    { bindingState: "account_bound", accountId: " " },
+    { bindingState: "guest", accountId: "account-id" },
+    { bindingState: "adoption_pending", accountId: "account-id" },
+  ]) {
+    const storage = new MemoryKeyValueStorage();
+    installKeyValueStorageForTests(storage);
+    writeCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, { ...firstIdentity, ...pair });
+    const original = storage.getString(STORAGE_KEYS.GUEST_INSTALLATION);
+    assert.equal(hasUnboundGuestInstallation(), false);
+    const result = await bootstrapApplication(async () => undefined, async () => undefined);
+    assert.equal(result.kind, "blocking");
+    assert.equal(storage.getString(STORAGE_KEYS.GUEST_INSTALLATION), original);
+  }
 });

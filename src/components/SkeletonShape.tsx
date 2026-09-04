@@ -26,10 +26,9 @@ export function useSkeletonGlassMotion(): Animated.Value | null {
         if (!active || observedEvent) return;
         setReduceMotion(enabled);
       })
-      .catch((error: unknown) => {
+      .catch(() => {
         if (!active || observedEvent) return;
         setReduceMotion(null);
-        console.warn("[SkeletonShape] Reduce Motion preference could not be read; glass motion remains static.", error);
       });
 
     return () => {

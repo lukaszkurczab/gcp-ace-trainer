@@ -57,6 +57,42 @@ test("generated client uses typed REST paths, bearer auth, timeout and bounded e
   await assert.rejects(failing.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "server_error" && error.status === 409 && error.serverCode === "version_conflict");
 });
 
+test("generated client deadline includes token acquisition", async () => {
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: () => new Promise<string | null>(() => undefined),
+    timeoutMs: 20,
+    fetchImplementation: async () => new Response("{}"),
+  });
+  await assert.rejects(client.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "request_timeout");
+});
+
+test("generated client preserves token provider failures", async () => {
+  const tokenError = { code: "auth/user-token-expired" };
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => { throw tokenError; },
+    timeoutMs: 20,
+    fetchImplementation: async () => new Response("{}"),
+  });
+  await assert.rejects(client.getMe(), (error: unknown) => error === tokenError);
+});
+
+test("generated client deadline includes response body parsing and aborts the request", async () => {
+  let aborted = false;
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "id-token",
+    timeoutMs: 20,
+    fetchImplementation: async (_url, init) => {
+      init?.signal?.addEventListener("abort", () => { aborted = true; }, { once: true });
+      return { ok: true, status: 200, json: () => new Promise<unknown>(() => undefined) } as Response;
+    },
+  });
+  await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "request_timeout");
+  assert.equal(aborted, true);
+});
+
 test("content reports send App Check and keep bearer identity optional", async () => {
   let observedHeaders: HeadersInit | undefined;
   const client = createPatternlyApiClient({

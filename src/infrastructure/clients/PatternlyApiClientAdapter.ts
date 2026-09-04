@@ -120,38 +120,61 @@ export function createPatternlyApiClient(input: Readonly<{
 
   type AuthenticationMode = "none" | "optional" | "required";
   async function requestJson<T>(path: string, method: "GET" | "POST" | "PATCH", body?: unknown, authentication: AuthenticationMode = "required", extraHeaders: Readonly<Record<string, string>> = {}): Promise<T> {
-    const token = authentication === "none" ? null : await input.getIdToken();
-    if (authentication === "required" && !token) throw new PatternlyApiClientError("authentication_required");
     const url = new URL(path, origin);
     const publicPath = path === "/health" || path === "/ready" || path === "/openapi.json";
     if (url.origin !== origin.origin || (!path.startsWith("/v1/") && !publicPath)) throw new PatternlyApiClientError("client_unconfigured");
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    let response: Response;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timedOut = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        controller.abort();
+        reject(new PatternlyApiClientError("request_timeout"));
+      }, timeoutMs);
+    });
+    const withinDeadline = <TValue>(promise: Promise<TValue>): Promise<TValue> => Promise.race([promise, timedOut]);
     try {
-      response = await fetchImplementation(url, {
-        method,
-        signal: controller.signal,
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-        headers: { ...extraHeaders, ...(token ? { authorization: `Bearer ${token}` } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) },
-      });
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
-      throw new PatternlyApiClientError("transport_failed");
+      let token: string | null;
+      try {
+        token = authentication === "none" ? null : await withinDeadline(input.getIdToken());
+      } catch (error) {
+        if (error instanceof PatternlyApiClientError) throw error;
+        if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
+        throw error;
+      }
+      if (authentication === "required" && !token) throw new PatternlyApiClientError("authentication_required");
+      let response: Response;
+      try {
+        response = await withinDeadline(fetchImplementation(url, {
+          method,
+          signal: controller.signal,
+          ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+          headers: { ...extraHeaders, ...(token ? { authorization: `Bearer ${token}` } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) },
+        }));
+      } catch (error) {
+        if (error instanceof PatternlyApiClientError) throw error;
+        if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
+        throw new PatternlyApiClientError("transport_failed");
+      }
+      let payload: unknown;
+      try {
+        payload = await withinDeadline(response.json());
+      } catch (error) {
+        if (error instanceof PatternlyApiClientError) throw error;
+        if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
+        throw new PatternlyApiClientError("invalid_response", response.status);
+      }
+      if (!response.ok) {
+        const serverCode = isRecord(payload) && isRecord(payload.error) && typeof payload.error.code === "string"
+          ? payload.error.code
+          : isRecord(payload) && Array.isArray(payload.conflicts) && isRecord(payload.conflicts[0]) && typeof payload.conflicts[0].code === "string"
+            ? payload.conflicts[0].code
+            : undefined;
+        throw new PatternlyApiClientError("server_error", response.status, serverCode);
+      }
+      return payload as T;
     } finally {
-      clearTimeout(timeout);
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
     }
-    let payload: unknown;
-    try { payload = await response.json(); } catch { throw new PatternlyApiClientError("invalid_response", response.status); }
-    if (!response.ok) {
-      const serverCode = isRecord(payload) && isRecord(payload.error) && typeof payload.error.code === "string"
-        ? payload.error.code
-        : isRecord(payload) && Array.isArray(payload.conflicts) && isRecord(payload.conflicts[0]) && typeof payload.conflicts[0].code === "string"
-          ? payload.conflicts[0].code
-          : undefined;
-      throw new PatternlyApiClientError("server_error", response.status, serverCode);
-    }
-    return payload as T;
   }
 
   return Object.freeze({

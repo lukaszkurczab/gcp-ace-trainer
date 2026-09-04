@@ -13,7 +13,7 @@ function tsxFiles(root: string): string[] {
   });
 }
 
-const genericPendingPaths = ["src/navigation/RootNavigator.tsx"] as const;
+const genericPendingPaths = ["src/content/application/ContentPreparationGate.tsx", "src/navigation/RootNavigator.tsx"] as const;
 
 test("LoadingState is the compact accessible generic pending status", () => {
   const loadingState = source("src/components/LoadingState.tsx");
@@ -27,6 +27,8 @@ test("LoadingState is the compact accessible generic pending status", () => {
   assert.match(loadingState, /accessibilityLiveRegion="polite"/);
   assert.match(loadingState, /accessibilityLabel=\{description \? `\$\{title\}\. \$\{description\}` : title\}/);
   assert.match(loadingState, /description\?: string/);
+  assert.match(loadingState, /showLogo\?: boolean/);
+  assert.match(loadingState, /<PatternlyMark decorative/);
   assert.match(loadingState, /statusBand:\s*\{[\s\S]*?backgroundColor:\s*palette\.progress\.loadingTrack,[\s\S]*?borderColor:\s*palette\.border,[\s\S]*?height:\s*8,[\s\S]*?width:\s*104/);
   assert.match(loadingState, /processingTitle/);
   assert.match(loadingState, /processingDescription/);
@@ -110,13 +112,9 @@ test("bootstrap, roadmap, and setup own their phase or screen loading geometry",
   const bootstrap = source("src/content/application/ContentPreparationGate.tsx");
   assert.match(bootstrap, /export function ContentBootstrapLoadingSkeleton\(\{ phase \}/);
   assert.match(bootstrap, /<ContentBootstrapLoadingSkeleton phase=\{state\.phase\} \/>/);
-  assert.match(bootstrap, /accessibilityLabel=\{`\$\{title\}\. \$\{phaseCopy\}`\}/);
-  assert.match(bootstrap, /<PatternlyMark decorative/);
-  assert.match(bootstrap, /bootstrapShapes/);
-  assert.equal((bootstrap.match(/useSkeletonGlassMotion\(\)/g) ?? []).length, 1);
-  assert.match(bootstrap, /Math\.min\(fontScale, 2\)/);
-  assert.match(bootstrap, /palette\.progress\.loadingTrack/);
-  assert.match(bootstrap, /palette\.border/);
+  assert.match(bootstrap, /<LoadingState[\s\S]*?title=\{title\}/);
+  assert.match(bootstrap, /description=\{phaseCopy\}/);
+  assert.match(bootstrap, /showLogo/);
 
   const roadmap = source("src/features/practice/TopicRoadmapScreen.tsx");
   assertLocalSkeletonDefinition("src/features/practice/TopicRoadmapScreen.tsx", "TopicRoadmapLoadingSkeleton", /accessibilityLabel=\{t\("Loading topic roadmap"\)\}/, ["roadmapLoadingCanvas", "roadmapLoadingCircle", "roadmapLoadingVerticalConnector"]);
@@ -298,7 +296,8 @@ test("Skeleton glass motion stays static while Reduce Motion is unresolved or fa
   const skeletonShape = source("src/components/SkeletonShape.tsx");
 
   assert.match(skeletonShape, /const \[reduceMotion, setReduceMotion\] = useState<boolean \| null>\(null\)/);
-  assert.match(skeletonShape, /\.catch\(\(error: unknown\) => \{[\s\S]*?setReduceMotion\(null\);[\s\S]*?console\.warn\("\[SkeletonShape\] Reduce Motion preference could not be read; glass motion remains static\.", error\)/);
+  assert.match(skeletonShape, /\.catch\(\(\) => \{[\s\S]*?setReduceMotion\(null\);/);
+  assert.doesNotMatch(skeletonShape, /console\.(?:log|debug|info|warn|error)\(/);
   assert.match(skeletonShape, /if \(!shouldAnimate\) return undefined/);
   assert.match(skeletonShape, /return shouldAnimate \? motion : null/);
 });

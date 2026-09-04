@@ -88,6 +88,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   or: t("or"),
   unavailable: t("unavailable"),
   unavailableDescription: t("unavailableDescription"),
+  authRestoreTimeout: t("authRestoreTimeout"),
+  authRestoreTimeoutDescription: t("authRestoreTimeoutDescription"),
   register: t("register"),
   signIn: t("signIn"),
   email: t("email"),
@@ -160,6 +162,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   recoveryCodeSignInAgain: t("recoveryCodeSignInAgain"),
   recoveryCodeSignInAgainButton: t("recoveryCodeSignInAgainButton"),
   accountRecoveryTitle: t("accountRecoveryTitle"),
+  accountBindingMismatch: t("accountBindingMismatch"),
+  accountBindingMismatchDescription: t("accountBindingMismatchDescription"),
+  accountBindingMismatchGuestDescription: t("accountBindingMismatchGuestDescription"),
   accountRecoveryDescription: t("accountRecoveryDescription"),
   retrySync: t("retrySync"),
   syncing: t("syncing"),
@@ -307,14 +312,34 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   }, []);
 
   const screenEdges: Edge[] = ["top", "bottom"];
-  if (account.state.kind === "unavailable")
+  if (account.state.kind === "unavailable") {
+    const authRestoreTimedOut = account.state.reason === "auth_restore_timeout";
     return (
       <AuthStatusScreen
-        action={{ label: text.continueWithoutAccount, onPress: continueWithoutAccount, testID: "account-unavailable-guest" }}
+        action={authRestoreTimedOut
+          ? { label: text.check, onPress: account.retrySessionRestore, testID: "account-retry-session-restore" }
+          : { label: text.continueWithoutAccount, onPress: continueWithoutAccount, testID: "account-unavailable-guest" }}
         backAction={backAction}
-        body={text.unavailableDescription}
+        body={authRestoreTimedOut ? text.authRestoreTimeoutDescription : text.unavailableDescription}
         testID="account-unavailable"
-        title={text.unavailable}
+        title={authRestoreTimedOut ? text.authRestoreTimeout : text.unavailable}
+      >
+        {authRestoreTimedOut ? (
+          <Button onPress={continueWithoutAccount} testID="account-unavailable-guest" variant="ghost">
+            {text.continueWithoutAccount}
+          </Button>
+        ) : null}
+      </AuthStatusScreen>
+    );
+  }
+  if (account.state.kind === "guestAccessBlocked" && mode === "entry")
+    return (
+      <AuthStatusScreen
+        action={{ label: text.signIn, onPress: () => setMode("signIn"), testID: "account-binding-sign-in" }}
+        backAction={backAction}
+        body={text.accountBindingMismatchGuestDescription}
+        testID="account-guest-access-blocked"
+        title={text.accountBindingMismatch}
       />
     );
   if (account.state.kind === "verificationPending")
@@ -463,20 +488,27 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   }
 
   if (mode === "signIn") {
+    const retainedDataNotice = account.state.kind === "guestAccessBlocked" ? (
+      <AuthText style={styles.authDescription} testID="account-binding-sign-in-notice">
+        {text.accountBindingMismatchGuestDescription}
+      </AuthText>
+    ) : null;
     return (
       <Screen
         ambient
         ambientVariant="auth"
         edges={screenEdges}
         footer={
-          <Button
-            labelStyle={styles.guestActionLabel}
-            onPress={continueWithoutAccount}
-            testID="account-sign-in-guest"
-            variant="ghost"
-          >
-            {text.continueWithoutAccount}
-          </Button>
+          account.state.kind === "guestAccessBlocked" ? undefined : (
+            <Button
+              labelStyle={styles.guestActionLabel}
+              onPress={continueWithoutAccount}
+              testID="account-sign-in-guest"
+              variant="ghost"
+            >
+              {text.continueWithoutAccount}
+            </Button>
+          )
         }
         footerVariant="sticky"
         style={[styles.authScreen, largeText ? styles.authScreenLargeText : null]}
@@ -485,6 +517,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           <AuthText style={styles.authTitle}>
             {text.signIn}
           </AuthText>
+          {retainedDataNotice}
           <SignInForm
             email={email}
             feedback={feedback}
@@ -1175,8 +1208,37 @@ function AccountRecoveryScreen({
   const styles = useThemedStyles(createStyles);
   const { busyAction, runCommand } = useAccountCommand();
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const retry = () => runCommand("retry", () => account.retryAccountSync(), setFeedback);
-  const signOut = () => runCommand("signOut", () => account.signOut(), setFeedback);
+  const [feedbackAction, setFeedbackAction] = useState<"retry" | "signOut" | null>(null);
+  const previousStatusRef = useRef(accountData.status);
+  useEffect(() => {
+    if (previousStatusRef.current === accountData.status) return;
+    previousStatusRef.current = accountData.status;
+    if (feedbackAction === "retry") {
+      setFeedback(null);
+      setFeedbackAction(null);
+    }
+  }, [accountData.status, feedbackAction]);
+  const retry = () => {
+    setFeedback(null);
+    setFeedbackAction("retry");
+    runCommand("retry", () => account.retryAccountSync(), (result) => {
+      if (result.kind === "failure") setFeedback(result);
+      else setFeedbackAction(null);
+    });
+  };
+  const signOut = () => {
+    setFeedback(null);
+    setFeedbackAction("signOut");
+    runCommand("signOut", () => account.signOut(), (result) => {
+      if (result.kind === "failure") setFeedback(result);
+      else setFeedbackAction(null);
+    });
+  };
+  const status = getAccountRecoveryPresentation(accountData, text);
+  const actionFailure = feedback?.kind === "failure" && !(feedbackAction === "retry" && isRetryFailureCoveredByStatus(accountData, feedback.failure))
+    ? { body: text[feedback.failure], testID: `account-feedback-${feedback.failure}`, title: text.accountRecoveryTitle }
+    : null;
+  const presentation = actionFailure ?? status;
   return (
     <Screen
       edges={["top", "bottom"]}
@@ -1194,14 +1256,60 @@ function AccountRecoveryScreen({
       footerVariant="sticky"
     >
       <ScreenHeader backAction={backAction} title={text.account} />
-      <View style={styles.accountIntro}>
-        <AuthText style={styles.accountHeading}>{text.accountRecoveryTitle}</AuthText>
-        <AuthText style={styles.accountBody}>{text.accountRecoveryDescription}</AuthText>
+      <View style={styles.accountRecoveryStatus} testID={status.testID}>
+        <View style={styles.accountRecoveryStatus} testID={actionFailure?.testID}>
+          <AuthText accessibilityRole="header" style={styles.accountHeading}>{presentation.title}</AuthText>
+          <AuthText style={styles.accountBody}>{presentation.body}</AuthText>
+        </View>
+        {status.retry ? (
+          <Button
+            disabled={busyAction !== null}
+            loading={busyAction === "retry"}
+            onPress={retry}
+            style={styles.accountRecoveryAction}
+            testID="account-sync-retry"
+            variant="primary"
+          >
+            {text.retrySync}
+          </Button>
+        ) : null}
       </View>
-      <AccountDataPanel accountData={accountData} onRetry={retry} retryDisabled={busyAction !== null} text={text} />
-      {feedback ? renderFeedback(feedback, text, text.account) : null}
     </Screen>
   );
+}
+
+type AccountRecoveryPresentation = Readonly<{
+  body: string;
+  retry: boolean;
+  testID: string;
+  title: string;
+}>;
+
+function getAccountRecoveryPresentation(accountData: AccountDataSession, text: AccountCopy): AccountRecoveryPresentation {
+  if (accountData.status === "resumeRequired") return { body: text.resumeRequiredDescription, retry: true, testID: "account-sync-resume-required", title: text.resumeRequired };
+  if (accountData.status === "offlinePending") return { body: text.pendingDescription, retry: true, testID: "account-sync-pending", title: text.pending };
+  if (accountData.status === "signOutPending") return { body: text.signOutPendingDescription, retry: false, testID: "account-sign-out-pending", title: text.signOutPending };
+  if (accountData.status === "remoteDeletionPending") return { body: text.deletionPendingDescription, retry: false, testID: "account-deletion-pending", title: text.deletionPending };
+  if (accountData.status === "localCleanupPending") return { body: text.localCleanupPendingDescription, retry: false, testID: "account-deletion-local-cleanup-pending", title: text.localCleanupPending };
+  if (accountData.activeSessionBlocked || accountData.lastFailureCode === "active_session_adoption_blocked") {
+    return { body: text.activeSessionBlocked, retry: true, testID: "account-adoption-active-session", title: text.accountRecoveryTitle };
+  }
+  if (accountData.lastFailureCode === "journal_recovery_required") {
+    return { body: text.journalBlocked, retry: true, testID: "account-adoption-journal", title: text.accountRecoveryTitle };
+  }
+  if (accountData.lastFailureCode === "account_binding_mismatch") {
+    return { body: text.accountBindingMismatchDescription, retry: false, testID: "account-sync-binding-mismatch", title: text.accountBindingMismatch };
+  }
+  if (accountData.status === "conflict") return { body: text.conflictDescription, retry: true, testID: "account-sync-conflict", title: text.conflict };
+  if (accountData.status === "failed") return { body: text.dataFailureDescription, retry: true, testID: "account-sync-failed", title: text.dataFailure };
+  if (accountData.status === "initialSyncRequired") return { body: text.accountRecoveryDescription, retry: true, testID: "account-sync-initial-required", title: text.accountRecoveryTitle };
+  return { body: text.syncing, retry: false, testID: "account-syncing", title: text.accountRecoveryTitle };
+}
+
+function isRetryFailureCoveredByStatus(accountData: AccountDataSession, failure: string): boolean {
+  return (accountData.status === "offlinePending" && failure === "offline")
+    || (accountData.status === "conflict" && failure === "conflict")
+    || (accountData.status === "failed" && failure === "remoteFailure");
 }
 
 function RadioOption({
@@ -1832,134 +1940,6 @@ function PublicDeletionLink({ text }: Readonly<{ text: AccountCopy }>) {
   );
 }
 
-function AccountDataPanel({
-  accountData,
-  onRetry,
-  retryDisabled = false,
-  text,
-}: Readonly<{
-  accountData: AccountDataSession;
-  onRetry: () => void;
-  retryDisabled?: boolean;
-  text: AccountCopy;
-}>) {
-  if (accountData.status === "resumeRequired")
-    return (
-      <Card testID="account-sync-resume-required" style={{ gap: spacing.md }}>
-        <InfoBlock
-          body={text.resumeRequiredDescription}
-          title={text.resumeRequired}
-          tone="warning"
-        />
-        <Button disabled={retryDisabled} loading={retryDisabled} onPress={onRetry} testID="account-sync-retry" variant="primary">
-          {text.retrySync}
-        </Button>
-      </Card>
-    );
-  if (accountData.status === "offlinePending")
-    return (
-      <Card testID="account-sync-pending" style={{ gap: spacing.md }}>
-        <InfoBlock
-          body={text.pendingDescription}
-          title={text.pending}
-          tone="warning"
-        />
-        <Button disabled={retryDisabled} loading={retryDisabled} onPress={onRetry} testID="account-sync-retry" variant="primary">
-          {text.retrySync}
-        </Button>
-      </Card>
-    );
-  if (accountData.status === "signOutPending")
-    return (
-      <InfoBlock
-        body={text.signOutPendingDescription}
-        title={text.signOutPending}
-        testID="account-sign-out-pending"
-        tone="warning"
-      />
-    );
-  if (accountData.status === "remoteDeletionPending")
-    return (
-      <InfoBlock
-        body={text.deletionPendingDescription}
-        title={text.deletionPending}
-        testID="account-deletion-pending"
-        tone="warning"
-      />
-    );
-  if (accountData.status === "localCleanupPending")
-    return (
-      <InfoBlock
-        body={text.localCleanupPendingDescription}
-        title={text.localCleanupPending}
-        testID="account-deletion-local-cleanup-pending"
-        tone="warning"
-      />
-    );
-  if (
-    accountData.activeSessionBlocked ||
-    accountData.lastFailureCode === "active_session_adoption_blocked"
-  )
-    return (
-      <Card testID="account-adoption-active-session" style={{ gap: spacing.md }}>
-        <InfoBlock
-          body={text.activeSessionBlocked}
-          title={text.accountRecoveryTitle}
-          tone="warning"
-        />
-        <Button disabled={retryDisabled} loading={retryDisabled} onPress={onRetry} testID="account-sync-retry" variant="primary">
-          {text.retrySync}
-        </Button>
-      </Card>
-    );
-  if (accountData.lastFailureCode === "journal_recovery_required")
-    return (
-      <Card testID="account-adoption-journal" style={{ gap: spacing.md }}>
-        <InfoBlock
-          body={text.journalBlocked}
-          title={text.accountRecoveryTitle}
-          tone="warning"
-        />
-        <Button disabled={retryDisabled} loading={retryDisabled} onPress={onRetry} testID="account-sync-retry" variant="primary">
-          {text.retrySync}
-        </Button>
-      </Card>
-    );
-  if (accountData.status === "conflict")
-    return (
-      <Card testID="account-sync-conflict" style={{ gap: spacing.md }}>
-        <InfoBlock
-          body={text.conflictDescription}
-          title={text.conflict}
-          tone="warning"
-        />
-        <Button disabled={retryDisabled} loading={retryDisabled} onPress={onRetry} testID="account-sync-retry" variant="primary">
-          {text.retrySync}
-        </Button>
-      </Card>
-    );
-  if (accountData.status === "failed")
-    return (
-      <Card testID="account-sync-failed" style={{ gap: spacing.md }}>
-        <InfoBlock
-          body={text.dataFailureDescription}
-          title={text.dataFailure}
-          tone="warning"
-        />
-        <Button disabled={retryDisabled} loading={retryDisabled} onPress={onRetry} testID="account-sync-retry" variant="primary">
-          {text.retrySync}
-        </Button>
-      </Card>
-    );
-  return (
-    <InfoBlock
-      body={text.syncing}
-      title={text.syncing}
-      testID="account-syncing"
-    />
-  );
-}
-
 function setResult(setFeedback: (feedback: Feedback) => void) {
   return (result: AccountCommandResult) => setFeedback(result);
 }
@@ -2007,6 +1987,8 @@ function isAuthFieldFailure(
     recoveryCodeSheet: { backgroundColor: palette.surfaceInput, borderRadius: 16, padding: spacing.md },
     accountCard: { gap: spacing.md },
     accountActionGroup: { gap: spacing.sm },
+    accountRecoveryStatus: { gap: spacing.md },
+    accountRecoveryAction: { alignSelf: "stretch" },
     accountHeading: {
       ...typography.bodyStrong,
       color: palette.textPrimary,
