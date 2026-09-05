@@ -1,24 +1,31 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { Icon, IconTile, ListRow, ScreenHeader, SettingsGroup, SkeletonShape, useSkeletonGlassMotion, type IconName } from "../../../components";
+import { Icon, IconTile, InfoBlock, ListRow, ScreenHeader, SettingsGroup, SkeletonShape, useSkeletonGlassMotion, type IconName } from "../../../components";
+import type { AccountCommandResult } from "../../../application/account/AccountSessionProvider";
 import type { StorageIssue } from "../../../application/learningReadModels";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
-import type { AppearancePreference } from "../../../application/appPreferences";
 import { radius, spacing, typography, type AppColors } from "../../../theme";
 import { hasPremiumTestingAccess, setPremiumTestingAccess } from "../../../application/premiumTesting";
 import { isPatternlyBackendE2eConfigured } from "../../../infrastructure/clients/patternlyBackendRuntime";
 import { isPatternlyPremiumTestingRuntime } from "../../../infrastructure/runtime/runtimeMode";
+import packageJson from "../../../../package.json";
+import { useAccountCommand } from "../../account/useAccountCommand";
+import type { SettingsAccountPresentation } from "./settingsAccountPresentation";
+import { LANGUAGE_SETTINGS_OPTIONS } from "../languageSettingsModel";
 
 type SettingsTabProps = {
+  account: SettingsAccountPresentation;
   onOpenAppearance: () => void;
   onOpenAccount: () => void;
   onOpenBackendDiagnostics: () => void;
+  onOpenLanguage: () => void;
   onOpenLegalInformation: () => void;
   onOpenNotifications: () => void;
   onOpenPracticeSettings: () => void;
   onOpenYourData: () => void;
+  onSignOut: () => Promise<AccountCommandResult>;
   storageIssues: readonly StorageIssue[];
 };
 
@@ -71,50 +78,76 @@ export function SettingsLoadingSkeleton() {
 
 
 export function SettingsTab({
+  account,
   onOpenAppearance,
   onOpenAccount,
   onOpenBackendDiagnostics,
+  onOpenLanguage,
   onOpenLegalInformation,
   onOpenNotifications,
   onOpenPracticeSettings,
   onOpenYourData,
+  onSignOut,
   storageIssues,
 }: SettingsTabProps) {
   const styles = useThemedStyles(createStyles);
-  const { appearance, locale } = useAppPreferences();
+  const { appearance, language, locale } = useAppPreferences();
   const { t } = useTranslation("settings");
+  const { t: tAccount } = useTranslation("account");
+  const { t: tAppearance } = useTranslation("appearance");
+  const [signOutFailure, setSignOutFailure] = useState<string | null>(null);
+  const { busyAction, runCommand } = useAccountCommand();
   const text = {
-  appearance: t("appearance"),
-  appearanceDetail: t("appearanceDetail"),
-  account: t("account"),
-  accountDetail: t("accountDetail"),
-  appSettings: t("appSettings"),
-  settingsDescription: t("settingsDescription"),
-  app: t("app"),
-  data: t("data"),
-  dataDetail: t("dataDetail"),
-  dataPrivacy: t("dataPrivacy"),
-  developerVerification: t("developerVerification"),
-  backendDiagnostics: t("backendDiagnostics"),
-  backendDiagnosticsDetail: t("backendDiagnosticsDetail"),
-  premiumTesting: t("premiumTesting"),
-  premiumTestingDetail: t("premiumTestingDetail"),
-  premiumTestingEnabled: t("premiumTestingEnabled"),
-  premiumTestingDisabled: t("premiumTestingDisabled"),
-  learning: t("learning"),
-  legal: t("legal"),
-  legalDetail: t("legalDetail"),
-  notifications: t("notifications"),
-  notificationsDetail: t("notificationsDetail"),
-  practiceSettings: t("practiceSettings"),
-  practiceSettingsDetail: t("practiceSettingsDetail"),
-  storageDegraded: t("storageDegraded"),
-  storageStatus: t("storageStatus"),
+    appearance: t("appearance"),
+    appearanceDetail: t("appearanceDetail"),
+    language: t("language"),
+    languageDetail: t("languageDetail"),
+    account: t("account"),
+    accountDetail: t("accountDetail"),
+    guestAccountDetail: t("guestAccountDetail"),
+    signedOutAccount: t("signedOutAccount"),
+    signedOutAccountDetail: t("signedOutAccountDetail"),
+    accountAttention: t("accountAttention"),
+    accountAttentionDetail: t("accountAttentionDetail"),
+    verificationPending: t("verificationPending"),
+    verificationPendingDetail: t("verificationPendingDetail"),
+    guestAccessBlocked: t("guestAccessBlocked"),
+    guestAccessBlockedDetail: t("guestAccessBlockedDetail"),
+    accountUnavailable: t("accountUnavailable"),
+    accountUnavailableDetail: t("accountUnavailableDetail"),
+    accountBusyDetail: t("accountBusyDetail"),
+    signOut: t("signOut"),
+    signOutDetail: t("signOutDetail"),
+    signOutErrorTitle: t("signOutErrorTitle"),
+    appSettings: t("appSettings"),
+    settingsDescription: t("settingsDescription"),
+    app: t("app"),
+    data: t("data"),
+    dataDetail: t("dataDetail"),
+    dataPrivacy: t("dataPrivacy"),
+    developerVerification: t("developerVerification"),
+    backendDiagnostics: t("backendDiagnostics"),
+    backendDiagnosticsDetail: t("backendDiagnosticsDetail"),
+    premiumTesting: t("premiumTesting"),
+    premiumTestingDetail: t("premiumTestingDetail"),
+    premiumTestingEnabled: t("premiumTestingEnabled"),
+    premiumTestingDisabled: t("premiumTestingDisabled"),
+    learning: t("learning"),
+    legal: t("legal"),
+    legalDetail: t("legalDetail"),
+    notifications: t("notifications"),
+    notificationsDetail: t("notificationsDetail"),
+    practiceSettings: t("practiceSettings"),
+    practiceSettingsDetail: t("practiceSettingsDetail"),
+    storageDegraded: t("storageDegraded"),
+    storageStatus: t("storageStatus"),
+    version: t("version"),
   };
   const latestStorageIssue = storageIssues[0] ?? null;
   const backendDiagnosticsConfigured = isPatternlyBackendE2eConfigured();
   const premiumTestingAvailable = isPatternlyPremiumTestingRuntime();
   const [premiumTestingEnabled, setPremiumTestingEnabled] = useState(false);
+  const metadata = appMetadata(text.version);
 
   useEffect(() => {
     if (premiumTestingAvailable) setPremiumTestingEnabled(hasPremiumTestingAccess());
@@ -126,9 +159,52 @@ export function SettingsTab({
     setPremiumTestingEnabled(next);
   }
 
+  function signOut(): void {
+    if (!account.canSignOut) return;
+    setSignOutFailure(null);
+    runCommand("signOut", onSignOut, (result) => {
+      setSignOutFailure(result.kind === "failure" ? result.failure : null);
+    });
+  }
+
+  const accountTitle = account.status === "guest"
+    ? text.signedOutAccount
+    : account.status === "signedOut"
+      ? text.signedOutAccount
+      : account.status === "verificationPending"
+        ? text.verificationPending
+        : account.status === "guestAccessBlocked"
+          ? text.guestAccessBlocked
+          : account.status === "attention"
+            ? text.accountAttention
+            : account.status === "unavailable"
+              ? text.accountUnavailable
+              : text.account;
+  const accountDetail = account.status === "guest"
+    ? text.guestAccountDetail
+    : account.status === "signedOut"
+      ? text.signedOutAccountDetail
+      : account.status === "verificationPending"
+        ? text.verificationPendingDetail
+        : account.status === "guestAccessBlocked"
+          ? text.guestAccessBlockedDetail
+          : account.status === "attention"
+            ? text.accountAttentionDetail
+            : account.status === "unavailable"
+              ? text.accountUnavailableDetail
+              : account.status === "busy"
+                ? text.accountBusyDetail
+                : text.accountDetail;
+  const accountDetailWithIdentity = account.email
+    ? `${accountDetail}\n${tAccount("accountSignedInAs")}: ${account.email}`
+    : accountDetail;
+  const languageValue = t(LANGUAGE_SETTINGS_OPTIONS.find((option) => option.value === language)?.labelKey ?? "languageSystem");
+
   return (
     <View style={styles.page} testID="settings-screen">
       <ScreenHeader description={text.settingsDescription} title={text.appSettings} />
+
+      {signOutFailure ? <InfoBlock accessibilityAlert body={tAccount(signOutFailure)} title={text.signOutErrorTitle} testID="settings-sign-out-error" tone="warning" /> : null}
 
       {latestStorageIssue ? (
         <SettingsGroup dividers title={text.storageStatus}>
@@ -143,14 +219,40 @@ export function SettingsTab({
 
       <View style={styles.content}>
         <SettingsGroup dividers title={text.app} titleGap={0}>
-          <SettingsNavigationRow detail={text.accountDetail} icon="user" onPress={onOpenAccount} testID="settings-account" title={text.account} />
+          <SettingsNavigationRow
+            detail={accountDetailWithIdentity}
+            disabled={!account.canOpenAccount}
+            icon="user"
+            onPress={onOpenAccount}
+            testID="settings-account"
+            title={accountTitle}
+          />
+          {account.canSignOut ? (
+            <SettingsNavigationRow
+              detail={text.signOutDetail}
+              disabled={busyAction !== null}
+              icon="rotate-ccw"
+              loading={busyAction === "signOut"}
+              onPress={signOut}
+              testID="settings-sign-out"
+              title={text.signOut}
+            />
+          ) : null}
           <SettingsNavigationRow
             detail={text.appearanceDetail}
             icon="moon-half"
             onPress={onOpenAppearance}
             testID="settings-appearance"
             title={text.appearance}
-            value={appearanceLabel(locale, appearance)}
+            value={tAppearance(appearance)}
+          />
+          <SettingsNavigationRow
+            detail={text.languageDetail}
+            icon="device-phone"
+            onPress={onOpenLanguage}
+            testID="settings-language"
+            title={text.language}
+            value={languageValue}
           />
         </SettingsGroup>
 
@@ -202,41 +304,44 @@ export function SettingsTab({
       </View>
       <View style={styles.footer}>
         <Text maxFontSizeMultiplier={2} style={styles.footerTitle}>Patternly</Text>
-        <Text maxFontSizeMultiplier={2} style={styles.footerText}>{`Version 0.1.0 · Build 1`}</Text>
+        {metadata ? <Text maxFontSizeMultiplier={2} style={styles.footerText}>{metadata}</Text> : null}
       </View>
     </View>
   );
 }
 
-function appearanceLabel(locale: AppLocale, appearance: AppearancePreference): string {
-  const labels: Record<AppLocale, Record<AppearancePreference, string>> = {
-    en: { dark: "Dark", light: "Light", system: "System" },
-    pl: { dark: "Ciemny", light: "Jasny", system: "System" },
-  };
-  return labels[locale][appearance];
-}
-
-function SettingsNavigationRow({ detail, icon, onPress, testID, title, value }: Readonly<{
+function SettingsNavigationRow({ detail, disabled = false, icon, loading = false, onPress, testID, title, value }: Readonly<{
   detail: string;
+  disabled?: boolean;
   icon: IconName;
+  loading?: boolean;
   onPress: () => void;
   testID: string;
   title: string;
   value?: string;
 }>) {
   const { colors } = useAppPreferences();
+  const { fontScale } = useWindowDimensions();
   const styles = useThemedStyles(createStyles);
+  const largeText = fontScale >= 1.3;
+  const rowDetail = largeText && value ? `${detail}\n${value}` : detail;
   return (
     <ListRow
-      detail={detail}
+      detail={rowDetail}
+      disabled={disabled}
       leading={<IconTile iconSize={24} name={icon} size={32} tone="settings" />}
       onPress={onPress}
       testID={testID}
       title={title}
-        trailing={<View style={styles.preferenceMeta}>{value ? <Text maxFontSizeMultiplier={2} style={styles.preferenceValue}>{value}</Text> : null}<Icon color={colors.listRow.icon} name="chevron-right" size={20} /></View>}
+      trailing={<View style={styles.preferenceMeta}>{loading ? <ActivityIndicator color={colors.primary} size="small" /> : <>{!largeText && value ? <Text maxFontSizeMultiplier={2} style={styles.preferenceValue}>{value}</Text> : null}<Icon color={colors.listRow.icon} name="chevron-right" size={20} /></>}</View>}
       variant="grouped"
     />
   );
+}
+
+function appMetadata(versionLabel: string): string | null {
+  const version = typeof packageJson.version === "string" ? packageJson.version.trim() : "";
+  return version ? `${versionLabel} ${version}` : null;
 }
 
 function formatStorageIssue(issue: StorageIssue, locale: AppLocale): string {

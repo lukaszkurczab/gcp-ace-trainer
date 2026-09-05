@@ -199,7 +199,7 @@ test("Practice Hub retains its mode layout and canonical ownership", () => {
   assert.match(listRow, /groupedCopy:\s*\{[\s\S]*?gap:\s*spacing\.xxs/);
   assert.match(listRow, /groupedDetail:\s*\{[\s\S]*?typography\.listRowDetail/);
   assert.match(practiceHub, /settingsActionText:\s*\{[\s\S]*?color:\s*palette\.primary[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"500"[\s\S]*?lineHeight:\s*16/);
-  assert.match(practiceHub, /buildPracticeModes\(activeTrack, data\.hasReviewEvidence\)/);
+  assert.match(practiceHub, /buildPracticeModes\(activeTrack, hasReviewEvidence\)/);
 });
 
 test("Practice Question Shell keeps the Figma prompt-to-answer rhythm", () => {

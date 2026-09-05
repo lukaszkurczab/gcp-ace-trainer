@@ -8,5 +8,7 @@
   "light": "Jasny",
   "lightDetail": "Zawsze używaj jasnego motywu.",
   "dark": "Ciemny",
-  "darkDetail": "Zawsze używaj ciemnego motywu."
+  "darkDetail": "Zawsze używaj ciemnego motywu.",
+  "saveErrorTitle": "Nie udało się zapisać wyglądu",
+  "saveErrorDetail": "Spróbuj ponownie wybrać wygląd."
 }

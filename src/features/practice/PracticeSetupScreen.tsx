@@ -1,16 +1,13 @@
-import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { AppShellHeader, Button, Card, ChoiceRow, EmptyState, Screen, ScreenHeader, SectionHeader, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { CODING_INTERVIEW_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
-import type { TrainingAttempt } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, getTrackDisplay } from "../../domain";
 import { goBackOrHome } from "../../navigation/goBackOrHome";
 import type { RootStackParamList } from "../../navigation/types";
-import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { radius, spacing, typography } from "../../theme";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode, isAlgorithmModeId } from "../../tracks/coding-interview";
@@ -21,6 +18,7 @@ import {
   buildTopicRoadmapNodes,
   resolvePracticeTopic as resolvePracticeTopicModel,
 } from "./practiceFlowModel";
+import { usePracticeReadModel } from "./usePracticeReadModel";
 import {
   formatPracticeTopicDetail,
   formatPracticeTopicTitle,
@@ -39,19 +37,12 @@ import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-
+import type { VerifiedPackageMode } from "../../content/contracts";
 
 type PracticeSetupScreenProps = NativeStackScreenProps<
   RootStackParamList,
   typeof ROUTES.PRACTICE_SETUP
 >;
-
-const STORED_TRACK_REQUEST_KEY = "stored-track" as const;
-type PracticeSetupRequestKey = TrackId | typeof STORED_TRACK_REQUEST_KEY;
-type PracticeSetupReadState =
-  | Readonly<{ kind: "pending"; requestKey: PracticeSetupRequestKey }>
-  | Readonly<{ kind: "ready"; requestKey: PracticeSetupRequestKey; activeTrackId: TrackId | null; trainingAttempts: readonly TrainingAttempt[] }>
-  | Readonly<{ kind: "unavailable"; requestKey: PracticeSetupRequestKey; reason: string }>;
 
 type PracticeSetupLoadingVariant =
   | "diagnostic"
@@ -59,7 +50,7 @@ type PracticeSetupLoadingVariant =
   | "lengthOnly"
   | "design"
   | "customCoding"
-  | "lengthFeedbackReview"
+  | "quickReview"
   | "unknown";
 
 function resolvePracticeSetupLoadingVariant(mode?: PracticeSessionMode): PracticeSetupLoadingVariant {
@@ -69,7 +60,7 @@ function resolvePracticeSetupLoadingVariant(mode?: PracticeSessionMode): Practic
   if (mode === ALGORITHM_MODE_IDS.customPractice) return "customCoding";
   if (isDesignInterviewModeId(mode)) return "design";
   if (isAlgorithmModeId(mode)) return "lengthOnly";
-  if (isCertificationPracticeModeId(mode) && mode === "certification-quick-review") return "lengthFeedbackReview";
+  if (isCertificationPracticeModeId(mode) && mode === "certification-quick-review") return "quickReview";
   if (isCertificationPracticeModeId(mode)) return "lengthOnly";
   return "unknown";
 }
@@ -84,10 +75,9 @@ export function PracticeSetupLoadingSkeleton({ mode }: Readonly<{ mode?: Practic
   const variant = resolvePracticeSetupLoadingVariant(mode);
   const compactCodingPractice = variant === "customCoding";
   const showIntro = variant !== "customCoding" && variant !== "unknown";
-  const showLength = variant !== "diagnostic" && variant !== "unknown";
+  const showLength = variant !== "diagnostic" && variant !== "quickReview" && variant !== "unknown";
   const showSelector = variant === "selector";
-  const showFeedback = variant === "customCoding" || variant === "lengthFeedbackReview";
-  const showReview = variant === "lengthFeedbackReview";
+  const showFeedback = variant === "customCoding";
 
   return (
     <View
@@ -107,6 +97,12 @@ export function PracticeSetupLoadingSkeleton({ mode }: Readonly<{ mode?: Practic
         </View> : null}
 
         {variant === "diagnostic" ? <View style={styles.practiceSetupLoadingDescriptionCard}>
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelTitle, { height: 16 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelDetail, { height: 13 * textScale }]} />
+          <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingDescriptionShort, { height: 13 * textScale }]} />
+        </View> : null}
+
+        {variant === "quickReview" ? <View style={styles.practiceSetupLoadingDescriptionCard}>
           <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelTitle, { height: 16 * textScale }]} />
           <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelDetail, { height: 13 * textScale }]} />
           <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingDescriptionShort, { height: 13 * textScale }]} />
@@ -156,14 +152,6 @@ export function PracticeSetupLoadingSkeleton({ mode }: Readonly<{ mode?: Practic
           </View>
         </View> : null}
 
-        {showReview ? <View style={styles.practiceSetupLoadingReviewCard}>
-          <View style={styles.practiceSetupLoadingPanelCopy}>
-            <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelTitle, { height: 15 * textScale }]} />
-            <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingPanelDetail, { height: 12 * textScale }]} />
-          </View>
-          <SkeletonShape motion={motion} style={styles.practiceSetupLoadingSwitch} />
-        </View> : null}
-
         {variant === "unknown" ? <View style={styles.practiceSetupLoadingUnknown}>
           <SkeletonShape motion={motion} style={[styles.practiceSetupLoadingLine, styles.practiceSetupLoadingUnknownTitle, { height: 16 * textScale }]} />
           <View style={styles.practiceSetupLoadingUnknownCard}>
@@ -184,8 +172,14 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
-  const requestKey: PracticeSetupRequestKey = route.params?.trackId ?? STORED_TRACK_REQUEST_KEY;
-  const [readState, setReadState] = useState<PracticeSetupReadState>({ kind: "pending", requestKey });
+  const { readState, requestKey, retry } = usePracticeReadModel({
+    errorFallback: t("We couldn’t load the session settings."),
+    requestedTrackId: route.params?.trackId,
+  });
+  const routeFormIdentity = buildPracticeSetupRouteIdentity(route.params);
+  const readTrackId = readState.kind === "ready" ? readState.activeTrackId : null;
+  const activeFormIdentity = readTrackId === null ? null : `${readTrackId}:${routeFormIdentity}`;
+  const [formIdentity, setFormIdentity] = useState<string | null>(null);
   const [sessionLength, setSessionLength] = useState<PracticeSessionLength>(
     route.params?.sessionLength ?? DEFAULT_PRACTICE_SESSION_LENGTH,
   );
@@ -196,50 +190,19 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     route.params?.reviewBehaviorEnabled ?? false,
   );
   const [focusTopicId, setFocusTopicId] = useState<string | null>(() => isCloudTopicId(route.params?.topicId ?? "") ? route.params!.topicId! : null);
-  const [scenarioCompetencyId, setScenarioCompetencyId] = useState<string | null>(route.params?.competencyId ?? null);
   const [setupError, setSetupError] = useState<string | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      const capturedRequestKey = requestKey;
-      let isActive = true;
-      setReadState({ kind: "pending", requestKey: capturedRequestKey });
+  useEffect(() => {
+    if (activeFormIdentity === null) return;
+    setFormIdentity(activeFormIdentity);
+    setSessionLength(route.params?.sessionLength ?? DEFAULT_PRACTICE_SESSION_LENGTH);
+    setFeedbackMode(route.params?.feedbackMode ?? DEFAULT_FEEDBACK_MODE);
+    setReviewBehaviorEnabled(route.params?.reviewBehaviorEnabled ?? false);
+    setFocusTopicId(isCloudTopicId(route.params?.topicId ?? "") ? route.params!.topicId! : null);
+    setSetupError(null);
+  }, [activeFormIdentity]);
 
-      async function loadData() {
-        try {
-          const [savedTrackId, trainingAttemptsResult] = await Promise.all([
-            getActiveTrackId(),
-            getTrainingAttempts(),
-          ]);
-
-          if (isActive) {
-            setReadState({
-              kind: "ready",
-              requestKey: capturedRequestKey,
-              activeTrackId: capturedRequestKey === STORED_TRACK_REQUEST_KEY ? savedTrackId ?? null : capturedRequestKey,
-              trainingAttempts: trainingAttemptsResult.value,
-            });
-          }
-        } catch (error) {
-          if (isActive) {
-            setReadState({
-              kind: "unavailable",
-              requestKey: capturedRequestKey,
-              reason: describeOperationalFailure(error, t("We couldn’t load the session settings.")),
-            });
-          }
-        }
-      }
-
-      void loadData();
-
-      return () => {
-        isActive = false;
-      };
-    }, [requestKey, t]),
-  );
-
-  if (readState.requestKey !== requestKey || readState.kind === "pending") {
+  function renderLoading() {
     const compactCodingPractice = route.params?.mode === ALGORITHM_MODE_IDS.customPractice;
     return (
       <Screen edges={["top", "bottom"]}>
@@ -255,51 +218,85 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
       </Screen>
     );
   }
-  if (readState.kind === "unavailable") return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><EmptyState title={t("Practice setup is unavailable")} description={t(readState.reason)} /></Screen>;
+
+  function renderUnavailable(
+    description: string,
+    actionLabel = t("Back to practice"),
+    onActionPress = () => goBackOrHome(navigation),
+  ) {
+    return (
+      <Screen edges={["top", "bottom"]}>
+        <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} />
+        <EmptyState actionLabel={actionLabel} onActionPress={onActionPress} title={t("Practice setup is unavailable")} description={description} />
+      </Screen>
+    );
+  }
+
+  if (readState.requestKey !== requestKey || readState.kind === "pending") {
+    return renderLoading();
+  }
+  if (readState.kind === "unavailable") return renderUnavailable(t(readState.reason), t("Try again"), retry);
   const { activeTrackId: resolvedTrackId, trainingAttempts } = readState;
   if (!resolvedTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
-  const activeTrack = getTrackDisplay(resolvedTrackId);
-  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
-  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><EmptyState title={t("Practice setup is unavailable")} description={t("This topic is not included in your free content.")} /></Screen>;
-  const selectedMode = (route.params?.mode ?? packageProfile.primaryEntry.modeId) as PracticeSessionMode;
-  packageProfile.getMode(selectedMode);
+  if (formIdentity !== activeFormIdentity) return renderLoading();
+  let activeTrack: ReturnType<typeof getTrackDisplay>;
+  let packageProfile: ReturnType<typeof contentPackageRuntimeOwner.getPreparedDiscovery>["profile"];
+  try {
+    activeTrack = getTrackDisplay(resolvedTrackId);
+    packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
+  } catch (error) {
+    return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
+  }
+  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) {
+    return renderUnavailable(t("This topic is not included in your free content."));
+  }
+  const requestedMode = route.params?.mode ?? packageProfile.primaryEntry.modeId;
+  if (typeof requestedMode !== "string") return renderUnavailable(t("This practice mode is unavailable."));
+  if (activeTrack.familyId === "coding_interview" && !isAlgorithmModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
+  if (activeTrack.familyId === "certification" && !isCertificationPracticeModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
+  if (activeTrack.familyId === "design_interview" && !isDesignInterviewModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
+  const selectedMode = requestedMode as PracticeSessionMode;
+  let selectedPackageMode: VerifiedPackageMode;
+  try {
+    selectedPackageMode = packageProfile.getMode(selectedMode);
+  } catch (error) {
+    return renderUnavailable(describeOperationalFailure(error, t("This practice mode is unavailable.")));
+  }
   const certificationTrack = activeTrack.familyId === "certification";
   const diagnosticBaseline = certificationTrack && selectedMode === "certification-diagnostic-baseline";
   const focusPractice = certificationTrack && selectedMode === "certification-focus-practice";
-  const scenarioPractice = certificationTrack && selectedMode === "certification-scenario-practice";
   const weakAreaReview = certificationTrack && selectedMode === "certification-weak-area-review";
-  const mixedPractice = certificationTrack && selectedMode === "certification-mixed-practice";
+  const quickReview = certificationTrack && selectedMode === "certification-quick-review";
   const algorithmMode = activeTrack.id === CODING_INTERVIEW_TRACK_ID
     ? getAlgorithmMode(selectedMode)
     : null;
   const compactCodingPractice = algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice;
-  const selectedPackageMode = packageProfile.getMode(selectedMode);
   const configuredSessionLength = !selectedPackageMode.requestedLengths.includes(sessionLength)
     ? selectedPackageMode.defaultRequestedLength as PracticeSessionLength
     : sessionLength;
   const designMode = isDesignInterviewModeId(selectedMode);
-  const reviewBehaviorCopy = getPracticeReviewBehaviorCopy(activeTrack.id);
-  const topic = resolvePracticeTopicModel({
-    activeTrackId: activeTrack.id,
-    routeTopicId: route.params?.topicId,
-    trainingAttempts,
-  });
-  const focusTopics = focusPractice
-    ? buildTopicRoadmapNodes({ activeTrackId: activeTrack.id, trainingAttempts })
-    : [];
+  let reviewBehaviorCopy: ReturnType<typeof getPracticeReviewBehaviorCopy>;
+  let topic: ReturnType<typeof resolvePracticeTopicModel>;
+  let focusTopics: ReturnType<typeof buildTopicRoadmapNodes> = [];
+  try {
+    reviewBehaviorCopy = getPracticeReviewBehaviorCopy(activeTrack.id);
+    topic = resolvePracticeTopicModel({
+      activeTrackId: activeTrack.id,
+      routeTopicId: route.params?.topicId,
+      trainingAttempts,
+    });
+    if (focusPractice) focusTopics = buildTopicRoadmapNodes({ activeTrackId: activeTrack.id, trainingAttempts });
+  } catch (error) {
+    return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
+  }
   const selectedFocusTopicId = focusPractice
     ? focusTopicId ?? packageProfile.freeNodeId
     : null;
-  const scenarioCompetencies: readonly Readonly<{ id: string; label: string; scenarioItemIds: readonly string[] }>[] = [];
 
   function startSession() {
     const mode = selectedMode;
     if (focusPractice && selectedFocusTopicId !== packageProfile.freeNodeId) {
       setSetupError("Choose an available topic to start practicing.");
-      return;
-    }
-    if (scenarioPractice && !scenarioCompetencyId) {
-      setSetupError("Choose a competency before starting Scenario Practice.");
       return;
     }
     navigation.navigate(
@@ -312,11 +309,10 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               reviewSource: route.params?.reviewSource,
               sessionLength: configuredSessionLength,
             }
-            : diagnosticBaseline ? {} : focusPractice || scenarioPractice || weakAreaReview || mixedPractice || designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
-        competencyId: scenarioPractice ? scenarioCompetencyId! : undefined,
+            : diagnosticBaseline || quickReview ? {} : focusPractice || weakAreaReview || designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         mode,
         source: "practiceSetup",
-        topicId: diagnosticBaseline ? packageProfile.freeNodeId : focusPractice ? selectedFocusTopicId! : weakAreaReview || mixedPractice ? "" : topic.id,
+        topicId: diagnosticBaseline ? packageProfile.freeNodeId : focusPractice ? selectedFocusTopicId! : weakAreaReview || quickReview ? "" : topic.id,
         trackId: activeTrack.id,
       }),
     );
@@ -356,7 +352,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
             {t("Practice setup")}
           </Text>
           <Text key={`practice-setup-intro-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>
-            {diagnosticBaseline ? t("Check your knowledge of {{topic}} with 40 questions.", { topic: formatPracticeTopicTitle(topic.title, t) }) : focusPractice ? t("Practice questions from one topic.") : scenarioPractice ? t("Choose the skill you want to practice.") : weakAreaReview ? t("Review questions that are ready to revisit.") : mixedPractice ? t("Practice a mix of topics in one session.") : t("Set up your session for {{topic}}.", { topic: formatPracticeTopicTitle(topic.title, t) })}
+            {diagnosticBaseline ? t("Check your knowledge of {{topic}} with 40 questions.", { topic: formatPracticeTopicTitle(topic.title, t) }) : focusPractice ? t("Practice questions from one topic.") : weakAreaReview || quickReview ? t("Review questions that are ready to revisit.") : t("Set up your session for {{topic}}.", { topic: formatPracticeTopicTitle(topic.title, t) })}
           </Text>
         </View> : null}
 
@@ -365,12 +361,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} disabled={focusTopic.status === "locked"} detail={focusTopic.status === "locked" ? `${t("Unavailable")}. ${formatPracticeTopicDetail(focusTopic.detail, t)}` : formatPracticeTopicDetail(focusTopic.detail, t)} label={focusTopic.title} onPress={() => { setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={selectedFocusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
         </View> : null}
 
-        {scenarioPractice ? <View style={styles.section}>
-          <SectionHeader title={t("Competency")} subtitle={t("Choose a skill for this session.")} tight />
-          {scenarioCompetencies.map((competency) => <SelectablePanel key={competency.id} detail={t("Questions: {{count}}", { count: competency.scenarioItemIds.length })} label={t(competency.label)} onPress={() => { setScenarioCompetencyId(competency.id); setSetupError(null); }} selected={scenarioCompetencyId === competency.id} testID={runtimeSelectors.practice.scenarioCompetency(competency.id)} />)}
-        </View> : null}
-
-        {!diagnosticBaseline ? <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>
+        {quickReview ? <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text key={`practice-setup-quick-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Quick Review")}</Text><Text key={`practice-setup-quick-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Review questions that are ready to revisit.")}</Text></View></Card> : !diagnosticBaseline ? <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>
           {compactCodingPractice ? <PracticeSetupSectionHeader title={t("Session length")} subtitle={t("Number of questions in this session.")} /> : <SectionHeader title={t("Session length")} tight />}
           <View style={[styles.lengthGrid, compactCodingPractice ? styles.compactLengthGrid : null]}>
             {selectedPackageMode.requestedLengths.map((length) => (
@@ -389,7 +380,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
         {designMode ? <Text key={`design-feedback-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Feedback is shown after each answer.")}</Text> : null}
 
-        {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && !designMode && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
+        {!diagnosticBaseline && !focusPractice && !weakAreaReview && !quickReview && !designMode && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
           <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>
             {compactCodingPractice ? <PracticeSetupSectionHeader title={t("Feedback mode")} subtitle={t("Choose when to see feedback on your answers.")} /> : <SectionHeader title={t("Feedback mode")} tight />}
             <SelectablePanel
@@ -411,7 +402,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         ) : null}
 
-        {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && !algorithmMode && !designMode ? (
+        {!diagnosticBaseline && !focusPractice && !weakAreaReview && !quickReview && !algorithmMode && !designMode ? (
           <Card style={styles.reviewCard}>
             <View style={styles.reviewCopy}>
               <Text key={`practice-setup-review-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
@@ -437,6 +428,14 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
       </Screen>
     </View>
   );
+}
+
+function buildPracticeSetupRouteIdentity(params: PracticeSetupScreenProps["route"]["params"]): string {
+  try {
+    return JSON.stringify(params ?? {}) ?? "{}";
+  } catch {
+    return "invalid-route";
+  }
 }
 
 type SelectableOptionProps = {
@@ -672,24 +671,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderWidth: 2,
     height: 28,
     width: 28,
-  },
-  practiceSetupLoadingReviewCard: {
-    alignItems: "center",
-    backgroundColor: palette.elevatedSurface,
-    borderColor: palette.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: spacing.md,
-    justifyContent: "space-between",
-    minHeight: 92,
-    padding: spacing.lg,
-  },
-  practiceSetupLoadingSwitch: {
-    backgroundColor: palette.progress.loadingTrack,
-    borderRadius: radius.pill,
-    height: 32,
-    width: 56,
   },
   practiceSetupLoadingActionSpace: {
     gap: spacing.md,

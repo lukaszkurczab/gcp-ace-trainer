@@ -216,6 +216,21 @@ test("request change during expected resume prevents the old session from publis
   assert.deepEqual(await pending, { kind: "stale" });
 });
 
+test("expected resume failure never falls back to starting a new exam", async () => {
+  const cause = new Error("expected exam could not be resumed");
+  let starts = 0;
+  const owner = createExamReadOwner({
+    expiredSessionId: () => null,
+    getProjection: async () => ({ id: "unexpected" }),
+    resumeExpected: async () => { throw cause; },
+    start: async () => { starts += 1; },
+  });
+  const pending = owner.load(owner.begin("expected"), "expected-session");
+
+  assert.deepEqual(await pending, { cause, kind: "unavailable", source: "expected" });
+  assert.equal(starts, 0);
+});
+
 test("the current expiry outcome carries its session id for guarded navigation", async () => {
   const read = deferred<{ id: string }>();
   const owner = ownerFor(() => read.promise);

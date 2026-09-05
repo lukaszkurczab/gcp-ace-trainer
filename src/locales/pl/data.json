@@ -21,10 +21,10 @@
         {
           "detailTitle": "Czego Patternly nie wymaga",
           "icon": "shield-check",
-          "summary": "Bez konta, profilu tożsamości, historii w chmurze i niepowiązanych danych urządzenia.",
-          "title": "Nie zbieramy",
+          "summary": "Ćwicz lokalnie bez konta i synchronizacji z chmurą.",
+          "title": "Konto jest opcjonalne",
           "paragraphs": [
-            "Patternly nie wymaga konta, imienia, adresu e-mail, danych logowania ani profilu tożsamości.",
+            "Możesz ćwiczyć lokalnie bez zakładania konta i podawania imienia lub adresu e-mail. Logowanie jest opcjonalne.",
             "Nie wymaga lokalizacji, kontaktów, zdjęć, mikrofonu, kamery, danych zdrowotnych, identyfikatorów reklamowych, samoocen ani syntetycznych metryk gotowości i opanowania materiału."
           ]
         },
@@ -34,7 +34,7 @@
           "summary": "Powiązanie konta wymaga podglądu i potwierdzenia.",
           "title": "Powiązanie konta jest jawne",
           "paragraphs": [
-            "Patternly pokazuje wejście do konta tylko wtedy, gdy jawnie skonfigurowano publiczne środowisko, dostawcę tożsamości Firebase i natywną konfigurację App Check. Utworzenie konta lub logowanie nie wiąże automatycznie lokalnych danych o nauce ani ich nie wysyła.",
+            "Gdy logowanie do konta jest dostępne, utworzenie konta lub zalogowanie nie łączy ani nie wysyła automatycznie lokalnych danych o nauce. Najpierw przeglądasz proponowane zmiany danych i je potwierdzasz.",
             "Po uwierzytelnieniu i Twoim potwierdzeniu Patternly może synchronizować aktywny tor oraz zwarte fakty ukończonej nauki. Aktywne sesje, szkice, pozycje, timery i dzienniki odzyskiwania pozostają tylko na tym urządzeniu."
           ]
         },
@@ -59,8 +59,8 @@
           "summary": "Adopcja konta zachowuje dane dopiero po jawnym potwierdzeniu.",
           "title": "Granice lokalnego zapisu",
           "paragraphs": [
-            "Odinstalowanie aplikacji, utrata lub wymiana urządzenia albo reset nauki mogą usunąć dane tylko urządzenia, takie jak aktywna sesja lub szkic. Potwierdzone rekordy konta mogą zostać odtworzone przez jawny przepływ adopcji.",
-            "Patternly konfiguruje wykluczenie rekordów nauki z automatycznych backupów systemu i transferów między urządzeniami. Nie oferuje backupu ani przywracania; nie może zagwarantować braku kopii poza kontrolą aplikacji."
+            "Odinstalowanie aplikacji, utrata lub wymiana urządzenia albo reset nauki mogą usunąć dane tylko urządzenia, takie jak aktywna sesja lub szkic.",
+            "Patternly wyklucza rekordy nauki z automatycznych backupów systemu i transferów między urządzeniami. Potwierdzone rekordy konta można przywrócić wyłącznie przez jawny przepływ adopcji; nie można zagwarantować braku kopii poza kontrolą aplikacji."
           ]
         }
       ]

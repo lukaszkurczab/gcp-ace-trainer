@@ -3,7 +3,7 @@ import { getTrackDisplay, type TrackId } from "../../../domain";
 import type { CertificationDomain } from "../../../tracks/certification/domain";
 import type { ActivitySessionRecord } from "../../../application/activityReadModels";
 import { activityTimestamp } from "../../../application/activityReadModels";
-import { activityTime, modeLabel } from "./activityPresentation";
+import { calendarDayDifference, isSameCalendarWeek, modeLabel, type ActivityDateLabel } from "./activityPresentation";
 import { getDomainLabel } from "../../../utils";
 import { getTrackRoadmapCatalog } from "../../practice/trackRoadmapCatalog";
 
@@ -13,7 +13,7 @@ export type ActivityGroup = "Today" | "Yesterday" | "This week" | "Earlier";
 
 export type ActivityItem = Readonly<{
   answerCount: number;
-  dateLabel: string;
+  dateLabel: ActivityDateLabel;
   duration: string;
   group: ActivityGroup;
   icon: IconName;
@@ -39,7 +39,8 @@ export function buildActivityModel(
   filter: ActivityFilter,
   now = new Date(),
 ): ActivityModel {
-  const items = records
+  const items = [...records]
+    .sort((left, right) => activityTimestamp(right).localeCompare(activityTimestamp(left)))
     .filter((record) => filter === ALL_ACTIVITY_TRACKS || record.session.trackId === filter)
     .map((record) => toActivityItem(record, now));
   const groups = (['Today', 'Yesterday', 'This week', 'Earlier'] as const)
@@ -102,21 +103,12 @@ function activityGroup(timestamp: string, now: Date): ActivityGroup {
   const difference = calendarDayDifference(timestamp, now);
   if (difference <= 0) return "Today";
   if (difference === 1) return "Yesterday";
-  if (difference <= 7) return "This week";
-  return "Earlier";
+  return isSameCalendarWeek(timestamp, now) ? "This week" : "Earlier";
 }
 
-function activityDateLabel(timestamp: string, group: ActivityGroup): string {
-  if (group === "Today" || group === "Yesterday") return `${group}, ${activityTime(timestamp)}`;
-  const date = new Date(timestamp);
-  return `${date.toLocaleDateString(undefined, { day: "numeric", month: "short" })}, ${activityTime(timestamp)}`;
-}
-
-function calendarDayDifference(timestamp: string, now: Date): number {
-  const date = new Date(timestamp);
-  const day = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  return Math.max(0, Math.round((today - day) / 86_400_000));
+function activityDateLabel(timestamp: string, group: ActivityGroup): ActivityDateLabel {
+  if (group === "Today" || group === "Yesterday") return { kind: "relative", label: group, timestamp };
+  return { kind: "calendar", timestamp };
 }
 
 function activityIcon(modeId: string): IconName {

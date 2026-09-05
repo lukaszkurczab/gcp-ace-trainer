@@ -82,6 +82,28 @@ test("sign-out keeps the account bound and exposes a durable pending state when 
   assert.equal((await getAccountSyncState()).accountId, null);
 });
 
+test("sign-out preparation retries after an injected ACCOUNT_SYNC read failure without revoking or clearing", async () => {
+  const storage = getKeyValueStorage() as MemoryKeyValueStorage;
+  let revokeCalls = 0;
+  const client = api({
+    revokeSessions: async (operationId) => {
+      revokeCalls++;
+      return { status: "revoked", operationId };
+    },
+  });
+
+  storage.setFailurePlan({ kind: "fail_on_key_read", key: STORAGE_KEYS.ACCOUNT_SYNC });
+  await assert.rejects(() => prepareAccountSignOut(client, accountId));
+  assert.equal(revokeCalls, 0);
+  assert.equal((await getGuestInstallation())?.accountId, accountId);
+
+  storage.setFailurePlan(null);
+  assert.deepEqual(await prepareAccountSignOut(client, accountId), { ok: true });
+  assert.equal(revokeCalls, 1);
+  assert.equal((await getGuestInstallation())?.accountId, null);
+  assert.equal((await getAccountSyncState()).accountId, null);
+});
+
 test("deletion retries after a revoked or stale session and leaves a verified local tombstone", async () => {
   let deleteCalls = 0;
   let statusCalls = 0;

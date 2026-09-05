@@ -1,5 +1,7 @@
 import type { EvidenceRef, TrainingAttempt, TrainingSession, TrainingSessionResult } from "../domain";
 import { getTrainingAttempts, getTrainingSessionResult, getTrainingSessions } from "../storage/repositories";
+import { StorageReadError } from "../storage/errors";
+import type { StorageRepositoryResult } from "../storage/repositories/result";
 
 export type ActivitySessionRecord = Readonly<{
   attemptCount: number;
@@ -9,12 +11,34 @@ export type ActivitySessionRecord = Readonly<{
   scopeRefs: readonly EvidenceRef[];
 }>;
 
+type ActivityReadDependencies = Readonly<Partial<{
+  getAttempts: typeof getTrainingAttempts;
+  getResult: typeof getTrainingSessionResult;
+  getSessions: typeof getTrainingSessions;
+}>>;
+
+export type ActivityReadOutcome =
+  | Readonly<{ kind: "ready"; records: readonly ActivitySessionRecord[] }>
+  | Readonly<{ kind: "error"; error: unknown }>
+  | Readonly<{ kind: "stale" }>;
+
+export type ActivityReadToken = Readonly<{ generation: number }>;
+
 /**
  * Activity is rebuilt from durable terminal session facts. Active sessions and
  * abandoned sessions without a committed attempt are intentionally excluded.
  */
-export async function loadActivitySessionRecords(): Promise<readonly ActivitySessionRecord[]> {
-  const [sessionsResult, attemptsResult] = await Promise.all([getTrainingSessions(), getTrainingAttempts()]);
+export async function loadActivitySessionRecords(
+  dependencies: ActivityReadDependencies = {},
+): Promise<readonly ActivitySessionRecord[]> {
+  const getAttempts = dependencies.getAttempts ?? getTrainingAttempts;
+  const getResult = dependencies.getResult ?? getTrainingSessionResult;
+  const getSessions = dependencies.getSessions ?? getTrainingSessions;
+  const [sessionsResult, attemptsResult] = await Promise.all([
+    getSessions(),
+    getAttempts(),
+  ]);
+  assertNoActivityReadIssues(sessionsResult, attemptsResult);
   const attemptsBySession = groupAttemptsBySession(attemptsResult.value);
   const terminalSessions = sessionsResult.value.filter((session) => {
     if (session.status === "active") return false;
@@ -27,13 +51,53 @@ export async function loadActivitySessionRecords(): Promise<readonly ActivitySes
     return {
       attemptCount: attempts.length,
       latestAttemptAt,
-      result: await getTrainingSessionResult(session.id),
+      result: await getResult(session.id),
       session,
       scopeRefs: activityScopeRefs(attempts),
     } satisfies ActivitySessionRecord;
   }));
 
   return Object.freeze([...records].sort((left, right) => activityTimestamp(right).localeCompare(activityTimestamp(left))));
+}
+
+function assertNoActivityReadIssues(
+  sessionsResult: StorageRepositoryResult<TrainingSession[]>,
+  attemptsResult: StorageRepositoryResult<TrainingAttempt<unknown>[]>,
+): void {
+  const issues = [...(sessionsResult.issues ?? []), ...(attemptsResult.issues ?? [])];
+  if (issues.length > 0) throw new StorageReadError("activity", issues);
+}
+
+/** Owns Activity's one read generation so blur and retry cannot publish stale data. */
+export function createActivityReadOwner(
+  read: () => Promise<readonly ActivitySessionRecord[]> = loadActivitySessionRecords,
+) {
+  let currentGeneration = 0;
+
+  function begin(): ActivityReadToken {
+    currentGeneration += 1;
+    return Object.freeze({ generation: currentGeneration });
+  }
+
+  function isCurrent(token: ActivityReadToken): boolean {
+    return token.generation === currentGeneration;
+  }
+
+  function invalidate(token: ActivityReadToken): void {
+    if (isCurrent(token)) currentGeneration += 1;
+  }
+
+  async function resolve(token: ActivityReadToken): Promise<ActivityReadOutcome> {
+    if (!isCurrent(token)) return { kind: "stale" };
+    try {
+      const records = await read();
+      return isCurrent(token) ? { kind: "ready", records } : { kind: "stale" };
+    } catch (error) {
+      return isCurrent(token) ? { error, kind: "error" } : { kind: "stale" };
+    }
+  }
+
+  return Object.freeze({ begin, invalidate, isCurrent, resolve });
 }
 
 function activityScopeRefs(attempts: readonly TrainingAttempt[]): readonly EvidenceRef[] {

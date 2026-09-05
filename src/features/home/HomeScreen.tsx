@@ -30,6 +30,7 @@ import {
   loadTrainingAttempts as getTrainingAttempts,
   type StorageIssue,
 } from "../../application/learningReadModels";
+import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
 import { type CloudCertificationProgressViewModel } from "../../tracks/certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/certification";
 import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
@@ -49,10 +50,12 @@ import type { HomeRecommendationAction } from "./tabs/homeTabModel";
 import { ProgressLoadingSkeleton, ProgressTab } from "./tabs/ProgressTab";
 import type { ProgressAction } from "./tabs/progressTabModel";
 import { SettingsLoadingSkeleton, SettingsTab } from "./tabs/SettingsTab";
+import { getSettingsAccountPresentation } from "./tabs/settingsAccountPresentation";
 import type { ShellTab } from "./types";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { feedbackTimingFromDurableSession } from "./resumeFeedbackTiming";
+import { navigateToActivityResult } from "./activityNavigation";
 
 
 type HomeScreenProps = NativeStackScreenProps<
@@ -61,6 +64,7 @@ type HomeScreenProps = NativeStackScreenProps<
 >;
 
 type ShellData = {
+  activityRecords: readonly ActivitySessionRecord[];
   algorithmsDashboard: CodingInterviewDashboard | null;
   algorithmsDashboardError: string | null;
   activeSession: TrainingSession | null;
@@ -82,6 +86,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const account = usePatternlyAccount();
   const accountRef = useRef(account);
   accountRef.current = account;
+  const settingsAccount = getSettingsAccountPresentation(account.state);
   const accountResumeRequired = account.state.kind === "authenticated" && account.state.accountData.status === "resumeRequired";
   const [activeTab, setActiveTab] = useState<HomeShellTab>(route.params?.initialTab ?? "home");
   const initialRouteTabRef = useRef<HomeShellTab | null>(route.params?.initialTab ?? null);
@@ -90,6 +95,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [shellReload, setShellReload] = useState(0);
   const [shellReadError, setShellReadError] = useState<string | null>(null);
   const [data, setData] = useState<ShellData>({
+    activityRecords: [],
     algorithmsDashboard: null,
     algorithmsDashboardError: null,
     activeSession: null,
@@ -136,6 +142,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             }
           }
           const savedTrackId = await getActiveTrackId();
+          const trainingAttemptsRead = getTrainingAttempts();
           const [
             savedAttempts,
             savedPracticeHistory,
@@ -143,13 +150,15 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             cloudProgress,
             reviewQueueItemsResult,
             trainingAttemptsResult,
+            activityRecords,
           ] = await Promise.all([
             getAttempts(),
             getPracticeHistory(),
             loadActiveTrainingSession(),
             loadCloudCertificationProgressViewModel(),
             getReviewQueueItems(),
-            getTrainingAttempts(),
+            trainingAttemptsRead,
+            loadActivitySessionRecords({ getAttempts: () => trainingAttemptsRead }),
           ]);
           const goal = savedTrackId ? await loadGoal(savedTrackId) : null;
           let algorithmsDashboard: CodingInterviewDashboard | null = null;
@@ -162,6 +171,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           if (isActive) {
             setActiveTrackId(savedTrackId ?? null);
             setData({
+              activityRecords,
               algorithmsDashboard,
               algorithmsDashboardError,
               activeSession,
@@ -309,6 +319,14 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     }
   }
 
+  function openAccount(): void {
+    if (settingsAccount.status === "guest" || settingsAccount.status === "signedOut") {
+      navigation.navigate(ROUTES.ACCOUNT_ENTRY, { initialMode: "signIn" });
+      return;
+    }
+    navigation.navigate(ROUTES.ACCOUNT_ENTRY);
+  }
+
   return (
     <View style={styles.shell}>
       <Screen
@@ -348,12 +366,15 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         {activeTab === "progress" ? (
           <ProgressTab
             activeTrack={activeTrack}
+            activityRecords={data.activityRecords}
             analytics={analytics}
             attempts={data.attempts}
             cloudProgress={data.cloudProgress}
             goal={data.goal}
             onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
             onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
+            onOpenActivityItem={(item) => navigateToActivityResult(navigation, item)}
+            onOpenPractice={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
             onOpenGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { trackId: activeTrack.id })}
             onProgressAction={handleProgressAction}
             practiceHistory={data.practiceHistory}
@@ -363,13 +384,16 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         ) : null}
         {activeTab === "settings" ? (
           <SettingsTab
-            onOpenAccount={() => navigation.navigate(ROUTES.ACCOUNT_ENTRY)}
+            account={settingsAccount}
+            onOpenAccount={openAccount}
             onOpenAppearance={() => navigation.navigate(ROUTES.APPEARANCE_SETTINGS)}
             onOpenBackendDiagnostics={() => navigation.navigate(ROUTES.BACKEND_DIAGNOSTICS)}
+            onOpenLanguage={() => navigation.navigate(ROUTES.LANGUAGE_SETTINGS)}
             onOpenLegalInformation={() => navigation.navigate(ROUTES.LEGAL_INFORMATION)}
             onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS)}
             onOpenPracticeSettings={() => navigation.navigate(ROUTES.PRACTICE_SETUP, { trackId: activeTrack.id })}
             onOpenYourData={() => navigation.navigate(ROUTES.YOUR_DATA)}
+            onSignOut={() => account.signOut()}
             storageIssues={data.storageIssues}
           />
         ) : null}

@@ -1,3 +1,9 @@
+export type ActivityDateLabel =
+  | Readonly<{ kind: "relative"; label: "Today" | "Yesterday"; timestamp: string }>
+  | Readonly<{ kind: "calendar"; timestamp: string }>;
+
+const MILLISECONDS_PER_DAY = 86_400_000;
+
 export function modeLabel(modeId: string): string {
   const labels: Record<string, string> = {
     "coding-interview-guided-practice": "Guided Practice",
@@ -12,16 +18,43 @@ export function modeLabel(modeId: string): string {
 }
 
 export function relativeDay(timestamp: string, now = new Date()): string {
-  const day = new Date(timestamp);
-  const dayKey = Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate());
-  const todayKey = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  const difference = Math.round((todayKey - dayKey) / 86_400_000);
+  const difference = calendarDayDifference(timestamp, now);
   if (difference === 0) return "Today";
   if (difference === 1) return "Yesterday";
   return `${difference} days ago`;
 }
 
+/** Difference between local calendar dates, independent of DST elapsed hours. */
+export function calendarDayDifference(timestamp: string, now = new Date()): number {
+  return Math.round((localCalendarDayKey(now) - localCalendarDayKey(new Date(timestamp))) / MILLISECONDS_PER_DAY);
+}
+
+/** Activity's “This week” group starts on Monday in the user's local calendar. */
+export function isSameCalendarWeek(timestamp: string, now = new Date()): boolean {
+  return localCalendarWeekKey(new Date(timestamp)) === localCalendarWeekKey(now);
+}
+
+export function formatActivityDateLabel(
+  label: ActivityDateLabel,
+  locale: "en" | "pl",
+  translate: (value: string) => string,
+): string {
+  const time = activityTime(label.timestamp);
+  if (label.kind === "relative") return `${translate(label.label)}, ${time}`;
+  const date = new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-US", { day: "numeric", month: "short" }).format(new Date(label.timestamp));
+  return `${date}, ${time}`;
+}
+
 export function activityTime(timestamp: string): string {
   const date = new Date(timestamp);
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function localCalendarDayKey(date: Date): number {
+  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function localCalendarWeekKey(date: Date): number {
+  const daysSinceMonday = (date.getDay() + 6) % 7;
+  return localCalendarDayKey(date) - daysSinceMonday * MILLISECONDS_PER_DAY;
 }

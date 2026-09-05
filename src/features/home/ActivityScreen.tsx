@@ -1,11 +1,11 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
-import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
-import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { createActivityReadOwner, loadActivitySessionRecords, type ActivityReadOutcome, type ActivityReadToken, type ActivitySessionRecord } from "../../application/activityReadModels";
+import { operationalDiagnosticCode, type OperationalDiagnosticCode } from "../../application/operationalDiagnostics";
 import { Button, EmptyState, Icon, Screen, ScreenHeader, SettingsBottomSheet, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
 import { getTrackDisplays } from "../../domain";
@@ -13,34 +13,56 @@ import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
+import { navigateToActivityResult } from "./activityNavigation";
 import { ALL_ACTIVITY_TRACKS, buildActivityModel, type ActivityFilter, type ActivityItem } from "./tabs/activityModel";
+import { formatActivityDateLabel } from "./tabs/activityPresentation";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ACTIVITY>;
 type ViewState =
   | Readonly<{ kind: "loading" }>
   | Readonly<{ kind: "ready"; records: readonly ActivitySessionRecord[] }>
-  | Readonly<{ kind: "unavailable"; reason: string }>;
+  | Readonly<{ diagnosticCode: OperationalDiagnosticCode; kind: "unavailable" }>;
 
 export function ActivityScreen({ navigation }: Props) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette } = useAppPreferences();
+  const { colors: palette, locale } = useAppPreferences();
   const { t } = useTranslation("common");
   const [state, setState] = useState<ViewState>({ kind: "loading" });
   const [filter, setFilter] = useState<ActivityFilter>(ALL_ACTIVITY_TRACKS);
   const [filterVisible, setFilterVisible] = useState(false);
+  const readOwner = useMemo(() => createActivityReadOwner(loadActivitySessionRecords), []);
+  const focusedRef = useRef(false);
+  const currentTokenRef = useRef<ActivityReadToken | null>(null);
 
-  const load = useCallback(async () => {
-    setState({ kind: "loading" });
-    try {
-      setState({ kind: "ready", records: await loadActivitySessionRecords() });
-    } catch (error) {
-      setState({ kind: "unavailable", reason: describeOperationalFailure(error, "Activity is unavailable.") });
+  const publish = useCallback((token: ActivityReadToken, outcome: ActivityReadOutcome) => {
+    if (!readOwner.isCurrent(token) || outcome.kind === "stale") return;
+    if (outcome.kind === "ready") {
+      setState({ kind: "ready", records: outcome.records });
+      return;
     }
-  }, []);
+    setState({ diagnosticCode: operationalDiagnosticCode(outcome.error), kind: "unavailable" });
+  }, [readOwner]);
+
+  const load = useCallback(() => {
+    if (!focusedRef.current) return;
+    const token = readOwner.begin();
+    currentTokenRef.current = token;
+    setState({ kind: "loading" });
+    void readOwner.resolve(token).then((outcome) => publish(token, outcome));
+  }, [publish, readOwner]);
 
   useFocusEffect(useCallback(() => {
-    void load();
-  }, [load]));
+    focusedRef.current = true;
+    load();
+    return () => {
+      focusedRef.current = false;
+      const token = currentTokenRef.current;
+      if (token) readOwner.invalidate(token);
+      currentTokenRef.current = null;
+    };
+  }, [load, readOwner]));
+
+  const retry = useCallback(() => { load(); }, [load]);
 
   const header = (
     <ScreenHeader
@@ -56,7 +78,7 @@ export function ActivityScreen({ navigation }: Props) {
     return <Screen ambientVariant="activity" edges={["top", "bottom"]} style={styles.screen}>{header}<ActivityLoadingSkeleton /></Screen>;
   }
   if (state.kind === "unavailable") {
-    return <Screen ambientVariant="activity" edges={["top", "bottom"]}>{header}<EmptyState title={t("Activity unavailable")} description={t(state.reason)} /></Screen>;
+    return <Screen ambientVariant="activity" edges={["top", "bottom"]}>{header}<EmptyState actionLabel={t("Try again")} description={`${t("Activity data could not be loaded locally.")} [${state.diagnosticCode}]`} onActionPress={retry} title={t("Activity unavailable")} /></Screen>;
   }
 
   const model = buildActivityModel(state.records, filter);
@@ -72,6 +94,7 @@ export function ActivityScreen({ navigation }: Props) {
           testID={runtimeSelectors.activity.filter()}
         >
           <Text maxFontSizeMultiplier={2} style={[styles.filterText, filter !== ALL_ACTIVITY_TRACKS ? styles.filterSelectedText : null]}>{t(filter === ALL_ACTIVITY_TRACKS ? "All tracks" : getTrackLabel(filter))}</Text>
+          <Icon color={palette.textPrimary} name="chevron-down" size={18} />
         </Pressable>
         {filter !== ALL_ACTIVITY_TRACKS ? (
           <Pressable
@@ -84,14 +107,6 @@ export function ActivityScreen({ navigation }: Props) {
             <Icon color={palette.textPrimary} name="close" size={18} />
           </Pressable>
         ) : null}
-        <Pressable
-          accessibilityLabel={t("Open activity filter")}
-          accessibilityRole="button"
-          onPress={() => setFilterVisible(true)}
-          style={({ pressed }) => [styles.filterAction, pressed ? styles.pressed : null]}
-        >
-          <Icon color={palette.textPrimary} name="chevron-down" size={18} />
-        </Pressable>
       </View>
       {model.items.length > 0 ? (
         <View style={styles.list} testID={runtimeSelectors.activity.root()}>
@@ -104,7 +119,7 @@ export function ActivityScreen({ navigation }: Props) {
                     item={item}
                     key={item.id}
                     last={index === group.items.length - 1}
-                    onPress={() => openActivityItem(item, navigation)}
+                    onPress={() => navigateToActivityResult(navigation, item)}
                   />
                 ))}
               </View>
@@ -221,7 +236,7 @@ function ActivityEmptyState({ filtered, onOpenPractice, onShowAll }: Readonly<{ 
 
 function ActivityRow({ item, last, onPress }: Readonly<{ item: ActivityItem; last: boolean; onPress: () => void }>) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette } = useAppPreferences();
+  const { colors: palette, locale } = useAppPreferences();
   const { t } = useTranslation("common");
   return (
     <Pressable
@@ -238,7 +253,7 @@ function ActivityRow({ item, last, onPress }: Readonly<{ item: ActivityItem; las
         <Text maxFontSizeMultiplier={2} style={styles.title}>{t(item.modeTitle)}</Text>
         <Text maxFontSizeMultiplier={2} style={styles.detail}>{[t(item.trackTitle), item.scopeLabel].filter(Boolean).join(" · ")}</Text>
         <Text maxFontSizeMultiplier={2} style={styles.detail}>{`${activityCountLabel(item, t)} · ${item.duration}`}</Text>
-        <Text maxFontSizeMultiplier={2} style={[styles.detail, item.status === "completed" ? null : styles.statusDetail]}>{`${t(item.statusLabel)} · ${translateDateLabel(item.dateLabel, t)}`}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.detail, item.status === "completed" ? null : styles.statusDetail]}>{`${t(item.statusLabel)} · ${formatActivityDateLabel(item.dateLabel, locale, t)}`}</Text>
       </View>
       <Icon color={palette.textMuted} name="chevron-right" size={18} />
     </Pressable>
@@ -261,26 +276,8 @@ function FilterOption({ label, onPress, selected }: Readonly<{ label: string; on
   );
 }
 
-function openActivityItem(item: ActivityItem, navigation: Props["navigation"]): void {
-  if (item.modeId === "coding-interview-simulation") {
-    navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { sessionId: item.sessionId });
-    return;
-  }
-  if (item.trackFamily === "coding_interview") {
-    navigation.navigate(ROUTES.ALGORITHMS_PRACTICE_SUMMARY, { sessionId: item.sessionId });
-    return;
-  }
-  navigation.navigate(ROUTES.RESULT, { sessionId: item.sessionId });
-}
-
 function getTrackLabel(filter: ActivityFilter): string {
   return getTrackDisplays().find((track) => track.id === filter)?.shortTitle ?? "All tracks";
-}
-
-function translateDateLabel(label: string, translate: (value: string) => string): string {
-  if (label.startsWith("Today,")) return label.replace("Today", translate("Today"));
-  if (label.startsWith("Yesterday,")) return label.replace("Yesterday", translate("Yesterday"));
-  return label;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
@@ -305,8 +302,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   loadingActivityLineShort: { width: "44%" },
   loadingActivityChevron: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.pill, height: 14, width: 14 },
   filter: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", gap: spacing.sm, minHeight: 40, paddingHorizontal: 14 },
-  filterTrigger: { flex: 1, minWidth: 0 },
-  filterAction: { alignItems: "center", height: 18, justifyContent: "center", width: 18 },
+  filterTrigger: { flex: 1, alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 44, minWidth: 0 },
+  filterAction: { alignItems: "center", height: 44, justifyContent: "center", minWidth: 44 },
   filterText: { ...typography.bodyStrong, color: palette.textSecondary },
   filterSelectedText: { color: palette.textPrimary },
   list: { gap: spacing.md, paddingBottom: spacing.lg, paddingTop: spacing.xs },

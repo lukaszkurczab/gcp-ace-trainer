@@ -1,7 +1,5 @@
-import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import {
@@ -18,15 +16,9 @@ import {
   useSkeletonGlassMotion,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { contentPackagePinsEqual, getTrackDisplay, type TrackId } from "../../domain";
-import type { TrainingAttempt } from "../../domain";
+import { getTrackDisplay } from "../../domain";
 import { goBackOrHome } from "../../navigation/goBackOrHome";
 import type { RootStackParamList } from "../../navigation/types";
-import {
-  loadActiveTrackId as getActiveTrackId,
-  loadTrainingAttempts as getTrainingAttempts,
-  loadReviewQueueItems,
-} from "../../application/learningReadModels";
 import { getAlgorithmsInterviewSimulationEntry } from "../../application/coding-interview";
 import { colorWithOpacity, radius, spacing, typography } from "../../theme";
 import {
@@ -38,13 +30,14 @@ import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
-import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 
 import {
   buildPracticeModes,
   resolvePracticeTopic,
 } from "./practiceFlowModel";
+import { usePracticeReadModel } from "./usePracticeReadModel";
 import {
   formatPracticeTopicDetail,
   formatPracticeTopicTitle,
@@ -59,11 +52,6 @@ type PracticeHubScreenProps = NativeStackScreenProps<
   RootStackParamList,
   typeof ROUTES.PRACTICE_HUB
 >;
-
-type PracticeHubData = {
-  trainingAttempts: TrainingAttempt[];
-  hasReviewEvidence: boolean;
-};
 
 export function PracticeHubLoadingSkeleton() {
   const styles = useThemedStyles(createStyles);
@@ -135,61 +123,29 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
-  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
-  const [hasLoadedData, setHasLoadedData] = useState(false);
-  const [readError, setReadError] = useState<string | null>(null);
-  const [data, setData] = useState<PracticeHubData>({
-    trainingAttempts: [],
-    hasReviewEvidence: false,
+  const { readState, requestKey, retry } = usePracticeReadModel({
+    errorFallback: t("We couldn’t load your practice options."),
+    includeReviews: true,
+    requestedTrackId: route.params?.trackId,
   });
 
-  useFocusEffect(
-    useCallback(() => {
-      let isActive = true;
-      setHasLoadedData(false);
-      setReadError(null);
+  function renderUnavailable(
+    description: string,
+    actionLabel = t("Back"),
+    onActionPress = () => goBackOrHome(navigation),
+  ) {
+    return (
+      <View style={styles.shell}>
+        <Screen edges={["top"]} style={styles.screenContent}>
+          <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} />
+          <EmptyState actionLabel={actionLabel} onActionPress={onActionPress} title={t("Practice is unavailable")} description={description} />
+        </Screen>
+        <AppBottomNavigation activeId="practice" navigation={navigation} />
+      </View>
+    );
+  }
 
-      async function loadData() {
-        try {
-          const [savedTrackId, trainingAttemptsResult, reviewResult] = await Promise.all([
-            getActiveTrackId(),
-            getTrainingAttempts(),
-            loadReviewQueueItems(),
-          ]);
-
-          if (isActive) {
-            const packagePin = savedTrackId
-              ? contentPackageRuntimeOwner.getPreparedDiscovery(savedTrackId).package.packagePin
-              : null;
-            const now = Date.now();
-            setActiveTrackId(savedTrackId ?? null);
-            setData({
-              trainingAttempts: trainingAttemptsResult.value,
-              hasReviewEvidence: packagePin !== null && reviewResult.value.some((entry) =>
-                entry.trackId === savedTrackId &&
-                contentPackagePinsEqual(entry.sourceItem.packagePin, packagePin) &&
-                Date.parse(entry.dueAt) <= now
-              ),
-            });
-            setHasLoadedData(true);
-          }
-        } catch (error) {
-          if (isActive) {
-            setReadError(describeOperationalFailure(error, t("We couldn’t load your practice options.")));
-            setHasLoadedData(true);
-          }
-        }
-      }
-
-      void loadData();
-
-      return () => {
-        isActive = false;
-      };
-    }, [t]),
-  );
-
-  if (!hasLoadedData) return (
+  if (readState.requestKey !== requestKey || readState.kind === "pending") return (
     <View style={styles.shell}>
       <Screen edges={["top"]} style={styles.screenContent}>
         <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} />
@@ -198,30 +154,43 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       <AppBottomNavigation activeId="practice" navigation={navigation} />
     </View>
   );
-  if (readError) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><EmptyState title={t("Practice is unavailable")} description={t(readError)} /></Screen>;
+  if (readState.kind === "unavailable") return renderUnavailable(t(readState.reason), t("Try again"), retry);
+  const { activeTrackId, hasReviewEvidence, trainingAttempts } = readState;
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
-  const activeTrack = getTrackDisplay(activeTrackId);
-  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
-  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><EmptyState title={t("Practice is unavailable")} description={t("This topic is not included in your free content.")} /></Screen>;
+  let activeTrack: ReturnType<typeof getTrackDisplay>;
+  let packageProfile: ReturnType<typeof contentPackageRuntimeOwner.getPreparedDiscovery>["profile"];
+  try {
+    activeTrack = getTrackDisplay(activeTrackId);
+    packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
+  } catch (error) {
+    return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
+  }
+  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) {
+    return renderUnavailable(
+      t("This topic is not included in your free content."),
+      t("Choose another topic"),
+      () => navigation.navigate(ROUTES.TOPIC_ROADMAP, { topicId: packageProfile.freeNodeId, trackId: activeTrack.id }),
+    );
+  }
   const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
   const isDesignInterviewTrack = activeTrack.familyId === "design_interview";
-  const topic = resolvePracticeTopic({
-    activeTrackId: activeTrack.id,
-    routeTopicId: route.params?.topicId,
-    trainingAttempts: data.trainingAttempts,
-  });
-  const modes = buildPracticeModes(activeTrack, data.hasReviewEvidence);
+  let topic: ReturnType<typeof resolvePracticeTopic>;
+  let modes: ReturnType<typeof buildPracticeModes>;
+  try {
+    topic = resolvePracticeTopic({
+      activeTrackId: activeTrack.id,
+      routeTopicId: route.params?.topicId,
+      trainingAttempts,
+    });
+    modes = buildPracticeModes(activeTrack, hasReviewEvidence);
+  } catch (error) {
+    return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
+  }
   const primaryMode = modes[0]!;
-  const secondaryModes = modes.filter((mode) => mode.mode !== primaryMode.mode);
+  const secondaryModes = modes.filter((mode) => mode.mode !== primaryMode.mode && mode.mode !== ALGORITHM_MODE_IDS.customPractice);
   const topicDetail = formatPracticeTopicDetail(topic.detail, t);
   function startSession(mode?: PracticeSessionMode | CertificationModeId, source: "practiceHub" | "modeShortcut" = mode === undefined ? "practiceHub" : "modeShortcut") {
-    const resolvedMode = mode ?? (
-      isCodingInterviewTrack
-        ? ALGORITHM_MODE_IDS.learnApproach
-        : isDesignInterviewTrack
-          ? packageProfile.primaryEntry.modeId as PracticeSessionMode
-          : "certification-focus-practice"
-    );
+    const resolvedMode = mode ?? primaryMode.mode;
     if (isCodingInterviewTrack && resolvedMode === ALGORITHM_MODE_IDS.customPractice) {
       navigation.navigate(ROUTES.PRACTICE_SETUP, {
         mode: resolvedMode,
@@ -240,7 +209,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       return;
     }
     if (activeTrack.familyId === "certification" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
-      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, sessionLength: 10, source: "modeShortcut", topicId: topic.id, trackId: activeTrack.id });
+      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source: "modeShortcut", topicId: topic.id, trackId: activeTrack.id });
       return;
     }
     if (activeTrack.familyId === "certification" && resolvedMode === "certification-quick-review") {
@@ -285,10 +254,18 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             </View>
             <Text maxFontSizeMultiplier={2} style={styles.changeTrack}>{t("Change")}</Text>
           </Pressable>
-          <View accessibilityLabel={`${t("Active topic")}: ${formatPracticeTopicTitle(topic.title, t)}. ${topicDetail}`} style={styles.topicContext}>
+          <Pressable
+            accessibilityLabel={`${t("Active topic")}: ${formatPracticeTopicTitle(topic.title, t)}. ${topicDetail}. ${t("Change topic")}`}
+            accessibilityRole="button"
+            onPress={() => navigation.navigate(ROUTES.TOPIC_ROADMAP, { topicId: topic.id, trackId: activeTrack.id })}
+            style={({ pressed }) => [styles.topicContext, pressed ? styles.pressed : null]}
+          >
             <Text maxFontSizeMultiplier={2} style={styles.topicContextLabel}>{t("Active topic")}</Text>
-            <Text maxFontSizeMultiplier={2} style={styles.topicContextText}>{formatPracticeTopicTitle(topic.title, t)}</Text>
-          </View>
+            <View style={styles.topicContextRow}>
+              <Text maxFontSizeMultiplier={2} style={styles.topicContextText}>{formatPracticeTopicTitle(topic.title, t)}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.changeTopic}>{t("Change topic")}</Text>
+            </View>
+          </Pressable>
         </View>
 
         <Card variant="layered" style={styles.heroCard}>
@@ -556,6 +533,15 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   topicContext: {
     alignItems: "flex-start",
     gap: spacing.xxs,
+    minWidth: 0,
+    width: "100%",
+  },
+  topicContextRow: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    minWidth: 0,
   },
   topicContextLabel: {
     color: palette.primary,
@@ -565,7 +551,15 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   topicContextText: {
     color: palette.textPrimary,
+    flexShrink: 1,
     fontSize: 15,
+    fontWeight: "600",
+    lineHeight: 20,
+  },
+  changeTopic: {
+    color: palette.primary,
+    flexShrink: 0,
+    fontSize: 13,
     fontWeight: "600",
     lineHeight: 20,
   },

@@ -8,6 +8,7 @@ import type { AppColors } from "../theme";
 type InfoBlockTone = "neutral" | "success" | "warning";
 
 type InfoBlockProps = {
+  accessibilityAlert?: boolean;
   body: string;
   icon?: ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -16,10 +17,16 @@ type InfoBlockProps = {
   tone?: InfoBlockTone;
 };
 
-export function InfoBlock({ body, icon, style, testID, title, tone = "neutral" }: InfoBlockProps) {
+export function InfoBlock({ accessibilityAlert = false, body, icon, style, testID, title, tone = "neutral" }: InfoBlockProps) {
   const styles = useThemedStyles(createStyles);
   return (
-    <View style={[styles.base, styles[tone], style]} testID={testID}>
+    <View
+      accessible={accessibilityAlert}
+      accessibilityLiveRegion={accessibilityAlert ? "polite" : undefined}
+      accessibilityRole={accessibilityAlert ? "alert" : undefined}
+      style={[styles.base, styles[tone], style]}
+      testID={testID}
+    >
       {icon ? <View style={styles.icon}>{icon}</View> : null}
       <View style={styles.copy}>
         <Text maxFontSizeMultiplier={2} style={[styles.title, styles[`${tone}Title`]]}>{title}</Text>

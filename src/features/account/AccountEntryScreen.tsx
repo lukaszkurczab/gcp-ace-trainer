@@ -49,6 +49,7 @@ import {
   typography,
   type AppColors,
 } from "../../theme";
+import { useAccountCommand } from "./useAccountCommand";
 
 type AccountEntryProps = NativeStackScreenProps<
   RootStackParamList,
@@ -77,6 +78,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const text = {
   account: t("account"),
   accountDescription: t("accountDescription"),
+  accountManagementDescription: t("accountManagementDescription"),
+  accountSignedInAs: t("accountSignedInAs"),
   welcomeTitle: t("welcomeTitle"),
   welcomeDescription: t("welcomeDescription"),
   continueWithoutAccount: t("continueWithoutAccount"),
@@ -381,7 +384,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       </AuthStatusScreen>
     );
   if (account.state.kind === "authenticated")
-    return account.state.accountData.status === "synced" ? (
+    return isHealthyAccountData(account.state.accountData) ? (
       <AccountManagementScreen
         key={account.state.user.uid}
         account={account}
@@ -730,44 +733,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
 }
 
 type BackAction = Readonly<{ onPress: () => void }> | undefined;
-type BusyAction = "recovery" | "continue" | "retry" | "delete" | "signOut";
-
-function useAccountCommand() {
-  const [busyAction, setBusyAction] = useState<BusyAction | null>(null);
-  const mountedRef = useRef(true);
-  const busyRef = useRef(false);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
-
-  const runCommand = (
-    action: BusyAction,
-    operation: () => Promise<AccountCommandResult>,
-    onResult: (result: AccountCommandResult) => void,
-  ) => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setBusyAction(action);
-    void operation()
-      .then((result) => {
-        if (mountedRef.current) onResult(result);
-      })
-      .catch(() => {
-        if (mountedRef.current) onResult({ kind: "failure", failure: "remoteFailure" });
-      })
-      .finally(() => {
-        busyRef.current = false;
-        if (mountedRef.current) setBusyAction(null);
-      });
-  };
-
-  return { busyAction, runCommand };
-}
-
 function RecoveryCodesDisplay({ codes, text }: Readonly<{ codes: readonly string[]; text: AccountCopy }>) {
   const styles = useThemedStyles(createStyles);
   const { colors } = useAppPreferences();
@@ -879,8 +844,8 @@ function AccountManagementScreen({
     >
       <ScreenHeader backAction={backAction} title={text.account} />
       <View style={styles.accountIntro}>
-        <AuthText style={styles.accountHeading}>{text.account}</AuthText>
-        <AuthText style={styles.accountBody}>{text.accountDescription}</AuthText>
+        <AuthText style={styles.accountBody}>{text.accountManagementDescription}</AuthText>
+        {authenticated.user.email ? <AuthText style={styles.accountIdentity}>{`${text.accountSignedInAs}: ${authenticated.user.email}`}</AuthText> : null}
       </View>
       {accountFeedback ? renderFeedback(accountFeedback, text, text.account) : null}
       <Card style={styles.accountCard} testID="account-recovery-codes-panel">
@@ -1300,10 +1265,20 @@ function getAccountRecoveryPresentation(accountData: AccountDataSession, text: A
   if (accountData.lastFailureCode === "account_binding_mismatch") {
     return { body: text.accountBindingMismatchDescription, retry: false, testID: "account-sync-binding-mismatch", title: text.accountBindingMismatch };
   }
+  if (accountData.pendingMutationCount > 0) return { body: text.pendingDescription, retry: true, testID: "account-sync-pending", title: text.pending };
+  if (accountData.blockingConflictCode !== null) return { body: text.conflictDescription, retry: true, testID: "account-sync-conflict", title: text.conflict };
+  if (accountData.lastFailureCode !== null) return { body: text.dataFailureDescription, retry: true, testID: "account-sync-failed", title: text.dataFailure };
   if (accountData.status === "conflict") return { body: text.conflictDescription, retry: true, testID: "account-sync-conflict", title: text.conflict };
   if (accountData.status === "failed") return { body: text.dataFailureDescription, retry: true, testID: "account-sync-failed", title: text.dataFailure };
   if (accountData.status === "initialSyncRequired") return { body: text.accountRecoveryDescription, retry: true, testID: "account-sync-initial-required", title: text.accountRecoveryTitle };
   return { body: text.syncing, retry: false, testID: "account-syncing", title: text.accountRecoveryTitle };
+}
+
+function isHealthyAccountData(accountData: AccountDataSession): boolean {
+  return accountData.status === "synced"
+    && accountData.pendingMutationCount === 0
+    && accountData.blockingConflictCode === null
+    && accountData.lastFailureCode === null;
 }
 
 function isRetryFailureCoveredByStatus(accountData: AccountDataSession, failure: string): boolean {
@@ -1996,6 +1971,11 @@ function isAuthFieldFailure(
     accountBody: {
       ...typography.small,
       color: palette.textSecondary,
+    },
+    accountIdentity: {
+      ...typography.small,
+      color: palette.textPrimary,
+      fontWeight: "600",
     },
     accountCode: {
       fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",

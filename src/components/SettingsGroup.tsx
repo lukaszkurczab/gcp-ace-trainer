@@ -1,7 +1,7 @@
 import { Children, Fragment, type ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { spacing } from "../theme";
+import { radius, spacing } from "../theme";
 import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
@@ -47,6 +47,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.sm,
   },
   dividedRows: {
+    backgroundColor: palette.listRow.surface,
+    borderColor: palette.border,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 0,
     overflow: "hidden",
   },

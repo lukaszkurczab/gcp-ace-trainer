@@ -77,12 +77,13 @@ test("route coverage has one native or inline shell owner and preserves active-s
     .filter((match) => /headerShown:\s*false/.test(match[2] ?? ""))
     .map((match) => match[1]);
 
-  assert.equal(routeIds.length, 25);
-  assert.equal(new Set(routeIds).size, 25);
+  assert.equal(routeIds.length, 26);
+  assert.equal(new Set(routeIds).size, 26);
   assert.deepEqual(headerlessRouteIds, [
     "HOME",
     "ACTIVITY",
     "APPEARANCE_SETTINGS",
+    "LANGUAGE_SETTINGS",
     "YOUR_DATA",
     "LEGAL_INFORMATION",
     "NOTIFICATION_SETTINGS",
@@ -239,7 +240,6 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   const homeTab = source("src/features/home/tabs/HomeTab.tsx");
   const button = source("src/components/Button.tsx");
   const settings = source("src/features/home/AppearanceSettingsScreen.tsx");
-  const preferenceSelection = source("src/features/home/PreferenceSelectionScreen.tsx");
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
   const session = source("src/features/coding-interview/session/SessionShell.tsx");
   const result = source("src/features/practice/AlgorithmsPracticeSummaryScreen.tsx");
@@ -277,8 +277,8 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   const pendingBranch = home.slice(home.indexOf("if (!hasLoadedActiveTrack)"), home.indexOf("if (shellReadError)"));
   assert.doesNotMatch(pendingBranch, /scroll=\{false\}/);
   assert.match(home, /navigation\.setParams\(\{ initialTab: tab \}\)/);
-  assert.match(settings, /<PreferenceSelectionScreen/);
-  assert.match(preferenceSelection, /<Screen\b/);
+  assert.match(settings, /<Screen\b/);
+  assert.match(settings, /<ChoiceRow[\s\S]*accessibilityRole="radiogroup"|accessibilityRole="radiogroup"[\s\S]*<ChoiceRow/);
   assert.match(rootNavigator, /name=\{ROUTES\.APPEARANCE_SETTINGS\}[\s\S]*?options=\{\{ headerShown: false, title: t\("Appearance"\) \}\}/);
   assert.match(setup, /<Screen edges=\{\["top", "bottom"\]\}>[\s\S]*<AppShellHeader/);
   assert.match(source("src/features/practice/AlgorithmsScopeSelectionScreen.tsx"), /state\.kind === "unavailable"[\s\S]*?<Screen edges=\{\["top"\]\}><AppShellHeader[\s\S]*?onActionPress=\{\(\) => goBackOrHome\(navigation\)\}/);

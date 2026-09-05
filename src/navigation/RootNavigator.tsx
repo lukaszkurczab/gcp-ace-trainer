@@ -11,6 +11,7 @@ import { ExamScreen } from "../features/exam/ExamScreen";
 import { HomeScreen } from "../features/home/HomeScreen";
 import { ActivityScreen } from "../features/home/ActivityScreen";
 import { AppearanceSettingsScreen } from "../features/home/AppearanceSettingsScreen";
+import { LanguageSettingsScreen } from "../features/home/LanguageSettingsScreen";
 import { LegalInformationScreen } from "../features/home/LegalInformationScreen";
 import { NotificationSettingsScreen } from "../features/home/NotificationSettingsScreen";
 import { YourDataScreen } from "../features/home/YourDataScreen";
@@ -82,6 +83,11 @@ export function RootNavigator() {
             name={ROUTES.APPEARANCE_SETTINGS}
             component={AppearanceSettingsScreen}
             options={{ headerShown: false, title: t("Appearance") }}
+          />
+          <Stack.Screen
+            name={ROUTES.LANGUAGE_SETTINGS}
+            component={LanguageSettingsScreen}
+            options={{ headerShown: false, title: t("Language") }}
           />
           <Stack.Screen
             name={ROUTES.YOUR_DATA}

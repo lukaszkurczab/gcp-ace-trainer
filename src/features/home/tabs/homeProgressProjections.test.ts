@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../../../domain";
+import type { ActivitySessionRecord } from "../../../application/activityReadModels";
 import { getTrackDisplay, getTrackDisplays } from "../../../domain";
 import { buildAnalyticsData } from "../../analytics/analyticsService";
 import { buildHomeTabModel } from "./homeTabModel";
@@ -74,6 +75,48 @@ function repeatedAlgorithmAttempts(count: number, result: "correct" | "incorrect
       occurrenceId: `occurrence-${index}`,
     };
   });
+}
+
+function activityRecord(
+  id: string,
+  completedAt: string,
+  options: Readonly<{ answered?: number; trackId?: string; status?: "completed" | "abandoned" }> = {},
+): ActivitySessionRecord {
+  const trackId = options.trackId ?? "coding-interview-dsa-problem-solving";
+  const totalOccurrences = 10;
+  const answered = options.answered ?? totalOccurrences;
+  return {
+    attemptCount: answered,
+    latestAttemptAt: answered > 0 ? completedAt : null,
+    result: {
+      answeredOccurrenceIds: Array.from({ length: answered }, (_, index) => `answered-${id}-${index}`),
+      completedAt,
+      evidence: {},
+      id: `result-${id}`,
+      sessionId: id,
+      totalOccurrences,
+      trackId,
+      unansweredOccurrenceIds: Array.from({ length: totalOccurrences - answered }, (_, index) => `unanswered-${id}-${index}`),
+    },
+    scopeRefs: [],
+    session: {
+      activeForegroundMs: 60_000,
+      actualLength: totalOccurrences,
+      configurationSnapshot: { feedbackMode: "atSessionEnd" },
+      contentVersion: "test",
+      currentItemIndex: totalOccurrences - 1,
+      id,
+      itemOrder: [],
+      modeId: trackId === "google-cloud-associate-cloud-engineer" ? "certification-focus-practice" : "coding-interview-guided-practice",
+      optionOrderByOccurrence: {},
+      packagePin: { contentHash: "test", packageId: "test", releaseId: "test" },
+      requestedLength: totalOccurrences,
+      startedAt: completedAt,
+      status: options.status ?? "completed",
+      trackId,
+      completedAt,
+    },
+  } as unknown as ActivitySessionRecord;
 }
 
 function dueAlgorithmReview(
@@ -235,30 +278,29 @@ test("Algorithms Progress keeps due review evidence honest and recommendations o
   assert.match(model.currentFocus.explanation, /does not restrict other topics/i);
 });
 
-test("Progress activity is nested, date-grouped, and limited to the active content package", async () => {
+test("Progress activity previews latest canonical sessions for the active track, including completed zero-answer sessions", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
-  const current = algorithmAttempt("correct");
-  const stale = {
-    ...algorithmAttempt("incorrect"),
-    id: "stale-attempt",
-    item: { ...current.item, packagePin: { ...current.item.packagePin, contentReleaseId: "stale-release" } },
-    reviewEvidence: { ...current.reviewEvidence, sourceItem: { ...current.item, packagePin: { ...current.item.packagePin, contentReleaseId: "stale-release" } } },
-  };
+  const timestamps = Array.from({ length: 13 }, (_, index) => new Date(Date.parse(NOW) - index * 60_000).toISOString());
+  const records = timestamps.map((timestamp, index) => activityRecord(`session-${index}`, timestamp, { answered: index === 1 ? 0 : 10 })).reverse();
+  records.push(activityRecord("cloud-session", new Date(Date.parse(NOW) + 60_000).toISOString(), { trackId: "google-cloud-associate-cloud-engineer" }));
+
   const model = buildProgressTabModel({
     activeTrackId: "coding-interview-dsa-problem-solving",
+    activityRecords: records,
     analytics: buildAnalyticsData([], []),
     attempts: [],
     now: NOW,
     practiceHistory: [],
-    trainingAttempts: [stale, current],
+    trainingAttempts: [],
   });
 
-  assert.deepEqual(model.activity.map(({ detail, group, time, title }) => ({ detail, group, time, title })), [{
-    detail: "Correct",
-    group: "Today",
-    time: `${String(new Date(NOW).getHours()).padStart(2, "0")}:00`,
-    title: "Guided Practice",
-  }]);
+  assert.equal(model.hasData, false);
+  assert.equal(model.activity.length, 12);
+  assert.equal(model.activity[0]?.sessionId, "session-0");
+  assert.equal(model.activity.at(-1)?.sessionId, "session-11");
+  assert.equal(model.activity.find((item) => item.sessionId === "session-12"), undefined);
+  assert.equal(model.activity.find((item) => item.sessionId === "session-1")?.answerCount, 0);
+  assert.equal(model.activity.some((item) => item.sessionId === "cloud-session"), false);
 });
 
 test("Algorithms Progress derives a deterministic continuation from recorded evidence", async () => {

@@ -1,11 +1,11 @@
-import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import {
   AppShellHeader,
+  Button,
   EmptyState,
   Icon,
   Screen,
@@ -19,9 +19,7 @@ import {
   getTrackDisplay,
   type TrackId,
 } from "../../domain";
-import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
-import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
 import { colorWithOpacity, radius, spacing, typography } from "../../theme";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
@@ -33,6 +31,7 @@ import {
   buildTopicRoadmapNodes,
   type TopicRoadmapNodeModel,
 } from "./practiceFlowModel";
+import { usePracticeReadModel } from "./usePracticeReadModel";
 
 type TopicRoadmapScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -42,13 +41,6 @@ type TopicRoadmapScreenProps = NativeStackScreenProps<
 type RoadmapRow =
   | { kind: "center"; topic: TopicRoadmapNodeModel }
   | { kind: "split"; left: TopicRoadmapNodeModel; right: TopicRoadmapNodeModel };
-
-const STORED_TRACK_REQUEST_KEY = "stored-track" as const;
-type RoadmapRequestKey = TrackId | typeof STORED_TRACK_REQUEST_KEY;
-type RoadmapReadState =
-  | Readonly<{ kind: "pending"; requestKey: RoadmapRequestKey }>
-  | Readonly<{ kind: "ready"; requestKey: RoadmapRequestKey; activeTrackId: TrackId | null; trainingAttempts: readonly TrainingAttempt[] }>
-  | Readonly<{ kind: "unavailable"; requestKey: RoadmapRequestKey; reason: string }>;
 
 const DOT_COLUMNS = 18;
 const DOT_ROWS = 56;
@@ -105,68 +97,59 @@ export function TopicRoadmapLoadingSkeleton() {
 export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
-  const requestKey: RoadmapRequestKey = route.params?.trackId ?? STORED_TRACK_REQUEST_KEY;
-  const [readState, setReadState] = useState<RoadmapReadState>({ kind: "pending", requestKey });
+  const { readState, requestKey, retry } = usePracticeReadModel({
+    errorFallback: t("We couldn’t load the topic list."),
+    requestedTrackId: route.params?.trackId,
+  });
   const [selectedTopicId, setSelectedTopicId] = useState(route.params?.topicId);
-
-  useFocusEffect(
-    useCallback(() => {
-      const capturedRequestKey = requestKey;
-      let isActive = true;
-      setReadState({ kind: "pending", requestKey: capturedRequestKey });
-
-      async function loadData() {
-        try {
-          const [savedTrackId, trainingAttemptsResult] = await Promise.all([
-            getActiveTrackId(),
-            getTrainingAttempts(),
-          ]);
-
-          if (isActive) {
-            setReadState({
-              kind: "ready",
-              requestKey: capturedRequestKey,
-              activeTrackId: capturedRequestKey === STORED_TRACK_REQUEST_KEY ? savedTrackId ?? null : capturedRequestKey,
-              trainingAttempts: trainingAttemptsResult.value,
-            });
-          }
-        } catch (error) {
-          if (isActive) {
-            setReadState({
-              kind: "unavailable",
-              requestKey: capturedRequestKey,
-              reason: describeOperationalFailure(error, t("We couldn’t load the topic list.")),
-            });
-          }
-        }
-      }
-
-      void loadData();
-
-      return () => {
-        isActive = false;
-      };
-    }, [requestKey, t]),
-  );
+  const readTrackId = readState.kind === "ready" ? readState.activeTrackId : null;
 
   useEffect(() => {
     setSelectedTopicId(route.params?.topicId);
-  }, [route.params?.topicId]);
+  }, [readTrackId, requestKey, route.params?.topicId]);
+
+  function navigateBackToPractice() {
+    navigation.navigate(
+      ROUTES.PRACTICE_HUB,
+      route.params?.trackId ? { trackId: route.params.trackId } : undefined,
+    );
+  }
+
+  function renderUnavailable(description: string, actionLabel = t("Back to practice"), onActionPress = navigateBackToPractice) {
+    return (
+      <View style={styles.shell}>
+        <Screen edges={["top", "bottom"]}>
+          <AppShellHeader backAction={{ onPress: navigateBackToPractice }} context={t("Topic Roadmap")} />
+          <EmptyState actionLabel={actionLabel} onActionPress={onActionPress} title={t("Topic roadmap is unavailable")} description={description} />
+        </Screen>
+        <AppBottomNavigation activeId="practice" navigation={navigation} />
+      </View>
+    );
+  }
 
   if (readState.requestKey !== requestKey || readState.kind === "pending") return (
     <View style={styles.shell}>
       <Screen edges={["top"]}>
-        <AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Topic Roadmap")} />
+        <AppShellHeader backAction={{ onPress: navigateBackToPractice }} context={t("Topic Roadmap")} />
         <TopicRoadmapLoadingSkeleton />
       </Screen>
       <AppBottomNavigation activeId="practice" navigation={navigation} />
     </View>
   );
-  if (readState.kind === "unavailable") return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Topic Roadmap")} /><EmptyState title={t("Topic roadmap is unavailable")} description={t(readState.reason)} /></Screen>;
+  if (readState.kind === "unavailable") return renderUnavailable(t(readState.reason), t("Try again"), retry);
   const { activeTrackId, trainingAttempts } = readState;
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
-  const activeTrack = getTrackDisplay(activeTrackId);
-  const topics = buildTopicRoadmapNodes({ activeTrackId, trainingAttempts });
+  let activeTrack: ReturnType<typeof getTrackDisplay>;
+  let topics: ReturnType<typeof buildTopicRoadmapNodes>;
+  try {
+    activeTrack = getTrackDisplay(activeTrackId);
+    topics = buildTopicRoadmapNodes({ activeTrackId, trainingAttempts });
+  } catch (error) {
+    return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
+  }
+  if (route.params?.topicId !== undefined && !topics.some((topic) => topic.id === route.params?.topicId && topic.status !== "locked")) {
+    return renderUnavailable(t("This topic is not included in your free content."));
+  }
   const rows = buildRoadmapRows(topics);
   const resolvedSelectedTopicId = getSelectableTopicId(topics, selectedTopicId);
 
@@ -176,12 +159,18 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
   }
 
   function returnToPracticeHub() {
-    navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: resolvedSelectedTopicId });
+    navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: resolvedSelectedTopicId ?? undefined, trackId: activeTrack.id });
   }
 
   return (
     <View style={styles.shell}>
-      <Screen edges={["top"]}>
+      <Screen
+        edges={["top"]}
+        footer={(
+          <Button onPress={returnToPracticeHub} variant="primary">{t("Continue")}</Button>
+        )}
+        footerVariant="sticky"
+      >
         <AppShellHeader backAction={{ onPress: returnToPracticeHub }} />
 
         <View style={styles.intro}>
@@ -347,7 +336,7 @@ function RoadmapNode({
           size={large ? 30 : 25}
         />
       </View>
-      <Text maxFontSizeMultiplier={2} numberOfLines={2} style={styles.nodeTitle}>
+      <Text maxFontSizeMultiplier={2} style={styles.nodeTitle}>
         {topic.title}
       </Text>
       <Text maxFontSizeMultiplier={2} style={[styles.nodeLabel, getLabelStyle(topic, selected, styles)]}>
@@ -680,6 +669,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   nodeTitle: {
     ...typography.bodyStrong,
     color: palette.textPrimary,
+    flexShrink: 1,
+    minWidth: 0,
     textAlign: "center",
   },
   nodeLabel: {

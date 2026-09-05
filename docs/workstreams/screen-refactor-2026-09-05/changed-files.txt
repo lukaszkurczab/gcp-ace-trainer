@@ -1,0 +1,55 @@
+M	scripts/mutationArchitecture.test.ts
+M	src/application/activityReadModels.ts
+M	src/components/ChoiceRow.tsx
+M	src/components/InfoBlock.tsx
+M	src/components/SettingsBottomSheet.tsx
+M	src/components/SettingsGroup.tsx
+M	src/components/visualShell.test.ts
+M	src/content/contentPackageRuntimeCutover.test.ts
+M	src/features/exam/examReadOwner.test.ts
+M	src/features/home/ActivityScreen.tsx
+M	src/features/home/AppearanceSettingsScreen.tsx
+M	src/features/home/HomeScreen.tsx
+M	src/features/home/LegalInformationScreen.tsx
+M	src/features/home/NotificationSettingsScreen.tsx
+D	src/features/home/PreferenceSelectionScreen.tsx
+M	src/features/home/SettingsInformationScreen.tsx
+M	src/features/home/YourDataScreen.tsx
+M	src/features/home/tabs/ProgressTab.tsx
+M	src/features/home/tabs/SettingsTab.tsx
+M	src/features/home/tabs/activityModel.test.ts
+M	src/features/home/tabs/activityModel.ts
+M	src/features/home/tabs/activityPresentation.ts
+M	src/features/home/tabs/homeProgressProjections.test.ts
+M	src/features/home/tabs/progressPresentation.test.ts
+M	src/features/home/tabs/progressTabModel.ts
+M	src/features/practice/PracticeHubScreen.tsx
+M	src/features/practice/PracticeSetupScreen.tsx
+M	src/features/practice/TopicRoadmapScreen.tsx
+M	src/features/practice/practiceNavigation.test.ts
+M	src/locales/en/appearance.json
+M	src/locales/en/common.json
+M	src/locales/en/data.json
+M	src/locales/en/notifications.json
+M	src/locales/en/settings.json
+M	src/locales/pl/appearance.json
+M	src/locales/pl/common.json
+M	src/locales/pl/data.json
+M	src/locales/pl/notifications.json
+M	src/locales/pl/settings.json
+M	src/navigation/loadingStateOwnership.test.ts
+M	src/navigation/types.ts
+M	src/preferences/notificationPresentation.test.ts
+M	src/preferences/settingsPresentation.test.ts
+M	src/preferences/useNotificationSettings.ts
+M	src/tracks/coding-interview/algorithmsSessionAccessibility.test.ts
+M	src/tracks/coding-interview/rcAlgorithmsBootstrap.test.ts
+
+New source files:
+src/application/activityReadModels.test.ts
+src/application/practiceReadModels.test.ts
+src/application/practiceReadModels.ts
+src/features/practice/practiceRouteGuards.test.ts
+src/features/practice/usePracticeReadModel.ts
+src/preferences/notificationSettingsState.test.ts
+src/preferences/notificationSettingsState.ts

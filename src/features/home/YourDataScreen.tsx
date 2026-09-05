@@ -3,14 +3,10 @@ import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
-import { useAppPreferences } from "../../preferences";
-
-
 
 type YourDataScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.YOUR_DATA>;
 
 export function YourDataScreen({ navigation }: YourDataScreenProps) {
-  const { locale } = useAppPreferences();
   const { t } = useTranslation("data");
   const text = {
   close: t("close"),

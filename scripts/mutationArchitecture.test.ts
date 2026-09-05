@@ -252,7 +252,15 @@ test("Certification route handoffs use exact resume intent and cannot hide failu
   assert.match(practice, /openCertificationPracticeSession/);
   assert.doesNotMatch(practice, /getCertificationPracticeProjection\(\)\.catch\(\(\) => null\)|if \(!active\) await startCertificationSession/);
   assert.match(practice, /expectedSessionId: conflict\.id/);
-  assert.match(exam, /if \(expectedSessionId\)[\s\S]*?resumeExpectedCertificationExam\(expectedSessionId\)[\s\S]*?return;[\s\S]*?startCertificationExam\(\)/);
+  assert.match(exam, /createExamReadOwner<CertificationExamProjection>\(\{[\s\S]*?resumeExpected: resumeExpectedCertificationExam,[\s\S]*?start: startCertificationExam,/);
+  assert.match(exam, /readOwner\.load\(token, route\.params\?\.expectedSessionId\)/);
+  const examReadOwner = read("src/features/exam/examReadOwner.ts");
+  const expectedResumeBranch = examReadOwner.slice(examReadOwner.indexOf("if (expectedSessionId)"), examReadOwner.indexOf("const initial = await refresh"));
+  assert.match(expectedResumeBranch, /await dependencies\.resumeExpected\(expectedSessionId\)/);
+  assert.match(expectedResumeBranch, /return resumed\.kind === "ready"/);
+  assert.doesNotMatch(expectedResumeBranch, /dependencies\.start\(\)/);
+  const newExamBranch = examReadOwner.slice(examReadOwner.indexOf("const initial = await refresh"), examReadOwner.indexOf("return afterStart"));
+  assert.match(newExamBranch, /await dependencies\.start\(\)/);
   assert.match(config, /Partial<Omit<PracticeSessionRouteParams, "expectedSessionId">>/);
   assert.match(config, /buildCertificationPracticeResumeRoute\(session: TrainingSession\)/);
   assert.match(config, /expectedSessionId: session\.id/);

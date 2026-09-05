@@ -20,7 +20,7 @@ test("practice session exit can return to the hub without a topic override", () 
 });
 
 
-test("both Custom Practice hub entries open setup before a session configuration is built", () => {
+test("the canonical Custom Practice hero opens setup without a duplicate mode row", () => {
   const hub = readFileSync("src/features/practice/PracticeHubScreen.tsx", "utf8");
   const customStart = hub.slice(hub.indexOf("if (isCodingInterviewTrack && resolvedMode === ALGORITHM_MODE_IDS.customPractice)"), hub.indexOf("if (isDesignInterviewTrack)"));
   assert.match(customStart, /navigation\.navigate\(ROUTES\.PRACTICE_SETUP/);
@@ -30,6 +30,7 @@ test("both Custom Practice hub entries open setup before a session configuration
   assert.match(customStart, /return;/);
   assert.doesNotMatch(customStart, /buildPracticeSessionConfig|PRACTICE_SESSION|feedbackMode/);
   assert.match(hub, /onPress=\{\(\) => \{\s*if \(isCodingInterviewTrack\) \{\s*startSession\(ALGORITHM_MODE_IDS\.customPractice, "practiceHub"\)/);
+  assert.match(hub, /const secondaryModes = modes\.filter\(\(mode\) => mode\.mode !== primaryMode\.mode && mode\.mode !== ALGORITHM_MODE_IDS\.customPractice\)/);
   const setup = readFileSync("src/features/practice/PracticeSetupScreen.tsx", "utf8");
   assert.match(setup, /buildPracticeSessionConfig\(\{[\s\S]*?feedbackMode,/);
 });

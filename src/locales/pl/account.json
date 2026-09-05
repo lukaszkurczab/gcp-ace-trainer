@@ -1,6 +1,8 @@
 {
   "account": "Konto",
   "accountDescription": "Zaloguj się, aby przejść do Patternly, lub utwórz konto, jeśli jeszcze go nie masz.",
+  "accountManagementDescription": "Zarządzaj synchronizacją, kodami odzyskiwania i usuwaniem konta z tego urządzenia.",
+  "accountSignedInAs": "Zalogowano jako",
   "welcomeTitle": "Ćwicz wzorce stojące za rozmowami technicznymi i certyfikacją",
   "welcomeDescription": "Buduj pewność dzięki skupionym sesjom, użytecznym powtórkom i jasnym kolejnym krokom.",
   "continueWithoutAccount": "Kontynuuj bez konta",

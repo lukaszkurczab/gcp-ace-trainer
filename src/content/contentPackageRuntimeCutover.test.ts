@@ -4,7 +4,8 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { contentPackageRuntimeOwner } from "../application/contentPackageRuntimeOwner";
-import { contentPackagePinsEqual, getTracks } from "../domain";
+import { contentPackagePinsEqual, getTrackDisplay, getTracks } from "../domain";
+import { buildPracticeModes } from "../features/practice/practiceFlowModel";
 import { GENERATED_FREE_NODE_PACKAGES } from "./bundled/generatedFreeNodePackages";
 
 const REMOVED_RUNTIME_OWNERS = [
@@ -64,11 +65,16 @@ test("PKG-04A makes exact package pins and closed profiles the only runtime cont
   assert.doesNotMatch(ownerSource, /pkg\.familyId === "coding_interview"[\s\S]*?: new CertificationFamilyRuntime/);
 });
 
-test("Free Practice entry points use the approved primary modes and never route to excluded package modes", () => {
+test("Free Practice entry points use the approved primary modes and never route to excluded package modes", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  for (const track of getTracks()) {
+    const profile = contentPackageRuntimeOwner.getPreparedDiscovery(track.id).profile;
+    assert.equal(buildPracticeModes(getTrackDisplay(track.id))[0]?.mode, profile.primaryEntry.modeId);
+  }
   const hub = readFileSync("src/features/practice/PracticeHubScreen.tsx", "utf8");
   const setup = readFileSync("src/features/practice/PracticeSetupScreen.tsx", "utf8");
 
-  assert.match(hub, /isCodingInterviewTrack[\s\S]*ALGORITHM_MODE_IDS\.learnApproach[\s\S]*"certification-focus-practice"/);
+  assert.match(hub, /const resolvedMode = mode \?\? primaryMode\.mode/);
   assert.match(hub, /isDesignInterviewTrack[\s\S]*packageProfile\.primaryEntry\.modeId/);
   assert.match(hub, /resolvedMode === "certification-diagnostic-baseline"/);
   assert.match(hub, /mode:\s*isDesignInterviewTrack \? packageProfile\.primaryEntry\.modeId as PracticeSessionMode : "certification-focus-practice"/);

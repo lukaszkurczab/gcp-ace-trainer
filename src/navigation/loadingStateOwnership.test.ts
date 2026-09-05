@@ -129,7 +129,7 @@ test("bootstrap, roadmap, and setup own their phase or screen loading geometry",
   assertLocalSkeletonDefinition("src/features/practice/PracticeSetupScreen.tsx", "PracticeSetupLoadingSkeleton", /accessibilityLabel=\{t\("Loading practice setup"\)\}/, ["practiceSetupLoadingLengthGrid", "practiceSetupLoadingPanel", "practiceSetupLoadingAction"]);
   assert.match(setup, /function resolvePracticeSetupLoadingVariant[\s\S]*?certification-diagnostic-baseline.*?return "diagnostic"[\s\S]*?certification-focus-practice.*?return "selector"[\s\S]*?ALGORITHM_MODE_IDS\.customPractice.*?return "customCoding"/);
   assert.match(setup, /const showIntro = variant !== "customCoding" && variant !== "unknown"/);
-  assert.match(setup, /const showLength = variant !== "diagnostic" && variant !== "unknown"/);
+  assert.match(setup, /const showLength = variant !== "diagnostic" && variant !== "quickReview" && variant !== "unknown"/);
   assert.match(setup, /variant === "design" \? <SkeletonShape[\s\S]*?practiceSetupLoadingFeedbackStrip/);
   assert.match(setup, /variant === "unknown" \? <View style=\{styles\.practiceSetupLoadingUnknown\}/);
   assert.match(setup, /const compactCodingPractice = route\.params\?\.mode === ALGORITHM_MODE_IDS\.customPractice/);
@@ -196,11 +196,11 @@ test("Home shell owns tab-specific glass loading geometry and keeps navigation u
   assertLocalSkeletonDefinition("src/features/home/tabs/SettingsTab.tsx", "SettingsLoadingSkeleton", /accessibilityLabel=\{tCommon\("Loading settings"\)\}/, ["settingsLoadingGroup", "settingsLoadingCard", "settingsLoadingRow"]);
 });
 
-test("Practice Hub owns its pending geometry and keeps the bottom navigation mounted", () => {
+test("Practice Hub keeps its local pending geometry while the scoped read model owns state", () => {
   const practiceHub = source("src/features/practice/PracticeHubScreen.tsx");
 
-  assert.match(practiceHub, /if \(!hasLoadedData\) return \([\s\S]*?<AppShellHeader[\s\S]*?<PracticeHubLoadingSkeleton \/>[\s\S]*?<AppBottomNavigation activeId="practice"/);
-  assert.doesNotMatch(practiceHub, /if \(!hasLoadedData\) return \([\s\S]*?<LoadingState/);
+  assert.match(practiceHub, /if \(readState\.requestKey !== requestKey \|\| readState\.kind === "pending"\) return \([\s\S]*?<AppShellHeader[\s\S]*?<PracticeHubLoadingSkeleton \/>[\s\S]*?<AppBottomNavigation activeId="practice"/);
+  assert.doesNotMatch(practiceHub, /if \(readState\.requestKey !== requestKey \|\| readState\.kind === "pending"\) return \([\s\S]*?<LoadingState/);
   assertLocalSkeletonDefinition("src/features/practice/PracticeHubScreen.tsx", "PracticeHubLoadingSkeleton", /accessibilityLabel=\{t\("Preparing practice"\)\}/, ["practiceHubLoadingIntro", "practiceHubLoadingHeroCard", "practiceHubLoadingModeRow"]);
 });
 
@@ -303,8 +303,13 @@ test("Skeleton glass motion stays static while Reduce Motion is unresolved or fa
 });
 
 test("pending data is distinct from true empty and onboarding outcomes", () => {
+  const practiceReadModel = source("src/features/practice/usePracticeReadModel.ts");
+  assert.match(practiceReadModel, /useState<PracticeReadState>\(\{ kind: "pending", requestKey \}\)/);
+  assert.match(practiceReadModel, /setReadState\(\{ kind: "pending", requestKey: capturedRequestKey \}\)/);
+  assert.match(practiceReadModel, /setReadState\(\{ kind: "ready", requestKey: capturedRequestKey/);
+  assert.match(practiceReadModel, /kind: "unavailable",\s*reason:/);
+
   for (const [path, loadedState, emptyBoundary] of [
-    ["src/features/practice/PracticeHubScreen.tsx", "hasLoadedData", "if (!activeTrackId)"],
     ["src/features/review/AnswerReviewScreen.tsx", "hasLoadedReviewData", "if (!attempt) return"],
   ] as const) {
     const file = source(path);
@@ -315,6 +320,7 @@ test("pending data is distinct from true empty and onboarding outcomes", () => {
   }
 
   for (const [path, emptyBoundary] of [
+    ["src/features/practice/PracticeHubScreen.tsx", "if (!activeTrackId)"],
     ["src/features/practice/TopicRoadmapScreen.tsx", "if (!activeTrackId)"],
     ["src/features/practice/PracticeSetupScreen.tsx", "if (!resolvedTrackId)"],
   ] as const) {
@@ -331,30 +337,47 @@ test("the six read owners end rejected reads in explicit unavailable EmptyStates
   assert.notEqual(home.indexOf("if (shellReadError)"), -1);
   assert.ok(home.indexOf("if (shellReadError)") < home.indexOf("if (!activeTrackId)"));
 
+  const practiceReadModel = source("src/features/practice/usePracticeReadModel.ts");
+  assert.match(practiceReadModel, /\.catch\(\(error: unknown\) => \{[\s\S]*?kind: "unavailable"[\s\S]*?describeOperationalFailure\(error, input\.errorFallback\)/);
+  assert.match(practiceReadModel, /return \(\) => \{[\s\S]*?isActive = false;/);
   for (const [path, defaultArgument, finishPending, unavailableTitle] of [
-    ["src/features/practice/PracticeHubScreen.tsx", "t(\"We couldn’t load your practice options.\")", "setHasLoadedData(true)", "Practice is unavailable"],
     ["src/features/review/MistakesReviewScreen.tsx", "\"Review queue data is unavailable.\"", "setLoading(false)", "Review queue is unavailable"],
   ] as const) {
     const file = source(path);
     assert.match(file, new RegExp(`catch \\(error\\) \\{[\\s\\S]*?describeOperationalFailure\\(error, ${escapeForRegExp(defaultArgument)}\\)[\\s\\S]*?${finishPending.replace(/[()]/g, "\\$&")}`), `${path} ends rejected pending state`);
     assert.match(file, new RegExp(`<EmptyState[\\s\\S]*?title=\\{t\\("${unavailableTitle}"\\)\\}`), `${path} renders unavailable EmptyState`);
   }
+  for (const [path, title] of [
+    ["src/features/practice/PracticeHubScreen.tsx", "Practice is unavailable"],
+    ["src/features/practice/TopicRoadmapScreen.tsx", "Topic roadmap is unavailable"],
+    ["src/features/practice/PracticeSetupScreen.tsx", "Practice setup is unavailable"],
+  ] as const) {
+    const file = source(path);
+    if (path === "src/features/practice/PracticeHubScreen.tsx" || path === "src/features/practice/TopicRoadmapScreen.tsx" || path === "src/features/practice/PracticeSetupScreen.tsx") {
+      assert.match(file, /if \(readState\.kind === "unavailable"\) return renderUnavailable\(t\(readState\.reason\), t\("Try again"\), retry\)/);
+      assert.match(file, /function renderUnavailable\([\s\S]*?actionLabel=\{actionLabel\}[\s\S]*?onActionPress=\{onActionPress\}/);
+    } else {
+      assert.ok(file.includes('actionLabel={t("Try again")} onActionPress={retry}'), `${path} exposes retry for unavailable reads`);
+    }
+    assert.match(file, new RegExp(`<EmptyState[\\s\\S]*?title=\\{t\\("${title}"\\)\\}`), `${path} renders unavailable EmptyState`);
+  }
 });
 
-test("resolved track reads apply null without overriding explicit route authority", () => {
-  const practiceHub = source("src/features/practice/PracticeHubScreen.tsx");
+test("scoped practice reads honor explicit route identity and only load reviews on Hub", () => {
+  const practiceReadModel = source("src/application/practiceReadModels.ts");
+  const hub = source("src/features/practice/PracticeHubScreen.tsx");
   const roadmap = source("src/features/practice/TopicRoadmapScreen.tsx");
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
 
-  assert.match(practiceHub, /setActiveTrackId\(savedTrackId \?\? null\)/);
-  assert.doesNotMatch(practiceHub, /if \(savedTrackId\) setActiveTrackId/);
+  assert.match(practiceReadModel, /const activeTrackIdPromise = input\.requestedTrackId\s*\?\s*Promise\.resolve\(input\.requestedTrackId\)\s*:\s*ports\.getActiveTrackId\(\)/);
+  assert.match(practiceReadModel, /includeReviews \? ports\.getReviewQueueItems\(\) : Promise\.resolve\(undefined\)/);
+  assert.match(hub, /usePracticeReadModel\(\{[\s\S]*?includeReviews: true/);
+  assert.doesNotMatch(roadmap, /includeReviews: true/);
+  assert.doesNotMatch(setup, /includeReviews: true/);
   for (const file of [roadmap, setup]) {
-    assert.match(file, /activeTrackId: capturedRequestKey === STORED_TRACK_REQUEST_KEY \? savedTrackId \?\? null : capturedRequestKey/);
-    assert.doesNotMatch(file, /if \(nextTrackId\)|if \(savedTrackId\) setActiveTrackId/);
-    assert.match(file, /const requestKey:[^=]+ = route\.params\?\.trackId \?\? STORED_TRACK_REQUEST_KEY/);
+    assert.match(file, /requestedTrackId: route\.params\?\.trackId/);
+    assert.doesNotMatch(file, /loadActiveTrackId|loadTrainingAttempts/);
   }
-  assert.match(roadmap, /useCallback\(\(\) => \{[\s\S]*?\}, \[requestKey, t\]\)/);
-  assert.match(setup, /useCallback\(\(\) => \{[\s\S]*?\}, \[requestKey, t\]\)/);
 });
 
 test("route-keyed read states block A under B and publish only their captured request", () => {
@@ -377,17 +400,19 @@ test("route-keyed read states block A under B and publish only their captured re
   assert.ok(examGuard < examReview.indexOf('if (readState.kind === "unavailable")'));
   assert.ok(examGuard < examReview.indexOf("const rows = readState.rows"));
 
-  for (const [path, stateName] of [
-    ["src/features/practice/TopicRoadmapScreen.tsx", "RoadmapReadState"],
-    ["src/features/practice/PracticeSetupScreen.tsx", "PracticeSetupReadState"],
+  const practiceReadHook = source("src/features/practice/usePracticeReadModel.ts");
+  assert.match(practiceReadHook, /export type PracticeReadState =[\s\S]*?kind: "pending"; requestKey: PracticeRequestKey[\s\S]*?kind: "ready"; requestKey: PracticeRequestKey[\s\S]*?kind: "unavailable"; reason: string; requestKey: PracticeRequestKey/);
+  assert.match(practiceReadHook, /const capturedRequestKey = requestKey;[\s\S]*?setReadState\(\{ kind: "pending", requestKey: capturedRequestKey \}\)/);
+  assert.match(practiceReadHook, /setReadState\(\{ kind: "ready", requestKey: capturedRequestKey/);
+  assert.match(practiceReadHook, /kind: "unavailable",\s*reason: describeOperationalFailure\(error, input\.errorFallback\),\s*requestKey: capturedRequestKey/);
+  assert.equal((practiceReadHook.match(/if \(!isActive\) return;/g) ?? []).length, 2, "practice read guards ready and unavailable publication");
+  assert.match(practiceReadHook, /return \(\) => \{\s*isActive = false;\s*\}/);
+  for (const path of [
+    "src/features/practice/PracticeHubScreen.tsx",
+    "src/features/practice/TopicRoadmapScreen.tsx",
+    "src/features/practice/PracticeSetupScreen.tsx",
   ] as const) {
     const file = source(path);
-    assert.match(file, new RegExp(`type ${stateName} =[\\s\\S]*?kind: "pending"; requestKey:[\\s\\S]*?kind: "ready"; requestKey:[\\s\\S]*?activeTrackId: TrackId \\| null; trainingAttempts:[\\s\\S]*?kind: "unavailable"; requestKey:[\\s\\S]*?reason:`));
-    assert.match(file, /const capturedRequestKey = requestKey;[\s\S]*?setReadState\(\{ kind: "pending", requestKey: capturedRequestKey \}\)/);
-    assert.match(file, /kind: "ready",\s*requestKey: capturedRequestKey,[\s\S]*?activeTrackId:/);
-    assert.match(file, /kind: "unavailable",\s*requestKey: capturedRequestKey,\s*reason:/);
-    assert.equal((file.match(/if \(isActive\) \{/g) ?? []).length, 2, `${path} guards ready and unavailable publication`);
-    assert.match(file, /return \(\) => \{\s*isActive = false;\s*\}/);
     const guard = file.indexOf('if (readState.requestKey !== requestKey || readState.kind === "pending")');
     assert.ok(guard < file.indexOf('if (readState.kind === "unavailable")'), `${path} mismatch guard precedes error rendering`);
     assert.ok(guard < file.indexOf("const { activeTrackId"), `${path} mismatch guard precedes ready derivation`);

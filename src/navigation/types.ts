@@ -8,6 +8,7 @@ export type RootStackParamList = {
   [ROUTES.HOME]: { initialTab?: Exclude<ShellTab, "practice"> } | undefined;
   [ROUTES.ACTIVITY]: undefined;
   [ROUTES.APPEARANCE_SETTINGS]: undefined;
+  [ROUTES.LANGUAGE_SETTINGS]: undefined;
   [ROUTES.LEGAL_INFORMATION]: undefined;
   [ROUTES.NOTIFICATION_SETTINGS]: undefined;
   [ROUTES.YOUR_DATA]: undefined;
@@ -15,7 +16,7 @@ export type RootStackParamList = {
   [ROUTES.BACKEND_DIAGNOSTICS]: undefined;
   [ROUTES.SELECT_TRACK]: undefined;
   [ROUTES.GOAL_CADENCE]: { trackId?: TrackId } | undefined;
-  [ROUTES.PRACTICE_HUB]: { topicId?: string } | undefined;
+  [ROUTES.PRACTICE_HUB]: { topicId?: string; trackId?: TrackId } | undefined;
   [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home"; targetMentalUnitId?: string };
   [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId } | undefined;
   [ROUTES.EXAM]: { expectedSessionId?: string } | undefined;

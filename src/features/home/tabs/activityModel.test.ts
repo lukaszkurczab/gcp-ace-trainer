@@ -4,6 +4,7 @@ import test from "node:test";
 import type { ActivitySessionRecord } from "../../../application/activityReadModels";
 import type { EvidenceRef } from "../../../domain";
 import { ALL_ACTIVITY_TRACKS, buildActivityModel } from "./activityModel";
+import { formatActivityDateLabel, relativeDay } from "./activityPresentation";
 
 const codingTrack = "coding-interview-dsa-problem-solving";
 const cloudTrack = "google-cloud-associate-cloud-engineer";
@@ -44,6 +45,40 @@ test("Activity track filter returns only records for the selected canonical trac
   ], cloudTrack, now);
 
   assert.deepEqual(model.items.map((item) => item.id), ["cloud"]);
+});
+
+test("Activity uses local calendar days and Monday-based calendar weeks", () => {
+  const now = new Date(2026, 7, 23, 12, 0);
+  const yesterday = new Date(2026, 7, 22, 9, 0).toISOString();
+  const previousWeek = new Date(2026, 7, 16, 9, 0).toISOString();
+  const model = buildActivityModel([
+    record({ id: "previous-week", modeId: "coding-interview-guided-practice", trackId: codingTrack, status: "completed", completedAt: previousWeek, totalOccurrences: 1, answered: 1 }),
+    record({ id: "yesterday", modeId: "coding-interview-guided-practice", trackId: codingTrack, status: "completed", completedAt: yesterday, totalOccurrences: 1, answered: 1 }),
+  ], ALL_ACTIVITY_TRACKS, now);
+
+  assert.equal(model.items.find((item) => item.id === "yesterday")?.group, "Yesterday");
+  assert.equal(model.items.find((item) => item.id === "previous-week")?.group, "Earlier");
+});
+
+test("Activity keeps local midnight and relative labels correct across a DST boundary", () => {
+  const now = new Date(2026, 2, 30, 0, 30);
+  const beforeMidnight = new Date(2026, 2, 29, 23, 45).toISOString();
+  const model = buildActivityModel([
+    record({ id: "dst-boundary", modeId: "coding-interview-guided-practice", trackId: codingTrack, status: "completed", completedAt: beforeMidnight, totalOccurrences: 1, answered: 1 }),
+  ], ALL_ACTIVITY_TRACKS, now);
+
+  assert.equal(model.items[0]?.group, "Yesterday");
+  assert.deepEqual(model.items[0]?.dateLabel, { kind: "relative", label: "Yesterday", timestamp: beforeMidnight });
+  assert.equal(relativeDay(beforeMidnight, now), "Yesterday");
+});
+
+test("Activity date labels format relative words and month names from the selected locale", () => {
+  const timestamp = new Date(2026, 8, 3, 16, 7).toISOString();
+  const translate = (value: string): string => value === "Today" ? "Dzisiaj" : value === "Yesterday" ? "Wczoraj" : value;
+  const expectedDate = new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "short" }).format(new Date(timestamp));
+
+  assert.equal(formatActivityDateLabel({ kind: "relative", label: "Today", timestamp }, "pl", translate), "Dzisiaj, 16:07");
+  assert.equal(formatActivityDateLabel({ kind: "calendar", timestamp }, "pl", translate), `${expectedDate}, 16:07`);
 });
 
 function record(input: Readonly<{

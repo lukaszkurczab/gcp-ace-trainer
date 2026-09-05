@@ -34,3 +34,29 @@ test("translations resolve common UI copy through i18next", () => {
   assert.equal(i18n.t("Settings", { lng: "en" }), "Settings");
   assert.equal(i18n.t("Unmapped learning prompt", { lng: "pl" }), "Unmapped learning prompt");
 });
+
+test("language changes persist all supported choices without changing appearance", async () => {
+  for (const language of ["pl", "system", "en"] as const) {
+    await updateAppSettings({ appearance: "dark", language });
+    assert.deepEqual(await loadAppSettings(), { appearance: "dark", language });
+  }
+});
+
+test("a failed language write rejects and preserves the previous saved choice for retry", async () => {
+  class FailingSettingsStorage extends MemoryKeyValueStorage {
+    failWrites = false;
+    override setString(key: string, value: string): void {
+      if (this.failWrites) throw new Error("settings write unavailable");
+      super.setString(key, value);
+    }
+  }
+  const storage = new FailingSettingsStorage();
+  installKeyValueStorageForTests(storage);
+  await updateAppSettings({ appearance: "system", language: "en" });
+  storage.failWrites = true;
+  await assert.rejects(updateAppSettings({ appearance: "system", language: "pl" }));
+  assert.deepEqual(await loadAppSettings(), { appearance: "system", language: "en" });
+  storage.failWrites = false;
+  await updateAppSettings({ appearance: "system", language: "pl" });
+  assert.deepEqual(await loadAppSettings(), { appearance: "system", language: "pl" });
+});

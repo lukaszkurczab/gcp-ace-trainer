@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Svg, { Circle, Polyline } from "react-native-svg";
 
-import { Button, Card, Icon, IconTile, ProgressBar, SkeletonShape, useSkeletonGlassMotion, type IconName } from "../../../components";
+import { Button, Card, Icon, IconTile, ProgressBar, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
+import type { ActivitySessionRecord } from "../../../application/activityReadModels";
 import type { GoalRecord, ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
@@ -17,15 +18,20 @@ import {
   type ProgressAction,
   type ProgressTabActivityItem,
 } from "./progressTabModel";
+import { formatActivityDateLabel } from "./activityPresentation";
+import type { ActivityItem } from "./activityModel";
 
 type ProgressTabProps = {
   activeTrack: TrackDisplay;
   analytics: AnalyticsData;
+  activityRecords?: readonly ActivitySessionRecord[];
   attempts: CertificationExamSummaryViewModel[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
   goal?: GoalRecord | null;
   onChangeTrack: () => void;
   onOpenActivity?: () => void;
+  onOpenActivityItem?: (item: ActivityItem) => void;
+  onOpenPractice?: () => void;
   onOpenGoal?: () => void;
   onProgressAction?: (action: ProgressAction) => void;
   practiceHistory: CertificationPracticeAnswerViewModel[];
@@ -109,11 +115,14 @@ export function ProgressLoadingSkeleton() {
 export function ProgressTab({
   activeTrack,
   analytics,
+  activityRecords = [],
   attempts,
   cloudProgress,
   goal = null,
   onChangeTrack,
   onOpenActivity,
+  onOpenActivityItem,
+  onOpenPractice,
   onOpenGoal,
   onProgressAction,
   practiceHistory,
@@ -121,10 +130,10 @@ export function ProgressTab({
   trainingAttempts = [],
 }: ProgressTabProps) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette } = useAppPreferences();
+  const { colors: palette, locale } = useAppPreferences();
   const { t } = useTranslation("common");
   const [showDiagnostics, setShowDiagnostics] = useState(false);
-  const model = buildProgressTabModel({ activeTrackId: activeTrack.id, analytics, attempts, cloudProgress, practiceHistory, reviewQueueItems, trainingAttempts });
+  const model = buildProgressTabModel({ activeTrackId: activeTrack.id, activityRecords, analytics, attempts, cloudProgress, practiceHistory, reviewQueueItems, trainingAttempts });
   const focus = model.algorithmsProgress?.currentFocus;
   const focusTitle = focus?.title ?? model.performanceScores[0]?.label ?? activeTrack.shortTitle;
   const focusProgress = focus?.showProgress ? focus.progressPercent : model.performanceScores[0]?.percent ?? 0;
@@ -169,6 +178,7 @@ export function ProgressTab({
       </View>
 
       {!model.hasData ? (
+        <>
         <View style={styles.emptyProgressState}>
           <View style={styles.emptyProgressIcon}>
             <Text maxFontSizeMultiplier={2} style={styles.emptyProgressGlyph}>⫶</Text>
@@ -179,8 +189,19 @@ export function ProgressTab({
             <Button labelStyle={styles.emptyProgressActionLabel} onPress={() => onProgressAction(model.algorithmsProgress!.priority.primaryAction)} style={styles.emptyProgressAction}>
               {t("Open Practice")}
             </Button>
+          ) : onOpenPractice ? (
+            <Button labelStyle={styles.emptyProgressActionLabel} onPress={onOpenPractice} style={styles.emptyProgressAction}>
+              {t("Open Practice")}
+            </Button>
+          ) : null}
+          {onOpenActivity && model.activity.length === 0 ? (
+            <Button labelStyle={styles.activityLink} onPress={onOpenActivity} testID={runtimeSelectors.progress.activity()} variant="ghost">
+              {t("View all activity")}
+            </Button>
           ) : null}
         </View>
+        {model.activity.length > 0 ? <ActivitySection items={model.activity} locale={locale} onOpenActivity={onOpenActivity} onOpenActivityItem={onOpenActivityItem} /> : null}
+        </>
       ) : (
         <>
           <View style={styles.section}>
@@ -250,16 +271,17 @@ export function ProgressTab({
           {model.algorithmsProgress ? (
             <AlgorithmsEvidenceSection
               activity={model.activity}
+              locale={locale}
               model={model.algorithmsProgress}
               onOpenActivity={onOpenActivity}
+              onOpenActivityItem={onOpenActivityItem}
               onProgressAction={onProgressAction}
-              trackFamily={activeTrack.familyId}
               showDiagnostics={showDiagnostics}
               setShowDiagnostics={setShowDiagnostics}
             />
           ) : (
             <>
-              <ActivitySection items={model.activity} onOpenActivity={onOpenActivity} trackFamily={activeTrack.familyId} />
+              <ActivitySection items={model.activity} onOpenActivity={onOpenActivity} onOpenActivityItem={onOpenActivityItem} locale={locale} />
               <PerformanceEvidenceSection scores={model.performanceScores} trackFamily={activeTrack.familyId} />
             </>
           )}
@@ -269,7 +291,7 @@ export function ProgressTab({
   );
 }
 
-function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ items: readonly ProgressTabActivityItem[]; onOpenActivity?: () => void; trackFamily: string }>) {
+function ActivitySection({ items, locale, onOpenActivity, onOpenActivityItem }: Readonly<{ items: readonly ProgressTabActivityItem[]; locale: "en" | "pl"; onOpenActivity?: () => void; onOpenActivityItem?: (item: ActivityItem) => void }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const groups = ["Today", "Yesterday", "This week", "Earlier"] as const;
@@ -278,7 +300,7 @@ function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ item
       <View style={styles.sectionHeading}>
         <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Recent activity")}</Text>
         {onOpenActivity ? (
-          <Pressable accessibilityRole="button" onPress={onOpenActivity} style={({ pressed }) => [pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.activity()}>
+          <Pressable accessibilityRole="button" onPress={onOpenActivity} style={({ pressed }) => [styles.activityHeaderAction, pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.activity()}>
             <Text maxFontSizeMultiplier={2} style={styles.activityLink}>{t("View all activity")}</Text>
           </Pressable>
         ) : null}
@@ -291,13 +313,23 @@ function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ item
             <Text maxFontSizeMultiplier={2} style={styles.activityGroupLabel}>{t(group)}</Text>
             <View style={styles.activityRows}>
               {groupItems.map((item, index) => (
-                <View key={item.id} style={[styles.activityRow, index === groupItems.length - 1 ? styles.activityRowLast : null]}>
-                  <IconTile iconSize={20} name={activityIcon(item.modeId, trackFamily)} size={36} tone={activityTone(item.outcome)} />
+                <Pressable
+                  key={item.id}
+                  accessibilityLabel={`${t(item.modeTitle)}, ${t(item.trackTitle)}`}
+                  accessibilityRole={onOpenActivityItem ? "button" : undefined}
+                  onPress={onOpenActivityItem ? () => onOpenActivityItem(item) : undefined}
+                  style={({ pressed }) => [styles.activityRow, index === groupItems.length - 1 ? styles.activityRowLast : null, pressed ? styles.pressed : null]}
+                  testID={runtimeSelectors.activity.row(item.sessionId)}
+                >
+                  <IconTile iconSize={20} name={item.icon} size={36} tone={activityTone(item.status)} />
                   <View style={styles.activityCopy}>
-                    <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(item.title)}</Text>
-                    <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{`${t("Answered")} · ${t(item.detail)} · ${item.time}`}</Text>
+                    <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t(item.modeTitle)}</Text>
+                    <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{[t(item.trackTitle), item.scopeLabel].filter(Boolean).join(" · ")}</Text>
+                    <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{`${activityCountLabel(item, t)} · ${item.duration}`}</Text>
+                    <Text maxFontSizeMultiplier={2} style={[styles.activityDetail, item.status === "completed" ? null : styles.activityStatusDetail]}>{`${t(item.statusLabel)} · ${formatActivityDateLabel(item.dateLabel, locale, t)}`}</Text>
                   </View>
-                </View>
+                  <Icon color={styles.activityChevron.color} name="chevron-right" size={18} />
+                </Pressable>
               ))}
             </View>
           </View>
@@ -305,45 +337,48 @@ function ActivitySection({ items, onOpenActivity, trackFamily }: Readonly<{ item
       }) : (
         <Card style={styles.emptyActivityCard}>
           <Text maxFontSizeMultiplier={2} style={styles.activityTitle}>{t("No activity yet")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{t("Complete a practice item to see local activity here.")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{t("Complete a practice session to see it in Activity.")}</Text>
         </Card>
       )}
     </View>
   );
 }
 
-function activityIcon(modeId: string, trackFamily: string): IconName {
-  if (trackFamily === "certification" || modeId.startsWith("certification-")) return "cloud";
-  if (trackFamily === "design_interview" || modeId.startsWith("design-interview-")) return "book-open";
-  return "route";
+function activityCountLabel(item: ProgressTabActivityItem, translate: (value: string) => string): string {
+  if (item.answerCount === item.totalCount) return `${item.totalCount} ${translate(item.totalCount === 1 ? "item" : "items")}`;
+  if (item.status === "ended-early") return `${item.answerCount} ${translate("of")} ${item.totalCount} ${translate("answered")}`;
+  return `${item.answerCount} ${translate("answered")} · ${Math.max(0, item.totalCount - item.answerCount)} ${translate("unanswered")}`;
 }
 
-function activityTone(outcome: ProgressTabActivityItem["outcome"]): "danger" | "success" | "warning" {
-  if (outcome === "correct") return "success";
-  if (outcome === "incorrect") return "danger";
-  return "warning";
+function activityTone(status: ProgressTabActivityItem["status"]): "danger" | "info" | "primary" | "warning" {
+  if (status === "ended-early") return "danger";
+  if (status === "time-expired") return "warning";
+  return "primary";
 }
 
 function AlgorithmsEvidenceSection({
   activity,
+  locale,
+  onOpenActivityItem,
   model,
   onOpenActivity,
   onProgressAction,
   setShowDiagnostics,
   showDiagnostics,
-  trackFamily,
 }: Readonly<{
   activity: readonly ProgressTabActivityItem[];
+  locale: "en" | "pl";
   model: NonNullable<ReturnType<typeof buildProgressTabModel>["algorithmsProgress"]>;
   onOpenActivity?: () => void;
+  onOpenActivityItem?: (item: ActivityItem) => void;
   onProgressAction?: (action: ProgressAction) => void;
   setShowDiagnostics: (value: (current: boolean) => boolean) => void;
   showDiagnostics: boolean;
-  trackFamily: string;
 }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const [showAllTrackNodes, setShowAllTrackNodes] = useState(false);
+  const { fontScale } = useWindowDimensions();
   const trackNodes = showAllTrackNodes ? model.trackNodes : model.trackNodes.slice(0, 4);
   return (
     <View style={styles.section}>
@@ -364,10 +399,10 @@ function AlgorithmsEvidenceSection({
       </View>
       {model.trackNodes.length > trackNodes.length ? <Button onPress={() => setShowAllTrackNodes((current) => !current)} variant="ghost">{t(showAllTrackNodes ? "Show fewer track areas" : "View all track evidence")}</Button> : null}
 
-      <ActivitySection items={activity} onOpenActivity={onOpenActivity} trackFamily={trackFamily} />
+      <ActivitySection items={activity} locale={locale} onOpenActivity={onOpenActivity} onOpenActivityItem={onOpenActivityItem} />
 
       <View style={styles.diagnosticsCard}>
-        <View style={styles.diagnosticsHeader}>
+        <View style={[styles.diagnosticsHeader, fontScale >= 1.3 ? styles.diagnosticsHeaderLarge : null]}>
           <View style={styles.diagnosticsCopy}>
             <Text maxFontSizeMultiplier={2} style={styles.diagnosticsTitle}>{t(model.diagnostics.title)}</Text>
             <Text maxFontSizeMultiplier={2} style={styles.diagnosticsSubtitle}>{t(model.diagnostics.subtitle)}</Text>
@@ -624,6 +659,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   activityCopy: { flex: 1, gap: spacing.xxs, minWidth: 0 },
   activityTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
   activityDetail: { color: palette.textSecondary, fontSize: 12, fontWeight: "400", lineHeight: 18 },
+  activityStatusDetail: { color: palette.warning },
+  activityChevron: { color: palette.textMuted },
   emptyActivityCard: { backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: spacing.xs, padding: spacing.lg },
   weekCard: { ...shadows.none, backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: 14 },
   emptyWeekCard: { gap: 4, paddingHorizontal: 14, paddingVertical: 12 },
@@ -636,7 +673,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   weekAction: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 18 },
   weekGoalAction: { alignSelf: "flex-start", minHeight: 32, justifyContent: "center" },
   section: { gap: 10 },
-  sectionHeading: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  sectionHeading: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, justifyContent: "space-between" },
+  activityHeaderAction: { justifyContent: "center", maxWidth: "100%", minHeight: 44 },
   activityLink: { color: palette.primary, fontSize: 13, fontWeight: "600", lineHeight: 18 },
   focusCard: { ...shadows.none, backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 14, gap: spacing.md, padding: spacing.lg },
   focusTitle: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20 },
@@ -661,6 +699,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   roadmapTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   diagnosticsCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, gap: spacing.md, padding: spacing.md },
   diagnosticsHeader: { alignItems: "center", flexDirection: "row", gap: spacing.md, justifyContent: "space-between" },
+  diagnosticsHeaderLarge: { alignItems: "stretch", flexDirection: "column" },
   diagnosticsCopy: { flex: 1, gap: spacing.xs },
   diagnosticsTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   diagnosticsSubtitle: { ...typography.caption, color: palette.textMuted },

@@ -8,5 +8,7 @@
   "light": "Light",
   "lightDetail": "Always use the light theme.",
   "dark": "Dark",
-  "darkDetail": "Always use the dark theme."
+  "darkDetail": "Always use the dark theme.",
+  "saveErrorTitle": "Appearance could not be saved",
+  "saveErrorDetail": "Try choosing an appearance again."
 }

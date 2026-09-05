@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { radius, spacing, typography } from "../theme";
 import { useAppPreferences, useThemedStyles } from "../preferences";
@@ -10,6 +10,7 @@ type ChoiceRowProps = {
   detail: string;
   density?: "comfortable" | "compact";
   disabled?: boolean;
+  loading?: boolean;
   onPress: () => void;
   selected: boolean;
   testID?: string;
@@ -17,20 +18,24 @@ type ChoiceRowProps = {
 };
 
 /** Canonical radio row from Figma's Choice Group pattern. */
-export function ChoiceRow({ accessibilityLabel, appearancePreview, density = "comfortable", detail, disabled = false, onPress, selected, testID, title }: ChoiceRowProps) {
+export function ChoiceRow({ accessibilityLabel, appearancePreview, density = "comfortable", detail, disabled = false, loading = false, onPress, selected, testID, title }: ChoiceRowProps) {
   const styles = useThemedStyles(createStyles);
+  const { colors: palette } = useAppPreferences();
   const { fontScale } = useWindowDimensions();
   const compact = density === "compact";
-  const radio = <View style={[styles.radio, selected ? styles.radioSelected : styles.radioUnselected]}>{selected ? <View style={styles.dot} /> : null}</View>;
+  const isDisabled = disabled || loading;
+  const radio = loading
+    ? <ActivityIndicator accessibilityElementsHidden color={palette.choice.active} size="small" style={styles.loadingIndicator} />
+    : <View style={[styles.radio, selected ? styles.radioSelected : styles.radioUnselected]}>{selected ? <View style={styles.dot} /> : null}</View>;
   const content = <View style={styles.content}><Text key={`choice-row-title-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.title, appearancePreview ? styles.appearanceTitle : null]}>{title}</Text>{!compact ? <Text key={`choice-row-detail-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text> : null}</View>;
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="radio"
-      accessibilityState={{ disabled, selected }}
-      disabled={disabled}
+      accessibilityState={{ busy: loading, disabled: isDisabled, selected }}
+      disabled={isDisabled}
       onPress={onPress}
-      style={[styles.row, compact ? styles.compactRow : null, selected ? styles.selected : styles.unselected, disabled ? styles.disabled : null]}
+      style={[styles.row, compact ? styles.compactRow : null, selected ? styles.selected : styles.unselected, isDisabled ? styles.disabled : null]}
       testID={testID}
     >
       {appearancePreview ? <AppearancePreview mode={appearancePreview} /> : null}
@@ -95,6 +100,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   radioUnselected: {
     borderColor: palette.choice.border,
+  },
+  loadingIndicator: {
+    height: 20,
+    width: 20,
   },
   dot: {
     backgroundColor: palette.choice.active,

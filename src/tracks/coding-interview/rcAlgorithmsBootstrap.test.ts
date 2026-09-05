@@ -2,6 +2,19 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+function compactYaml(source: string): string {
+  return source.replace(/\s+/g, " ").trim();
+}
+
+function assertInOrder(source: string, ...fragments: readonly string[]): void {
+  let cursor = 0;
+  for (const fragment of fragments) {
+    const index = source.indexOf(fragment, cursor);
+    assert.ok(index >= 0, `Expected YAML fragment after offset ${cursor}: ${fragment}`);
+    cursor = index + fragment.length;
+  }
+}
+
 test("RC Algorithms bootstrap resets learning data and explicitly selects the Algorithms track", () => {
   const flow = readFileSync(".maestro/rc-algorithms-bootstrap.yaml", "utf8");
   const listener = readFileSync(".maestro/rc-runtime-audit-listener-ready.yaml", "utf8");
@@ -10,19 +23,66 @@ test("RC Algorithms bootstrap resets learning data and explicitly selects the Al
   assert.match(readFileSync(".maestro/rc-runtime-audit-reset-complete.yaml", "utf8"), /patternly:content:ready-after-audit-reset/);
   assert.equal((devMenu.match(/text: "Continue"\n    optional: true\n    retryTapIfNoChange: true/g) ?? []).length, 2);
   assert.doesNotMatch(devMenu, /when:\n      visible: "Continue"/);
-  const waitForShell = flow.indexOf('- extendedWaitUntil:\n    visible:\n      id: "main-tab-bar"\n    timeout: 30000');
-  const homeBranch = flow.indexOf('- runFlow:\n    when:\n      visible:\n        id: "patternly:home:change-track"');
-  const selectAlgorithms = flow.indexOf('- scrollUntilVisible:\n    element:\n      id: "patternly:home:select-track:coding-interview-dsa-problem-solving"');
-  assert.ok(waitForShell >= 0 && homeBranch > waitForShell && selectAlgorithms > homeBranch);
-  assert.equal((flow.match(/- runFlow:/g) ?? []).length, 1);
+  const normalizedFlow = compactYaml(flow);
+  const initialReady = compactYaml(`extendedWaitUntil:
+    visible:
+      id: "account-guest|main-tab-bar|patternly:home:select-track:root"
+    timeout: 30000`);
+  const afterGuestReady = compactYaml(`extendedWaitUntil:
+    visible:
+      id: "main-tab-bar|patternly:home:select-track:root"
+    timeout: 30000`);
+  const guestBranch = compactYaml(`runFlow:
+    when:
+      visible:
+        id: "account-guest"
+    commands:
+      - tapOn:
+          id: "account-guest"`);
+  const noTrackBranch = compactYaml(`runFlow:
+    when:
+      notVisible:
+        id: "patternly:home:track-card:coding-interview-dsa-problem-solving"`);
+  const finalReady = compactYaml(`extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000`);
+  const finalAssertion = compactYaml(`assertVisible:
+    id: "patternly:home:track-card:coding-interview-dsa-problem-solving"`);
+
+  assertInOrder(normalizedFlow, initialReady, guestBranch, afterGuestReady, noTrackBranch, finalReady, finalAssertion);
+  const noTrackBranchIndex = normalizedFlow.indexOf(noTrackBranch);
+  const finalReadyIndex = normalizedFlow.indexOf(finalReady, noTrackBranchIndex);
+  assert.ok(noTrackBranchIndex >= 0 && finalReadyIndex > noTrackBranchIndex);
+  const noTrackCommands = normalizedFlow.slice(noTrackBranchIndex, finalReadyIndex);
+  assertInOrder(
+    noTrackCommands,
+    compactYaml(`runFlow:
+      when:
+        visible:
+          id: "patternly:home:change-track"
+      commands:
+        - tapOn:
+            id: "patternly:home:change-track"
+            retryTapIfNoChange: true`),
+    compactYaml(`scrollUntilVisible:
+      element:
+        id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+      direction: DOWN
+      centerElement: false
+      timeout: 30000
+      visibilityPercentage: 50`),
+    compactYaml(`tapOn:
+      id: "patternly:home:select-track:coding-interview-dsa-problem-solving"`),
+    compactYaml(`tapOn:
+      id: "patternly:home:select-track:continue"`),
+  );
+  assert.equal((flow.match(/- runFlow:/g) ?? []).length, 3);
   assert.equal((flow.match(/id: "patternly:home:change-track"/g) ?? []).length, 2);
-  assert.match(flow, /commands:\n      - tapOn:\n          id: "patternly:home:change-track"\n          retryTapIfNoChange: true/);
   assert.equal((flow.match(/retryTapIfNoChange: true/g) ?? []).length, 1);
   assert.doesNotMatch(flow, /openLink:|point:|coordinates:|repeat:/);
-  assert.match(flow, /scrollUntilVisible:\n    element:\n      id: "patternly:home:select-track:coding-interview-dsa-problem-solving"[\s\S]*?timeout: 30000[\s\S]*?- tapOn:\n    id: "patternly:home:select-track:coding-interview-dsa-problem-solving"/);
   assert.equal((flow.match(/id: "patternly:home:select-track:coding-interview-dsa-problem-solving"/g) ?? []).length, 2);
-  assert.match(flow, /scrollUntilVisible:\n    element:\n      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"[\s\S]*?timeout: 30000[\s\S]*?- assertVisible:\n    id: "patternly:home:track-card:coding-interview-dsa-problem-solving"/);
-  assert.equal((flow.match(/id: "patternly:home:track-card:coding-interview-dsa-problem-solving"/g) ?? []).length, 2);
+  assert.equal((flow.match(/id: "patternly:home:track-card:coding-interview-dsa-problem-solving"/g) ?? []).length, 3);
 });
 
 test("RC Algorithms iOS runner validates and passes explicit capture inputs only to the final Maestro flow", () => {

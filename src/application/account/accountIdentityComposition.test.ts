@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { AUTH_INITIALIZATION_TIMEOUT_MS, classifyAccountFailure, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, planPasswordVerificationCommand, requiresPasswordEmailVerification } from "./AccountSessionProvider";
+import { AUTH_INITIALIZATION_TIMEOUT_MS, classifyAccountFailure, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, normalizeAccountSignOutPreparationFailure, planPasswordVerificationCommand, requiresPasswordEmailVerification, restoreAuthenticatedAfterSignOutFailure, type AccountState } from "./AccountSessionProvider";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
@@ -91,10 +91,14 @@ test("account entry copy makes the destructive choice and code acknowledgement e
   assert.match(en.discardGuestDataDescription ?? "", /account.?s progress/u);
   assert.match(en.recoveryCodesDescription ?? "", /10 single-use codes/u);
   assert.match(en.recoveryCodesSaveRequired ?? "", /before continuing/u);
+  assert.match(en.accountManagementDescription ?? "", /Manage synchronization/u);
+  assert.equal(en.accountSignedInAs, "Signed in as");
   assert.equal(pl.accountEntryContinue, "Dalej");
   assert.match(pl.discardGuestDataDescription ?? "", /Postęp gościa zostanie usunięty/u);
   assert.match(pl.discardGuestDataDescription ?? "", /Dane konta pozostaną bez zmian/u);
   assert.match(pl.recoveryCodesDescription ?? "", /10 jednorazowych kodów/u);
+  assert.match(pl.accountManagementDescription ?? "", /Zarządzaj synchronizacją/u);
+  assert.equal(pl.accountSignedInAs, "Zalogowano jako");
 });
 
 test("account entry owns one terminal choice and keeps synced account controls separate", () => {
@@ -102,7 +106,14 @@ test("account entry owns one terminal choice and keeps synced account controls s
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
 
   assert.match(screen, /accountData\.status === "synced"/);
+  assert.match(screen, /isHealthyAccountData\(account\.state\.accountData\)/);
+  assert.match(screen, /accountData\.pendingMutationCount > 0/);
+  assert.match(screen, /accountData\.blockingConflictCode !== null/);
+  assert.match(screen, /accountData\.lastFailureCode !== null/);
   assert.match(screen, /accountData\.status === "previewReady"/);
+  assert.match(screen, /text\.accountManagementDescription/);
+  assert.match(screen, /text\.accountSignedInAs/);
+  assert.doesNotMatch(screen, /<AuthText style=\{styles\.accountHeading\}>\{text\.account\}<\/AuthText>[\s\S]*?accountManagementDescription/);
   assert.match(screen, /testID="account-entry-choice"/);
   assert.match(screen, /testID="account-keep-progress-toggle"/);
   assert.match(screen, /testID="account-copy-recovery-codes"/);
@@ -140,6 +151,34 @@ test("account recovery owns one status message, a truthful retry, and a sign-out
   assert.match(screen, /conflictDescription/);
   assert.match(screen, /account\.state\.kind === "guestAccessBlocked" && mode === "entry"/);
   assert.match(screen, /testID="account-binding-sign-in-notice"/);
+});
+
+test("sign-out preparation failures restore the authenticated state before auth sign-out", () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const authenticated = {
+    accountData: {
+      activeSessionBlocked: false,
+      blockingConflictCode: null,
+      lastFailureCode: null,
+      lastSuccessfulSyncAt: null,
+      pendingMutationCount: 0,
+      preview: null,
+      status: "synced",
+    },
+    backendUser: { id: "backend-user" },
+    kind: "authenticated",
+    user: { email: "learner@example.com", emailVerified: true, provider: "password", uid: "firebase-user" },
+  } as unknown as Extract<AccountState, { kind: "authenticated" }>;
+  const restored = restoreAuthenticatedAfterSignOutFailure(authenticated, "localDeletionFailure");
+  assert.equal(restored.kind, "authenticated");
+  assert.equal(restored.accountData.status, "synced");
+  assert.equal(restored.accountData.lastFailureCode, "localDeletionFailure");
+  const bindingMismatch = restoreAuthenticatedAfterSignOutFailure({ ...authenticated, accountData: { ...authenticated.accountData, lastFailureCode: "account_binding_mismatch" } }, "localDeletionFailure");
+  assert.equal(bindingMismatch.accountData.lastFailureCode, "account_binding_mismatch");
+  assert.equal(normalizeAccountSignOutPreparationFailure(new Error("injected storage failure")), "localDeletionFailure");
+  assert.match(provider, /let prepared: Awaited<ReturnType<typeof prepareAccountSignOut>>;/);
+  assert.match(provider, /prepared = await prepareAccountSignOut\(api, state\.backendUser\.id\);[\s\S]*?catch \(error\)[\s\S]*?restoreAuthenticatedAfterSignOutFailure\(state, failure\)/);
+  assert.match(provider, /setState\(restoreAuthenticatedAfterSignOutFailure\(state, prepared\.failure\)\)/);
 });
 
 test("sign-in keeps guest access visible and uses the approved Google logo asset", () => {

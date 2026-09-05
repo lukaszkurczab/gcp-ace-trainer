@@ -21,10 +21,10 @@
         {
           "detailTitle": "What Patternly does not require",
           "icon": "shield-check",
-          "summary": "No account, identity profile, cloud history, or unrelated device data.",
-          "title": "Not collected",
+          "summary": "Practice locally without an account or cloud sync.",
+          "title": "Account is optional",
           "paragraphs": [
-            "Patternly does not require an account, name, email address, authentication credentials, or an identity profile.",
+            "You can practice locally without creating an account or providing a name or email address. Signing in is optional.",
             "It does not require location, contacts, photos, microphone, camera, health data, advertising identifiers, self-assessments, or synthetic readiness and mastery metrics."
           ]
         },
@@ -34,7 +34,7 @@
           "summary": "Account binding is explicit and previewed before data moves.",
           "title": "Account binding is explicit",
           "paragraphs": [
-            "Patternly exposes account entry only when the public environment, Firebase identity provider, and native App Check composition are explicitly configured. Creating or signing into an account does not automatically bind or upload local learning records.",
+            "When account sign-in is available, creating or signing into an account does not automatically link or upload local learning records. You first review the proposed data changes and confirm them.",
             "After an authenticated preview and your confirmation, Patternly can synchronize the current track and compact completed learning facts. Active sessions, drafts, positions, timers, and recovery journals stay on this device."
           ]
         },
@@ -59,8 +59,8 @@
           "summary": "Account adoption preserves data only after explicit confirmation.",
           "title": "Local-only limits",
           "paragraphs": [
-            "Uninstalling the app, losing or replacing the device, or resetting learning state may remove device-only data such as an active session or draft. Confirmed account-owned records can be restored through the explicit adoption flow.",
-            "Patternly configures learning records to be excluded from automatic operating-system backups and device transfers. It offers no backup or restore path; copies outside the app's control cannot be guaranteed absent."
+            "Uninstalling the app, losing or replacing the device, or resetting learning state may remove device-only data such as an active session or draft.",
+            "Patternly excludes learning records from automatic operating-system backups and device transfers. Confirmed account-owned records can be restored only through the explicit adoption flow; copies outside the app's control cannot be guaranteed absent."
           ]
         }
       ]

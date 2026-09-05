@@ -8,14 +8,10 @@ import { SettingsInformationScreen, type InformationSection } from "./SettingsIn
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
-import { useAppPreferences } from "../../preferences";
-
-
 
 type LegalInformationScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.LEGAL_INFORMATION>;
 
 export function LegalInformationScreen({ navigation }: LegalInformationScreenProps) {
-  const { locale } = useAppPreferences();
   const { t } = useTranslation("legal");
   const text = {
   close: t("close"),

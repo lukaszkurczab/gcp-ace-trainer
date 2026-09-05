@@ -18,6 +18,11 @@ export type InformationSection = Readonly<{
   topics: readonly InformationTopic[];
 }>;
 
+type InformationTopicSelection = Readonly<{
+  sectionIndex: number;
+  topicIndex: number;
+}>;
+
 type SettingsInformationScreenProps = Readonly<{
   closeLabel: string;
   infoBody: string;
@@ -29,7 +34,11 @@ type SettingsInformationScreenProps = Readonly<{
 
 export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, screenHeader, sections, supplementalContent }: SettingsInformationScreenProps) {
   const styles = useThemedStyles(createStyles);
-  const [activeTopic, setActiveTopic] = useState<InformationTopic | null>(null);
+  const { colors } = useAppPreferences();
+  const [activeTopicSelection, setActiveTopicSelection] = useState<InformationTopicSelection | null>(null);
+  const activeTopic = activeTopicSelection === null
+    ? null
+    : sections[activeTopicSelection.sectionIndex]?.topics[activeTopicSelection.topicIndex] ?? null;
 
   return (
     <Screen edges={screenHeader ? ["top", "bottom"] : undefined}>
@@ -42,15 +51,16 @@ export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, scr
         />
       ) : null}
       <InfoBlock body={infoBody} icon={<Icon name="shield-check" size={18} />} title={infoTitle} />
-      {sections.map((section) => (
-        <SettingsGroup key={section.title} title={section.title}>
-          {section.topics.map((topic) => (
+      {sections.map((section, sectionIndex) => (
+        <SettingsGroup key={`section-${sectionIndex}`} title={section.title}>
+          {section.topics.map((topic, topicIndex) => (
             <ListRow
               detail={topic.summary}
-              key={topic.title}
+              key={`${sectionIndex}-${topicIndex}`}
               leading={<IconTile name={topic.icon} size={32} tone="settings" />}
-              onPress={() => setActiveTopic(topic)}
+              onPress={() => setActiveTopicSelection({ sectionIndex, topicIndex })}
               title={topic.title}
+              trailing={<Icon color={colors.listRow.icon} name="chevron-right" size={20} />}
               variant="grouped"
             />
           ))}
@@ -60,7 +70,7 @@ export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, scr
       <SettingsBottomSheet
         closeLabel={closeLabel}
         intro={activeTopic?.summary ?? ""}
-        onClose={() => setActiveTopic(null)}
+        onClose={() => setActiveTopicSelection(null)}
         title={activeTopic?.detailTitle ?? ""}
         visible={activeTopic !== null}
       >

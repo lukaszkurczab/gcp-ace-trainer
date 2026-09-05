@@ -1,6 +1,8 @@
 {
   "account": "Account",
   "accountDescription": "Sign in to continue to Patternly, or create an account if you do not have one yet.",
+  "accountManagementDescription": "Manage synchronization, recovery codes, and account deletion from this device.",
+  "accountSignedInAs": "Signed in as",
   "welcomeTitle": "Practice the patterns behind technical interviews and certifications",
   "welcomeDescription": "Build confidence through focused sessions, useful review, and clear next steps.",
   "continueWithoutAccount": "Continue without an account",

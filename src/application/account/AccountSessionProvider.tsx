@@ -137,6 +137,36 @@ export function createAccountSessionCoordinator<T>(publish: (token: AccountSessi
 
 type FinalizationOutcome = Readonly<{ result: AccountCommandResult; state?: AccountState }>;
 
+type AuthenticatedAccountState = Extract<AccountState, { kind: "authenticated" }>;
+
+/**
+ * Preparation can fail before accountDataService reaches its guarded catch
+ * (for example, a durable sync-state read can throw). Keep the Firebase
+ * session usable and surface the failure through the existing authenticated
+ * account state instead of leaving the provider in signingOut forever.
+ */
+export function restoreAuthenticatedAfterSignOutFailure(state: AuthenticatedAccountState, failure: AccountFailure): AuthenticatedAccountState {
+  const preservedBindingMismatch = state.accountData.lastFailureCode === "account_binding_mismatch";
+  return {
+    kind: "authenticated",
+    backendUser: state.backendUser,
+    user: state.user,
+    accountData: {
+      ...state.accountData,
+      status: failure === "signOutPending" ? "signOutPending" : state.accountData.status,
+      lastFailureCode: preservedBindingMismatch ? "account_binding_mismatch" : failure,
+    },
+  };
+}
+
+/** Storage failures thrown before the data service can classify them are local
+ * cleanup failures; keep remote/auth failures on their existing classifications.
+ */
+export function normalizeAccountSignOutPreparationFailure(error: unknown): AccountFailure {
+  const failure = classifyAccountFailure(error);
+  return failure === "providerUnavailable" ? "localDeletionFailure" : failure;
+}
+
 export function PatternlyAccountProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [state, setState] = useState<AccountState>({ kind: "loading" });
   const [authClient, setAuthClient] = useState<FirebaseAuthClient | null>(null);
@@ -494,12 +524,18 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
         if (user && state.kind === "authenticated") {
           setState({ kind: "signingOut", backendUser: state.backendUser, user, accountData: state.accountData });
-          const prepared = await prepareAccountSignOut(api, state.backendUser.id);
+          let prepared: Awaited<ReturnType<typeof prepareAccountSignOut>>;
+          try {
+            prepared = await prepareAccountSignOut(api, state.backendUser.id);
+          } catch (error) {
+            if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+            const failure = normalizeAccountSignOutPreparationFailure(error);
+            setState(restoreAuthenticatedAfterSignOutFailure(state, failure));
+            return { kind: "failure", failure };
+          }
           if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
           if (!prepared.ok) {
-            const preservedBindingMismatch = state.accountData.lastFailureCode === "account_binding_mismatch";
-            const lastFailureCode = preservedBindingMismatch ? "account_binding_mismatch" : prepared.failure;
-            setState({ kind: "authenticated", backendUser: state.backendUser, user, accountData: { ...state.accountData, status: prepared.failure === "signOutPending" ? "signOutPending" : state.accountData.status, lastFailureCode } });
+            setState(restoreAuthenticatedAfterSignOutFailure(state, prepared.failure));
             return { kind: "failure", failure: prepared.failure === "signOutPending" ? "signOutPending" : prepared.failure };
           }
         }
