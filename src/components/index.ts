@@ -11,6 +11,7 @@ export * from "./EmptyState";
 export * from "./Icon";
 export * from "./IconButton";
 export * from "./IconTile";
+export * from "./HoldToConfirmButton";
 export * from "./InfoBlock";
 export * from "./ListRow";
 export * from "./LoadingState";

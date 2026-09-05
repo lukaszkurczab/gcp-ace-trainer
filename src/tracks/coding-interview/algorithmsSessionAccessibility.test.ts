@@ -119,7 +119,8 @@ test("practice exit makes abandonment a single explicit decision in a modal", ()
   assert.match(practiceSurface, /<Button onPress=\{onLeave\} testID=\{sessionId \? runtimeSelectors\.session\.leaveAndResume\(sessionId\) : undefined\} variant="secondary">\{t\("Pause and resume later"\)\}<\/Button>/);
   assert.match(practiceSurface, /<Button onPress=\{onAbandon\} testID=\{sessionId \? runtimeSelectors\.session\.abandon\(sessionId\) : undefined\} variant="destructive">\{t\(copy\.destructiveLabel\)\}<\/Button>/);
   assert.match(practiceSurface, /variant=\{props\.retryVariant \?\? "secondary"\}/);
-  assert.match(practiceSurface, /trackId === "coding-interview-dsa-problem-solving"[\s\S]*?description: "Pause to continue later, or end the session to see a partial summary\. Saved answers remain available\.", destructiveLabel: "End and view summary"/);
+  assert.match(practiceSurface, /import \{ getPracticeSessionExitCopy \} from "\.\/practiceSessionExitCopy";/);
+  assert.match(practiceSurface, /const copy = getPracticeSessionExitCopy\(trackId\);/);
   assert.doesNotMatch(practiceSurface, /abandon_confirmation|onRequestAbandon|AbandonSurface/);
 });
 

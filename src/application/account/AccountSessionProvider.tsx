@@ -3,17 +3,18 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { PatternlyApiClientError, createPatternlyApiClient, type MeResponseDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { composePatternlyNativeAppCheck } from "../../infrastructure/clients/patternlyAppCheckToken";
-import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
+import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
-import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, retryPendingAccountDataSync, type AccountDataSession } from "./accountDataService";
-import { getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
+import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion, type AccountDataSession } from "./accountDataService";
+import { clearAccountDeletionState, getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
 import { grantGuestAccess, hasGuestAccess, revokeGuestAccess } from "../../storage/repositories/guestAccessRepository";
 import { hasUnboundGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
+import { createDeletionAuthorizationVault, createSensitiveCommandLane, prepareDeletionAuthorization, runReauthenticatedMutation, type DeletionAuthorizationVault, type SensitiveCommandLane } from "./accountCommandGuards";
 
 export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "expiredAction" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
-export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "signedOut"; recoveryCodes?: readonly string[] }>;
+export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
 export type PasswordVerificationCommand = "register" | "signIn" | "resend" | "persisted" | "refresh";
 export type PasswordVerificationPlan =
   | Readonly<{ kind: "finalize" }>
@@ -27,15 +28,20 @@ export type AccountState =
   | Readonly<{ kind: "guestAccessBlocked" }>
   | Readonly<{ kind: "verificationPending"; user: FirebaseAuthUserSnapshot }>
   | Readonly<{ kind: "authenticated"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
+  | Readonly<{ kind: "deletionPending"; user: FirebaseAuthUserSnapshot; accountId: string; status: "remoteDeletionPending" | "localCleanupPending"; failure: AccountFailure }>
   | Readonly<{ kind: "signingOut"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "deleting"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "backendUnavailable" | "revokedSession"; user: FirebaseAuthUserSnapshot }>;
 
 export type AccountSessionContextValue = Readonly<{
   applyVerificationCode: (code: string) => Promise<AccountCommandResult>;
+  changePassword: (credentials: FirebaseAuthCredentials, newPassword: string) => Promise<AccountCommandResult>;
   confirmPasswordReset: (code: string, password: string) => Promise<AccountCommandResult>;
+  deleteAccount: () => Promise<AccountCommandResult>;
   requestPasswordRecovery: (email: string) => Promise<AccountCommandResult>;
+  requestEmailChange: (credentials: FirebaseAuthCredentials, email: string) => Promise<AccountCommandResult>;
   retrySessionRestore: () => void;
+  refreshAccountIdentity: () => Promise<AccountCommandResult>;
   refreshVerification: () => Promise<AccountCommandResult>;
   register: (email: string, password: string) => Promise<AccountCommandResult>;
   resendVerification: () => Promise<AccountCommandResult>;
@@ -46,8 +52,10 @@ export type AccountSessionContextValue = Readonly<{
   continueAsGuest: () => void;
   retryAccountSync: () => Promise<AccountCommandResult>;
   retryPendingAccountSync: () => Promise<AccountCommandResult>;
-  deleteAccount: (password: string) => Promise<AccountCommandResult>;
-  issueRecoveryCodes: (password?: string) => Promise<AccountCommandResult>;
+  retryPendingDeletion: () => Promise<AccountCommandResult>;
+  prepareDeletion: (credentials: FirebaseAuthCredentials) => Promise<AccountCommandResult>;
+  issueRecoveryCodes: (credentials: FirebaseAuthCredentials) => Promise<AccountCommandResult>;
+  revokeDeletionAuthorization: () => void;
   consumeRecoveryCode: (code: string) => Promise<AccountCommandResult>;
   discardGuestData: () => Promise<AccountCommandResult>;
   signOut: () => Promise<AccountCommandResult>;
@@ -167,6 +175,43 @@ export function normalizeAccountSignOutPreparationFailure(error: unknown): Accou
   return failure === "providerUnavailable" ? "localDeletionFailure" : failure;
 }
 
+function deletionRecoverySession(state: ReturnType<typeof getAccountDeletionState>): AccountDataSession | null {
+  if (!state || state.status === "failed" || state.status === "complete") return null;
+  const lastFailureCode = state.lastFailureCode === "reauthentication_required"
+    ? "reauthenticationRequired"
+    : state.lastFailureCode;
+  return Object.freeze({
+    status: state.status === "remotePending" ? "remoteDeletionPending" : "localCleanupPending",
+    preview: null,
+    lastSuccessfulSyncAt: null,
+    pendingMutationCount: 0,
+    blockingConflictCode: null,
+    lastFailureCode,
+    activeSessionBlocked: false,
+  });
+}
+
+function deletionRecoveryFailure(state: NonNullable<ReturnType<typeof getAccountDeletionState>>, fallback: AccountFailure = "remoteDeletionPending"): AccountFailure {
+  if (state.lastFailureCode === "reauthentication_required") return "reauthenticationRequired";
+  if (state.lastFailureCode === "offline") return "pendingSyncRequiresNetwork";
+  if (state.lastFailureCode === "journal_recovery_required") return "journalRecoveryFailure";
+  if (state.lastFailureCode === "local_cleanup_failure") return "localCleanupFailure";
+  if (state.lastFailureCode === "remoteFailure") return "remoteFailure";
+  return fallback;
+}
+
+function deletionPendingState(user: FirebaseAuthUserSnapshot, deletion: NonNullable<ReturnType<typeof getAccountDeletionState>>, failure?: AccountFailure): Extract<AccountState, { kind: "deletionPending" }> {
+  const accountData = deletionRecoverySession(deletion);
+  if (!accountData) throw new Error("deletion_recovery_marker_not_resumable");
+  return {
+    kind: "deletionPending",
+    user,
+    accountId: deletion.accountId,
+    status: accountData.status === "remoteDeletionPending" ? "remoteDeletionPending" : "localCleanupPending",
+    failure: failure ?? deletionRecoveryFailure(deletion, accountData.status === "localCleanupPending" ? "localCleanupFailure" : "remoteDeletionPending"),
+  };
+}
+
 export function PatternlyAccountProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [state, setState] = useState<AccountState>({ kind: "loading" });
   const [authClient, setAuthClient] = useState<FirebaseAuthClient | null>(null);
@@ -175,12 +220,24 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const [authInitializationRevision, setAuthInitializationRevision] = useState(0);
   const sessionCoordinatorRef = useRef<AccountSessionCoordinator<FinalizationOutcome> | null>(null);
   const observerBlockedUidRef = useRef<string | null>(null);
+  const deletionAuthorizationRef = useRef<DeletionAuthorizationVault | null>(null);
+  const deletionAuthorizationTokenRef = useRef<AccountSessionGenerationToken | null>(null);
+  const sensitiveCommandLaneRef = useRef<SensitiveCommandLane | null>(null);
   if (!sessionCoordinatorRef.current) {
     sessionCoordinatorRef.current = createAccountSessionCoordinator((_token, outcome) => {
       if (outcome.state) setState(outcome.state);
     });
   }
+  if (!deletionAuthorizationRef.current) deletionAuthorizationRef.current = createDeletionAuthorizationVault();
+  if (!sensitiveCommandLaneRef.current) sensitiveCommandLaneRef.current = createSensitiveCommandLane();
   const sessionCoordinator = sessionCoordinatorRef.current;
+  const deletionAuthorization = deletionAuthorizationRef.current!;
+  const sensitiveCommandLane = sensitiveCommandLaneRef.current!;
+
+  const revokeDeletionAuthorization = useCallback(() => {
+    deletionAuthorization.revoke();
+    deletionAuthorizationTokenRef.current = null;
+  }, [deletionAuthorization]);
 
   const finalizeCurrent = useCallback(async (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>, user: FirebaseAuthUserSnapshot | null = auth.getSnapshot(), restart = false, expectedToken?: AccountSessionGenerationToken): Promise<AccountCommandResult> => {
     if (!user || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
@@ -194,7 +251,19 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           // Keep this guard immediately before local account loading. The data
           // service may persist state, so stale generations must not enter it.
           if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
-          const accountData = await loadAccountDataSession(api, response.user.id);
+          let deletion = getAccountDeletionState();
+          // A completed marker belongs to the account that was deleted. If a
+          // later /me resolves a different account for the same auth subject,
+          // discard only that terminal marker so the new account can start its
+          // own lifecycle. Resumable markers remain untouched on mismatch.
+          if (deletion?.status === "complete" && deletion.accountId !== response.user.id) {
+            clearAccountDeletionState();
+            deletion = null;
+          }
+          const pendingDeletion = deletion?.accountUidHash === sha256Utf8(user.uid) && deletion.accountId === response.user.id
+            ? deletionRecoverySession(deletion)
+            : null;
+          const accountData = pendingDeletion ?? await loadAccountDataSession(api, response.user.id);
           if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
           revokeGuestAccess();
           return {
@@ -203,6 +272,17 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           };
         } catch (error) {
           if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
+          const deletion = getAccountDeletionState();
+          if (deletion?.accountUidHash === sha256Utf8(user.uid)) {
+            const accountData = deletionRecoverySession(deletion);
+            if (accountData) {
+              const recoveryState = deletionPendingState(user, deletion);
+              return {
+                result: { kind: "failure", failure: recoveryState.failure },
+                state: recoveryState,
+              };
+            }
+          }
           const failure = classifyAccountFailure(error);
           return {
             result: { kind: "failure", failure },
@@ -220,13 +300,15 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
 
   const retrySessionRestore = useCallback(() => {
     sessionCoordinator.invalidate();
+    revokeDeletionAuthorization();
     observerBlockedUidRef.current = null;
     setState({ kind: "loading" });
     setAuthInitializationRevision((revision) => revision + 1);
-  }, [sessionCoordinator]);
+  }, [revokeDeletionAuthorization, sessionCoordinator]);
 
   useEffect(() => {
     sessionCoordinator.activate();
+    revokeDeletionAuthorization();
     observerBlockedUidRef.current = null;
     let live = true;
     let unsubscribe: (() => void) | undefined;
@@ -250,12 +332,12 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     const publicEnvironment = readPublicEnvironmentFromRuntime();
     if (!smokeRuntime && publicEnvironment.kind !== "configured") {
       publish(guestAccess ? persistedGuestState() : { kind: "unavailable", reason: publicEnvironment.reason === "invalid_public_environment" ? "public_environment_invalid" : "public_environment_unconfigured" });
-      return () => { live = false; observerBlockedUidRef.current = null; sessionCoordinator.dispose(); };
+      return () => { live = false; observerBlockedUidRef.current = null; revokeDeletionAuthorization(); sessionCoordinator.dispose(); };
     }
     const firebaseConfiguration = readFirebaseClientConfiguration();
     if (firebaseConfiguration.kind !== "configured") {
       publish(guestAccess ? persistedGuestState() : { kind: "unavailable", reason: "firebase_unconfigured" });
-      return () => { live = false; observerBlockedUidRef.current = null; sessionCoordinator.dispose(); };
+      return () => { live = false; observerBlockedUidRef.current = null; revokeDeletionAuthorization(); sessionCoordinator.dispose(); };
     }
     const androidProvider = process.env.EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER;
     const appleProvider = process.env.EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER;
@@ -277,7 +359,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         : publicEnvironment.kind === "configured" ? publicEnvironment.value.authActionOrigin : undefined;
       if (!apiOrigin || !authActionOrigin || (smokeRuntime && !authEmulatorOrigin)) {
         publish(guestAccess ? persistedGuestState() : { kind: "unavailable", reason: "public_environment_unconfigured" });
-        return () => { live = false; observerBlockedUidRef.current = null; sessionCoordinator.dispose(); };
+        return () => { live = false; observerBlockedUidRef.current = null; revokeDeletionAuthorization(); sessionCoordinator.dispose(); };
       }
       auth = createFirebaseAuthClient({
         authActionOrigin,
@@ -299,6 +381,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           if (initializationTimeout !== undefined) clearTimeout(initializationTimeout);
         }
         if (!user) {
+          revokeDeletionAuthorization();
           observerBlockedUidRef.current = null;
           observedUid = null;
           sessionCoordinator.invalidate();
@@ -307,6 +390,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         }
         if (observerBlockedUidRef.current === user.uid) return;
         const uidChanged = observedUid !== null && observedUid !== user.uid;
+        if (uidChanged) revokeDeletionAuthorization();
         observedUid = user.uid;
         const generation = sessionCoordinator.begin(user.uid);
         const isCurrentObserver = () => live && !observerDetached && sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === generation.uid;
@@ -324,23 +408,29 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return () => {
         live = false;
         observerBlockedUidRef.current = null;
+        revokeDeletionAuthorization();
         detachObserver();
         sessionCoordinator.dispose();
       };
     } catch {
       publish({ kind: "unavailable", reason: "firebase_unconfigured" });
-      return () => { live = false; observerBlockedUidRef.current = null; sessionCoordinator.dispose(); };
+      return () => { live = false; observerBlockedUidRef.current = null; revokeDeletionAuthorization(); sessionCoordinator.dispose(); };
     }
-  }, [authInitializationRevision, finalizeCurrent, runtimeMode, sessionCoordinator]);
+  }, [authInitializationRevision, finalizeCurrent, revokeDeletionAuthorization, runtimeMode, sessionCoordinator]);
 
   const runWithAuth = useCallback(async (operation: (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>) => Promise<AccountCommandResult>): Promise<AccountCommandResult> => {
     if (!authClient || !apiClient) return { kind: "failure", failure: "providerUnavailable" };
     try { return await operation(authClient, apiClient); } catch (error) { return { kind: "failure", failure: classifyAccountFailure(error) }; }
   }, [apiClient, authClient]);
 
+  const runSensitiveWithAuth = useCallback((operation: (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>) => Promise<AccountCommandResult>): Promise<AccountCommandResult> => {
+    return sensitiveCommandLane.run(() => runWithAuth(operation)).catch((error) => ({ kind: "failure", failure: classifyAccountFailure(error) }));
+  }, [runWithAuth, sensitiveCommandLane]);
+
   const value = useMemo<AccountSessionContextValue>(() => ({
     continueAsGuest: () => {
       sessionCoordinator.invalidate();
+      revokeDeletionAuthorization();
       if (!hasUnboundGuestInstallation()) {
         setState({ kind: "guestAccessBlocked" });
         return;
@@ -348,12 +438,14 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       grantGuestAccess();
       setState({ kind: "guest" });
     },
-    applyVerificationCode: (code) => runWithAuth(async (auth, api) => {
+    applyVerificationCode: (code) => runSensitiveWithAuth(async (auth, api) => {
+      revokeDeletionAuthorization();
       if (!code.trim()) return { kind: "failure", failure: "invalid" };
       await auth.applyActionCode(code.trim());
       return finalizeCurrent(auth, api, auth.getSnapshot(), true);
     }),
-    confirmPasswordReset: (code, password) => runWithAuth(async (auth) => {
+    confirmPasswordReset: (code, password) => runSensitiveWithAuth(async (auth) => {
+      revokeDeletionAuthorization();
       if (!code.trim()) return { kind: "failure", failure: "invalid" };
       if (!isValidPassword(password)) return { kind: "failure", failure: "weakPassword" };
       sessionCoordinator.invalidate();
@@ -389,8 +481,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return { kind: "success", next: "recoveryAccepted" };
     }),
     retrySessionRestore,
-    refreshVerification: () => runWithAuth(async (auth, api) => {
+    refreshVerification: () => runSensitiveWithAuth(async (auth, api) => {
       const previousUser = auth.getSnapshot();
+      revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
       const generation = previousUser ? sessionCoordinator.begin(previousUser.uid) : null;
       if (previousUser) observerBlockedUidRef.current = previousUser.uid;
@@ -412,9 +505,29 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (previousUser && observerBlockedUidRef.current === previousUser.uid) observerBlockedUidRef.current = null;
       }
     }),
+    refreshAccountIdentity: () => runSensitiveWithAuth(async (auth, api) => {
+      revokeDeletionAuthorization();
+      const previousUser = auth.getSnapshot();
+      if (!previousUser || state.kind !== "authenticated" || state.user.uid !== previousUser.uid) return { kind: "failure", failure: "providerUnavailable" };
+      const generation = sessionCoordinator.restart(previousUser.uid);
+      const canContinue = (user: FirebaseAuthUserSnapshot | null) => user?.uid === previousUser.uid
+        && sessionCoordinator.isCurrent(generation)
+        && auth.getSnapshot()?.uid === previousUser.uid;
+      try {
+        const user = await auth.refreshAccountIdentity();
+        if (!user || !canContinue(user)) return { kind: "failure", failure: "revokedSession" };
+        const response = await api.getMe();
+        if (!canContinue(user)) return { kind: "failure", failure: "revokedSession" };
+        setState({ kind: "authenticated", backendUser: response.user, user, accountData: state.accountData });
+        return { kind: "success", next: "authenticated" };
+      } catch (error) {
+        return { kind: "failure", failure: classifyAccountFailure(error) };
+      }
+    }),
     register: (email, password) => runWithAuth(async (auth, api) => {
       if (!isValidEmail(email)) return { kind: "failure", failure: "invalidEmail" };
       if (!isValidPassword(password)) return { kind: "failure", failure: "weakPassword" };
+      revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
       let user: FirebaseAuthUserSnapshot;
       try {
@@ -452,6 +565,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     signIn: (email, password) => runWithAuth(async (auth, api) => {
       if (!isValidEmail(email)) return { kind: "failure", failure: "invalidEmail" };
       if (password.length === 0) return { kind: "failure", failure: "invalid" };
+      revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
       const user = await auth.signIn(email.trim().toLowerCase(), password);
       const plan = planPasswordVerificationCommand("signIn", runtimeMode, user);
@@ -472,11 +586,13 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return finalizeCurrent(auth, api, user);
     }),
     signInWithApple: () => runWithAuth(async (auth, api) => {
+      revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
       const user = await auth.signInWithApple();
       return finalizeCurrent(auth, api, user);
     }),
     signInWithGoogle: (idToken) => runWithAuth(async (auth, api) => {
+      revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
       const user = await auth.signInWithGoogle(idToken);
       return finalizeCurrent(auth, api, user);
@@ -509,8 +625,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
       return next.status === "synced" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "remoteFailure" };
     }),
-    signOut: () => runWithAuth(async (auth, api) => {
+    signOut: () => runSensitiveWithAuth(async (auth, api) => {
       const user = auth.getSnapshot();
+      revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
       const generation = user ? sessionCoordinator.begin(user.uid) : null;
       if (user) observerBlockedUidRef.current = user.uid;
@@ -544,7 +661,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           await auth.signOut();
         } catch {
           if (auth.getSnapshot()?.uid === user?.uid) {
-            setState({ kind: "revokedSession", user: auth.getSnapshot() ?? user ?? { uid: "unknown", email: null, emailVerified: false, provider: "password" } });
+            setState({ kind: "revokedSession", user: auth.getSnapshot() ?? user ?? { uid: "unknown", email: null, emailVerified: false, providers: [] } });
           }
           return { kind: "failure", failure: "revokedSession" };
         }
@@ -554,31 +671,107 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         setState({ kind: "signedOut" });
         return { kind: "success", next: "signedOut" };
       } finally {
+        revokeDeletionAuthorization();
         clearBlockedUid();
       }
     }),
-    deleteAccount: (password) => runWithAuth(async (auth, api) => {
+    changePassword: (credentials, newPassword) => runSensitiveWithAuth(async (auth) => {
+      revokeDeletionAuthorization();
       const user = auth.getSnapshot();
-      if (!user || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
-      if (user.provider !== "password" || password.length < 8) return { kind: "failure", failure: "reauthenticationRequired" };
-      sessionCoordinator.invalidate();
-      const generation = sessionCoordinator.begin(user.uid);
-      observerBlockedUidRef.current = user.uid;
+      if (!user || state.kind !== "authenticated" || state.user.uid !== user.uid) return { kind: "failure", failure: "providerUnavailable" };
+      if (!user.providers.includes("password") || credentials.kind !== "password") return { kind: "failure", failure: "providerUnavailable" };
+      if (!isValidPassword(newPassword)) return { kind: "failure", failure: "weakPassword" };
+      if (!credentials.password) return { kind: "failure", failure: "reauthenticationRequired" };
+      const generation = sessionCoordinator.restart(user.uid);
       const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid;
+      try {
+        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        await auth.changePassword(credentials, newPassword);
+        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        revokeDeletionAuthorization();
+        return { kind: "success", next: "authenticated" };
+      } catch (error) {
+        const failure = classifyAccountFailure(error);
+        return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
+      } finally {
+        revokeDeletionAuthorization();
+      }
+    }),
+    requestEmailChange: (credentials, email) => runSensitiveWithAuth(async (auth) => {
+      revokeDeletionAuthorization();
+      const user = auth.getSnapshot();
+      const nextEmail = email.trim().toLowerCase();
+      if (!user || state.kind !== "authenticated" || state.user.uid !== user.uid) return { kind: "failure", failure: "providerUnavailable" };
+      if (!isValidEmail(nextEmail)) return { kind: "failure", failure: "invalidEmail" };
+      if (user.email?.toLowerCase() === nextEmail) return { kind: "failure", failure: "invalidEmail" };
+      if (!credentialsMatchSnapshot(user, credentials)) return { kind: "failure", failure: "providerUnavailable" };
+      const generation = sessionCoordinator.restart(user.uid);
+      const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid;
+      try {
+        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        await auth.requestEmailChange(credentials, nextEmail);
+        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        return { kind: "success", next: "verificationSent" };
+      } catch (error) {
+        const failure = classifyAccountFailure(error);
+        return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
+      } finally {
+        revokeDeletionAuthorization();
+      }
+    }),
+    prepareDeletion: (credentials) => runSensitiveWithAuth(async (auth) => {
+      revokeDeletionAuthorization();
+      const user = auth.getSnapshot();
+      if (!user || state.kind !== "authenticated" || state.user.uid !== user.uid) return { kind: "failure", failure: "providerUnavailable" };
+      if (!credentialsMatchSnapshot(user, credentials)) return { kind: "failure", failure: "reauthenticationRequired" };
+      const generation = sessionCoordinator.restart(user.uid);
+      const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid;
+      deletionAuthorizationTokenRef.current = generation;
+      const canPrepare = () => canContinue() && deletionAuthorizationTokenRef.current === generation;
+      const prepared = await prepareDeletionAuthorization({
+        credentials,
+        generation: generation.generation,
+        isCurrent: canPrepare,
+        reauthenticate: auth.reauthenticateWithCredential,
+        uid: user.uid,
+        vault: deletionAuthorization,
+      });
+      if (prepared.ok) {
+        return { kind: "success", next: "deletionAuthorized" };
+      }
+      try {
+        if (!canPrepare()) return { kind: "failure", failure: "revokedSession" };
+        const failure = classifyAccountFailure(prepared.error);
+        return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
+      } finally {
+        deletionAuthorizationTokenRef.current = null;
+        deletionAuthorization.revoke();
+      }
+    }),
+    deleteAccount: () => runSensitiveWithAuth(async (auth, api) => {
+      const user = auth.getSnapshot();
+      const token = deletionAuthorizationTokenRef.current;
+      if (!user || state.kind !== "authenticated" || state.user.uid !== user.uid) {
+        revokeDeletionAuthorization();
+        return { kind: "failure", failure: "providerUnavailable" };
+      }
+      if (!token || token.uid !== user.uid || !sessionCoordinator.isCurrent(token)) {
+        revokeDeletionAuthorization();
+        return { kind: "failure", failure: "reauthenticationRequired" };
+      }
+      const canContinue = () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === user.uid;
+      if (!canContinue() || !deletionAuthorization.consume(user.uid, token.generation)) {
+        revokeDeletionAuthorization();
+        return { kind: "failure", failure: "reauthenticationRequired" };
+      }
+      deletionAuthorizationTokenRef.current = null;
+      observerBlockedUidRef.current = user.uid;
       const clearBlockedUid = () => {
         if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
       };
       try {
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
         setState({ kind: "deleting", backendUser: state.backendUser, user, accountData: state.accountData });
-        try {
-          await auth.reauthenticateWithPassword(password);
-        } catch (error) {
-          if (canContinue()) setState({ kind: "authenticated", backendUser: state.backendUser, user, accountData: state.accountData });
-          const failure = classifyAccountFailure(error);
-          return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
-        }
-        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
         const result = await deleteBoundAccount(api, state.backendUser.id, user.uid);
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
         if (!result.ok) {
@@ -598,24 +791,91 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         setState({ kind: "signedOut" });
         return { kind: "success", next: "signedOut" };
       } finally {
+        revokeDeletionAuthorization();
         clearBlockedUid();
       }
     }),
-    issueRecoveryCodes: (password) => runWithAuth(async (auth, api) => {
+    retryPendingDeletion: () => runSensitiveWithAuth(async (auth, api) => {
+      revokeDeletionAuthorization();
       const user = auth.getSnapshot();
-      if (!user || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
-      if (password !== undefined && (user.provider !== "password" || password.length < 8)) return { kind: "failure", failure: "reauthenticationRequired" };
+      const deletion = getAccountDeletionState();
+      const accountId = state.kind === "authenticated"
+        ? state.backendUser.id
+        : state.kind === "deletionPending"
+          ? state.accountId
+          : null;
+      const accountDataStatus = state.kind === "authenticated" ? state.accountData.status : state.kind === "deletionPending" ? state.status : null;
+      if (!user || (state.kind !== "authenticated" && state.kind !== "deletionPending") || state.user.uid !== user.uid) return { kind: "failure", failure: "providerUnavailable" };
+      if (!deletion || !accountId || (accountDataStatus !== "remoteDeletionPending" && accountDataStatus !== "localCleanupPending") || deletion.accountId !== accountId || deletion.accountUidHash !== sha256Utf8(user.uid) || (deletion.status !== "remotePending" && deletion.status !== "remoteDeleted" && deletion.status !== "localCleanupPending")) {
+        return { kind: "failure", failure: "providerUnavailable" };
+      }
+      const generation = sessionCoordinator.restart(user.uid);
+      const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid;
+      observerBlockedUidRef.current = user.uid;
+      const clearBlockedUid = () => {
+        if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
+      };
       try {
-        if (password !== undefined) await auth.reauthenticateWithPassword(password);
-        const issued = await api.issueRecoveryCodes();
-        if (auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
-        return { kind: "success", next: "recoveryCodesIssued", recoveryCodes: issued.codes };
-      } catch (error) {
-        const failure = classifyAccountFailure(error);
-        return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
+        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        const result = await retryPendingAccountDeletion(api, accountId, user.uid);
+        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        if (!result) return { kind: "failure", failure: "providerUnavailable" };
+        if (!result.ok) {
+          if (result.failure === "reauthenticationRequired") {
+            const finalized = await finalizeCurrent(auth, api, user, false, generation);
+            if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+            // A successful finalization publishes an authenticated pending
+            // session, where AccountSecurityScreen can collect fresh
+            // credentials. Keep the retry result truthful: remote deletion
+            // still needs that reauthentication.
+            if (finalized.kind === "success") return { kind: "failure", failure: result.failure };
+          }
+          const status = result.failure === "localCleanupFailure" || deletion.status === "remoteDeleted" || deletion.status === "localCleanupPending" ? "localCleanupPending" : "remoteDeletionPending";
+          if (state.kind === "authenticated") {
+            setState({ kind: "authenticated", backendUser: state.backendUser, user, accountData: { ...state.accountData, status, lastFailureCode: result.failure } });
+          } else {
+            setState({ kind: "deletionPending", user, accountId, status, failure: result.failure });
+          }
+          return { kind: "failure", failure: result.failure };
+        }
+        try {
+          await auth.signOut();
+        } catch {
+          if (auth.getSnapshot()?.uid === user.uid) setState({ kind: "revokedSession", user: auth.getSnapshot() ?? user });
+          return { kind: "failure", failure: "revokedSession" };
+        }
+        const afterSignOut = auth.getSnapshot();
+        if (afterSignOut && afterSignOut.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
+        revokeGuestAccess();
+        setState({ kind: "signedOut" });
+        return { kind: "success", next: "signedOut" };
+      } finally {
+        revokeDeletionAuthorization();
+        clearBlockedUid();
       }
     }),
-    consumeRecoveryCode: (code) => runWithAuth(async (auth, api) => {
+    issueRecoveryCodes: (credentials) => runSensitiveWithAuth(async (auth, api) => {
+      revokeDeletionAuthorization();
+      const user = auth.getSnapshot();
+      if (!user || state.kind !== "authenticated" || state.user.uid !== user.uid) return { kind: "failure", failure: "providerUnavailable" };
+      if (!credentialsMatchSnapshot(user, credentials)) return { kind: "failure", failure: "reauthenticationRequired" };
+      if (credentials.kind === "password" && !credentials.password) return { kind: "failure", failure: "reauthenticationRequired" };
+      const generation = sessionCoordinator.restart(user.uid);
+      const result = await runReauthenticatedMutation({
+        credentials,
+        isCurrent: () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid,
+        mutation: () => api.issueRecoveryCodes(),
+        reauthenticate: auth.reauthenticateWithCredential,
+      });
+      if (!result.ok) {
+        const failure = classifyAccountFailure(result.error);
+        return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
+      }
+      return { kind: "success", next: "recoveryCodesIssued", recoveryCodes: result.value.codes };
+    }),
+    revokeDeletionAuthorization,
+    consumeRecoveryCode: (code) => runSensitiveWithAuth(async (auth, api) => {
+      revokeDeletionAuthorization();
       if (!/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/u.test(code.trim().toUpperCase())) return { kind: "failure", failure: "invalidRecoveryCode" };
       const token = await api.consumeRecoveryCode(code.trim().toUpperCase());
       sessionCoordinator.invalidate();
@@ -639,7 +899,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return { kind: "failure", failure: "remoteFailure" };
     }),
     state,
-  }), [apiClient, retrySessionRestore, runWithAuth, runtimeMode, sessionCoordinator, state]);
+  }), [apiClient, finalizeCurrent, retrySessionRestore, revokeDeletionAuthorization, runSensitiveWithAuth, runWithAuth, runtimeMode, sessionCoordinator, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }
@@ -670,12 +930,24 @@ async function reconcileAuthenticatedUser(
         if (canContinue()) setState({ kind: "signedOut" });
         return;
       }
-      if (!canContinue()) return;
-      const recovered = await deleteBoundAccount(api, deletion.accountId, user.uid);
-      if (recovered.ok) {
+      // A matching remote marker already represents an authorized/requested
+      // deletion. Resume its status/proof/cleanup path after restart, even if
+      // Firebase has revoked the session and /me can no longer be read. The
+      // service rejects absent, failed, and mismatched markers, so restore
+      // cannot create a new deletion operation here.
+      if (deletion.status === "remotePending" || deletion.status === "remoteDeleted" || deletion.status === "localCleanupPending") {
         if (!canContinue()) return;
-        await auth.signOut();
-        if (canContinue()) setState({ kind: "signedOut" });
+        const recovered = await retryPendingAccountDeletion(api, deletion.accountId, user.uid);
+        if (!canContinue()) return;
+        if (recovered?.ok) {
+          await auth.signOut();
+          if (canContinue()) setState({ kind: "signedOut" });
+          return;
+        }
+        // Keep the Firebase user available for an explicit retry or
+        // reauthentication. finalizeCurrent projects the matching marker and
+        // falls back to its marker-backed identity when /me is revoked.
+        await finalize(user);
         return;
       }
     }
@@ -698,7 +970,7 @@ async function reconcileAuthenticatedUser(
 }
 
 export function requiresPasswordEmailVerification(runtimeMode: PatternlyRuntimeMode | undefined, user: FirebaseAuthUserSnapshot): boolean {
-  return user.provider === "password" && !user.emailVerified && requiresVerifiedPasswordIdentity(runtimeMode);
+  return user.providers.includes("password") && !user.emailVerified && requiresVerifiedPasswordIdentity(runtimeMode);
 }
 
 /**
@@ -731,6 +1003,7 @@ export function classifyAccountFailure(error: unknown): AccountFailure {
   if (["auth/expired-action-code", "auth/code-expired"].includes(code)) return "expiredAction";
   if (["auth/too-many-requests", "auth/quota-exceeded"].includes(code)) return "rateLimited";
   if (["auth/network-request-failed", "auth/timeout"].includes(code)) return "offline";
+  if (code === "auth/command-in-flight") return "conflict";
   if (["auth/user-token-expired", "auth/invalid-user-token", "auth/user-disabled"].includes(code)) return "revokedSession";
   if (["auth/requires-recent-login", "auth/reauthentication-provider-unavailable"].includes(code)) return "reauthenticationRequired";
   if (["auth/operation-not-allowed", "auth/app-not-authorized", "auth/invalid-api-key", "auth/invalid-app-id", "auth/provider-unavailable", "auth/apple-unavailable"].includes(code)) return "providerUnavailable";
@@ -748,4 +1021,10 @@ function isValidEmail(email: string): boolean {
 
 function isValidPassword(password: string): boolean {
   return password.length >= 8;
+}
+
+function credentialsMatchSnapshot(user: FirebaseAuthUserSnapshot, credentials: FirebaseAuthCredentials): boolean {
+  if (credentials.kind === "password") return user.providers.includes("password");
+  if (credentials.kind === "google") return user.providers.includes("google") && credentials.idToken.trim().length > 0;
+  return user.providers.includes("apple");
 }

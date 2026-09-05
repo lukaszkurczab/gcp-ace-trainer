@@ -12,6 +12,7 @@ import {
   applyRemoteAccountData,
   assertValidAccountDataRecords,
   buildAccountDataSnapshot,
+  clearAccountDeletionOwnedLocalData,
   clearAccountOwnedLocalData,
   clearGuestOwnedLocalData,
   ensureAccountOutboxFromLocalDataset,
@@ -41,6 +42,7 @@ import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
 export { accountDataRecordFingerprint } from "../../storage/repositories/accountDataRepository";
+export { clearAccountDeletionOwnedLocalData } from "../../storage/repositories/accountDataRepository";
 
 export type AccountDataSession = Readonly<{
   status: "initialSyncRequired" | "previewReady" | "syncing" | "synced" | "resumeRequired" | "offlinePending" | "conflict" | "failed" | "signOutPending" | "remoteDeletionPending" | "localCleanupPending";
@@ -84,6 +86,12 @@ async function loadAccountDataSessionUnlocked(api: PatternlyApiClient, accountId
     const initialInstallation = await getGuestInstallation();
     if (!initialInstallation) throw new AccountDataFailure("guest_installation_required");
     if (initialInstallation.accountId !== null && initialInstallation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+    const completedDeletion = getAccountDeletionState();
+    // A terminal deletion marker is scoped to the deleted account. Clear it
+    // when a later account session resolves a different account so it cannot
+    // block that account's own lifecycle. Resumable markers stay durable until
+    // their matching operation is explicitly recovered.
+    if (completedDeletion?.status === "complete" && completedDeletion.accountId !== accountId) clearAccountDeletionState();
     const state = await getAccountSyncState();
     if (state.accountId !== null && state.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
     if (state.materialization) {
@@ -366,55 +374,217 @@ async function completeRemoteRevokedSignOutUnlocked(): Promise<boolean> {
 }
 
 export function deleteBoundAccount(api: PatternlyApiClient, accountId: string, uid: string): Promise<AccountDeletionResult> {
-  return withAccountDataOperation(() => deleteBoundAccountUnlocked(api, accountId, uid));
+  return withAccountDataOperation(() => deleteBoundAccountUnlocked(api, accountId, uid, true));
 }
 
-async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: string, uid: string): Promise<AccountDeletionResult> {
-  if ((await getAccountSyncState()).materialization) return { ok: false, failure: "conflict" };
-  const pending = getAccountDeletionState() ?? beginAccountDeletion(accountId, uid);
+/**
+ * Resumes only a durable deletion operation for this exact account and UID.
+ * A missing, failed, completed, or mismatched marker is not a deletion
+ * request and must never cause a new remote operation to be created.
+ */
+export function retryPendingAccountDeletion(api: PatternlyApiClient, accountId: string, uid: string): Promise<AccountDeletionResult | null> {
+  return withAccountDataOperation(() => retryPendingAccountDeletionUnlocked(api, accountId, uid));
+}
+
+async function retryPendingAccountDeletionUnlocked(api: PatternlyApiClient, accountId: string, uid: string): Promise<AccountDeletionResult | null> {
+  const pending = getAccountDeletionState();
+  if (!pending || pending.accountId !== accountId || pending.accountUidHash !== sha256Utf8(uid) || !isResumableDeletionState(pending)) return null;
+  return deleteBoundAccountUnlocked(api, accountId, uid, false);
+}
+
+type DeletionRemoteResolution = Readonly<{ pending: NonNullable<ReturnType<typeof getAccountDeletionState>>; proofId: string | null }>;
+
+function isResumableDeletionState(state: NonNullable<ReturnType<typeof getAccountDeletionState>>): boolean {
+  return state.status === "remotePending" || state.status === "remoteDeleted" || state.status === "localCleanupPending";
+}
+
+function deletionResultForFailure(failure: string): AccountDeletionResult {
+  if (failure === "journal_recovery_required") return { ok: false, failure: "journalRecoveryFailure" };
+  if (failure === "offline") return { ok: false, failure: "pendingSyncRequiresNetwork" };
+  if (failure === "account_revision_conflict" || failure === "version_conflict" || failure === "adoption_conflict" || failure === "active_session_adoption_blocked") return { ok: false, failure: "conflict" };
+  if (failure === "reauthentication_required") return { ok: false, failure: "reauthenticationRequired" };
+  return { ok: false, failure: "remoteDeletionPending" };
+}
+
+function shouldResolveDeletionStatus(failure: string): boolean {
+  return failure === "revokedSession"
+    || failure === "offline"
+    || failure === "remoteFailure"
+    || failure === "server_error"
+    || failure === "internal_error"
+    || failure === "backend_unavailable"
+    || failure === "remote_deletion_pending";
+}
+
+async function readVerifiedDeletionStatus(api: PatternlyApiClient, pending: NonNullable<ReturnType<typeof getAccountDeletionState>>, uid: string): Promise<DeletionRemoteResolution | null> {
   try {
-    if (await getActiveMutationJournal()) {
-      updateAccountDeletionState(pending, { status: "failed", lastFailureCode: "journal_recovery_required" });
-      return { ok: false, failure: "journalRecoveryFailure" };
+    const status = await api.getDeletionOperationStatus(pending.operationId, sha256Utf8(uid));
+    if (status.operationId !== pending.operationId) return null;
+    if ((status.status === "remote_deleted" || status.status === "complete") && status.proofId) {
+      const next = updateAccountDeletionState(pending, { status: "remoteDeleted", proofId: status.proofId, lastFailureCode: null });
+      return { pending: next, proofId: status.proofId };
     }
+    if (status.status === "pending") {
+      const next = updateAccountDeletionState(pending, { status: "remotePending", lastFailureCode: "remote_deletion_pending" });
+      return { pending: next, proofId: null };
+    }
+  } catch {
+    // The original failure is more useful to the caller. The durable marker
+    // remains available for a later explicit retry.
+  }
+  return null;
+}
+
+async function assertDeletionCleanupGuards(accountId: string): Promise<void> {
+  if (await getActiveMutationJournal()) throw new AccountDataFailure("journal_recovery_required");
+  const installation = await getGuestInstallation();
+  if (!installation) throw new AccountDataFailure("guest_installation_required");
+  if (installation.accountId !== null && installation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+}
+
+async function clearDeletionOwnedLocalDataAndBinding(accountId: string): Promise<void> {
+  await assertDeletionCleanupGuards(accountId);
+  await clearAccountDeletionOwnedLocalData();
+  // A journal is never part of the deletion allow-list. If one appears while
+  // cleanup is in progress, leave the deletion marker durable for recovery.
+  await assertDeletionCleanupGuards(accountId);
+  const installation = await getGuestInstallation();
+  if (!installation) throw new AccountDataFailure("guest_installation_required");
+  if (installation.accountId === accountId) await clearGuestAccountBinding();
+  else if (installation.accountId !== null) throw new AccountDataFailure("account_binding_mismatch");
+}
+
+async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: string, uid: string, allowBegin: boolean): Promise<AccountDeletionResult> {
+  if ((await getAccountSyncState()).materialization) return { ok: false, failure: "conflict" };
+  const uidHash = sha256Utf8(uid);
+  let pending = getAccountDeletionState();
+
+  // A marker for another account must remain untouched. This guard is checked
+  // before any local deletion and before replacing a failed marker.
+  if (pending && (pending.accountId !== accountId || pending.accountUidHash !== uidHash)) return { ok: false, failure: "remoteDeletionPending" };
+  if (!allowBegin && (!pending || !isResumableDeletionState(pending))) return { ok: false, failure: "remoteDeletionPending" };
+  if (pending?.status === "complete") return pending.proofId ? { ok: true, proofId: pending.proofId } : { ok: false, failure: "remoteDeletionPending" };
+
+  try {
+    // Existing remote markers already represent an authorized/requested
+    // operation. A new deletion marker is created only after all preflight
+    // checks and synchronization have completed.
+    if (await getActiveMutationJournal()) return { ok: false, failure: "journalRecoveryFailure" };
     const installation = await getGuestInstallation();
-    if (!installation || installation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
-    let proofId = pending.proofId;
-    let operationId = pending.operationId;
-    if (pending.status !== "remoteDeleted" && pending.status !== "localCleanupPending") {
+    const existingRemoteMarker = pending !== null && isResumableDeletionState(pending);
+    if (!existingRemoteMarker && (!installation || installation.accountId !== accountId)) throw new AccountDataFailure("account_binding_mismatch");
+    if (existingRemoteMarker && installation && installation.accountId !== null && installation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+
+    if (!existingRemoteMarker) {
       const synced = await synchronizeBoundAccount(api, accountId);
       if (synced.status === "conflict") return { ok: false, failure: "conflict" };
       if (synced.status !== "synced") return { ok: false, failure: "pendingSyncRequiresNetwork" };
-      const remote = await api.deleteAccount(pending.operationId);
-      proofId = remote.proofId;
-      operationId = remote.operationId;
-      updateAccountDeletionState(pending, { status: "remoteDeleted", proofId, lastFailureCode: null });
     }
-    if (!proofId) throw new AccountDataFailure("remote_deletion_pending");
-    const proof = await api.getDeletionProof(proofId);
-    if (proof.status !== "deleted" || proof.operationId !== operationId) throw new AccountDataFailure("remote_deletion_pending");
+
+    if (pending?.status === "failed") {
+      clearAccountDeletionState();
+      pending = null;
+    }
+    if (!pending) pending = beginAccountDeletion(accountId, uid);
+
+    let proofId = pending.proofId;
+    if (pending.status === "remotePending") {
+      try {
+        const remote = await api.deleteAccount(pending.operationId);
+        if (remote.operationId !== pending.operationId || !remote.proofId) throw new AccountDataFailure("remote_deletion_pending");
+        proofId = remote.proofId;
+        pending = updateAccountDeletionState(pending, { status: "remoteDeleted", proofId, lastFailureCode: null });
+      } catch (error) {
+        const failure = classifyDataFailure(error);
+        if (shouldResolveDeletionStatus(failure)) {
+          const resolved = await readVerifiedDeletionStatus(api, pending, uid);
+          if (resolved?.proofId) {
+            pending = resolved.pending!;
+            proofId = resolved.proofId;
+          } else {
+            if (resolved?.pending) pending = resolved.pending!;
+            else pending = updateAccountDeletionState(pending, { status: "remotePending", lastFailureCode: failure });
+            return deletionResultForFailure(failure);
+          }
+        } else {
+          pending = updateAccountDeletionState(pending, { status: failure === "reauthentication_required" ? "remotePending" : "failed", lastFailureCode: failure });
+          return deletionResultForFailure(failure);
+        }
+      }
+    }
+
+    if (!proofId) {
+      const resolved = await readVerifiedDeletionStatus(api, pending, uid);
+      if (!resolved?.proofId) return { ok: false, failure: "remoteDeletionPending" };
+      pending = resolved.pending!;
+      proofId = resolved.proofId;
+    }
+
     try {
-      await clearAccountOwnedLocalData();
-      await clearGuestAccountBinding();
-    } catch {
-      updateAccountDeletionState(pending, { status: "localCleanupPending", proofId, lastFailureCode: "local_cleanup_failure" });
+      const proof = await api.getDeletionProof(proofId);
+      if (proof.status !== "deleted" || proof.operationId !== pending.operationId || proof.proofId !== proofId) throw new AccountDataFailure("remote_deletion_pending");
+    } catch (error) {
+      const failure = classifyDataFailure(error);
+      if (shouldResolveDeletionStatus(failure)) {
+        const resolved = await readVerifiedDeletionStatus(api, pending, uid);
+        if (resolved?.proofId) {
+          pending = resolved.pending!;
+          proofId = resolved.proofId;
+          const proof = await api.getDeletionProof(proofId);
+          if (proof.status !== "deleted" || proof.operationId !== pending.operationId || proof.proofId !== proofId) return { ok: false, failure: "remoteDeletionPending" };
+        } else {
+          pending = resolved?.pending ?? updateAccountDeletionState(pending, { status: "remoteDeleted", proofId, lastFailureCode: failure });
+          return deletionResultForFailure(failure);
+        }
+      } else {
+        pending = updateAccountDeletionState(pending, { status: "remoteDeleted", proofId, lastFailureCode: failure });
+        return deletionResultForFailure(failure);
+      }
+    }
+
+    try {
+      await clearDeletionOwnedLocalDataAndBinding(accountId);
+    } catch (error) {
+      const failure = classifyDataFailure(error);
+      try {
+        pending = updateAccountDeletionState(pending, { status: "localCleanupPending", proofId, lastFailureCode: failure });
+      } catch {
+        // Keep the last verified marker state if the lifecycle record itself
+        // cannot be written. A later retry can still inspect remoteDeleted or
+        // localCleanupPending and continue the idempotent cleanup.
+      }
+      if (failure === "journal_recovery_required") return { ok: false, failure: "journalRecoveryFailure" };
       return { ok: false, failure: "localCleanupFailure" };
     }
-    markAccountDeletionComplete(getAccountDeletionState() ?? { ...pending, proofId });
+
+    try {
+      markAccountDeletionComplete(getAccountDeletionState() ?? { ...pending, proofId });
+    } catch {
+      // The remote proof and local allow-list cleanup are complete. Keep the
+      // remote-deleted marker so the next explicit retry only persists the
+      // terminal state and never starts another remote request.
+      try {
+        updateAccountDeletionState(pending, { status: "localCleanupPending", proofId, lastFailureCode: "local_cleanup_failure" });
+      } catch {
+        // The existing remoteDeleted marker remains safe to retry.
+      }
+      return { ok: false, failure: "localCleanupFailure" };
+    }
     return { ok: true, proofId };
   } catch (error) {
     const failure = classifyDataFailure(error);
-    if (failure === "revokedSession" && pending.status !== "complete") {
-      const status = await api.getDeletionOperationStatus(pending.operationId, sha256Utf8(uid)).catch(() => null);
-      if (status?.proofId && (status.status === "remote_deleted" || status.status === "complete")) {
-        updateAccountDeletionState(pending, { status: "remoteDeleted", proofId: status.proofId, lastFailureCode: null });
-        return deleteBoundAccountUnlocked(api, accountId, uid);
+    // Do not mutate a marker that failed the account/UID ownership check.
+    const current = getAccountDeletionState();
+    if (current && current.accountId === accountId && current.accountUidHash === uidHash && current.status !== "complete") {
+      const preservedRemotePhase = current.status === "remoteDeleted" || current.status === "localCleanupPending";
+      try {
+        updateAccountDeletionState(current, { status: preservedRemotePhase ? current.status : shouldResolveDeletionStatus(failure) ? "remotePending" : failure === "reauthentication_required" ? "remotePending" : "failed", lastFailureCode: failure });
+      } catch {
+        // Preserve the durable marker as-is if lifecycle storage is currently
+        // unavailable; the caller will receive the same safe pending result.
       }
     }
-    updateAccountDeletionState(pending, { status: failure === "remote_deletion_pending" ? "remotePending" : "failed", lastFailureCode: failure });
-    if (failure === "offline") return { ok: false, failure: "pendingSyncRequiresNetwork" };
-    if (failure === "account_revision_conflict" || failure === "version_conflict" || failure === "adoption_conflict") return { ok: false, failure: "conflict" };
-    return { ok: false, failure: "remoteDeletionPending" };
+    return deletionResultForFailure(failure);
   }
 }
 

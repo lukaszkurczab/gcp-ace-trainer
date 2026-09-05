@@ -8,6 +8,7 @@ export type SettingsAccountPresentation = Readonly<{
   canOpenAccount: boolean;
   canSignOut: boolean;
   email: string | null;
+  providerLabel?: string;
   status: SettingsAccountStatus;
 }>;
 
@@ -30,6 +31,7 @@ export function getSettingsAccountPresentation(state: AccountState): SettingsAcc
         canOpenAccount: true,
         canSignOut: true,
         email: state.user.email,
+        providerLabel: state.user.providers.map((provider) => provider === "apple" ? "Apple" : provider === "google" ? "Google" : "Patternly").join(", "),
         status: accountDataNeedsAttention(state.accountData) ? "attention" : "authenticated",
       };
     case "signingOut":
@@ -39,8 +41,11 @@ export function getSettingsAccountPresentation(state: AccountState): SettingsAcc
         canOpenAccount: false,
         canSignOut: false,
         email: state.user.email,
+        providerLabel: state.user.providers.map((provider) => provider === "apple" ? "Apple" : provider === "google" ? "Google" : "Patternly").join(", "),
         status: "busy",
       };
+    case "deletionPending":
+      return { accountDataStatus: state.status, canOpenAccount: true, canSignOut: false, email: state.user.email, status: "unavailable" };
     case "verificationPending":
       return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: state.user.email, status: "verificationPending" };
     case "guestAccessBlocked":

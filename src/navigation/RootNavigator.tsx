@@ -16,6 +16,7 @@ import { LegalInformationScreen } from "../features/home/LegalInformationScreen"
 import { NotificationSettingsScreen } from "../features/home/NotificationSettingsScreen";
 import { YourDataScreen } from "../features/home/YourDataScreen";
 import { BackendDiagnosticsScreen } from "../features/home/BackendDiagnosticsScreen";
+import { AccountSecurityScreen } from "../features/account/AccountSecurityScreen";
 import { AccountEntryScreen } from "../features/account/AccountEntryScreen";
 import { SelectTrackScreen } from "../features/home/SelectTrackScreen";
 import { GoalCadenceScreen } from "../features/home/GoalCadenceScreen";
@@ -42,7 +43,7 @@ export function RootNavigator() {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
   const { state } = usePatternlyAccount();
-  const applicationSessionReady = state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting" || (state.kind === "authenticated" && state.accountData.status === "synced") || (state.kind === "authenticated" && state.accountData.status === "resumeRequired");
+  const applicationSessionReady = state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting" || (state.kind === "authenticated" && state.accountData.status === "synced") || (state.kind === "authenticated" && ["resumeRequired", "remoteDeletionPending", "localCleanupPending"].includes(state.accountData.status));
 
   if (state.kind === "loading") {
     return (
@@ -79,6 +80,7 @@ export function RootNavigator() {
             component={ActivityScreen}
             options={{ headerShown: false, title: t("Activity") }}
           />
+          <Stack.Screen name={ROUTES.ACCOUNT_SECURITY} component={AccountSecurityScreen} options={{ headerShown: false }} />
           <Stack.Screen
             name={ROUTES.APPEARANCE_SETTINGS}
             component={AppearanceSettingsScreen}

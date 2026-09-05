@@ -80,8 +80,9 @@ function ButtonLabel({ children, style }: Readonly<{ children: ReactNode; style:
 }
 
 function getActivityColor(variant: ButtonVariant, palette: AppColors, isDisabled: boolean): string {
-  if (isDisabled) return variant === "primary" || variant === "destructive" ? palette.textPrimary : variant === "secondary" ? palette.textMuted : palette.textSecondary;
-  return variant === "primary" || variant === "destructive" ? palette.onPrimary : palette.primary;
+  if (variant === "destructive") return palette.onDanger;
+  if (isDisabled) return variant === "primary" ? palette.textPrimary : variant === "secondary" ? palette.textMuted : palette.textSecondary;
+  return variant === "primary" ? palette.onPrimary : palette.primary;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
@@ -163,7 +164,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textSecondary
   },
   destructiveLabel: {
-    color: palette.textPrimary
+    color: palette.onDanger
   },
   primaryDisabledLabel: {
     color: palette.textMuted,
@@ -172,7 +173,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textMuted,
   },
   destructiveDisabledLabel: {
-    color: palette.textPrimary,
+    color: palette.onDanger,
   },
   ghostDisabledLabel: {
     color: palette.textSecondary,

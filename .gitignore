@@ -27,6 +27,7 @@ web-build/
 !.maestro/screenshot-capture/visual-shell/algorithms-final-item-capture.yaml
 !.maestro/screenshot-capture/visual-shell/algorithms-completed-summary-deferred-capture.yaml
 !.maestro/screenshot-capture/visual-shell/progress-activity-capture.yaml
+docs/qa/
 
 npm-debug.log*
 yarn-debug.log*

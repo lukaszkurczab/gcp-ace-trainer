@@ -1,4 +1,5 @@
 import { PracticeQuestionCard } from "./PracticeQuestionCard";
+import { getPracticeSessionExitCopy } from "./practiceSessionExitCopy";
 import { Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -208,7 +209,7 @@ function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readon
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const insets = useSafeAreaInsets();
-  const copy = exitCopy(trackId);
+  const copy = getPracticeSessionExitCopy(trackId);
   return (
     <Modal animationType="fade" onRequestClose={onDismiss} transparent visible>
       <View style={styles.modalBackdrop}>
@@ -229,12 +230,6 @@ function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readon
       </View>
     </Modal>
   );
-}
-
-function exitCopy(trackId: TrackId | undefined): Readonly<{ description: string; destructiveLabel: string }> {
-  if (trackId === "coding-interview-dsa-problem-solving") return Object.freeze({ description: "Pause to continue later, or end the session to see a partial summary. Saved answers remain available.", destructiveLabel: "End and view summary" });
-  if (trackId === "google-cloud-associate-cloud-engineer" || trackId === "backend-system-design-interview" || trackId === "frontend-system-design-interview" || trackId === "object-oriented-design-interview") return Object.freeze({ description: "Pause to continue later. If you end the session, you will return to Practice and cannot resume it.", destructiveLabel: "End session" });
-  throw new Error("Practice exit requires an exact supported track identity.");
 }
 
 function noop() {}

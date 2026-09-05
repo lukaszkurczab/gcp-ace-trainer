@@ -63,6 +63,32 @@ export type AccountOutboxEntry = Readonly<AccountDataRecord & { mutationId: stri
 
 const emptyState = (): AccountSyncState => Object.freeze({ protocolVersion: ACCOUNT_DATA_PROTOCOL_VERSION, accountId: null, status: "initialSyncRequired", localDatasetVersion: 0, localDatasetFingerprint: null, remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged: Object.freeze({}), outbox: Object.freeze([]), materialization: null, pendingConfirmation: null });
 
+const LEARNING_FIXED_KEYS = [
+  STORAGE_KEYS.ACTIVE_TRACK,
+  STORAGE_KEYS.ACTIVE_TRAINING_SESSION,
+  STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT,
+  STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER,
+  STORAGE_KEYS.TRAINING_SESSION_INDEX,
+  STORAGE_KEYS.TRAINING_ATTEMPT_INDEX,
+  STORAGE_KEYS.REVIEW_INDEX,
+  STORAGE_KEYS.CONTENT_REPORT_OUTBOX,
+] as const;
+
+const LEARNING_RECORD_PREFIXES = [
+  `${STORAGE_NAMESPACE}training-session:`,
+  `${STORAGE_NAMESPACE}training-session-result:`,
+  `${STORAGE_NAMESPACE}training-attempt:`,
+  `${STORAGE_NAMESPACE}review-entry:`,
+  `${STORAGE_NAMESPACE}goal:`,
+] as const;
+
+function clearCanonicalLearningNamespace(includeAccountSync: boolean): void {
+  const fixedKeys: ReadonlySet<string> = new Set(includeAccountSync ? [...LEARNING_FIXED_KEYS, STORAGE_KEYS.ACCOUNT_SYNC] : LEARNING_FIXED_KEYS);
+  for (const key of getKeyValueStorage().getAllKeys()) {
+    if (fixedKeys.has(key) || LEARNING_RECORD_PREFIXES.some((prefix) => key.startsWith(prefix))) removeCanonicalValue(key);
+  }
+}
+
 function isSyncableRecordType(value: unknown): value is SyncableRecordType { return typeof value === "string" && (SYNCABLE_RECORD_TYPES as readonly string[]).includes(value); }
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 function isAccountSyncState(value: unknown): value is AccountSyncState {
@@ -288,26 +314,24 @@ export async function finishAccountMaterialization(records: readonly AccountData
 
 /** Clears only local guest-owned learning and pending report data. The account sync marker is retained for recovery. */
 export async function clearGuestOwnedLocalData(): Promise<void> {
-  const fixedKeys: ReadonlySet<string> = new Set([
-    STORAGE_KEYS.ACTIVE_TRACK,
-    STORAGE_KEYS.ACTIVE_TRAINING_SESSION,
-    STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT,
-    STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER,
-    STORAGE_KEYS.TRAINING_SESSION_INDEX,
-    STORAGE_KEYS.TRAINING_ATTEMPT_INDEX,
-    STORAGE_KEYS.REVIEW_INDEX,
-    STORAGE_KEYS.CONTENT_REPORT_OUTBOX,
-  ]);
-  const recordPrefixes = [
-    `${STORAGE_NAMESPACE}training-session:`,
-    `${STORAGE_NAMESPACE}training-session-result:`,
-    `${STORAGE_NAMESPACE}training-attempt:`,
-    `${STORAGE_NAMESPACE}review-entry:`,
-    `${STORAGE_NAMESPACE}goal:`,
-  ];
-  for (const key of getKeyValueStorage().getAllKeys()) {
-    if (fixedKeys.has(key) || recordPrefixes.some((prefix) => key.startsWith(prefix))) removeCanonicalValue(key);
-  }
+  clearCanonicalLearningNamespace(false);
+}
+
+/**
+ * Clears the account-owned learning namespace after the remote account has
+ * been deleted.  This intentionally has a separate entry point from
+ * clearAccountOwnedLocalData: sign-out must retain pending learning state so
+ * it can be synchronized on the next account session, while deletion must
+ * remove every learning record, including records no longer present in an
+ * index.  The deletion marker, installation identity, preferences, and
+ * mutation journal are outside this allow-list and remain durable.
+ */
+export async function clearAccountDeletionOwnedLocalData(): Promise<void> {
+  // Enumerate before removing so a failed individual delete leaves the
+  // remaining namespace discoverable for the next retry.  Do not broaden this
+  // to the whole canonical namespace: settings, installation, journal, and
+  // lifecycle markers have different ownership and recovery semantics.
+  clearCanonicalLearningNamespace(true);
 }
 
 export async function clearAccountOwnedLocalData(): Promise<void> {

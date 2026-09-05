@@ -24,10 +24,8 @@ import GoogleIcon from "../../assets/icons/google.svg";
 
 import {
   Button,
-  Card,
   Icon,
   InfoBlock,
-  PublicLinkRow,
   Screen,
   ScreenHeader,
 } from "../../components";
@@ -42,6 +40,7 @@ import type { AccountDataSession } from "../../application/account/accountDataSe
 import {
   readFirebaseClientConfiguration,
   readPublicLegalLinksFromRuntime,
+  type FirebaseClientConfiguration,
 } from "../../infrastructure/firebase/publicConfig";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import {
@@ -63,6 +62,7 @@ type Feedback = AccountCommandResult;
 
 type AccountCopy = Record<keyof typeof accountCopy | "invalidEmail", string>;
 type AccountContext = ReturnType<typeof usePatternlyAccount>;
+type AccountContextRef = Readonly<{ current: AccountContext }>;
 
 function AuthText({ maxFontSizeMultiplier = 2, ...props }: TextProps) {
   const { fontScale } = useWindowDimensions();
@@ -78,7 +78,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const text = {
   account: t("account"),
   accountDescription: t("accountDescription"),
-  accountManagementDescription: t("accountManagementDescription"),
   accountSignedInAs: t("accountSignedInAs"),
   welcomeTitle: t("welcomeTitle"),
   welcomeDescription: t("welcomeDescription"),
@@ -123,14 +122,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   signOutPending: t("signOutPending"),
   signOutPendingDescription: t("signOutPendingDescription"),
   deleteAccount: t("deleteAccount"),
-  deleteAccountDescription: t("deleteAccountDescription"),
-  confirmDeletion: t("confirmDeletion"),
-  publicDeletionLink: t("publicDeletionLink"),
-  publicDeletionLinkDetail: t("publicDeletionLinkDetail"),
-  publicDeletionLinkUnavailable: t("publicDeletionLinkUnavailable"),
-  publicDeletionLinkInvalid: t("publicDeletionLinkInvalid"),
-  publicDeletionLinkOpenFailedTitle: t("publicDeletionLinkOpenFailedTitle"),
-  publicDeletionLinkOpenFailed: t("publicDeletionLinkOpenFailed"),
   deleting: t("deleting"),
   deletionPending: t("deletionPending"),
   deletionPendingDescription: t("deletionPendingDescription"),
@@ -251,39 +242,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     setAcceptedTerms(false);
     setMode("register");
   };
+  const { t: tSettings } = useTranslation("settings");
   const firebaseConfig = useMemo(() => readFirebaseClientConfiguration(), []);
-  const [googleRequest, googleResponse, promptGoogle] =
-    Google.useIdTokenAuthRequest(
-      {
-        androidClientId:
-          firebaseConfig.kind === "configured"
-            ? firebaseConfig.value.googleAndroidClientId
-            : undefined,
-        iosClientId:
-          firebaseConfig.kind === "configured"
-            ? firebaseConfig.value.googleIosClientId
-            : undefined,
-        selectAccount: true,
-        webClientId:
-          firebaseConfig.kind === "configured"
-            ? firebaseConfig.value.googleWebClientId
-            : undefined,
-      },
-      { scheme: "com.lkurczab.patternly" },
-    );
-
-  useEffect(() => {
-    if (!googleResponse) return;
-    if (googleResponse.type !== "success") {
-      if (googleResponse.type === "error")
-        setFeedback({ kind: "failure", failure: "providerUnavailable" });
-      return;
-    }
-    const idToken = googleResponse.params.id_token;
-    void accountRef.current
-      .signInWithGoogle(idToken ?? "")
-      .then(setResult(setFeedback));
-  }, [googleResponse]);
 
   useEffect(() => {
     const consumeUrl = (url: string | null) => {
@@ -293,7 +253,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         const code = parsed.searchParams.get("oobCode");
         const action = parsed.searchParams.get("mode");
         if (!code) return;
-        if (action === "verifyEmail")
+        if (action === "verifyEmail" || action === "verifyAndChangeEmail")
           void accountRef.current
             .applyVerificationCode(code)
             .then(setResult(setFeedback));
@@ -301,7 +261,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           setResetCode(code);
           setMode("resetPassword");
         }
-        if (action !== "verifyEmail" && action !== "resetPassword")
+        if (action !== "verifyEmail" && action !== "verifyAndChangeEmail" && action !== "resetPassword")
           setFeedback({ kind: "failure", failure: "invalid" });
       } catch {
         setFeedback({ kind: "failure", failure: "invalid" });
@@ -383,14 +343,14 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         </Button>
       </AuthStatusScreen>
     );
+  if (account.state.kind === "deletionPending")
+    return <DeletionContinuationScreen account={account} backAction={backAction} text={text} retryLabel={tSettings("retryDeletion")} />;
   if (account.state.kind === "authenticated")
     return isHealthyAccountData(account.state.accountData) ? (
-      <AccountManagementScreen
-        key={account.state.user.uid}
-        account={account}
-        backAction={backAction}
-        text={text}
-      />
+      <Screen edges={screenEdges}>
+        <ScreenHeader backAction={backAction} title={text.accountReadyTitle} />
+        <Button onPress={() => navigation.navigate(ROUTES.HOME, { initialTab: "settings" })} testID="account-open-settings">{tSettings("appSettings")}</Button>
+      </Screen>
     ) : account.state.accountData.status === "previewReady" ? (
       <AccountAdoptionScreen
         key={account.state.user.uid}
@@ -567,20 +527,14 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
               text={text.continueWithApple}
             />
           ) : null}
-          <ProviderButton
-            icon="google"
-            onPress={() => {
-              if (!googleRequest) {
-                setFeedback({
-                  kind: "failure",
-                  failure: "providerUnavailable",
-                });
-                return;
-              }
-              void promptGoogle();
-            }}
-            text={text.continueWithGoogle}
-          />
+          {firebaseConfig.kind === "configured" ? (
+            <GoogleProviderButton
+              accountRef={accountRef}
+              configuration={firebaseConfig.value}
+              onFeedback={setFeedback}
+              text={text.continueWithGoogle}
+            />
+          ) : null}
         </View>
       </Screen>
     );
@@ -770,175 +724,15 @@ function RecoveryCodesDisplay({ codes, text }: Readonly<{ codes: readonly string
   );
 }
 
-function AccountManagementScreen({
-  account,
-  backAction,
-  text,
-}: Readonly<{
-  account: AccountContext;
-  backAction: BackAction;
-  text: AccountCopy;
-}>) {
-  const styles = useThemedStyles(createStyles);
-  const [recoveryPassword, setRecoveryPassword] = useState("");
-  const [recoveryCodes, setRecoveryCodes] = useState<readonly string[] | null>(null);
-  const [recoveryFeedback, setRecoveryFeedback] = useState<Feedback | null>(null);
-  const [recoveryNeedsReauthentication, setRecoveryNeedsReauthentication] = useState(false);
-  const [deletionPassword, setDeletionPassword] = useState("");
-  const [deletionFeedback, setDeletionFeedback] = useState<Feedback | null>(null);
-  const [accountFeedback, setAccountFeedback] = useState<Feedback | null>(null);
+function DeletionContinuationScreen({ account, backAction, text, retryLabel }: Readonly<{ account: AccountContext; backAction: BackAction; text: AccountCopy; retryLabel: string }>) {
   const { busyAction, runCommand } = useAccountCommand();
-
-  const authenticated = account.state.kind === "authenticated" ? account.state : null;
-  if (!authenticated) return null;
-
-  const recoveryUsesPassword = authenticated.user.provider === "password";
-  const issueCodes = () => {
-    runCommand(
-      "recovery",
-      () => account.issueRecoveryCodes(recoveryNeedsReauthentication ? recoveryPassword : undefined),
-      (result) => {
-        if (
-          result.kind === "success" &&
-          result.next === "recoveryCodesIssued" &&
-          result.recoveryCodes &&
-          result.recoveryCodes.length > 0
-        ) {
-          setRecoveryCodes(result.recoveryCodes);
-          setRecoveryPassword("");
-          setRecoveryNeedsReauthentication(false);
-          setRecoveryFeedback(null);
-          return;
-        }
-        if (result.kind === "failure" && isReauthenticationFailure(result)) setRecoveryNeedsReauthentication(true);
-        setRecoveryFeedback(
-          result.kind === "failure"
-            ? result
-            : { kind: "failure", failure: "remoteFailure" },
-        );
-      },
-    );
-  };
-  const deleteAccount = () => {
-    runCommand("delete", () => account.deleteAccount(deletionPassword), setDeletionFeedback);
-  };
-  const signOut = () => {
-    runCommand("signOut", () => account.signOut(), setAccountFeedback);
-  };
-
-  return (
-    <Screen
-      edges={["top", "bottom"]}
-      footer={
-        <Button
-          disabled={busyAction !== null}
-          loading={busyAction === "signOut"}
-          onPress={signOut}
-          testID="account-sign-out"
-          variant="ghost"
-        >
-          {text.signOut}
-        </Button>
-      }
-      footerVariant="sticky"
-    >
-      <ScreenHeader backAction={backAction} title={text.account} />
-      <View style={styles.accountIntro}>
-        <AuthText style={styles.accountBody}>{text.accountManagementDescription}</AuthText>
-        {authenticated.user.email ? <AuthText style={styles.accountIdentity}>{`${text.accountSignedInAs}: ${authenticated.user.email}`}</AuthText> : null}
-      </View>
-      {accountFeedback ? renderFeedback(accountFeedback, text, text.account) : null}
-      <Card style={styles.accountCard} testID="account-recovery-codes-panel">
-        <AuthText style={styles.accountHeading}>{text.recoveryCodes}</AuthText>
-        <AuthText style={styles.accountBody}>{recoveryCodes ? text.recoveryCodesDescription : text.recoveryCodesIntro}</AuthText>
-        {recoveryCodes ? (
-          <View testID="account-recovery-codes"><RecoveryCodesDisplay codes={recoveryCodes} text={text} /></View>
-        ) : (
-          <View style={styles.accountActionGroup}>
-            {recoveryFeedback && !isReauthenticationFailure(recoveryFeedback) ? renderFeedback(recoveryFeedback, text, text.recoveryCodes) : null}
-            {recoveryNeedsReauthentication && recoveryUsesPassword ? (
-              <View style={styles.accountActionGroup}>
-                <AuthText style={styles.accountBody}>{text.recoveryCodeReauthDescription}</AuthText>
-                <AuthPasswordInput
-                  error={isReauthenticationFailure(recoveryFeedback) ? text.reauthenticationRequired : undefined}
-                  errorTestID="account-recovery-reauth-password-error"
-                  inputStyle={styles.input}
-                  label={text.password}
-                  onChangeText={(value) => {
-                    setRecoveryPassword(value);
-                    setRecoveryFeedback(null);
-                  }}
-                  placeholder={text.password}
-                  placeholderTextColor={styles.placeholder.color as string}
-                  testID="account-recovery-reauth-password"
-                  text={text}
-                  value={recoveryPassword}
-                />
-              </View>
-            ) : recoveryNeedsReauthentication ? (
-              <InfoBlock
-                body={text.recoveryCodeSignInAgain}
-                title={text.recoveryCodes}
-                testID="account-recovery-sign-in-required"
-                tone="warning"
-              />
-            ) : null}
-            {recoveryNeedsReauthentication && !recoveryUsesPassword ? (
-              <Button
-                disabled={busyAction !== null}
-                loading={busyAction === "signOut"}
-                onPress={signOut}
-                testID="account-recovery-sign-in-again"
-                variant="secondary"
-              >
-                {text.recoveryCodeSignInAgainButton}
-              </Button>
-            ) : (
-              <Button
-                disabled={busyAction !== null}
-                loading={busyAction === "recovery"}
-                onPress={issueCodes}
-                testID="account-recovery-codes-submit"
-                variant="secondary"
-              >
-                {text.issueRecoveryCodes}
-              </Button>
-            )}
-          </View>
-        )}
-      </Card>
-      <Card style={styles.accountCard} testID="account-delete-panel">
-        <AuthText style={styles.accountHeading}>{text.deleteAccount}</AuthText>
-        <AuthText style={styles.accountBody}>{text.deleteAccountDescription}</AuthText>
-        <PublicDeletionLink text={text} />
-        {deletionFeedback && !isReauthenticationFailure(deletionFeedback) ? renderFeedback(deletionFeedback, text, text.deleteAccount) : null}
-        <AuthPasswordInput
-          error={isReauthenticationFailure(deletionFeedback) ? text.reauthenticationRequired : undefined}
-          errorTestID="account-delete-reauth-password-error"
-          inputStyle={styles.input}
-          label={text.password}
-          onChangeText={(value) => {
-            setDeletionPassword(value);
-            setDeletionFeedback(null);
-          }}
-          placeholder={text.password}
-          placeholderTextColor={styles.placeholder.color as string}
-          testID="account-delete-reauth-password"
-          text={text}
-          value={deletionPassword}
-        />
-        <Button
-          disabled={busyAction !== null}
-          loading={busyAction === "delete"}
-          onPress={deleteAccount}
-          testID="account-delete-submit"
-          variant="secondary"
-        >
-          {text.confirmDeletion}
-        </Button>
-      </Card>
-    </Screen>
-  );
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  return <Screen edges={["top", "bottom"]}>
+    <ScreenHeader backAction={backAction} title={text.deleting} />
+    <InfoBlock body={text.deletionPendingDescription} title={text.deleteAccount} testID="account-deletion-recovery" tone="warning" />
+    {feedback?.kind === "failure" ? renderFeedback(feedback, text, text.deleteAccount) : null}
+    <Button disabled={busyAction !== null} loading={busyAction === "retry"} onPress={() => runCommand("retry", () => account.retryPendingDeletion(), setFeedback)} testID="account-deletion-retry">{retryLabel}</Button>
+  </Screen>;
 }
 
 function AccountAdoptionScreen({
@@ -968,11 +762,21 @@ function AccountAdoptionScreen({
   if (!plan) return null;
   const authenticated = account.state.kind === "authenticated" ? account.state : null;
   if (!authenticated) return null;
-  const recoveryUsesPassword = authenticated.user.provider === "password";
+  const recoveryUsesPassword = authenticated.user.providers.includes("password");
   const issueCodes = () => {
+    const credentials = recoveryUsesPassword
+      ? { kind: "password" as const, password: recoveryPassword }
+      : authenticated.user.providers.includes("apple")
+        ? { kind: "apple" as const }
+        : null;
+    if (!credentials) {
+      setRecoveryNeedsReauthentication(true);
+      setRecoveryFeedback({ kind: "failure", failure: "providerUnavailable" });
+      return;
+    }
     runCommand(
       "recovery",
-      () => account.issueRecoveryCodes(recoveryNeedsReauthentication ? recoveryPassword : undefined),
+      () => account.issueRecoveryCodes(credentials),
       (result) => {
         if (
           result.kind === "success" &&
@@ -1610,6 +1414,61 @@ function ProviderButton({
   );
 }
 
+function GoogleProviderButton({
+  accountRef,
+  configuration,
+  onFeedback,
+  text,
+}: Readonly<{
+  accountRef: AccountContextRef;
+  configuration: FirebaseClientConfiguration;
+  onFeedback: (feedback: Feedback) => void;
+  text: string;
+}>) {
+  const [googleRequest, googleResponse, promptGoogle] =
+    Google.useIdTokenAuthRequest(
+      {
+        androidClientId: configuration.googleAndroidClientId,
+        iosClientId: configuration.googleIosClientId,
+        selectAccount: true,
+        webClientId: configuration.googleWebClientId,
+      },
+      { scheme: "com.lkurczab.patternly" },
+    );
+  const feedbackRef = useRef(onFeedback);
+  feedbackRef.current = onFeedback;
+
+  useEffect(() => {
+    if (!googleResponse) return;
+    if (googleResponse.type !== "success") {
+      if (googleResponse.type === "error")
+        feedbackRef.current({ kind: "failure", failure: "providerUnavailable" });
+      return;
+    }
+    const idToken = googleResponse.params.id_token;
+    void accountRef.current
+      .signInWithGoogle(idToken ?? "")
+      .then((result) => feedbackRef.current(result));
+  }, [googleResponse]);
+
+  return (
+    <ProviderButton
+      icon="google"
+      onPress={() => {
+        if (!googleRequest) {
+          feedbackRef.current({
+            kind: "failure",
+            failure: "providerUnavailable",
+          });
+          return;
+        }
+        void promptGoogle();
+      }}
+      text={text}
+    />
+  );
+}
+
 function CredentialsForm({
   acceptedTerms,
   buttonLabel,
@@ -1716,6 +1575,7 @@ function AuthPasswordInput({
   errorTestID,
   inputStyle,
   label,
+  onBlur,
   onChangeText,
   placeholder,
   placeholderTextColor,
@@ -1728,6 +1588,7 @@ function AuthPasswordInput({
   errorTestID?: string;
   inputStyle: StyleProp<TextStyle>;
   label?: string;
+  onBlur?: () => void;
   onChangeText: (value: string) => void;
   placeholder: string;
   placeholderTextColor: string;
@@ -1740,7 +1601,7 @@ function AuthPasswordInput({
   return (
     <FormField error={error} errorTestID={errorTestID} label={label ?? text.password}>
       <View style={styles.passwordField}>
-        <TextInput autoCapitalize="none" autoComplete={autoComplete} maxFontSizeMultiplier={2} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={placeholderTextColor} secureTextEntry={!visible} style={[inputStyle, styles.centeredInput, styles.passwordInput, error ? styles.authInputError : null]} testID={testID} value={value} />
+        <TextInput autoCapitalize="none" autoComplete={autoComplete} maxFontSizeMultiplier={2} onBlur={onBlur} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={placeholderTextColor} secureTextEntry={!visible} style={[inputStyle, styles.centeredInput, styles.passwordInput, error ? styles.authInputError : null]} testID={testID} value={value} />
         <Pressable accessibilityLabel={visible ? text.hidePassword : text.showPassword} accessibilityRole="button" hitSlop={8} onPress={() => setVisible((current) => !current)} style={styles.visibilityButton} testID={`${testID}-visibility`}>
           <Icon color={styles.icon.color as string} name={visible ? "eye-off" : "eye"} size={24} />
         </Pressable>
@@ -1869,52 +1730,6 @@ function renderFeedback(
   );
 }
 
-function PublicDeletionLink({ text }: Readonly<{ text: AccountCopy }>) {
-  const publicLinks = readPublicLegalLinksFromRuntime();
-  const [openFailure, setOpenFailure] = useState(false);
-  const available = publicLinks.kind === "configured";
-  const url = available ? publicLinks.value.publicDeletionUrl : null;
-
-  const openPublicDeletionLink = async () => {
-    if (!url) return;
-    setOpenFailure(false);
-    try {
-      await Linking.openURL(url);
-    } catch {
-      setOpenFailure(true);
-    }
-  };
-
-  return (
-    <View style={{ gap: spacing.sm }}>
-      {openFailure ? (
-        <InfoBlock
-          body={text.publicDeletionLinkOpenFailed}
-          title={text.publicDeletionLinkOpenFailedTitle}
-          testID="account-public-deletion-open-failed"
-          tone="warning"
-        />
-      ) : null}
-      <PublicLinkRow
-        available={available}
-        detail={
-          available
-            ? text.publicDeletionLinkDetail
-            : publicLinks.reason === "invalid_public_environment"
-              ? text.publicDeletionLinkInvalid
-              : text.publicDeletionLinkUnavailable
-        }
-        icon="trash"
-        onPress={() => {
-          void openPublicDeletionLink();
-        }}
-        testID="account-public-deletion-link"
-        title={text.publicDeletionLink}
-      />
-    </View>
-  );
-}
-
 function setResult(setFeedback: (feedback: Feedback) => void) {
   return (result: AccountCommandResult) => setFeedback(result);
 }
@@ -1960,7 +1775,6 @@ function isAuthFieldFailure(
     copyCodesButton: { maxWidth: "100%", alignItems: "center", alignSelf: "flex-start", flexDirection: "row", gap: spacing.sm, minHeight: 44, paddingVertical: spacing.sm, paddingHorizontal: spacing.md, borderRadius: 12, backgroundColor: palette.surface },
     copyCodesLabel: { ...typography.small, color: palette.primary, flexShrink: 1 },
     recoveryCodeSheet: { backgroundColor: palette.surfaceInput, borderRadius: 16, padding: spacing.md },
-    accountCard: { gap: spacing.md },
     accountActionGroup: { gap: spacing.sm },
     accountRecoveryStatus: { gap: spacing.md },
     accountRecoveryAction: { alignSelf: "stretch" },

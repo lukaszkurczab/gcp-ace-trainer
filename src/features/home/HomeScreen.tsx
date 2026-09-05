@@ -386,6 +386,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           <SettingsTab
             account={settingsAccount}
             onOpenAccount={openAccount}
+            onOpenSecurity={(screen) => navigation.navigate(ROUTES.ACCOUNT_SECURITY, { screen })}
             onOpenAppearance={() => navigation.navigate(ROUTES.APPEARANCE_SETTINGS)}
             onOpenBackendDiagnostics={() => navigation.navigate(ROUTES.BACKEND_DIAGNOSTICS)}
             onOpenLanguage={() => navigation.navigate(ROUTES.LANGUAGE_SETTINGS)}

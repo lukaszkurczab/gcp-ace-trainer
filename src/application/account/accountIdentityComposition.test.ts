@@ -47,9 +47,9 @@ test("public environment and Firebase client configuration fail closed", () => {
 });
 
 test("only the explicit local smoke runtime finalizes every password-identity command without verification side effects", () => {
-  const unverifiedPassword = { email: "learner@example.com", emailVerified: false, provider: "password", uid: "password-user" } as const;
+  const unverifiedPassword = { email: "learner@example.com", emailVerified: false, provider: "password", providers: ["password"] as const, uid: "password-user" } as const;
   const verifiedPassword = { ...unverifiedPassword, emailVerified: true } as const;
-  const unverifiedGoogle = { ...unverifiedPassword, provider: "google" } as const;
+  const unverifiedGoogle = { ...unverifiedPassword, provider: "google", providers: ["google"] as const } as const;
 
   assert.equal(requiresVerifiedPasswordIdentity("smoke"), false);
   assert.equal(requiresVerifiedPasswordIdentity("sandbox"), true);
@@ -91,13 +91,11 @@ test("account entry copy makes the destructive choice and code acknowledgement e
   assert.match(en.discardGuestDataDescription ?? "", /account.?s progress/u);
   assert.match(en.recoveryCodesDescription ?? "", /10 single-use codes/u);
   assert.match(en.recoveryCodesSaveRequired ?? "", /before continuing/u);
-  assert.match(en.accountManagementDescription ?? "", /Manage synchronization/u);
   assert.equal(en.accountSignedInAs, "Signed in as");
   assert.equal(pl.accountEntryContinue, "Dalej");
   assert.match(pl.discardGuestDataDescription ?? "", /Postęp gościa zostanie usunięty/u);
   assert.match(pl.discardGuestDataDescription ?? "", /Dane konta pozostaną bez zmian/u);
   assert.match(pl.recoveryCodesDescription ?? "", /10 jednorazowych kodów/u);
-  assert.match(pl.accountManagementDescription ?? "", /Zarządzaj synchronizacją/u);
   assert.equal(pl.accountSignedInAs, "Zalogowano jako");
 });
 
@@ -111,8 +109,9 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.match(screen, /accountData\.blockingConflictCode !== null/);
   assert.match(screen, /accountData\.lastFailureCode !== null/);
   assert.match(screen, /accountData\.status === "previewReady"/);
-  assert.match(screen, /text\.accountManagementDescription/);
-  assert.match(screen, /text\.accountSignedInAs/);
+  assert.match(screen, /testID="account-open-settings"/);
+  assert.doesNotMatch(screen, /AccountManagementScreen/);
+  assert.match(readFileSync("src/features/home/tabs/SettingsTab.tsx", "utf8"), /tAccount\("accountSignedInAs"\)/);
   assert.doesNotMatch(screen, /<AuthText style=\{styles\.accountHeading\}>\{text\.account\}<\/AuthText>[\s\S]*?accountManagementDescription/);
   assert.match(screen, /testID="account-entry-choice"/);
   assert.match(screen, /testID="account-keep-progress-toggle"/);
@@ -124,9 +123,9 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.doesNotMatch(screen, /testID="account-authenticated"/);
   assert.doesNotMatch(screen, /testID="account-adoption-confirm"/);
   assert.doesNotMatch(screen, /text\.(?:preserve|upload|restore|deduplicated|decisions|keepGuest\b|keepAccount\b|confirmAdoption\b)/);
-  assert.match(provider, /issueRecoveryCodes: \(password\?: string\)/);
+  assert.match(provider, /issueRecoveryCodes: \(credentials: FirebaseAuthCredentials\)/);
   assert.match(provider, /discardGuestData: \(\) => runWithAuth/);
-  assert.match(provider, /const issued = await api\.issueRecoveryCodes\(\)/);
+  assert.match(provider, /mutation: \(\) => api\.issueRecoveryCodes\(\)/);
 });
 
 test("account recovery owns one status message, a truthful retry, and a sign-out exit", () => {
@@ -167,7 +166,7 @@ test("sign-out preparation failures restore the authenticated state before auth 
     },
     backendUser: { id: "backend-user" },
     kind: "authenticated",
-    user: { email: "learner@example.com", emailVerified: true, provider: "password", uid: "firebase-user" },
+    user: { email: "learner@example.com", emailVerified: true, provider: "password", providers: ["password"], uid: "firebase-user" },
   } as unknown as Extract<AccountState, { kind: "authenticated" }>;
   const restored = restoreAuthenticatedAfterSignOutFailure(authenticated, "localDeletionFailure");
   assert.equal(restored.kind, "authenticated");
@@ -219,6 +218,26 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.match(screen, /providerContent:[\s\S]*?minWidth: 0/);
   assert.doesNotMatch(screen, /providerIcon:[\s\S]*?position: "absolute"/);
   assert.doesNotMatch(screen, /themeColors\.(?:dark|light)|#[0-9a-f]{3,8}/i);
+});
+
+test("unconfigured account entry never composes Google OAuth without typed provider configuration", () => {
+  const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  const providerStart = screen.indexOf("function GoogleProviderButton");
+  const providerEnd = screen.indexOf("function CredentialsForm", providerStart);
+
+  assert.ok(providerStart >= 0 && providerEnd > providerStart);
+  const accountEntry = screen.slice(0, providerStart);
+  const provider = screen.slice(providerStart, providerEnd);
+
+  assert.doesNotMatch(accountEntry, /Google\.useIdTokenAuthRequest/);
+  assert.match(accountEntry, /firebaseConfig\.kind === "configured" \? \([\s\S]*?<GoogleProviderButton[\s\S]*?configuration=\{firebaseConfig\.value\}/);
+  assert.match(provider, /configuration: FirebaseClientConfiguration/);
+  assert.match(provider, /Google\.useIdTokenAuthRequest\([\s\S]*?androidClientId: configuration\.googleAndroidClientId[\s\S]*?iosClientId: configuration\.googleIosClientId[\s\S]*?webClientId: configuration\.googleWebClientId/);
+  assert.match(provider, /googleResponse\.type !== "success"[\s\S]*?googleResponse\.type === "error"/);
+  assert.match(provider, /accountRef\.current[\s\S]*?signInWithGoogle/);
+  assert.match(provider, /feedbackRef\.current/);
+  assert.match(provider, /<ProviderButton[\s\S]*?icon="google"[\s\S]*?text=\{text\}/);
+  assert.doesNotMatch(provider, /(?:androidClientId|iosClientId|webClientId):\s*["']/);
 });
 
 test("a guest transition resets navigation into the application session", () => {
@@ -388,6 +407,7 @@ test("account failures expose explicit provider, network, expiry, and revoked-se
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 503)), "backendUnavailable");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 400, "recovery_code_invalid")), "invalidRecoveryCode");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 400, "recovery_code_used")), "recoveryCodeUsed");
+  assert.equal(classifyAccountFailure({ code: "auth/command-in-flight" }), "conflict");
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/user-not-found", message: "private provider detail" }), true);
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/invalid-credential", message: "private provider detail" }), true);
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/too-many-requests", message: "private provider detail" }), false);

@@ -15,7 +15,7 @@ function authenticated(status: string, email: string | null = "learner@example.c
       ...metadata,
     },
     backendUser: { id: "backend-user" },
-    user: { email, emailVerified: true, provider: "password", uid: "firebase-user" },
+    user: { email, emailVerified: true, providers: ["password"], uid: "firebase-user" },
   } as unknown as AccountState;
 }
 
@@ -72,7 +72,7 @@ test("Settings blocks invalid actions while account lifecycle work is busy and k
     accountData: { status: "synced" },
     backendUser: { id: "backend-user" },
     kind: "signingOut",
-    user: { email: "learner@example.com", emailVerified: true, provider: "google", uid: "firebase-user" },
+    user: { email: "learner@example.com", emailVerified: true, providers: ["google"], uid: "firebase-user" },
   } as unknown as AccountState);
   assert.equal(signingOut.status, "busy");
   assert.equal(signingOut.canOpenAccount, false);
@@ -80,7 +80,7 @@ test("Settings blocks invalid actions while account lifecycle work is busy and k
 
   const verification = getSettingsAccountPresentation({
     kind: "verificationPending",
-    user: { email: "learner@example.com", emailVerified: false, provider: "password", uid: "firebase-user" },
+    user: { email: "learner@example.com", emailVerified: false, providers: ["password"], uid: "firebase-user" },
   });
   assert.equal(verification.status, "verificationPending");
   assert.equal(verification.canOpenAccount, true);

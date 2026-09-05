@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { Icon, IconTile, InfoBlock, ListRow, ScreenHeader, SettingsGroup, SkeletonShape, useSkeletonGlassMotion, type IconName } from "../../../components";
+import { Button, Icon, IconTile, InfoBlock, ListRow, ScreenHeader, SettingsGroup, SkeletonShape, useSkeletonGlassMotion, type IconName } from "../../../components";
 import type { AccountCommandResult } from "../../../application/account/AccountSessionProvider";
 import type { StorageIssue } from "../../../application/learningReadModels";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
@@ -17,6 +17,7 @@ import { LANGUAGE_SETTINGS_OPTIONS } from "../languageSettingsModel";
 
 type SettingsTabProps = {
   account: SettingsAccountPresentation;
+  onOpenSecurity: (screen: "recovery" | "email" | "password" | "delete") => void;
   onOpenAppearance: () => void;
   onOpenAccount: () => void;
   onOpenBackendDiagnostics: () => void;
@@ -79,6 +80,7 @@ export function SettingsLoadingSkeleton() {
 
 export function SettingsTab({
   account,
+  onOpenSecurity,
   onOpenAppearance,
   onOpenAccount,
   onOpenBackendDiagnostics,
@@ -117,11 +119,9 @@ export function SettingsTab({
     accountUnavailableDetail: t("accountUnavailableDetail"),
     accountBusyDetail: t("accountBusyDetail"),
     signOut: t("signOut"),
-    signOutDetail: t("signOutDetail"),
     signOutErrorTitle: t("signOutErrorTitle"),
     appSettings: t("appSettings"),
     settingsDescription: t("settingsDescription"),
-    app: t("app"),
     data: t("data"),
     dataDetail: t("dataDetail"),
     dataPrivacy: t("dataPrivacy"),
@@ -195,14 +195,21 @@ export function SettingsTab({
               : account.status === "busy"
                 ? text.accountBusyDetail
                 : text.accountDetail;
-  const accountDetailWithIdentity = account.email
-    ? `${accountDetail}\n${tAccount("accountSignedInAs")}: ${account.email}`
-    : accountDetail;
   const languageValue = t(LANGUAGE_SETTINGS_OPTIONS.find((option) => option.value === language)?.labelKey ?? "languageSystem");
 
   return (
     <View style={styles.page} testID="settings-screen">
       <ScreenHeader description={text.settingsDescription} title={text.appSettings} />
+
+      <View style={styles.identity} testID="settings-identity">
+        <IconTile name="user" tone="settings" />
+        <View style={styles.identityCopy}>
+          <Text maxFontSizeMultiplier={2} style={styles.identityTitle}>{account.status === "guest" || account.status === "signedOut" ? t("guestIdentity") : account.canSignOut || account.email ? tAccount("accountSignedInAs") : accountTitle}</Text>
+          {account.email || account.providerLabel ? <Text selectable maxFontSizeMultiplier={2} style={styles.identityEmail}>{account.email ?? account.providerLabel}</Text> : null}
+          {account.status !== "authenticated" ? <Text maxFontSizeMultiplier={2} style={styles.identityDetail}>{accountDetail}</Text> : null}
+        </View>
+      </View>
+      {account.status !== "authenticated" && account.canOpenAccount ? <Button onPress={onOpenAccount} testID="settings-account-entry" variant="secondary">{accountTitle}</Button> : null}
 
       {signOutFailure ? <InfoBlock accessibilityAlert body={tAccount(signOutFailure)} title={text.signOutErrorTitle} testID="settings-sign-out-error" tone="warning" /> : null}
 
@@ -218,26 +225,7 @@ export function SettingsTab({
       ) : null}
 
       <View style={styles.content}>
-        <SettingsGroup dividers title={text.app} titleGap={0}>
-          <SettingsNavigationRow
-            detail={accountDetailWithIdentity}
-            disabled={!account.canOpenAccount}
-            icon="user"
-            onPress={onOpenAccount}
-            testID="settings-account"
-            title={accountTitle}
-          />
-          {account.canSignOut ? (
-            <SettingsNavigationRow
-              detail={text.signOutDetail}
-              disabled={busyAction !== null}
-              icon="rotate-ccw"
-              loading={busyAction === "signOut"}
-              onPress={signOut}
-              testID="settings-sign-out"
-              title={text.signOut}
-            />
-          ) : null}
+        <SettingsGroup dividers title={t("preferencesSecurity")} titleGap={0}>
           <SettingsNavigationRow
             detail={text.appearanceDetail}
             icon="moon-half"
@@ -254,6 +242,9 @@ export function SettingsTab({
             title={text.language}
             value={languageValue}
           />
+          {account.canSignOut ? <SettingsNavigationRow detail={t("recoveryDetail")} disabled={busyAction !== null} icon="shield-check" onPress={() => onOpenSecurity("recovery")} testID="settings-recovery" title={t("recoveryCodes")} /> : null}
+          {account.canSignOut ? <SettingsNavigationRow detail={t("emailDetail")} disabled={busyAction !== null} icon="user" onPress={() => onOpenSecurity("email")} testID="settings-email" title={t("changeEmail")} /> : null}
+          {account.canSignOut ? <SettingsNavigationRow detail={t("passwordDetail")} disabled={busyAction !== null} icon="shield" onPress={() => onOpenSecurity("password")} testID="settings-password" title={t("changePassword")} /> : null}
         </SettingsGroup>
 
         <SettingsGroup dividers title={text.learning} titleGap={0}>
@@ -302,6 +293,10 @@ export function SettingsTab({
           </SettingsGroup>
         ) : null}
       </View>
+      {account.canSignOut ? <View style={styles.content} testID="settings-account-actions">
+        <Button disabled={busyAction !== null} onPress={() => onOpenSecurity("delete")} testID="settings-delete-account" variant="secondary">{tAccount("deleteAccount")}</Button>
+        <Button disabled={busyAction !== null} loading={busyAction === "signOut"} onPress={signOut} testID="settings-sign-out" variant="destructive">{text.signOut}</Button>
+      </View> : null}
       <View style={styles.footer}>
         <Text maxFontSizeMultiplier={2} style={styles.footerTitle}>Patternly</Text>
         {metadata ? <Text maxFontSizeMultiplier={2} style={styles.footerText}>{metadata}</Text> : null}
@@ -423,6 +418,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     height: 14,
     width: 14,
   },
+  identity: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  identityCopy: { flex: 1, gap: spacing.xs },
+  identityTitle: { ...typography.caption, color: palette.textMuted },
+  identityEmail: { ...typography.body, color: palette.textPrimary },
+  identityDetail: { ...typography.caption, color: palette.textMuted },
   page: { gap: spacing.xl },
   content: { gap: spacing.xl },
   preferenceMeta: { alignItems: "center", flexDirection: "row", gap: spacing.xs },

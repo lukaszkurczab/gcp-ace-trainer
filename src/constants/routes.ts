@@ -6,6 +6,7 @@ export const ROUTES = {
   LEGAL_INFORMATION: "LegalInformation",
   NOTIFICATION_SETTINGS: "NotificationSettings",
   YOUR_DATA: "YourData",
+  ACCOUNT_SECURITY: "AccountSecurity",
   ACCOUNT_ENTRY: "AccountEntry",
   BACKEND_DIAGNOSTICS: "BackendDiagnostics",
   SELECT_TRACK: "select_track",

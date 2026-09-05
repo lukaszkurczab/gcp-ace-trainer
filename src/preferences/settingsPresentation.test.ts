@@ -17,7 +17,7 @@ const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
 test("Settings exposes account and participant navigation actions plus conditional developer verification actions", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
-  assert.equal(navigationRows.length, 10);
+  assert.equal(navigationRows.length, 11);
 
   for (const callback of [
     "onOpenAccount",
@@ -62,7 +62,7 @@ test("Settings account presentation names guest, authenticated, and unavailable 
   assert.match(home, /getSettingsAccountPresentation\(account\.state\)/);
   assert.match(home, /initialMode: "signIn"/);
   assert.match(home, /onSignOut=\{\(\) => account\.signOut\(\)\}/);
-  assert.match(accountProvider, /signOut: \(\) => runWithAuth/);
+  assert.match(accountProvider, /signOut: \(\) => runSensitiveWithAuth/);
   assert.match(accountProvider, /prepareAccountSignOut\(api, state\.backendUser\.id\)/);
 });
 
@@ -79,7 +79,7 @@ test("grouped settings rows follow the Figma 200% text geometry", () => {
   assert.match(listRow, /listRowDetail/);
   assert.match(settingsGroup, /rows:\s*\{[\s\S]*?gap:\s*spacing\.sm,/);
   assert.match(settingsGroup, /titleGap\?: number/);
-  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.app\} titleGap=\{0\}>/);
+  assert.match(settingsTab, /<SettingsGroup dividers title=\{t\("preferencesSecurity"\)\} titleGap=\{0\}>/);
   assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.learning\} titleGap=\{0\}>/);
   assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.dataPrivacy\} titleGap=\{0\}>/);
   assert.match(settingsTab, /IconTile iconSize=\{24\} name=\{icon\} size=\{32\} tone="settings"/);

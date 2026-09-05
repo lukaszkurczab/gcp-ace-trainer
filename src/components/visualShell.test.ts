@@ -77,11 +77,12 @@ test("route coverage has one native or inline shell owner and preserves active-s
     .filter((match) => /headerShown:\s*false/.test(match[2] ?? ""))
     .map((match) => match[1]);
 
-  assert.equal(routeIds.length, 26);
-  assert.equal(new Set(routeIds).size, 26);
+  assert.equal(routeIds.length, 27);
+  assert.equal(new Set(routeIds).size, 27);
   assert.deepEqual(headerlessRouteIds, [
     "HOME",
     "ACTIVITY",
+    "ACCOUNT_SECURITY",
     "APPEARANCE_SETTINGS",
     "LANGUAGE_SETTINGS",
     "YOUR_DATA",
@@ -216,6 +217,7 @@ test("Screen and SessionShell remain the only general and active-session page ow
 
   assert.deepEqual(safeAreaOwners, []);
   assert.deepEqual(scrollViewOwners, [
+    "src/features/account/AccountSecurityScreen.tsx",
     "src/features/reports/ContentReportSheet.tsx",
     "src/features/simulation/SimulationSessionSurface.tsx",
     "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",

@@ -4,14 +4,16 @@ import test, { beforeEach } from "node:test";
 import { PatternlyApiClientError, type PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { deleteBoundAccount, prepareAccountSignOut } from "./accountDataService";
+import { clearAccountDeletionOwnedLocalData, deleteBoundAccount, loadAccountDataSession, prepareAccountSignOut, retryPendingAccountDeletion } from "./accountDataService";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { getAccountSyncState } from "../../storage/repositories/accountDataRepository";
 import {
+  beginAccountDeletion,
   getAccountDeletionState,
   getAccountSignOutState,
+  markAccountDeletionComplete,
 } from "../../storage/repositories/accountLifecycleRepository";
-import { bindGuestInstallationToAccount, getGuestInstallation, provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
+import { bindGuestInstallationToAccount, clearGuestAccountBinding, getGuestInstallation, provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
 
 const accountId = "55555555-5555-4555-8555-555555555555";
 const uid = "firebase-fixture-uid";
@@ -135,6 +137,162 @@ test("deletion retries after a revoked or stale session and leaves a verified lo
   assert.equal(getAccountDeletionState()?.status, "complete");
 });
 
+test("deletion cleanup removes the complete canonical learning namespace while preserving device records and recovery markers", async () => {
+  const storage = getKeyValueStorage() as MemoryKeyValueStorage;
+  const learningKeys = [
+    STORAGE_KEYS.ACTIVE_TRACK,
+    STORAGE_KEYS.ACTIVE_TRAINING_SESSION,
+    STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT,
+    STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER,
+    STORAGE_KEYS.TRAINING_SESSION_INDEX,
+    STORAGE_KEYS.TRAINING_ATTEMPT_INDEX,
+    STORAGE_KEYS.REVIEW_INDEX,
+    STORAGE_KEYS.CONTENT_REPORT_OUTBOX,
+    STORAGE_KEYS.ACCOUNT_SYNC,
+    STORAGE_KEYS.trainingSession("orphan-session"),
+    STORAGE_KEYS.trainingSessionResult("orphan-result"),
+    STORAGE_KEYS.trainingAttempt("orphan-attempt"),
+    STORAGE_KEYS.reviewEntry("orphan-review"),
+    STORAGE_KEYS.goal("orphan-goal"),
+  ];
+  for (const key of learningKeys) storage.setString(key, "learning");
+  storage.setString(STORAGE_KEYS.SETTINGS, "device-settings");
+  storage.setString(STORAGE_KEYS.NOTIFICATION_SETTINGS, "device-notifications");
+  storage.setString(STORAGE_KEYS.ACTIVE_JOURNAL, "journal-must-remain");
+  const marker = beginAccountDeletion(accountId, uid);
+  const installationBefore = await getGuestInstallation();
+
+  await clearAccountDeletionOwnedLocalData();
+
+  for (const key of learningKeys) assert.equal(storage.contains(key), false, key);
+  assert.equal(storage.getString(STORAGE_KEYS.SETTINGS), "device-settings");
+  assert.equal(storage.getString(STORAGE_KEYS.NOTIFICATION_SETTINGS), "device-notifications");
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), "journal-must-remain");
+  assert.deepEqual(await getGuestInstallation(), installationBefore);
+  assert.deepEqual(getAccountDeletionState(), marker);
+});
+
+test("a completed marker from an earlier account does not block a later bound account", async () => {
+  const nextAccountId = "88888888-8888-4888-8888-888888888888";
+  await clearGuestAccountBinding();
+  await bindGuestInstallationToAccount(nextAccountId);
+  markAccountDeletionComplete(beginAccountDeletion(accountId, uid));
+
+  const next = await loadAccountDataSession(api(), nextAccountId);
+
+  assert.equal(next.status, "synced");
+  assert.equal(getAccountDeletionState(), null);
+  assert.equal((await getGuestInstallation())?.accountId, nextAccountId);
+});
+
+test("a preflight journal failure does not create a deletion operation and pending retry cannot start one", async () => {
+  await persistMutationJournal(makeJournal([
+    { kind: "put_attempt", record: journalAttempt() },
+    { kind: "put_session", record: journalSession() },
+  ]));
+  let deleteCalls = 0;
+  const client = api({ deleteAccount: async (operationId) => { deleteCalls++; return { status: "deleted", operationId, proofId: "proof_fixture_12345678901234567890" }; } });
+
+  const first = await deleteBoundAccount(client, accountId, uid);
+  assert.deepEqual(first, { ok: false, failure: "journalRecoveryFailure" });
+  assert.equal(getAccountDeletionState(), null);
+  assert.equal(await retryPendingAccountDeletion(client, accountId, uid), null);
+  assert.equal(deleteCalls, 0);
+});
+
+test("response loss resolves a matching remote operation and rejects mismatched status without local cleanup", async () => {
+  const storage = getKeyValueStorage() as MemoryKeyValueStorage;
+  const orphanKey = STORAGE_KEYS.goal("response-loss-goal");
+  storage.setString(orphanKey, "orphan");
+  let operationId = "";
+  let statusCalls = 0;
+  const client = api({
+    deleteAccount: async (requestedOperationId) => {
+      operationId = requestedOperationId;
+      throw new PatternlyApiClientError("transport_failed");
+    },
+    getDeletionOperationStatus: async (requestedOperationId) => {
+      statusCalls++;
+      return { status: "remote_deleted", operationId: requestedOperationId, proofId: "proof_fixture_12345678901234567890" };
+    },
+    getDeletionProof: async (proofId) => ({ status: "deleted", operationId, proofId }),
+  });
+
+  assert.deepEqual(await deleteBoundAccount(client, accountId, uid), { ok: true, proofId: "proof_fixture_12345678901234567890" });
+  assert.equal(statusCalls, 1);
+  assert.equal(storage.contains(orphanKey), false);
+  assert.equal(getAccountDeletionState()?.status, "complete");
+
+  installKeyValueStorageForTests(new MemoryKeyValueStorage());
+  await provisionGuestInstallation({ async create() { return { installationId: "66666666-6666-4666-8666-666666666666", localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
+  await bindGuestInstallationToAccount(accountId);
+  const mismatchStorage = getKeyValueStorage() as MemoryKeyValueStorage;
+  const mismatchKey = STORAGE_KEYS.goal("mismatch-goal");
+  mismatchStorage.setString(mismatchKey, "must-remain");
+  beginAccountDeletion(accountId, uid);
+  let mismatchDeleteCalls = 0;
+  const mismatchClient = api({
+    deleteAccount: async () => { mismatchDeleteCalls++; throw new PatternlyApiClientError("transport_failed"); },
+    getDeletionOperationStatus: async (requestedOperationId) => ({ status: "remote_deleted", operationId: `${requestedOperationId}-other`, proofId: "proof_fixture_12345678901234567890" }),
+  });
+  const mismatch = await retryPendingAccountDeletion(mismatchClient, accountId, uid);
+  assert.deepEqual(mismatch, { ok: false, failure: "pendingSyncRequiresNetwork" });
+  assert.equal(mismatchDeleteCalls, 1);
+  assert.equal(mismatchStorage.contains(mismatchKey), true);
+  assert.notEqual(getAccountDeletionState()?.status, "complete");
+});
+
+test("local deletion cleanup resumes after a failed key removal without issuing another remote delete", async () => {
+  const storage = getKeyValueStorage() as MemoryKeyValueStorage;
+  const orphanKey = STORAGE_KEYS.goal("cleanup-retry-goal");
+  storage.setString(orphanKey, "orphan");
+  let operationId = "";
+  let deleteCalls = 0;
+  const client = api({
+    deleteAccount: async (requestedOperationId) => {
+      deleteCalls++;
+      operationId = requestedOperationId;
+      return { status: "deleted", operationId: requestedOperationId, proofId: "proof_fixture_12345678901234567890" };
+    },
+    getDeletionProof: async (proofId) => ({ status: "deleted", operationId, proofId }),
+  });
+
+  storage.setFailurePlan({ kind: "fail_on_key_remove", key: orphanKey });
+  assert.deepEqual(await deleteBoundAccount(client, accountId, uid), { ok: false, failure: "localCleanupFailure" });
+  assert.equal(getAccountDeletionState()?.status, "localCleanupPending");
+  storage.setFailurePlan(null);
+  assert.deepEqual(await retryPendingAccountDeletion(client, accountId, uid), { ok: true, proofId: "proof_fixture_12345678901234567890" });
+  assert.equal(deleteCalls, 1);
+  assert.equal(storage.contains(orphanKey), false);
+  assert.equal(getAccountDeletionState()?.status, "complete");
+});
+
+test("server reauthentication failures remain reauthentication failures with the pending marker intact", async () => {
+  const client = api({ deleteAccount: async () => { throw new PatternlyApiClientError("server_error", 400, "recent_reauthentication_required"); } });
+  const result = await deleteBoundAccount(client, accountId, uid);
+  assert.deepEqual(result, { ok: false, failure: "reauthenticationRequired" });
+  assert.equal(getAccountDeletionState()?.status, "remotePending");
+});
+
+test("an uncertain server deletion failure resolves through the bound operation status", async () => {
+  let operationId = "";
+  let statusCalls = 0;
+  const client = api({
+    deleteAccount: async (requestedOperationId) => {
+      operationId = requestedOperationId;
+      throw new PatternlyApiClientError("server_error", 500, "internal_error");
+    },
+    getDeletionOperationStatus: async (requestedOperationId) => {
+      statusCalls++;
+      return { status: "remote_deleted", operationId: requestedOperationId, proofId: "proof_fixture_12345678901234567890" };
+    },
+    getDeletionProof: async (proofId) => ({ status: "deleted", operationId, proofId }),
+  });
+
+  assert.deepEqual(await deleteBoundAccount(client, accountId, uid), { ok: true, proofId: "proof_fixture_12345678901234567890" });
+  assert.equal(statusCalls, 1);
+});
+
 // The discard path uses the real repositories and injected durable storage faults.
 import { completeTrainingSession, createFamilyEnvelope, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult } from "../../domain";
 import { commitSessionCompletion } from "../learningMutations/commitSessionLifecycle";
@@ -142,8 +300,7 @@ import { commitTrainingSessionStart } from "../learningMutations/commitTrainingS
 import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../../storage/keys";
-import { discardGuestDataAndLoadAccount, loadAccountDataSession, retryPendingAccountDataSync } from "./accountDataService";
-import { clearGuestAccountBinding } from "../../storage/repositories/guestInstallationRepository";
+import { discardGuestDataAndLoadAccount, retryPendingAccountDataSync } from "./accountDataService";
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import { clearTrainingSessions, getActiveTrainingSession, saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
 import { clearActiveTrainingSessionDraft, getActiveTrainingSessionDraft, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
