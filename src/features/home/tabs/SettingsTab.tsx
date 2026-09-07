@@ -38,7 +38,7 @@ export function SettingsLoadingSkeleton() {
   const { fontScale } = useWindowDimensions();
   const textScale = Math.min(fontScale, 2);
   const motion = useSkeletonGlassMotion();
-  const rows = [0, 1, 2, 3, 4, 5];
+  const groupRows = [2, 3, 2] as const;
 
   return (
     <View
@@ -50,15 +50,22 @@ export function SettingsLoadingSkeleton() {
       style={styles.settingsLoading}
       testID="settings-loading-skeleton"
     >
-      <Text accessible={false} maxFontSizeMultiplier={2} style={styles.settingsLoadingTitle}>{t("appSettings")}</Text>
+      <ScreenHeader description={t("settingsDescription")} title={t("appSettings")} />
       <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.settingsLoadingShapes}>
-        <SkeletonShape motion={motion} style={[styles.settingsLoadingDescription, { height: 14 * textScale }]} />
+        <View style={styles.settingsLoadingIdentity}>
+          <SkeletonShape motion={motion} style={styles.settingsLoadingIdentityIcon} />
+          <View style={styles.settingsLoadingIdentityCopy}>
+            <SkeletonShape motion={motion} style={[styles.settingsLoadingLine, styles.settingsLoadingIdentityTitle, { height: 12 * textScale }]} />
+            <SkeletonShape motion={motion} style={[styles.settingsLoadingLine, styles.settingsLoadingIdentityDetail, { height: 15 * textScale }]} />
+          </View>
+        </View>
+        <SkeletonShape motion={motion} style={styles.settingsLoadingAccountAction} />
         <View style={styles.settingsLoadingGroups}>
-          {[0, 1, 2].map((group) => (
+          {groupRows.map((rowCount, group) => (
             <View key={group} style={styles.settingsLoadingGroup}>
               <SkeletonShape motion={motion} style={[styles.settingsLoadingGroupTitle, { height: 12 * textScale }]} />
               <View style={styles.settingsLoadingCard}>
-                {rows.slice(group * 2, group * 2 + 2).map((row) => (
+                {Array.from({ length: rowCount }, (_, row) => (
                   <View key={row} style={styles.settingsLoadingRow}>
                     <SkeletonShape motion={motion} style={styles.settingsLoadingIcon} />
                     <View style={styles.settingsLoadingRowCopy}>
@@ -358,27 +365,46 @@ function formatStorageIssue(issue: StorageIssue, locale: AppLocale): string {
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   settingsLoading: {
-    gap: spacing.lg,
+    gap: spacing.xl,
     width: "100%",
-  },
-  settingsLoadingTitle: {
-    ...typography.title,
-    color: palette.textPrimary,
   },
   settingsLoadingShapes: {
-    gap: spacing.lg,
+    gap: spacing.xl,
     width: "100%",
   },
-  settingsLoadingDescription: {
+  settingsLoadingIdentity: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  settingsLoadingIdentityIcon: {
     backgroundColor: palette.progress.loadingTrack,
-    borderRadius: radius.pill,
-    width: "82%",
+    borderRadius: radius.md,
+    height: 40,
+    width: 40,
+  },
+  settingsLoadingIdentityCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    minWidth: 0,
+  },
+  settingsLoadingIdentityTitle: {
+    width: "34%",
+  },
+  settingsLoadingIdentityDetail: {
+    width: "58%",
+  },
+  settingsLoadingAccountAction: {
+    backgroundColor: palette.progress.loadingTrack,
+    borderRadius: radius.button,
+    height: 48,
+    width: "100%",
   },
   settingsLoadingGroups: {
     gap: spacing.xl,
   },
   settingsLoadingGroup: {
-    gap: spacing.sm,
+    gap: 0,
   },
   settingsLoadingGroupTitle: {
     backgroundColor: palette.progress.loadingTrack,
@@ -398,9 +424,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: spacing.md,
-    minHeight: 72,
+    minHeight: 63,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: 14,
   },
   settingsLoadingIcon: {
     backgroundColor: palette.progress.loadingTrack,

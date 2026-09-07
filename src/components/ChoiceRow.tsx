@@ -7,7 +7,7 @@ import type { AppColors } from "../theme";
 type ChoiceRowProps = {
   appearancePreview?: "dark" | "light" | "system";
   accessibilityLabel?: string;
-  detail: string;
+  detail?: string;
   density?: "comfortable" | "compact";
   disabled?: boolean;
   loading?: boolean;
@@ -27,7 +27,7 @@ export function ChoiceRow({ accessibilityLabel, appearancePreview, density = "co
   const radio = loading
     ? <ActivityIndicator accessibilityElementsHidden color={palette.choice.active} size="small" style={styles.loadingIndicator} />
     : <View style={[styles.radio, selected ? styles.radioSelected : styles.radioUnselected]}>{selected ? <View style={styles.dot} /> : null}</View>;
-  const content = <View style={styles.content}><Text key={`choice-row-title-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.title, appearancePreview ? styles.appearanceTitle : null]}>{title}</Text>{!compact ? <Text key={`choice-row-detail-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text> : null}</View>;
+  const content = <View style={styles.content}><Text key={`choice-row-title-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.title, appearancePreview ? styles.appearanceTitle : null]}>{title}</Text>{!compact && detail ? <Text key={`choice-row-detail-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text> : null}</View>;
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}

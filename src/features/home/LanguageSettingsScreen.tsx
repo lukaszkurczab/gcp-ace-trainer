@@ -58,7 +58,7 @@ export function LanguageSettingsScreen({ navigation }: LanguageSettingsScreenPro
       <View accessibilityLabel={t("languageOptions")} accessibilityRole="radiogroup" style={styles.choiceGroup}>
         {LANGUAGE_SETTINGS_OPTIONS.map((option) => (
           <ChoiceRow
-            detail={t(option.detailKey)}
+            detail={option.detailKey ? t(option.detailKey, { lng: preferences.deviceLocale }) : undefined}
             disabled={savingValue !== null}
             key={option.value}
             loading={savingValue === option.value}

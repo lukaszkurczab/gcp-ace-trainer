@@ -9,6 +9,7 @@ const infoBlock = readFileSync("src/components/InfoBlock.tsx", "utf8");
 const appearanceSettings = readFileSync("src/features/home/AppearanceSettingsScreen.tsx", "utf8");
 const languageSettings = readFileSync("src/features/home/LanguageSettingsScreen.tsx", "utf8");
 const languageSettingsModel = readFileSync("src/features/home/languageSettingsModel.ts", "utf8");
+const appPreferencesProvider = readFileSync("src/preferences/AppPreferencesProvider.tsx", "utf8");
 const accountCommand = readFileSync("src/features/account/useAccountCommand.ts", "utf8");
 const informationScreen = readFileSync("src/features/home/SettingsInformationScreen.tsx", "utf8");
 const yourDataScreen = readFileSync("src/features/home/YourDataScreen.tsx", "utf8");
@@ -156,6 +157,8 @@ test("appearance selection owns the typed accessible radio choice flow", () => {
   assert.match(appearanceSettings, /if \(mountedRef\.current\) setSaveError\(true\)/);
   assert.match(choiceRow, /accessibilityRole="radio"/);
   assert.match(choiceRow, /loading\?: boolean/);
+  assert.match(choiceRow, /detail\?: string/);
+  assert.match(choiceRow, /!compact && detail \?/);
   assert.match(choiceRow, /accessibilityState=\{\{ busy: loading, disabled: isDisabled, selected \}\}/);
   assert.match(choiceRow, /minHeight:\s*72,[\s\S]*?paddingHorizontal:\s*14,[\s\S]*?paddingVertical:\s*spacing\.md/);
   assert.match(choiceRow, /height:\s*20,[\s\S]*?width:\s*20/);
@@ -174,6 +177,35 @@ test("language selection owns the typed accessible radio choice flow", () => {
   assert.match(languageSettings, /const savingRef = useRef<LanguagePreference \| null>\(null\)/);
   assert.match(languageSettings, /if \(value === preferences\.language \|\| savingRef\.current !== null\) return/);
   assert.match(languageSettings, /await preferences\.setLanguage\(value\)/);
+  assert.match(appPreferencesProvider, /deviceLocale: AppLocale/);
+  assert.match(appPreferencesProvider, /const deviceLocale = resolveSystemLocale\(\)/);
+  assert.match(appPreferencesProvider, /settings\.language === "system" \? deviceLocale : settings\.language/);
+  assert.match(languageSettings, /detail=\{option\.detailKey \? t\(option\.detailKey, \{ lng: preferences\.deviceLocale \}\) : undefined\}/);
+  assert.match(languageSettingsModel, /detailKey\?: string/);
+  assert.match(languageSettingsModel, /\{ detailKey: "languageSystemDetail", labelKey: "languageSystem", value: "system" \}/);
+  assert.doesNotMatch(languageSettingsModel, /languageEnglishDetail|languagePolishDetail/);
+});
+
+test("System language detail follows the device locale independently from the selected app locale", () => {
+  const settingsEn = JSON.parse(readFileSync("src/locales/en/settings.json", "utf8")) as Record<string, string>;
+  const settingsPl = JSON.parse(readFileSync("src/locales/pl/settings.json", "utf8")) as Record<string, string>;
+  const settingsByLocale = { en: settingsEn, pl: settingsPl } as const;
+
+  for (const appLocale of ["en", "pl"] as const) {
+    for (const deviceLocale of ["en", "pl"] as const) {
+      const appStrings = settingsByLocale[appLocale];
+      const deviceStrings = settingsByLocale[deviceLocale];
+
+      assert.equal(appStrings.languageSystem, appLocale === "en" ? "System" : "Systemowy");
+      assert.equal(
+        deviceStrings.languageSystemDetail,
+        deviceLocale === "en" ? "Follow your device language." : "Użyj języka urządzenia.",
+        `${appLocale} app/${deviceLocale} device`,
+      );
+      assert.equal(appStrings.languageEnglishDetail, undefined);
+      assert.equal(appStrings.languagePolishDetail, undefined);
+    }
+  }
 });
 
 test("InfoBlock exposes opt-in alert semantics for dynamic settings errors", () => {

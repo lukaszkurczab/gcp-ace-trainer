@@ -20,6 +20,7 @@ type AppPreferencesContextValue = Readonly<{
   appearance: AppearancePreference;
   colorMode: ColorMode;
   colors: AppColors;
+  deviceLocale: AppLocale;
   language: LanguagePreference;
   locale: AppLocale;
   ready: boolean;
@@ -36,6 +37,7 @@ function resolveSystemLocale(): AppLocale {
 
 export function AppPreferencesProvider({ children }: { children: ReactNode }) {
   const systemColorScheme = useColorScheme();
+  const deviceLocale = resolveSystemLocale();
   const [settings, setSettings] = useState<Settings>(DEFAULT_APP_SETTINGS);
   const [ready, setReady] = useState(false);
 
@@ -70,7 +72,7 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
   const colorMode: ColorMode = settings.appearance === "system"
     ? systemColorScheme === "dark" ? "dark" : "light"
     : settings.appearance;
-  const locale: AppLocale = settings.language === "system" ? resolveSystemLocale() : settings.language;
+  const locale: AppLocale = settings.language === "system" ? deviceLocale : settings.language;
 
   useEffect(() => {
     void i18n.changeLanguage(locale);
@@ -80,12 +82,13 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
     appearance: settings.appearance,
     colorMode,
     colors: colors[colorMode] as AppColors,
+    deviceLocale,
     language: settings.language,
     locale,
     ready,
     setAppearance,
     setLanguage,
-  }), [colorMode, locale, ready, setAppearance, setLanguage, settings.appearance, settings.language]);
+  }), [colorMode, deviceLocale, locale, ready, setAppearance, setLanguage, settings.appearance, settings.language]);
 
   return <AppPreferencesContext.Provider value={value}>{children}</AppPreferencesContext.Provider>;
 }
