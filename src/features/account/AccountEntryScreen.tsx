@@ -58,6 +58,7 @@ type AccountMode = NonNullable<
   NonNullable<RootStackParamList[typeof ROUTES.ACCOUNT_ENTRY]>["initialMode"]
 >;
 type Feedback = AccountCommandResult;
+type TermsPresentationState = "pristine" | "checked" | "uncheckedAfterInteraction";
 
 
 type AccountCopy = Record<keyof typeof accountCopy | "invalidEmail", string>;
@@ -224,6 +225,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [termsPresentationState, setTermsPresentationState] = useState<TermsPresentationState>("pristine");
   const [resetCode, setResetCode] = useState("");
   const [recoveryCode, setRecoveryCode] = useState("");
   const [recoveryMethod, setRecoveryMethod] = useState<"email" | "code">("email");
@@ -241,7 +243,12 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const beginRegistration = () => {
     setFeedback(null);
     setAcceptedTerms(false);
+    setTermsPresentationState("pristine");
     setMode("register");
+  };
+  const handleTermsChange = (accepted: boolean) => {
+    setAcceptedTerms(accepted);
+    setTermsPresentationState(accepted ? "checked" : "uncheckedAfterInteraction");
   };
   const { t: tSettings } = useTranslation("settings");
   const firebaseConfig = useMemo(() => readFirebaseClientConfiguration(), []);
@@ -519,7 +526,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             </Button>
           </View>
           <Divider label={text.or} />
-          <TermsAcceptance accepted={acceptedTerms} onChange={setAcceptedTerms} onOpenPrivacy={() => navigation.navigate(ROUTES.PRIVACY_POLICY)} onOpenTerms={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE)} text={text} />
+          <TermsAcceptance accepted={acceptedTerms} onChange={handleTermsChange} onOpenPrivacy={() => navigation.navigate(ROUTES.PRIVACY_POLICY)} onOpenTerms={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE)} presentationState="uncheckedAfterInteraction" text={text} />
           {Platform.OS === "ios" ? (
             <ProviderButton
               disabled={!acceptedTerms}
@@ -622,7 +629,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           email={email}
           feedback={feedback}
           inputStyle={styles.authInput}
-          onAcceptedTermsChange={setAcceptedTerms}
+          onAcceptedTermsChange={handleTermsChange}
           onOpenPrivacy={() => navigation.navigate(ROUTES.PRIVACY_POLICY)}
           onOpenTerms={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE)}
           onConfirmationChange={(value) => { setFeedback(null); setConfirmation(value); }}
@@ -637,6 +644,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           }}
           password={password}
           placeholderTextColor={styles.authPlaceholder.color as string}
+          termsPresentationState={termsPresentationState}
           text={text}
           testID="account-register-submit"
         />
@@ -1508,6 +1516,7 @@ function CredentialsForm({
   onSubmit,
   password,
   placeholderTextColor,
+  termsPresentationState,
   text,
   testID,
 }: Readonly<{
@@ -1526,10 +1535,12 @@ function CredentialsForm({
   onSubmit: () => void;
   password: string;
   placeholderTextColor: string;
+  termsPresentationState?: TermsPresentationState;
   text: AccountCopy;
   testID: string;
 }>) {
   const styles = useThemedStyles(createStyles);
+  const [emailFocused, setEmailFocused] = useState(false);
   const passwordMismatch = feedback?.kind === "failure" && feedback.failure === "passwordMismatch";
   const invalidEmail = feedback?.kind === "failure" && feedback.failure === "invalidEmail";
   const emailError = invalidEmail
@@ -1545,13 +1556,60 @@ function CredentialsForm({
   return (
     <View style={styles.authForm}>
       <FormField error={emailError} errorTestID="account-register-email-error" label={text.email}>
-          <TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" maxFontSizeMultiplier={2} onChangeText={onEmailChange} placeholder={text.enterEmail} placeholderTextColor={placeholderTextColor} style={[inputStyle, styles.centeredInput, emailError ? styles.authInputError : null]} testID="account-email" value={email} />
+        <TextInput
+          accessibilityLabel={text.email}
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+          maxFontSizeMultiplier={2}
+          onBlur={() => setEmailFocused(false)}
+          onChangeText={onEmailChange}
+          onFocus={() => setEmailFocused(true)}
+          placeholder={text.enterEmail}
+          placeholderTextColor={placeholderTextColor}
+          returnKeyType="next"
+          style={[inputStyle, styles.centeredInput, emailFocused ? styles.authInputFocused : null, emailError ? styles.authInputError : null]}
+          testID="account-email"
+          textContentType="emailAddress"
+          value={email}
+        />
       </FormField>
-          <AuthPasswordInput error={passwordError} errorTestID="account-register-password-error" inputStyle={inputStyle} onChangeText={onPasswordChange} placeholder={text.enterPassword} placeholderTextColor={placeholderTextColor} testID="account-password" text={text} value={password} />
+      <AuthPasswordInput
+        accessibilityLabel={text.password}
+        autoComplete="password-new"
+        enableFocusHighlight
+        error={passwordError}
+        errorTestID="account-register-password-error"
+        inputStyle={inputStyle}
+        onChangeText={onPasswordChange}
+        placeholder={text.enterPassword}
+        placeholderTextColor={placeholderTextColor}
+        returnKeyType="next"
+        testID="account-password"
+        text={text}
+        textContentType="newPassword"
+        value={password}
+      />
       {confirmation !== undefined && onConfirmationChange ? (
-        <AuthPasswordInput error={passwordMismatch ? text.passwordMismatch : undefined} errorTestID="account-password-confirmation-error" inputStyle={inputStyle} label={text.confirmPassword} onChangeText={onConfirmationChange} placeholder={text.confirmPassword} placeholderTextColor={placeholderTextColor} testID="account-password-confirmation" text={text} value={confirmation} />
+        <AuthPasswordInput
+          accessibilityLabel={text.confirmPassword}
+          autoComplete="password-new"
+          enableFocusHighlight
+          error={passwordMismatch ? text.passwordMismatch : undefined}
+          errorTestID="account-password-confirmation-error"
+          inputStyle={inputStyle}
+          label={text.confirmPassword}
+          onChangeText={onConfirmationChange}
+          placeholder={text.confirmPassword}
+          placeholderTextColor={placeholderTextColor}
+          returnKeyType="done"
+          testID="account-password-confirmation"
+          text={text}
+          textContentType="newPassword"
+          value={confirmation}
+        />
       ) : null}
-      {acceptedTerms !== undefined && onAcceptedTermsChange && onOpenPrivacy && onOpenTerms ? <TermsAcceptance accepted={acceptedTerms} onChange={onAcceptedTermsChange} onOpenPrivacy={onOpenPrivacy} onOpenTerms={onOpenTerms} text={text} /> : null}
+      {acceptedTerms !== undefined && onAcceptedTermsChange && onOpenPrivacy && onOpenTerms ? <TermsAcceptance accepted={acceptedTerms} onChange={onAcceptedTermsChange} onOpenPrivacy={onOpenPrivacy} onOpenTerms={onOpenTerms} presentationState={termsPresentationState} text={text} /> : null}
       <Button disabled={acceptedTerms === false} labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID={testID} variant="primary">
         {buttonLabel}
       </Button>
@@ -1559,20 +1617,20 @@ function CredentialsForm({
   );
 }
 
-function TermsAcceptance({ accepted, onChange, onOpenPrivacy, onOpenTerms, text }: Readonly<{ accepted: boolean; onChange: (accepted: boolean) => void; onOpenPrivacy: () => void; onOpenTerms: () => void; text: AccountCopy }>) {
+function TermsAcceptance({ accepted, onChange, onOpenPrivacy, onOpenTerms, presentationState = "pristine", text }: Readonly<{ accepted: boolean; onChange: (accepted: boolean) => void; onOpenPrivacy: () => void; onOpenTerms: () => void; presentationState?: TermsPresentationState; text: AccountCopy }>) {
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.termsAcceptance}>
       <View style={styles.termsCheckboxRow}>
         <Pressable accessibilityLabel={`${text.acceptTermsPrefix} ${text.termsOfService}`} accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} hitSlop={8} onPress={() => onChange(!accepted)} style={styles.termsCheckboxControl} testID="account-register-terms-checkbox">
-          <View style={[styles.termsCheckbox, accepted ? styles.termsCheckboxChecked : null]}>{accepted ? <Icon color={styles.termsCheckboxIcon.color as string} name="check" size={16} /> : null}</View>
+          <View style={[styles.termsCheckbox, accepted ? styles.termsAcceptanceCheckboxChecked : null]}>{accepted ? <Icon color={styles.termsAcceptanceCheckboxIcon.color as string} name="check" size={16} /> : null}</View>
         </Pressable>
         <View style={styles.termsLinks}>
           <AuthText style={styles.termsCopy}>{text.acceptTermsPrefix}</AuthText>
           <Pressable accessibilityRole="link" onPress={onOpenTerms} style={styles.termsLinkPressable} testID="account-register-terms-link"><AuthText style={styles.termsLink}>{text.termsOfService}</AuthText></Pressable>
         </View>
       </View>
-      {!accepted ? <AuthText accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.termsRequired} testID="account-register-terms-error">{text.termsRequired}</AuthText> : null}
+      {presentationState === "uncheckedAfterInteraction" && !accepted ? <AuthText accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.termsRequired} testID="account-register-terms-error">{text.termsRequired}</AuthText> : null}
       <View style={styles.termsPrivacyNotice}>
         <AuthText style={styles.termsCopy}>{text.privacyNoticePrefix}</AuthText>
         <Pressable accessibilityRole="link" onPress={onOpenPrivacy} style={styles.termsLinkPressable} testID="account-register-privacy-link"><AuthText style={styles.termsLink}>{text.privacyPolicy}</AuthText></Pressable>
@@ -1598,38 +1656,57 @@ function FormField({
 }
 
 function AuthPasswordInput({
+  accessibilityLabel,
   autoComplete = "password",
+  enableFocusHighlight = false,
   error,
   errorTestID,
   inputStyle,
   label,
   onBlur,
   onChangeText,
+  onFocus,
   placeholder,
   placeholderTextColor,
+  returnKeyType,
   testID,
   text,
+  textContentType,
   value,
 }: Readonly<{
+  accessibilityLabel?: string;
   autoComplete?: "password" | "password-new";
+  enableFocusHighlight?: boolean;
   error?: string;
   errorTestID?: string;
   inputStyle: StyleProp<TextStyle>;
   label?: string;
   onBlur?: () => void;
   onChangeText: (value: string) => void;
+  onFocus?: () => void;
   placeholder: string;
   placeholderTextColor: string;
+  returnKeyType?: "next" | "done";
   testID: string;
   text: AccountCopy;
+  textContentType?: "password" | "newPassword";
   value: string;
 }>) {
   const styles = useThemedStyles(createStyles);
   const [visible, setVisible] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const handleFocus = () => {
+    if (enableFocusHighlight) setFocused(true);
+    onFocus?.();
+  };
+  const handleBlur = () => {
+    if (enableFocusHighlight) setFocused(false);
+    onBlur?.();
+  };
   return (
     <FormField error={error} errorTestID={errorTestID} label={label ?? text.password}>
       <View style={styles.passwordField}>
-        <TextInput autoCapitalize="none" autoComplete={autoComplete} maxFontSizeMultiplier={2} onBlur={onBlur} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={placeholderTextColor} secureTextEntry={!visible} style={[inputStyle, styles.centeredInput, styles.passwordInput, error ? styles.authInputError : null]} testID={testID} value={value} />
+        <TextInput accessibilityLabel={accessibilityLabel} autoCapitalize="none" autoComplete={autoComplete} maxFontSizeMultiplier={2} onBlur={enableFocusHighlight || onBlur ? handleBlur : undefined} onChangeText={onChangeText} onFocus={enableFocusHighlight || onFocus ? handleFocus : undefined} placeholder={placeholder} placeholderTextColor={placeholderTextColor} returnKeyType={returnKeyType} secureTextEntry={!visible} style={[inputStyle, styles.centeredInput, styles.passwordInput, enableFocusHighlight && focused ? styles.authInputFocused : null, error ? styles.authInputError : null]} testID={testID} textContentType={textContentType} value={value} />
         <Pressable accessibilityLabel={visible ? text.hidePassword : text.showPassword} accessibilityRole="button" hitSlop={8} onPress={() => setVisible((current) => !current)} style={styles.visibilityButton} testID={`${testID}-visibility`}>
           <Icon color={styles.icon.color as string} name={visible ? "eye-off" : "eye"} size={24} />
         </Pressable>
@@ -1874,6 +1951,8 @@ function isAuthFieldFailure(
     termsCheckbox: { alignItems: "center", borderColor: palette.borderStrong, borderRadius: 5, borderWidth: 1, height: 22, justifyContent: "center", width: 22 },
     termsCheckboxChecked: { backgroundColor: palette.primary, borderColor: palette.primary },
     termsCheckboxIcon: { color: palette.onPrimary },
+    termsAcceptanceCheckboxChecked: { backgroundColor: palette.onPrimary, borderColor: palette.primary },
+    termsAcceptanceCheckboxIcon: { color: palette.primary },
     termsCopy: { color: palette.textSecondary, flexShrink: 1, fontSize: 13, lineHeight: 20 },
     termsLinks: { flex: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, minWidth: 0 },
     termsLinkPressable: { alignSelf: "flex-start", flexShrink: 1, maxWidth: "100%" },
@@ -1925,6 +2004,7 @@ function isAuthFieldFailure(
       paddingVertical: spacing.md,
     },
     centeredInput: { textAlignVertical: "center" },
+    authInputFocused: { borderColor: palette.primary },
     authInputError: { borderColor: palette.danger },
     fieldError: {
       color: palette.danger,

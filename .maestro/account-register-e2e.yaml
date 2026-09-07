@@ -1,0 +1,68 @@
+appId: com.lkurczab.patternly
+name: Patternly account registration — EN/light baseline
+tags:
+  - e2e
+  - auth
+  - registration
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "^account-register$"
+    timeout: 30000
+- tapOn:
+    id: "^account-register$"
+- extendedWaitUntil:
+    visible:
+      id: "^account-register-submit$"
+    timeout: 10000
+- assertNotVisible:
+    id: "^account-register-terms-error$"
+- assertVisible:
+    id: "^account-register-submit$"
+    enabled: false
+- takeScreenshot: registration-pristine
+- tapOn:
+    id: "^account-register-terms-checkbox$"
+- assertNotVisible:
+    id: "^account-register-terms-error$"
+- assertVisible:
+    id: "^account-register-submit$"
+    enabled: true
+- takeScreenshot: registration-terms-checked
+- tapOn:
+    id: "^account-register-terms-checkbox$"
+- assertVisible:
+    id: "^account-register-terms-error$"
+- assertVisible:
+    id: "^account-register-submit$"
+    enabled: false
+- takeScreenshot: registration-terms-unchecked-after-interaction
+- tapOn:
+    id: "^account-register-terms-checkbox$"
+- assertNotVisible:
+    id: "^account-register-terms-error$"
+- assertVisible:
+    id: "^account-register-submit$"
+    enabled: true
+- takeScreenshot: registration-terms-rechecked
+- tapOn:
+    id: "^account-email$"
+- inputText: "audit.register@example.com"
+- takeScreenshot: registration-focus-email
+- tapOn:
+    id: "^account-password$"
+- inputText: "AlphaSecure1"
+- takeScreenshot: registration-focus-password
+- tapOn:
+    id: "^account-password-confirmation$"
+- inputText: "BravoSecure2"
+- takeScreenshot: registration-focus-confirmation
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "^account-register-submit$"
+- assertVisible:
+    id: "^account-password-confirmation-error$"
+- takeScreenshot: registration-password-mismatch

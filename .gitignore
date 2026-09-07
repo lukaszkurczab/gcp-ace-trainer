@@ -15,6 +15,7 @@ web-build/
 !.maestro/home-practice-presentation.yaml
 !.maestro/screenshot-capture/
 .maestro/screenshot-capture/*
+!.maestro/account-register-e2e.yaml
 !.maestro/screenshot-capture/visual-shell/
 .maestro/screenshot-capture/visual-shell/*
 !.maestro/screenshot-capture/visual-shell/visual-shell-capture.yaml
@@ -28,6 +29,12 @@ web-build/
 !.maestro/screenshot-capture/visual-shell/algorithms-completed-summary-deferred-capture.yaml
 !.maestro/screenshot-capture/visual-shell/progress-activity-capture.yaml
 docs/qa/
+!docs/qa/
+!docs/qa/ios-backend/
+docs/qa/ios-backend/*
+!docs/qa/ios-backend/ODK-E2E-003.1-IMPLEMENTATION-REPORT.md
+!docs/qa/ios-backend/ODK-E2E-003.2-IMPLEMENTATION-REPORT.md
+!docs/qa/ios-backend/ODK-E2E-003.3-IMPLEMENTATION-REPORT.md
 
 npm-debug.log*
 yarn-debug.log*

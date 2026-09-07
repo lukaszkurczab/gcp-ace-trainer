@@ -219,6 +219,58 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.doesNotMatch(screen, /themeColors\.(?:dark|light)|#[0-9a-f]{3,8}/i);
 });
 
+test("registration keeps consent presentation separate from the boolean domain contract", () => {
+  const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  const en = JSON.parse(readFileSync("src/locales/en/account.json", "utf8")) as Record<string, string>;
+  const pl = JSON.parse(readFileSync("src/locales/pl/account.json", "utf8")) as Record<string, string>;
+  const registrationStart = screen.indexOf("function CredentialsForm");
+  const termsStart = screen.indexOf("function TermsAcceptance");
+  const termsEnd = screen.indexOf("function FormField", termsStart);
+  const recoveryCheckboxStart = screen.indexOf('testID="account-recovery-codes-saved-checkbox"');
+  const recoveryCheckboxEnd = screen.indexOf("</Pressable>", recoveryCheckboxStart);
+  const passwordStart = screen.indexOf("function AuthPasswordInput");
+
+  assert.match(screen, /type TermsPresentationState = "pristine" \| "checked" \| "uncheckedAfterInteraction"/u);
+  assert.match(screen, /useState<TermsPresentationState>\("pristine"\)/u);
+  assert.match(screen, /setTermsPresentationState\("pristine"\)/u);
+  assert.match(screen, /setTermsPresentationState\(accepted \? "checked" : "uncheckedAfterInteraction"\)/u);
+  assert.match(screen, /presentationState === "uncheckedAfterInteraction" && !accepted/u);
+  assert.match(screen, /<Button disabled=\{acceptedTerms === false\}/u);
+  assert.ok(registrationStart >= 0 && termsStart > registrationStart && termsEnd > termsStart && passwordStart > termsEnd);
+
+  const registration = screen.slice(registrationStart, termsStart);
+  const termsAcceptance = screen.slice(termsStart, termsEnd);
+  const recoveryCheckbox = screen.slice(recoveryCheckboxStart, recoveryCheckboxEnd);
+  const passwordInput = screen.slice(passwordStart);
+  assert.equal((registration.match(/enableFocusHighlight/g) ?? []).length, 2);
+  assert.match(registration, /const \[emailFocused, setEmailFocused\] = useState\(false\)/u);
+  assert.match(registration, /onFocus=\{\(\) => setEmailFocused\(true\)\}/u);
+  assert.match(registration, /onBlur=\{\(\) => setEmailFocused\(false\)\}/u);
+  assert.match(registration, /accessibilityLabel=\{text\.email\}[\s\S]*?textContentType="emailAddress"[\s\S]*?returnKeyType="next"/u);
+  assert.match(registration, /accessibilityLabel=\{text\.password\}[\s\S]*?returnKeyType="next"[\s\S]*?textContentType="newPassword"/u);
+  assert.match(registration, /accessibilityLabel=\{text\.confirmPassword\}[\s\S]*?returnKeyType="done"[\s\S]*?textContentType="newPassword"/u);
+  assert.match(passwordInput, /const \[focused, setFocused\] = useState\(false\)/u);
+  assert.match(passwordInput, /if \(enableFocusHighlight\) setFocused\(true\)/u);
+  assert.match(passwordInput, /if \(enableFocusHighlight\) setFocused\(false\)/u);
+  assert.match(passwordInput, /enableFocusHighlight && focused \? styles\.authInputFocused : null, error \? styles\.authInputError : null/u);
+  assert.match(screen, /emailFocused \? styles\.authInputFocused : null, emailError \? styles\.authInputError : null/u);
+  assert.match(screen, /authInputFocused: \{ borderColor: palette\.primary \}/u);
+  assert.match(screen, /termsCheckboxChecked: \{ backgroundColor: palette\.primary, borderColor: palette\.primary \}/u);
+  assert.match(screen, /termsCheckboxIcon: \{ color: palette\.onPrimary \}/u);
+  assert.match(screen, /termsAcceptanceCheckboxChecked: \{ backgroundColor: palette\.onPrimary, borderColor: palette\.primary \}/u);
+  assert.match(screen, /termsAcceptanceCheckboxIcon: \{ color: palette\.primary \}/u);
+  assert.match(termsAcceptance, /termsAcceptanceCheckboxChecked/u);
+  assert.match(termsAcceptance, /termsAcceptanceCheckboxIcon/u);
+  assert.doesNotMatch(termsAcceptance, /termsCheckboxChecked|termsCheckboxIcon/u);
+  assert.match(recoveryCheckbox, /termsCheckboxChecked/u);
+  assert.match(recoveryCheckbox, /termsCheckboxIcon/u);
+  assert.equal(en.termsRequired, "Confirm that you are at least 18 and agree to the Terms of Service to create an account.");
+  assert.equal(pl.termsRequired, "Potwierdź, że masz co najmniej 18 lat, i zaakceptuj Warunki korzystania, aby utworzyć konto.");
+  assert.match(screen, /account\.register\(email, password, acceptedTerms\)/u);
+  assert.match(screen, /ROUTES\.TERMS_OF_SERVICE/gu);
+  assert.match(screen, /ROUTES\.PRIVACY_POLICY/gu);
+});
+
 test("both recovery-code surfaces warn before copying through the guarded clipboard", () => {
   const entry = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
   const security = readFileSync("src/features/account/AccountSecurityScreen.tsx", "utf8");
