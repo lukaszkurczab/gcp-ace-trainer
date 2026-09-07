@@ -24,6 +24,7 @@ type SettingsTabProps = {
   onOpenLanguage: () => void;
   onOpenLegalInformation: () => void;
   onOpenNotifications: () => void;
+  onOpenPremium: () => void;
   onOpenPracticeSettings: () => void;
   onOpenYourData: () => void;
   onSignOut: () => Promise<AccountCommandResult>;
@@ -87,6 +88,7 @@ export function SettingsTab({
   onOpenLanguage,
   onOpenLegalInformation,
   onOpenNotifications,
+  onOpenPremium,
   onOpenPracticeSettings,
   onOpenYourData,
   onSignOut,
@@ -132,6 +134,8 @@ export function SettingsTab({
     premiumTestingDetail: t("premiumTestingDetail"),
     premiumTestingEnabled: t("premiumTestingEnabled"),
     premiumTestingDisabled: t("premiumTestingDisabled"),
+    premiumTitle: t("premiumTitle"),
+    premiumEntryDetail: t("premiumEntryDetail"),
     learning: t("learning"),
     legal: t("legal"),
     legalDetail: t("legalDetail"),
@@ -248,6 +252,13 @@ export function SettingsTab({
         </SettingsGroup>
 
         <SettingsGroup dividers title={text.learning} titleGap={0}>
+          <SettingsNavigationRow
+            detail={text.premiumEntryDetail}
+            icon="sparkle"
+            onPress={onOpenPremium}
+            testID="settings-premium"
+            title={text.premiumTitle}
+          />
           <SettingsNavigationRow
             detail={text.practiceSettingsDetail}
             icon="settings"

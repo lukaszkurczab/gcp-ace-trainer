@@ -46,11 +46,11 @@ if (/type\s+TrackId\s*=\s*["']/.test(activeSource)) fail("TrackId is a closed co
 if (/type\s+TrackFamilyId\s*=\s*["']/.test(activeSource)) fail("TrackFamilyId is a closed concrete union.");
 if (sourcePaths.some((path) => /Adapter|Compatibility/.test(path) && !path.endsWith("src/infrastructure/clients/PatternlyApiClientAdapter.ts"))) fail("an adapter or compatibility source path remains.");
 const mmkvConsumers = sourcePaths.filter((path) => /react-native-mmkv/.test(readFileSync(path, "utf8")));
-if (mmkvConsumers.length !== 1 || !mmkvConsumers[0].endsWith("src/infrastructure/storage/mmkvClient.ts")) fail("MMKV must have one infrastructure-only client.");
+if (mmkvConsumers.length !== 1 || !mmkvConsumers[0].endsWith("src/infrastructure/storage/encryptedStorageNative.ts")) fail("MMKV must have one infrastructure-only native adapter.");
 if ((activeSource.match(/createMMKV\s*\(/g) ?? []).length !== 1) fail("MMKV must have one production instance.");
 for (const path of sourcePaths) {
   const source = readFileSync(path, "utf8");
-  if (/infrastructure\/storage\/mmkvClient/.test(source) && !/src\/storage\/repositories\//.test(path)) {
+  if (/infrastructure\/storage\/mmkvClient/.test(source) && !/src\/(?:storage\/repositories|content\/application|preferences)\//.test(path)) {
     fail(`only repository implementations may import the MMKV client: ${path}`);
   }
   if (/(?:from\s+|import\s*\()\s*["'](?:[^"']*\/)?journalTestSupport["']/.test(source)) {

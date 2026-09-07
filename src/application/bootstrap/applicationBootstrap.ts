@@ -2,6 +2,8 @@ import { getTrainingLifecycleUseCases } from "../trainingLifecycle";
 import { recoverPendingMutation } from "../learningMutations";
 import { canPersistTrainingSessionDraft } from "../../domain";
 import { describeOperationalFailure } from "../operationalDiagnostics";
+import { EncryptedStorageBootstrapError, type EncryptedStorageFailureCode } from "../../infrastructure/storage/encryptedStorageBootstrap";
+import { cleanupOrphanedAccountDataExports } from "../account/accountDataExportService";
 import {
   type CanonicalRepositoryBootstrapDependencies,
   getActiveTrainingSession,
@@ -12,7 +14,7 @@ import {
 
 export type ApplicationBootstrapState =
   | Readonly<{ kind: "ready"; activeSessionId: string | null }>
-  | Readonly<{ kind: "blocking"; reason: string }>;
+  | Readonly<{ kind: "blocking"; reason: string; storageFailureCode?: EncryptedStorageFailureCode }>;
 export type ApplicationBootstrapDependencies = Readonly<{ repositories?: CanonicalRepositoryBootstrapDependencies }>;
 
 /**
@@ -26,6 +28,7 @@ export async function bootstrapApplication(
   dependencies: ApplicationBootstrapDependencies = {},
 ): Promise<ApplicationBootstrapState> {
   try {
+    try { cleanupOrphanedAccountDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
     await openCanonicalRepositories(dependencies.repositories);
     if (prepareLifecycle) {
       await prepareLifecycle();
@@ -58,6 +61,10 @@ export async function bootstrapApplication(
     await resolveActiveSession(activeSession.id);
     return { kind: "ready", activeSessionId: activeSession.id };
   } catch (error) {
-    return { kind: "blocking", reason: describeOperationalFailure(error, "Application bootstrap failed.") };
+    return {
+      kind: "blocking",
+      reason: describeOperationalFailure(error, "Application bootstrap failed."),
+      ...(error instanceof EncryptedStorageBootstrapError ? { storageFailureCode: error.code } : {}),
+    };
   }
 }

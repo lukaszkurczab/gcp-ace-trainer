@@ -1,7 +1,8 @@
 import type { ContentReportInput, ContentReportOutboxEntry, ContentReportOutboxStatus } from "../../domain";
 import { CONTENT_REPORT_REASONS } from "../../domain";
+import { localReportOutboxRetentionDays } from "../../legal/legalVariables";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalJson, writeCanonicalJson } from "./canonicalRecordCodec";
+import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 const isNonEmptyString = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
@@ -23,6 +24,10 @@ export function getContentReportOutbox(): readonly ContentReportOutboxEntry[] {
 
 export function saveContentReportOutbox(entries: readonly ContentReportOutboxEntry[]): readonly ContentReportOutboxEntry[] {
   const next = [...entries];
+  if (next.length === 0) {
+    removeCanonicalValue(STORAGE_KEYS.CONTENT_REPORT_OUTBOX);
+    return Object.freeze(next);
+  }
   writeCanonicalJson(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, next);
   return Object.freeze(next);
 }
@@ -50,4 +55,29 @@ export function updateContentReportOutboxStatus(clientSubmissionId: string, stat
 
 export function clearContentReportOutbox(): void {
   saveContentReportOutbox([]);
+}
+
+/** A failed cleanup leaves the original entry intact for idempotent retry. */
+export function removeContentReportOutboxEntry(clientSubmissionId: string): void {
+  const current = getContentReportOutbox();
+  if (!current.some((entry) => entry.input.clientSubmissionId === clientSubmissionId)) throw new Error("Content report outbox entry is unavailable.");
+  saveContentReportOutbox(current.filter((entry) => entry.input.clientSubmissionId !== clientSubmissionId));
+}
+
+/** Pre-ODK-071 accepted records are terminal; preserve all uncertain states. */
+export function purgeAcceptedContentReportOutboxEntries(): readonly ContentReportOutboxEntry[] {
+  const current = getContentReportOutbox();
+  const pending = current.filter((entry) => entry.status !== "accepted");
+  return pending.length === current.length ? current : saveContentReportOutbox(pending);
+}
+
+/** Unconfirmed reports expire locally so an offline queue cannot retain free text indefinitely. */
+export function purgeExpiredContentReportOutboxEntries(now: Date = new Date()): readonly ContentReportOutboxEntry[] {
+  const current = getContentReportOutbox();
+  const cutoff = now.getTime() - localReportOutboxRetentionDays * 24 * 60 * 60 * 1000;
+  const pending = current.filter((entry) => {
+    const createdAt = Date.parse(entry.createdAt);
+    return !Number.isFinite(createdAt) || createdAt > cutoff;
+  });
+  return pending.length === current.length ? current : saveContentReportOutbox(pending);
 }

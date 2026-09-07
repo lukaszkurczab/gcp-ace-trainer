@@ -3,7 +3,6 @@ import { AppState, Keyboard, KeyboardAvoidingView, Linking, Platform, ScrollView
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
-import * as Clipboard from "expo-clipboard";
 import * as Google from "expo-auth-session/providers/google";
 
 import { Button, HoldToConfirmButton, InfoBlock, Screen, ScreenHeader } from "../../components";
@@ -15,6 +14,7 @@ import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation/types";
 import { useThemedStyles } from "../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../theme";
+import { recoveryCodeClipboard } from "../../infrastructure/security/recoveryCodeClipboard";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ACCOUNT_SECURITY>;
 
@@ -48,7 +48,7 @@ function SecurityForm({ route, navigation }: Props) {
   const usesPassword = user?.providers.includes("password") ?? false;
   const usesApple = !usesPassword && Platform.OS === "ios" && (user?.providers.includes("apple") ?? false);
   const usesGoogle = !usesPassword && !usesApple && (user?.providers.includes("google") ?? false);
-  const title = mode === "delete" ? ta("deleteAccount") : t(mode === "recovery" ? "recoveryCodes" : mode === "email" ? "changeEmail" : "changePassword");
+  const title = mode === "delete" ? ta("deleteAccount") : t(mode === "recovery" ? "recoveryCodes" : mode === "email" ? "changeEmail" : mode === "export" ? "exportAuthentication" : mode === "privacy" ? "privacyAuthentication" : "changePassword");
 
   const revoke = useCallback(() => {
     epoch.current += 1;
@@ -124,11 +124,13 @@ function SecurityForm({ route, navigation }: Props) {
     revoke();
     void run(() => mode === "delete" ? account.prepareDeletion(credentials)
       : mode === "recovery" ? account.issueRecoveryCodes(credentials)
+      : mode === "export" || mode === "privacy" ? account.reauthenticateForExport(credentials)
       : mode === "email" ? account.requestEmailChange(credentials, nextValue)
       : account.changePassword(credentials, nextValue), (result) => {
       setPassword("");
       if (mode === "delete" && result.next === "deletionAuthorized") setPrepared(true);
       else if (mode === "recovery" && result.next === "recoveryCodesIssued" && result.recoveryCodes?.length === 10) { setCodes(result.recoveryCodes); setSuccess("codesGenerated"); }
+      else if ((mode === "export" || mode === "privacy") && result.next === "authenticated") navigation.goBack();
       else if (mode === "email" && result.next === "verificationSent") setSuccess("emailVerificationSent");
       else if (mode === "password" && result.next === "authenticated") { setNextValue(""); setConfirmation(""); setSuccess("passwordChanged"); }
       else setFailure("remoteFailure");
@@ -150,14 +152,14 @@ function SecurityForm({ route, navigation }: Props) {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.flex}>
         <ScrollView automaticallyAdjustKeyboardInsets keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
           {user?.email ? <Text selectable maxFontSizeMultiplier={2} style={styles.body}>{`${ta("accountSignedInAs")}: ${user.email}`}</Text> : null}
-          {failure ? <InfoBlock accessibilityAlert body={ta(failure === "invalidEmail" ? "emailFormatError" : failure)} title={title} tone="warning" testID={`security-error-${failure}`} /> : null}
+          {failure ? <InfoBlock accessibilityAlert body={mode === "export" || mode === "privacy" ? t("exportAuthenticationFailed") : ta(failure === "invalidEmail" ? "emailFormatError" : failure)} title={title} tone="warning" testID={`security-error-${failure}`} /> : null}
           {success ? <InfoBlock accessibilityAlert body={t(success)} title={title} testID="security-success" /> : null}
           {mode === "delete" ? <>
             <InfoBlock body={t("deleteConsequences")} title={t("deletePermanent")} tone="warning" />
             <Text selectable maxFontSizeMultiplier={2} style={styles.body}>{t("deletionRetention")}</Text>
             <Text selectable maxFontSizeMultiplier={2} style={styles.body}>{t("deletionContact")}</Text>
             <Button onPress={() => { void Linking.openURL("mailto:Lukasz.kurczab@gmail.com").catch(() => { if (focused.current) setFailure("remoteFailure"); }); }} variant="ghost">Lukasz.kurczab@gmail.com</Button>
-          </> : <Text maxFontSizeMultiplier={2} style={styles.body}>{t(mode === "recovery" ? "recoveryWarning" : mode === "email" ? "emailChangeIntro" : "passwordChangeIntro")}</Text>}
+          </> : <Text maxFontSizeMultiplier={2} style={styles.body}>{t(mode === "recovery" ? "recoveryWarning" : mode === "email" ? "emailChangeIntro" : mode === "export" ? "exportAuthenticationIntro" : mode === "privacy" ? "privacyAuthenticationIntro" : "passwordChangeIntro")}</Text>}
           {!authenticated ? <InfoBlock body={account.state.kind === "deleting" ? ta("deletionPendingDescription") : ta("providerUnavailable")} title={title} testID="security-unavailable" /> : pendingDeletion ? <>
             <InfoBlock body={ta("deletionPendingDescription")} title={ta("deleting")} />
             <Button disabled={busy} loading={busy} onPress={() => { void run(() => account.retryPendingDeletion(), () => {}); }} testID="security-delete-retry">{t("retryDeletion")}</Button>
@@ -166,10 +168,11 @@ function SecurityForm({ route, navigation }: Props) {
             {mode === "password" ? <>{field(t("newPassword"), nextValue, setNextValue, "security-new-password", true)}{field(t("confirmNewPassword"), confirmation, setConfirmation, "security-confirm-password", true)}</> : null}
             {codes ? <View style={styles.field} testID="security-recovery-codes">
               <Text selectable maxFontSizeMultiplier={2} style={styles.codes}>{codes.join("\n")}</Text>
-              <Button disabled={busy} onPress={() => { void Clipboard.setStringAsync(codes.join("\n")).then((copied) => { if (focused.current) copied ? setSuccess("codesCopied") : setFailure("remoteFailure"); }).catch(() => { if (focused.current) setFailure("remoteFailure"); }); }} variant="secondary">{ta("copyRecoveryCodes")}</Button>
+              <Text maxFontSizeMultiplier={2} style={styles.body}>{ta("recoveryCodesClipboardWarning")}</Text>
+              <Button disabled={busy} onPress={() => { void recoveryCodeClipboard.copy(codes).then(() => { if (focused.current) setSuccess("codesCopied"); }).catch(() => { if (focused.current) setFailure("remoteFailure"); }); }} variant="secondary">{ta("copyRecoveryCodes")}</Button>
             </View> : <>
               {usesPassword ? field(t("currentPassword"), password, setPassword, "security-password", true) : null}
-              {prepared ? <InfoBlock body={t("deletionVerified")} title={t("identityVerified")} testID="security-deletion-authorized" /> : usesGoogle && configuration.kind === "configured" ? <GoogleVerification configuration={configuration.value} disabled={blocked} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" ? "verifyIdentity" : mode === "recovery" ? "generateCodes" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} />}
+              {prepared ? <InfoBlock body={t("deletionVerified")} title={t("identityVerified")} testID="security-deletion-authorized" /> : usesGoogle && configuration.kind === "configured" ? <GoogleVerification configuration={configuration.value} disabled={blocked} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" || mode === "export" || mode === "privacy" ? "verifyIdentity" : mode === "recovery" ? "generateCodes" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} />}
               {mode === "delete" ? <HoldToConfirmButton accessibilityLabel={t("holdDelete")} disabled={!prepared || blocked} hint={t("holdDeleteHint")} loading={busy} onConfirm={() => { setPrepared(false); void run(() => account.deleteAccount(), () => {}); }} readyLabel={t("releaseDelete")} testID="security-delete-hold">{t("holdDelete")}</HoldToConfirmButton> : null}
             </>}
           </>}

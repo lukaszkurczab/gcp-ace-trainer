@@ -21,7 +21,6 @@ const sandboxConfiguration = {
   environment: "sandbox",
   iosAssociatedDomain: "applinks:patternly-app-sandbox.firebaseapp.com",
   privacyUrl: "https://patternly-app-sandbox.firebaseapp.com/privacy",
-  publicDeletionUrl: "https://patternly-app-sandbox.firebaseapp.com/delete",
   publicWebOrigin: "https://patternly-app-sandbox.firebaseapp.com",
   supportUrl: "https://patternly-app-sandbox.firebaseapp.com/support",
   termsUrl: "https://patternly-app-sandbox.firebaseapp.com/terms",

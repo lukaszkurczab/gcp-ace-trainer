@@ -68,7 +68,6 @@ test("missing public URL fails closed instead of inferring a destination", () =>
     environment: "sandbox",
     iosAssociatedDomain: "applinks:sandbox.patternly.invalid",
     privacyUrl: "",
-    publicDeletionUrl: "https://sandbox.patternly.invalid/delete",
     publicWebOrigin: "https://sandbox.patternly.invalid",
     supportUrl: "https://sandbox.patternly.invalid/support",
     termsUrl: "https://sandbox.patternly.invalid/terms",
@@ -90,7 +89,6 @@ test("configured public legal links preserve the validated contract destinations
     environment: "sandbox",
     iosAssociatedDomain: "applinks:sandbox.patternly.invalid",
     privacyUrl: "https://sandbox.patternly.invalid/privacy",
-    publicDeletionUrl: "https://sandbox.patternly.invalid/delete",
     publicWebOrigin: "https://sandbox.patternly.invalid",
     supportUrl: "https://sandbox.patternly.invalid/support",
     termsUrl: "https://sandbox.patternly.invalid/terms",
@@ -101,7 +99,6 @@ test("configured public legal links preserve the validated contract destinations
     kind: "configured",
     value: {
       privacyUrl: "https://sandbox.patternly.invalid/privacy",
-      publicDeletionUrl: "https://sandbox.patternly.invalid/delete",
       supportUrl: "https://sandbox.patternly.invalid/support",
       termsUrl: "https://sandbox.patternly.invalid/terms",
     },

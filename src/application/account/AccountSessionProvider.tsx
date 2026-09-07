@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-import { PatternlyApiClientError, createPatternlyApiClient, type MeResponseDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
-import { composePatternlyNativeAppCheck } from "../../infrastructure/clients/patternlyAppCheckToken";
+import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExportDto, type LegalRequestDto, type LegalRequestKindDto, type MeResponseDto, type PrivacyRequestListItemDto, type PrivacyRequestResponseDto, type PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
+import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
+import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion, type AccountDataSession } from "./accountDataService";
@@ -12,9 +13,18 @@ import { readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type Patter
 import { grantGuestAccess, hasGuestAccess, revokeGuestAccess } from "../../storage/repositories/guestAccessRepository";
 import { hasUnboundGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
 import { createDeletionAuthorizationVault, createSensitiveCommandLane, prepareDeletionAuthorization, runReauthenticatedMutation, type DeletionAuthorizationVault, type SensitiveCommandLane } from "./accountCommandGuards";
+import { shareAccountDataExport as shareDownloadedAccountData } from "./accountDataExportService";
+import { legalVariables } from "../../legal/legalVariables";
 
 export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "expiredAction" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
 export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
+export type AccountDataExportFailure = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed";
+export type AccountDataExportCommandResult = Readonly<
+  | { kind: "success" }
+  | { kind: "failure"; failure: AccountDataExportFailure; retryAfterSeconds?: number }
+>;
+export type PrivacyRequestFailure = "authenticationRequired" | "offline" | "recentAuthenticationRequired" | "serverFailure" | "invalidResponse" | "appCheckUnavailable";
+export type PrivacyRequestCommandResult<T> = Readonly<{ kind: "success"; value: T } | { kind: "failure"; failure: PrivacyRequestFailure }>;
 export type PasswordVerificationCommand = "register" | "signIn" | "resend" | "persisted" | "refresh";
 export type PasswordVerificationPlan =
   | Readonly<{ kind: "finalize" }>
@@ -38,22 +48,32 @@ export type AccountSessionContextValue = Readonly<{
   changePassword: (credentials: FirebaseAuthCredentials, newPassword: string) => Promise<AccountCommandResult>;
   confirmPasswordReset: (code: string, password: string) => Promise<AccountCommandResult>;
   deleteAccount: () => Promise<AccountCommandResult>;
+  exportAccountData: (isRequestActive?: () => boolean) => Promise<AccountDataExportCommandResult>;
+  createPrivacyRequest: (right: PrivacyRequestRightDto, narrative?: string) => Promise<PrivacyRequestCommandResult<PrivacyRequestListItemDto>>;
+  listPrivacyRequests: () => Promise<PrivacyRequestCommandResult<readonly PrivacyRequestListItemDto[]>>;
+  readPrivacyRequest: (requestId: string) => Promise<PrivacyRequestCommandResult<PrivacyRequestResponseDto>>;
+  createLegalRequest: (input: Readonly<{ kind: LegalRequestKindDto; narrative?: string; transactionId?: string }>) => Promise<PrivacyRequestCommandResult<LegalRequestDto>>;
+  createPublicLegalRequest: (input: Readonly<{ email: string; kind: LegalRequestKindDto; narrative?: string; transactionId?: string }>) => Promise<PrivacyRequestCommandResult<LegalRequestDto>>;
+  listLegalRequests: () => Promise<PrivacyRequestCommandResult<readonly LegalRequestDto[]>>;
+  readLegalRequest: (requestId: string) => Promise<PrivacyRequestCommandResult<LegalRequestDto>>;
+  recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>) => Promise<AccountCommandResult>;
   requestPasswordRecovery: (email: string) => Promise<AccountCommandResult>;
   requestEmailChange: (credentials: FirebaseAuthCredentials, email: string) => Promise<AccountCommandResult>;
   retrySessionRestore: () => void;
   refreshAccountIdentity: () => Promise<AccountCommandResult>;
   refreshVerification: () => Promise<AccountCommandResult>;
-  register: (email: string, password: string) => Promise<AccountCommandResult>;
+  register: (email: string, password: string, acceptanceConfirmed: boolean) => Promise<AccountCommandResult>;
   resendVerification: () => Promise<AccountCommandResult>;
   signIn: (email: string, password: string) => Promise<AccountCommandResult>;
-  signInWithApple: () => Promise<AccountCommandResult>;
-  signInWithGoogle: (idToken: string) => Promise<AccountCommandResult>;
+  signInWithApple: (acceptanceConfirmed: boolean) => Promise<AccountCommandResult>;
+  signInWithGoogle: (idToken: string, acceptanceConfirmed: boolean) => Promise<AccountCommandResult>;
   confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[] ) => Promise<AccountCommandResult>;
   continueAsGuest: () => void;
   retryAccountSync: () => Promise<AccountCommandResult>;
   retryPendingAccountSync: () => Promise<AccountCommandResult>;
   retryPendingDeletion: () => Promise<AccountCommandResult>;
   prepareDeletion: (credentials: FirebaseAuthCredentials) => Promise<AccountCommandResult>;
+  reauthenticateForExport: (credentials: FirebaseAuthCredentials) => Promise<AccountCommandResult>;
   issueRecoveryCodes: (credentials: FirebaseAuthCredentials) => Promise<AccountCommandResult>;
   revokeDeletionAuthorization: () => void;
   consumeRecoveryCode: (code: string) => Promise<AccountCommandResult>;
@@ -216,13 +236,16 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const [state, setState] = useState<AccountState>({ kind: "loading" });
   const [authClient, setAuthClient] = useState<FirebaseAuthClient | null>(null);
   const [apiClient, setApiClient] = useState<ReturnType<typeof createPatternlyApiClient> | null>(null);
+  const [appCheckReady, setAppCheckReady] = useState(false);
   const [runtimeMode] = useState<PatternlyRuntimeMode | undefined>(readPatternlyRuntimeMode);
   const [authInitializationRevision, setAuthInitializationRevision] = useState(0);
   const sessionCoordinatorRef = useRef<AccountSessionCoordinator<FinalizationOutcome> | null>(null);
   const observerBlockedUidRef = useRef<string | null>(null);
+  const legalAcceptancePendingRef = useRef(false);
   const deletionAuthorizationRef = useRef<DeletionAuthorizationVault | null>(null);
   const deletionAuthorizationTokenRef = useRef<AccountSessionGenerationToken | null>(null);
   const sensitiveCommandLaneRef = useRef<SensitiveCommandLane | null>(null);
+  const contentReportRegistrationRef = useRef<ContentReportRuntimeRegistration | null>(null);
   if (!sessionCoordinatorRef.current) {
     sessionCoordinatorRef.current = createAccountSessionCoordinator((_token, outcome) => {
       if (outcome.state) setState(outcome.state);
@@ -233,6 +256,21 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const sessionCoordinator = sessionCoordinatorRef.current;
   const deletionAuthorization = deletionAuthorizationRef.current!;
   const sensitiveCommandLane = sensitiveCommandLaneRef.current!;
+
+  useEffect(() => {
+    if (!apiClient || !appCheckReady) {
+      contentReportRegistrationRef.current?.unregister();
+      contentReportRegistrationRef.current = null;
+      return;
+    }
+    const registration = registerContentReportRuntimeTransport(createContentReportTransport(apiClient));
+    contentReportRegistrationRef.current = registration;
+    void registration.ready.catch(() => undefined);
+    return () => {
+      registration.unregister();
+      if (contentReportRegistrationRef.current === registration) contentReportRegistrationRef.current = null;
+    };
+  }, [apiClient, appCheckReady]);
 
   const revokeDeletionAuthorization = useCallback(() => {
     deletionAuthorization.revoke();
@@ -339,14 +377,17 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       publish(guestAccess ? persistedGuestState() : { kind: "unavailable", reason: "firebase_unconfigured" });
       return () => { live = false; observerBlockedUidRef.current = null; revokeDeletionAuthorization(); sessionCoordinator.dispose(); };
     }
+    setAppCheckReady(false);
     const androidProvider = process.env.EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER;
     const appleProvider = process.env.EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER;
     if (androidProvider === "debug" || androidProvider === "playIntegrity") {
       if (appleProvider === "debug" || appleProvider === "deviceCheck" || appleProvider === "appAttest" || appleProvider === "appAttestWithDeviceCheckFallback") {
-        void composePatternlyNativeAppCheck({ androidProvider, appleProvider });
+        void composePatternlyNativeAppCheck({ androidProvider, appleProvider }).then((result) => { if (live && result === "available") setAppCheckReady(true); });
       } else {
-        void composePatternlyNativeAppCheck({ androidProvider });
+        void composePatternlyNativeAppCheck({ androidProvider }).then((result) => { if (live && result === "available") setAppCheckReady(true); });
       }
+    } else {
+      configurePatternlyAppCheckTokenProvider(null);
     }
     let auth: FirebaseAuthClient;
     try {
@@ -388,7 +429,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           publish(hasGuestAccess() ? persistedGuestState() : { kind: "signedOut" });
           return;
         }
-        if (observerBlockedUidRef.current === user.uid) return;
+        if (legalAcceptancePendingRef.current || observerBlockedUidRef.current === user.uid) return;
         const uidChanged = observedUid !== null && observedUid !== user.uid;
         if (uidChanged) revokeDeletionAuthorization();
         observedUid = user.uid;
@@ -428,6 +469,11 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   }, [runWithAuth, sensitiveCommandLane]);
 
   const value = useMemo<AccountSessionContextValue>(() => ({
+    recordPurchaseConfirmation: async (input) => {
+      if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
+      try { await apiClient.recordPurchaseConfirmation(input); return { kind: "success", next: "authenticated" }; }
+      catch (error) { return { kind: "failure", failure: classifyAccountFailure(error) }; }
+    },
     continueAsGuest: () => {
       sessionCoordinator.invalidate();
       revokeDeletionAuthorization();
@@ -437,6 +483,89 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       }
       grantGuestAccess();
       setState({ kind: "guest" });
+    },
+    exportAccountData: async (isRequestActive = () => true) => {
+      if (!authClient || !apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
+      return sensitiveCommandLane.run(async (): Promise<AccountDataExportCommandResult> => {
+        const user = authClient.getSnapshot();
+        if (!user || state.kind !== "authenticated" || state.user.uid !== user.uid) return { kind: "failure", failure: "sessionRevoked" };
+        const generation = sessionCoordinator.begin(user.uid);
+        const isCurrent = () => isRequestActive() && sessionCoordinator.isCurrent(generation) && authClient.getSnapshot()?.uid === user.uid;
+        try {
+          const data: AccountDataExportDto = await apiClient.exportAccountData();
+          if (!isCurrent()) return { kind: "failure", failure: "sessionRevoked" };
+          const shared = await shareDownloadedAccountData(data, undefined, isCurrent);
+          if (shared.kind === "shared") return { kind: "success" };
+          if (shared.failure === "sessionChanged") return { kind: "failure", failure: "sessionRevoked" };
+          return { kind: "failure", failure: shared.failure };
+        } catch (error) {
+          return classifyAccountDataExportFailure(error);
+        }
+      }).catch(() => ({ kind: "failure", failure: "serverFailure" }));
+    },
+    createPrivacyRequest: async (right, narrative) => {
+      if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
+      try {
+        const result = await apiClient.createPrivacyRequest(right, narrative);
+        return { kind: "success", value: result.request };
+      } catch (error) {
+        return { kind: "failure", failure: classifyPrivacyRequestFailure(error) };
+      }
+    },
+    listPrivacyRequests: async () => {
+      if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
+      try {
+        const result = await apiClient.getPrivacyRequests();
+        return { kind: "success", value: result.requests };
+      } catch (error) {
+        return { kind: "failure", failure: classifyPrivacyRequestFailure(error) };
+      }
+    },
+    readPrivacyRequest: async (requestId) => {
+      if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
+      try {
+        return { kind: "success", value: await apiClient.getPrivacyRequest(requestId) };
+      } catch (error) {
+        return { kind: "failure", failure: classifyPrivacyRequestFailure(error) };
+      }
+    },
+    createLegalRequest: async (input) => {
+      if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
+      try {
+        const result = await apiClient.createLegalRequest(input);
+        return { kind: "success", value: result.request };
+      } catch (error) {
+        return { kind: "failure", failure: classifyPrivacyRequestFailure(error) };
+      }
+    },
+    createPublicLegalRequest: async (input) => {
+      if (!apiClient) return { kind: "failure", failure: "serverFailure" };
+      const appCheckToken = await getPatternlyAppCheckToken();
+      if (!appCheckToken) return { kind: "failure", failure: "appCheckUnavailable" };
+      try {
+        const result = await apiClient.createPublicLegalRequest(input, appCheckToken);
+        return { kind: "success", value: result.request };
+      } catch (error) {
+        return { kind: "failure", failure: classifyPrivacyRequestFailure(error) };
+      }
+    },
+    listLegalRequests: async () => {
+      if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
+      try {
+        const result = await apiClient.getLegalRequests();
+        return { kind: "success", value: result.requests };
+      } catch (error) {
+        return { kind: "failure", failure: classifyPrivacyRequestFailure(error) };
+      }
+    },
+    readLegalRequest: async (requestId) => {
+      if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
+      try {
+        const result = await apiClient.getLegalRequest(requestId);
+        return { kind: "success", value: result.request };
+      } catch (error) {
+        return { kind: "failure", failure: classifyPrivacyRequestFailure(error) };
+      }
     },
     applyVerificationCode: (code) => runSensitiveWithAuth(async (auth, api) => {
       revokeDeletionAuthorization();
@@ -524,18 +653,24 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         return { kind: "failure", failure: classifyAccountFailure(error) };
       }
     }),
-    register: (email, password) => runWithAuth(async (auth, api) => {
+    register: (email, password, acceptanceConfirmed) => runWithAuth(async (auth, api) => {
+      if (!acceptanceConfirmed) return { kind: "failure", failure: "invalid" };
       if (!isValidEmail(email)) return { kind: "failure", failure: "invalidEmail" };
       if (!isValidPassword(password)) return { kind: "failure", failure: "weakPassword" };
       revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
+      legalAcceptancePendingRef.current = true;
       let user: FirebaseAuthUserSnapshot;
       try {
         user = await auth.register(email.trim().toLowerCase(), password);
       } catch (error) {
         if (firebaseAuthErrorCode(error) === "auth/email-already-in-use") return { kind: "failure", failure: "duplicate" };
+        legalAcceptancePendingRef.current = false;
         throw error;
       }
+      try { await api.recordLegalAcceptance(legalVariables.documentVersion.en); }
+      catch (error) { await auth.signOut().catch(() => undefined); setState({ kind: "signedOut" }); throw error; }
+      finally { legalAcceptancePendingRef.current = false; }
       const plan = planPasswordVerificationCommand("register", runtimeMode, user);
       if (plan.kind === "finalize") {
         return finalizeCurrent(auth, api, user);
@@ -585,17 +720,37 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       }
       return finalizeCurrent(auth, api, user);
     }),
-    signInWithApple: () => runWithAuth(async (auth, api) => {
+    signInWithApple: (acceptanceConfirmed) => runWithAuth(async (auth, api) => {
+      if (!acceptanceConfirmed) return { kind: "failure", failure: "invalid" };
       revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
-      const user = await auth.signInWithApple();
-      return finalizeCurrent(auth, api, user);
+      legalAcceptancePendingRef.current = true;
+      try {
+        const user = await auth.signInWithApple();
+        await api.recordLegalAcceptance(legalVariables.documentVersion.en);
+        legalAcceptancePendingRef.current = false;
+        return finalizeCurrent(auth, api, user);
+      } catch (error) {
+        await auth.signOut().catch(() => undefined);
+        setState({ kind: "signedOut" });
+        throw error;
+      } finally { legalAcceptancePendingRef.current = false; }
     }),
-    signInWithGoogle: (idToken) => runWithAuth(async (auth, api) => {
+    signInWithGoogle: (idToken, acceptanceConfirmed) => runWithAuth(async (auth, api) => {
+      if (!acceptanceConfirmed) return { kind: "failure", failure: "invalid" };
       revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
-      const user = await auth.signInWithGoogle(idToken);
-      return finalizeCurrent(auth, api, user);
+      legalAcceptancePendingRef.current = true;
+      try {
+        const user = await auth.signInWithGoogle(idToken);
+        await api.recordLegalAcceptance(legalVariables.documentVersion.en);
+        legalAcceptancePendingRef.current = false;
+        return finalizeCurrent(auth, api, user);
+      } catch (error) {
+        await auth.signOut().catch(() => undefined);
+        setState({ kind: "signedOut" });
+        throw error;
+      } finally { legalAcceptancePendingRef.current = false; }
     }),
     confirmAdoption: (resolutions) => runWithAuth(async (auth, api) => {
       const current = auth.getSnapshot();
@@ -746,6 +901,18 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       } finally {
         deletionAuthorizationTokenRef.current = null;
         deletionAuthorization.revoke();
+      }
+    }),
+    reauthenticateForExport: (credentials) => runSensitiveWithAuth(async (auth) => {
+      const user = auth.getSnapshot();
+      if (!user || state.kind !== "authenticated" || state.user.uid !== user.uid) return { kind: "failure", failure: "providerUnavailable" };
+      if (!credentialsMatchSnapshot(user, credentials)) return { kind: "failure", failure: "reauthenticationRequired" };
+      try {
+        await auth.reauthenticateWithCredential(credentials);
+        return { kind: "success", next: "authenticated" };
+      } catch (error) {
+        const failure = classifyAccountFailure(error);
+        return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
       }
     }),
     deleteAccount: () => runSensitiveWithAuth(async (auth, api) => {
@@ -899,7 +1066,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return { kind: "failure", failure: "remoteFailure" };
     }),
     state,
-  }), [apiClient, finalizeCurrent, retrySessionRestore, revokeDeletionAuthorization, runSensitiveWithAuth, runWithAuth, runtimeMode, sessionCoordinator, state]);
+  }), [apiClient, authClient, finalizeCurrent, retrySessionRestore, revokeDeletionAuthorization, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }
@@ -989,6 +1156,7 @@ export function classifyAccountFailure(error: unknown): AccountFailure {
   if (error instanceof PatternlyApiClientError) {
     if (error.serverCode === "recovery_code_invalid") return "invalidRecoveryCode";
     if (error.serverCode === "recovery_code_used") return "recoveryCodeUsed";
+    if (error.serverCode === "purchase_attempt_active") return "conflict";
     if (error.serverCode === "recent_reauthentication_required") return "reauthenticationRequired";
     if (error.status === 401 || error.serverCode === "account_deleted" || error.serverCode === "authentication_required") return "revokedSession";
     if (error.status !== undefined && error.status >= 500) return "backendUnavailable";
@@ -1009,6 +1177,37 @@ export function classifyAccountFailure(error: unknown): AccountFailure {
   if (["auth/operation-not-allowed", "auth/app-not-authorized", "auth/invalid-api-key", "auth/invalid-app-id", "auth/provider-unavailable", "auth/apple-unavailable"].includes(code)) return "providerUnavailable";
   if (["auth/wrong-password", "auth/invalid-credential", "auth/email-already-in-use", "auth/user-not-found"].includes(code)) return "invalidCredential";
   return "providerUnavailable";
+}
+
+export function classifyAccountDataExportFailure(error: unknown): Extract<AccountDataExportCommandResult, { kind: "failure" }> {
+  if (error instanceof PatternlyApiClientError) {
+    if (error.serverCode === "recent_reauthentication_required") return { kind: "failure", failure: "authenticationRequired" };
+    if (error.status === 401 || error.code === "authentication_required") return { kind: "failure", failure: "sessionRevoked" };
+    if (error.status === 429) return error.retryAfterSeconds
+      ? { kind: "failure", failure: "rateLimited", retryAfterSeconds: error.retryAfterSeconds }
+      : { kind: "failure", failure: "serverFailure" };
+    if (error.status === 413) return { kind: "failure", failure: "responseTooLarge" };
+    if (error.status !== undefined && error.status >= 500) return { kind: "failure", failure: "serverFailure" };
+    if (error.code === "transport_failed" || error.code === "request_timeout") return { kind: "failure", failure: "offline" };
+    if (error.code === "invalid_response") return { kind: "failure", failure: "invalidResponse" };
+    return { kind: "failure", failure: "serverFailure" };
+  }
+  if (firebaseAuthErrorCode(error) === "auth/uid-changed") return { kind: "failure", failure: "sessionRevoked" };
+  const failure = classifyAccountFailure(error);
+  if (failure === "offline") return { kind: "failure", failure: "offline" };
+  if (failure === "revokedSession") return { kind: "failure", failure: "sessionRevoked" };
+  if (failure === "reauthenticationRequired" || failure === "invalidCredential") return { kind: "failure", failure: "authenticationRequired" };
+  return { kind: "failure", failure: "serverFailure" };
+}
+
+export function classifyPrivacyRequestFailure(error: unknown): PrivacyRequestFailure {
+  if (error instanceof PatternlyApiClientError) {
+    if (error.serverCode === "recent_reauthentication_required") return "recentAuthenticationRequired";
+    if (error.status === 401 || error.code === "authentication_required") return "authenticationRequired";
+    if (error.code === "transport_failed" || error.code === "request_timeout") return "offline";
+    if (error.code === "invalid_response") return "invalidResponse";
+  }
+  return "serverFailure";
 }
 
 export function isNonEnumeratingRecoveryError(error: unknown): boolean {

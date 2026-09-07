@@ -10,9 +10,14 @@ export type RootStackParamList = {
   [ROUTES.APPEARANCE_SETTINGS]: undefined;
   [ROUTES.LANGUAGE_SETTINGS]: undefined;
   [ROUTES.LEGAL_INFORMATION]: undefined;
+  [ROUTES.TERMS_OF_SERVICE]: undefined;
+  [ROUTES.PRIVACY_POLICY]: undefined;
+  [ROUTES.PREMIUM_PURCHASE]: undefined;
   [ROUTES.NOTIFICATION_SETTINGS]: undefined;
   [ROUTES.YOUR_DATA]: undefined;
-  [ROUTES.ACCOUNT_SECURITY]: { screen: "recovery" | "email" | "password" | "delete" };
+  [ROUTES.PRIVACY_REQUESTS]: undefined;
+  [ROUTES.LEGAL_REQUESTS]: { kind: "complaint" | "withdrawal" | "data_recovery" | "suspension_appeal" };
+  [ROUTES.ACCOUNT_SECURITY]: { screen: "recovery" | "email" | "password" | "delete" | "export" | "privacy" };
   [ROUTES.ACCOUNT_ENTRY]: { initialMode?: "entry" | "register" | "signIn" | "recovery" | "resetPassword" } | undefined;
   [ROUTES.BACKEND_DIAGNOSTICS]: undefined;
   [ROUTES.SELECT_TRACK]: undefined;

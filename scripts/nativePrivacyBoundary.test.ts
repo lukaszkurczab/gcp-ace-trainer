@@ -5,9 +5,14 @@ import test from "node:test";
 
 const read = (path: string) => readFileSync(path, "utf8");
 const require = createRequire(import.meta.url);
+const plist = require("@expo/plist").default;
+const normalized = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 const {
   injectIosBackupPolicy,
+  privacyInfoXcPrivacy,
   withAndroidBackupPolicy,
+  withoutRemoteNotificationBackgroundMode,
+  withoutRemoteNotificationEntitlement,
 } = require("../plugins/withPrivacyBoundary.js");
 
 test("release-native configuration excludes canonical learning storage from backup and unneeded ingress", () => {
@@ -15,6 +20,7 @@ test("release-native configuration excludes canonical learning storage from back
   const plugin = read("plugins/withPrivacyBoundary.js");
 
   assert.match(appConfig, /"\.\/plugins\/withPrivacyBoundary"/);
+  assert.match(appConfig, /"expo-notifications"/);
   assert.match(plugin, /"android:allowBackup": "false"/);
   assert.match(plugin, /"android:fullBackupContent": "@xml\/backup_rules"/);
   assert.match(plugin, /"android:dataExtractionRules": "@xml\/data_extraction_rules"/);
@@ -89,4 +95,41 @@ class AppDelegate: ExpoAppDelegate {
   assert.match(transformed, /values\.isExcludedFromBackup = true/);
   assert.match(transformed, /fatalError\("Patternly cannot establish its local-storage backup policy\./);
   assert.equal(injectIosBackupPolicy(transformed), transformed);
+});
+
+test("clean iOS output declares current data collection without tracking or remote notifications", () => {
+  const privacyInfo = plist.parse(privacyInfoXcPrivacy());
+  const collectedDataTypes = privacyInfo.NSPrivacyCollectedDataTypes;
+
+  assert.equal(privacyInfo.NSPrivacyTracking, false);
+  assert.deepEqual(normalized(privacyInfo.NSPrivacyAccessedAPITypes), [
+    { NSPrivacyAccessedAPIType: "NSPrivacyAccessedAPICategoryFileTimestamp", NSPrivacyAccessedAPITypeReasons: ["C617.1", "0A2A.1", "3B52.1"] },
+    { NSPrivacyAccessedAPIType: "NSPrivacyAccessedAPICategoryUserDefaults", NSPrivacyAccessedAPITypeReasons: ["CA92.1", "1C8F.1", "C56D.1"] },
+    { NSPrivacyAccessedAPIType: "NSPrivacyAccessedAPICategoryDiskSpace", NSPrivacyAccessedAPITypeReasons: ["E174.1", "85F4.1"] },
+    { NSPrivacyAccessedAPIType: "NSPrivacyAccessedAPICategorySystemBootTime", NSPrivacyAccessedAPITypeReasons: ["35F9.1"] },
+  ]);
+  assert.deepEqual(normalized(collectedDataTypes), [
+    "Name",
+    "EmailAddress",
+    "UserID",
+    "DeviceID",
+    "OtherUserContent",
+    "CustomerSupport",
+    "ProductInteraction",
+    "OtherDiagnosticData",
+  ].map((suffix) => ({
+    NSPrivacyCollectedDataType: `NSPrivacyCollectedDataType${suffix}`,
+    NSPrivacyCollectedDataTypeLinked: true,
+    NSPrivacyCollectedDataTypeTracking: false,
+    NSPrivacyCollectedDataTypePurposes: ["NSPrivacyCollectedDataTypePurposeAppFunctionality"],
+  })).concat({
+    NSPrivacyCollectedDataType: "NSPrivacyCollectedDataTypePurchaseHistory",
+    NSPrivacyCollectedDataTypeLinked: true,
+    NSPrivacyCollectedDataTypeTracking: false,
+    NSPrivacyCollectedDataTypePurposes: ["NSPrivacyCollectedDataTypePurposeAppFunctionality", "NSPrivacyCollectedDataTypePurposeAnalytics"],
+  }));
+  assert.equal("NSPrivacyTrackingDomains" in privacyInfo, false);
+  assert.deepEqual(withoutRemoteNotificationEntitlement({ "aps-environment": "development", "com.apple.developer.applesignin": ["Default"] }), { "com.apple.developer.applesignin": ["Default"] });
+  assert.deepEqual(withoutRemoteNotificationBackgroundMode({ UIBackgroundModes: ["remote-notification", "processing"] }), { UIBackgroundModes: ["processing"] });
+  assert.deepEqual(withoutRemoteNotificationBackgroundMode({ UIBackgroundModes: ["remote-notification"] }), {});
 });

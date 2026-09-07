@@ -418,7 +418,7 @@ function shouldResolveDeletionStatus(failure: string): boolean {
 
 async function readVerifiedDeletionStatus(api: PatternlyApiClient, pending: NonNullable<ReturnType<typeof getAccountDeletionState>>, uid: string): Promise<DeletionRemoteResolution | null> {
   try {
-    const status = await api.getDeletionOperationStatus(pending.operationId, sha256Utf8(uid));
+    const status = await api.getDeletionOperationStatus(pending.operationId, pending.operationSecret);
     if (status.operationId !== pending.operationId) return null;
     if ((status.status === "remote_deleted" || status.status === "complete") && status.proofId) {
       const next = updateAccountDeletionState(pending, { status: "remoteDeleted", proofId: status.proofId, lastFailureCode: null });
@@ -490,7 +490,7 @@ async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: st
     let proofId = pending.proofId;
     if (pending.status === "remotePending") {
       try {
-        const remote = await api.deleteAccount(pending.operationId);
+        const remote = await api.deleteAccount(pending.operationId, pending.operationSecret);
         if (remote.operationId !== pending.operationId || !remote.proofId) throw new AccountDataFailure("remote_deletion_pending");
         proofId = remote.proofId;
         pending = updateAccountDeletionState(pending, { status: "remoteDeleted", proofId, lastFailureCode: null });

@@ -94,13 +94,13 @@ test("bootstrap runs resolution only after recovery/content validation and expos
   assert.deepEqual(mismatch, { kind: "blocking", reason: "Application bootstrap failed. [LOCAL_OPERATION_FAILED]" });
 });
 
-test("one MMKV import is infrastructure-owned and only repositories access it", () => {
+test("one MMKV native adapter is infrastructure-owned and runtime access stays bounded", () => {
   const source = files("src").filter((path) => /\.(ts|tsx)$/.test(path));
   const imports = source.filter((path) => /react-native-mmkv/.test(readFileSync(path, "utf8")));
-  assert.deepEqual(imports, [join("src", "infrastructure", "storage", "mmkvClient.ts")]);
+  assert.deepEqual(imports, [join("src", "infrastructure", "storage", "encryptedStorageNative.ts")]);
   for (const path of source) {
     if (path.endsWith("src/infrastructure/storage/mmkvClient.ts")) continue;
-    if (/infrastructure\/storage\/mmkvClient/.test(readFileSync(path, "utf8"))) assert.match(path, /src\/(?:storage\/repositories|testing)\//);
+    if (/infrastructure\/storage\/mmkvClient/.test(readFileSync(path, "utf8"))) assert.match(path, /src\/(?:storage\/repositories|testing|content\/application|preferences)\//);
   }
 });
 

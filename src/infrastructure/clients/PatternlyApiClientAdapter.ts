@@ -34,14 +34,45 @@ export type ProgressRecordDto = Readonly<{
   updatedAt: string;
 }>;
 
-export type MeResponseDto = Readonly<{ user: Readonly<{ id: string; createdAt: string; identity: Readonly<{ provider: string; subject: string; email: string | null; emailVerified: boolean }> }> }>;
+export type MeResponseDto = Readonly<{ user: Readonly<{ id: string; createdAt: string; acceptedTermsVersion: string | null; identity: Readonly<{ provider: string; subject: string; email: string | null; emailVerified: boolean }> }> }>;
 export type RecoveryCodesResponseDto = Readonly<{ generationId: string; codes: readonly string[] }>;
 export type AccountDeletionResponseDto = Readonly<{ status: "deleted"; operationId: string; proofId: string }>;
-export type PublicDeletionRequestResponseDto = Readonly<{ status: "accepted" }>;
 export type PublicDeletionProofResponseDto = Readonly<{ status: "deleted"; operationId: string; proofId: string }>;
 export type DeletionOperationStatusDto = Readonly<{ status: "pending" | "remote_deleted" | "complete"; operationId: string; proofId: string | null }>;
 export type EntitlementsResponseDto = Readonly<{ entitlements: readonly Readonly<{ entitlement: string; status: string; source: string; expiresAt: string | null; updatedAt: string }>[] }>;
 export type ProgressResponseDto = Readonly<{ accountRevision: number; records: readonly ProgressRecordDto[] }>;
+export type AccountDataExportDto = Readonly<{
+  schemaVersion: "account-data-export-v1";
+  exportId: string;
+  exportedAt: string;
+  scope: Readonly<{ portable: "user_data_and_activity"; accountContext: "user_visible_account_context" }>;
+  article15Information: Readonly<{ purposes: readonly string[]; dataCategories: readonly string[]; recipientCategories: readonly string[]; retentionCriteria: readonly string[]; dataSources: readonly string[]; internationalTransfers: string; automatedDecisionMaking: string; rightsAndComplaint: string }>;
+  portable: Readonly<{
+    profile: Readonly<{ createdAt: string; identity: Readonly<{ provider: string; email: string | null; emailVerified: boolean }> }>;
+    progress: readonly ProgressRecordDto[];
+    linkedContentReports: readonly Readonly<Record<string, unknown>>[];
+  }>;
+  accountContext: Readonly<{
+    trackAccess: readonly Readonly<Record<string, unknown>>[];
+    entitlements: readonly Readonly<Record<string, unknown>>[];
+    legalAcceptances: readonly Readonly<Record<string, unknown>>[];
+    purchaseConfirmations: readonly Readonly<Record<string, unknown>>[];
+    devices: readonly Readonly<Record<string, unknown>>[];
+    syncMetadata: Readonly<Record<string, unknown>>;
+    exportHistory: readonly Readonly<Record<string, unknown>>[];
+  }>;
+  manifest: Readonly<{
+    included: readonly string[];
+    omitted: readonly Readonly<{ category: string; reason: string }>[];
+  }>;
+}>;
+export type PrivacyRequestRightDto = "access" | "rectification" | "erasure" | "restriction" | "objection" | "portability" | "consent_withdrawal";
+export type PrivacyRequestStatusDto = "received" | "identity_verification_required" | "in_review" | "response_ready" | "fulfilled" | "partially_fulfilled" | "refused" | "closed";
+export type PrivacyRequestListItemDto = Readonly<{ requestId: string; right: PrivacyRequestRightDto; channel: "account" | "public"; status: PrivacyRequestStatusDto; outcome: "fulfilled" | "partially_fulfilled" | "refused" | null; receivedAt: string; deadlineAt: string; deliveredAt: string | null; extendedAt: string | null; revision: number }>;
+export type PrivacyRequestResponseDto = Readonly<{ request: PrivacyRequestListItemDto; response: string | null; responseAvailableUntil: string | null; extensionReason: string | null; complaintInformationIncluded: boolean }>;
+export type LegalRequestKindDto = "complaint" | "withdrawal" | "data_recovery" | "suspension_appeal";
+export type LegalRequestStatusDto = "received" | "in_review" | "answered" | "closed";
+export type LegalRequestDto = Readonly<{ requestId: string; kind: LegalRequestKindDto; status: LegalRequestStatusDto; receivedAt: string; responseDueAt: string | null; answeredAt: string | null; retentionUntil: string | null; response: string | null }>;
 export type SyncResponseDto = Readonly<{ accountRevision: number; applied: readonly ProgressRecordDto[]; duplicates: readonly string[]; conflicts: readonly Readonly<{ mutationId: string; code: "version_conflict"; current: ProgressRecordDto | null }>[]; accountRevisionConflict?: Readonly<{ code: "account_revision_conflict"; currentAccountRevision: number }> }>;
 export type GuestMergeRecordDto = Readonly<{ fingerprint: string; recordId: string; recordType: ProgressMutationDto["recordType"]; state: Readonly<Record<string, unknown>>; trackId: string; version: number }>;
 export type GuestMergeSnapshotDto = Readonly<{ guestSnapshotVersion: number; guestUserId: string; records: readonly GuestMergeRecordDto[]; activeSession: boolean; pendingJournal: boolean }>;
@@ -67,7 +98,7 @@ export type OpenApiResponseDto = Readonly<{ openapi: string; paths: Readonly<Rec
 export type PatternlyApiClientErrorCode = "client_unconfigured" | "authentication_required" | "transport_failed" | "invalid_response" | "server_error" | "request_timeout";
 
 export class PatternlyApiClientError extends Error {
-  public constructor(readonly code: PatternlyApiClientErrorCode, readonly status?: number, readonly serverCode?: string) {
+  public constructor(readonly code: PatternlyApiClientErrorCode, readonly status?: number, readonly serverCode?: string, readonly retryAfterSeconds?: number) {
     super(code);
     this.name = "PatternlyApiClientError";
   }
@@ -80,19 +111,27 @@ export type PatternlyApiClient = Readonly<{
   getReady: () => Promise<ReadyResponseDto>;
   getOpenApi: () => Promise<OpenApiResponseDto>;
   getMe: () => Promise<MeResponseDto>;
+  recordLegalAcceptance: (termsVersion: string) => Promise<Readonly<{ acceptance: Readonly<{ termsVersion: string; acceptedAt: string }> }>>;
+  recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>) => Promise<Readonly<{ confirmation: Readonly<{ confirmationId: string; acceptedAt: string }> }>>;
   getEntitlements: () => Promise<EntitlementsResponseDto>;
   getProgress: () => Promise<ProgressResponseDto>;
+  exportAccountData: () => Promise<AccountDataExportDto>;
+  createPrivacyRequest: (right: PrivacyRequestRightDto, narrative?: string) => Promise<Readonly<{ request: PrivacyRequestListItemDto }>>;
+  getPrivacyRequests: () => Promise<Readonly<{ requests: readonly PrivacyRequestListItemDto[] }>>;
+  getPrivacyRequest: (requestId: string) => Promise<PrivacyRequestResponseDto>;
+  createLegalRequest: (input: Readonly<{ kind: LegalRequestKindDto; narrative?: string; transactionId?: string }>) => Promise<Readonly<{ request: LegalRequestDto }>>;
+  createPublicLegalRequest: (input: Readonly<{ email: string; kind: LegalRequestKindDto; narrative?: string; transactionId?: string }>, appCheckToken: string) => Promise<Readonly<{ request: LegalRequestDto }>>;
+  getLegalRequests: () => Promise<Readonly<{ requests: readonly LegalRequestDto[] }>>;
+  getLegalRequest: (requestId: string) => Promise<Readonly<{ request: LegalRequestDto }>>;
   syncProgress: (input: SyncRequestDto) => Promise<SyncResponseDto>;
   previewAccountAdoption: (input: GuestMergeSnapshotDto) => Promise<AdoptionPreviewResponseDto>;
   confirmAccountAdoption: (input: Readonly<{ deviceId: string; snapshot: GuestMergeSnapshotDto; confirmation: AdoptionConfirmationDto }>) => Promise<AdoptionExecutionResponseDto>;
   issueRecoveryCodes: () => Promise<RecoveryCodesResponseDto>;
   consumeRecoveryCode: (code: string) => Promise<Readonly<{ customToken: string }>>;
   revokeSessions: (operationId: string) => Promise<Readonly<{ status: "revoked"; operationId: string }>>;
-  deleteAccount: (operationId: string) => Promise<AccountDeletionResponseDto>;
-  requestPublicDeletion: (email: string) => Promise<PublicDeletionRequestResponseDto>;
-  confirmPublicDeletion: (requestId: string, token: string) => Promise<AccountDeletionResponseDto>;
+  deleteAccount: (operationId: string, operationSecret: string) => Promise<AccountDeletionResponseDto>;
   getDeletionProof: (proofId: string) => Promise<PublicDeletionProofResponseDto>;
-  getDeletionOperationStatus: (operationId: string, accountUidHash: string) => Promise<DeletionOperationStatusDto>;
+  getDeletionOperationStatus: (operationId: string, operationSecret: string) => Promise<DeletionOperationStatusDto>;
   getTracks: () => Promise<TracksResponseDto>;
   getContentVersions: () => Promise<ContentVersionsResponseDto>;
   createContentReport: (input: CreateContentReportDto, appCheckToken: string) => Promise<CreateContentReportResponseDto>;
@@ -161,6 +200,7 @@ export function createPatternlyApiClient(input: Readonly<{
       } catch (error) {
         if (error instanceof PatternlyApiClientError) throw error;
         if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
+        if (response.status >= 500) throw new PatternlyApiClientError("server_error", response.status);
         throw new PatternlyApiClientError("invalid_response", response.status);
       }
       if (!response.ok) {
@@ -169,7 +209,14 @@ export function createPatternlyApiClient(input: Readonly<{
           : isRecord(payload) && Array.isArray(payload.conflicts) && isRecord(payload.conflicts[0]) && typeof payload.conflicts[0].code === "string"
             ? payload.conflicts[0].code
             : undefined;
-        throw new PatternlyApiClientError("server_error", response.status, serverCode);
+        const retryAfterHeader = response.headers.get("retry-after");
+        const parsedRetryAfter = retryAfterHeader !== null && /^[1-9][0-9]*$/u.test(retryAfterHeader)
+          ? Number.parseInt(retryAfterHeader, 10)
+          : undefined;
+        const retryAfterSeconds = parsedRetryAfter !== undefined && Number.isSafeInteger(parsedRetryAfter)
+          ? parsedRetryAfter
+          : undefined;
+        throw new PatternlyApiClientError("server_error", response.status, serverCode, retryAfterSeconds);
       }
       return payload as T;
     } finally {
@@ -183,19 +230,27 @@ export function createPatternlyApiClient(input: Readonly<{
     getReady: () => requestJson<ReadyResponseDto>("/ready", "GET", undefined, "none"),
     getOpenApi: () => requestJson<OpenApiResponseDto>("/openapi.json", "GET", undefined, "none"),
     getMe: () => requestJson<MeResponseDto>("/v1/me", "GET"),
+    recordLegalAcceptance: (termsVersion) => requestJson("/v1/legal-acceptances", "POST", { termsVersion, minimumAgeConfirmed: 18 }),
+    recordPurchaseConfirmation: (body) => requestJson("/v1/purchase-confirmations", "POST", body),
     getEntitlements: () => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET"),
     getProgress: () => requestJson<ProgressResponseDto>("/v1/progress", "GET"),
+    exportAccountData: () => requestJson<AccountDataExportDto>("/v1/account-data/export", "GET"),
+    createPrivacyRequest: async (right, narrative) => parsePrivacyRequestEnvelope(await requestJson<unknown>("/v1/privacy-requests", "POST", { right, ...(narrative === undefined ? {} : { narrative }) })),
+    getPrivacyRequests: async () => parsePrivacyRequestList(await requestJson<unknown>("/v1/privacy-requests", "GET")),
+    getPrivacyRequest: async (requestId) => parsePrivacyRequestResponse(await requestJson<unknown>(`/v1/privacy-requests/${encodeURIComponent(requestId)}`, "GET")),
+    createLegalRequest: async (body) => parseLegalRequestEnvelope(await requestJson<unknown>("/v1/legal-requests", "POST", body)),
+    createPublicLegalRequest: async (body, appCheckToken) => parseLegalRequestEnvelope(await requestJson<unknown>("/v1/public/legal-requests", "POST", body, "optional", { "x-firebase-appcheck": appCheckToken })),
+    getLegalRequests: async () => parseLegalRequestList(await requestJson<unknown>("/v1/legal-requests", "GET")),
+    getLegalRequest: async (requestId) => parseLegalRequestEnvelope(await requestJson<unknown>(`/v1/legal-requests/${encodeURIComponent(requestId)}`, "GET")),
     syncProgress: (body: SyncRequestDto) => requestJson<SyncResponseDto>("/v1/progress/sync", "POST", body),
     previewAccountAdoption: (body: GuestMergeSnapshotDto) => requestJson<AdoptionPreviewResponseDto>("/v1/account-data/adoption/preview", "POST", body),
     confirmAccountAdoption: (body) => requestJson<AdoptionExecutionResponseDto>("/v1/account-data/adoption/confirm", "POST", body),
     issueRecoveryCodes: () => requestJson<RecoveryCodesResponseDto>("/v1/account/recovery-codes", "POST", {}),
     consumeRecoveryCode: (code) => requestJson<Readonly<{ customToken: string }>>("/v1/public/recovery-codes/consume", "POST", { code }, "none"),
     revokeSessions: (operationId) => requestJson<Readonly<{ status: "revoked"; operationId: string }>>("/v1/account/session/revoke", "POST", { operationId }),
-    deleteAccount: (operationId) => requestJson<AccountDeletionResponseDto>("/v1/account/deletion", "POST", { operationId }),
-    requestPublicDeletion: (email) => requestJson<PublicDeletionRequestResponseDto>("/v1/public/deletion-requests", "POST", { email }, "none"),
-    confirmPublicDeletion: (requestId, token) => requestJson<AccountDeletionResponseDto>(`/v1/public/deletion-requests/${requestId}/confirm`, "POST", { token }, "none"),
+    deleteAccount: (operationId, operationSecret) => requestJson<AccountDeletionResponseDto>("/v1/account/deletion", "POST", { operationId, operationSecret }),
     getDeletionProof: (proofId) => requestJson<PublicDeletionProofResponseDto>(`/v1/public/deletion-proofs/${proofId}`, "GET", undefined, "none"),
-    getDeletionOperationStatus: (operationId, accountUidHash) => requestJson<DeletionOperationStatusDto>("/v1/public/deletion-operations/status", "POST", { operationId, accountUidHash }, "none"),
+    getDeletionOperationStatus: (operationId, operationSecret) => requestJson<DeletionOperationStatusDto>("/v1/public/deletion-operations/status", "POST", { operationId, operationSecret }, "none"),
     getTracks: () => requestJson<TracksResponseDto>("/v1/tracks", "GET"),
     getContentVersions: () => requestJson<ContentVersionsResponseDto>("/v1/content/versions", "GET"),
     createContentReport: (body, appCheckToken) => requestJson<CreateContentReportResponseDto>("/v1/content/reports", "POST", body, "optional", { "x-firebase-appcheck": appCheckToken }),
@@ -235,4 +290,73 @@ export function createFirebaseEmulatorIdTokenProvider(input: Readonly<{
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+const privacyRights = new Set<PrivacyRequestRightDto>(["access", "rectification", "erasure", "restriction", "objection", "portability", "consent_withdrawal"]);
+const privacyStatuses = new Set<PrivacyRequestStatusDto>(["received", "identity_verification_required", "in_review", "response_ready", "fulfilled", "partially_fulfilled", "refused", "closed"]);
+const privacyOutcomes = new Set(["fulfilled", "partially_fulfilled", "refused"]);
+
+function isIsoDate(value: unknown): value is string {
+  return typeof value === "string" && !Number.isNaN(Date.parse(value));
+}
+
+function isPrivacyRequestListItem(value: unknown): value is PrivacyRequestListItemDto {
+  return isRecord(value)
+    && typeof value.requestId === "string" && value.requestId.length > 0
+    && typeof value.right === "string" && privacyRights.has(value.right as PrivacyRequestRightDto)
+    && (value.channel === "account" || value.channel === "public")
+    && typeof value.status === "string" && privacyStatuses.has(value.status as PrivacyRequestStatusDto)
+    && (value.outcome === null || (typeof value.outcome === "string" && privacyOutcomes.has(value.outcome)))
+    && isIsoDate(value.receivedAt) && isIsoDate(value.deadlineAt)
+    && (value.deliveredAt === null || isIsoDate(value.deliveredAt))
+    && (value.extendedAt === null || isIsoDate(value.extendedAt))
+    && Number.isSafeInteger(value.revision) && Number(value.revision) >= 0;
+}
+
+function invalidPrivacyResponse(): never {
+  throw new PatternlyApiClientError("invalid_response");
+}
+
+function parsePrivacyRequestEnvelope(value: unknown): Readonly<{ request: PrivacyRequestListItemDto }> {
+  if (!isRecord(value) || !isPrivacyRequestListItem(value.request)) return invalidPrivacyResponse();
+  return { request: value.request };
+}
+
+function parsePrivacyRequestList(value: unknown): Readonly<{ requests: readonly PrivacyRequestListItemDto[] }> {
+  if (!isRecord(value) || !Array.isArray(value.requests) || !value.requests.every(isPrivacyRequestListItem)) return invalidPrivacyResponse();
+  return { requests: value.requests };
+}
+
+function parsePrivacyRequestResponse(value: unknown): PrivacyRequestResponseDto {
+  if (!isRecord(value) || !isPrivacyRequestListItem(value.request)
+    || (value.response !== null && typeof value.response !== "string")
+    || (value.responseAvailableUntil !== null && !isIsoDate(value.responseAvailableUntil))
+    || (value.extensionReason !== null && typeof value.extensionReason !== "string")
+    || typeof value.complaintInformationIncluded !== "boolean") return invalidPrivacyResponse();
+  return value as PrivacyRequestResponseDto;
+}
+
+const legalRequestKinds = new Set<LegalRequestKindDto>(["complaint", "withdrawal", "data_recovery", "suspension_appeal"]);
+const legalRequestStatuses = new Set<LegalRequestStatusDto>(["received", "in_review", "answered", "closed"]);
+
+function isLegalRequest(value: unknown): value is LegalRequestDto {
+  return isRecord(value)
+    && typeof value.requestId === "string" && value.requestId.length > 0
+    && typeof value.kind === "string" && legalRequestKinds.has(value.kind as LegalRequestKindDto)
+    && typeof value.status === "string" && legalRequestStatuses.has(value.status as LegalRequestStatusDto)
+    && isIsoDate(value.receivedAt)
+    && (value.responseDueAt === null || isIsoDate(value.responseDueAt))
+    && (value.answeredAt === null || isIsoDate(value.answeredAt))
+    && (value.retentionUntil === null || isIsoDate(value.retentionUntil))
+    && (value.response === null || typeof value.response === "string");
+}
+
+function parseLegalRequestEnvelope(value: unknown): Readonly<{ request: LegalRequestDto }> {
+  if (!isRecord(value) || !isLegalRequest(value.request)) throw new PatternlyApiClientError("invalid_response");
+  return { request: value.request };
+}
+
+function parseLegalRequestList(value: unknown): Readonly<{ requests: readonly LegalRequestDto[] }> {
+  if (!isRecord(value) || !Array.isArray(value.requests) || !value.requests.every(isLegalRequest)) throw new PatternlyApiClientError("invalid_response");
+  return { requests: value.requests };
 }

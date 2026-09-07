@@ -8,7 +8,6 @@ export type ConfiguredPublicEnvironment = Readonly<{
   environment: PublicEnvironmentName;
   iosAssociatedDomain: string;
   privacyUrl: string;
-  publicDeletionUrl: string;
   publicWebOrigin: string;
   supportUrl: string;
   termsUrl: string;
@@ -27,7 +26,6 @@ const REQUIRED_KEYS = [
   "environment",
   "iosAssociatedDomain",
   "privacyUrl",
-  "publicDeletionUrl",
   "publicWebOrigin",
   "supportUrl",
   "termsUrl",
@@ -73,7 +71,6 @@ export function parseConfiguredPublicEnvironment(input: unknown): ConfiguredPubl
   const privacyUrl = exactHttpsUrl(source.privacyUrl, "privacyUrl", true);
   const termsUrl = exactHttpsUrl(source.termsUrl, "termsUrl", true);
   const supportUrl = exactHttpsUrl(source.supportUrl, "supportUrl", true);
-  const publicDeletionUrl = exactHttpsUrl(source.publicDeletionUrl, "publicDeletionUrl", true);
   const authRedirectDomain = hostname(source.authRedirectDomain, "authRedirectDomain");
   const androidAppLinkHost = hostname(source.androidAppLinkHost, "androidAppLinkHost");
   const transactionalSenderDomain = hostname(source.transactionalSenderDomain, "transactionalSenderDomain");
@@ -81,7 +78,7 @@ export function parseConfiguredPublicEnvironment(input: unknown): ConfiguredPubl
   const iosAssociatedDomain = `applinks:${hostname((source.iosAssociatedDomain as string).slice("applinks:".length), "iosAssociatedDomain")}`;
   const relevantHosts = [new URL(apiOrigin).hostname, new URL(publicWebOrigin).hostname, new URL(authActionOrigin).hostname, authRedirectDomain, androidAppLinkHost, transactionalSenderDomain, iosAssociatedDomain.slice("applinks:".length)];
   if (environment === "production" && relevantHosts.some(isDefaultFirebaseDomain)) invalid("production_default_firebase_domain");
-  return Object.freeze({ apiOrigin, androidAppLinkHost, authActionOrigin, authRedirectDomain, environment, iosAssociatedDomain, privacyUrl, publicDeletionUrl, publicWebOrigin, supportUrl, termsUrl, transactionalSenderDomain });
+  return Object.freeze({ apiOrigin, androidAppLinkHost, authActionOrigin, authRedirectDomain, environment, iosAssociatedDomain, privacyUrl, publicWebOrigin, supportUrl, termsUrl, transactionalSenderDomain });
 }
 
 /** Local builds have no implicit network destination. A supplied configuration

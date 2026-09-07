@@ -1,14 +1,18 @@
 import { useMemo, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { readContentReportTransport, retryContentReport, submitContentReportFromConfiguredRuntime } from "../../application/contentReports";
+import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import type { ContentReportInput, ContentReportModeRoute, ContentReportOutboxEntry, ContentReportReason } from "../../domain";
-import type { ContentItemRef } from "../../domain";
+import { CONTENT_REPORT_DESCRIPTION_MAX_LENGTH, contentReportDescriptionIssue, type ContentItemRef, type ContentReportInput, type ContentReportModeRoute, type ContentReportOutboxEntry, type ContentReportReason } from "../../domain";
 import { Button } from "../../components";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../theme";
+import { ROUTES } from "../../constants/routes";
+import type { RootStackParamList } from "../../navigation";
 
 export type ContentReportSurfaceContext = Readonly<{ modeRoute: ContentReportModeRoute; trackNode: string | null }>;
 
@@ -22,6 +26,8 @@ const REASON_LABELS: Readonly<Record<ContentReportReason, string>> = {
 
 export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentItemRef; surface: ContentReportSurfaceContext }>) {
   const styles = useThemedStyles(createStyles);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const account = usePatternlyAccount();
   const { locale } = useAppPreferences();
   const { t } = useTranslation("common");
   const [visible, setVisible] = useState(false);
@@ -30,11 +36,13 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
   const [pending, setPending] = useState(false);
   const [entry, setEntry] = useState<ContentReportOutboxEntry | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [detailsVisible, setDetailsVisible] = useState(false);
   const platform = Platform.OS === "ios" || Platform.OS === "android" ? Platform.OS : null;
   const reasonOptions = useMemo(() => Object.keys(REASON_LABELS) as ContentReportReason[], []);
 
   function open() {
     setError(null);
+    setDetailsVisible(false);
     setVisible(true);
   }
 
@@ -43,8 +51,13 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
   }
 
   async function submit() {
-    if (description.trim().length < 10) {
-      setError(t("Please describe the issue in at least 10 characters."));
+    const descriptionIssue = contentReportDescriptionIssue(description);
+    if (descriptionIssue === "private_data") {
+      setError(t("Remove private information: an email address, phone number, link, password, or code."));
+      return;
+    }
+    if (descriptionIssue === "too_long") {
+      setError(t("Keep the extra details within 280 characters."));
       return;
     }
     if (!platform) {
@@ -88,7 +101,23 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
           <View style={styles.sheet}>
             <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
               <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Report a content issue")}</Text>
-              <Text maxFontSizeMultiplier={2} style={styles.description}>{t("Tell us what is wrong. Your answer and the full explanation are not sent automatically.")}</Text>
+              {account.state.kind === "guest" ? (
+                <View style={styles.guestNotice} testID="content-report-guest-notice">
+                  <Text maxFontSizeMultiplier={2} style={styles.description}>{t("We send the issue category, an optional note, and technical details about the question so Patternly can improve it.")}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.warning}>{t("Do not enter your answer or private information, such as an email, phone number, or password.")}</Text>
+                  <Pressable accessibilityRole="button" accessibilityState={{ expanded: detailsVisible }} onPress={() => setDetailsVisible((current) => !current)} testID="content-report-details-toggle">
+                    <Text maxFontSizeMultiplier={2} style={styles.detailsAction}>{t(detailsVisible ? "Hide details" : "Show details")}</Text>
+                  </Pressable>
+                  {detailsVisible ? (
+                    <View style={styles.detailsBlock} testID="content-report-details">
+                      <Text maxFontSizeMultiplier={2} style={styles.details}>{t("We send the issue category, a note only if you write one, a random report ID, the question ID and version, screen, language, app version, platform, report time, and an app security token. We do not automatically add your account, contact details, or answer. Your connection gives the server an IP address; the server turns it into a code used only to limit repeated reports. Do not enter your name, address, email, phone number, password, code, or link.")}</Text>
+                      <Pressable accessibilityRole="link" onPress={() => { setVisible(false); navigation.navigate(ROUTES.PRIVACY_POLICY); }} testID="content-report-privacy-policy-link">
+                        <Text maxFontSizeMultiplier={2} style={styles.detailsAction}>{t("Privacy Policy")}</Text>
+                      </Pressable>
+                    </View>
+                  ) : null}
+                </View>
+              ) : <Text maxFontSizeMultiplier={2} style={styles.description}>{t("Tell us what is wrong. Your answer and the full explanation are not sent automatically.")}</Text>}
               <Text maxFontSizeMultiplier={2} style={styles.label}>{t("Category")}</Text>
               <View style={styles.reasons}>
                 {reasonOptions.map((option) => (
@@ -97,9 +126,10 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
                   </Pressable>
                 ))}
               </View>
-              <Text maxFontSizeMultiplier={2} style={styles.label}>{t("Description")}</Text>
-              <TextInput accessibilityLabel={t("Report description")} editable={!pending} maxLength={2_000} multiline onChangeText={setDescription} placeholder={t("Describe the issue without including your answer.")} placeholderTextColor={styles.placeholder.color as string} style={styles.input} testID={`content-report-input-${item.itemId}`} value={description} />
-              <Text maxFontSizeMultiplier={2} style={styles.privacy}>{t("Reports are anonymous by default and sent to Patternly.")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.label}>{t("Extra details (optional)")}</Text>
+              <TextInput accessibilityLabel={t("Report description")} editable={!pending} maxLength={CONTENT_REPORT_DESCRIPTION_MAX_LENGTH} multiline onChangeText={setDescription} placeholder={t("Write only what is wrong with this question.")} placeholderTextColor={styles.placeholder.color as string} style={styles.input} testID={`content-report-input-${item.itemId}`} value={description} />
+              <Text maxFontSizeMultiplier={2} style={styles.privacy}>{t("Do not include private information or your answer.")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.privacy}>{t("By default, we do not link reports to your account or contact details.")}</Text>
               {entry ? <ReportStatus entry={entry} /> : null}
               {error ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.error}>{error}</Text> : null}
               <Button disabled={pending} loading={pending} onPress={() => void submit()} testID={`content-report-submit-${item.itemId}`}>{t("Send report")}</Button>
@@ -149,8 +179,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   backdrop: { backgroundColor: palette.effects.scrim, flex: 1, justifyContent: "flex-end" },
   content: { gap: spacing.lg, paddingBottom: spacing.xxxl, paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
   description: { ...typography.body, color: palette.textSecondary },
+  details: { ...typography.caption, color: palette.textSecondary },
+  detailsBlock: { gap: spacing.sm },
+  detailsAction: { ...typography.bodyStrong, color: palette.primary },
   dismissArea: { flex: 1 },
   error: { color: palette.danger, ...typography.body },
+  guestNotice: { gap: spacing.sm },
   input: { backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, color: palette.textPrimary, minHeight: 120, padding: spacing.md, textAlignVertical: "top", ...typography.body },
   label: { ...typography.bodyStrong, color: palette.textPrimary },
   placeholder: { color: palette.textMuted },
@@ -164,4 +198,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   statusPending: { ...typography.body, color: palette.textSecondary },
   title: { ...typography.title, color: palette.textPrimary },
   trigger: { alignSelf: "flex-start", marginTop: spacing.sm, paddingHorizontal: 0 },
+  warning: { ...typography.bodyStrong, color: palette.textPrimary },
 });

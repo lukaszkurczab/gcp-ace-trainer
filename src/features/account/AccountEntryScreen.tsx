@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import accountCopy from "../../locales/en/account.json";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
+  AppState,
   Linking,
   Platform,
   Pressable,
@@ -18,7 +19,6 @@ import {
 } from "react-native";
 import type { Edge } from "react-native-safe-area-context";
 import * as Google from "expo-auth-session/providers/google";
-import * as Clipboard from "expo-clipboard";
 import { StatusBar } from "expo-status-bar";
 import GoogleIcon from "../../assets/icons/google.svg";
 
@@ -39,10 +39,10 @@ import {
 import type { AccountDataSession } from "../../application/account/accountDataService";
 import {
   readFirebaseClientConfiguration,
-  readPublicLegalLinksFromRuntime,
   type FirebaseClientConfiguration,
 } from "../../infrastructure/firebase/publicConfig";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
+import { recoveryCodeClipboard } from "../../infrastructure/security/recoveryCodeClipboard";
 import {
   spacing,
   typography,
@@ -136,6 +136,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   recoveryCodesIntro: t("recoveryCodesIntro"),
   copyRecoveryCodes: t("copyRecoveryCodes"),
   recoveryCodesCopied: t("recoveryCodesCopied"),
+  recoveryCodesClipboardWarning: t("recoveryCodesClipboardWarning"),
   recoveryCodesCopyFailed: t("recoveryCodesCopyFailed"),
   accountReadyTitle: t("accountReadyTitle"),
   accountReadyDescription: t("accountReadyDescription"),
@@ -194,12 +195,12 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   acceptTermsPrefix: t("acceptTermsPrefix"),
   termsOfService: t("termsOfService"),
   privacyPolicy: t("privacyPolicy"),
+  privacyNoticePrefix: t("privacyNoticePrefix"),
   and: t("and"),
   showPassword: t("showPassword"),
   hidePassword: t("hidePassword"),
   passwordMismatch: t("passwordMismatch"),
   termsRequired: t("termsRequired"),
-  termsUnavailable: t("termsUnavailable"),
   weakPassword: t("weakPassword"),
   invalid: t("invalid"),
   invalidEmail: t("emailFormatError"),
@@ -518,11 +519,13 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             </Button>
           </View>
           <Divider label={text.or} />
+          <TermsAcceptance accepted={acceptedTerms} onChange={setAcceptedTerms} onOpenPrivacy={() => navigation.navigate(ROUTES.PRIVACY_POLICY)} onOpenTerms={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE)} text={text} />
           {Platform.OS === "ios" ? (
             <ProviderButton
+              disabled={!acceptedTerms}
               icon="apple"
               onPress={() =>
-                void account.signInWithApple().then(setResult(setFeedback))
+                void account.signInWithApple(acceptedTerms).then(setResult(setFeedback))
               }
               text={text.continueWithApple}
             />
@@ -530,6 +533,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           {firebaseConfig.kind === "configured" ? (
             <GoogleProviderButton
               accountRef={accountRef}
+              acceptanceConfirmed={acceptedTerms}
               configuration={firebaseConfig.value}
               onFeedback={setFeedback}
               text={text.continueWithGoogle}
@@ -619,6 +623,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           feedback={feedback}
           inputStyle={styles.authInput}
           onAcceptedTermsChange={setAcceptedTerms}
+          onOpenPrivacy={() => navigation.navigate(ROUTES.PRIVACY_POLICY)}
+          onOpenTerms={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE)}
           onConfirmationChange={(value) => { setFeedback(null); setConfirmation(value); }}
           onEmailChange={(value) => { setFeedback(null); setEmail(value); }}
           onPasswordChange={(value) => { setFeedback(null); setPassword(value); }}
@@ -627,7 +633,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
               setFeedback({ kind: "failure", failure: "passwordMismatch" });
               return;
             }
-            void account.register(email, password).then(setResult(setFeedback));
+            void account.register(email, password, acceptedTerms).then(setResult(setFeedback));
           }}
           password={password}
           placeholderTextColor={styles.authPlaceholder.color as string}
@@ -694,14 +700,15 @@ function RecoveryCodesDisplay({ codes, text }: Readonly<{ codes: readonly string
   const copyCodes = async () => {
     setCopyState("copying");
     try {
-      const copied = await Clipboard.setStringAsync(codes.join("\n"));
-      setCopyState(copied ? "copied" : "failed");
+      await recoveryCodeClipboard.copy(codes);
+      setCopyState("copied");
     } catch {
       setCopyState("failed");
     }
   };
   return (
     <View style={styles.accountActionGroup}>
+      <AuthText style={styles.accountBody}>{text.recoveryCodesClipboardWarning}</AuthText>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={copyState === "copied" ? `${text.recoveryCodesCopied}. ${text.copyRecoveryCodes}` : text.copyRecoveryCodes}
@@ -758,6 +765,16 @@ function AccountAdoptionScreen({
   const [recoveryNeedsReauthentication, setRecoveryNeedsReauthentication] = useState(false);
   const [commandFeedback, setCommandFeedback] = useState<Feedback | null>(null);
   const { busyAction, runCommand } = useAccountCommand();
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state !== "active") {
+        setRecoveryCodes(null);
+        setRecoveryCodesSaved(false);
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
   if (!plan) return null;
   const authenticated = account.state.kind === "authenticated" ? account.state : null;
@@ -1383,15 +1400,18 @@ function Divider({ label }: Readonly<{ label: string }>) {
 }
 
 function ProviderButton({
+  disabled = false,
   icon,
   onPress,
   text,
-}: Readonly<{ icon: "apple" | "google"; onPress: () => void; text: string }>) {
+}: Readonly<{ disabled?: boolean; icon: "apple" | "google"; onPress: () => void; text: string }>) {
   const styles = useThemedStyles(createStyles);
   const { colors } = useAppPreferences();
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
       onPress={onPress}
       accessibilityLabel={text}
       style={({ pressed }) => [
@@ -1415,12 +1435,14 @@ function ProviderButton({
 }
 
 function GoogleProviderButton({
+  acceptanceConfirmed,
   accountRef,
   configuration,
   onFeedback,
   text,
 }: Readonly<{
   accountRef: AccountContextRef;
+  acceptanceConfirmed: boolean;
   configuration: FirebaseClientConfiguration;
   onFeedback: (feedback: Feedback) => void;
   text: string;
@@ -1447,12 +1469,13 @@ function GoogleProviderButton({
     }
     const idToken = googleResponse.params.id_token;
     void accountRef.current
-      .signInWithGoogle(idToken ?? "")
+      .signInWithGoogle(idToken ?? "", acceptanceConfirmed)
       .then((result) => feedbackRef.current(result));
-  }, [googleResponse]);
+  }, [acceptanceConfirmed, googleResponse]);
 
   return (
     <ProviderButton
+      disabled={!acceptanceConfirmed}
       icon="google"
       onPress={() => {
         if (!googleRequest) {
@@ -1480,6 +1503,8 @@ function CredentialsForm({
   onConfirmationChange,
   onEmailChange,
   onPasswordChange,
+  onOpenPrivacy,
+  onOpenTerms,
   onSubmit,
   password,
   placeholderTextColor,
@@ -1496,6 +1521,8 @@ function CredentialsForm({
   onConfirmationChange?: (value: string) => void;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
+  onOpenPrivacy?: () => void;
+  onOpenTerms?: () => void;
   onSubmit: () => void;
   password: string;
   placeholderTextColor: string;
@@ -1524,7 +1551,7 @@ function CredentialsForm({
       {confirmation !== undefined && onConfirmationChange ? (
         <AuthPasswordInput error={passwordMismatch ? text.passwordMismatch : undefined} errorTestID="account-password-confirmation-error" inputStyle={inputStyle} label={text.confirmPassword} onChangeText={onConfirmationChange} placeholder={text.confirmPassword} placeholderTextColor={placeholderTextColor} testID="account-password-confirmation" text={text} value={confirmation} />
       ) : null}
-      {acceptedTerms !== undefined && onAcceptedTermsChange ? <TermsAcceptance accepted={acceptedTerms} onChange={onAcceptedTermsChange} text={text} /> : null}
+      {acceptedTerms !== undefined && onAcceptedTermsChange && onOpenPrivacy && onOpenTerms ? <TermsAcceptance accepted={acceptedTerms} onChange={onAcceptedTermsChange} onOpenPrivacy={onOpenPrivacy} onOpenTerms={onOpenTerms} text={text} /> : null}
       <Button disabled={acceptedTerms === false} labelStyle={styles.authPrimaryLabel} onPress={onSubmit} style={styles.authPrimaryButton} testID={testID} variant="primary">
         {buttonLabel}
       </Button>
@@ -1532,23 +1559,24 @@ function CredentialsForm({
   );
 }
 
-function TermsAcceptance({ accepted, onChange, text }: Readonly<{ accepted: boolean; onChange: (accepted: boolean) => void; text: AccountCopy }>) {
+function TermsAcceptance({ accepted, onChange, onOpenPrivacy, onOpenTerms, text }: Readonly<{ accepted: boolean; onChange: (accepted: boolean) => void; onOpenPrivacy: () => void; onOpenTerms: () => void; text: AccountCopy }>) {
   const styles = useThemedStyles(createStyles);
-  const publicLinks = readPublicLegalLinksFromRuntime();
-  const links = publicLinks.kind === "configured" ? publicLinks.value : null;
   return (
     <View style={styles.termsAcceptance}>
       <View style={styles.termsCheckboxRow}>
-        <Pressable accessibilityLabel={`${text.acceptTermsPrefix} ${text.termsOfService} ${text.and} ${text.privacyPolicy}`} accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} hitSlop={8} onPress={() => onChange(!accepted)} style={styles.termsCheckboxControl} testID="account-register-terms-checkbox">
+        <Pressable accessibilityLabel={`${text.acceptTermsPrefix} ${text.termsOfService}`} accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} hitSlop={8} onPress={() => onChange(!accepted)} style={styles.termsCheckboxControl} testID="account-register-terms-checkbox">
           <View style={[styles.termsCheckbox, accepted ? styles.termsCheckboxChecked : null]}>{accepted ? <Icon color={styles.termsCheckboxIcon.color as string} name="check" size={16} /> : null}</View>
         </Pressable>
         <View style={styles.termsLinks}>
           <AuthText style={styles.termsCopy}>{text.acceptTermsPrefix}</AuthText>
-          {links ? <><Pressable accessibilityRole="link" onPress={() => void Linking.openURL(links.termsUrl)} style={styles.termsLinkPressable} testID="account-register-terms-link"><AuthText style={styles.termsLink}>{text.termsOfService}</AuthText></Pressable><AuthText style={styles.termsCopy}>{text.and}</AuthText><Pressable accessibilityRole="link" onPress={() => void Linking.openURL(links.privacyUrl)} style={styles.termsLinkPressable} testID="account-register-privacy-link"><AuthText style={styles.termsLink}>{text.privacyPolicy}</AuthText></Pressable></> : <AuthText style={styles.termsCopy}>{`${text.termsOfService} ${text.and} ${text.privacyPolicy}`}</AuthText>}
+          <Pressable accessibilityRole="link" onPress={onOpenTerms} style={styles.termsLinkPressable} testID="account-register-terms-link"><AuthText style={styles.termsLink}>{text.termsOfService}</AuthText></Pressable>
         </View>
       </View>
-      {!links ? <AuthText style={styles.termsUnavailable} testID="account-terms-unavailable">{text.termsUnavailable}</AuthText> : null}
       {!accepted ? <AuthText accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.termsRequired} testID="account-register-terms-error">{text.termsRequired}</AuthText> : null}
+      <View style={styles.termsPrivacyNotice}>
+        <AuthText style={styles.termsCopy}>{text.privacyNoticePrefix}</AuthText>
+        <Pressable accessibilityRole="link" onPress={onOpenPrivacy} style={styles.termsLinkPressable} testID="account-register-privacy-link"><AuthText style={styles.termsLink}>{text.privacyPolicy}</AuthText></Pressable>
+      </View>
     </View>
   );
 }
@@ -1850,8 +1878,8 @@ function isAuthFieldFailure(
     termsLinks: { flex: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, minWidth: 0 },
     termsLinkPressable: { alignSelf: "flex-start", flexShrink: 1, maxWidth: "100%" },
     termsLink: { color: palette.primary, flexShrink: 1, fontSize: 13, lineHeight: 20, textDecorationLine: "underline" },
-    termsUnavailable: { color: palette.textSecondary, flexShrink: 1, fontSize: 13, lineHeight: 20 },
     termsRequired: { color: palette.danger, fontSize: 12, lineHeight: 17, marginLeft: 44 + spacing.sm },
+    termsPrivacyNotice: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, marginLeft: 44 + spacing.sm, minWidth: 0 },
     authTitle: {
       ...typography.display,
       color: palette.textPrimary,

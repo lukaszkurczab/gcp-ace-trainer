@@ -8,10 +8,12 @@ import { ContentPreparationGate } from "./src/content/application/ContentPrepara
 import { AppPreferencesProvider, useAppPreferences } from "./src/preferences";
 import { buildNavigationTheme } from "./src/theme/navigationTheme";
 import { PatternlyAccountProvider, usePatternlyAccount } from "./src/application/account/AccountSessionProvider";
+import { RecoveryCodeClipboardGuard } from "./src/infrastructure/security/RecoveryCodeClipboardGuard";
 
 export default function App() {
   return (
     <SafeAreaProvider>
+      <RecoveryCodeClipboardGuard />
       <AppPreferencesProvider>
         <ContentPreparationGate>
           <PatternlyAccountProvider>

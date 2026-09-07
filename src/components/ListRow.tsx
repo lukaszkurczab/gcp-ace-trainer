@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { Pressable, StyleSheet, Text, View, type AccessibilityProps, type StyleProp, type ViewStyle } from "react-native";
 
 import { radius, spacing, typography } from "../theme";
 import { useThemedStyles } from "../preferences";
@@ -7,6 +7,8 @@ import type { AppColors } from "../theme";
 
 
 type ListRowProps = {
+  accessibilityLabel?: string;
+  accessibilityLiveRegion?: AccessibilityProps["accessibilityLiveRegion"];
   detail?: string;
   disabled?: boolean;
   leading?: ReactNode;
@@ -21,6 +23,8 @@ type ListRowProps = {
 };
 
 export function ListRow({
+  accessibilityLabel,
+  accessibilityLiveRegion,
   detail,
   disabled = false,
   leading,
@@ -59,6 +63,8 @@ export function ListRow({
   if (onPress) {
     return (
       <Pressable
+        accessibilityLabel={accessibilityLabel}
+        accessibilityLiveRegion={accessibilityLiveRegion}
         accessibilityRole="button"
         accessibilityState={{ disabled }}
         disabled={disabled}

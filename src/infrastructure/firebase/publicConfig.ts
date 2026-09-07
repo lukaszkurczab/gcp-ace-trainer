@@ -2,7 +2,7 @@ import type { ConfiguredPublicEnvironment, PublicEnvironment } from "../clients/
 import { developmentLoopbackHost } from "../developmentEndpoints";
 import { isPatternlySmokeRuntime } from "../runtime/runtimeMode";
 
-export type PublicLegalLinks = Readonly<Pick<ConfiguredPublicEnvironment, "privacyUrl" | "termsUrl" | "supportUrl" | "publicDeletionUrl">>;
+export type PublicLegalLinks = Readonly<Pick<ConfiguredPublicEnvironment, "privacyUrl" | "termsUrl" | "supportUrl">>;
 
 export type PublicLegalLinksResult =
   | Readonly<{ kind: "configured"; value: PublicLegalLinks }>
@@ -112,7 +112,6 @@ export function readPublicLegalLinksFromRuntime(): PublicLegalLinksResult {
     kind: "configured",
     value: Object.freeze({
       privacyUrl: environment.value.privacyUrl,
-      publicDeletionUrl: environment.value.publicDeletionUrl,
       supportUrl: environment.value.supportUrl,
       termsUrl: environment.value.termsUrl,
     }),

@@ -18,7 +18,6 @@ const publicEnvironment = {
   environment: "sandbox",
   iosAssociatedDomain: "applinks:app.patternly.example",
   privacyUrl: "https://patternly.example/privacy",
-  publicDeletionUrl: "https://patternly.example/delete",
   publicWebOrigin: "https://patternly.example",
   supportUrl: "https://patternly.example/support",
   termsUrl: "https://patternly.example/terms",
@@ -214,10 +213,22 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.match(screen, /function AuthText\(\{ maxFontSizeMultiplier = 2/);
   assert.match(screen, /<Text key=\{fontScale\} maxFontSizeMultiplier=\{maxFontSizeMultiplier\}/);
   assert.doesNotMatch(screen, /AUTH_HEADING_MAX_FONT_SCALE|maxFontSizeMultiplier=\{1\.35\}/);
-  assert.match(screen, /termsUnavailable.*account-terms-unavailable|account-terms-unavailable.*termsUnavailable/);
+  assert.doesNotMatch(screen, /termsUnavailable|account-terms-unavailable/);
   assert.match(screen, /providerContent:[\s\S]*?minWidth: 0/);
   assert.doesNotMatch(screen, /providerIcon:[\s\S]*?position: "absolute"/);
   assert.doesNotMatch(screen, /themeColors\.(?:dark|light)|#[0-9a-f]{3,8}/i);
+});
+
+test("both recovery-code surfaces warn before copying through the guarded clipboard", () => {
+  const entry = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  const security = readFileSync("src/features/account/AccountSecurityScreen.tsx", "utf8");
+  for (const screen of [entry, security]) {
+    const warning = screen.indexOf("recoveryCodesClipboardWarning");
+    const guardedCopy = screen.indexOf("recoveryCodeClipboard.copy(codes)");
+    assert.ok(warning >= 0 && guardedCopy > warning);
+    assert.doesNotMatch(screen, /Clipboard\.setStringAsync\(codes\.join/);
+  }
+  assert.match(entry, /AppState\.addEventListener\("change"[\s\S]*?state !== "active"[\s\S]*?setRecoveryCodes\(null\)/);
 });
 
 test("unconfigured account entry never composes Google OAuth without typed provider configuration", () => {
@@ -407,6 +418,7 @@ test("account failures expose explicit provider, network, expiry, and revoked-se
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 503)), "backendUnavailable");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 400, "recovery_code_invalid")), "invalidRecoveryCode");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 400, "recovery_code_used")), "recoveryCodeUsed");
+  assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 409, "purchase_attempt_active")), "conflict");
   assert.equal(classifyAccountFailure({ code: "auth/command-in-flight" }), "conflict");
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/user-not-found", message: "private provider detail" }), true);
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/invalid-credential", message: "private provider detail" }), true);

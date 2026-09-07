@@ -13,6 +13,7 @@ export type AccountDeletionState = Readonly<{
   accountId: string;
   accountUidHash: string;
   operationId: string;
+  operationSecret: string;
   status: "remotePending" | "remoteDeleted" | "localCleanupPending" | "complete" | "failed";
   proofId: string | null;
   lastFailureCode: string | null;
@@ -21,7 +22,7 @@ export type AccountDeletionState = Readonly<{
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 const isUuid = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value);
 const isSignOutState = (value: unknown): value is AccountSignOutState => isRecord(value) && typeof value.accountId === "string" && isUuid(value.operationId) && ["pending", "remoteRevoked", "localCleanupPending"].includes(String(value.status)) && (value.lastFailureCode === null || typeof value.lastFailureCode === "string");
-const isDeletionState = (value: unknown): value is AccountDeletionState => isRecord(value) && typeof value.accountId === "string" && typeof value.accountUidHash === "string" && isUuid(value.operationId) && ["remotePending", "remoteDeleted", "localCleanupPending", "complete", "failed"].includes(String(value.status)) && (value.proofId === null || typeof value.proofId === "string") && (value.lastFailureCode === null || typeof value.lastFailureCode === "string");
+const isDeletionState = (value: unknown): value is AccountDeletionState => isRecord(value) && typeof value.accountId === "string" && typeof value.accountUidHash === "string" && isUuid(value.operationId) && typeof value.operationSecret === "string" && /^[0-9a-f]{64}$/iu.test(value.operationSecret) && ["remotePending", "remoteDeleted", "localCleanupPending", "complete", "failed"].includes(String(value.status)) && (value.proofId === null || typeof value.proofId === "string") && (value.lastFailureCode === null || typeof value.lastFailureCode === "string");
 
 function operationId(): string {
   if (typeof globalThis.crypto?.randomUUID === "function") return globalThis.crypto.randomUUID();
@@ -31,6 +32,16 @@ function operationId(): string {
   } catch {
     throw new Error("secure_operation_id_unavailable");
   }
+}
+
+function operationSecret(): string {
+  const bytes = new Uint8Array(32);
+  if (typeof globalThis.crypto?.getRandomValues === "function") globalThis.crypto.getRandomValues(bytes);
+  else {
+    const crypto = require("expo-crypto") as typeof import("expo-crypto");
+    crypto.getRandomValues(bytes);
+  }
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export function getAccountSignOutState(): AccountSignOutState | null { return readCanonicalJson(STORAGE_KEYS.ACCOUNT_SIGN_OUT, isSignOutState); }
@@ -48,7 +59,7 @@ export function clearAccountSignOutState(): void { removeCanonicalValue(STORAGE_
 
 export function getAccountDeletionState(): AccountDeletionState | null { return readCanonicalJson(STORAGE_KEYS.ACCOUNT_DELETION, isDeletionState); }
 export function beginAccountDeletion(accountId: string, uid: string): AccountDeletionState {
-  const state: AccountDeletionState = { accountId, accountUidHash: sha256Utf8(uid), operationId: operationId(), status: "remotePending", proofId: null, lastFailureCode: null };
+  const state: AccountDeletionState = { accountId, accountUidHash: sha256Utf8(uid), operationId: operationId(), operationSecret: operationSecret(), status: "remotePending", proofId: null, lastFailureCode: null };
   writeCanonicalJson(STORAGE_KEYS.ACCOUNT_DELETION, state);
   return state;
 }

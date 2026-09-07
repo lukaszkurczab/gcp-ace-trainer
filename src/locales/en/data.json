@@ -2,68 +2,100 @@
   "close": "Close",
   "data": "Data",
   "dataPrivacy": "Data & privacy",
-  "infoBody": "Patternly stores learning data locally on this device to run sessions, review progress, and recover one active session.",
   "infoTitle": "Your learning data",
-  "sections": [
-    {
-      "title": "Quick answers",
-      "topics": [
-        {
-          "detailTitle": "What Patternly stores",
-          "icon": "database",
-          "summary": "Learning records and the settings needed to run the app.",
-          "title": "Stored locally",
-          "paragraphs": [
-            "Patternly stores application settings, active and completed sessions, attempts, results, review items, progress evidence, recommendation inputs, and the one active-session draft required to resume safely.",
-            "It also keeps the durable records required to verify writes and recover an interrupted learning operation."
-          ]
-        },
-        {
-          "detailTitle": "What Patternly does not require",
-          "icon": "shield-check",
-          "summary": "Practice locally without an account or cloud sync.",
-          "title": "Account is optional",
-          "paragraphs": [
-            "You can practice locally without creating an account or providing a name or email address. Signing in is optional.",
-            "It does not require location, contacts, photos, microphone, camera, health data, advertising identifiers, self-assessments, or synthetic readiness and mastery metrics."
-          ]
-        },
-        {
-          "detailTitle": "Account, sync, and deletion",
-          "icon": "user",
-          "summary": "Account binding is explicit and previewed before data moves.",
-          "title": "Account binding is explicit",
-          "paragraphs": [
-            "When account sign-in is available, creating or signing into an account does not automatically link or upload local learning records. You first review the proposed data changes and confirm them.",
-            "After an authenticated preview and your confirmation, Patternly can synchronize the current track and compact completed learning facts. Active sessions, drafts, positions, timers, and recovery journals stay on this device."
-          ]
-        },
-        {
-          "detailTitle": "Where learning data goes",
-          "icon": "cloud",
-          "summary": "Only the declared account-owned learning facts can sync.",
-          "title": "Explicit account sync",
-          "paragraphs": [
-            "The sync allowlist contains the current track, terminal session summaries, completed-session results, attempts, and review-queue entries. Active sessions, drafts, current positions, timers, mutation journals, settings, and notification preferences never sync.",
-            "A local commit is retained before remote acknowledgement. Pending, conflict, failure, and retry states remain visible; sign-out is blocked while unsynchronized data exists."
-          ]
-        }
-      ]
+  "infoBodyAuthenticated": "Learning data is stored locally. You can download synced account data below.",
+  "infoBodyGuest": "Learning data is stored locally on this device. You can use Patternly without an account.",
+  "rights": { "title": "Your rights" },
+  "export": {
+    "title": "Download account data",
+    "summary": "A JSON file with your account and synced learning data"
+  },
+  "guest": {
+    "title": "Request help with your data",
+    "summary": "Contact us without creating an account"
+  },
+  "privacyRequests": {
+    "title": "Privacy requests",
+    "entryTitle": "Make a privacy request",
+    "entrySummary": "Check status or exercise your rights",
+    "infoTitle": "Your rights",
+    "summary": "Choose one right. Each request has its own status and response deadline.",
+    "create": "Make a request",
+    "yourRequests": "Your requests",
+    "empty": "No requests",
+    "emptyDetail": "A new request will appear here after it is sent",
+    "formIntro": "Choose the right concerned. Add details only when they are needed.",
+    "narrativeLabel": "Additional information (optional)",
+    "narrativePlaceholder": "Briefly explain the request. Do not provide passwords or codes.",
+    "submit": "Send for free",
+    "created": "Your request was received.",
+    "deadline": "Deadline: {{date}}",
+    "extended": "deadline extended; open for details",
+    "extendedTitle": "Deadline extended",
+    "extensionNotice": "Because of the complexity or number of requests, the response deadline was extended by up to two months. The new deadline is shown above.",
+    "extensionReason": "The response deadline was extended by up to two months. Reason: {{reason}}. The new deadline is shown above.",
+    "noResponse": "A response is not available yet. Return after the status changes.",
+    "accountRequired": "Sign in to view account requests. Without an account, use the public channel on the Your data screen.",
+    "failureTitle": "Could not complete the action",
+    "rights": {
+      "access": "Access your data",
+      "rectification": "Rectify your data",
+      "erasure": "Erase your data",
+      "restriction": "Restrict processing",
+      "objection": "Object to processing",
+      "portability": "Data portability",
+      "consent_withdrawal": "Withdraw consent"
     },
-    {
-      "title": "Keeping your data",
-      "topics": [
-        {
-          "detailTitle": "Loss and recovery",
-          "icon": "alert-triangle",
-          "summary": "Account adoption preserves data only after explicit confirmation.",
-          "title": "Local-only limits",
-          "paragraphs": [
-            "Uninstalling the app, losing or replacing the device, or resetting learning state may remove device-only data such as an active session or draft.",
-            "Patternly excludes learning records from automatic operating-system backups and device transfers. Confirmed account-owned records can be restored only through the explicit adoption flow; copies outside the app's control cannot be guaranteed absent."
-          ]
-        }
-      ]
+    "rightDetails": {
+      "access": "A copy of your data and information about its processing",
+      "rectification": "Correct inaccurate or incomplete data",
+      "erasure": "Erase data when the legal conditions apply",
+      "restriction": "Temporarily restrict specified processing",
+      "objection": "Object to processing based on legitimate interests",
+      "portability": "Qualifying data in a machine-readable format",
+      "consent_withdrawal": "Stop future processing based on the specified consent"
+    },
+    "status": {
+      "received": "Received",
+      "identity_verification_required": "Identity confirmation required",
+      "in_review": "In review",
+      "response_ready": "Response prepared",
+      "fulfilled": "Fulfilled",
+      "partially_fulfilled": "Partially fulfilled",
+      "refused": "Refused",
+      "closed": "Closed"
+    },
+    "failures": {
+      "authenticationRequired": "Your session expired. Sign in again.",
+      "recentAuthenticationRequired": "Confirm your identity, then retry the action.",
+      "offline": "You appear to be offline. Check your connection and try again.",
+      "invalidResponse": "The service returned an invalid response. Try again.",
+      "serverFailure": "The privacy request service is temporarily unavailable. Try again."
     }
-  ]
+  },
+  "details": {
+    "action": "Show details",
+    "title": "Data details",
+    "scopeTitle": "Scope",
+    "accountIntro": "The export is a JSON file prepared for the signed-in account.",
+    "accountBody": "It includes account profile data, synced progress, linked content reports, access and entitlements, and export history. Confirmed account-owned records can be restored only through the explicit adoption flow. It excludes active sessions, drafts, settings, and other data stored only on this device. For security, you may need to confirm your identity again. Downloads are rate limited.",
+    "guestIntro": "You do not need an account to contact us about your data.",
+    "guestBody": "You can remove data stored only on this device locally. Send a broader privacy request through the public support channel. The app does not attach an account identifier or check whether an address exists in the system."
+  },
+  "status": {
+    "title": "Could not complete the action",
+    "preparing": "Preparing…",
+    "authenticationRequired": "Confirm your identity, then return and choose the download action again.",
+    "sessionRevoked": "The account session expired or changed. Sign in again before exporting.",
+    "offline": "You appear to be offline. Check your connection and try again.",
+    "rateLimited": "Try again in {{seconds}} s.",
+    "responseTooLarge": "The export is too large to download in the app. Contact support.",
+    "serverFailure": "The export service is temporarily unavailable. Try again.",
+    "invalidResponse": "The export response was incomplete and was not saved.",
+    "sharingUnavailable": "The system save and share sheet is unavailable.",
+    "fileFailure": "The temporary file could not be prepared safely.",
+    "sharingFailed": "The system save or share sheet could not be opened.",
+    "cleanupFailed": "The temporary file could not be removed. The app will retry safe cleanup on its next launch.",
+    "supportUnavailable": "The public support channel is not currently configured."
+  }
 }

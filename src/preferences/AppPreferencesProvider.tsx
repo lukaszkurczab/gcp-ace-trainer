@@ -12,6 +12,7 @@ import {
   type Settings,
 } from "../application/appPreferences";
 import { colors, type AppColors, type ColorMode } from "../theme";
+import { initializeKeyValueStorage, onKeyValueStorageReady } from "../infrastructure/storage/mmkvClient";
 
 export type AppLocale = "en" | "pl";
 
@@ -40,10 +41,17 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    void loadAppSettings()
-      .then((stored) => { if (active) setSettings(stored); })
-      .finally(() => { if (active) setReady(true); });
-    return () => { active = false; };
+    let loading = false;
+    const load = () => {
+      if (loading) return;
+      loading = true;
+      void loadAppSettings()
+        .then((stored) => { if (active) setSettings(stored); })
+        .finally(() => { loading = false; if (active) setReady(true); });
+    };
+    const unsubscribe = onKeyValueStorageReady(load);
+    void initializeKeyValueStorage().catch(() => undefined);
+    return () => { active = false; unsubscribe(); };
   }, []);
 
   const persist = useCallback(async (next: Settings) => {

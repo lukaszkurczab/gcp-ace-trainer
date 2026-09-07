@@ -8,9 +8,10 @@ const { createExpoConfig } = require("../app.config.js") as { createExpoConfig: 
 const base = {
   EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY: "key", EXPO_PUBLIC_PATTERNLY_FIREBASE_APP_ID: "1:1:android:test", EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_DOMAIN: "patternly-app-sandbox.firebaseapp.com", EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID: "patternly-app-sandbox",
   EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID: "android-client", EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID: "ios-client", EXPO_PUBLIC_PATTERNLY_GOOGLE_WEB_CLIENT_ID: "web-client",
+  EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "appl_test_public_key",
   GOOGLE_SERVICE_INFO_PLIST: "/private/GoogleService-Info.plist", GOOGLE_SERVICES_JSON: "/private/google-services.json",
 };
-const publicEnvironment = (environment: "sandbox" | "production") => JSON.stringify({ apiOrigin: `https://api.${environment}.patternly.test`, androidAppLinkHost: `${environment}.patternly.test`, authActionOrigin: `https://${environment}.patternly.test`, authRedirectDomain: `${environment}.patternly.test`, environment, iosAssociatedDomain: `applinks:${environment}.patternly.test`, privacyUrl: `https://${environment}.patternly.test/privacy`, publicDeletionUrl: `https://${environment}.patternly.test/delete`, publicWebOrigin: `https://${environment}.patternly.test`, supportUrl: `https://${environment}.patternly.test/support`, termsUrl: `https://${environment}.patternly.test/terms`, transactionalSenderDomain: `${environment}.patternly.test` });
+const publicEnvironment = (environment: "sandbox" | "production") => JSON.stringify({ apiOrigin: `https://api.${environment}.patternly.test`, androidAppLinkHost: `${environment}.patternly.test`, authActionOrigin: `https://${environment}.patternly.test`, authRedirectDomain: `${environment}.patternly.test`, environment, iosAssociatedDomain: `applinks:${environment}.patternly.test`, privacyUrl: `https://${environment}.patternly.test/privacy`, publicWebOrigin: `https://${environment}.patternly.test`, supportUrl: `https://${environment}.patternly.test/support`, termsUrl: `https://${environment}.patternly.test/terms`, transactionalSenderDomain: `${environment}.patternly.test` });
 
 test("runtime mode is explicit and persists in public Expo config", () => {
   const config = createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" });
@@ -36,6 +37,13 @@ test("remote artifacts require their public Firebase configuration before prebui
   assert.throws(
     () => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY: "" }),
     /requires EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY/,
+  );
+});
+
+test("remote artifacts require the public RevenueCat Apple SDK key before prebuild", () => {
+  assert.throws(
+    () => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "" }),
+    /requires EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY/,
   );
 });
 

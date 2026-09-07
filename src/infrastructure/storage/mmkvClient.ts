@@ -7,26 +7,52 @@ export interface KeyValueStorage {
 }
 
 let client: KeyValueStorage | null = null;
+let productionInitialization: Promise<KeyValueStorage> | null = null;
+const readyListeners = new Set<() => void>();
 
 /** Initializes the one native client before repositories are opened. */
-export function initializeKeyValueStorage(): KeyValueStorage {
-  return getKeyValueStorage();
+export async function initializeKeyValueStorage(): Promise<KeyValueStorage> {
+  if (client) return client;
+  if (!productionInitialization) {
+    productionInitialization = (async () => {
+      const { openEncryptedStorage, STORAGE_MIGRATION_MARKER_KEY } = await import("./encryptedStorageBootstrap");
+      const { createNativeEncryptedStoragePlatform } = await import("./encryptedStorageNative");
+      const result = await openEncryptedStorage(createNativeEncryptedStoragePlatform());
+      const storage: KeyValueStorage = {
+        getString: (key) => result.storage.getString(key),
+        setString: (key, value) => { result.storage.setString(key, value); },
+        remove: (key) => { result.storage.remove(key); },
+        contains: (key) => key !== STORAGE_MIGRATION_MARKER_KEY && result.storage.getString(key) !== undefined,
+        getAllKeys: () => result.storage.getAllKeys().filter((key) => key !== STORAGE_MIGRATION_MARKER_KEY),
+      };
+      client = storage;
+      for (const listener of readyListeners) listener();
+      return storage;
+    })().catch((error) => { productionInitialization = null; throw error; });
+  }
+  return productionInitialization;
+}
+
+export function onKeyValueStorageReady(listener: () => void): () => void {
+  readyListeners.add(listener);
+  if (client) listener();
+  return () => { readyListeners.delete(listener); };
 }
 
 export function getKeyValueStorage(): KeyValueStorage {
   if (!client) {
-    // Native code is intentionally loaded only by the production client. Node tests install memory storage first.
-    const { createMMKV } = require("react-native-mmkv") as typeof import("react-native-mmkv");
-    const mmkv = createMMKV({ id: "patternly" });
-    client = {
-      getString: (key) => mmkv.getString(key),
-      setString: (key, value) => { mmkv.set(key, value); },
-      remove: (key) => { mmkv.remove(key); },
-      contains: (key) => mmkv.contains(key),
-      getAllKeys: () => mmkv.getAllKeys(),
-    };
+    throw new Error("encrypted_storage_not_initialized");
   }
   return client;
+}
+
+/** Destructive recovery used only after the user confirms an unrecoverable key loss. */
+export async function removeUnavailableEncryptedStorage(): Promise<void> {
+  const { resetUnavailableEncryptedStorage } = await import("./encryptedStorageBootstrap");
+  const { createNativeEncryptedStoragePlatform } = await import("./encryptedStorageNative");
+  await resetUnavailableEncryptedStorage(createNativeEncryptedStoragePlatform());
+  client = null;
+  productionInitialization = null;
 }
 
 /** Test infrastructure. Production always uses the one MMKV instance above. */
@@ -54,4 +80,4 @@ export type FailurePlan =
   | { kind: "fail_on_remove_number"; removeNumber: number }
   | { kind: "fail_on_key_remove"; key: string };
 
-export function installKeyValueStorageForTests(storage: KeyValueStorage): void { client = storage; }
+export function installKeyValueStorageForTests(storage: KeyValueStorage): void { client = storage; productionInitialization = null; }

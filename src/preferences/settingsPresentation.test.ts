@@ -13,11 +13,12 @@ const accountCommand = readFileSync("src/features/account/useAccountCommand.ts",
 const informationScreen = readFileSync("src/features/home/SettingsInformationScreen.tsx", "utf8");
 const yourDataScreen = readFileSync("src/features/home/YourDataScreen.tsx", "utf8");
 const legalScreen = readFileSync("src/features/home/LegalInformationScreen.tsx", "utf8");
+const legalRequestsScreen = readFileSync("src/features/home/LegalRequestsScreen.tsx", "utf8");
 const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
 test("Settings exposes account and participant navigation actions plus conditional developer verification actions", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
-  assert.equal(navigationRows.length, 11);
+  assert.equal(navigationRows.length, 12);
 
   for (const callback of [
     "onOpenAccount",
@@ -25,6 +26,7 @@ test("Settings exposes account and participant navigation actions plus condition
     "onOpenLanguage",
     "onOpenLegalInformation",
     "onOpenNotifications",
+    "onOpenPremium",
     "onOpenPracticeSettings",
     "onOpenYourData",
   ]) {
@@ -35,6 +37,24 @@ test("Settings exposes account and participant navigation actions plus condition
   assert.match(settingsTab, /premiumTestingAvailable \? \([\s\S]*?testID="settings-premium-testing"/);
   assert.match(settingsTab, /testID="settings-sign-out"/);
   assert.match(settingsTab, /testID="settings-language"/);
+});
+
+test("Legal information exposes exactly four distinct request entries and keeps data routes under data rights", () => {
+  for (const id of ["complaint", "withdrawal", "data-rights", "suspension-appeal"]) assert.match(legalScreen, new RegExp(`testID=\"legal-request-${id}\"`));
+  assert.equal(legalScreen.match(/testID="legal-request-/g)?.length, 4);
+  assert.match(legalScreen, /testID="legal-data-rights-privacy"/);
+  assert.match(legalScreen, /testID="legal-data-rights-recovery"/);
+  assert.match(legalScreen, /kind: "complaint"/);
+  assert.match(legalScreen, /kind: "withdrawal"/);
+  assert.match(legalScreen, /kind: "suspension_appeal"/);
+  assert.match(legalRequestsScreen, /account\.state\.kind !== "authenticated"/);
+  assert.match(legalRequestsScreen, /account\.createPublicLegalRequest/);
+  assert.match(legalRequestsScreen, /testID="legal-request-email"/);
+  assert.match(legalScreen, /kind: "data_recovery"/);
+  assert.match(legalRequestsScreen, /kind === "withdrawal"/);
+  assert.match(legalRequestsScreen, /kind !== "withdrawal" && !trimmedNarrative/);
+  assert.match(legalRequestsScreen, /\.\.\.\(trimmedNarrative \? \{ narrative: trimmedNarrative \} : \{\}\)/);
+  assert.doesNotMatch(legalRequestsScreen, /mailto:/);
 });
 
 test("Settings account presentation names guest, authenticated, and unavailable states and keeps sign-out provider-owned", () => {

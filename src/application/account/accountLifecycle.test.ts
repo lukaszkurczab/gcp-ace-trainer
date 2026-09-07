@@ -24,9 +24,19 @@ function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
     getHealth: async () => ({ status: "ok", service: "patternly-backend" }),
     getReady: async () => ({ status: "ready", checks: { database: true, authentication: true } }),
     getOpenApi: async () => ({ openapi: "3.0.3", paths: {} }),
-    getMe: async () => ({ user: { id: accountId, createdAt: "2026-01-01T00:00:00.000Z", identity: { provider: "firebase", subject: uid, email: null, emailVerified: true } } }),
+    getMe: async () => ({ user: { id: accountId, createdAt: "2026-01-01T00:00:00.000Z", acceptedTermsVersion: "1", identity: { provider: "firebase", subject: uid, email: null, emailVerified: true } } }),
+    recordLegalAcceptance: async (termsVersion) => ({ acceptance: { termsVersion, acceptedAt: "2026-01-01T00:00:00.000Z" } }),
+    recordPurchaseConfirmation: async (input) => ({ confirmation: { confirmationId: input.confirmationId, acceptedAt: "2026-01-01T00:00:00.000Z" } }),
     getEntitlements: async () => ({ entitlements: [] }),
     getProgress: async () => ({ accountRevision: 0, records: [] }),
+    exportAccountData: async () => { throw new Error("unused"); },
+    createPrivacyRequest: async () => { throw new Error("unused"); },
+    getPrivacyRequests: async () => ({ requests: [] }),
+    getPrivacyRequest: async () => { throw new Error("unused"); },
+    createLegalRequest: async () => { throw new Error("unused"); },
+    createPublicLegalRequest: async () => { throw new Error("unused"); },
+    getLegalRequests: async () => ({ requests: [] }),
+    getLegalRequest: async () => { throw new Error("unused"); },
     syncProgress: async () => ({ accountRevision: 0, applied: [], duplicates: [], conflicts: [] }),
     previewAccountAdoption: async () => { throw new Error("unused"); },
     confirmAccountAdoption: async () => { throw new Error("unused"); },
@@ -34,8 +44,6 @@ function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
     consumeRecoveryCode: async () => ({ customToken: "custom-token-fixture" }),
     revokeSessions: async (operationId) => ({ status: "revoked", operationId }),
     deleteAccount: async (operationId) => ({ status: "deleted", operationId, proofId: "proof_fixture_12345678901234567890" }),
-    requestPublicDeletion: async () => ({ status: "accepted" }),
-    confirmPublicDeletion: async () => ({ status: "deleted", operationId: "operation-fixture", proofId: "proof_fixture_12345678901234567890" }),
     getDeletionProof: async (proofId) => ({ status: "deleted", operationId: "operation-fixture", proofId }),
     getDeletionOperationStatus: async (operationId) => ({ status: "remote_deleted", operationId, proofId: "proof_fixture_12345678901234567890" }),
     getTracks: async () => ({ tracks: [] }),
@@ -115,10 +123,10 @@ test("deletion retries after a revoked or stale session and leaves a verified lo
       deleteCalls += 1;
       throw new PatternlyApiClientError("server_error", 401, "account_deleted");
     },
-    getDeletionOperationStatus: async (operationId, accountUidHash) => {
+    getDeletionOperationStatus: async (operationId, operationSecret) => {
       statusCalls += 1;
       observedOperationId = operationId;
-      assert.equal(accountUidHash, sha256Utf8(uid));
+      assert.match(operationSecret, /^[0-9a-f]{64}$/iu);
       return { status: "remote_deleted", operationId, proofId: "proof_fixture_12345678901234567890" };
     },
     getDeletionProof: async (proofId) => ({ status: "deleted", operationId: observedOperationId, proofId }),
@@ -130,6 +138,7 @@ test("deletion retries after a revoked or stale session and leaves a verified lo
   assert.equal(statusCalls, 1);
   assert.equal(getAccountDeletionState()?.status, "complete");
   assert.equal(getAccountDeletionState()?.accountUidHash, sha256Utf8(uid));
+  assert.match(getAccountDeletionState()?.operationSecret ?? "", /^[0-9a-f]{64}$/iu);
   assert.equal((await getGuestInstallation())?.accountId, null);
   assert.equal((await getAccountSyncState()).accountId, null);
 

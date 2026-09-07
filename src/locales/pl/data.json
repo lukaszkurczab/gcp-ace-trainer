@@ -2,68 +2,100 @@
   "close": "Zamknij",
   "data": "Dane",
   "dataPrivacy": "Dane i prywatność",
-  "infoBody": "Patternly zapisuje dane o nauce lokalnie na tym urządzeniu, aby prowadzić sesje, powtórki i bezpiecznie odzyskać jedną aktywną sesję.",
   "infoTitle": "Twoje dane o nauce",
-  "sections": [
-    {
-      "title": "Szybkie odpowiedzi",
-      "topics": [
-        {
-          "detailTitle": "Co zapisuje Patternly",
-          "icon": "database",
-          "summary": "Rekordy nauki i ustawienia potrzebne do działania aplikacji.",
-          "title": "Zapisywane lokalnie",
-          "paragraphs": [
-            "Patternly zapisuje ustawienia aplikacji, aktywne i ukończone sesje, podejścia, wyniki, elementy powtórek, dowody postępu, dane wejściowe rekomendacji oraz szkic jednej aktywnej sesji potrzebny do bezpiecznego wznowienia.",
-            "Przechowuje również trwałe rekordy potrzebne do weryfikacji zapisów i odzyskania przerwanej operacji nauki."
-          ]
-        },
-        {
-          "detailTitle": "Czego Patternly nie wymaga",
-          "icon": "shield-check",
-          "summary": "Ćwicz lokalnie bez konta i synchronizacji z chmurą.",
-          "title": "Konto jest opcjonalne",
-          "paragraphs": [
-            "Możesz ćwiczyć lokalnie bez zakładania konta i podawania imienia lub adresu e-mail. Logowanie jest opcjonalne.",
-            "Nie wymaga lokalizacji, kontaktów, zdjęć, mikrofonu, kamery, danych zdrowotnych, identyfikatorów reklamowych, samoocen ani syntetycznych metryk gotowości i opanowania materiału."
-          ]
-        },
-        {
-          "detailTitle": "Konto, synchronizacja i usunięcie",
-          "icon": "user",
-          "summary": "Powiązanie konta wymaga podglądu i potwierdzenia.",
-          "title": "Powiązanie konta jest jawne",
-          "paragraphs": [
-            "Gdy logowanie do konta jest dostępne, utworzenie konta lub zalogowanie nie łączy ani nie wysyła automatycznie lokalnych danych o nauce. Najpierw przeglądasz proponowane zmiany danych i je potwierdzasz.",
-            "Po uwierzytelnieniu i Twoim potwierdzeniu Patternly może synchronizować aktywny tor oraz zwarte fakty ukończonej nauki. Aktywne sesje, szkice, pozycje, timery i dzienniki odzyskiwania pozostają tylko na tym urządzeniu."
-          ]
-        },
-        {
-          "detailTitle": "Dokąd trafiają dane o nauce",
-          "icon": "cloud",
-          "summary": "Synchronizują się tylko zadeklarowane fakty danych konta.",
-          "title": "Jawna synchronizacja konta",
-          "paragraphs": [
-            "Allowlista synchronizacji obejmuje aktywny tor, terminalne podsumowania sesji, wyniki ukończonych sesji, podejścia i wpisy kolejki powtórek. Aktywne sesje, szkice, pozycje, timery, dzienniki mutacji, ustawienia i powiadomienia nigdy nie są wysyłane.",
-            "Lokalny zapis jest zachowany przed potwierdzeniem zdalnym. Oczekiwanie, konflikt, błąd i ponowienie są widoczne; wylogowanie blokują niesynchronizowane dane."
-          ]
-        }
-      ]
+  "infoBodyAuthenticated": "Dane nauki są zapisywane lokalnie. Zsynchronizowane dane konta możesz pobrać poniżej.",
+  "infoBodyGuest": "Dane nauki są zapisywane lokalnie na tym urządzeniu. Możesz korzystać z Patternly bez konta.",
+  "rights": { "title": "Twoje prawa" },
+  "export": {
+    "title": "Pobierz dane konta",
+    "summary": "Plik JSON z danymi konta i synchronizowaną nauką"
+  },
+  "guest": {
+    "title": "Poproś o pomoc w sprawie danych",
+    "summary": "Skontaktuj się z nami bez zakładania konta"
+  },
+  "privacyRequests": {
+    "title": "Wnioski dotyczące prywatności",
+    "entryTitle": "Złóż wniosek dotyczący prywatności",
+    "entrySummary": "Sprawdź status lub skorzystaj ze swoich praw",
+    "infoTitle": "Twoje prawa",
+    "summary": "Wybierz jedno prawo. Każdy wniosek ma własny status i termin odpowiedzi.",
+    "create": "Złóż wniosek",
+    "yourRequests": "Twoje wnioski",
+    "empty": "Brak wniosków",
+    "emptyDetail": "Nowy wniosek pojawi się tutaj po wysłaniu",
+    "formIntro": "Wybierz prawo, którego dotyczy wniosek. Szczegóły możesz dopisać tylko wtedy, gdy są potrzebne.",
+    "narrativeLabel": "Dodatkowe informacje (opcjonalnie)",
+    "narrativePlaceholder": "Napisz krótko, czego dotyczy wniosek. Nie podawaj haseł ani kodów.",
+    "submit": "Wyślij bezpłatnie",
+    "created": "Wniosek został przyjęty.",
+    "deadline": "Termin: {{date}}",
+    "extended": "termin przedłużony; otwórz szczegóły",
+    "extendedTitle": "Termin został przedłużony",
+    "extensionNotice": "Ze względu na złożoność lub liczbę żądań termin odpowiedzi został przedłużony o maksymalnie dwa miesiące. Nowy termin jest pokazany powyżej.",
+    "extensionReason": "Termin odpowiedzi został przedłużony o maksymalnie dwa miesiące. Powód: {{reason}}. Nowy termin jest pokazany powyżej.",
+    "noResponse": "Odpowiedź nie jest jeszcze dostępna. Wróć tutaj po zmianie statusu.",
+    "accountRequired": "Zaloguj się, aby przeglądać wnioski konta. Bez konta skorzystaj z publicznego kanału na ekranie Twoje dane.",
+    "failureTitle": "Nie udało się wykonać działania",
+    "rights": {
+      "access": "Dostęp do danych",
+      "rectification": "Sprostowanie danych",
+      "erasure": "Usunięcie danych",
+      "restriction": "Ograniczenie przetwarzania",
+      "objection": "Sprzeciw",
+      "portability": "Przenoszenie danych",
+      "consent_withdrawal": "Wycofanie zgody"
     },
-    {
-      "title": "Przechowywanie danych",
-      "topics": [
-        {
-          "detailTitle": "Utrata i odzyskiwanie",
-          "icon": "alert-triangle",
-          "summary": "Adopcja konta zachowuje dane dopiero po jawnym potwierdzeniu.",
-          "title": "Granice lokalnego zapisu",
-          "paragraphs": [
-            "Odinstalowanie aplikacji, utrata lub wymiana urządzenia albo reset nauki mogą usunąć dane tylko urządzenia, takie jak aktywna sesja lub szkic.",
-            "Patternly wyklucza rekordy nauki z automatycznych backupów systemu i transferów między urządzeniami. Potwierdzone rekordy konta można przywrócić wyłącznie przez jawny przepływ adopcji; nie można zagwarantować braku kopii poza kontrolą aplikacji."
-          ]
-        }
-      ]
+    "rightDetails": {
+      "access": "Kopia danych oraz informacje o ich przetwarzaniu",
+      "rectification": "Poprawienie danych nieprawidłowych lub niekompletnych",
+      "erasure": "Usunięcie danych, gdy mają zastosowanie przesłanki prawne",
+      "restriction": "Czasowe ograniczenie wskazanego przetwarzania",
+      "objection": "Sprzeciw wobec przetwarzania opartego na uzasadnionym interesie",
+      "portability": "Dane objęte prawem w formacie maszynowym",
+      "consent_withdrawal": "Zatrzymanie przyszłego przetwarzania opartego na wskazanej zgodzie"
+    },
+    "status": {
+      "received": "Przyjęty",
+      "identity_verification_required": "Potrzebne potwierdzenie tożsamości",
+      "in_review": "W analizie",
+      "response_ready": "Odpowiedź przygotowana",
+      "fulfilled": "Zrealizowany",
+      "partially_fulfilled": "Zrealizowany częściowo",
+      "refused": "Odmowa",
+      "closed": "Zamknięty"
+    },
+    "failures": {
+      "authenticationRequired": "Sesja wygasła. Zaloguj się ponownie.",
+      "recentAuthenticationRequired": "Potwierdź tożsamość, a następnie ponów działanie.",
+      "offline": "Brak połączenia. Sprawdź sieć i spróbuj ponownie.",
+      "invalidResponse": "Otrzymano nieprawidłową odpowiedź. Spróbuj ponownie.",
+      "serverFailure": "Usługa wniosków jest chwilowo niedostępna. Spróbuj ponownie."
     }
-  ]
+  },
+  "details": {
+    "action": "Pokaż szczegóły",
+    "title": "Szczegóły danych",
+    "scopeTitle": "Zakres",
+    "accountIntro": "Eksport jest plikiem JSON przygotowanym dla zalogowanego konta.",
+    "accountBody": "Obejmuje dane profilu konta, synchronizowany postęp, powiązane zgłoszenia treści, dostęp i uprawnienia oraz historię eksportów. Potwierdzone rekordy konta można przywrócić wyłącznie przez jawny przepływ adopcji. Nie obejmuje aktywnych sesji, szkiców, ustawień i innych danych zapisanych wyłącznie na tym urządzeniu. Ze względów bezpieczeństwa może być wymagane ponowne potwierdzenie tożsamości. Pobieranie podlega limitowi częstotliwości.",
+    "guestIntro": "Konto nie jest potrzebne, aby skontaktować się w sprawie swoich danych.",
+    "guestBody": "Dane zapisane wyłącznie na tym urządzeniu możesz usunąć lokalnie. Szersze żądanie dotyczące prywatności wyślij przez publiczny kanał pomocy. Aplikacja nie dołącza identyfikatora konta ani nie sprawdza, czy adres występuje w systemie."
+  },
+  "status": {
+    "title": "Nie udało się dokończyć",
+    "preparing": "Przygotowywanie…",
+    "authenticationRequired": "Potwierdź tożsamość, a po powrocie ponownie wybierz pobranie eksportu.",
+    "sessionRevoked": "Sesja konta wygasła lub uległa zmianie. Zaloguj się ponownie przed eksportem.",
+    "offline": "Brak połączenia. Sprawdź sieć i spróbuj ponownie.",
+    "rateLimited": "Spróbuj ponownie za {{seconds}} s.",
+    "responseTooLarge": "Eksport jest zbyt duży do pobrania w aplikacji. Skontaktuj się z pomocą.",
+    "serverFailure": "Usługa eksportu jest chwilowo niedostępna. Spróbuj ponownie.",
+    "invalidResponse": "Otrzymany eksport był niekompletny i nie został zapisany.",
+    "sharingUnavailable": "Systemowy arkusz zapisu i udostępniania jest niedostępny.",
+    "fileFailure": "Nie udało się bezpiecznie przygotować pliku tymczasowego.",
+    "sharingFailed": "Nie udało się otworzyć systemowego arkusza zapisu lub udostępniania.",
+    "cleanupFailed": "Nie udało się usunąć pliku tymczasowego. Aplikacja ponowi bezpieczne czyszczenie przy następnym uruchomieniu.",
+    "supportUnavailable": "Publiczny kanał pomocy nie jest obecnie skonfigurowany."
+  }
 }

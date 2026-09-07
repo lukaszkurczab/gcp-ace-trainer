@@ -28,7 +28,7 @@ test("bootstrap owns one branded phase-aware loading surface with no synthetic c
   assert.match(gate, /ContentPreparationPhase[\s\S]*?"opening-storage"[\s\S]*?"recovering-learning-state"[\s\S]*?"verifying-content"[\s\S]*?"resuming-session"/);
   assert.match(gate, /runtimeSelectors\.content\.unavailable\(\)/);
   assert.match(gate, /setState\(\{ kind: "loading", phase: "opening-storage" \}\)/);
-  assert.match(gate, /<EmptyState actionLabel="Retry"[\s\S]*?onActionPress=/);
+  assert.match(gate, /<EmptyState[\s\S]*?actionLabel=\{t\("Try again"\)\}[\s\S]*?onActionPress=/);
   assert.doesNotMatch(`${gate}\n${loadingState}`, /Variant|startupProgress|startupContent|Preparing your questions/);
   assert.doesNotMatch(`${gate}\n${loadingState}`, /setInterval|delay\s*:/);
 });

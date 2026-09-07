@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import { EmptyState, LoadingState, Screen } from "../../components";
+import { Button, EmptyState, LoadingState, Screen } from "../../components";
 import { bootstrapApplication } from "../../application/bootstrap";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
@@ -10,6 +10,8 @@ import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditabil
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { useAppPreferences } from "../../preferences";
+import { removeUnavailableEncryptedStorage } from "../../infrastructure/storage/mmkvClient";
+import type { EncryptedStorageFailureCode } from "../../infrastructure/storage/encryptedStorageBootstrap";
 
 export type ContentPreparationPhase =
   | "opening-storage"
@@ -34,7 +36,7 @@ const CONTENT_PREPARATION_TIMEOUT_MS = 15_000;
 export type ContentPreparationState =
   | { kind: "loading"; phase: ContentPreparationPhase }
   | { kind: "ready" }
-  | { kind: "blocking"; phase: ContentPreparationPhase; reason: string };
+  | { kind: "blocking"; phase: ContentPreparationPhase; reason: string; storageFailureCode?: EncryptedStorageFailureCode };
 
 export function ContentBootstrapLoadingSkeleton({ phase }: Readonly<{ phase: ContentPreparationPhase }>) {
   const { t } = useTranslation("common");
@@ -46,10 +48,13 @@ export function ContentBootstrapLoadingSkeleton({ phase }: Readonly<{ phase: Con
 
 export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const { colors } = useAppPreferences();
+  const { t } = useTranslation("common");
   const [state, setState] = useState<ContentPreparationState>({ kind: "loading", phase: "opening-storage" });
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
   const [auditResetReady, setAuditResetReady] = useState(false);
   const [auditCommandListenerReady, setAuditCommandListenerReady] = useState(false);
+  const [confirmUnavailableDataRemoval, setConfirmUnavailableDataRemoval] = useState(false);
+  const [removingUnavailableData, setRemovingUnavailableData] = useState(false);
   const initialUrlHandled = useRef(false);
   const resetInFlight = useRef(false);
   const lifecycleReady = useRef(false);
@@ -115,7 +120,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         },
       );
     })().then((result) => {
-      complete(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", phase: currentPhase, reason: result.reason });
+      complete(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", phase: currentPhase, reason: result.reason, ...(result.storageFailureCode ? { storageFailureCode: result.storageFailureCode } : {}) });
     }).catch((error) => {
       complete({ kind: "blocking", phase: currentPhase, reason: describeOperationalFailure(error, "Application bootstrap failed.") });
     });
@@ -158,10 +163,42 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     return () => { live = false; subscription.remove(); };
   }, [state.kind]);
 
+  const retry = () => {
+    setConfirmUnavailableDataRemoval(false);
+    setState({ kind: "loading", phase: "opening-storage" });
+    setBootstrapRevision((revision) => revision + 1);
+  };
+  const removeUnavailableData = async () => {
+    if (removingUnavailableData) return;
+    setRemovingUnavailableData(true);
+    try {
+      await removeUnavailableEncryptedStorage();
+      retry();
+    } catch (error) {
+      setState({ kind: "blocking", phase: "opening-storage", reason: describeOperationalFailure(error, "Unavailable local data could not be removed."), storageFailureCode: "encrypted_storage_key_missing" });
+    } finally {
+      setRemovingUnavailableData(false);
+    }
+  };
+  const lostKey = state.kind === "blocking" && state.storageFailureCode === "encrypted_storage_key_missing";
   const body = state.kind === "ready"
     ? <View style={{ flex: 1 }} testID={auditResetReady ? runtimeSelectors.content.readyAfterAuditReset() : runtimeSelectors.content.ready()}>{children}</View>
     : state.kind === "loading"
       ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.preparing(state.phase)}><Screen edges={["top", "bottom"]}><ContentBootstrapLoadingSkeleton phase={state.phase} /></Screen></View>
-      : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen><EmptyState actionLabel="Retry" description={state.reason} onActionPress={() => { setState({ kind: "loading", phase: "opening-storage" }); setBootstrapRevision((revision) => revision + 1); }} title="Application unavailable" /></Screen></View>;
+      : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen>
+          <EmptyState
+            actionLabel={t("Try again")}
+            description={lostKey ? t(confirmUnavailableDataRemoval ? "Unsent sessions and guest progress will be permanently lost. Account data previously saved in the cloud will remain." : "The key protecting local data is missing. Try again. If the key cannot be recovered, you can remove the unavailable data from this device.") : state.reason}
+            onActionPress={retry}
+            title={lostKey ? t("Data on this device can’t be opened") : t("Application unavailable")}
+          />
+          {lostKey ? confirmUnavailableDataRemoval
+            ? <View style={{ gap: 12 }}>
+                <Button onPress={() => setConfirmUnavailableDataRemoval(false)} variant="secondary">{t("Cancel")}</Button>
+                <Button loading={removingUnavailableData} onPress={() => { void removeUnavailableData(); }} variant="destructive">{t("Remove data from device")}</Button>
+              </View>
+            : <Button onPress={() => setConfirmUnavailableDataRemoval(true)} variant="secondary">{t("Remove unavailable data")}</Button>
+          : null}
+        </Screen></View>;
   return <View style={{ backgroundColor: colors.background, flex: 1 }} testID={auditCommandListenerReady ? runtimeSelectors.content.auditCommandListener() : undefined}>{body}</View>;
 }

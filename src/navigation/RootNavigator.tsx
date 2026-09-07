@@ -13,8 +13,13 @@ import { ActivityScreen } from "../features/home/ActivityScreen";
 import { AppearanceSettingsScreen } from "../features/home/AppearanceSettingsScreen";
 import { LanguageSettingsScreen } from "../features/home/LanguageSettingsScreen";
 import { LegalInformationScreen } from "../features/home/LegalInformationScreen";
+import { PrivacyPolicyScreen } from "../features/home/PrivacyPolicyScreen";
+import { PremiumPurchaseScreen } from "../features/premium/PremiumPurchaseScreen";
+import { TermsOfServiceScreen } from "../features/home/TermsOfServiceScreen";
 import { NotificationSettingsScreen } from "../features/home/NotificationSettingsScreen";
 import { YourDataScreen } from "../features/home/YourDataScreen";
+import { PrivacyRequestsScreen } from "../features/home/PrivacyRequestsScreen";
+import { LegalRequestsScreen } from "../features/home/LegalRequestsScreen";
 import { BackendDiagnosticsScreen } from "../features/home/BackendDiagnosticsScreen";
 import { AccountSecurityScreen } from "../features/account/AccountSecurityScreen";
 import { AccountEntryScreen } from "../features/account/AccountEntryScreen";
@@ -96,6 +101,8 @@ export function RootNavigator() {
             component={YourDataScreen}
             options={{ headerShown: false, title: t("Your data") }}
           />
+          <Stack.Screen name={ROUTES.PRIVACY_REQUESTS} component={PrivacyRequestsScreen} options={{ headerShown: false, title: t("Privacy requests") }} />
+          <Stack.Screen name={ROUTES.LEGAL_REQUESTS} component={LegalRequestsScreen} options={{ headerShown: false, title: t("Legal requests") }} />
           <Stack.Screen
             name={ROUTES.BACKEND_DIAGNOSTICS}
             component={BackendDiagnosticsScreen}
@@ -106,6 +113,7 @@ export function RootNavigator() {
             component={LegalInformationScreen}
             options={{ headerShown: false, title: t("Legal information") }}
           />
+          <Stack.Screen name={ROUTES.PREMIUM_PURCHASE} component={PremiumPurchaseScreen} options={{ headerShown: false, title: t("Premium") }} />
           <Stack.Screen
             name={ROUTES.NOTIFICATION_SETTINGS}
             component={NotificationSettingsScreen}
@@ -203,6 +211,16 @@ export function RootNavigator() {
         component={AccountEntryScreen}
         initialParams={{ initialMode: "entry" }}
         options={{ headerShown: false, title: t("Account") }}
+      />
+      <Stack.Screen
+        name={ROUTES.TERMS_OF_SERVICE}
+        component={TermsOfServiceScreen}
+        options={{ headerShown: false, title: t("Terms of Service") }}
+      />
+      <Stack.Screen
+        name={ROUTES.PRIVACY_POLICY}
+        component={PrivacyPolicyScreen}
+        options={{ headerShown: false, title: t("Privacy Policy") }}
       />
     </Stack.Navigator>
   );
