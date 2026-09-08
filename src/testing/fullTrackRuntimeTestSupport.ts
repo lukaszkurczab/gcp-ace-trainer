@@ -82,6 +82,13 @@ export async function createCodingFullTrackTestRuntime(): Promise<Readonly<{
   });
   const catalog: AlgorithmRuntimeCatalog = Object.freeze({
     ...base,
+    resolveSessionCapacity(modeId: string, requestedLength: number, eligibleItemCount: number) {
+      const declared = modeId === ALGORITHM_MODE_IDS.interviewSimulation ? blueprint : modeId === ALGORITHM_MODE_IDS.independentPractice ? independentBlueprint : base.getPracticeBlueprint(modeId);
+      if (!declared || !declared.requestedLengths.includes(requestedLength)) throw new Error(`Full-track test blueprint does not support ${modeId}/${requestedLength}.`);
+      if (eligibleItemCount >= requestedLength) return Object.freeze({ kind: "exact" as const, actualLength: requestedLength });
+      if (declared.shortening === "allowed" && eligibleItemCount >= declared.minimumActualLength) return Object.freeze({ kind: "shortened" as const, actualLength: eligibleItemCount, requestedLength });
+      return Object.freeze({ kind: "shortfall" as const, requestedLength, eligibleItemCount, missingItemCount: requestedLength - eligibleItemCount });
+    },
     assertModeAvailable(modeId: string, requestedLength: number) {
       if (modeId === ALGORITHM_MODE_IDS.interviewSimulation && requestedLength === 40) return;
       if (modeId === ALGORITHM_MODE_IDS.independentPractice && [10, 20].includes(requestedLength)) return;

@@ -23,6 +23,8 @@ import {
   GOAL_DAY_IDS,
   isIsoDate,
   normalizeGoalRecord,
+  normalizeGoalForExplicitSave,
+  projectGoalTargetDate,
   type GoalDay,
   type GoalRecord,
   type GoalTemplateId,
@@ -209,10 +211,10 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       setSaveError(t("Use a valid date in YYYY-MM-DD format."));
       return;
     }
-    const nextGoal = normalizeGoalRecord({
+    const nextGoal = normalizeGoalRecord(normalizeGoalForExplicitSave({
       ...current,
       targetDate: dateInput.length > 0 ? dateInput : undefined,
-    });
+    }));
     if (nextGoal.preferredDays.length === 0) {
       setSaveError(t("Choose at least one practice day."));
       return;
@@ -369,20 +371,17 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
         </View>
       </View>
 
-      <View style={styles.formSection}>
-        <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Target date")}</Text>
-        <View style={styles.dateField}>
-          <TextInput
-            accessibilityLabel={t("Target date")}
-            onChangeText={(value) => onChangeDate(value.slice(0, 10))}
-            placeholder={t("YYYY-MM-DD (optional)")}
-            placeholderTextColor={palette.textMuted}
-            style={styles.dateInput}
-            value={dateInput}
-          />
-          <Icon color={palette.textSecondary} name="chevron-down" size={18} />
+      {selectedGoalType === "learn_at_own_pace" ? (
+        <View style={styles.formSection}><Text maxFontSizeMultiplier={2} style={styles.sectionSubtitle}>{t("This goal type does not use a target date.")}</Text></View>
+      ) : (
+        <View style={styles.formSection}>
+          <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Target date")}</Text>
+          <View style={styles.dateField}>
+            <TextInput accessibilityLabel={t("Target date")} onChangeText={(value) => onChangeDate(value.slice(0, 10))} placeholder={t("YYYY-MM-DD (optional)")} placeholderTextColor={palette.textMuted} style={styles.dateInput} value={dateInput} />
+            <Icon color={palette.textSecondary} name="chevron-down" size={18} />
+          </View>
         </View>
-      </View>
+      )}
 
       <View style={styles.formSection}>
         <View style={styles.sectionCopy}>
@@ -430,12 +429,15 @@ function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onToggle
 }>) {
   const styles = useThemedStyles(createStyles);
   const copy = GOAL_COPY[goal.goalType];
+  const target = projectGoalTargetDate(goal);
+  const targetLabel = target.meaning === "event" ? t("Event date") : target.meaning === "deadline" ? t("Target date") : target.meaning === "checkpoint" ? t("Checkpoint") : t("Target date");
+  const targetValue = target.availability === "ignored_legacy" || target.availability === "not_applicable" ? t("Not applicable for this goal") : target.targetDate ? formatGoalDate(target.targetDate, locale) : t("No target date");
   return (
     <View style={styles.form} testID={runtimeSelectors.goal.root()}>
       <View style={styles.summaryCard}>
         <SummaryRow label={t("Goal")} value={t(copy.title)} />
         <View style={styles.summaryDivider} />
-        <SummaryRow label={t("Target date")} value={goal.targetDate ? formatGoalDate(goal.targetDate, locale) : t("No target date")} />
+        <SummaryRow label={targetLabel} value={targetValue} />
         <View style={styles.summaryDivider} />
         <SummaryRow label={t("Sessions/week")} value={String(goal.weeklySessionTarget)} />
         <View style={styles.summaryDivider} />

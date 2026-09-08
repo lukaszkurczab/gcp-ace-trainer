@@ -18,7 +18,11 @@ test("goal cadence is a reachable root route backed by the canonical repository"
   assert.match(screen, /style=\{styles\.title\}[^>]*>\{t\("Set learning rhythm for this track"\)\}/);
   assert.match(navigator, /title: t\("Goal"\)/);
   assert.doesNotMatch(screen + navigator, /Goal & cadence|Goal and cadence/);
-  assert.match(screen, /normalizeGoalRecord\(\{/);
+  assert.match(screen, /normalizeGoalRecord\(normalizeGoalForExplicitSave\(\{/);
+  assert.match(screen, /selectedGoalType === "learn_at_own_pace"/);
+  assert.match(screen, /This goal type does not use a target date\./);
+  assert.match(screen, /projectGoalTargetDate\(goal\)/);
+  assert.match(screen, /ignored_legacy/);
   assert.match(screen, /<ChoiceRow|accessibilityRole="radio"/);
   assert.match(screen, /Preferred days/);
   assert.match(screen, /Choose at least one practice day\./);

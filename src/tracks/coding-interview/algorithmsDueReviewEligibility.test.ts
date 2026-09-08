@@ -7,6 +7,7 @@ import { getCodingPackageTestCatalog } from "../../testing/contentPackageRuntime
 import { prepareBundledTestPackages } from "../../testing/contentPackageRuntimeTestSupport";
 import { createTrainingAttempt, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { createAlgorithmReviewEntry } from "./";
+import { selectAlgorithmReviewItems } from "./algorithmReviewSelection";
 import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "./algorithmQuestionTypes";
 import type { AlgorithmResponse } from "./domain";
 import { getActiveTrainingSession } from "../../storage/repositories";
@@ -145,4 +146,79 @@ test("Algorithms runtime rejects malformed review requests before selecting or p
     runtime.prepare({ ...input, request: { sessionId: "invalid-ref", requestedLength: 10, reviewSource: "session_misses", reviewItemRefs: [{ trackId: "coding-interview-dsa-problem-solving", itemId: "", contentVersion: "algorithms-core-0002" }] } }),
     /review item refs must contain only Algorithms content item references/,
   );
+  await assert.rejects(
+    runtime.prepare({ ...input, request: { sessionId: "empty-review", requestedLength: 10, reviewSource: "session_misses", reviewItemRefs: [] } }),
+    /unavailable|minimum actual length/,
+  );
+  const item = catalog.getItems()[0]!;
+  const mismatchedPinRef = { ...catalog.toContentItemRef(item), packagePin: { ...catalog.getPackagePin(), packageIdentity: "0".repeat(64) } };
+  await assert.rejects(
+    runtime.prepare({ ...input, request: { sessionId: "pin-mismatch", requestedLength: 10, reviewSource: "session_misses", reviewItemRefs: [mismatchedPinRef] } }),
+    /unavailable/,
+  );
+});
+
+test("Algorithms due_queue ignores review entries from a different package pin", async () => {
+  await prepareBundledTestPackages();
+  const catalog = getCodingPackageTestCatalog();
+  const runtime = new CodingInterviewFamilyRuntime(catalog, undefined, "coding-interview-taxonomy-v2");
+  const item = catalog.getItems()[0]!;
+  const foreignReview = { ...reviewFor(item, 900), sourceItem: { ...reviewFor(item, 900).sourceItem, packagePin: { ...catalog.getPackagePin(), packageVersion: "foreign-package" } } };
+
+  await assert.rejects(
+    runtime.prepare({
+      trackId: "coding-interview-dsa-problem-solving",
+      modeId: "coding-interview-weak-area-review",
+      request: { sessionId: "foreign-due", requestedLength: 10, reviewSource: "due_queue" },
+      attempts: [],
+      reviews: [foreignReview],
+      now: NOW,
+    }),
+    /unavailable|minimum actual length/,
+  );
+});
+
+test("Algorithms session_misses admits only reviewed item refs with the current package pin", async () => {
+  await prepareBundledTestPackages();
+  const catalog = getCodingPackageTestCatalog();
+  const runtime = new CodingInterviewFamilyRuntime(catalog, undefined, "coding-interview-taxonomy-v2");
+  const [first, ...matchingItems] = catalog.getItems();
+  assert.ok(first);
+  const foreignRef = { ...catalog.toContentItemRef(first), packagePin: { ...catalog.getPackagePin(), contentReleaseId: "foreign-release" } };
+  const currentRefs = matchingItems.slice(0, 10).map((item) => catalog.toContentItemRef(item));
+  assert.equal(currentRefs.length, 10);
+
+  const prepared = await runtime.prepare({
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-weak-area-review",
+    request: { sessionId: "matching-miss", requestedLength: 10, reviewSource: "session_misses", reviewItemRefs: [foreignRef, ...currentRefs] },
+    attempts: [],
+    reviews: [],
+    now: NOW,
+  });
+
+  assert.deepEqual(prepared.session.itemOrder.map((occurrence) => occurrence.item), currentRefs);
+});
+
+test("Algorithms reviewedItemRefs require the current package pin for compatibility reinsert", async () => {
+  await prepareBundledTestPackages();
+  const catalog = getCodingPackageTestCatalog();
+  const [source, compatible] = catalog.getItems();
+  assert.ok(source);
+  assert.ok(compatible);
+  const sourceWithCompatibility = { ...source, compatibilityMemberships: ["pin-test-set"] };
+  const selectionCatalog = {
+    ...catalog,
+    getItemById: (itemId: string) => itemId === source.id ? sourceWithCompatibility : compatible,
+    getCompatibilitySet: (id: string) => id === "pin-test-set" ? { id, version: "v1", relation: "reviewed_variant", direction: "directed", sourceItemIds: [source.id], targetItemIds: [compatible.id] } as const : undefined,
+  };
+  const sourceRef = catalog.toContentItemRef(source);
+  const currentCompatibleRef = catalog.toContentItemRef(compatible);
+  const foreignCompatibleRef = { ...currentCompatibleRef, packagePin: { ...currentCompatibleRef.packagePin, packageVersion: "foreign-package" } };
+
+  const withoutCurrentPin = selectAlgorithmReviewItems({ catalog: selectionCatalog, reviewedItemRefs: [foreignCompatibleRef], requestedLength: 2, source: { kind: "session_misses", itemRefs: [sourceRef] } });
+  const withCurrentPin = selectAlgorithmReviewItems({ catalog: selectionCatalog, reviewedItemRefs: [currentCompatibleRef], requestedLength: 2, source: { kind: "session_misses", itemRefs: [sourceRef] } });
+
+  assert.deepEqual(withoutCurrentPin.items.map((item) => item.id), [source.id]);
+  assert.deepEqual(withCurrentPin.items.map((item) => item.id), [source.id, compatible.id]);
 });

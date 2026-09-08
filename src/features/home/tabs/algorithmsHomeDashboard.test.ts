@@ -44,6 +44,7 @@ function runtime() {
     },
     toContentItemRef(question) { return { contentVersion: "algorithms-core-0002", packagePin: TEST_CONTENT_PACKAGE_PIN, itemId: question.id, trackId: "coding-interview-dsa-problem-solving" }; },
     getPracticeBlueprint() { return undefined; },
+    resolveSessionCapacity(_modeId, requestedLength, eligibleItemCount) { return eligibleItemCount >= requestedLength ? { kind: "exact", actualLength: requestedLength } : { kind: "shortfall", requestedLength, eligibleItemCount, missingItemCount: requestedLength - eligibleItemCount }; },
     assertModeAvailable() {},
     getCompatibilitySets() { return []; },
     getCompatibilitySet() { return undefined; },

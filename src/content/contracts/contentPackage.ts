@@ -1,6 +1,7 @@
 /** Immutable identity persisted by sessions and used for exact package lookup. */
 export type { ContentPackagePin } from "../../domain/learning/contentPackagePin";
 import type { ContentPackagePin } from "../../domain/learning/contentPackagePin";
+import type { PackageCompletionRuleV1 } from "../../domain/learning/packageCompletionRule";
 
 export type ContentPackageErrorCode =
   | "package_record_invalid"
@@ -84,6 +85,7 @@ export type VerifiedContentPackageBase = Readonly<{
     profileId: string;
     profileVersion: string;
     primaryEntry: Readonly<{ modeId: string; requestedLength: number }>;
+    completionRule?: PackageCompletionRuleV1;
     modes: readonly VerifiedPackageMode[];
     configurations: readonly VerifiedPackageModeConfiguration[];
   }>;

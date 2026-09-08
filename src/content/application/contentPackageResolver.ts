@@ -14,6 +14,8 @@ import { ALGORITHM_MODES } from "../../tracks/coding-interview/domain/algorithmM
 import { CERTIFICATION_MODES } from "../../tracks/certification/domain/certificationModes";
 import { DESIGN_INTERVIEW_MODE_IDS } from "../../tracks/design-interview/designModes";
 import { BUNDLED_CONTENT_PACKAGE_TRUST_INDEX } from "./bundledContentPackageTrustIndex";
+import { createPackageCompletionRuleV1 } from "../../domain/learning/packageCompletionRule";
+import { markResolvedContentPackage } from "./verifiedPackageIdentity.internal";
 
 /** Resolves only immutable whole-node package bytes; it has no lifecycle or cache ownership. */
 export class ContentPackageResolver {
@@ -94,7 +96,7 @@ async function verify(source: ContentPackageSource, appVersion: string, runtime:
   // The outer-byte checksum is the only package identity: manifest fields are
   // validated as package contents, never promoted into an identity alias.
   const pin = Object.freeze({ packageIdentity: source.packageSha256, packageVersion: manifest.packageVersion, contentReleaseId: manifest.provenance.releaseId });
-  return Object.freeze({ familyId, packagePin: pin, trackId: manifest.trackId, freeNodeId: manifest.freeNodeId, contentVersion: manifest.contentVersion, taxonomyVersion: manifest.taxonomyVersion, minimumAppVersion: manifest.minimumAppVersion, catalog: Object.freeze({ itemIds: Object.freeze(itemIds as string[]), items: cloneFreeze(payload.items), assets }), profile });
+  return markResolvedContentPackage(Object.freeze({ familyId, packagePin: pin, trackId: manifest.trackId, freeNodeId: manifest.freeNodeId, contentVersion: manifest.contentVersion, taxonomyVersion: manifest.taxonomyVersion, minimumAppVersion: manifest.minimumAppVersion, catalog: Object.freeze({ itemIds: Object.freeze(itemIds as string[]), items: cloneFreeze(payload.items), assets }), profile }));
 }
 
 function validateNodeLocalTaxonomy(taxonomy: unknown, items: unknown[], familyId: ContentPackageFamilyId, manifest: Record<string, unknown>): void {
@@ -131,7 +133,8 @@ function validAlgorithmInteraction(value: Record<string, unknown>): boolean {
 
 function verifiedProfile(value: Record<string, unknown>, modeStructures: unknown, manifest: Record<string, unknown>, sourceModes: readonly string[], familyId: ContentPackageFamilyId, packageItemIds: readonly string[]) {
   const keys = ["familyId", "freeNodeId", "modes", "primaryEntry", "profileId", "profileVersion", "schemaVersion", "trackId"];
-  exactKeys(value, keys, "package_profile_invalid");
+  const actualKeys = Object.keys(value);
+  if (!actualKeys.every((key) => keys.includes(key) || key === "completionRule") || actualKeys.length < keys.length || actualKeys.length > keys.length + 1) fail("package_profile_invalid", "Package profile keys are invalid.");
   if (value.schemaVersion !== "patternly-free-node-experience-profile-v1" || value.trackId !== manifest.trackId || value.familyId !== manifest.familyId || value.freeNodeId !== manifest.freeNodeId || value.profileId !== manifest.profileId || value.profileVersion !== manifest.profileVersion || !Array.isArray(value.modes) || !record(value.primaryEntry) || !nonEmpty(value.primaryEntry.modeId) || !positive(value.primaryEntry.requestedLength)) fail("package_profile_invalid", "Package profile identity is invalid.");
   if (!record(modeStructures) || !Array.isArray(modeStructures.configurations)) fail("package_profile_invalid", "Package mode structures are missing.");
   const structures = modeStructures.configurations;
@@ -163,7 +166,12 @@ function verifiedProfile(value: Record<string, unknown>, modeStructures: unknown
     }
     return Object.freeze({ configurationId: structure.configurationId, configurationVersion: structure.configurationVersion, modeId: structure.modeId, blueprintModeId: structure.blueprintModeId, availability: structure.availability, requestedLengths: Object.freeze([...structure.requestedLengths]), defaultRequestedLength: structure.defaultRequestedLength, reinsertPolicy: structure.reinsertPolicy, ...(structure.feedbackOptions === undefined ? {} : { feedbackOptions: Object.freeze([...structure.feedbackOptions]) }), selection: cloneFreeze(structure.selection) });
   });
-  return Object.freeze({ profileId: value.profileId as string, profileVersion: value.profileVersion as string, primaryEntry: Object.freeze({ modeId: value.primaryEntry.modeId, requestedLength: value.primaryEntry.requestedLength }), modes: Object.freeze(modes), configurations: Object.freeze(configurations) });
+  let completionRule;
+  if (value.completionRule !== undefined) {
+    try { completionRule = createPackageCompletionRuleV1(value.completionRule); }
+    catch { fail("package_profile_invalid", "Package completion rule is invalid."); }
+  }
+  return Object.freeze({ profileId: value.profileId as string, profileVersion: value.profileVersion as string, primaryEntry: Object.freeze({ modeId: value.primaryEntry.modeId, requestedLength: value.primaryEntry.requestedLength }), ...(completionRule === undefined ? {} : { completionRule }), modes: Object.freeze(modes), configurations: Object.freeze(configurations) });
 }
 
 function validateCertificationDiagnosticMode(mode: Record<string, unknown>, structure: Record<string, unknown>, freeNodeId: string, packageItemIds: readonly string[]): void {

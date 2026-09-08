@@ -206,6 +206,11 @@ test("CONTENT-PACKAGE-RESOLVER-001 verifies exact bundled node packages and reso
   await assertPackageFailure(repack(sources[0]!, (outer) => { outer.manifest.freeNodeId = "wrong"; }), "package_identity_mismatch");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.trackId = "wrong"; }, true), "package_identity_mismatch");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.freeNodeExperienceProfile.modes.pop(); }, true), "package_profile_invalid");
+  const completionRuleSource = repackPayload(sources[0]!, (payload) => { payload.freeNodeExperienceProfile.completionRule = { ruleVersion: 1, minimumAttemptCount: 3, rollingWindowSize: 2, qualityThreshold: 0.75 }; }, true);
+  const completionRuleResolver = createContentPackageResolver([completionRuleSource], runtime, [{ packageIdentity: completionRuleSource.packageSha256, packageBytes: completionRuleSource.packageBytes }]);
+  const completionRulePackage = await completionRuleResolver.resolveForPreparation({ trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", freeNodeId: "complexity_and_constraints", modeId: "coding-interview-learn-approach", appVersion: "0.1.0" });
+  assert.deepEqual(completionRulePackage.profile.completionRule, { ruleVersion: 1, minimumAttemptCount: 3, rollingWindowSize: 2, qualityThreshold: 0.75 });
+  await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.freeNodeExperienceProfile.completionRule = { ruleVersion: 1, minimumAttemptCount: 1, rollingWindowSize: 2, qualityThreshold: 0.75 }; }, true), "package_profile_invalid");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.items.push({ ...payload.items[0] }); }, true), "package_identity_mismatch");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.assets[0].sha256 = "0".repeat(64); }, true), "package_payload_integrity_failed");
   await assertPackageFailure(repackPayload(sources[0]!, (payload) => { payload.modeStructures.configurations[0].selection.freeNodeId = "external_node"; }, true), "package_profile_invalid");

@@ -1,4 +1,5 @@
 import type { ContentItemRef, ReviewQueueEntry } from "../../domain";
+import { contentPackagePinsEqual } from "../../domain";
 import type { AlgorithmRuntimeCatalog } from "./algorithmRuntimeCatalog";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 export type AlgorithmReviewSource = "due_queue" | "session_misses";
@@ -16,7 +17,7 @@ export function selectAlgorithmReviewItems(input: Readonly<{ catalog: AlgorithmR
   const selected: AlgorithmQuestion[] = [];
   const selectedIds = new Set<string>();
   const add = (item: AlgorithmQuestion) => { if (!selectedIds.has(item.id) && selected.length < input.requestedLength) { selected.push(item); selectedIds.add(item.id); } };
-  for (const ref of refs) { if (ref.trackId !== "coding-interview-dsa-problem-solving" || ref.contentVersion !== input.catalog.getContentVersion()) throw new Error("Algorithms review source is not in the active exact bank."); add(input.catalog.getItemById(ref.itemId)); }
-  const reviewed = new Set(input.reviewedItemRefs.filter((ref) => ref.trackId === "coding-interview-dsa-problem-solving" && ref.contentVersion === input.catalog.getContentVersion()).map((ref) => ref.itemId));
+  for (const ref of refs) { if (ref.trackId === "coding-interview-dsa-problem-solving" && ref.contentVersion === input.catalog.getContentVersion() && contentPackagePinsEqual(ref.packagePin, input.catalog.getPackagePin())) add(input.catalog.getItemById(ref.itemId)); }
+  const reviewed = new Set(input.reviewedItemRefs.filter((ref) => ref.trackId === "coding-interview-dsa-problem-solving" && ref.contentVersion === input.catalog.getContentVersion() && contentPackagePinsEqual(ref.packagePin, input.catalog.getPackagePin())).map((ref) => ref.itemId));
   for (const source of [...selected]) for (const membership of source.compatibilityMemberships) { const relation = input.catalog.getCompatibilitySet(membership); if (!relation) throw new Error(`Algorithms item ${source.id} references an unknown compatibility set.`); const candidates = relation.direction === "directed" ? relation.targetItemIds : [...relation.sourceItemIds, ...relation.targetItemIds]; for (const id of candidates) if (id !== source.id && reviewed.has(id)) add(input.catalog.getItemById(id)); }
   return Object.freeze({ actualLength: selected.length, items: Object.freeze(selected), requestedLength: input.requestedLength }); }

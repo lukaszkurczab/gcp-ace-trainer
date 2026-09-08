@@ -8,6 +8,7 @@ import {
   isGoalRecordShapeForTrack,
   isGoalRecordForTrack,
   normalizeGoalRecord,
+  projectGoalTargetDate,
   TRACK_DENSITY_DESCRIPTORS,
   type GoalDay,
   type GoalRecord,
@@ -144,4 +145,16 @@ test("goal repository persists one canonical record per track", async () => {
   await saveGoal(goal);
   assert.deepEqual(await getGoal(goal.trackId), goal);
   assert.equal(await getGoal("backend-system-design-interview"), null);
+});
+
+test("target-date projection follows goal type and explicit own-pace saves remove only legacy dates", async () => {
+  const event = { ...createDefaultGoal(CODING_TRACK), targetDate: "2027-01-15" };
+  assert.deepEqual(projectGoalTargetDate(event), { meaning: "event", targetDate: "2027-01-15", sessionBoundary: "strictly_before", completionBehavior: "attainability", availability: "present" });
+  assert.deepEqual(projectGoalTargetDate({ ...event, goalType: "build_foundations" }), { meaning: "deadline", targetDate: "2027-01-15", sessionBoundary: "inclusive", completionBehavior: "attainability", availability: "present" });
+  assert.deepEqual(projectGoalTargetDate({ ...event, goalType: "refresh_and_maintain_skills" }), { meaning: "checkpoint", targetDate: "2027-01-15", sessionBoundary: "inclusive", completionBehavior: "no_automatic_completion", availability: "present" });
+  assert.deepEqual(projectGoalTargetDate({ ...event, goalType: "build_foundations", targetDate: undefined }), { meaning: "deadline", sessionBoundary: "inclusive", completionBehavior: "attainability", availability: "missing" });
+  const ownPace = { ...event, goalType: "learn_at_own_pace" as const };
+  assert.equal(projectGoalTargetDate(ownPace).availability, "ignored_legacy");
+  await saveGoal(ownPace);
+  assert.equal((await getGoal(CODING_TRACK))?.targetDate, undefined);
 });
