@@ -26,7 +26,7 @@ export function createVerifiedSessionCapacity(pkg: VerifiedContentPackage, modeI
   const configuration = pkg.profile.configurations.find((entry) => entry.modeId === modeId);
   if (!configuration || !configuration.requestedLengths.includes(requestedLength)) throw new Error(`Mode ${modeId} does not support requested length ${requestedLength} in this verified package.`);
   const shorteningPolicy = configuration.selection.shortening === "truthful_to_eligible_count" ? "allowed" : "prohibited";
-  const minimumActualLength = shorteningPolicy === "allowed" ? 1 : requestedLength;
+  const minimumActualLength = shorteningPolicy === "allowed" ? configuration.minimumActualLength : requestedLength;
   const capacity: VerifiedSessionCapacity = Object.freeze({ packagePin: pkg.packagePin, modeId, requestedLength, minimumActualLength, eligibleItemCount, shorteningPolicy });
   VERIFIED_CAPACITY.add(capacity);
   return capacity;

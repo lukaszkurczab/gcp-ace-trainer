@@ -52,6 +52,7 @@ export type VerifiedPackageMode = Readonly<{
   blueprintModeId: string;
   availability: "immediate" | "evidence_conditioned";
   requestedLengths: readonly number[];
+  minimumActualLength: number;
   defaultRequestedLength: number;
 }>;
 
@@ -63,6 +64,7 @@ export type VerifiedPackageModeConfiguration = Readonly<{
   blueprintModeId: string;
   availability: "immediate" | "evidence_conditioned";
   requestedLengths: readonly number[];
+  minimumActualLength: number;
   defaultRequestedLength: number;
   reinsertPolicy: string;
   feedbackOptions?: readonly string[];
