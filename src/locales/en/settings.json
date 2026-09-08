@@ -42,6 +42,8 @@
   "premiumTestingEnabled": "Enabled",
   "premiumTestingDisabled": "Disabled",
   "learning": "Learning",
+  "goal": "Goal",
+  "goalDetail": "Set your learning goal and preferred practice days.",
   "legal": "Legal information",
   "legalDetail": "Privacy and study-use information.",
   "notifications": "Notifications",

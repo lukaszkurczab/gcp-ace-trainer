@@ -129,7 +129,7 @@ export function RootNavigator() {
           <Stack.Screen
             name={ROUTES.GOAL_CADENCE}
             component={GoalCadenceScreen}
-            options={{ headerShown: false, title: t("Goal & cadence") }}
+            options={{ headerShown: false, title: t("Goal") }}
           />
           <Stack.Screen
             name={ROUTES.PRACTICE_HUB}

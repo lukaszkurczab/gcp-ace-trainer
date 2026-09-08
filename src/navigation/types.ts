@@ -4,6 +4,8 @@ import type { PracticeSessionRouteParams } from "../features/practice/sessionCon
 import type { ShellTab } from "../features/home/types";
 import type { AlgorithmsDeclaredScopeMode } from "../application/coding-interview";
 
+export type GoalCadenceReturnTo = "progress" | "settings";
+
 export type RootStackParamList = {
   [ROUTES.HOME]: { initialTab?: Exclude<ShellTab, "practice"> } | undefined;
   [ROUTES.ACTIVITY]: undefined;
@@ -22,7 +24,7 @@ export type RootStackParamList = {
   [ROUTES.ACCOUNT_ENTRY]: { initialMode?: "entry" | "register" | "signIn" | "recovery" | "resetPassword" } | undefined;
   [ROUTES.BACKEND_DIAGNOSTICS]: undefined;
   [ROUTES.SELECT_TRACK]: undefined;
-  [ROUTES.GOAL_CADENCE]: { trackId?: TrackId } | undefined;
+  [ROUTES.GOAL_CADENCE]: { trackId?: TrackId; returnTo?: GoalCadenceReturnTo } | undefined;
   [ROUTES.PRACTICE_HUB]: { topicId?: string; trackId?: TrackId } | undefined;
   [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home"; targetMentalUnitId?: string };
   [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId } | undefined;

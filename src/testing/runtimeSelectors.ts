@@ -119,7 +119,6 @@ export const runtimeSelectors = Object.freeze({
     root: () => selector("goal", "root"),
     save: () => selector("goal", "save"),
     goalType: (goalType: string) => selector("goal", "type", goalType),
-    cadence: () => selector("goal", "cadence"),
     day: (day: string) => selector("goal", "day", day),
   }),
   activity: Object.freeze({

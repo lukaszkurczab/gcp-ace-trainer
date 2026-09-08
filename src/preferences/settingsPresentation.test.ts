@@ -19,7 +19,7 @@ const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
 test("Settings exposes account and participant navigation actions plus conditional developer verification actions", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
-  assert.equal(navigationRows.length, 11);
+  assert.equal(navigationRows.length, 12);
 
   for (const callback of [
     "onOpenAccount",
@@ -32,6 +32,8 @@ test("Settings exposes account and participant navigation actions plus condition
   ]) {
     assert.match(settingsTab, new RegExp(`onPress=\\{${callback}\\}`));
   }
+  assert.match(settingsTab, /onOpenGoal/);
+  assert.match(settingsTab, /testID="settings-goal"/);
   assert.match(settingsTab, /testID="settings-backend-diagnostics"/);
   assert.match(settingsTab, /backendDiagnosticsConfigured \? \(/);
   assert.match(settingsTab, /premiumTestingAvailable \? \([\s\S]*?testID="settings-premium-testing"/);
@@ -116,6 +118,10 @@ test("Settings description reflects app and practice preferences without account
   const settingsPl = readFileSync("src/locales/pl/settings.json", "utf8");
   assert.match(settingsEn, /"settingsDescription": "Manage your app, practice, and privacy preferences\."/);
   assert.match(settingsPl, /"settingsDescription": "Zarządzaj preferencjami aplikacji, ćwiczeń i prywatności\."/);
+  assert.match(settingsEn, /"goal": "Goal"/);
+  assert.match(settingsEn, /"goalDetail": "Set your learning goal and preferred practice days\."/);
+  assert.match(settingsPl, /"goal": "Cel"/);
+  assert.match(settingsPl, /"goalDetail": "Ustaw cel nauki i dni ćwiczeń\."/);
   assert.doesNotMatch(settingsEn, /"settingsDescription": "[^"]*account[^"]*"/);
   assert.doesNotMatch(settingsPl, /"settingsDescription": "[^"]*kontem[^"]*"/);
 });

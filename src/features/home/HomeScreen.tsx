@@ -375,7 +375,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
             onOpenActivityItem={(item) => navigateToActivityResult(navigation, item)}
             onOpenPractice={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
-            onOpenGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { trackId: activeTrack.id })}
+            onOpenGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo: "progress", trackId: activeTrack.id })}
             onProgressAction={handleProgressAction}
             practiceHistory={data.practiceHistory}
             reviewQueueItems={data.reviewQueueItems}
@@ -389,6 +389,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             onOpenSecurity={(screen) => navigation.navigate(ROUTES.ACCOUNT_SECURITY, { screen })}
             onOpenAppearance={() => navigation.navigate(ROUTES.APPEARANCE_SETTINGS)}
             onOpenBackendDiagnostics={() => navigation.navigate(ROUTES.BACKEND_DIAGNOSTICS)}
+            onOpenGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo: "settings", trackId: activeTrack.id })}
             onOpenLanguage={() => navigation.navigate(ROUTES.LANGUAGE_SETTINGS)}
             onOpenLegalInformation={() => navigation.navigate(ROUTES.LEGAL_INFORMATION)}
             onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS)}

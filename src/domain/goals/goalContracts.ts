@@ -48,7 +48,7 @@ export function createDefaultGoal(trackId: TrackId): GoalRecord {
   });
 }
 
-export function isGoalRecordForTrack(value: unknown, trackId: string): value is GoalRecord {
+export function isGoalRecordShapeForTrack(value: unknown, trackId: string): value is GoalRecord {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const record = value as Record<string, unknown>;
   const keys = Object.keys(record);
@@ -56,12 +56,29 @@ export function isGoalRecordForTrack(value: unknown, trackId: string): value is 
   if (record.trackId !== trackId || typeof record.trackId !== "string" || !isRegisteredTrackId(record.trackId)) return false;
   let templates: readonly GoalTemplateId[];
   try { templates = getTrackGoalTemplates(record.trackId); } catch { return false; }
+  if (!Array.isArray(record.preferredDays) || record.preferredDays.length > 7 ||
+    !record.preferredDays.every(isGoalDay) || new Set(record.preferredDays).size !== record.preferredDays.length) return false;
+  const preferredDays = record.preferredDays;
   return templates.includes(record.goalType as GoalTemplateId) &&
-    Number.isSafeInteger(record.weeklySessionTarget) && Number(record.weeklySessionTarget) >= 1 && Number(record.weeklySessionTarget) <= 7 &&
-    Array.isArray(record.preferredDays) && record.preferredDays.length <= 7 &&
-    record.preferredDays.every(isGoalDay) && new Set(record.preferredDays).size === record.preferredDays.length &&
+    Number.isSafeInteger(record.weeklySessionTarget) && Number(record.weeklySessionTarget) >= 0 && Number(record.weeklySessionTarget) <= 7 &&
+    (record.weeklySessionTarget !== 0 || preferredDays.length === 0) &&
     (record.targetDate === undefined || isIsoDate(record.targetDate)) &&
     (record.status === "active" || record.status === "paused");
+}
+
+export function normalizeGoalRecord(value: GoalRecord): GoalRecord {
+  const trackId = value.trackId;
+  if (!isGoalRecordShapeForTrack(value, trackId)) throw new Error(`Goal record for ${trackId} is invalid.`);
+  const preferredDays = GOAL_DAY_IDS.filter((day) => value.preferredDays.includes(day));
+  return Object.freeze({
+    ...value,
+    preferredDays: Object.freeze(preferredDays),
+    weeklySessionTarget: preferredDays.length,
+  });
+}
+
+export function isGoalRecordForTrack(value: unknown, trackId: string): value is GoalRecord {
+  return isGoalRecordShapeForTrack(value, trackId) && value.preferredDays.length > 0 && value.weeklySessionTarget === value.preferredDays.length;
 }
 
 export function isGoalTemplateId(value: unknown): value is GoalTemplateId {

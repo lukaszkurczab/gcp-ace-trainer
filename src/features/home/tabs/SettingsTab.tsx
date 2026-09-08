@@ -21,6 +21,7 @@ type SettingsTabProps = {
   onOpenAppearance: () => void;
   onOpenAccount: () => void;
   onOpenBackendDiagnostics: () => void;
+  onOpenGoal: () => void;
   onOpenLanguage: () => void;
   onOpenLegalInformation: () => void;
   onOpenNotifications: () => void;
@@ -37,7 +38,7 @@ export function SettingsLoadingSkeleton() {
   const { fontScale } = useWindowDimensions();
   const textScale = Math.min(fontScale, 2);
   const motion = useSkeletonGlassMotion();
-  const groupRows = [2, 2, 2] as const;
+  const groupRows = [2, 3, 2] as const;
 
   return (
     <View
@@ -91,6 +92,7 @@ export function SettingsTab({
   onOpenAppearance,
   onOpenAccount,
   onOpenBackendDiagnostics,
+  onOpenGoal,
   onOpenLanguage,
   onOpenLegalInformation,
   onOpenNotifications,
@@ -142,6 +144,8 @@ export function SettingsTab({
     premiumTitle: t("premiumTitle"),
     premiumEntryDetail: t("premiumEntryDetail"),
     learning: t("learning"),
+    goal: t("goal"),
+    goalDetail: t("goalDetail"),
     legal: t("legal"),
     legalDetail: t("legalDetail"),
     notifications: t("notifications"),
@@ -255,6 +259,13 @@ export function SettingsTab({
         </SettingsGroup>
 
         <SettingsGroup dividers title={text.learning} titleGap={spacing.md}>
+          <SettingsNavigationRow
+            detail={text.goalDetail}
+            icon="flag"
+            onPress={onOpenGoal}
+            testID="settings-goal"
+            title={text.goal}
+          />
           <SettingsNavigationRow
             detail={text.premiumEntryDetail}
             icon="sparkle"

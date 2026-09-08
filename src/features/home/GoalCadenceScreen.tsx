@@ -22,12 +22,13 @@ import {
   getTrackGoalTemplates,
   GOAL_DAY_IDS,
   isIsoDate,
+  normalizeGoalRecord,
   type GoalDay,
   type GoalRecord,
   type GoalTemplateId,
 } from "../../domain";
 import { getTrackDisplay, isRegisteredTrackId, type TrackId } from "../../domain";
-import type { RootStackParamList } from "../../navigation";
+import type { GoalCadenceReturnTo, RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { colorWithOpacity, radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
@@ -62,7 +63,7 @@ const DAY_SHORT_LABELS: Readonly<Record<GoalDay, string>> = {
   sun: "Sun",
 };
 
-export function GoalLoadingSkeleton({ onBack }: Readonly<{ onBack: () => void }>) {
+export function GoalLoadingSkeleton({ context, onBack }: Readonly<{ context: string; onBack: () => void }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
@@ -78,7 +79,7 @@ export function GoalLoadingSkeleton({ onBack }: Readonly<{ onBack: () => void }>
       header={(
         <View style={styles.loadingHeader}>
           <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={onBack} />
-          <Text maxFontSizeMultiplier={2} style={styles.loadingContext}>{t("Progress")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.loadingContext}>{context}</Text>
         </View>
       )}
       style={styles.loadingScreen}
@@ -131,6 +132,16 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const [saveError, setSaveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const returnTo: GoalCadenceReturnTo = route.params?.returnTo === "settings" ? "settings" : "progress";
+  const context = t(returnTo === "settings" ? "Settings" : "Progress");
+
+  const handleBack = useCallback(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate(ROUTES.HOME, { initialTab: returnTo });
+  }, [navigation, returnTo]);
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -184,7 +195,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       const preferredDays = selected
         ? currentDraft.preferredDays.filter((candidate) => candidate !== day)
         : [...currentDraft.preferredDays, day];
-      return { ...currentDraft, preferredDays };
+      return { ...currentDraft, preferredDays, weeklySessionTarget: preferredDays.length };
     });
   }
 
@@ -194,10 +205,14 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       setSaveError(t("Use a valid date in YYYY-MM-DD format."));
       return;
     }
-    const nextGoal: GoalRecord = {
+    const nextGoal = normalizeGoalRecord({
       ...current,
       targetDate: dateInput.length > 0 ? dateInput : undefined,
-    };
+    });
+    if (nextGoal.preferredDays.length === 0) {
+      setSaveError(t("Choose at least one practice day."));
+      return;
+    }
     setSaving(true);
     setSaveError(null);
     try {
@@ -226,7 +241,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     }
   }
 
-  if (loading) return <GoalLoadingSkeleton onBack={() => navigation.goBack()} />;
+  if (loading) return <GoalLoadingSkeleton context={context} onBack={handleBack} />;
   if (loadError || !track || !current) {
     return (
       <Screen edges={["top", "bottom"]} scroll={false}>
@@ -259,18 +274,18 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     >
       <View style={styles.header}>
         <View style={styles.headerContext}>
-          <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={() => navigation.goBack()} />
-          <Text maxFontSizeMultiplier={2} style={styles.context}>{t("Progress")}</Text>
+          <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={handleBack} />
+          <Text maxFontSizeMultiplier={2} style={styles.context}>{context}</Text>
         </View>
         <View style={styles.titleBlock}>
           <View style={styles.titleRow}>
-            <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Goal & cadence")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Goal")}</Text>
           </View>
           <View style={styles.trackContext}>
             <View style={styles.trackDot} />
             <Text maxFontSizeMultiplier={2} style={styles.trackLabel}>{t(track.shortTitle)}</Text>
           </View>
-          {editing ? <Text maxFontSizeMultiplier={2} style={styles.description}>{t("Set a learning rhythm for this track.")}</Text> : (
+          {editing ? <Text maxFontSizeMultiplier={2} style={styles.description}>{t("Set your learning goal for this track.")}</Text> : (
             <View style={styles.statusRow}>
               <View style={[styles.statusBadge, goal?.status === "paused" ? styles.pausedBadge : null]}><Text maxFontSizeMultiplier={2} style={styles.statusBadgeLabel}>{t(goal?.status === "paused" ? "Paused" : "Active")}</Text></View>
             </View>
@@ -284,14 +299,12 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           onChangeDate={setDateInput}
           onSelectGoalType={(goalType) => updateDraft((currentDraft) => ({ ...currentDraft, goalType }))}
           onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS)}
-          onSetWeeklyTarget={(weeklySessionTarget) => updateDraft((currentDraft) => ({ ...currentDraft, weeklySessionTarget }))}
           onToggleDay={toggleDay}
           palette={palette}
           selectedDays={current.preferredDays}
           selectedGoalType={current.goalType}
           templates={templates}
           t={t}
-          weeklySessionTarget={current.weeklySessionTarget}
         />
       ) : (
         <ActiveGoalSummary
@@ -308,19 +321,17 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   );
 }
 
-function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelectGoalType, onSetWeeklyTarget, onToggleDay, palette, selectedDays, selectedGoalType, templates, t, weeklySessionTarget }: Readonly<{
+function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelectGoalType, onToggleDay, palette, selectedDays, selectedGoalType, templates, t }: Readonly<{
   dateInput: string;
   onChangeDate: (value: string) => void;
   onOpenNotifications: () => void;
   onSelectGoalType: (value: GoalTemplateId) => void;
-  onSetWeeklyTarget: (value: number) => void;
   onToggleDay: (value: GoalDay) => void;
   palette: AppColors;
   selectedDays: readonly GoalDay[];
   selectedGoalType: GoalTemplateId;
   templates: readonly GoalTemplateId[];
   t: (value: string) => string;
-  weeklySessionTarget: number;
 }>) {
   const styles = useThemedStyles(createStyles);
   return (
@@ -360,24 +371,10 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
         </View>
       </View>
 
-      <View style={styles.formSection} testID={runtimeSelectors.goal.cadence()}>
-        <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Weekly cadence")}</Text>
-        <Text maxFontSizeMultiplier={2} style={styles.sectionSubtitle}>{t("Sessions per week")}</Text>
-        <View style={styles.stepper}>
-          <Pressable accessibilityLabel={t("Decrease sessions per week")} accessibilityRole="button" disabled={weeklySessionTarget <= 1} onPress={() => onSetWeeklyTarget(Math.max(1, weeklySessionTarget - 1))} style={styles.stepperButton}>
-            <Text maxFontSizeMultiplier={2} style={styles.stepperGlyph}>−</Text>
-          </Pressable>
-          <Text maxFontSizeMultiplier={2} accessibilityLabel={`${t("Sessions per week")}: ${weeklySessionTarget}`} style={styles.stepperValue}>{String(weeklySessionTarget)}</Text>
-          <Pressable accessibilityLabel={t("Increase sessions per week")} accessibilityRole="button" disabled={weeklySessionTarget >= 7} onPress={() => onSetWeeklyTarget(Math.min(7, weeklySessionTarget + 1))} style={styles.stepperButton}>
-            <Text maxFontSizeMultiplier={2} style={styles.stepperGlyph}>+</Text>
-          </Pressable>
-        </View>
-      </View>
-
       <View style={styles.formSection}>
         <View style={styles.sectionCopy}>
           <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Preferred days")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.sectionSubtitle}>{t("Optional — select when you prefer to practice")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.sectionSubtitle}>{t("Choose at least one practice day.")}</Text>
         </View>
         <View style={styles.daysRow}>
           {GOAL_DAY_IDS.map((day) => {
@@ -439,7 +436,7 @@ function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onToggle
                 </View>
               ))}
             </View>
-          ) : <Text maxFontSizeMultiplier={2} style={styles.summaryValue}>{t("No preferred days")}</Text>}
+          ) : <Text maxFontSizeMultiplier={2} style={styles.summaryValue}>{t("Choose at least one practice day.")}</Text>}
         </View>
         <View style={styles.summaryDivider} />
         <View style={styles.summaryReminderRow}>
@@ -507,10 +504,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   choiceGroup: { gap: spacing.md },
   dateField: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", minHeight: 48, paddingHorizontal: 14 },
   dateInput: { ...typography.body, color: palette.textPrimary, flex: 1, paddingVertical: 0 },
-  stepper: { alignItems: "center", flexDirection: "row", justifyContent: "center" },
-  stepperButton: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, height: 44, justifyContent: "center", width: 44 },
-  stepperGlyph: { color: palette.textPrimary, fontSize: 22, lineHeight: 24 },
-  stepperValue: { color: palette.textPrimary, fontSize: 24, fontWeight: "700", lineHeight: 29, textAlign: "center", width: 80 },
   daysRow: { flexDirection: "row", gap: 6, justifyContent: "space-between" },
   dayButton: { alignItems: "center", borderRadius: 10, borderWidth: 1, height: 36, justifyContent: "center", width: 44 },
   dayButtonSelected: { backgroundColor: palette.success, borderColor: palette.success },

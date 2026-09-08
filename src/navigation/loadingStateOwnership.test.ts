@@ -97,8 +97,8 @@ test("exactly the one remaining generic pending branch uses LoadingState", () =>
 
 test("C1 screens own local review and exam loading geometry", () => {
   const goal = source("src/features/home/GoalCadenceScreen.tsx");
-  assert.match(goal, /export function GoalLoadingSkeleton\(\{ onBack \}/);
-  assert.match(goal, /if \(loading\) return <GoalLoadingSkeleton onBack=\{\(\) => navigation\.goBack\(\)\} \/>/);
+  assert.match(goal, /export function GoalLoadingSkeleton\(\{ context, onBack \}/);
+  assert.match(goal, /if \(loading\) return <GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
   assert.match(goal, /accessibilityLabel=\{t\("Loading goal"\)\}/);
   assert.match(goal, /header=\{\([\s\S]*?<IconButton accessibilityLabel=\{t\("Go back"\)/);
   assert.match(goal, /loadingPanel/);
@@ -227,7 +227,7 @@ test("Home shell owns tab-specific glass loading geometry and keeps navigation u
   assertLocalSkeletonDefinition("src/features/home/tabs/SettingsTab.tsx", "SettingsLoadingSkeleton", /accessibilityLabel=\{tCommon\("Loading settings"\)\}/, ["settingsLoadingGroup", "settingsLoadingCard", "settingsLoadingRow"]);
   const settings = source("src/features/home/tabs/SettingsTab.tsx");
   assert.match(settings, /<ScreenHeader description=\{t\("settingsDescription"\)\} title=\{t\("appSettings"\)\} \/>/);
-  assert.match(settings, /const groupRows = \[2, 2, 2\] as const/);
+  assert.match(settings, /const groupRows = \[2, 3, 2\] as const/);
   assert.match(settings, /settingsLoadingIdentity/);
   assert.match(settings, /settingsLoadingAccountAction:[\s\S]*?height:\s*48,[\s\S]*?width:\s*"100%"/);
   assert.match(settings, /settingsLoadingGroup:\s*\{[\s\S]*?gap:\s*spacing\.md/);
