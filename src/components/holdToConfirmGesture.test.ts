@@ -307,7 +307,7 @@ test("reset cancels a scheduled RAF and does not invoke the completion callback"
   assert.equal(testHarness.state().phase, "idle");
 });
 
-test("the component wires native responder cancellation, visual progress, and translated hint props", () => {
+test("the component wires native responder cancellation and a simple full-surface progress fill", () => {
   const source = readFileSync("src/components/HoldToConfirmButton.tsx", "utf8");
   const exports = readFileSync("src/components/index.ts", "utf8");
 
@@ -323,13 +323,11 @@ test("the component wires native responder cancellation, visual progress, and tr
   assert.match(source, /controller\.deactivate\(\)/u);
   assert.match(source, /isInteractiveRef/u);
   assert.match(source, /accessibilityHint=\{hint\}/u);
-  assert.match(source, /testID=\{hintTestID\}/u);
-  assert.match(source, /testID=\{readyTestID\}/u);
-  assert.match(source, /width: `\$\{percent\}%`/u);
+  assert.match(source, /width: `\$\{Math\.round\(state\.progress \* 100\)\}%`/u);
   assert.match(source, /onMoveShouldSetResponder=\{\(\) => false\}/u);
-  assert.match(source, /progressArea/u);
-  assert.match(source, /progressFill:\s*\{[\s\S]*backgroundColor: palette\.onDanger[\s\S]*opacity: 1/u);
-  assert.match(source, /progressTrack:\s*\{[\s\S]*backgroundColor: palette\.danger/u);
+  assert.match(source, /progressFill:\s*\{[\s\S]*backgroundColor: palette\.danger[\s\S]*position: "absolute"/u);
+  assert.match(source, /root:\s*\{[\s\S]*backgroundColor: palette\.dangerSoft/u);
+  assert.doesNotMatch(source, /progress-percent|ready-label|testID=\{hintTestID\}/u);
   assert.match(source, /requestAnimationFrame/u);
   assert.match(source, /cancelAnimationFrame/u);
   assert.doesNotMatch(source, /Date\.now\(\)/u);
@@ -338,14 +336,13 @@ test("the component wires native responder cancellation, visual progress, and tr
   assert.match(exports, /export \* from "\.\/HoldToConfirmButton";/u);
 });
 
-test("destructive text and progress colors meet their composite contrast thresholds", () => {
+test("destructive text layers meet their contrast thresholds", () => {
   const source = readFileSync("src/components/HoldToConfirmButton.tsx", "utf8");
-  assert.match(source, /progressFill:\s*\{[\s\S]*backgroundColor: palette\.onDanger[\s\S]*opacity: 1/u);
-  assert.match(source, /progressTrack:\s*\{[\s\S]*backgroundColor: palette\.danger/u);
+  assert.match(source, /label:\s*\{[\s\S]*color: palette\.danger/u);
+  assert.match(source, /fillLabel:\s*\{[\s\S]*color: palette\.onDanger/u);
 
   for (const theme of [colors.light, colors.dark]) {
-    const ratio = contrastRatio(theme.onDanger, theme.danger);
-    assert.ok(ratio >= 4.5, `text contrast ${ratio} is below 4.5`);
-    assert.ok(ratio >= 3, `progress contrast ${ratio} is below 3`);
+    assert.ok(contrastRatio(theme.onDanger, theme.danger) >= 4.5);
+    assert.ok(contrastRatio(theme.danger, theme.dangerSoft) >= 4.5);
   }
 });

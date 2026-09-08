@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, Keyboard, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { AppState, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
@@ -161,12 +161,9 @@ function SecurityForm({ route, navigation }: Props) {
           {failure && errorField === null ? <InfoBlock accessibilityAlert body={mode === "export" || mode === "privacy" ? t("exportAuthenticationFailed") : ta(failure === "invalidEmail" ? "emailFormatError" : failure)} title={title} tone="warning" testID={`security-error-${failure}`} /> : null}
           {mode === "email" && account.refreshAccountIdentityFailure ? <InfoBlock accessibilityAlert body={ta(account.refreshAccountIdentityFailure)} title={t("changeEmail")} tone="warning" testID="security-refresh-error" /> : null}
           {success ? <InfoBlock accessibilityAlert body={t(success)} title={title} testID="security-success" /> : null}
-          {mode === "delete" ? <>
+          {mode === "delete" ? !prepared ? <>
             <InfoBlock body={t("deleteConsequences")} title={t("deletePermanent")} tone="warning" />
-            <Text selectable maxFontSizeMultiplier={2} style={styles.body}>{t("deletionRetention")}</Text>
-            <Text selectable maxFontSizeMultiplier={2} style={styles.body}>{t("deletionContact")}</Text>
-            <Button onPress={() => { void Linking.openURL("mailto:Lukasz.kurczab@gmail.com").catch(() => { if (focused.current) setFailure("remoteFailure"); }); }} variant="ghost">Lukasz.kurczab@gmail.com</Button>
-          </> : <Text maxFontSizeMultiplier={2} style={styles.body}>{t(mode === "recovery" ? "recoveryWarning" : mode === "email" ? "emailChangeIntro" : mode === "export" ? "exportAuthenticationIntro" : mode === "privacy" ? "privacyAuthenticationIntro" : "passwordChangeIntro")}</Text>}
+          </> : null : <Text maxFontSizeMultiplier={2} style={styles.body}>{t(mode === "recovery" ? "recoveryWarning" : mode === "email" ? "emailChangeIntro" : mode === "export" ? "exportAuthenticationIntro" : mode === "privacy" ? "privacyAuthenticationIntro" : "passwordChangeIntro")}</Text>}
           {!authenticated ? <InfoBlock body={account.state.kind === "deleting" ? ta("deletionPendingDescription") : ta("providerUnavailable")} title={title} testID="security-unavailable" /> : pendingDeletion ? <>
             <InfoBlock body={ta("deletionPendingDescription")} title={ta("deleting")} />
             <Button disabled={busy} loading={busy} onPress={() => { void run(() => account.retryPendingDeletion(), () => {}); }} testID="security-delete-retry">{t("retryDeletion")}</Button>
@@ -178,9 +175,9 @@ function SecurityForm({ route, navigation }: Props) {
               <Text maxFontSizeMultiplier={2} style={styles.body}>{ta("recoveryCodesClipboardWarning")}</Text>
               <Button disabled={busy} onPress={() => { void recoveryCodeClipboard.copy(codes).then(() => { if (focused.current) setSuccess("codesCopied"); }).catch(() => { if (focused.current) setFailure("remoteFailure"); }); }} variant="secondary">{ta("copyRecoveryCodes")}</Button>
             </View> : <>
-              {usesPassword ? field(t("currentPassword"), password, setPassword, "security-password", true) : null}
-              {prepared ? <InfoBlock body={t("deletionVerified")} title={t("identityVerified")} testID="security-deletion-authorized" /> : usesGoogle && configuration.kind === "configured" ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" || mode === "export" || mode === "privacy" ? "verifyIdentity" : mode === "recovery" ? "generateCodes" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} />}
-              {mode === "delete" ? <HoldToConfirmButton accessibilityLabel={t("holdDelete")} disabled={!prepared || blocked} hint={t("holdDeleteHint")} loading={busy} onConfirm={() => { setPrepared(false); void run(() => account.deleteAccount(), () => {}); }} readyLabel={t("releaseDelete")} testID="security-delete-hold">{t("holdDelete")}</HoldToConfirmButton> : null}
+              {usesPassword && !prepared ? field(t(mode === "delete" ? "password" : "currentPassword"), password, setPassword, "security-password", true) : null}
+              {!prepared ? usesGoogle && configuration.kind === "configured" ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" || mode === "export" || mode === "privacy" ? "verifyIdentity" : mode === "recovery" ? "generateCodes" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} /> : null}
+              {mode === "delete" && prepared ? <HoldToConfirmButton accessibilityLabel={t("holdDelete")} disabled={blocked} hint={t("holdDeleteHint")} loading={busy} onConfirm={() => { setPrepared(false); void run(() => account.deleteAccount(), () => {}); }} testID="security-delete-hold">{t("holdDelete")}</HoldToConfirmButton> : null}
             </>}
           </>}
         </ScrollView>

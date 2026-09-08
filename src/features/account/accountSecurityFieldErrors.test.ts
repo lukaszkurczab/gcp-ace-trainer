@@ -13,6 +13,8 @@ test("reauthentication errors identify a password only when that field exists", 
   for (const failure of ["reauthenticationRequired", "invalidCredential"]) {
     assert.equal(getAccountSecurityErrorField({ mode: "email", failure, usesPassword: true }), "security-password");
     assert.equal(getAccountSecurityErrorField({ mode: "email", failure, usesPassword: false }), null);
+    assert.equal(getAccountSecurityErrorField({ mode: "delete", failure, usesPassword: true }), "security-password");
+    assert.equal(getAccountSecurityErrorField({ mode: "delete", failure, usesPassword: false }), null);
   }
 });
 
@@ -20,10 +22,11 @@ test("general errors and other security screens retain their existing banner pre
   for (const failure of [null, "offline", "providerUnavailable", "revokedSession", "rateLimited"]) {
     assert.equal(getAccountSecurityErrorField({ mode: "email", failure, usesPassword: true }), null);
   }
-  for (const mode of ["password", "recovery", "delete", "export", "privacy"]) {
+  for (const mode of ["password", "recovery", "export", "privacy"]) {
     assert.equal(getAccountSecurityErrorField({ mode, failure: "reauthenticationRequired", usesPassword: true }), null);
     assert.equal(getAccountSecurityErrorField({ mode, failure: "invalidEmail", usesPassword: true }), null);
   }
+  assert.equal(getAccountSecurityErrorField({ mode: "delete", failure: "invalidEmail", usesPassword: true }), null);
 });
 
 test("editing another field preserves its error; editing the affected field clears it", () => {
@@ -38,4 +41,5 @@ test("editing another field preserves its error; editing the affected field clea
   }
   assert.equal(getAccountSecurityErrorAfterEdit({ mode: "email", failure: "offline", usesPassword: true, editedField: "security-password" }), null);
   assert.equal(getAccountSecurityErrorAfterEdit({ mode: "password", failure: "reauthenticationRequired", usesPassword: true, editedField: "security-new-password" }), null);
+  assert.equal(getAccountSecurityErrorAfterEdit({ mode: "delete", failure: "invalidCredential", usesPassword: true, editedField: "security-password" }), null);
 });

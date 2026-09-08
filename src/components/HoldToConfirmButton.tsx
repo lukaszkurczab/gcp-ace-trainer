@@ -29,7 +29,6 @@ export type HoldToConfirmButtonProps = Readonly<{
   hint: string;
   loading?: boolean;
   onConfirm: () => void;
-  readyLabel: string;
   scheduler?: HoldToConfirmFrameScheduler;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -52,7 +51,6 @@ export function HoldToConfirmButton({
   hint,
   loading = false,
   onConfirm,
-  readyLabel,
   scheduler,
   style,
   testID,
@@ -64,6 +62,7 @@ export function HoldToConfirmButton({
   const clockRef = useRef(clock);
   clockRef.current = clock;
   const boundsRef = useRef<ResponderBounds>({ height: 0, width: 0 });
+  const [measuredWidth, setMeasuredWidth] = useState(0);
   const schedulerRef = useRef<HoldToConfirmFrameScheduler | null>(null);
   if (!schedulerRef.current) schedulerRef.current = scheduler ?? createNativeFrameScheduler();
   const controllerRef = useRef<HoldToConfirmController | null>(null);
@@ -102,6 +101,7 @@ export function HoldToConfirmButton({
       height: event.nativeEvent.layout.height,
       width: event.nativeEvent.layout.width,
     };
+    setMeasuredWidth(event.nativeEvent.layout.width);
   };
 
   const isInsideMeasuredBounds = (locationX: number, locationY: number): boolean => {
@@ -120,12 +120,8 @@ export function HoldToConfirmButton({
     controller.move(isInsideMeasuredBounds(locationX, locationY));
   };
 
-  const percent = Math.round(state.progress * 100);
   const progressTestID = testID ? `${testID}-progress` : undefined;
   const fillTestID = testID ? `${testID}-progress-fill` : undefined;
-  const percentTestID = testID ? `${testID}-progress-percent` : undefined;
-  const hintTestID = testID ? `${testID}-hint` : undefined;
-  const readyTestID = testID ? `${testID}-ready-label` : undefined;
   const handleGrant = (): void => {
     if (!isInteractiveRef.current) {
       controller.reset();
@@ -161,15 +157,13 @@ export function HoldToConfirmButton({
       testID={testID}
     >
       <View pointerEvents="none" style={styles.content}>
-        {loading ? <ActivityIndicator accessibilityElementsHidden color={palette.onDanger} importantForAccessibility="no" size="small" /> : null}
+        {loading ? <ActivityIndicator accessibilityElementsHidden color={palette.danger} importantForAccessibility="no" size="small" /> : null}
         <Text maxFontSizeMultiplier={2} style={styles.label}>{children}</Text>
-        <Text maxFontSizeMultiplier={2} style={styles.percent} testID={percentTestID}>{`${percent}%`}</Text>
-        {state.phase === "ready" ? <Text maxFontSizeMultiplier={2} style={styles.readyLabel} testID={readyTestID}>{readyLabel}</Text> : null}
-        <Text maxFontSizeMultiplier={2} style={styles.hint} testID={hintTestID}>{hint}</Text>
       </View>
-      <View pointerEvents="none" style={styles.progressArea} testID={progressTestID}>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${percent}%` }]} testID={fillTestID} />
+      <View pointerEvents="none" style={[styles.progressFill, { width: `${Math.round(state.progress * 100)}%` }]} testID={progressTestID}>
+        <View style={[styles.fillContent, { width: measuredWidth }]}>
+          {loading ? <ActivityIndicator accessibilityElementsHidden color={palette.onDanger} importantForAccessibility="no" size="small" /> : null}
+          <Text maxFontSizeMultiplier={2} style={styles.fillLabel} testID={fillTestID}>{children}</Text>
         </View>
       </View>
     </View>
@@ -195,50 +189,34 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   disabled: {
     opacity: 0.55,
   },
-  hint: {
-    ...typography.small,
-    color: palette.onDanger,
-    opacity: 0.88,
+  label: {
+    ...typography.button,
+    color: palette.danger,
     textAlign: "center",
   },
-  label: {
+  progressFill: {
+    backgroundColor: palette.danger,
+    bottom: 0,
+    left: 0,
+    overflow: "hidden",
+    position: "absolute",
+    top: 0,
+  },
+  fillContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 64,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  fillLabel: {
     ...typography.button,
     color: palette.onDanger,
     textAlign: "center",
   },
-  percent: {
-    ...typography.small,
-    color: palette.onDanger,
-    fontVariant: ["tabular-nums"],
-  },
-  progressArea: {
-    alignSelf: "stretch",
-    paddingBottom: spacing.md,
-    paddingHorizontal: spacing.lg,
-  },
-  progressFill: {
-    backgroundColor: palette.onDanger,
-    height: "100%",
-    opacity: 1,
-  },
-  progressTrack: {
-    backgroundColor: palette.danger,
-    borderColor: palette.onDanger,
-    borderRadius: 4,
-    borderWidth: 1,
-    height: 8,
-    overflow: "hidden",
-    width: "100%",
-  },
-  readyLabel: {
-    ...typography.small,
-    color: palette.onDanger,
-    fontWeight: "700",
-    textTransform: "uppercase",
-  },
   root: {
     alignItems: "center",
-    backgroundColor: palette.danger,
+    backgroundColor: palette.dangerSoft,
     borderColor: palette.danger,
     borderRadius: radius.button,
     borderWidth: 1,

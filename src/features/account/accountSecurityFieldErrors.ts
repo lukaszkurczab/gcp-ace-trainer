@@ -5,6 +5,7 @@ type FieldErrorInput = Readonly<{
 }>;
 
 export function getAccountSecurityErrorField(input: FieldErrorInput): "security-new-email" | "security-password" | null {
+  if (input.mode === "delete" && input.usesPassword && (input.failure === "reauthenticationRequired" || input.failure === "invalidCredential")) return "security-password";
   if (input.mode !== "email") return null;
   if (input.failure === "invalidEmail") return "security-new-email";
   if (input.usesPassword && (input.failure === "reauthenticationRequired" || input.failure === "invalidCredential")) return "security-password";
