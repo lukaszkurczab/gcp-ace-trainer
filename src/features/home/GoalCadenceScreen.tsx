@@ -14,6 +14,7 @@ import {
   useSkeletonGlassMotion,
 } from "../../components";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { learningPlanProposalCoordinator, type LearningPlanProposalResult } from "../../application/learningPlan";
 import { loadActiveTrackId, loadGoal, persistGoal } from "../../application/learningReadModels";
 import { reconcileDeviceReminder } from "../../preferences";
 import { ROUTES } from "../../constants/routes";
@@ -138,6 +139,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const [saveError, setSaveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [creatingPlan, setCreatingPlan] = useState(false);
   const returnTo: GoalCadenceReturnTo = route.params?.returnTo ?? "progress";
   const context = t(returnTo === "settings" ? "Settings" : returnTo === "home" ? "Home" : "Progress");
 
@@ -227,14 +229,30 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       setDraft(null);
       try {
         await reconcileDeviceReminder(reminderCopy);
-        if (returnTo === "home") handleBack();
       } catch {
         setSaveError(t("Goal saved, but reminders could not be updated. Try again from Reminders."));
+        return;
       }
+      await createAndOpenPlan(track.id);
     } catch (error) {
       setSaveError(describeOperationalFailure(error, "The goal could not be saved."));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function createAndOpenPlan(selectedTrackId: TrackId): Promise<void> {
+    setCreatingPlan(true);
+    setSaveError(null);
+    try {
+      const result = await learningPlanProposalCoordinator.create(selectedTrackId);
+      if (isCreatedProposal(result)) {
+        navigation.navigate(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId: selectedTrackId });
+        return;
+      }
+      setSaveError(proposalCreationError(result.kind));
+    } finally {
+      setCreatingPlan(false);
     }
   }
 
@@ -326,6 +344,8 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           goal={current}
           locale={locale}
           onEdit={() => { setDraft({ ...current, preferredDays: [...current.preferredDays] }); setSaveError(null); }}
+          onCreatePlan={() => { void createAndOpenPlan(track.id); }}
+          creatingPlan={creatingPlan}
           onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "goal", trackId: track.id, returnToGoal: returnTo })}
           onTogglePause={() => { void togglePause(); }}
           t={t}
@@ -401,7 +421,7 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
                 style={[styles.dayButton, selected ? styles.dayButtonSelected : styles.dayButtonUnselected]}
                 testID={runtimeSelectors.goal.day(day)}
               >
-                <Text maxFontSizeMultiplier={2} style={[styles.dayLabel, selected ? styles.dayLabelSelected : null]}>{DAY_SHORT_LABELS[day]}</Text>
+                <Text maxFontSizeMultiplier={2} style={[styles.dayLabel, selected ? styles.dayLabelSelected : null]}>{t(DAY_SHORT_LABELS[day])}</Text>
               </Pressable>
             );
           })}
@@ -419,9 +439,11 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
   );
 }
 
-function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onTogglePause, t }: Readonly<{
+function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, onOpenNotifications, onTogglePause, t }: Readonly<{
+  creatingPlan: boolean;
   goal: GoalRecord;
   locale: "en" | "pl";
+  onCreatePlan: () => void;
   onEdit: () => void;
   onOpenNotifications: () => void;
   onTogglePause: () => void;
@@ -447,7 +469,7 @@ function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onToggle
             <View style={styles.dayBadges}>
               {goal.preferredDays.map((day) => (
                 <View key={day} style={styles.dayBadge}>
-                  <Text maxFontSizeMultiplier={2} style={styles.dayBadgeLabel}>{DAY_SHORT_LABELS[day]}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.dayBadgeLabel}>{t(DAY_SHORT_LABELS[day])}</Text>
                 </View>
               ))}
             </View>
@@ -459,12 +481,24 @@ function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onToggle
           <Pressable accessibilityRole="button" onPress={onOpenNotifications} testID="goal-summary-reminders"><Text maxFontSizeMultiplier={2} style={styles.summaryLink}>{t("Reminders")}</Text></Pressable>
         </View>
       </View>
+      <Button disabled={goal.status === "paused"} loading={creatingPlan} onPress={onCreatePlan} testID={runtimeSelectors.learningPlan.create()}>{t("Create plan")}</Button>
       <Pressable accessibilityRole="button" onPress={onEdit} style={styles.centerAction}><Text maxFontSizeMultiplier={2} style={styles.centerActionLabel}>{t("Edit goal")}</Text></Pressable>
       <Pressable accessibilityRole="button" onPress={onTogglePause} style={styles.centerAction}>
         <Text maxFontSizeMultiplier={2} style={styles.centerActionLabel}>{t(goal.status === "paused" ? "Resume goal" : "Pause goal")}</Text>
       </Pressable>
     </View>
   );
+}
+
+function isCreatedProposal(result: LearningPlanProposalResult): result is Extract<LearningPlanProposalResult, { proposal: unknown }> {
+  return "proposal" in result;
+}
+
+function proposalCreationError(kind: LearningPlanProposalResult["kind"]): string {
+  if (kind === "no_goal") return "Set an active goal before creating a plan.";
+  if (kind === "goal_paused") return "Resume the goal before creating a plan.";
+  if (kind === "package_unavailable") return "This learning package is not available for planning.";
+  return "The learning plan could not be prepared. Try again.";
 }
 
 function SummaryRow({ label, value }: Readonly<{ label: string; value: string }>) {

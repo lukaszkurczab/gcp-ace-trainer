@@ -6,6 +6,7 @@ import enAppearance from "./locales/en/appearance.json";
 import enCommon from "./locales/en/common.json";
 import enData from "./locales/en/data.json";
 import enLegal from "./locales/en/legal.json";
+import enLearningPlan from "./locales/en/learningPlan.json";
 import enNotifications from "./locales/en/notifications.json";
 import enSettings from "./locales/en/settings.json";
 import plAccount from "./locales/pl/account.json";
@@ -13,6 +14,7 @@ import plAppearance from "./locales/pl/appearance.json";
 import plCommon from "./locales/pl/common.json";
 import plData from "./locales/pl/data.json";
 import plLegal from "./locales/pl/legal.json";
+import plLearningPlan from "./locales/pl/learningPlan.json";
 import plNotifications from "./locales/pl/notifications.json";
 import plSettings from "./locales/pl/settings.json";
 
@@ -20,7 +22,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: "en",
   lng: "en",
   supportedLngs: ["en", "pl"],
-  ns: ["common", "account", "appearance", "data", "legal", "notifications", "settings"],
+  ns: ["common", "account", "appearance", "data", "legal", "learningPlan", "notifications", "settings"],
   defaultNS: "common",
   resources: {
     en: {
@@ -29,6 +31,7 @@ void i18n.use(initReactI18next).init({
       common: enCommon,
       data: enData,
       legal: enLegal,
+      learningPlan: enLearningPlan,
       notifications: enNotifications,
       settings: enSettings,
     },
@@ -38,6 +41,7 @@ void i18n.use(initReactI18next).init({
       common: plCommon,
       data: plData,
       legal: plLegal,
+      learningPlan: plLearningPlan,
       notifications: plNotifications,
       settings: plSettings,
     },

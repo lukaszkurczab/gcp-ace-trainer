@@ -70,7 +70,8 @@ test("Settings opens the shared goal screen with its return context", () => {
   assert.match(screen, /source: "goal", trackId: track\.id, returnToGoal: returnTo/);
   assert.match(screen, /<GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
   assert.match(screen, /style=\{styles\.context\}\>\{context\}</);
-  assert.match(screen, /if \(returnTo === "home"\) handleBack\(\)/);
+  assert.match(screen, /await createAndOpenPlan\(track\.id\)/);
+  assert.match(screen, /navigation\.navigate\(ROUTES\.LEARNING_PLAN_PROPOSAL, \{ proposalId: result\.proposal\.proposalId, trackId: selectedTrackId \}\)/);
 });
 
 test("active goal summary only exposes Save while editing", () => {

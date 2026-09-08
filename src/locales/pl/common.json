@@ -585,5 +585,17 @@
   "Unsent sessions and guest progress will be permanently lost. Account data previously saved in the cloud will remain.": "Niewysłane sesje i postęp gościa zostaną bezpowrotnie utracone. Dane konta zapisane wcześniej w chmurze pozostaną.",
   "Remove unavailable data": "Usuń niedostępne dane",
   "Remove data from device": "Usuń dane z urządzenia",
-  "Cancel": "Anuluj"
+  "Cancel": "Anuluj",
+  "Create plan": "Utwórz plan",
+  "Set an active goal before creating a plan.": "Ustaw aktywny cel przed utworzeniem planu.",
+  "Resume the goal before creating a plan.": "Wznów cel przed utworzeniem planu.",
+  "This learning package is not available for planning.": "Ten pakiet nauki nie jest dostępny do planowania.",
+  "The learning plan could not be prepared. Try again.": "Nie udało się przygotować planu nauki. Spróbuj ponownie.",
+  "Mon": "Pon.",
+  "Tue": "Wt.",
+  "Wed": "Śr.",
+  "Thu": "Czw.",
+  "Fri": "Pt.",
+  "Sat": "Sob.",
+  "Sun": "Niedz."
 }

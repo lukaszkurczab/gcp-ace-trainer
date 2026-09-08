@@ -29,6 +29,7 @@ export type RootStackParamList = {
   [ROUTES.BACKEND_DIAGNOSTICS]: undefined;
   [ROUTES.SELECT_TRACK]: undefined;
   [ROUTES.GOAL_CADENCE]: { trackId?: TrackId; returnTo?: GoalCadenceReturnTo } | undefined;
+  [ROUTES.LEARNING_PLAN_PROPOSAL]: { proposalId: string; trackId: TrackId };
   [ROUTES.PRACTICE_HUB]: { topicId?: string; trackId?: TrackId } | undefined;
   [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home"; targetMentalUnitId?: string };
   [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId } | undefined;

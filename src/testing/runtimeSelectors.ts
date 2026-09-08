@@ -122,6 +122,15 @@ export const runtimeSelectors = Object.freeze({
     goalType: (goalType: string) => selector("goal", "type", goalType),
     day: (day: string) => selector("goal", "day", day),
   }),
+  learningPlan: Object.freeze({
+    root: () => selector("learning-plan", "root"),
+    create: () => selector("learning-plan", "create"),
+    state: (state: string) => selector("learning-plan", "state", state),
+    slot: (day: string) => selector("learning-plan", "slot", day),
+    update: () => selector("learning-plan", "update"),
+    adjustGoal: () => selector("learning-plan", "adjust-goal"),
+    backToPractice: () => selector("learning-plan", "back-to-practice"),
+  }),
   goalOnboarding: Object.freeze({
     root: () => selector("home", "guest-goal-onboarding", "root"),
     setGoal: () => selector("home", "guest-goal-onboarding", "set-goal"),

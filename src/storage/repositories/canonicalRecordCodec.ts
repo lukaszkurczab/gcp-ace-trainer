@@ -1,5 +1,5 @@
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
-import { CorruptStoredRecordError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../errors";
+import { CanonicalWriteConflictError, CorruptStoredRecordError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../errors";
 
 /**
  * The sole MMKV access boundary.  It intentionally lives with repository
@@ -13,6 +13,8 @@ export type CanonicalRecordEnvelope<T> = Readonly<{
   revision: number;
   payload: T;
 }>;
+
+const activeWrites = new Set<string>();
 
 function isEnvelope(value: unknown): value is CanonicalRecordEnvelope<unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value) &&
@@ -36,23 +38,29 @@ export function readCanonicalJson<T>(key: string, guard: StorageValueGuard<T>): 
 }
 
 export function writeCanonicalJson<T>(key: string, value: T, expectedRevision?: number | null): CanonicalRecordEnvelope<T> {
-  const current = readCanonicalEnvelope(key, (_value): _value is unknown => true);
-  if (expectedRevision === null) {
-    if (current !== null) throw new UnsupportedStoredRecordError(key);
-  } else if (expectedRevision !== undefined && current?.revision !== expectedRevision) {
-    throw new UnsupportedStoredRecordError(key);
+  if (activeWrites.has(key)) throw new CanonicalWriteConflictError(key);
+  activeWrites.add(key);
+  try {
+    const current = readCanonicalEnvelope(key, (_value): _value is unknown => true);
+    if (expectedRevision === null) {
+      if (current !== null) throw new UnsupportedStoredRecordError(key);
+    } else if (expectedRevision !== undefined && current?.revision !== expectedRevision) {
+      throw new UnsupportedStoredRecordError(key);
+    }
+    const envelope: CanonicalRecordEnvelope<T> = {
+      schemaIdentity: CANONICAL_RECORD_SCHEMA,
+      revision: (current?.revision ?? 0) + 1,
+      payload: value,
+    };
+    try { getKeyValueStorage().setString(key, JSON.stringify(envelope)); } catch (error) { throw new StorageWriteError(key, error); }
+    const verified = readCanonicalEnvelope(key, (_value): _value is T => true);
+    if (!verified || verified.schemaIdentity !== envelope.schemaIdentity || verified.revision !== envelope.revision || JSON.stringify(verified.payload) !== JSON.stringify(envelope.payload)) {
+      throw new StorageWriteError(key, new Error("Canonical record write could not be verified."));
+    }
+    return envelope;
+  } finally {
+    activeWrites.delete(key);
   }
-  const envelope: CanonicalRecordEnvelope<T> = {
-    schemaIdentity: CANONICAL_RECORD_SCHEMA,
-    revision: (current?.revision ?? 0) + 1,
-    payload: value,
-  };
-  try { getKeyValueStorage().setString(key, JSON.stringify(envelope)); } catch (error) { throw new StorageWriteError(key, error); }
-  const verified = readCanonicalEnvelope(key, (_value): _value is T => true);
-  if (!verified || verified.schemaIdentity !== envelope.schemaIdentity || verified.revision !== envelope.revision || JSON.stringify(verified.payload) !== JSON.stringify(envelope.payload)) {
-    throw new StorageWriteError(key, new Error("Canonical record write could not be verified."));
-  }
-  return envelope;
 }
 
 export function removeCanonicalValue(key: string): void {

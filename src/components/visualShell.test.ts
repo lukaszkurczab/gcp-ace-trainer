@@ -77,8 +77,8 @@ test("route coverage has one native or inline shell owner and preserves active-s
     .filter((match) => /headerShown:\s*false/.test(match[2] ?? ""))
     .map((match) => match[1]);
 
-  assert.equal(routeIds.length, 33);
-  assert.equal(new Set(routeIds).size, 33);
+  assert.equal(routeIds.length, 34);
+  assert.equal(new Set(routeIds).size, 34);
   assert.deepEqual(headerlessRouteIds, [
     "HOME",
     "ACTIVITY",
@@ -94,6 +94,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "NOTIFICATION_SETTINGS",
     "SELECT_TRACK",
     "GOAL_CADENCE",
+    "LEARNING_PLAN_PROPOSAL",
     "PRACTICE_HUB",
     "ALGORITHMS_SCOPE_SELECTION",
     "TOPIC_ROADMAP",

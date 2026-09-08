@@ -1,4 +1,4 @@
-import type { GoalRecord, TrackId } from "../domain";
+import type { GoalRecord, GoalSnapshot, TrackId } from "../domain";
 import { getTrainingLifecycleUseCases } from "./trainingLifecycle";
 import type { CodingInterviewDashboard } from "./coding-interview/CodingInterviewFamilyRuntime";
 import {
@@ -10,11 +10,13 @@ import {
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
   getGoal,
+  getGoalSnapshot,
   isGoalOnboardingDismissed,
   getReviewQueueItems,
   getTrainingAttempts,
   saveActiveTrackId,
   saveGoal,
+  saveGoalSnapshot,
   dismissGoalOnboarding,
 } from "../storage/repositories";
 import { getAttempts, getPracticeHistory } from "../storage/queries";
@@ -32,6 +34,8 @@ export async function loadActiveTrackId() { return getActiveTrackId(); }
 export async function selectActiveTrack(trackId: TrackId) { await saveActiveTrackId(trackId); }
 export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId); }
 export async function persistGoal(goal: GoalRecord): Promise<void> { await saveGoal(goal); }
+export async function loadGoalSnapshot(trackId: TrackId): Promise<GoalSnapshot | null> { return getGoalSnapshot(trackId); }
+export async function persistGoalSnapshot(goal: GoalRecord, expectedRevision: number | null): Promise<GoalSnapshot> { return saveGoalSnapshot(goal, expectedRevision); }
 export function loadGoalOnboardingDismissed(trackId: TrackId): boolean { return isGoalOnboardingDismissed(trackId); }
 export function persistGoalOnboardingDismissal(trackId: TrackId): void { dismissGoalOnboarding(trackId); }
 export async function loadExamSummaries() { return getAttempts(); }

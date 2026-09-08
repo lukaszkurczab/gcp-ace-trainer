@@ -585,5 +585,17 @@
   "Unsent sessions and guest progress will be permanently lost. Account data previously saved in the cloud will remain.": "Unsent sessions and guest progress will be permanently lost. Account data previously saved in the cloud will remain.",
   "Remove unavailable data": "Remove unavailable data",
   "Remove data from device": "Remove data from device",
-  "Cancel": "Cancel"
+  "Cancel": "Cancel",
+  "Create plan": "Create plan",
+  "Set an active goal before creating a plan.": "Set an active goal before creating a plan.",
+  "Resume the goal before creating a plan.": "Resume the goal before creating a plan.",
+  "This learning package is not available for planning.": "This learning package is not available for planning.",
+  "The learning plan could not be prepared. Try again.": "The learning plan could not be prepared. Try again.",
+  "Mon": "Mon",
+  "Tue": "Tue",
+  "Wed": "Wed",
+  "Thu": "Thu",
+  "Fri": "Fri",
+  "Sat": "Sat",
+  "Sun": "Sun"
 }

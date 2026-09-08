@@ -17,6 +17,7 @@ export const ROUTES = {
   BACKEND_DIAGNOSTICS: "BackendDiagnostics",
   SELECT_TRACK: "select_track",
   GOAL_CADENCE: "GoalCadence",
+  LEARNING_PLAN_PROPOSAL: "LearningPlanProposal",
   PRACTICE_HUB: "PracticeHub",
   ALGORITHMS_SCOPE_SELECTION: "AlgorithmsScopeSelection",
   TOPIC_ROADMAP: "TopicRoadmap",

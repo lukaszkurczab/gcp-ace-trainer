@@ -22,6 +22,7 @@ const specializedLoadingOwners = [
   "src/features/exam/ResultScreen.tsx#ExamResultLoadingSkeleton",
   "src/features/home/ActivityScreen.tsx#ActivityLoadingSkeleton",
   "src/features/home/GoalCadenceScreen.tsx#GoalLoadingSkeleton",
+  "src/features/home/LearningPlanProposalScreen.tsx#LearningPlanProposalLoadingSkeleton",
   "src/features/home/tabs/HomeTab.tsx#HomeLoadingSkeleton",
   "src/features/home/tabs/ProgressTab.tsx#ProgressLoadingSkeleton",
   "src/features/home/tabs/SettingsTab.tsx#SettingsLoadingSkeleton",
@@ -43,7 +44,7 @@ test("the loading-state inventory stays complete as pending surfaces evolve", ()
     .sort();
 
   assert.deepEqual(actual, [...specializedLoadingOwners].sort());
-  assert.equal(actual.length, 20);
+  assert.equal(actual.length, 21);
 });
 
 test("LoadingState is the compact accessible generic pending status", () => {

@@ -25,6 +25,11 @@ export type GoalRecord = Readonly<{
   weeklySessionTarget: number;
 }>;
 
+export type GoalSnapshot = Readonly<{
+  record: GoalRecord;
+  revision: number;
+}>;
+
 export function getTrackGoalTemplates(trackId: TrackId): readonly GoalTemplateId[] {
   const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === trackId);
   if (!descriptor) throw new Error(`No goal templates are declared for track ${trackId}.`);

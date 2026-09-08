@@ -2,6 +2,7 @@ export * from "./attemptResult";
 export * from "./contentItemRef";
 export * from "./contentPackagePin";
 export * from "./packageCompletionRule";
+export * from "./learningPlanProposalGenerator";
 export * from "./errors";
 export * from "./learningEvidence";
 export * from "./familyEnvelope";
