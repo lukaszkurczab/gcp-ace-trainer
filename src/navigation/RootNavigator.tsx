@@ -22,6 +22,7 @@ import { PrivacyRequestsScreen } from "../features/home/PrivacyRequestsScreen";
 import { LegalRequestsScreen } from "../features/home/LegalRequestsScreen";
 import { BackendDiagnosticsScreen } from "../features/home/BackendDiagnosticsScreen";
 import { AccountSecurityScreen } from "../features/account/AccountSecurityScreen";
+import { AccountEmailChangePendingScreen } from "../features/account/AccountEmailChangePendingScreen";
 import { AccountEntryScreen } from "../features/account/AccountEntryScreen";
 import { SelectTrackScreen } from "../features/home/SelectTrackScreen";
 import { GoalCadenceScreen } from "../features/home/GoalCadenceScreen";
@@ -86,6 +87,7 @@ export function RootNavigator() {
             options={{ headerShown: false, title: t("Activity") }}
           />
           <Stack.Screen name={ROUTES.ACCOUNT_SECURITY} component={AccountSecurityScreen} options={{ headerShown: false }} />
+          <Stack.Screen name={ROUTES.ACCOUNT_EMAIL_CHANGE_PENDING} component={AccountEmailChangePendingScreen} options={{ headerShown: false }} />
           <Stack.Screen
             name={ROUTES.APPEARANCE_SETTINGS}
             component={AppearanceSettingsScreen}

@@ -12,7 +12,7 @@ import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
 import { grantGuestAccess, hasGuestAccess, revokeGuestAccess } from "../../storage/repositories/guestAccessRepository";
 import { hasUnboundGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
-import { createDeletionAuthorizationVault, createSensitiveCommandLane, prepareDeletionAuthorization, runReauthenticatedMutation, type DeletionAuthorizationVault, type SensitiveCommandLane } from "./accountCommandGuards";
+import { createDeletionAuthorizationVault, createSensitiveCommandLane, isLiveDeletionAuthorization, prepareDeletionAuthorization, runReauthenticatedMutation, type DeletionAuthorizationVault, type SensitiveCommandLane } from "./accountCommandGuards";
 import { shareAccountDataExport as shareDownloadedAccountData } from "./accountDataExportService";
 import { legalVariables } from "../../legal/legalVariables";
 
@@ -60,7 +60,9 @@ export type AccountSessionContextValue = Readonly<{
   requestPasswordRecovery: (email: string) => Promise<AccountCommandResult>;
   requestEmailChange: (credentials: FirebaseAuthCredentials, email: string) => Promise<AccountCommandResult>;
   retrySessionRestore: () => void;
+  holdAccountIdentityRefresh: () => () => void;
   refreshAccountIdentity: () => Promise<AccountCommandResult>;
+  refreshAccountIdentityFailure: AccountFailure | null;
   refreshVerification: () => Promise<AccountCommandResult>;
   register: (email: string, password: string, acceptanceConfirmed: boolean) => Promise<AccountCommandResult>;
   resendVerification: () => Promise<AccountCommandResult>;
@@ -87,6 +89,21 @@ const AccountSessionContext = createContext<AccountSessionContextValue | null>(n
 export const AUTH_INITIALIZATION_TIMEOUT_MS = 15_000;
 
 export type AccountSessionGenerationToken = Readonly<{ generation: number; uid: string }>;
+
+export function canContinueAccountIdentityRefresh(input: Readonly<{
+  authUid: string | null;
+  currentState: AccountState;
+  expectedUid: string;
+  generation: AccountSessionGenerationToken;
+  isCurrentGeneration: (token: AccountSessionGenerationToken) => boolean;
+  refreshedUid: string | null;
+}>): boolean {
+  return input.currentState.kind === "authenticated"
+    && input.currentState.user.uid === input.expectedUid
+    && input.refreshedUid === input.expectedUid
+    && input.authUid === input.expectedUid
+    && input.isCurrentGeneration(input.generation);
+}
 
 export class AccountSessionGenerationStaleError extends Error {
   public constructor() {
@@ -167,6 +184,20 @@ type FinalizationOutcome = Readonly<{ result: AccountCommandResult; state?: Acco
 
 type AuthenticatedAccountState = Extract<AccountState, { kind: "authenticated" }>;
 
+export function publishRefreshedAuthenticatedState(latest: AccountState, input: Readonly<{
+  backendUser: MeResponseDto["user"];
+  isCurrent: () => boolean;
+  user: FirebaseAuthUserSnapshot;
+}>): AccountState {
+  if (!input.isCurrent() || latest.kind !== "authenticated" || latest.user.uid !== input.user.uid) return latest;
+  return {
+    kind: "authenticated",
+    backendUser: input.backendUser,
+    user: input.user,
+    accountData: latest.accountData,
+  };
+}
+
 /**
  * Preparation can fail before accountDataService reaches its guarded catch
  * (for example, a durable sync-state read can throw). Keep the Firebase
@@ -234,9 +265,12 @@ function deletionPendingState(user: FirebaseAuthUserSnapshot, deletion: NonNulla
 
 export function PatternlyAccountProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [state, setState] = useState<AccountState>({ kind: "loading" });
+  const stateRef = useRef<AccountState>({ kind: "loading" });
+  stateRef.current = state;
   const [authClient, setAuthClient] = useState<FirebaseAuthClient | null>(null);
   const [apiClient, setApiClient] = useState<ReturnType<typeof createPatternlyApiClient> | null>(null);
   const [appCheckReady, setAppCheckReady] = useState(false);
+  const [refreshAccountIdentityFailure, setRefreshAccountIdentityFailure] = useState<AccountFailure | null>(null);
   const [runtimeMode] = useState<PatternlyRuntimeMode | undefined>(readPatternlyRuntimeMode);
   const [authInitializationRevision, setAuthInitializationRevision] = useState(0);
   const sessionCoordinatorRef = useRef<AccountSessionCoordinator<FinalizationOutcome> | null>(null);
@@ -423,6 +457,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         }
         if (!user) {
           revokeDeletionAuthorization();
+          setRefreshAccountIdentityFailure(null);
           observerBlockedUidRef.current = null;
           observedUid = null;
           sessionCoordinator.invalidate();
@@ -431,7 +466,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         }
         if (legalAcceptancePendingRef.current || observerBlockedUidRef.current === user.uid) return;
         const uidChanged = observedUid !== null && observedUid !== user.uid;
-        if (uidChanged) revokeDeletionAuthorization();
+        if (uidChanged) {
+          revokeDeletionAuthorization();
+          setRefreshAccountIdentityFailure(null);
+        }
         observedUid = user.uid;
         const generation = sessionCoordinator.begin(user.uid);
         const isCurrentObserver = () => live && !observerDetached && sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === generation.uid;
@@ -467,6 +505,11 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const runSensitiveWithAuth = useCallback((operation: (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>) => Promise<AccountCommandResult>): Promise<AccountCommandResult> => {
     return sensitiveCommandLane.run(() => runWithAuth(operation)).catch((error) => ({ kind: "failure", failure: classifyAccountFailure(error) }));
   }, [runWithAuth, sensitiveCommandLane]);
+
+  const runRefreshWithAuth = useCallback((operation: (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>) => Promise<AccountCommandResult>): Promise<AccountCommandResult> => {
+    return sensitiveCommandLane.runWhenIdle(() => runWithAuth(operation));
+  }, [runWithAuth, sensitiveCommandLane]);
+  const holdAccountIdentityRefresh = useCallback(() => sensitiveCommandLane.holdRefresh(), [sensitiveCommandLane]);
 
   const value = useMemo<AccountSessionContextValue>(() => ({
     recordPurchaseConfirmation: async (input) => {
@@ -610,6 +653,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return { kind: "success", next: "recoveryAccepted" };
     }),
     retrySessionRestore,
+    holdAccountIdentityRefresh,
+    refreshAccountIdentityFailure,
     refreshVerification: () => runSensitiveWithAuth(async (auth, api) => {
       const previousUser = auth.getSnapshot();
       revokeDeletionAuthorization();
@@ -634,25 +679,67 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (previousUser && observerBlockedUidRef.current === previousUser.uid) observerBlockedUidRef.current = null;
       }
     }),
-    refreshAccountIdentity: () => runSensitiveWithAuth(async (auth, api) => {
-      revokeDeletionAuthorization();
-      const previousUser = auth.getSnapshot();
-      if (!previousUser || state.kind !== "authenticated" || state.user.uid !== previousUser.uid) return { kind: "failure", failure: "providerUnavailable" };
-      const generation = sessionCoordinator.restart(previousUser.uid);
-      const canContinue = (user: FirebaseAuthUserSnapshot | null) => user?.uid === previousUser.uid
-        && sessionCoordinator.isCurrent(generation)
-        && auth.getSnapshot()?.uid === previousUser.uid;
-      try {
-        const user = await auth.refreshAccountIdentity();
-        if (!user || !canContinue(user)) return { kind: "failure", failure: "revokedSession" };
-        const response = await api.getMe();
-        if (!canContinue(user)) return { kind: "failure", failure: "revokedSession" };
-        setState({ kind: "authenticated", backendUser: response.user, user, accountData: state.accountData });
-        return { kind: "success", next: "authenticated" };
-      } catch (error) {
-        return { kind: "failure", failure: classifyAccountFailure(error) };
+    refreshAccountIdentity: () => {
+      const current = stateRef.current;
+      const previousUser = authClient?.getSnapshot();
+      if (!authClient || !apiClient || !previousUser || current.kind !== "authenticated" || current.user.uid !== previousUser.uid) {
+        return Promise.resolve({ kind: "failure", failure: "providerUnavailable" } as const);
       }
-    }),
+      const generation = sessionCoordinator.begin(previousUser.uid);
+      const canContinue = (auth: FirebaseAuthClient, user: FirebaseAuthUserSnapshot | null) => canContinueAccountIdentityRefresh({
+        authUid: auth.getSnapshot()?.uid ?? null,
+        currentState: stateRef.current,
+        expectedUid: previousUser.uid,
+        generation,
+        isCurrentGeneration: sessionCoordinator.isCurrent,
+        refreshedUid: user?.uid ?? null,
+      });
+      const hasLiveDeletionAuthorization = () => {
+        return isLiveDeletionAuthorization({
+          isCurrent: sessionCoordinator.isCurrent,
+          token: deletionAuthorizationTokenRef.current,
+          uid: previousUser.uid,
+          vault: deletionAuthorization,
+        });
+      };
+      let skippedForDeletionGrant = false;
+      if (hasLiveDeletionAuthorization()) {
+        skippedForDeletionGrant = true;
+        return Promise.resolve({ kind: "success", next: "authenticated" } as const);
+      }
+      setRefreshAccountIdentityFailure(null);
+      return runRefreshWithAuth(async (auth, api) => {
+        if (hasLiveDeletionAuthorization()) {
+          skippedForDeletionGrant = true;
+          return { kind: "success", next: "authenticated" };
+        }
+        if (!canContinue(auth, auth.getSnapshot())) return { kind: "failure", failure: "revokedSession" };
+        observerBlockedUidRef.current = previousUser.uid;
+        try {
+          const user = await auth.refreshAccountIdentity();
+          if (!user || !canContinue(auth, user)) return { kind: "failure", failure: "revokedSession" };
+          const response = await api.getMe();
+          if (!canContinue(auth, user)) return { kind: "failure", failure: "revokedSession" };
+          setState((latest) => publishRefreshedAuthenticatedState(latest, {
+            backendUser: response.user,
+            isCurrent: () => canContinue(auth, auth.getSnapshot()),
+            user,
+          }));
+          return { kind: "success", next: "authenticated" };
+        } catch (error) {
+          return { kind: "failure", failure: classifyAccountFailure(error) };
+        } finally {
+          if (observerBlockedUidRef.current === previousUser.uid) observerBlockedUidRef.current = null;
+        }
+      }).then((result) => {
+        const currentAuth = authClient;
+        const currentUser = currentAuth?.getSnapshot() ?? null;
+        if (!skippedForDeletionGrant && currentAuth && canContinue(currentAuth, currentUser)) {
+          setRefreshAccountIdentityFailure(result.kind === "failure" ? result.failure : null);
+        }
+        return result;
+      });
+    },
     register: (email, password, acceptanceConfirmed) => runWithAuth(async (auth, api) => {
       if (!acceptanceConfirmed) return { kind: "failure", failure: "invalid" };
       if (!isValidEmail(email)) return { kind: "failure", failure: "invalidEmail" };
@@ -866,6 +953,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
         await auth.requestEmailChange(credentials, nextEmail);
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        setRefreshAccountIdentityFailure(null);
         return { kind: "success", next: "verificationSent" };
       } catch (error) {
         const failure = classifyAccountFailure(error);
@@ -1066,7 +1154,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return { kind: "failure", failure: "remoteFailure" };
     }),
     state,
-  }), [apiClient, authClient, finalizeCurrent, retrySessionRestore, revokeDeletionAuthorization, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, state]);
+  }), [apiClient, authClient, finalizeCurrent, holdAccountIdentityRefresh, refreshAccountIdentityFailure, retrySessionRestore, revokeDeletionAuthorization, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }

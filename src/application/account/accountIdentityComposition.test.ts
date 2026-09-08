@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { AUTH_INITIALIZATION_TIMEOUT_MS, classifyAccountFailure, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, normalizeAccountSignOutPreparationFailure, planPasswordVerificationCommand, requiresPasswordEmailVerification, restoreAuthenticatedAfterSignOutFailure, type AccountState } from "./AccountSessionProvider";
+import { AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, normalizeAccountSignOutPreparationFailure, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, requiresPasswordEmailVerification, restoreAuthenticatedAfterSignOutFailure, type AccountState } from "./AccountSessionProvider";
+import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
@@ -177,6 +178,108 @@ test("sign-out preparation failures restore the authenticated state before auth 
   assert.match(provider, /let prepared: Awaited<ReturnType<typeof prepareAccountSignOut>>;/);
   assert.match(provider, /prepared = await prepareAccountSignOut\(api, state\.backendUser\.id\);[\s\S]*?catch \(error\)[\s\S]*?restoreAuthenticatedAfterSignOutFailure\(state, failure\)/);
   assert.match(provider, /setState\(restoreAuthenticatedAfterSignOutFailure\(state, prepared\.failure\)\)/);
+});
+
+test("foreground identity publication keeps the latest account data and rejects stale generations", () => {
+  const latest = {
+    accountData: {
+      activeSessionBlocked: false,
+      blockingConflictCode: null,
+      lastFailureCode: null,
+      lastSuccessfulSyncAt: "2026-09-07T10:00:00.000Z",
+      pendingMutationCount: 2,
+      preview: null,
+      status: "synced",
+    },
+    backendUser: { id: "backend-old" },
+    kind: "authenticated",
+    user: { email: "old@example.com", emailVerified: true, provider: "password", providers: ["password"], uid: "uid-a" },
+  } as unknown as Extract<AccountState, { kind: "authenticated" }>;
+  const refreshedUser = { ...latest.user, email: "new@example.com" };
+  const published = publishRefreshedAuthenticatedState(latest, { backendUser: { id: "backend-new" } as never, isCurrent: () => true, user: refreshedUser });
+  assert.equal(published.kind, "authenticated");
+  if (published.kind === "authenticated") {
+    assert.equal(published.user.email, "new@example.com");
+    assert.equal(published.backendUser.id, "backend-new");
+    assert.equal(published.accountData, latest.accountData);
+  }
+  assert.equal(publishRefreshedAuthenticatedState(latest, { backendUser: { id: "backend-new" } as never, isCurrent: () => false, user: refreshedUser }), latest);
+});
+
+test("queued identity refresh is rejected by the production guard after sign-out or UID switch", async () => {
+  const token = { generation: 4, uid: "uid-a" } as const;
+  const authenticated = {
+    accountData: { activeSessionBlocked: false, blockingConflictCode: null, lastFailureCode: null, lastSuccessfulSyncAt: null, pendingMutationCount: 0, preview: null, status: "synced" },
+    backendUser: { id: "backend-a" },
+    kind: "authenticated",
+    user: { email: "a@example.com", emailVerified: true, provider: "password", providers: ["password"], uid: "uid-a" },
+  } as unknown as Extract<AccountState, { kind: "authenticated" }>;
+
+  for (const transition of ["signOut", "switchUid"] as const) {
+    let currentState: AccountState = authenticated;
+    let authUid: string | null = "uid-a";
+    let generationCurrent = true;
+    let release: (() => void) | undefined;
+    const lane = createSensitiveCommandLane();
+    const blocker = lane.run(async () => {
+      await new Promise<void>((resolve) => { release = resolve; });
+    });
+    let refreshCalls = 0;
+    const queuedRefresh = lane.runWhenIdle(async () => {
+      const canContinue = canContinueAccountIdentityRefresh({
+        authUid,
+        currentState,
+        expectedUid: token.uid,
+        generation: token,
+        isCurrentGeneration: () => generationCurrent,
+        refreshedUid: authUid,
+      });
+      if (canContinue) refreshCalls += 1;
+      return canContinue;
+    });
+    await Promise.resolve();
+    if (transition === "signOut") {
+      currentState = { kind: "signedOut" };
+      authUid = null;
+    } else {
+      currentState = { ...authenticated, user: { ...authenticated.user, uid: "uid-b" } };
+      authUid = "uid-b";
+    }
+    generationCurrent = false;
+    release?.();
+    await blocker;
+    assert.equal(await queuedRefresh, false, transition);
+    assert.equal(refreshCalls, 0, transition);
+  }
+});
+
+test("email security composition delegates refresh to the global foreground owner", () => {
+  const app = readFileSync("App.tsx", "utf8");
+  const sidecar = readFileSync("src/application/account/AccountForegroundRefreshSidecar.tsx", "utf8");
+  const screen = readFileSync("src/features/account/AccountSecurityScreen.tsx", "utf8");
+  const pendingScreen = readFileSync("src/features/account/AccountEmailChangePendingScreen.tsx", "utf8");
+  const en = JSON.parse(readFileSync("src/locales/en/settings.json", "utf8")) as Record<string, string>;
+  const pl = JSON.parse(readFileSync("src/locales/pl/settings.json", "utf8")) as Record<string, string>;
+  assert.match(app, /<AccountForegroundRefreshSidecar \/>/u);
+  assert.match(sidecar, /AppState\.addEventListener\("change"/u);
+  assert.match(sidecar, /previousState !== "active" && nextState === "active"/u);
+  assert.doesNotMatch(screen, /refreshIdentity|identityRefreshed|Refresh account details|Odśwież dane konta/u);
+  assert.match(screen, /account\.refreshAccountIdentityFailure/u);
+  assert.match(screen, /const requestedEmail = mode === "email" \? nextValue\.trim\(\)\.toLowerCase\(\) : ""/u);
+  assert.match(screen, /account\.requestEmailChange\(credentials, requestedEmail\)/u);
+  assert.match(screen, /navigation\.replace\(ROUTES\.ACCOUNT_EMAIL_CHANGE_PENDING/u);
+  assert.match(pendingScreen, /getAccountEmailChangePendingStatus/u);
+  for (const testID of ["email-change-waiting", "email-change-confirmed", "email-change-refresh-error", "email-change-unavailable", "email-change-return"]) {
+    assert.match(pendingScreen, new RegExp(`testID="${testID}"`, "u"));
+  }
+  assert.equal("emailVerificationSent" in en, false);
+  assert.equal("emailVerificationSent" in pl, false);
+  assert.equal("emailChangePendingTitle" in en, true);
+  assert.equal("emailChangePendingTitle" in pl, true);
+  assert.equal("identityRefreshed" in en, false);
+  assert.equal("refreshIdentity" in en, false);
+  assert.equal("identityRefreshed" in pl, false);
+  assert.equal("refreshIdentity" in pl, false);
 });
 
 test("sign-in keeps guest access visible and uses the approved Google logo asset", () => {

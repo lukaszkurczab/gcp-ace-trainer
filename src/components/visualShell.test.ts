@@ -77,12 +77,13 @@ test("route coverage has one native or inline shell owner and preserves active-s
     .filter((match) => /headerShown:\s*false/.test(match[2] ?? ""))
     .map((match) => match[1]);
 
-  assert.equal(routeIds.length, 32);
-  assert.equal(new Set(routeIds).size, 32);
+  assert.equal(routeIds.length, 33);
+  assert.equal(new Set(routeIds).size, 33);
   assert.deepEqual(headerlessRouteIds, [
     "HOME",
     "ACTIVITY",
     "ACCOUNT_SECURITY",
+    "ACCOUNT_EMAIL_CHANGE_PENDING",
     "APPEARANCE_SETTINGS",
     "LANGUAGE_SETTINGS",
     "YOUR_DATA",
@@ -119,6 +120,9 @@ test("route coverage has one native or inline shell owner and preserves active-s
     assert.match(source(path), /<AppShellHeader\b/);
   }
   assert.match(source("src/features/home/NotificationSettingsScreen.tsx"), /<ScreenHeader\b/);
+  const emailChangePending = source("src/features/account/AccountEmailChangePendingScreen.tsx");
+  assert.match(emailChangePending, /<ScreenHeader\b/);
+  assert.match(emailChangePending, /<Screen\s+edges=\{\["top", "bottom"\]\}/);
   assert.match(source("src/features/home/LegalInformationScreen.tsx"), /screenHeader=\{\{ context: text\.settings/);
 
   assert.match(source("src/features/coding-interview/session/SessionShell.tsx"), /<Screen[\s\S]*edges=\{\["top", "bottom"\]\}/);

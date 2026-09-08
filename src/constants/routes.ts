@@ -12,6 +12,7 @@ export const ROUTES = {
   PRIVACY_REQUESTS: "PrivacyRequests",
   LEGAL_REQUESTS: "LegalRequests",
   ACCOUNT_SECURITY: "AccountSecurity",
+  ACCOUNT_EMAIL_CHANGE_PENDING: "AccountEmailChangePending",
   ACCOUNT_ENTRY: "AccountEntry",
   BACKEND_DIAGNOSTICS: "BackendDiagnostics",
   SELECT_TRACK: "select_track",

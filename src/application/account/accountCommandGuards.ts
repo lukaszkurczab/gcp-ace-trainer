@@ -4,9 +4,20 @@ export type MonotonicClock = () => number;
 
 export type DeletionAuthorizationVault = Readonly<{
   consume: (uid: string, generation: number) => boolean;
+  isLive: (uid: string, generation: number) => boolean;
   issue: (uid: string, generation: number) => void;
   revoke: () => void;
 }>;
+
+export function isLiveDeletionAuthorization<TToken extends Readonly<{ generation: number; uid: string }>>(input: Readonly<{
+  isCurrent: (token: TToken) => boolean;
+  token: TToken | null;
+  uid: string;
+  vault: Pick<DeletionAuthorizationVault, "isLive">;
+}>): boolean {
+  const token = input.token;
+  return token !== null && token.uid === input.uid && input.isCurrent(token) && input.vault.isLive(token.uid, token.generation);
+}
 
 export class DeletionAuthorizationClockError extends Error {
   public readonly code = "auth/monotonic-clock-invalid";
@@ -63,6 +74,16 @@ export function createDeletionAuthorizationVault(
       const readAt = readClock();
       return readAt !== null && readAt < current.expiresAt;
     },
+    isLive: (uid: string, generation: number): boolean => {
+      const current = authorization;
+      if (!current || current.uid !== uid || current.generation !== generation) return false;
+      const readAt = readClock();
+      if (readAt === null || readAt >= current.expiresAt) {
+        authorization = null;
+        return false;
+      }
+      return true;
+    },
     issue: (uid: string, generation: number): void => {
       const issuedAt = readClock();
       const expiresAt = issuedAt === null ? Number.NaN : issuedAt + duration;
@@ -115,8 +136,29 @@ export async function runReauthenticatedMutation<TCredentials, TValue>(input: Re
 }
 
 export type SensitiveCommandLane = Readonly<{
+  holdRefresh: () => () => void;
   run: <T>(operation: () => Promise<T>) => Promise<T>;
+  runWhenIdle: <T>(operation: () => Promise<T>) => Promise<T>;
 }>;
+
+export type RefreshHoldLifecycle = Readonly<{
+  acquire: () => void;
+  release: () => void;
+}>;
+
+export function createRefreshHoldLifecycle(holdRefresh: () => () => void): RefreshHoldLifecycle {
+  let releaseHold: (() => void) | null = null;
+  return Object.freeze({
+    acquire: (): void => {
+      if (releaseHold === null) releaseHold = holdRefresh();
+    },
+    release: (): void => {
+      const release = releaseHold;
+      releaseHold = null;
+      release?.();
+    },
+  });
+}
 
 export class SensitiveCommandInFlightError extends Error {
   public readonly code = "auth/command-in-flight";
@@ -133,23 +175,72 @@ export class SensitiveCommandInFlightError extends Error {
  * result.
  */
 export function createSensitiveCommandLane(): SensitiveCommandLane {
-  let active: Promise<unknown> | null = null;
+  type ActiveCommand = Readonly<{
+    kind: "command" | "refresh";
+    settled: Promise<void>;
+  }>;
+  let active: ActiveCommand | null = null;
+  let refreshHoldCount = 0;
+  let refreshHoldRelease: (() => void) | null = null;
+  let refreshHoldReleasePromise: Promise<void> | null = null;
+
+  const waitForRefreshHoldRelease = (): Promise<void> => {
+    if (refreshHoldCount === 0) return Promise.resolve();
+    if (!refreshHoldReleasePromise) {
+      refreshHoldReleasePromise = new Promise<void>((resolve) => { refreshHoldRelease = resolve; });
+    }
+    return refreshHoldReleasePromise;
+  };
+
+  const holdRefresh = (): (() => void) => {
+    refreshHoldCount += 1;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      refreshHoldCount -= 1;
+      if (refreshHoldCount !== 0) return;
+      const release = refreshHoldRelease;
+      refreshHoldRelease = null;
+      refreshHoldReleasePromise = null;
+      release?.();
+    };
+  };
+
+  const start = <T>(kind: ActiveCommand["kind"], operation: () => Promise<T>): Promise<T> => {
+    const promise = Promise.resolve().then(operation);
+    let entry: ActiveCommand;
+    const settled = promise.then(
+      () => {
+        if (active === entry) active = null;
+      },
+      () => {
+        if (active === entry) active = null;
+      },
+    );
+    entry = Object.freeze({ kind, settled });
+    active = entry;
+    return promise;
+  };
+
+  const run = <T>(operation: () => Promise<T>): Promise<T> => {
+    const current = active;
+    if (!current) return start("command", operation);
+    if (current.kind === "command") return Promise.reject(new SensitiveCommandInFlightError());
+    return current.settled.then(() => run(operation), () => run(operation));
+  };
+
+  const runWhenIdle = <T>(operation: () => Promise<T>): Promise<T> => {
+    const current = active;
+    if (current) return current.settled.then(() => runWhenIdle(operation), () => runWhenIdle(operation));
+    if (refreshHoldCount > 0) return waitForRefreshHoldRelease().then(() => runWhenIdle(operation));
+    return start("refresh", operation);
+  };
 
   return Object.freeze({
-    run: <T>(operation: () => Promise<T>): Promise<T> => {
-      if (active) return Promise.reject(new SensitiveCommandInFlightError());
-      const current = Promise.resolve().then(operation);
-      active = current;
-      void current.then(
-        () => {
-          if (active === current) active = null;
-        },
-        () => {
-          if (active === current) active = null;
-        },
-      );
-      return current;
-    },
+    holdRefresh,
+    run,
+    runWhenIdle,
   });
 }
 

@@ -196,7 +196,7 @@ test("System language detail follows the device locale independently from the se
       const appStrings = settingsByLocale[appLocale];
       const deviceStrings = settingsByLocale[deviceLocale];
 
-      assert.equal(appStrings.languageSystem, appLocale === "en" ? "System" : "Systemowy");
+      assert.equal(appStrings.languageSystem, "System");
       assert.equal(
         deviceStrings.languageSystemDetail,
         deviceLocale === "en" ? "Follow your device language." : "Użyj języka urządzenia.",

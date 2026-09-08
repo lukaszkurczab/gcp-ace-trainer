@@ -8,6 +8,7 @@ import { ContentPreparationGate } from "./src/content/application/ContentPrepara
 import { AppPreferencesProvider, useAppPreferences } from "./src/preferences";
 import { buildNavigationTheme } from "./src/theme/navigationTheme";
 import { PatternlyAccountProvider, usePatternlyAccount } from "./src/application/account/AccountSessionProvider";
+import { AccountForegroundRefreshSidecar } from "./src/application/account/AccountForegroundRefreshSidecar";
 import { RecoveryCodeClipboardGuard } from "./src/infrastructure/security/RecoveryCodeClipboardGuard";
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
       <AppPreferencesProvider>
         <ContentPreparationGate>
           <PatternlyAccountProvider>
+            <AccountForegroundRefreshSidecar />
             <AppNavigation />
           </PatternlyAccountProvider>
         </ContentPreparationGate>
