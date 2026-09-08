@@ -3,15 +3,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
-  disableDailyReminder,
-  loadNotificationPreferences,
+  disablePracticeReminder,
   NotificationPermissionDeniedError,
+  reconcilePracticeReminder,
   requestNotificationPermission,
-  saveDailyReminder,
-  type DailyReminder,
-  type DailyReminderRequest,
+  savePracticeReminder,
   type DailyReminderTime,
   type NotificationPermission,
+  type PracticeReminder,
+  type PracticeReminderCopy,
+  type ReminderContext,
   type NotificationSettings,
 } from "../application/notificationPreferences";
 import { expoNotificationPlatform } from "../infrastructure/notifications/expoNotificationPlatform";
@@ -21,7 +22,8 @@ export type NotificationSettingsOperation = "disable" | "load" | "request" | "sa
 type NotificationSettingsBusyOperation = Exclude<NotificationSettingsOperation, "load">;
 
 type NotificationSettingsState = Readonly<{
-  dailyReminder: DailyReminder | null;
+  context: ReminderContext;
+  practiceReminder: PracticeReminder | null;
   error: NotificationSettingsOperation | null;
   loading: boolean;
   busy: boolean;
@@ -32,13 +34,16 @@ type NotificationSettingsState = Readonly<{
   requestPermission: () => Promise<NotificationPermission>;
   saveReminder: (
     time: DailyReminderTime,
-    notification: Omit<DailyReminderRequest, "time">,
+    notification: PracticeReminderCopy,
   ) => Promise<boolean>;
-  disableReminder: (notification: Omit<DailyReminderRequest, "time">) => Promise<boolean>;
+  disableReminder: (notification: PracticeReminderCopy) => Promise<boolean>;
 }>;
 
-export function useNotificationSettings(): NotificationSettingsState {
+const EMPTY_CONTEXT: ReminderContext = Object.freeze({ preferredDays: Object.freeze([]), status: "missing-track", trackId: null });
+
+export function useNotificationSettings(copy: PracticeReminderCopy): NotificationSettingsState {
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+  const [context, setContext] = useState<ReminderContext>(EMPTY_CONTEXT);
   const [permission, setPermission] = useState<NotificationPermission | null>(null);
   const [error, setError] = useState<NotificationSettingsOperation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,12 +66,10 @@ export function useNotificationSettings(): NotificationSettingsState {
     if (token.startedWhileBusy) return;
     if (mountedRef.current) setLoading(true);
     try {
-      const [stored, currentPermission] = await Promise.all([
-        loadNotificationPreferences(),
-        expoNotificationPlatform.getPermission(),
-      ]);
+      const [stored, currentPermission] = await Promise.all([reconcilePracticeReminder(expoNotificationPlatform, copy), expoNotificationPlatform.getPermission()]);
       if (!mountedRef.current || !guard.canCommitRead(token)) return;
       setSettings(stored);
+      setContext(stored.context);
       setPermission(currentPermission);
       setError(null);
     } catch {
@@ -74,7 +77,7 @@ export function useNotificationSettings(): NotificationSettingsState {
     } finally {
       if (mountedRef.current && guard.canCommitRead(token)) setLoading(false);
     }
-  }, [guard]);
+  }, [copy.body, copy.title, guard]);
 
   useEffect(() => {
     void refresh();
@@ -115,7 +118,7 @@ export function useNotificationSettings(): NotificationSettingsState {
 
   const saveReminder = useCallback(async (
     time: DailyReminderTime,
-    notification: Omit<DailyReminderRequest, "time">,
+    notification: PracticeReminderCopy,
   ) => {
     const revision = guard.beginMutation();
     if (revision === null) return false;
@@ -126,9 +129,10 @@ export function useNotificationSettings(): NotificationSettingsState {
       setLoading(false);
     }
     try {
-      const next = await saveDailyReminder(expoNotificationPlatform, time, notification);
+      const next = await savePracticeReminder(expoNotificationPlatform, time, notification);
       if (mountedRef.current) {
         setSettings(next);
+        setContext(next.context);
         setPermission("granted");
       }
       return true;
@@ -154,7 +158,7 @@ export function useNotificationSettings(): NotificationSettingsState {
     }
   }, [guard]);
 
-  const disableReminder = useCallback(async (notification: Omit<DailyReminderRequest, "time">) => {
+  const disableReminder = useCallback(async (notification: PracticeReminderCopy) => {
     const revision = guard.beginMutation();
     if (revision === null) return false;
     if (mountedRef.current) {
@@ -164,8 +168,11 @@ export function useNotificationSettings(): NotificationSettingsState {
       setLoading(false);
     }
     try {
-      const next = await disableDailyReminder(expoNotificationPlatform, notification);
-      if (mountedRef.current) setSettings(next);
+      const next = await disablePracticeReminder(expoNotificationPlatform, notification);
+      if (mountedRef.current) {
+        setSettings(next);
+        setContext(next.context);
+      }
       return true;
     } catch (caught) {
       if (mountedRef.current) setError("disable");
@@ -180,7 +187,8 @@ export function useNotificationSettings(): NotificationSettingsState {
   }, [guard]);
 
   return {
-    dailyReminder: settings.dailyReminder,
+    context,
+    practiceReminder: settings.practiceReminder,
     disableReminder,
     error,
     loading,

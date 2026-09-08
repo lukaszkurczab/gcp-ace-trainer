@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { AppShellHeader, Button, Icon, Screen, type IconName } from "../../components";
@@ -25,7 +25,7 @@ import type { RootStackParamList } from "../../navigation/types";
 import { loadActiveTrackId as getActiveTrackId, selectActiveTrack as saveActiveTrackId } from "../../application/learningReadModels";
 import { colorWithOpacity, spacing, typography } from "../../theme";
 import type { AppColors } from "../../theme";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
+import { reconcileDeviceReminder, useAppPreferences, useThemedStyles } from "../../preferences";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 type SelectTrackScreenProps = {
@@ -58,6 +58,8 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
   const { fontScale } = useWindowDimensions();
   const { colors: palette } = useAppPreferences();
   const { t } = useTranslation("common");
+  const { t: tNotifications } = useTranslation("notifications");
+  const reminderCopy = useMemo(() => ({ body: tNotifications("notificationBody"), title: tNotifications("notificationTitle") }), [tNotifications]);
   const largeText = fontScale >= 1.3;
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>(CODING_INTERVIEW_TRACK_ID);
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
@@ -96,6 +98,12 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
     setSaveError(null);
     try {
       await saveActiveTrackId(track.id);
+      try {
+        await reconcileDeviceReminder(reminderCopy);
+      } catch {
+        setSaveError(t("Track saved, but reminders could not be updated. Try again from Reminders."));
+        return;
+      }
       setActiveTrackId(track.id);
       onTrackSelected?.(track.id);
       if (onTrackSelected) return;

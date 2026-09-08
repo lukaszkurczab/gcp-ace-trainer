@@ -1,6 +1,6 @@
 {
   "close": "Close",
-  "dailyReminder": "Daily reminder",
+  "dailyReminder": "Practice reminder",
   "disableReminder": "Turn off reminder",
   "notificationBody": "Choose one focused Patternly practice session.",
   "notificationTitle": "Time to practise",
@@ -25,7 +25,7 @@
   "reminderDisableErrorDetail": "Try turning off the reminder again.",
   "reminderTimeInvalid": "Use a valid 24-hour time, for example 20:00.",
   "reminderTimePlaceholder": "20:00",
-  "reminderNote": "One daily reminder on this device.",
+  "reminderNote": "This device follows the preferred days of the current track.",
   "reminderSection": "Practice reminder",
   "settings": "Settings",
   "goal": "Goal",
@@ -41,6 +41,18 @@
   "openSettingsErrorTitle": "Device settings unavailable",
   "openSettingsErrorDetail": "Patternly could not open device settings. Open Settings manually to change notifications.",
   "retry": "Try again",
-  "sheetIntro": "Choose when Patternly should remind you to practise.",
-  "sheetTitle": "Daily reminder"
+  "sheetIntro": "Choose one time for the preferred practice days.",
+  "sheetTitle": "Practice reminder",
+  "activeTrack": "Current track",
+  "preferredDays": "Preferred days",
+  "goalPaused": "The goal is paused. No reminders are scheduled.",
+  "noActiveGoal": "Set an active goal to schedule reminders.",
+  "noActiveTrack": "Select a track to schedule reminders.",
+  "dayMon": "Mon",
+  "dayTue": "Tue",
+  "dayWed": "Wed",
+  "dayThu": "Thu",
+  "dayFri": "Fri",
+  "daySat": "Sat",
+  "daySun": "Sun"
 }

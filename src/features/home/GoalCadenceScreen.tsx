@@ -15,6 +15,7 @@ import {
 } from "../../components";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { loadActiveTrackId, loadGoal, persistGoal } from "../../application/learningReadModels";
+import { reconcileDeviceReminder } from "../../preferences";
 import { ROUTES } from "../../constants/routes";
 import {
   createDefaultGoal,
@@ -125,6 +126,8 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const styles = useThemedStyles(createStyles);
   const { colors: palette, locale } = useAppPreferences();
   const { t } = useTranslation("common");
+  const { t: tNotifications } = useTranslation("notifications");
+  const reminderCopy = useMemo(() => ({ body: tNotifications("notificationBody"), title: tNotifications("notificationTitle") }), [tNotifications]);
   const [trackId, setTrackId] = useState<TrackId | null>(null);
   const [goal, setGoal] = useState<GoalRecord | null>(null);
   const [draft, setDraft] = useState<GoalRecord | null>(null);
@@ -220,7 +223,12 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       await persistGoal(nextGoal);
       setGoal(nextGoal);
       setDraft(null);
-      if (returnTo === "home") handleBack();
+      try {
+        await reconcileDeviceReminder(reminderCopy);
+        if (returnTo === "home") handleBack();
+      } catch {
+        setSaveError(t("Goal saved, but reminders could not be updated. Try again from Reminders."));
+      }
     } catch (error) {
       setSaveError(describeOperationalFailure(error, "The goal could not be saved."));
     } finally {
@@ -236,6 +244,11 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     try {
       await persistGoal(nextGoal);
       setGoal(nextGoal);
+      try {
+        await reconcileDeviceReminder(reminderCopy);
+      } catch {
+        setSaveError(t("Goal saved, but reminders could not be updated. Try again from Reminders."));
+      }
     } catch (error) {
       setSaveError(describeOperationalFailure(error, "The goal status could not be saved."));
     } finally {
@@ -441,7 +454,7 @@ function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onToggle
         <View style={styles.summaryDivider} />
         <View style={styles.summaryReminderRow}>
           <Text maxFontSizeMultiplier={2} style={[styles.summaryLabel, styles.summaryReminderLabel]}>{t("Reminders")}</Text>
-          <Pressable accessibilityRole="button" onPress={onOpenNotifications}><Text maxFontSizeMultiplier={2} style={styles.summaryLink}>{t("Reminders")}</Text></Pressable>
+          <Pressable accessibilityRole="button" onPress={onOpenNotifications} testID="goal-summary-reminders"><Text maxFontSizeMultiplier={2} style={styles.summaryLink}>{t("Reminders")}</Text></Pressable>
         </View>
       </View>
       <Pressable accessibilityRole="button" onPress={onEdit} style={styles.centerAction}><Text maxFontSizeMultiplier={2} style={styles.centerActionLabel}>{t("Edit goal")}</Text></Pressable>

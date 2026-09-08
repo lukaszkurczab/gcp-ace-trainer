@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import notificationCopy from "../../locales/en/notifications.json";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -23,6 +23,7 @@ import {
 } from "../../application/notificationPreferences";
 import { useAppPreferences, useNotificationSettings, useThemedStyles } from "../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../theme";
+import { getTrackDisplay, GOAL_DAY_IDS, type GoalDay } from "../../domain";
 
 
 
@@ -31,7 +32,6 @@ type NotificationSettingsScreenProps = NativeStackScreenProps<RootStackParamList
 export function NotificationSettingsScreen({ navigation, route }: NotificationSettingsScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { colors } = useAppPreferences();
-  const notifications = useNotificationSettings();
   const [reminderError, setReminderError] = useState<string | null>(null);
   const [reminderSheetVisible, setReminderSheetVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState("20:00");
@@ -82,7 +82,15 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
   retry: t("retry"),
   sheetIntro: t("sheetIntro"),
   sheetTitle: t("sheetTitle"),
+  activeTrack: t("activeTrack"),
+  preferredDays: t("preferredDays"),
+  goalPaused: t("goalPaused"),
+  noActiveGoal: t("noActiveGoal"),
+  noActiveTrack: t("noActiveTrack"),
+  dayMon: t("dayMon"), dayTue: t("dayTue"), dayWed: t("dayWed"), dayThu: t("dayThu"), dayFri: t("dayFri"), daySat: t("daySat"), daySun: t("daySun"),
   };
+  const notification = useMemo(() => ({ body: text.notificationBody, title: text.notificationTitle }), [text.notificationBody, text.notificationTitle]);
+  const notifications = useNotificationSettings(notification);
   const source = route.params?.source === "goal" ? "goal" : "settings";
   const context = source === "goal" ? text.goal : text.settings;
   const backLabel = source === "goal" ? text.backToGoal : text.backToSettings;
@@ -101,12 +109,18 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
     }
     navigation.replace(ROUTES.HOME, { initialTab: "settings" });
   }, [navigation, route.params]);
-  const reminderBlocked = notifications.permission === "denied" && notifications.dailyReminder === null;
-  const reminderDisabled = notifications.loading || notifications.busy || notifications.permission === null || reminderBlocked;
+  const reminderBlocked = notifications.permission === "denied" && notifications.practiceReminder === null;
+  const goalUnavailable = notifications.context.status !== "active";
+  const reminderDisabled = notifications.loading || notifications.busy || notifications.permission === null || reminderBlocked || goalUnavailable;
+  const activeTrack = notifications.context.trackId ? getTrackDisplay(notifications.context.trackId) : null;
+  const dayLabels: Readonly<Record<GoalDay, string>> = {
+    mon: text.dayMon, tue: text.dayTue, wed: text.dayWed, thu: text.dayThu, fri: text.dayFri, sat: text.daySat, sun: text.daySun,
+  };
+  const goalStatusDetail = notifications.context.status === "paused" ? text.goalPaused : notifications.context.status === "missing-track" ? text.noActiveTrack : text.noActiveGoal;
 
   useEffect(() => {
-    if (!reminderSheetVisible && notifications.dailyReminder) setReminderTime(formatDailyReminderTime(notifications.dailyReminder));
-  }, [notifications.dailyReminder, reminderSheetVisible]);
+    if (!reminderSheetVisible && notifications.practiceReminder) setReminderTime(formatDailyReminderTime(notifications.practiceReminder));
+  }, [notifications.practiceReminder, reminderSheetVisible]);
 
   async function requestPermission(): Promise<void> {
     try {
@@ -119,7 +133,7 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
   function openReminderSheet(): void {
     notifications.clearError();
     setReminderError(null);
-    setReminderTime(notifications.dailyReminder ? formatDailyReminderTime(notifications.dailyReminder) : "20:00");
+    setReminderTime(notifications.practiceReminder ? formatDailyReminderTime(notifications.practiceReminder) : "20:00");
     setReminderSheetVisible(true);
   }
 
@@ -133,10 +147,7 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
     }
 
     try {
-      const saved = await notifications.saveReminder(time, {
-        body: text.notificationBody,
-        title: text.notificationTitle,
-      });
+      const saved = await notifications.saveReminder(time, notification);
       if (!saved) return;
       setReminderError(null);
       setReminderSheetVisible(false);
@@ -153,7 +164,7 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
 
   async function disableReminder(): Promise<void> {
     try {
-      const disabled = await notifications.disableReminder({ body: text.notificationBody, title: text.notificationTitle });
+      const disabled = await notifications.disableReminder(notification);
       if (!disabled) return;
       setReminderSheetVisible(false);
     } catch {
@@ -221,12 +232,22 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
           <Button disabled={notifications.loading || notifications.busy} loading={notifications.busyOperation === "request"} onPress={() => { void requestPermission(); }}>{text.permissionRequest}</Button>
         ) : null}
 
+        <View style={styles.scheduleContext} testID={`notification-goal-${notifications.context.status}`}>
+          <Text maxFontSizeMultiplier={2} style={styles.scheduleContextLabel}>{text.activeTrack}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.scheduleContextValue}>{activeTrack ? t(activeTrack.shortTitle, { ns: "common" }) : text.noActiveTrack}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.scheduleContextLabel}>{text.preferredDays}</Text>
+          {notifications.context.status === "active" ? (
+            <View style={styles.dayList}>{GOAL_DAY_IDS.filter((day) => notifications.context.preferredDays.includes(day)).map((day) => <Text key={day} maxFontSizeMultiplier={2} style={styles.dayBadge}>{dayLabels[day]}</Text>)}</View>
+          ) : <Text maxFontSizeMultiplier={2} style={styles.scheduleUnavailable}>{goalStatusDetail}</Text>}
+        </View>
+
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{text.reminderSection}</Text>
         <ListRow
-          detail={notifications.loading || notifications.permission === null ? text.reminderUnavailable : reminderBlocked ? text.reminderBlocked : notifications.dailyReminder ? formatDailyReminderTime(notifications.dailyReminder) : text.reminderOff}
+          detail={notifications.loading || notifications.permission === null ? text.reminderUnavailable : reminderBlocked ? text.reminderBlocked : goalUnavailable ? goalStatusDetail : notifications.practiceReminder ? formatDailyReminderTime(notifications.practiceReminder) : text.reminderOff}
           disabled={reminderDisabled}
           leading={<IconTile iconSize={20} name="bell" size={32} tone={reminderBlocked ? "muted" : "settings"} />}
           onPress={openReminderSheet}
+          testID="notification-practice-reminder"
           title={text.dailyReminder}
           trailing={reminderDisabled ? undefined : <Icon color={colors.listRow.icon} name="chevron-right" size={16} />}
           variant="settings"
@@ -259,7 +280,7 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
         {reminderOperationError ? <InfoBlock accessibilityAlert body={reminderOperationError.body} title={reminderOperationError.title} testID={`notification-settings-error-${notifications.error}`} tone="warning" /> : null}
         <View style={styles.sheetActions}>
           <Button disabled={notifications.loading || notifications.busy || notifications.permission === "denied"} loading={notifications.busyOperation === "save"} onPress={() => { void saveReminder(); }}>{text.reminderSave}</Button>
-          {notifications.dailyReminder ? (
+          {notifications.practiceReminder ? (
             <Button disabled={notifications.loading || notifications.busy} loading={notifications.busyOperation === "disable"} onPress={() => { void disableReminder(); }} variant="ghost">{text.disableReminder}</Button>
           ) : null}
         </View>
@@ -336,6 +357,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   permissionActionDisabled: { opacity: 0.5 },
   permissionActionText: { color: palette.warning, fontSize: 14, fontWeight: "600", lineHeight: 18 },
   note: { color: palette.textMuted, fontSize: 12.5, lineHeight: 16 },
+  scheduleContext: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },
+  scheduleContextLabel: { ...typography.small, color: palette.textSecondary },
+  scheduleContextValue: { ...typography.bodyStrong, color: palette.textPrimary },
+  scheduleUnavailable: { ...typography.body, color: palette.textSecondary },
+  dayList: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  dayBadge: { ...typography.small, backgroundColor: palette.primarySoft, borderRadius: radius.pill, color: palette.primary, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
   reminderTimeInput: { color: palette.textPrimary, fontSize: 28, fontWeight: "600", lineHeight: 34, minHeight: 66, paddingHorizontal: spacing.xl, paddingVertical: spacing.lg, textAlign: "center", textAlignVertical: "center" },
   reminderError: { ...typography.small, color: palette.danger },
   sheetActions: { gap: spacing.lg },

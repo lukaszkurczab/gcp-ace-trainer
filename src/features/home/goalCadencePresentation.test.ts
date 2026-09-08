@@ -27,6 +27,7 @@ test("goal cadence is a reachable root route backed by the canonical repository"
   assert.doesNotMatch(screen, /stepper|onSetWeeklyTarget|Weekly cadence|Sessions per week|Decrease sessions per week|Increase sessions per week/);
   assert.match(screen, /Configure your practice reminders\./);
   assert.match(screen, /summaryLink[\s\S]*?t\("Reminders"\)/);
+  assert.match(screen, /testID="goal-summary-reminders"/);
   assert.doesNotMatch(screen, /Managed in notification settings|Notification settings/);
   assert.match(screen, /status === "paused"/);
   assert.match(screen, /header: \{ gap: spacing\.sm \}/);

@@ -5,8 +5,18 @@ import type {
   NotificationPermission,
   NotificationPlatform,
 } from "../../application/notificationPreferences";
+import { GOAL_DAY_IDS, type GoalDay } from "../../domain";
 
-const DAILY_REMINDER_CHANNEL_ID = "patternly-daily-reminder";
+const PRACTICE_REMINDER_CHANNEL_ID = "patternly-practice-reminder";
+const EXPO_WEEKDAY: Readonly<Record<GoalDay, number>> = Object.freeze({
+  sun: 1,
+  mon: 2,
+  tue: 3,
+  wed: 4,
+  thu: 5,
+  fri: 6,
+  sat: 7,
+});
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -19,9 +29,9 @@ Notifications.setNotificationHandler({
 
 async function ensureAndroidChannel(): Promise<void> {
   if (Platform.OS !== "android") return;
-  await Notifications.setNotificationChannelAsync(DAILY_REMINDER_CHANNEL_ID, {
+  await Notifications.setNotificationChannelAsync(PRACTICE_REMINDER_CHANNEL_ID, {
     importance: Notifications.AndroidImportance.DEFAULT,
-    name: "Daily learning reminder",
+    name: "Practice reminders",
     sound: null,
     vibrationPattern: [0],
   });
@@ -33,7 +43,7 @@ function toPermission(status: Notifications.NotificationPermissionsStatus): Noti
 }
 
 export const expoNotificationPlatform: NotificationPlatform = {
-  async cancelDailyReminder(notificationId) {
+  async cancelReminder(notificationId) {
     await Notifications.cancelScheduledNotificationAsync(notificationId);
   },
 
@@ -48,21 +58,36 @@ export const expoNotificationPlatform: NotificationPlatform = {
     }));
   },
 
-  async scheduleDailyReminder({ body, time: { hour, minute }, title }) {
+  async listScheduledReminders(transactionId) {
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    return scheduled.flatMap((request) => {
+      const data = request.content.data;
+      const day = data?.day;
+      return data?.source === "practice-reminder" && data.transactionId === transactionId &&
+        typeof day === "string" && GOAL_DAY_IDS.includes(day as GoalDay)
+        ? [{ day: day as GoalDay, notificationId: request.identifier }]
+        : [];
+    });
+  },
+
+  async scheduleWeeklyReminder({ body, day, time: { hour, minute }, title, trackId, transactionId }) {
     await ensureAndroidChannel();
     return await Notifications.scheduleNotificationAsync({
       content: {
         body,
-        data: { source: "daily-reminder" },
+        data: { day, source: "practice-reminder", trackId, transactionId },
         sound: false,
         title,
       },
       trigger: {
-        channelId: Platform.OS === "android" ? DAILY_REMINDER_CHANNEL_ID : undefined,
+        channelId: Platform.OS === "android" ? PRACTICE_REMINDER_CHANNEL_ID : undefined,
         hour,
         minute,
-        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+        weekday: EXPO_WEEKDAY[day],
       },
     });
   },
 };
+
+export function goalDayToExpoWeekday(day: GoalDay): number { return EXPO_WEEKDAY[day]; }

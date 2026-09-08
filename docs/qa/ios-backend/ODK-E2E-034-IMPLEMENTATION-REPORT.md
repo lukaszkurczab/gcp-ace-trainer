@@ -2,4 +2,4 @@
 
 Status: BLOCKED
 
-Harmonogram przypomnień wymaga planu z `ODK-E2E-029` oraz decyzji i projektów `ODK-E2E-024`–`025`. Wszystkie zależności są zablokowane przez brak decyzji PO. Nie zmieniono runtime. Nie uruchamiano testów ani E2E. Zadanie pozostaje aktywne.
+Harmonogram przypomnień wymaga planu z `ODK-E2E-029` oraz godzin indywidualnych z `ODK-E2E-025`. ODK-E2E-024 zakończono po decyzji PO i wdrożono WEEKLY dla dni celu. Pozostałe zależności nadal blokują034. Zadanie pozostaje aktywne.

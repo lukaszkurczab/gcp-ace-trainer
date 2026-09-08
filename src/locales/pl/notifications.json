@@ -1,6 +1,6 @@
 {
   "close": "Zamknij",
-  "dailyReminder": "Codzienne przypomnienie",
+  "dailyReminder": "Przypomnienie o ćwiczeniach",
   "disableReminder": "Wyłącz przypomnienie",
   "notificationBody": "Wybierz jedną skupioną sesję ćwiczeń w Patternly.",
   "notificationTitle": "Czas na ćwiczenia",
@@ -25,7 +25,7 @@
   "reminderDisableErrorDetail": "Spróbuj ponownie wyłączyć przypomnienie.",
   "reminderTimeInvalid": "Podaj prawidłową godzinę w formacie 24-godzinnym, np. 20:00.",
   "reminderTimePlaceholder": "20:00",
-  "reminderNote": "Jedno codzienne przypomnienie na tym urządzeniu.",
+  "reminderNote": "To urządzenie używa preferowanych dni aktualnej ścieżki.",
   "reminderSection": "Przypomnienie o ćwiczeniach",
   "settings": "Ustawienia",
   "goal": "Cel",
@@ -41,6 +41,18 @@
   "openSettingsErrorTitle": "Ustawienia urządzenia są niedostępne",
   "openSettingsErrorDetail": "Patternly nie mogło otworzyć ustawień urządzenia. Otwórz Ustawienia ręcznie, aby zmienić powiadomienia.",
   "retry": "Spróbuj ponownie",
-  "sheetIntro": "Ustaw codzienną godzinę jednej skupionej sesji ćwiczeń.",
-  "sheetTitle": "Codzienne przypomnienie"
+  "sheetIntro": "Ustaw jedną godzinę dla preferowanych dni ćwiczeń.",
+  "sheetTitle": "Przypomnienie o ćwiczeniach",
+  "activeTrack": "Aktualna ścieżka",
+  "preferredDays": "Preferowane dni",
+  "goalPaused": "Cel jest wstrzymany. Przypomnienia nie są zaplanowane.",
+  "noActiveGoal": "Ustaw aktywny cel, aby zaplanować przypomnienia.",
+  "noActiveTrack": "Wybierz ścieżkę, aby zaplanować przypomnienia.",
+  "dayMon": "Pon",
+  "dayTue": "Wt",
+  "dayWed": "Śr",
+  "dayThu": "Czw",
+  "dayFri": "Pt",
+  "daySat": "Sob",
+  "daySun": "Nd"
 }

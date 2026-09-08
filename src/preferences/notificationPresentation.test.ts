@@ -42,6 +42,11 @@ test("notification reminder row and editor use the Figma-specific row and sheet 
   assert.match(screen, /disabled=\{reminderDisabled\}/);
   assert.match(screen, /detail=\{notifications\.loading \|\| notifications\.permission === null \? text\.reminderUnavailable[\s\S]*?reminderBlocked \? text\.reminderBlocked/);
   assert.match(screen, /onPress=\{openReminderSheet\}/);
+  assert.match(screen, /testID="notification-practice-reminder"/);
+  assert.match(screen, /notification-goal-\$\{notifications\.context\.status\}/);
+  assert.match(screen, /notifications\.context\.preferredDays\.includes\(day\)/);
+  assert.match(screen, /goalUnavailable \? goalStatusDetail : notifications\.practiceReminder/);
+  assert.doesNotMatch(screen, /notifications\.dailyReminder/);
   assert.match(screen, /trailing=\{reminderDisabled \? undefined/);
   assert.match(screen, /<InfoBlock accessibilityAlert[\s\S]*notification-settings-error-/);
   assert.match(screen, /<InfoBlock accessibilityAlert[\s\S]*notification-settings-open-settings-error/);
