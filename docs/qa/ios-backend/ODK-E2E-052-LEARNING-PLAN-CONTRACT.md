@@ -125,6 +125,7 @@ type PaceForecast =
   | Readonly<{
       kind: "available";
       source: ForecastSource;
+      requiredQuestionsPerSession: number;
       requiredQuestionsPerWeek: number;
       actualQuestionsPerWeek: number;
       projectedCompletionDate: string;
@@ -149,6 +150,15 @@ type CompletedAttemptFact = Readonly<{
 type ImmutableCompletedFacts = Readonly<{
   sessions: readonly CompletedSessionFact[];
   attempts: readonly CompletedAttemptFact[];
+}>;
+
+type PaceForecastInput = Readonly<{
+  acceptedPlan: LearningPlan;
+  c3Result: C3Result;
+  requiredAttemptCount: number;
+  today: string; // fixed local YYYY-MM-DD in acceptedPlan.timezone
+  timezone: string; // explicit IANA timezone; no device clock is read
+  completedFacts: ImmutableCompletedFacts;
 }>;
 
 type TargetDateGuidanceInput = Readonly<{
@@ -258,6 +268,12 @@ type TargetDateGuidance = Readonly<{
 `CompletedSessionFact` i `CompletedAttemptFact` są snapshotem immutable facts dostarczonym przez właściciela faktów. Projekcja ich nie zmienia, nie sortuje w miejscu i nie tworzy nowych wyników sesji. Daty faktów są walidowane przez właściciela; `today`, `projectedCompletionDate` i daty targetu przechodzą tę samą ścisłą walidację daty kalendarzowej.
 
 `PaceForecast` jest otagowaną sumą `available`/`unavailable`. Wariant `available` musi mieć wszystkie liczby, daty i `status`/`trend`; `status` (`on_track` albo `at_risk`) oraz `trend` (`improving`, `stable`, `slowing`) są wynikiem ODK-E2E-030. ODK-E2E-030 jest właścicielem formuł i progów. UI nigdy nie odtwarza tych progów z liczb.
+
+ODK-E2E-030 używa `PaceForecastInput` jako jawnego, niemutowalnego wejścia. `PlanSlot.sessionLength` oznacza liczbę pytań. Dla `event` dzień targetu jest wyłączony, a dla `deadline` i `checkpoint` włączony; bieżący dzień jest włączony, gdy mieści się w tej granicy. `remainingRequiredAttempts = max(0, requiredAttemptCount - qualifyingCount)`, a wynik `completed` ma zero pozostałej pracy. `requiredQuestionsPerSession = ceil(remainingRequiredAttempts / futureOccurrenceCount)`, zaś `requiredQuestionsPerWeek = ceilTo2(remainingRequiredAttempts * 7 / inclusiveRemainingDays)`. Pojemność jest sumą `sessionLength` wszystkich przyszłych wystąpień; brak wystąpień przy dodatnim remaining daje `unavailable(no_future_slots)`.
+
+Tempo obserwowane liczy tylko kwalifikujące próby z okna `[max(local createdAt date, today - 27), today]`, z oboma końcami włącznie. Okno musi mieć co najmniej siedem dni, a próba z przyszłą datą jest błędem wejścia. `actualQuestionsPerWeek = roundTo2(qualifyingCount * 7 / observationDays)`; fakty sesji są walidowane i pozostają immutable, ale nie są dodawane drugi raz do liczby prób. Prognoza używa niezaokrąglonego tempa: `ceil(remainingRequiredAttempts * 7 / actualRate)` dni i `today + max(0, days - 1)`. Przy remaining równym zero wynik to dzisiaj, wymagane tempo zero i `on_track`. Status porównuje tę datę z ostatnim dozwolonym dniem; zaokrąglone tempo nie zmienia daty ani statusu.
+
+Trend porównuje dwa siedmiodniowe okna `[today - 6, today]` i `[today - 13, today - 7]` od lokalnej daty utworzenia planu oddalonej o co najmniej trzynaście dni. Wcześniej neutralny trend pozostaje `stable`, ale nie klasyfikuje poprawy ani spowolnienia. `0 → 0` jest `stable`, `0 → positive` jest `improving`, `positive → 0` jest `slowing`; poza tym próg jest ostry: `> 1.10` oznacza `improving`, `< 0.90` `slowing`, a równe granice `stable`. Nieprawidłowy kształt, data, liczba, timezone, przyszły fakt albo niespójny fakt daje `InvalidPaceForecastInputError`; brak danych biznesowych pozostaje otagowanym `unavailable`.
 
 Wariant `available` jest przyjmowany tylko wtedy, gdy `source` pasuje do bieżącego `acceptedPlan`: `planId`, `planRevision`, `goalRevision`, pełny `target` oraz pełny `contentPackagePin` muszą być identyczne. `targetDate` prognozy musi być równy `acceptedTarget.targetDate`. Rozbieżność nie może użyć starych liczb; kończy się jawnym `calculation_error` albo wcześniejszym `update_required` zgodnie z precedencją.
 
