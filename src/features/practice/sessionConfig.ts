@@ -49,6 +49,16 @@ export type PracticeSessionConfigInput = Partial<Omit<PracticeSessionRouteParams
 export const DEFAULT_PRACTICE_SESSION_LENGTH: PracticeSessionLength = 20;
 export const DEFAULT_FEEDBACK_MODE: PracticeFeedbackMode = "afterEachAnswer";
 
+export function resolvePracticeSessionLength(
+  selectedLength: number | null | undefined,
+  mode: Readonly<{ requestedLengths: readonly number[]; defaultRequestedLength: number }>,
+): number {
+  return typeof selectedLength === "number" && mode.requestedLengths.includes(selectedLength)
+    ? selectedLength
+    : mode.defaultRequestedLength;
+}
+
+
 const cloudDomainTopicIds: readonly CertificationDomain[] = [
   "setup_environment",
   "planning_implementation",

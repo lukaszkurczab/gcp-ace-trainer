@@ -19,7 +19,7 @@ const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
 test("Settings exposes account and participant navigation actions plus conditional developer verification actions", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
-  assert.equal(navigationRows.length, 12);
+  assert.equal(navigationRows.length, 11);
 
   for (const callback of [
     "onOpenAccount",
@@ -28,7 +28,6 @@ test("Settings exposes account and participant navigation actions plus condition
     "onOpenLegalInformation",
     "onOpenNotifications",
     "onOpenPremium",
-    "onOpenPracticeSettings",
     "onOpenYourData",
   ]) {
     assert.match(settingsTab, new RegExp(`onPress=\\{${callback}\\}`));
@@ -38,6 +37,7 @@ test("Settings exposes account and participant navigation actions plus condition
   assert.match(settingsTab, /premiumTestingAvailable \? \([\s\S]*?testID="settings-premium-testing"/);
   assert.match(settingsTab, /testID="settings-sign-out"/);
   assert.match(settingsTab, /testID="settings-language"/);
+  assert.doesNotMatch(settingsTab, /settings-practice|onOpenPracticeSettings/);
 });
 
 test("Legal information exposes exactly four distinct request entries and keeps data routes under data rights", () => {
@@ -90,6 +90,7 @@ test("Settings account presentation names guest, authenticated, and unavailable 
 test("Settings keeps the backend verification group explicitly development-only", () => {
   const groups = settingsTab.match(/<SettingsGroup\b/g) ?? [];
   assert.equal(groups.length, 5);
+  assert.equal((settingsTab.match(/titleGap=\{spacing\.md\}/g) ?? []).length, 5);
   assert.match(settingsTab, /title=\{text\.developerVerification\}/);
   assert.match(settingsTab, /backendDiagnosticsConfigured \? \([\s\S]*?\) : null/);
 });
@@ -100,13 +101,13 @@ test("grouped settings rows follow the Figma 200% text geometry", () => {
   assert.match(listRow, /listRowDetail/);
   assert.match(settingsGroup, /rows:\s*\{[\s\S]*?gap:\s*spacing\.sm,/);
   assert.match(settingsGroup, /titleGap\?: number/);
-  assert.match(settingsTab, /<SettingsGroup dividers title=\{t\("preferencesSecurity"\)\} titleGap=\{0\}>/);
-  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.learning\} titleGap=\{0\}>/);
-  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.dataPrivacy\} titleGap=\{0\}>/);
+  assert.match(settingsTab, /<SettingsGroup dividers title=\{t\("preferencesSecurity"\)\} titleGap=\{spacing\.md\}>/);
+  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.learning\} titleGap=\{spacing\.md\}>/);
+  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.dataPrivacy\} titleGap=\{spacing\.md\}>/);
   assert.match(settingsTab, /IconTile iconSize=\{24\} name=\{icon\} size=\{32\} tone="settings"/);
   assert.match(settingsTab, /name="chevron-right" size=\{20\}/);
   assert.match(settingsTab, /<ScreenHeader description=\{text\.settingsDescription\} title=\{text\.appSettings\}/);
-  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.learning\} titleGap=\{0\}>/);
+  assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.learning\} titleGap=\{spacing\.md\}>/);
   assert.match(settingsGroup, /dividedRows:[\s\S]*?gap:\s*0/);
 });
 
@@ -128,11 +129,7 @@ test("Settings app identity follows the Figma footer geometry", () => {
   assert.doesNotMatch(settingsTab, /Version 0\.1\.0|Build 1/);
 });
 
-test("Settings uses honest practice setup copy and keeps appearance values readable at large text", () => {
-  const settingsEn = readFileSync("src/locales/en/settings.json", "utf8");
-  const settingsPl = readFileSync("src/locales/pl/settings.json", "utf8");
-  assert.match(settingsEn, /"practiceSettingsDetail": "Choose a practice session setup\."/);
-  assert.match(settingsPl, /"practiceSettingsDetail": "Wybierz ustawienia sesji ćwiczeń\."/);
+test("Settings keeps appearance values readable at large text", () => {
   assert.match(settingsTab, /const largeText = fontScale >= 1\.3/);
   assert.match(settingsTab, /const rowDetail = largeText && value \? `\$\{detail\}\\n\$\{value\}` : detail/);
   assert.match(settingsTab, /!largeText && value/);

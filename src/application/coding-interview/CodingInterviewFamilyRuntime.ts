@@ -104,7 +104,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
     const mode = getAlgorithmMode(input.modeId);
     const request = preparationRequest(input.request);
     if (!mode.profile.supportedLengths.includes(request.requestedLength)) throw new Error(`Algorithms mode ${mode.id} does not support requested length ${request.requestedLength}.`);
-    this.catalog.assertModeAvailable(mode.id, request.requestedLength);
+    this.catalog.assertModeAvailable(mode.id, request.requestedLength, request.scope);
     if (mode.id === ALGORITHM_MODE_IDS.interviewSimulation) {
       const profileId = request.scope?.simulationProfileId;
       if (!profileId || request.requestedLength !== 40) throw new Error("Algorithms Interview Simulation requires its declared 40-item profile.");

@@ -26,7 +26,7 @@ import {
 import {
   buildPracticeSessionConfig,
   DEFAULT_FEEDBACK_MODE,
-  DEFAULT_PRACTICE_SESSION_LENGTH,
+  resolvePracticeSessionLength,
   isCloudTopicId,
   type PracticeFeedbackMode,
   type PracticeSessionMode,
@@ -180,8 +180,8 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const readTrackId = readState.kind === "ready" ? readState.activeTrackId : null;
   const activeFormIdentity = readTrackId === null ? null : `${readTrackId}:${routeFormIdentity}`;
   const [formIdentity, setFormIdentity] = useState<string | null>(null);
-  const [sessionLength, setSessionLength] = useState<PracticeSessionLength>(
-    route.params?.sessionLength ?? DEFAULT_PRACTICE_SESSION_LENGTH,
+  const [sessionLength, setSessionLength] = useState<PracticeSessionLength | null>(
+    route.params?.sessionLength ?? null,
   );
   const [feedbackMode, setFeedbackMode] = useState<PracticeFeedbackMode>(
     route.params?.feedbackMode ?? DEFAULT_FEEDBACK_MODE,
@@ -195,7 +195,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   useEffect(() => {
     if (activeFormIdentity === null) return;
     setFormIdentity(activeFormIdentity);
-    setSessionLength(route.params?.sessionLength ?? DEFAULT_PRACTICE_SESSION_LENGTH);
+    setSessionLength(route.params?.sessionLength ?? null);
     setFeedbackMode(route.params?.feedbackMode ?? DEFAULT_FEEDBACK_MODE);
     setReviewBehaviorEnabled(route.params?.reviewBehaviorEnabled ?? false);
     setFocusTopicId(isCloudTopicId(route.params?.topicId ?? "") ? route.params!.topicId! : null);
@@ -271,9 +271,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     ? getAlgorithmMode(selectedMode)
     : null;
   const compactCodingPractice = algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice;
-  const configuredSessionLength = !selectedPackageMode.requestedLengths.includes(sessionLength)
-    ? selectedPackageMode.defaultRequestedLength as PracticeSessionLength
-    : sessionLength;
+  const configuredSessionLength = resolvePracticeSessionLength(sessionLength, selectedPackageMode);
   const designMode = isDesignInterviewModeId(selectedMode);
   let reviewBehaviorCopy: ReturnType<typeof getPracticeReviewBehaviorCopy>;
   let topic: ReturnType<typeof resolvePracticeTopicModel>;

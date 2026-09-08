@@ -5,6 +5,8 @@ import { gzipSync } from "node:zlib";
 import test from "node:test";
 
 import { contentPackageRuntime, createContentPackageResolver, type ContentPackageSource } from "./";
+import { createCodingPackageRuntimeCatalog } from "./application/packageRuntimeCatalog";
+import { selectAlgorithmSessionPlan } from "../tracks/coding-interview/algorithmSessionSelection";
 import { GENERATED_FREE_NODE_PACKAGES } from "./bundled/generatedFreeNodePackages";
 
 const sources = GENERATED_FREE_NODE_PACKAGES as readonly ContentPackageSource[];
@@ -97,4 +99,27 @@ test("PKG-04A native runtime uses Expo Crypto and pure-JS gzip without Node buil
   assert.match(nativeRuntime, /from "expo-crypto"/);
   assert.match(nativeRuntime, /from "fflate"/);
   assert.doesNotMatch(nativeRuntime, /node:(?:crypto|zlib)/);
+});
+
+
+test("Custom Practice prepares 10, 20 and 40 unique questions from its verified free node", async () => {
+  const resolver = createContentPackageResolver(sources, contentPackageRuntime);
+  const pkg = await resolver.resolveForPreparation({
+    trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview",
+    freeNodeId: "complexity_and_constraints", modeId: "coding-interview-custom-practice", appVersion: "0.1.0",
+  });
+  assert.equal(pkg.familyId, "coding_interview");
+  if (pkg.familyId !== "coding_interview") throw new Error("Expected Coding package");
+  const mode = pkg.profile.modes.find((entry) => entry.modeId === "coding-interview-custom-practice")!;
+  assert.deepEqual(mode.requestedLengths, [10, 20, 40]);
+  assert.equal(mode.defaultRequestedLength, 10);
+  const catalog = createCodingPackageRuntimeCatalog(pkg);
+  for (const sessionLength of mode.requestedLengths) {
+    const plan = selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "coding-interview-custom-practice", scope: { roadmapNodeId: pkg.freeNodeId }, sessionLength });
+    assert.equal(plan.actualLength, sessionLength);
+    assert.equal(plan.shorteningReason, undefined);
+    assert.equal(new Set(plan.items.map((item) => item.id)).size, sessionLength);
+    assert.ok(plan.items.every((item) => item.taxonomy.roadmapNodeId === pkg.freeNodeId));
+  }
+  assert.throws(() => selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "coding-interview-custom-practice", scope: { roadmapNodeId: "binary_search" }, sessionLength: 40 }), /minimum actual length/);
 });

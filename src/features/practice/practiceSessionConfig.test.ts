@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test, { before } from "node:test";
 
 import type { TrainingSession } from "../../domain";
-import { buildCertificationPracticeResumeRoute, buildPracticeSessionConfig } from "./sessionConfig";
+import { buildCertificationPracticeResumeRoute, buildPracticeSessionConfig, resolvePracticeSessionLength } from "./sessionConfig";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 
 before(async () => { await contentPackageRuntimeOwner.verifyBundledPackages(); });
@@ -43,14 +43,14 @@ function certificationSession(input: Readonly<{
 }
 
 test("Custom Practice accepts its package-declared length and persists its selected feedback timing", () => {
-  for (const sessionLength of [10] as const) {
+  for (const sessionLength of [10, 20, 40] as const) {
     for (const feedbackMode of ["afterEachAnswer", "atSessionEnd"] as const) {
       const config = buildPracticeSessionConfig({
         feedbackMode,
         mode: "coding-interview-custom-practice",
         sessionLength,
         source: "practiceSetup",
-        topicId: "binary_search",
+        topicId: "complexity_and_constraints",
         trackId: "coding-interview-dsa-problem-solving",
       });
       assert.equal(config.mode, "coding-interview-custom-practice");
@@ -62,14 +62,14 @@ test("Custom Practice accepts its package-declared length and persists its selec
 });
 
 test("Custom Practice setup rejects every unsupported session length", () => {
-  for (const sessionLength of [0, 1, 9, 11, 15, 20, 21, 39, 40, 41] as const) {
+  for (const sessionLength of [0, 1, 9, 11, 15, 21, 39, 41] as const) {
     assert.throws(
       () => buildPracticeSessionConfig({
         feedbackMode: "afterEachAnswer",
         mode: "coding-interview-custom-practice",
         sessionLength: sessionLength as never,
         source: "practiceSetup",
-        topicId: "binary_search",
+        topicId: "complexity_and_constraints",
         trackId: "coding-interview-dsa-problem-solving",
       }),
       /does not support session length/,
@@ -83,7 +83,7 @@ test("Custom Practice requires a selected timing while predefined Algorithms mod
       mode: "coding-interview-custom-practice",
       sessionLength: 10,
       source: "practiceSetup",
-      topicId: "binary_search",
+      topicId: "complexity_and_constraints",
       trackId: "coding-interview-dsa-problem-solving",
     }),
     /Custom Practice requires an explicit feedback mode/,
@@ -94,7 +94,7 @@ test("Custom Practice requires a selected timing while predefined Algorithms mod
       mode: "coding-interview-custom-practice",
       sessionLength: 10,
       source: "practiceSetup",
-      topicId: "binary_search",
+      topicId: "complexity_and_constraints",
       trackId: "coding-interview-dsa-problem-solving",
     }),
     /does not support feedback mode afterReview/,
@@ -105,7 +105,7 @@ test("Custom Practice requires a selected timing while predefined Algorithms mod
       mode: "coding-interview-guided-practice",
       sessionLength: 40,
       source: "practiceSetup",
-      topicId: "binary_search",
+      topicId: "complexity_and_constraints",
       trackId: "coding-interview-dsa-problem-solving",
     }),
     /does not support feedback mode atSessionEnd/,
@@ -117,7 +117,7 @@ test("Custom Practice requires a selected timing while predefined Algorithms mod
       feedbackMode: "afterEachAnswer",
       sessionLength: 10,
       source: "practiceSetup",
-      topicId: "binary_search",
+      topicId: "complexity_and_constraints",
       trackId: "coding-interview-dsa-problem-solving",
     }),
     /owns reinsert setting true/,
@@ -130,7 +130,7 @@ test("rejects an Algorithms session length that the selected mode does not decla
       mode: "coding-interview-weak-area-review",
       reviewSource: "due_queue",
       sessionLength: 40,
-      topicId: "binary_search",
+      topicId: "complexity_and_constraints",
       trackId: "coding-interview-dsa-problem-solving",
     }),
     /does not support session length 40/,
@@ -171,4 +171,17 @@ test("Certification resume rejects stale, cross-track, exam, and non-active sess
   assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationSimulation" }, id: "exam", modeId: "certification-exam-simulation", requestedLength: 50 })), /ordinary Certification session/);
   assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice", domain: "operations" }, id: "cross-track", modeId: "certification-focus-practice", requestedLength: 10, trackId: "coding-interview-dsa-problem-solving" })), /Certification package/);
   assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice", domain: "operations" }, id: "completed", modeId: "certification-focus-practice", requestedLength: 10, status: "completed" })), /Only an active/);
+});
+
+
+test("Practice Setup uses the package default until the learner or route selects a supported length", () => {
+  const coding = { requestedLengths: [10, 20, 40], defaultRequestedLength: 10 };
+  const aws = { requestedLengths: [4], defaultRequestedLength: 4 };
+  for (const missing of [null, undefined]) {
+    assert.equal(resolvePracticeSessionLength(missing, coding), 10);
+    assert.equal(resolvePracticeSessionLength(missing, aws), 4);
+  }
+  for (const selected of [10, 20, 40]) assert.equal(resolvePracticeSessionLength(selected, coding), selected);
+  for (const invalid of [0, 9, 30, 100, NaN]) assert.equal(resolvePracticeSessionLength(invalid, coding), 10);
+  assert.equal(resolvePracticeSessionLength(20, aws), 4);
 });

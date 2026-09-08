@@ -30,7 +30,8 @@ test("practice route changes cannot submit stale setup controls and preserve tra
   assert.match(setup, /const activeFormIdentity = readTrackId === null \? null : `\$\{readTrackId\}:\$\{routeFormIdentity\}`/);
   assert.match(setup, /function renderLoading\(\)[\s\S]*?<PracticeSetupLoadingSkeleton mode=\{route\.params\?\.mode\} \/>/);
   assert.match(setup, /if \(formIdentity !== activeFormIdentity\) return renderLoading\(\)/);
-  assert.match(setup, /setSessionLength\(route\.params\?\.sessionLength \?\? DEFAULT_PRACTICE_SESSION_LENGTH\)/);
+  assert.match(setup, /setSessionLength\(route\.params\?\.sessionLength \?\? null\)/);
+  assert.match(setup, /const configuredSessionLength = resolvePracticeSessionLength\(sessionLength, selectedPackageMode\)/);
   assert.match(setup, /setFeedbackMode\(route\.params\?\.feedbackMode \?\? DEFAULT_FEEDBACK_MODE\)/);
   assert.match(setup, /setReviewBehaviorEnabled\(route\.params\?\.reviewBehaviorEnabled \?\? false\)/);
   assert.match(setup, /setFocusTopicId\(isCloudTopicId\(route\.params\?\.topicId \?\? ""\)/);

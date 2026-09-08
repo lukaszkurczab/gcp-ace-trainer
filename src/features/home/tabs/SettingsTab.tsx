@@ -25,7 +25,6 @@ type SettingsTabProps = {
   onOpenLegalInformation: () => void;
   onOpenNotifications: () => void;
   onOpenPremium: () => void;
-  onOpenPracticeSettings: () => void;
   onOpenYourData: () => void;
   onSignOut: () => Promise<AccountCommandResult>;
   storageIssues: readonly StorageIssue[];
@@ -38,7 +37,7 @@ export function SettingsLoadingSkeleton() {
   const { fontScale } = useWindowDimensions();
   const textScale = Math.min(fontScale, 2);
   const motion = useSkeletonGlassMotion();
-  const groupRows = [2, 3, 2] as const;
+  const groupRows = [2, 2, 2] as const;
 
   return (
     <View
@@ -96,7 +95,6 @@ export function SettingsTab({
   onOpenLegalInformation,
   onOpenNotifications,
   onOpenPremium,
-  onOpenPracticeSettings,
   onOpenYourData,
   onSignOut,
   storageIssues,
@@ -148,8 +146,6 @@ export function SettingsTab({
     legalDetail: t("legalDetail"),
     notifications: t("notifications"),
     notificationsDetail: t("notificationsDetail"),
-    practiceSettings: t("practiceSettings"),
-    practiceSettingsDetail: t("practiceSettingsDetail"),
     storageDegraded: t("storageDegraded"),
     storageStatus: t("storageStatus"),
     version: t("version"),
@@ -225,7 +221,7 @@ export function SettingsTab({
       {signOutFailure ? <InfoBlock accessibilityAlert body={tAccount(signOutFailure)} title={text.signOutErrorTitle} testID="settings-sign-out-error" tone="warning" /> : null}
 
       {latestStorageIssue ? (
-        <SettingsGroup dividers title={text.storageStatus}>
+        <SettingsGroup dividers title={text.storageStatus} titleGap={spacing.md}>
           <ListRow
             detail={formatStorageIssue(latestStorageIssue, locale)}
             leading={<IconTile name="alert-triangle" tone="warning" />}
@@ -236,7 +232,7 @@ export function SettingsTab({
       ) : null}
 
       <View style={styles.content}>
-        <SettingsGroup dividers title={t("preferencesSecurity")} titleGap={0}>
+        <SettingsGroup dividers title={t("preferencesSecurity")} titleGap={spacing.md}>
           <SettingsNavigationRow
             detail={text.appearanceDetail}
             icon="moon-half"
@@ -258,20 +254,13 @@ export function SettingsTab({
           {account.canSignOut ? <SettingsNavigationRow detail={t("passwordDetail")} disabled={busyAction !== null} icon="shield" onPress={() => onOpenSecurity("password")} testID="settings-password" title={t("changePassword")} /> : null}
         </SettingsGroup>
 
-        <SettingsGroup dividers title={text.learning} titleGap={0}>
+        <SettingsGroup dividers title={text.learning} titleGap={spacing.md}>
           <SettingsNavigationRow
             detail={text.premiumEntryDetail}
             icon="sparkle"
             onPress={onOpenPremium}
             testID="settings-premium"
             title={text.premiumTitle}
-          />
-          <SettingsNavigationRow
-            detail={text.practiceSettingsDetail}
-            icon="settings"
-            onPress={onOpenPracticeSettings}
-            testID="settings-practice"
-            title={text.practiceSettings}
           />
           <SettingsNavigationRow
             detail={text.notificationsDetail}
@@ -282,13 +271,13 @@ export function SettingsTab({
           />
         </SettingsGroup>
 
-        <SettingsGroup dividers title={text.dataPrivacy} titleGap={0}>
+        <SettingsGroup dividers title={text.dataPrivacy} titleGap={spacing.md}>
           <SettingsNavigationRow detail={text.dataDetail} icon="shield" onPress={onOpenYourData} testID="settings-your-data" title={text.data} />
           <SettingsNavigationRow detail={text.legalDetail} icon="shield-check" onPress={onOpenLegalInformation} testID="settings-legal-information" title={text.legal} />
         </SettingsGroup>
 
         {backendDiagnosticsConfigured || premiumTestingAvailable ? (
-          <SettingsGroup dividers title={text.developerVerification}>
+          <SettingsGroup dividers title={text.developerVerification} titleGap={spacing.md}>
             {backendDiagnosticsConfigured ? (
               <SettingsNavigationRow
                 detail={text.backendDiagnosticsDetail}
@@ -404,7 +393,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.xl,
   },
   settingsLoadingGroup: {
-    gap: 0,
+    gap: spacing.md,
   },
   settingsLoadingGroupTitle: {
     backgroundColor: palette.progress.loadingTrack,

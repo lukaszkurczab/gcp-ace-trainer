@@ -22,7 +22,7 @@ test("PKG-04A adapts each verified package into a closed family-local catalog/pr
   assert.deepEqual(coding.modes.map((mode) => [mode.modeId, mode.blueprintModeId, mode.requestedLengths]), [
     ["coding-interview-learn-approach", "coding-interview-learn-approach", [10]],
     ["coding-interview-guided-practice", "coding-interview-guided-practice", [10, 20, 40]],
-    ["coding-interview-custom-practice", "coding-interview-guided-practice", [10]],
+    ["coding-interview-custom-practice", "coding-interview-guided-practice", [10, 20, 40]],
     ["coding-interview-weak-area-review", "coding-interview-weak-area-review", [10, 20]],
   ]);
   assert.deepEqual(coding.getConfiguration("coding-interview-custom-practice").feedbackOptions, ["afterEachAnswer", "atSessionEnd"]);
@@ -74,9 +74,14 @@ test("PKG-04A package catalogs are accepted by family runtimes only for their cl
   const codingItem = codingPackage.catalog.items[0] as { taxonomy: { primaryMentalUnitId: string } };
   const preparedCoding = await coding.prepare({ trackId: codingPackage.trackId, modeId: "coding-interview-learn-approach", request: { sessionId: "pkg-coding", requestedLength: 10, scope: { mentalUnitId: codingItem.taxonomy.primaryMentalUnitId } }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" });
   assert.equal(preparedCoding.session.actualLength, 10);
-  const preparedCustom = await coding.prepare({ trackId: codingPackage.trackId, modeId: "coding-interview-custom-practice", request: { sessionId: "pkg-coding-custom", requestedLength: 10, feedbackMode: "atSessionEnd", scope: { mentalUnitId: codingItem.taxonomy.primaryMentalUnitId } }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" });
-  assert.equal(preparedCustom.session.actualLength, 10);
-  await assert.rejects(() => coding.prepare({ trackId: codingPackage.trackId, modeId: "coding-interview-custom-practice", request: { sessionId: "pkg-coding-custom-excluded", requestedLength: 20, scope: { mentalUnitId: codingItem.taxonomy.primaryMentalUnitId } }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" }), /does not support requested length|unavailable/);
+  for (const requestedLength of [10, 20, 40]) for (const feedbackMode of ["afterEachAnswer", "atSessionEnd"]) {
+    const preparedCustom = await coding.prepare({ trackId: codingPackage.trackId, modeId: "coding-interview-custom-practice", request: { sessionId: `pkg-custom-${requestedLength}-${feedbackMode}`, requestedLength, feedbackMode, scope: { roadmapNodeId: codingPackage.freeNodeId } }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" });
+    assert.equal(preparedCustom.session.actualLength, requestedLength);
+  }
+  for (const scope of [{ mentalUnitId: codingItem.taxonomy.primaryMentalUnitId }, { roadmapNodeId: "binary_search" }, undefined]) {
+    await assert.rejects(() => coding.prepare({ trackId: codingPackage.trackId, modeId: "coding-interview-custom-practice", request: { sessionId: "invalid-scope", requestedLength: 10, feedbackMode: "afterEachAnswer", scope }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" }), /scope|explicit mental unit or roadmap node/);
+  }
+  await assert.rejects(() => coding.prepare({ trackId: codingPackage.trackId, modeId: "coding-interview-custom-practice", request: { sessionId: "pkg-coding-custom-excluded", requestedLength: 30, feedbackMode: "afterEachAnswer", scope: { roadmapNodeId: codingPackage.freeNodeId } }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" }), /requires a sessionId and a supported requestedLength/);
   await assert.rejects(() => coding.prepare({ trackId: codingPackage.trackId, modeId: "coding-interview-simulation", request: { sessionId: "pkg-coding-excluded", requestedLength: 40, scope: { simulationProfileId: "outside" } }, attempts: [], reviews: [], now: "2026-08-09T00:00:00.000Z" }), /unavailable/);
 
   const certificationPackage = await resolver.resolveForPreparation({ trackId: "google-cloud-associate-cloud-engineer", familyId: "certification", freeNodeId: "organization_projects_policies_services_quotas_and_assets", modeId: "certification-focus-practice", appVersion: "0.1.0" });
@@ -250,3 +255,29 @@ function sourceFor(outer: any, source: ContentPackageSource): ContentPackageSour
   const packageBytes = JSON.stringify(outer);
   return { ...source, packageBytes, packageSize: packageBytes.length, packageSha256: createHash("sha256").update(packageBytes).digest("hex") };
 }
+
+test("retained Coding 0004 stays exact-resolvable after Custom Practice expands", async () => {
+  const trackId = "coding-interview-dsa-problem-solving";
+  const retained = GENERATED_RETAINED_FREE_NODE_PACKAGES.find((source) => source.trackId === trackId);
+  assert.ok(retained);
+  const resolver = createContentPackageResolver(sources, runtime, undefined, GENERATED_RETAINED_FREE_NODE_PACKAGES);
+  const current = await resolver.resolveForDiscovery(trackId, "coding_interview", "0.1.0");
+  const historical = await resolver.resolveExact({ packageIdentity: retained.packageSha256, packageVersion: retained.packageVersion, contentReleaseId: retained.manifest.provenance.releaseId }, "0.1.0");
+  assert.equal(historical.packagePin.packageVersion, "coding-interview-dsa-problem-solving-free-node-0004");
+  assert.notEqual(historical.packagePin.packageIdentity, current.packagePin.packageIdentity);
+  assert.deepEqual(historical.profile.modes.find((mode) => mode.modeId === "coding-interview-custom-practice")?.requestedLengths, [10]);
+  assert.deepEqual(current.profile.modes.find((mode) => mode.modeId === "coding-interview-custom-practice")?.requestedLengths, [10, 20, 40]);
+  if (historical.familyId !== "coding_interview") throw new Error("Expected historical Coding package.");
+  const catalog = createCodingPackageRuntimeCatalog(historical);
+  const mentalUnitId = catalog.getItems()[0]!.taxonomy.primaryMentalUnitId;
+  const family = new CodingInterviewFamilyRuntime(catalog, undefined, historical.taxonomyVersion);
+  const prepared = await family.prepare({ trackId, modeId: "coding-interview-custom-practice", request: { sessionId: "historical-custom", requestedLength: 10, feedbackMode: "afterEachAnswer", scope: { mentalUnitId } }, attempts: [], reviews: [], now: "2026-09-08T00:00:00.000Z" });
+  assert.equal(prepared.session.actualLength, 10);
+  const itemIds = prepared.session.itemOrder.map((occurrence) => occurrence.item.itemId);
+  assert.equal(new Set(itemIds).size, 10);
+  for (const itemId of itemIds) {
+    const item = catalog.getItemById(itemId);
+    assert.equal(item.taxonomy.primaryMentalUnitId, mentalUnitId);
+    assert.equal(item.taxonomy.roadmapNodeId, historical.freeNodeId);
+  }
+});

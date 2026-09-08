@@ -227,10 +227,10 @@ test("Home shell owns tab-specific glass loading geometry and keeps navigation u
   assertLocalSkeletonDefinition("src/features/home/tabs/SettingsTab.tsx", "SettingsLoadingSkeleton", /accessibilityLabel=\{tCommon\("Loading settings"\)\}/, ["settingsLoadingGroup", "settingsLoadingCard", "settingsLoadingRow"]);
   const settings = source("src/features/home/tabs/SettingsTab.tsx");
   assert.match(settings, /<ScreenHeader description=\{t\("settingsDescription"\)\} title=\{t\("appSettings"\)\} \/>/);
-  assert.match(settings, /const groupRows = \[2, 3, 2\] as const/);
+  assert.match(settings, /const groupRows = \[2, 2, 2\] as const/);
   assert.match(settings, /settingsLoadingIdentity/);
   assert.match(settings, /settingsLoadingAccountAction:[\s\S]*?height:\s*48,[\s\S]*?width:\s*"100%"/);
-  assert.match(settings, /settingsLoadingGroup:\s*\{[\s\S]*?gap:\s*0/);
+  assert.match(settings, /settingsLoadingGroup:\s*\{[\s\S]*?gap:\s*spacing\.md/);
   assert.match(settings, /settingsLoadingRow:\s*\{[\s\S]*?minHeight:\s*63,[\s\S]*?paddingHorizontal:\s*spacing\.lg,[\s\S]*?paddingVertical:\s*14/);
 });
 
