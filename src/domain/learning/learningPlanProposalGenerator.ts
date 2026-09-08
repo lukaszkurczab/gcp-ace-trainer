@@ -4,6 +4,7 @@ import { projectGoalTargetDate } from "../goals/goalTargetDateSemantics";
 import type { ContentPackagePin } from "./contentPackagePin";
 import { contentPackagePinsEqual, createContentPackagePin } from "./contentPackagePin";
 import type { PackageCompletionState } from "./packageCompletionRule";
+import { createProposalSlotId, type ProposalSlotId } from "./slotIdentity";
 import type { TrackId } from "./trackIdentity";
 
 export type ProposalSessionCapacity =
@@ -13,7 +14,7 @@ export type ProposalSessionCapacity =
 
 /** A stable, recurring local-time slot in a generated proposal. */
 export type ProposalSlot = Readonly<{
-  slotId: string;
+  slotId: ProposalSlotId;
   day: GoalDay;
   localTime: "18:00";
   sessionLength: number;
@@ -263,7 +264,7 @@ function resolveCapacity(capacity: ProposalSessionCapacity): ResolvedCapacity {
 }
 
 function createSlots(days: readonly GoalDay[], actualLength: number): readonly ProposalSlot[] {
-  return Object.freeze(days.map((day) => Object.freeze({ slotId: `proposal-slot:v1:${day}:18-00`, day, localTime: "18:00" as const, sessionLength: actualLength })));
+  return Object.freeze(days.map((day) => Object.freeze({ slotId: createProposalSlotId(`proposal-slot:v1:${day}:18-00`), day, localTime: "18:00" as const, sessionLength: actualLength })));
 }
 
 function cloneCapacity(capacity: ProposalSessionCapacity): ProposalSessionCapacity {

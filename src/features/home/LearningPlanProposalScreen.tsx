@@ -4,10 +4,16 @@ import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { learningPlanProposalCoordinator, type LearningPlanProposalResult } from "../../application/learningPlan";
+import {
+  learningPlanEditorCoordinator,
+  learningPlanProposalCoordinator,
+  type LearningPlanAcceptResult,
+  type LearningPlanSnapshot,
+  type LearningPlanProposalResult,
+} from "../../application/learningPlan";
 import { AppShellHeader, Button, Card, EmptyState, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import type { GoalDay, ProposalOutcome, TargetAssessment } from "../../domain";
+import type { GoalDay, LearningPlan, ProposalOutcome, TargetAssessment } from "../../domain";
 import { getTrackDisplay } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { useThemedStyles } from "../../preferences";
@@ -16,6 +22,7 @@ import { radius, spacing, typography, type AppColors } from "../../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.LEARNING_PLAN_PROPOSAL>;
 type ViewState = { kind: "loading" } | LearningPlanProposalResult;
+type ProposalActionError = "accept-validation" | "accept-storage" | "open-proposal-storage" | "open-existing-storage";
 
 const DAY_KEYS: Readonly<Record<GoalDay, string>> = {
   mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday",
@@ -29,6 +36,8 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
   const { proposalId, trackId } = route.params;
   const [state, setState] = useState<ViewState>({ kind: "loading" });
   const [updating, setUpdating] = useState(false);
+  const [acceptedPlan, setAcceptedPlan] = useState<LearningPlanSnapshot | null>(null);
+  const [actionError, setActionError] = useState<ProposalActionError | null>(null);
   const track = getTrackDisplay(trackId);
 
   useEffect(() => {
@@ -56,7 +65,60 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
     setState(result);
   }
 
+  async function editProposal(): Promise<void> {
+    setUpdating(true);
+    setActionError(null);
+    const result = await learningPlanEditorCoordinator.startProposalEdit(proposalId, trackId);
+    setUpdating(false);
+    if (result.kind === "ready") {
+      navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId });
+    } else if (result.kind === "stale") {
+      setActionError(null);
+      setState({ kind: "stale" });
+    } else {
+      setActionError("open-proposal-storage");
+    }
+  }
+
+  async function acceptProposal(): Promise<void> {
+    setUpdating(true);
+    setActionError(null);
+    const result: LearningPlanAcceptResult = await learningPlanEditorCoordinator.acceptProposal(proposalId, trackId);
+    setUpdating(false);
+    if (result.kind === "accepted") {
+      setAcceptedPlan(result.snapshot);
+    } else if (result.kind === "stale") {
+      setActionError(null);
+      setAcceptedPlan(null);
+      setState({ kind: "stale" });
+    } else if (result.kind === "validation_error") {
+      setActionError("accept-validation");
+    } else {
+      setActionError("accept-storage");
+    }
+  }
+
+  async function editAcceptedPlan(): Promise<void> {
+    setUpdating(true);
+    setActionError(null);
+    const result = await learningPlanEditorCoordinator.startExistingEdit(trackId);
+    setUpdating(false);
+    if (result.kind === "ready") {
+      navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId });
+    } else if (result.kind === "stale") {
+      setActionError(null);
+      setAcceptedPlan(null);
+      setState({ kind: "stale" });
+    } else {
+      setActionError("open-existing-storage");
+    }
+  }
+
   const header = <AppShellHeader backAction={{ onPress: goBack }} context={t("Learning plan")} placement="stack" />;
+
+  if (acceptedPlan) {
+    return <PersistedPlanView plan={acceptedPlan.plan} track={tCommon(track.shortTitle)} t={t} updating={updating} actionError={actionError} onEdit={() => { void editAcceptedPlan(); }} onBack={goBack} />;
+  }
 
   if (state.kind === "loading") {
     return <LearningPlanProposalLoadingSkeleton header={header} />;
@@ -105,7 +167,7 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
   }
 
   return (
-    <Screen edges={["top", "bottom"]} footer={<Button onPress={goBack} variant="secondary">{t("Go back")}</Button>} footerVariant="sticky" header={header}>
+    <Screen edges={["top", "bottom"]} footer={<View style={styles.footerActions}><Button loading={updating} onPress={() => { void editProposal(); }} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button><Button loading={updating} onPress={() => { void acceptProposal(); }} testID={runtimeSelectors.learningPlan.accept()}>{t("Accept plan")}</Button><Button onPress={goBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={header}>
       <View style={styles.root} testID={runtimeSelectors.learningPlan.root()}>
         <PlanHeader subtitle={t("A proposal based on your current goal")} title={t("Your proposed rhythm")} track={tCommon(track.shortTitle)} />
         <GoalContext outcome={outcome} t={t} tCommon={tCommon} />
@@ -114,11 +176,12 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
         ) : null}
         <Card testID={runtimeSelectors.learningPlan.state(state.kind)}>
           <Text maxFontSizeMultiplier={2} style={styles.cardTitle}>{t("Weekly schedule")}</Text>
-          {outcome.slots.map((slot) => <View key={slot.slotId} style={styles.slot} testID={runtimeSelectors.learningPlan.slot(slot.day)}><Text maxFontSizeMultiplier={2} style={styles.slotDay}>{t(DAY_KEYS[slot.day])}</Text><Text maxFontSizeMultiplier={2} style={styles.slotDetail}>{slot.localTime} · {t("{{count}} question", { count: slot.sessionLength })}</Text></View>)}
+          {outcome.slots.map((slot) => <View key={slot.slotId} style={styles.slot} testID={runtimeSelectors.learningPlan.slot(slot.slotId)}><Text maxFontSizeMultiplier={2} style={styles.slotDay}>{t(DAY_KEYS[slot.day])}</Text><Text maxFontSizeMultiplier={2} style={styles.slotDetail}>{slot.localTime} · {t("{{count}} question", { count: slot.sessionLength })}</Text></View>)}
         </Card>
         <FactCard label={t("Material priority")} value={outcome.materialPriority.kind === "due_review" ? t("Due reviews first") : t("Primary package scope: {{scope}}", { scope: outcome.materialPriority.label })} />
         <FactCard label={t("Completion rule")} value={completionCopy(outcome, t)} />
         <FactCard label={t("Target outlook")} value={targetCopy(outcome.targetAssessment, t)} />
+        {actionError ? <PlanActionError kind={actionError} t={t} /> : null}
       </View>
     </Screen>
   );
@@ -182,6 +245,42 @@ function targetCopy(target: TargetAssessment, t: Translate): string {
   if (target.kind === "unavailable_due_to_shortfall") return t("Target outlook is unavailable until the material shortfall is resolved.");
   if (target.kind === "achievable") return t("The target is achievable with {{occurrences}} planned sessions.", { occurrences: target.occurrences });
   return t("The target is not achievable with the current rhythm. {{remaining}} attempts remain and {{occurrences}} sessions fit before the target.", { occurrences: target.occurrences, remaining: target.remainingAttempts });
+}
+
+function PersistedPlanView({ plan, track, t, updating, actionError, onEdit, onBack }: Readonly<{
+  plan: LearningPlan;
+  track: string;
+  t: Translate;
+  updating: boolean;
+  actionError: ProposalActionError | null;
+  onEdit(): void;
+  onBack(): void;
+}>) {
+  const styles = useThemedStyles(createStyles);
+  return (
+    <Screen edges={["top", "bottom"]} footer={<View style={styles.footerActions}><Button loading={updating} onPress={onEdit} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button><Button onPress={onBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={<AppShellHeader backAction={{ onPress: onBack }} context={t("Learning plan")} placement="stack" />}>
+      <View style={styles.root} testID={runtimeSelectors.learningPlan.persisted()}>
+        <PlanHeader subtitle={t("Saved learning plan")} title={t("Your learning rhythm")} track={track} />
+        <Card testID={runtimeSelectors.learningPlan.state("accepted") }>
+          <Text maxFontSizeMultiplier={2} style={styles.cardTitle}>{t("Weekly schedule")}</Text>
+          {plan.slots.map((slot) => <View key={slot.slotId} style={styles.slot} testID={runtimeSelectors.learningPlan.slot(slot.slotId)}><Text maxFontSizeMultiplier={2} style={styles.slotDay}>{t(DAY_KEYS[slot.day])}</Text><Text maxFontSizeMultiplier={2} style={styles.slotDetail}>{slot.localTime} · {t("{{count}} question", { count: slot.sessionLength })}</Text></View>)}
+        </Card>
+        {actionError ? <PlanActionError kind={actionError} t={t} /> : null}
+      </View>
+    </Screen>
+  );
+}
+
+function PlanActionError({ kind, t }: Readonly<{ kind: ProposalActionError; t: Translate }>) {
+  const styles = useThemedStyles(createStyles);
+  const copy = kind === "accept-validation"
+    ? t("Review the schedule and try again.")
+    : kind === "accept-storage"
+      ? t("The plan could not be saved. Try again.")
+      : kind === "open-proposal-storage"
+        ? t("The schedule editor could not be opened. Try again.")
+        : t("The saved plan could not be loaded. Try again.");
+  return <Card testID={runtimeSelectors.learningPlan.actionError(kind)} variant="warning"><Text maxFontSizeMultiplier={2} style={styles.body}>{copy}</Text></Card>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

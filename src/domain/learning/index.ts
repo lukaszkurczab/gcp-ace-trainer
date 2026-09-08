@@ -3,6 +3,8 @@ export * from "./contentItemRef";
 export * from "./contentPackagePin";
 export * from "./packageCompletionRule";
 export * from "./learningPlanProposalGenerator";
+export * from "./learningPlan";
+export * from "./slotIdentity";
 export * from "./errors";
 export * from "./learningEvidence";
 export * from "./familyEnvelope";

@@ -27,6 +27,7 @@ import { AccountEntryScreen } from "../features/account/AccountEntryScreen";
 import { SelectTrackScreen } from "../features/home/SelectTrackScreen";
 import { GoalCadenceScreen } from "../features/home/GoalCadenceScreen";
 import { LearningPlanProposalScreen } from "../features/home/LearningPlanProposalScreen";
+import { LearningPlanEditorScreen } from "../features/home/LearningPlanEditorScreen";
 import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
 import { PracticeHubScreen } from "../features/practice/PracticeHubScreen";
 import { AlgorithmsScopeSelectionScreen } from "../features/practice/AlgorithmsScopeSelectionScreen";
@@ -135,6 +136,11 @@ export function RootNavigator() {
           <Stack.Screen
             name={ROUTES.LEARNING_PLAN_PROPOSAL}
             component={LearningPlanProposalScreen}
+            options={{ headerShown: false, title: t("Learning plan") }}
+          />
+          <Stack.Screen
+            name={ROUTES.LEARNING_PLAN_EDITOR}
+            component={LearningPlanEditorScreen}
             options={{ headerShown: false, title: t("Learning plan") }}
           />
           <Stack.Screen

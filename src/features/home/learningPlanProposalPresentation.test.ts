@@ -15,14 +15,26 @@ test("learning plan proposal route carries identity only and resolves the in-mem
   assert.doesNotMatch(routes, /LEARNING_PLAN_PROPOSAL\]:[^\n]*(outcome|goalRevision|contentVersion|packagePin|timezone)/);
 });
 
-test("proposal UI exposes all explicit states without claiming ODK-029 edit or acceptance", () => {
+test("proposal UI exposes all explicit states and the ODK-029 edit and acceptance actions", () => {
   for (const state of ["loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "generator_error", "shortfall", "shortened", "ready"]) {
     assert.match(screen, new RegExp(state));
   }
   assert.match(screen, /runtimeSelectors\.learningPlan\.update\(\)/);
   assert.match(screen, /runtimeSelectors\.learningPlan\.adjustGoal\(\)/);
   assert.match(screen, /runtimeSelectors\.learningPlan\.backToPractice\(\)/);
-  assert.doesNotMatch(screen, />\{t\("(?:Accept|Edit) plan"\)\}</);
+  assert.match(screen, /runtimeSelectors\.learningPlan\.editSchedule\(\)/);
+  assert.match(screen, /runtimeSelectors\.learningPlan\.accept\(\)/);
+  assert.match(screen, /learningPlanEditorCoordinator\.startProposalEdit/);
+  assert.match(screen, /setActionError\("open-proposal-storage"\)/);
+  assert.match(screen, /setActionError\("open-existing-storage"\)/);
+  assert.match(screen, /learningPlanEditorCoordinator\.acceptProposal/);
+  assert.match(screen, /setActionError\("accept-validation"\)/);
+  assert.match(screen, /setActionError\("accept-storage"\)/);
+  assert.match(screen, /runtimeSelectors\.learningPlan\.actionError\(kind\)/);
+  assert.match(screen, /The schedule editor could not be opened\. Try again\./);
+  assert.match(screen, /The saved plan could not be loaded\. Try again\./);
+  assert.match(screen, /setState\(\{ kind: "stale" \}\)/);
+  assert.match(screen, /setActionError\(null\)/);
 });
 
 test("goal save opens a real proposal only after reminder reconciliation", () => {

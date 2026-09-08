@@ -59,11 +59,13 @@ type LearningPlan = {
   goalRevision: number;
   status: "accepted" | "paused" | "completed";
   timezone: string;
+  contentVersion: string;
   contentPackagePin: ContentPackagePin;
   acceptedTarget: AcceptedTargetSnapshot;
   createdAt: string;
   updatedAt: string;
   planRevision: number;
+  commandId: string;
   slots: PlanSlot[];
 };
 
@@ -75,9 +77,9 @@ type PlanSlot = {
 };
 ```
 
-Plan nie kopiuje wyników sesji ani kolejki review. `goalRevision` pochodzi z `GoalSnapshot`. `contentPackagePin` jest pełnym, zweryfikowanym pinem pakietu, a nie samą wersją. `sessionLength` opisuje planowaną liczbę pytań. Konkretne pytania są wybierane przy starcie sesji z aktualnego zakresu i review.
+Plan nie kopiuje wyników sesji ani kolejki review. `goalRevision` pochodzi z `GoalSnapshot`. `contentVersion` oraz pełny `contentPackagePin` razem identyfikują dokładny kontekst treści, z którym plan został zaakceptowany; `timezone` domyka identity lokalnego harmonogramu. Przed edycją i zapisem zaakceptowanego planu wszystkie te pola muszą nadal pasować do bieżącego, zweryfikowanego runtime contextu. `contentPackagePin` jest pełnym, zweryfikowanym pinem pakietu, a nie samą wersją. `commandId` jest trwałą identity konkretnej komendy zapisu: pozwala bezpiecznie rozpoznać idempotentny retry po niepewnej odpowiedzi bez ponownego zastosowania komendy. `sessionLength` opisuje planowaną liczbę pytań. Konkretne pytania są wybierane przy starcie sesji z aktualnego zakresu i review.
 
-Nie ma migracji tego pola: runtime nie posiada jeszcze trwałego `LearningPlan`.
+Nie ma migracji do tego kontraktu: runtime nie posiada jeszcze trwałego `LearningPlan`.
 
 `acceptedTarget` jest snapshotem semantyki zaakceptowanej razem z planem. `targetDate` ma dokładnie format `YYYY-MM-DD` i musi być prawidłową datą kalendarza (np. `2027-02-29` jest odrzucane); pusty string, `undefined` i inne substytuty nie są dozwolone. Brak daty zawsze zapisuje się jako `null`. `meaning: "none"` wymaga `targetDate: null`; `event`, `deadline` i `checkpoint` mogą mieć `null`, gdy dany cel nie ma daty.
 

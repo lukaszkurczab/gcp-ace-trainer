@@ -1,4 +1,4 @@
-import type { ContentItemRef, TrackId } from "../domain";
+import type { ContentItemRef, GoalDay, LearningPlanSlotId, TrackId } from "../domain";
 import type { AlgorithmFeedbackMode } from "../tracks/coding-interview/domain/algorithmModes";
 
 /**
@@ -15,6 +15,21 @@ declare const runtimeSelectorId: unique symbol;
 
 export type RuntimeSelectorId = string & Readonly<{ [runtimeSelectorId]: "RuntimeSelectorId" }>;
 export type ResponseResult = "correct" | "incorrect" | "partial";
+export type LearningPlanPrimaryState =
+  | "loading"
+  | "stale"
+  | "no_goal"
+  | "goal_paused"
+  | "package_error"
+  | "package_unavailable"
+  | "generator_error"
+  | "shortfall"
+  | "shortened"
+  | "ready"
+  | "accepted";
+export type LearningPlanActionErrorKind = "accept-validation" | "accept-storage" | "open-proposal-storage" | "open-existing-storage";
+export type LearningPlanEditorErrorKind = "validation" | "storage" | "start-existing-storage";
+export type LearningPlanEditorRetryKind = "save" | "start-existing";
 
 type ItemId = ContentItemRef["itemId"];
 
@@ -125,11 +140,23 @@ export const runtimeSelectors = Object.freeze({
   learningPlan: Object.freeze({
     root: () => selector("learning-plan", "root"),
     create: () => selector("learning-plan", "create"),
-    state: (state: string) => selector("learning-plan", "state", state),
-    slot: (day: string) => selector("learning-plan", "slot", day),
+    state: (state: LearningPlanPrimaryState) => selector("learning-plan", "state", learningPlanStateSegment(state)),
+    slot: (slotId: LearningPlanSlotId) => selector("learning-plan", "slot", slotId),
     update: () => selector("learning-plan", "update"),
     adjustGoal: () => selector("learning-plan", "adjust-goal"),
     backToPractice: () => selector("learning-plan", "back-to-practice"),
+    persisted: () => selector("learning-plan", "persisted"),
+    editSchedule: () => selector("learning-plan", "edit-schedule"),
+    accept: () => selector("learning-plan", "accept"),
+    editorRoot: (editorId: string) => selector("learning-plan", "editor", "root", editorId),
+    editorState: (state: LearningPlanEditorSelectorState) => selector("learning-plan", "editor", "state", state),
+    editorDay: (day: GoalDay) => selector("learning-plan", "editor", "day", day),
+    editorTime: (day: GoalDay) => selector("learning-plan", "editor", "time", day),
+    editorCommit: () => selector("learning-plan", "editor", "commit"),
+    editorRetry: (kind: LearningPlanEditorRetryKind = "save") => selector("learning-plan", "editor", kind === "save" ? "retry-save" : "retry-start-existing"),
+    editorStale: () => selector("learning-plan", "editor", "stale"),
+    editorError: (kind: LearningPlanEditorErrorKind) => selector("learning-plan", "editor", "error", kind),
+    actionError: (kind: LearningPlanActionErrorKind) => selector("learning-plan", "action-error", kind),
   }),
   goalOnboarding: Object.freeze({
     root: () => selector("home", "guest-goal-onboarding", "root"),
@@ -156,6 +183,13 @@ export const runtimeSelectors = Object.freeze({
   }),
 });
 
+export type LearningPlanEditorSelectorState = "loading" | "ready" | "stale" | "validation-error" | "storage-error" | "saved";
+
+const LEARNING_PLAN_PRIMARY_STATES: ReadonlySet<LearningPlanPrimaryState> = new Set([
+  "loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "generator_error",
+  "shortfall", "shortened", "ready", "accepted",
+]);
+
 export function isRuntimeSelectorId(value: string): value is RuntimeSelectorId {
   const segments = value.split(":");
   return segments.length >= 3 && segments[0] === PREFIX && segments.every((segment) => SEGMENT.test(segment));
@@ -165,6 +199,11 @@ function selector(surface: string, element: string, ...identities: readonly stri
   const segments = [PREFIX, surface, element, ...identities];
   for (const segment of segments) assertSegment(segment);
   return segments.join(":") as RuntimeSelectorId;
+}
+
+function learningPlanStateSegment(state: LearningPlanPrimaryState): string {
+  if (!LEARNING_PLAN_PRIMARY_STATES.has(state)) throw new Error("Unknown learning plan primary state.");
+  return state;
 }
 
 function assertSegment(value: string): void {

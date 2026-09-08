@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { isRuntimeSelectorId, runtimeSelectors } from "./runtimeSelectors";
+import { createLearningPlanSlotId, createProposalSlotId } from "../domain";
+import { isRuntimeSelectorId, runtimeSelectors, type LearningPlanPrimaryState } from "./runtimeSelectors";
 
 test("runtime selectors are deterministic and use the canonical grammar", () => {
   const selector = runtimeSelectors.session.option("alg-complexity-amortized-001", "amortized-o1");
@@ -112,4 +113,30 @@ test("runtime selector factories reject values that cannot be represented in the
   assert.throws(() => runtimeSelectors.practice.sessionLength(1.5), /session length/);
   assert.throws(() => runtimeSelectors.session.counter("session-1", 0, 10), /session ordinal/);
   assert.throws(() => runtimeSelectors.session.counter("session-1", 11, 10), /cannot exceed/);
+});
+
+test("learning plan selectors use the closed primary states and stable slot identities", () => {
+  const states: readonly LearningPlanPrimaryState[] = [
+    "loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "generator_error",
+    "shortfall", "shortened", "ready", "accepted",
+  ];
+  for (const state of states) {
+    assert.equal(runtimeSelectors.learningPlan.state(state), `patternly:learning-plan:state:${state}`);
+  }
+  assert.throws(() => runtimeSelectors.learningPlan.state("unknown" as LearningPlanPrimaryState), /Unknown learning plan primary state/);
+
+  const proposalSlotId = createProposalSlotId("proposal-slot:v1:mon:18-00");
+  const persistedSlotId = createLearningPlanSlotId("editor:one:slot:2");
+  assert.equal(runtimeSelectors.learningPlan.slot(proposalSlotId), "patternly:learning-plan:slot:proposal-slot:v1:mon:18-00");
+  assert.equal(runtimeSelectors.learningPlan.slot(persistedSlotId), "patternly:learning-plan:slot:editor:one:slot:2");
+  assert.throws(() => createProposalSlotId("mon"), /canonical v1 identity/);
+});
+
+test("learning plan editor retry selectors distinguish save from start-existing", () => {
+  assert.equal(runtimeSelectors.learningPlan.editorRetry(), "patternly:learning-plan:editor:retry-save");
+  assert.equal(runtimeSelectors.learningPlan.editorRetry("start-existing"), "patternly:learning-plan:editor:retry-start-existing");
+  assert.equal(runtimeSelectors.learningPlan.editorError("start-existing-storage"), "patternly:learning-plan:editor:error:start-existing-storage");
+  assert.equal(runtimeSelectors.learningPlan.actionError("open-proposal-storage"), "patternly:learning-plan:action-error:open-proposal-storage");
+  assert.equal(runtimeSelectors.learningPlan.actionError("open-existing-storage"), "patternly:learning-plan:action-error:open-existing-storage");
+  assert.equal(runtimeSelectors.learningPlan.actionError("accept-storage"), "patternly:learning-plan:action-error:accept-storage");
 });

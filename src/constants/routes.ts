@@ -18,6 +18,7 @@ export const ROUTES = {
   SELECT_TRACK: "select_track",
   GOAL_CADENCE: "GoalCadence",
   LEARNING_PLAN_PROPOSAL: "LearningPlanProposal",
+  LEARNING_PLAN_EDITOR: "LearningPlanEditor",
   PRACTICE_HUB: "PracticeHub",
   ALGORITHMS_SCOPE_SELECTION: "AlgorithmsScopeSelection",
   TOPIC_ROADMAP: "TopicRoadmap",
