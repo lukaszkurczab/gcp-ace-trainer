@@ -148,8 +148,8 @@ export function SettingsTab({
     goalDetail: t("goalDetail"),
     legal: t("legal"),
     legalDetail: t("legalDetail"),
-    notifications: t("notifications"),
-    notificationsDetail: t("notificationsDetail"),
+    reminders: t("reminders"),
+    remindersDetail: t("remindersDetail"),
     storageDegraded: t("storageDegraded"),
     storageStatus: t("storageStatus"),
     version: t("version"),
@@ -274,11 +274,11 @@ export function SettingsTab({
             title={text.premiumTitle}
           />
           <SettingsNavigationRow
-            detail={text.notificationsDetail}
+            detail={text.remindersDetail}
             icon="bell"
             onPress={onOpenNotifications}
             testID="settings-notifications"
-            title={text.notifications}
+            title={text.reminders}
           />
         </SettingsGroup>
 

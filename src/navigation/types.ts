@@ -6,6 +6,10 @@ import type { AlgorithmsDeclaredScopeMode } from "../application/coding-intervie
 
 export type GoalCadenceReturnTo = "progress" | "settings";
 
+export type NotificationSettingsRouteParams =
+  | { source: "settings" }
+  | { source: "goal"; trackId: TrackId; returnToGoal: GoalCadenceReturnTo };
+
 export type RootStackParamList = {
   [ROUTES.HOME]: { initialTab?: Exclude<ShellTab, "practice"> } | undefined;
   [ROUTES.ACTIVITY]: undefined;
@@ -15,7 +19,7 @@ export type RootStackParamList = {
   [ROUTES.TERMS_OF_SERVICE]: undefined;
   [ROUTES.PRIVACY_POLICY]: undefined;
   [ROUTES.PREMIUM_PURCHASE]: undefined;
-  [ROUTES.NOTIFICATION_SETTINGS]: undefined;
+  [ROUTES.NOTIFICATION_SETTINGS]: NotificationSettingsRouteParams | undefined;
   [ROUTES.YOUR_DATA]: undefined;
   [ROUTES.PRIVACY_REQUESTS]: undefined;
   [ROUTES.LEGAL_REQUESTS]: { kind: "complaint" | "withdrawal" | "data_recovery" | "suspension_appeal" };

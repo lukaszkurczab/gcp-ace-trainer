@@ -8,12 +8,20 @@ const guard = readFileSync("src/preferences/notificationSettingsState.ts", "utf8
 const listRow = readFileSync("src/components/ListRow.tsx", "utf8");
 const sheet = readFileSync("src/components/SettingsBottomSheet.tsx", "utf8");
 const navigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
+const navigationTypes = readFileSync("src/navigation/types.ts", "utf8");
+const home = readFileSync("src/features/home/HomeScreen.tsx", "utf8");
+const goal = readFileSync("src/features/home/GoalCadenceScreen.tsx", "utf8");
 
 test("notification settings owns the Figma granted and blocked states in one local screen header", () => {
   const notifications = readFileSync("src/locales/en/notifications.json", "utf8");
   assert.match(navigator, /name=\{ROUTES\.NOTIFICATION_SETTINGS\}[\s\S]*?headerShown:\s*false/);
-  assert.match(screen, /<ScreenHeader[\s\S]*context=\{text\.settings\}[\s\S]*contextTone="primary"[\s\S]*title=\{text\.notifications\}/);
+  assert.match(navigator, /name=\{ROUTES\.NOTIFICATION_SETTINGS\}[\s\S]*?title: t\("Reminders"\)/);
+  assert.match(screen, /<ScreenHeader[\s\S]*context=\{context\}[\s\S]*contextTone="primary"[\s\S]*title=\{text\.reminders\}/);
+  assert.doesNotMatch(screen, /text\.notifications/);
+  assert.match(notifications, /"reminders": "Reminders"/);
   assert.match(notifications, /"permissionSection": "Permission"/);
+  assert.match(notifications, /"permissionGranted": "Notifications allowed"/);
+  assert.match(notifications, /"permissionDenied": "Notifications are blocked"/);
   assert.match(screen, /content:\s*\{\s*gap:\s*spacing\.xxl\s*\}/);
   assert.match(screen, /permissionCard:[\s\S]*?borderRadius:\s*radius\.button[\s\S]*?paddingHorizontal:\s*spacing\.lg[\s\S]*?paddingVertical:\s*spacing\.lg/);
   assert.match(screen, /permissionGranted:[\s\S]*?paddingVertical:\s*14/);
@@ -60,6 +68,25 @@ test("notification reminder row and editor use the Figma-specific row and sheet 
   assert.match(screen, /editable=\{!notifications\.loading && !notifications\.busy\}/);
   assert.match(sheet, /KeyboardAvoidingView behavior=\{Platform\.OS === "ios" \? "padding" : "height"\}/);
   assert.match(sheet, /testID="settings-bottom-sheet-close"/);
+});
+
+test("notification settings preserves the source context and direct-entry fallback", () => {
+  const en = JSON.parse(readFileSync("src/locales/en/notifications.json", "utf8")) as Record<string, string>;
+  const pl = JSON.parse(readFileSync("src/locales/pl/notifications.json", "utf8")) as Record<string, string>;
+  assert.match(navigationTypes, /export type NotificationSettingsRouteParams =\s*[\s\S]*source: "settings"[\s\S]*source: "goal"[\s\S]*trackId: TrackId[\s\S]*returnToGoal: GoalCadenceReturnTo/);
+  assert.match(navigationTypes, /NOTIFICATION_SETTINGS\]: NotificationSettingsRouteParams \| undefined/);
+  assert.match(screen, /const source = route\.params\?\.source === "goal" \? "goal" : "settings"/);
+  assert.match(screen, /const context = source === "goal" \? text\.goal : text\.settings/);
+  assert.match(screen, /const backLabel = source === "goal" \? text\.backToGoal : text\.backToSettings/);
+  assert.match(screen, /backAction=\{\{ accessibilityLabel: backLabel, onPress: handleBack \}\}/);
+  assert.match(screen, /if \(route\.params\?\.source === "goal"\) \{[\s\S]*?navigation\.replace\(ROUTES\.GOAL_CADENCE, \{[\s\S]*?returnTo: route\.params\.returnToGoal,[\s\S]*?trackId: route\.params\.trackId/);
+  assert.match(screen, /navigation\.replace\(ROUTES\.HOME, \{ initialTab: "settings" \}\)/);
+  assert.match(home, /onOpenNotifications=\{\(\) => navigation\.navigate\(ROUTES\.NOTIFICATION_SETTINGS, \{ source: "settings" \}\)\}/);
+  assert.match(goal, /source: "goal", trackId: track\.id, returnToGoal: returnTo/);
+  assert.equal(en.backToSettings, "Back to Settings");
+  assert.equal(en.backToGoal, "Back to Goal");
+  assert.equal(pl.backToSettings, "Wróć do Ustawień");
+  assert.equal(pl.backToGoal, "Wróć do celu");
 });
 
 test("notification settings exposes lifecycle-safe load and mutation state", () => {

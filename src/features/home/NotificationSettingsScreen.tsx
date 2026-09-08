@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import notificationCopy from "../../locales/en/notifications.json";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -28,7 +28,7 @@ import { radius, spacing, typography, type AppColors } from "../../theme";
 
 type NotificationSettingsScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.NOTIFICATION_SETTINGS>;
 
-export function NotificationSettingsScreen({ navigation }: NotificationSettingsScreenProps) {
+export function NotificationSettingsScreen({ navigation, route }: NotificationSettingsScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { colors } = useAppPreferences();
   const notifications = useNotificationSettings();
@@ -67,7 +67,10 @@ export function NotificationSettingsScreen({ navigation }: NotificationSettingsS
   reminderNote: t("reminderNote"),
   reminderSection: t("reminderSection"),
   settings: t("settings"),
-  notifications: t("notifications"),
+  goal: t("goal"),
+  reminders: t("reminders"),
+  backToSettings: t("backToSettings"),
+  backToGoal: t("backToGoal"),
   loading: t("loading"),
   loadingDetail: t("loadingDetail"),
   loadErrorTitle: t("loadErrorTitle"),
@@ -80,6 +83,24 @@ export function NotificationSettingsScreen({ navigation }: NotificationSettingsS
   sheetIntro: t("sheetIntro"),
   sheetTitle: t("sheetTitle"),
   };
+  const source = route.params?.source === "goal" ? "goal" : "settings";
+  const context = source === "goal" ? text.goal : text.settings;
+  const backLabel = source === "goal" ? text.backToGoal : text.backToSettings;
+
+  const handleBack = useCallback(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    if (route.params?.source === "goal") {
+      navigation.replace(ROUTES.GOAL_CADENCE, {
+        returnTo: route.params.returnToGoal,
+        trackId: route.params.trackId,
+      });
+      return;
+    }
+    navigation.replace(ROUTES.HOME, { initialTab: "settings" });
+  }, [navigation, route.params]);
   const reminderBlocked = notifications.permission === "denied" && notifications.dailyReminder === null;
   const reminderDisabled = notifications.loading || notifications.busy || notifications.permission === null || reminderBlocked;
 
@@ -168,10 +189,10 @@ export function NotificationSettingsScreen({ navigation }: NotificationSettingsS
   return (
     <Screen edges={["top", "bottom"]}>
       <ScreenHeader
-        backAction={{ onPress: () => navigation.goBack() }}
-        context={text.settings}
+        backAction={{ accessibilityLabel: backLabel, onPress: handleBack }}
+        context={context}
         contextTone="primary"
-        title={text.notifications}
+        title={text.reminders}
       />
 
       <View style={styles.content}>

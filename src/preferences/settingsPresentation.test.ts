@@ -34,6 +34,17 @@ test("Settings exposes account and participant navigation actions plus condition
   }
   assert.match(settingsTab, /onOpenGoal/);
   assert.match(settingsTab, /testID="settings-goal"/);
+  assert.match(settingsTab, /remindersDetail: t\("remindersDetail"\)/);
+  assert.match(settingsTab, /title=\{text\.reminders\}/);
+  assert.doesNotMatch(settingsTab, /notificationsDetail|text\.notifications/);
+  const settingsEn = JSON.parse(readFileSync("src/locales/en/settings.json", "utf8")) as Record<string, string>;
+  const settingsPl = JSON.parse(readFileSync("src/locales/pl/settings.json", "utf8")) as Record<string, string>;
+  assert.equal(settingsEn.reminders, "Reminders");
+  assert.equal(settingsPl.reminders, "Przypomnienia");
+  assert.equal(settingsEn.notifications, undefined);
+  assert.equal(settingsEn.notificationsDetail, undefined);
+  assert.equal(settingsPl.notifications, undefined);
+  assert.equal(settingsPl.notificationsDetail, undefined);
   assert.match(settingsTab, /testID="settings-backend-diagnostics"/);
   assert.match(settingsTab, /backendDiagnosticsConfigured \? \(/);
   assert.match(settingsTab, /premiumTestingAvailable \? \([\s\S]*?testID="settings-premium-testing"/);

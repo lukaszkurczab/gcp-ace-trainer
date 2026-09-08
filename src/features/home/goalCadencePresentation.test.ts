@@ -25,7 +25,9 @@ test("goal cadence is a reachable root route backed by the canonical repository"
   assert.match(screen, /weeklySessionTarget: preferredDays\.length/);
   assert.doesNotMatch(screen, /No preferred days/);
   assert.doesNotMatch(screen, /stepper|onSetWeeklyTarget|Weekly cadence|Sessions per week|Decrease sessions per week|Increase sessions per week/);
-  assert.match(screen, /Managed in notification settings/);
+  assert.match(screen, /Configure your practice reminders\./);
+  assert.match(screen, /summaryLink[\s\S]*?t\("Reminders"\)/);
+  assert.doesNotMatch(screen, /Managed in notification settings|Notification settings/);
   assert.match(screen, /status === "paused"/);
   assert.match(screen, /header: \{ gap: spacing\.sm \}/);
   assert.match(screen, /trackContext[\s\S]*?statusRow/);
@@ -54,6 +56,7 @@ test("Settings opens the shared goal screen with its return context", () => {
   assert.match(screen, /const context = t\(returnTo === "settings" \? "Settings" : "Progress"\)/);
   assert.match(screen, /navigation\.canGoBack\(\)/);
   assert.match(screen, /navigation\.navigate\(ROUTES\.HOME, \{ initialTab: returnTo \}\)/);
+  assert.match(screen, /source: "goal", trackId: track\.id, returnToGoal: returnTo/);
   assert.match(screen, /<GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
   assert.match(screen, /style=\{styles\.context\}\>\{context\}</);
 });
@@ -73,6 +76,8 @@ test("goal loading keeps its back action separate from the busy content announce
   assert.match(screen, /accessibilityRole="progressbar"[\s\S]*?accessibilityState=\{\{ busy: true \}\}/);
   assert.match(screen, /<View accessible=\{false\} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style=\{styles\.loadingShapes\}>/);
   assert.match(screen, /if \(loading\) return <GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
+  assert.match(screen, /useEffect\(\(\) => \{[\s\S]*?\}, \[route\.params\?\.trackId\]\);/);
+  assert.doesNotMatch(screen, /useFocusEffect/);
   const pendingBranch = screen.slice(screen.indexOf("if (loading)"), screen.indexOf("if (loadError"));
   assert.doesNotMatch(pendingBranch, /scroll=\{false\}/);
 });

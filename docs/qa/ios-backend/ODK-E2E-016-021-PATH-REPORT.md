@@ -19,3 +19,5 @@ Nowe102: angielskie skróty dni w polskim podsumowaniu celu.
 Brama po016/018/019: npm run qa:static PASS,884/884,0pominiętych, typecheck/recovery/content boundary/runtime privacy boundary PASS. Wynik nie obejmuje niewdrożonego021.
 
 Nowe 103: łamanie etykiety przypomnień przy największym tekście, potwierdzone w EN i PL. Dwie pierwsze próby dużego tekstu wymagały korekty przewijania scenariusza. Końcowy przebieg przeszedł bez zmian kodu. Przywrócono EN i standardowy tekst.
+
+Push wdrożonego zakresu: bd5862479faaedee5143ebfdfae50fc84182a953 na origin/main. Zdalne QA 34180487489 SUCCESS: Recovery QA gate i Multi-track content release contract. Nie oznacza to ukończenia zablokowanych020–021.

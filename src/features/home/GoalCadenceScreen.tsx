@@ -1,7 +1,6 @@
-import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 
 import {
@@ -143,7 +142,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     navigation.navigate(ROUTES.HOME, { initialTab: returnTo });
   }, [navigation, returnTo]);
 
-  useFocusEffect(useCallback(() => {
+  useEffect(() => {
     let active = true;
     setLoading(true);
     setLoadError(null);
@@ -177,7 +176,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       }
     })();
     return () => { active = false; };
-  }, [route.params?.trackId]));
+  }, [route.params?.trackId]);
 
   const track = useMemo(() => trackId ? getTrackDisplay(trackId) : null, [trackId]);
   const editing = draft !== null;
@@ -298,7 +297,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           dateInput={dateInput}
           onChangeDate={setDateInput}
           onSelectGoalType={(goalType) => updateDraft((currentDraft) => ({ ...currentDraft, goalType }))}
-          onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS)}
+          onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "goal", trackId: track.id, returnToGoal: returnTo })}
           onToggleDay={toggleDay}
           palette={palette}
           selectedDays={current.preferredDays}
@@ -311,7 +310,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           goal={current}
           locale={locale}
           onEdit={() => { setDraft({ ...current, preferredDays: [...current.preferredDays] }); setSaveError(null); }}
-          onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS)}
+          onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "goal", trackId: track.id, returnToGoal: returnTo })}
           onTogglePause={() => { void togglePause(); }}
           t={t}
         />
@@ -399,7 +398,7 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
       <Pressable accessibilityRole="button" onPress={onOpenNotifications} style={styles.reminderRow}>
         <View style={styles.reminderCopy}>
           <Text maxFontSizeMultiplier={2} style={styles.reminderTitle}>{t("Reminders")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{t("Managed in notification settings")}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{t("Configure your practice reminders.")}</Text>
         </View>
         <Icon color={palette.textSecondary} name="chevron-right" size={18} />
       </Pressable>
@@ -441,7 +440,7 @@ function ActiveGoalSummary({ goal, locale, onEdit, onOpenNotifications, onToggle
         <View style={styles.summaryDivider} />
         <View style={styles.summaryReminderRow}>
           <Text maxFontSizeMultiplier={2} style={[styles.summaryLabel, styles.summaryReminderLabel]}>{t("Reminders")}</Text>
-          <Pressable accessibilityRole="button" onPress={onOpenNotifications}><Text maxFontSizeMultiplier={2} style={styles.summaryLink}>{t("Notification settings")}</Text></Pressable>
+          <Pressable accessibilityRole="button" onPress={onOpenNotifications}><Text maxFontSizeMultiplier={2} style={styles.summaryLink}>{t("Reminders")}</Text></Pressable>
         </View>
       </View>
       <Pressable accessibilityRole="button" onPress={onEdit} style={styles.centerAction}><Text maxFontSizeMultiplier={2} style={styles.centerActionLabel}>{t("Edit goal")}</Text></Pressable>

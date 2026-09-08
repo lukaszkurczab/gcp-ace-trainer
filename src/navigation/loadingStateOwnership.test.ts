@@ -101,6 +101,8 @@ test("C1 screens own local review and exam loading geometry", () => {
   assert.match(goal, /if \(loading\) return <GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
   assert.match(goal, /accessibilityLabel=\{t\("Loading goal"\)\}/);
   assert.match(goal, /header=\{\([\s\S]*?<IconButton accessibilityLabel=\{t\("Go back"\)/);
+  assert.match(goal, /useEffect\(\(\) => \{[\s\S]*?\}, \[route\.params\?\.trackId\]\);/);
+  assert.doesNotMatch(goal, /useFocusEffect/);
   assert.match(goal, /loadingPanel/);
   assert.match(goal, /loadingField/);
   assert.doesNotMatch(goal, /LoadingState/);

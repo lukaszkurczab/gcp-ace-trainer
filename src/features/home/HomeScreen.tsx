@@ -392,7 +392,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             onOpenGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo: "settings", trackId: activeTrack.id })}
             onOpenLanguage={() => navigation.navigate(ROUTES.LANGUAGE_SETTINGS)}
             onOpenLegalInformation={() => navigation.navigate(ROUTES.LEGAL_INFORMATION)}
-            onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS)}
+            onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "settings" })}
             onOpenPremium={() => navigation.navigate(ROUTES.PREMIUM_PURCHASE)}
             onOpenYourData={() => navigation.navigate(ROUTES.YOUR_DATA)}
             onSignOut={() => account.signOut()}
