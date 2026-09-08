@@ -13,8 +13,7 @@ Plik służy wyłącznie do zapisywania problemów zauważonych podczas ręcznej
 
 | ID | Data | Ścieżka / przypadek E2E | Obserwacja / problem | Kroki reprodukcji | Oczekiwane zachowanie | Faktyczne zachowanie | Priorytet | Status | Dowód / powiązanie |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ODK-E2E-028 | 2026-09-05 | Plan nauki — generowanie propozycji | Wdrożyć algorytm tworzący pierwszy plan na podstawie zaakceptowanego celu, target date, zakresu materiału i preferencji użytkownika. | Utworzyć cele dla różnych tracków i terminów, wygenerować plan i sprawdzić jego sesje, pytania oraz priorytety tematów. | Aplikacja tworzy realistyczny plan: dobiera materiał do celu, rozkłada pytania na sesje, uwzględnia powtórki i pokazuje, czy termin jest osiągalny. | Zapisanie celu nie wpływa na to, jakie pytania, tematy ani sesje otrzymuje użytkownik. | P1 | `OPEN` | ODK-E2E-026, 027 i 053 są wdrożone i zweryfikowane. Generator jest następnym zadaniem. |
-| ODK-E2E-029 | 2026-09-05 | Plan nauki — edycja harmonogramu | Umożliwić użytkownikowi edycję zaproponowanego planu: dni, godzin i liczby sesji tygodniowo. | Zmienić dzień sesji, godzinę oraz liczbę sesji, a następnie zapisać plan i sprawdzić jego trwałość. | Użytkownik może np. usunąć wtorek, dodać środę, zmienić godzinę z 17:00 na 20:00 i zwiększyć plan z 4 do 5 sesji. Zmiany są zapisane i widoczne w całej aplikacji. | Użytkownik nie ma kontroli nad algorytmiczną propozycją planu ani nad liczbą sesji. | P1 | `BLOCKED` | BLOCKED przez 028. Edycja wymaga trwałego modelu i generatora. |
+| ODK-E2E-029 | 2026-09-05 | Plan nauki — edycja harmonogramu | Umożliwić użytkownikowi edycję zaproponowanego planu: dni, godzin i liczby sesji tygodniowo. | Zmienić dzień sesji, godzinę oraz liczbę sesji, a następnie zapisać plan i sprawdzić jego trwałość. | Użytkownik może np. usunąć wtorek, dodać środę, zmienić godzinę z 17:00 na 20:00 i zwiększyć plan z 4 do 5 sesji. Zmiany są zapisane i widoczne w całej aplikacji. | Użytkownik nie ma kontroli nad algorytmiczną propozycją planu ani nad liczbą sesji. | P1 | `OPEN` | ODK-E2E-028 jest wdrożone i zweryfikowane w `209b629`. Następny krok to trwały model, edycja i akceptacja planu. |
 | ODK-E2E-030 | 2026-09-05 | Plan nauki — przeliczanie tempa i terminu | Po każdej zmianie planu lub postępu przeliczać liczbę pytań na sesję, przewidywaną datę ukończenia i zgodność z target date. | Zmienić liczbę sesji, dni, godzin, ukończyć sesję, pominąć sesję i zmienić target date. | Plan aktualizuje się automatycznie i pokazuje prosty status: na dobrej drodze, ryzyko opóźnienia albo opóźnienie, wraz z konkretną sugestią. | Target date nie wpływa na tempo, plan ani komunikaty o postępie. | P1 | `BLOCKED` | BLOCKED przez 028–029. Kanoniczny wzorzec stanów target date jest gotowy. |
 | ODK-E2E-031 | 2026-09-05 | Plan nauki — projekt komunikatów i statusów | Przygotować copy i projekt stanów informujących o realizacji planu, opóźnieniu i wymaganym tempie. | Zaprojektować stany: na dobrej drodze, za wolno, brak sesji, pominięta sesja, termin nieosiągalny i cel ukończony. | Komunikaty są krótkie, zrozumiałe i wskazują następne działanie, np. dodatkową sesję albo większą liczbę pytań. Projekt uwzględnia lokalizację i dostępność. | Użytkownik nie dostaje jasnej informacji, czy jego tempo wystarczy do osiągnięcia celu. | P2 | `BLOCKED` | BLOCKED przez 030. Copy wymaga rzeczywistych przeliczeń; kanoniczny wzorzec stanów jest gotowy. |
 | ODK-E2E-032 | 2026-09-05 | Home — dzisiejszy plan | Pokazać na Home zadanie wynikające z zaakceptowanego planu nauki. | Otworzyć Home w dniu sesji, po wykonaniu sesji, w dniu wolnym i po pominięciu sesji. | Home pokazuje, co użytkownik ma zrobić dzisiaj, ile pytań, z jakiego obszaru i czy są pytania do powtórki, z przyciskiem rozpoczęcia właściwej sesji. | Home nie przedstawia dziennego planu wynikającego z celu. | P1 | `BLOCKED` | BLOCKED przez 028–031. Home wymaga zaakceptowanego planu. |
@@ -64,29 +63,23 @@ Plik służy wyłącznie do zapisywania problemów zauważonych podczas ręcznej
 
 ## Kolejność realizacji
 
-Agent realizuje zadania w poniższej kolejności. Po każdym zadaniu zwraca wynik, dowody i ewentualne blokery, a następnie przechodzi do kolejnego zadania. Po zakończeniu etapu należy wykonać push na główne branche i rozwiązać ewentualne problemy z pipelinie’ami i github. Numery identyfikatorów pozostają stałe; kolejność wynika z zależności, nie z numeracji.
+Realizujemy wyłącznie zadania obecne w aktywnej tabeli. Zakończonych identyfikatorów nie utrzymujemy w tej kolejce; ich raporty i historia Git pozostają źródłem historii. W obrębie etapu obowiązuje kolejność od lewej do prawej. Następny etap zaczyna się po raporcie, wymaganej weryfikacji i pushu etapu poprzedniego. Nie przechodzimy dalej, gdy wymagany retest lub dowód nie istnieje.
 
-Zakończone ścieżki pozostają poniżej dla zachowania historii kolejności. Aktywne zadania określa tabela.
+1.  **Bieżąca ścieżka planu nauki:** `ODK-E2E-029` → `ODK-E2E-030` → `ODK-E2E-031` → `ODK-E2E-032` → `ODK-E2E-033` → `ODK-E2E-034` → `ODK-E2E-054` → `ODK-E2E-035`.
+2.  **Cel gościa i konto:** `ODK-E2E-056` → `ODK-E2E-038` → `ODK-E2E-040` → `ODK-E2E-039` → `ODK-E2E-041`.
+3.  **Krótkie, niezależne poprawki produktu:** `ODK-E2E-043` → `ODK-E2E-089` → `ODK-E2E-092` → `ODK-E2E-093` → `ODK-E2E-094` → `ODK-E2E-095` → `ODK-E2E-098` → `ODK-E2E-100` → `ODK-E2E-101` → `ODK-E2E-102` → `ODK-E2E-103`.
+4.  **Legal i Your data:** `ODK-E2E-091` → `ODK-E2E-104` → `ODK-E2E-090` → `ODK-E2E-105` → `ODK-E2E-106` → `ODK-E2E-107` → `ODK-E2E-108` → `ODK-E2E-109` → `ODK-E2E-110` → `ODK-E2E-111` → `ODK-E2E-112` → `ODK-E2E-055`.
+5.  **Treść i konfiguracja pakietów:** `ODK-E2E-096` → `ODK-E2E-097`.
 
-1.  `ODK-E2E-022` → `ODK-E2E-023` → `ODK-E2E-024` → `ODK-E2E-025`
-2.  `ODK-E2E-044` → `ODK-E2E-042` → `ODK-E2E-043` → `ODK-E2E-045` → `ODK-E2E-046` → `ODK-E2E-047` → `ODK-E2E-048` → `ODK-E2E-049`
-3.  `ODK-E2E-050` → `ODK-E2E-051`
-4.  `ODK-E2E-052` → `ODK-E2E-056`
-5.  `ODK-E2E-028` → `ODK-E2E-029` → `ODK-E2E-030` → `ODK-E2E-031`
-6.  `ODK-E2E-032` → `ODK-E2E-033` → `ODK-E2E-034` → `ODK-E2E-035`
-7.  `ODK-E2E-036` → `ODK-E2E-037` → `ODK-E2E-038` → `ODK-E2E-040` → `ODK-E2E-039` → `ODK-E2E-041`
-8.  `ODK-E2E-054` → `ODK-E2E-055`
-9.  `ODK-E2E-089` → `ODK-E2E-091` → `ODK-E2E-090` → `ODK-E2E-092` → `ODK-E2E-093` → `ODK-E2E-094` → `ODK-E2E-095` → `ODK-E2E-096` → `ODK-E2E-097` → `ODK-E2E-098` → `ODK-E2E-100` → `ODK-E2E-101` → `ODK-E2E-102` → `ODK-E2E-103` → `ODK-E2E-104` → `ODK-E2E-105` → `ODK-E2E-106` → `ODK-E2E-107` → `ODK-E2E-108` → `ODK-E2E-109` → `ODK-E2E-110` → `ODK-E2E-111` → `ODK-E2E-112` (potwierdzone wyniki 011–019, 046, 048 i 049)
+`ODK-E2E-029` jest pierwszym następnym zadaniem. Wymaga nowej, niezależnej walidacji briefu przed implementacją.
 
-Provider/release gate’y `ODK-E2E-082`–`ODK-E2E-088`, następnie `ODK-E2E-099`, są osobną kolejką blokującą wydanie. Mogą rozpocząć się dopiero po zapewnieniu wymaganych dostępów, konfiguracji i decyzji właściciela; ich brak nie blokuje pracy nad powyższymi ścieżkami produktu.
-
-## Ocena przygotowania
+Provider/release gate’y tworzą osobną kolejkę blokującą wydanie: `ODK-E2E-082` → `ODK-E2E-083` → `ODK-E2E-084` → `ODK-E2E-085` → `ODK-E2E-086` → `ODK-E2E-087` → `ODK-E2E-088` → `ODK-E2E-099`. Uruchamiamy ją po zapewnieniu wymaganych dostępów, konfiguracji i decyzji właściciela. Brak tych warunków nie blokuje etapów produktowych powyżej.
 
 ## Zakres zatwierdzony do realizacji
 
 Właściciel zatwierdził realizację wszystkich pozycji ze statusem `OPEN`. Zatwierdzenie nie zmienia ich statusu: każda pozycja pozostaje `OPEN` do czasu wykonania poprawki i osobnego retestu w przejściu E2E.
 
-Aktualnie aktywny zakres obejmuje otwarte zadania `ODK-E2E-020`–`ODK-E2E-056` wymienione w tabeli, zadania następcze `ODK-E2E-089`–`ODK-E2E-098` i `ODK-E2E-100`–`ODK-E2E-103` oraz provider/release gate’y `ODK-E2E-082`–`ODK-E2E-088` i `ODK-E2E-099`. Zamknięte zadania mają osobne raporty wdrożenia i retestu obok tego rejestru. Wcześniejsze zadania zakończone, zastąpione lub odrzucone decyzją właściciela pozostają dostępne w historii Git do commita `fd94070`.
+Aktualny zakres obejmuje wyłącznie pozycje widoczne w tabeli: zadania produktowe `ODK-E2E-028`–`ODK-E2E-056` obecne w rejestrze, zadania następcze `ODK-E2E-089`–`ODK-E2E-112` oraz provider/release gate’y `ODK-E2E-082`–`ODK-E2E-088` i `ODK-E2E-099`. Zamknięte zadania nie wracają do aktywnej kolejki bez konkretnego dowodu regresji; ich raporty i historia Git pozostają źródłem dowodów.
 
 -   Dopasowanie do celu: **0,98** — osobny plik dokumentacyjny nie zmienia runtime ani testów.
 -   Prostota: **0,99** — jeden rejestr i jedna tabela.
