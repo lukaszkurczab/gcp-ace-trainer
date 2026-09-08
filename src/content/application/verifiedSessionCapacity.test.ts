@@ -16,6 +16,12 @@ test("resolved package capacity reports a shortfall when its configuration has n
   assert.deepEqual(resolveVerifiedSessionCapacity(createVerifiedSessionCapacity(resolved, "coding-interview-learn-approach", 10, 4), resolved.packagePin), { kind: "shortfall", requestedLength: 10, eligibleItemCount: 4, missingItemCount: 6 });
 });
 
+test("truthful shortening respects the verified package minimum above one", async () => {
+  const resolved = await createContentPackageResolver(GENERATED_FREE_NODE_PACKAGES, contentPackageRuntime).resolveForPreparation({ trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", freeNodeId: "complexity_and_constraints", modeId: "coding-interview-weak-area-review", appVersion: "0.1.0" });
+  assert.deepEqual(resolveVerifiedSessionCapacity(createVerifiedSessionCapacity(resolved, "coding-interview-weak-area-review", 20, 9), resolved.packagePin), { kind: "shortfall", requestedLength: 20, eligibleItemCount: 9, missingItemCount: 11 });
+  assert.deepEqual(resolveVerifiedSessionCapacity(createVerifiedSessionCapacity(resolved, "coding-interview-weak-area-review", 20, 10), resolved.packagePin), { kind: "shortened", actualLength: 10, requestedLength: 20 });
+});
+
 test("capacity rejects forged records, pin mismatches, and invalid counts", () => {
   assert.throws(() => createVerifiedSessionCapacity(pkg(undefined), "mode", 10, 0), /resolved and verified/);
   assert.throws(() => createVerifiedSessionCapacity(pkg(undefined), "mode", 10, -1), /invalid/);
