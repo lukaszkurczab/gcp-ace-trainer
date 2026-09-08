@@ -1,6 +1,8 @@
 # ODK-E2E-056 — plan wdrożenia po decyzji PO
 
-Status: PREPARED_BLOCKED
+Status: ACCEPTED_PENDING_IMPLEMENTATION
+
+PO zatwierdził wariant A po audycie zbiorczym. Plan może być użyty po dojściu do zadania zgodnie z kolejnością rejestru.
 
 ## Nowe ustalenie
 

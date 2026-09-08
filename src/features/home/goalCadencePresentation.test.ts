@@ -15,7 +15,7 @@ test("goal cadence is a reachable root route backed by the canonical repository"
   assert.match(repositoryIndex, /export \* from "\.\/goalRepository"/);
   assert.match(screen, /loadGoal\(savedTrackId\)/);
   assert.match(screen, /persistGoal\(nextGoal\)/);
-  assert.match(screen, /style=\{styles\.title\}[^>]*>\{t\("Goal"\)\}/);
+  assert.match(screen, /style=\{styles\.title\}[^>]*>\{t\("Set learning rhythm for this track"\)\}/);
   assert.match(navigator, /title: t\("Goal"\)/);
   assert.doesNotMatch(screen + navigator, /Goal & cadence|Goal and cadence/);
   assert.match(screen, /normalizeGoalRecord\(\{/);
@@ -30,8 +30,13 @@ test("goal cadence is a reachable root route backed by the canonical repository"
   assert.doesNotMatch(screen, /Managed in notification settings|Notification settings/);
   assert.match(screen, /status === "paused"/);
   assert.match(screen, /header: \{ gap: spacing\.sm \}/);
-  assert.match(screen, /trackContext[\s\S]*?statusRow/);
-  assert.match(screen, /editing \? <Text[\s\S]*?: \([\s\S]*?statusRow/);
+  assert.match(screen, /trackContext[\s\S]*?trackAccent[\s\S]*?trackLabel/);
+  assert.match(screen, /title: \{[^}]*fontSize: 28[^}]*fontWeight: "600"[^}]*lineHeight: 34/);
+  assert.match(screen, /trackContext: \{[^}]*backgroundColor: palette\.surface[^}]*borderRadius: radius\.lg[^}]*padding: spacing\.lg/);
+  assert.match(screen, /trackAccent: \{[^}]*backgroundColor: palette\.primary[^}]*width: 3/);
+  assert.match(screen, /trackLabel: \{[^}]*flexShrink: 1[^}]*fontSize: 20[^}]*lineHeight: 28/);
+  assert.match(screen, /editing \? null : \([\s\S]*?statusRow/);
+  assert.doesNotMatch(screen, /styles\.trackDot|styles\.description/);
   assert.match(screen, /summaryCard:[\s\S]*?gap: 14[\s\S]*?padding: spacing\.lg/);
   assert.match(screen, /summaryDivider:[\s\S]*?height: StyleSheet\.hairlineWidth/);
   assert.match(screen, /dayBadges:[\s\S]*?gap: 6/);
@@ -77,6 +82,7 @@ test("goal loading keeps its back action separate from the busy content announce
   assert.match(screen, /onPress=\{onBack\}/);
   assert.match(screen, /accessibilityRole="progressbar"[\s\S]*?accessibilityState=\{\{ busy: true \}\}/);
   assert.match(screen, /<View accessible=\{false\} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style=\{styles\.loadingShapes\}>/);
+  assert.match(screen, /loadingTrackContext[\s\S]*?loadingTrackAccent[\s\S]*?loadingTrack/);
   assert.match(screen, /if \(loading\) return <GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
   assert.match(screen, /useEffect\(\(\) => \{[\s\S]*?\}, \[route\.params\?\.trackId\]\);/);
   assert.doesNotMatch(screen, /useFocusEffect/);

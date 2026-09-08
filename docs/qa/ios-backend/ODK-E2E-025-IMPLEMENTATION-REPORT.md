@@ -1,6 +1,10 @@
 # ODK-E2E-025 — projekt godzin
 
-Status: BLOCKED. Licznik próśb PO: 5/5. Projekt i specyfikacja gotowe. Bez implementacji.
+Status: OPEN. Licznik próśb PO pozostaje 5/5. PO wybrał wariant 2. Bez implementacji.
+
+## Decyzja PO po audycie zbiorczym
+
+PO zatwierdził `025=2`: checkbox włączający osobne godziny oraz lista wybranych dni. Zadanie pozostaje aktywne do implementacji i retestu.
 
 ## Wykonano
 

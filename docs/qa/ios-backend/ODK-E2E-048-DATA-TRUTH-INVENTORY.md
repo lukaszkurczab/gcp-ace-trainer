@@ -45,3 +45,11 @@ Lokalny store jest szyfrowanym MMKV. Sync ma allowlistę wspieranych rekordów. 
 - ODK-E2E-106: jawne stany sesji.
 - ODK-E2E-107: lokalny reset.
 - ODK-E2E-108: zakres oraz nazwa akcji eksportu.
+
+## Decyzje PO po audycie zbiorczym
+
+- `106=A`: ekran pokazuje jawne stany sesji i bezpieczne akcje.
+- `107=A`: Your data udostępnia kanoniczny lokalny reset z potwierdzeniem i opisem zakresu.
+- `108=A`: eksport używa krótkiego pełniejszego opisu oraz nazwy „Share or download”.
+
+Liczniki tych decyzji pozostają 0/5. Zadania pozostają aktywne do implementacji i retestu.

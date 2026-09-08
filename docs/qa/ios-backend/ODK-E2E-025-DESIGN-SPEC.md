@@ -1,6 +1,10 @@
 # ODK-E2E-025 — godziny przypomnień
 
-Status: BLOCKED po pięciu prośbach bez odpowiedzi. Trzy kierunki pokazano właścicielowi. Nie wybrano projektu. Nie wdrożono harmonogramu.
+Status: ACCEPTED_PENDING_IMPLEMENTATION. PO wybrał wariant 2 po audycie zbiorczym. Nie wdrożono harmonogramu.
+
+## Decyzja PO po audycie zbiorczym
+
+PO zatwierdził `025=2`. Checkbox włącza osobne godziny i pokazuje listę wybranych dni. Bez zaznaczenia obowiązuje jedna wspólna godzina.
 
 ## Cel i granice
 

@@ -1,6 +1,10 @@
 # ODK-E2E-056 — raport discovery
 
-Status: BLOCKED
+Status: ACCEPTED_PENDING_IMPLEMENTATION
+
+## Decyzja PO po audycie zbiorczym
+
+PO zatwierdził `056=A`: atomowy wybór lokalne albo konto per track dla pary cel i plan. Licznik wcześniejszych prób pozostaje 5/5. Zadanie pozostaje aktywne do implementacji i retestu.
 
 ## Wynik przygotowania
 

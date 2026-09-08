@@ -1,6 +1,8 @@
 # ODK-E2E-027 — raport wdrożenia i weryfikacji
 
-Status: BLOCKED
+Status: OPEN
+
+Decyzje `026T=T4`, `026C=C3` i `026S=S12` odblokowały projekt. Zadanie nadal czeka na wykonanie zgodnie z kolejnością planu.
 
 ## Wynik
 

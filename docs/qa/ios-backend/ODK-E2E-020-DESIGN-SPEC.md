@@ -1,6 +1,10 @@
 # ODK-E2E-020 — projekt do decyzji PO
 
-Status: BLOCKED po pięciu prośbach bez wyboru PO. Warianty przedstawiono w kolejności 1,2,3. Nie wdrożono021.
+Status: ACCEPTED_PENDING_IMPLEMENTATION. PO wybrał wariant 3 po audycie zbiorczym. Nie wdrożono 021.
+
+## Decyzja PO po audycie zbiorczym
+
+PO zatwierdził `020=3`: nazwa tracka ma subtelny pionowy akcent. Licznik wcześniejszych prób pozostaje 5/5.
 
 ## Wspólny zakres
 

@@ -40,3 +40,7 @@ Kod i istniejące przepływy checkpoint potwierdzają osobne route’y Privacy P
 - ODK111 i ODK112 wymagają decyzji PO przed implementacją.
 - Nie wykonano provider E2E ani fizycznego urządzenia. Należą do osobnej kolejki 082–088.
 - Nie wykonano VoiceOver zgodnie z zakresem właściciela.
+
+## Decyzje PO po audycie zbiorczym
+
+PO zatwierdził wariant A dla ODK-E2E-111 i 112. Liczniki pozostają 0/5. Decyzje nie zamykają zadań bez implementacji i retestu.

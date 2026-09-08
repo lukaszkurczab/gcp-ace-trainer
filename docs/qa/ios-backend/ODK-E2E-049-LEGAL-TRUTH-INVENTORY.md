@@ -32,3 +32,10 @@ Polityka i Terms zawierają właściwe szczegóły retencji, usunięcia, proceso
 - ODK-E2E-110: prawdziwy stan niedostępnego Support.
 - ODK-E2E-111: rozdzielenie Data rights i data recovery.
 - ODK-E2E-112: decyzja o roli huba, URL-ach i terminach/SLA.
+
+## Decyzje PO po audycie zbiorczym
+
+- `111=A`: Data rights i data recovery są dwoma osobnymi wierszami.
+- `112=A`: Legal information pozostaje krótkim hubem. Privacy Policy i Terms pozostają lokalnymi dokumentami kanonicznymi. Zewnętrzny pozostaje Support. Hub pokazuje prawnie określone terminy, ale nie wymyśla SLA.
+
+Liczniki pozostają 0/5. Zadania pozostają aktywne do implementacji i retestu.

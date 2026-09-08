@@ -1,6 +1,10 @@
 # ODK-E2E-024 — harmonogram dni celu
 
-Status: BLOCKED. Pięć próśb bez odpowiedzi PO. Zadanie pozostaje aktywne. Nie zmieniono harmonogramu ani modelu.
+Status: OPEN. PO wybrał wariant A po audycie zbiorczym. Zadanie pozostaje aktywne. Nie zmieniono harmonogramu ani modelu.
+
+## Decyzja PO po audycie zbiorczym
+
+PO zatwierdził `024=A`: reminders dotyczą wyłącznie aktualnie wybranego tracka. Licznik wcześniejszych prób pozostaje 5/5.
 
 Nierozstrzygnięta decyzja: przypomnienia tylko dla aktualnie wybranej ścieżki albo równolegle dla wszystkich ścieżek z aktywnym celem. Wariant A jest mniejszy. Wariant B wymaga szerszego zapisu i migracji. Brak odpowiedzi nie jest wyborem A.
 

@@ -1,6 +1,10 @@
 # ODK-E2E-042 — typografia górnej nawigacji
 
-Status: BLOCKED po pięciu prośbach bez odpowiedzi. Pokazano trzy kierunki. Implementacja 043 nie rozpoczęła się.
+Status: ACCEPTED_PENDING_IMPLEMENTATION. PO wybrał wariant 1 po audycie zbiorczym. Implementacja 043 nie rozpoczęła się.
+
+## Decyzja PO po audycie zbiorczym
+
+PO zatwierdził `042=1`: context używa 16/22/600. Licznik wcześniejszych prób pozostaje 5/5.
 
 ## Źródła
 

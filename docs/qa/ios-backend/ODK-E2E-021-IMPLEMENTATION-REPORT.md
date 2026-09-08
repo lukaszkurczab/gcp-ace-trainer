@@ -1,9 +1,40 @@
 # ODK-E2E-021 — wdrożenie projektu Goal
 
-Status: BLOCKED. Nie wdrożono kodu021. Nie wykonano testów ani E2E021.
+Status: DONE. Wariant `020=3` wdrożono i zweryfikowano E2E.
 
-Bloker: brak wyboru wariantu projektu020 po pięciu udokumentowanych prośbach do PO. To ta sama decyzja, bez której021 nie może rozpocząć się zgodnie z rejestrem. Szczegóły próśb, trzy warianty i specyfikacja są w raporcie020 oraz DESIGN-SPEC.
+## Decyzja PO
 
-Zachowano zadanie w aktywnym rejestrze. Po decyzji wymagany jest konkretny brief wdrożenia wybranego wariantu, niezależna walidacja, implementacja oraz pełny retest EN/PL, motywów, długich nazw, dużego tekstu, zapisu i obu powrotów. VoiceOver pominięto na życzenie właściciela.
+PO wybrał subtelny pionowy akcent przy nazwie tracka. Wcześniejszy licznik próśb pozostaje 5/5. Audyt nie zwiększył licznika.
 
-Przejście do022 nie oznacza zakończenia020 ani021. Po wyborze wrócimy do nich przy najbliższej bezpiecznej granicy.
+## Walidacja briefu
+
+Niezależny `gpt-5.6-luna / max`, bez narzędzi i bez inspekcji repozytorium: zgodność celu i architektury 0,96; prostota 0,92; ryzyko 0,86; utrzymywalność 0,93. Minimum 0,86. Wynik: APPROVE.
+
+## Wdrożenie
+
+- wspólny ekran Goal używa głównego nagłówka `Set learning rhythm for this track`;
+- polski nagłówek brzmi `Ustaw rytm nauki dla tej ścieżki`;
+- nazwa aktualnego tracka jest w elastycznej karcie z pionowym akcentem;
+- długie nazwy zawijają się bez obcięcia;
+- loading zachowuje tę samą hierarchię;
+- nie zmieniono formularza, zapisu ani celu powrotu;
+- nie dodano nowej ścieżki ani fallbacku dla nazw tracków.
+
+## Weryfikacja
+
+- testy celu i nawigacji: 36/36 PASS;
+- typecheck: PASS;
+- `npm run qa:static`: PASS, 891/891 testów, 0 błędów;
+- content boundary i runtime privacy boundary: PASS;
+- Maestro, wejście z Home: PASS;
+- Maestro, wejście z Progress oraz Settings: PASS;
+- EN/light i PL/dark: PASS;
+- systemowy rozmiar tekstu `accessibility-large`: PASS;
+- obejrzano pięć zrzutów. Karta, akcent i zawijanie są poprawne;
+- VoiceOver pominięto na polecenie PO.
+
+Pierwsze dwa przebiegi PL/dark zatrzymały błędne oczekiwanie testu, że zmiana języka tłumaczy nazwę pakietu. Kod poprawnie zachował kanoniczną nazwę `Backend System Design`. Po korekcie wyłącznie tymczasowego scenariusza przebieg zakończył się powodzeniem.
+
+## Wynik
+
+ODK-E2E-020 i ODK-E2E-021 są zakończone. Oba zadania usunięto z aktywnego rejestru. Następne zadanie według kolejności planu to ODK-E2E-024.

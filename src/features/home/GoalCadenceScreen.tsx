@@ -95,8 +95,10 @@ export function GoalLoadingSkeleton({ context, onBack }: Readonly<{ context: str
         <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.loadingShapes}>
           <View style={styles.loadingTitleBlock}>
             <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingTitle, { height: 27 * textScale }]} />
-            <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingTrack, { height: 15 * textScale }]} />
-            <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingDescription, { height: 14 * textScale }]} />
+            <View style={styles.loadingTrackContext}>
+              <View style={styles.loadingTrackAccent} />
+              <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingTrack, { height: 20 * textScale }]} />
+            </View>
           </View>
           <View style={[styles.loadingPanel, largeLayout ? styles.loadingPanelLarge : null]}>
             <SkeletonShape motion={motion} style={[styles.loadingLine, styles.loadingSectionTitle, { height: 17 * textScale }]} />
@@ -278,14 +280,12 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           <Text maxFontSizeMultiplier={2} style={styles.context}>{context}</Text>
         </View>
         <View style={styles.titleBlock}>
-          <View style={styles.titleRow}>
-            <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Goal")}</Text>
-          </View>
+          <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Set learning rhythm for this track")}</Text>
           <View style={styles.trackContext}>
-            <View style={styles.trackDot} />
+            <View style={styles.trackAccent} />
             <Text maxFontSizeMultiplier={2} style={styles.trackLabel}>{t(track.shortTitle)}</Text>
           </View>
-          {editing ? <Text maxFontSizeMultiplier={2} style={styles.description}>{t("Set your learning goal for this track.")}</Text> : (
+          {editing ? null : (
             <View style={styles.statusRow}>
               <View style={[styles.statusBadge, goal?.status === "paused" ? styles.pausedBadge : null]}><Text maxFontSizeMultiplier={2} style={styles.statusBadgeLabel}>{t(goal?.status === "paused" ? "Paused" : "Active")}</Text></View>
             </View>
@@ -464,7 +464,6 @@ function formatGoalDate(value: string, locale: "en" | "pl"): string {
 const createStyles = (palette: AppColors) => StyleSheet.create({
   loadingAction: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, width: "100%" },
   loadingContext: { ...typography.small, color: palette.textSecondary, fontWeight: "500" },
-  loadingDescription: { width: "72%" },
   loadingField: { backgroundColor: palette.surfaceInput, borderRadius: radius.lg, width: "100%" },
   loadingHeader: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minHeight: 44, paddingHorizontal: spacing.xl },
   loadingLine: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1 },
@@ -480,18 +479,18 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   loadingShapes: { gap: spacing.xl },
   loadingTitle: { width: "66%" },
   loadingTitleBlock: { gap: spacing.sm },
-  loadingTrack: { width: "38%" },
+  loadingTrack: { width: "52%" },
+  loadingTrackAccent: { alignSelf: "stretch", backgroundColor: palette.primary, borderRadius: radius.pill, width: 3 },
+  loadingTrackContext: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
   screenContent: { gap: spacing.xxl, paddingBottom: spacing.xxl, paddingTop: 28 },
   header: { gap: spacing.sm },
   headerContext: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minHeight: 44 },
   context: { ...typography.small, color: palette.textSecondary, fontWeight: "500" },
-  titleBlock: { gap: spacing.sm },
-  titleRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
-  title: { color: palette.textPrimary, fontSize: 22, fontWeight: "700", lineHeight: 27 },
-  trackContext: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
-  trackLabel: { ...typography.small, color: palette.textSecondary, fontWeight: "500" },
-  trackDot: { backgroundColor: palette.primary, borderRadius: radius.pill, height: spacing.sm, width: spacing.sm },
-  description: { ...typography.small, color: palette.primary, lineHeight: 19 },
+  titleBlock: { gap: spacing.md },
+  title: { color: palette.textPrimary, fontSize: 28, fontWeight: "600", lineHeight: 34 },
+  trackAccent: { alignSelf: "stretch", backgroundColor: palette.primary, borderRadius: radius.pill, width: 3 },
+  trackContext: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", gap: spacing.md, padding: spacing.lg },
+  trackLabel: { color: palette.textPrimary, flexShrink: 1, fontSize: 20, fontWeight: "600", lineHeight: 28 },
   statusBadge: { backgroundColor: palette.success, borderRadius: radius.md, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
   pausedBadge: { backgroundColor: palette.warning },
   statusBadgeLabel: { color: palette.primary, fontSize: 11, fontWeight: "700", lineHeight: 14 },

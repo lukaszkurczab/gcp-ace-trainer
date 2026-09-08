@@ -1,6 +1,6 @@
 # ODK-E2E-020 — projekt nagłówka i kontekstu tracka
 
-Status: BLOCKED — brak wyboru PO po pięciu udokumentowanych prośbach.
+Status: DONE — PO wybrał wariant 3. Projekt wdrożono i zweryfikowano w ODK-E2E-021.
 
 ## Zakres projektu
 
@@ -32,6 +32,10 @@ Próba PO4/5: przekazano nowe ustalenia niezależnego przeglądu i sprawdzenie k
 
 Próba PO5/5: wskazano gotowy projekt/specyfikację i skutek braku odpowiedzi — blokada020 oraz zależnego021, potem022. Pozostawiono wszystkie trzy warianty. Ostatnia prośba jest nadal otwarta; nie uznano milczenia za zgodę.
 
-## Blokada
+## Historyczna blokada
 
-Po pięciu prośbach i wykonaniu bezpiecznych przygotowań nie otrzymano wyboru. Nierozstrzygnięta decyzja: wariant1,2 albo3 dla nagłówka i boksu tracka. Zadanie020 nie jest zakończone. Zależne021 nie zostało wdrożone. Oba pozostają aktywne jako BLOCKED. Najbliższe niezablokowane zadanie:022. Po odpowiedzi wrócimy do020/021 przy bezpiecznej granicy między zadaniami.
+Po pięciu prośbach i wykonaniu bezpiecznych przygotowań nie otrzymano wyboru. W tamtym stanie zadania020 i021 pozostawały aktywne jako BLOCKED. Późniejsza zbiorcza decyzja PO zakończyła tę blokadę.
+
+## Decyzja PO po audycie zbiorczym
+
+PO zatwierdził `020=3`. Bloker projektu został rozwiązany. Wcześniejszy licznik pozostaje 5/5. Wdrożenie i pełny retest opisuje ODK-E2E-021-IMPLEMENTATION-REPORT.md. Zadanie usunięto z aktywnego rejestru.

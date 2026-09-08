@@ -1,6 +1,14 @@
 # ODK-E2E-026 — model planu nauki
 
-Status: BLOCKED
+Status: ACCEPTED_PENDING_IMPLEMENTATION
+
+## Decyzja PO po audycie zbiorczym
+
+- `026T=T4`: znaczenie daty zależy od typu celu zgodnie z rekomendowanym mapowaniem poniżej.
+- `026C=C3`: pakiet definiuje wersjonowaną regułę ukończenia. Reguła zawiera jawną minimalną liczbę prób, rozmiar ruchomego okna wyników i próg jakości. Nie używa średniej całej historii. Pytania mogą się powtarzać. Ukończenie nie wymaga zobaczenia każdego unikalnego pytania. Brak reguły daje jawny stan `unknown`.
+- `026S=S12`: plan pokazuje jawny shortfall. Skracanie jest dozwolone tylko wtedy, gdy pakiet jawnie deklaruje sensowną skróconą ścieżkę. Materiał z innego zakresu jest zabroniony.
+
+Licznik wcześniejszych prób pozostaje 5/5. Discovery jest zaakceptowane, ale zadanie pozostaje aktywne do wdrożenia i retestu pełnej ścieżki.
 
 ## Potwierdzone fakty
 
@@ -172,6 +180,10 @@ Wariant C3 wymaga od wersjonowanego pakietu jawnych danych:
 - stan przy brakującym materiale.
 
 Brak tych danych nie oznacza ukończenia. Daje `attainability: unknown` i wskazuje brak kontraktu treści.
+
+### Uzupełnienie kontraktu C3
+
+Kontrakt pakietu musi też zawierać `minimumAttemptCount`, `rollingWindowSize`, `qualityThreshold`, sposób wyliczania jakości w ruchomym oknie oraz testy granic tych wartości. Reguła nie może wymagać napotkania każdego unikalnego pytania.
 
 ## Wpływ decyzji na ekran propozycji
 

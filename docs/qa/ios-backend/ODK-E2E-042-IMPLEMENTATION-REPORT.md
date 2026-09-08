@@ -1,6 +1,10 @@
 # ODK-E2E-042 — raport projektu nagłówków
 
-Status: BLOCKED. Licznik próśb PO: 5/5. Bez implementacji.
+Status: ACCEPTED_PENDING_IMPLEMENTATION. Licznik próśb PO pozostaje 5/5. PO wybrał wariant 1. Bez implementacji.
+
+## Decyzja PO po audycie zbiorczym
+
+PO zatwierdził `042=1`, czyli context 16/22/600. Zadanie pozostaje aktywne do wdrożenia 043 i retestu.
 
 ## Wynik
 

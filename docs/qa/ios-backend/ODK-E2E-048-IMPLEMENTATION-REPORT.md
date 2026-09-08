@@ -37,3 +37,7 @@ Dowody potwierdzają treść boxa, brak lokalnej akcji resetu i osobny problem s
 048 jest zadaniem odczytowym. Nie dodano kodu produktu. Wspólna brama po zmianach 045/047: `qa:static` 885/885 PASS przed zmianą 047; test 047 17/17 PASS i typecheck PASS po zmianie.
 
 Nie wykonano eksportu ani usunięcia danych na urządzeniu, ponieważ discovery sprawdzało kontrakty bez mutacji. Nie wykonano VoiceOver. Główne urządzenie konta wymaga ponownego logowania; użyto zachowanego dowodu authenticated oraz osobnego symulatora gościa.
+
+## Decyzje PO po audycie zbiorczym
+
+PO zatwierdził warianty A dla ODK-E2E-106, 107 i 108. Liczniki pozostają 0/5. Decyzje nie zamykają zadań bez implementacji i retestu.

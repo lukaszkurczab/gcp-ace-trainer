@@ -1,6 +1,10 @@
 # ODK-E2E-026 — raport discovery
 
-Status: BLOCKED
+Status: ACCEPTED_PENDING_IMPLEMENTATION
+
+## Decyzja PO po audycie zbiorczym
+
+PO zatwierdził `T4`, `C3` i `S12`. Reguła C3 używa minimalnej liczby prób, progu jakości oraz bieżącego ruchomego okna wyników. Wartości są jawne i należą do wersjonowanego kontraktu pakietu. Pytania mogą się powtarzać. Brak reguły daje stan nieznany. Licznik wcześniejszych prób pozostaje 5/5.
 
 ## Wynik przygotowania
 
@@ -38,3 +42,5 @@ Nie zmieniono runtime. Nie uruchamiano E2E. Discovery opiera się na zweryfikowa
 ## Bloker
 
 PO musi zatwierdzić semantykę target date, regułę ukończenia i zachowanie przy shortfall. Licznik: 5/5. Brak odpowiedzi. Zadanie pozostaje w aktywnym rejestrze jako `BLOCKED`.
+
+Bloker został rozwiązany przez zbiorczą decyzję PO. Zadanie pozostaje aktywne do implementacji i retestu zależnej ścieżki.
