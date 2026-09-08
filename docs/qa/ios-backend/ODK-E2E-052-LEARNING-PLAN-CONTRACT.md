@@ -54,7 +54,7 @@ type LearningPlan = {
   goalRevision: number;
   status: "accepted" | "paused" | "completed";
   timezone: string;
-  contentPackageVersion: string;
+  contentPackagePin: ContentPackagePin;
   createdAt: string;
   updatedAt: string;
   planRevision: number;
@@ -69,14 +69,16 @@ type PlanSlot = {
 };
 ```
 
-Plan nie kopiuje wyników sesji ani kolejki review. `goalRevision` pochodzi z `GoalSnapshot`. `sessionLength` opisuje planowaną liczbę pytań. Konkretne pytania są wybierane przy starcie sesji z aktualnego zakresu i review.
+Plan nie kopiuje wyników sesji ani kolejki review. `goalRevision` pochodzi z `GoalSnapshot`. `contentPackagePin` jest pełnym, zweryfikowanym pinem pakietu, a nie samą wersją. `sessionLength` opisuje planowaną liczbę pytań. Konkretne pytania są wybierane przy starcie sesji z aktualnego zakresu i review.
+
+Nie ma migracji tego pola: runtime nie posiada jeszcze trwałego `LearningPlan`.
 
 Propozycja jest nietrwałym `LearningPlanProposal`. Nie jest synchronizowana. Dopiero jawna akceptacja tworzy `LearningPlan` z `planRevision: 1`.
 
 ## Wejścia generatora
 
 - `GoalSnapshot`;
-- zaakceptowany track i wersja pakietu treści;
+- zaakceptowany track i pełny, zweryfikowany pin pakietu treści;
 - dostępny zakres pytań;
 - terminalne fakty sesji i prób;
 - aktualna kolejka review;
