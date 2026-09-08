@@ -75,6 +75,25 @@ test("notification reminder row and editor use the Figma-specific row and sheet 
   assert.match(sheet, /testID="settings-bottom-sheet-close"/);
 });
 
+test("reminder editor exposes the approved separate-times checkbox and one field per goal day", () => {
+  const en = JSON.parse(readFileSync("src/locales/en/notifications.json", "utf8")) as Record<string, string>;
+  const pl = JSON.parse(readFileSync("src/locales/pl/notifications.json", "utf8")) as Record<string, string>;
+  assert.match(screen, /accessibilityRole="checkbox"[\s\S]*testID="notification-separate-times-checkbox"/);
+  assert.match(screen, /accessibilityState=\{\{ checked: separateTimes/);
+  assert.match(screen, /GOAL_DAY_IDS\.filter\(\(day\) => notifications\.context\.preferredDays\.includes\(day\)\)/);
+  assert.match(screen, /testID=\{`notification-day-time-input-\$\{day\}`\}/);
+  assert.match(screen, /testID="notification-common-time-input"/);
+  assert.match(screen, /setByDayDraftEdited\(true\)/);
+  assert.match(screen, /if \(!byDayDraftEdited\) setDayTimes/);
+  assert.match(screen, /if \(separateTimes\) \{[\s\S]*mode: "by-day"[\s\S]*parseDailyReminderTime\(dayTimes\[day\][\s\S]*\} else \{[\s\S]*parseDailyReminderTime\(reminderTime\)/);
+  assert.equal(en.sheetTitle, "Reminder times");
+  assert.equal(en.separateTimes, "Use separate times");
+  assert.equal(pl.sheetTitle, "Godziny przypomnień");
+  assert.equal(pl.separateTimes, "Użyj osobnych godzin");
+  assert.equal(en.noGoalDays, "Add preferred days to your goal before setting reminder times.");
+  assert.equal(pl.noGoalDays, "Dodaj preferowane dni do celu, aby ustawić godziny przypomnień.");
+});
+
 test("notification settings preserves the source context and direct-entry fallback", () => {
   const en = JSON.parse(readFileSync("src/locales/en/notifications.json", "utf8")) as Record<string, string>;
   const pl = JSON.parse(readFileSync("src/locales/pl/notifications.json", "utf8")) as Record<string, string>;

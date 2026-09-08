@@ -1,30 +1,44 @@
-# ODK-E2E-025 — projekt godzin
+# ODK-E2E-025 — godziny przypomnień
 
-Status: OPEN. Licznik próśb PO pozostaje 5/5. PO wybrał wariant 2. Bez implementacji.
+Status: DONE. PO wybrał wariant 2. Licznik wcześniejszych próśb pozostaje 5/5.
 
-## Decyzja PO po audycie zbiorczym
+## Decyzja
 
-PO zatwierdził `025=2`: checkbox włączający osobne godziny oraz lista wybranych dni. Zadanie pozostaje aktywne do implementacji i retestu.
+Checkbox włącza osobne godziny. Bez zaznaczenia jedna wspólna godzina obowiązuje we wszystkie dni aktywnego celu. Po zaznaczeniu każdy wybrany dzień ma własne pole czasu.
 
-## Wykonano
+## Walidacja
 
-Sprawdzono obecny ekran, bottom sheet, lokalizacje, model celu i tokeny. Maestro2026-09-08_045809 przechwycił edytor bez zapisu i zmiany uprawnień. Obejrzano zrzut. Trzy osobne wywołania ImageGen otrzymały ten zrzut. Każdy wynik pokazano raz. Kolejność1–3 jest zapisana w ODK-E2E-025-DESIGN-SPEC.md.
+Brief wdrożeniowy ocenił niezależny `gpt-5.6-luna / max`: zgodność 0,94; prostota 0,83; ryzyko 0,85; utrzymywalność 0,87. Minimum 0,83. APPROVE.
 
-Brief został niezależnie zatwierdzony przez gpt-5.6-luna / max. Minimum początkowe0,87. Po doprecyzowaniu szkicu i nowego dnia0,91. Spec opisuje oba tryby, nowe dni, anulowanie, błędy, EN/PL, motywy i duży tekst. Nie rozstrzyga zakresu024.
+Pierwszy review kodu odrzucił zmianę z minimum 0,60. Wykrył zależność trybu osobnego od ukrytej godziny wspólnej, brak cleanupu po usunięciu aktywnego tracka, zbyt słabe recovery duplikatów i brak stanu celu bez dni. Wszystkie cztery problemy poprawiono.
 
-## Prośby PO
+Ponowny review: zgodność 0,94; prostota 0,84; ryzyko 0,84; utrzymywalność 0,88. Minimum 0,84. PASS.
 
-1. Po pokazaniu wszystkich obrazów zapytano o wybór1/2/3 albo poprawki. Brak odpowiedzi.
-2. Po zapisaniu spec przekazano regułę szkicu i prostą różnicę obsługi: segmenty/lista, checkbox/lista, wybór dnia/jedno pole. Ponownie poproszono o numer. Brak odpowiedzi.
+## Wdrożenie
 
-3. Po niezależnym QA i uzupełnieniu lokalizacji oraz dużego tekstu poproszono o sam numer. Brak odpowiedzi.
+- kanoniczny rekord ma jawny tryb `same-time` albo `by-day`;
+- każdy harmonogram dnia przechowuje własny czas;
+- rekord oraz niedokończony journal ODK-E2E-024 migrują do wersji 2;
+- tryb wspólny ma jedno źródło czasu, a tryb osobny kompletną listę dni celu;
+- nowe dni dziedziczą czas pierwszego istniejącego dnia w kolejności pon.–niedz.; fallback to 20:00;
+- usunięte dni i brak aktywnego tracka usuwają stare systemowe wpisy;
+- recovery sprawdza rzeczywiste wpisy systemowe i utrwala każdy udany cleanup;
+- ekran zachowuje oba szkice podczas przełączania, ale zapisuje tylko aktywny tryb;
+- zamknięcie arkusza odrzuca niezapisany szkic;
+- `no-days` jest jawnym, zablokowanym stanem;
+- EN i PL mają ten sam kontrakt 60 kluczy.
 
-4. Polecono wariant1, bo pokazuje oba tryby i wszystkie godziny. Pytanie uproszczono do Tak1 albo2/3. Brak odpowiedzi.
+## Weryfikacja
 
-5. Ostatnia prośba po przygotowaniu projektów, spec i QA. Wyjaśniono, że brak wyboru spowoduje BLOCKED i przejście do044. Brak odpowiedzi. Zadanie pozostaje aktywne jako BLOCKED. Wymagana decyzja: wybór projektu 1, 2 albo 3 lub wskazanie zmian.
+- wąska brama: 33/33 PASS;
+- końcowy `npm run qa:static`: PASS;
+- pełny zestaw: 910/910 PASS;
+- typecheck, recovery, granica treści i prywatności runtime: PASS;
+- Maestro PL/dark: tryb osobny, trzy pola, zapis, ponowne otwarcie i anulowanie szkicu: PASS;
+- Maestro PL/dark: wielokrotne przełączanie zachowuje dwa szkice, a tryb wspólny 17:00 zapisuje się i otwiera ponownie: PASS;
+- obejrzano cztery końcowe zrzuty. Układ jest czytelny i nie jest obcięty;
+- VoiceOver pominięto zgodnie z decyzją PO.
 
-## Weryfikacja i ograniczenia
+## Wynik
 
-Obrazy obejrzano. Są kierunkami wizualnymi, nie działającą aplikacją. Spec wskazuje odstępstwa generatora: gradienty, kontrast wybranego dnia w3 i dodatkowy blok tła w2. Nie należy ich przenosić do kodu. Nie wykonano testów wdrożenia025 ani retestu obu nowych trybów. Nie utworzono zadania wdrożeniowego przed wyborem PO. Brak zatwierdzenia oznacza, że025 pozostaje aktywne. Materiały są tymczasowe do zakończenia ścieżki.
-
-Niezależne QA projektu, gpt-5.6-luna / max: PASS warunkowy. Uzupełniono pełną tabelę copy EN/PL, skróty dni, token light bottomSheet oraz źródło tracka przy wejściu z Settings. Brak dowodu7dni/2×/klawiatura pozostaje jawnym wymogiem przyszłego wdrożenia. Nie zmieniono kodu.
+ODK-E2E-025 usunięto z aktywnego rejestru. ODK-E2E-034 pozostaje zablokowane tylko przez ODK-E2E-029.

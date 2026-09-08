@@ -2,4 +2,4 @@
 
 Status: BLOCKED
 
-Harmonogram przypomnień wymaga planu z `ODK-E2E-029` oraz godzin indywidualnych z `ODK-E2E-025`. ODK-E2E-024 zakończono po decyzji PO i wdrożono WEEKLY dla dni celu. Pozostałe zależności nadal blokują034. Zadanie pozostaje aktywne.
+Harmonogram przypomnień wymaga planu z `ODK-E2E-029`. ODK-E2E-024 i ODK-E2E-025 są zakończone: działają dni celu, wspólna godzina i godziny per dzień. Zależność 029 nadal blokuje 034. Zadanie pozostaje aktywne.

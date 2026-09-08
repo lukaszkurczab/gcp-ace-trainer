@@ -1,6 +1,6 @@
 # ODK-E2E-025 — godziny przypomnień
 
-Status: ACCEPTED_PENDING_IMPLEMENTATION. PO wybrał wariant 2 po audycie zbiorczym. Nie wdrożono harmonogramu.
+Status: IMPLEMENTED. PO wybrał wariant 2 po audycie zbiorczym. Wdrożenie i retest zakończono w ODK-E2E-025-IMPLEMENTATION-REPORT.md.
 
 ## Decyzja PO po audycie zbiorczym
 
@@ -10,7 +10,7 @@ PO zatwierdził `025=2`. Checkbox włącza osobne godziny i pokazuje listę wybr
 
 Użytkownik ustawia jedną godzinę dla dni celu albo inną godzinę dla każdego dnia. Dni pochodzą z Goal. Ten edytor nie zmienia dni. Pokazuje nazwę wskazanej ścieżki.
 
-Projekt dotyczy godzin jednego celu. Nie rozstrzyga blokera024: aktualna ścieżka czy wszystkie aktywne cele. Zapis i aktualizacja natywnych powiadomień należą do024/034. Implementacja wymaga decyzji024 i wyboru projektu025.
+Projekt dotyczy godzin jednego celu. Decyzja024 ogranicza przypomnienia do aktualnej ścieżki. Zapis i aktualizacja natywnych powiadomień działają dla dni aktywnego celu.
 
 ## Źródła
 

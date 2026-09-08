@@ -8,10 +8,10 @@ import {
   reconcilePracticeReminder,
   requestNotificationPermission,
   savePracticeReminder,
-  type DailyReminderTime,
   type NotificationPermission,
   type PracticeReminder,
   type PracticeReminderCopy,
+  type PracticeReminderDraft,
   type ReminderContext,
   type NotificationSettings,
 } from "../application/notificationPreferences";
@@ -33,7 +33,7 @@ type NotificationSettingsState = Readonly<{
   refresh: () => Promise<void>;
   requestPermission: () => Promise<NotificationPermission>;
   saveReminder: (
-    time: DailyReminderTime,
+    draft: PracticeReminderDraft,
     notification: PracticeReminderCopy,
   ) => Promise<boolean>;
   disableReminder: (notification: PracticeReminderCopy) => Promise<boolean>;
@@ -117,7 +117,7 @@ export function useNotificationSettings(copy: PracticeReminderCopy): Notificatio
   }, [guard, permission]);
 
   const saveReminder = useCallback(async (
-    time: DailyReminderTime,
+    draft: PracticeReminderDraft,
     notification: PracticeReminderCopy,
   ) => {
     const revision = guard.beginMutation();
@@ -129,7 +129,7 @@ export function useNotificationSettings(copy: PracticeReminderCopy): Notificatio
       setLoading(false);
     }
     try {
-      const next = await savePracticeReminder(expoNotificationPlatform, time, notification);
+      const next = await savePracticeReminder(expoNotificationPlatform, draft, notification);
       if (mountedRef.current) {
         setSettings(next);
         setContext(next.context);

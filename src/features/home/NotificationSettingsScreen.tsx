@@ -20,6 +20,7 @@ import {
   formatDailyReminderTime,
   NotificationPermissionDeniedError,
   parseDailyReminderTime,
+  type PracticeReminderDraft,
 } from "../../application/notificationPreferences";
 import { useAppPreferences, useNotificationSettings, useThemedStyles } from "../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../theme";
@@ -35,6 +36,10 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
   const [reminderError, setReminderError] = useState<string | null>(null);
   const [reminderSheetVisible, setReminderSheetVisible] = useState(false);
   const [reminderTime, setReminderTime] = useState("20:00");
+  const [separateTimes, setSeparateTimes] = useState(false);
+  const [byDayDraftEdited, setByDayDraftEdited] = useState(false);
+  const [dayTimes, setDayTimes] = useState<Partial<Record<GoalDay, string>>>({});
+  const [dayErrors, setDayErrors] = useState<Partial<Record<GoalDay, string>>>({});
   const [openSettingsError, setOpenSettingsError] = useState(false);
   const { t } = useTranslation("notifications");
   const text = {
@@ -87,7 +92,11 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
   goalPaused: t("goalPaused"),
   noActiveGoal: t("noActiveGoal"),
   noActiveTrack: t("noActiveTrack"),
+  noGoalDays: t("noGoalDays"),
   dayMon: t("dayMon"), dayTue: t("dayTue"), dayWed: t("dayWed"), dayThu: t("dayThu"), dayFri: t("dayFri"), daySat: t("daySat"), daySun: t("daySun"),
+  separateTimes: t("separateTimes"),
+  separateTimesDetail: t("separateTimesDetail"),
+  sameTimeSummary: t("sameTimeSummary"),
   };
   const notification = useMemo(() => ({ body: text.notificationBody, title: text.notificationTitle }), [text.notificationBody, text.notificationTitle]);
   const notifications = useNotificationSettings(notification);
@@ -116,10 +125,14 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
   const dayLabels: Readonly<Record<GoalDay, string>> = {
     mon: text.dayMon, tue: text.dayTue, wed: text.dayWed, thu: text.dayThu, fri: text.dayFri, sat: text.daySat, sun: text.daySun,
   };
-  const goalStatusDetail = notifications.context.status === "paused" ? text.goalPaused : notifications.context.status === "missing-track" ? text.noActiveTrack : text.noActiveGoal;
+  const goalStatusDetail = notifications.context.status === "paused" ? text.goalPaused : notifications.context.status === "missing-track" ? text.noActiveTrack : notifications.context.status === "no-days" ? text.noGoalDays : text.noActiveGoal;
 
   useEffect(() => {
-    if (!reminderSheetVisible && notifications.practiceReminder) setReminderTime(formatDailyReminderTime(notifications.practiceReminder));
+    if (!reminderSheetVisible && notifications.practiceReminder) {
+      const reminder = notifications.practiceReminder;
+      const fallback = reminder.commonTime ?? reminder.schedules[0]?.time ?? { hour: 20, minute: 0 };
+      setReminderTime(formatDailyReminderTime(fallback));
+    }
   }, [notifications.practiceReminder, reminderSheetVisible]);
 
   async function requestPermission(): Promise<void> {
@@ -133,21 +146,34 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
   function openReminderSheet(): void {
     notifications.clearError();
     setReminderError(null);
-    setReminderTime(notifications.practiceReminder ? formatDailyReminderTime(notifications.practiceReminder) : "20:00");
+    const reminder = notifications.practiceReminder;
+    const fallback = reminder?.commonTime ?? reminder?.schedules[0]?.time ?? { hour: 20, minute: 0 };
+    const common = formatDailyReminderTime(fallback);
+    setReminderTime(common);
+    setSeparateTimes(reminder?.mode === "by-day");
+    setByDayDraftEdited(reminder?.mode === "by-day");
+    setDayTimes(Object.fromEntries(notifications.context.preferredDays.map((day) => [day, reminder?.schedules.find((entry) => entry.day === day) ? formatDailyReminderTime(reminder.schedules.find((entry) => entry.day === day)!.time) : common])));
+    setDayErrors({});
     setReminderSheetVisible(true);
   }
 
   async function saveReminder(): Promise<void> {
-    let time;
+    let draft: PracticeReminderDraft;
     try {
-      time = parseDailyReminderTime(reminderTime);
+      if (separateTimes) {
+        draft = { mode: "by-day", commonTime: null, days: notifications.context.preferredDays.map((day) => ({ day, time: parseDailyReminderTime(dayTimes[day] ?? "") })) };
+      } else {
+        const commonTime = parseDailyReminderTime(reminderTime);
+        draft = { mode: "same-time", commonTime, days: notifications.context.preferredDays.map((day) => ({ day, time: commonTime })) };
+      }
     } catch {
       setReminderError(text.reminderTimeInvalid);
+      if (separateTimes) setDayErrors(Object.fromEntries(notifications.context.preferredDays.filter((day) => { try { parseDailyReminderTime(dayTimes[day] ?? ""); return false; } catch { return true; } }).map((day) => [day, text.reminderTimeInvalid])));
       return;
     }
 
     try {
-      const saved = await notifications.saveReminder(time, notification);
+      const saved = await notifications.saveReminder(draft, notification);
       if (!saved) return;
       setReminderError(null);
       setReminderSheetVisible(false);
@@ -243,7 +269,7 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
 
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{text.reminderSection}</Text>
         <ListRow
-          detail={notifications.loading || notifications.permission === null ? text.reminderUnavailable : reminderBlocked ? text.reminderBlocked : goalUnavailable ? goalStatusDetail : notifications.practiceReminder ? formatDailyReminderTime(notifications.practiceReminder) : text.reminderOff}
+          detail={notifications.loading || notifications.permission === null ? text.reminderUnavailable : reminderBlocked ? text.reminderBlocked : goalUnavailable ? goalStatusDetail : notifications.practiceReminder ? notifications.practiceReminder.mode === "by-day" ? notifications.practiceReminder.schedules.map((entry) => `${dayLabels[entry.day]} ${formatDailyReminderTime(entry.time)}`).join(" · ") : `${text.sameTimeSummary} ${formatDailyReminderTime(notifications.practiceReminder.commonTime!)}` : text.reminderOff}
           disabled={reminderDisabled}
           leading={<IconTile iconSize={20} name="bell" size={32} tone={reminderBlocked ? "muted" : "settings"} />}
           onPress={openReminderSheet}
@@ -263,19 +289,39 @@ export function NotificationSettingsScreen({ navigation, route }: NotificationSe
         variant="reminder"
         visible={reminderSheetVisible}
       >
-        <TextInput
+        <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: separateTimes, disabled: notifications.loading || notifications.busy }} disabled={notifications.loading || notifications.busy} onPress={() => { setSeparateTimes((value) => !value); setReminderError(null); setDayErrors({}); }} style={styles.checkboxRow} testID="notification-separate-times-checkbox">
+          <View style={[styles.checkbox, separateTimes ? styles.checkboxChecked : null]}>{separateTimes ? <Icon color={colors.onPrimary} name="check" size={16} /> : null}</View>
+          <View style={styles.checkboxCopy}>
+            <Text maxFontSizeMultiplier={2} style={styles.checkboxTitle}>{text.separateTimes}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.checkboxDetail}>{text.separateTimesDetail}</Text>
+          </View>
+        </Pressable>
+        {separateTimes ? (
+          <View style={styles.dayTimeList}>
+            {GOAL_DAY_IDS.filter((day) => notifications.context.preferredDays.includes(day)).map((day) => (
+              <View key={day} style={styles.dayTimeRow} testID={`notification-day-time-${day}`}>
+                <Text maxFontSizeMultiplier={2} style={styles.dayTimeLabel}>{dayLabels[day]}</Text>
+                <View style={styles.dayTimeField}>
+                  <TextInput accessibilityLabel={`${dayLabels[day]} ${text.dailyReminder}`} autoCapitalize="none" editable={!notifications.loading && !notifications.busy} keyboardType="numbers-and-punctuation" maxFontSizeMultiplier={2} maxLength={5} onChangeText={(value) => { setByDayDraftEdited(true); setDayTimes((current) => ({ ...current, [day]: value })); setDayErrors((current) => ({ ...current, [day]: undefined })); setReminderError(null); }} placeholder={text.reminderTimePlaceholder} placeholderTextColor={colors.textMuted} style={styles.dayTimeInput} testID={`notification-day-time-input-${day}`} value={dayTimes[day] ?? reminderTime} />
+                  {dayErrors[day] ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.reminderError}>{dayErrors[day]}</Text> : null}
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : <TextInput
           accessibilityLabel={text.dailyReminder}
           autoCapitalize="none"
           keyboardType="numbers-and-punctuation"
           maxLength={5}
           maxFontSizeMultiplier={2}
-          onChangeText={(value) => { setReminderTime(value); setReminderError(null); }}
+          onChangeText={(value) => { setReminderTime(value); if (!byDayDraftEdited) setDayTimes(Object.fromEntries(notifications.context.preferredDays.map((day) => [day, value]))); setReminderError(null); }}
           placeholder={text.reminderTimePlaceholder}
           placeholderTextColor={colors.textMuted}
           editable={!notifications.loading && !notifications.busy}
           style={styles.reminderTimeInput}
+          testID="notification-common-time-input"
           value={reminderTime}
-        />
+        />}
         {reminderError ? <Text accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.reminderError}>{reminderError}</Text> : null}
         {reminderOperationError ? <InfoBlock accessibilityAlert body={reminderOperationError.body} title={reminderOperationError.title} testID={`notification-settings-error-${notifications.error}`} tone="warning" /> : null}
         <View style={styles.sheetActions}>
@@ -364,6 +410,17 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dayList: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   dayBadge: { ...typography.small, backgroundColor: palette.primarySoft, borderRadius: radius.pill, color: palette.primary, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
   reminderTimeInput: { color: palette.textPrimary, fontSize: 28, fontWeight: "600", lineHeight: 34, minHeight: 66, paddingHorizontal: spacing.xl, paddingVertical: spacing.lg, textAlign: "center", textAlignVertical: "center" },
+  checkboxRow: { alignItems: "flex-start", flexDirection: "row", gap: spacing.md, minHeight: 48 },
+  checkbox: { alignItems: "center", borderColor: palette.borderStrong, borderRadius: 5, borderWidth: 1, height: 22, justifyContent: "center", marginTop: 1, width: 22 },
+  checkboxChecked: { backgroundColor: palette.primary, borderColor: palette.primary },
+  checkboxCopy: { flex: 1, gap: spacing.xxs },
+  checkboxTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  checkboxDetail: { ...typography.small, color: palette.textSecondary },
+  dayTimeList: { gap: spacing.md },
+  dayTimeRow: { alignItems: "flex-start", flexDirection: "row", gap: spacing.lg, minHeight: 58 },
+  dayTimeLabel: { ...typography.bodyStrong, color: palette.textPrimary, minWidth: 44, paddingTop: spacing.md },
+  dayTimeField: { flex: 1, gap: spacing.xs },
+  dayTimeInput: { ...typography.bodyStrong, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, color: palette.textPrimary, minHeight: 48, paddingHorizontal: spacing.lg, textAlign: "center" },
   reminderError: { ...typography.small, color: palette.danger },
   sheetActions: { gap: spacing.lg },
 });
