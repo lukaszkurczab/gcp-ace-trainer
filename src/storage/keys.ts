@@ -17,6 +17,7 @@ export const STORAGE_KEYS = {
   REVIEW_INDEX: `${PREFIX}review-index`,
   SETTINGS: `${PREFIX}settings`,
   goal: (trackId: string) => `${PREFIX}goal:${trackId}`,
+  GOAL_ONBOARDING_PREFERENCES: `${PREFIX}goal-onboarding-preferences`,
   NOTIFICATION_SETTINGS: `${PREFIX}notification-settings`,
   ACTIVE_JOURNAL: `${PREFIX}journal:active`,
   ACCOUNT_SYNC: `${PREFIX}account-sync`,

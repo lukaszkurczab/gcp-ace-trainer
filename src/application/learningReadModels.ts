@@ -10,10 +10,12 @@ import {
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
   getGoal,
+  isGoalOnboardingDismissed,
   getReviewQueueItems,
   getTrainingAttempts,
   saveActiveTrackId,
   saveGoal,
+  dismissGoalOnboarding,
 } from "../storage/repositories";
 import { getAttempts, getPracticeHistory } from "../storage/queries";
 import type { StorageIssue } from "../storage/repositories/result";
@@ -30,6 +32,8 @@ export async function loadActiveTrackId() { return getActiveTrackId(); }
 export async function selectActiveTrack(trackId: TrackId) { await saveActiveTrackId(trackId); }
 export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId); }
 export async function persistGoal(goal: GoalRecord): Promise<void> { await saveGoal(goal); }
+export function loadGoalOnboardingDismissed(trackId: TrackId): boolean { return isGoalOnboardingDismissed(trackId); }
+export function persistGoalOnboardingDismissal(trackId: TrackId): void { dismissGoalOnboarding(trackId); }
 export async function loadExamSummaries() { return getAttempts(); }
 export async function loadPracticeHistory() { return getPracticeHistory(); }
 export async function loadTrainingAttempts() { return getTrainingAttempts(); }

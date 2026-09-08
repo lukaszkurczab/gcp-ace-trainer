@@ -32,6 +32,27 @@ test("the first Home visit replaces repeated empty metrics with one honest next-
   assert.match(homeTab, /hasActiveSession \|\| isFirstUse \? null/);
   assert.match(homeTab, /Your learning starts here/);
   assert.match(homeTab, /Complete your first session to see progress and activity here\./);
+  assert.match(homeTab, /isFirstUse && !showGuestGoalOnboarding/);
   assert.match(homeTab, /\{!isFirstUse \? <View style=\{styles\.overviewSection\}/);
   assert.match(homeTab, /firstUseState:\s*\{[\s\S]*?backgroundColor: palette\.surface/);
+});
+
+test("guest goal onboarding stays optional, reloads after Goal, and persists dismissal per track", () => {
+  const homeTab = readFileSync("src/features/home/tabs/HomeTab.tsx", "utf8");
+  const navigation = readFileSync("src/navigation/types.ts", "utf8");
+
+  assert.match(source, /loadGoalOnboardingDismissed\(savedTrackId\)/);
+  assert.match(source, /catch \{ goalOnboardingDismissed = true; \}/);
+  assert.match(source, /account\.state\.kind === "guest" && data\.goal === null && !data\.goalOnboardingDismissed/);
+  assert.match(source, /persistGoalOnboardingDismissal\(activeTrack\.id\)/);
+  assert.match(source, /returnTo: "home", trackId: activeTrack\.id/);
+  assert.match(navigation, /GoalCadenceReturnTo = "home" \| "progress" \| "settings"/);
+  assert.match(homeTab, /testID=\{runtimeSelectors\.goalOnboarding\.root\(\)\}/);
+  assert.match(homeTab, /runtimeSelectors\.home\.primaryAction\(\)/);
+  assert.match(homeTab, /t\("Set a goal for this track"\)/);
+  assert.match(homeTab, /t\("Choose when and why you want to practise \{\{trackName\}\}\."/);
+  assert.match(homeTab, /testID=\{runtimeSelectors\.goalOnboarding\.setGoal\(\)\}/);
+  assert.match(homeTab, /testID=\{runtimeSelectors\.goalOnboarding\.notNow\(\)\}/);
+  assert.match(homeTab, /We couldn't save this choice\. Try again\./);
+  assert.match(homeTab, /minHeight: 44/);
 });

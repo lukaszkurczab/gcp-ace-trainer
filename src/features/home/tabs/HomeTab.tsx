@@ -26,11 +26,14 @@ type HomeTabProps = {
   dashboardError: string | null;
   onChangeTrack: () => void;
   onChooseTopic: () => void;
+  onDismissGoalOnboarding: () => Promise<void>;
   onOpenActivity: () => void;
   onOpenSettings: () => void;
+  onSetGoal: () => void;
   onRecommendationAction: (action: HomeRecommendationAction) => void;
   onStartLearning: (topicId: string) => void;
   reviewQueueItems: readonly ReviewQueueEntry[];
+  showGuestGoalOnboarding: boolean;
   trainingAttempts: readonly TrainingAttempt[];
 };
 
@@ -110,11 +113,14 @@ export function HomeTab({
   dashboardError,
   onChangeTrack,
   onChooseTopic,
+  onDismissGoalOnboarding,
   onOpenActivity,
   onOpenSettings,
+  onSetGoal,
   onRecommendationAction,
   onStartLearning,
   reviewQueueItems,
+  showGuestGoalOnboarding,
   trainingAttempts,
 }: HomeTabProps) {
   const styles = useThemedStyles(createStyles);
@@ -124,6 +130,8 @@ export function HomeTab({
   const largeText = fontScale >= 1.3;
   const actionMeasurementKey = `${i18n.resolvedLanguage ?? i18n.language}:${fontScale}:${width}`;
   const [actionMeasurements, setActionMeasurements] = useState<HomeActionMeasurements>({ key: "", widths: { activity: 0, focus: 0 } });
+  const [goalOnboardingError, setGoalOnboardingError] = useState<string | null>(null);
+  const [savingGoalOnboarding, setSavingGoalOnboarding] = useState(false);
   const actionWidths = actionMeasurements.key === actionMeasurementKey
     ? actionMeasurements.widths
     : { activity: 0, focus: 0 };
@@ -168,6 +176,19 @@ export function HomeTab({
         ? current
         : { key: actionMeasurementKey, widths: { ...widths, [key]: width } };
     });
+  }
+
+  async function dismissGoalOnboarding(): Promise<void> {
+    if (savingGoalOnboarding) return;
+    setSavingGoalOnboarding(true);
+    setGoalOnboardingError(null);
+    try {
+      await onDismissGoalOnboarding();
+    } catch {
+      setGoalOnboardingError(t("We couldn't save this choice. Try again."));
+    } finally {
+      setSavingGoalOnboarding(false);
+    }
   }
 
   return (
@@ -240,7 +261,7 @@ export function HomeTab({
           style={styles.startButton}
           testID={resumeSessionId
             ? runtimeSelectors.resume.continue(resumeSessionId)
-            : undefined}
+            : runtimeSelectors.home.primaryAction()}
           variant="primary"
         >
           {t(decisionLabel)}
@@ -256,7 +277,39 @@ export function HomeTab({
           </Pressable>
         )}
       </Card>
-      {isFirstUse ? (
+      {showGuestGoalOnboarding ? (
+        <Card style={styles.goalOnboardingCard} testID={runtimeSelectors.goalOnboarding.root()}>
+          <View style={[styles.goalOnboardingHeading, largeText ? styles.goalOnboardingHeadingLargeText : null]}>
+            <View style={styles.firstUseIcon}>
+              <Icon color={palette.accentTeal} name="route" size={20} />
+            </View>
+            <View style={styles.goalOnboardingCopy}>
+              <Text maxFontSizeMultiplier={2} style={styles.firstUseTitle}>{t("Set a goal for this track")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.firstUseDetail}>
+                {t("Choose when and why you want to practise {{trackName}}.", { trackName: t(activeTrack.shortTitle) })}
+              </Text>
+            </View>
+          </View>
+          <Button onPress={onSetGoal} testID={runtimeSelectors.goalOnboarding.setGoal()}>
+            {t("Set a goal")}
+          </Button>
+          <Pressable
+            accessibilityRole="button"
+            disabled={savingGoalOnboarding}
+            onPress={() => { void dismissGoalOnboarding(); }}
+            style={({ pressed }) => [styles.goalOnboardingSecondary, pressed ? styles.pressed : null]}
+            testID={runtimeSelectors.goalOnboarding.notNow()}
+          >
+            <Text maxFontSizeMultiplier={2} style={styles.secondaryActionText}>{t("Not now")}</Text>
+          </Pressable>
+          {goalOnboardingError ? (
+            <Text accessibilityLiveRegion="polite" maxFontSizeMultiplier={2} style={styles.goalOnboardingError} testID={runtimeSelectors.goalOnboarding.error()}>
+              {goalOnboardingError}
+            </Text>
+          ) : null}
+        </Card>
+      ) : null}
+      {isFirstUse && !showGuestGoalOnboarding ? (
         <View style={styles.firstUseState}>
           <View style={styles.firstUseIcon}>
             <Icon color={palette.accentTeal} name="route" size={20} />
@@ -607,6 +660,39 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   firstUseCopy: { flex: 1, gap: spacing.xxs, minWidth: 0 },
   firstUseTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   firstUseDetail: { ...typography.body, color: palette.textSecondary },
+  goalOnboardingCard: {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
+  goalOnboardingHeading: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  goalOnboardingHeadingLargeText: {
+    flexDirection: "column",
+  },
+  goalOnboardingCopy: {
+    flex: 1,
+    gap: spacing.xxs,
+    minWidth: 0,
+  },
+  goalOnboardingSecondary: {
+    alignItems: "center",
+    alignSelf: "center",
+    justifyContent: "center",
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+  },
+  goalOnboardingError: {
+    ...typography.small,
+    color: palette.danger,
+    textAlign: "center",
+  },
   overviewSection: {
     gap: 2,
   },

@@ -52,13 +52,15 @@ test("Settings opens the shared goal screen with its return context", () => {
   assert.match(settings, /onPress=\{onOpenGoal\}/);
   assert.match(settings, /testID="settings-goal"/);
   assert.match(home, /onOpenGoal=\{\(\) => navigation\.navigate\(ROUTES\.GOAL_CADENCE, \{ returnTo: "settings", trackId: activeTrack\.id \}\)\}/);
-  assert.match(screen, /const returnTo: GoalCadenceReturnTo = route\.params\?\.returnTo === "settings" \? "settings" : "progress"/);
-  assert.match(screen, /const context = t\(returnTo === "settings" \? "Settings" : "Progress"\)/);
+  assert.match(navigationTypes, /export type GoalCadenceReturnTo = "home" \| "progress" \| "settings"/);
+  assert.match(screen, /const returnTo: GoalCadenceReturnTo = route\.params\?\.returnTo \?\? "progress"/);
+  assert.match(screen, /returnTo === "home" \? "Home" : "Progress"/);
   assert.match(screen, /navigation\.canGoBack\(\)/);
   assert.match(screen, /navigation\.navigate\(ROUTES\.HOME, \{ initialTab: returnTo \}\)/);
   assert.match(screen, /source: "goal", trackId: track\.id, returnToGoal: returnTo/);
   assert.match(screen, /<GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
   assert.match(screen, /style=\{styles\.context\}\>\{context\}</);
+  assert.match(screen, /if \(returnTo === "home"\) handleBack\(\)/);
 });
 
 test("active goal summary only exposes Save while editing", () => {

@@ -10,4 +10,6 @@ test("Home stacks quiet-layered context and decision metadata at large text size
   assert.match(source, /largeText \? styles\.trackContextLargeText : null/);
   assert.match(source, /largeText \? styles\.decisionHeadingLargeText : null/);
   assert.match(source, /decisionHeadingLargeText:\s*\{[\s\S]*flexDirection:\s*"column"/);
+  assert.match(source, /largeText \? styles\.goalOnboardingHeadingLargeText : null/);
+  assert.match(source, /goalOnboardingHeadingLargeText:\s*\{[\s\S]*flexDirection:\s*"column"/);
 });

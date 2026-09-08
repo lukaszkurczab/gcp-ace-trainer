@@ -131,8 +131,8 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const [saveError, setSaveError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const returnTo: GoalCadenceReturnTo = route.params?.returnTo === "settings" ? "settings" : "progress";
-  const context = t(returnTo === "settings" ? "Settings" : "Progress");
+  const returnTo: GoalCadenceReturnTo = route.params?.returnTo ?? "progress";
+  const context = t(returnTo === "settings" ? "Settings" : returnTo === "home" ? "Home" : "Progress");
 
   const handleBack = useCallback(() => {
     if (navigation.canGoBack()) {
@@ -218,6 +218,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       await persistGoal(nextGoal);
       setGoal(nextGoal);
       setDraft(null);
+      if (returnTo === "home") handleBack();
     } catch (error) {
       setSaveError(describeOperationalFailure(error, "The goal could not be saved."));
     } finally {

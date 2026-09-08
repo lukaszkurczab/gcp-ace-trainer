@@ -14,6 +14,7 @@ export * from "./trainingSessionResultRepository";
 export * from "./trainingSessionDraftRepository";
 export * from "./foregroundTimerRepository";
 export * from "./goalRepository";
+export * from "./goalOnboardingPreferenceRepository";
 export * from "./contentReportOutboxRepository";
 export * from "./accountDataRepository";
 export * from "./accountLifecycleRepository";

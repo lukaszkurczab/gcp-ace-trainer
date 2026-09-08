@@ -4,7 +4,7 @@ import type { PracticeSessionRouteParams } from "../features/practice/sessionCon
 import type { ShellTab } from "../features/home/types";
 import type { AlgorithmsDeclaredScopeMode } from "../application/coding-interview";
 
-export type GoalCadenceReturnTo = "progress" | "settings";
+export type GoalCadenceReturnTo = "home" | "progress" | "settings";
 
 export type NotificationSettingsRouteParams =
   | { source: "settings" }

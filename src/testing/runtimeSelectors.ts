@@ -30,6 +30,7 @@ export const runtimeSelectors = Object.freeze({
     root: () => selector("home", "root"),
     trackCard: (trackId: TrackId) => selector("home", "track-card", trackId),
     changeTrack: () => selector("home", "change-track"),
+    primaryAction: () => selector("home", "primary-action"),
     activity: () => selector("home", "activity"),
     selectTrack: (trackId: TrackId) => selector("home", "select-track", trackId),
     selectTrackContinue: () => selector("home", "select-track", "continue"),
@@ -120,6 +121,12 @@ export const runtimeSelectors = Object.freeze({
     save: () => selector("goal", "save"),
     goalType: (goalType: string) => selector("goal", "type", goalType),
     day: (day: string) => selector("goal", "day", day),
+  }),
+  goalOnboarding: Object.freeze({
+    root: () => selector("home", "guest-goal-onboarding", "root"),
+    setGoal: () => selector("home", "guest-goal-onboarding", "set-goal"),
+    notNow: () => selector("home", "guest-goal-onboarding", "not-now"),
+    error: () => selector("home", "guest-goal-onboarding", "error"),
   }),
   activity: Object.freeze({
     root: () => selector("activity", "root"),

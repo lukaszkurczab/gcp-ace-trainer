@@ -24,11 +24,13 @@ import {
   loadCodingInterviewDashboard,
   loadCloudCertificationProgress as loadCloudCertificationProgressViewModel,
   loadGoal,
+  loadGoalOnboardingDismissed,
   loadExamSummaries as getAttempts,
   loadPracticeHistory as getPracticeHistory,
   loadReviewQueueItems as getReviewQueueItems,
   loadTrainingAttempts as getTrainingAttempts,
   type StorageIssue,
+  persistGoalOnboardingDismissal,
 } from "../../application/learningReadModels";
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
 import { type CloudCertificationProgressViewModel } from "../../tracks/certification";
@@ -71,6 +73,7 @@ type ShellData = {
   attempts: CertificationExamSummaryViewModel[];
   cloudProgress: CloudCertificationProgressViewModel | null;
   goal: GoalRecord | null;
+  goalOnboardingDismissed: boolean;
   practiceHistory: CertificationPracticeAnswerViewModel[];
   reviewQueueItems: ReviewQueueEntry[];
   storageIssues: readonly StorageIssue[];
@@ -102,6 +105,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     attempts: [],
     cloudProgress: null,
     goal: null,
+    goalOnboardingDismissed: true,
     practiceHistory: [],
     reviewQueueItems: [],
     storageIssues: [],
@@ -161,6 +165,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             loadActivitySessionRecords({ getAttempts: () => trainingAttemptsRead }),
           ]);
           const goal = savedTrackId ? await loadGoal(savedTrackId) : null;
+          let goalOnboardingDismissed = true;
+          if (savedTrackId) {
+            try { goalOnboardingDismissed = loadGoalOnboardingDismissed(savedTrackId); }
+            catch { goalOnboardingDismissed = true; }
+          }
           let algorithmsDashboard: CodingInterviewDashboard | null = null;
           let algorithmsDashboardError: string | null = null;
           if (savedTrackId === CODING_INTERVIEW_TRACK_ID) {
@@ -178,6 +187,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               attempts: savedAttempts,
               cloudProgress,
               goal,
+              goalOnboardingDismissed,
               practiceHistory: savedPracticeHistory,
               reviewQueueItems: reviewQueueItemsResult.value,
               storageIssues: [],
@@ -350,15 +360,21 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               analytics={analytics}
               algorithmsDashboard={data.algorithmsDashboard}
               dashboardError={data.algorithmsDashboardError}
+              onDismissGoalOnboarding={async () => {
+                persistGoalOnboardingDismissal(activeTrack.id);
+                setData((current) => ({ ...current, goalOnboardingDismissed: true }));
+              }}
               onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
               onChooseTopic={() => navigation.navigate(ROUTES.TOPIC_ROADMAP, {
                 trackId: activeTrack.id,
               })}
               onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
               onOpenSettings={() => handleHomeTabChange("settings")}
+              onSetGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo: "home", trackId: activeTrack.id })}
               onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
               onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
               reviewQueueItems={data.reviewQueueItems}
+              showGuestGoalOnboarding={account.state.kind === "guest" && data.goal === null && !data.goalOnboardingDismissed}
               trainingAttempts={data.trainingAttempts}
             />
           </>

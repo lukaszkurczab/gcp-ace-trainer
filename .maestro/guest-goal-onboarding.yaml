@@ -1,0 +1,123 @@
+appId: com.lkurczab.patternly
+name: Guest goal onboarding
+tags:
+  - e2e
+  - goal
+  - guest
+---
+- launchApp:
+    clearState: true
+- openLink: ${PATTERNLY_DEV_CLIENT_URL}
+- runFlow:
+    when:
+      visible: "Otwórz"
+    commands:
+      - tapOn:
+          text: "Otwórz"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible: "Otwórz"
+          timeout: 10000
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn:
+          text: "Open"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible: "Open"
+          timeout: 10000
+- extendedWaitUntil:
+    visible: "Remove unavailable data"
+    timeout: 30000
+- tapOn: "Remove unavailable data"
+- extendedWaitUntil:
+    visible: "Remove data from device"
+    timeout: 10000
+- tapOn: "Remove data from device"
+- extendedWaitUntil:
+    visible:
+      id: "account-guest"
+    timeout: 30000
+- tapOn:
+    id: "account-guest"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+- tapOn:
+    id: "patternly:home:select-track:continue"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:guest-goal-onboarding:root"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:home:primary-action"
+    enabled: true
+- takeScreenshot: 01-coding-invitation
+- tapOn:
+    id: "patternly:home:guest-goal-onboarding:not-now"
+- assertNotVisible:
+    id: "patternly:home:guest-goal-onboarding:root"
+- assertVisible:
+    id: "patternly:home:primary-action"
+    enabled: true
+- takeScreenshot: 02-coding-dismissed
+- stopApp
+- launchApp
+- openLink: ${PATTERNLY_DEV_CLIENT_URL}
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:home:guest-goal-onboarding:root"
+- tapOn:
+    id: "patternly:home:change-track"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:backend-system-design-interview"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:select-track:backend-system-design-interview"
+- tapOn:
+    id: "patternly:home:select-track:continue"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:guest-goal-onboarding:root"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:home:track-card:backend-system-design-interview"
+- takeScreenshot: 03-design-invitation
+- tapOn:
+    id: "patternly:home:guest-goal-onboarding:set-goal"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:goal:root"
+    timeout: 30000
+- assertVisible: "Home"
+- takeScreenshot: 04-goal-from-home
+- tapOn:
+    id: "patternly:goal:save"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:backend-system-design-interview"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:home:guest-goal-onboarding:root"
+- assertVisible:
+    id: "patternly:home:primary-action"
+    enabled: true
+- takeScreenshot: 05-goal-saved
+- stopApp
+- launchApp
+- openLink: ${PATTERNLY_DEV_CLIENT_URL}
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:backend-system-design-interview"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:home:guest-goal-onboarding:root"
