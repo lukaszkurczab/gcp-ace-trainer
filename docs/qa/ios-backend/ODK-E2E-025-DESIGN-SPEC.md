@@ -10,7 +10,7 @@ Projekt dotyczy godzin jednego celu. Nie rozstrzyga blokera024: aktualna ścież
 
 ## Źródła
 
-Obejrzano aktualny edytor na iOS: Maestro2026-09-08_045809, dziewięć poleceń COMPLETED, bez zapisu i zmiany zgody. Zrzut025-existing-editor. Sprawdzono NotificationSettingsScreen, SettingsBottomSheet, ScreenHeader, goalContracts i tokeny.
+Obejrzano aktualny edytor na iOS: Maestro2026-09-08_045809, 11/11 poleceń COMPLETED (według commands.json), bez zapisu i zmiany zgody. Zrzut025-existing-editor. Sprawdzono NotificationSettingsScreen, SettingsBottomSheet, ScreenHeader, goalContracts i tokeny.
 
 Obrazy powstały osobno w ImageGen, z dołączonym rzeczywistym zrzutem. Kolejność wyświetlenia jest wiążąca:
 

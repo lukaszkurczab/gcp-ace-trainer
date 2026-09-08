@@ -50,7 +50,7 @@ export function SettingsLoadingSkeleton() {
       style={styles.settingsLoading}
       testID="settings-loading-skeleton"
     >
-      <ScreenHeader description={t("settingsDescription")} title={t("appSettings")} />
+      <ScreenHeader title={t("appSettings")} />
       <View accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.settingsLoadingShapes}>
         <View style={styles.settingsLoadingIdentity}>
           <SkeletonShape motion={motion} style={styles.settingsLoadingIdentityIcon} />
@@ -130,7 +130,6 @@ export function SettingsTab({
     signOut: t("signOut"),
     signOutErrorTitle: t("signOutErrorTitle"),
     appSettings: t("appSettings"),
-    settingsDescription: t("settingsDescription"),
     data: t("data"),
     dataDetail: t("dataDetail"),
     dataPrivacy: t("dataPrivacy"),
@@ -210,7 +209,7 @@ export function SettingsTab({
 
   return (
     <View style={styles.page} testID="settings-screen">
-      <ScreenHeader description={text.settingsDescription} title={text.appSettings} />
+      <ScreenHeader title={text.appSettings} />
 
       <View style={styles.identity} testID="settings-identity">
         <IconTile name="user" tone="settings" />

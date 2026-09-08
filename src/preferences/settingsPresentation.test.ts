@@ -119,22 +119,32 @@ test("grouped settings rows follow the Figma 200% text geometry", () => {
   assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.dataPrivacy\} titleGap=\{spacing\.md\}>/);
   assert.match(settingsTab, /IconTile iconSize=\{24\} name=\{icon\} size=\{32\} tone="settings"/);
   assert.match(settingsTab, /name="chevron-right" size=\{20\}/);
-  assert.match(settingsTab, /<ScreenHeader description=\{text\.settingsDescription\} title=\{text\.appSettings\}/);
+  assert.match(settingsTab, /<ScreenHeader title=\{text\.appSettings\} \/>/);
   assert.match(settingsTab, /<SettingsGroup dividers title=\{text\.learning\} titleGap=\{spacing\.md\}>/);
   assert.match(settingsGroup, /dividedRows:[\s\S]*?gap:\s*0/);
 });
 
-test("Settings description reflects app and practice preferences without account semantics", () => {
+test("Settings heading has no redundant description and locale keeps goal copy", () => {
+  assert.doesNotMatch(settingsTab, /settingsDescription/);
   const settingsEn = readFileSync("src/locales/en/settings.json", "utf8");
   const settingsPl = readFileSync("src/locales/pl/settings.json", "utf8");
-  assert.match(settingsEn, /"settingsDescription": "Manage your app, practice, and privacy preferences\."/);
-  assert.match(settingsPl, /"settingsDescription": "Zarządzaj preferencjami aplikacji, ćwiczeń i prywatności\."/);
+  assert.doesNotMatch(settingsEn, /"settingsDescription"/);
+  assert.doesNotMatch(settingsPl, /"settingsDescription"/);
   assert.match(settingsEn, /"goal": "Goal"/);
   assert.match(settingsEn, /"goalDetail": "Set your learning goal and preferred practice days\."/);
   assert.match(settingsPl, /"goal": "Cel"/);
   assert.match(settingsPl, /"goalDetail": "Ustaw cel nauki i dni ćwiczeń\."/);
-  assert.doesNotMatch(settingsEn, /"settingsDescription": "[^"]*account[^"]*"/);
-  assert.doesNotMatch(settingsPl, /"settingsDescription": "[^"]*kontem[^"]*"/);
+});
+
+test("Your data keeps the Settings entry label and names its local header consistently", () => {
+  assert.match(settingsTab, /testID="settings-your-data" title=\{text\.data\}/);
+  assert.match(yourDataScreen, /<ScreenHeader backAction=\{\{ onPress: \(\) => navigation\.goBack\(\) \}\} context=\{t\("settings"\)\} contextTone="primary" title=\{t\("yourData"\)\} \/>/);
+  const dataEn = JSON.parse(readFileSync("src/locales/en/data.json", "utf8")) as Record<string, unknown>;
+  const dataPl = JSON.parse(readFileSync("src/locales/pl/data.json", "utf8")) as Record<string, unknown>;
+  assert.equal(dataEn.settings, "Settings");
+  assert.equal(dataEn.yourData, "Your data");
+  assert.equal(dataPl.settings, "Ustawienia");
+  assert.equal(dataPl.yourData, "Twoje dane");
 });
 
 test("Settings app identity follows the Figma footer geometry", () => {

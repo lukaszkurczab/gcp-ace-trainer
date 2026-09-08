@@ -149,7 +149,7 @@ export function ProgressTab({
   return (
     <View style={styles.root} testID={runtimeSelectors.progress.root()}>
       <View style={styles.header}>
-        <Text maxFontSizeMultiplier={2} style={[styles.screenTitle, compactProgressLayout ? styles.emptyProgressScreenTitle : null]}>{t("Progress")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.screenTitle}>{t("Progress")}</Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`${t("Change track")}: ${t(activeTrack.shortTitle)}`}
@@ -635,13 +635,12 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   root: { gap: 28 },
   header: { gap: 28 },
-  screenTitle: { color: palette.textPrimary, fontSize: 30, fontWeight: "600", letterSpacing: -0.4, lineHeight: 36 },
+  screenTitle: { ...typography.title, color: palette.textPrimary },
   trackSelector: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: 12, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 40, paddingHorizontal: 14 },
   trackSelectorText: { ...typography.bodyStrong, color: palette.textSecondary },
   pressed: { opacity: 0.78 },
   sectionLabel: { color: palette.primary, fontSize: 12, fontWeight: "600", lineHeight: 19 },
   weekSection: { gap: 10 },
-  emptyProgressScreenTitle: { fontSize: 24, fontWeight: "700", lineHeight: 29 },
   emptyWeekSection: { gap: 8 },
   emptyProgressState: { alignItems: "center", gap: 16, paddingBottom: 40, paddingHorizontal: spacing.lg, paddingTop: 40 },
   emptyProgressIcon: { alignItems: "center", backgroundColor: palette.surface, borderRadius: 20, height: 48, justifyContent: "center", width: 48 },

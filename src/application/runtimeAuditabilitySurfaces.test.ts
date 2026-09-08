@@ -61,12 +61,12 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.doesNotMatch(simulation, /value:\$\{index \+ 1\}/);
   assert.match(simulation, /runtimeSelectors\.simulation\.action\(sessionId, action\.id\)/);
   assert.match(summary, /runtimeSelectors\.summary\.root\(sessionId\)/);
-  assert.match(progress, /screenTitle:[\s\S]*?fontSize:\s*30[\s\S]*?lineHeight:\s*36/);
+  assert.match(progress, /screenTitle:\s*\{[\s\S]*\.\.\.typography\.title/);
   assert.match(progress, /root:\s*\{\s*gap:\s*28\s*\}/);
   assert.match(progress, /<View style=\{\[styles\.weekSection,[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionLabel\}>/);
   assert.match(progress, /weekSection:\s*\{\s*gap:\s*10\s*\}/);
   assert.match(progress, /!model\.hasData \? \([\s\S]*?No learning evidence yet[\s\S]*?Open Practice/);
-  assert.match(progress, /emptyProgressScreenTitle:\s*\{[\s\S]*?fontSize:\s*24[\s\S]*?fontWeight:\s*"700"[\s\S]*?lineHeight:\s*29/);
+  assert.doesNotMatch(progress, /emptyProgressScreenTitle/);
   assert.match(progress, /emptyWeekSection:\s*\{\s*gap:\s*8\s*\}/);
   assert.match(progress, /emptyWeekCard:\s*\{[\s\S]*?gap:\s*4[\s\S]*?paddingHorizontal:\s*14[\s\S]*?paddingVertical:\s*12/);
   assert.match(progress, /model\.hasData \? <View style=\{styles\.miniBar\}/);

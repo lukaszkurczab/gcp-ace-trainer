@@ -100,7 +100,7 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
 
   return (
     <Screen edges={["top", "bottom"]}>
-      <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("data")} contextTone="primary" title={t("dataPrivacy")} />
+      <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("settings")} contextTone="primary" title={t("yourData")} />
       <InfoBlock body={t(authenticated ? "infoBodyAuthenticated" : "infoBodyGuest")} icon={<Icon name="shield-check" size={18} />} title={t("infoTitle")} />
       <SettingsGroup title={t("rights.title")}>
         <ListRow

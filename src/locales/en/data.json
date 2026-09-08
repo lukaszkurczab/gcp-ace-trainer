@@ -2,6 +2,8 @@
   "close": "Close",
   "data": "Data",
   "dataPrivacy": "Data & privacy",
+  "settings": "Settings",
+  "yourData": "Your data",
   "infoTitle": "Your learning data",
   "infoBodyAuthenticated": "Learning data is stored locally. You can download synced account data below.",
   "infoBodyGuest": "Learning data is stored locally on this device. You can use Patternly without an account.",

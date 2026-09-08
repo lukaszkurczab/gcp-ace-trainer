@@ -2,6 +2,8 @@
   "close": "Zamknij",
   "data": "Dane",
   "dataPrivacy": "Dane i prywatność",
+  "settings": "Ustawienia",
+  "yourData": "Twoje dane",
   "infoTitle": "Twoje dane o nauce",
   "infoBodyAuthenticated": "Dane nauki są zapisywane lokalnie. Zsynchronizowane dane konta możesz pobrać poniżej.",
   "infoBodyGuest": "Dane nauki są zapisywane lokalnie na tym urządzeniu. Możesz korzystać z Patternly bez konta.",

@@ -29,7 +29,6 @@
   "signOutDetail": "Safely sync pending changes before signing out.",
   "signOutErrorTitle": "Couldn’t finish signing out",
   "appSettings": "Settings",
-  "settingsDescription": "Manage your app, practice, and privacy preferences.",
   "app": "App",
   "data": "Your data",
   "dataDetail": "View the local data contract for this app.",
