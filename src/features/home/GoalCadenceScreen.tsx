@@ -16,7 +16,7 @@ import {
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { learningPlanProposalCoordinator, type LearningPlanProposalResult } from "../../application/learningPlan";
 import { loadActiveTrackId, loadGoal, persistGoal } from "../../application/learningReadModels";
-import { reconcileDeviceReminder } from "../../preferences";
+import { reconcileDeviceReminder, reminderNeedsAttention } from "../../preferences";
 import { ROUTES } from "../../constants/routes";
 import {
   createDefaultGoal,
@@ -35,6 +35,7 @@ import type { GoalCadenceReturnTo, RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { colorWithOpacity, radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
+import type { LearningPlanReminderFailure, LearningPlanReminderResult } from "../../application/notificationPreferences";
 
 type GoalCadenceScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.GOAL_CADENCE>;
 
@@ -137,6 +138,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const [dateInput, setDateInput] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [reminderErrorKind, setReminderErrorKind] = useState<LearningPlanReminderFailure | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [creatingPlan, setCreatingPlan] = useState(false);
@@ -195,6 +197,18 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   function updateDraft(update: (currentDraft: GoalRecord) => GoalRecord): void {
     setDraft((currentDraft) => currentDraft ? update(currentDraft) : currentDraft);
     setSaveError(null);
+    setReminderErrorKind(null);
+  }
+
+  function applyReminderResult(result: LearningPlanReminderResult): boolean {
+    if (!reminderNeedsAttention(result)) {
+      setReminderErrorKind(null);
+      return false;
+    }
+    setReminderErrorKind(result.kind);
+    const key = result.kind === "goal_paused" ? "goalPausedDetail" : result.kind === "concurrent_change" ? "concurrentChangeDetail" : "schedulerFailureDetail";
+    setSaveError(tNotifications(key));
+    return true;
   }
 
   function toggleDay(day: GoalDay): void {
@@ -223,14 +237,17 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     }
     setSaving(true);
     setSaveError(null);
+    setReminderErrorKind(null);
     try {
       await persistGoal(nextGoal);
       setGoal(nextGoal);
       setDraft(null);
       try {
-        await reconcileDeviceReminder(reminderCopy);
+        const reminderResult = await reconcileDeviceReminder(reminderCopy);
+        if (applyReminderResult(reminderResult)) return;
       } catch {
-        setSaveError(t("Goal saved, but reminders could not be updated. Try again from Reminders."));
+        setReminderErrorKind("scheduler_failure");
+        setSaveError(tNotifications("schedulerFailureDetail"));
         return;
       }
       await createAndOpenPlan(track.id);
@@ -261,13 +278,16 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     const nextGoal = { ...goal, status: goal.status === "active" ? "paused" as const : "active" as const };
     setSaving(true);
     setSaveError(null);
+    setReminderErrorKind(null);
     try {
       await persistGoal(nextGoal);
       setGoal(nextGoal);
       try {
-        await reconcileDeviceReminder(reminderCopy);
+        const reminderResult = await reconcileDeviceReminder(reminderCopy);
+        applyReminderResult(reminderResult);
       } catch {
-        setSaveError(t("Goal saved, but reminders could not be updated. Try again from Reminders."));
+        setReminderErrorKind("scheduler_failure");
+        setSaveError(tNotifications("schedulerFailureDetail"));
       }
     } catch (error) {
       setSaveError(describeOperationalFailure(error, "The goal status could not be saved."));
@@ -351,7 +371,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           t={t}
         />
       )}
-      {saveError ? <Text maxFontSizeMultiplier={2} style={styles.error}>{t(saveError)}</Text> : null}
+      {saveError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.error} testID={reminderErrorKind ? runtimeSelectors.notifications.error(reminderErrorKind) : undefined}>{t(saveError)}</Text> : null}
     </Screen>
   );
 }

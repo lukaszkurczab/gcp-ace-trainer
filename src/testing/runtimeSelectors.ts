@@ -2,6 +2,7 @@ import type { ContentItemRef, GoalDay, LearningPlanSlotId, TrackId } from "../do
 import type { AlgorithmFeedbackMode } from "../tracks/coding-interview/domain/algorithmModes";
 import type { TargetDateGuidanceReason, TargetDateGuidanceState } from "../application/learningPlan/targetDateGuidance";
 import type { HomePlanDayStatus, HomePlanUnavailableReason } from "../application/homePlanSnapshotReader";
+import type { LearningPlanReminderFailure } from "../application/notificationPreferences";
 export type { TargetDateGuidanceReason, TargetDateGuidanceState } from "../application/learningPlan/targetDateGuidance";
 
 /**
@@ -30,7 +31,7 @@ export type LearningPlanPrimaryState =
   | "shortened"
   | "ready"
   | "accepted";
-export type LearningPlanActionErrorKind = "accept-validation" | "accept-storage" | "open-proposal-storage" | "open-existing-storage";
+export type LearningPlanActionErrorKind = "accept-validation" | "accept-storage" | "accept-reminders-pending" | "open-proposal-storage" | "open-existing-storage";
 export type LearningPlanEditorErrorKind = "validation" | "storage" | "start-existing-storage";
 export type LearningPlanEditorRetryKind = "save" | "start-existing";
 
@@ -169,16 +170,32 @@ export const runtimeSelectors = Object.freeze({
     backToPractice: () => selector("learning-plan", "back-to-practice"),
     persisted: () => selector("learning-plan", "persisted"),
     editSchedule: () => selector("learning-plan", "edit-schedule"),
+    retryReminders: () => selector("learning-plan", "retry-reminders"),
     accept: () => selector("learning-plan", "accept"),
     editorRoot: (editorId: string) => selector("learning-plan", "editor", "root", editorId),
     editorState: (state: LearningPlanEditorSelectorState) => selector("learning-plan", "editor", "state", state),
     editorDay: (day: GoalDay) => selector("learning-plan", "editor", "day", day),
     editorTime: (day: GoalDay) => selector("learning-plan", "editor", "time", day),
     editorCommit: () => selector("learning-plan", "editor", "commit"),
+    editorReminderPending: () => selector("learning-plan", "editor", "reminders-pending"),
+    editorReminderRetry: () => selector("learning-plan", "editor", "retry-reminders"),
     editorRetry: (kind: LearningPlanEditorRetryKind = "save") => selector("learning-plan", "editor", kind === "save" ? "retry-save" : "retry-start-existing"),
     editorStale: () => selector("learning-plan", "editor", "stale"),
     editorError: (kind: LearningPlanEditorErrorKind) => selector("learning-plan", "editor", "error", kind),
     actionError: (kind: LearningPlanActionErrorKind) => selector("learning-plan", "action-error", kind),
+  }),
+  notifications: Object.freeze({
+    root: () => selector("notifications", "root"),
+    state: (state: NotificationSettingsSelectorState) => selector("notifications", "state", notificationStateSegment(state)),
+    planSchedule: () => selector("notifications", "plan-schedule"),
+    slot: (slotId: LearningPlanSlotId) => selector("notifications", "slot", slotId),
+    permission: (permission: NotificationPermissionSelector) => selector("notifications", "permission", permission),
+    error: (reason: LearningPlanReminderFailure) => selector("notifications", "error", notificationStateSegment(reason)),
+    pending: () => selector("notifications", "pending"),
+    enable: () => selector("notifications", "enable"),
+    disable: () => selector("notifications", "disable"),
+    retry: () => selector("notifications", "retry"),
+    openSettingsError: () => selector("notifications", "open-settings-error"),
   }),
   goalOnboarding: Object.freeze({
     root: () => selector("home", "guest-goal-onboarding", "root"),
@@ -206,6 +223,8 @@ export const runtimeSelectors = Object.freeze({
 });
 
 export type LearningPlanEditorSelectorState = "loading" | "ready" | "stale" | "validation-error" | "storage-error" | "saved";
+export type NotificationPermissionSelector = "checking" | "undetermined" | "granted" | "denied";
+export type NotificationSettingsSelectorState = "loading" | "synced" | "disabled" | LearningPlanReminderFailure;
 export type TargetDateGuidanceSurface = "home" | "progress";
 export type TargetDateGuidanceFactKind = "required-pace" | "actual-pace" | "forecast" | "target";
 export type ProgressPlanCompletionState = "unknown" | "in_progress" | "completed";
@@ -229,6 +248,12 @@ function selector(surface: string, element: string, ...identities: readonly stri
 function learningPlanStateSegment(state: LearningPlanPrimaryState): string {
   if (!LEARNING_PLAN_PRIMARY_STATES.has(state)) throw new Error("Unknown learning plan primary state.");
   return state;
+}
+
+function notificationStateSegment(state: NotificationSettingsSelectorState | LearningPlanReminderFailure): string {
+  if (state === "loading" || state === "synced" || state === "disabled") return state;
+  if (state === "missing_track" || state === "missing_goal" || state === "missing_plan" || state === "identity_mismatch" || state === "goal_paused" || state === "plan_paused" || state === "plan_completed" || state === "no_slots" || state === "timezone_mismatch" || state === "permission_denied" || state === "scheduler_failure" || state === "concurrent_change") return state.replaceAll("_", "-");
+  throw new Error("Unknown notification settings state.");
 }
 
 function assertSegment(value: string): void {

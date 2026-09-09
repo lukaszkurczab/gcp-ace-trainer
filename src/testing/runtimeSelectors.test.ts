@@ -141,6 +141,20 @@ test("learning plan editor retry selectors distinguish save from start-existing"
   assert.equal(runtimeSelectors.learningPlan.actionError("accept-storage"), "patternly:learning-plan:action-error:accept-storage");
 });
 
+test("notification selectors keep plan slots and closed error states typed", () => {
+  assert.equal(runtimeSelectors.notifications.root(), "patternly:notifications:root");
+  assert.equal(runtimeSelectors.notifications.planSchedule(), "patternly:notifications:plan-schedule");
+  assert.equal(runtimeSelectors.notifications.slot(createLearningPlanSlotId("editor:one:slot:2")), "patternly:notifications:slot:editor:one:slot:2");
+  assert.equal(runtimeSelectors.notifications.permission("granted"), "patternly:notifications:permission:granted");
+  assert.equal(runtimeSelectors.notifications.state("synced"), "patternly:notifications:state:synced");
+  for (const reason of ["missing_track", "missing_goal", "missing_plan", "identity_mismatch", "goal_paused", "plan_paused", "plan_completed", "no_slots", "timezone_mismatch", "permission_denied", "scheduler_failure", "concurrent_change"] as const) {
+    assert.equal(runtimeSelectors.notifications.error(reason), `patternly:notifications:error:${reason.replaceAll("_", "-")}`);
+  }
+  assert.equal(runtimeSelectors.notifications.retry(), "patternly:notifications:retry");
+  assert.equal(runtimeSelectors.notifications.pending(), "patternly:notifications:pending");
+  assert.throws(() => runtimeSelectors.notifications.state("unknown" as never), /Unknown notification settings state/);
+});
+
 test("target date guidance selectors expose every closed state and reason", () => {
   const states: readonly TargetDateGuidanceState[] = [
     "no_goal", "goal_paused", "no_plan", "update_required", "plan_paused", "completed", "overdue", "unreachable", "at_risk", "on_track", "open_ended", "unavailable",

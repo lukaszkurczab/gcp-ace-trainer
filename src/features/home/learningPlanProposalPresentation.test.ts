@@ -7,7 +7,7 @@ const goal = readFileSync("src/features/home/GoalCadenceScreen.tsx", "utf8");
 const routes = readFileSync("src/navigation/types.ts", "utf8");
 const navigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
 
-test("learning plan proposal route carries identity only and resolves the in-memory proposal", () => {
+test("proposal route carries only identity and resolves the in-memory proposal", () => {
   assert.match(routes, /LEARNING_PLAN_PROPOSAL\]: \{ proposalId: string; trackId: TrackId \}/);
   assert.match(navigator, /name=\{ROUTES\.LEARNING_PLAN_PROPOSAL\}[\s\S]*?component=\{LearningPlanProposalScreen\}/);
   assert.match(screen, /learningPlanProposalCoordinator\.resolve\(proposalId, trackId\)/);
@@ -15,40 +15,29 @@ test("learning plan proposal route carries identity only and resolves the in-mem
   assert.doesNotMatch(routes, /LEARNING_PLAN_PROPOSAL\]:[^\n]*(outcome|goalRevision|contentVersion|packagePin|timezone)/);
 });
 
-test("proposal UI exposes all explicit states and the ODK-029 edit and acceptance actions", () => {
-  for (const state of ["loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "generator_error", "shortfall", "shortened", "ready"]) {
-    assert.match(screen, new RegExp(state));
-  }
-  assert.match(screen, /runtimeSelectors\.learningPlan\.update\(\)/);
-  assert.match(screen, /runtimeSelectors\.learningPlan\.adjustGoal\(\)/);
-  assert.match(screen, /runtimeSelectors\.learningPlan\.backToPractice\(\)/);
-  assert.match(screen, /runtimeSelectors\.learningPlan\.editSchedule\(\)/);
-  assert.match(screen, /runtimeSelectors\.learningPlan\.accept\(\)/);
-  assert.match(screen, /learningPlanEditorCoordinator\.startProposalEdit/);
-  assert.match(screen, /setActionError\("open-proposal-storage"\)/);
-  assert.match(screen, /setActionError\("open-existing-storage"\)/);
-  assert.match(screen, /learningPlanEditorCoordinator\.acceptProposal/);
-  assert.match(screen, /setActionError\("accept-validation"\)/);
-  assert.match(screen, /setActionError\("accept-storage"\)/);
-  assert.match(screen, /runtimeSelectors\.learningPlan\.actionError\(kind\)/);
-  assert.match(screen, /The schedule editor could not be opened\. Try again\./);
-  assert.match(screen, /The saved plan could not be loaded\. Try again\./);
+test("proposal accepts through the plan/reminder runtime and preserves pending saves", () => {
+  assert.match(screen, /acceptPlanWithReminders\(proposalId, trackId, notification\)/);
+  assert.doesNotMatch(screen, /learningPlanEditorCoordinator\.acceptProposal/);
+  assert.match(screen, /plan_saved_reminders_synced/);
+  assert.match(screen, /plan_saved_reminders_pending/);
+  assert.match(screen, /runtimeSelectors\.learningPlan\.retryReminders\(\)/);
+  assert.match(screen, /retryPlanReminders\(notification\)/);
   assert.match(screen, /setState\(\{ kind: "stale" \}\)/);
-  assert.match(screen, /setActionError\(null\)/);
 });
 
-test("goal save opens a real proposal only after reminder reconciliation", () => {
+test("proposal keeps explicit states, edit actions and localized copy", () => {
+  for (const state of ["loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "generator_error", "shortfall", "shortened", "ready"]) assert.match(screen, new RegExp(state));
+  assert.match(screen, /learningPlanEditorCoordinator\.startProposalEdit/);
+  assert.match(screen, /learningPlanEditorCoordinator\.startExistingEdit/);
+  assert.match(screen, /runtimeSelectors\.learningPlan\.actionError\(kind\)/);
+  assert.match(screen, /useTranslation\("learningPlan"\)/);
+  assert.match(screen, /footerVariant="sticky"/);
+  assert.doesNotMatch(screen, /numberOfLines=/);
+});
+
+test("goal save still opens a proposal only after its existing reminder reconciliation", () => {
   const reminder = goal.indexOf("await reconcileDeviceReminder(reminderCopy)");
   const proposal = goal.indexOf("await createAndOpenPlan(track.id)");
   assert.ok(reminder >= 0 && proposal > reminder);
   assert.match(goal, /learningPlanProposalCoordinator\.create\(selectedTrackId\)/);
-  assert.match(goal, /runtimeSelectors\.learningPlan\.create\(\)/);
-  assert.match(goal, /disabled=\{goal\.status === "paused"\}/);
-});
-
-test("proposal copy uses its EN and PL namespace and supports 200 percent text", () => {
-  assert.match(screen, /useTranslation\("learningPlan"\)/);
-  assert.match(screen, /maxFontSizeMultiplier=\{2\}/);
-  assert.match(screen, /footerVariant="sticky"/);
-  assert.doesNotMatch(screen, /numberOfLines=/);
 });

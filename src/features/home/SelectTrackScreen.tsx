@@ -25,8 +25,9 @@ import type { RootStackParamList } from "../../navigation/types";
 import { loadActiveTrackId as getActiveTrackId, selectActiveTrack as saveActiveTrackId } from "../../application/learningReadModels";
 import { colorWithOpacity, spacing, typography } from "../../theme";
 import type { AppColors } from "../../theme";
-import { reconcileDeviceReminder, useAppPreferences, useThemedStyles } from "../../preferences";
+import { reconcileDeviceReminder, reminderNeedsAttention, useAppPreferences, useThemedStyles } from "../../preferences";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
+import type { LearningPlanReminderFailure } from "../../application/notificationPreferences";
 
 type SelectTrackScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList>;
@@ -68,6 +69,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
   const [loadRevision, setLoadRevision] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [reminderErrorKind, setReminderErrorKind] = useState<LearningPlanReminderFailure | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -96,12 +98,20 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
     if (!track || track.status === "archived") return;
     setIsSaving(true);
     setSaveError(null);
+    setReminderErrorKind(null);
     try {
       await saveActiveTrackId(track.id);
       try {
-        await reconcileDeviceReminder(reminderCopy);
+        const reminderResult = await reconcileDeviceReminder(reminderCopy);
+        if (reminderNeedsAttention(reminderResult)) {
+          setReminderErrorKind(reminderResult.kind);
+          const key = reminderResult.kind === "goal_paused" ? "goalPausedDetail" : reminderResult.kind === "concurrent_change" ? "concurrentChangeDetail" : "schedulerFailureDetail";
+          setSaveError(tNotifications(key));
+          return;
+        }
       } catch {
-        setSaveError(t("Track saved, but reminders could not be updated. Try again from Reminders."));
+        setReminderErrorKind("scheduler_failure");
+        setSaveError(tNotifications("schedulerFailureDetail"));
         return;
       }
       setActiveTrackId(track.id);
@@ -132,7 +142,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
                 </Text>
               </View>
             ) : null}
-            {saveError ? <Text accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.saveError} testID="patternly:home:select-track:save-error">{t(saveError)}</Text> : null}
+            {saveError ? <View testID="patternly:home:select-track:save-error"><Text accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.saveError} testID={reminderErrorKind ? runtimeSelectors.notifications.error(reminderErrorKind) : undefined}>{t(saveError)}</Text></View> : null}
             <Button
               disabled={!loaded || isSaving || (!onboarding && selectedTrackId === activeTrackId)}
               loading={isSaving}
@@ -178,6 +188,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
                   onPress={() => {
                     setSelectedTrackId(track.id);
                     setSaveError(null);
+                    setReminderErrorKind(null);
                   }}
                   selected={track.id === selectedTrackId}
                   track={track}

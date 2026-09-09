@@ -185,5 +185,10 @@
   "homePlan.day.completed": "Completed today",
   "homePlan.day.skipped": "Skipped today",
   "homePlan.day.rest": "Rest day",
-  "homePlan.todayDetail": "{{status}} · {{count}} questions · {{area}} · {{reviews}} reviews due. {{message}}"
+  "homePlan.todayDetail": "{{status}} · {{count}} questions · {{area}} · {{reviews}} reviews due. {{message}}",
+  "Retry reminders": "Retry reminders",
+  "Reminders are pending": "Reminders are pending",
+  "The plan was saved, but reminders are pending. Try again.": "The plan was saved, but reminders are pending. Try again.",
+  "notificationBody": "Choose one focused Patternly practice session.",
+  "notificationTitle": "Time to practise"
 }

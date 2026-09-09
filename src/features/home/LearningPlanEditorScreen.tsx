@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +9,7 @@ import {
   type LearningPlanEditorMutationResult,
   type LearningPlanEditorSession,
 } from "../../application/learningPlan";
+import { commitPlanWithReminders, retryPlanReminders } from "../../application/learningPlan/learningPlanMutationRuntime";
 import { AppShellHeader, Button, Card, EmptyState, InfoBlock, Screen } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { GoalDay, LearningPlan } from "../../domain";
@@ -30,9 +31,11 @@ export function LearningPlanEditorScreen({ navigation, route }: Props) {
   const { editorId, trackId } = route.params;
   const [state, setState] = useState<EditorState>({ kind: "loading" });
   const [savedPlan, setSavedPlan] = useState<LearningPlan | null>(null);
+  const [savedReminderPending, setSavedReminderPending] = useState(false);
   const [busy, setBusy] = useState(false);
   const [draftTimes, setDraftTimes] = useState<Partial<Record<GoalDay, string>>>({});
   const [inlineError, setInlineError] = useState<string | null>(null);
+  const notification = useMemo(() => ({ body: t("notificationBody", { ns: "notifications" }), title: t("notificationTitle", { ns: "notifications" }) }), [t]);
 
   useEffect(() => {
     const session = learningPlanEditorCoordinator.getSession(editorId, trackId);
@@ -46,9 +49,9 @@ export function LearningPlanEditorScreen({ navigation, route }: Props) {
 
   function showMutation(result: LearningPlanEditorMutationResult): void {
     if (result.kind === "updated") { setInlineError(null); setState({ kind: "ready", session: result.session }); }
-    else if (result.kind === "stale") { setSavedPlan(null); setState({ kind: "stale" }); }
+    else if (result.kind === "stale") { setSavedPlan(null); setSavedReminderPending(false); setState({ kind: "stale" }); }
     else if (result.kind === "validation_error") setInlineError(t(validationCopyKey(result.code)));
-    else { setSavedPlan(null); setState({ kind: "error", source: "mutation", errorKind: "storage", message: t("The schedule could not be updated. Try again.") }); }
+    else { setSavedPlan(null); setSavedReminderPending(false); setState({ kind: "error", source: "mutation", errorKind: "storage", message: t("The schedule could not be updated. Try again.") }); }
   }
 
   function toggleDay(day: GoalDay): void {
@@ -74,11 +77,21 @@ export function LearningPlanEditorScreen({ navigation, route }: Props) {
       }
     }
     setBusy(true);
-    const result = await learningPlanEditorCoordinator.commit(editorId, trackId);
+    const result = await commitPlanWithReminders(editorId, trackId, notification);
     setBusy(false);
-    if (result.kind === "saved") setSavedPlan(result.snapshot.plan);
-    else if (result.kind === "stale") { setSavedPlan(null); setState({ kind: "stale" }); }
-    else { setSavedPlan(null); setState({ kind: "error", source: "commit", errorKind: result.kind === "validation_error" ? "validation" : "storage", message: result.kind === "validation_error" ? t(validationCopyKey(result.code)) : t("The plan could not be saved. Try again.") }); }
+    if (result.kind === "plan_saved_reminders_synced" || result.kind === "plan_saved_reminders_pending" || result.kind === "plan_saved_reminders_cleared") {
+      setSavedPlan(result.snapshot.plan);
+      setSavedReminderPending(result.kind === "plan_saved_reminders_pending");
+    }
+    else if (result.kind === "stale") { setSavedPlan(null); setSavedReminderPending(false); setState({ kind: "stale" }); }
+    else { setSavedPlan(null); setSavedReminderPending(false); setState({ kind: "error", source: "commit", errorKind: result.kind === "validation_error" ? "validation" : "storage", message: result.kind === "validation_error" ? t(validationCopyKey(result.code)) : t("The plan could not be saved. Try again.") }); }
+  }
+
+  async function retryReminders(): Promise<void> {
+    setBusy(true);
+    const result = await retryPlanReminders(notification);
+    setBusy(false);
+    setSavedReminderPending(result.kind !== "synced" && result.kind !== "disabled");
   }
 
   async function editSavedPlan(): Promise<void> {
@@ -87,20 +100,23 @@ export function LearningPlanEditorScreen({ navigation, route }: Props) {
     setBusy(false);
     if (result.kind === "ready") {
       setSavedPlan(null);
+      setSavedReminderPending(false);
       setState({ kind: "ready", session: result.session });
       navigation.setParams({ editorId: result.session.editorId, trackId });
     } else if (result.kind === "stale") {
       setSavedPlan(null);
+      setSavedReminderPending(false);
       setState({ kind: "stale" });
     } else {
       setSavedPlan(null);
+      setSavedReminderPending(false);
       setState({ kind: "error", source: "start-existing", errorKind: "storage", message: t("The saved plan could not be loaded. Try again.") });
     }
   }
 
   const header = <AppShellHeader backAction={{ onPress: goBack }} context={t("Learning plan")} placement="stack" />;
   if (state.kind === "loading") return <Screen edges={["top", "bottom"]} header={header}><Text style={styles.body}>{t("Preparing your plan")}</Text></Screen>;
-  if (savedPlan) return <SavedPlanView plan={savedPlan} t={t} busy={busy} onEdit={() => { void editSavedPlan(); }} onBack={goBack} header={header} />;
+  if (savedPlan) return <SavedPlanView plan={savedPlan} t={t} busy={busy} remindersPending={savedReminderPending} onEdit={() => { void editSavedPlan(); }} onRetryReminders={() => { void retryReminders(); }} onBack={goBack} header={header} />;
   if (state.kind === "stale") return <Screen edges={["top", "bottom"]} footer={<Button onPress={goBack} variant="secondary">{t("Go back")}</Button>} footerVariant="sticky" header={header}><View style={styles.root} testID={runtimeSelectors.learningPlan.editorStale()}><EmptyState description={t("This plan is out of date. Review it again.")} title={t("This plan is out of date")} /></View></Screen>;
   if (state.kind === "error") {
     const canRetryCommit = state.source === "commit" && state.errorKind === "storage" && learningPlanEditorCoordinator.getSession(editorId, trackId) !== null;
@@ -146,9 +162,9 @@ function validationCopyKey(code: LearningPlanEditorValidationCode): string {
   return "Every day needs a valid supported time and session length.";
 }
 
-function SavedPlanView({ plan, t, busy, onEdit, onBack, header }: Readonly<{ plan: LearningPlan; t: (key: string, options?: Record<string, unknown>) => string; busy: boolean; onEdit(): void; onBack(): void; header: React.ReactNode }>) {
+function SavedPlanView({ plan, t, busy, remindersPending, onEdit, onRetryReminders, onBack, header }: Readonly<{ plan: LearningPlan; t: (key: string, options?: Record<string, unknown>) => string; busy: boolean; remindersPending: boolean; onEdit(): void; onRetryReminders(): void; onBack(): void; header: React.ReactNode }>) {
   const styles = useThemedStyles(createStyles);
-  return <Screen edges={["top", "bottom"]} footer={<View style={styles.footerActions}><Button loading={busy} onPress={onEdit} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button><Button onPress={onBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={header}><View style={styles.root} testID={runtimeSelectors.learningPlan.persisted()}><Text maxFontSizeMultiplier={2} style={styles.title}>{t("Saved learning plan")}</Text><Card>{plan.slots.map((slot) => <View key={slot.slotId} style={styles.slotRow}><Text maxFontSizeMultiplier={2} style={styles.slotDay}>{t(DAY_KEYS[slot.day])}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{slot.localTime}</Text></View>)}</Card></View></Screen>;
+  return <Screen edges={["top", "bottom"]} footer={<View style={styles.footerActions}><Button loading={busy} onPress={onEdit} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button>{remindersPending ? <Button loading={busy} onPress={onRetryReminders} testID={runtimeSelectors.learningPlan.editorReminderRetry()} variant="secondary">{t("Retry reminders")}</Button> : null}<Button onPress={onBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={header}><View style={styles.root} testID={runtimeSelectors.learningPlan.persisted()}><Text maxFontSizeMultiplier={2} style={styles.title}>{t("Saved learning plan")}</Text>{remindersPending ? <InfoBlock body={t("The plan was saved, but reminders are pending. Try again.")} title={t("Reminders are pending")} testID={runtimeSelectors.learningPlan.editorReminderPending()} tone="warning" /> : null}<Card>{plan.slots.map((slot) => <View key={slot.slotId} style={styles.slotRow}><Text maxFontSizeMultiplier={2} style={styles.slotDay}>{t(DAY_KEYS[slot.day])}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{slot.localTime}</Text></View>)}</Card></View></Screen>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

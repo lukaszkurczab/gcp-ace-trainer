@@ -2,50 +2,99 @@ import { AppState } from "react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
-  DEFAULT_NOTIFICATION_SETTINGS,
-  disablePracticeReminder,
-  NotificationPermissionDeniedError,
-  reconcilePracticeReminder,
-  requestNotificationPermission,
-  savePracticeReminder,
+  enableLearningPlanReminders,
+  disableLearningPlanReminders,
+  reconcileLearningPlanReminders,
+  retryLearningPlanReminders,
+  type LearningPlanReminderFailure,
+  type LearningPlanReminderResult,
   type NotificationPermission,
-  type PracticeReminder,
   type PracticeReminderCopy,
-  type PracticeReminderDraft,
-  type ReminderContext,
-  type NotificationSettings,
 } from "../application/notificationPreferences";
 import { expoNotificationPlatform } from "../infrastructure/notifications/expoNotificationPlatform";
+import { getActiveTrackId, getLearningPlanSnapshot } from "../storage/repositories";
+import type { DeviceReminderSlot } from "../storage/repositories/notificationSettingsRepository";
+import type { TrackId } from "../domain";
 import { createNotificationSettingsRequestGuard, type NotificationSettingsRequestGuard } from "./notificationSettingsState";
 
-export type NotificationSettingsOperation = "disable" | "load" | "request" | "save";
+export type NotificationSettingsOperation = "disable" | "enable" | "load" | "retry";
+export type NotificationSettingsStatus = "loading" | "synced" | "disabled" | LearningPlanReminderFailure;
+export type NotificationSettingsError = LearningPlanReminderFailure;
 type NotificationSettingsBusyOperation = Exclude<NotificationSettingsOperation, "load">;
 
-type NotificationSettingsState = Readonly<{
-  context: ReminderContext;
-  practiceReminder: PracticeReminder | null;
-  error: NotificationSettingsOperation | null;
-  loading: boolean;
-  busy: boolean;
-  busyOperation: NotificationSettingsBusyOperation | null;
-  permission: NotificationPermission | null;
-  clearError: () => void;
-  refresh: () => Promise<void>;
-  requestPermission: () => Promise<NotificationPermission>;
-  saveReminder: (
-    draft: PracticeReminderDraft,
-    notification: PracticeReminderCopy,
-  ) => Promise<boolean>;
-  disableReminder: (notification: PracticeReminderCopy) => Promise<boolean>;
+type AcceptedPlanSlots = Readonly<{
+  trackId: TrackId | null;
+  slots: readonly DeviceReminderSlot[];
 }>;
 
-const EMPTY_CONTEXT: ReminderContext = Object.freeze({ preferredDays: Object.freeze([]), status: "missing-track", trackId: null });
+export type NotificationSettingsState = Readonly<{
+  busy: boolean;
+  busyOperation: NotificationSettingsBusyOperation | null;
+  clearError: () => void;
+  enabled: boolean;
+  error: NotificationSettingsError | null;
+  loading: boolean;
+  pending: boolean;
+  permission: NotificationPermission | null;
+  planSlots: readonly DeviceReminderSlot[];
+  refresh: () => Promise<void>;
+  retryReminders: () => Promise<LearningPlanReminderResult | null>;
+  status: NotificationSettingsStatus;
+  trackId: TrackId | null;
+  enableReminders: () => Promise<LearningPlanReminderResult | null>;
+  disableReminders: () => Promise<LearningPlanReminderResult | null>;
+}>;
+
+const EMPTY_PLAN: AcceptedPlanSlots = Object.freeze({ trackId: null, slots: Object.freeze([]) });
+
+async function readAcceptedPlanSlots(): Promise<AcceptedPlanSlots> {
+  const trackId = await getActiveTrackId();
+  if (!trackId) return EMPTY_PLAN;
+  const snapshot = getLearningPlanSnapshot(trackId);
+  if (!snapshot || snapshot.plan.status !== "accepted") return Object.freeze({ trackId, slots: Object.freeze([]) });
+  return Object.freeze({
+    trackId,
+    slots: Object.freeze(snapshot.plan.slots.map((slot) => Object.freeze({ slotId: slot.slotId, day: slot.day, localTime: slot.localTime }))),
+  });
+}
+
+function errorFromResult(result: LearningPlanReminderResult): NotificationSettingsError | null {
+  return result.kind === "synced" || result.kind === "disabled" ? null : result.kind;
+}
+
+function applyResult(result: LearningPlanReminderResult, plan: AcceptedPlanSlots, permission: NotificationPermission): Readonly<{
+  enabled: boolean;
+  error: NotificationSettingsError | null;
+  pending: boolean;
+  permission: NotificationPermission;
+  planSlots: readonly DeviceReminderSlot[];
+  status: NotificationSettingsStatus;
+  trackId: TrackId | null;
+}> {
+  const pending = result.status === "pending";
+  const enabled = result.kind === "synced" || pending;
+  const fallbackSlots = result.kind === "synced"
+    ? Object.freeze(result.schedules.map(({ slotId, day, localTime }) => Object.freeze({ slotId, day, localTime })))
+    : Object.freeze([]);
+  return Object.freeze({
+    enabled,
+    error: errorFromResult(result),
+    pending,
+    permission,
+    planSlots: plan.slots.length > 0 ? plan.slots : fallbackSlots,
+    status: result.kind,
+    trackId: plan.trackId,
+  });
+}
 
 export function useNotificationSettings(copy: PracticeReminderCopy): NotificationSettingsState {
-  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
-  const [context, setContext] = useState<ReminderContext>(EMPTY_CONTEXT);
+  const [status, setStatus] = useState<NotificationSettingsStatus>("loading");
+  const [error, setError] = useState<NotificationSettingsError | null>(null);
+  const [planSlots, setPlanSlots] = useState<readonly DeviceReminderSlot[]>(EMPTY_PLAN.slots);
+  const [trackId, setTrackId] = useState<TrackId | null>(null);
   const [permission, setPermission] = useState<NotificationPermission | null>(null);
-  const [error, setError] = useState<NotificationSettingsOperation | null>(null);
+  const [enabled, setEnabled] = useState(false);
+  const [pending, setPending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [busyOperation, setBusyOperation] = useState<NotificationSettingsBusyOperation | null>(null);
@@ -56,9 +105,19 @@ export function useNotificationSettings(copy: PracticeReminderCopy): Notificatio
 
   useEffect(() => {
     mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  const commitResult = useCallback((result: LearningPlanReminderResult, plan: AcceptedPlanSlots, currentPermission: NotificationPermission) => {
+    const next = applyResult(result, plan, currentPermission);
+    if (!mountedRef.current) return;
+    setStatus(next.status);
+    setError(next.error);
+    setPlanSlots(next.planSlots);
+    setTrackId(next.trackId);
+    setPermission(next.permission);
+    setEnabled(next.enabled);
+    setPending(next.pending);
   }, []);
 
   const refresh = useCallback(async () => {
@@ -66,47 +125,61 @@ export function useNotificationSettings(copy: PracticeReminderCopy): Notificatio
     if (token.startedWhileBusy) return;
     if (mountedRef.current) setLoading(true);
     try {
-      const [stored, currentPermission] = await Promise.all([reconcilePracticeReminder(expoNotificationPlatform, copy), expoNotificationPlatform.getPermission()]);
-      if (!mountedRef.current || !guard.canCommitRead(token)) return;
-      setSettings(stored);
-      setContext(stored.context);
-      setPermission(currentPermission);
-      setError(null);
+      const [result, currentPermission, plan] = await Promise.all([
+        reconcileLearningPlanReminders(expoNotificationPlatform, copy),
+        expoNotificationPlatform.getPermission().catch(() => "undetermined" as const),
+        readAcceptedPlanSlots(),
+      ]);
+      if (!guard.canCommitRead(token)) return;
+      commitResult(result, plan, currentPermission);
     } catch {
-      if (mountedRef.current && guard.canCommitRead(token)) setError("load");
+      if (mountedRef.current && guard.canCommitRead(token)) {
+        setStatus("scheduler_failure");
+        setError("scheduler_failure");
+        setPending(true);
+      }
     } finally {
       if (mountedRef.current && guard.canCommitRead(token)) setLoading(false);
     }
-  }, [copy.body, copy.title, guard]);
+  }, [commitResult, copy.body, copy.title, guard]);
 
   useEffect(() => {
     void refresh();
-    const subscription = AppState.addEventListener("change", (state) => {
-      if (state === "active") void refresh();
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") void refresh();
     });
     return () => subscription.remove();
   }, [refresh]);
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+  const clearError = useCallback(() => setError(null), []);
 
-  const requestPermission = useCallback(async () => {
+  const runMutation = useCallback(async (
+    operation: NotificationSettingsBusyOperation,
+    action: () => Promise<LearningPlanReminderResult>,
+  ): Promise<LearningPlanReminderResult | null> => {
     const revision = guard.beginMutation();
-    if (revision === null) return permission ?? "undetermined";
+    if (revision === null) return null;
     if (mountedRef.current) {
       setBusy(true);
-      setBusyOperation("request");
+      setBusyOperation(operation);
       setError(null);
       setLoading(false);
     }
     try {
-      const nextPermission = await requestNotificationPermission(expoNotificationPlatform);
-      if (mountedRef.current) setPermission(nextPermission);
-      return nextPermission;
-    } catch (caught) {
-      if (mountedRef.current) setError("request");
-      throw caught;
+      const result = await action();
+      const [currentPermission, plan] = await Promise.all([
+        expoNotificationPlatform.getPermission().catch(() => "undetermined" as const),
+        readAcceptedPlanSlots(),
+      ]);
+      if (mountedRef.current) commitResult(result, plan, currentPermission);
+      return result;
+    } catch {
+      if (mountedRef.current) {
+        setStatus("scheduler_failure");
+        setError("scheduler_failure");
+        setPending(true);
+      }
+      return null;
     } finally {
       guard.finishMutation(revision);
       if (mountedRef.current) {
@@ -114,90 +187,27 @@ export function useNotificationSettings(copy: PracticeReminderCopy): Notificatio
         setBusyOperation(null);
       }
     }
-  }, [guard, permission]);
+  }, [commitResult, guard]);
 
-  const saveReminder = useCallback(async (
-    draft: PracticeReminderDraft,
-    notification: PracticeReminderCopy,
-  ) => {
-    const revision = guard.beginMutation();
-    if (revision === null) return false;
-    if (mountedRef.current) {
-      setBusy(true);
-      setBusyOperation("save");
-      setError(null);
-      setLoading(false);
-    }
-    try {
-      const next = await savePracticeReminder(expoNotificationPlatform, draft, notification);
-      if (mountedRef.current) {
-        setSettings(next);
-        setContext(next.context);
-        setPermission("granted");
-      }
-      return true;
-    } catch (caught) {
-      if (mountedRef.current) {
-        setError("save");
-        if (caught instanceof NotificationPermissionDeniedError) {
-          try {
-            const currentPermission = await expoNotificationPlatform.getPermission();
-            if (mountedRef.current) setPermission(currentPermission);
-          } catch {
-            // Preserve the original operation error when the follow-up permission read fails.
-          }
-        }
-      }
-      throw caught;
-    } finally {
-      guard.finishMutation(revision);
-      if (mountedRef.current) {
-        setBusy(false);
-        setBusyOperation(null);
-      }
-    }
-  }, [guard]);
-
-  const disableReminder = useCallback(async (notification: PracticeReminderCopy) => {
-    const revision = guard.beginMutation();
-    if (revision === null) return false;
-    if (mountedRef.current) {
-      setBusy(true);
-      setBusyOperation("disable");
-      setError(null);
-      setLoading(false);
-    }
-    try {
-      const next = await disablePracticeReminder(expoNotificationPlatform, notification);
-      if (mountedRef.current) {
-        setSettings(next);
-        setContext(next.context);
-      }
-      return true;
-    } catch (caught) {
-      if (mountedRef.current) setError("disable");
-      throw caught;
-    } finally {
-      guard.finishMutation(revision);
-      if (mountedRef.current) {
-        setBusy(false);
-        setBusyOperation(null);
-      }
-    }
-  }, [guard]);
+  const enableReminders = useCallback(() => runMutation("enable", () => enableLearningPlanReminders(expoNotificationPlatform, copy)), [copy, runMutation]);
+  const disableReminders = useCallback(() => runMutation("disable", () => disableLearningPlanReminders(expoNotificationPlatform, copy)), [copy, runMutation]);
+  const retryReminders = useCallback(() => runMutation("retry", () => retryLearningPlanReminders(expoNotificationPlatform, copy)), [copy, runMutation]);
 
   return {
-    context,
-    practiceReminder: settings.practiceReminder,
-    disableReminder,
-    error,
-    loading,
     busy,
     busyOperation,
-    permission,
     clearError,
+    disableReminders,
+    enableReminders,
+    enabled,
+    error,
+    loading,
+    pending,
+    permission,
+    planSlots,
     refresh,
-    requestPermission,
-    saveReminder,
+    retryReminders,
+    status,
+    trackId,
   };
 }

@@ -185,5 +185,10 @@
   "homePlan.day.completed": "Ukończono dziś",
   "homePlan.day.skipped": "Pominięto dziś",
   "homePlan.day.rest": "Dzień odpoczynku",
-  "homePlan.todayDetail": "{{status}} · {{count}} pytań · {{area}} · zaległe powtórki: {{reviews}}. {{message}}"
+  "homePlan.todayDetail": "{{status}} · {{count}} pytań · {{area}} · zaległe powtórki: {{reviews}}. {{message}}",
+  "Retry reminders": "Ponów przypomnienia",
+  "Reminders are pending": "Przypomnienia oczekują",
+  "The plan was saved, but reminders are pending. Try again.": "Plan jest zapisany, ale przypomnienia oczekują. Spróbuj ponownie.",
+  "notificationBody": "Wybierz jedną skupioną sesję ćwiczeń w Patternly.",
+  "notificationTitle": "Czas na ćwiczenia"
 }

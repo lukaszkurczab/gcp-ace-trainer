@@ -7,10 +7,10 @@ import { useTranslation } from "react-i18next";
 import {
   learningPlanEditorCoordinator,
   learningPlanProposalCoordinator,
-  type LearningPlanAcceptResult,
   type LearningPlanSnapshot,
   type LearningPlanProposalResult,
 } from "../../application/learningPlan";
+import { acceptPlanWithReminders, retryPlanReminders } from "../../application/learningPlan/learningPlanMutationRuntime";
 import { AppShellHeader, Button, Card, EmptyState, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { GoalDay, LearningPlan, ProposalOutcome, TargetAssessment } from "../../domain";
@@ -22,7 +22,7 @@ import { radius, spacing, typography, type AppColors } from "../../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.LEARNING_PLAN_PROPOSAL>;
 type ViewState = { kind: "loading" } | LearningPlanProposalResult;
-type ProposalActionError = "accept-validation" | "accept-storage" | "open-proposal-storage" | "open-existing-storage";
+type ProposalActionError = "accept-validation" | "accept-storage" | "accept-reminders-pending" | "open-proposal-storage" | "open-existing-storage";
 
 const DAY_KEYS: Readonly<Record<GoalDay, string>> = {
   mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday",
@@ -38,6 +38,7 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
   const [updating, setUpdating] = useState(false);
   const [acceptedPlan, setAcceptedPlan] = useState<LearningPlanSnapshot | null>(null);
   const [actionError, setActionError] = useState<ProposalActionError | null>(null);
+  const notification = { body: t("notificationBody", { ns: "notifications" }), title: t("notificationTitle", { ns: "notifications" }) };
   const track = getTrackDisplay(trackId);
 
   useEffect(() => {
@@ -83,10 +84,11 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
   async function acceptProposal(): Promise<void> {
     setUpdating(true);
     setActionError(null);
-    const result: LearningPlanAcceptResult = await learningPlanEditorCoordinator.acceptProposal(proposalId, trackId);
+    const result = await acceptPlanWithReminders(proposalId, trackId, notification);
     setUpdating(false);
-    if (result.kind === "accepted") {
+    if (result.kind === "plan_saved_reminders_synced" || result.kind === "plan_saved_reminders_pending" || result.kind === "plan_saved_reminders_cleared") {
       setAcceptedPlan(result.snapshot);
+      setActionError(result.kind === "plan_saved_reminders_pending" ? "accept-reminders-pending" : null);
     } else if (result.kind === "stale") {
       setActionError(null);
       setAcceptedPlan(null);
@@ -96,6 +98,13 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
     } else {
       setActionError("accept-storage");
     }
+  }
+
+  async function retryReminders(): Promise<void> {
+    setUpdating(true);
+    const result = await retryPlanReminders(notification);
+    setUpdating(false);
+    setActionError(result.kind === "synced" || result.kind === "disabled" ? null : "accept-reminders-pending");
   }
 
   async function editAcceptedPlan(): Promise<void> {
@@ -117,7 +126,7 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
   const header = <AppShellHeader backAction={{ onPress: goBack }} context={t("Learning plan")} placement="stack" />;
 
   if (acceptedPlan) {
-    return <PersistedPlanView plan={acceptedPlan.plan} track={tCommon(track.shortTitle)} t={t} updating={updating} actionError={actionError} onEdit={() => { void editAcceptedPlan(); }} onBack={goBack} />;
+    return <PersistedPlanView plan={acceptedPlan.plan} track={tCommon(track.shortTitle)} t={t} updating={updating} actionError={actionError} onEdit={() => { void editAcceptedPlan(); }} onRetryReminders={() => { void retryReminders(); }} onBack={goBack} />;
   }
 
   if (state.kind === "loading") {
@@ -247,18 +256,19 @@ function targetCopy(target: TargetAssessment, t: Translate): string {
   return t("The target is not achievable with the current rhythm. {{remaining}} attempts remain and {{occurrences}} sessions fit before the target.", { occurrences: target.occurrences, remaining: target.remainingAttempts });
 }
 
-function PersistedPlanView({ plan, track, t, updating, actionError, onEdit, onBack }: Readonly<{
+function PersistedPlanView({ plan, track, t, updating, actionError, onEdit, onRetryReminders, onBack }: Readonly<{
   plan: LearningPlan;
   track: string;
   t: Translate;
   updating: boolean;
   actionError: ProposalActionError | null;
   onEdit(): void;
+  onRetryReminders(): void;
   onBack(): void;
 }>) {
   const styles = useThemedStyles(createStyles);
   return (
-    <Screen edges={["top", "bottom"]} footer={<View style={styles.footerActions}><Button loading={updating} onPress={onEdit} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button><Button onPress={onBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={<AppShellHeader backAction={{ onPress: onBack }} context={t("Learning plan")} placement="stack" />}>
+    <Screen edges={["top", "bottom"]} footer={<View style={styles.footerActions}><Button loading={updating} onPress={onEdit} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button>{actionError === "accept-reminders-pending" ? <Button loading={updating} onPress={onRetryReminders} testID={runtimeSelectors.learningPlan.retryReminders()} variant="secondary">{t("Retry reminders")}</Button> : null}<Button onPress={onBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={<AppShellHeader backAction={{ onPress: onBack }} context={t("Learning plan")} placement="stack" />}>
       <View style={styles.root} testID={runtimeSelectors.learningPlan.persisted()}>
         <PlanHeader subtitle={t("Saved learning plan")} title={t("Your learning rhythm")} track={track} />
         <Card testID={runtimeSelectors.learningPlan.state("accepted") }>
@@ -277,6 +287,8 @@ function PlanActionError({ kind, t }: Readonly<{ kind: ProposalActionError; t: T
     ? t("Review the schedule and try again.")
     : kind === "accept-storage"
       ? t("The plan could not be saved. Try again.")
+      : kind === "accept-reminders-pending"
+        ? t("The plan was saved, but reminders are pending. Try again.")
       : kind === "open-proposal-storage"
         ? t("The schedule editor could not be opened. Try again.")
         : t("The saved plan could not be loaded. Try again.");

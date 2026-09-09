@@ -5,126 +5,46 @@ import test from "node:test";
 const screen = readFileSync("src/features/home/NotificationSettingsScreen.tsx", "utf8");
 const hook = readFileSync("src/preferences/useNotificationSettings.ts", "utf8");
 const guard = readFileSync("src/preferences/notificationSettingsState.ts", "utf8");
-const listRow = readFileSync("src/components/ListRow.tsx", "utf8");
-const sheet = readFileSync("src/components/SettingsBottomSheet.tsx", "utf8");
-const navigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
-const navigationTypes = readFileSync("src/navigation/types.ts", "utf8");
-const home = readFileSync("src/features/home/HomeScreen.tsx", "utf8");
-const goal = readFileSync("src/features/home/GoalCadenceScreen.tsx", "utf8");
+const en = JSON.parse(readFileSync("src/locales/en/notifications.json", "utf8")) as Record<string, string>;
+const pl = JSON.parse(readFileSync("src/locales/pl/notifications.json", "utf8")) as Record<string, string>;
 
-test("notification settings owns the Figma granted and blocked states in one local screen header", () => {
-  const notifications = readFileSync("src/locales/en/notifications.json", "utf8");
-  assert.match(navigator, /name=\{ROUTES\.NOTIFICATION_SETTINGS\}[\s\S]*?headerShown:\s*false/);
-  assert.match(navigator, /name=\{ROUTES\.NOTIFICATION_SETTINGS\}[\s\S]*?title: t\("Reminders"\)/);
-  assert.match(screen, /<ScreenHeader[\s\S]*context=\{context\}[\s\S]*contextTone="primary"[\s\S]*title=\{text\.reminders\}/);
-  assert.doesNotMatch(screen, /text\.notifications/);
-  assert.match(notifications, /"reminders": "Reminders"/);
-  assert.match(notifications, /"permissionSection": "Permission"/);
-  assert.match(notifications, /"permissionGranted": "Notifications allowed"/);
-  assert.match(notifications, /"permissionDenied": "Notifications are blocked"/);
-  assert.match(screen, /content:\s*\{\s*gap:\s*spacing\.xxl\s*\}/);
-  assert.match(screen, /permissionCard:[\s\S]*?borderRadius:\s*radius\.button[\s\S]*?paddingHorizontal:\s*spacing\.lg[\s\S]*?paddingVertical:\s*spacing\.lg/);
-  assert.match(screen, /permissionGranted:[\s\S]*?paddingVertical:\s*14/);
-  assert.match(screen, /permissionWarning:[\s\S]*?backgroundColor:\s*palette\.warningSoft/);
-  assert.match(screen, /permissionWarningHeader:[\s\S]*?gap:\s*10/);
-  assert.match(screen, /permissionAction:[\s\S]*?minHeight:\s*44/);
-  assert.match(screen, /permissionActionText:[\s\S]*?lineHeight:\s*18/);
-  assert.match(screen, /onOpenSettings=\{notifications\.permission === "denied"/);
-  assert.match(screen, /permissionChecking/);
-  assert.match(screen, /permission === null/);
-  assert.match(screen, /openDeviceSettings[\s\S]*?Linking\.openSettings\(\)[\s\S]*?catch/);
-  assert.match(screen, /notification-settings-open-settings-error/);
-  assert.doesNotMatch(screen, /SettingsDialog/);
+test("notification settings renders only the accepted plan slots", () => {
+  assert.match(screen, /useNotificationSettings\(copy\)/);
+  assert.match(screen, /notifications\.planSlots\.map/);
+  assert.match(screen, /runtimeSelectors\.notifications\.slot\(slot\.slotId\)/);
+  assert.match(screen, /planSchedule/);
+  assert.doesNotMatch(screen, /TextInput|SettingsBottomSheet|separateTimes|commonTime|dayTimes|saveReminder/);
+  assert.doesNotMatch(hook, /savePracticeReminder|disablePracticeReminder|reconcilePracticeReminder|PracticeReminderDraft/);
 });
 
-test("notification reminder row and editor use the Figma-specific row and sheet geometry", () => {
-  assert.match(screen, /<IconTile iconSize=\{20\} name="bell" size=\{32\} tone=\{reminderBlocked \? "muted" : "settings"\} \/>/);
-  assert.match(screen, /disabled=\{reminderDisabled\}/);
-  assert.match(screen, /detail=\{notifications\.loading \|\| notifications\.permission === null \? text\.reminderUnavailable[\s\S]*?reminderBlocked \? text\.reminderBlocked/);
-  assert.match(screen, /onPress=\{openReminderSheet\}/);
-  assert.match(screen, /testID="notification-practice-reminder"/);
-  assert.match(screen, /notification-goal-\$\{notifications\.context\.status\}/);
-  assert.match(screen, /notifications\.context\.preferredDays\.includes\(day\)/);
-  assert.match(screen, /goalUnavailable \? goalStatusDetail : notifications\.practiceReminder/);
-  assert.doesNotMatch(screen, /notifications\.dailyReminder/);
-  assert.match(screen, /trailing=\{reminderDisabled \? undefined/);
-  assert.match(screen, /<InfoBlock accessibilityAlert[\s\S]*notification-settings-error-/);
-  assert.match(screen, /<InfoBlock accessibilityAlert[\s\S]*notification-settings-open-settings-error/);
-  assert.match(screen, /name="chevron-right" size=\{16\}/);
-  assert.match(screen, /variant="settings"/);
-  assert.match(screen, /variant="reminder"/);
-  assert.match(screen, /variant="ghost"/);
-  assert.match(screen, /reminderTimeInput:[\s\S]*?fontSize:\s*28[\s\S]*?minHeight:\s*66/);
-  assert.match(listRow, /settingsRow:[\s\S]*?borderRadius:\s*radius\.button,[\s\S]*?minHeight:\s*63/);
-  assert.match(listRow, /settingsDetail:[\s\S]*?fontSize:\s*13/);
-  assert.match(listRow, /disabled:\s*\{[\s\S]*?backgroundColor:\s*palette\.surfaceInput/);
-  assert.match(listRow, /disabledDetail:[\s\S]*?color:\s*palette\.textSecondary/);
-  assert.match(listRow, /accessibilityState=\{\{ disabled \}\}/);
-  assert.match(sheet, /variant\?: "default" \| "reminder"/);
-  assert.match(sheet, /reminderSheet:[\s\S]*?minHeight:\s*432/);
-  assert.match(sheet, /reminderContent:[\s\S]*?gap:\s*spacing\.lg[\s\S]*?paddingTop:\s*spacing\.md/);
-  assert.match(sheet, /reminderHandle:[\s\S]*?marginBottom:\s*0/);
-  assert.match(sheet, /reminderTitle:[\s\S]*?fontSize:\s*22[\s\S]*?lineHeight:\s*28/);
-  assert.match(sheet, /reminderIntro:[\s\S]*?fontSize:\s*14[\s\S]*?lineHeight:\s*22/);
-  assert.match(screen, /reminderTimeInput:[\s\S]*?paddingVertical:\s*spacing\.lg/);
-  assert.match(screen, /sheetActions:[\s\S]*?gap:\s*spacing\.lg/);
-  assert.match(screen, /notifications\.busyOperation === "save"/);
-  assert.match(screen, /notifications\.busyOperation === "disable"/);
-  assert.match(screen, /editable=\{!notifications\.loading && !notifications\.busy\}/);
-  assert.match(sheet, /KeyboardAvoidingView behavior=\{Platform\.OS === "ios" \? "padding" : "height"\}/);
-  assert.match(sheet, /testID="settings-bottom-sheet-close"/);
-});
-
-test("reminder editor exposes the approved separate-times checkbox and one field per goal day", () => {
-  const en = JSON.parse(readFileSync("src/locales/en/notifications.json", "utf8")) as Record<string, string>;
-  const pl = JSON.parse(readFileSync("src/locales/pl/notifications.json", "utf8")) as Record<string, string>;
-  assert.match(screen, /accessibilityRole="checkbox"[\s\S]*testID="notification-separate-times-checkbox"/);
-  assert.match(screen, /accessibilityState=\{\{ checked: separateTimes/);
-  assert.match(screen, /GOAL_DAY_IDS\.filter\(\(day\) => notifications\.context\.preferredDays\.includes\(day\)\)/);
-  assert.match(screen, /testID=\{`notification-day-time-input-\$\{day\}`\}/);
-  assert.match(screen, /testID="notification-common-time-input"/);
-  assert.match(screen, /setByDayDraftEdited\(true\)/);
-  assert.match(screen, /if \(!byDayDraftEdited\) setDayTimes/);
-  assert.match(screen, /if \(separateTimes\) \{[\s\S]*mode: "by-day"[\s\S]*parseDailyReminderTime\(dayTimes\[day\][\s\S]*\} else \{[\s\S]*parseDailyReminderTime\(reminderTime\)/);
-  assert.equal(en.sheetTitle, "Reminder times");
-  assert.equal(en.separateTimes, "Use separate times");
-  assert.equal(pl.sheetTitle, "Godziny przypomnień");
-  assert.equal(pl.separateTimes, "Użyj osobnych godzin");
-  assert.equal(en.noGoalDays, "Add preferred days to your goal before setting reminder times.");
-  assert.equal(pl.noGoalDays, "Dodaj preferowane dni do celu, aby ustawić godziny przypomnień.");
-});
-
-test("notification settings preserves the source context and direct-entry fallback", () => {
-  const en = JSON.parse(readFileSync("src/locales/en/notifications.json", "utf8")) as Record<string, string>;
-  const pl = JSON.parse(readFileSync("src/locales/pl/notifications.json", "utf8")) as Record<string, string>;
-  assert.match(navigationTypes, /export type NotificationSettingsRouteParams =\s*[\s\S]*source: "settings"[\s\S]*source: "goal"[\s\S]*trackId: TrackId[\s\S]*returnToGoal: GoalCadenceReturnTo/);
-  assert.match(navigationTypes, /NOTIFICATION_SETTINGS\]: NotificationSettingsRouteParams \| undefined/);
-  assert.match(screen, /const source = route\.params\?\.source === "goal" \? "goal" : "settings"/);
-  assert.match(screen, /const context = source === "goal" \? text\.goal : text\.settings/);
-  assert.match(screen, /const backLabel = source === "goal" \? text\.backToGoal : text\.backToSettings/);
-  assert.match(screen, /backAction=\{\{ accessibilityLabel: backLabel, onPress: handleBack \}\}/);
-  assert.match(screen, /if \(route\.params\?\.source === "goal"\) \{[\s\S]*?navigation\.replace\(ROUTES\.GOAL_CADENCE, \{[\s\S]*?returnTo: route\.params\.returnToGoal,[\s\S]*?trackId: route\.params\.trackId/);
-  assert.match(screen, /navigation\.replace\(ROUTES\.HOME, \{ initialTab: "settings" \}\)/);
-  assert.match(home, /onOpenNotifications=\{\(\) => navigation\.navigate\(ROUTES\.NOTIFICATION_SETTINGS, \{ source: "settings" \}\)\}/);
-  assert.match(goal, /source: "goal", trackId: track\.id, returnToGoal: returnTo/);
-  assert.equal(en.backToSettings, "Back to Settings");
-  assert.equal(en.backToGoal, "Back to Goal");
-  assert.equal(pl.backToSettings, "Wróć do Ustawień");
-  assert.equal(pl.backToGoal, "Wróć do celu");
-});
-
-test("notification settings exposes lifecycle-safe load and mutation state", () => {
+test("notification settings exposes one enable/disable action and durable pending retry", () => {
+  assert.match(screen, /runtimeSelectors\.notifications\.enable\(\)/);
+  assert.match(screen, /runtimeSelectors\.notifications\.disable\(\)/);
+  assert.match(screen, /runtimeSelectors\.notifications\.retry\(\)/);
+  assert.match(screen, /notifications\.pending/);
+  assert.match(hook, /retryLearningPlanReminders/);
+  assert.match(hook, /setPending\(next\.pending\)/);
   assert.match(hook, /AppState\.addEventListener\("change"/);
-  assert.match(hook, /state === "active"/);
+});
+
+test("notification settings maps every closed reminder failure in both locales", () => {
+  const required = [
+    "missingTrackTitle", "missingTrackDetail", "missingGoalTitle", "missingGoalDetail", "missingPlanTitle", "missingPlanDetail",
+    "identityMismatchTitle", "identityMismatchDetail", "goalPausedTitle", "goalPausedDetail", "planPausedTitle", "planPausedDetail", "planCompletedTitle", "planCompletedDetail",
+    "noSlotsTitle", "noSlotsDetail", "timezoneMismatchTitle", "timezoneMismatchDetail", "permissionDeniedTitle", "schedulerFailureTitle",
+    "schedulerFailureDetail", "concurrentChangeTitle", "concurrentChangeDetail", "pendingTitle", "pendingDetail", "planSchedule", "planScheduleEmpty",
+  ];
+  for (const key of required) {
+    assert.equal(typeof en[key], "string", `missing EN key ${key}`);
+    assert.equal(typeof pl[key], "string", `missing PL key ${key}`);
+  }
+  assert.deepEqual(Object.keys(en).sort(), Object.keys(pl).sort());
+});
+
+test("notification settings keeps lifecycle-safe request coordination", () => {
   assert.match(hook, /if \(token\.startedWhileBusy\) return/);
-  assert.match(hook, /mountedRef\.current = true/);
-  assert.match(hook, /setLoading\(true\)/);
-  assert.match(hook, /setError\("load"\)/);
-  assert.match(hook, /setBusyOperation\("save"\)/);
-  assert.match(hook, /setBusyOperation\("disable"\)/);
-  assert.match(hook, /guard\.beginMutation\(\)/);
-  assert.match(hook, /if \(revision === null\) return/);
   assert.match(hook, /guard\.canCommitRead\(token\)/);
-  assert.match(guard, /startedWhileBusy/);
+  assert.match(hook, /guard\.beginMutation\(\)/);
   assert.match(guard, /mutationRevision/);
+  assert.match(guard, /startedWhileBusy/);
 });

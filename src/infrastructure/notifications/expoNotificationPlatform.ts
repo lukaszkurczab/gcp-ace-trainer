@@ -65,17 +65,23 @@ export const expoNotificationPlatform: NotificationPlatform = {
       const day = data?.day;
       return data?.source === "practice-reminder" && data.transactionId === transactionId &&
         typeof day === "string" && GOAL_DAY_IDS.includes(day as GoalDay)
-        ? [{ day: day as GoalDay, notificationId: request.identifier }]
+        ? [{
+          commandId: typeof data.commandId === "string" ? data.commandId : undefined,
+          day: day as GoalDay,
+          identity: typeof data.identity === "object" && data.identity !== null ? data.identity as import("../../storage/repositories/notificationSettingsRepository").NotificationPlanIdentity : undefined,
+          notificationId: request.identifier,
+          slotId: typeof data.slotId === "string" ? data.slotId : undefined,
+        }]
         : [];
     });
   },
 
-  async scheduleWeeklyReminder({ body, day, time: { hour, minute }, title, trackId, transactionId }) {
+  async scheduleWeeklyReminder({ body, commandId, day, identity, slotId, time: { hour, minute }, title, trackId, transactionId }) {
     await ensureAndroidChannel();
     return await Notifications.scheduleNotificationAsync({
       content: {
         body,
-        data: { day, source: "practice-reminder", trackId, transactionId },
+        data: { commandId: commandId ?? identity?.commandId, day, identity, slotId, source: "practice-reminder", trackId, transactionId },
         sound: false,
         title,
       },
