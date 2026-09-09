@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import type { AccountState } from "../../../application/account/AccountSessionProvider";
@@ -65,6 +66,26 @@ test("Settings treats synced account data with durable warnings as needing atten
     assert.equal(presentation.canSignOut, true);
   }
   assert.equal(getSettingsAccountPresentation(authenticated("synced")).status, "authenticated");
+});
+
+test("Settings maps only the resume-required sign-out pair to canonical localized copy", () => {
+  const screen = readFileSync("src/features/home/tabs/SettingsTab.tsx", "utf8");
+  const en = JSON.parse(readFileSync("src/locales/en/account.json", "utf8")) as Record<string, string>;
+  const pl = JSON.parse(readFileSync("src/locales/pl/account.json", "utf8")) as Record<string, string>;
+
+  assert.match(screen, /signOutFailure === "pendingSyncRequiresNetwork" && account\.accountDataStatus === "resumeRequired"/u);
+  assert.match(screen, /tAccount\("resumeRequired"\)/u);
+  assert.match(screen, /tAccount\("resumeRequiredDescription"\)/u);
+  assert.match(screen, /testID="settings-sign-out-resume-required"/u);
+  assert.match(screen, /body=\{tAccount\(signOutFailure\)\}/u);
+  assert.match(screen, /title=\{text\.signOutErrorTitle\}/u);
+  assert.match(screen, /testID="settings-sign-out-error"/u);
+
+  assert.deepEqual(Object.keys(pl).sort(), Object.keys(en).sort());
+  assert.equal(en.resumeRequired, "Session saved on this device");
+  assert.equal(pl.resumeRequired, "Sesja zapisana na tym urządzeniu");
+  assert.equal(en.resumeRequiredDescription, "Your session and answers are saved on this device. Finish it to sync your progress to your account.");
+  assert.equal(pl.resumeRequiredDescription, "Sesja i odpowiedzi są zapisane na tym urządzeniu. Dokończ ją, aby zsynchronizować postęp z kontem.");
 });
 
 test("Settings blocks invalid actions while account lifecycle work is busy and keeps recovery states available", () => {

@@ -158,6 +158,7 @@ export function SettingsTab({
   const premiumTestingAvailable = isPatternlyPremiumTestingRuntime();
   const [premiumTestingEnabled, setPremiumTestingEnabled] = useState(false);
   const metadata = appMetadata(text.version);
+  const isResumeRequiredSignOutFailure = signOutFailure === "pendingSyncRequiresNetwork" && account.accountDataStatus === "resumeRequired";
 
   useEffect(() => {
     if (premiumTestingAvailable) setPremiumTestingEnabled(hasPremiumTestingAccess());
@@ -221,7 +222,11 @@ export function SettingsTab({
       </View>
       {account.status !== "authenticated" && account.canOpenAccount ? <Button onPress={onOpenAccount} testID="settings-account-entry" variant="secondary">{accountTitle}</Button> : null}
 
-      {signOutFailure ? <InfoBlock accessibilityAlert body={tAccount(signOutFailure)} title={text.signOutErrorTitle} testID="settings-sign-out-error" tone="warning" /> : null}
+      {signOutFailure ? isResumeRequiredSignOutFailure ? (
+        <InfoBlock accessibilityAlert body={tAccount("resumeRequiredDescription")} title={tAccount("resumeRequired")} testID="settings-sign-out-resume-required" tone="warning" />
+      ) : (
+        <InfoBlock accessibilityAlert body={tAccount(signOutFailure)} title={text.signOutErrorTitle} testID="settings-sign-out-error" tone="warning" />
+      ) : null}
 
       {latestStorageIssue ? (
         <SettingsGroup dividers title={text.storageStatus} titleGap={spacing.md}>
