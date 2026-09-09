@@ -64,6 +64,7 @@
   "currentPassword": "Current password",
   "password": "Password",
   "emailChangeAddressError": "Enter a valid new email address, different from your current one.",
+  "emailChangeAddressUnavailable": "This email address can't be used. Try a different address.",
   "emailChangePasswordError": "We couldn't verify your password. Check it and try again.",
   "recoveryWarning": "Generating 10 new single-use codes will invalidate all previous recovery codes. Save the new codes somewhere safe; they are shown only on this screen.",
   "emailChangeIntro": "Verify your identity to send a confirmation link to the new address. Your current email stays unchanged until you confirm that link.",

@@ -212,6 +212,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   termsRequired: t("termsRequired"),
   weakPassword: t("weakPassword"),
   invalid: t("invalid"),
+  emailUnavailable: t("emailUnavailable"),
   invalidEmail: t("emailFormatError"),
   duplicate: t("duplicate"),
   rateLimited: t("rateLimited"),

@@ -21,7 +21,7 @@ import { createDeletionAuthorizationVault, createSensitiveCommandLane, isLiveDel
 import { shareAccountDataExport as shareDownloadedAccountData } from "./accountDataExportService";
 import { legalVariables } from "../../legal/legalVariables";
 
-export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "expiredAction" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
+export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "emailUnavailable" | "expiredAction" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
 export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
 export type AccountDataExportFailure = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed";
 export type AccountDataExportCommandResult = Readonly<
@@ -969,8 +969,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         setRefreshAccountIdentityFailure(null);
         return { kind: "success", next: "verificationSent" };
       } catch (error) {
-        const failure = classifyAccountFailure(error);
-        return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
+        return { kind: "failure", failure: classifyEmailChangeFailure(error) };
       } finally {
         revokeDeletionAuthorization();
       }
@@ -1280,6 +1279,18 @@ export function classifyAccountFailure(error: unknown): AccountFailure {
   if (["auth/operation-not-allowed", "auth/app-not-authorized", "auth/invalid-api-key", "auth/invalid-app-id", "auth/provider-unavailable", "auth/apple-unavailable"].includes(code)) return "providerUnavailable";
   if (["auth/wrong-password", "auth/invalid-credential", "auth/email-already-in-use", "auth/user-not-found"].includes(code)) return "invalidCredential";
   return "providerUnavailable";
+}
+
+/**
+ * Change-email needs one provider-specific distinction that the global
+ * classifier intentionally cannot make: a new address can be unavailable
+ * while the current credentials are valid. Keep this mapping local so other
+ * account operations retain their existing failure contract.
+ */
+export function classifyEmailChangeFailure(error: unknown): AccountFailure {
+  if (firebaseAuthErrorCode(error) === "auth/email-already-in-use") return "emailUnavailable";
+  const failure = classifyAccountFailure(error);
+  return failure === "invalidCredential" ? "reauthenticationRequired" : failure;
 }
 
 export function classifyAccountDataExportFailure(error: unknown): Extract<AccountDataExportCommandResult, { kind: "failure" }> {

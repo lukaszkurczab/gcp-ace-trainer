@@ -145,7 +145,7 @@ function SecurityForm({ route, navigation }: Props) {
   const blocked = busy || !authenticated;
   const errorField = getAccountSecurityErrorField({ failure, mode, usesPassword });
   const fieldErrorMessage = errorField === "security-new-email"
-    ? t("emailChangeAddressError")
+    ? t(failure === "emailUnavailable" ? "emailChangeAddressUnavailable" : "emailChangeAddressError")
     : failure === "passwordMismatch"
       ? ta("passwordMismatch")
     : failure === "weakPassword"

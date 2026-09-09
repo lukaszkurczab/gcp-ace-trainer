@@ -6,6 +6,7 @@ import { getAccountSecurityErrorAfterEdit, getAccountSecurityErrorField } from "
 test("email validation identifies the address field for all sign-in providers", () => {
   for (const usesPassword of [true, false]) {
     assert.equal(getAccountSecurityErrorField({ mode: "email", failure: "invalidEmail", usesPassword }), "security-new-email");
+    assert.equal(getAccountSecurityErrorField({ mode: "email", failure: "emailUnavailable", usesPassword }), "security-new-email");
   }
 });
 
@@ -43,6 +44,7 @@ test("general errors and non-field security failures retain their existing banne
 test("editing another field preserves its error; editing the affected field clears it", () => {
   for (const [failure, affected, other] of [
     ["invalidEmail", "security-new-email", "security-password"],
+    ["emailUnavailable", "security-new-email", "security-password"],
     ["reauthenticationRequired", "security-password", "security-new-email"],
     ["invalidCredential", "security-password", "security-new-email"],
   ] as const) {

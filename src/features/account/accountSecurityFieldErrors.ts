@@ -10,7 +10,7 @@ export function getAccountSecurityErrorField(input: FieldErrorInput): "security-
   if (input.mode === "password" && input.failure === "weakPassword") return "security-new-password";
   if (input.mode === "recovery" && input.usesPassword && input.failure === "invalidCredential") return "security-password";
   if (input.mode !== "email") return null;
-  if (input.failure === "invalidEmail") return "security-new-email";
+  if (input.failure === "invalidEmail" || input.failure === "emailUnavailable") return "security-new-email";
   if (input.usesPassword && (input.failure === "reauthenticationRequired" || input.failure === "invalidCredential")) return "security-password";
   return null;
 }

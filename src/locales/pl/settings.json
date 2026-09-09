@@ -64,6 +64,7 @@
   "currentPassword": "Obecne hasło",
   "password": "Hasło",
   "emailChangeAddressError": "Wpisz poprawny nowy adres e-mail, inny niż obecny.",
+  "emailChangeAddressUnavailable": "Tego adresu e-mail nie można użyć. Spróbuj innego adresu.",
   "emailChangePasswordError": "Nie udało się potwierdzić hasła. Sprawdź je i spróbuj ponownie.",
   "recoveryWarning": "Wygenerowanie 10 nowych kodów jednorazowych unieważni wszystkie poprzednie kody. Zapisz nowe kody w bezpiecznym miejscu — są widoczne tylko na tym ekranie.",
   "emailChangeIntro": "Potwierdź tożsamość, aby wysłać link na nowy adres. Obecny adres pozostanie bez zmian do czasu potwierdzenia linku.",

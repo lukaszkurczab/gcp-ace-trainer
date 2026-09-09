@@ -125,6 +125,7 @@
   "termsRequired": "Potwierdź, że masz co najmniej 18 lat, i zaakceptuj Warunki korzystania, aby utworzyć konto.",
   "weakPassword": "Hasło musi mieć co najmniej 8 znaków.",
   "invalid": "Sprawdź wpisane dane.",
+  "emailUnavailable": "Tego adresu e-mail nie można użyć. Spróbuj innego adresu.",
   "duplicate": "Ten dostawca jest już połączony albo dane logowania są już używane.",
   "rateLimited": "Zbyt wiele prób. Spróbuj później.",
   "offline": "Wygląda na to, że jesteś offline. Spróbuj po połączeniu.",
