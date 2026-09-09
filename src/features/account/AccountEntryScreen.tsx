@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigationState } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import accountCopy from "../../locales/en/account.json";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -77,6 +78,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
   const { locale } = useAppPreferences();
+  const navigationIndex = useNavigationState((state) => state.index);
   const { t } = useTranslation("account");
   const text = {
   account: t("account"),
@@ -239,8 +241,12 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const [recoveryCode, setRecoveryCode] = useState("");
   const [recoveryMethod, setRecoveryMethod] = useState<"email" | "code">("email");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const backAction = navigation.canGoBack()
-    ? { onPress: () => navigation.goBack() }
+  const backAction = navigationIndex > 0
+    ? {
+        onPress: () => {
+          if (navigation.canGoBack()) navigation.goBack();
+        },
+      }
     : undefined;
   const continueWithoutAccount = () => {
     if (account.state.kind === "guest" && navigation.canGoBack()) {

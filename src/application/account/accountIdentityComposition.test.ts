@@ -158,6 +158,15 @@ test("account recovery owns one status message, a truthful retry, and a sign-out
   assert.match(screen, /testID="account-binding-sign-in-notice"/);
 });
 
+test("account recovery back action follows live navigator history", () => {
+  const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+
+  assert.match(screen, /import \{ useNavigationState \} from "@react-navigation\/native";/u);
+  assert.match(screen, /const navigationIndex = useNavigationState\(\(state\) => state\.index\);/u);
+  assert.match(screen, /const backAction = navigationIndex > 0[\s\S]*?if \(navigation\.canGoBack\(\)\) navigation\.goBack\(\);/u);
+  assert.doesNotMatch(screen, /const backAction = navigation\.canGoBack\(\)/u);
+});
+
 test("sign-out preparation failures restore the authenticated state before auth sign-out", () => {
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
   const authenticated = {
