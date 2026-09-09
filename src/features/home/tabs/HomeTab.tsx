@@ -40,7 +40,8 @@ type HomeTabProps = {
   onStartLearning: (topicId: string) => void;
   homePlan: HomePlanSnapshot | null;
   reviewQueueItems: readonly ReviewQueueEntry[];
-  showGuestGoalOnboarding: boolean;
+  goalInvitationAudience: "guest" | "account";
+  showGoalInvitation: boolean;
   trainingAttempts: readonly TrainingAttempt[];
 };
 
@@ -130,7 +131,8 @@ export function HomeTab({
   onStartLearning,
   homePlan,
   reviewQueueItems,
-  showGuestGoalOnboarding,
+  goalInvitationAudience,
+  showGoalInvitation,
   trainingAttempts,
 }: HomeTabProps) {
   const styles = useThemedStyles(createStyles);
@@ -228,7 +230,7 @@ export function HomeTab({
     try {
       await onDismissGoalOnboarding();
     } catch {
-      setGoalOnboardingError(t("We couldn't save this choice. Try again."));
+      setGoalOnboardingError(t("We couldn't hide this goal invitation. Try again. Your goal data was not changed."));
     } finally {
       setSavingGoalOnboarding(false);
     }
@@ -340,16 +342,16 @@ export function HomeTab({
           </Pressable>
         )}
       </Card>
-      {showGuestGoalOnboarding ? (
+      {showGoalInvitation ? (
         <Card style={styles.goalOnboardingCard} testID={runtimeSelectors.goalOnboarding.root()}>
           <View style={[styles.goalOnboardingHeading, largeText ? styles.goalOnboardingHeadingLargeText : null]}>
             <View style={styles.firstUseIcon}>
               <Icon color={palette.accentTeal} name="route" size={20} />
             </View>
             <View style={styles.goalOnboardingCopy}>
-              <Text maxFontSizeMultiplier={2} style={styles.firstUseTitle}>{t("Set a goal for this track")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.firstUseTitle}>{t(goalInvitationAudience === "account" ? "No goal is set for this track" : "Set a goal for this track")}</Text>
               <Text maxFontSizeMultiplier={2} style={styles.firstUseDetail}>
-                {t("Choose when and why you want to practise {{trackName}}.", { trackName: t(activeTrack.shortTitle) })}
+                {t(goalInvitationAudience === "account" ? "Your account has no goal for {{trackName}} yet. You can add one now or later." : "Choose when and why you want to practise {{trackName}}.", { trackName: t(activeTrack.shortTitle) })}
               </Text>
             </View>
           </View>
@@ -372,7 +374,7 @@ export function HomeTab({
           ) : null}
         </Card>
       ) : null}
-      {isFirstUse && !showGuestGoalOnboarding ? (
+      {isFirstUse && !showGoalInvitation ? (
         <View style={styles.firstUseState}>
           <View style={styles.firstUseIcon}>
             <Icon color={palette.accentTeal} name="route" size={20} />

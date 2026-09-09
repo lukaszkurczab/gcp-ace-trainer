@@ -58,8 +58,10 @@ export type AccountSyncState = Readonly<{
 
 export type AccountMaterialization = Readonly<
   | { operationId: string; previewFingerprint: string }
-  | { kind: "discardGuest"; accountId: string }
+  | { kind: "discardGuest"; accountId: string; installationId?: string; phase?: "prepared" | "applying"; guestBackup?: readonly GuestOwnedLocalDataBackupEntry[] }
 >;
+
+export type GuestOwnedLocalDataBackupEntry = Readonly<{ key: string; value: string }>;
 
 export type AccountAcknowledgedRecord = Readonly<{ fingerprint: string; recordId: string; recordType: SyncableRecordType; remoteVersion: number; trackId: string }>;
 export type AccountOutboxEntry = Readonly<AccountDataRecord & { mutationId: string; expectedVersion: number | null; attemptCount: number; lastErrorCode: string | null; status: "pending" | "retrying" | "failed" }>;
@@ -93,6 +95,14 @@ function clearCanonicalLearningNamespace(includeAccountSync: boolean): void {
   }
 }
 
+function isGuestOwnedLearningKey(key: string): boolean {
+  return (LEARNING_FIXED_KEYS as readonly string[]).includes(key) || LEARNING_RECORD_PREFIXES.some((prefix) => key.startsWith(prefix));
+}
+
+function isGuestOwnedLocalDataBackupEntry(value: unknown): value is GuestOwnedLocalDataBackupEntry {
+  return isRecord(value) && typeof value.key === "string" && isGuestOwnedLearningKey(value.key) && typeof value.value === "string";
+}
+
 function isSyncableRecordType(value: unknown): value is SyncableRecordType { return typeof value === "string" && (SYNCABLE_RECORD_TYPES as readonly string[]).includes(value); }
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 function isAccountSyncState(value: unknown): value is AccountSyncState {
@@ -105,7 +115,13 @@ function isResolution(value: unknown): boolean { return isRecord(value) && typeo
 function isGroupChoice(value: unknown): boolean { return isRecord(value) && typeof value.groupId === "string" && (value.resolution === "keep_guest" || value.resolution === "keep_account"); }
 function isAccountMaterialization(value: unknown): value is AccountMaterialization {
   if (!isRecord(value)) return false;
-  if ("kind" in value) return value.kind === "discardGuest" && typeof value.accountId === "string" && value.accountId.trim().length > 0;
+  if ("kind" in value) {
+    if (value.kind !== "discardGuest" || typeof value.accountId !== "string" || value.accountId.trim().length === 0) return false;
+    if (value.installationId === undefined && value.phase === undefined && value.guestBackup === undefined) return true;
+    return typeof value.installationId === "string" && value.installationId.trim().length > 0
+      && (value.phase === "prepared" || value.phase === "applying")
+      && Array.isArray(value.guestBackup) && value.guestBackup.every(isGuestOwnedLocalDataBackupEntry);
+  }
   return typeof value.operationId === "string" && value.operationId.trim().length > 0 && typeof value.previewFingerprint === "string" && value.previewFingerprint.trim().length > 0;
 }
 function isAcknowledgedRecord(value: unknown): value is AccountAcknowledgedRecord { return isRecord(value) && typeof value.fingerprint === "string" && typeof value.recordId === "string" && isSyncableRecordType(value.recordType) && Number.isSafeInteger(value.remoteVersion) && typeof value.trackId === "string"; }
@@ -249,6 +265,13 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
   for (const acknowledged of Object.values(state.acknowledged)) {
     const key = accountDataRecordKey(acknowledged);
     if (currentKeys.has(key) || byKey.has(key)) continue;
+    const acknowledgedTombstoneFingerprint = accountDataRecordFingerprint({
+      recordId: acknowledged.recordId,
+      recordType: acknowledged.recordType,
+      state: { deleted: true },
+      trackId: acknowledged.trackId,
+    });
+    if (acknowledged.fingerprint === acknowledgedTombstoneFingerprint) continue;
     const tombstone: Omit<AccountOutboxEntry, "mutationId"> = Object.freeze({
       fingerprint: accountDataRecordFingerprint({ recordId: acknowledged.recordId, recordType: acknowledged.recordType, state: { deleted: true }, trackId: acknowledged.trackId }),
       recordId: acknowledged.recordId,
@@ -282,15 +305,49 @@ export async function markAccountMaterializationPending(operationId: string, pre
   return saveAccountSyncState({ ...current, accountId, materialization: { operationId, previewFingerprint }, pendingConfirmation: null, status: "syncing" });
 }
 
-export async function markGuestDiscardMaterializationPending(accountId: string): Promise<AccountSyncState> {
+export async function buildGuestOwnedLocalDataBackup(): Promise<readonly GuestOwnedLocalDataBackupEntry[]> {
+  const storage = getKeyValueStorage();
+  const entries: GuestOwnedLocalDataBackupEntry[] = [];
+  for (const key of [...storage.getAllKeys()].filter(isGuestOwnedLearningKey).sort()) {
+    const value = storage.getString(key);
+    if (value !== undefined) entries.push(Object.freeze({ key, value }));
+  }
+  return Object.freeze(entries);
+}
+
+export async function restoreGuestOwnedLocalDataBackup(guestBackup: readonly GuestOwnedLocalDataBackupEntry[]): Promise<void> {
+  if (!Array.isArray(guestBackup) || !guestBackup.every(isGuestOwnedLocalDataBackupEntry)) throw new AccountDataFailure("account_data_records_invalid");
+  const storage = getKeyValueStorage();
+  const currentKeys = [...storage.getAllKeys()].filter(isGuestOwnedLearningKey);
+  const lockedKeys = [...new Set([...currentKeys, ...guestBackup.map((entry) => entry.key)])];
+  withCanonicalWriteLocks(lockedKeys, () => {
+    for (const entry of guestBackup) storage.setString(entry.key, entry.value);
+    const backupKeys = new Set(guestBackup.map((entry) => entry.key));
+    for (const key of currentKeys) if (!backupKeys.has(key)) storage.remove(key);
+    if (guestBackup.some((entry) => storage.getString(entry.key) !== entry.value)) throw new AccountDataFailure("account_materialization_verification_failed");
+  });
+}
+
+export async function markGuestDiscardMaterializationPending(accountId: string, installationId: string, guestBackup: readonly GuestOwnedLocalDataBackupEntry[]): Promise<AccountSyncState> {
   if (!accountId.trim()) throw new AccountDataFailure("account_id_required");
+  if (!installationId.trim()) throw new AccountDataFailure("guest_installation_required");
   const current = await getAccountSyncState();
   if (current.accountId !== null && current.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
   if (current.pendingConfirmation !== null) throw new AccountDataFailure("account_adoption_pending");
   if (current.materialization && (!("kind" in current.materialization) || current.materialization.kind !== "discardGuest" || current.materialization.accountId !== accountId)) {
     throw new AccountDataFailure("account_materialization_in_progress");
   }
-  return saveAccountSyncState({ ...current, accountId, materialization: { kind: "discardGuest", accountId }, status: "syncing", pendingConfirmation: null });
+  if (!Array.isArray(guestBackup) || !guestBackup.every(isGuestOwnedLocalDataBackupEntry)) throw new AccountDataFailure("account_data_records_invalid");
+  return saveAccountSyncState({ ...current, accountId, materialization: { kind: "discardGuest", accountId, installationId, phase: "prepared", guestBackup: Object.freeze([...guestBackup]) }, status: "syncing", pendingConfirmation: null });
+}
+
+export async function markGuestDiscardMaterializationApplying(accountId: string): Promise<AccountSyncState> {
+  const current = await getAccountSyncState();
+  const materialization = current.materialization;
+  if (!materialization || !("kind" in materialization) || materialization.kind !== "discardGuest" || materialization.accountId !== accountId || !materialization.installationId || !materialization.guestBackup) {
+    throw new AccountDataFailure("account_materialization_target_required");
+  }
+  return saveAccountSyncState({ ...current, materialization: { ...materialization, phase: "applying" } });
 }
 
 export function assertValidAccountDataRecords(records: unknown): asserts records is readonly AccountDataRecord[] {

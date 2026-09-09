@@ -87,14 +87,14 @@ test("account entry copy makes the destructive choice and code acknowledgement e
 
   assert.deepEqual(Object.keys(pl).sort(), Object.keys(en).sort());
   assert.equal(en.accountEntryContinue, "Continue");
-  assert.match(en.discardGuestDataDescription ?? "", /Guest progress will be removed/u);
-  assert.match(en.discardGuestDataDescription ?? "", /account.?s progress/u);
+  assert.match(en.accountDiscardDescription ?? "", /saved only on this device will be removed/u);
+  assert.match(en.accountDiscardDescription ?? "", /data already saved to your account/u);
   assert.match(en.recoveryCodesDescription ?? "", /10 single-use codes/u);
   assert.match(en.recoveryCodesSaveRequired ?? "", /before continuing/u);
   assert.equal(en.accountSignedInAs, "Signed in as");
   assert.equal(pl.accountEntryContinue, "Dalej");
-  assert.match(pl.discardGuestDataDescription ?? "", /Postęp gościa zostanie usunięty/u);
-  assert.match(pl.discardGuestDataDescription ?? "", /Dane konta pozostaną bez zmian/u);
+  assert.match(pl.accountDiscardDescription ?? "", /zapisane tylko na tym urządzeniu zostaną usunięte/u);
+  assert.match(pl.accountDiscardDescription ?? "", /dane zapisane już na koncie/u);
   assert.match(pl.recoveryCodesDescription ?? "", /10 jednorazowych kodów/u);
   assert.equal(pl.accountSignedInAs, "Zalogowano jako");
 });
@@ -119,10 +119,13 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.match(screen, /testID="account-entry-continue"/);
   assert.match(screen, /testID="account-recovery-codes-saved-checkbox"/);
   assert.match(screen, /account\.discardGuestData\(\)/);
+  assert.match(screen, /Alert\.alert\(text\.accountDiscardTitle, text\.accountDiscardDescription/);
+  assert.match(screen, /style: "destructive", onPress: executeEntry/);
   assert.match(screen, /account\.confirmAdoption\(resolutions, accountData\.preview/);
   assert.match(screen, /goalPlanConflictGroups/);
   assert.match(screen, /account-goal-plan-\$\{group\.trackId\}-keep-guest/);
   assert.match(screen, /account-goal-plan-\$\{group\.trackId\}-keep-account/);
+  assert.match(screen, /tCommon\(getTrackDisplay\(group\.trackId\)\.shortTitle\)/);
   assert.doesNotMatch(screen, /testID="account-authenticated"/);
   assert.doesNotMatch(screen, /testID="account-adoption-confirm"/);
   assert.doesNotMatch(screen, /text\.(?:preserve|upload|restore|deduplicated|decisions|keepGuest\b|keepAccount\b|confirmAdoption\b)/);

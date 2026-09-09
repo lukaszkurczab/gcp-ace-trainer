@@ -17,6 +17,7 @@ export type AccountDataFailureCode =
   | "account_adoption_pending"
   | "account_materialization_in_progress"
   | "account_materialization_target_required"
+  | "account_materialization_verification_failed"
   | "account_outbox_pending"
   | "active_session_adoption_blocked"
   | "journal_recovery_required"

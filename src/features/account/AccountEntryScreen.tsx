@@ -4,6 +4,7 @@ import accountCopy from "../../locales/en/account.json";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   AppState,
+  Alert,
   Linking,
   Platform,
   Pressable,
@@ -21,6 +22,7 @@ import type { Edge } from "react-native-safe-area-context";
 import * as Google from "expo-auth-session/providers/google";
 import { StatusBar } from "expo-status-bar";
 import GoogleIcon from "../../assets/icons/google.svg";
+import { getTrackDisplay } from "../../domain";
 
 import {
   Button,
@@ -147,6 +149,10 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   transferGuestData: t("transferGuestData"),
   transferGuestDataDescription: t("transferGuestDataDescription"),
   discardGuestDataDescription: t("discardGuestDataDescription"),
+  accountDiscardTitle: t("accountDiscardTitle"),
+  accountDiscardDescription: t("accountDiscardDescription"),
+  accountDiscardKeepDevice: t("accountDiscardKeepDevice"),
+  accountDiscardConfirm: t("accountDiscardConfirm"),
   conflictChoiceTitle: t("conflictChoiceTitle"),
   conflictChoiceDescription: t("conflictChoiceDescription"),
   goalPlanConflictTitle: t("goalPlanConflictTitle"),
@@ -764,6 +770,7 @@ function AccountAdoptionScreen({
   text: AccountCopy;
 }>) {
   const styles = useThemedStyles(createStyles);
+  const { t: tCommon } = useTranslation("common");
   const { colors } = useAppPreferences();
   const plan = accountData.preview?.plan;
   const [entryChoice, setEntryChoice] = useState<"transfer" | "discard">("transfer");
@@ -830,7 +837,7 @@ function AccountAdoptionScreen({
   };
   const hasGuestData = plan.localRecordCount > 0;
   const effectiveChoice = hasGuestData ? entryChoice : "discard";
-  const continueEntry = () => {
+  const executeEntry = () => {
     if (effectiveChoice === "transfer" && plan.conflictRecordIds.length > 0 && !conflictChoice) return;
     if (effectiveChoice === "transfer" && accountData.preview!.preview.goalPlanConflictGroups.some((group) => !goalPlanChoices[group.groupId])) return;
     const resolutions = plan.conflictRecordIds.map((conflictId) => ({
@@ -842,6 +849,16 @@ function AccountAdoptionScreen({
       () => effectiveChoice === "discard" ? account.discardGuestData() : account.confirmAdoption(resolutions, accountData.preview!.preview.goalPlanConflictGroups.map((group) => ({ groupId: group.groupId, resolution: goalPlanChoices[group.groupId] === "guest" ? "keep_guest" as const : "keep_account" as const }))),
       setCommandFeedback,
     );
+  };
+  const continueEntry = () => {
+    if (hasGuestData && effectiveChoice === "discard") {
+      Alert.alert(text.accountDiscardTitle, text.accountDiscardDescription, [
+        { text: text.accountDiscardKeepDevice, style: "cancel" },
+        { text: text.accountDiscardConfirm, style: "destructive", onPress: executeEntry },
+      ]);
+      return;
+    }
+    executeEntry();
   };
   const signOut = () => {
     runCommand("signOut", () => account.signOut(), setCommandFeedback);
@@ -916,7 +933,7 @@ function AccountAdoptionScreen({
         {entryChoice === "transfer" ? accountData.preview.preview.goalPlanConflictGroups.map((group) => (
           <View key={group.groupId} style={styles.accountActionGroup} testID={`account-goal-plan-conflict-${group.trackId}`}>
             <AuthText style={styles.accountHeading}>{text.goalPlanConflictTitle}</AuthText>
-            <AuthText style={styles.accountBody}>{group.trackId}</AuthText>
+            <AuthText style={styles.accountBody}>{tCommon(getTrackDisplay(group.trackId).shortTitle)}</AuthText>
             <AuthText style={styles.accountBody}>{text.goalPlanConflictDescription}</AuthText>
             <RadioOption description={text.keepGuestData} disabled={busyAction !== null} label={text.keepGuestData} onPress={() => setGoalPlanChoices((current) => ({ ...current, [group.groupId]: "guest" }))} selected={goalPlanChoices[group.groupId] === "guest"} testID={`account-goal-plan-${group.trackId}-keep-guest`} />
             <RadioOption description={text.keepAccountData} disabled={busyAction !== null} label={text.keepAccountData} onPress={() => setGoalPlanChoices((current) => ({ ...current, [group.groupId]: "account" }))} selected={goalPlanChoices[group.groupId] === "account"} testID={`account-goal-plan-${group.trackId}-keep-account`} />

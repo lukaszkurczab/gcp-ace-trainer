@@ -392,6 +392,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     navigation.navigate(ROUTES.ACCOUNT_ENTRY);
   }
 
+  const homeActiveSession = data.homePlan?.kind === "ready" ? data.homePlan.activeSession : data.homePlan?.kind === "unavailable" ? null : data.activeSession;
+
   return (
     <View style={styles.shell}>
       <Screen
@@ -410,7 +412,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               />
             ) : null}
             <HomeTab
-              activeSession={data.homePlan?.kind === "ready" ? data.homePlan.activeSession : data.homePlan?.kind === "unavailable" ? null : data.activeSession}
+              activeSession={homeActiveSession}
               activeTrack={activeTrack}
               analytics={analytics}
               algorithmsDashboard={data.algorithmsDashboard}
@@ -432,7 +434,13 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
               homePlan={data.homePlan}
               reviewQueueItems={data.reviewQueueItems}
-              showGuestGoalOnboarding={account.state.kind === "guest" && data.goal === null && !data.goalOnboardingDismissed}
+              goalInvitationAudience={account.state.kind === "authenticated" ? "account" : "guest"}
+              showGoalInvitation={(account.state.kind === "guest" || (account.state.kind === "authenticated"
+                && account.state.accountData.status === "synced"
+                && account.state.accountData.pendingMutationCount === 0
+                && account.state.accountData.blockingConflictCode === null
+                && account.state.accountData.lastFailureCode === null))
+                && homeActiveSession === null && data.goal === null && !data.goalOnboardingDismissed}
               trainingAttempts={data.trainingAttempts}
             />
           </>

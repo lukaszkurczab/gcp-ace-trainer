@@ -723,6 +723,8 @@ for (const fault of ["partial-index", "binding", "finish"] as const) {
   test(`discard resumes after ${fault} failure without reconstructing a guest upload`, async () => {
     const storage = await prepareGuest();
     await saveTrainingSession(guestSession("abandoned"));
+    storage.setString(STORAGE_KEYS.trainingSessionResult("backup-orphan"), "guest orphan result");
+    storage.setString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, "guest report outbox");
     storage.resetCounters();
     if (fault === "partial-index") storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.TRAINING_SESSION_INDEX });
     if (fault === "binding") storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.GUEST_INSTALLATION });
@@ -738,7 +740,17 @@ for (const fault of ["partial-index", "binding", "finish"] as const) {
     const first = await discardGuestDataAndLoadAccount(api(), accountId);
     assert.notEqual(first.status, "synced");
     storage.setFailurePlan(null);
-    assert.deepEqual((await getAccountSyncState()).materialization, { kind: "discardGuest", accountId });
+    assert.equal(storage.getString(STORAGE_KEYS.trainingSessionResult("backup-orphan")), "guest orphan result");
+    assert.equal(storage.getString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX), "guest report outbox");
+    const pendingMaterialization = (await getAccountSyncState()).materialization;
+    assert.equal(pendingMaterialization && "kind" in pendingMaterialization ? pendingMaterialization.kind : null, "discardGuest");
+    assert.equal(pendingMaterialization && "kind" in pendingMaterialization ? pendingMaterialization.accountId : null, accountId);
+    assert.equal(pendingMaterialization && "kind" in pendingMaterialization ? pendingMaterialization.installationId : null, "66666666-6666-4666-8666-666666666666");
+    assert.equal(pendingMaterialization && "kind" in pendingMaterialization ? pendingMaterialization.phase : null, "applying");
+    assert.ok(pendingMaterialization && "kind" in pendingMaterialization && pendingMaterialization.guestBackup && pendingMaterialization.guestBackup.length > 0);
+    const backupKeys = pendingMaterialization && "kind" in pendingMaterialization ? pendingMaterialization.guestBackup?.map((entry) => entry.key) : [];
+    assert.ok(backupKeys?.includes(STORAGE_KEYS.trainingSessionResult("backup-orphan")));
+    assert.ok(backupKeys?.includes(STORAGE_KEYS.CONTENT_REPORT_OUTBOX));
     assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0);
     let uploads = 0;
     const retried = await loadAccountDataSession(api({ syncProgress: async () => { uploads++; throw new Error("guest upload forbidden"); } }), accountId);
@@ -760,6 +772,20 @@ test("discard rejects another account and pending adoption without changing gues
   assert.equal(await getActiveTrackId(), guestTrack);
 });
 
+test("a stale adoption confirmation is cleared so retry can request a fresh preview", async () => {
+  await prepareGuest();
+  const state = await getAccountSyncState();
+  saveAccountSyncState({ ...state, accountId, status: "syncing", pendingConfirmation: { operationId: "stale-operation", previewFingerprint: "stale-fingerprint", protocolVersion: 2, resolutions: [], groupChoices: [] } });
+  const result = await loadAccountDataSession(api({ confirmAccountAdoption: async () => {
+    throw new PatternlyApiClientError("server_error", 409, "merge_preview_mismatch");
+  } }), accountId);
+  assert.equal(result.lastFailureCode, "adoption_conflict");
+  const reset = await getAccountSyncState();
+  assert.equal(reset.pendingConfirmation, null);
+  assert.equal(reset.accountId, null);
+  assert.equal(reset.status, "initialSyncRequired");
+});
+
 test("discard blocks an active guest session before fetching or deleting data", async () => {
   await prepareGuest();
   await saveTrainingSession(guestSession("active"));
@@ -777,6 +803,31 @@ test("concurrent discard calls make one transition and keep the guest outbox emp
   const results = await Promise.all([discardGuestDataAndLoadAccount(client, accountId), discardGuestDataAndLoadAccount(client, accountId)]);
   assert.deepEqual(results.map((result) => result.status), ["synced", "synced"]);
   assert.equal(reads, 1);
+});
+
+test("a session start requested while discard fetches waits and is preserved after materialization", async () => {
+  await prepareGuest();
+  let releaseFetch!: () => void;
+  let fetchStarted!: () => void;
+  const fetchReady = new Promise<void>((resolve) => { fetchStarted = resolve; });
+  const fetchPaused = new Promise<void>((resolve) => { releaseFetch = resolve; });
+  const discard = discardGuestDataAndLoadAccount(api({ getProgress: async () => {
+    fetchStarted();
+    await fetchPaused;
+    return { accountRevision: 0, records: [] };
+  } }), accountId);
+  await fetchReady;
+  const session = guestSession("active");
+  let sessionStarted = false;
+  const start = commitTrainingSessionStart({ session, draft: null, createdAt: session.startedAt }).then(() => { sessionStarted = true; });
+  await Promise.resolve();
+  assert.equal(sessionStarted, false);
+  releaseFetch();
+  const result = await discard;
+  await start;
+  assert.equal(result.status, "synced");
+  assert.deepEqual(await getActiveTrainingSession(), session);
+  assert.equal((await getAccountSyncState()).status, "offlinePending");
 });
 
 test("malformed remote records are rejected before the guest dataset or marker changes", async () => {
@@ -798,6 +849,15 @@ test("pending materialization blocks lifecycle revoke and deletion without losin
   assert.equal(calls, 0);
   assert.equal(await getActiveTrackId(), guestTrack);
   assert.deepEqual((await getAccountSyncState()).materialization, { kind: "discardGuest", accountId });
+});
+
+test("a durable adoption confirmation blocks a new learning commit", async () => {
+  await prepareGuest();
+  const state = await getAccountSyncState();
+  saveAccountSyncState({ ...state, accountId, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", protocolVersion: 2, resolutions: [], groupChoices: [] } });
+  await assert.rejects(() => commitTrainingSessionStart({ session: guestSession("active"), draft: null, createdAt: "2026-01-01T00:00:00.000Z" }));
+  assert.equal(await getActiveTrainingSession(), null);
+  assert.notEqual((await getAccountSyncState()).pendingConfirmation, null);
 });
 
 test("signout queued with discard runs after materialization and cannot be followed by a stale bind", async () => {

@@ -134,6 +134,10 @@ test("bound account outbox is deterministic and creates an explicit tombstone fo
   const afterDeletion = await ensureAccountOutboxFromLocalDataset();
   assert.equal(afterDeletion.outbox.length, 1);
   assert.equal(isDeletedAccountDataRecord(afterDeletion.outbox[0]!), true);
+  await acknowledgeOutbox(afterDeletion.outbox, 2);
+  const afterConfirmedDeletion = await ensureAccountOutboxFromLocalDataset();
+  assert.equal(afterConfirmedDeletion.outbox.length, 0);
+  assert.equal(afterConfirmedDeletion.remoteAccountRevision, 2);
 });
 
 test("mutation IDs include the expected remote version so returning to a prior value is a new command", async () => {
