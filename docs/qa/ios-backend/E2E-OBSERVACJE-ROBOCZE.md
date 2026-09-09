@@ -13,7 +13,6 @@ Plik służy wyłącznie do zapisywania problemów zauważonych podczas ręcznej
 
 | ID | Data | Ścieżka / przypadek E2E | Obserwacja / problem | Kroki reprodukcji | Oczekiwane zachowanie | Faktyczne zachowanie | Priorytet | Status | Dowód / powiązanie |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ODK-E2E-035 | 2026-09-05 | Plan nauki — test pełnego przepływu | Zweryfikować pełny przepływ od utworzenia celu do codziennej sesji, Progress i Reminders. | Utworzyć cel z target date, zaakceptować propozycję, zmienić dni, godzinę i liczbę sesji, wykonać oraz pominąć sesję, a następnie sprawdzić Home, Progress i Reminders. | Wszystkie ekrany korzystają z jednego planu, a zmiany i postęp są spójne w całej aplikacji. | Brak pełnego testu łączącego cel, plan, sesję, Home, Progress i Reminders. | P1 | `OPEN` | Odblokowane przez zweryfikowane ODK-E2E-054. Wymaga osobnego pełnego retestu ścieżki. |
 | ODK-E2E-038 | 2026-09-05 | Gość → konto — projekt zachowania i migracji celu | Przygotować projekt UX przejścia z lokalnego celu gościa do konta po rejestracji lub logowaniu. | Zaprojektować stany: gość z celem, gość bez celu, rejestracja po ustawieniu celu, istniejące konto z celem oraz istniejące konto bez celu. | Projekt jasno komunikuje, że lokalny cel zostanie zachowany lub połączony z kontem, nie powtarza onboardingu i obsługuje konflikty bez utraty danych użytkownika. | Brak zaprojektowanego zachowania dla celu ustawionego przed rejestracją oraz dla ponownego wejścia użytkownika posiadającego już cel. | P1 | `OPEN` | Zadanie designerskie; poprzedza `ODK-E2E-039` |
 | ODK-E2E-039 | 2026-09-05 | Gość → konto — zachowanie onboardingu i celu | Wdrożyć migrację lokalnego celu i planu gościa do konta oraz warunki niewyświetlania onboardingu po rejestracji lub logowaniu. | Ustawić cel jako gość, zarejestrować konto, zalogować istniejące konto z celem i konto bez celu, a następnie sprawdzić Home, Goal i Progress. | Lokalny cel i plan zostają zachowane przy rejestracji i przypisane do konta. Użytkownik z istniejącym celem nie widzi onboardingu ponownie; użytkownik bez celu dostaje jasną propozycję jego ustawienia. | Brak potwierdzonej logiki zachowania celu i onboardingu po zmianie statusu użytkownika. | P1 | `OPEN` | Zadanie wdrożeniowe zależne od zaakceptowanego `ODK-E2E-038` |
 | ODK-E2E-040 | 2026-09-05 | Onboarding celu — projekt stanów i komunikatów | Przygotować projekt komunikatów i stanów dla pominięcia celu, braku celu, zachowanego celu po rejestracji oraz ponownego wejścia na nowym urządzeniu. | Zdefiniować copy, CTA, komunikaty błędów i stany pustego celu dla gościa oraz użytkownika zalogowanego. | Użytkownik zawsze rozumie, czy ma cel, co może zrobić dalej i czy jego lokalne dane zostały zachowane. Projekt uwzględnia lokalizację, dostępność i brak presji na natychmiastową rejestrację. | Brak spójnych komunikatów opisujących stan celu i decyzje użytkownika. | P2 | `OPEN` | Zadanie designerskie; poprzedza `ODK-E2E-041` |
@@ -58,13 +57,12 @@ Plik służy wyłącznie do zapisywania problemów zauważonych podczas ręcznej
 
 Realizujemy wyłącznie zadania obecne w aktywnej tabeli. Zakończonych identyfikatorów nie utrzymujemy w tej kolejce; ich raporty i historia Git pozostają źródłem historii. W obrębie etapu obowiązuje kolejność od lewej do prawej. Następny etap zaczyna się po raporcie, wymaganej weryfikacji i pushu etapu poprzedniego. Nie przechodzimy dalej, gdy wymagany retest lub dowód nie istnieje.
 
-1.  **Bieżąca ścieżka planu nauki:** `ODK-E2E-035`.
-2.  **Cel gościa i konto:** `ODK-E2E-056` → `ODK-E2E-038` → `ODK-E2E-040` → `ODK-E2E-039` → `ODK-E2E-041`.
-3.  **Krótkie, niezależne poprawki produktu:** `ODK-E2E-043` → `ODK-E2E-089` → `ODK-E2E-092` → `ODK-E2E-093` → `ODK-E2E-094` → `ODK-E2E-095` → `ODK-E2E-098` → `ODK-E2E-100` → `ODK-E2E-101` → `ODK-E2E-102` → `ODK-E2E-103`.
-4.  **Legal i Your data:** `ODK-E2E-091` → `ODK-E2E-104` → `ODK-E2E-090` → `ODK-E2E-105` → `ODK-E2E-106` → `ODK-E2E-107` → `ODK-E2E-108` → `ODK-E2E-109` → `ODK-E2E-110` → `ODK-E2E-111` → `ODK-E2E-112` → `ODK-E2E-055`.
-5.  **Treść i konfiguracja pakietów:** `ODK-E2E-096` → `ODK-E2E-097`.
+1.  **Cel gościa i konto:** `ODK-E2E-056` → `ODK-E2E-038` → `ODK-E2E-040` → `ODK-E2E-039` → `ODK-E2E-041`.
+2.  **Krótkie, niezależne poprawki produktu:** `ODK-E2E-043` → `ODK-E2E-089` → `ODK-E2E-092` → `ODK-E2E-093` → `ODK-E2E-094` → `ODK-E2E-095` → `ODK-E2E-098` → `ODK-E2E-100` → `ODK-E2E-101` → `ODK-E2E-102` → `ODK-E2E-103`.
+3.  **Legal i Your data:** `ODK-E2E-091` → `ODK-E2E-104` → `ODK-E2E-090` → `ODK-E2E-105` → `ODK-E2E-106` → `ODK-E2E-107` → `ODK-E2E-108` → `ODK-E2E-109` → `ODK-E2E-110` → `ODK-E2E-111` → `ODK-E2E-112` → `ODK-E2E-055`.
+4.  **Treść i konfiguracja pakietów:** `ODK-E2E-096` → `ODK-E2E-097`.
 
-`ODK-E2E-035` jest pierwszym następnym zadaniem. Wymaga nowej, niezależnej walidacji briefu przed retestem.
+`ODK-E2E-056` jest pierwszym następnym zadaniem. Wymaga nowej, niezależnej walidacji briefu przed dalszą implementacją.
 
 Provider/release gate’y tworzą osobną kolejkę blokującą wydanie: `ODK-E2E-082` → `ODK-E2E-083` → `ODK-E2E-084` → `ODK-E2E-085` → `ODK-E2E-086` → `ODK-E2E-087` → `ODK-E2E-088` → `ODK-E2E-099`. Uruchamiamy ją po zapewnieniu wymaganych dostępów, konfiguracji i decyzji właściciela. Brak tych warunków nie blokuje etapów produktowych powyżej.
 
