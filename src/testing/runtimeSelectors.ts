@@ -1,7 +1,7 @@
 import type { ContentItemRef, GoalDay, LearningPlanSlotId, TrackId } from "../domain";
 import type { AlgorithmFeedbackMode } from "../tracks/coding-interview/domain/algorithmModes";
 import type { TargetDateGuidanceReason, TargetDateGuidanceState } from "../application/learningPlan/targetDateGuidance";
-import type { HomePlanUnavailableReason } from "../application/homePlanSnapshotReader";
+import type { HomePlanDayStatus, HomePlanUnavailableReason } from "../application/homePlanSnapshotReader";
 export type { TargetDateGuidanceReason, TargetDateGuidanceState } from "../application/learningPlan/targetDateGuidance";
 
 /**
@@ -137,6 +137,14 @@ export const runtimeSelectors = Object.freeze({
     node: (roadmapNodeId: string) => selector("progress", "node", roadmapNodeId),
     activity: () => selector("progress", "activity"),
   }),
+  progressPlan: Object.freeze({
+    root: () => selector("progress-plan", "root"),
+    completion: (state: ProgressPlanCompletionState) => selector("progress-plan", "completion", progressPlanCompletionStateSegment(state)),
+    day: (status: HomePlanDayStatus) => selector("progress-plan", "day", progressPlanDayStatusSegment(status)),
+    session: () => selector("progress-plan", "session"),
+    activeSession: () => selector("progress-plan", "active-session"),
+    unavailable: (reason: HomePlanUnavailableReason) => selector("progress-plan", "unavailable", homePlanUnavailableReasonSegment(reason)),
+  }),
   targetDateGuidance: Object.freeze({
     root: (surface: TargetDateGuidanceSurface) => selector("target-date-guidance", "root", guidanceSurfaceSegment(surface)),
     state: (surface: TargetDateGuidanceSurface, state: TargetDateGuidanceState) => selector("target-date-guidance", "state", guidanceSurfaceSegment(surface), guidanceStateSegment(state)),
@@ -200,6 +208,7 @@ export const runtimeSelectors = Object.freeze({
 export type LearningPlanEditorSelectorState = "loading" | "ready" | "stale" | "validation-error" | "storage-error" | "saved";
 export type TargetDateGuidanceSurface = "home" | "progress";
 export type TargetDateGuidanceFactKind = "required-pace" | "actual-pace" | "forecast" | "target";
+export type ProgressPlanCompletionState = "unknown" | "in_progress" | "completed";
 
 const LEARNING_PLAN_PRIMARY_STATES: ReadonlySet<LearningPlanPrimaryState> = new Set([
   "loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "generator_error",
@@ -288,6 +297,16 @@ function guidanceReasonSegment(value: TargetDateGuidanceReason): string {
 
 function guidanceFactSegment(value: TargetDateGuidanceFactKind): string {
   if (value !== "required-pace" && value !== "actual-pace" && value !== "forecast" && value !== "target") throw new Error("Unknown target date guidance fact.");
+  return value;
+}
+
+function progressPlanCompletionStateSegment(value: ProgressPlanCompletionState): string {
+  if (value !== "unknown" && value !== "in_progress" && value !== "completed") throw new Error("Unknown Progress plan completion state.");
+  return value.replaceAll("_", "-");
+}
+
+function progressPlanDayStatusSegment(value: HomePlanDayStatus): string {
+  if (value !== "scheduled" && value !== "completed" && value !== "skipped" && value !== "rest") throw new Error("Unknown Progress plan day status.");
   return value;
 }
 

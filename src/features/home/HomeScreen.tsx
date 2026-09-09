@@ -346,12 +346,13 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     }
   }
 
-  async function handleHomePlanAction(action: GuidanceAction, homePlan: HomePlanSnapshot): Promise<void> {
+  async function handleHomePlanAction(action: GuidanceAction, homePlan: HomePlanSnapshot, returnTo: "home" | "progress" = "home"): Promise<void> {
     if (action.kind === "set_goal" || action.kind === "adjust_goal") {
-      navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo: "home", trackId: selectedTrackId });
+      navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo, trackId: selectedTrackId });
       return;
     }
     if (action.kind === "view_progress") {
+      if (returnTo === "progress") return;
       handleHomeTabChange("progress");
       return;
     }
@@ -422,7 +423,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               onOpenSettings={() => handleHomeTabChange("settings")}
               onSetGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo: "home", trackId: activeTrack.id })}
               onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
-              onHomePlanAction={(action) => { void handleHomePlanAction(action, data.homePlan!); }}
+              onHomePlanAction={(action) => { void handleHomePlanAction(action, data.homePlan!, "home"); }}
               onRetryHomePlan={() => setShellReload((reload) => reload + 1)}
               onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
               homePlan={data.homePlan}
@@ -445,7 +446,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             onOpenActivityItem={(item) => navigateToActivityResult(navigation, item)}
             onOpenPractice={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
             onOpenGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo: "progress", trackId: activeTrack.id })}
+            onHomePlanAction={(action) => { void handleHomePlanAction(action, data.homePlan!, "progress"); }}
+            onRetryHomePlan={() => setShellReload((reload) => reload + 1)}
             onProgressAction={handleProgressAction}
+            homePlan={data.homePlan}
             practiceHistory={data.practiceHistory}
             reviewQueueItems={data.reviewQueueItems}
             trainingAttempts={data.trainingAttempts}

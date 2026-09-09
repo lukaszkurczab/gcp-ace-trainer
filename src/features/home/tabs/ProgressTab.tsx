@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Svg, { Circle, Polyline } from "react-native-svg";
 
-import { Button, Card, Icon, IconTile, ProgressBar, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
+import { Button, Card, Icon, IconTile, InfoBlock, ProgressBar, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
 import type { ActivitySessionRecord } from "../../../application/activityReadModels";
+import type { GuidanceAction } from "../../../application/learningPlan";
+import type { HomePlanSnapshot } from "../../../application/homePlanSnapshotReader";
 import type { GoalRecord, ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
@@ -20,6 +22,7 @@ import {
 } from "./progressTabModel";
 import { formatActivityDateLabel } from "./activityPresentation";
 import type { ActivityItem } from "./activityModel";
+import { buildProgressPlanPresentationModel, type ProgressPlanPresentationModel, type ProgressPlanReadyPresentation } from "../progressPlanPresentationModel";
 
 type ProgressTabProps = {
   activeTrack: TrackDisplay;
@@ -33,7 +36,10 @@ type ProgressTabProps = {
   onOpenActivityItem?: (item: ActivityItem) => void;
   onOpenPractice?: () => void;
   onOpenGoal?: () => void;
+  onHomePlanAction?: (action: GuidanceAction) => void;
+  onRetryHomePlan?: () => void;
   onProgressAction?: (action: ProgressAction) => void;
+  homePlan?: HomePlanSnapshot | null;
   practiceHistory: CertificationPracticeAnswerViewModel[];
   reviewQueueItems?: readonly ReviewQueueEntry[];
   trainingAttempts?: TrainingAttempt[];
@@ -124,7 +130,10 @@ export function ProgressTab({
   onOpenActivityItem,
   onOpenPractice,
   onOpenGoal,
+  onHomePlanAction,
+  onRetryHomePlan,
   onProgressAction,
+  homePlan = null,
   practiceHistory,
   reviewQueueItems = [],
   trainingAttempts = [],
@@ -135,6 +144,7 @@ export function ProgressTab({
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const model = buildProgressTabModel({ activeTrackId: activeTrack.id, activityRecords, analytics, attempts, cloudProgress, practiceHistory, reviewQueueItems, trainingAttempts });
   const focus = model.algorithmsProgress?.currentFocus;
+  const planPresentation = buildProgressPlanPresentationModel({ snapshot: homePlan, activeTrackId: activeTrack.id, locale });
   const focusTitle = focus?.title ?? model.performanceScores[0]?.label ?? activeTrack.shortTitle;
   const focusProgress = focus?.showProgress ? focus.progressPercent : model.performanceScores[0]?.percent ?? 0;
   const focusAction = model.algorithmsProgress?.priority.primaryAction ?? model.reviewAction;
@@ -161,6 +171,8 @@ export function ProgressTab({
           <Icon color={palette.textPrimary} name="chevron-down" size={18} />
         </Pressable>
       </View>
+
+      <ProgressPlanSection model={planPresentation} onAction={onHomePlanAction} onRetry={onRetryHomePlan} />
 
       <View style={[styles.weekSection, compactProgressLayout ? styles.emptyWeekSection : null]}>
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("This week")}</Text>
@@ -289,6 +301,118 @@ export function ProgressTab({
       )}
     </View>
   );
+}
+
+function ProgressPlanSection({ model, onAction, onRetry }: Readonly<{
+  model: ProgressPlanPresentationModel;
+  onAction?: (action: GuidanceAction) => void;
+  onRetry?: () => void;
+}>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation("learningPlan");
+  const { t: tCommon } = useTranslation("common");
+  const { colors: palette } = useAppPreferences();
+  const { fontScale } = useWindowDimensions();
+  const largeTextLayout = fontScale >= 1.8;
+
+  if (model.kind === "unavailable") {
+    return (
+      <View style={styles.planSection} testID={runtimeSelectors.progressPlan.root()}>
+        <View testID={runtimeSelectors.progressPlan.unavailable(model.reason)}>
+          <InfoBlock
+            accessibilityAlert
+            body={t(`homePlan.unavailable.${model.reason}`)}
+            testID={runtimeSelectors.targetDateGuidance.state("progress", "unavailable")}
+            title={t("Progress plan unavailable")}
+            tone="warning"
+          />
+          {onRetry ? <Button onPress={onRetry} testID={runtimeSelectors.targetDateGuidance.primary("progress")}>{t("Try again")}</Button> : null}
+        </View>
+      </View>
+    );
+  }
+
+  const factSelector = {
+    requiredPace: "required-pace",
+    actualPace: "actual-pace",
+    forecast: "forecast",
+    target: "target",
+  } as const;
+  const action = model.primaryAction;
+  const secondary = model.secondaryAction;
+
+  return (
+    <View style={styles.planSection} testID={runtimeSelectors.progressPlan.root()}>
+      <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Target outlook")}</Text>
+      <Card style={styles.planCard} testID={runtimeSelectors.targetDateGuidance.root("progress")}>
+        <View pointerEvents="none" style={[styles.planStatusRail, { backgroundColor: planToneColor(model.guidance.tone, palette) }]} />
+        <View testID={runtimeSelectors.targetDateGuidance.state("progress", model.guidance.state)}>
+          <Text maxFontSizeMultiplier={2} style={styles.planState}>{model.guidance.stateLabel}</Text>
+          <Text maxFontSizeMultiplier={2} style={styles.planMessage} testID={runtimeSelectors.targetDateGuidance.reason("progress", model.guidance.reason)}>{model.guidance.message}</Text>
+        </View>
+
+        {model.kind === "ready" ? (
+          <>
+            <View style={styles.planCompletion} testID={runtimeSelectors.progressPlan.completion(model.completion.kind)}>
+              <View style={styles.planCompletionHeader}>
+                <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Completed scope")}</Text>
+                {model.completion.ratio !== null ? <Text maxFontSizeMultiplier={2} style={styles.planCompletionPercent}>{`${Math.round(model.completion.ratio * 100)}%`}</Text> : null}
+              </View>
+              {model.completion.kind === "unknown" ? (
+                <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("Completion scope unavailable")}</Text>
+              ) : model.completion.kind === "completed" ? (
+                <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("{{count}} qualifying attempt", { count: model.completion.qualifyingAttemptCount })}</Text>
+              ) : (
+                <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("{{completed}} of {{required}} qualifying attempts", { completed: model.completion.qualifyingAttemptCount, required: model.completion.requiredAttemptCount })}</Text>
+              )}
+              {model.completion.ratio !== null ? <ProgressBar progress={model.completion.ratio} tone="primary" /> : null}
+            </View>
+            <View style={styles.planDay} testID={runtimeSelectors.progressPlan.day(model.day.status)}>
+              <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Today's plan")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t(`homePlan.day.${model.day.status}`)}</Text>
+            </View>
+            {model.activeSession ? (
+              <InfoBlock
+                body={t("Continue your active session.")}
+                testID={runtimeSelectors.progressPlan.activeSession()}
+                title={t("Active session")}
+                tone="neutral"
+              />
+            ) : null}
+            <View style={styles.planSession} testID={runtimeSelectors.progressPlan.session()}>
+              <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Your learning rhythm")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{`${tCommon(model.session.areaLabel)} · ${t("{{count}} question", { count: model.session.sessionLength })}`}</Text>
+            </View>
+          </>
+        ) : (
+          <View style={styles.planCompletion} testID={runtimeSelectors.progressPlan.completion("unknown")}>
+            <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Completed scope")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("Completion scope unavailable")}</Text>
+          </View>
+        )}
+
+        <View style={[styles.planFacts, largeTextLayout ? styles.planFactsLarge : null]}>
+          {model.guidance.facts.map((fact) => (
+            <View key={fact.key} style={[styles.planFact, largeTextLayout ? styles.planFactLarge : null]} testID={runtimeSelectors.targetDateGuidance.fact(factSelector[fact.key])}>
+              <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{fact.label}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{fact.value}</Text>
+            </View>
+          ))}
+        </View>
+
+        {action && onAction ? <Button onPress={() => onAction(action)} testID={runtimeSelectors.targetDateGuidance.primary("progress")}>{model.guidance.primaryLabel}</Button> : null}
+        {secondary && onAction ? <Button onPress={() => onAction(secondary)} testID={runtimeSelectors.targetDateGuidance.secondary()} variant="secondary">{model.guidance.secondaryLabel}</Button> : null}
+      </Card>
+    </View>
+  );
+}
+
+function planToneColor(tone: ProgressPlanReadyPresentation["guidance"]["tone"], palette: AppColors): string {
+  if (tone === "positive") return palette.success;
+  if (tone === "warning") return palette.warning;
+  if (tone === "danger") return palette.danger;
+  if (tone === "muted") return palette.textMuted;
+  return palette.info;
 }
 
 function ActivitySection({ items, locale, onOpenActivity, onOpenActivityItem }: Readonly<{ items: readonly ProgressTabActivityItem[]; locale: "en" | "pl"; onOpenActivity?: () => void; onOpenActivityItem?: (item: ActivityItem) => void }>) {
@@ -639,6 +763,22 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   trackSelector: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: 12, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 40, paddingHorizontal: 14 },
   trackSelectorText: { ...typography.bodyStrong, color: palette.textSecondary },
   pressed: { opacity: 0.78 },
+  planSection: { gap: spacing.sm },
+  planCard: { backgroundColor: palette.surface, gap: spacing.lg, overflow: "hidden", padding: spacing.lg, position: "relative" },
+  planStatusRail: { bottom: 0, left: 0, position: "absolute", top: 0, width: 4 },
+  planState: { ...typography.bodyStrong, color: palette.textPrimary },
+  planMessage: { color: palette.textSecondary, fontSize: 13, lineHeight: 19 },
+  planCompletion: { backgroundColor: palette.elevatedSurface, borderRadius: radius.md, gap: spacing.xs, padding: spacing.md },
+  planCompletionHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", gap: spacing.sm },
+  planCompletionPercent: { ...typography.bodyStrong, color: palette.primary, fontVariant: ["tabular-nums"] },
+  planDay: { gap: spacing.xs },
+  planSession: { gap: spacing.xs },
+  planFacts: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  planFactsLarge: { flexDirection: "column" },
+  planFact: { flexBasis: 145, flexGrow: 1, gap: spacing.xxs, minWidth: 135 },
+  planFactLarge: { flexBasis: "auto", minWidth: "100%", width: "100%" },
+  planFactLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16, textTransform: "uppercase" },
+  planFactValue: { color: palette.textPrimary, fontSize: 14, lineHeight: 20 },
   sectionLabel: { color: palette.primary, fontSize: 12, fontWeight: "600", lineHeight: 19 },
   weekSection: { gap: 10 },
   emptyWeekSection: { gap: 8 },

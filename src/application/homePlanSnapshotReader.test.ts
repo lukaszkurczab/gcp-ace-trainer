@@ -163,8 +163,35 @@ test("Home reader double-reads every mutable collection before publishing none",
     getReviewQueueItems: async () => { reads.reviews += 1; return []; },
   }));
 
-  assert.deepEqual(await reader.read({ trackId: TRACK_ID, now: "2026-09-09T10:00:00.000Z" }), { kind: "none", trackId: TRACK_ID });
+  const result = await reader.read({ trackId: TRACK_ID, now: "2026-09-09T10:00:00.000Z" });
+  assert.equal(result.kind, "none");
+  if (result.kind === "none") {
+    assert.equal(result.goal, null);
+    assert.equal(result.guidance.state, "no_goal");
+    assert.equal(result.guidance.home.primary.kind, "set_goal");
+  }
   assert.deepEqual(reads, { goal: 2, plan: 2, active: 2, sessions: 2, attempts: 2, reviews: 2 });
+});
+
+test("Home reader publishes canonical paused-goal and no-plan guidance without resolving a package", async () => {
+  const goal = createDefaultGoal(TRACK_ID);
+  const pausedReader = new HomePlanSnapshotReader(dependencies({
+    getGoalSnapshot: async () => ({ record: { ...goal, status: "paused" }, revision: 4 }),
+  }));
+  const noPlanReader = new HomePlanSnapshotReader(dependencies({
+    getGoalSnapshot: async () => ({ record: goal, revision: 4 }),
+  }));
+
+  const paused = await pausedReader.read({ trackId: TRACK_ID, now: "2026-09-09T10:00:00.000Z" });
+  const noPlan = await noPlanReader.read({ trackId: TRACK_ID, now: "2026-09-09T10:00:00.000Z" });
+  assert.equal(paused.kind, "none");
+  assert.equal(noPlan.kind, "none");
+  if (paused.kind === "none" && noPlan.kind === "none") {
+    assert.equal(paused.guidance.state, "goal_paused");
+    assert.equal(paused.guidance.home.primary.kind, "adjust_goal");
+    assert.equal(noPlan.guidance.state, "no_plan");
+    assert.equal(noPlan.guidance.home.primary.kind, "create_plan");
+  }
 });
 
 test("Home reader exposes concurrent mutation instead of publishing a mixed generation", async () => {
@@ -231,6 +258,7 @@ test("Home reader publishes a ready projection with the exact package identity",
   assert.equal(result.day.status, "rest");
   assert.equal(result.activeSession, null);
   assert.equal(result.dueReviewCount, 0);
+  assert.equal(result.completion.kind, "unknown");
 });
 
 test("Home reader reports a scheduled slot and exposes the canonical ready session facts", async () => {
@@ -314,6 +342,16 @@ test("Home reader ignores a foreign active session instead of offering a mismatc
 
   assert.equal(result.kind, "ready");
   if (result.kind === "ready") assert.equal(result.activeSession, null);
+});
+
+test("Home reader preserves the matching active session for Progress precedence", async () => {
+  const base = await readyFixture();
+  const active = sessionFor(base.resolved, { id: "matching-active", status: "active" });
+  const fixture = await readyFixture({ activeSession: active, sessions: [active] });
+  const result = await fixture.reader.read({ trackId: TRACK_ID, now: "2026-09-09T10:00:00.000Z", today: "2026-09-09" });
+
+  assert.equal(result.kind, "ready");
+  if (result.kind === "ready") assert.equal(result.activeSession?.id, "matching-active");
 });
 
 test("Home reader fails closed when an active pointer differs from its stored session record", async () => {

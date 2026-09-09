@@ -37,3 +37,20 @@ test("Home passes canonical sessions and exact row navigation into Progress", ()
   assert.match(props, /activityRecords=\{data\.activityRecords\}/);
   assert.match(props, /onOpenActivityItem=\{\(item\) => navigateToActivityResult\(navigation, item\)\}/);
 });
+
+test("Progress receives the single canonical Home plan snapshot and guidance action owner", () => {
+  const home = readFileSync("src/features/home/HomeScreen.tsx", "utf8");
+  const progress = readFileSync("src/features/home/tabs/ProgressTab.tsx", "utf8");
+  const props = home.slice(home.indexOf("<ProgressTab"), home.indexOf("/>", home.indexOf("<ProgressTab")));
+  assert.match(props, /homePlan=\{data\.homePlan\}/);
+  assert.match(props, /onHomePlanAction=\{\(action\) => \{ void handleHomePlanAction\(action, data\.homePlan!, "progress"\); \}\}/);
+  assert.match(progress, /buildProgressPlanPresentationModel\(\{ snapshot: homePlan, activeTrackId: activeTrack\.id, locale \}\)/);
+  assert.match(progress, /runtimeSelectors\.targetDateGuidance\.root\("progress"\)/);
+  assert.match(progress, /runtimeSelectors\.progressPlan\.completion\(model\.completion\.kind\)/);
+  assert.match(home, /navigation\.navigate\(ROUTES\.PRACTICE_SETUP, buildHomePlanPracticeSetupParams\(homePlan, selectedTrackId\)\)/);
+});
+
+test("Completed guidance does not render a Progress self-link", () => {
+  const model = readFileSync("src/features/home/progressPlanPresentationModel.ts", "utf8");
+  assert.match(model, /hasActiveSession && \(primary\.kind === "continue_plan" \|\| primary\.kind === "start_next_session"\)/);
+});

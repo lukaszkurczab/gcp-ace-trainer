@@ -174,3 +174,18 @@ test("Home plan selectors expose every closed unavailable reason", () => {
   }
   assert.throws(() => runtimeSelectors.homePlan.reason("future" as never), /Unknown Home plan unavailable reason/);
 });
+
+test("Progress plan selectors expose typed completion, day and unavailable identities", () => {
+  assert.equal(runtimeSelectors.progressPlan.root(), "patternly:progress-plan:root");
+  assert.equal(runtimeSelectors.progressPlan.completion("in_progress"), "patternly:progress-plan:completion:in-progress");
+  assert.equal(runtimeSelectors.progressPlan.completion("completed"), "patternly:progress-plan:completion:completed");
+  assert.equal(runtimeSelectors.progressPlan.day("scheduled"), "patternly:progress-plan:day:scheduled");
+  assert.equal(runtimeSelectors.progressPlan.day("completed"), "patternly:progress-plan:day:completed");
+  assert.equal(runtimeSelectors.progressPlan.day("skipped"), "patternly:progress-plan:day:skipped");
+  assert.equal(runtimeSelectors.progressPlan.day("rest"), "patternly:progress-plan:day:rest");
+  assert.equal(runtimeSelectors.progressPlan.session(), "patternly:progress-plan:session");
+  assert.equal(runtimeSelectors.progressPlan.activeSession(), "patternly:progress-plan:active-session");
+  assert.equal(runtimeSelectors.progressPlan.unavailable("identity_mismatch"), "patternly:progress-plan:unavailable:identity-mismatch");
+  assert.throws(() => runtimeSelectors.progressPlan.completion("future" as never), /Unknown Progress plan completion state/);
+  assert.throws(() => runtimeSelectors.progressPlan.day("future" as never), /Unknown Progress plan day status/);
+});

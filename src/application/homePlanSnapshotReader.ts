@@ -11,6 +11,7 @@ import {
   type GoalSnapshot,
   type LearningPlan,
   type LearningPlanSnapshot,
+  type PackageCompletionState,
   type ReviewQueueEntry,
   type TrainingAttempt,
   type TrainingSession,
@@ -81,6 +82,7 @@ export type HomePlanReady = Readonly<{
   activeSession: TrainingSession | null;
   dueReviewCount: number;
   dueReviewIds: readonly string[];
+  completion: PackageCompletionState;
   session: Readonly<{
     modeId: string;
     topicId: string;
@@ -93,7 +95,12 @@ export type HomePlanReady = Readonly<{
 
 export type HomePlanSnapshot =
   | HomePlanReady
-  | Readonly<{ kind: "none"; trackId: TrackId }>
+  | Readonly<{
+    kind: "none";
+    trackId: TrackId;
+    goal: GoalSnapshot | null;
+    guidance: TargetDateGuidance;
+  }>
   | Readonly<{ kind: "unavailable"; trackId: TrackId; reason: HomePlanUnavailableReason }>;
 
 export type HomePlanReadInput = Readonly<{
@@ -135,6 +142,17 @@ const defaultDependencies: HomePlanSnapshotReaderDependencies = {
   getReviewQueueItems: async () => (await getReviewQueueItems()),
   resolveExact: (pin) => contentPackageRuntimeOwner.resolveExact(pin),
 };
+
+const EMPTY_GUIDANCE_PIN: ContentPackagePin = Object.freeze({
+  packageIdentity: "0".repeat(64),
+  packageVersion: "none",
+  contentReleaseId: "none",
+});
+
+const EMPTY_COMPLETED_FACTS: ImmutableCompletedFacts = Object.freeze({
+  sessions: Object.freeze([]),
+  attempts: Object.freeze([]),
+});
 
 /**
  * Reads all Home learning facts twice and only publishes the generation if the
@@ -182,7 +200,26 @@ export class HomePlanSnapshotReader {
   }
 
   private async project(trackId: TrackId, generation: HomeReadGeneration, instant: string, requestedToday?: string): Promise<HomePlanSnapshot> {
-    if (generation.plan === null) return Object.freeze({ kind: "none", trackId });
+    if (generation.plan === null) {
+      let goal: GoalSnapshot | null = null;
+      if (generation.goal !== null) {
+        try {
+          goal = normalizeGoalSnapshot(generation.goal, trackId);
+        } catch {
+          return unavailable(trackId, "corrupt_record");
+        }
+      }
+      const guidance = projectTargetDateGuidance({
+        currentGoal: goal,
+        acceptedPlan: null,
+        currentVerifiedPackagePin: EMPTY_GUIDANCE_PIN,
+        c3Result: "unknown",
+        today: instant.slice(0, 10),
+        completedFacts: EMPTY_COMPLETED_FACTS,
+        paceForecast: Object.freeze({ kind: "unavailable", reason: "no_target" }),
+      });
+      return Object.freeze({ kind: "none", trackId, goal, guidance });
+    }
     if (generation.goal === null) return unavailable(trackId, "identity_mismatch");
 
     let goal: GoalSnapshot;
@@ -235,15 +272,17 @@ export class HomePlanSnapshotReader {
     const dueReviews = matchingReviews.filter((entry) => isDueReview(entry, nowMs));
     let paceForecast: PaceForecast;
     let c3Result: "unknown" | "in_progress" | "completed";
+    let completion: PackageCompletionState;
     let completedFacts: ImmutableCompletedFacts;
     try {
       const completionRule = resolved.package.profile.completionRule;
       completedFacts = buildCompletedFacts(matchingSessions, matchingAttempts);
       if (completionRule === undefined) {
+        completion = Object.freeze({ kind: "unknown" });
         c3Result = "unknown";
         paceForecast = Object.freeze({ kind: "unavailable", reason: "unknown_completion_rule" });
       } else {
-        const completion = evaluatePackageCompletion({
+        completion = evaluatePackageCompletion({
           trackId: plan.trackId,
           contentVersion: plan.contentVersion,
           packagePin: plan.contentPackagePin,
@@ -294,6 +333,7 @@ export class HomePlanSnapshotReader {
       activeSession: activeSession ?? null,
       dueReviewCount: dueReviews.length,
       dueReviewIds: Object.freeze(dueReviews.map((entry) => entry.id)),
+      completion,
       session: Object.freeze({
         modeId: primary.modeId,
         topicId: resolved.package.freeNodeId,
