@@ -50,6 +50,8 @@ Plik służy wyłącznie do zapisywania problemów zauważonych podczas ręcznej
 | ODK-E2E-110 | 2026-09-08 | Legal information — niedostępny Support | Poprawić stan niedostępnego publicznego linku. | Otworzyć lokalny build bez public environment oraz build z poprawnym i błędnym support URL. | Komunikat mówi wyłącznie, że zewnętrzny Support jest niedostępny. Lokalne Privacy Policy i Terms pozostają dostępne i nie są przedstawiane jako niedostępne. | `Public legal links unavailable` sugeruje niedostępność wszystkich dokumentów, choć wyłączony jest tylko Support. | P2 | `OPEN` | Audyt049. Test trzech stanów konfiguracji i E2E lokalnych dokumentów. |
 | ODK-E2E-111 | 2026-09-08 | Legal information — Data rights i data recovery | Rozdzielić w hubie prawa do danych osobowych od ręcznie ocenianego odzyskania danych nieosobowych. | Przejść oba wejścia jako gość i konto, sprawdzić nazwy, opis, formularz oraz endpoint. | Użytkownik rozumie różnicę między privacy request a non-personal data recovery. Copy nie obiecuje odzyskania usuniętego postępu. | Wspólny wiersz `Data rights` obejmuje oba przepływy i opisuje tylko GDPR account data. | P1 | `OPEN` | PO wybrał A: dwa osobne wiersze. Próba pozostaje 0/5 |
 | ODK-E2E-112 | 2026-09-08 | Legal information — rola huba, linki i terminy | Zatwierdzić granicę treści krótkiego huba względem pełnych dokumentów i kanałów zewnętrznych. | Porównać hub z Privacy Policy, Terms, public URLs oraz terminami withdrawal, complaint, privacy request i suspension review. | Istnieje jedna zatwierdzona zasada: co jest krótkim opisem w hubie, co pozostaje w dokumencie, czy używane są zewnętrzne Privacy/Terms oraz które terminy lub SLA są pokazywane przed wysłaniem wniosku. | Kod ma lokalne dokumenty i zewnętrzny Support. Skróty nie pokazują wszystkich terminów, a manual suspension review nie ma udowodnionego SLA. | P1 | `OPEN` | PO wybrał A: krótki hub, lokalne Privacy/Terms, zewnętrzny Support, prawne terminy bez wymyślonego SLA. Próba pozostaje 0/5 |
+| ODK-E2E-113 | 2026-09-08 | Start aplikacji — projekt odzyskiwania po utracie klucza danych | Zaprojektować pełny stan `Data on this device can’t be opened`, w tym etap bezpiecznego potwierdzenia usunięcia niedostępnych danych. | Odtworzyć stan `encrypted_storage_key_missing`; ocenić wariant podstawowy, potwierdzenie usunięcia, operację w toku i błąd usuwania w Light/Dark, EN/PL, przy dużym tekście i z VoiceOver. | Projekt ma czytelną hierarchię, respektuje safe area, grupuje treść i akcje bez przypadkowego pustego pola, wyraźnie odróżnia bezpieczne `Try again` od destrukcyjnej ścieżki oraz przed usunięciem jasno podaje zakres utraty danych. Zachowuje spokojny język Patternly i istniejące kontrakty bezpieczeństwa. | Załączony zrzut pokazuje tytuł bardzo blisko Dynamic Island, luźno powiązane akcje, nadmierne puste pole i dekorację bez funkcji. Kod składa ten stan z ogólnego `EmptyState` oraz osobnego przycisku poza komponentem. | P1 | `OPEN` | Zadanie designerskie; [pakiet poniżej](#pakiet-odk-e2e-113114--ekran-odzyskiwania-lokalnych-danych). Poprzedza `ODK-E2E-114`. |
+| ODK-E2E-114 | 2026-09-08 | Start aplikacji — wdrożenie ekranu odzyskiwania danych | Wdrożyć zaakceptowany projekt `ODK-E2E-113` dla wszystkich stanów utraty klucza lokalnego magazynu. | Zmienić prezentację w `ContentPreparationGate`, zachowując retry, dwuetapowe usuwanie, blokadę wielokrotnego wywołania, obsługę błędu i istniejące kontrakty storage. Wykonać testy prezentacji oraz retest iOS. | Ekran odpowiada zaakceptowanemu projektowi we wszystkich stanach i motywach, działa w EN/PL i przy dużym tekście, ma poprawną kolejność fokusu i etykiety dostępności. `Try again` nie usuwa danych; usunięcie wymaga jawnego potwierdzenia; sukces ponawia bootstrap; błąd pozostawia bezpieczną drogę dalszego działania. | Obecna funkcjonalność istnieje, ale jej kompozycja nie spełnia jakości wizualnej widocznej na załączonym zrzucie. | P1 | `BLOCKED` | BLOCKED przez akceptację `ODK-E2E-113`; [pakiet poniżej](#pakiet-odk-e2e-113114--ekran-odzyskiwania-lokalnych-danych). |
 
 ## Kolejność realizacji
 
@@ -59,6 +61,7 @@ Realizujemy wyłącznie zadania obecne w aktywnej tabeli. Zakończonych identyfi
 2.  **Krótkie, niezależne poprawki produktu:** `ODK-E2E-043` → `ODK-E2E-089` → `ODK-E2E-092` → `ODK-E2E-093` → `ODK-E2E-094` → `ODK-E2E-095` → `ODK-E2E-098` → `ODK-E2E-100` → `ODK-E2E-101` → `ODK-E2E-102` → `ODK-E2E-103`.
 3.  **Legal i Your data:** `ODK-E2E-091` → `ODK-E2E-104` → `ODK-E2E-090` → `ODK-E2E-105` → `ODK-E2E-106` → `ODK-E2E-107` → `ODK-E2E-108` → `ODK-E2E-109` → `ODK-E2E-110` → `ODK-E2E-111` → `ODK-E2E-112` → `ODK-E2E-055`.
 4.  **Treść i konfiguracja pakietów:** `ODK-E2E-096` → `ODK-E2E-097`.
+5.  **Odzyskiwanie lokalnych danych — design i wdrożenie:** `ODK-E2E-113` → `ODK-E2E-114`.
 
 `ODK-E2E-040` jest pierwszym następnym zadaniem.
 
@@ -68,10 +71,45 @@ Provider/release gate’y tworzą osobną kolejkę blokującą wydanie: `ODK-E2E
 
 Właściciel zatwierdził realizację wszystkich pozycji ze statusem `OPEN`. Zatwierdzenie nie zmienia ich statusu: każda pozycja pozostaje `OPEN` do czasu wykonania poprawki i osobnego retestu w przejściu E2E.
 
-Aktualny zakres obejmuje wyłącznie pozycje widoczne w tabeli: zadania produktowe `ODK-E2E-033`–`ODK-E2E-056` obecne w rejestrze, zadania następcze `ODK-E2E-089`–`ODK-E2E-112` oraz provider/release gate’y `ODK-E2E-082`–`ODK-E2E-088` i `ODK-E2E-099`. Zamknięte zadania nie wracają do aktywnej kolejki bez konkretnego dowodu regresji; ich raporty i historia Git pozostają źródłem dowodów.
+Aktualny zakres obejmuje wyłącznie pozycje widoczne w tabeli: zadania produktowe `ODK-E2E-035`–`ODK-E2E-056` obecne w rejestrze, zadania następcze `ODK-E2E-089`–`ODK-E2E-114` oraz provider/release gate’y `ODK-E2E-082`–`ODK-E2E-088` i `ODK-E2E-099`. Zamknięte zadania nie wracają do aktywnej kolejki bez konkretnego dowodu regresji; ich raporty i historia Git pozostają źródłem dowodów.
 
 -   Dopasowanie do celu: **0,98** — osobny plik dokumentacyjny nie zmienia runtime ani testów.
 -   Prostota: **0,99** — jeden rejestr i jedna tabela.
 -   Ryzyko: **0,98** — plik znajduje się poza katalogami przypadków wykonywalnych, skryptów i artefaktów.
 -   Utrzymywalność: **0,95** — stałe identyfikatory, statusy i linkowanie do dowodów.
 -   Wynik minimalny: **0,95**.
+
+## Pakiet ODK-E2E-113–114 — ekran odzyskiwania lokalnych danych
+
+### Potwierdzone fakty
+
+- `ContentPreparationGate` rozpoznaje `encrypted_storage_key_missing`, pozwala ponowić bootstrap i ma już dwuetapowe usuwanie danych.
+- Projekt nowej prezentacji jest `planned`; wdrożenie pozostaje `blocking` do jawnej akceptacji projektu.
+- Ekran działa przed pełnym startem aplikacji, więc nie może zależeć od usług wymagających otwartego storage.
+
+### ODK-E2E-113 — projekt
+
+- **Cel i zakres:** przygotować stan podstawowy, potwierdzenie usunięcia, operację w toku i błąd; objąć Light/Dark, EN/PL, największy wspierany font scale, VoiceOver, safe area i małą wysokość ekranu.
+- **Poza zakresem:** szyfrowanie, Keychain, manifest storage, automatyczne usuwanie, obietnica odzyskania danych i globalny redesign `EmptyState` bez dowodu ponownego użycia.
+- **Wejścia:** zrzut Product Ownera z 2026-09-08, `ContentPreparationGate`, repozytoryjne zasady design systemu i brandu oraz aktualne teksty EN/PL.
+- **Akceptacja:** jedna zwarta hierarchia bez nadmiernego pustego pola; tytuł poza obszarem systemowym; `Try again` jako akcja podstawowa; wejście do usuwania jako akcja drugorzędna; destrukcyjne CTA dopiero po opisie skutków i z anulowaniem; pełne stany loading/error; brak ucięć i poprawna kolejność VoiceOver; dekoracja usunięta albo podporządkowana treści.
+- **Weryfikacja i dowód:** kadry czterech stanów w obu motywach, EN/PL i dużym tekście; kontrola safe area, kontrastu, fokusu i hitboxów; zapis decyzji PO. Raport docelowy: `ODK-E2E-113-DESIGN-SPEC.md`.
+- **Ryzyko:** wizualne osłabienie ostrzeżenia lub sugestia, że retry usuwa dane. Bez decyzji PO zadanie nie jest zakończone.
+
+### ODK-E2E-114 — wdrożenie
+
+- **Cel i zakres:** wdrożyć jedną kanoniczną prezentację zaakceptowanych stanów, zachowując retry, potwierdzenie, usunięcie, blokadę wielokrotnego wywołania i ponowny bootstrap; zaktualizować potrzebne copy, selektory, testy i dowody.
+- **Poza zakresem:** zmiana kontraktu storage, semantyki usuwanych danych i refaktor wszystkich ekranów błędów.
+- **Akceptacja:** zgodność z projektem; retry nigdy nie usuwa danych; usunięcie wymaga potwierdzenia; kolejne tapnięcie jest blokowane podczas operacji; sukces ponawia bootstrap; błąd nie udaje sukcesu i pozostawia bezpieczną akcję; EN/PL, Light/Dark, safe area, duży tekst i VoiceOver są poprawne.
+- **Weryfikacja i dowód:** testy `contentPreparationRecovery`, prezentacji i loading-state ownership; iOS E2E dla retry, anulowania, usunięcia, wielokrotnego tapnięcia i błędu; zrzuty porównawcze. Raport docelowy: `ODK-E2E-114-IMPLEMENTATION-REPORT.md`.
+- **Ryzyko:** zmiana wspólnego `EmptyState` może wywołać regresje niezwiązanych ekranów; preferowany jest lokalny komponent, dopóki kod nie wykaże rzeczywistego współdzielenia.
+
+### Ocena podejścia
+
+- Dopasowanie do celu: **0,98**.
+- Prostota: **0,96**.
+- Ryzyko: **0,94**.
+- Utrzymywalność: **0,96**.
+- Wynik minimalny: **0,94**.
+
+Pierwszym krokiem tego strumienia jest `ODK-E2E-113`. `ODK-E2E-114` pozostaje zablokowane do chwili jawnej akceptacji projektu.
