@@ -99,7 +99,7 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
 
   return (
     <Screen edges={["top", "bottom"]}>
-      <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("settings")} title={t("premiumTitle")} />
+      <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("appSettings")} title={t("premiumTitle")} />
       <View style={styles.hero} testID="premium-offer-summary">
         <Text maxFontSizeMultiplier={2} style={styles.title}>{productName}</Text>
         <Text maxFontSizeMultiplier={2} style={styles.body}>{serviceScope}</Text>

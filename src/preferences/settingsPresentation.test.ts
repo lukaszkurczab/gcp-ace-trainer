@@ -16,6 +16,7 @@ const yourDataScreen = readFileSync("src/features/home/YourDataScreen.tsx", "utf
 const legalScreen = readFileSync("src/features/home/LegalInformationScreen.tsx", "utf8");
 const legalRequestsScreen = readFileSync("src/features/home/LegalRequestsScreen.tsx", "utf8");
 const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
+const premiumScreen = readFileSync("src/features/premium/PremiumPurchaseScreen.tsx", "utf8");
 
 test("Settings exposes account and participant navigation actions plus conditional developer verification actions", () => {
   const navigationRows = settingsTab.match(/<SettingsNavigationRow\b/g) ?? [];
@@ -134,6 +135,17 @@ test("Settings heading has no redundant description and locale keeps goal copy",
   assert.match(settingsEn, /"goalDetail": "Set your learning goal and preferred practice days\."/);
   assert.match(settingsPl, /"goal": "Cel"/);
   assert.match(settingsPl, /"goalDetail": "Ustaw cel nauki i dni ćwiczeń\."/);
+});
+
+test("Premium keeps a localized Settings context while retaining the back action", () => {
+  assert.match(premiumScreen, /<ScreenHeader backAction=\{\{ onPress: \(\) => navigation\.goBack\(\) \}\} context=\{t\("appSettings"\)\} title=\{t\("premiumTitle"\)\} \/>/);
+  assert.doesNotMatch(premiumScreen, /context=\{t\("settings"\)\}/);
+  const settingsEn = JSON.parse(readFileSync("src/locales/en/settings.json", "utf8")) as Record<string, unknown>;
+  const settingsPl = JSON.parse(readFileSync("src/locales/pl/settings.json", "utf8")) as Record<string, unknown>;
+  assert.equal(settingsEn.appSettings, "Settings");
+  assert.equal(settingsPl.appSettings, "Ustawienia");
+  assert.equal(settingsEn.settings, undefined);
+  assert.equal(settingsPl.settings, undefined);
 });
 
 test("Your data keeps the Settings entry label and names its local header consistently", () => {
