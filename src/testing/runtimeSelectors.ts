@@ -157,6 +157,8 @@ export const runtimeSelectors = Object.freeze({
   goal: Object.freeze({
     root: () => selector("goal", "root"),
     save: () => selector("goal", "save"),
+    dateInput: () => selector("goal", "date-input"),
+    dateError: () => selector("goal", "date-error"),
     goalType: (goalType: string) => selector("goal", "type", goalType),
     day: (day: string) => selector("goal", "day", day),
   }),

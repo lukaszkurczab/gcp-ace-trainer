@@ -115,6 +115,17 @@ test("runtime selector factories reject values that cannot be represented in the
   assert.throws(() => runtimeSelectors.session.counter("session-1", 11, 10), /cannot exceed/);
 });
 
+test("goal selectors expose stable target-date input and field-error identities", () => {
+  const input = runtimeSelectors.goal.dateInput();
+  const error = runtimeSelectors.goal.dateError();
+
+  assert.equal(input, "patternly:goal:date-input");
+  assert.equal(error, "patternly:goal:date-error");
+  assert.ok(isRuntimeSelectorId(input));
+  assert.ok(isRuntimeSelectorId(error));
+  assert.notEqual(input, error);
+});
+
 test("learning plan selectors use the closed primary states and stable slot identities", () => {
   const states: readonly LearningPlanPrimaryState[] = [
     "loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "generator_error",

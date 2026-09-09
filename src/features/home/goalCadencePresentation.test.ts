@@ -81,6 +81,30 @@ test("active goal summary only exposes Save while editing", () => {
   assert.match(screen, /onTogglePause=\{\(\) => \{ void togglePause\(\); \}\}/);
 });
 
+test("invalid target dates stay field-scoped, block persistence, and clear only on date edits", () => {
+  const saveStart = screen.indexOf("async function save()");
+  const saveEnd = screen.indexOf("async function createAndOpenPlan", saveStart);
+  const save = screen.slice(saveStart, saveEnd);
+  assert.match(save, /if \(current\.goalType !== "learn_at_own_pace" && dateInput\.length > 0 && !isIsoDate\(dateInput\)\) \{[\s\S]*?Keyboard\.dismiss\(\);[\s\S]*?setDateError\("Use a valid date in YYYY-MM-DD format\."\);[\s\S]*?return;/);
+  assert.doesNotMatch(save, /setSaveError\(t\("Use a valid date in YYYY-MM-DD format\."\)\)/);
+  assert.doesNotMatch(save.slice(save.indexOf("if (current.goalType"), save.indexOf("const nextGoal")), /persistGoal|createAndOpenPlan/);
+  assert.match(screen, /function handleDateChange\(value: string\): void \{\s*if \(value !== dateInput\) setDateError\(null\);\s*setDateInput\(value\);/);
+  assert.match(screen, /dateError=\{dateError\}[\s\S]*?onChangeDate=\{handleDateChange\}/);
+  const dateSection = screen.slice(screen.indexOf('<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionTitle\}>\{t\("Target date"\)\}</Text>'), screen.indexOf("<View style={styles.formSection}>", screen.indexOf("Preferred days")));
+  assert.match(dateSection, /dateField[\s\S]*?dateError/);
+  assert.match(dateSection, /accessibilityLiveRegion="polite" accessibilityRole="alert"/);
+  assert.match(dateSection, /testID=\{runtimeSelectors\.goal\.dateInput\(\)\}/);
+  assert.match(dateSection, /testID=\{runtimeSelectors\.goal\.dateError\(\)\}/);
+  assert.match(screen, /dateFieldError: \{ borderColor: palette\.danger \}/);
+  assert.match(screen, /selectedGoalType === "learn_at_own_pace"[\s\S]*?This goal type does not use a target date\./);
+});
+
+test("goal editing uses local keyboard avoidance while preserving the shared sticky footer", () => {
+  assert.match(screen, /import \{ Keyboard, KeyboardAvoidingView, Platform,[^}]+\} from "react-native"/);
+  assert.match(screen, /<KeyboardAvoidingView behavior=\{Platform\.OS === "ios" \? "padding" : "height"\} style=\{styles\.keyboardAvoiding\}>[\s\S]*?<Screen[\s\S]*?footerVariant="sticky"/);
+  assert.match(screen, /keyboardAvoiding: \{ flex: 1 \}/);
+});
+
 test("goal loading keeps its back action separate from the busy content announcement", () => {
   assert.match(screen, /export function GoalLoadingSkeleton\(\{ context, onBack \}/);
   assert.match(screen, /header=\{\(/);

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 
 import {
   Button,
@@ -136,6 +136,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const [goal, setGoal] = useState<GoalRecord | null>(null);
   const [draft, setDraft] = useState<GoalRecord | null>(null);
   const [dateInput, setDateInput] = useState("");
+  const [dateError, setDateError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [reminderErrorKind, setReminderErrorKind] = useState<LearningPlanReminderFailure | null>(null);
@@ -221,10 +222,16 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     });
   }
 
+  function handleDateChange(value: string): void {
+    if (value !== dateInput) setDateError(null);
+    setDateInput(value);
+  }
+
   async function save(): Promise<void> {
     if (!current || !track) return;
-    if (dateInput.length > 0 && !isIsoDate(dateInput)) {
-      setSaveError(t("Use a valid date in YYYY-MM-DD format."));
+    if (current.goalType !== "learn_at_own_pace" && dateInput.length > 0 && !isIsoDate(dateInput)) {
+      Keyboard.dismiss();
+      setDateError("Use a valid date in YYYY-MM-DD format.");
       return;
     }
     const nextGoal = normalizeGoalRecord(normalizeGoalForExplicitSave({
@@ -318,74 +325,78 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   }
 
   return (
-    <Screen
-      ambient
-      ambientVariant="goal"
-      edges={["top", "bottom"]}
-      footer={editing ? (
-        <Button
-          disabled={saving}
-          loading={saving}
-          onPress={() => { void save(); }}
-          style={styles.footerButton}
-          testID={runtimeSelectors.goal.save()}
-        >
-          {t(goal ? "Save changes" : "Save goal")}
-        </Button>
-      ) : null}
-      footerVariant="sticky"
-      style={styles.screenContent}
-    >
-      <View style={styles.header}>
-        <View style={styles.headerContext}>
-          <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={handleBack} />
-          <Text accessibilityLabel={context} ellipsizeMode="clip" maxFontSizeMultiplier={2} numberOfLines={2} style={styles.context}>{context}</Text>
-        </View>
-        <View style={styles.titleBlock}>
-          <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Set learning rhythm for this track")}</Text>
-          <View style={styles.trackContext}>
-            <View style={styles.trackAccent} />
-            <Text maxFontSizeMultiplier={2} style={styles.trackLabel}>{t(track.shortTitle)}</Text>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardAvoiding}>
+      <Screen
+        ambient
+        ambientVariant="goal"
+        edges={["top", "bottom"]}
+        footer={editing ? (
+          <Button
+            disabled={saving}
+            loading={saving}
+            onPress={() => { void save(); }}
+            style={styles.footerButton}
+            testID={runtimeSelectors.goal.save()}
+          >
+            {t(goal ? "Save changes" : "Save goal")}
+          </Button>
+        ) : null}
+        footerVariant="sticky"
+        style={styles.screenContent}
+      >
+        <View style={styles.header}>
+          <View style={styles.headerContext}>
+            <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={handleBack} />
+            <Text accessibilityLabel={context} ellipsizeMode="clip" maxFontSizeMultiplier={2} numberOfLines={2} style={styles.context}>{context}</Text>
           </View>
-          {editing ? null : (
-            <View style={styles.statusRow}>
-              <View style={[styles.statusBadge, goal?.status === "paused" ? styles.pausedBadge : null]}><Text maxFontSizeMultiplier={2} style={styles.statusBadgeLabel}>{t(goal?.status === "paused" ? "Paused" : "Active")}</Text></View>
+          <View style={styles.titleBlock}>
+            <Text maxFontSizeMultiplier={2} style={styles.title}>{t("Set learning rhythm for this track")}</Text>
+            <View style={styles.trackContext}>
+              <View style={styles.trackAccent} />
+              <Text maxFontSizeMultiplier={2} style={styles.trackLabel}>{t(track.shortTitle)}</Text>
             </View>
-          )}
+            {editing ? null : (
+              <View style={styles.statusRow}>
+                <View style={[styles.statusBadge, goal?.status === "paused" ? styles.pausedBadge : null]}><Text maxFontSizeMultiplier={2} style={styles.statusBadgeLabel}>{t(goal?.status === "paused" ? "Paused" : "Active")}</Text></View>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
 
-      {editing ? (
-        <CreateGoalForm
-          dateInput={dateInput}
-          onChangeDate={setDateInput}
-          onSelectGoalType={(goalType) => updateDraft((currentDraft) => ({ ...currentDraft, goalType }))}
-          onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "goal", trackId: track.id, returnToGoal: returnTo })}
-          onToggleDay={toggleDay}
-          palette={palette}
-          selectedDays={current.preferredDays}
-          selectedGoalType={current.goalType}
-          templates={templates}
-          t={t}
-        />
-      ) : (
-        <ActiveGoalSummary
-          goal={current}
-          locale={locale}
-          onEdit={() => { setDraft({ ...current, preferredDays: [...current.preferredDays] }); setSaveError(null); }}
-          onCreatePlan={() => { void createAndOpenPlan(track.id); }}
-          creatingPlan={creatingPlan}
-          onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "goal", trackId: track.id, returnToGoal: returnTo })}
-          onTogglePause={() => { void togglePause(); }}
-          t={t}
-        />
-      )}
-      {saveError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.error} testID={reminderErrorKind ? runtimeSelectors.notifications.error(reminderErrorKind) : undefined}>{t(saveError)}</Text> : null}
-    </Screen>
+        {editing ? (
+          <CreateGoalForm
+            dateError={dateError}
+            dateInput={dateInput}
+            onChangeDate={handleDateChange}
+            onSelectGoalType={(goalType) => updateDraft((currentDraft) => ({ ...currentDraft, goalType }))}
+            onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "goal", trackId: track.id, returnToGoal: returnTo })}
+            onToggleDay={toggleDay}
+            palette={palette}
+            selectedDays={current.preferredDays}
+            selectedGoalType={current.goalType}
+            templates={templates}
+            t={t}
+          />
+        ) : (
+          <ActiveGoalSummary
+            goal={current}
+            locale={locale}
+            onEdit={() => { setDraft({ ...current, preferredDays: [...current.preferredDays] }); setSaveError(null); }}
+            onCreatePlan={() => { void createAndOpenPlan(track.id); }}
+            creatingPlan={creatingPlan}
+            onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "goal", trackId: track.id, returnToGoal: returnTo })}
+            onTogglePause={() => { void togglePause(); }}
+            t={t}
+          />
+        )}
+        {saveError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.error} testID={reminderErrorKind ? runtimeSelectors.notifications.error(reminderErrorKind) : undefined}>{t(saveError)}</Text> : null}
+      </Screen>
+    </KeyboardAvoidingView>
   );
 }
 
-function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelectGoalType, onToggleDay, palette, selectedDays, selectedGoalType, templates, t }: Readonly<{
+function CreateGoalForm({ dateError, dateInput, onChangeDate, onOpenNotifications, onSelectGoalType, onToggleDay, palette, selectedDays, selectedGoalType, templates, t }: Readonly<{
+  dateError: string | null;
   dateInput: string;
   onChangeDate: (value: string) => void;
   onOpenNotifications: () => void;
@@ -425,10 +436,11 @@ function CreateGoalForm({ dateInput, onChangeDate, onOpenNotifications, onSelect
       ) : (
         <View style={styles.formSection}>
           <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Target date")}</Text>
-          <View style={styles.dateField}>
-            <TextInput accessibilityLabel={t("Target date")} onChangeText={(value) => onChangeDate(value.slice(0, 10))} placeholder={t("YYYY-MM-DD (optional)")} placeholderTextColor={palette.textMuted} style={styles.dateInput} value={dateInput} />
+          <View style={[styles.dateField, dateError ? styles.dateFieldError : null]} testID={runtimeSelectors.goal.dateInput()}>
+            <TextInput accessibilityHint={dateError ? t(dateError) : undefined} accessibilityLabel={t("Target date")} onChangeText={(value) => onChangeDate(value.slice(0, 10))} placeholder={t("YYYY-MM-DD (optional)")} placeholderTextColor={palette.textMuted} style={styles.dateInput} value={dateInput} />
             <Icon color={palette.textSecondary} name="chevron-down" size={18} />
           </View>
+          {dateError ? <Text accessibilityLabel={`${t("Target date")}. ${t(dateError)}`} accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} selectable style={styles.dateError} testID={runtimeSelectors.goal.dateError()}>{t(dateError)}</Text> : null}
         </View>
       )}
 
@@ -540,6 +552,7 @@ function formatGoalDate(value: string, locale: "en" | "pl"): string {
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
+  keyboardAvoiding: { flex: 1 },
   loadingAction: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, width: "100%" },
   loadingContext: { ...typography.navigationContext, color: palette.textPrimary, flexShrink: 1, minWidth: 0 },
   loadingField: { backgroundColor: palette.surfaceInput, borderRadius: radius.lg, width: "100%" },
@@ -580,6 +593,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   sectionSubtitle: { ...typography.small, color: palette.primary, lineHeight: 18 },
   choiceGroup: { gap: spacing.md },
   dateField: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", minHeight: 48, paddingHorizontal: 14 },
+  dateFieldError: { borderColor: palette.danger },
+  dateError: { ...typography.small, color: palette.danger },
   dateInput: { ...typography.body, color: palette.textPrimary, flex: 1, paddingVertical: 0 },
   daysRow: { flexDirection: "row", gap: 6, justifyContent: "space-between" },
   dayButton: { alignItems: "center", borderRadius: 10, borderWidth: 1, height: 36, justifyContent: "center", width: 44 },
