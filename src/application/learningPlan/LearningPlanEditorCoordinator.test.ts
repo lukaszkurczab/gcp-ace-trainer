@@ -42,12 +42,14 @@ async function fixture() {
   let resolveGate: (() => void) | null = null;
   let resolutionGate: Promise<void> | null = null;
   let contentContext = { contentVersion: "content-v1", contentPackagePin: TEST_CONTENT_PACKAGE_PIN, timezone: "Europe/Warsaw" };
-  const outcome = proposal(goal);
-  const proposalResult = { kind: "ready" as const, proposal: { proposalId: "proposal:one", trackId: TRACK_ID, outcome } };
+  let outcome = proposal(goal);
+  let proposalId = "proposal:one";
   const proposalCoordinator = {
-    resolve: async (_proposalId: string, requestedTrackId: string) => {
+    resolve: async (requestedProposalId: string, requestedTrackId: string) => {
       if (resolutionGate) await resolutionGate;
-      return removed || requestedTrackId !== TRACK_ID ? { kind: "stale" as const } : proposalResult;
+      return removed || requestedTrackId !== TRACK_ID || requestedProposalId !== proposalId
+        ? { kind: "stale" as const }
+        : { kind: "ready" as const, proposal: { proposalId, trackId: TRACK_ID, outcome } };
     },
     remove: () => { removed = true; },
   } as unknown as LearningPlanProposalCoordinator;
@@ -80,6 +82,11 @@ async function fixture() {
     setUncertainSave: (value: boolean) => { uncertainSave = value; },
     saveCount: () => saveCount,
     restoreProposal: () => { removed = false; },
+    replaceProposal: (nextProposalId: string, nextOutcome: ProposalOutcome) => {
+      proposalId = nextProposalId;
+      outcome = nextOutcome;
+      removed = false;
+    },
     pauseResolution: () => {
       resolutionGate = new Promise<void>((resolve) => { resolveGate = resolve; });
     },
@@ -245,6 +252,41 @@ test("a replacement proposal keeps plan identity and increments plan revision", 
   assert.equal(replaced.snapshot.plan.planRevision, first.snapshot.plan.planRevision + 1);
   assert.equal(replaced.snapshot.plan.planId, first.snapshot.plan.planId);
   assert.equal(replaced.snapshot.plan.createdAt, first.snapshot.plan.createdAt);
+});
+
+test("a target-date replacement remains explicit and atomically updates the accepted plan identity", async () => {
+  const f = await fixture();
+  const first = await f.coordinator.acceptProposal("proposal:one", TRACK_ID);
+  assert.equal(first.kind, "accepted");
+  if (first.kind !== "accepted") return;
+
+  const changedGoal = await saveGoalSnapshot(
+    { ...f.goal.record, goalType: "build_foundations", targetDate: "2027-03-31" },
+    f.goal.revision,
+  );
+  f.setGoal(changedGoal);
+
+  const beforeAcceptance = f.getPlan();
+  assert.equal(beforeAcceptance?.plan.planId, first.snapshot.plan.planId);
+  assert.equal(beforeAcceptance?.plan.planRevision, first.snapshot.plan.planRevision);
+  assert.deepEqual(beforeAcceptance?.plan.acceptedTarget, first.snapshot.plan.acceptedTarget);
+
+  const nextOutcome: ProposalOutcome = {
+    ...f.outcome,
+    identity: { ...f.outcome.identity, goalRevision: changedGoal.revision },
+    goal: changedGoal.record,
+    targetAssessment: { kind: "achievable", occurrences: 20, actualLength: 10, remainingAttempts: 100 },
+  };
+  f.replaceProposal("proposal:target-change", nextOutcome);
+  const replacement = await f.coordinator.acceptProposal("proposal:target-change", TRACK_ID);
+  assert.equal(replacement.kind, "accepted");
+  if (replacement.kind !== "accepted") return;
+
+  assert.equal(replacement.snapshot.plan.planId, first.snapshot.plan.planId);
+  assert.equal(replacement.snapshot.plan.planRevision, first.snapshot.plan.planRevision + 1);
+  assert.equal(replacement.snapshot.plan.goalRevision, changedGoal.revision);
+  assert.deepEqual(replacement.snapshot.plan.acceptedTarget, { meaning: "deadline", targetDate: "2027-03-31" });
+  assert.deepEqual(replacement.snapshot.plan.contentPackagePin, first.snapshot.plan.contentPackagePin);
 });
 
 test("accepted plan freshness checks content version, full package pin, and timezone", async () => {

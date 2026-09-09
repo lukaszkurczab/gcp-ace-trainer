@@ -6,6 +6,7 @@ const screen = readFileSync("src/features/home/LearningPlanProposalScreen.tsx", 
 const goal = readFileSync("src/features/home/GoalCadenceScreen.tsx", "utf8");
 const routes = readFileSync("src/navigation/types.ts", "utf8");
 const navigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
+const home = readFileSync("src/features/home/HomeScreen.tsx", "utf8");
 
 test("proposal route carries only identity and resolves the in-memory proposal", () => {
   assert.match(routes, /LEARNING_PLAN_PROPOSAL\]: \{ proposalId: string; trackId: TrackId \}/);
@@ -40,4 +41,8 @@ test("goal save still opens a proposal only after its existing reminder reconcil
   const proposal = goal.indexOf("await createAndOpenPlan(track.id)");
   assert.ok(reminder >= 0 && proposal > reminder);
   assert.match(goal, /learningPlanProposalCoordinator\.create\(selectedTrackId\)/);
+});
+
+test("target guidance retry performs a real canonical snapshot reload", () => {
+  assert.match(home, /if \(action\.kind === "try_again"\) \{\s*setShellReload\(\(reload\) => reload \+ 1\);\s*return;\s*\}/);
 });

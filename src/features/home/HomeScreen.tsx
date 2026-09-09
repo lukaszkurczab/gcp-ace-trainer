@@ -347,6 +347,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   }
 
   async function handleHomePlanAction(action: GuidanceAction, homePlan: HomePlanSnapshot, returnTo: "home" | "progress" = "home"): Promise<void> {
+    if (action.kind === "try_again") {
+      setShellReload((reload) => reload + 1);
+      return;
+    }
     if (action.kind === "set_goal" || action.kind === "adjust_goal") {
       navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo, trackId: selectedTrackId });
       return;
