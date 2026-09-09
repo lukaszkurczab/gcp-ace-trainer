@@ -1,33 +1,50 @@
-# ODK-E2E-056 — raport discovery
+# ODK-E2E-056 — raport wdrożenia i retestu
 
-Status: ACCEPTED_PENDING_IMPLEMENTATION
+Data: 2026-09-09
 
-## Decyzja PO po audycie zbiorczym
+## Wynik
 
-PO zatwierdził `056=A`: atomowy wybór lokalne albo konto per track dla pary cel i plan. Licznik wcześniejszych prób pozostaje 5/5. Zadanie pozostaje aktywne do implementacji i retestu.
+PASS.
 
-## Wynik przygotowania
+Wdrożono protokół synchronizacji v2. Cel i plan są jedną parą per track. Konflikt wymaga jednego jawnego wyboru: dane gościa albo dane konta. Różne tracki mogą mieć różne wybory.
 
-- Zbadano lokalny GoalRecord, account sync i adopcję danych.
-- Potwierdzono, że cel i plan nie są synchronizowane.
-- Przygotowano cztery warianty i rekomendację.
-- Bez decyzji nie można zamknąć discovery ani projektować konfliktu.
-- Niezależna walidacja `gpt-5.6-luna / max`: 0,94 / 0,91 / 0,88 / 0,92. Minimum 0,88. APPROVE.
-- Inspekcja ekranu wykazała jeden globalny wybór dla wszystkich konfliktów. Przygotowano bezpieczniejszy wybór per track i plan protokołu sync v2.
-- Końcowe QA wykryło brak źródła revision, lifecycle propozycji, negocjacji starego klienta i atomowości pary cel+plan. Dokumenty poprawiono.
+Backend zachowuje rekordy v2 dla klienta v1. Klient v1 ich nie odczytuje. Tombstone ma dokładny stan `{ "deleted": true }`. Materializacja lokalna zachowuje rewizje kopert i działa pod wspólnymi blokadami celu i planu. Po materializacji aplikacja ponownie uzgadnia lokalne przypomnienia.
 
-## Sprawdzone pliki
+## Commity
 
-- `src/domain/goals/goalContracts.ts`
-- `src/storage/repositories/goalRepository.ts`
-- `src/storage/repositories/accountDataRepository.ts`
-- `src/application/account/accountDataService.ts`
-- `src/storage/repositories/accountDataSync.test.ts`
+- aplikacja: `84819ba`
+- backend: `fb35d99`
+- poprawka po niezależnym QA: `56c7d58`
 
-## Testy i E2E
+Wszystkie commity były obecne na `origin/main` przed zamknięciem raportu.
 
-Nie zmieniono runtime. `accountDataSync.test.ts`: 8/8 PASS. Test potwierdza wersje, retry i tombstones obecnych rekordów. Nie obejmuje celu ani planu i właśnie potwierdza lukę. Nie uruchamiano nowego E2E.
+## Weryfikacja
 
-## Bloker
+- aplikacja `qa:static`: 1031/1031 testów PASS;
+- aplikacja: typecheck, content boundary i runtime privacy boundary PASS;
+- backend na emulatorach Firebase: 117/117 testów PASS;
+- backend: lint, typecheck, OpenAPI check i build PASS;
+- celowany test transakcji adopcji v2: 3/3 PASS;
+- celowany test aplikacji dla dokładnego round-trip celu i planu PASS;
+- symulator iOS `Maestro_IOS_iPhone-17_26` uruchomił aktualną aplikację i udostępnił hierarchię runtime;
+- VoiceOver pominięto zgodnie z poleceniem właściciela.
 
-PO musi zaakceptować rekomendowany wariant A z atomowym wyborem per track albo wskazać inną regułę z `ODK-E2E-056-DISCOVERY.md`. Po 5/5 próbach nie otrzymano odpowiedzi. Zadanie pozostaje w aktywnym rejestrze.
+## Niezależne QA
+
+Pierwsze QA wykryło P1: transakcja używała starszego walidatora potwierdzenia. Poprawka `56c7d58` zastąpiła go kanonicznym walidatorem v2 i dodała testy emulatorowe dla sukcesu, braku wyboru i złego protokołu.
+
+Powtórne QA: PASS. Brak pozostałych ustaleń P0–P2.
+
+Model QA: `gpt-5.6-luna`. Effort: `max`.
+
+## Ocena rozwiązania
+
+- dopasowanie do celu: 0,96;
+- prostota: 0,82;
+- ryzyko: 0,82;
+- utrzymywalność: 0,89;
+- minimum: 0,82.
+
+## Ograniczenia
+
+Nie wykonano VoiceOver. Nie uruchamiano bramek provider/release ODK-E2E-082–088 i 099. Pozostają osobną kolejką.
