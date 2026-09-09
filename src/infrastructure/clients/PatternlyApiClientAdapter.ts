@@ -8,7 +8,7 @@ import { developmentLoopbackHost } from "../developmentEndpoints";
 export type ProgressMutationDto = Readonly<{
   mutationId: string;
   kind: "node" | "item";
-  recordType: "active_track" | "training_session_summary" | "training_session_result" | "training_attempt" | "review_queue_entry";
+  recordType: "active_track" | "training_session_summary" | "training_session_result" | "training_attempt" | "review_queue_entry" | "goal" | "learning_plan";
   trackId: string;
   targetId: string;
   expectedVersion: number | null;
@@ -17,6 +17,7 @@ export type ProgressMutationDto = Readonly<{
 }>;
 
 export type SyncRequestDto = Readonly<{
+  protocolVersion: 2;
   expectedAccountRevision: number;
   deviceId?: string | null;
   mutations: readonly ProgressMutationDto[];
@@ -75,11 +76,14 @@ export type LegalRequestStatusDto = "received" | "in_review" | "answered" | "clo
 export type LegalRequestDto = Readonly<{ requestId: string; kind: LegalRequestKindDto; status: LegalRequestStatusDto; receivedAt: string; responseDueAt: string | null; answeredAt: string | null; retentionUntil: string | null; response: string | null }>;
 export type SyncResponseDto = Readonly<{ accountRevision: number; applied: readonly ProgressRecordDto[]; duplicates: readonly string[]; conflicts: readonly Readonly<{ mutationId: string; code: "version_conflict"; current: ProgressRecordDto | null }>[]; accountRevisionConflict?: Readonly<{ code: "account_revision_conflict"; currentAccountRevision: number }> }>;
 export type GuestMergeRecordDto = Readonly<{ fingerprint: string; recordId: string; recordType: ProgressMutationDto["recordType"]; state: Readonly<Record<string, unknown>>; trackId: string; version: number }>;
-export type GuestMergeSnapshotDto = Readonly<{ guestSnapshotVersion: number; guestUserId: string; records: readonly GuestMergeRecordDto[]; activeSession: boolean; pendingJournal: boolean }>;
-export type GuestMergePreviewDto = Readonly<{ accountSnapshotVersion: number; accountUserId: string; conflicts: readonly Readonly<{ accountVersion: number; conflictId: string; guestVersion: number; recordId: string; recordType: GuestMergeRecordDto["recordType"] }>[]; fingerprint: string; guestSnapshotVersion: number; guestUserId: string; operationId: string; protocolVersion: 1 }>;
+export type GuestMergeSnapshotDto = Readonly<{ protocolVersion: 1 | 2; guestSnapshotVersion: number; guestUserId: string; records: readonly GuestMergeRecordDto[]; activeSession: boolean; pendingJournal: boolean }>;
+export type GoalPlanConflictGroupDto = Readonly<{ groupId: string; trackId: string; localRecordIds: readonly string[]; accountRecordIds: readonly string[] }>;
+export type GuestMergePreviewDto = Readonly<{ accountSnapshotVersion: number; accountUserId: string; conflicts: readonly Readonly<{ accountVersion: number; conflictId: string; guestVersion: number; recordId: string; recordType: GuestMergeRecordDto["recordType"] }>[]; fingerprint: string; guestSnapshotVersion: number; guestUserId: string; operationId: string; protocolVersion: 2; goalPlanConflictGroups: readonly GoalPlanConflictGroupDto[] }>;
 export type AdoptionPlanDto = Readonly<{ caseId: "emptyLocalEmptyRemote" | "populatedLocalEmptyRemote" | "emptyLocalPopulatedRemote" | "populatedLocalPopulatedRemote" | "divergentRecord" | "blocked"; localRecordCount: number; remoteRecordCount: number; uploadRecordIds: readonly string[]; restoreRecordIds: readonly string[]; deduplicatedRecordIds: readonly string[]; conflictRecordIds: readonly string[]; blockingReason: "active_session" | "journal_recovery" | null }>;
 export type AdoptionPreviewResponseDto = Readonly<{ preview: GuestMergePreviewDto; plan: AdoptionPlanDto; remoteRecords: readonly GuestMergeRecordDto[] }>;
-export type AdoptionConfirmationDto = Readonly<{ operationId: string; previewFingerprint: string; protocolVersion: 1; resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" | "manual_required" }>[] }>;
+export type AdoptionConfirmationDto =
+  | Readonly<{ operationId: string; previewFingerprint: string; protocolVersion: 1; resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" | "manual_required" }>[] }>
+  | Readonly<{ operationId: string; previewFingerprint: string; protocolVersion: 2; resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" | "manual_required" }>[]; groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[] }>;
 export type AdoptionExecutionResponseDto = Readonly<{ accountRevision: number; operationId: string; mutationIds: readonly string[]; records: readonly GuestMergeRecordDto[] }>;
 export type TracksResponseDto = Readonly<{ tracks: readonly Readonly<{ trackId: string; source: string; status: string; updatedAt: string }>[] }>;
 export type ContentVersionsResponseDto = Readonly<{ versions: readonly Readonly<{ trackId: string; version: string; checksumSha256: string; packageUri: string; publishedAt: string }>[] }>;
@@ -233,7 +237,7 @@ export function createPatternlyApiClient(input: Readonly<{
     recordLegalAcceptance: (termsVersion) => requestJson("/v1/legal-acceptances", "POST", { termsVersion, minimumAgeConfirmed: 18 }),
     recordPurchaseConfirmation: (body) => requestJson("/v1/purchase-confirmations", "POST", body),
     getEntitlements: () => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET"),
-    getProgress: () => requestJson<ProgressResponseDto>("/v1/progress", "GET"),
+    getProgress: () => requestJson<ProgressResponseDto>("/v1/progress?protocolVersion=2", "GET"),
     exportAccountData: () => requestJson<AccountDataExportDto>("/v1/account-data/export", "GET"),
     createPrivacyRequest: async (right, narrative) => parsePrivacyRequestEnvelope(await requestJson<unknown>("/v1/privacy-requests", "POST", { right, ...(narrative === undefined ? {} : { narrative }) })),
     getPrivacyRequests: async () => parsePrivacyRequestList(await requestJson<unknown>("/v1/privacy-requests", "GET")),

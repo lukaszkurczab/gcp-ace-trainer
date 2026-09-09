@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
-import { completeTrainingSession, createTrainingSession, createTrainingSessionResult } from "../../domain";
+import { completeTrainingSession, createDefaultGoal, createLearningPlan, createTrainingSession, createTrainingSessionResult } from "../../domain";
+import { createLearningPlanSlotId } from "../../domain/learning/slotIdentity";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
@@ -20,6 +21,8 @@ import { bindGuestInstallationToAccount, provisionGuestInstallation } from "./gu
 import { clearActiveTrackId, saveActiveTrackId } from "./activeTrackRepository";
 import { saveTrainingSession } from "./trainingSessionRepository";
 import { getTrainingSessionResult, saveTrainingSessionResult } from "./trainingSessionResultRepository";
+import { getGoalSnapshot, saveGoal } from "./goalRepository";
+import { getLearningPlanSnapshot, saveLearningPlanAtomically } from "./learningPlanRepository";
 
 const accountId = "55555555-5555-4555-8555-555555555555";
 const trackId = "coding-interview-dsa-problem-solving" as const;
@@ -92,6 +95,28 @@ test("completed results roundtrip by their own identity while remaining readable
   const mismatched = { ...exported, recordId: session.id };
   mismatched.fingerprint = accountDataRecordFingerprint(mismatched);
   assert.throws(() => assertValidAccountDataRecords([mismatched]), /account_data_result_invalid/);
+});
+
+test("v2 snapshot and materialization preserve one exact goal-plan bundle", async () => {
+  const goal = createDefaultGoal(trackId);
+  await saveGoal(goal);
+  const plan = createLearningPlan({
+    schemaVersion: 1, planId: "plan:sync", trackId, goalRevision: 1, status: "accepted",
+    timezone: "Europe/Warsaw", contentVersion: "test", contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    acceptedTarget: { meaning: "none", targetDate: null }, createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z", planRevision: 1, commandId: "command:sync",
+    slots: [{ slotId: createLearningPlanSlotId("slot:mon"), day: "mon", localTime: "18:00", sessionLength: 10 }],
+  });
+  saveLearningPlanAtomically(trackId, plan, 1, null);
+
+  const snapshot = await buildAccountDataSnapshot();
+  assert.equal(snapshot.protocolVersion, 2);
+  assert.deepEqual(snapshot.records.map((record) => record.recordType), ["goal", "learning_plan"]);
+  assertValidAccountDataRecords(snapshot.records);
+
+  await applyRemoteAccountData(snapshot.records);
+  assert.deepEqual(await getGoalSnapshot(trackId), { record: goal, revision: 1 });
+  assert.deepEqual(getLearningPlanSnapshot(trackId), { plan, revision: 1 });
 });
 
 test("bound account outbox is deterministic and creates an explicit tombstone for a deleted acknowledged record", async () => {

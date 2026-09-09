@@ -64,6 +64,8 @@
   "discardGuestDataDescription": "Postęp gościa zostanie usunięty z urządzenia. Dane konta pozostaną bez zmian.",
   "conflictChoiceTitle": "Wybierz jedną wersję",
   "conflictChoiceDescription": "Część postępów się różni. Wybierz wersję, która ma zostać zachowana dla wszystkich różnic.",
+  "goalPlanConflictTitle": "Cel i plan nauki",
+  "goalPlanConflictDescription": "Wybierz jedną pełną wersję dla tego tracka. Cel i zaakceptowany plan pozostaną razem.",
   "keepGuestData": "Zachowaj wersję z urządzenia",
   "keepAccountData": "Zachowaj wersję z konta",
   "accountEntryContinue": "Dalej",

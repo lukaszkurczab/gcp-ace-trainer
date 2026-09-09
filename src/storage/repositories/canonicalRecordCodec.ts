@@ -89,6 +89,15 @@ export function writeCanonicalJsonUnlocked<T>(key: string, value: T, expectedRev
   return envelope;
 }
 
+/** Restores an already validated cloud envelope while the caller owns the key lock. */
+export function restoreCanonicalEnvelopeUnlocked<T>(key: string, envelope: CanonicalRecordEnvelope<T>): CanonicalRecordEnvelope<T> {
+  if (envelope.schemaIdentity !== CANONICAL_RECORD_SCHEMA || !Number.isSafeInteger(envelope.revision) || envelope.revision < 1) throw new UnsupportedStoredRecordError(key);
+  try { getKeyValueStorage().setString(key, JSON.stringify(envelope)); } catch (error) { throw new StorageWriteError(key, error); }
+  const verified = readCanonicalEnvelope(key, (_value): _value is T => true);
+  if (!verified || verified.schemaIdentity !== envelope.schemaIdentity || verified.revision !== envelope.revision || JSON.stringify(verified.payload) !== JSON.stringify(envelope.payload)) throw new StorageWriteError(key, new Error("Canonical envelope restore could not be verified."));
+  return verified;
+}
+
 export function removeCanonicalValue(key: string): void {
   try { getKeyValueStorage().remove(key); } catch (error) { throw new StorageDeleteError(key, error); }
 }

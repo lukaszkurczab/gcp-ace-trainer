@@ -119,7 +119,10 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.match(screen, /testID="account-entry-continue"/);
   assert.match(screen, /testID="account-recovery-codes-saved-checkbox"/);
   assert.match(screen, /account\.discardGuestData\(\)/);
-  assert.match(screen, /account\.confirmAdoption\(resolutions\)/);
+  assert.match(screen, /account\.confirmAdoption\(resolutions, accountData\.preview/);
+  assert.match(screen, /goalPlanConflictGroups/);
+  assert.match(screen, /account-goal-plan-\$\{group\.trackId\}-keep-guest/);
+  assert.match(screen, /account-goal-plan-\$\{group\.trackId\}-keep-account/);
   assert.doesNotMatch(screen, /testID="account-authenticated"/);
   assert.doesNotMatch(screen, /testID="account-adoption-confirm"/);
   assert.doesNotMatch(screen, /text\.(?:preserve|upload|restore|deduplicated|decisions|keepGuest\b|keepAccount\b|confirmAdoption\b)/);

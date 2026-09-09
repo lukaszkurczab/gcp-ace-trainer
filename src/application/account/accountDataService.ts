@@ -65,6 +65,7 @@ const CLASSIFIABLE_ACCOUNT_DATA_FAILURE_CODES: readonly string[] = [
   "account_data_records_invalid", "account_data_record_invalid", "account_data_fingerprint_invalid",
   "account_data_track_invalid", "account_data_session_invalid", "account_data_result_invalid",
   "account_data_attempt_invalid", "account_data_review_invalid",
+  "account_data_goal_invalid", "account_data_plan_invalid", "account_data_goal_plan_invalid",
 ];
 
 let accountDataOperationLane: Promise<void> = Promise.resolve();
@@ -107,12 +108,10 @@ async function loadAccountDataSessionUnlocked(api: PatternlyApiClient, accountId
       const snapshot = await buildAccountDataSnapshot();
       const blocked = learningSyncGuardSession(pendingConfirmation, snapshot, false);
       if (blocked) return blocked;
-      const confirmation: AdoptionConfirmationDto = {
-        operationId: pendingConfirmation.pendingConfirmation.operationId,
-        previewFingerprint: pendingConfirmation.pendingConfirmation.previewFingerprint,
-        protocolVersion: 1,
-        resolutions: pendingConfirmation.pendingConfirmation.resolutions,
-      };
+      const saved = pendingConfirmation.pendingConfirmation;
+      const confirmation: AdoptionConfirmationDto = saved.protocolVersion === 1
+        ? { operationId: saved.operationId, previewFingerprint: saved.previewFingerprint, protocolVersion: 1, resolutions: saved.resolutions }
+        : { operationId: saved.operationId, previewFingerprint: saved.previewFingerprint, protocolVersion: 2, resolutions: saved.resolutions, groupChoices: saved.groupChoices };
       try {
         const executed = await api.confirmAccountAdoption({ deviceId: installation.installationId, snapshot, confirmation });
         await markAccountMaterializationPending(executed.operationId, confirmation.previewFingerprint, accountId);
@@ -130,7 +129,7 @@ async function loadAccountDataSessionUnlocked(api: PatternlyApiClient, accountId
       }
       try {
         const preview = await api.previewAccountAdoption(snapshot);
-        return Object.freeze({ status: "previewReady", preview, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: preview.plan.conflictRecordIds.length > 0 ? "adoption_conflict" : null, lastFailureCode: null, activeSessionBlocked: false });
+        return Object.freeze({ status: "previewReady", preview, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: preview.plan.conflictRecordIds.length > 0 || preview.preview.goalPlanConflictGroups.length > 0 ? "adoption_conflict" : null, lastFailureCode: null, activeSessionBlocked: false });
       } catch (error) {
         return failureSession(await recordFailure(state, classifyDataFailure(error)), false);
       }
@@ -142,17 +141,17 @@ async function loadAccountDataSessionUnlocked(api: PatternlyApiClient, accountId
   }
 }
 
-export function confirmAccountDataAdoption(api: PatternlyApiClient, accountId: string, preview: AdoptionPreviewResponseDto, resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[] ): Promise<AccountDataSession> {
-  return withAccountDataOperation(() => confirmAccountDataAdoptionUnlocked(api, accountId, preview, resolutions));
+export function confirmAccountDataAdoption(api: PatternlyApiClient, accountId: string, preview: AdoptionPreviewResponseDto, resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[], groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[]): Promise<AccountDataSession> {
+  return withAccountDataOperation(() => confirmAccountDataAdoptionUnlocked(api, accountId, preview, resolutions, groupChoices));
 }
 
-async function confirmAccountDataAdoptionUnlocked(api: PatternlyApiClient, accountId: string, preview: AdoptionPreviewResponseDto, resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[] ): Promise<AccountDataSession> {
+async function confirmAccountDataAdoptionUnlocked(api: PatternlyApiClient, accountId: string, preview: AdoptionPreviewResponseDto, resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[], groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[]): Promise<AccountDataSession> {
   const current = await getAccountSyncState();
   await readDiscardGuards(accountId);
   const snapshot = await buildAccountDataSnapshot();
-  const pendingConfirmation = { operationId: preview.preview.operationId, previewFingerprint: preview.preview.fingerprint, resolutions } as const;
+  const pendingConfirmation = { operationId: preview.preview.operationId, previewFingerprint: preview.preview.fingerprint, protocolVersion: 2 as const, resolutions, groupChoices } as const;
   await saveAccountSyncState({ ...current, accountId, pendingConfirmation, status: "syncing", lastFailureCode: null });
-  const confirmation: AdoptionConfirmationDto = { operationId: pendingConfirmation.operationId, previewFingerprint: pendingConfirmation.previewFingerprint, protocolVersion: 1, resolutions };
+  const confirmation: AdoptionConfirmationDto = { operationId: pendingConfirmation.operationId, previewFingerprint: pendingConfirmation.previewFingerprint, protocolVersion: 2, resolutions, groupChoices };
   try {
     const executed = await api.confirmAccountAdoption({ deviceId: snapshot.guestUserId, snapshot, confirmation });
     await markAccountMaterializationPending(executed.operationId, confirmation.previewFingerprint, accountId);
@@ -601,6 +600,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
     let response: SyncResponseDto | null = null;
     if (state.outbox.length > 0) {
       response = await api.syncProgress({
+        protocolVersion: 2,
         expectedAccountRevision: state.remoteAccountRevision,
         deviceId: (await getGuestInstallation())?.installationId ?? null,
         mutations: state.outbox.map((entry) => ({ mutationId: entry.mutationId, kind: entry.recordType === "training_attempt" || entry.recordType === "review_queue_entry" ? "item" as const : "node" as const, recordType: entry.recordType, trackId: entry.trackId, targetId: entry.recordId, expectedVersion: entry.expectedVersion, fingerprint: entry.fingerprint, state: entry.state })),

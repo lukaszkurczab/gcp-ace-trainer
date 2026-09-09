@@ -211,7 +211,7 @@ test("a preflight journal failure does not create a deletion operation and pendi
 
 test("response loss resolves a matching remote operation and rejects mismatched status without local cleanup", async () => {
   const storage = getKeyValueStorage() as MemoryKeyValueStorage;
-  const orphanKey = STORAGE_KEYS.goal("response-loss-goal");
+  const orphanKey = STORAGE_KEYS.trainingSession("response-loss-orphan");
   storage.setString(orphanKey, "orphan");
   let operationId = "";
   let statusCalls = 0;
@@ -253,7 +253,7 @@ test("response loss resolves a matching remote operation and rejects mismatched 
 
 test("local deletion cleanup resumes after a failed key removal without issuing another remote delete", async () => {
   const storage = getKeyValueStorage() as MemoryKeyValueStorage;
-  const orphanKey = STORAGE_KEYS.goal("cleanup-retry-goal");
+  const orphanKey = STORAGE_KEYS.trainingSession("cleanup-retry-orphan");
   storage.setString(orphanKey, "orphan");
   let operationId = "";
   let deleteCalls = 0;
@@ -303,7 +303,7 @@ test("an uncertain server deletion failure resolves through the bound operation 
 });
 
 // The discard path uses the real repositories and injected durable storage faults.
-import { completeTrainingSession, createFamilyEnvelope, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult } from "../../domain";
+import { completeTrainingSession, createDefaultGoal, createFamilyEnvelope, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult } from "../../domain";
 import { commitSessionCompletion } from "../learningMutations/commitSessionLifecycle";
 import { commitTrainingSessionStart } from "../learningMutations/commitTrainingSessionStart";
 import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
@@ -315,6 +315,7 @@ import { clearTrainingSessions, getActiveTrainingSession, saveTrainingSession } 
 import { clearActiveTrainingSessionDraft, getActiveTrainingSessionDraft, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
 import { buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, saveAccountSyncState } from "../../storage/repositories/accountDataRepository";
 import { persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
+import { saveGoal } from "../../storage/repositories/goalRepository";
 import { attempt as journalAttempt, journal as makeJournal, session as journalSession } from "../../testing/journalTestSupport";
 
 const guestTrack = "coding-interview-dsa-problem-solving" as const;
@@ -550,7 +551,7 @@ test("Home pending retry honors binding, state, and durable recovery guards with
   const materializationBlocked = await retryPendingAccountDataSync(client, accountId);
   assert.equal(materializationBlocked?.lastFailureCode, "account_materialization_in_progress");
 
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "offlinePending", materialization: null, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [] } });
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "offlinePending", materialization: null, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", protocolVersion: 1, resolutions: [], groupChoices: [] } });
   const confirmationBlocked = await retryPendingAccountDataSync(client, accountId);
   assert.equal(confirmationBlocked?.lastFailureCode, "account_adoption_pending");
   assert.equal(remoteCalls, 0);
@@ -674,7 +675,7 @@ test("a deferred upload state resumes locally and syncs idempotently after final
 
 test("discard deletes guest records and goals but preserves device preferences and performs no remote writes", async () => {
   const storage = await prepareGuest();
-  storage.setString(STORAGE_KEYS.goal("removed-track"), "guest goal");
+  await saveGoal(createDefaultGoal(guestTrack));
   storage.setString(STORAGE_KEYS.trainingSessionResult("orphan"), "guest result");
   storage.setString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, "guest reports");
   storage.setString(STORAGE_KEYS.SETTINGS, "device settings");
@@ -685,7 +686,7 @@ test("discard deletes guest records and goals but preserves device preferences a
   assert.equal(result.status, "synced");
   assert.equal(await getActiveTrackId(), null);
   assert.equal((await buildAccountDataSnapshot()).records.length, 0);
-  assert.equal(storage.contains(STORAGE_KEYS.goal("removed-track")), false);
+  assert.equal(storage.contains(STORAGE_KEYS.goal(guestTrack)), false);
   assert.equal(storage.contains(STORAGE_KEYS.trainingSessionResult("orphan")), false);
   assert.equal(storage.contains(STORAGE_KEYS.CONTENT_REPORT_OUTBOX), false);
   assert.equal(storage.getString(STORAGE_KEYS.SETTINGS), "device settings");
@@ -754,7 +755,7 @@ test("discard rejects another account and pending adoption without changing gues
   saveAccountSyncState({ ...state, accountId: "other-account", materialization: { kind: "discardGuest", accountId: "other-account" } });
   assert.notEqual((await discardGuestDataAndLoadAccount(api(), accountId)).status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
-  saveAccountSyncState({ ...state, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [] } });
+  saveAccountSyncState({ ...state, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", protocolVersion: 1, resolutions: [], groupChoices: [] } });
   assert.notEqual((await discardGuestDataAndLoadAccount(api(), accountId)).status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
 });

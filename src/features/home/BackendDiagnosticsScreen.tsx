@@ -85,17 +85,17 @@ export function BackendDiagnosticsScreen() {
     };
     const beforeSync = await client.getProgress();
     await run("sync-apply", text.syncApply, async () => {
-      const response = await client.syncProgress({ expectedAccountRevision: beforeSync.accountRevision, mutations: [mutation] });
+      const response = await client.syncProgress({ protocolVersion: 2, expectedAccountRevision: beforeSync.accountRevision, mutations: [mutation] });
       if (response.applied.length !== 1 || response.duplicates.length !== 0 || response.conflicts.length !== 0) throw new PatternlyApiClientError("invalid_response");
     });
     await run("sync-duplicate", text.syncDuplicate, async () => {
-      const response = await client.syncProgress({ expectedAccountRevision: beforeSync.accountRevision, mutations: [mutation] });
+      const response = await client.syncProgress({ protocolVersion: 2, expectedAccountRevision: beforeSync.accountRevision, mutations: [mutation] });
       if (response.applied.length !== 0 || response.duplicates.length !== 1 || response.duplicates[0] !== mutationId) throw new PatternlyApiClientError("invalid_response");
     });
     await run("sync-conflict", text.syncConflict, async () => {
       const conflictMutation = { ...mutation, expectedVersion: 0, mutationId: `${mutationId}-conflict`, fingerprint: accountDataRecordFingerprint({ recordId: targetId, recordType: "training_attempt", state: { source: "ios_simulator", check: "backend_paths" }, trackId: "coding-interview-dsa-problem-solving" }) };
       try {
-        await client.syncProgress({ expectedAccountRevision: beforeSync.accountRevision + 1, mutations: [conflictMutation] });
+        await client.syncProgress({ protocolVersion: 2, expectedAccountRevision: beforeSync.accountRevision + 1, mutations: [conflictMutation] });
       } catch (error) {
         if (error instanceof PatternlyApiClientError && error.status === 409 && error.serverCode === "version_conflict") return;
         throw error;

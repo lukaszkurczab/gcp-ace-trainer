@@ -149,6 +149,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   discardGuestDataDescription: t("discardGuestDataDescription"),
   conflictChoiceTitle: t("conflictChoiceTitle"),
   conflictChoiceDescription: t("conflictChoiceDescription"),
+  goalPlanConflictTitle: t("goalPlanConflictTitle"),
+  goalPlanConflictDescription: t("goalPlanConflictDescription"),
   keepGuestData: t("keepGuestData"),
   keepAccountData: t("keepAccountData"),
   accountEntryContinue: t("accountEntryContinue"),
@@ -766,6 +768,7 @@ function AccountAdoptionScreen({
   const plan = accountData.preview?.plan;
   const [entryChoice, setEntryChoice] = useState<"transfer" | "discard">("transfer");
   const [conflictChoice, setConflictChoice] = useState<"guest" | "account" | null>(null);
+  const [goalPlanChoices, setGoalPlanChoices] = useState<Readonly<Record<string, "guest" | "account">>>({});
   const [recoveryPassword, setRecoveryPassword] = useState("");
   const [recoveryCodes, setRecoveryCodes] = useState<readonly string[] | null>(null);
   const [recoveryCodesSaved, setRecoveryCodesSaved] = useState(false);
@@ -829,13 +832,14 @@ function AccountAdoptionScreen({
   const effectiveChoice = hasGuestData ? entryChoice : "discard";
   const continueEntry = () => {
     if (effectiveChoice === "transfer" && plan.conflictRecordIds.length > 0 && !conflictChoice) return;
+    if (effectiveChoice === "transfer" && accountData.preview!.preview.goalPlanConflictGroups.some((group) => !goalPlanChoices[group.groupId])) return;
     const resolutions = plan.conflictRecordIds.map((conflictId) => ({
       conflictId,
       resolution: conflictChoice === "guest" ? "keep_guest" : "keep_account",
     } as const));
     runCommand(
       "continue",
-      () => effectiveChoice === "discard" ? account.discardGuestData() : account.confirmAdoption(resolutions),
+      () => effectiveChoice === "discard" ? account.discardGuestData() : account.confirmAdoption(resolutions, accountData.preview!.preview.goalPlanConflictGroups.map((group) => ({ groupId: group.groupId, resolution: goalPlanChoices[group.groupId] === "guest" ? "keep_guest" as const : "keep_account" as const }))),
       setCommandFeedback,
     );
   };
@@ -844,6 +848,7 @@ function AccountAdoptionScreen({
   };
   const canContinue =
     (effectiveChoice === "discard" || plan.conflictRecordIds.length === 0 || conflictChoice !== null) &&
+    (effectiveChoice === "discard" || accountData.preview.preview.goalPlanConflictGroups.every((group) => goalPlanChoices[group.groupId] !== undefined)) &&
     (recoveryCodes === null || recoveryCodesSaved);
 
   return (
@@ -875,6 +880,7 @@ function AccountAdoptionScreen({
             onValueChange={(keepProgress) => {
               setEntryChoice(keepProgress ? "transfer" : "discard");
               setConflictChoice(null);
+              setGoalPlanChoices({});
               setCommandFeedback(null);
             }}
             testID="account-keep-progress-toggle"
@@ -907,6 +913,15 @@ function AccountAdoptionScreen({
             />
           </View>
         ) : null}
+        {entryChoice === "transfer" ? accountData.preview.preview.goalPlanConflictGroups.map((group) => (
+          <View key={group.groupId} style={styles.accountActionGroup} testID={`account-goal-plan-conflict-${group.trackId}`}>
+            <AuthText style={styles.accountHeading}>{text.goalPlanConflictTitle}</AuthText>
+            <AuthText style={styles.accountBody}>{group.trackId}</AuthText>
+            <AuthText style={styles.accountBody}>{text.goalPlanConflictDescription}</AuthText>
+            <RadioOption description={text.keepGuestData} disabled={busyAction !== null} label={text.keepGuestData} onPress={() => setGoalPlanChoices((current) => ({ ...current, [group.groupId]: "guest" }))} selected={goalPlanChoices[group.groupId] === "guest"} testID={`account-goal-plan-${group.trackId}-keep-guest`} />
+            <RadioOption description={text.keepAccountData} disabled={busyAction !== null} label={text.keepAccountData} onPress={() => setGoalPlanChoices((current) => ({ ...current, [group.groupId]: "account" }))} selected={goalPlanChoices[group.groupId] === "account"} testID={`account-goal-plan-${group.trackId}-keep-account`} />
+          </View>
+        )) : null}
       </View> : null}
       <View style={styles.recoverySection} testID="account-recovery-codes-panel">
         <AuthText style={styles.accountHeading}>{text.recoveryCodes}</AuthText>

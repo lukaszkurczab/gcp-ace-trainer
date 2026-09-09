@@ -7,6 +7,11 @@ import { createContentReportTransport, registerContentReportRuntimeTransport, ty
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion, type AccountDataSession } from "./accountDataService";
+
+async function reconcileMaterializedAccountReminders(): Promise<void> {
+  const { reconcileDeviceReminder } = await import("../../preferences/reconcileDeviceReminder");
+  await reconcileDeviceReminder();
+}
 import { clearAccountDeletionState, getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
@@ -69,7 +74,7 @@ export type AccountSessionContextValue = Readonly<{
   signIn: (email: string, password: string) => Promise<AccountCommandResult>;
   signInWithApple: (acceptanceConfirmed: boolean) => Promise<AccountCommandResult>;
   signInWithGoogle: (idToken: string, acceptanceConfirmed: boolean) => Promise<AccountCommandResult>;
-  confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[] ) => Promise<AccountCommandResult>;
+  confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[], groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[]) => Promise<AccountCommandResult>;
   continueAsGuest: () => void;
   retryAccountSync: () => Promise<AccountCommandResult>;
   retryPendingAccountSync: () => Promise<AccountCommandResult>;
@@ -336,6 +341,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
             ? deletionRecoverySession(deletion)
             : null;
           const accountData = pendingDeletion ?? await loadAccountDataSession(api, response.user.id);
+          if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
+          if (accountData.status === "synced") await reconcileMaterializedAccountReminders().catch(() => undefined);
           if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
           revokeGuestAccess();
           return {
@@ -839,11 +846,13 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         throw error;
       } finally { legalAcceptancePendingRef.current = false; }
     }),
-    confirmAdoption: (resolutions) => runWithAuth(async (auth, api) => {
+    confirmAdoption: (resolutions, groupChoices) => runWithAuth(async (auth, api) => {
       const current = auth.getSnapshot();
       if (!current || state.kind !== "authenticated" || !state.accountData.preview) return { kind: "failure", failure: "conflict" };
       const generation = sessionCoordinator.restart(current.uid);
-      const next = await confirmAccountDataAdoption(api, state.backendUser.id, state.accountData.preview, resolutions);
+      const next = await confirmAccountDataAdoption(api, state.backendUser.id, state.accountData.preview, resolutions, groupChoices);
+      if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
+      if (next.status === "synced") await reconcileMaterializedAccountReminders().catch(() => undefined);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
       return next.status === "synced" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "conflict" };
@@ -853,6 +862,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (!current || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
       const generation = sessionCoordinator.restart(current.uid);
       const next = await retryAccountDataSync(api, state.backendUser.id);
+      if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
+      if (next.status === "synced") await reconcileMaterializedAccountReminders().catch(() => undefined);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
       return next.status === "synced" || next.status === "previewReady" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "remoteFailure" };
@@ -864,6 +875,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const next = await retryPendingAccountDataSync(api, state.backendUser.id);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       if (!next) return { kind: "success", next: "authenticated" };
+      if (next.status === "synced") await reconcileMaterializedAccountReminders().catch(() => undefined);
+      if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
       return next.status === "synced" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "remoteFailure" };
     }),
@@ -1144,6 +1157,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const next = await discardGuestDataAndLoadAccount(api, state.backendUser.id);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       if (next.status === "synced") {
+        await reconcileMaterializedAccountReminders().catch(() => undefined);
+        if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
         revokeGuestAccess();
         setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
         return { kind: "success", next: "authenticated" };

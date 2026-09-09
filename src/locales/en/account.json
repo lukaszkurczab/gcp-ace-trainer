@@ -64,6 +64,8 @@
   "discardGuestDataDescription": "Guest progress will be removed from this device. Your account’s progress stays unchanged.",
   "conflictChoiceTitle": "Choose one version",
   "conflictChoiceDescription": "Some progress differs. Choose which version to keep for all differences.",
+  "goalPlanConflictTitle": "Learning goal and plan",
+  "goalPlanConflictDescription": "Choose one complete version for this track. Its goal and accepted plan stay together.",
   "keepGuestData": "Keep this device’s version",
   "keepAccountData": "Keep the account’s version",
   "accountEntryContinue": "Continue",

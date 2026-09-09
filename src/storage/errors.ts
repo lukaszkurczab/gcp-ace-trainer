@@ -28,7 +28,10 @@ export type AccountDataFailureCode =
   | "account_data_session_invalid"
   | "account_data_result_invalid"
   | "account_data_attempt_invalid"
-  | "account_data_review_invalid";
+  | "account_data_review_invalid"
+  | "account_data_goal_invalid"
+  | "account_data_plan_invalid"
+  | "account_data_goal_plan_invalid";
 
 /** Typed local account-data failure; callers classify its code without reading a raw message. */
 export class AccountDataFailure extends Error {
