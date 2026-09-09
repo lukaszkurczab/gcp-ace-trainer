@@ -144,7 +144,15 @@ function SecurityForm({ route, navigation }: Props) {
   const pendingDeletion = authenticated && account.state.accountData.lastFailureCode !== "reauthenticationRequired" && (account.state.accountData.status === "remoteDeletionPending" || account.state.accountData.status === "localCleanupPending");
   const blocked = busy || !authenticated;
   const errorField = getAccountSecurityErrorField({ failure, mode, usesPassword });
-  const fieldErrorMessage = errorField === "security-new-email" ? t("emailChangeAddressError") : t("emailChangePasswordError");
+  const fieldErrorMessage = errorField === "security-new-email"
+    ? t("emailChangeAddressError")
+    : failure === "passwordMismatch"
+      ? ta("passwordMismatch")
+    : failure === "weakPassword"
+      ? ta("weakPassword")
+      : mode === "recovery" && failure === "invalidCredential"
+        ? ta("invalidCredential")
+      : t("emailChangePasswordError");
   const field = (label: string, value: string, setter: (value: string) => void, id: string, secret: boolean) => (
     <View style={styles.field}>
       <Text maxFontSizeMultiplier={2} style={styles.label}>{label}</Text>

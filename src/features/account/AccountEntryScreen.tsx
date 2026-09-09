@@ -1872,7 +1872,7 @@ function setResult(setFeedback: (feedback: Feedback) => void) {
 }
 
 function isReauthenticationFailure(feedback: Feedback | null): boolean {
-  return feedback?.kind === "failure" && feedback.failure === "reauthenticationRequired";
+  return feedback?.kind === "failure" && (feedback.failure === "reauthenticationRequired" || feedback.failure === "invalidCredential");
 }
 
 function isRegisterFieldFailure(feedback: Feedback | null): boolean {

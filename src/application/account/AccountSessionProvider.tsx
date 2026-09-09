@@ -1137,7 +1137,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       });
       if (!result.ok) {
         const failure = classifyAccountFailure(result.error);
-        return { kind: "failure", failure: failure === "invalidCredential" ? "reauthenticationRequired" : failure };
+        return { kind: "failure", failure };
       }
       return { kind: "success", next: "recoveryCodesIssued", recoveryCodes: result.value.codes };
     }),
