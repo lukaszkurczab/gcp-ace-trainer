@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useAppPreferences, useThemedStyles } from "../preferences";
-import { radius, spacing, type AppColors } from "../theme";
+import { radius, spacing, typography, type AppColors } from "../theme";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 import { IconButton } from "./IconButton";
@@ -69,10 +69,10 @@ export function ReviewShell({
     >
       <View style={styles.headerBar} testID={testID}>
         <IconButton accessibilityLabel={backLabel ?? t("Back to summary")} icon="chevron-left" onPress={onBack} />
-        <Text maxFontSizeMultiplier={2} style={styles.headerTitle}>{t("Answer review")}</Text>
+        <Text accessibilityLabel={t("Answer review")} ellipsizeMode="clip" maxFontSizeMultiplier={2} numberOfLines={2} style={styles.headerTitle}>{t("Answer review")}</Text>
       </View>
       <View style={styles.contextRow}>
-        <Text maxFontSizeMultiplier={2} style={styles.contextText}>{contextLabel}</Text>
+        <Text accessibilityLabel={contextLabel} ellipsizeMode="clip" maxFontSizeMultiplier={2} numberOfLines={2} style={styles.contextText}>{contextLabel}</Text>
         <Pressable accessibilityLabel={t("Open answer navigator")} accessibilityRole="button" onPress={onNavigator} style={styles.navigatorAction}>
           <Icon color={styles.navigatorLabel.color} name="grid" size={16} />
           <Text maxFontSizeMultiplier={2} style={styles.navigatorLabel}>{t("Navigator")}</Text>
@@ -98,8 +98,8 @@ function FilterTab({ active, label, onPress, styles }: Readonly<{ active: boolea
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  contextRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 64, paddingHorizontal: spacing.xl, paddingVertical: 10 },
-  contextText: { color: palette.textSecondary, fontSize: 13, fontWeight: "500", lineHeight: 18 },
+  contextRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm, justifyContent: "space-between", minHeight: 64, minWidth: 0, paddingHorizontal: spacing.xl, paddingVertical: 10 },
+  contextText: { color: palette.textSecondary, flexShrink: 1, fontSize: 13, fontWeight: "500", lineHeight: 18, minWidth: 0 },
   filterRow: { paddingHorizontal: spacing.xl, paddingVertical: spacing.sm },
   filterShell: { alignItems: "center", backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", minHeight: 44, padding: 4 },
   filterTab: { alignItems: "center", borderRadius: 10, justifyContent: "center", minHeight: 34, paddingHorizontal: spacing.xl, paddingVertical: spacing.xs },
@@ -110,9 +110,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   footerButton: { flex: 1, minWidth: 0 },
   footerButtonDisabled: { backgroundColor: palette.surfaceInput, borderColor: palette.border },
   footerDisabledLabel: { color: palette.textMuted },
-  headerBar: { alignItems: "center", flexDirection: "row", gap: 10, paddingHorizontal: spacing.xl, paddingVertical: 14 },
-  headerTitle: { color: palette.textPrimary, fontSize: 15, fontWeight: "600", lineHeight: 18 },
-  navigatorAction: { alignItems: "center", flexDirection: "row", gap: spacing.xs, minHeight: 44, paddingHorizontal: spacing.xs },
+  headerBar: { alignItems: "center", flexDirection: "row", gap: 10, minWidth: 0, paddingHorizontal: spacing.xl, paddingVertical: 14 },
+  headerTitle: { ...typography.navigationContext, color: palette.textPrimary, flexShrink: 1, minWidth: 0 },
+  navigatorAction: { alignItems: "center", flexDirection: "row", flexShrink: 0, gap: spacing.xs, minHeight: 44, paddingHorizontal: spacing.xs },
   navigatorLabel: { color: palette.primary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   screen: { gap: 0, paddingBottom: 0, paddingHorizontal: 0, paddingTop: 0 },
   scrollableContent: { flex: 1, gap: spacing.xl, paddingBottom: spacing.xxl, paddingHorizontal: spacing.xl, paddingLeft: spacing.xxl, paddingTop: spacing.xxl },

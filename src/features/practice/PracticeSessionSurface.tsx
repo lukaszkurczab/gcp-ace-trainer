@@ -185,6 +185,7 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
       {props.primaryAction ? (
         <Button
           disabled={!props.primaryAction.enabled}
+          labelStyle={styles.sessionActionLabel}
           loading={props.primaryAction.loading}
           onPress={props.onPrimaryAction ?? noop}
           testID={primaryActionTestID(props)}
@@ -192,8 +193,8 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
           {t(props.primaryAction.label)}
         </Button>
       ) : null}
-      {props.onRetry && props.retryLabel ? <Button onPress={props.onRetry} variant={props.retryVariant ?? "secondary"}>{t(props.retryLabel)}</Button> : null}
-      {props.allowLeave !== false && props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "completion_failed" && props.phase !== "abandoning" && props.phase !== "abandonment_failed_before_journal" && props.phase !== "abandonment_recovery_required" ? <Button onPress={props.onRequestLeave} style={styles.leaveAction} testID={props.runtimeIdentity ? runtimeSelectors.session.leave(props.runtimeIdentity.sessionId) : undefined} variant="ghost">{t("Leave session")}</Button> : null}
+      {props.onRetry && props.retryLabel ? <Button labelStyle={styles.sessionActionLabel} onPress={props.onRetry} variant={props.retryVariant ?? "secondary"}>{t(props.retryLabel)}</Button> : null}
+      {props.allowLeave !== false && props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "completion_failed" && props.phase !== "abandoning" && props.phase !== "abandonment_failed_before_journal" && props.phase !== "abandonment_recovery_required" ? <Button labelStyle={styles.sessionActionLabel} onPress={props.onRequestLeave} style={styles.leaveAction} testID={props.runtimeIdentity ? runtimeSelectors.session.leave(props.runtimeIdentity.sessionId) : undefined} variant="ghost">{t("Leave session")}</Button> : null}
     </View>
   );
 }
@@ -236,6 +237,7 @@ function noop() {}
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   actions: { gap: spacing.sm },
+  sessionActionLabel: { fontSize: 13, fontWeight: "600", lineHeight: 16 },
   practiceSessionLoading: { gap: spacing.lg, width: "100%" },
   practiceSessionLoadingShapes: { gap: spacing.lg, width: "100%" },
   practiceSessionLoadingQuestion: {

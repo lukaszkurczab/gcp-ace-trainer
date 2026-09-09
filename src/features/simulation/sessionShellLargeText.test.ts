@@ -13,7 +13,7 @@ test("SessionShell keeps the Figma top bar in one row at large text", () => {
     [...source.matchAll(/key=\{`([^`]+)`\}/g)].map((match) => match[1]),
     ["timer:${fontScale}", "mode:${fontScale}", "position:${fontScale}"],
   );
-  assert.match(source, /topBar:\s*\{[\s\S]*flexDirection:\s*"row"[\s\S]*minHeight:\s*16/);
+  assert.match(source, /topBar:\s*\{[\s\S]*flexDirection:\s*"row"[\s\S]*minHeight:\s*20/);
   assert.match(source, /topBar:\s*\{[\s\S]*paddingHorizontal:\s*spacing\.xl/);
 });
 

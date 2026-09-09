@@ -37,8 +37,8 @@ test("simulation confirmation reuses the session chrome owner with its Figma fro
   const shell = readFileSync("src/features/coding-interview/session/SessionShell.tsx", "utf8");
   assert.match(shell, /layout\?: "practice" \| "simulation" \| "simulationSaved" \| "simulationConfirmation"/);
   assert.match(shell, /topBarLargeSimulation:\s*\{[\s\S]*?minHeight:\s*48[\s\S]*?paddingVertical:\s*spacing\.lg/);
+  assert.match(shell, /modeText:\s*\{[\s\S]*?fontSize:\s*14[\s\S]*?fontWeight:\s*"600"[\s\S]*?lineHeight:\s*20/);
   assert.match(shell, /topTextLargeSimulation:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"600"/);
-  assert.match(shell, /modeTextLargeSimulation:\s*\{[\s\S]*?fontSize:\s*13[\s\S]*?fontWeight:\s*"700"/);
   assert.match(shell, /progressTrackConfirmation:\s*\{\s*backgroundColor:\s*palette\.border\s*,?/);
 });
 

@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { useThemedStyles } from "../preferences";
-import { radius, spacing, type AppColors } from "../theme";
+import { radius, spacing, typography, type AppColors } from "../theme";
 import { IconButton } from "./IconButton";
 import { Screen } from "./Screen";
 import { SkeletonShape, useSkeletonGlassMotion } from "./SkeletonShape";
@@ -33,7 +33,7 @@ export function ReviewLoadingSkeleton({ onBack }: ReviewLoadingSkeletonProps) {
       header={(
         <View style={styles.header}>
           <IconButton accessibilityLabel={t("Go back")} icon="chevron-left" onPress={onBack} />
-          <Text maxFontSizeMultiplier={2} style={styles.headerTitle}>{t("Answer review")}</Text>
+          <Text accessibilityLabel={t("Answer review")} ellipsizeMode="clip" maxFontSizeMultiplier={2} numberOfLines={2} style={styles.headerTitle}>{t("Answer review")}</Text>
         </View>
       )}
       style={styles.screen}
@@ -90,8 +90,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   filterTab: { backgroundColor: palette.surfaceInput, borderRadius: radius.md, flex: 1 },
   footer: { flexDirection: "row", gap: spacing.sm, width: "100%" },
   footerAction: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.md, flex: 1 },
-  header: { alignItems: "center", flexDirection: "row", gap: spacing.sm, paddingHorizontal: spacing.xl, paddingVertical: spacing.sm },
-  headerTitle: { color: palette.textPrimary, fontSize: 15, fontWeight: "600", lineHeight: 19 },
+  header: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minWidth: 0, paddingHorizontal: spacing.xl, paddingVertical: spacing.sm },
+  headerTitle: { ...typography.navigationContext, color: palette.textPrimary, flexShrink: 1, minWidth: 0 },
   line: { backgroundColor: palette.progress.loadingTrack, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1 },
   question: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.lg },
   questionEyebrow: { width: "24%" },

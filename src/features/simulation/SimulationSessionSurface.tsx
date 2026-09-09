@@ -130,7 +130,7 @@ function SimulationRecoverySurface({ actions, operationNotice, sessionId }: Read
 function Action({ action, fullWidth = false, sessionId }: Readonly<{ action: SimulationAction; fullWidth?: boolean; sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
-  return <Button accessibilityLabel={action.accessibilityLabel ? t(action.accessibilityLabel) : undefined} disabled={action.disabled} loading={action.loading} onPress={action.onPress} style={fullWidth ? styles.fullWidthAction : undefined} testID={sessionId && action.id ? runtimeSelectors.simulation.action(sessionId, action.id) : undefined} variant={action.variant}>{t(action.label)}</Button>;
+  return <Button accessibilityLabel={action.accessibilityLabel ? t(action.accessibilityLabel) : undefined} disabled={action.disabled} labelStyle={styles.sessionActionLabel} loading={action.loading} onPress={action.onPress} style={fullWidth ? styles.fullWidthAction : undefined} testID={sessionId && action.id ? runtimeSelectors.simulation.action(sessionId, action.id) : undefined} variant={action.variant}>{t(action.label)}</Button>;
 }
 
 function Notice({ notice }: Readonly<{ notice: NonNullable<SimulationSurfaceProjection["notice"]> }>) {
@@ -276,6 +276,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dimensionLabel: { ...typography.bodyStrong, color: palette.textPrimary },
   error: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
   actionBar: { gap: spacing.sm, width: "100%" },
+  sessionActionLabel: { fontSize: 13, fontWeight: "600", lineHeight: 16 },
   actionSlot: { alignSelf: "stretch" },
   fullWidthAction: { alignSelf: "stretch" },
   notice: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },

@@ -74,7 +74,7 @@ export function SessionShell({
               {timer ? <Text key={`timer:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.topText, isLargeSimulationLayout ? styles.topTextLargeSimulation : null]}>{timer.label}</Text> : null}
             </View>
             <View style={[styles.modeSlot, isSimulationLayout ? styles.modeSlotSimulation : null]}>
-              {modeLabel ? <Text key={`mode:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.modeText, isSimulationLayout ? styles.modeTextSimulation : null, isLargeSimulationLayout ? styles.modeTextLargeSimulation : null]} testID={modeTestID}>{modeLabel}</Text> : null}
+              {modeLabel ? <Text accessibilityLabel={modeLabel} ellipsizeMode="clip" key={`mode:${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={2} style={[styles.modeText, isSimulationLayout ? styles.modeTextSimulation : null]} testID={modeTestID}>{modeLabel}</Text> : null}
             </View>
             <PositionSlot isConfirmationSimulationLayout={isConfirmationSimulationLayout} isSavedSimulationLayout={isSavedSimulationLayout} isSimulationLayout={isSimulationLayout} onPress={onPositionPress} position={position} positionAccessibilityLabel={positionAccessibilityLabel} positionTestID={positionTestID} styles={styles} />
           </View>
@@ -115,21 +115,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     alignItems: "center",
   },
   modeText: {
-    ...typography.caption,
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 20,
     color: palette.textSecondary,
     textAlign: "center",
   },
   modeTextSimulation: {
     color: palette.textPrimary,
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 0.5,
-    lineHeight: 16,
-  },
-  modeTextLargeSimulation: {
-    fontSize: 13,
-    fontWeight: "700",
-    lineHeight: 16,
   },
   positionSlot: {
     alignItems: "flex-end",
@@ -162,7 +155,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.lg,
   },
   topBarSimulation: {
-    minHeight: 16,
+    minHeight: 20,
     paddingVertical: 0,
   },
   topBarLargeSimulation: {
@@ -172,7 +165,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   topBar: {
     alignItems: "center",
     flexDirection: "row",
-    minHeight: 16,
+    minHeight: 20,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm,
   },

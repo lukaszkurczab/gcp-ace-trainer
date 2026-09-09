@@ -301,6 +301,11 @@ export const typography = {
     lineHeight: 18,
     fontWeight: "600",
   },
+  navigationContext: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "600",
+  },
   button: {
     fontSize: 15,
     lineHeight: 18,

@@ -36,7 +36,7 @@ export function ScreenHeader({ backAction, context, contextTone = "muted", descr
               onPress={backAction.onPress}
             />
           ) : null}
-          {context ? <Text key={`context:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null, variant === "practiceSetup" ? styles.practiceSetupContext : null]}>{context}</Text> : null}
+          {context ? <Text accessibilityLabel={context} ellipsizeMode="clip" key={`context:${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={2} style={[styles.context, contextTone === "primary" ? styles.contextPrimary : null, variant === "practiceSetup" ? styles.practiceSetupContext : null]}>{context}</Text> : null}
         </View>
       ) : null}
       <View style={[styles.copy, variant === "practiceSetup" ? styles.practiceSetupCopy : null]}>
@@ -59,6 +59,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
     minHeight: 44,
+    minWidth: 0,
   },
   activityContextRow: {
     gap: spacing.sm,
@@ -70,12 +71,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.sm,
   },
   context: {
-    ...typography.bodyStrong,
-    color: palette.textMuted,
+    ...typography.navigationContext,
+    color: palette.textPrimary,
+    flexShrink: 1,
+    minWidth: 0,
   },
   practiceSetupContext: {
-    fontWeight: "500",
-    lineHeight: 17,
+    ...typography.navigationContext,
   },
   contextPrimary: {
     color: palette.textPrimary,

@@ -38,7 +38,7 @@ export function AppShellHeader({ backAction, context, placement = "inline" }: Ap
         </View>
         <View style={styles.headerCopy}>
           <Text key={`app-shell-brand-${fontScale}`} maxFontSizeMultiplier={2} style={styles.brandTitle}>Patternly</Text>
-          {context ? <Text key={`app-shell-context-${fontScale}`} maxFontSizeMultiplier={2} style={styles.headerMeta}>{context}</Text> : null}
+          {context ? <Text accessibilityLabel={context} ellipsizeMode="clip" key={`app-shell-context-${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={2} style={styles.headerMeta}>{context}</Text> : null}
         </View>
       </View>
     </View>
@@ -57,7 +57,7 @@ export function AppShellHeader({ backAction, context, placement = "inline" }: Ap
         >
           <Icon color={palette.textSecondary} name="chevron-left" size={16} />
         </Pressable>
-        <Text key={`app-shell-back-${fontScale}`} maxFontSizeMultiplier={2} style={styles.backLabel}>Patternly</Text>
+        <Text accessibilityLabel="Patternly" ellipsizeMode="clip" key={`app-shell-back-${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={2} style={styles.backLabel}>Patternly</Text>
       </View>
     );
   }
@@ -100,8 +100,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flexShrink: 1,
   },
   headerMeta: {
-    ...typography.caption,
-    color: palette.textSecondary,
+    ...typography.navigationContext,
+    color: palette.textPrimary,
     flexShrink: 1,
   },
   stackHeader: {
@@ -116,23 +116,24 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     gap: spacing.sm,
-    minHeight: 36,
+    minHeight: 44,
+    minWidth: 0,
   },
   backChevron: {
     alignItems: "center",
     backgroundColor: colorWithOpacity(palette.textPrimary, 0.06),
     borderRadius: spacing.md,
-    height: 36,
+    height: 44,
     justifyContent: "center",
-    width: 36,
+    width: 44,
   },
   backPressed: {
     backgroundColor: colorWithOpacity(palette.textPrimary, 0.1),
   },
   backLabel: {
-    color: palette.textSecondary,
-    fontSize: 14,
-    fontWeight: "500",
-    lineHeight: 18,
+    ...typography.navigationContext,
+    color: palette.textPrimary,
+    flexShrink: 1,
+    minWidth: 0,
   },
 });
