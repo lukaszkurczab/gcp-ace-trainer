@@ -32,6 +32,15 @@ import {
   type StorageIssue,
   persistGoalOnboardingDismissal,
 } from "../../application/learningReadModels";
+import {
+  homePlanSnapshotReader,
+  type HomePlanSnapshot,
+} from "../../application/homePlanSnapshotReader";
+import {
+  learningPlanEditorCoordinator,
+  learningPlanProposalCoordinator,
+  type GuidanceAction,
+} from "../../application/learningPlan";
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
 import { type CloudCertificationProgressViewModel } from "../../tracks/certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/certification";
@@ -58,6 +67,7 @@ import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { feedbackTimingFromDurableSession } from "./resumeFeedbackTiming";
 import { navigateToActivityResult } from "./activityNavigation";
+import { buildHomePlanPracticeSetupParams } from "./homePlanUiContract";
 
 
 type HomeScreenProps = NativeStackScreenProps<
@@ -78,6 +88,7 @@ type ShellData = {
   reviewQueueItems: ReviewQueueEntry[];
   storageIssues: readonly StorageIssue[];
   trainingAttempts: TrainingAttempt[];
+  homePlan: HomePlanSnapshot | null;
 };
 
 type HomeShellTab = Exclude<ShellTab, "practice">;
@@ -85,6 +96,7 @@ type HomeShellTab = Exclude<ShellTab, "practice">;
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
+  const { t: tLearningPlan } = useTranslation("learningPlan");
   const { t: tAccount } = useTranslation("account");
   const account = usePatternlyAccount();
   const accountRef = useRef(account);
@@ -110,6 +122,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     reviewQueueItems: [],
     storageIssues: [],
     trainingAttempts: [],
+    homePlan: null,
   });
 
   useEffect(() => {
@@ -155,6 +168,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             reviewQueueItemsResult,
             trainingAttemptsResult,
             activityRecords,
+            homePlan,
           ] = await Promise.all([
             getAttempts(),
             getPracticeHistory(),
@@ -163,6 +177,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             getReviewQueueItems(),
             trainingAttemptsRead,
             loadActivitySessionRecords({ getAttempts: () => trainingAttemptsRead }),
+            savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: new Date() }) : Promise.resolve(null),
           ]);
           const goal = savedTrackId ? await loadGoal(savedTrackId) : null;
           let goalOnboardingDismissed = true;
@@ -192,6 +207,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               reviewQueueItems: reviewQueueItemsResult.value,
               storageIssues: [],
               trainingAttempts: trainingAttemptsResult.value,
+              homePlan,
             });
             setHasLoadedActiveTrack(true);
           }
@@ -243,6 +259,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     );
   }
   const activeTrack = getTrackDisplay(activeTrackId);
+  const selectedTrackId: TrackId = activeTrackId;
 
   function handleProgressAction(action: ProgressAction) {
     if (action.kind === "practiceSession") {
@@ -329,6 +346,39 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     }
   }
 
+  async function handleHomePlanAction(action: GuidanceAction, homePlan: HomePlanSnapshot): Promise<void> {
+    if (action.kind === "set_goal" || action.kind === "adjust_goal") {
+      navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo: "home", trackId: selectedTrackId });
+      return;
+    }
+    if (action.kind === "view_progress") {
+      handleHomeTabChange("progress");
+      return;
+    }
+    if (action.kind === "start_next_session" || action.kind === "continue_plan") {
+      if (homePlan.kind !== "ready") return;
+      navigation.navigate(ROUTES.PRACTICE_SETUP, buildHomePlanPracticeSetupParams(homePlan, selectedTrackId));
+      return;
+    }
+    if (action.kind === "create_plan" || action.kind === "review_updated_plan") {
+      const result = await learningPlanProposalCoordinator.create(selectedTrackId);
+      if ("proposal" in result) {
+        navigation.navigate(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId: selectedTrackId });
+        return;
+      }
+      Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The learning plan could not be opened. Try again."));
+      return;
+    }
+    if (action.kind === "resume_plan" || action.kind === "adjust_schedule") {
+      const result = await learningPlanEditorCoordinator.startExistingEdit(selectedTrackId);
+      if (result.kind === "ready") {
+        navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId: selectedTrackId });
+        return;
+      }
+      Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The saved learning plan could not be opened. Try again."));
+    }
+  }
+
   function openAccount(): void {
     if (settingsAccount.status === "guest" || settingsAccount.status === "signedOut") {
       navigation.navigate(ROUTES.ACCOUNT_ENTRY, { initialMode: "signIn" });
@@ -355,7 +405,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               />
             ) : null}
             <HomeTab
-              activeSession={data.activeSession}
+              activeSession={data.homePlan?.kind === "ready" ? data.homePlan.activeSession : data.homePlan?.kind === "unavailable" ? null : data.activeSession}
               activeTrack={activeTrack}
               analytics={analytics}
               algorithmsDashboard={data.algorithmsDashboard}
@@ -372,7 +422,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               onOpenSettings={() => handleHomeTabChange("settings")}
               onSetGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo: "home", trackId: activeTrack.id })}
               onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
+              onHomePlanAction={(action) => { void handleHomePlanAction(action, data.homePlan!); }}
+              onRetryHomePlan={() => setShellReload((reload) => reload + 1)}
               onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
+              homePlan={data.homePlan}
               reviewQueueItems={data.reviewQueueItems}
               showGuestGoalOnboarding={account.state.kind === "guest" && data.goal === null && !data.goalOnboardingDismissed}
               trainingAttempts={data.trainingAttempts}

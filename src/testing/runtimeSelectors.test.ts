@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createLearningPlanSlotId, createProposalSlotId } from "../domain";
-import { isRuntimeSelectorId, runtimeSelectors, type LearningPlanPrimaryState } from "./runtimeSelectors";
+import { isRuntimeSelectorId, runtimeSelectors, type LearningPlanPrimaryState, type TargetDateGuidanceReason, type TargetDateGuidanceState } from "./runtimeSelectors";
 
 test("runtime selectors are deterministic and use the canonical grammar", () => {
   const selector = runtimeSelectors.session.option("alg-complexity-amortized-001", "amortized-o1");
@@ -139,4 +139,38 @@ test("learning plan editor retry selectors distinguish save from start-existing"
   assert.equal(runtimeSelectors.learningPlan.actionError("open-proposal-storage"), "patternly:learning-plan:action-error:open-proposal-storage");
   assert.equal(runtimeSelectors.learningPlan.actionError("open-existing-storage"), "patternly:learning-plan:action-error:open-existing-storage");
   assert.equal(runtimeSelectors.learningPlan.actionError("accept-storage"), "patternly:learning-plan:action-error:accept-storage");
+});
+
+test("target date guidance selectors expose every closed state and reason", () => {
+  const states: readonly TargetDateGuidanceState[] = [
+    "no_goal", "goal_paused", "no_plan", "update_required", "plan_paused", "completed", "overdue", "unreachable", "at_risk", "on_track", "open_ended", "unavailable",
+  ];
+  const reasons: readonly TargetDateGuidanceReason[] = [
+    "no_goal", "goal_paused", "no_plan", "target_changed", "package_changed", "cadence_changed", "plan_paused", "completed", "overdue", "insufficient_sessions", "no_future_slots", "at_risk", "on_track", "no_target", "unknown_completion_rule", "insufficient_elapsed_evidence", "calculation_error",
+  ];
+  for (const surface of ["home", "progress"] as const) {
+    assert.equal(runtimeSelectors.targetDateGuidance.root(surface), `patternly:target-date-guidance:root:${surface}`);
+    assert.equal(runtimeSelectors.targetDateGuidance.primary(surface), `patternly:target-date-guidance:primary:${surface}`);
+    for (const state of states) assert.equal(runtimeSelectors.targetDateGuidance.state(surface, state), `patternly:target-date-guidance:state:${surface}:${state.replaceAll("_", "-")}`);
+    for (const reason of reasons) assert.equal(runtimeSelectors.targetDateGuidance.reason(surface, reason), `patternly:target-date-guidance:reason:${surface}:${reason.replaceAll("_", "-")}`);
+  }
+  for (const fact of ["required-pace", "actual-pace", "forecast", "target"] as const) {
+    assert.equal(runtimeSelectors.targetDateGuidance.fact(fact), `patternly:target-date-guidance:fact:${fact}`);
+  }
+  assert.equal(runtimeSelectors.targetDateGuidance.secondary(), "patternly:target-date-guidance:secondary");
+  assert.throws(() => runtimeSelectors.targetDateGuidance.state("home", "future" as TargetDateGuidanceState), /Unknown target date guidance state/);
+  assert.throws(() => runtimeSelectors.targetDateGuidance.reason("home", "future" as TargetDateGuidanceReason), /Unknown target date guidance reason/);
+  assert.throws(() => runtimeSelectors.targetDateGuidance.root("settings" as "home"), /Unknown target date guidance surface/);
+  assert.ok(isRuntimeSelectorId(runtimeSelectors.targetDateGuidance.state("home", "at_risk")));
+});
+
+test("Home plan selectors expose every closed unavailable reason", () => {
+  const reasons = [
+    "invalid_request", "concurrent_change", "storage_error", "corrupt_record", "identity_mismatch",
+    "package_error", "package_unavailable", "calculation_error", "unsupported_action",
+  ] as const;
+  for (const reason of reasons) {
+    assert.equal(runtimeSelectors.homePlan.reason(reason), `patternly:home-plan:reason:${reason.replaceAll("_", "-")}`);
+  }
+  assert.throws(() => runtimeSelectors.homePlan.reason("future" as never), /Unknown Home plan unavailable reason/);
 });

@@ -26,6 +26,15 @@
   "DSA & Problem Solving": "DSA & Problem Solving",
   "Cloud Fundamentals": "Cloud Fundamentals",
   "Free start · Complexity and constraints": "Free start · Complexity and constraints",
+  "Complexity and constraints": "Complexity and constraints",
+  "Aws secure architecture foundations": "AWS secure architecture foundations",
+  "Entra identity lifecycle and authentication": "Entra identity lifecycle and authentication",
+  "Organization projects policies services quotas and assets": "Organization, projects, policies, services, quotas, and assets",
+  "Requirements capacity and architecture decomposition": "Requirements, capacity, and architecture decomposition",
+  "Requirements use cases domain vocabulary and model boundaries": "Requirements, use cases, domain vocabulary, and model boundaries",
+  "Requirements user journeys constraints and frontend decomposition": "Requirements, user journeys, constraints, and frontend decomposition",
+  "Responsible ai model foundations and deployment choices": "Responsible AI, model foundations, and deployment choices",
+  "Solution design and architecture": "Solution design and architecture",
   "Free start · Cloud fundamentals": "Free start · Cloud fundamentals",
   "Start with": "Start with",
   "Select": "Select",
@@ -597,5 +606,6 @@
   "Thu": "Thu",
   "Fri": "Fri",
   "Sat": "Sat",
-  "Sun": "Sun"
+  "Sun": "Sun",
+  "This learning plan uses a different content package. Review the plan before starting.": "This learning plan uses a different content package. Review the plan before starting."
 }

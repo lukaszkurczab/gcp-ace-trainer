@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 
 import { AppShellHeader, Button, Card, ChoiceRow, EmptyState, Screen, ScreenHeader, SectionHeader, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { CODING_INTERVIEW_TRACK_ID, getTrackDisplay } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, contentPackagePinsEqual, getTrackDisplay } from "../../domain";
 import { goBackOrHome } from "../../navigation/goBackOrHome";
 import type { RootStackParamList } from "../../navigation/types";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
@@ -246,6 +246,10 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
   } catch (error) {
     return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
+  }
+  if ((route.params?.expectedContentVersion !== undefined && route.params.expectedContentVersion !== packageProfile.contentVersion) ||
+    (route.params?.expectedContentPackagePin !== undefined && !contentPackagePinsEqual(route.params.expectedContentPackagePin, packageProfile.packagePin))) {
+    return renderUnavailable(t("This learning plan uses a different content package. Review the plan before starting."));
   }
   if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) {
     return renderUnavailable(t("This topic is not included in your free content."));

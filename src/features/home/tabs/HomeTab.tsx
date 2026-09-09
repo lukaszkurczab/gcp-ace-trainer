@@ -5,6 +5,9 @@ import { Fragment, useState } from "react";
 import { Button, Card, Icon, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
 import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
 import type { CodingInterviewDashboard } from "../../../application/coding-interview";
+import type { GuidanceAction } from "../../../application/learningPlan";
+import { presentTargetDateGuidance } from "../../../application/learningPlan";
+import type { HomePlanSnapshot } from "../../../application/homePlanSnapshotReader";
 import { colorWithOpacity, radius, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { modeLabel, relativeDay } from "./activityPresentation";
@@ -16,6 +19,7 @@ import {
   formatPracticeTopicDetail,
   formatPracticeTopicTitle,
 } from "../../practice/practiceFlowPresentation";
+import { localizeHomePlanArea } from "../homePlanUiContract";
 
 
 type HomeTabProps = {
@@ -31,7 +35,10 @@ type HomeTabProps = {
   onOpenSettings: () => void;
   onSetGoal: () => void;
   onRecommendationAction: (action: HomeRecommendationAction) => void;
+  onHomePlanAction: (action: GuidanceAction) => void;
+  onRetryHomePlan: () => void;
   onStartLearning: (topicId: string) => void;
+  homePlan: HomePlanSnapshot | null;
   reviewQueueItems: readonly ReviewQueueEntry[];
   showGuestGoalOnboarding: boolean;
   trainingAttempts: readonly TrainingAttempt[];
@@ -118,7 +125,10 @@ export function HomeTab({
   onOpenSettings,
   onSetGoal,
   onRecommendationAction,
+  onHomePlanAction,
+  onRetryHomePlan,
   onStartLearning,
+  homePlan,
   reviewQueueItems,
   showGuestGoalOnboarding,
   trainingAttempts,
@@ -126,6 +136,7 @@ export function HomeTab({
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
   const { i18n, t } = useTranslation("common");
+  const { t: tPlan } = useTranslation("learningPlan");
   const { fontScale, width } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
   const actionMeasurementKey = `${i18n.resolvedLanguage ?? i18n.language}:${fontScale}:${width}`;
@@ -139,29 +150,61 @@ export function HomeTab({
   const model = buildHomeTabModel({ activeSession, activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts });
   const recommendation = model.recommendations[0];
   const hasActiveSession = activeSession?.status === "active" && activeSession.trackId === activeTrack.id;
+  const readyHomePlan = !hasActiveSession && homePlan?.kind === "ready" ? homePlan : null;
+  const homePlanReady = readyHomePlan !== null;
+  const homePlanUnavailable = !hasActiveSession && homePlan?.kind === "unavailable";
+  const homePlanPresentation = homePlanReady
+    ? presentTargetDateGuidance({
+      guidance: readyHomePlan.guidance,
+      locale: i18n.resolvedLanguage?.toLowerCase().startsWith("pl") ? "pl" : "en",
+      timezone: readyHomePlan.plan.timezone,
+    })
+    : null;
   const isReviewRecommendation = recommendation?.action.kind === "start_practice" &&
     recommendation.action.reviewSource !== undefined;
-  const isRecommendationSettingsAction = !hasActiveSession && recommendation !== undefined;
+  const isRecommendationSettingsAction = !hasActiveSession && !homePlanReady && !homePlanUnavailable && recommendation !== undefined;
   const resumeSessionId = recommendation?.action.kind === "resume_active_session" || recommendation?.action.kind === "resume_certification_practice"
     ? recommendation.action.sessionId
     : undefined;
   const decisionTitle = hasActiveSession
     ? "Session in progress"
+    : homePlanPresentation && readyHomePlan
+      ? homePlanPresentation.stateLabel
+      : homePlanUnavailable
+        ? tPlan("Home plan unavailable")
     : isReviewRecommendation
       ? "Review weak areas"
       : recommendation?.title ?? formatPracticeTopicTitle(model.heroTitle, t);
   const decisionDetail = hasActiveSession
     ? t(modeLabel(activeSession.modeId))
+    : homePlanPresentation && readyHomePlan
+      ? tPlan("homePlan.todayDetail", {
+        area: localizeHomePlanArea(readyHomePlan, t),
+        count: readyHomePlan.session.sessionLength,
+        message: homePlanPresentation.message,
+        reviews: readyHomePlan.dueReviewCount,
+        status: tPlan(`homePlan.day.${readyHomePlan.day.status}`),
+      })
+      : homePlanUnavailable
+        ? tPlan(`homePlan.unavailable.${homePlan.reason}`)
     : isReviewRecommendation
       ? t("Review due items before they become stale.")
     : recommendation
       ? t(recommendation.unavailableReason ?? recommendation.detail)
     : formatPracticeTopicDetail(model.heroSubtitle, t);
-  const decisionLabel = hasActiveSession ? "Resume session" : recommendation?.primaryLabel ?? model.primaryLabel;
+  const decisionLabel = hasActiveSession
+    ? "Resume session"
+    : homePlanPresentation?.primaryLabel ?? (homePlanUnavailable ? tPlan("Try again") : recommendation?.primaryLabel ?? model.primaryLabel);
   const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
-  const decisionIcon = recommendation?.icon ?? (isCodingInterviewTrack ? "route" : "cloud");
-  const decisionTone = recommendation?.enabled === false ? "muted" : "primary";
-  const decisionEnabled = recommendation?.enabled ?? true;
+  const decisionIcon = homePlanUnavailable
+    ? "alert-triangle"
+    : homePlanPresentation?.tone === "danger"
+      ? "alert-triangle"
+      : homePlanPresentation
+        ? "route"
+        : recommendation?.icon ?? (isCodingInterviewTrack ? "route" : "cloud");
+  const decisionTone = homePlanUnavailable || recommendation?.enabled === false ? "muted" : "primary";
+  const decisionEnabled = homePlanUnavailable || homePlanReady || recommendation?.enabled !== false;
   const recentAttempts = trainingAttempts
     .filter((attempt) => attempt.trackId === activeTrack.id && attempt.sessionId !== activeSession?.id)
     .sort((left, right) => right.answeredAt.localeCompare(left.answeredAt));
@@ -223,7 +266,9 @@ export function HomeTab({
           style={[styles.decisionHeading, largeText ? styles.decisionHeadingLargeText : null]}
           testID={resumeSessionId
             ? runtimeSelectors.resume.card(resumeSessionId)
-            : undefined}
+            : homePlanReady || homePlanUnavailable
+              ? runtimeSelectors.targetDateGuidance.root("home")
+              : undefined}
         >
           <View style={styles.decisionIconTile}>
             <Icon color={decisionTone === "muted" ? palette.textMuted : palette.accentTeal} name={decisionIcon} size={24} />
@@ -234,16 +279,24 @@ export function HomeTab({
               style={styles.decisionTitle}
               testID={resumeSessionId
                 ? runtimeSelectors.resume.title(resumeSessionId)
-                : undefined}
+                : homePlanReady && homePlanPresentation
+                  ? runtimeSelectors.targetDateGuidance.state("home", homePlanPresentation.state)
+                  : homePlanUnavailable
+                    ? runtimeSelectors.targetDateGuidance.state("home", "unavailable")
+                  : undefined}
             >
-              {t(decisionTitle)}
+              {homePlanReady && homePlanPresentation ? decisionTitle : t(decisionTitle)}
             </Text>
             <Text
               maxFontSizeMultiplier={2}
               style={styles.decisionDetail}
               testID={resumeSessionId
                 ? runtimeSelectors.resume.status(resumeSessionId)
-                : undefined}
+                : homePlanReady && homePlanPresentation
+                  ? runtimeSelectors.targetDateGuidance.reason("home", homePlanPresentation.reason)
+                  : homePlanUnavailable
+                    ? runtimeSelectors.homePlan.reason(homePlan.reason)
+                  : undefined}
             >
               {decisionDetail}
             </Text>
@@ -252,6 +305,14 @@ export function HomeTab({
         <Button
           disabled={!decisionEnabled}
           onPress={() => {
+            if (homePlanReady) {
+              onHomePlanAction(readyHomePlan.guidance.home.primary);
+              return;
+            }
+            if (homePlanUnavailable) {
+              onRetryHomePlan();
+              return;
+            }
             if (recommendation) {
               onRecommendationAction(recommendation.action);
               return;
@@ -261,10 +322,12 @@ export function HomeTab({
           style={styles.startButton}
           testID={resumeSessionId
             ? runtimeSelectors.resume.continue(resumeSessionId)
-            : runtimeSelectors.home.primaryAction()}
+            : homePlanReady || homePlanUnavailable
+              ? runtimeSelectors.targetDateGuidance.primary("home")
+              : runtimeSelectors.home.primaryAction()}
           variant="primary"
         >
-          {t(decisionLabel)}
+          {homePlanReady || homePlanUnavailable ? decisionLabel : t(decisionLabel)}
         </Button>
         {hasActiveSession || isFirstUse ? null : (
           <Pressable

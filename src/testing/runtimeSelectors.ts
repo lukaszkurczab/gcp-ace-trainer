@@ -1,5 +1,8 @@
 import type { ContentItemRef, GoalDay, LearningPlanSlotId, TrackId } from "../domain";
 import type { AlgorithmFeedbackMode } from "../tracks/coding-interview/domain/algorithmModes";
+import type { TargetDateGuidanceReason, TargetDateGuidanceState } from "../application/learningPlan/targetDateGuidance";
+import type { HomePlanUnavailableReason } from "../application/homePlanSnapshotReader";
+export type { TargetDateGuidanceReason, TargetDateGuidanceState } from "../application/learningPlan/targetDateGuidance";
 
 /**
  * Stable native identifiers for observing product runtime state in development
@@ -49,6 +52,9 @@ export const runtimeSelectors = Object.freeze({
     activity: () => selector("home", "activity"),
     selectTrack: (trackId: TrackId) => selector("home", "select-track", trackId),
     selectTrackContinue: () => selector("home", "select-track", "continue"),
+  }),
+  homePlan: Object.freeze({
+    reason: (reason: HomePlanUnavailableReason) => selector("home-plan", "reason", homePlanUnavailableReasonSegment(reason)),
   }),
   practice: Object.freeze({
     hubRoot: () => selector("practice", "hub", "root"),
@@ -131,6 +137,14 @@ export const runtimeSelectors = Object.freeze({
     node: (roadmapNodeId: string) => selector("progress", "node", roadmapNodeId),
     activity: () => selector("progress", "activity"),
   }),
+  targetDateGuidance: Object.freeze({
+    root: (surface: TargetDateGuidanceSurface) => selector("target-date-guidance", "root", guidanceSurfaceSegment(surface)),
+    state: (surface: TargetDateGuidanceSurface, state: TargetDateGuidanceState) => selector("target-date-guidance", "state", guidanceSurfaceSegment(surface), guidanceStateSegment(state)),
+    reason: (surface: TargetDateGuidanceSurface, reason: TargetDateGuidanceReason) => selector("target-date-guidance", "reason", guidanceSurfaceSegment(surface), guidanceReasonSegment(reason)),
+    fact: (kind: TargetDateGuidanceFactKind) => selector("target-date-guidance", "fact", guidanceFactSegment(kind)),
+    primary: (surface: TargetDateGuidanceSurface) => selector("target-date-guidance", "primary", guidanceSurfaceSegment(surface)),
+    secondary: () => selector("target-date-guidance", "secondary"),
+  }),
   goal: Object.freeze({
     root: () => selector("goal", "root"),
     save: () => selector("goal", "save"),
@@ -184,6 +198,8 @@ export const runtimeSelectors = Object.freeze({
 });
 
 export type LearningPlanEditorSelectorState = "loading" | "ready" | "stale" | "validation-error" | "storage-error" | "saved";
+export type TargetDateGuidanceSurface = "home" | "progress";
+export type TargetDateGuidanceFactKind = "required-pace" | "actual-pace" | "forecast" | "target";
 
 const LEARNING_PLAN_PRIMARY_STATES: ReadonlySet<LearningPlanPrimaryState> = new Set([
   "loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "generator_error",
@@ -235,6 +251,44 @@ function sessionPosition(ordinal: number, length: number): Readonly<{ ordinal: s
 
 function feedbackTimingSegment(timing: AlgorithmFeedbackMode): string {
   return timing === "afterEachAnswer" ? "after-each-answer" : "at-session-end";
+}
+
+const TARGET_DATE_GUIDANCE_STATES: ReadonlySet<TargetDateGuidanceState> = new Set([
+  "no_goal", "goal_paused", "no_plan", "update_required", "plan_paused", "completed", "overdue", "unreachable", "at_risk", "on_track", "open_ended", "unavailable",
+]);
+
+const TARGET_DATE_GUIDANCE_REASONS: ReadonlySet<TargetDateGuidanceReason> = new Set([
+  "no_goal", "goal_paused", "no_plan", "target_changed", "package_changed", "cadence_changed", "plan_paused", "completed", "overdue", "insufficient_sessions", "no_future_slots", "at_risk", "on_track", "no_target", "unknown_completion_rule", "insufficient_elapsed_evidence", "calculation_error",
+]);
+
+const HOME_PLAN_UNAVAILABLE_REASONS: ReadonlySet<HomePlanUnavailableReason> = new Set([
+  "invalid_request", "concurrent_change", "storage_error", "corrupt_record", "identity_mismatch",
+  "package_error", "package_unavailable", "calculation_error", "unsupported_action",
+]);
+
+function homePlanUnavailableReasonSegment(value: HomePlanUnavailableReason): string {
+  if (!HOME_PLAN_UNAVAILABLE_REASONS.has(value)) throw new Error("Unknown Home plan unavailable reason.");
+  return value.replaceAll("_", "-");
+}
+
+function guidanceSurfaceSegment(value: TargetDateGuidanceSurface): string {
+  if (value !== "home" && value !== "progress") throw new Error("Unknown target date guidance surface.");
+  return value;
+}
+
+function guidanceStateSegment(value: TargetDateGuidanceState): string {
+  if (!TARGET_DATE_GUIDANCE_STATES.has(value)) throw new Error("Unknown target date guidance state.");
+  return value.replaceAll("_", "-");
+}
+
+function guidanceReasonSegment(value: TargetDateGuidanceReason): string {
+  if (!TARGET_DATE_GUIDANCE_REASONS.has(value)) throw new Error("Unknown target date guidance reason.");
+  return value.replaceAll("_", "-");
+}
+
+function guidanceFactSegment(value: TargetDateGuidanceFactKind): string {
+  if (value !== "required-pace" && value !== "actual-pace" && value !== "forecast" && value !== "target") throw new Error("Unknown target date guidance fact.");
+  return value;
 }
 
 function encodedTextSegment(value: string, label: string): string {

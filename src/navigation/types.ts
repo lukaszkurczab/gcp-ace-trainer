@@ -1,5 +1,5 @@
 import { ROUTES } from "../constants/routes";
-import type { TrackId } from "../domain";
+import type { ContentPackagePin, TrackId } from "../domain";
 import type { PracticeSessionRouteParams } from "../features/practice/sessionConfig";
 import type { ShellTab } from "../features/home/types";
 import type { AlgorithmsDeclaredScopeMode } from "../application/coding-interview";
@@ -38,7 +38,10 @@ export type RootStackParamList = {
   [ROUTES.EXAM_REVIEW]: { sessionId: string };
   [ROUTES.RESULT]: { sessionId: string };
   [ROUTES.ANSWER_REVIEW]: { attemptId?: string; initialFilter?: "all" | "incorrect" } | undefined;
-  [ROUTES.PRACTICE_SETUP]: Partial<PracticeSessionRouteParams> | undefined;
+  [ROUTES.PRACTICE_SETUP]: (Partial<PracticeSessionRouteParams> & Readonly<{
+    expectedContentPackagePin?: ContentPackagePin;
+    expectedContentVersion?: string;
+  }>) | undefined;
   [ROUTES.PRACTICE_SESSION]: PracticeSessionRouteParams;
   [ROUTES.ALGORITHMS_PRACTICE_REVIEW]: { sessionId: string; occurrenceId: string };
   [ROUTES.ALGORITHMS_PRACTICE_SUMMARY]: { sessionId: string };

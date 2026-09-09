@@ -26,6 +26,15 @@
   "DSA & Problem Solving": "Struktury danych i rozwiązywanie problemów",
   "Cloud Fundamentals": "Podstawy chmury",
   "Free start · Complexity and constraints": "Darmowy start · Złożoność i ograniczenia",
+  "Complexity and constraints": "Złożoność i ograniczenia",
+  "Aws secure architecture foundations": "Podstawy bezpiecznej architektury AWS",
+  "Entra identity lifecycle and authentication": "Cykl życia tożsamości i uwierzytelnianie w Entra",
+  "Organization projects policies services quotas and assets": "Organizacja, projekty, zasady, usługi, limity i zasoby",
+  "Requirements capacity and architecture decomposition": "Wymagania, pojemność i podział architektury",
+  "Requirements use cases domain vocabulary and model boundaries": "Wymagania, przypadki użycia, słownictwo domenowe i granice modelu",
+  "Requirements user journeys constraints and frontend decomposition": "Wymagania, ścieżki użytkownika, ograniczenia i podział frontendu",
+  "Responsible ai model foundations and deployment choices": "Odpowiedzialna AI, podstawy modeli i wybór wdrożenia",
+  "Solution design and architecture": "Projektowanie rozwiązania i architektura",
   "Free start · Cloud fundamentals": "Darmowy start · Podstawy chmury",
   "Start with": "Zacznij od",
   "Select": "Wybierz",
@@ -597,5 +606,6 @@
   "Thu": "Czw.",
   "Fri": "Pt.",
   "Sat": "Sob.",
-  "Sun": "Niedz."
+  "Sun": "Niedz.",
+  "This learning plan uses a different content package. Review the plan before starting.": "Ten plan nauki używa innego pakietu treści. Sprawdź plan przed rozpoczęciem."
 }
