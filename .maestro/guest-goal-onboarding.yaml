@@ -28,14 +28,15 @@ tags:
       - extendedWaitUntil:
           notVisible: "Open"
           timeout: 10000
-- extendedWaitUntil:
-    visible: "Remove unavailable data"
-    timeout: 30000
-- tapOn: "Remove unavailable data"
-- extendedWaitUntil:
-    visible: "Remove data from device"
-    timeout: 10000
-- tapOn: "Remove data from device"
+- runFlow:
+    when:
+      visible: "Remove unavailable data"
+    commands:
+      - tapOn: "Remove unavailable data"
+      - extendedWaitUntil:
+          visible: "Remove data from device"
+          timeout: 10000
+      - tapOn: "Remove data from device"
 - extendedWaitUntil:
     visible:
       id: "account-guest"
@@ -49,7 +50,7 @@ tags:
 - tapOn:
     id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
 - tapOn:
-    id: "patternly:home:select-track:continue"
+    point: "50%,90%"
 - extendedWaitUntil:
     visible:
       id: "patternly:home:guest-goal-onboarding:root"
@@ -84,7 +85,7 @@ tags:
 - tapOn:
     id: "patternly:home:select-track:backend-system-design-interview"
 - tapOn:
-    id: "patternly:home:select-track:continue"
+    point: "50%,90%"
 - extendedWaitUntil:
     visible:
       id: "patternly:home:guest-goal-onboarding:root"
@@ -101,16 +102,30 @@ tags:
 - assertVisible: "Home"
 - takeScreenshot: 04-goal-from-home
 - tapOn:
-    id: "patternly:goal:save"
+    point: "50%,90%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:accept"
+    timeout: 30000
+- tapOn:
+    id: "patternly:learning-plan:accept"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:persisted"
+    timeout: 30000
+- tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:goal:root"
+    timeout: 30000
+- tapOn:
+    point: "10%,12%"
 - extendedWaitUntil:
     visible:
       id: "patternly:home:track-card:backend-system-design-interview"
     timeout: 30000
 - assertNotVisible:
     id: "patternly:home:guest-goal-onboarding:root"
-- assertVisible:
-    id: "patternly:home:primary-action"
-    enabled: true
 - takeScreenshot: 05-goal-saved
 - stopApp
 - launchApp

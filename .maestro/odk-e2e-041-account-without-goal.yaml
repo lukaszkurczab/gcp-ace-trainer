@@ -1,0 +1,103 @@
+appId: com.lkurczab.patternly
+name: ODK-E2E-041 account with track and without goal
+tags:
+  - e2e
+  - goal
+  - account
+---
+- launchApp:
+    clearState: true
+- openLink: ${PATTERNLY_DEV_CLIENT_URL}
+- runFlow:
+    when:
+      visible: "Otwórz"
+    commands:
+      - tapOn:
+          text: "Otwórz"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible: "Otwórz"
+          timeout: 10000
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn:
+          text: "Open"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible: "Open"
+          timeout: 10000
+- runFlow:
+    when:
+      visible: "Remove unavailable data"
+    commands:
+      - tapOn: "Remove unavailable data"
+      - tapOn: "Remove data from device"
+- extendedWaitUntil:
+    visible:
+      id: "account-guest"
+    timeout: 30000
+- tapOn:
+    id: "account-guest"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:select-track:backend-system-design-interview"
+- tapOn:
+    point: "50%,90%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:guest-goal-onboarding:not-now"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:guest-goal-onboarding:not-now"
+- tapOn: "^Settings$"
+- tapOn: "^Settings$"
+- extendedWaitUntil:
+    visible:
+      id: "settings-account-entry"
+    timeout: 30000
+- tapOn:
+    id: "settings-account-entry"
+- tapOn:
+    id: "account-entry-register"
+- tapOn:
+    id: "account-register-terms-checkbox"
+- tapOn:
+    id: "account-email"
+- inputText: ${ODK_E2E_041_EMAIL_NO_GOAL}
+- tapOn:
+    id: "account-password-visibility"
+- tapOn:
+    id: "account-password"
+- inputText: ${ODK_E2E_041_PASSWORD}
+- tapOn:
+    id: "account-password-confirmation"
+- inputText: ${ODK_E2E_041_PASSWORD}
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "account-register-submit"
+- extendedWaitUntil:
+    visible:
+      id: "account-entry-choice"
+    timeout: 30000
+- tapOn:
+    id: "account-entry-continue"
+- extendedWaitUntil:
+    visible:
+      id: "account-open-settings"
+    timeout: 30000
+- tapOn:
+    id: "account-open-settings"
+- tapOn: "^Progress$"
+- tapOn: "^Progress$"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:progress:goal"
+    timeout: 30000
+- assertVisible: "Set goal"
+- takeScreenshot: 07-account-without-goal

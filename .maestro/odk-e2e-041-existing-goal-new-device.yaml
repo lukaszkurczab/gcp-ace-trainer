@@ -1,0 +1,113 @@
+appId: com.lkurczab.patternly
+name: ODK-E2E-041 existing goal on a clean device
+tags:
+  - e2e
+  - goal
+  - account
+---
+- launchApp:
+    clearState: true
+- openLink: ${PATTERNLY_DEV_CLIENT_URL}
+- runFlow:
+    when:
+      visible: "Otwórz"
+    commands:
+      - tapOn:
+          text: "Otwórz"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible: "Otwórz"
+          timeout: 10000
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn:
+          text: "Open"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible: "Open"
+          timeout: 10000
+- runFlow:
+    when:
+      visible: "Remove unavailable data"
+    commands:
+      - tapOn: "Remove unavailable data"
+      - tapOn: "Remove data from device"
+- extendedWaitUntil:
+    visible:
+      id: "account-sign-in"
+    timeout: 30000
+- tapOn:
+    id: "account-sign-in"
+- tapOn:
+    id: "account-email"
+- inputText: ${ODK_E2E_041_EMAIL}
+- tapOn:
+    text: "Show password"
+- tapOn:
+    id: "account-password"
+- inputText: ${ODK_E2E_041_PASSWORD}
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "account-sign-in-submit"
+- extendedWaitUntil:
+    visible:
+      id: "account-entry-continue"
+    timeout: 30000
+- tapOn:
+    point: "92%,92%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "^Continue$"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:backend-system-design-interview"
+    timeout: 30000
+- tapOn: "^Settings$"
+- tapOn: "^Settings$"
+- extendedWaitUntil:
+    visible:
+      id: "settings-goal"
+    timeout: 30000
+- tapOn:
+    id: "settings-goal"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:goal:root"
+    timeout: 30000
+- takeScreenshot: 05-existing-account-goal-clean-device
+- tapOn:
+    point: "10%,12%"
+- stopApp
+- launchApp
+- openLink: ${PATTERNLY_DEV_CLIENT_URL}
+- runFlow:
+    when:
+      visible: "Otwórz"
+    commands:
+      - tapOn:
+          text: "Otwórz"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible: "Otwórz"
+          timeout: 10000
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn:
+          text: "Open"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible: "Open"
+          timeout: 10000
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:backend-system-design-interview"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:home:guest-goal-onboarding:root"
+- takeScreenshot: 06-existing-account-goal-restart

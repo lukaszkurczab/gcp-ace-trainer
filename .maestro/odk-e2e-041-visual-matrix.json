@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "cases": [
+    {
+      "state": "guest_goal_and_account_adoption",
+      "flow": ".maestro/odk-e2e-041-guest-account-goal.yaml",
+      "screenshots": ["01-guest-goal-saved", "02-account-adoption", "03-account-goal-preserved", "04-account-restart-progress"]
+    },
+    {
+      "state": "guest_skip_scoped_per_track",
+      "flow": ".maestro/guest-goal-onboarding.yaml",
+      "screenshots": ["01-coding-invitation", "02-coding-dismissed", "03-design-invitation", "04-goal-from-home", "05-goal-saved"]
+    },
+    {
+      "state": "existing_account_goal_on_clean_device",
+      "flow": ".maestro/odk-e2e-041-existing-goal-new-device.yaml",
+      "screenshots": ["05-existing-account-goal-clean-device", "06-existing-account-goal-restart"]
+    },
+    {
+      "state": "account_without_goal",
+      "flow": ".maestro/odk-e2e-041-account-without-goal.yaml",
+      "screenshots": ["07-account-without-goal"]
+    }
+  ]
+}

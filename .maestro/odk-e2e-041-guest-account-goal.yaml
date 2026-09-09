@@ -1,0 +1,154 @@
+appId: com.lkurczab.patternly
+name: ODK-E2E-041 guest goal to account and restart
+tags:
+  - e2e
+  - goal
+  - account
+---
+- launchApp:
+    clearState: true
+- openLink: ${PATTERNLY_DEV_CLIENT_URL}
+- runFlow:
+    when:
+      visible: "Otwórz"
+    commands:
+      - tapOn: "Otwórz"
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- runFlow:
+    when:
+      visible: "Remove unavailable data"
+    commands:
+      - tapOn: "Remove unavailable data"
+      - tapOn: "Remove data from device"
+- extendedWaitUntil:
+    visible:
+      id: "account-guest"
+    timeout: 30000
+- tapOn:
+    id: "account-guest"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:select-track:backend-system-design-interview"
+- tapOn:
+    point: "50%,90%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:guest-goal-onboarding:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:guest-goal-onboarding:set-goal"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:goal:root"
+    timeout: 30000
+- tapOn:
+    point: "50%,90%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:accept"
+    timeout: 30000
+- tapOn:
+    id: "patternly:learning-plan:accept"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:persisted"
+    timeout: 30000
+- tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:goal:root"
+    timeout: 30000
+- tapOn:
+    point: "10%,12%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:backend-system-design-interview"
+    timeout: 30000
+- takeScreenshot: 01-guest-goal-saved
+- tapOn:
+    text: "^Settings$"
+    retryTapIfNoChange: true
+- tapOn:
+    text: "^Settings$"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "settings-account-entry"
+    timeout: 30000
+- tapOn:
+    id: "settings-account-entry"
+- tapOn:
+    id: "account-entry-register"
+- tapOn:
+    id: "account-register-terms-checkbox"
+- tapOn:
+    id: "account-email"
+- inputText: ${ODK_E2E_041_EMAIL}
+- tapOn:
+    id: "account-password-visibility"
+- tapOn:
+    id: "account-password"
+- inputText: ${ODK_E2E_041_PASSWORD}
+- tapOn:
+    id: "account-password-confirmation"
+- inputText: ${ODK_E2E_041_PASSWORD}
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "account-register-submit"
+- extendedWaitUntil:
+    visible:
+      id: "account-entry-choice"
+    timeout: 30000
+- assertVisible:
+    id: "account-keep-progress-toggle"
+- takeScreenshot: 02-account-adoption
+- tapOn:
+    id: "account-entry-continue"
+- extendedWaitUntil:
+    visible:
+      id: "account-open-settings"
+    timeout: 30000
+- tapOn:
+    id: "account-open-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-goal"
+    timeout: 30000
+- tapOn:
+    id: "settings-goal"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:goal:root"
+    timeout: 30000
+- takeScreenshot: 03-account-goal-preserved
+- stopApp
+- launchApp
+- openLink: ${PATTERNLY_DEV_CLIENT_URL}
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:backend-system-design-interview"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:home:guest-goal-onboarding:root"
+- tapOn:
+    point: "92%,92%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "^Progress$"
+    retryTapIfNoChange: true
+- tapOn:
+    text: "^Progress$"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:progress:root"
+    timeout: 30000
+- takeScreenshot: 04-account-restart-progress
