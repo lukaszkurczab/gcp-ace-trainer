@@ -491,6 +491,8 @@ function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, o
   t: (value: string) => string;
 }>) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
+  const largeTextLayout = fontScale >= 1.8;
   const copy = GOAL_COPY[goal.goalType];
   const target = projectGoalTargetDate(goal);
   const targetLabel = target.meaning === "event" ? t("Event date") : target.meaning === "deadline" ? t("Target date") : target.meaning === "checkpoint" ? t("Checkpoint") : t("Target date");
@@ -517,9 +519,9 @@ function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, o
           ) : <Text maxFontSizeMultiplier={2} style={styles.summaryValue}>{t("Choose at least one practice day.")}</Text>}
         </View>
         <View style={styles.summaryDivider} />
-        <View style={styles.summaryReminderRow}>
-          <Text maxFontSizeMultiplier={2} style={[styles.summaryLabel, styles.summaryReminderLabel]}>{t("Reminders")}</Text>
-          <Pressable accessibilityRole="button" onPress={onOpenNotifications} testID="goal-summary-reminders"><Text maxFontSizeMultiplier={2} style={styles.summaryLink}>{t("Reminders")}</Text></Pressable>
+        <View style={[styles.summaryReminderRow, largeTextLayout ? styles.summaryReminderRowLarge : null]}>
+          <Text maxFontSizeMultiplier={2} style={[styles.summaryLabel, styles.summaryReminderLabel, largeTextLayout ? styles.summaryReminderLabelLarge : null]}>{t("Reminders")}</Text>
+          <Pressable accessibilityRole="button" onPress={onOpenNotifications} style={largeTextLayout ? styles.summaryReminderActionLarge : null} testID="goal-summary-reminders"><Text maxFontSizeMultiplier={2} style={styles.summaryLink}>{t("Reminders")}</Text></Pressable>
         </View>
       </View>
       <Button disabled={goal.status === "paused"} loading={creatingPlan} onPress={onCreatePlan} testID={runtimeSelectors.learningPlan.create()}>{t("Create plan")}</Button>
@@ -616,8 +618,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dayBadgeLabel: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 15 },
   summaryReminderRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
   summaryReminderLabel: { flex: 1 },
+  summaryReminderRowLarge: { alignItems: "flex-start", flexDirection: "column" },
+  summaryReminderLabelLarge: { flex: 0 },
   summaryLink: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 15 },
   centerAction: { alignItems: "center", minHeight: 40, justifyContent: "center" },
+  summaryReminderActionLarge: { justifyContent: "center", minHeight: 44 },
   centerActionLabel: { ...typography.small, color: palette.textSecondary, fontWeight: "600" },
   error: { color: palette.danger, fontSize: 13, lineHeight: 18 },
   footerButton: { width: "100%" },

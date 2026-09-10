@@ -83,6 +83,21 @@ test("active goal summary only exposes Save while editing", () => {
   assert.match(screen, /onTogglePause=\{\(\) => \{ void togglePause\(\); \}\}/);
 });
 
+test("active goal summary switches reminder and action layout at accessibility font scale", () => {
+  const summary = screen.slice(screen.indexOf("function ActiveGoalSummary"), screen.indexOf("function isCreatedProposal"));
+  assert.match(summary, /const \{ fontScale \} = useWindowDimensions\(\);/);
+  assert.match(summary, /const largeTextLayout = fontScale >= 1\.8;/);
+  assert.match(summary, /summaryReminderRow, largeTextLayout \? styles\.summaryReminderRowLarge/);
+  assert.match(summary, /summaryReminderLabel, largeTextLayout \? styles\.summaryReminderLabelLarge/);
+  assert.match(summary, /testID="goal-summary-reminders"/);
+  assert.match(summary, /onPress=\{onOpenNotifications\}/);
+  assert.match(summary, /style=\{largeTextLayout \? styles\.summaryReminderActionLarge : null\} testID="goal-summary-reminders"/);
+  assert.doesNotMatch(summary, /centerAction, largeTextLayout/);
+  assert.match(screen, /summaryReminderRowLarge: \{ alignItems: "flex-start", flexDirection: "column" \}/);
+  assert.match(screen, /summaryReminderLabelLarge: \{ flex: 0 \}/);
+  assert.match(screen, /summaryReminderActionLarge: \{ justifyContent: "center", minHeight: 44 \}/);
+});
+
 test("goal status and selected day labels use onPrimary on filled backgrounds", () => {
   assert.match(screen, /statusBadge: \{ backgroundColor: palette\.success,/);
   assert.match(screen, /pausedBadge: \{ backgroundColor: palette\.warning \}/);
