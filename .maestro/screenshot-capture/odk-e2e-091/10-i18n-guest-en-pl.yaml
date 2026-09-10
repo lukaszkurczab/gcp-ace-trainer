@@ -1,0 +1,175 @@
+appId: com.lkurczab.patternly
+name: ODK-E2E-091 nested i18n — guest EN and PL
+tags:
+  - screenshot
+  - ios
+  - i18n
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Remove unavailable data"
+    timeout: 30000
+- tapOn: "Remove unavailable data"
+- tapOn: "Remove data from device"
+- extendedWaitUntil:
+    visible:
+      id: "account-register"
+    timeout: 30000
+- tapOn:
+    point: "370,795"
+- tapOn: "Continue without an account"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:continue"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:select-track:continue"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-en"
+- tapOn: "Go back"
+- assertVisible:
+    id: "settings-your-data"
+- tapOn:
+    id: "settings-your-data"
+- assertVisible: "Your rights"
+- assertVisible:
+    id: "data-privacy-support"
+- takeScreenshot: "i18n__guest__010__your-data__en"
+- tapOn:
+    id: "account-data-export-details"
+- assertVisible: "Data details"
+- assertVisible: "Scope"
+- takeScreenshot: "i18n__guest__020__your-data-details__en"
+- tapOn: "Close"
+- tapOn:
+    point: "42,105"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-legal-information"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-legal-information"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-complaint"
+    direction: DOWN
+- tapOn:
+    id: "legal-request-complaint"
+- assertVisible: "Send request"
+- tapOn:
+    id: "legal-request-create-complaint"
+- assertVisible: "Details (required)"
+- assertVisible: "Email address"
+- takeScreenshot: "i18n__guest__030__legal-form__en"
+- tapOn:
+    id: "legal-request-submit"
+- tapOn: "Close"
+- takeScreenshot: "i18n__guest__040__legal-error__en"
+- tapOn:
+    point: "42,105"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-data-rights"
+    direction: DOWN
+- tapOn:
+    id: "legal-request-data-rights"
+- tapOn:
+    id: "legal-data-rights-privacy"
+- assertVisible: "Privacy requests"
+- takeScreenshot: "i18n__guest__050__privacy-requests__en"
+- tapOn:
+    point: "42,105"
+- scrollUntilVisible:
+    element: "Go back"
+    direction: UP
+    centerElement: true
+- tapOn:
+    point: "42,105"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-pl"
+- tapOn: "Wróć"
+- assertVisible:
+    id: "settings-your-data"
+- tapOn:
+    id: "settings-your-data"
+- assertVisible: "Twoje prawa"
+- assertVisible:
+    id: "data-privacy-support"
+- takeScreenshot: "i18n__guest__060__your-data__pl"
+- tapOn:
+    id: "account-data-export-details"
+- assertVisible: "Szczegóły danych"
+- assertVisible: "Zakres"
+- takeScreenshot: "i18n__guest__070__your-data-details__pl"
+- tapOn: "Zamknij"
+- tapOn:
+    point: "42,105"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-legal-information"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-legal-information"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-complaint"
+    direction: DOWN
+- tapOn:
+    id: "legal-request-complaint"
+- assertVisible: "Wyślij zgłoszenie"
+- tapOn:
+    id: "legal-request-create-complaint"
+- assertVisible: "Szczegóły (wymagane)"
+- assertVisible: "Adres e-mail"
+- takeScreenshot: "i18n__guest__080__legal-form__pl"
+- tapOn:
+    id: "legal-request-submit"
+- tapOn: "Zamknij"
+- takeScreenshot: "i18n__guest__090__legal-error__pl"
+- tapOn:
+    point: "42,105"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-data-rights"
+    direction: DOWN
+- tapOn:
+    id: "legal-request-data-rights"
+- tapOn:
+    id: "legal-data-rights-privacy"
+- assertVisible: "Wnioski dotyczące prywatności"
+- takeScreenshot: "i18n__guest__100__privacy-requests__pl"
