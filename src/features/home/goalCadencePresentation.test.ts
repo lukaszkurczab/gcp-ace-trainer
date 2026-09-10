@@ -9,6 +9,8 @@ const settings = readFileSync("src/features/home/tabs/SettingsTab.tsx", "utf8");
 const navigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
 const navigationTypes = readFileSync("src/navigation/types.ts", "utf8");
 const repositoryIndex = readFileSync("src/storage/repositories/index.ts", "utf8");
+const enCommon = JSON.parse(readFileSync("src/locales/en/common.json", "utf8")) as Record<string, string>;
+const plCommon = JSON.parse(readFileSync("src/locales/pl/common.json", "utf8")) as Record<string, string>;
 
 test("goal cadence is a reachable root route backed by the canonical repository", () => {
   assert.match(navigator, /name=\{ROUTES\.GOAL_CADENCE\}[\s\S]*?component=\{GoalCadenceScreen\}/);
@@ -87,6 +89,33 @@ test("goal status and selected day labels use onPrimary on filled backgrounds", 
   assert.match(screen, /statusBadgeLabel: \{ color: palette\.onPrimary,/);
   assert.match(screen, /dayButtonSelected: \{ backgroundColor: palette\.success,/);
   assert.match(screen, /dayLabelSelected: \{ color: palette\.onPrimary \}/);
+});
+
+test("preferred-day shortcuts preserve domain ids and translate every EN/PL label", () => {
+  const expected = {
+    mon: ["Mon", "Pon."],
+    tue: ["Tue", "Wt."],
+    wed: ["Wed", "Śr."],
+    thu: ["Thu", "Czw."],
+    fri: ["Fri", "Pt."],
+    sat: ["Sat", "Sob."],
+    sun: ["Sun", "Niedz."],
+  } as const;
+
+  for (const [day, [english, polish]] of Object.entries(expected)) {
+    assert.equal(enCommon[english], english);
+    assert.equal(plCommon[english], polish);
+    assert.match(screen, new RegExp(`\\b${day}: "${english}"`));
+  }
+
+  const goalForm = screen.slice(screen.indexOf("function CreateGoalForm"), screen.indexOf("function ActiveGoalSummary"));
+  const activeGoalSummary = screen.slice(screen.indexOf("function ActiveGoalSummary"));
+  assert.match(goalForm, /selectedDays\.includes\(day\)/);
+  assert.match(goalForm, /\{t\(DAY_SHORT_LABELS\[day\]\)\}/);
+  assert.match(activeGoalSummary, /\{t\(DAY_SHORT_LABELS\[day\]\)\}/);
+  assert.match(screen, /preferredDays\.filter\(\(candidate\) => candidate !== day\)/);
+  assert.match(screen, /preferredDays, weeklySessionTarget: preferredDays\.length/);
+  assert.match(screen, /persistGoal\(nextGoal\)/);
 });
 
 test("invalid target dates stay field-scoped, block persistence, and clear only on date edits", () => {
