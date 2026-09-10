@@ -45,7 +45,7 @@ test("generated client uses typed REST paths, bearer auth, timeout and bounded e
   await client.getReady();
   await client.getOpenApi();
   assert.deepEqual(calls.map((call) => [call.method, call.url]), [
-    ["GET", "https://api.sandbox.patternly.invalid/v1/progress?protocolVersion=2"],
+    ["GET", "https://api.sandbox.patternly.invalid/v1/progress?protocolVersion=2&pageSize=100"],
     ["GET", "https://api.sandbox.patternly.invalid/v1/account-data/export"],
     ["POST", "https://api.sandbox.patternly.invalid/v1/progress/sync"],
     ["GET", "https://api.sandbox.patternly.invalid/ready"],

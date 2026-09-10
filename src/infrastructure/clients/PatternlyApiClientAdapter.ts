@@ -16,12 +16,26 @@ export type ProgressMutationDto = Readonly<{
   state: Readonly<Record<string, unknown>>;
 }>;
 
-export type SyncRequestDto = Readonly<{
+export type SyncRequestV2Dto = Readonly<{
   protocolVersion: 2;
   expectedAccountRevision: number;
   deviceId?: string | null;
   mutations: readonly ProgressMutationDto[];
 }>;
+
+export type SyncRequestV3Dto = Readonly<{
+  protocolVersion: 3;
+  canonicalVersion: "canonical-json-v1";
+  expectedAccountRevision: number;
+  deviceId: string;
+  sessionId: string;
+  batchId: string;
+  planVersion: 3;
+  highWatermark: number;
+  mutations: readonly ProgressMutationDto[];
+}>;
+
+export type SyncRequestDto = SyncRequestV2Dto | SyncRequestV3Dto;
 
 export type ProgressRecordDto = Readonly<{
   kind: "node" | "item";
@@ -41,7 +55,7 @@ export type AccountDeletionResponseDto = Readonly<{ status: "deleted"; operation
 export type PublicDeletionProofResponseDto = Readonly<{ status: "deleted"; operationId: string; proofId: string }>;
 export type DeletionOperationStatusDto = Readonly<{ status: "pending" | "remote_deleted" | "complete"; operationId: string; proofId: string | null }>;
 export type EntitlementsResponseDto = Readonly<{ entitlements: readonly Readonly<{ entitlement: string; status: string; source: string; expiresAt: string | null; updatedAt: string }>[] }>;
-export type ProgressResponseDto = Readonly<{ accountRevision: number; records: readonly ProgressRecordDto[] }>;
+export type ProgressResponseDto = Readonly<{ accountRevision: number; records: readonly ProgressRecordDto[]; nextPageToken?: string | null; generation?: number }>;
 export type AccountDataExportDto = Readonly<{
   schemaVersion: "account-data-export-v1";
   exportId: string;
@@ -237,7 +251,28 @@ export function createPatternlyApiClient(input: Readonly<{
     recordLegalAcceptance: (termsVersion) => requestJson("/v1/legal-acceptances", "POST", { termsVersion, minimumAgeConfirmed: 18 }),
     recordPurchaseConfirmation: (body) => requestJson("/v1/purchase-confirmations", "POST", body),
     getEntitlements: () => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET"),
-    getProgress: () => requestJson<ProgressResponseDto>("/v1/progress?protocolVersion=2", "GET"),
+    getProgress: async () => {
+      const records: ProgressRecordDto[] = [];
+      let pageToken: string | null = null;
+      let accountRevision: number | null = null;
+      let generation: number | undefined;
+      for (let page = 0; page < 1_001; page += 1) {
+        const query: string = pageToken === null
+          ? "/v1/progress?protocolVersion=2&pageSize=100"
+          : `/v1/progress?protocolVersion=2&pageSize=100&pageToken=${encodeURIComponent(pageToken)}`;
+        const response: ProgressResponseDto = await requestJson<ProgressResponseDto>(query, "GET");
+        if (accountRevision === null) {
+          accountRevision = response.accountRevision;
+          generation = response.generation;
+        } else if (response.accountRevision !== accountRevision || response.generation !== generation) {
+          throw new PatternlyApiClientError("server_error", 409, "progress_generation_conflict");
+        }
+        records.push(...response.records);
+        pageToken = response.nextPageToken ?? null;
+        if (pageToken === null) return { accountRevision: accountRevision ?? 0, records: Object.freeze(records), generation, nextPageToken: null };
+      }
+      throw new PatternlyApiClientError("invalid_response");
+    },
     exportAccountData: () => requestJson<AccountDataExportDto>("/v1/account-data/export", "GET"),
     createPrivacyRequest: async (right, narrative) => parsePrivacyRequestEnvelope(await requestJson<unknown>("/v1/privacy-requests", "POST", { right, ...(narrative === undefined ? {} : { narrative }) })),
     getPrivacyRequests: async () => parsePrivacyRequestList(await requestJson<unknown>("/v1/privacy-requests", "GET")),

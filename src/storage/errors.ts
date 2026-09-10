@@ -32,7 +32,9 @@ export type AccountDataFailureCode =
   | "account_data_review_invalid"
   | "account_data_goal_invalid"
   | "account_data_plan_invalid"
-  | "account_data_goal_plan_invalid";
+  | "account_data_goal_plan_invalid"
+  | "account_sync_record_too_large"
+  | "account_sync_group_too_large";
 
 /** Typed local account-data failure; callers classify its code without reading a raw message. */
 export class AccountDataFailure extends Error {

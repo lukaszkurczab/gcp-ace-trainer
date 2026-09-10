@@ -1,6 +1,6 @@
 import { isLearningPlanV1ForTrack, isRegisteredTrackId, normalizeLearningPlan, type GoalRecord, type LearningPlan, type TrainingAttempt, type TrainingSession, type TrainingSessionResult, type ReviewQueueEntry } from "../../domain";
 import { isGoalRecordShapeForTrack, normalizeGoalRecord } from "../../domain/goals/goalContracts";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalJsonV1, canonicalJsonV1ByteLength, canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
@@ -30,6 +30,25 @@ export type AccountDataRecord = Readonly<{
   version: number;
 }>;
 
+export type AccountSyncPlanItem = Readonly<{
+  sequence: number;
+  recordKey: string;
+  mutationId: string;
+  expectedVersion: number | null;
+  payload: AccountDataRecord;
+  groupId: string | null;
+  status: "pending" | "sent" | "acked";
+}>;
+
+export type AccountSyncPlan = Readonly<{
+  version: 3;
+  planId: string;
+  snapshotVersion: number;
+  expectedAccountRevision: number;
+  highWatermark: number;
+  items: readonly AccountSyncPlanItem[];
+}>;
+
 export type AccountDataSnapshot = Readonly<{
   protocolVersion: 1 | 2;
   guestSnapshotVersion: number;
@@ -54,6 +73,10 @@ export type AccountSyncState = Readonly<{
   outbox: readonly AccountOutboxEntry[];
   materialization: AccountMaterialization | null;
   pendingConfirmation: Readonly<{ operationId: string; previewFingerprint: string; protocolVersion: 1 | 2; resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[]; groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[] }> | null;
+  /** Durable protocol-v3 planning cursor. Older stored states hydrate it lazily. */
+  syncPlan: AccountSyncPlan | null;
+  outboxSequence: number;
+  highWatermark: number;
 }>;
 
 export type AccountMaterialization = Readonly<
@@ -64,9 +87,9 @@ export type AccountMaterialization = Readonly<
 export type GuestOwnedLocalDataBackupEntry = Readonly<{ key: string; value: string }>;
 
 export type AccountAcknowledgedRecord = Readonly<{ fingerprint: string; recordId: string; recordType: SyncableRecordType; remoteVersion: number; trackId: string }>;
-export type AccountOutboxEntry = Readonly<AccountDataRecord & { mutationId: string; expectedVersion: number | null; attemptCount: number; lastErrorCode: string | null; status: "pending" | "retrying" | "failed" }>;
+export type AccountOutboxEntry = Readonly<AccountDataRecord & { mutationId: string; expectedVersion: number | null; attemptCount: number; lastErrorCode: string | null; status: "pending" | "retrying" | "failed"; sequence: number }>;
 
-const emptyState = (): AccountSyncState => Object.freeze({ protocolVersion: ACCOUNT_DATA_PROTOCOL_VERSION, accountId: null, status: "initialSyncRequired", localDatasetVersion: 0, localDatasetFingerprint: null, remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged: Object.freeze({}), outbox: Object.freeze([]), materialization: null, pendingConfirmation: null });
+const emptyState = (): AccountSyncState => Object.freeze({ protocolVersion: ACCOUNT_DATA_PROTOCOL_VERSION, accountId: null, status: "initialSyncRequired", localDatasetVersion: 0, localDatasetFingerprint: null, remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged: Object.freeze({}), outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, outboxSequence: 0, highWatermark: 0 });
 
 const LEARNING_FIXED_KEYS = [
   STORAGE_KEYS.ACTIVE_TRACK,
@@ -105,8 +128,22 @@ function isGuestOwnedLocalDataBackupEntry(value: unknown): value is GuestOwnedLo
 
 function isSyncableRecordType(value: unknown): value is SyncableRecordType { return typeof value === "string" && (SYNCABLE_RECORD_TYPES as readonly string[]).includes(value); }
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
+function isAccountSyncPlanItem(value: unknown): value is AccountSyncPlanItem {
+  if (!isRecord(value) || !Number.isSafeInteger(value.sequence) || Number(value.sequence) < 1 || typeof value.recordKey !== "string" || typeof value.mutationId !== "string" || (value.expectedVersion !== null && (!Number.isSafeInteger(value.expectedVersion) || Number(value.expectedVersion) < 0)) || !isAccountDataRecord(value.payload) || (value.groupId !== null && typeof value.groupId !== "string") || !["pending", "sent", "acked"].includes(value.status as string)) return false;
+  // Plans written before the v3 identity migration may still carry the
+  // legacy `(recordType, recordId)` key. Accept them once, then normalize.
+  return value.recordKey === accountDataRecordKey(value.payload) || value.recordKey === legacyAccountDataRecordKey(value.payload);
+}
+
+function isAccountSyncPlan(value: unknown): value is AccountSyncPlan {
+  return isRecord(value) && value.version === 3 && typeof value.planId === "string" && value.planId.length > 0 && Number.isSafeInteger(value.snapshotVersion) && Number(value.snapshotVersion) >= 0 && Number.isSafeInteger(value.expectedAccountRevision) && Number(value.expectedAccountRevision) >= 0 && Number.isSafeInteger(value.highWatermark) && Number(value.highWatermark) >= 0 && Array.isArray(value.items) && value.items.every(isAccountSyncPlanItem);
+}
+
 function isAccountSyncState(value: unknown): value is AccountSyncState {
   if (!isRecord(value) || (value.protocolVersion !== 1 && value.protocolVersion !== 2) || (value.accountId !== null && typeof value.accountId !== "string") || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || !Number.isSafeInteger(value.remoteAccountRevision) || !Array.isArray(value.outbox) || !isRecord(value.acknowledged)) return false;
+  if (value.syncPlan !== undefined && value.syncPlan !== null && !isAccountSyncPlan(value.syncPlan)) return false;
+  if (value.outboxSequence !== undefined && (!Number.isSafeInteger(value.outboxSequence) || Number(value.outboxSequence) < 0)) return false;
+  if (value.highWatermark !== undefined && (!Number.isSafeInteger(value.highWatermark) || Number(value.highWatermark) < 0)) return false;
   const pending = value.pendingConfirmation;
   const pendingValid = pending === null || (isRecord(pending) && typeof pending.operationId === "string" && typeof pending.previewFingerprint === "string" && (pending.protocolVersion === undefined || pending.protocolVersion === 1 || pending.protocolVersion === 2) && Array.isArray(pending.resolutions) && pending.resolutions.every(isResolution) && (pending.groupChoices === undefined || (Array.isArray(pending.groupChoices) && pending.groupChoices.every(isGroupChoice))));
   return value.outbox.every(isOutboxEntry) && Object.values(value.acknowledged).every(isAcknowledgedRecord) && (value.materialization === null || isAccountMaterialization(value.materialization)) && pendingValid;
@@ -128,33 +165,200 @@ function isAcknowledgedRecord(value: unknown): value is AccountAcknowledgedRecor
 function isOutboxEntry(value: unknown): value is AccountOutboxEntry {
   if (!isRecord(value) || !isAccountDataRecord(value)) return false;
   const candidate = value as AccountOutboxEntry;
-  return typeof candidate.mutationId === "string" && (candidate.expectedVersion === null || (typeof candidate.expectedVersion === "number" && Number.isSafeInteger(candidate.expectedVersion))) && typeof candidate.attemptCount === "number" && Number.isSafeInteger(candidate.attemptCount) && ["pending", "retrying", "failed"].includes(candidate.status);
+  return typeof candidate.mutationId === "string" && (candidate.expectedVersion === null || (typeof candidate.expectedVersion === "number" && Number.isSafeInteger(candidate.expectedVersion))) && typeof candidate.attemptCount === "number" && Number.isSafeInteger(candidate.attemptCount) && ["pending", "retrying", "failed"].includes(candidate.status) && (candidate.sequence === undefined || (Number.isSafeInteger(candidate.sequence) && candidate.sequence >= 1));
 }
 function isAccountDataRecord(value: unknown): value is AccountDataRecord {
   if (!isRecord(value) || typeof value.fingerprint !== "string" || !/^[a-f0-9]{64}$/u.test(value.fingerprint) || typeof value.recordId !== "string" || !isSyncableRecordType(value.recordType) || !isRecord(value.state) || typeof value.trackId !== "string" || typeof value.version !== "number") return false;
   return Number.isSafeInteger(value.version) && value.version >= 0;
 }
 
-export function accountDataRecordKey(record: Pick<AccountDataRecord, "recordType" | "recordId">): string { return `${record.recordType}:${record.recordId}`; }
+type AccountDataRecordIdentity = Pick<AccountDataRecord, "recordType" | "recordId" | "trackId">;
+
+function legacyAccountDataRecordKey(record: Pick<AccountDataRecord, "recordType" | "recordId">): string {
+  return `${record.recordType}:${record.recordId}`;
+}
+
+/** Collision-safe, canonical key for one logical account record. */
+export function accountDataRecordKey(record: AccountDataRecordIdentity): string {
+  return canonicalJsonV1({ recordId: record.recordId, recordType: record.recordType, trackId: record.trackId });
+}
 export function accountDataRecordFingerprint(record: Readonly<{ recordId: string; recordType: SyncableRecordType; state: Readonly<Record<string, unknown>>; trackId: string }>): string { return sha256Utf8(canonicalSerialize({ recordId: record.recordId, recordType: record.recordType, state: record.state, trackId: record.trackId })); }
 export function isDeletedAccountDataRecord(record: Pick<AccountDataRecord, "state">): boolean { return record.state.deleted === true; }
 
-function accountMutationId(accountId: string, record: Pick<AccountDataRecord, "recordType" | "recordId" | "fingerprint">, expectedVersion: number | null): string {
+function accountMutationId(accountId: string, record: Pick<AccountDataRecord, "recordType" | "recordId" | "trackId" | "fingerprint">, expectedVersion: number | null): string {
   return `mutation_${sha256Utf8(canonicalSerialize({ accountId, key: accountDataRecordKey(record), expectedVersion, fingerprint: record.fingerprint }))}`;
+}
+
+export const MAX_SYNC_ENVELOPE_UTF8_BYTES = 512 * 1024;
+
+function syncMutationPayload(entry: AccountOutboxEntry): Readonly<Record<string, unknown>> {
+  return Object.freeze({
+    mutationId: entry.mutationId,
+    kind: entry.recordType === "training_attempt" || entry.recordType === "review_queue_entry" ? "item" : "node",
+    recordType: entry.recordType,
+    trackId: entry.trackId,
+    targetId: entry.recordId,
+    expectedVersion: entry.expectedVersion,
+    fingerprint: entry.fingerprint,
+    state: entry.state,
+  });
+}
+
+function syncGroupId(entry: Pick<AccountDataRecord, "recordType" | "trackId">): string | null {
+  return entry.recordType === "goal" || entry.recordType === "learning_plan" ? `track:${entry.trackId}` : null;
+}
+
+function cloneAndFreezeJson(value: unknown): unknown {
+  if (Array.isArray(value)) return Object.freeze(value.map(cloneAndFreezeJson));
+  if (isRecord(value)) return Object.freeze(Object.fromEntries(Object.entries(value).map(([key, child]) => [key, cloneAndFreezeJson(child)])));
+  return value;
+}
+
+function immutableSyncPayload(entry: AccountDataRecord): AccountDataRecord {
+  return Object.freeze({
+    fingerprint: entry.fingerprint,
+    recordId: entry.recordId,
+    recordType: entry.recordType,
+    state: cloneAndFreezeJson(entry.state) as Readonly<Record<string, unknown>>,
+    trackId: entry.trackId,
+    version: entry.version,
+  });
+}
+
+function normalizeSyncPlan(plan: AccountSyncPlan | null): AccountSyncPlan | null {
+  if (!plan) return null;
+  const items = plan.items.map((item) => Object.freeze({
+    ...item,
+    recordKey: accountDataRecordKey(item.payload),
+    payload: immutableSyncPayload(item.payload),
+  }));
+  return Object.freeze({ ...plan, items: Object.freeze(items) });
+}
+
+function sameAcknowledgedRecord(left: AccountAcknowledgedRecord, right: AccountAcknowledgedRecord): boolean {
+  return left.fingerprint === right.fingerprint
+    && left.recordId === right.recordId
+    && left.recordType === right.recordType
+    && left.remoteVersion === right.remoteVersion
+    && left.trackId === right.trackId;
+}
+
+function normalizeAcknowledgedRecords(value: Readonly<Record<string, AccountAcknowledgedRecord>>): Readonly<Record<string, AccountAcknowledgedRecord>> {
+  const normalized: Record<string, AccountAcknowledgedRecord> = {};
+  for (const record of Object.values(value)) {
+    const key = accountDataRecordKey(record);
+    const existing = normalized[key];
+    if (existing && !sameAcknowledgedRecord(existing, record)) throw new AccountDataFailure("account_sync_state_invalid");
+    normalized[key] = Object.freeze({ ...record });
+  }
+  return Object.freeze(normalized);
+}
+
+/**
+ * Builds deterministic byte-bounded batches from durable outbox entries. A
+ * track's goal and learning plan stay together; if a single record or group
+ * cannot fit, an explicit failure is returned instead of a partial upload.
+ */
+export function splitAccountSyncBatches(input: Readonly<{
+  entries: readonly AccountOutboxEntry[];
+  expectedAccountRevision?: number;
+  sessionId?: string;
+  highWatermark?: number;
+}>): readonly (readonly AccountOutboxEntry[])[] {
+  const expectedAccountRevision = input.expectedAccountRevision ?? 0;
+  const sessionId = input.sessionId ?? "session-placeholder";
+  const highWatermark = input.highWatermark ?? Math.max(0, ...input.entries.map((entry) => entry.sequence));
+  const sorted = [...input.entries].sort((left, right) => left.sequence - right.sequence || accountDataRecordKey(left).localeCompare(accountDataRecordKey(right)));
+  const groups: Array<readonly AccountOutboxEntry[]> = [];
+  const groupById = new Map<string, AccountOutboxEntry[]>();
+  for (const entry of sorted) {
+    const groupId = syncGroupId(entry);
+    if (!groupId) groups.push([entry]);
+    else {
+      const existing = groupById.get(groupId);
+      if (existing) existing.push(entry);
+      else { const created = [entry]; groupById.set(groupId, created); groups.push(created); }
+    }
+  }
+  const batches: Array<AccountOutboxEntry[]> = [];
+  let current: AccountOutboxEntry[] = [];
+  const fits = (entries: readonly AccountOutboxEntry[]): boolean => {
+    const probe = {
+      schema: "canonical-json-v1",
+      payload: {
+        protocolVersion: 3,
+        canonicalVersion: "canonical-json-v1",
+        expectedAccountRevision,
+        // Reserve the longest legal UUID representation, since the actual
+        // request may contain a device id while tests/helpers often omit it.
+        deviceId: "00000000-0000-4000-8000-000000000000",
+        sessionId,
+        // Reserve three decimal digits for the deterministic batch suffix.
+        batchId: `${sessionId}:batch:999`,
+        planVersion: 3,
+        highWatermark,
+        mutations: entries.map(syncMutationPayload),
+      },
+    };
+    return canonicalJsonV1ByteLength(probe) <= MAX_SYNC_ENVELOPE_UTF8_BYTES;
+  };
+  for (const group of groups) {
+    if (!fits(group)) {
+      if (group.length > 1) throw new AccountDataFailure("account_sync_group_too_large");
+      throw new AccountDataFailure("account_sync_record_too_large");
+    }
+    if (current.length > 0 && (current.length + group.length > 100 || !fits([...current, ...group]))) {
+      batches.push(current);
+      current = [];
+    }
+    current.push(...group);
+  }
+  if (current.length > 0) batches.push(current);
+  return Object.freeze(batches.map((batch) => Object.freeze(batch)));
+}
+
+function createSyncPlan(accountId: string, snapshotVersion: number, expectedAccountRevision: number, highWatermark: number, entries: readonly AccountOutboxEntry[]): AccountSyncPlan | null {
+  if (entries.length === 0) return null;
+  const items = entries
+    .slice()
+    .sort((left, right) => left.sequence - right.sequence || accountDataRecordKey(left).localeCompare(accountDataRecordKey(right)))
+    .map((entry) => Object.freeze({ sequence: entry.sequence, recordKey: accountDataRecordKey(entry), mutationId: entry.mutationId, expectedVersion: entry.expectedVersion, payload: immutableSyncPayload(entry), groupId: syncGroupId(entry), status: "pending" as const }));
+  const planId = `plan_${sha256Utf8(canonicalJsonV1({ accountId, snapshotVersion, expectedAccountRevision, highWatermark, items: items.map((item) => ({ sequence: item.sequence, recordKey: item.recordKey, mutationId: item.mutationId, fingerprint: item.payload.fingerprint })) }))}`;
+  return Object.freeze({ version: 3, planId, snapshotVersion, expectedAccountRevision, highWatermark, items: Object.freeze(items) });
+}
+
+function canReuseSyncPlan(plan: AccountSyncPlan | null, entries: readonly AccountOutboxEntry[]): plan is AccountSyncPlan {
+  if (!plan || plan.items.length !== entries.length) return false;
+  const byMutationId = new Map(entries.map((entry) => [entry.mutationId, entry]));
+  return plan.items.every((item) => {
+    const entry = byMutationId.get(item.mutationId);
+    return entry !== undefined
+      && item.sequence === entry.sequence
+      && item.expectedVersion === entry.expectedVersion
+      && item.recordKey === accountDataRecordKey(entry)
+      && item.payload.fingerprint === entry.fingerprint;
+  });
 }
 
 export async function getAccountSyncState(): Promise<AccountSyncState> {
   const stored = readCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, isAccountSyncState);
   if (!stored) return emptyState();
   const normalized = normalizeSyncState(stored);
-  if (normalized.protocolVersion === 1 && normalized.pendingConfirmation === null && normalized.materialization === null) return saveAccountSyncState({ ...normalized, protocolVersion: 2 });
+  const legacyAcknowledgedKey = Object.entries(stored.acknowledged).some(([key, record]) => key !== accountDataRecordKey(record));
+  const legacyPlanKey = stored.syncPlan?.items.some((item) => item.recordKey !== accountDataRecordKey(item.payload)) ?? false;
+  if ((normalized.protocolVersion === 1 && normalized.pendingConfirmation === null && normalized.materialization === null) || legacyAcknowledgedKey || legacyPlanKey) return saveAccountSyncState({ ...normalized, protocolVersion: normalized.protocolVersion === 1 && normalized.pendingConfirmation === null && normalized.materialization === null ? 2 : normalized.protocolVersion });
   return normalized;
 }
 
 function normalizeSyncState(state: AccountSyncState): AccountSyncState {
   const pending = state.pendingConfirmation;
-  if (!pending) return state;
-  return Object.freeze({ ...state, pendingConfirmation: Object.freeze({ ...pending, protocolVersion: pending.protocolVersion ?? 1, groupChoices: Object.freeze(pending.groupChoices ?? []) }) });
+  let nextSequence = Math.max(0, state.outboxSequence ?? 0, ...state.outbox.map((entry) => entry.sequence ?? 0));
+  const outbox = state.outbox.map((entry) => entry.sequence === undefined ? Object.freeze({ ...entry, sequence: ++nextSequence }) : entry);
+  const outboxSequence = nextSequence;
+  const highWatermark = state.highWatermark ?? outboxSequence;
+  const withDefaults = { ...state, acknowledged: normalizeAcknowledgedRecords(state.acknowledged), outbox: Object.freeze(outbox), outboxSequence, highWatermark, syncPlan: normalizeSyncPlan(state.syncPlan ?? null) };
+  if (!pending) return Object.freeze(withDefaults);
+  return Object.freeze({ ...withDefaults, pendingConfirmation: Object.freeze({ ...pending, protocolVersion: pending.protocolVersion ?? 1, groupChoices: Object.freeze(pending.groupChoices ?? []) }) });
 }
 
 export function saveAccountSyncState(state: AccountSyncState): AccountSyncState {
@@ -213,7 +417,7 @@ async function readLocalAccountDataRecords(state: AccountSyncState): Promise<rea
 }
 
 function makeRecord(recordType: SyncableRecordType, recordId: string, trackId: string, state: Readonly<Record<string, unknown>>, syncState: AccountSyncState): AccountDataRecord {
-  const key = `${recordType}:${recordId}`;
+  const key = accountDataRecordKey({ recordType, recordId, trackId });
   const acknowledged = syncState.acknowledged[key];
   const copied = JSON.parse(JSON.stringify(state)) as Record<string, unknown>;
   const fingerprint = accountDataRecordFingerprint({ recordId, recordType, state: copied, trackId });
@@ -249,22 +453,29 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
   if (latestState.materialization || latestState.accountId !== installation.accountId) return latestState;
   state = latestState;
   const outbox = [...state.outbox];
+  let outboxSequence = state.outboxSequence;
   const byKey = new Map(outbox.map((entry) => [accountDataRecordKey(entry), entry]));
   for (const record of snapshot.records) {
     const key = accountDataRecordKey(record);
     const acknowledged = state.acknowledged[key];
     if (acknowledged?.fingerprint === record.fingerprint || byKey.get(key)?.fingerprint === record.fingerprint) continue;
     const expectedVersion = acknowledged?.remoteVersion ?? null;
-    const entry: AccountOutboxEntry = Object.freeze({ ...record, mutationId: accountMutationId(boundAccountId, record, expectedVersion), expectedVersion, attemptCount: byKey.get(key)?.attemptCount ?? 0, lastErrorCode: null, status: "pending" });
+    const existing = byKey.get(key);
+    const entry: AccountOutboxEntry = Object.freeze({ ...record, mutationId: accountMutationId(boundAccountId, record, expectedVersion), expectedVersion, attemptCount: existing?.attemptCount ?? 0, lastErrorCode: null, status: "pending", sequence: existing?.sequence ?? ++outboxSequence });
     const existingIndex = outbox.findIndex((candidate) => accountDataRecordKey(candidate) === key);
     if (existingIndex >= 0) outbox[existingIndex] = entry;
     else outbox.push(entry);
     byKey.set(key, entry);
   }
   const currentKeys = new Set(snapshot.records.map(accountDataRecordKey));
+  const hasCurrentActiveTrack = snapshot.records.some((record) => record.recordType === "active_track");
   for (const acknowledged of Object.values(state.acknowledged)) {
     const key = accountDataRecordKey(acknowledged);
     if (currentKeys.has(key) || byKey.has(key)) continue;
+    // `active_track` is a local selector, not a durable deletion when the
+    // learner switches to another track. Only emit its tombstone when the
+    // selector is actually cleared (no current active-track record).
+    if (acknowledged.recordType === "active_track" && hasCurrentActiveTrack) continue;
     const acknowledgedTombstoneFingerprint = accountDataRecordFingerprint({
       recordId: acknowledged.recordId,
       recordType: acknowledged.recordType,
@@ -283,12 +494,19 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
       attemptCount: 0,
       lastErrorCode: null,
       status: "pending",
+      sequence: ++outboxSequence,
     });
     const tombstoneWithMutationId: AccountOutboxEntry = Object.freeze({ ...tombstone, mutationId: accountMutationId(boundAccountId, tombstone, tombstone.expectedVersion) });
     outbox.push(tombstoneWithMutationId);
     byKey.set(key, tombstoneWithMutationId);
   }
-  const next = { ...state, status: outbox.length > 0 ? "offlinePending" as const : state.status, pendingMutationCount: outbox.length, outbox: Object.freeze(outbox) };
+  const nextBase = { ...state, status: outbox.length > 0 ? "offlinePending" as const : state.status, pendingMutationCount: outbox.length, outbox: Object.freeze(outbox), outboxSequence, highWatermark: Math.max(state.highWatermark, outboxSequence) };
+  const syncPlan = outbox.length === 0
+    ? null
+    : canReuseSyncPlan(state.syncPlan, outbox)
+      ? state.syncPlan
+      : createSyncPlan(boundAccountId, snapshot.guestSnapshotVersion, state.remoteAccountRevision, nextBase.highWatermark, outbox);
+  const next = { ...nextBase, syncPlan };
   saveAccountSyncState(next);
   return next;
 }
@@ -464,9 +682,15 @@ function replaceGoalPlanRecords(records: readonly AccountDataRecord[]): void {
 }
 
 export async function finishAccountMaterialization(records: readonly AccountDataRecord[], accountId: string, remoteAccountRevision: number, syncedAt: string): Promise<AccountSyncState> {
-  const acknowledged = Object.fromEntries(records.map((record) => [accountDataRecordKey(record), { fingerprint: record.fingerprint, recordId: record.recordId, recordType: record.recordType, remoteVersion: record.version, trackId: record.trackId }]));
   const current = await getAccountSyncState();
-  return saveAccountSyncState({ ...current, accountId, status: "synced", remoteAccountRevision, lastSuccessfulSyncAt: syncedAt, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged, outbox: Object.freeze([]), materialization: null, pendingConfirmation: null });
+  // A paged/partial remote response must not erase ACKs for another track.
+  // Full identity keys let later reconciliation retain each independent
+  // `(recordType, recordId, trackId)` version without cross-track leakage.
+  const acknowledged = Object.freeze({
+    ...current.acknowledged,
+    ...Object.fromEntries(records.map((record) => [accountDataRecordKey(record), { fingerprint: record.fingerprint, recordId: record.recordId, recordType: record.recordType, remoteVersion: record.version, trackId: record.trackId }])),
+  });
+  return saveAccountSyncState({ ...current, accountId, status: "synced", remoteAccountRevision, lastSuccessfulSyncAt: syncedAt, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged, outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null });
 }
 
 /** Clears only local guest-owned learning and pending report data. The account sync marker is retained for recovery. */

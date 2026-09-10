@@ -4,10 +4,12 @@ import test, { beforeEach } from "node:test";
 import { completeTrainingSession, createDefaultGoal, createLearningPlan, createTrainingSession, createTrainingSessionResult } from "../../domain";
 import { createLearningPlanSlotId } from "../../domain/learning/slotIdentity";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
+import { canonicalJsonV1ByteLength } from "../../infrastructure/identity/canonicalSerialization";
 import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import {
   accountDataRecordFingerprint,
+  accountDataRecordKey,
   applyRemoteAccountData,
   assertValidAccountDataRecords,
   buildAccountDataSnapshot,
@@ -16,6 +18,7 @@ import {
   getAccountSyncState,
   isDeletedAccountDataRecord,
   saveAccountSyncState,
+  splitAccountSyncBatches,
 } from "./accountDataRepository";
 import { bindGuestInstallationToAccount, provisionGuestInstallation } from "./guestInstallationRepository";
 import { clearActiveTrackId, saveActiveTrackId } from "./activeTrackRepository";
@@ -129,7 +132,7 @@ test("bound account outbox is deterministic and creates an explicit tombstone fo
   const first = await ensureAccountOutboxFromLocalDataset();
   assert.equal(first.outbox.length, 0);
   const acknowledged = await getAccountSyncState();
-  assert.equal(acknowledged.acknowledged["active_track:current"]?.fingerprint, accountDataRecordFingerprint({ recordId: "current", recordType: "active_track", state: { trackId }, trackId }));
+  assert.equal(acknowledged.acknowledged[accountDataRecordKey({ recordId: "current", recordType: "active_track", trackId })]?.fingerprint, accountDataRecordFingerprint({ recordId: "current", recordType: "active_track", state: { trackId }, trackId }));
   await clearActiveTrackId();
   const afterDeletion = await ensureAccountOutboxFromLocalDataset();
   assert.equal(afterDeletion.outbox.length, 1);
@@ -140,7 +143,46 @@ test("bound account outbox is deterministic and creates an explicit tombstone fo
   assert.equal(afterConfirmedDeletion.remoteAccountRevision, 2);
 });
 
-test("mutation IDs include the expected remote version so returning to a prior value is a new command", async () => {
+test("legacy acknowledged keys migrate to the full record identity without losing version", async () => {
+  await saveActiveTrackId(trackId);
+  const snapshot = await buildAccountDataSnapshot();
+  const active = snapshot.records[0]!;
+  await bindGuestInstallationToAccount(accountId);
+  const current = await getAccountSyncState();
+  saveAccountSyncState({
+    ...current,
+    accountId,
+    status: "synced",
+    acknowledged: Object.freeze({
+      "active_track:current": Object.freeze({ fingerprint: active.fingerprint, recordId: active.recordId, recordType: active.recordType, remoteVersion: 7, trackId: active.trackId }),
+    }),
+  });
+
+  const migrated = await getAccountSyncState();
+  const key = accountDataRecordKey(active);
+  assert.equal(migrated.acknowledged[key]?.remoteVersion, 7);
+  assert.equal(migrated.acknowledged["active_track:current"], undefined);
+  const afterMigration = await buildAccountDataSnapshot();
+  assert.equal(afterMigration.records[0]?.version, 7);
+});
+
+test("legacy durable plan keys migrate without changing the retry plan identity", async () => {
+  await bindSyncedAccount();
+  await saveActiveTrackId(trackId);
+  const pending = await ensureAccountOutboxFromLocalDataset();
+  const plan = pending.syncPlan!;
+  const legacyPlan = Object.freeze({
+    ...plan,
+    items: Object.freeze(plan.items.map((item) => Object.freeze({ ...item, recordKey: "active_track:current" }))),
+  });
+  saveAccountSyncState({ ...pending, syncPlan: legacyPlan });
+
+  const migrated = await getAccountSyncState();
+  assert.equal(migrated.syncPlan?.planId, plan.planId);
+  assert.equal(migrated.syncPlan?.items[0]?.recordKey, accountDataRecordKey(pending.outbox[0]!));
+});
+
+test("track-scoped ACK/version state does not leak the active record across tracks", async () => {
   await bindSyncedAccount();
   await saveActiveTrackId(trackId);
   const first = await ensureAccountOutboxFromLocalDataset();
@@ -149,16 +191,16 @@ test("mutation IDs include the expected remote version so returning to a prior v
 
   await saveActiveTrackId(alternateTrackId);
   const second = await ensureAccountOutboxFromLocalDataset();
+  assert.equal(second.outbox[0]!.expectedVersion, null);
   const secondId = second.outbox[0]!.mutationId;
-  assert.equal(second.outbox[0]!.expectedVersion, 1);
   await acknowledgeOutbox(second.outbox, 2);
 
   await saveActiveTrackId(trackId);
   const returned = await ensureAccountOutboxFromLocalDataset();
-  assert.equal(returned.outbox[0]!.expectedVersion, 2);
+  assert.equal(returned.outbox.length, 0);
+  assert.equal(returned.acknowledged[accountDataRecordKey({ recordId: "current", recordType: "active_track", trackId })]?.remoteVersion, 1);
+  assert.equal(returned.acknowledged[accountDataRecordKey({ recordId: "current", recordType: "active_track", trackId: alternateTrackId })]?.remoteVersion, 2);
   assert.notEqual(firstId, secondId);
-  assert.notEqual(firstId, returned.outbox[0]!.mutationId);
-  assert.notEqual(secondId, returned.outbox[0]!.mutationId);
 });
 
 test("pending mutation IDs stay stable across an uncertain retry", async () => {
@@ -172,6 +214,25 @@ test("pending mutation IDs stay stable across an uncertain retry", async () => {
   assert.equal(retry.outbox[0]!.mutationId, firstEntry.mutationId);
   assert.equal(retry.outbox[0]!.expectedVersion, firstEntry.expectedVersion);
   assert.deepEqual(retry.outbox[0]!.state, firstEntry.state);
+});
+
+test("a partially acknowledged plan keeps its identity and original revision across reload", async () => {
+  await bindSyncedAccount();
+  await saveActiveTrackId(trackId);
+  const planned = await ensureAccountOutboxFromLocalDataset();
+  const plan = planned.syncPlan!;
+  const acknowledgedItem = Object.freeze({ ...plan.items[0]!, status: "acked" as const });
+  saveAccountSyncState({
+    ...planned,
+    status: "offlinePending",
+    remoteAccountRevision: 1,
+    syncPlan: Object.freeze({ ...plan, items: Object.freeze([acknowledgedItem, ...plan.items.slice(1)]) }),
+  });
+
+  const reloaded = await ensureAccountOutboxFromLocalDataset();
+  assert.equal(reloaded.syncPlan?.planId, plan.planId);
+  assert.equal(reloaded.syncPlan?.expectedAccountRevision, plan.expectedAccountRevision);
+  assert.equal(reloaded.syncPlan?.items[0]?.status, "acked");
 });
 
 test("delete, recreate, and delete again use distinct version-bound tombstone IDs", async () => {
@@ -234,4 +295,52 @@ test("an offline or otherwise uncertain retry preserves an old pending mutation 
   const retry = await ensureAccountOutboxFromLocalDataset();
   assert.equal(retry.outbox[0]!.mutationId, uncertain.mutationId);
   assert.equal(retry.outbox[0]!.expectedVersion, uncertain.expectedVersion);
+});
+
+test("protocol-v3 splitter is deterministic and byte bounded", async () => {
+  await bindSyncedAccount();
+  await saveActiveTrackId(trackId);
+  const base = (await ensureAccountOutboxFromLocalDataset()).outbox[0]!;
+  const makeEntry = (index: number, stateSize: number) => {
+    const state = { trackId, payload: "x".repeat(stateSize) };
+    const record = { ...base, recordId: `record-${index}`, state, fingerprint: accountDataRecordFingerprint({ recordId: `record-${index}`, recordType: base.recordType, state, trackId }), mutationId: `mutation_${String(index).padStart(16, "0")}`, sequence: index + 1 } as const;
+    return record;
+  };
+  const entries = [makeEntry(0, 280_000), makeEntry(1, 280_000)];
+  const input = { entries, expectedAccountRevision: 4, sessionId: "plan_test", highWatermark: 2 } as const;
+  const batches = splitAccountSyncBatches(input);
+  assert.equal(batches.length, 2);
+  for (const batch of batches) {
+    const envelope = { schema: "canonical-json-v1", payload: { protocolVersion: 3, canonicalVersion: "canonical-json-v1", expectedAccountRevision: 4, deviceId: "00000000-0000-4000-8000-000000000000", sessionId: "plan_test", batchId: "plan_test:batch:999", planVersion: 3, highWatermark: 2, mutations: batch.map((entry) => ({ mutationId: entry.mutationId, kind: "node", recordType: entry.recordType, trackId: entry.trackId, targetId: entry.recordId, expectedVersion: entry.expectedVersion, fingerprint: entry.fingerprint, state: entry.state })) } };
+    assert.ok(canonicalJsonV1ByteLength(envelope) <= 512 * 1024);
+  }
+  assert.deepEqual(splitAccountSyncBatches({ ...input, entries: [...entries].reverse() }).map((batch) => batch.map((entry) => entry.mutationId)), batches.map((batch) => batch.map((entry) => entry.mutationId)));
+});
+
+test("protocol-v3 splitter rejects an individual record above the full envelope budget", async () => {
+  await bindSyncedAccount();
+  await saveActiveTrackId(trackId);
+  const base = (await ensureAccountOutboxFromLocalDataset()).outbox[0]!;
+  const state = { trackId, payload: "x".repeat(530_000) };
+  const oversized = { ...base, state, fingerprint: accountDataRecordFingerprint({ recordId: base.recordId, recordType: base.recordType, state, trackId }) };
+  assert.throws(() => splitAccountSyncBatches({ entries: [oversized] }), /account_sync_record_too_large/u);
+});
+
+test("protocol-v3 durable plan keeps an immutable payload snapshot across reload", async () => {
+  await bindSyncedAccount();
+  await saveActiveTrackId(trackId);
+  const planned = await ensureAccountOutboxFromLocalDataset();
+  const item = planned.syncPlan?.items[0];
+  assert.ok(item);
+  assert.notEqual(item.payload, planned.outbox[0]);
+  assert.equal(Object.isFrozen(item), true);
+  assert.equal(Object.isFrozen(item.payload), true);
+  assert.equal(Object.isFrozen(item.payload.state), true);
+  const payloadFingerprint = item.payload.fingerprint;
+  const reloaded = await getAccountSyncState();
+  assert.equal(reloaded.syncPlan?.items[0]?.payload.fingerprint, payloadFingerprint);
+  assert.equal(Object.isFrozen(reloaded.syncPlan?.items[0]?.payload.state), true);
+  const mutableView = reloaded.syncPlan!.items[0]!.payload.state as Record<string, unknown>;
+  assert.equal(Reflect.set(mutableView, "tampered", true), false);
+  assert.equal("tampered" in mutableView, false);
 });

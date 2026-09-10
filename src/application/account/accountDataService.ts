@@ -24,7 +24,10 @@ import {
   markGuestDiscardMaterializationPending,
   restoreGuestOwnedLocalDataBackup,
   saveAccountSyncState,
+  splitAccountSyncBatches,
   type AccountDataRecord,
+  type AccountOutboxEntry,
+  type AccountSyncPlanItem,
   type AccountDataSnapshot,
   type AccountSyncState,
 } from "../../storage/repositories/accountDataRepository";
@@ -63,6 +66,18 @@ export type AccountDeletionResult = Readonly<{ ok: true; proofId: string } | { o
 
 const nowIso = () => new Date().toISOString();
 
+function syncPlanItemAsOutboxEntry(item: AccountSyncPlanItem): AccountOutboxEntry {
+  return Object.freeze({
+    ...item.payload,
+    mutationId: item.mutationId,
+    expectedVersion: item.expectedVersion,
+    attemptCount: 0,
+    lastErrorCode: null,
+    status: "pending",
+    sequence: item.sequence,
+  });
+}
+
 const CLASSIFIABLE_ACCOUNT_DATA_FAILURE_CODES: readonly string[] = [
   "account_sync_state_invalid", "guest_installation_required", "account_binding_mismatch",
   "account_adoption_pending", "account_materialization_in_progress", "active_session_adoption_blocked",
@@ -70,6 +85,7 @@ const CLASSIFIABLE_ACCOUNT_DATA_FAILURE_CODES: readonly string[] = [
   "account_data_track_invalid", "account_data_session_invalid", "account_data_result_invalid",
   "account_data_attempt_invalid", "account_data_review_invalid",
   "account_data_goal_invalid", "account_data_plan_invalid", "account_data_goal_plan_invalid",
+  "account_sync_record_too_large", "account_sync_group_too_large",
   "account_materialization_verification_failed",
 ];
 
@@ -656,15 +672,42 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
     state = await getAccountSyncState();
     let response: SyncResponseDto | null = null;
     if (state.outbox.length > 0) {
-      response = await api.syncProgress({
-        protocolVersion: 2,
-        expectedAccountRevision: state.remoteAccountRevision,
-        deviceId: (await getGuestInstallation())?.installationId ?? null,
-        mutations: state.outbox.map((entry) => ({ mutationId: entry.mutationId, kind: entry.recordType === "training_attempt" || entry.recordType === "review_queue_entry" ? "item" as const : "node" as const, recordType: entry.recordType, trackId: entry.trackId, targetId: entry.recordId, expectedVersion: entry.expectedVersion, fingerprint: entry.fingerprint, state: entry.state })),
-      });
-    }
-    if (response) {
-      state = saveAccountSyncState({ ...await getAccountSyncState(), remoteAccountRevision: response.accountRevision });
+      const plan = state.syncPlan;
+      if (!plan) throw new AccountDataFailure("account_sync_state_invalid");
+      const planEntries = plan.items.map(syncPlanItemAsOutboxEntry);
+      const batches = splitAccountSyncBatches({ entries: planEntries, expectedAccountRevision: state.remoteAccountRevision, sessionId: plan.planId, highWatermark: plan.highWatermark });
+      const planItemsByMutationId = new Map(plan.items.map((item) => [item.mutationId, item]));
+      const installation = await getGuestInstallation();
+      if (!installation) throw new AccountDataFailure("guest_installation_required");
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex += 1) {
+        const batch = batches[batchIndex]!;
+        const batchId = `${plan.planId}:batch:${batchIndex}`;
+        // A successful response and the updated remote revision are persisted
+        // together. On a later retry, do not replay an already acknowledged
+        // batch with the newer revision: the server's durable batch marker is
+        // bound to the original request revision and must remain untouched.
+        if (batch.every((entry) => planItemsByMutationId.get(entry.mutationId)?.status === "acked")) continue;
+        const current = await getAccountSyncState();
+        if (current.syncPlan?.planId !== plan.planId) throw new AccountDataFailure("account_sync_state_invalid");
+        response = await api.syncProgress({
+          protocolVersion: 3,
+          canonicalVersion: "canonical-json-v1",
+          expectedAccountRevision: current.remoteAccountRevision,
+          deviceId: installation.installationId,
+          sessionId: plan.planId,
+          batchId,
+          planVersion: 3,
+          highWatermark: plan.highWatermark,
+          mutations: batch.map((entry) => ({ mutationId: entry.mutationId, kind: entry.recordType === "training_attempt" || entry.recordType === "review_queue_entry" ? "item" as const : "node" as const, recordType: entry.recordType, trackId: entry.trackId, targetId: entry.recordId, expectedVersion: entry.expectedVersion, fingerprint: entry.fingerprint, state: entry.state })),
+        });
+        if (response.conflicts.length > 0) throw new PatternlyApiClientError("server_error", 409, response.conflicts[0]?.code ?? "version_conflict");
+        const currentAfterUpload = await getAccountSyncState();
+        const acknowledgedIds = new Set([...response.applied.map((record) => record.lastMutationId), ...response.duplicates]);
+        const nextPlan = currentAfterUpload.syncPlan && currentAfterUpload.syncPlan.planId === plan.planId
+          ? { ...currentAfterUpload.syncPlan, items: Object.freeze(currentAfterUpload.syncPlan.items.map((item) => acknowledgedIds.has(item.mutationId) ? Object.freeze({ ...item, status: "acked" as const }) : item)) }
+          : currentAfterUpload.syncPlan;
+        state = saveAccountSyncState({ ...currentAfterUpload, remoteAccountRevision: response.accountRevision, syncPlan: nextPlan });
+      }
     }
     const materializationGuard = await readBoundSyncGuard(accountId);
     if (materializationGuard) return preservePendingSyncGuard(accountId, materializationGuard);
