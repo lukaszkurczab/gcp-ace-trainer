@@ -1,0 +1,78 @@
+appId: com.lkurczab.patternly
+name: ODK-E2E-101 fixture setup
+tags:
+  - e2e
+  - goal
+---
+- launchApp:
+    clearState: true
+- openLink: ${PATTERNLY_DEV_CLIENT_URL}
+- runFlow:
+    when:
+      visible: "Otwórz"
+    commands:
+      - tapOn:
+          text: "Otwórz"
+          retryTapIfNoChange: true
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn:
+          text: "Open"
+          retryTapIfNoChange: true
+- runFlow:
+    when:
+      visible: "Remove unavailable data"
+    commands:
+      - tapOn: "Remove unavailable data"
+      - extendedWaitUntil:
+          visible: "Remove data from device"
+          timeout: 10000
+      - tapOn: "Remove data from device"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:audit-command-listener:ready"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "account-guest"
+    direction: DOWN
+    centerElement: true
+    timeout: 30000
+- tapOn:
+    id: "account-guest"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:select-track:backend-system-design-interview"
+- tapOn:
+    point: "50%,90%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:guest-goal-onboarding:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:guest-goal-onboarding:set-goal"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:goal:root"
+    timeout: 30000
+- tapOn:
+    point: "50%,90%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:accept"
+    timeout: 30000
+- tapOn:
+    id: "patternly:learning-plan:accept"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:persisted"
+    timeout: 30000
+- tapOn: "Go back"
+- extendedWaitUntil:
+    visible: "Active"
+    timeout: 30000

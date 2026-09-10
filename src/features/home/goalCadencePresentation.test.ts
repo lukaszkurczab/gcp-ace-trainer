@@ -81,6 +81,14 @@ test("active goal summary only exposes Save while editing", () => {
   assert.match(screen, /onTogglePause=\{\(\) => \{ void togglePause\(\); \}\}/);
 });
 
+test("goal status and selected day labels use onPrimary on filled backgrounds", () => {
+  assert.match(screen, /statusBadge: \{ backgroundColor: palette\.success,/);
+  assert.match(screen, /pausedBadge: \{ backgroundColor: palette\.warning \}/);
+  assert.match(screen, /statusBadgeLabel: \{ color: palette\.onPrimary,/);
+  assert.match(screen, /dayButtonSelected: \{ backgroundColor: palette\.success,/);
+  assert.match(screen, /dayLabelSelected: \{ color: palette\.onPrimary \}/);
+});
+
 test("invalid target dates stay field-scoped, block persistence, and clear only on date edits", () => {
   const saveStart = screen.indexOf("async function save()");
   const saveEnd = screen.indexOf("async function createAndOpenPlan", saveStart);

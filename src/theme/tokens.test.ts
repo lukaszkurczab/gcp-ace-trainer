@@ -31,3 +31,12 @@ test("onDanger keeps destructive button text above normal-text contrast in both 
   assert.ok(contrastRatio(colors.light.onDanger, colors.light.danger) >= minimumNormalTextContrast);
   assert.ok(contrastRatio(colors.dark.onDanger, colors.dark.danger) >= minimumNormalTextContrast);
 });
+
+test("onPrimary keeps goal status and selected day labels above normal-text contrast in both themes", () => {
+  const minimumNormalTextContrast = 4.5;
+
+  assert.ok(contrastRatio(colors.light.onPrimary, colors.light.success) >= minimumNormalTextContrast, "light onPrimary on success");
+  assert.ok(contrastRatio(colors.light.onPrimary, colors.light.warning) >= minimumNormalTextContrast, "light onPrimary on warning");
+  assert.ok(contrastRatio(colors.dark.onPrimary, colors.dark.success) >= minimumNormalTextContrast, "dark onPrimary on success");
+  assert.ok(contrastRatio(colors.dark.onPrimary, colors.dark.warning) >= minimumNormalTextContrast, "dark onPrimary on warning");
+});
