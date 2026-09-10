@@ -58,7 +58,7 @@ Provider/release gate’y tworzą osobną kolejkę blokującą wydanie: `ODK-E2E
 
 Właściciel zatwierdził realizację wszystkich pozycji ze statusem `OPEN`. Zatwierdzenie nie zmienia ich statusu: każda pozycja pozostaje `OPEN` do czasu wykonania poprawki i osobnego retestu w przejściu E2E.
 
-Aktualny zakres obejmuje wyłącznie pozycje widoczne w tabeli: zadania produktowe `ODK-E2E-035`–`ODK-E2E-056` obecne w rejestrze, zadania następcze `ODK-E2E-090`–`ODK-E2E-114` oraz provider/release gate’y `ODK-E2E-082`–`ODK-E2E-088` i `ODK-E2E-099`. Zamknięte zadania nie wracają do aktywnej kolejki bez konkretnego dowodu regresji; ich raporty i historia Git pozostają źródłem dowodów.
+Aktualny zakres obejmuje wyłącznie identyfikatory widoczne w tabeli i wymienione w sekcji „Kolejność realizacji”. Zamknięte zadania nie wracają do aktywnej kolejki bez konkretnego dowodu regresji; ich raporty i historia Git pozostają źródłem dowodów.
 
 -   Dopasowanie do celu: **0,98** — osobny plik dokumentacyjny nie zmienia runtime ani testów.
 -   Prostota: **0,99** — jeden rejestr i jedna tabela.
