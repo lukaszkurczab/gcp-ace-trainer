@@ -40,9 +40,15 @@ test("remote artifacts require their public Firebase configuration before prebui
   );
 });
 
-test("remote artifacts require the public RevenueCat Apple SDK key before prebuild", () => {
+test("only iOS remote artifacts require the public RevenueCat Apple SDK key before prebuild", () => {
+  const environment = { ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "", EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" };
+  assert.equal(createExpoConfig({ ...environment, EAS_BUILD_PLATFORM: "android" }).expo.extra.patternlyRuntime, "sandbox");
   assert.throws(
-    () => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "" }),
+    () => createExpoConfig({ ...environment, EAS_BUILD_PLATFORM: "ios" }),
+    /requires EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY/,
+  );
+  assert.throws(
+    () => createExpoConfig(environment),
     /requires EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY/,
   );
 });

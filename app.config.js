@@ -1,5 +1,6 @@
 const RUNTIME_MODES = Object.freeze(["sandbox", "smoke", "release"]);
 const PUBLIC_ENVIRONMENT_KEY = "EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT";
+const REVENUECAT_IOS_API_KEY = "EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY";
 const FIREBASE_FILE_KEYS = Object.freeze({
   android: "GOOGLE_SERVICES_JSON",
   ios: "GOOGLE_SERVICE_INFO_PLIST",
@@ -12,7 +13,6 @@ const FIREBASE_PUBLIC_KEYS = Object.freeze([
   "EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID",
   "EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID",
   "EXPO_PUBLIC_PATTERNLY_GOOGLE_WEB_CLIENT_ID",
-  "EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY",
 ]);
 
 function required(environment, key) {
@@ -60,6 +60,7 @@ function assertRuntimeEnvironment(environment, mode) {
   readConfiguredPublicEnvironment(environment, mode);
   if (mode !== "smoke") {
     for (const key of FIREBASE_PUBLIC_KEYS) required(environment, key);
+    if (environment.EAS_BUILD_PLATFORM !== "android") required(environment, REVENUECAT_IOS_API_KEY);
   }
   nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.android, mode);
   nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.ios, mode);
