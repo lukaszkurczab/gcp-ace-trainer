@@ -4,11 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       application_commit:
-        description: Exact application commit SHA to evaluate
+        description: Exact patternly application commit SHA to evaluate
+        required: true
+        type: string
+      backend_commit:
+        description: Exact patternly-backend commit SHA to evaluate
         required: true
         type: string
       content_commit:
-        description: Exact content repository commit SHA to evaluate
+        description: Exact patternly-content commit SHA to evaluate
+        required: true
+        type: string
+      web_commit:
+        description: Exact patternly-web commit SHA to evaluate
         required: true
         type: string
 
@@ -20,66 +28,392 @@ jobs:
     name: Exact-SHA launch gate
     runs-on: ubuntu-latest
     steps:
+      - name: Validate exact commit inputs
+        id: validate-inputs
+        env:
+          APPLICATION_COMMIT: ${{ inputs.application_commit }}
+          BACKEND_COMMIT: ${{ inputs.backend_commit }}
+          CONTENT_COMMIT: ${{ inputs.content_commit }}
+          WEB_COMMIT: ${{ inputs.web_commit }}
+        run: |
+          set -euo pipefail
+          [[ "$APPLICATION_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$BACKEND_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CONTENT_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$WEB_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+
       - name: Checkout application
         uses: actions/checkout@v4
         with:
+          repository: lukaszkurczab/gcp-ace-trainer
           ref: ${{ inputs.application_commit }}
           path: app
           fetch-depth: 0
-      - name: Checkout content evidence repository
+
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-backend
+          ref: ${{ inputs.backend_commit }}
+          path: patternly-backend
+          fetch-depth: 0
+
+      - name: Checkout content
         uses: actions/checkout@v4
         with:
           repository: lukaszkurczab/patternly-content
           ref: ${{ inputs.content_commit }}
           path: patternly-content
           fetch-depth: 0
-      - name: Verify exact checkout SHAs
+
+      - name: Checkout web
+        uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-web
+          ref: ${{ inputs.web_commit }}
+          path: patternly-web
+          fetch-depth: 0
+
+      - name: Verify exact checkout SHAs and clean worktrees
+        id: checkout-integrity
         env:
           APPLICATION_COMMIT: ${{ inputs.application_commit }}
+          BACKEND_COMMIT: ${{ inputs.backend_commit }}
           CONTENT_COMMIT: ${{ inputs.content_commit }}
+          WEB_COMMIT: ${{ inputs.web_commit }}
         run: |
           set -euo pipefail
-          [[ "$APPLICATION_COMMIT" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$CONTENT_COMMIT" =~ ^[0-9a-f]{40}$ ]]
           test "$(git -C app rev-parse HEAD)" = "$APPLICATION_COMMIT"
+          test "$(git -C patternly-backend rev-parse HEAD)" = "$BACKEND_COMMIT"
           test "$(git -C patternly-content rev-parse HEAD)" = "$CONTENT_COMMIT"
+          test "$(git -C patternly-web rev-parse HEAD)" = "$WEB_COMMIT"
+          test -z "$(git -C app status --porcelain --untracked-files=all)"
+          test -z "$(git -C patternly-backend status --porcelain --untracked-files=all)"
+          test -z "$(git -C patternly-content status --porcelain --untracked-files=all)"
+          test -z "$(git -C patternly-web status --porcelain --untracked-files=all)"
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22.13.1
           cache: npm
-          cache-dependency-path: app/package-lock.json
-      - name: Install application dependencies
-        working-directory: app
-        run: npm ci
-      - name: Install content dependencies
-        working-directory: patternly-content
-        run: npm ci
-      - name: Validate exact content checkout
-        working-directory: patternly-content
+          cache-dependency-path: |
+            app/package-lock.json
+            patternly-backend/package-lock.json
+            patternly-content/package-lock.json
+            patternly-web/package-lock.json
+
+      - name: Set up Java 21 for backend emulator gate
+        id: setup-java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install Firebase CLI for backend emulator gate
+        id: install-firebase
         run: |
           set -euo pipefail
-          npm test
-          npm run authoring:validate
-          npm run audit:aws-workbook-source
-      - name: Run enforced release gate
-        id: release-gate
+          npm install --global firebase-tools@15.19.0
+          firebase --version
+
+      - name: Install application dependencies
+        id: install-application
+        working-directory: app
+        run: npm ci
+
+      - name: Install backend dependencies
+        id: install-backend
+        working-directory: patternly-backend
+        run: npm ci
+
+      - name: Install content dependencies
+        id: install-content
+        working-directory: patternly-content
+        run: npm ci
+
+      - name: Install web dependencies
+        id: install-web
+        working-directory: patternly-web
+        run: npm ci
+
+      - name: Install pinned Playwright Chromium for web gates
+        id: install-web-browser
+        working-directory: patternly-web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run application owning gate
+        id: application-gate
+        continue-on-error: true
+        working-directory: app
+        run: npm run qa:static
+
+      - name: Run backend owning gate
+        id: backend-gate
+        continue-on-error: true
+        working-directory: patternly-backend
+        env:
+          PATTERNLY_FRONTEND_ROOT: ${{ github.workspace }}/app
+          PATTERNLY_WEB_ROOT: ${{ github.workspace }}/patternly-web
+        run: npm run ci
+
+      - name: Run content test gate
+        id: content-test-gate
+        continue-on-error: true
+        working-directory: patternly-content
+        run: npm test
+
+      - name: Run content authoring gate
+        id: content-authoring-gate
+        continue-on-error: true
+        working-directory: patternly-content
+        run: npm run authoring:validate
+
+      - name: Run content AWS source gate
+        id: content-aws-gate
+        continue-on-error: true
+        working-directory: patternly-content
+        run: npm run audit:aws-workbook-source
+
+      - name: Run web local verification gate
+        id: web-verify-gate
+        continue-on-error: true
+        working-directory: patternly-web
+        run: |
+          set -euo pipefail
+          local_url="http://127.0.0.1:4173"
+          server_log="$(mktemp)"
+          server_pid=""
+          cleanup() {
+            if [[ -n "$server_pid" ]]; then
+              kill "$server_pid" 2>/dev/null || true
+              wait "$server_pid" 2>/dev/null || true
+            fi
+            rm -f "$server_log"
+          }
+          trap cleanup EXIT
+          npm run dev -- --host 127.0.0.1 --port 4173 --strictPort >"$server_log" 2>&1 &
+          server_pid=$!
+          ready=0
+          for attempt in {1..60}; do
+            if curl --fail --silent --show-error "$local_url/" >/dev/null; then
+              ready=1
+              break
+            fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              cat "$server_log"
+              exit 1
+            fi
+            sleep 1
+          done
+          if [[ "$ready" != 1 ]]; then
+            cat "$server_log"
+            exit 1
+          fi
+          export PATTERNLY_LOCAL_URL="$local_url"
+          npm run verify:local
+
+      - name: Run web admin behavior gate
+        id: web-admin-behavior-gate
+        continue-on-error: true
+        working-directory: patternly-web
+        run: npm run test:admin-behavior
+
+      - name: Run web admin config gate
+        id: web-admin-config-gate
+        continue-on-error: true
+        working-directory: patternly-web
+        run: npm run test:admin-config
+
+      - name: Verify exact HEADs and clean worktrees after owning gates
+        id: post-gate-integrity
+        if: always()
+        continue-on-error: true
+        env:
+          APPLICATION_COMMIT: ${{ inputs.application_commit }}
+          BACKEND_COMMIT: ${{ inputs.backend_commit }}
+          CONTENT_COMMIT: ${{ inputs.content_commit }}
+          WEB_COMMIT: ${{ inputs.web_commit }}
+        run: |
+          set -euo pipefail
+          test "$(git -C app rev-parse HEAD)" = "$APPLICATION_COMMIT"
+          test "$(git -C patternly-backend rev-parse HEAD)" = "$BACKEND_COMMIT"
+          test "$(git -C patternly-content rev-parse HEAD)" = "$CONTENT_COMMIT"
+          test "$(git -C patternly-web rev-parse HEAD)" = "$WEB_COMMIT"
+          test -z "$(git -C app status --porcelain --untracked-files=all)"
+          test -z "$(git -C patternly-backend status --porcelain --untracked-files=all)"
+          test -z "$(git -C patternly-content status --porcelain --untracked-files=all)"
+          test -z "$(git -C patternly-web status --porcelain --untracked-files=all)"
+
+      - name: Create candidate release manifest
+        id: release-manifest-create
+        if: always()
+        continue-on-error: true
         working-directory: app
         env:
-          EXPECTED_APPLICATION_COMMIT: ${{ inputs.application_commit }}
+          APPLICATION_ROOT: ${{ github.workspace }}/app
+          BACKEND_ROOT: ${{ github.workspace }}/patternly-backend
+          CONTENT_ROOT: ${{ github.workspace }}/patternly-content
+          WEB_ROOT: ${{ github.workspace }}/patternly-web
+          RELEASE_MANIFEST_PATH: ${{ runner.temp }}/launch-readiness-manifest.json
+        run: |
+          set -euo pipefail
+          node scripts/releaseManifest.mjs create \
+            --application-root "$APPLICATION_ROOT" \
+            --backend-root "$BACKEND_ROOT" \
+            --content-root "$CONTENT_ROOT" \
+            --web-root "$WEB_ROOT" \
+            --output "$RELEASE_MANIFEST_PATH"
+
+      - name: Validate candidate release manifest JSON
+        id: release-manifest-json
+        if: always()
+        continue-on-error: true
+        env:
+          RELEASE_MANIFEST_PATH: ${{ runner.temp }}/launch-readiness-manifest.json
+        run: |
+          set -euo pipefail
+          node -e 'const fs = require("node:fs"); JSON.parse(fs.readFileSync(process.env.RELEASE_MANIFEST_PATH, "utf8"));'
+
+      - name: Verify candidate release manifest
+        id: release-manifest-verify
+        if: always()
+        continue-on-error: true
+        working-directory: app
+        env:
+          APPLICATION_ROOT: ${{ github.workspace }}/app
+          BACKEND_ROOT: ${{ github.workspace }}/patternly-backend
+          CONTENT_ROOT: ${{ github.workspace }}/patternly-content
+          WEB_ROOT: ${{ github.workspace }}/patternly-web
+          RELEASE_MANIFEST_PATH: ${{ runner.temp }}/launch-readiness-manifest.json
+        run: |
+          set -euo pipefail
+          node scripts/releaseManifest.mjs verify \
+            --application-root "$APPLICATION_ROOT" \
+            --backend-root "$BACKEND_ROOT" \
+            --content-root "$CONTENT_ROOT" \
+            --web-root "$WEB_ROOT" \
+            --manifest "$RELEASE_MANIFEST_PATH"
+
+      - name: Run enforced release gate with verified manifest
+        id: release-gate
+        if: always()
+        continue-on-error: true
+        working-directory: app
+        env:
+          APPLICATION_ROOT: ${{ github.workspace }}/app
+          BACKEND_ROOT: ${{ github.workspace }}/patternly-backend
+          CONTENT_ROOT: ${{ github.workspace }}/patternly-content
+          WEB_ROOT: ${{ github.workspace }}/patternly-web
+          RELEASE_MANIFEST_PATH: ${{ runner.temp }}/launch-readiness-manifest.json
           RELEASE_REPORT_PATH: ${{ runner.temp }}/launch-readiness-report.json
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_APPLICATION_COMMIT"
           set +e
-          node scripts/releaseGate.mjs --enforce --output "$RELEASE_REPORT_PATH"
-          gate_status=$?
+          node scripts/releaseGate.mjs \
+            --enforce \
+            --manifest "$RELEASE_MANIFEST_PATH" \
+            --application-root "$APPLICATION_ROOT" \
+            --backend-root "$BACKEND_ROOT" \
+            --content-root "$CONTENT_ROOT" \
+            --web-root "$WEB_ROOT" \
+            --output "$RELEASE_REPORT_PATH"
+          release_status=$?
           set -e
+          test -s "$RELEASE_REPORT_PATH"
           node -e 'const fs = require("node:fs"); JSON.parse(fs.readFileSync(process.env.RELEASE_REPORT_PATH, "utf8"));'
-          exit "$gate_status"
-      - name: Upload launch readiness report
+          exit "$release_status"
+
+      - name: Validate launch readiness report JSON
+        id: release-report-json
+        if: always()
+        continue-on-error: true
+        env:
+          RELEASE_REPORT_PATH: ${{ runner.temp }}/launch-readiness-report.json
+        run: |
+          set -euo pipefail
+          node -e 'const fs = require("node:fs"); JSON.parse(fs.readFileSync(process.env.RELEASE_REPORT_PATH, "utf8"));'
+
+      - name: Upload candidate release manifest
+        id: upload-release-manifest
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: launch-readiness-report-${{ inputs.application_commit }}
+          name: launch-readiness-manifest-${{ inputs.application_commit }}-${{ inputs.backend_commit }}-${{ inputs.content_commit }}-${{ inputs.web_commit }}
+          path: ${{ runner.temp }}/launch-readiness-manifest.json
+          if-no-files-found: error
+
+      - name: Upload launch readiness report
+        id: upload-release-report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: launch-readiness-report-${{ inputs.application_commit }}-${{ inputs.backend_commit }}-${{ inputs.content_commit }}-${{ inputs.web_commit }}
           path: ${{ runner.temp }}/launch-readiness-report.json
           if-no-files-found: error
+
+      - name: Enforce complete launch readiness result
+        id: final-result
+        if: always()
+        env:
+          INPUTS_OUTCOME: ${{ steps.validate-inputs.outcome }}
+          CHECKOUT_OUTCOME: ${{ steps.checkout-integrity.outcome }}
+          JAVA_OUTCOME: ${{ steps.setup-java.outcome }}
+          FIREBASE_OUTCOME: ${{ steps.install-firebase.outcome }}
+          INSTALL_APPLICATION_OUTCOME: ${{ steps.install-application.outcome }}
+          INSTALL_BACKEND_OUTCOME: ${{ steps.install-backend.outcome }}
+          INSTALL_CONTENT_OUTCOME: ${{ steps.install-content.outcome }}
+          INSTALL_WEB_OUTCOME: ${{ steps.install-web.outcome }}
+          INSTALL_WEB_BROWSER_OUTCOME: ${{ steps.install-web-browser.outcome }}
+          APPLICATION_GATE_OUTCOME: ${{ steps.application-gate.outcome }}
+          BACKEND_GATE_OUTCOME: ${{ steps.backend-gate.outcome }}
+          CONTENT_TEST_GATE_OUTCOME: ${{ steps.content-test-gate.outcome }}
+          CONTENT_AUTHORING_GATE_OUTCOME: ${{ steps.content-authoring-gate.outcome }}
+          CONTENT_AWS_GATE_OUTCOME: ${{ steps.content-aws-gate.outcome }}
+          WEB_VERIFY_GATE_OUTCOME: ${{ steps.web-verify-gate.outcome }}
+          WEB_ADMIN_BEHAVIOR_GATE_OUTCOME: ${{ steps.web-admin-behavior-gate.outcome }}
+          WEB_ADMIN_CONFIG_GATE_OUTCOME: ${{ steps.web-admin-config-gate.outcome }}
+          POST_GATE_INTEGRITY_OUTCOME: ${{ steps.post-gate-integrity.outcome }}
+          MANIFEST_CREATE_OUTCOME: ${{ steps.release-manifest-create.outcome }}
+          MANIFEST_JSON_OUTCOME: ${{ steps.release-manifest-json.outcome }}
+          MANIFEST_VERIFY_OUTCOME: ${{ steps.release-manifest-verify.outcome }}
+          RELEASE_GATE_OUTCOME: ${{ steps.release-gate.outcome }}
+          REPORT_JSON_OUTCOME: ${{ steps.release-report-json.outcome }}
+          UPLOAD_MANIFEST_OUTCOME: ${{ steps.upload-release-manifest.outcome }}
+          UPLOAD_REPORT_OUTCOME: ${{ steps.upload-release-report.outcome }}
+        run: |
+          set -euo pipefail
+          failed=0
+          for check in \
+            "inputs=$INPUTS_OUTCOME" \
+            "checkout=$CHECKOUT_OUTCOME" \
+            "java=$JAVA_OUTCOME" \
+            "firebase=$FIREBASE_OUTCOME" \
+            "install-application=$INSTALL_APPLICATION_OUTCOME" \
+            "install-backend=$INSTALL_BACKEND_OUTCOME" \
+            "install-content=$INSTALL_CONTENT_OUTCOME" \
+            "install-web=$INSTALL_WEB_OUTCOME" \
+            "install-web-browser=$INSTALL_WEB_BROWSER_OUTCOME" \
+            "application-gate=$APPLICATION_GATE_OUTCOME" \
+            "backend-gate=$BACKEND_GATE_OUTCOME" \
+            "content-test-gate=$CONTENT_TEST_GATE_OUTCOME" \
+            "content-authoring-gate=$CONTENT_AUTHORING_GATE_OUTCOME" \
+            "content-aws-gate=$CONTENT_AWS_GATE_OUTCOME" \
+            "web-verify-gate=$WEB_VERIFY_GATE_OUTCOME" \
+            "web-admin-behavior-gate=$WEB_ADMIN_BEHAVIOR_GATE_OUTCOME" \
+            "web-admin-config-gate=$WEB_ADMIN_CONFIG_GATE_OUTCOME" \
+            "post-gate-integrity=$POST_GATE_INTEGRITY_OUTCOME" \
+            "manifest-create=$MANIFEST_CREATE_OUTCOME" \
+            "manifest-json=$MANIFEST_JSON_OUTCOME" \
+            "manifest-verify=$MANIFEST_VERIFY_OUTCOME" \
+            "release-gate=$RELEASE_GATE_OUTCOME" \
+            "report-json=$REPORT_JSON_OUTCOME" \
+            "upload-manifest=$UPLOAD_MANIFEST_OUTCOME" \
+            "upload-report=$UPLOAD_REPORT_OUTCOME"; do
+            name=${check%%=*}
+            outcome=${check#*=}
+            if [[ "$outcome" != "success" ]]; then
+              echo "${name} outcome=${outcome}"
+              failed=1
+            fi
+          done
+          exit "$failed"
