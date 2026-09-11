@@ -66,19 +66,20 @@ jobs:
         working-directory: app
         env:
           EXPECTED_APPLICATION_COMMIT: ${{ inputs.application_commit }}
+          RELEASE_REPORT_PATH: ${{ runner.temp }}/launch-readiness-report.json
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_APPLICATION_COMMIT"
           set +e
-          node scripts/releaseGate.mjs --enforce > launch-readiness-report.json
+          node scripts/releaseGate.mjs --enforce --output "$RELEASE_REPORT_PATH"
           gate_status=$?
           set -e
-          node -e 'const fs = require("node:fs"); JSON.parse(fs.readFileSync("launch-readiness-report.json", "utf8"));'
+          node -e 'const fs = require("node:fs"); JSON.parse(fs.readFileSync(process.env.RELEASE_REPORT_PATH, "utf8"));'
           exit "$gate_status"
       - name: Upload launch readiness report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: launch-readiness-report-${{ inputs.application_commit }}
-          path: app/launch-readiness-report.json
+          path: ${{ runner.temp }}/launch-readiness-report.json
           if-no-files-found: error

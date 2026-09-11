@@ -1,14 +1,43 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, lstatSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { basename, dirname, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
-const applicationRoot = resolve(process.env.PATTERNLY_APPLICATION_ROOT ?? root);
-const contentRoot = resolve(process.env.PATTERNLY_CONTENT_ROOT ?? "../patternly-content");
+const applicationRoot = realpathSync(resolve(process.env.PATTERNLY_APPLICATION_ROOT ?? root));
+const contentRoot = realpathSync(resolve(process.env.PATTERNLY_CONTENT_ROOT ?? "../patternly-content"));
 const evidenceRoot = resolve(process.env.PATTERNLY_RELEASE_EVIDENCE_ROOT ?? "evidence/release");
 const releaseLockPath = resolve(process.env.PATTERNLY_RELEASE_LOCK_PATH ?? "integration/contracts/content-release/release.lock.json");
-const releaseGate = process.argv.includes("--enforce");
+let releaseGate = false;
+let outputPath = null;
+for (let index = 2; index < process.argv.length; index += 1) {
+  const argument = process.argv[index];
+  if (argument === "--enforce" && !releaseGate) releaseGate = true;
+  else if (argument === "--output" && outputPath === null) {
+    const value = process.argv[index + 1];
+    if (!value || value.startsWith("--")) throw new Error("--output requires a path");
+    outputPath = resolve(value);
+    index += 1;
+  } else throw new Error(`Unknown or duplicate argument: ${argument}`);
+}
+
+function isWithin(parent, child) {
+  const relative = child.slice(parent.length);
+  return child === parent || (child.startsWith(parent) && (relative.startsWith("/") || relative.startsWith("\\")));
+}
+
+if (outputPath) {
+  const outputParent = realpathSync(dirname(outputPath));
+  try {
+    if (lstatSync(outputPath).isSymbolicLink()) throw new Error("--output final path must not be a symbolic link");
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  const physicalOutputPath = existsSync(outputPath) ? realpathSync(outputPath) : resolve(outputParent, basename(outputPath));
+  if (isWithin(applicationRoot, physicalOutputPath) || isWithin(contentRoot, physicalOutputPath)) throw new Error("--output must be outside the application and content worktrees");
+  outputPath = physicalOutputPath;
+}
 
 // Design authority is an owner decision. Figma connector/session identifiers are
 // ephemeral and must never become release evidence or a launch blocker.
@@ -71,16 +100,6 @@ function repositoryStatus(repositoryRoot) {
 
 function contentRepositoryStatus() {
   return repositoryStatus(contentRoot);
-}
-
-function contentSourceCommitStatus(sourceCommit) {
-  if (typeof sourceCommit !== "string" || !/^[a-f0-9]{40}$/.test(sourceCommit)) return { status: "invalid" };
-  try {
-    execFileSync("git", ["-C", contentRoot, "cat-file", "-e", `${sourceCommit}^{commit}`], { stdio: "ignore" });
-    return { status: "reachable" };
-  } catch (error) {
-    return { status: "unreachable", error: readableError(error) };
-  }
 }
 
 function inspectReleaseLock() {
@@ -171,39 +190,44 @@ if (contentReleaseLock.status === "valid" && lockedTrackIds.length !== 9) blocke
 const launchTrackIds = contentReleaseLock.status === "valid" && lockedTrackIds.length === 9 ? lockedTrackIds : [];
 
 let readiness = null;
+let candidate = null;
+const readinessPath = resolve(contentRoot, "evidence/readiness/candidate-readiness.json");
 try {
-  readiness = readJson(resolve(contentRoot, "evidence/readiness/eight-track-launch-readiness.json"));
-  if (readiness?.schemaVersion !== "eight-track-launch-readiness-v1" || !Array.isArray(readiness.launchTrackIds) || !Array.isArray(readiness.tracks)) {
-    blockers.push({ kind: "invalid_content_readiness_report" });
-    readiness = null;
-  }
+  const candidateContract = await import(pathToFileURL(resolve(contentRoot, "scripts/review/candidate-manifest.mjs")));
+  const approvalContract = await import(pathToFileURL(resolve(contentRoot, "scripts/review/content-approval.mjs")));
+  candidate = await candidateContract.loadCandidateManifest(contentRoot);
+  const approval = await approvalContract.loadHumanApprovalManifest({ root: contentRoot, candidate, trackIds: candidateContract.CANDIDATE_TRACK_IDS });
+  readiness = readJson(readinessPath);
+  candidateContract.validateCandidateReadiness(readiness, { candidate, approval });
 } catch (error) {
-  blockers.push({ kind: "unreadable_content_readiness_report", error: readableError(error) });
+  blockers.push({ kind: existsSync(readinessPath) ? "invalid_content_readiness_report" : "unreadable_content_readiness_report", error: readableError(error) });
+  candidate = null;
+  readiness = null;
 }
 
 const contentRepository = { ...contentRepositoryStatus(), headCommit: repositoryHeadCommit(contentRoot) };
 if (contentRepository.status === "unavailable") blockers.push({ kind: "content_readiness_repository_unavailable", error: contentRepository.error });
 if (contentRepository.status === "dirty") blockers.push({ kind: "content_readiness_worktree_dirty", changedPathCount: contentRepository.changedPathCount });
-const contentSourceCommit = contentSourceCommitStatus(readiness?.sourceCommit);
-if (contentSourceCommit.status === "invalid" || contentSourceCommit.status === "unreachable") blockers.push({ kind: "content_readiness_source_commit_unavailable", sourceCommit: readiness?.sourceCommit ?? null, actual: contentSourceCommit.status });
 
 if (readiness) {
-  const reportScope = uniqueSorted(readiness.launchTrackIds);
+  const reportScope = readiness.trackIds;
   if (JSON.stringify(reportScope) !== JSON.stringify(launchTrackIds)) blockers.push({ kind: "content_readiness_scope_mismatch", expected: launchTrackIds, actual: reportScope });
   const byTrackId = new Map(readiness.tracks.map((track) => [track?.trackId, track]));
+  const lockByTrackId = new Map((contentReleaseLock.status === "valid" ? readJson(releaseLockPath).artifacts : []).map((artifact) => [artifact.trackId, artifact]));
   for (const trackId of launchTrackIds) {
     const track = byTrackId.get(trackId);
     if (!track) {
       blockers.push({ kind: "missing_track_readiness", trackId });
       continue;
     }
-    if (!Number.isInteger(track.sourceFileCount) || track.sourceFileCount < 1 || !Number.isInteger(track.canonicalItemCount) || track.canonicalItemCount < 1) blockers.push({ kind: "canonical_source_not_ready", trackId });
-    if (track.structuralValidation?.result !== "passed") blockers.push({ kind: "technical_validation_not_admitted", trackId, actual: track.structuralValidation?.result ?? null });
-    if (track.humanReview !== "approved") blockers.push({ kind: "human_editorial_approval_missing", trackId, actual: track.humanReview ?? null });
-    if (track.bundledFreeNodePackage?.presence !== "present") blockers.push({ kind: "free_node_package_missing", trackId });
-    if (track.immutableArtifact?.presence !== "verified") blockers.push({ kind: "immutable_full_package_missing", trackId, actual: track.immutableArtifact?.presence ?? null });
+    if (track.structuralValidation.result !== "passed") blockers.push({ kind: "technical_validation_not_admitted", trackId, actual: track.structuralValidation.result });
+    if (!track.humanApproval) blockers.push({ kind: "human_editorial_approval_missing", trackId });
+    const lockedArtifact = lockByTrackId.get(trackId);
+    const artifactMatchesLock = lockedArtifact && ["releaseId", "trackId", "contentVersion", "sourceRepositoryCommit", "checksumSha256"].every((field) => track.artifact?.[field] === lockedArtifact[field]);
+    if (!artifactMatchesLock) blockers.push({ kind: "content_readiness_artifact_mismatch", trackId });
     if (track.publishingAdmission !== "admitted") blockers.push({ kind: "publishing_admission_missing", trackId, actual: track.publishingAdmission ?? null });
     if (track.runtimeAdmission !== "admitted") blockers.push({ kind: "runtime_admission_missing", trackId, actual: track.runtimeAdmission ?? null });
+    if (track.blockers.length !== 0) blockers.push({ kind: "track_readiness_blocked", trackId, actual: track.blockers });
   }
 }
 
@@ -218,7 +242,7 @@ const report = {
   status: blockers.length === 0 ? "ready" : "not_ready",
   launchTrackIds,
   applicationRepository: { path: applicationRoot, headCommit: applicationCommit, ...applicationRepository },
-  contentReadiness: readiness ? { path: resolve(contentRoot, "evidence/readiness/eight-track-launch-readiness.json"), sourceCommit: readiness.sourceCommit ?? null, headCommit: contentRepository.headCommit, repository: contentRepository.status, sourceCommitStatus: contentSourceCommit.status } : null,
+  contentReadiness: readiness ? { path: readinessPath, candidateId: readiness.candidateId, trackIds: readiness.trackIds, headCommit: contentRepository.headCommit, repository: contentRepository.status } : null,
   contentReleaseLock,
   applicationReleaseLockTrackIds: lockedTrackIds,
   externalEvidence: external,
@@ -226,5 +250,7 @@ const report = {
   blockers: blockers.sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right))),
 };
 
-process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+const serializedReport = `${JSON.stringify(report, null, 2)}\n`;
+if (outputPath) writeFileSync(outputPath, serializedReport);
+process.stdout.write(serializedReport);
 if (releaseGate && blockers.length) process.exitCode = 1;
