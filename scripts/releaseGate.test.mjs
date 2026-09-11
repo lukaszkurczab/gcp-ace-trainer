@@ -161,6 +161,7 @@ test("launch readiness report is deterministic and exposes the unresolved releas
     assert.equal(report.externalEvidence.find((evidence) => evidence.id === "signing-and-builds")?.status, "not_evidenced");
     assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing" && blocker.evidenceId === "signing-and-builds"));
     assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing"));
+    assert.equal(first.output.includes(root), false);
   } finally {
     rmSync(contentRoot, { recursive: true, force: true });
   }
@@ -184,6 +185,14 @@ test("release gate fails while the readiness report contains blockers", () => {
   const result = run(true);
   assert.equal(result.status, 1);
   assert.equal(JSON.parse(result.output).status, "not_ready");
+});
+
+test("enforced release gate requires a verified four-repository manifest", () => {
+  const result = run(true);
+  const report = JSON.parse(result.output);
+  assert.equal(result.status, 1);
+  assert.equal(report.releaseManifest?.status, "missing");
+  assert.ok(report.blockers.some((blocker) => blocker.kind === "release_manifest_missing"));
 });
 
 test("launch readiness fails closed when the content evidence checkout is dirty", () => {

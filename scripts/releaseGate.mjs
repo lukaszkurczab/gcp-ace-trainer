@@ -3,14 +3,20 @@ import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { verifyReleaseManifest } from "./releaseManifest.mjs";
 
 const root = process.cwd();
-const applicationRoot = realpathSync(resolve(process.env.PATTERNLY_APPLICATION_ROOT ?? root));
-const contentRoot = realpathSync(resolve(process.env.PATTERNLY_CONTENT_ROOT ?? "../patternly-content"));
+let applicationRootInput = process.env.PATTERNLY_APPLICATION_ROOT ?? root;
+let contentRootInput = process.env.PATTERNLY_CONTENT_ROOT ?? "../patternly-content";
+let backendRootInput = process.env.PATTERNLY_BACKEND_ROOT ?? null;
+let webRootInput = process.env.PATTERNLY_WEB_ROOT ?? null;
 const evidenceRoot = resolve(process.env.PATTERNLY_RELEASE_EVIDENCE_ROOT ?? "evidence/release");
 const releaseLockPath = resolve(process.env.PATTERNLY_RELEASE_LOCK_PATH ?? "integration/contracts/content-release/release.lock.json");
 let releaseGate = false;
 let outputPath = null;
+let releaseManifestPath = process.env.PATTERNLY_RELEASE_MANIFEST_PATH ? resolve(process.env.PATTERNLY_RELEASE_MANIFEST_PATH) : null;
+const seenRootArguments = new Set();
+let seenManifestArgument = false;
 for (let index = 2; index < process.argv.length; index += 1) {
   const argument = process.argv[index];
   if (argument === "--enforce" && !releaseGate) releaseGate = true;
@@ -19,12 +25,57 @@ for (let index = 2; index < process.argv.length; index += 1) {
     if (!value || value.startsWith("--")) throw new Error("--output requires a path");
     outputPath = resolve(value);
     index += 1;
+  } else if (argument === "--manifest" && !seenManifestArgument) {
+    const value = process.argv[index + 1];
+    if (!value || value.startsWith("--")) throw new Error(`${argument} requires a path`);
+    releaseManifestPath = resolve(value);
+    seenManifestArgument = true;
+    index += 1;
+  } else if (argument === "--application-root" && !seenRootArguments.has("application")) {
+    const value = process.argv[index + 1];
+    if (!value || value.startsWith("--")) throw new Error(`${argument} requires a path`);
+    seenRootArguments.add("application");
+    applicationRootInput = value;
+    index += 1;
+  } else if (argument === "--content-root" && !seenRootArguments.has("content")) {
+    const value = process.argv[index + 1];
+    if (!value || value.startsWith("--")) throw new Error(`${argument} requires a path`);
+    seenRootArguments.add("content");
+    contentRootInput = value;
+    index += 1;
+  } else if (argument === "--backend-root" && !seenRootArguments.has("backend")) {
+    const value = process.argv[index + 1];
+    if (!value || value.startsWith("--")) throw new Error(`${argument} requires a path`);
+    seenRootArguments.add("backend");
+    backendRootInput = value;
+    index += 1;
+  } else if (argument === "--web-root" && !seenRootArguments.has("web")) {
+    const value = process.argv[index + 1];
+    if (!value || value.startsWith("--")) throw new Error(`${argument} requires a path`);
+    seenRootArguments.add("web");
+    webRootInput = value;
+    index += 1;
   } else throw new Error(`Unknown or duplicate argument: ${argument}`);
 }
+
+const applicationRoot = realpathSync(resolve(applicationRootInput));
+const contentRoot = realpathSync(resolve(contentRootInput));
+
+const applicationReleaseLockRelativePath = "integration/contracts/content-release/release.lock.json";
+const contentReadinessRelativePath = "evidence/readiness/candidate-readiness.json";
+const releaseEvidenceRelativeDirectory = "evidence/release";
 
 function isWithin(parent, child) {
   const relative = child.slice(parent.length);
   return child === parent || (child.startsWith(parent) && (relative.startsWith("/") || relative.startsWith("\\")));
+}
+
+const outputBoundaryRoots = [applicationRoot, contentRoot];
+if (releaseManifestPath) {
+  for (const optionalRoot of [backendRootInput, webRootInput]) {
+    if (!optionalRoot) continue;
+    try { outputBoundaryRoots.push(realpathSync(resolve(optionalRoot))); } catch { /* manifest verification reports the missing root */ }
+  }
 }
 
 if (outputPath) {
@@ -35,7 +86,7 @@ if (outputPath) {
     if (error?.code !== "ENOENT") throw error;
   }
   const physicalOutputPath = existsSync(outputPath) ? realpathSync(outputPath) : resolve(outputParent, basename(outputPath));
-  if (isWithin(applicationRoot, physicalOutputPath) || isWithin(contentRoot, physicalOutputPath)) throw new Error("--output must be outside the application and content worktrees");
+  if (outputBoundaryRoots.some((boundaryRoot) => isWithin(boundaryRoot, physicalOutputPath))) throw new Error("--output must be outside all repository worktrees");
   outputPath = physicalOutputPath;
 }
 
@@ -60,6 +111,21 @@ function uniqueSorted(values) {
 
 function readableError(error) {
   return error instanceof Error ? error.message : String(error);
+}
+
+function portableManifestError(error) {
+  let message = readableError(error);
+  for (const repositoryRoot of [applicationRoot, contentRoot, backendRootInput && resolve(backendRootInput), webRootInput && resolve(webRootInput)]) {
+    if (repositoryRoot) message = message.split(repositoryRoot).join("<repository-root>");
+  }
+  // A release report can be copied between machines. Do not let an underlying
+  // validator's ENOENT or Git diagnostic reintroduce the author's filesystem.
+  return message.replace(/(^|[\s:'"(])(?:\/[A-Za-z0-9._-]+)+(?![A-Za-z0-9._-])/gu, "$1<local-path>")
+    .replace(/(^|[\s:'"(])[A-Za-z]:[\\/][^\s'"(),;]+/gu, "$1<local-path>");
+}
+
+function portableError(error) {
+  return portableManifestError(error);
 }
 
 function canonicalize(value) {
@@ -94,7 +160,7 @@ function repositoryStatus(repositoryRoot) {
     const porcelain = execFileSync("git", ["-C", repositoryRoot, "status", "--porcelain", "--untracked-files=all"], { encoding: "utf8" });
     return { status: porcelain.trim() ? "dirty" : "clean", changedPathCount: porcelain.split("\n").filter(Boolean).length };
   } catch (error) {
-    return { status: "unavailable", error: readableError(error) };
+    return { status: "unavailable", error: portableError(error) };
   }
 }
 
@@ -107,7 +173,13 @@ function inspectReleaseLock() {
   try {
     lock = readJson(releaseLockPath);
   } catch (error) {
-    return { status: "unavailable", path: releaseLockPath, trackIds: [], error: readableError(error) };
+    return {
+      repositoryRole: "application",
+      path: applicationReleaseLockRelativePath,
+      status: "unavailable",
+      trackIds: [],
+      error: portableError(error),
+    };
   }
 
   const errors = [];
@@ -136,8 +208,9 @@ function inspectReleaseLock() {
   if (new Set(trackIds).size !== trackIds.length) errors.push("artifacts.trackId values must be unique");
 
   return {
+    repositoryRole: "application",
     status: errors.length === 0 ? "valid" : "invalid",
-    path: releaseLockPath,
+    path: applicationReleaseLockRelativePath,
     schemaVersion: lock?.schemaVersion ?? null,
     repository: lock?.repository ?? null,
     bundleId: lock?.bundleId ?? null,
@@ -148,7 +221,8 @@ function inspectReleaseLock() {
 
 function externalEvidenceStatus(id, expectedApplicationCommit) {
   const path = resolve(evidenceRoot, `${id}.json`);
-  if (!existsSync(path)) return { id, path, status: "not_evidenced" };
+  const portablePath = `${releaseEvidenceRelativeDirectory}/${id}.json`;
+  if (!existsSync(path)) return { id, repositoryRole: "application", path: portablePath, status: "not_evidenced" };
   try {
     const value = readJson(path);
     const { evidenceSha256, ...identity } = value ?? {};
@@ -169,11 +243,11 @@ function externalEvidenceStatus(id, expectedApplicationCommit) {
       || typeof evidenceSha256 !== "string"
       || !/^[a-f0-9]{64}$/.test(evidenceSha256)
       || evidenceSha256 !== canonicalHash(identity)) {
-      return { id, path, status: "invalid" };
+      return { id, repositoryRole: "application", path: portablePath, status: "invalid" };
     }
-    return { id, path, status: "verified", applicationCommit: value.applicationCommit, evidenceSha256 };
+    return { id, repositoryRole: "application", path: portablePath, status: "verified", applicationCommit: value.applicationCommit, evidenceSha256 };
   } catch (error) {
-    return { id, path, status: "invalid", error: readableError(error) };
+    return { id, repositoryRole: "application", path: portablePath, status: "invalid", error: portableError(error) };
   }
 }
 
@@ -191,7 +265,7 @@ const launchTrackIds = contentReleaseLock.status === "valid" && lockedTrackIds.l
 
 let readiness = null;
 let candidate = null;
-const readinessPath = resolve(contentRoot, "evidence/readiness/candidate-readiness.json");
+const readinessPath = resolve(contentRoot, contentReadinessRelativePath);
 try {
   const candidateContract = await import(pathToFileURL(resolve(contentRoot, "scripts/review/candidate-manifest.mjs")));
   const approvalContract = await import(pathToFileURL(resolve(contentRoot, "scripts/review/content-approval.mjs")));
@@ -200,7 +274,7 @@ try {
   readiness = readJson(readinessPath);
   candidateContract.validateCandidateReadiness(readiness, { candidate, approval });
 } catch (error) {
-  blockers.push({ kind: existsSync(readinessPath) ? "invalid_content_readiness_report" : "unreadable_content_readiness_report", error: readableError(error) });
+  blockers.push({ kind: existsSync(readinessPath) ? "invalid_content_readiness_report" : "unreadable_content_readiness_report", error: portableError(error) });
   candidate = null;
   readiness = null;
 }
@@ -233,6 +307,38 @@ if (readiness) {
 
 if (contentReleaseLock.status === "valid" && JSON.stringify(lockedTrackIds) !== JSON.stringify(launchTrackIds)) blockers.push({ kind: "application_release_lock_scope_mismatch", expected: launchTrackIds, actual: lockedTrackIds });
 
+let releaseManifest = null;
+if (releaseGate && !releaseManifestPath) {
+  releaseManifest = { status: "missing" };
+  blockers.push({ kind: "release_manifest_missing" });
+}
+if (releaseManifestPath) {
+  if (!backendRootInput || !webRootInput) {
+    releaseManifest = { status: "invalid" };
+    blockers.push({ kind: "release_manifest_inputs_missing" });
+  } else {
+    try {
+      const verified = await verifyReleaseManifest({
+        manifestPath: releaseManifestPath,
+        applicationRoot,
+        backendRoot: backendRootInput,
+        contentRoot,
+        webRoot: webRootInput,
+      });
+      releaseManifest = {
+        status: verified.status,
+        manifestId: verified.manifestId,
+        candidateId: verified.candidateId,
+        trackIds: verified.trackIds,
+        repositories: verified.repositories,
+  };
+    } catch (error) {
+      releaseManifest = { status: "invalid" };
+      blockers.push({ kind: "release_manifest_invalid", reason: portableManifestError(error) });
+    }
+  }
+}
+
 const external = externalEvidence.map((id) => externalEvidenceStatus(id, applicationCommit));
 for (const evidence of external) if (evidence.status !== "verified") blockers.push({ kind: "external_release_evidence_missing", evidenceId: evidence.id, status: evidence.status, path: evidence.path });
 const optionalExternal = optionalExternalEvidence.map((id) => externalEvidenceStatus(id, applicationCommit));
@@ -241,10 +347,11 @@ const report = {
   schemaVersion: "patternly-launch-readiness-v1",
   status: blockers.length === 0 ? "ready" : "not_ready",
   launchTrackIds,
-  applicationRepository: { path: applicationRoot, headCommit: applicationCommit, ...applicationRepository },
-  contentReadiness: readiness ? { path: readinessPath, candidateId: readiness.candidateId, trackIds: readiness.trackIds, headCommit: contentRepository.headCommit, repository: contentRepository.status } : null,
+  applicationRepository: { repositoryRole: "application", path: ".", headCommit: applicationCommit, ...applicationRepository },
+  contentReadiness: readiness ? { repositoryRole: "content", path: contentReadinessRelativePath, candidateId: readiness.candidateId, trackIds: readiness.trackIds, headCommit: contentRepository.headCommit, repository: contentRepository.status } : null,
   contentReleaseLock,
   applicationReleaseLockTrackIds: lockedTrackIds,
+  releaseManifest,
   externalEvidence: external,
   optionalExternalEvidence: optionalExternal,
   blockers: blockers.sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right))),
