@@ -241,7 +241,7 @@ function backendAudit(): BackendProtocolInventoryAudit {
 function registryEntryForKey(key: string): RegistryEntry | null {
   const exact = fixedRegistry.get(key);
   if (exact) return exact;
-  return dynamicRegistry.find((entry) => key.startsWith(entry.selector)) ?? null;
+  return dynamicRegistry.find((entry) => entry.kind === "index" ? key === entry.selector : key.startsWith(entry.selector)) ?? null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
