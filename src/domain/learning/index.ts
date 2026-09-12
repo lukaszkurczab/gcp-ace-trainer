@@ -20,3 +20,4 @@ export * from "./trainingSession";
 export * from "./trainingSessionDraft";
 export * from "./foregroundTimerState";
 export * from "./paceForecast";
+export * from "./resolvedContentRef";
