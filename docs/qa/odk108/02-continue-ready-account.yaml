@@ -1,0 +1,9 @@
+appId: com.lkurczab.patternly
+name: ODK-108 continue ready account
+---
+- tapOn:
+    id: "account-entry-continue"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000

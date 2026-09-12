@@ -1,0 +1,90 @@
+appId: com.lkurczab.patternly
+name: ODK-107 local reset — guest EN
+tags: [ios, guest, i18n, destructive]
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible:
+        id: "settings-bottom-sheet-close"
+    commands:
+      - tapOn:
+          id: "settings-bottom-sheet-close"
+- runFlow:
+    when:
+      visible: "Go back"
+    commands:
+      - tapOn: "Go back"
+- runFlow:
+    when:
+      visible: "Twoje dane"
+    commands:
+      - tapOn:
+          point: "10%,12%"
+- runFlow:
+    when:
+      visible: "Your data"
+    commands:
+      - tapOn:
+          point: "10%,12%"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000
+- tapOn:
+    id: "main-tab-bar-settings"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-en"
+- tapOn: "Go back"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-your-data"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-your-data"
+- scrollUntilVisible:
+    element:
+      id: "data-local-reset"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "data-local-reset"
+- assertVisible: "What will be reset"
+- assertVisible: ".*active track, goals, plans, preferences, notifications.*are kept.*"
+- takeScreenshot: "local-reset__guest__010__scope__en__light__ios-regular"
+- scrollUntilVisible:
+    element:
+      id: "data-local-reset-cancel"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "data-local-reset-cancel"
+- assertVisible:
+    id: "data-local-reset"
+- tapOn:
+    id: "data-local-reset"
+- scrollUntilVisible:
+    element:
+      id: "data-local-reset-confirm"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "data-local-reset-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "data-local-reset-success"
+    timeout: 30000
+- takeScreenshot: "local-reset__guest__020__success__en__light__ios-regular"

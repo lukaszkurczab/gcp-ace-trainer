@@ -4,17 +4,51 @@
   "dataPrivacy": "Data & privacy",
   "settings": "Settings",
   "yourData": "Your data",
-  "infoTitle": "Your learning data",
-  "infoBodyAuthenticated": "Learning data is stored locally. You can download synced account data below.",
-  "infoBodyGuest": "Learning data is stored locally on this device. You can use Patternly without an account.",
   "rights": { "title": "Your rights" },
-  "export": {
-    "title": "Download account data",
-    "summary": "A JSON file with your account and synced learning data"
+  "actions": {
+    "export": { "title": "Share or download account data", "summary": "A JSON file with account data, synced learning, and account activity" },
+    "guestSupport": { "title": "Request help with your data", "summary": "Contact us without creating an account" },
+    "openAccount": { "title": "Open account", "summary": "Sign in or create an account to manage account data" },
+    "retryRestore": { "title": "Try restoring the session", "summary": "Check your account session again" },
+    "retryDeletion": { "title": "Retry account cleanup", "summary": "Continue the pending account deletion" },
+    "retryIdentity": { "title": "Retry account check", "summary": "Refresh the account session before using account data" },
+    "signOut": { "title": "Sign out", "summary": "End this expired account session before signing in again" },
+    "none": { "title": "Data actions unavailable", "summary": "No account action is available in this state" }
   },
-  "guest": {
-    "title": "Request help with your data",
-    "summary": "Contact us without creating an account"
+  "localReset": {
+    "entryTitle": "Reset local learning history",
+    "entrySummary": "Remove sessions, attempts, reviews, drafts, and timers from this device",
+    "title": "Reset learning history?",
+    "intro": "Review the scope before removing local learning history.",
+    "scopeTitle": "What will be reset",
+    "scopeBody": "This removes practice and exam sessions, results, attempts, review items, the active session, saved drafts, and timers from this device.",
+    "confirmationTitle": "Confirm local reset",
+    "confirmationBody": "Your active track, goals, plans, preferences, notifications, installation identity, account link, and content-report outbox are kept. For a signed-in account, the cloud copy is never deleted; the app restores this history from the account after the local reset.",
+    "cancel": "Cancel",
+    "confirm": "Reset learning history",
+    "runningTitle": "Resetting learning history",
+    "runningBody": "Keep this sheet open while the reset is completed safely.",
+    "successTitle": "Learning history reset",
+    "successBody": "The selected local learning history was reset successfully.",
+    "errorTitle": "Reset could not finish",
+    "errorBody": "Some local data may remain. Try again; a signed-in reset keeps its recovery marker until the account copy is restored."
+  },
+  "state": {
+    "authenticated": { "title": "Your account data", "body": "Learning data is stored on this device. Supported account records can also sync to your account cloud and return through normal sync after you sign in. Use the export, details, and privacy actions below for this account." },
+    "guest": { "title": "Guest data", "body": "Learning data is stored locally on this device. You can use Patternly without an account. Use the public support channel below if you need help with your data." },
+    "signedOut": { "title": "Sign in to manage account data", "body": "Sign in or create an account to access account data and privacy actions." },
+    "guestAccessBlocked": { "title": "Account access needed", "body": "This saved guest data is linked to another account. Sign in to continue." },
+    "verificationPending": { "title": "Finish signing in", "body": "Check your email to finish signing in before managing account data." },
+    "loading": { "title": "Preparing your data", "body": "Account state is still loading. No account action is available yet." },
+    "authRestoreTimeout": { "title": "Account state unavailable", "body": "We could not restore your session. Try again to check account data." },
+    "firebaseUnconfigured": { "title": "Account unavailable", "body": "Account services are not configured in this build." },
+    "publicEnvironmentUnconfigured": { "title": "Data actions unavailable", "body": "The public data environment is not configured in this build." },
+    "publicEnvironmentInvalid": { "title": "Data actions unavailable", "body": "The public data environment is invalid in this build." },
+    "deletionPending": { "title": "Account deletion pending", "body": "Your account deletion is waiting to finish. Retry the cleanup before using account data." },
+    "signingOut": { "title": "Signing out", "body": "Signing out is in progress. Account data actions are temporarily unavailable." },
+    "deleting": { "title": "Deleting account", "body": "Account deletion is in progress. Account data actions are temporarily unavailable." },
+    "backendUnavailable": { "title": "Account service unavailable", "body": "We could not refresh your account session. Try again." },
+    "revokedSession": { "title": "Session expired", "body": "Your account session is no longer valid. Sign out, then sign in again." }
   },
   "privacyRequests": {
     "title": "Privacy requests",
@@ -80,7 +114,7 @@
     "title": "Data details",
     "scopeTitle": "Scope",
     "accountIntro": "The export is a JSON file prepared for the signed-in account.",
-    "accountBody": "It includes account profile data, synced progress, linked content reports, access and entitlements, and export history. Confirmed account-owned records can be restored only through the explicit adoption flow. It excludes active sessions, drafts, settings, and other data stored only on this device. For security, you may need to confirm your identity again. Downloads are rate limited.",
+    "accountBody": "The export includes your account profile; supported synced learning records such as the active track, goals and learning plans, completed session summaries and results, attempts, and review queue; and linked content reports. Account activity and context include track access, entitlements, legal acceptances, purchase confirmations, consumer cases, device metadata, sync metadata, and export history. Access information explains purposes, data categories, recipients, retention, sources, transfers, automated decisions, and your rights. The manifest names included and omitted categories; credentials, secrets, raw provider or device identifiers, other people's reports, and anonymous reports are not included. Active sessions, drafts, settings, and other device-only data are not synced. After you sign in to the same account, normal sync can restore supported records from the account cloud. Guest-data adoption is a separate choice that merges eligible progress from this device into the account. The JSON is shared through the system share or save sheet for access and portability and cannot be imported into Patternly. For security, you may need to confirm your identity again. Exports are rate limited.",
     "guestIntro": "You do not need an account to contact us about your data.",
     "guestBody": "You can remove data stored only on this device locally. Send a broader privacy request through the public support channel. The app does not attach an account identifier or check whether an address exists in the system."
   },
@@ -98,6 +132,7 @@
     "fileFailure": "The temporary file could not be prepared safely.",
     "sharingFailed": "The system save or share sheet could not be opened.",
     "cleanupFailed": "The temporary file could not be removed. The app will retry safe cleanup on its next launch.",
-    "supportUnavailable": "The public support channel is not currently configured."
+    "supportUnavailable": "The public support channel is not currently configured.",
+    "actionFailed": "We couldn't complete that account action. Try again."
   }
 }

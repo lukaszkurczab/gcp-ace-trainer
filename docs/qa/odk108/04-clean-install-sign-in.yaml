@@ -1,0 +1,48 @@
+appId: com.lkurczab.patternly
+name: ODK-108 clean install sign in
+tags: [ios, account, setup]
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Remove unavailable data"
+    timeout: 120000
+- tapOn: "Remove unavailable data"
+- tapOn: "Remove data from device"
+- extendedWaitUntil:
+    visible:
+      id: "account-sign-in"
+    timeout: 120000
+- tapOn:
+    id: "account-sign-in"
+- tapOn:
+    id: "account-email"
+- inputText: "odk108-clean-20260912@example.test"
+- tapOn:
+    id: "account-password"
+- inputText: "Odk108CleanSecure42"
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "account-sign-in-submit"
+- extendedWaitUntil:
+    visible:
+      id: "account-entry-continue"
+    timeout: 30000
+- tapOn:
+    id: "account-entry-continue"
+- runFlow:
+    when:
+      visible: "Nie teraz"
+    commands:
+      - tapOn:
+          point: "30%,64%"
+- runFlow:
+    when:
+      visible: "Start track"
+    commands:
+      - tapOn: "Start track"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000

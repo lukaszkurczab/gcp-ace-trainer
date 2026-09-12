@@ -1,0 +1,10 @@
+appId: com.lkurczab.patternly
+---
+- scrollUntilVisible:
+    element: "Close"
+    direction: UP
+    centerElement: true
+- tapOn: "Close"
+- tapOn: "Go back"
+- tapOn: "Go back"
+- runFlow: ../10-data-auth-en-pl.yaml

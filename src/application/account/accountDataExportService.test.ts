@@ -14,8 +14,9 @@ const validExport = {
   exportId: "export_12345678",
   exportedAt: "2026-09-06T12:00:00.000Z",
   scope: { portable: "user_data_and_activity", accountContext: "user_visible_account_context" },
+  article15Information: { purposes: [], dataCategories: [], recipientCategories: [], retentionCriteria: [], dataSources: [], internationalTransfers: "described", automatedDecisionMaking: "none", rightsAndComplaint: "described" },
   portable: { profile: { createdAt: "2026-01-01T00:00:00.000Z", identity: { provider: "firebase", email: null, emailVerified: true } }, progress: [], linkedContentReports: [] },
-  accountContext: { trackAccess: [], entitlements: [], devices: [], syncMetadata: {}, exportHistory: [] },
+  accountContext: { trackAccess: [], entitlements: [], legalAcceptances: [], purchaseConfirmations: [], consumerCases: [], devices: [], syncMetadata: {}, exportHistory: [] },
   manifest: { included: [], omitted: [] },
 } as const;
 
@@ -48,6 +49,9 @@ test("validates the account export envelope before any file is created", async (
 
 test("rejects partial profiles and malformed section entries", () => {
   assert.equal(isValidAccountDataExport({ ...validExport, portable: { ...validExport.portable, profile: {} } }), false);
+  assert.equal(isValidAccountDataExport({ ...validExport, article15Information: { ...validExport.article15Information, dataCategories: [3] } }), false);
+  assert.equal(isValidAccountDataExport({ ...validExport, accountContext: { ...validExport.accountContext, legalAcceptances: undefined } }), false);
+  assert.equal(isValidAccountDataExport({ ...validExport, accountContext: { ...validExport.accountContext, consumerCases: undefined } }), false);
   assert.equal(isValidAccountDataExport({ ...validExport, accountContext: { ...validExport.accountContext, devices: [null] } }), false);
   assert.equal(isValidAccountDataExport({ ...validExport, manifest: { included: [3], omitted: [] } }), false);
 });

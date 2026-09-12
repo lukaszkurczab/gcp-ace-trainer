@@ -1,0 +1,51 @@
+appId: com.lkurczab.patternly
+name: ODK-090 authenticated inline narrative validation
+tags:
+  - screenshot
+  - ios
+  - legal
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible: "Check verification"
+    commands:
+      - tapOn: "Check verification"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 60000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-legal-information"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-legal-information"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-complaint"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "legal-request-complaint"
+- tapOn:
+    id: "legal-request-create-complaint"
+- tapOn:
+    id: "legal-request-submit"
+- assertVisible:
+    id: "legal-request-narrative-error"
+- assertVisible:
+    id: "legal-request-submit"
+- takeScreenshot: "legal-validation__auth__010__narrative-error-inline__dark__ios-regular"
+- tapOn:
+    id: "legal-request-narrative"
+- inputText: "Account complaint details"
+- assertNotVisible:
+    id: "legal-request-narrative-error"
+- assertVisible:
+    id: "legal-request-submit"
+- takeScreenshot: "legal-validation__auth__020__narrative-corrected__dark__ios-regular"

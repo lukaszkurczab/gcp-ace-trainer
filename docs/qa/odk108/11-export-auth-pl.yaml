@@ -1,0 +1,83 @@
+appId: com.lkurczab.patternly
+name: ODK-108 export copy and share sheet — auth PL
+tags: [ios, account, export, i18n]
+---
+- launchApp:
+    stopApp: true
+- runFlow:
+    when:
+      visible:
+        id: "settings-bottom-sheet-close"
+    commands:
+      - tapOn:
+          id: "settings-bottom-sheet-close"
+- runFlow:
+    when:
+      visible: "Twoje dane"
+    commands:
+      - tapOn:
+          point: "10%,12%"
+- runFlow:
+    when:
+      visible: "Your data"
+    commands:
+      - tapOn:
+          point: "10%,12%"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-pl"
+- tapOn: "Wróć"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-your-data"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-your-data"
+- assertVisible:
+    id: "account-data-export"
+- assertVisible: ".*Udostępnij lub pobierz dane konta.*danymi konta, synchronizowaną nauką i aktywnością konta.*"
+- takeScreenshot: "export__auth__010__entry__pl__dark__ios-regular"
+- tapOn:
+    id: "account-data-export-details"
+- assertVisible: ".*akceptacje prawne, potwierdzenia zakupów, sprawy konsumenckie, metadane urządzeń.*"
+- assertVisible: ".*systemowego arkusza udostępniania lub zapisu.*nie można go zaimportować.*"
+- takeScreenshot: "export__auth__020__details__pl__dark__ios-regular"
+- tapOn:
+    id: "settings-bottom-sheet-close"
+- tapOn:
+    id: "account-data-export"
+- runFlow:
+    when:
+      visible:
+        id: "security-password"
+    commands:
+      - tapOn:
+          id: "security-password"
+      - inputText: "Odk108CleanSecure42"
+      - tapOn:
+          point: "50%,20%"
+      - tapOn:
+          id: "security-submit"
+      - extendedWaitUntil:
+          visible:
+            id: "account-data-export"
+          timeout: 30000
+      - tapOn:
+          id: "account-data-export"
+- waitForAnimationToEnd
+- takeScreenshot: "export__auth__030__system-share-sheet__pl__dark__ios-regular"

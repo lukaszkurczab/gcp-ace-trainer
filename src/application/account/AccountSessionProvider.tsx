@@ -6,7 +6,8 @@ import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
-import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, prepareAccountSignOut, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion, type AccountDataSession } from "./accountDataService";
+import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, prepareAccountSignOut, resetAccountLocalLearningHistory, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion, type AccountDataSession } from "./accountDataService";
+import { commitLearningStateReset } from "../learningMutations";
 
 async function reconcileMaterializedAccountReminders(): Promise<void> {
   const { reconcileDeviceReminder } = await import("../../preferences/reconcileDeviceReminder");
@@ -22,7 +23,7 @@ import { shareAccountDataExport as shareDownloadedAccountData } from "./accountD
 import { legalVariables } from "../../legal/legalVariables";
 
 export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "emailUnavailable" | "expiredAction" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
-export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
+export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "guest" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
 export type AccountDataExportFailure = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed";
 export type AccountDataExportCommandResult = Readonly<
   | { kind: "success" }
@@ -54,6 +55,7 @@ export type AccountSessionContextValue = Readonly<{
   confirmPasswordReset: (code: string, password: string) => Promise<AccountCommandResult>;
   deleteAccount: () => Promise<AccountCommandResult>;
   exportAccountData: (isRequestActive?: () => boolean) => Promise<AccountDataExportCommandResult>;
+  resetLocalLearningHistory: () => Promise<AccountCommandResult>;
   createPrivacyRequest: (right: PrivacyRequestRightDto, narrative?: string) => Promise<PrivacyRequestCommandResult<PrivacyRequestListItemDto>>;
   listPrivacyRequests: () => Promise<PrivacyRequestCommandResult<readonly PrivacyRequestListItemDto[]>>;
   readPrivacyRequest: (requestId: string) => Promise<PrivacyRequestCommandResult<PrivacyRequestResponseDto>>;
@@ -552,6 +554,30 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           return classifyAccountDataExportFailure(error);
         }
       }).catch(() => ({ kind: "failure", failure: "serverFailure" }));
+    },
+    resetLocalLearningHistory: async () => {
+      if (state.kind === "guest") {
+        try {
+          await commitLearningStateReset(new Date().toISOString());
+          return { kind: "success", next: "guest" };
+        } catch {
+          return { kind: "failure", failure: "localCleanupFailure" };
+        }
+      }
+      return runWithAuth(async (auth, api) => {
+        const current = auth.getSnapshot();
+        if (!current || state.kind !== "authenticated" || state.user.uid !== current.uid) return { kind: "failure", failure: "providerUnavailable" };
+        const generation = sessionCoordinator.restart(current.uid);
+        const next = await resetAccountLocalLearningHistory(api, state.backendUser.id);
+        if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
+        if (next.status === "synced") {
+          await reconcileMaterializedAccountReminders().catch(() => undefined);
+          if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
+        }
+        setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
+        if (next.status === "synced") return { kind: "success", next: "authenticated" };
+        return { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "localCleanupFailure" };
+      });
     },
     createPrivacyRequest: async (right, narrative) => {
       if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };

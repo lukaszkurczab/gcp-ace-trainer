@@ -1,0 +1,189 @@
+appId: com.lkurczab.patternly
+name: ODK-E2E-104 data namespace — authenticated EN and PL
+tags:
+  - screenshot
+  - ios
+  - i18n
+  - account
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-en"
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: "settings-your-data"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-your-data"
+- assertVisible: "Your rights"
+- assertVisible:
+    id: "account-data-export"
+- assertVisible:
+    id: "privacy-requests-entry"
+- takeScreenshot: "data__auth__010__your-data__en"
+- tapOn:
+    id: "account-data-export-details"
+- assertVisible: "Data details"
+- assertVisible: "Scope"
+- takeScreenshot: "data__auth__020__details__en"
+- tapOn: "Close"
+- tapOn:
+    id: "privacy-requests-entry"
+- assertVisible: "Privacy requests"
+- assertVisible:
+    id: "privacy-request-create"
+- assertVisible: "No\\ requests"
+- assertNotVisible: "Could\\ not\\ complete\\ the\\ action"
+- takeScreenshot: "data__auth__030__privacy-list__en"
+- tapOn:
+    id: "privacy-request-create"
+- assertVisible: "Choose\\ the\\ right\\ concerned\\.\\ Add\\ details\\ only\\ when\\ they\\ are\\ needed\\."
+- assertVisible: "Access\\ your\\ data,\\ A\\ copy\\ of\\ your\\ data\\ and\\ information\\ about\\ its\\ processing"
+- assertVisible: "Rectify\\ your\\ data,\\ Correct\\ inaccurate\\ or\\ incomplete\\ data"
+- takeScreenshot: "data__auth__040__privacy-form-rights__en"
+- scrollUntilVisible:
+    element: "Erase\\ your\\ data,\\ Erase\\ data\\ when\\ the\\ legal\\ conditions\\ apply"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Erase\\ your\\ data,\\ Erase\\ data\\ when\\ the\\ legal\\ conditions\\ apply"
+- scrollUntilVisible:
+    element: "Restrict\\ processing,\\ Temporarily\\ restrict\\ specified\\ processing"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Restrict\\ processing,\\ Temporarily\\ restrict\\ specified\\ processing"
+- scrollUntilVisible:
+    element: "Object\\ to\\ processing,\\ Object\\ to\\ processing\\ based\\ on\\ legitimate\\ interests"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Object\\ to\\ processing,\\ Object\\ to\\ processing\\ based\\ on\\ legitimate\\ interests"
+- scrollUntilVisible:
+    element: "Data\\ portability,\\ Qualifying\\ data\\ in\\ a\\ machine\\-readable\\ format"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Data\\ portability,\\ Qualifying\\ data\\ in\\ a\\ machine\\-readable\\ format"
+- scrollUntilVisible:
+    element: "Withdraw\\ consent,\\ Stop\\ future\\ processing\\ based\\ on\\ the\\ specified\\ consent"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Withdraw\\ consent,\\ Stop\\ future\\ processing\\ based\\ on\\ the\\ specified\\ consent"
+- takeScreenshot: "data__auth__045__privacy-form-rights-middle__en"
+- scrollUntilVisible:
+    element:
+      id: "privacy-request-narrative"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Additional information (optional)"
+- assertVisible:
+    id: "privacy-request-submit"
+- assertVisible: "Send\\ for\\ free"
+- takeScreenshot: "data__auth__050__privacy-form-fields__en"
+- scrollUntilVisible:
+    element: "Close"
+    direction: UP
+    centerElement: true
+- tapOn: "Close"
+- tapOn: "Go back"
+- assertVisible:
+    id: "account-data-export"
+- tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-pl"
+- tapOn: "Wróć"
+- scrollUntilVisible:
+    element:
+      id: "settings-your-data"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-your-data"
+- assertVisible: "Twoje prawa"
+- assertVisible:
+    id: "account-data-export"
+- assertVisible:
+    id: "privacy-requests-entry"
+- takeScreenshot: "data__auth__060__your-data__pl"
+- tapOn:
+    id: "account-data-export-details"
+- assertVisible: "Szczegóły danych"
+- assertVisible: "Zakres"
+- takeScreenshot: "data__auth__070__details__pl"
+- tapOn: "Zamknij"
+- tapOn:
+    id: "privacy-requests-entry"
+- assertVisible: "Wnioski dotyczące prywatności"
+- assertVisible:
+    id: "privacy-request-create"
+- assertVisible: "Brak\\ wniosków"
+- assertNotVisible: "Nie\\ udało\\ się\\ wykonać\\ działania"
+- takeScreenshot: "data__auth__080__privacy-list__pl"
+- tapOn:
+    id: "privacy-request-create"
+- assertVisible: "Wybierz\\ prawo,\\ którego\\ dotyczy\\ wniosek\\.\\ Szczegóły\\ możesz\\ dopisać\\ tylko\\ wtedy,\\ gdy\\ są\\ potrzebne\\."
+- assertVisible: "Dostęp\\ do\\ danych,\\ Kopia\\ danych\\ oraz\\ informacje\\ o\\ ich\\ przetwarzaniu"
+- assertVisible: "Sprostowanie\\ danych,\\ Poprawienie\\ danych\\ nieprawidłowych\\ lub\\ niekompletnych"
+- takeScreenshot: "data__auth__090__privacy-form-rights__pl"
+- scrollUntilVisible:
+    element: "Usunięcie\\ danych,\\ Usunięcie\\ danych,\\ gdy\\ mają\\ zastosowanie\\ przesłanki\\ prawne"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Usunięcie\\ danych,\\ Usunięcie\\ danych,\\ gdy\\ mają\\ zastosowanie\\ przesłanki\\ prawne"
+- scrollUntilVisible:
+    element: "Ograniczenie\\ przetwarzania,\\ Czasowe\\ ograniczenie\\ wskazanego\\ przetwarzania"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Ograniczenie\\ przetwarzania,\\ Czasowe\\ ograniczenie\\ wskazanego\\ przetwarzania"
+- scrollUntilVisible:
+    element: "Sprzeciw,\\ Sprzeciw\\ wobec\\ przetwarzania\\ opartego\\ na\\ uzasadnionym\\ interesie"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Sprzeciw,\\ Sprzeciw\\ wobec\\ przetwarzania\\ opartego\\ na\\ uzasadnionym\\ interesie"
+- scrollUntilVisible:
+    element: "Przenoszenie\\ danych,\\ Dane\\ objęte\\ prawem\\ w\\ formacie\\ maszynowym"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Przenoszenie\\ danych,\\ Dane\\ objęte\\ prawem\\ w\\ formacie\\ maszynowym"
+- scrollUntilVisible:
+    element: "Wycofanie\\ zgody,\\ Zatrzymanie\\ przyszłego\\ przetwarzania\\ opartego\\ na\\ wskazanej\\ zgodzie"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Wycofanie\\ zgody,\\ Zatrzymanie\\ przyszłego\\ przetwarzania\\ opartego\\ na\\ wskazanej\\ zgodzie"
+- takeScreenshot: "data__auth__095__privacy-form-rights-middle__pl"
+- scrollUntilVisible:
+    element:
+      id: "privacy-request-narrative"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Dodatkowe informacje (opcjonalnie)"
+- assertVisible:
+    id: "privacy-request-submit"
+- assertVisible: "Wyślij\\ bezpłatnie"
+- takeScreenshot: "data__auth__100__privacy-form-fields__pl"

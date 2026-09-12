@@ -1,0 +1,190 @@
+TAP version 13
+# Subtest: account export distinguishes recent authentication, revoked sessions, transport, limits, and 5xx
+ok 1 - account export distinguishes recent authentication, revoked sessions, transport, limits, and 5xx
+  ---
+  duration_ms: 2.054208
+  type: 'test'
+  ...
+# Subtest: i18n locale files have matching namespaces and keys
+ok 2 - i18n locale files have matching namespaces and keys
+  ---
+  duration_ms: 13.148084
+  type: 'test'
+  ...
+# Subtest: app preferences default to English content locale and device appearance
+ok 3 - app preferences default to English content locale and device appearance
+  ---
+  duration_ms: 2.325584
+  type: 'test'
+  ...
+# Subtest: app preferences retain an explicitly selected Polish locale
+ok 4 - app preferences retain an explicitly selected Polish locale
+  ---
+  duration_ms: 1.556542
+  type: 'test'
+  ...
+# Subtest: translations resolve common UI copy through i18next
+ok 5 - translations resolve common UI copy through i18next
+  ---
+  duration_ms: 2.484292
+  type: 'test'
+  ...
+# Subtest: nested legal and data translations resolve and interpolate in English and Polish
+ok 6 - nested legal and data translations resolve and interpolate in English and Polish
+  ---
+  duration_ms: 1.708042
+  type: 'test'
+  ...
+# Subtest: sentence keys containing dots remain literal in common
+ok 7 - sentence keys containing dots remain literal in common
+  ---
+  duration_ms: 0.665875
+  type: 'test'
+  ...
+# Subtest: flat common labels containing colons remain literal keys
+ok 8 - flat common labels containing colons remain literal keys
+  ---
+  duration_ms: 0.166834
+  type: 'test'
+  ...
+# Subtest: flat learningPlan plural resources remain addressable and mutable
+ok 9 - flat learningPlan plural resources remain addressable and mutable
+  ---
+  duration_ms: 9.929
+  type: 'test'
+  ...
+# Subtest: namespace normalization rejects dotted-key collisions atomically regardless of source order
+ok 10 - namespace normalization rejects dotted-key collisions atomically regardless of source order
+  ---
+  duration_ms: 0.483666
+  type: 'test'
+  ...
+# Subtest: language changes persist all supported choices without changing appearance
+ok 11 - language changes persist all supported choices without changing appearance
+  ---
+  duration_ms: 0.520208
+  type: 'test'
+  ...
+# Subtest: a failed language write rejects and preserves the previous saved choice for retry
+ok 12 - a failed language write rejects and preserves the previous saved choice for retry
+  ---
+  duration_ms: 0.732791
+  type: 'test'
+  ...
+# Subtest: Settings exposes account and participant navigation actions plus conditional developer verification actions
+ok 13 - Settings exposes account and participant navigation actions plus conditional developer verification actions
+  ---
+  duration_ms: 15.850625
+  type: 'test'
+  ...
+# Subtest: Legal information exposes exactly four distinct request entries and keeps data routes under data rights
+ok 14 - Legal information exposes exactly four distinct request entries and keeps data routes under data rights
+  ---
+  duration_ms: 1.435417
+  type: 'test'
+  ...
+# Subtest: Settings account presentation names guest, authenticated, and unavailable states and keeps sign-out provider-owned
+ok 15 - Settings account presentation names guest, authenticated, and unavailable states and keeps sign-out provider-owned
+  ---
+  duration_ms: 2.703875
+  type: 'test'
+  ...
+# Subtest: Settings keeps the backend verification group explicitly development-only
+ok 16 - Settings keeps the backend verification group explicitly development-only
+  ---
+  duration_ms: 0.585
+  type: 'test'
+  ...
+# Subtest: grouped settings rows follow the Figma 200% text geometry
+ok 17 - grouped settings rows follow the Figma 200% text geometry
+  ---
+  duration_ms: 0.509333
+  type: 'test'
+  ...
+# Subtest: Settings heading has no redundant description and locale keeps goal copy
+ok 18 - Settings heading has no redundant description and locale keeps goal copy
+  ---
+  duration_ms: 0.456042
+  type: 'test'
+  ...
+# Subtest: Premium keeps a localized Settings context while retaining the back action
+ok 19 - Premium keeps a localized Settings context while retaining the back action
+  ---
+  duration_ms: 0.565792
+  type: 'test'
+  ...
+# Subtest: Your data keeps the Settings entry label and names its local header consistently
+ok 20 - Your data keeps the Settings entry label and names its local header consistently
+  ---
+  duration_ms: 0.381333
+  type: 'test'
+  ...
+# Subtest: Settings app identity follows the Figma footer geometry
+ok 21 - Settings app identity follows the Figma footer geometry
+  ---
+  duration_ms: 0.621459
+  type: 'test'
+  ...
+# Subtest: Settings keeps appearance values readable at large text
+ok 22 - Settings keeps appearance values readable at large text
+  ---
+  duration_ms: 0.495042
+  type: 'test'
+  ...
+# Subtest: shared supporting list-row text uses the Figma fractional line height
+ok 23 - shared supporting list-row text uses the Figma fractional line height
+  ---
+  duration_ms: 0.646333
+  type: 'test'
+  ...
+# Subtest: appearance selection owns the typed accessible radio choice flow
+ok 24 - appearance selection owns the typed accessible radio choice flow
+  ---
+  duration_ms: 0.620375
+  type: 'test'
+  ...
+# Subtest: language selection owns the typed accessible radio choice flow
+ok 25 - language selection owns the typed accessible radio choice flow
+  ---
+  duration_ms: 0.550083
+  type: 'test'
+  ...
+# Subtest: System language detail follows the device locale independently from the selected app locale
+ok 26 - System language detail follows the device locale independently from the selected app locale
+  ---
+  duration_ms: 0.475375
+  type: 'test'
+  ...
+# Subtest: InfoBlock exposes opt-in alert semantics for dynamic settings errors
+ok 27 - InfoBlock exposes opt-in alert semantics for dynamic settings errors
+  ---
+  duration_ms: 0.089042
+  type: 'test'
+  ...
+# Subtest: appearance choices use the Figma preview variants without changing language choices
+ok 28 - appearance choices use the Figma preview variants without changing language choices
+  ---
+  duration_ms: 0.124542
+  type: 'test'
+  ...
+# Subtest: settings bottom sheets use the Figma elevated shell and modal accessibility boundary
+ok 29 - settings bottom sheets use the Figma elevated shell and modal accessibility boundary
+  ---
+  duration_ms: 0.600958
+  type: 'test'
+  ...
+# Subtest: information topics keep a stable locale-independent selection and explicit next-page affordance
+ok 30 - information topics keep a stable locale-independent selection and explicit next-page affordance
+  ---
+  duration_ms: 0.315
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1417.445209

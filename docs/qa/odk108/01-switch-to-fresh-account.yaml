@@ -1,0 +1,58 @@
+appId: com.lkurczab.patternly
+name: ODK-108 switch to fresh recent-auth account
+tags: [ios, account, setup]
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    notVisible: "Refreshing..."
+    timeout: 120000
+- runFlow:
+    when:
+      visible: "Go back"
+    commands:
+      - tapOn: "Go back"
+- runFlow:
+    when:
+      visible: "Go back"
+    commands:
+      - tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-sign-out"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-sign-out"
+- extendedWaitUntil:
+    visible:
+      id: "account-sign-in"
+    timeout: 30000
+- tapOn:
+    id: "account-sign-in"
+- tapOn:
+    id: "account-email"
+- inputText: "odk108-runtime-20260912@example.test"
+- tapOn:
+    id: "account-password"
+- inputText: "Odk108Secure42"
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "account-sign-in-submit"
+- extendedWaitUntil:
+    visible:
+      id: "account-entry-continue"
+    timeout: 30000
+- tapOn:
+    id: "account-entry-continue"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000

@@ -13,8 +13,10 @@ const appPreferencesProvider = readFileSync("src/preferences/AppPreferencesProvi
 const accountCommand = readFileSync("src/features/account/useAccountCommand.ts", "utf8");
 const informationScreen = readFileSync("src/features/home/SettingsInformationScreen.tsx", "utf8");
 const yourDataScreen = readFileSync("src/features/home/YourDataScreen.tsx", "utf8");
+const yourDataPresentation = readFileSync("src/features/home/yourDataPresentation.ts", "utf8");
 const legalScreen = readFileSync("src/features/home/LegalInformationScreen.tsx", "utf8");
 const legalRequestsScreen = readFileSync("src/features/home/LegalRequestsScreen.tsx", "utf8");
+const legalRequestSubmission = readFileSync("src/features/home/legalRequestSubmission.ts", "utf8");
 const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 const premiumScreen = readFileSync("src/features/premium/PremiumPurchaseScreen.tsx", "utf8");
 
@@ -62,14 +64,31 @@ test("Legal information exposes exactly four distinct request entries and keeps 
   assert.match(legalScreen, /kind: "complaint"/);
   assert.match(legalScreen, /kind: "withdrawal"/);
   assert.match(legalScreen, /kind: "suspension_appeal"/);
-  assert.match(legalRequestsScreen, /account\.state\.kind !== "authenticated"/);
+  assert.match(legalRequestsScreen, /authenticated: account\.state\.kind === "authenticated"/);
   assert.match(legalRequestsScreen, /account\.createPublicLegalRequest/);
   assert.match(legalRequestsScreen, /testID="legal-request-email"/);
   assert.match(legalScreen, /kind: "data_recovery"/);
-  assert.match(legalRequestsScreen, /kind === "withdrawal"/);
-  assert.match(legalRequestsScreen, /kind !== "withdrawal" && !trimmedNarrative/);
-  assert.match(legalRequestsScreen, /\.\.\.\(trimmedNarrative \? \{ narrative: trimmedNarrative \} : \{\}\)/);
+  assert.match(legalRequestSubmission, /input\.kind !== "withdrawal" && !narrative/);
+  assert.match(legalRequestSubmission, /\.\.\.\(narrative \? \{ narrative \} : \{\}\)/);
   assert.doesNotMatch(legalRequestsScreen, /mailto:/);
+});
+
+test("Legal request form keeps validation inline, field-specific, and API-free", () => {
+  assert.match(legalRequestsScreen, /type LegalRequestEmailError = "emailRequired"/u);
+  assert.match(legalRequestsScreen, /type LegalRequestNarrativeError = "narrativeRequired"/u);
+  assert.match(legalRequestsScreen, /const \[emailError, setEmailError\] = useState<LegalRequestEmailError \| null>\(null\)/u);
+  assert.match(legalRequestsScreen, /const \[narrativeError, setNarrativeError\] = useState<LegalRequestNarrativeError \| null>\(null\)/u);
+  assert.equal((legalRequestSubmission.match(/LEGAL_REQUEST_EMAIL_PATTERN/g) ?? []).length, 2);
+  assert.match(legalRequestsScreen, /if \(submission\.kind === "validation_failure"\)[\s\S]*?setNarrativeError\(submission\.errors\.narrative\);[\s\S]*?setEmailError\(submission\.errors\.email\);[\s\S]*?return/u);
+  assert.match(legalRequestsScreen, /testID="legal-request-email-error"/u);
+  assert.match(legalRequestsScreen, /testID="legal-request-narrative-error"/u);
+  assert.match(legalRequestsScreen, /accessibilityHint=\{emailErrorMessage\}[\s\S]*?accessibilityLabel=\{emailLabel\}[\s\S]*?styles\.inputError/u);
+  assert.match(legalRequestsScreen, /accessibilityHint=\{narrativeErrorMessage\}[\s\S]*?accessibilityLabel=\{narrativeLabel\}[\s\S]*?styles\.inputError/u);
+  assert.match(legalRequestsScreen, /setEmail\(value\); setEmailError\(null\)/u);
+  assert.match(legalRequestsScreen, /setNarrative\(value\); setNarrativeError\(null\)/u);
+  assert.match(legalRequestsScreen, /function openForm\(\)\s*\{\s*setEmailError\(null\);\s*setNarrativeError\(null\);\s*setFormVisible\(true\);/u);
+  assert.match(legalRequestsScreen, /setTransactionId\(""\);\s*setEmailError\(null\);\s*setNarrativeError\(null\);\s*setFormVisible\(false\)/u);
+  assert.doesNotMatch(legalRequestsScreen, /setFailure\(t\("legalRequests\.(?:emailRequired|narrativeRequired)"\)\)/u);
 });
 
 test("Settings account presentation names guest, authenticated, and unavailable states and keeps sign-out provider-owned", () => {
@@ -157,6 +176,54 @@ test("Your data keeps the Settings entry label and names its local header consis
   assert.equal(dataEn.yourData, "Your data");
   assert.equal(dataPl.settings, "Ustawienia");
   assert.equal(dataPl.yourData, "Twoje dane");
+});
+
+test("Your data owns an exhaustive account-state action matrix and wires the mapped controls", () => {
+  assert.match(yourDataPresentation, /export function getYourDataPresentation\(state: AccountState\)/u);
+  assert.match(yourDataPresentation, /switch \(state\.kind\)/u);
+  assert.match(yourDataPresentation, /function assertNever\(value: never\): never/u);
+  for (const state of ["authenticated", "guest", "signedOut", "guestAccessBlocked", "verificationPending", "loading", "unavailable", "deletionPending", "signingOut", "deleting", "backendUnavailable", "revokedSession"]) {
+    assert.match(yourDataPresentation, new RegExp(`case "${state}"`));
+  }
+  assert.match(yourDataPresentation, /auth_restore_timeout/);
+  assert.match(yourDataPresentation, /firebase_unconfigured/);
+  assert.match(yourDataPresentation, /public_environment_unconfigured/);
+  assert.match(yourDataPresentation, /public_environment_invalid/);
+  assert.match(yourDataScreen, /getYourDataPresentation\(account\.state\)/u);
+  assert.match(yourDataScreen, /account\.retrySessionRestore\(\)/u);
+  assert.match(yourDataScreen, /account\.retryPendingDeletion\(\)/u);
+  assert.match(yourDataScreen, /account\.refreshAccountIdentity\(\)/u);
+  assert.match(yourDataScreen, /account\.signOut\(\)/u);
+  assert.match(yourDataScreen, /if \(busyRef\.current \|\| !activeRef\.current\) return/u);
+  assert.match(yourDataScreen, /presentation\.action\.kind === "none" \? <ListRow/u);
+  assert.match(yourDataScreen, /presentation\.details !== "none"/u);
+  assert.match(yourDataScreen, /presentation\.privacyRequests \?/u);
+  assert.match(yourDataScreen, /testID=\{presentation\.action\.testID\}/u);
+  assert.match(yourDataPresentation, /reset: stateCopy === "authenticated" \|\| stateCopy === "guest"/u);
+  for (const testID of ["data-local-reset", "data-local-reset-confirmation", "data-local-reset-scope", "data-local-reset-cancel", "data-local-reset-confirm", "data-local-reset-success", "data-local-reset-error", "data-local-reset-running"]) {
+    assert.match(yourDataScreen, new RegExp(`testID="${testID}"`));
+  }
+  assert.match(yourDataScreen, /account\.resetLocalLearningHistory\(\)/u);
+  assert.doesNotMatch(yourDataScreen, /testID="your-data-none"/u);
+  for (const locale of ["en", "pl"]) {
+    const data = JSON.parse(readFileSync(`src/locales/${locale}/data.json`, "utf8")) as Record<string, unknown>;
+    assert.ok(data.state);
+    assert.ok(data.actions);
+    assert.ok(data.localReset);
+    assert.equal(typeof (data.status as Record<string, unknown>).actionFailed, "string");
+  }
+});
+
+test("Your data export copy matches the complete JSON scope and the system share or save action", () => {
+  const en = JSON.parse(readFileSync("src/locales/en/data.json", "utf8")) as Record<string, any>;
+  const pl = JSON.parse(readFileSync("src/locales/pl/data.json", "utf8")) as Record<string, any>;
+
+  assert.equal(en.actions.export.title, "Share or download account data");
+  assert.match(en.actions.export.summary, /account data, synced learning, and account activity/u);
+  for (const phrase of ["legal acceptances", "purchase confirmations", "consumer cases", "device metadata", "sync metadata", "system share or save sheet", "cannot be imported"]) assert.match(en.details.accountBody, new RegExp(phrase, "u"));
+  assert.equal(pl.actions.export.title, "Udostępnij lub pobierz dane konta");
+  assert.match(pl.actions.export.summary, /danymi konta, synchronizowaną nauką i aktywnością konta/u);
+  for (const phrase of ["akceptacje prawne", "potwierdzenia zakupów", "sprawy konsumenckie", "metadane urządzeń", "metadane synchronizacji", "systemowego arkusza udostępniania lub zapisu", "nie można go zaimportować"]) assert.match(pl.details.accountBody, new RegExp(phrase, "u"));
 });
 
 test("Settings app identity follows the Figma footer geometry", () => {
@@ -286,8 +353,18 @@ test("information topics keep a stable locale-independent selection and explicit
 
   const dataEn = readFileSync("src/locales/en/data.json", "utf8");
   const dataPl = readFileSync("src/locales/pl/data.json", "utf8");
-  assert.match(dataEn, /Confirmed account-owned records can be restored only through the explicit adoption flow/);
-  assert.match(dataPl, /Potwierdzone rekordy konta można przywrócić wyłącznie przez jawny przepływ adopcji/);
+  assert.match(dataEn, /Supported account records can also sync to your account cloud and return through normal sync after you sign in/);
+  assert.match(dataPl, /Obsługiwane rekordy konta mogą być także synchronizowane z chmurą konta i wrócić przez zwykłą synchronizację po zalogowaniu/);
+  assert.match(dataEn, /normal sync can restore supported records from the account cloud/);
+  assert.match(dataPl, /zwykła synchronizacja może przywrócić obsługiwane rekordy z chmury konta/);
+  assert.match(dataEn, /completed session summaries and results/);
+  assert.match(dataPl, /podsumowania i wyniki ukończonych sesji/);
+  assert.match(dataEn, /Guest-data adoption is a separate choice that merges eligible progress from this device into the account/);
+  assert.match(dataPl, /Adopcja danych gościa jest osobną decyzją, która łączy kwalifikujący się postęp z tego urządzenia z kontem/);
+  assert.match(dataEn, /system share or save sheet for access and portability and cannot be imported into Patternly/);
+  assert.match(dataPl, /systemowego arkusza udostępniania lub zapisu, służy dostępowi i przenoszeniu danych i nie można go zaimportować do Patternly/);
+  assert.doesNotMatch(dataEn, /restored only through the explicit adoption flow/);
+  assert.doesNotMatch(dataPl, /przywrócić wyłącznie przez jawny przepływ adopcji/);
   assert.doesNotMatch(dataEn, /It offers no backup or restore path/);
   assert.doesNotMatch(dataPl, /Nie oferuje backupu ani przywracania/);
 });

@@ -1,0 +1,64 @@
+appId: com.lkurczab.patternly
+name: ODK-090 guest inline email validation
+tags:
+  - screenshot
+  - ios
+  - legal
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible:
+        id: "patternly:home:guest-goal-onboarding:not-now"
+    commands:
+      - tapOn:
+          id: "patternly:home:guest-goal-onboarding:not-now"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-language"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "settings-legal-information"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-legal-information"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-complaint"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "legal-request-complaint"
+- tapOn:
+    id: "legal-request-create-complaint"
+- tapOn:
+    id: "legal-request-email"
+- inputText: "invalid"
+- tapOn:
+    id: "legal-request-narrative"
+- inputText: "Guest complaint details"
+- tapOn:
+    id: "legal-request-submit"
+- assertVisible:
+    id: "legal-request-email-error"
+- assertVisible:
+    id: "legal-request-submit"
+- takeScreenshot: "legal-validation__guest__010__email-error-inline__light__ios-regular"
+- tapOn:
+    id: "legal-request-email"
+- eraseText
+- inputText: "guest@example.com"
+- assertNotVisible:
+    id: "legal-request-email-error"
+- assertVisible:
+    id: "legal-request-submit"
+- takeScreenshot: "legal-validation__guest__020__email-corrected__light__ios-regular"

@@ -1,0 +1,83 @@
+appId: com.lkurczab.patternly
+name: ODK-106 Your data explicit state — guest EN and PL
+tags:
+  - screenshot
+  - ios
+  - i18n
+  - guest
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible:
+        id: "onboarding-not-now"
+    commands:
+      - tapOn:
+          id: "onboarding-not-now"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000
+- tapOn:
+    id: "main-tab-bar-settings"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-en"
+- tapOn: "Go back"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-your-data"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-your-data"
+- assertVisible: "Guest data"
+- assertVisible: ".*Learning data is stored locally on this device.*"
+- assertVisible:
+    id: "data-privacy-support"
+- takeScreenshot: "your-data-state__guest__010__summary__en__light__ios-regular"
+- tapOn:
+    id: "data-guest-details"
+- assertVisible: ".*You do not need an account to contact us about your data.*"
+- takeScreenshot: "your-data-state__guest__020__details__en__light__ios-regular"
+- tapOn: "Close"
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-pl"
+- tapOn: "Wróć"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-your-data"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-your-data"
+- assertVisible: "Dane gościa"
+- assertVisible: ".*Dane nauki są zapisywane lokalnie na tym urządzeniu.*"
+- assertVisible:
+    id: "data-privacy-support"
+- takeScreenshot: "your-data-state__guest__030__summary__pl__light__ios-regular"
+- tapOn:
+    id: "data-guest-details"
+- assertVisible: ".*Konto nie jest potrzebne, aby skontaktować się w sprawie swoich danych.*"
+- takeScreenshot: "your-data-state__guest__040__details__pl__light__ios-regular"

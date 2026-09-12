@@ -15,6 +15,8 @@ export type AccountDataFailureCode =
   | "account_binding_mismatch"
   | "guest_binding_write_unverified"
   | "account_adoption_pending"
+  | "content_identity_schema_conflict"
+  | "account_reset_requires_clean_sync"
   | "account_materialization_in_progress"
   | "account_materialization_target_required"
   | "account_materialization_verification_failed"

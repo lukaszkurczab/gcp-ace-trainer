@@ -31,11 +31,19 @@ export function isValidAccountDataExport(value: unknown): value is AccountDataEx
   if (typeof value.exportId !== "string" || !/^[A-Za-z0-9_-]{8,128}$/u.test(value.exportId)) return false;
   if (typeof value.exportedAt !== "string" || !Number.isFinite(Date.parse(value.exportedAt))) return false;
   if (!isRecord(value.scope) || value.scope.portable !== "user_data_and_activity" || value.scope.accountContext !== "user_visible_account_context") return false;
+  if (!isRecord(value.article15Information)) return false;
+  const article15 = value.article15Information;
+  for (const key of ["purposes", "dataCategories", "recipientCategories", "retentionCriteria", "dataSources"] as const) {
+    if (!Array.isArray(article15[key]) || !article15[key].every(isString)) return false;
+  }
+  for (const key of ["internationalTransfers", "automatedDecisionMaking", "rightsAndComplaint"] as const) {
+    if (!isString(article15[key])) return false;
+  }
   if (!isRecord(value.portable) || !isRecord(value.portable.profile) || !isString(value.portable.profile.createdAt) || !Number.isFinite(Date.parse(value.portable.profile.createdAt)) || !isRecord(value.portable.profile.identity)) return false;
   const identity = value.portable.profile.identity;
   if (!isString(identity.provider) || (identity.email !== null && !isString(identity.email)) || typeof identity.emailVerified !== "boolean") return false;
   if (!isRecordArray(value.portable.progress) || !isRecordArray(value.portable.linkedContentReports)) return false;
-  if (!isRecord(value.accountContext) || !isRecordArray(value.accountContext.trackAccess) || !isRecordArray(value.accountContext.entitlements) || !isRecordArray(value.accountContext.devices) || !isRecord(value.accountContext.syncMetadata) || !isRecordArray(value.accountContext.exportHistory)) return false;
+  if (!isRecord(value.accountContext) || !isRecordArray(value.accountContext.trackAccess) || !isRecordArray(value.accountContext.entitlements) || !isRecordArray(value.accountContext.legalAcceptances) || !isRecordArray(value.accountContext.purchaseConfirmations) || !isRecordArray(value.accountContext.consumerCases) || !isRecordArray(value.accountContext.devices) || !isRecord(value.accountContext.syncMetadata) || !isRecordArray(value.accountContext.exportHistory)) return false;
   if (!isRecord(value.manifest) || !Array.isArray(value.manifest.included) || !value.manifest.included.every(isString) || !isRecordArray(value.manifest.omitted)) return false;
   return value.manifest.omitted.every((entry) => isString(entry.category) && isString(entry.reason));
 }

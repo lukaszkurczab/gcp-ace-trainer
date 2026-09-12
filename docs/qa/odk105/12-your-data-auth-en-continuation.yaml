@@ -1,0 +1,38 @@
+appId: com.lkurczab.patternly
+name: ODK-105 Your data truth — authenticated EN continuation
+tags:
+  - screenshot
+  - ios
+  - i18n
+  - account
+---
+- tapOn: "Zamknij"
+- tapOn: "Wróć"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-en"
+- tapOn: "Go back"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-your-data"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-your-data"
+- assertVisible: ".*Supported account records can also sync to your account cloud.*"
+- takeScreenshot: "data-truth__auth__010__summary__en__dark__ios-regular"
+- tapOn:
+    id: "account-data-export-details"
+- assertVisible: "Data details"
+- assertVisible: ".*normal sync can restore supported records from the account cloud.*"
+- assertVisible: ".*Guest-data adoption is a separate choice.*"
+- assertVisible: ".*downloaded JSON is for access and portability and cannot be imported into Patternly.*"
+- takeScreenshot: "data-truth__auth__020__details-restore__en__dark__ios-regular"

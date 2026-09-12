@@ -6,6 +6,16 @@ export const CLEAR_LOCAL_HISTORY_DETAIL =
 export const CLEAR_LOCAL_HISTORY_CONFIRMATION =
   "This deletes local practice, exams, review queue, progress, review marks, active sessions, and saved draft responses.";
 
+export const LOCAL_HISTORY_RESET_SCOPE = Object.freeze([
+  "sessions",
+  "results",
+  "attempts",
+  "review",
+  "activeSession",
+  "drafts",
+  "timers",
+] as const);
+
 export type ClearLocalHistoryResult =
   | { ok: true }
   | { ok: false; message: string };

@@ -11,8 +11,11 @@ import type { RootStackParamList } from "../../navigation";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { radius, spacing, typography } from "../../theme";
+import { submitLegalRequest } from "./legalRequestSubmission";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.LEGAL_REQUESTS>;
+type LegalRequestEmailError = "emailRequired";
+type LegalRequestNarrativeError = "narrativeRequired";
 
 export function LegalRequestsScreen({ navigation, route }: Props) {
   const { t } = useTranslation("legal");
@@ -23,6 +26,8 @@ export function LegalRequestsScreen({ navigation, route }: Props) {
   const [narrative, setNarrative] = useState("");
   const [email, setEmail] = useState("");
   const [transactionId, setTransactionId] = useState("");
+  const [emailError, setEmailError] = useState<LegalRequestEmailError | null>(null);
+  const [narrativeError, setNarrativeError] = useState<LegalRequestNarrativeError | null>(null);
   const [formVisible, setFormVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<LegalRequestDto | null>(null);
   const [busy, setBusy] = useState(false);
@@ -41,24 +46,34 @@ export function LegalRequestsScreen({ navigation, route }: Props) {
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; operationActive.current = false; }; }, []);
   useEffect(() => { if (failure) AccessibilityInfo.announceForAccessibility(failure); }, [failure]);
 
+  function openForm() {
+    setEmailError(null);
+    setNarrativeError(null);
+    setFormVisible(true);
+  }
+
   async function submit() {
     if (operationActive.current) return;
-    const trimmedNarrative = narrative.trim();
-    if (kind !== "withdrawal" && !trimmedNarrative) {
-      setFailure(t("legalRequests.narrativeRequired"));
+    const submission = await submitLegalRequest({
+      authenticated: account.state.kind === "authenticated",
+      email,
+      kind,
+      narrative,
+      transactionId,
+      onValidated: () => {
+        operationActive.current = true;
+        setBusy(true);
+        setFailure(null);
+      },
+      createLegalRequest: account.createLegalRequest,
+      createPublicLegalRequest: account.createPublicLegalRequest,
+    });
+    if (submission.kind === "validation_failure") {
+      setNarrativeError(submission.errors.narrative);
+      setEmailError(submission.errors.email);
       return;
     }
-    if (account.state.kind !== "authenticated" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email.trim())) {
-      setFailure(t("legalRequests.emailRequired"));
-      return;
-    }
-    operationActive.current = true;
-    setBusy(true);
-    setFailure(null);
-    const request = { kind, ...(trimmedNarrative ? { narrative: trimmedNarrative } : {}), ...(transactionId.trim() ? { transactionId: transactionId.trim() } : {}) };
-    const result = account.state.kind === "authenticated"
-      ? await account.createLegalRequest(request)
-      : await account.createPublicLegalRequest({ ...request, email: email.trim() });
+    const result = submission.result;
     if (!mounted.current) return;
     operationActive.current = false;
     setBusy(false);
@@ -67,6 +82,8 @@ export function LegalRequestsScreen({ navigation, route }: Props) {
     setNarrative("");
     setEmail("");
     setTransactionId("");
+    setEmailError(null);
+    setNarrativeError(null);
     setFormVisible(false);
     AccessibilityInfo.announceForAccessibility(t("legalRequests.created"));
   }
@@ -86,21 +103,24 @@ export function LegalRequestsScreen({ navigation, route }: Props) {
 
   const title = t(`legalRequests.kinds.${kind}.title`);
   const isAuthenticated = account.state.kind === "authenticated";
+  const emailLabel = t("legalRequests.emailLabel");
+  const narrativeLabel = t(kind === "withdrawal" ? "legalRequests.narrativeOptionalLabel" : "legalRequests.narrativeLabel");
+  const emailErrorMessage = emailError ? t(`legalRequests.${emailError}`) : undefined;
+  const narrativeErrorMessage = narrativeError ? t(`legalRequests.${narrativeError}`) : undefined;
 
   return (
     <Screen edges={["top", "bottom"]}>
       <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("settings")} contextTone="primary" title={title} />
       <InfoBlock body={isAuthenticated ? t(`legalRequests.kinds.${kind}.intro`) : t("legalRequests.guestIntro")} icon={<Icon name="shield-check" size={18} />} title={title} />
-      <Button onPress={() => setFormVisible(true)} testID={`legal-request-create-${kind}`}>{t("legalRequests.create")}</Button>
+      <Button onPress={openForm} testID={`legal-request-create-${kind}`}>{t("legalRequests.create")}</Button>
       {isAuthenticated ? <SettingsGroup title={t("legalRequests.yourRequests")}>
         {items.length === 0 ? <ListRow detail={t("legalRequests.emptyDetail")} leading={<IconTile name="mail" size={32} tone="settings" />} title={t("legalRequests.empty")} variant="grouped" /> : items.map((item) => <ListRow detail={`${t(`legalRequests.status.${item.status}`)} · ${t("legalRequests.received", { date: new Date(item.receivedAt).toLocaleDateString() })}`} key={item.requestId} leading={<IconTile name="shield-check" size={32} tone="settings" />} onPress={() => { void openRequest(item); }} testID={`legal-request-${item.requestId}`} title={title} variant="grouped" />)}
       </SettingsGroup> : null}
       {failure ? <InfoBlock accessibilityAlert body={failure} title={t("legalRequests.failureTitle")} tone="warning" /> : null}
 
       <SettingsBottomSheet closeLabel={t("close")} intro={t(`legalRequests.kinds.${kind}.formIntro`)} onClose={() => setFormVisible(false)} title={title} visible={formVisible}>
-        {isAuthenticated ? null : <View style={styles.field}><Text maxFontSizeMultiplier={2} style={styles.label}>{t("legalRequests.emailLabel")}</Text><TextInput accessibilityLabel={t("legalRequests.emailLabel")} autoCapitalize="none" autoComplete="email" editable={!busy} keyboardType="email-address" onChangeText={setEmail} placeholder={t("legalRequests.emailPlaceholder")} placeholderTextColor={styles.placeholder.color as string} style={styles.singleLineInput} testID="legal-request-email" value={email} /></View>}
-        <Text maxFontSizeMultiplier={2} style={styles.label}>{t(kind === "withdrawal" ? "legalRequests.narrativeOptionalLabel" : "legalRequests.narrativeLabel")}</Text>
-        <TextInput accessibilityLabel={t("legalRequests.narrativeLabel")} editable={!busy} maxLength={2000} multiline onChangeText={setNarrative} placeholder={t("legalRequests.narrativePlaceholder")} placeholderTextColor={styles.placeholder.color as string} style={styles.input} testID="legal-request-narrative" value={narrative} />
+        {isAuthenticated ? null : <View style={styles.field}><Text maxFontSizeMultiplier={2} style={styles.label}>{emailLabel}</Text><TextInput accessibilityHint={emailErrorMessage} accessibilityLabel={emailLabel} autoCapitalize="none" autoComplete="email" editable={!busy} keyboardType="email-address" onChangeText={(value) => { setEmail(value); setEmailError(null); }} placeholder={t("legalRequests.emailPlaceholder")} placeholderTextColor={styles.placeholder.color as string} style={[styles.singleLineInput, emailError ? styles.inputError : null]} testID="legal-request-email" value={email} />{emailErrorMessage ? <Text selectable accessibilityLabel={`${emailLabel}. ${emailErrorMessage}`} accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.fieldError} testID="legal-request-email-error">{emailErrorMessage}</Text> : null}</View>}
+        <View style={styles.field}><Text maxFontSizeMultiplier={2} style={styles.label}>{narrativeLabel}</Text><TextInput accessibilityHint={narrativeErrorMessage} accessibilityLabel={narrativeLabel} editable={!busy} maxLength={2000} multiline onChangeText={(value) => { setNarrative(value); setNarrativeError(null); }} placeholder={t("legalRequests.narrativePlaceholder")} placeholderTextColor={styles.placeholder.color as string} style={[styles.input, narrativeError ? styles.inputError : null]} testID="legal-request-narrative" value={narrative} />{narrativeErrorMessage ? <Text selectable accessibilityLabel={`${narrativeLabel}. ${narrativeErrorMessage}`} accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.fieldError} testID="legal-request-narrative-error">{narrativeErrorMessage}</Text> : null}</View>
         {kind === "withdrawal" ? <View style={styles.field}><Text maxFontSizeMultiplier={2} style={styles.label}>{t("legalRequests.transactionIdLabel")}</Text><TextInput accessibilityLabel={t("legalRequests.transactionIdLabel")} editable={!busy} maxLength={160} onChangeText={setTransactionId} placeholder={t("legalRequests.transactionIdPlaceholder")} placeholderTextColor={styles.placeholder.color as string} style={styles.singleLineInput} testID="legal-request-transaction-id" value={transactionId} /></View> : null}
         <Button loading={busy} onPress={() => { void submit(); }} testID="legal-request-submit">{t("legalRequests.submit")}</Button>
       </SettingsBottomSheet>
@@ -115,7 +135,9 @@ export function LegalRequestsScreen({ navigation, route }: Props) {
 const createStyles = (palette: AppColors) => StyleSheet.create({
   field: { gap: spacing.xs },
   input: { ...typography.body, backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, color: palette.textPrimary, minHeight: 96, padding: spacing.md, textAlignVertical: "top" },
+  inputError: { borderColor: palette.danger },
   label: { ...typography.small, color: palette.textSecondary },
   placeholder: { color: palette.textMuted },
   singleLineInput: { ...typography.body, backgroundColor: palette.surfaceInput, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, color: palette.textPrimary, minHeight: 48, paddingHorizontal: spacing.md },
+  fieldError: { ...typography.caption, color: palette.danger },
 });

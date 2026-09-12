@@ -1,0 +1,80 @@
+appId: com.lkurczab.patternly
+name: ODK-106 Your data explicit state — authenticated EN and PL
+tags:
+  - screenshot
+  - ios
+  - i18n
+  - account
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible: "Check verification"
+    commands:
+      - tapOn: "Check verification"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000
+- tapOn:
+    id: "main-tab-bar-settings"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-en"
+- tapOn: "Go back"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-your-data"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-your-data"
+- assertVisible: "Your account data"
+- assertVisible: ".*Supported account records can also sync to your account cloud.*"
+- assertVisible:
+    id: "account-data-export"
+- assertVisible:
+    id: "account-data-export-details"
+- assertVisible:
+    id: "privacy-requests-entry"
+- takeScreenshot: "your-data-state__auth__010__actions__en__dark__ios-regular"
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: "settings-language"
+- tapOn:
+    id: "language-option-pl"
+- tapOn: "Wróć"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-your-data"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-your-data"
+- assertVisible: "Dane Twojego konta"
+- assertVisible: ".*Obsługiwane rekordy konta mogą być także synchronizowane z chmurą konta.*"
+- assertVisible:
+    id: "account-data-export"
+- assertVisible:
+    id: "account-data-export-details"
+- assertVisible:
+    id: "privacy-requests-entry"
+- takeScreenshot: "your-data-state__auth__020__actions__pl__dark__ios-regular"
