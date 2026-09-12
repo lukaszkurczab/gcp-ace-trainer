@@ -15,8 +15,13 @@ import { getTrainingSessionResult, saveTrainingSessionResult } from "./trainingS
 import { clearTrainingSessions, getActiveTrainingSessionId, getTrainingSessions, saveTrainingSession } from "./trainingSessionRepository";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionResult } from "./trainingModelGuards";
 import { AccountDataFailure } from "../errors";
+import { CONTENT_IDENTITY_V2_SCHEMA as CONTENT_IDENTITY_SCHEMA } from "../contracts/contentIdentityV2";
 
 export const ACCOUNT_DATA_PROTOCOL_VERSION = 2 as const;
+export const ACCOUNT_DATA_PROTOCOL_V4 = 4 as const;
+export type AccountDataProtocolMode = "v3" | "v4";
+export type ContentIdentitySchema = typeof CONTENT_IDENTITY_SCHEMA;
+export { CONTENT_IDENTITY_SCHEMA };
 export const LEGACY_SYNCABLE_RECORD_TYPES = ["active_track", "training_session_summary", "training_session_result", "training_attempt", "review_queue_entry"] as const;
 export const SYNCABLE_RECORD_TYPES = [...LEGACY_SYNCABLE_RECORD_TYPES, "goal", "learning_plan"] as const;
 export type SyncableRecordType = (typeof SYNCABLE_RECORD_TYPES)[number];
@@ -28,7 +33,12 @@ export type AccountDataRecord = Readonly<{
   state: Readonly<Record<string, unknown>>;
   trackId: string;
   version: number;
+  /** Present only for records carried by protocol-v4. */
+  contentIdentitySchema?: ContentIdentitySchema;
 }>;
+
+export type AccountDataRecordV3 = Readonly<Omit<AccountDataRecord, "contentIdentitySchema"> & { contentIdentitySchema?: never }>;
+export type AccountDataRecordV4 = Readonly<Omit<AccountDataRecord, "contentIdentitySchema"> & { contentIdentitySchema: ContentIdentitySchema }>;
 
 export type AccountSyncPlanItem = Readonly<{
   sequence: number;
@@ -40,26 +50,43 @@ export type AccountSyncPlanItem = Readonly<{
   status: "pending" | "sent" | "acked";
 }>;
 
+export type AccountSyncPlanItemV4 = Readonly<AccountSyncPlanItem & { payload: AccountDataRecordV4 }>;
+
 export type AccountSyncPlan = Readonly<{
-  version: 3;
+  version: 3 | 4;
   planId: string;
   snapshotVersion: number;
   expectedAccountRevision: number;
   highWatermark: number;
   items: readonly AccountSyncPlanItem[];
+  /** Required when version is 4; absent for protocol-v3 plans. */
+  contentIdentitySchema?: ContentIdentitySchema;
 }>;
 
-export type AccountDataSnapshot = Readonly<{
+export type AccountDataSnapshotV3 = Readonly<{
   protocolVersion: 1 | 2;
   guestSnapshotVersion: number;
   guestUserId: string;
-  records: readonly AccountDataRecord[];
+  records: readonly AccountDataRecordV3[];
+  activeSession: boolean;
+  pendingJournal: boolean;
+  contentIdentitySchema?: never;
+}>;
+
+export type AccountDataSnapshotV4 = Readonly<{
+  protocolVersion: 4;
+  contentIdentitySchema: ContentIdentitySchema;
+  guestSnapshotVersion: number;
+  guestUserId: string;
+  records: readonly AccountDataRecordV4[];
   activeSession: boolean;
   pendingJournal: boolean;
 }>;
 
+export type AccountDataSnapshot = AccountDataSnapshotV3 | AccountDataSnapshotV4;
+
 export type AccountSyncState = Readonly<{
-  protocolVersion: 1 | 2;
+  protocolVersion: 1 | 2 | 3 | 4;
   accountId: string | null;
   status: "initialSyncRequired" | "syncing" | "synced" | "offlinePending" | "conflict" | "failed";
   localDatasetVersion: number;
@@ -72,11 +99,22 @@ export type AccountSyncState = Readonly<{
   acknowledged: Readonly<Record<string, AccountAcknowledgedRecord>>;
   outbox: readonly AccountOutboxEntry[];
   materialization: AccountMaterialization | null;
-  pendingConfirmation: Readonly<{ operationId: string; previewFingerprint: string; protocolVersion: 1 | 2; resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[]; groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[] }> | null;
+  pendingConfirmation: Readonly<{ operationId: string; previewFingerprint: string; protocolVersion: 1 | 2 | 4; contentIdentitySchema?: ContentIdentitySchema; resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[]; groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[] }> | null;
   /** Durable protocol-v3 planning cursor. Older stored states hydrate it lazily. */
   syncPlan: AccountSyncPlan | null;
   outboxSequence: number;
   highWatermark: number;
+  /** Required when protocolVersion is 4; absent for pre-marker state. */
+  contentIdentitySchema?: ContentIdentitySchema;
+  /** Optional durable local-history reset cursor. Older stored states hydrate it as null. */
+  resetGuard: AccountResetGuard | null;
+}>;
+
+export type AccountResetGuard = Readonly<{
+  accountId: string;
+  createdAt: string;
+  operationId: string;
+  phase: "localResetPending" | "remoteRestorePending";
 }>;
 
 export type AccountMaterialization = Readonly<
@@ -86,10 +124,12 @@ export type AccountMaterialization = Readonly<
 
 export type GuestOwnedLocalDataBackupEntry = Readonly<{ key: string; value: string }>;
 
-export type AccountAcknowledgedRecord = Readonly<{ fingerprint: string; recordId: string; recordType: SyncableRecordType; remoteVersion: number; trackId: string }>;
+export type AccountAcknowledgedRecord = Readonly<{ fingerprint: string; recordId: string; recordType: SyncableRecordType; remoteVersion: number; trackId: string; contentIdentitySchema?: ContentIdentitySchema }>;
+export type AccountAcknowledgedRecordV4 = Readonly<AccountAcknowledgedRecord & { contentIdentitySchema: ContentIdentitySchema }>;
 export type AccountOutboxEntry = Readonly<AccountDataRecord & { mutationId: string; expectedVersion: number | null; attemptCount: number; lastErrorCode: string | null; status: "pending" | "retrying" | "failed"; sequence: number }>;
+export type AccountOutboxEntryV4 = Readonly<AccountOutboxEntry & { contentIdentitySchema: ContentIdentitySchema }>;
 
-const emptyState = (): AccountSyncState => Object.freeze({ protocolVersion: ACCOUNT_DATA_PROTOCOL_VERSION, accountId: null, status: "initialSyncRequired", localDatasetVersion: 0, localDatasetFingerprint: null, remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged: Object.freeze({}), outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, outboxSequence: 0, highWatermark: 0 });
+const emptyState = (): AccountSyncState => Object.freeze({ protocolVersion: ACCOUNT_DATA_PROTOCOL_VERSION, accountId: null, status: "initialSyncRequired", localDatasetVersion: 0, localDatasetFingerprint: null, remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged: Object.freeze({}), outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, outboxSequence: 0, highWatermark: 0, resetGuard: null });
 
 const LEARNING_FIXED_KEYS = [
   STORAGE_KEYS.ACTIVE_TRACK,
@@ -128,6 +168,112 @@ function isGuestOwnedLocalDataBackupEntry(value: unknown): value is GuestOwnedLo
 
 function isSyncableRecordType(value: unknown): value is SyncableRecordType { return typeof value === "string" && (SYNCABLE_RECORD_TYPES as readonly string[]).includes(value); }
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
+function isProtocolMode(value: unknown): value is AccountDataProtocolMode { return value === "v3" || value === "v4"; }
+type AccountDataProtocolModeOption = AccountDataProtocolMode | Readonly<{ protocolMode?: AccountDataProtocolMode }>;
+function protocolModeFromOption(value: AccountDataProtocolModeOption | undefined): AccountDataProtocolMode {
+  if (typeof value === "string") return value;
+  return value?.protocolMode ?? "v3";
+}
+function isContentIdentitySchema(value: unknown): value is ContentIdentitySchema { return value === CONTENT_IDENTITY_SCHEMA; }
+const CONTENT_IDENTITY_LEGACY_KEYS = new Set(["packagePin", "contentPackagePin", "itemId"]);
+const CONTENT_IDENTITY_TOMBSTONE_REASONS = new Set(["unknown_artifact_hash", "stale_content_version", "stale_content_release", "track_mismatch", "question_not_in_active_artifact"]);
+
+function hasExactKeys(value: unknown, expected: readonly string[]): value is Record<string, unknown> {
+  if (!isRecord(value)) return false;
+  const actual = Object.keys(value).sort();
+  const sortedExpected = [...expected].sort();
+  return actual.length === sortedExpected.length && actual.every((key, index) => key === sortedExpected[index]);
+}
+
+function containsContentIdentitySchema(value: unknown, seen = new Set<unknown>()): boolean {
+  if (value === null || typeof value !== "object") return false;
+  if (seen.has(value)) return false;
+  seen.add(value);
+  if (Array.isArray(value)) return value.some((child) => containsContentIdentitySchema(child, seen));
+  return isRecord(value) && (Object.prototype.hasOwnProperty.call(value, "contentIdentitySchema") || Object.values(value).some((child) => containsContentIdentitySchema(child, seen)));
+}
+
+function assertV4ContentIdentityState(value: unknown): void {
+  const seen = new Set<unknown>();
+  const visit = (candidate: unknown): void => {
+    if (candidate === null || typeof candidate !== "object") return;
+    if (seen.has(candidate)) throw new AccountDataFailure("content_identity_schema_conflict");
+    seen.add(candidate);
+    if (Array.isArray(candidate)) { candidate.forEach(visit); return; }
+    if (!isRecord(candidate)) throw new AccountDataFailure("content_identity_schema_conflict");
+    const keys = Object.keys(candidate);
+    if (keys.some((key) => CONTENT_IDENTITY_LEGACY_KEYS.has(key))) throw new AccountDataFailure("content_identity_schema_conflict");
+    if (candidate.kind === "resolved" || candidate.kind === "tombstone") {
+      if (candidate.kind === "resolved") {
+        const ref = candidate.ref;
+        if (!isRecord(ref) || !hasExactKeys(ref, ["trackId", "questionId", "contentVersion", "artifactSha256"]) ||
+          ![ref.trackId, ref.questionId, ref.contentVersion].every((entry) => typeof entry === "string" && entry.length >= 1 && entry.length <= 256) ||
+          typeof ref.artifactSha256 !== "string" || !/^[a-f0-9]{64}$/u.test(ref.artifactSha256)) throw new AccountDataFailure("content_identity_schema_conflict");
+        if (!hasExactKeys(candidate, ["kind", "ref"])) throw new AccountDataFailure("content_identity_schema_conflict");
+      } else {
+        const tombstone = candidate.tombstone;
+        if (!isRecord(tombstone) || !["archival_history", "unavailable_active", "unavailable_review"].includes(String(tombstone.kind)) ||
+          ![tombstone.trackId, tombstone.questionId, tombstone.contentVersion, tombstone.reason].every((entry) => typeof entry === "string" && entry.length >= 1 && entry.length <= 256) ||
+          !CONTENT_IDENTITY_TOMBSTONE_REASONS.has(String(tombstone.reason)) || tombstone.migrationVersion !== 1 ||
+          typeof tombstone.legacyIdentityDigest !== "string" || !/^[a-f0-9]{64}$/u.test(tombstone.legacyIdentityDigest)) throw new AccountDataFailure("content_identity_schema_conflict");
+        const tail = tombstone.kind === "archival_history" || tombstone.kind === "unavailable_active" ? "sessionId" : "reviewId";
+        if (!hasExactKeys(tombstone, ["trackId", "questionId", "contentVersion", "reason", "migrationVersion", "legacyIdentityDigest", "kind", tail]) ||
+          typeof tombstone[tail] !== "string" || tombstone[tail].length < 1 || tombstone[tail].length > 256) throw new AccountDataFailure("content_identity_schema_conflict");
+        if (!hasExactKeys(candidate, ["kind", "tombstone"])) throw new AccountDataFailure("content_identity_schema_conflict");
+      }
+      return;
+    }
+    const isPlanPayload = keys.some((key) => ["planId", "goalRevision", "slots", "acceptedTarget", "planRevision"].includes(key));
+    const isResolvedLeaf = keys.length > 0 && (keys.includes("questionId") || (keys.includes("artifactSha256") && !isPlanPayload));
+    const isTombstoneLeaf = candidate.kind === "archival_history" || candidate.kind === "unavailable_active" || candidate.kind === "unavailable_review" ||
+      keys.includes("legacyIdentityDigest") || (keys.includes("migrationVersion") && keys.includes("reason"));
+    if (isResolvedLeaf) {
+      if (!hasExactKeys(candidate, ["trackId", "questionId", "contentVersion", "artifactSha256"]) ||
+        ![candidate.trackId, candidate.questionId, candidate.contentVersion].every((entry) => typeof entry === "string" && entry.length >= 1 && entry.length <= 256) ||
+        typeof candidate.artifactSha256 !== "string" || !/^[a-f0-9]{64}$/u.test(candidate.artifactSha256)) throw new AccountDataFailure("content_identity_schema_conflict");
+      return;
+    }
+    if (isTombstoneLeaf) {
+      const kind = candidate.kind;
+      const tail = kind === "archival_history" || kind === "unavailable_active" ? "sessionId" : "reviewId";
+      if (!(kind === "archival_history" || kind === "unavailable_active" || kind === "unavailable_review") ||
+        !hasExactKeys(candidate, ["trackId", "questionId", "contentVersion", "reason", "migrationVersion", "legacyIdentityDigest", "kind", tail]) ||
+        ![candidate.trackId, candidate.questionId, candidate.contentVersion, candidate[tail]].every((entry) => typeof entry === "string" && entry.length >= 1 && entry.length <= 256) ||
+        !CONTENT_IDENTITY_TOMBSTONE_REASONS.has(String(candidate.reason)) || candidate.migrationVersion !== 1 ||
+        typeof candidate.legacyIdentityDigest !== "string" || !/^[a-f0-9]{64}$/u.test(candidate.legacyIdentityDigest)) throw new AccountDataFailure("content_identity_schema_conflict");
+      return;
+    }
+    Object.values(candidate).forEach(visit);
+  };
+  visit(value);
+}
+
+function assertProtocolMarker(value: unknown, mode: AccountDataProtocolMode): void {
+  if (!isRecord(value)) throw new AccountDataFailure("content_identity_schema_conflict");
+  if (mode === "v4") {
+    if (!isContentIdentitySchema(value.contentIdentitySchema)) throw new AccountDataFailure("content_identity_schema_conflict");
+  } else if (value.contentIdentitySchema !== undefined) {
+    throw new AccountDataFailure("content_identity_schema_conflict");
+  }
+}
+
+function assertRecordProtocol(record: unknown, mode: AccountDataProtocolMode): void {
+  if (!isRecord(record) || !isRecord(record.state)) throw new AccountDataFailure("content_identity_schema_conflict");
+  assertProtocolMarker(record, mode);
+  if (mode === "v4") {
+    assertV4ContentIdentityState(record.state);
+  } else if (record.contentIdentitySchema !== undefined || containsContentIdentitySchema(record.state)) {
+    throw new AccountDataFailure("content_identity_schema_conflict");
+  }
+}
+
+function inferRecordProtocolMode(records: readonly Readonly<{ contentIdentitySchema?: ContentIdentitySchema }>[]): AccountDataProtocolMode {
+  const hasV4 = records.some((record) => isRecord(record) && record.contentIdentitySchema !== undefined);
+  const hasLegacy = records.some((record) => !isRecord(record) || record.contentIdentitySchema === undefined);
+  if (hasV4 && hasLegacy) throw new AccountDataFailure("content_identity_schema_conflict");
+  return hasV4 ? "v4" : "v3";
+}
+
 function hasOnlyKeys(value: Record<string, unknown>, required: readonly string[]): boolean {
   const keys = Object.keys(value);
   return keys.length === required.length && required.every((key) => Object.prototype.hasOwnProperty.call(value, key));
@@ -140,17 +286,48 @@ function isAccountSyncPlanItem(value: unknown): value is AccountSyncPlanItem {
 }
 
 function isAccountSyncPlan(value: unknown): value is AccountSyncPlan {
-  return isRecord(value) && value.version === 3 && typeof value.planId === "string" && value.planId.length > 0 && Number.isSafeInteger(value.snapshotVersion) && Number(value.snapshotVersion) >= 0 && Number.isSafeInteger(value.expectedAccountRevision) && Number(value.expectedAccountRevision) >= 0 && Number.isSafeInteger(value.highWatermark) && Number(value.highWatermark) >= 0 && Array.isArray(value.items) && value.items.every(isAccountSyncPlanItem);
+  if (!isRecord(value) || (value.version !== 3 && value.version !== 4) || typeof value.planId !== "string" || value.planId.length === 0 || !Number.isSafeInteger(value.snapshotVersion) || Number(value.snapshotVersion) < 0 || !Number.isSafeInteger(value.expectedAccountRevision) || Number(value.expectedAccountRevision) < 0 || !Number.isSafeInteger(value.highWatermark) || Number(value.highWatermark) < 0 || !Array.isArray(value.items) || !value.items.every(isAccountSyncPlanItem)) return false;
+  const mode: AccountDataProtocolMode = value.version === 4 ? "v4" : "v3";
+  if (mode === "v4" ? !isContentIdentitySchema(value.contentIdentitySchema) : value.contentIdentitySchema !== undefined) return false;
+  try {
+    for (const item of value.items) {
+      if (!isAccountSyncPlanItem(item)) return false;
+      assertRecordProtocol(item.payload, mode);
+    }
+  } catch { return false; }
+  return true;
+}
+
+function pendingConfirmationMatchesStateProtocol(value: unknown, stateMode: AccountDataProtocolMode): boolean {
+  if (value === null) return true;
+  if (!isRecord(value)) return false;
+  if (stateMode === "v4") return value.protocolVersion === 4 && isContentIdentitySchema(value.contentIdentitySchema);
+  return (value.protocolVersion === undefined || value.protocolVersion === 1 || value.protocolVersion === 2) && value.contentIdentitySchema === undefined;
 }
 
 function isAccountSyncState(value: unknown): value is AccountSyncState {
-  if (!isRecord(value) || (value.protocolVersion !== 1 && value.protocolVersion !== 2) || (value.accountId !== null && typeof value.accountId !== "string") || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || !Number.isSafeInteger(value.remoteAccountRevision) || !Array.isArray(value.outbox) || !isRecord(value.acknowledged)) return false;
+  if (!isRecord(value) || (value.protocolVersion !== 1 && value.protocolVersion !== 2 && value.protocolVersion !== 3 && value.protocolVersion !== 4) || (value.accountId !== null && typeof value.accountId !== "string") || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || !Number.isSafeInteger(value.remoteAccountRevision) || !Array.isArray(value.outbox) || !isRecord(value.acknowledged)) return false;
+  const stateMode: AccountDataProtocolMode = value.protocolVersion === 4 ? "v4" : "v3";
+  if (stateMode === "v4" ? !isContentIdentitySchema(value.contentIdentitySchema) : value.contentIdentitySchema !== undefined) return false;
   if (value.syncPlan !== undefined && value.syncPlan !== null && !isAccountSyncPlan(value.syncPlan)) return false;
   if (value.outboxSequence !== undefined && (!Number.isSafeInteger(value.outboxSequence) || Number(value.outboxSequence) < 0)) return false;
   if (value.highWatermark !== undefined && (!Number.isSafeInteger(value.highWatermark) || Number(value.highWatermark) < 0)) return false;
   const pending = value.pendingConfirmation;
-  const pendingValid = pending === null || (isRecord(pending) && typeof pending.operationId === "string" && typeof pending.previewFingerprint === "string" && (pending.protocolVersion === undefined || pending.protocolVersion === 1 || pending.protocolVersion === 2) && Array.isArray(pending.resolutions) && pending.resolutions.every(isResolution) && (pending.groupChoices === undefined || (Array.isArray(pending.groupChoices) && pending.groupChoices.every(isGroupChoice))));
-  return value.outbox.every(isOutboxEntry) && Object.values(value.acknowledged).every(isAcknowledgedRecord) && (value.materialization === null || isAccountMaterialization(value.materialization)) && pendingValid;
+  const pendingValid = pending === null || (isRecord(pending) && typeof pending.operationId === "string" && typeof pending.previewFingerprint === "string" && (pending.protocolVersion === undefined || pending.protocolVersion === 1 || pending.protocolVersion === 2 || pending.protocolVersion === 4) && (pending.protocolVersion === 4 ? isContentIdentitySchema(pending.contentIdentitySchema) : pending.contentIdentitySchema === undefined) && Array.isArray(pending.resolutions) && pending.resolutions.every(isResolution) && (pending.groupChoices === undefined || (Array.isArray(pending.groupChoices) && pending.groupChoices.every(isGroupChoice))));
+  if (!pendingConfirmationMatchesStateProtocol(pending, stateMode)) return false;
+  try {
+    for (const entry of value.outbox) {
+      if (!isOutboxEntry(entry)) return false;
+      assertRecordProtocol(entry, stateMode);
+    }
+    for (const record of Object.values(value.acknowledged)) {
+      if (!isAcknowledgedRecord(record)) return false;
+      assertProtocolMarker(record, stateMode);
+    }
+  } catch { return false; }
+  if (stateMode === "v4" && value.syncPlan !== null && value.syncPlan !== undefined && value.syncPlan.version !== 4) return false;
+  if (stateMode === "v3" && value.syncPlan !== null && value.syncPlan !== undefined && value.syncPlan.version === 4) return false;
+  return value.outbox.every(isOutboxEntry) && Object.values(value.acknowledged).every(isAcknowledgedRecord) && (value.materialization === null || isAccountMaterialization(value.materialization)) && pendingValid && (value.resetGuard === undefined || value.resetGuard === null || isAccountResetGuard(value.resetGuard));
 }
 function isResolution(value: unknown): boolean { return isRecord(value) && typeof value.conflictId === "string" && (value.resolution === "keep_guest" || value.resolution === "keep_account"); }
 function isGroupChoice(value: unknown): boolean { return isRecord(value) && typeof value.groupId === "string" && (value.resolution === "keep_guest" || value.resolution === "keep_account"); }
@@ -165,20 +342,31 @@ function isAccountMaterialization(value: unknown): value is AccountMaterializati
   }
   return typeof value.operationId === "string" && value.operationId.trim().length > 0 && typeof value.previewFingerprint === "string" && value.previewFingerprint.trim().length > 0;
 }
-function isAcknowledgedRecord(value: unknown): value is AccountAcknowledgedRecord { return isRecord(value) && typeof value.fingerprint === "string" && typeof value.recordId === "string" && isSyncableRecordType(value.recordType) && Number.isSafeInteger(value.remoteVersion) && typeof value.trackId === "string"; }
+function isAccountResetGuard(value: unknown): value is AccountResetGuard {
+  return isRecord(value)
+    && typeof value.accountId === "string"
+    && value.accountId.trim().length > 0
+    && typeof value.createdAt === "string"
+    && !Number.isNaN(Date.parse(value.createdAt))
+    && typeof value.operationId === "string"
+    && value.operationId.trim().length > 0
+    && (value.phase === "localResetPending" || value.phase === "remoteRestorePending");
+}
+function isAcknowledgedRecord(value: unknown): value is AccountAcknowledgedRecord { return isRecord(value) && typeof value.fingerprint === "string" && typeof value.recordId === "string" && isSyncableRecordType(value.recordType) && Number.isSafeInteger(value.remoteVersion) && typeof value.trackId === "string" && (value.contentIdentitySchema === undefined || isContentIdentitySchema(value.contentIdentitySchema)); }
 function isOutboxEntry(value: unknown): value is AccountOutboxEntry {
   if (!isRecord(value) || !isAccountDataRecord(value)) return false;
   const candidate = value as AccountOutboxEntry;
   return typeof candidate.mutationId === "string" && (candidate.expectedVersion === null || (typeof candidate.expectedVersion === "number" && Number.isSafeInteger(candidate.expectedVersion))) && typeof candidate.attemptCount === "number" && Number.isSafeInteger(candidate.attemptCount) && ["pending", "retrying", "failed"].includes(candidate.status) && (candidate.sequence === undefined || (Number.isSafeInteger(candidate.sequence) && candidate.sequence >= 1));
 }
 function isAccountDataRecord(value: unknown): value is AccountDataRecord {
-  if (!isRecord(value) || typeof value.fingerprint !== "string" || !/^[a-f0-9]{64}$/u.test(value.fingerprint) || typeof value.recordId !== "string" || !isSyncableRecordType(value.recordType) || !isRecord(value.state) || typeof value.trackId !== "string" || typeof value.version !== "number") return false;
+  if (!isRecord(value) || typeof value.fingerprint !== "string" || !/^[a-f0-9]{64}$/u.test(value.fingerprint) || typeof value.recordId !== "string" || !isSyncableRecordType(value.recordType) || !isRecord(value.state) || typeof value.trackId !== "string" || typeof value.version !== "number" || (value.contentIdentitySchema !== undefined && !isContentIdentitySchema(value.contentIdentitySchema))) return false;
   return Number.isSafeInteger(value.version) && value.version >= 0;
 }
 
 function isCanonicalAccountDataRecord(value: unknown, exact = true): value is AccountDataRecord {
-  if (!isAccountDataRecord(value) || (exact && !hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version"])) || value.recordId.trim().length === 0 || !isRegisteredTrackId(value.trackId)) return false;
+  if (!isAccountDataRecord(value) || (exact && (!hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version"]) && !(isContentIdentitySchema(value.contentIdentitySchema) && hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version", "contentIdentitySchema"])))) || value.recordId.trim().length === 0 || !isRegisteredTrackId(value.trackId)) return false;
   try {
+    assertRecordProtocol(value, value.contentIdentitySchema === undefined ? "v3" : "v4");
     return accountDataRecordFingerprint(value) === value.fingerprint;
   } catch {
     return false;
@@ -186,7 +374,7 @@ function isCanonicalAccountDataRecord(value: unknown, exact = true): value is Ac
 }
 
 function isCanonicalOutboxEntry(value: unknown): value is AccountOutboxEntry {
-  if (!isOutboxEntry(value) || !isRecord(value) || !hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version", "mutationId", "expectedVersion", "attemptCount", "lastErrorCode", "status", "sequence"]) || !isCanonicalAccountDataRecord(value, false)) return false;
+  if (!isOutboxEntry(value) || !isRecord(value) || (!hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version", "mutationId", "expectedVersion", "attemptCount", "lastErrorCode", "status", "sequence"]) && !(isContentIdentitySchema(value.contentIdentitySchema) && hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version", "contentIdentitySchema", "mutationId", "expectedVersion", "attemptCount", "lastErrorCode", "status", "sequence"]))) || !isCanonicalAccountDataRecord(value, false)) return false;
   const entry = value as AccountOutboxEntry;
   return typeof entry.mutationId === "string" && entry.mutationId.trim().length > 0 &&
     (entry.expectedVersion === null || (Number.isSafeInteger(entry.expectedVersion) && entry.expectedVersion >= 0)) &&
@@ -196,7 +384,7 @@ function isCanonicalOutboxEntry(value: unknown): value is AccountOutboxEntry {
 }
 
 function isCanonicalAcknowledgedRecord(value: unknown): value is AccountAcknowledgedRecord {
-  return isAcknowledgedRecord(value) && isRecord(value) && hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "remoteVersion", "trackId"]) && /^[a-f0-9]{64}$/u.test(value.fingerprint) && value.recordId.trim().length > 0 && isRegisteredTrackId(value.trackId) && value.remoteVersion >= 0;
+  return isAcknowledgedRecord(value) && isRecord(value) && (hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "remoteVersion", "trackId"]) || (isContentIdentitySchema(value.contentIdentitySchema) && hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "remoteVersion", "trackId", "contentIdentitySchema"]))) && /^[a-f0-9]{64}$/u.test(value.fingerprint) && value.recordId.trim().length > 0 && isRegisteredTrackId(value.trackId) && value.remoteVersion >= 0;
 }
 
 function isCanonicalSyncPlanItem(value: unknown): value is AccountSyncPlanItem {
@@ -208,7 +396,15 @@ function isCanonicalSyncPlanItem(value: unknown): value is AccountSyncPlanItem {
 
 function isCanonicalPendingConfirmation(value: unknown): boolean {
   if (value === null) return true;
-  if (!isRecord(value) || !hasOnlyKeys(value, ["operationId", "previewFingerprint", "protocolVersion", "resolutions", "groupChoices"]) || typeof value.operationId !== "string" || value.operationId.trim().length === 0 || typeof value.previewFingerprint !== "string" || value.previewFingerprint.trim().length === 0 || (value.protocolVersion !== 1 && value.protocolVersion !== 2) || !Array.isArray(value.resolutions) || !value.resolutions.every((entry) => isRecord(entry) && hasOnlyKeys(entry, ["conflictId", "resolution"]) && isResolution(entry)) || !Array.isArray(value.groupChoices) || !value.groupChoices.every((entry) => isRecord(entry) && hasOnlyKeys(entry, ["groupId", "resolution"]) && isGroupChoice(entry))) return false;
+  if (!isRecord(value)) return false;
+  const keysValid = value.protocolVersion === 4
+    ? hasOnlyKeys(value, ["operationId", "previewFingerprint", "protocolVersion", "contentIdentitySchema", "resolutions", "groupChoices"])
+    : hasOnlyKeys(value, ["operationId", "previewFingerprint", "protocolVersion", "resolutions", "groupChoices"]);
+  if (!keysValid || typeof value.operationId !== "string" || value.operationId.trim().length === 0 || typeof value.previewFingerprint !== "string" || value.previewFingerprint.trim().length === 0) return false;
+  if (value.protocolVersion !== 1 && value.protocolVersion !== 2 && value.protocolVersion !== 4) return false;
+  if (value.protocolVersion === 4 ? !isContentIdentitySchema(value.contentIdentitySchema) : value.contentIdentitySchema !== undefined) return false;
+  if (!Array.isArray(value.resolutions) || !value.resolutions.every((entry) => isRecord(entry) && hasOnlyKeys(entry, ["conflictId", "resolution"]) && isResolution(entry))) return false;
+  if (!Array.isArray(value.groupChoices) || !value.groupChoices.every((entry) => isRecord(entry) && hasOnlyKeys(entry, ["groupId", "resolution"]) && isGroupChoice(entry))) return false;
   return true;
 }
 
@@ -227,15 +423,20 @@ function isCanonicalMaterialization(value: unknown): boolean {
 /** Pure, current account-sync validation used by read-only inventory tooling. */
 export function isCanonicalAccountSyncState(value: unknown): boolean {
   const requiredKeys = ["protocolVersion", "accountId", "status", "localDatasetVersion", "localDatasetFingerprint", "remoteAccountRevision", "lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode", "acknowledged", "outbox", "materialization", "pendingConfirmation", "syncPlan", "outboxSequence", "highWatermark"] as const;
-  if (!isRecord(value) || !hasOnlyKeys(value, requiredKeys) || !isAccountSyncState(value)) return false;
+  const canonicalKeys = [...requiredKeys, "resetGuard"] as const;
+  const v4Keys = [...canonicalKeys, "contentIdentitySchema"] as const;
+  if (!isRecord(value) || (!hasOnlyKeys(value, requiredKeys) && !hasOnlyKeys(value, canonicalKeys) && !hasOnlyKeys(value, v4Keys)) || !isAccountSyncState(value)) return false;
   const state = value as AccountSyncState;
   try {
     assertValidAccountDataRecords(state.outbox);
     for (const item of state.syncPlan?.items ?? []) assertValidAccountDataRecords([item.payload]);
   } catch { return false; }
   if ((state.accountId !== null && state.accountId.trim().length === 0) || state.localDatasetVersion < 0 || state.remoteAccountRevision < 0 || !Number.isSafeInteger(state.pendingMutationCount) || state.pendingMutationCount < 0 || !Number.isSafeInteger(state.outboxSequence) || state.outboxSequence < 0 || !Number.isSafeInteger(state.highWatermark) || state.highWatermark < 0 || (state.localDatasetFingerprint !== null && !/^[a-f0-9]{64}$/u.test(state.localDatasetFingerprint)) || (state.lastSuccessfulSyncAt !== null && (typeof state.lastSuccessfulSyncAt !== "string" || Number.isNaN(Date.parse(state.lastSuccessfulSyncAt)))) || (state.blockingConflictCode !== null && (typeof state.blockingConflictCode !== "string" || state.blockingConflictCode.trim().length === 0)) || (state.lastFailureCode !== null && (typeof state.lastFailureCode !== "string" || state.lastFailureCode.trim().length === 0))) return false;
-  if (!state.outbox.every(isCanonicalOutboxEntry) || !Object.values(state.acknowledged).every(isCanonicalAcknowledgedRecord) || !isCanonicalMaterialization(state.materialization) || !isCanonicalPendingConfirmation(state.pendingConfirmation)) return false;
-  if (state.syncPlan && (!hasOnlyKeys(state.syncPlan, ["version", "planId", "snapshotVersion", "expectedAccountRevision", "highWatermark", "items"]) || !state.syncPlan.items.every(isCanonicalSyncPlanItem))) return false;
+  if (state.protocolVersion === 4 && !hasOnlyKeys(state, v4Keys)) return false;
+  if (state.protocolVersion !== 4 && !hasOnlyKeys(state, canonicalKeys) && !hasOnlyKeys(state, requiredKeys)) return false;
+  if (!pendingConfirmationMatchesStateProtocol(state.pendingConfirmation, state.protocolVersion === 4 ? "v4" : "v3")) return false;
+  if (!state.outbox.every(isCanonicalOutboxEntry) || !Object.values(state.acknowledged).every(isCanonicalAcknowledgedRecord) || !isCanonicalMaterialization(state.materialization) || !isCanonicalPendingConfirmation(state.pendingConfirmation) || (state.resetGuard !== undefined && state.resetGuard !== null && (!isAccountResetGuard(state.resetGuard) || !hasOnlyKeys(state.resetGuard, ["accountId", "createdAt", "operationId", "phase"])))) return false;
+  if (state.syncPlan && (!((state.syncPlan.version === 4 && hasOnlyKeys(state.syncPlan, ["version", "planId", "snapshotVersion", "expectedAccountRevision", "highWatermark", "items", "contentIdentitySchema"])) || (state.syncPlan.version === 3 && (hasOnlyKeys(state.syncPlan, ["version", "planId", "snapshotVersion", "expectedAccountRevision", "highWatermark", "items"]) || hasOnlyKeys(state.syncPlan, ["version", "planId", "snapshotVersion", "expectedAccountRevision", "highWatermark", "items", "contentIdentitySchema"])))) || !state.syncPlan.items.every(isCanonicalSyncPlanItem))) return false;
   return true;
 }
 
@@ -249,11 +450,18 @@ function legacyAccountDataRecordKey(record: Pick<AccountDataRecord, "recordType"
 export function accountDataRecordKey(record: AccountDataRecordIdentity): string {
   return canonicalJsonV1({ recordId: record.recordId, recordType: record.recordType, trackId: record.trackId });
 }
-export function accountDataRecordFingerprint(record: Readonly<{ recordId: string; recordType: SyncableRecordType; state: Readonly<Record<string, unknown>>; trackId: string }>): string { return sha256Utf8(canonicalSerialize({ recordId: record.recordId, recordType: record.recordType, state: record.state, trackId: record.trackId })); }
+export function accountDataRecordFingerprint(record: Readonly<{ recordId: string; recordType: SyncableRecordType; state: Readonly<Record<string, unknown>>; trackId: string; contentIdentitySchema?: ContentIdentitySchema }>): string {
+  if (record.contentIdentitySchema !== undefined && !isContentIdentitySchema(record.contentIdentitySchema)) throw new AccountDataFailure("content_identity_schema_conflict");
+  return sha256Utf8(canonicalSerialize({ ...(record.contentIdentitySchema === CONTENT_IDENTITY_SCHEMA ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}), recordId: record.recordId, recordType: record.recordType, state: record.state, trackId: record.trackId }));
+}
+/** Explicit v4 fingerprint helper; legacy callers keep the byte-identical helper above. */
+export function accountDataRecordFingerprintV4(record: Readonly<{ recordId: string; recordType: SyncableRecordType; state: Readonly<Record<string, unknown>>; trackId: string }>): string {
+  return accountDataRecordFingerprint({ ...record, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA });
+}
 export function isDeletedAccountDataRecord(record: Pick<AccountDataRecord, "state">): boolean { return record.state.deleted === true; }
 
-function accountMutationId(accountId: string, record: Pick<AccountDataRecord, "recordType" | "recordId" | "trackId" | "fingerprint">, expectedVersion: number | null): string {
-  return `mutation_${sha256Utf8(canonicalSerialize({ accountId, key: accountDataRecordKey(record), expectedVersion, fingerprint: record.fingerprint }))}`;
+function accountMutationId(accountId: string, record: Pick<AccountDataRecord, "recordType" | "recordId" | "trackId" | "fingerprint" | "contentIdentitySchema">, expectedVersion: number | null): string {
+  return `mutation_${sha256Utf8(canonicalSerialize({ accountId, key: accountDataRecordKey(record), expectedVersion, fingerprint: record.fingerprint, ...(record.contentIdentitySchema === CONTENT_IDENTITY_SCHEMA ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}) }))}`;
 }
 
 export const MAX_SYNC_ENVELOPE_UTF8_BYTES = 512 * 1024;
@@ -268,6 +476,7 @@ function syncMutationPayload(entry: AccountOutboxEntry): Readonly<Record<string,
     expectedVersion: entry.expectedVersion,
     fingerprint: entry.fingerprint,
     state: entry.state,
+    ...(entry.contentIdentitySchema === CONTENT_IDENTITY_SCHEMA ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}),
   });
 }
 
@@ -289,6 +498,7 @@ function immutableSyncPayload(entry: AccountDataRecord): AccountDataRecord {
     state: cloneAndFreezeJson(entry.state) as Readonly<Record<string, unknown>>,
     trackId: entry.trackId,
     version: entry.version,
+    ...(entry.contentIdentitySchema === CONTENT_IDENTITY_SCHEMA ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}),
   });
 }
 
@@ -299,7 +509,7 @@ function normalizeSyncPlan(plan: AccountSyncPlan | null): AccountSyncPlan | null
     recordKey: accountDataRecordKey(item.payload),
     payload: immutableSyncPayload(item.payload),
   }));
-  return Object.freeze({ ...plan, items: Object.freeze(items) });
+  return Object.freeze({ ...plan, items: Object.freeze(items), ...(plan.version === 4 ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}) });
 }
 
 function sameAcknowledgedRecord(left: AccountAcknowledgedRecord, right: AccountAcknowledgedRecord): boolean {
@@ -331,7 +541,11 @@ export function splitAccountSyncBatches(input: Readonly<{
   expectedAccountRevision?: number;
   sessionId?: string;
   highWatermark?: number;
+  protocolMode?: AccountDataProtocolMode;
+  mode?: AccountDataProtocolMode;
 }>): readonly (readonly AccountOutboxEntry[])[] {
+  const protocolMode = input.protocolMode ?? input.mode ?? inferRecordProtocolMode(input.entries);
+  input.entries.forEach((entry) => assertRecordProtocol(entry, protocolMode));
   const expectedAccountRevision = input.expectedAccountRevision ?? 0;
   const sessionId = input.sessionId ?? "session-placeholder";
   const highWatermark = input.highWatermark ?? Math.max(0, ...input.entries.map((entry) => entry.sequence));
@@ -353,8 +567,9 @@ export function splitAccountSyncBatches(input: Readonly<{
     const probe = {
       schema: "canonical-json-v1",
       payload: {
-        protocolVersion: 3,
+        protocolVersion: protocolMode === "v4" ? 4 : 3,
         canonicalVersion: "canonical-json-v1",
+        ...(protocolMode === "v4" ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}),
         expectedAccountRevision,
         // Reserve the longest legal UUID representation, since the actual
         // request may contain a device id while tests/helpers often omit it.
@@ -362,7 +577,7 @@ export function splitAccountSyncBatches(input: Readonly<{
         sessionId,
         // Reserve three decimal digits for the deterministic batch suffix.
         batchId: `${sessionId}:batch:999`,
-        planVersion: 3,
+        planVersion: protocolMode === "v4" ? 4 : 3,
         highWatermark,
         mutations: entries.map(syncMutationPayload),
       },
@@ -384,18 +599,25 @@ export function splitAccountSyncBatches(input: Readonly<{
   return Object.freeze(batches.map((batch) => Object.freeze(batch)));
 }
 
-function createSyncPlan(accountId: string, snapshotVersion: number, expectedAccountRevision: number, highWatermark: number, entries: readonly AccountOutboxEntry[]): AccountSyncPlan | null {
+function createSyncPlan(accountId: string, snapshotVersion: number, expectedAccountRevision: number, highWatermark: number, entries: readonly AccountOutboxEntry[], protocolMode: AccountDataProtocolMode): AccountSyncPlan | null {
   if (entries.length === 0) return null;
+  entries.forEach((entry) => assertRecordProtocol(entry, protocolMode));
   const items = entries
     .slice()
     .sort((left, right) => left.sequence - right.sequence || accountDataRecordKey(left).localeCompare(accountDataRecordKey(right)))
     .map((entry) => Object.freeze({ sequence: entry.sequence, recordKey: accountDataRecordKey(entry), mutationId: entry.mutationId, expectedVersion: entry.expectedVersion, payload: immutableSyncPayload(entry), groupId: syncGroupId(entry), status: "pending" as const }));
-  const planId = `plan_${sha256Utf8(canonicalJsonV1({ accountId, snapshotVersion, expectedAccountRevision, highWatermark, items: items.map((item) => ({ sequence: item.sequence, recordKey: item.recordKey, mutationId: item.mutationId, fingerprint: item.payload.fingerprint })) }))}`;
-  return Object.freeze({ version: 3, planId, snapshotVersion, expectedAccountRevision, highWatermark, items: Object.freeze(items) });
+  // Keep the v3 plan identity byte-for-byte compatible with the pre-v4
+  // protocol. The schema marker is deliberately part of v4 only.
+  const planIdentity = protocolMode === "v4"
+    ? { accountId, snapshotVersion, expectedAccountRevision, highWatermark, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA, planVersion: 4, items: items.map((item) => ({ sequence: item.sequence, recordKey: item.recordKey, mutationId: item.mutationId, fingerprint: item.payload.fingerprint, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA })) }
+    : { accountId, snapshotVersion, expectedAccountRevision, highWatermark, items: items.map((item) => ({ sequence: item.sequence, recordKey: item.recordKey, mutationId: item.mutationId, fingerprint: item.payload.fingerprint })) };
+  const planId = `plan_${sha256Utf8(canonicalJsonV1(planIdentity))}`;
+  return Object.freeze({ version: protocolMode === "v4" ? 4 : 3, planId, snapshotVersion, expectedAccountRevision, highWatermark, items: Object.freeze(items), ...(protocolMode === "v4" ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}) });
 }
 
-function canReuseSyncPlan(plan: AccountSyncPlan | null, entries: readonly AccountOutboxEntry[]): plan is AccountSyncPlan {
+function canReuseSyncPlan(plan: AccountSyncPlan | null, entries: readonly AccountOutboxEntry[], protocolMode: AccountDataProtocolMode): plan is AccountSyncPlan {
   if (!plan || plan.items.length !== entries.length) return false;
+  if (protocolMode === "v4" ? (plan.version !== 4 || plan.contentIdentitySchema !== CONTENT_IDENTITY_SCHEMA) : (plan.version !== 3 || plan.contentIdentitySchema !== undefined)) return false;
   const byMutationId = new Map(entries.map((entry) => [entry.mutationId, entry]));
   return plan.items.every((item) => {
     const entry = byMutationId.get(item.mutationId);
@@ -403,12 +625,33 @@ function canReuseSyncPlan(plan: AccountSyncPlan | null, entries: readonly Accoun
       && item.sequence === entry.sequence
       && item.expectedVersion === entry.expectedVersion
       && item.recordKey === accountDataRecordKey(entry)
-      && item.payload.fingerprint === entry.fingerprint;
+      && item.payload.fingerprint === entry.fingerprint
+      && item.payload.contentIdentitySchema === entry.contentIdentitySchema;
   });
 }
 
+function hasLegacyProtocolPayload(state: AccountSyncState): boolean {
+  return state.protocolVersion !== 4 && (
+    Object.values(state.acknowledged).some((record) => record.contentIdentitySchema === undefined) && Object.keys(state.acknowledged).length > 0
+    || state.outbox.some((entry) => entry.contentIdentitySchema === undefined)
+    || state.syncPlan?.version === 3
+    || state.pendingConfirmation?.protocolVersion === 1
+    || state.pendingConfirmation?.protocolVersion === 2
+  );
+}
+
+function assertStateProtocolMode(state: AccountSyncState, protocolMode: AccountDataProtocolMode): void {
+  if (state.protocolVersion === 4) {
+    if (protocolMode !== "v4" || state.contentIdentitySchema !== CONTENT_IDENTITY_SCHEMA) throw new AccountDataFailure("content_identity_schema_conflict");
+    return;
+  }
+  if (protocolMode === "v4" && hasLegacyProtocolPayload(state)) throw new AccountDataFailure("content_identity_schema_conflict");
+}
+
 export async function getAccountSyncState(): Promise<AccountSyncState> {
-  const stored = readCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, isAccountSyncState);
+  const storedValue = readCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, (value): value is Record<string, unknown> => isRecord(value));
+  if (storedValue !== null && !isAccountSyncState(storedValue)) throw new AccountDataFailure("account_sync_state_invalid");
+  const stored = storedValue as AccountSyncState | null;
   if (!stored) return emptyState();
   const normalized = normalizeSyncState(stored);
   const legacyAcknowledgedKey = Object.entries(stored.acknowledged).some(([key, record]) => key !== accountDataRecordKey(record));
@@ -423,72 +666,134 @@ function normalizeSyncState(state: AccountSyncState): AccountSyncState {
   const outbox = state.outbox.map((entry) => entry.sequence === undefined ? Object.freeze({ ...entry, sequence: ++nextSequence }) : entry);
   const outboxSequence = nextSequence;
   const highWatermark = state.highWatermark ?? outboxSequence;
-  const withDefaults = { ...state, acknowledged: normalizeAcknowledgedRecords(state.acknowledged), outbox: Object.freeze(outbox), outboxSequence, highWatermark, syncPlan: normalizeSyncPlan(state.syncPlan ?? null) };
+  const withDefaults = { ...state, acknowledged: normalizeAcknowledgedRecords(state.acknowledged), outbox: Object.freeze(outbox), outboxSequence, highWatermark, syncPlan: normalizeSyncPlan(state.syncPlan ?? null), resetGuard: state.resetGuard ?? null };
   if (!pending) return Object.freeze(withDefaults);
   return Object.freeze({ ...withDefaults, pendingConfirmation: Object.freeze({ ...pending, protocolVersion: pending.protocolVersion ?? 1, groupChoices: Object.freeze(pending.groupChoices ?? []) }) });
 }
 
 export function saveAccountSyncState(state: AccountSyncState): AccountSyncState {
   if (!isAccountSyncState(state)) throw new AccountDataFailure("account_sync_state_invalid");
+  if (state.protocolVersion === 4 && state.contentIdentitySchema !== CONTENT_IDENTITY_SCHEMA) throw new AccountDataFailure("content_identity_schema_conflict");
+  if (state.protocolVersion !== 4 && state.contentIdentitySchema !== undefined) throw new AccountDataFailure("content_identity_schema_conflict");
   const saved = writeCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, state);
   return saved.payload;
 }
 
-export async function buildAccountDataSnapshot(): Promise<AccountDataSnapshot> {
-  const installation = await getGuestInstallation();
-  if (!installation) throw new AccountDataFailure("guest_installation_required");
-  const state = await getAccountSyncState();
-  const records = await readLocalAccountDataRecords(state);
+function persistSnapshotDatasetVersion(state: AccountSyncState, protocolMode: AccountDataProtocolMode, records: readonly AccountDataRecord[]): number {
   const datasetFingerprint = sha256Utf8(canonicalSerialize(records));
   const nextVersion = state.localDatasetFingerprint === datasetFingerprint ? state.localDatasetVersion : state.localDatasetVersion + 1;
-  if (nextVersion !== state.localDatasetVersion || state.localDatasetFingerprint !== datasetFingerprint) saveAccountSyncState({ ...state, localDatasetVersion: nextVersion, localDatasetFingerprint: datasetFingerprint });
-  const activeSession = (await getTrainingSessions()).value.some((session) => session.status === "active");
-  return Object.freeze({ protocolVersion: state.protocolVersion, guestSnapshotVersion: nextVersion, guestUserId: installation.installationId, records, activeSession, pendingJournal: (await getActiveMutationJournal()) !== null });
+  const stateWithMode = protocolMode === "v4" && state.protocolVersion !== 4
+    ? { ...state, protocolVersion: 4 as const, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA }
+    : state;
+  if (nextVersion !== state.localDatasetVersion || state.localDatasetFingerprint !== datasetFingerprint || stateWithMode !== state) {
+    saveAccountSyncState({ ...stateWithMode, localDatasetVersion: nextVersion, localDatasetFingerprint: datasetFingerprint });
+  }
+  return nextVersion;
 }
 
-async function readLocalAccountDataRecords(state: AccountSyncState): Promise<readonly AccountDataRecord[]> {
+export function buildAccountDataSnapshot(): Promise<AccountDataSnapshotV3>;
+export function buildAccountDataSnapshot(modeOption: "v4" | Readonly<{ protocolMode: "v4" }>): Promise<AccountDataSnapshotV4>;
+export function buildAccountDataSnapshot(modeOption: "v3" | Readonly<{ protocolMode: "v3" }>): Promise<AccountDataSnapshotV3>;
+export function buildAccountDataSnapshot(modeOption: AccountDataProtocolModeOption): Promise<AccountDataSnapshot>;
+export async function buildAccountDataSnapshot(modeOption?: AccountDataProtocolModeOption): Promise<AccountDataSnapshot> {
+  const installation = await getGuestInstallation();
+  if (!installation) throw new AccountDataFailure("guest_installation_required");
+  const requestedMode = protocolModeFromOption(modeOption);
+  const state = await getAccountSyncState();
+  assertStateProtocolMode(state, requestedMode);
+  const protocolMode: AccountDataProtocolMode = state.protocolVersion === 4 ? "v4" : requestedMode;
+  const stateForRead: AccountSyncState = protocolMode === "v4" && state.protocolVersion !== 4
+    ? { ...state, protocolVersion: 4, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA }
+    : state;
+  const activeSession = (await getTrainingSessions()).value.some((session) => session.status === "active");
+  const pendingJournal = (await getActiveMutationJournal()) !== null;
+  if (protocolMode === "v4") {
+    const records = await readLocalAccountDataRecords(stateForRead, "v4");
+    assertValidAccountDataRecords(records, { protocolMode: "v4" });
+    const nextVersion = persistSnapshotDatasetVersion(state, "v4", records);
+    return createAccountDataSnapshot("v4", 2, nextVersion, installation.installationId, records, activeSession, pendingJournal);
+  }
+  const records = await readLocalAccountDataRecords(stateForRead, "v3");
+  assertValidAccountDataRecords(records, { protocolMode: "v3" });
+  const nextVersion = persistSnapshotDatasetVersion(state, "v3", records);
+  return createAccountDataSnapshot("v3", state.protocolVersion === 1 ? 1 : 2, nextVersion, installation.installationId, records, activeSession, pendingJournal);
+}
+
+function createAccountDataSnapshot(protocolMode: "v4", legacyProtocolVersion: 1 | 2, guestSnapshotVersion: number, guestUserId: string, records: readonly AccountDataRecordV4[], activeSession: boolean, pendingJournal: boolean): AccountDataSnapshotV4;
+function createAccountDataSnapshot(protocolMode: "v3", legacyProtocolVersion: 1 | 2, guestSnapshotVersion: number, guestUserId: string, records: readonly AccountDataRecordV3[], activeSession: boolean, pendingJournal: boolean): AccountDataSnapshotV3;
+function createAccountDataSnapshot(protocolMode: AccountDataProtocolMode, legacyProtocolVersion: 1 | 2, guestSnapshotVersion: number, guestUserId: string, records: readonly AccountDataRecord[], activeSession: boolean, pendingJournal: boolean): AccountDataSnapshot;
+function createAccountDataSnapshot(protocolMode: AccountDataProtocolMode, legacyProtocolVersion: 1 | 2, guestSnapshotVersion: number, guestUserId: string, records: readonly AccountDataRecord[], activeSession: boolean, pendingJournal: boolean): AccountDataSnapshot {
+  if (protocolMode === "v4") {
+    const v4Records: AccountDataRecordV4[] = [];
+    for (const record of records) {
+      if (!isAccountDataRecordV4(record)) throw new AccountDataFailure("content_identity_schema_conflict");
+      v4Records.push(record);
+    }
+    return Object.freeze({ protocolVersion: 4, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA, guestSnapshotVersion, guestUserId, records: Object.freeze(v4Records), activeSession, pendingJournal });
+  }
+  const v3Records: AccountDataRecordV3[] = [];
+  for (const record of records) {
+    if (!isAccountDataRecordV3(record)) throw new AccountDataFailure("content_identity_schema_conflict");
+    v3Records.push(record);
+  }
+  return Object.freeze({ protocolVersion: legacyProtocolVersion, guestSnapshotVersion, guestUserId, records: Object.freeze(v3Records), activeSession, pendingJournal });
+}
+
+function isAccountDataRecordV3(record: AccountDataRecord): record is AccountDataRecordV3 {
+  return record.contentIdentitySchema === undefined;
+}
+
+function isAccountDataRecordV4(record: AccountDataRecord): record is AccountDataRecordV4 {
+  return record.contentIdentitySchema === CONTENT_IDENTITY_SCHEMA;
+}
+
+async function readLocalAccountDataRecords(state: AccountSyncState, protocolMode: "v4"): Promise<readonly AccountDataRecordV4[]>;
+async function readLocalAccountDataRecords(state: AccountSyncState, protocolMode: "v3"): Promise<readonly AccountDataRecordV3[]>;
+async function readLocalAccountDataRecords(state: AccountSyncState, protocolMode: AccountDataProtocolMode): Promise<readonly AccountDataRecord[]>;
+async function readLocalAccountDataRecords(state: AccountSyncState, protocolMode: AccountDataProtocolMode): Promise<readonly AccountDataRecord[]> {
   const records: AccountDataRecord[] = [];
   const activeTrack = await getActiveTrackId();
-  if (activeTrack) records.push(makeRecord("active_track", "current", activeTrack, { trackId: activeTrack }, state));
+  if (activeTrack) records.push(makeRecord("active_track", "current", activeTrack, { trackId: activeTrack }, state, protocolMode));
   const sessions = (await getTrainingSessions()).value;
-  for (const session of sessions.filter((candidate) => candidate.status !== "active")) records.push(makeRecord("training_session_summary", session.id, session.trackId, session, state));
+  for (const session of sessions.filter((candidate) => candidate.status !== "active")) records.push(makeRecord("training_session_summary", session.id, session.trackId, session, state, protocolMode));
   const results = await Promise.all(sessions.filter((session) => session.status !== "active").map((session) => getTrainingSessionResult(session.id)));
-  for (const result of results.filter((candidate): candidate is TrainingSessionResult => candidate !== null)) records.push(makeRecord("training_session_result", result.id, result.trackId, result, state));
-  for (const attempt of (await getTrainingAttempts()).value) records.push(makeRecord("training_attempt", attempt.id, attempt.trackId, attempt, state));
-  for (const review of (await getReviewQueueItems()).value) records.push(makeRecord("review_queue_entry", review.id, review.trackId, review, state));
-  if (state.protocolVersion === 2) {
+  for (const result of results.filter((candidate): candidate is TrainingSessionResult => candidate !== null)) records.push(makeRecord("training_session_result", result.id, result.trackId, result, state, protocolMode));
+  for (const attempt of (await getTrainingAttempts()).value) records.push(makeRecord("training_attempt", attempt.id, attempt.trackId, attempt, state, protocolMode));
+  for (const review of (await getReviewQueueItems()).value) records.push(makeRecord("review_queue_entry", review.id, review.trackId, review, state, protocolMode));
+  if (state.protocolVersion >= 2 || protocolMode === "v4") {
     for (const key of [...getKeyValueStorage().getAllKeys()].sort()) {
       if (key.startsWith(`${STORAGE_NAMESPACE}goal:`)) {
         const candidateTrackId = key.slice(`${STORAGE_NAMESPACE}goal:`.length);
         if (!isRegisteredTrackId(candidateTrackId)) throw new AccountDataFailure("account_data_track_invalid");
         const envelope = readCanonicalEnvelope(key, (value): value is GoalRecord => isGoalRecordShapeForTrack(value, candidateTrackId));
         if (!envelope) continue;
-        records.push(makeRecord("goal", candidateTrackId, candidateTrackId, { schemaVersion: 1, revision: envelope.revision, record: normalizeGoalRecord(envelope.payload) }, state));
+        records.push(makeRecord("goal", candidateTrackId, candidateTrackId, { schemaVersion: 1, revision: envelope.revision, record: normalizeGoalRecord(envelope.payload) }, state, protocolMode));
       }
       if (key.startsWith(`${STORAGE_NAMESPACE}learning-plan:`)) {
         const candidateTrackId = key.slice(`${STORAGE_NAMESPACE}learning-plan:`.length);
         if (!isRegisteredTrackId(candidateTrackId)) throw new AccountDataFailure("account_data_track_invalid");
         const envelope = readCanonicalEnvelope(key, (value): value is LearningPlan => isLearningPlanV1ForTrack(value, candidateTrackId));
         if (!envelope) continue;
-        records.push(makeRecord("learning_plan", candidateTrackId, candidateTrackId, { schemaVersion: 1, revision: envelope.revision, plan: normalizeLearningPlan(envelope.payload) }, state));
+        records.push(makeRecord("learning_plan", candidateTrackId, candidateTrackId, { schemaVersion: 1, revision: envelope.revision, plan: normalizeLearningPlan(envelope.payload) }, state, protocolMode));
       }
     }
     assertGoalPlanRecordBundles(records);
   }
   for (const tombstone of Object.values(state.acknowledged)) {
     if (!records.some((record) => accountDataRecordKey(record) === accountDataRecordKey(tombstone)) && state.outbox.some((entry) => accountDataRecordKey(entry) === accountDataRecordKey(tombstone) && isDeletedAccountDataRecord(entry))) {
-      records.push(makeRecord(tombstone.recordType, tombstone.recordId, tombstone.trackId, { deleted: true }, state));
+      records.push(makeRecord(tombstone.recordType, tombstone.recordId, tombstone.trackId, { deleted: true }, state, protocolMode));
     }
   }
   return Object.freeze(records.sort((left, right) => accountDataRecordKey(left).localeCompare(accountDataRecordKey(right))));
 }
 
-function makeRecord(recordType: SyncableRecordType, recordId: string, trackId: string, state: Readonly<Record<string, unknown>>, syncState: AccountSyncState): AccountDataRecord {
+function makeRecord(recordType: SyncableRecordType, recordId: string, trackId: string, state: Readonly<Record<string, unknown>>, syncState: AccountSyncState, protocolMode: AccountDataProtocolMode): AccountDataRecord {
   const key = accountDataRecordKey({ recordType, recordId, trackId });
   const acknowledged = syncState.acknowledged[key];
   const copied = JSON.parse(JSON.stringify(state)) as Record<string, unknown>;
-  const fingerprint = accountDataRecordFingerprint({ recordId, recordType, state: copied, trackId });
-  return Object.freeze({ fingerprint, recordId, recordType, state: Object.freeze(copied), trackId, version: acknowledged?.remoteVersion ?? 0 });
+  const contentIdentitySchema = protocolMode === "v4" ? CONTENT_IDENTITY_SCHEMA : undefined;
+  const fingerprint = accountDataRecordFingerprint({ recordId, recordType, state: copied, trackId, ...(contentIdentitySchema ? { contentIdentitySchema } : {}) });
+  return Object.freeze({ fingerprint, recordId, recordType, state: Object.freeze(copied), trackId, version: acknowledged?.remoteVersion ?? 0, ...(contentIdentitySchema ? { contentIdentitySchema } : {}) });
 }
 
 /** Local commits only mark pending work; account synchronization builds the outbox. */
@@ -500,11 +805,20 @@ export async function markAccountDataPending(): Promise<void> {
   if (state.status === "synced") saveAccountSyncState({ ...state, status: "offlinePending" });
 }
 
-export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSyncState> {
+export async function ensureAccountOutboxFromLocalDataset(modeOption?: AccountDataProtocolModeOption): Promise<AccountSyncState> {
   const installation = await getGuestInstallation();
   let state = await getAccountSyncState();
-  if (state.materialization) return state;
+  const requestedMode = protocolModeFromOption(modeOption);
+  // A local-history reset intentionally removes local records before pulling
+  // the account copy back. Never turn that temporary absence into tombstones.
+  if (state.resetGuard || state.materialization) return state;
+  assertStateProtocolMode(state, requestedMode);
+  const protocolMode: AccountDataProtocolMode = state.protocolVersion === 4 ? "v4" : requestedMode;
   const boundAccountId = installation?.accountId;
+  if (boundAccountId !== null && boundAccountId !== undefined && state.accountId === null) {
+    const localRecords = await readLocalAccountDataRecords(state, protocolMode);
+    if (localRecords.length > 0) throw new AccountDataFailure("account_binding_mismatch");
+  }
   if (!boundAccountId || state.accountId !== boundAccountId) return state;
   if (state.lastFailureCode === "mutation_id_reuse" && state.outbox.length > 0) {
     const repairedOutbox = state.outbox.map((entry) => Object.freeze({
@@ -515,9 +829,9 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
     }));
     state = saveAccountSyncState({ ...state, outbox: Object.freeze(repairedOutbox), pendingMutationCount: repairedOutbox.length });
   }
-  const snapshot = await buildAccountDataSnapshot();
+  const snapshot = await buildAccountDataSnapshot(protocolMode);
   const latestState = await getAccountSyncState();
-  if (latestState.materialization || latestState.accountId !== installation.accountId) return latestState;
+  if (latestState.resetGuard || latestState.materialization || latestState.accountId !== installation.accountId) return latestState;
   state = latestState;
   const outbox = [...state.outbox];
   let outboxSequence = state.outboxSequence;
@@ -548,10 +862,11 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
       recordType: acknowledged.recordType,
       state: { deleted: true },
       trackId: acknowledged.trackId,
+      ...(protocolMode === "v4" ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}),
     });
     if (acknowledged.fingerprint === acknowledgedTombstoneFingerprint) continue;
     const tombstone: Omit<AccountOutboxEntry, "mutationId"> = Object.freeze({
-      fingerprint: accountDataRecordFingerprint({ recordId: acknowledged.recordId, recordType: acknowledged.recordType, state: { deleted: true }, trackId: acknowledged.trackId }),
+      fingerprint: accountDataRecordFingerprint({ recordId: acknowledged.recordId, recordType: acknowledged.recordType, state: { deleted: true }, trackId: acknowledged.trackId, ...(protocolMode === "v4" ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}) }),
       recordId: acknowledged.recordId,
       recordType: acknowledged.recordType,
       state: Object.freeze({ deleted: true }),
@@ -562,25 +877,70 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
       lastErrorCode: null,
       status: "pending",
       sequence: ++outboxSequence,
+      ...(protocolMode === "v4" ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}),
     });
     const tombstoneWithMutationId: AccountOutboxEntry = Object.freeze({ ...tombstone, mutationId: accountMutationId(boundAccountId, tombstone, tombstone.expectedVersion) });
     outbox.push(tombstoneWithMutationId);
     byKey.set(key, tombstoneWithMutationId);
   }
-  const nextBase = { ...state, status: outbox.length > 0 ? "offlinePending" as const : state.status, pendingMutationCount: outbox.length, outbox: Object.freeze(outbox), outboxSequence, highWatermark: Math.max(state.highWatermark, outboxSequence) };
+  const nextBase = { ...state, status: outbox.length > 0 ? "offlinePending" as const : state.status, pendingMutationCount: outbox.length, outbox: Object.freeze(outbox), outboxSequence, highWatermark: Math.max(state.highWatermark, outboxSequence), ...(protocolMode === "v4" ? { protocolVersion: 4 as const, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}) };
   const syncPlan = outbox.length === 0
     ? null
-    : canReuseSyncPlan(state.syncPlan, outbox)
+    : canReuseSyncPlan(state.syncPlan, outbox, protocolMode)
       ? state.syncPlan
-      : createSyncPlan(boundAccountId, snapshot.guestSnapshotVersion, state.remoteAccountRevision, nextBase.highWatermark, outbox);
+      : createSyncPlan(boundAccountId, snapshot.guestSnapshotVersion, state.remoteAccountRevision, nextBase.highWatermark, outbox, protocolMode);
   const next = { ...nextBase, syncPlan };
   saveAccountSyncState(next);
   return next;
 }
 
 export function setAccountSyncState(input: Partial<AccountSyncState> & Pick<AccountSyncState, "accountId">): AccountSyncState {
-  const current = readCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, isAccountSyncState) ?? emptyState();
+  const stored = readCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, (value): value is Record<string, unknown> => isRecord(value));
+  if (stored !== null && !isAccountSyncState(stored)) throw new AccountDataFailure("account_sync_state_invalid");
+  const current = (stored as AccountSyncState | null) ?? emptyState();
   return saveAccountSyncState({ ...current, ...input, pendingMutationCount: input.outbox?.length ?? current.outbox.length });
+}
+
+/** Persists the reset guard before the journaled local deletion starts. */
+export async function markAccountResetPending(accountId: string, operationId: string, createdAt: string): Promise<AccountSyncState> {
+  if (!accountId.trim()) throw new AccountDataFailure("account_id_required");
+  if (!operationId.trim() || Number.isNaN(Date.parse(createdAt))) throw new AccountDataFailure("account_sync_state_invalid");
+  const current = await getAccountSyncState();
+  if (current.accountId !== null && current.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+  if (current.materialization) throw new AccountDataFailure("account_materialization_in_progress");
+  if (current.pendingConfirmation !== null) throw new AccountDataFailure("account_adoption_pending");
+  if (current.resetGuard) {
+    if (current.resetGuard.accountId !== accountId || current.resetGuard.operationId !== operationId) throw new AccountDataFailure("account_binding_mismatch");
+    return current;
+  }
+  if (
+    current.accountId !== accountId
+    || current.status !== "synced"
+    || current.pendingMutationCount !== 0
+    || current.outbox.length > 0
+    || current.syncPlan !== null
+    || current.blockingConflictCode !== null
+    || current.lastFailureCode !== null
+  ) throw new AccountDataFailure("account_reset_requires_clean_sync");
+  return saveAccountSyncState({
+    ...current,
+    accountId,
+    status: "syncing",
+    lastFailureCode: null,
+    outbox: Object.freeze([]),
+    pendingMutationCount: 0,
+    syncPlan: null,
+    resetGuard: { accountId, createdAt, operationId, phase: "localResetPending" },
+  });
+}
+
+/** Advances the durable reset cursor only after local deletion has completed. */
+export async function markAccountResetRemoteRestorePending(accountId: string, operationId: string): Promise<AccountSyncState> {
+  const current = await getAccountSyncState();
+  const guard = current.resetGuard;
+  if (!guard || guard.accountId !== accountId || guard.operationId !== operationId) throw new AccountDataFailure("account_sync_state_invalid");
+  if (guard.phase === "remoteRestorePending") return current;
+  return saveAccountSyncState({ ...current, status: "syncing", lastFailureCode: null, resetGuard: { ...guard, phase: "remoteRestorePending" } });
 }
 
 export async function markAccountMaterializationPending(operationId: string, previewFingerprint: string, accountId: string): Promise<AccountSyncState> {
@@ -635,10 +995,14 @@ export async function markGuestDiscardMaterializationApplying(accountId: string)
   return saveAccountSyncState({ ...current, materialization: { ...materialization, phase: "applying" } });
 }
 
-export function assertValidAccountDataRecords(records: unknown): asserts records is readonly AccountDataRecord[] {
+export function assertValidAccountDataRecords(records: unknown, options?: Readonly<{ protocolMode?: AccountDataProtocolMode }> | AccountDataProtocolMode): asserts records is readonly AccountDataRecord[] {
   if (!Array.isArray(records)) throw new AccountDataFailure("account_data_records_invalid");
+  const protocolMode = typeof options === "string" ? options : options?.protocolMode ?? inferRecordProtocolMode(records as readonly AccountDataRecord[]);
+  const seenModes = new Set<AccountDataProtocolMode>();
   for (const record of records) {
     if (!isAccountDataRecord(record) || !record.recordId.trim() || !isRegisteredTrackId(record.trackId)) throw new AccountDataFailure("account_data_record_invalid");
+    assertRecordProtocol(record, protocolMode);
+    seenModes.add(record.contentIdentitySchema === undefined ? "v3" : "v4");
     if (record.fingerprint !== accountDataRecordFingerprint(record)) throw new AccountDataFailure("account_data_fingerprint_invalid");
     if (isDeletedAccountDataRecord(record)) continue;
     const state = record.state;
@@ -657,17 +1021,19 @@ export function assertValidAccountDataRecords(records: unknown): asserts records
       if (record.recordId !== record.trackId || !parsed) throw new AccountDataFailure("account_data_plan_invalid");
     }
   }
+  if (seenModes.size > 1 || (seenModes.size > 0 && [...seenModes][0] !== protocolMode)) throw new AccountDataFailure("content_identity_schema_conflict");
   assertGoalPlanRecordBundles(records);
 }
 
-export async function applyRemoteAccountData(records: readonly AccountDataRecord[]): Promise<void> {
-  assertValidAccountDataRecords(records);
+export async function applyRemoteAccountData(records: readonly AccountDataRecord[], options: Readonly<{ preserveLocalContext?: boolean; protocolMode?: AccountDataProtocolMode }> = {}): Promise<void> {
+  assertValidAccountDataRecords(records, options.protocolMode);
   if (await getActiveTrainingSessionId()) throw new AccountDataFailure("active_session_adoption_blocked");
-  await clearActiveTrackId();
+  const preserveLocalContext = options.preserveLocalContext === true;
+  if (!preserveLocalContext) await clearActiveTrackId();
   await clearTrainingSessions();
   await clearTrainingAttempts();
   await clearReviewQueueItems();
-  for (const record of records.filter((candidate) => !isDeletedAccountDataRecord(candidate))) {
+  for (const record of records.filter((candidate) => !isDeletedAccountDataRecord(candidate) && (!preserveLocalContext || ["training_session_summary", "training_session_result", "training_attempt", "review_queue_entry"].includes(candidate.recordType)))) {
     if (record.recordType === "active_track") {
       const trackId = record.state.trackId;
       if (typeof trackId !== "string" || !isRegisteredTrackId(trackId)) throw new AccountDataFailure("account_data_track_invalid");
@@ -692,7 +1058,7 @@ export async function applyRemoteAccountData(records: readonly AccountDataRecord
     reviews.push(record.state);
   }
   if (reviews.length > 0) await addReviewQueueItems(reviews);
-  replaceGoalPlanRecords(records);
+  if (!preserveLocalContext) replaceGoalPlanRecords(records);
 }
 
 type GoalCloudState = Readonly<{ schemaVersion: 1; revision: number; record: GoalRecord }>;
@@ -748,16 +1114,22 @@ function replaceGoalPlanRecords(records: readonly AccountDataRecord[]): void {
   });
 }
 
-export async function finishAccountMaterialization(records: readonly AccountDataRecord[], accountId: string, remoteAccountRevision: number, syncedAt: string): Promise<AccountSyncState> {
+export async function finishAccountMaterialization(records: readonly AccountDataRecord[], accountId: string, remoteAccountRevision: number, syncedAt: string, modeOption?: AccountDataProtocolModeOption): Promise<AccountSyncState> {
+  const inferredMode = inferRecordProtocolMode(records);
+  const requestedMode = protocolModeFromOption(modeOption);
+  const protocolMode = modeOption === undefined ? inferredMode : requestedMode;
+  assertValidAccountDataRecords(records, protocolMode);
   const current = await getAccountSyncState();
+  assertStateProtocolMode(current, protocolMode);
   // A paged/partial remote response must not erase ACKs for another track.
   // Full identity keys let later reconciliation retain each independent
   // `(recordType, recordId, trackId)` version without cross-track leakage.
   const acknowledged = Object.freeze({
     ...current.acknowledged,
-    ...Object.fromEntries(records.map((record) => [accountDataRecordKey(record), { fingerprint: record.fingerprint, recordId: record.recordId, recordType: record.recordType, remoteVersion: record.version, trackId: record.trackId }])),
+    ...Object.fromEntries(records.map((record) => [accountDataRecordKey(record), { fingerprint: record.fingerprint, recordId: record.recordId, recordType: record.recordType, remoteVersion: record.version, trackId: record.trackId, ...(record.contentIdentitySchema === CONTENT_IDENTITY_SCHEMA ? { contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}) }])),
   });
-  return saveAccountSyncState({ ...current, accountId, status: "synced", remoteAccountRevision, lastSuccessfulSyncAt: syncedAt, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged, outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null });
+  if (current.resetGuard && current.resetGuard.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+  return saveAccountSyncState({ ...current, accountId, status: "synced", remoteAccountRevision, lastSuccessfulSyncAt: syncedAt, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged, outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, resetGuard: null, ...(protocolMode === "v4" ? { protocolVersion: 4 as const, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA } : {}) });
 }
 
 /** Clears only local guest-owned learning and pending report data. The account sync marker is retained for recovery. */

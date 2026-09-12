@@ -9,6 +9,7 @@ import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import {
   accountDataRecordFingerprint,
+  CONTENT_IDENTITY_SCHEMA,
   accountDataRecordKey,
   applyRemoteAccountData,
   assertValidAccountDataRecords,
@@ -16,12 +17,13 @@ import {
   ensureAccountOutboxFromLocalDataset,
   finishAccountMaterialization,
   getAccountSyncState,
+  isCanonicalAccountSyncState,
   isDeletedAccountDataRecord,
   saveAccountSyncState,
   splitAccountSyncBatches,
 } from "./accountDataRepository";
 import { bindGuestInstallationToAccount, provisionGuestInstallation } from "./guestInstallationRepository";
-import { clearActiveTrackId, saveActiveTrackId } from "./activeTrackRepository";
+import { clearActiveTrackId, getActiveTrackId, saveActiveTrackId } from "./activeTrackRepository";
 import { saveTrainingSession } from "./trainingSessionRepository";
 import { getTrainingSessionResult, saveTrainingSessionResult } from "./trainingSessionResultRepository";
 import { getGoalSnapshot, saveGoal } from "./goalRepository";
@@ -343,4 +345,102 @@ test("protocol-v3 durable plan keeps an immutable payload snapshot across reload
   const mutableView = reloaded.syncPlan!.items[0]!.payload.state as Record<string, unknown>;
   assert.equal(Reflect.set(mutableView, "tampered", true), false);
   assert.equal("tampered" in mutableView, false);
+});
+
+test("protocol-v4 fingerprints and guards are schema-bound for resolved and tombstone states", async () => {
+  const resolvedState = {
+    trackId,
+    content: { kind: "resolved", ref: { trackId, questionId: "two-sum-001", contentVersion: "2026-09-12", artifactSha256: "a".repeat(64) } },
+  } as const;
+  const resolved = {
+    recordId: "current",
+    recordType: "active_track" as const,
+    state: resolvedState,
+    trackId,
+    version: 0,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    fingerprint: accountDataRecordFingerprint({ recordId: "current", recordType: "active_track", state: resolvedState, trackId, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA }),
+  } as const;
+  const tombstoneState = {
+    deleted: true,
+    content: { kind: "tombstone", tombstone: { kind: "unavailable_review", trackId, questionId: "two-sum-001", contentVersion: "2026-09-12", reason: "stale_content_release", migrationVersion: 1, legacyIdentityDigest: "b".repeat(64), reviewId: "review-1" } },
+  } as const;
+  const tombstone = {
+    recordId: "review-1",
+    recordType: "review_queue_entry" as const,
+    state: tombstoneState,
+    trackId,
+    version: 1,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    fingerprint: accountDataRecordFingerprint({ recordId: "review-1", recordType: "review_queue_entry", state: tombstoneState, trackId, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA }),
+  } as const;
+
+  assert.notEqual(resolved.fingerprint, accountDataRecordFingerprint({ recordId: resolved.recordId, recordType: resolved.recordType, state: resolved.state, trackId }));
+  assertValidAccountDataRecords([resolved, tombstone], "v4");
+  assert.throws(() => assertValidAccountDataRecords([{ ...resolved, contentIdentitySchema: undefined }], "v4"), /content_identity_schema_conflict/u);
+  assert.throws(() => assertValidAccountDataRecords([{ ...resolved, state: { ...resolved.state, itemId: "legacy" }, fingerprint: accountDataRecordFingerprint({ recordId: resolved.recordId, recordType: resolved.recordType, state: { ...resolved.state, itemId: "legacy" }, trackId, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA }) }], "v4"), /content_identity_schema_conflict/u);
+});
+
+test("protocol-v4 outbox and plan remain deterministic and refuse a v3 downgrade after the marker", async () => {
+  await bindSyncedAccount();
+  await saveActiveTrackId(trackId);
+  const first = await ensureAccountOutboxFromLocalDataset("v4");
+  const entry = first.outbox[0]!;
+  assert.equal(first.protocolVersion, 4);
+  assert.equal(first.contentIdentitySchema, CONTENT_IDENTITY_SCHEMA);
+  assert.equal(entry.contentIdentitySchema, CONTENT_IDENTITY_SCHEMA);
+  assert.equal(first.syncPlan?.version, 4);
+  assert.equal(first.syncPlan?.contentIdentitySchema, CONTENT_IDENTITY_SCHEMA);
+  const batches = splitAccountSyncBatches({ entries: first.outbox, expectedAccountRevision: first.remoteAccountRevision, sessionId: first.syncPlan!.planId, highWatermark: first.syncPlan!.highWatermark, protocolMode: "v4" });
+  assert.equal(batches[0]?.[0]?.mutationId, entry.mutationId);
+  assert.equal(batches[0]?.[0]?.contentIdentitySchema, CONTENT_IDENTITY_SCHEMA);
+  const stable = await ensureAccountOutboxFromLocalDataset("v4");
+  assert.equal(stable.outbox[0]?.mutationId, entry.mutationId);
+  assert.equal(stable.syncPlan?.planId, first.syncPlan?.planId);
+  await assert.rejects(() => ensureAccountOutboxFromLocalDataset("v3"), /content_identity_schema_conflict/u);
+  const after = await getAccountSyncState();
+  assert.equal(after.outbox[0]?.mutationId, entry.mutationId);
+  assert.equal(after.syncPlan?.planId, first.syncPlan?.planId);
+});
+
+test("pending adoption protocol must match the durable account-state protocol", async () => {
+  const state = await getAccountSyncState();
+  const pendingV4 = {
+    operationId: "operation-v4",
+    previewFingerprint: "f".repeat(64),
+    protocolVersion: 4 as const,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    resolutions: [],
+    groupChoices: [],
+  };
+  assert.equal(isCanonicalAccountSyncState({ ...state, pendingConfirmation: pendingV4 }), false);
+  assert.throws(() => saveAccountSyncState({ ...state, pendingConfirmation: pendingV4 }), /account_sync_state_invalid/u);
+
+  const pendingV3 = {
+    operationId: "operation-v3",
+    previewFingerprint: "e".repeat(64),
+    protocolVersion: 2 as const,
+    resolutions: [],
+    groupChoices: [],
+  };
+  const v4State = { ...state, protocolVersion: 4 as const, contentIdentitySchema: CONTENT_IDENTITY_SCHEMA, resetGuard: null };
+  assert.equal(isCanonicalAccountSyncState({ ...v4State, pendingConfirmation: pendingV3 }), false);
+  assert.throws(() => saveAccountSyncState({ ...v4State, pendingConfirmation: pendingV3 }), /account_sync_state_invalid/u);
+});
+
+test("bound installation with an unbound sync state remains a no-op until the service binds sync ownership", async () => {
+  await bindGuestInstallationToAccount(accountId);
+  const before = await getAccountSyncState();
+  assert.equal(before.accountId, null);
+  assert.deepEqual(await ensureAccountOutboxFromLocalDataset(), before);
+  assert.deepEqual(await getAccountSyncState(), before);
+});
+
+test("bound installation with an unbound sync state rejects a non-empty local learning dataset", async () => {
+  await bindGuestInstallationToAccount(accountId);
+  await saveActiveTrackId(trackId);
+  const before = await getAccountSyncState();
+  await assert.rejects(() => ensureAccountOutboxFromLocalDataset(), /account_binding_mismatch/u);
+  assert.deepEqual(await getAccountSyncState(), before);
+  assert.equal(await getActiveTrackId(), trackId);
 });
