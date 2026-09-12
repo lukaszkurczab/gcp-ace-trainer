@@ -79,10 +79,10 @@ test("Legal information scopes missing public configuration to external support 
 
   assert.equal(legalEn.supportUnavailableTitle, "External support unavailable");
   assert.equal(legalPl.supportUnavailableTitle, "Zewnętrzna pomoc jest niedostępna");
-  assert.match(legalEn.publicLinksUnconfiguredDescription, /support link is disabled/u);
-  assert.match(legalEn.publicLinksInvalidDescription, /support link is disabled/u);
-  assert.match(legalPl.publicLinksUnconfiguredDescription, /link do pomocy jest wyłączony/u);
-  assert.match(legalPl.publicLinksInvalidDescription, /link do pomocy jest wyłączony/u);
+  assert.match(legalEn.publicLinksUnconfiguredDescription ?? "", /support link is disabled/u);
+  assert.match(legalEn.publicLinksInvalidDescription ?? "", /support link is disabled/u);
+  assert.match(legalPl.publicLinksUnconfiguredDescription ?? "", /link do pomocy jest wyłączony/u);
+  assert.match(legalPl.publicLinksInvalidDescription ?? "", /link do pomocy jest wyłączony/u);
   assert.equal(legalEn.publicLinksUnavailableTitle, undefined);
   assert.equal(legalPl.publicLinksUnavailableTitle, undefined);
 
