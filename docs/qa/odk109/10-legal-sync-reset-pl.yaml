@@ -1,0 +1,41 @@
+appId: com.lkurczab.patternly
+name: ODK-109 legal sync and deletion scopes — PL
+tags: [ios, legal, i18n]
+---
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn: ".*Open debugger to view warnings.*"
+- tapOn:
+    id: "main-tab-bar-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-language"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "settings-legal-information"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-legal-information"
+- assertVisible: ".*Lokalny zapis.*obsługiwane rekordy konta mogą też synchronizować się z chmurą konta.*"
+- assertVisible: ".*Granice resetu.*Lokalny reset, usunięcie konta i ograniczone dowody usunięcia.*"
+- takeScreenshot: "legal__sync-reset__010__hub__pl__light__ios-regular"
+- tapOn: ".*Lokalny zapis.*obsługiwane rekordy konta mogą też synchronizować się z chmurą konta.*"
+- assertVisible: ".*Nauka gościa pozostaje na tym urządzeniu.*aktywna ścieżka, cele i plany.*"
+- takeScreenshot: "legal__sync-reset__020__local-storage__pl__light__ios-regular"
+- tapOn:
+    id: "settings-bottom-sheet-close"
+- tapOn: ".*Granice resetu.*Lokalny reset, usunięcie konta i ograniczone dowody usunięcia.*"
+- assertVisible: ".*Nie usuwa konta ani jego kopii w chmurze.*zwykła synchronizacja odtwarza.*"
+- assertVisible: ".*Usunięcie konta jest osobnym działaniem.*"
+- assertVisible: ".*Ograniczone pseudonimizowane zabezpieczenia.*Polityka prywatności.*"
+- takeScreenshot: "legal__sync-reset__030__deletion-scopes__pl__light__ios-regular"

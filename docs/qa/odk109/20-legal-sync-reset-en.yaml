@@ -1,0 +1,57 @@
+appId: com.lkurczab.patternly
+name: ODK-109 legal sync and deletion scopes — EN
+tags: [ios, legal, i18n]
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn: ".*Open debugger to view warnings.*"
+- runFlow:
+    when:
+      visible: "Welcome to Patternly"
+    commands:
+      - tapOn:
+          id: "patternly:home:select-track:continue"
+- runFlow:
+    when:
+      visible: "Try again"
+    commands:
+      - tapOn: "Try again"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn: ".*Open debugger to view warnings.*"
+- tapOn:
+    id: "main-tab-bar-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-language"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "settings-legal-information"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-legal-information"
+- assertVisible: ".*Local storage.*supported account records can also sync to the account cloud.*"
+- assertVisible: ".*Reset limits.*Local reset, account deletion, and limited deletion evidence.*"
+- takeScreenshot: "legal__sync-reset__010__hub__en__light__ios-regular"
+- tapOn: ".*Local storage.*supported account records can also sync to the account cloud.*"
+- assertVisible: ".*Guest learning stays on this device.*active track, goals and plans.*"
+- takeScreenshot: "legal__sync-reset__020__local-storage__en__light__ios-regular"
+- tapOn:
+    id: "settings-bottom-sheet-close"
+- tapOn: ".*Reset limits.*Local reset, account deletion, and limited deletion evidence.*"
+- assertVisible: ".*does not delete an account or its cloud copy.*normal synchronization restores.*"
+- assertVisible: ".*Delete account is a separate in-app action.*"
+- assertVisible: ".*pseudonymized deletion safeguards.*Privacy Policy.*"
+- takeScreenshot: "legal__sync-reset__030__deletion-scopes__en__light__ios-regular"

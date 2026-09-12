@@ -82,10 +82,10 @@
         {
           "detailTitle": "Local storage and security",
           "icon": "shield-check",
-          "summary": "Learning data stays in local app storage, with no encryption claim.",
+          "summary": "Learning data is stored on this device; supported account records can also sync to the account cloud.",
           "title": "Local storage",
           "paragraphs": [
-            "Patternly uses one canonical local storage boundary. Screens and learning runtimes do not access that storage directly.",
+            "Patternly uses one canonical local storage boundary. Guest learning stays on this device unless you choose a network feature. For a signed-in account, supported records such as the active track, goals and plans, completed sessions, attempts, and review items can also synchronize with the account cloud.",
             "Local storage does not by itself guarantee encryption, protection on a compromised device, or irrecoverable deletion. Patternly does not describe the current local data as encrypted."
           ]
         },
@@ -117,11 +117,12 @@
         {
           "detailTitle": "Deletion and reset",
           "icon": "trash",
-          "summary": "A verified learning-state reset removes supported local learning records; it cannot be undone.",
+          "summary": "Local reset, account deletion, and limited deletion evidence have different scopes.",
           "title": "Reset limits",
           "paragraphs": [
-            "A learning-state reset logically removes supported canonical learning records such as sessions, attempts, review items, progress evidence, active drafts, and pending learning mutations where the storage contract permits it.",
-            "It is not forensic secure erasure and cannot promise deletion from copies created before the current no-backup policy, operating-system copies outside the app's control, or flash-memory remnants. Non-learning preferences may remain unless a separately defined full reset exists."
+            "Reset local learning history removes supported learning records from this device. It does not delete an account or its cloud copy; for a signed-in account, normal synchronization restores supported history after the reset.",
+            "Delete account is a separate in-app action that removes the account and synchronized learning data. It does not by itself cancel an App Store subscription.",
+            "Limited pseudonymized deletion safeguards and minimal proof that deletion completed can remain for their defined retention periods. The local Privacy Policy gives the exact scope, periods, legal bases, backup limits, and rights. Neither action is forensic secure erasure of operating-system copies or flash-memory remnants."
           ]
         }
       ]

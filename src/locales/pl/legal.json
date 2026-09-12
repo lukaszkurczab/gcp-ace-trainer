@@ -82,10 +82,10 @@
         {
           "detailTitle": "Lokalny zapis i bezpieczeństwo",
           "icon": "shield-check",
-          "summary": "Dane o nauce pozostają w lokalnym zapisie aplikacji; nie deklarujemy szyfrowania.",
+          "summary": "Dane nauki są zapisane na tym urządzeniu; obsługiwane rekordy konta mogą też synchronizować się z chmurą konta.",
           "title": "Lokalny zapis",
           "paragraphs": [
-            "Patternly używa jednej kanonicznej granicy lokalnego zapisu. Ekrany i runtime nauki nie odczytują tego zapisu bezpośrednio.",
+            "Patternly używa jednej kanonicznej granicy lokalnego zapisu. Nauka gościa pozostaje na tym urządzeniu, chyba że wybierzesz funkcję sieciową. Dla zalogowanego konta obsługiwane rekordy, takie jak aktywna ścieżka, cele i plany, ukończone sesje, próby oraz elementy powtórek, mogą też synchronizować się z chmurą konta.",
             "Lokalny zapis sam w sobie nie gwarantuje szyfrowania, ochrony na przejętym urządzeniu ani nieodwracalnego usunięcia. Patternly nie opisuje obecnych danych lokalnych jako zaszyfrowanych."
           ]
         },
@@ -117,11 +117,12 @@
         {
           "detailTitle": "Usuwanie i reset",
           "icon": "trash",
-          "summary": "Zweryfikowany reset stanu nauki usuwa obsługiwane lokalne rekordy i nie można go cofnąć.",
+          "summary": "Lokalny reset, usunięcie konta i ograniczone dowody usunięcia mają różne zakresy.",
           "title": "Granice resetu",
           "paragraphs": [
-            "Reset stanu nauki logicznie usuwa obsługiwane kanoniczne rekordy nauki, takie jak sesje, podejścia, elementy powtórek, dowody postępu, aktywne szkice i oczekujące mutacje nauki, gdy pozwala na to kontrakt zapisu.",
-            "Nie jest to bezpieczne usuwanie forensyczne i nie może obiecywać usunięcia z kopii utworzonych przed obecną polityką bez backupu, kopii systemowych poza kontrolą aplikacji ani pozostałości w pamięci flash. Preferencje niezwiązane z nauką mogą pozostać, dopóki nie istnieje osobno zdefiniowany pełny reset."
+            "Reset lokalnej historii nauki usuwa obsługiwane rekordy nauki z tego urządzenia. Nie usuwa konta ani jego kopii w chmurze; dla zalogowanego konta zwykła synchronizacja odtwarza obsługiwaną historię po resecie.",
+            "Usunięcie konta jest osobnym działaniem w aplikacji, które usuwa konto i zsynchronizowane dane nauki. Samo w sobie nie anuluje subskrypcji App Store.",
+            "Ograniczone pseudonimizowane zabezpieczenia przed odtworzeniem konta i minimalny dowód zakończenia usuwania mogą pozostać przez określone okresy retencji. Lokalna Polityka prywatności podaje dokładny zakres, okresy, podstawy prawne, granice kopii zapasowych i prawa. Żadne z tych działań nie jest forensycznym usunięciem kopii systemowych ani pozostałości w pamięci flash."
           ]
         }
       ]

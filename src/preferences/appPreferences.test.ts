@@ -72,6 +72,28 @@ test("nested legal and data translations resolve and interpolate in English and 
   }
 });
 
+test("Legal information distinguishes device storage, account sync, local reset, account deletion, and retained deletion evidence", () => {
+  for (const legal of [enLegal, plLegal]) {
+    const topics = legal.sections.flatMap((section) => section.topics);
+    const localStorage = topics.find((topic) => topic.icon === "shield-check");
+    const resetLimits = topics.find((topic) => topic.icon === "trash");
+
+    assert.ok(localStorage);
+    assert.ok(resetLimits);
+    const localCopy = [localStorage.summary, ...localStorage.paragraphs].join(" ");
+    const resetCopy = [resetLimits.summary, ...resetLimits.paragraphs].join(" ");
+
+    assert.match(localCopy, /device|urządzeniu/u);
+    assert.match(localCopy, /account cloud|chmurą konta/u);
+    assert.match(localCopy, /active track|aktywna ścieżka/u);
+    assert.match(resetCopy, /[Ll]ocal reset|Reset lokalnej/u);
+    assert.match(resetCopy, /Delete account|Usunięcie konta/u);
+    assert.match(resetCopy, /does not delete an account|Nie usuwa konta/u);
+    assert.match(resetCopy, /deletion safeguards|zabezpieczenia przed odtworzeniem konta/u);
+    assert.match(resetCopy, /Privacy Policy|Polityka prywatności/u);
+  }
+});
+
 test("sentence keys containing dots remain literal in common", () => {
   const key = "Checking saved sign-in.";
 
