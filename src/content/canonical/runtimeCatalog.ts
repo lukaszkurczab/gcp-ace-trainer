@@ -8,7 +8,7 @@ import az104 from "../generated/canonical-content/microsoft-azure-administrator-
 import ai901 from "../generated/canonical-content/microsoft-azure-ai-fundamentals-ai-901.json";
 import objectDesign from "../generated/canonical-content/object-oriented-design-interview.json";
 import lockFile from "../generated/canonical-content/content-lock.json";
-import { sha256Utf8 } from "../../infrastructure/identity/sha256";
+import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { getProductModeConfig, PRODUCT_MODE_CONFIGS, validateProductModeConfigsAgainstArtifacts, type ProductModeConfig } from "./productModeConfig";
 import { createCanonicalQuestionCatalog, type CanonicalQuestionCatalog } from "./questionCatalog";
 import type { CanonicalContentLockRecord, Question } from "./questionTypes";
@@ -74,13 +74,15 @@ export async function buildCanonicalRuntimeCatalog(dependencies: CanonicalRuntim
 async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}): Promise<CanonicalRuntimeCatalog> {
   const sourceArtifacts = dependencies.artifacts ?? artifacts;
   const sourceLocks = new Map((dependencies.locks ?? [...locks.values()]).map((entry) => [entry.trackId, entry]));
-  const catalogs = await Promise.all(sourceArtifacts.map(async (artifact) => {
+  const sha256 = dependencies.sha256Utf8 ?? contentHasher.sha256;
+  const catalogs: CanonicalQuestionCatalog[] = [];
+  for (const artifact of sourceArtifacts) {
     if (!artifact || typeof artifact !== "object" || Array.isArray(artifact) || typeof (artifact as Record<string, unknown>).trackId !== "string") throw new Error("Canonical artifact is unavailable; restart to load canonical content.");
     const trackId = (artifact as Record<string, unknown>).trackId as string;
     const lock = sourceLocks.get(trackId);
     if (!lock) throw new Error(`Canonical content lock is missing for ${trackId}.`);
-    return createCanonicalQuestionCatalog(artifact, lock, trackId, dependencies.sha256Utf8 ?? (async (value) => sha256Utf8(value)));
-  }));
+    catalogs.push(await createCanonicalQuestionCatalog(artifact, lock, trackId, sha256));
+  }
   const projections = catalogs.map((catalog) => ({ schemaVersion: "patternly-content-artifact-v1", trackId: catalog.trackId, contentVersion: catalog.contentVersion, questions: catalog.questions.map((question) => ({ trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, questionId: question.questionId, interaction: { type: question.interaction.type } })) }));
   const modeConfigs = validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, projections);
   const byTrack = new Map(catalogs.map((catalog) => [catalog.trackId, createTrackRuntime(catalog, modeConfigs)]));
