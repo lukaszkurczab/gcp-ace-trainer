@@ -118,7 +118,7 @@ function clearCanonicalLearningNamespace(includeAccountSync: boolean): void {
   }
 }
 
-function isGuestOwnedLearningKey(key: string): boolean {
+export function isGuestOwnedLearningKey(key: string): boolean {
   return (LEARNING_FIXED_KEYS as readonly string[]).includes(key) || LEARNING_RECORD_PREFIXES.some((prefix) => key.startsWith(prefix));
 }
 
@@ -128,6 +128,10 @@ function isGuestOwnedLocalDataBackupEntry(value: unknown): value is GuestOwnedLo
 
 function isSyncableRecordType(value: unknown): value is SyncableRecordType { return typeof value === "string" && (SYNCABLE_RECORD_TYPES as readonly string[]).includes(value); }
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
+function hasOnlyKeys(value: Record<string, unknown>, required: readonly string[]): boolean {
+  const keys = Object.keys(value);
+  return keys.length === required.length && required.every((key) => Object.prototype.hasOwnProperty.call(value, key));
+}
 function isAccountSyncPlanItem(value: unknown): value is AccountSyncPlanItem {
   if (!isRecord(value) || !Number.isSafeInteger(value.sequence) || Number(value.sequence) < 1 || typeof value.recordKey !== "string" || typeof value.mutationId !== "string" || (value.expectedVersion !== null && (!Number.isSafeInteger(value.expectedVersion) || Number(value.expectedVersion) < 0)) || !isAccountDataRecord(value.payload) || (value.groupId !== null && typeof value.groupId !== "string") || !["pending", "sent", "acked"].includes(value.status as string)) return false;
   // Plans written before the v3 identity migration may still carry the
@@ -170,6 +174,69 @@ function isOutboxEntry(value: unknown): value is AccountOutboxEntry {
 function isAccountDataRecord(value: unknown): value is AccountDataRecord {
   if (!isRecord(value) || typeof value.fingerprint !== "string" || !/^[a-f0-9]{64}$/u.test(value.fingerprint) || typeof value.recordId !== "string" || !isSyncableRecordType(value.recordType) || !isRecord(value.state) || typeof value.trackId !== "string" || typeof value.version !== "number") return false;
   return Number.isSafeInteger(value.version) && value.version >= 0;
+}
+
+function isCanonicalAccountDataRecord(value: unknown, exact = true): value is AccountDataRecord {
+  if (!isAccountDataRecord(value) || (exact && !hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version"])) || value.recordId.trim().length === 0 || !isRegisteredTrackId(value.trackId)) return false;
+  try {
+    return accountDataRecordFingerprint(value) === value.fingerprint;
+  } catch {
+    return false;
+  }
+}
+
+function isCanonicalOutboxEntry(value: unknown): value is AccountOutboxEntry {
+  if (!isOutboxEntry(value) || !isRecord(value) || !hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version", "mutationId", "expectedVersion", "attemptCount", "lastErrorCode", "status", "sequence"]) || !isCanonicalAccountDataRecord(value, false)) return false;
+  const entry = value as AccountOutboxEntry;
+  return typeof entry.mutationId === "string" && entry.mutationId.trim().length > 0 &&
+    (entry.expectedVersion === null || (Number.isSafeInteger(entry.expectedVersion) && entry.expectedVersion >= 0)) &&
+    Number.isSafeInteger(entry.attemptCount) && entry.attemptCount >= 0 &&
+    (entry.lastErrorCode === null || (typeof entry.lastErrorCode === "string" && entry.lastErrorCode.trim().length > 0)) &&
+    (entry.sequence === undefined || (Number.isSafeInteger(entry.sequence) && entry.sequence >= 1));
+}
+
+function isCanonicalAcknowledgedRecord(value: unknown): value is AccountAcknowledgedRecord {
+  return isAcknowledgedRecord(value) && isRecord(value) && hasOnlyKeys(value, ["fingerprint", "recordId", "recordType", "remoteVersion", "trackId"]) && /^[a-f0-9]{64}$/u.test(value.fingerprint) && value.recordId.trim().length > 0 && isRegisteredTrackId(value.trackId) && value.remoteVersion >= 0;
+}
+
+function isCanonicalSyncPlanItem(value: unknown): value is AccountSyncPlanItem {
+  if (!isAccountSyncPlanItem(value) || !isRecord(value) || !hasOnlyKeys(value, ["sequence", "recordKey", "mutationId", "expectedVersion", "payload", "groupId", "status"]) || !isCanonicalAccountDataRecord(value.payload)) return false;
+  return value.recordKey === accountDataRecordKey(value.payload) && value.mutationId.trim().length > 0 &&
+    (value.expectedVersion === null || (Number.isSafeInteger(value.expectedVersion) && value.expectedVersion >= 0)) &&
+    (value.groupId === null || value.groupId.trim().length > 0);
+}
+
+function isCanonicalPendingConfirmation(value: unknown): boolean {
+  if (value === null) return true;
+  if (!isRecord(value) || !hasOnlyKeys(value, ["operationId", "previewFingerprint", "protocolVersion", "resolutions", "groupChoices"]) || typeof value.operationId !== "string" || value.operationId.trim().length === 0 || typeof value.previewFingerprint !== "string" || value.previewFingerprint.trim().length === 0 || (value.protocolVersion !== 1 && value.protocolVersion !== 2) || !Array.isArray(value.resolutions) || !value.resolutions.every((entry) => isRecord(entry) && hasOnlyKeys(entry, ["conflictId", "resolution"]) && isResolution(entry)) || !Array.isArray(value.groupChoices) || !value.groupChoices.every((entry) => isRecord(entry) && hasOnlyKeys(entry, ["groupId", "resolution"]) && isGroupChoice(entry))) return false;
+  return true;
+}
+
+function isCanonicalMaterialization(value: unknown): boolean {
+  if (value === null) return true;
+  if (!isRecord(value)) return false;
+  if ("kind" in value) {
+    if ((!hasOnlyKeys(value, ["kind", "accountId"]) && !hasOnlyKeys(value, ["kind", "accountId", "installationId", "phase", "guestBackup"])) || value.kind !== "discardGuest" || typeof value.accountId !== "string" || value.accountId.trim().length === 0) return false;
+    const hasBackup = value.installationId !== undefined || value.phase !== undefined || value.guestBackup !== undefined;
+    if (!hasBackup) return Object.keys(value).length === 2;
+    return typeof value.installationId === "string" && value.installationId.trim().length > 0 && (value.phase === "prepared" || value.phase === "applying") && Array.isArray(value.guestBackup) && value.guestBackup.every((entry) => isRecord(entry) && hasOnlyKeys(entry, ["key", "value"]) && typeof entry.key === "string" && isGuestOwnedLearningKey(entry.key) && typeof entry.value === "string");
+  }
+  return hasOnlyKeys(value, ["operationId", "previewFingerprint"]) && typeof value.operationId === "string" && value.operationId.trim().length > 0 && typeof value.previewFingerprint === "string" && value.previewFingerprint.trim().length > 0;
+}
+
+/** Pure, current account-sync validation used by read-only inventory tooling. */
+export function isCanonicalAccountSyncState(value: unknown): boolean {
+  const requiredKeys = ["protocolVersion", "accountId", "status", "localDatasetVersion", "localDatasetFingerprint", "remoteAccountRevision", "lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode", "acknowledged", "outbox", "materialization", "pendingConfirmation", "syncPlan", "outboxSequence", "highWatermark"] as const;
+  if (!isRecord(value) || !hasOnlyKeys(value, requiredKeys) || !isAccountSyncState(value)) return false;
+  const state = value as AccountSyncState;
+  try {
+    assertValidAccountDataRecords(state.outbox);
+    for (const item of state.syncPlan?.items ?? []) assertValidAccountDataRecords([item.payload]);
+  } catch { return false; }
+  if ((state.accountId !== null && state.accountId.trim().length === 0) || state.localDatasetVersion < 0 || state.remoteAccountRevision < 0 || !Number.isSafeInteger(state.pendingMutationCount) || state.pendingMutationCount < 0 || !Number.isSafeInteger(state.outboxSequence) || state.outboxSequence < 0 || !Number.isSafeInteger(state.highWatermark) || state.highWatermark < 0 || (state.localDatasetFingerprint !== null && !/^[a-f0-9]{64}$/u.test(state.localDatasetFingerprint)) || (state.lastSuccessfulSyncAt !== null && (typeof state.lastSuccessfulSyncAt !== "string" || Number.isNaN(Date.parse(state.lastSuccessfulSyncAt)))) || (state.blockingConflictCode !== null && (typeof state.blockingConflictCode !== "string" || state.blockingConflictCode.trim().length === 0)) || (state.lastFailureCode !== null && (typeof state.lastFailureCode !== "string" || state.lastFailureCode.trim().length === 0))) return false;
+  if (!state.outbox.every(isCanonicalOutboxEntry) || !Object.values(state.acknowledged).every(isCanonicalAcknowledgedRecord) || !isCanonicalMaterialization(state.materialization) || !isCanonicalPendingConfirmation(state.pendingConfirmation)) return false;
+  if (state.syncPlan && (!hasOnlyKeys(state.syncPlan, ["version", "planId", "snapshotVersion", "expectedAccountRevision", "highWatermark", "items"]) || !state.syncPlan.items.every(isCanonicalSyncPlanItem))) return false;
+  return true;
 }
 
 type AccountDataRecordIdentity = Pick<AccountDataRecord, "recordType" | "recordId" | "trackId">;

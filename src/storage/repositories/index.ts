@@ -19,3 +19,4 @@ export * from "./goalOnboardingPreferenceRepository";
 export * from "./contentReportOutboxRepository";
 export * from "./accountDataRepository";
 export * from "./accountLifecycleRepository";
+export * from "./contentIdentityInventory";

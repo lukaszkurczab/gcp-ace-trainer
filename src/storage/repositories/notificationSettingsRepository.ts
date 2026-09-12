@@ -514,6 +514,15 @@ function isAnyNotificationSettings(value: unknown): value is AnyNotificationSett
   return isStoredNotificationSettings(value) || isDeviceReminderSettings(value);
 }
 
+/** Pure owner guards for inventory/preflight callers; they never normalize or write. */
+export function isCanonicalNotificationSettings(value: unknown): boolean {
+  return isAnyNotificationSettings(value);
+}
+
+export function isCanonicalNotificationSettingsJournal(value: unknown): boolean {
+  return isDeviceReminderJournal(value) || isPracticeReminderJournal(value);
+}
+
 function legacyNotificationIds(value: StoredNotificationSettings): readonly string[] {
   if (isLegacyNotificationSettings(value)) return value.dailyReminder ? Object.freeze([value.dailyReminder.notificationId]) : Object.freeze([]);
   return Object.freeze([...new Set(value.practiceReminder?.schedules.map((entry) => entry.notificationId) ?? [])]);

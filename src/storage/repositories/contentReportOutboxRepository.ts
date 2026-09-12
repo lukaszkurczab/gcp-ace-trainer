@@ -1,5 +1,5 @@
 import type { ContentReportInput, ContentReportOutboxEntry, ContentReportOutboxStatus } from "../../domain";
-import { CONTENT_REPORT_REASONS } from "../../domain";
+import { CONTENT_REPORT_REASONS, contentReportDescriptionIssue, isRegisteredTrackId } from "../../domain";
 import { localReportOutboxRetentionDays } from "../../legal/legalVariables";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
@@ -7,16 +7,24 @@ import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./c
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 const isNonEmptyString = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
 const isStatus = (value: unknown): value is ContentReportOutboxStatus => value === "queued" || value === "retrying" || value === "failed" || value === "accepted";
+const hasOnlyKeys = (value: Record<string, unknown>, allowed: readonly string[], required: readonly string[] = allowed): boolean => required.every((key) => Object.prototype.hasOwnProperty.call(value, key)) && Object.keys(value).every((key) => allowed.includes(key));
+const isTimestamp = (value: unknown): value is string => {
+  if (typeof value !== "string" || Number.isNaN(Date.parse(value))) return false;
+  try { return new Date(value).toISOString() === value; } catch { return false; }
+};
 const isReportInput = (value: unknown): value is ContentReportInput => {
-  if (!isRecord(value) || !isNonEmptyString(value.clientSubmissionId) || !isNonEmptyString(value.trackId) || !isNonEmptyString(value.contentVersion) || !isNonEmptyString(value.itemId) || !CONTENT_REPORT_REASONS.includes(value.reason as typeof CONTENT_REPORT_REASONS[number]) || !isNonEmptyString(value.description) || !isRecord(value.context)) return false;
+  if (!isRecord(value) || !hasOnlyKeys(value, ["clientSubmissionId", "trackId", "contentVersion", "itemId", "reason", "description", "context", "linkAccount", "contactEmail"], ["clientSubmissionId", "trackId", "contentVersion", "itemId", "reason", "description", "context"]) || !isNonEmptyString(value.clientSubmissionId) || !isNonEmptyString(value.trackId) || !isRegisteredTrackId(value.trackId) || !isNonEmptyString(value.contentVersion) || !isNonEmptyString(value.itemId) || !CONTENT_REPORT_REASONS.includes(value.reason as typeof CONTENT_REPORT_REASONS[number]) || typeof value.description !== "string" || contentReportDescriptionIssue(value.description) !== null || !isRecord(value.context) || (value.linkAccount !== undefined && typeof value.linkAccount !== "boolean") || (value.contactEmail !== undefined && !isNonEmptyString(value.contactEmail))) return false;
   const context = value.context;
-  return isNonEmptyString(context.releasePackageId) && (context.trackNode === null || isNonEmptyString(context.trackNode)) && (context.modeRoute === "practice_feedback_details" || context.modeRoute === "answer_review") && (context.locale === "en" || context.locale === "pl") && isNonEmptyString(context.appBuild) && (context.platform === "ios" || context.platform === "android") && isNonEmptyString(context.occurredAt);
+  return hasOnlyKeys(context, ["releasePackageId", "trackNode", "modeRoute", "locale", "appBuild", "platform", "occurredAt"]) && isNonEmptyString(context.releasePackageId) && (context.trackNode === null || isNonEmptyString(context.trackNode)) && (context.modeRoute === "practice_feedback_details" || context.modeRoute === "answer_review") && (context.locale === "en" || context.locale === "pl") && isNonEmptyString(context.appBuild) && (context.platform === "ios" || context.platform === "android") && isTimestamp(context.occurredAt);
 };
 const isEntry = (value: unknown): value is ContentReportOutboxEntry => {
-  if (!isRecord(value) || !isReportInput(value.input) || !isStatus(value.status) || !Number.isSafeInteger(value.attemptCount) || Number(value.attemptCount) < 0 || !isNonEmptyString(value.createdAt) || !isNonEmptyString(value.updatedAt) || (value.lastErrorCode !== null && !isNonEmptyString(value.lastErrorCode))) return false;
+  if (!isRecord(value) || !hasOnlyKeys(value, ["input", "status", "attemptCount", "createdAt", "updatedAt", "lastErrorCode"]) || !isReportInput(value.input) || !isStatus(value.status) || !Number.isSafeInteger(value.attemptCount) || Number(value.attemptCount) < 0 || !isTimestamp(value.createdAt) || !isTimestamp(value.updatedAt) || (value.lastErrorCode !== null && !isNonEmptyString(value.lastErrorCode))) return false;
   return true;
 };
 const isEntries = (value: unknown): value is ContentReportOutboxEntry[] => Array.isArray(value) && value.every(isEntry);
+
+/** Pure owner guard for read-only inventory and migration preflight callers. */
+export const isContentReportOutboxEntries = isEntries;
 
 export function getContentReportOutbox(): readonly ContentReportOutboxEntry[] {
   return Object.freeze(readCanonicalJson(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, isEntries) ?? []);
