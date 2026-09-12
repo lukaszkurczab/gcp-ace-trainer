@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking } from "react-native";
 
-import { Icon, IconTile, InfoBlock, ListRow, PublicLinkRow, SettingsBottomSheet, SettingsGroup } from "../../components";
+import { Icon, IconTile, InfoBlock, ListRow, PublicLinkRow, SettingsGroup } from "../../components";
 import { readPublicLegalLinksFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { SettingsInformationScreen, type InformationSection } from "./SettingsInformationScreen";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -36,8 +36,10 @@ export function LegalInformationScreen({ navigation }: LegalInformationScreenPro
   complaintDetail: t("complaintDetail"),
   withdrawal: t("withdrawal"),
   withdrawalDetail: t("withdrawalDetail"),
-  dataRights: t("dataRights"),
-  dataRightsDetail: t("dataRightsDetail"),
+  privacyRequestsTitle: t("privacyRequestsTitle"),
+  privacyRequestsDetail: t("privacyRequestsDetail"),
+  dataRecoveryTitle: t("dataRecoveryTitle"),
+  dataRecoveryDetail: t("dataRecoveryDetail"),
   suspensionAppeal: t("suspensionAppeal"),
   suspensionAppealDetail: t("suspensionAppealDetail"),
   settings: t("settings"),
@@ -45,7 +47,6 @@ export function LegalInformationScreen({ navigation }: LegalInformationScreenPro
   };
   const publicLinks = readPublicLegalLinksFromRuntime();
   const [openFailure, setOpenFailure] = useState(false);
-  const [dataRightsVisible, setDataRightsVisible] = useState(false);
   const available = publicLinks.kind === "configured";
   const publicDestinations = [
     { detail: available ? text.supportLinkDetail : text.publicLinkUnavailableDetail, icon: "mail" as const, title: text.supportLink, testID: "legal-link-support", url: available ? publicLinks.value.supportUrl : null },
@@ -84,10 +85,11 @@ export function LegalInformationScreen({ navigation }: LegalInformationScreenPro
     <SettingsGroup title={text.legalRequestsTitle}>
       <ListRow detail={text.complaintDetail} leading={<IconTile iconSize={20} name="alert-triangle" size={32} tone="settings" />} onPress={() => navigation.navigate(ROUTES.LEGAL_REQUESTS, { kind: "complaint" })} testID="legal-request-complaint" title={text.complaint} trailing={<Icon name="chevron-right" size={20} />} variant="grouped" />
       <ListRow detail={text.withdrawalDetail} leading={<IconTile iconSize={20} name="rotate-ccw" size={32} tone="settings" />} onPress={() => navigation.navigate(ROUTES.LEGAL_REQUESTS, { kind: "withdrawal" })} testID="legal-request-withdrawal" title={text.withdrawal} trailing={<Icon name="chevron-right" size={20} />} variant="grouped" />
-      <ListRow detail={text.dataRightsDetail} leading={<IconTile iconSize={20} name="database" size={32} tone="settings" />} onPress={() => setDataRightsVisible(true)} testID="legal-request-data-rights" title={text.dataRights} trailing={<Icon name="chevron-right" size={20} />} variant="grouped" />
+      <ListRow detail={text.privacyRequestsDetail} leading={<IconTile iconSize={20} name="shield-check" size={32} tone="settings" />} onPress={() => navigation.navigate(ROUTES.PRIVACY_REQUESTS)} testID="legal-request-privacy" title={text.privacyRequestsTitle} trailing={<Icon name="chevron-right" size={20} />} variant="grouped" />
+      <ListRow detail={text.dataRecoveryDetail} leading={<IconTile iconSize={20} name="database" size={32} tone="settings" />} onPress={() => navigation.navigate(ROUTES.LEGAL_REQUESTS, { kind: "data_recovery" })} testID="legal-request-data-recovery" title={text.dataRecoveryTitle} trailing={<Icon name="chevron-right" size={20} />} variant="grouped" />
       <ListRow detail={text.suspensionAppealDetail} leading={<IconTile iconSize={20} name="shield-check" size={32} tone="settings" />} onPress={() => navigation.navigate(ROUTES.LEGAL_REQUESTS, { kind: "suspension_appeal" })} testID="legal-request-suspension-appeal" title={text.suspensionAppeal} trailing={<Icon name="chevron-right" size={20} />} variant="grouped" />
     </SettingsGroup>
   );
 
-  return <><SettingsInformationScreen closeLabel={text.close} infoBody={text.infoBody} infoTitle={text.infoTitle} screenHeader={{ context: text.settings, onBack: () => navigation.goBack(), title: text.legal }} sections={text.sections} supplementalContent={<>{legalRequestContent}{supplementalContent}</>} /><SettingsBottomSheet closeLabel={text.close} intro={t("dataRightsIntro")} onClose={() => setDataRightsVisible(false)} title={text.dataRights} visible={dataRightsVisible}><SettingsGroup title={text.dataRights}><ListRow detail={t("privacyRequestsDetail")} leading={<IconTile name="shield-check" size={32} tone="settings" />} onPress={() => { setDataRightsVisible(false); navigation.navigate(ROUTES.PRIVACY_REQUESTS); }} testID="legal-data-rights-privacy" title={t("privacyRequestsTitle")} variant="grouped" /><ListRow detail={t("dataRecoveryDetail")} leading={<IconTile name="database" size={32} tone="settings" />} onPress={() => { setDataRightsVisible(false); navigation.navigate(ROUTES.LEGAL_REQUESTS, { kind: "data_recovery" }); }} testID="legal-data-rights-recovery" title={t("dataRecoveryTitle")} variant="grouped" /></SettingsGroup></SettingsBottomSheet></>;
+  return <SettingsInformationScreen closeLabel={text.close} infoBody={text.infoBody} infoTitle={text.infoTitle} screenHeader={{ context: text.settings, onBack: () => navigation.goBack(), title: text.legal }} sections={text.sections} supplementalContent={<>{legalRequestContent}{supplementalContent}</>} />;
 }

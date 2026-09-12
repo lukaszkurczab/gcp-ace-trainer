@@ -1,0 +1,71 @@
+appId: com.lkurczab.patternly
+name: ODK-111 personal rights and non-personal recovery — guest EN
+tags: [ios, legal, guest]
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible: "Welcome to Patternly"
+    commands:
+      - tapOn:
+          id: "patternly:home:select-track:continue"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Not now"
+    commands:
+      - tapOn: "Not now"
+- tapOn:
+    id: "main-tab-bar-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-language"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "settings-legal-information"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-legal-information"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: "legal-request-complaint"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "legal-request-data-recovery"
+    direction: DOWN
+    centerElement: true
+- assertVisible: ".*GDPR requests.*privacy-right request.*"
+- assertVisible: ".*Recover non-personal data.*Deleted progress is not retained or restored.*"
+- takeScreenshot: "legal__data-routes__010__separate-rows__guest-en__dark__ios-regular"
+- tapOn:
+    id: "legal-request-privacy"
+- assertVisible: "Privacy requests"
+- assertVisible: ".*Sign in to view account requests.*"
+- assertNotVisible:
+    id: "privacy-request-create"
+- takeScreenshot: "legal__data-routes__020__privacy-account-boundary__guest-en__dark__ios-regular"
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-data-recovery"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "legal-request-data-recovery"
+- assertVisible: "Recover non-personal data"
+- assertVisible: ".*Send this request using your email address.*"
+- tapOn:
+    id: "legal-request-create-data_recovery"
+- assertVisible:
+    id: "legal-request-email"
+- assertVisible:
+    id: "legal-request-narrative"
+- takeScreenshot: "legal__data-routes__030__recovery-public-form__guest-en__dark__ios-regular"

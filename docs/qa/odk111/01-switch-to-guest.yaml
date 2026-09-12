@@ -1,0 +1,59 @@
+appId: com.lkurczab.patternly
+name: ODK-111 switch simulator to guest
+tags: [ios, legal, setup]
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible:
+        id: "settings-bottom-sheet-close"
+    commands:
+      - tapOn:
+          id: "settings-bottom-sheet-close"
+- runFlow:
+    when:
+      notVisible:
+        id: "main-tab-bar-settings"
+    commands:
+      - scrollUntilVisible:
+          element: "Legal information"
+          direction: UP
+          centerElement: true
+      - tapOn:
+          point: "10%,12%"
+- runFlow:
+    when:
+      visible: "Go back"
+    commands:
+      - tapOn: "Go back"
+- runFlow:
+    when:
+      visible: "Go back"
+    commands:
+      - tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 60000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-sign-out"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "settings-sign-out"
+- extendedWaitUntil:
+    visible:
+      id: "account-sign-in"
+    timeout: 30000
+- tapOn:
+    id: "account-sign-in"
+- tapOn:
+    id: "account-sign-in-guest"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 60000

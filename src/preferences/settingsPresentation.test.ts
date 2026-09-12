@@ -56,11 +56,10 @@ test("Settings exposes account and participant navigation actions plus condition
   assert.doesNotMatch(settingsTab, /settings-practice|onOpenPracticeSettings/);
 });
 
-test("Legal information exposes exactly four distinct request entries and keeps data routes under data rights", () => {
-  for (const id of ["complaint", "withdrawal", "data-rights", "suspension-appeal"]) assert.match(legalScreen, new RegExp(`testID=\"legal-request-${id}\"`));
-  assert.equal(legalScreen.match(/testID="legal-request-/g)?.length, 4);
-  assert.match(legalScreen, /testID="legal-data-rights-privacy"/);
-  assert.match(legalScreen, /testID="legal-data-rights-recovery"/);
+test("Legal information exposes distinct personal-rights and non-personal-recovery entries", () => {
+  for (const id of ["complaint", "withdrawal", "privacy", "data-recovery", "suspension-appeal"]) assert.match(legalScreen, new RegExp(`testID=\"legal-request-${id}\"`));
+  assert.equal(legalScreen.match(/testID="legal-request-/g)?.length, 5);
+  assert.doesNotMatch(legalScreen, /legal-data-rights-|dataRightsVisible|SettingsBottomSheet/);
   assert.match(legalScreen, /kind: "complaint"/);
   assert.match(legalScreen, /kind: "withdrawal"/);
   assert.match(legalScreen, /kind: "suspension_appeal"/);
@@ -68,6 +67,7 @@ test("Legal information exposes exactly four distinct request entries and keeps 
   assert.match(legalRequestsScreen, /account\.createPublicLegalRequest/);
   assert.match(legalRequestsScreen, /testID="legal-request-email"/);
   assert.match(legalScreen, /kind: "data_recovery"/);
+  assert.match(legalScreen, /navigation\.navigate\(ROUTES\.PRIVACY_REQUESTS\)/);
   assert.match(legalRequestSubmission, /input\.kind !== "withdrawal" && !narrative/);
   assert.match(legalRequestSubmission, /\.\.\.\(narrative \? \{ narrative \} : \{\}\)/);
   assert.doesNotMatch(legalRequestsScreen, /mailto:/);
