@@ -1,4 +1,3 @@
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -18,12 +17,13 @@ const files = (directory: string): string[] => readdirSync(directory, { withFile
       ? []
       : [join(directory, entry.name)],
 );
+const TEST_ARTIFACT_SHA256 = "a".repeat(64);
 const simulation = () => createTrainingSession({
   id: "bootstrap-session", trackId: "coding-interview-dsa-problem-solving", modeId: "interview-simulation",
   configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "interviewSimulation", submission: "manualOrForegroundTimeout" },
   requestedLength: 1, actualLength: 1, currentItemIndex: 0,
-  itemOrder: [{ occurrenceId: "bootstrap-session:0", item: { trackId: "coding-interview-dsa-problem-solving", itemId: "item", contentVersion: "content-v1" , packagePin: TEST_CONTENT_PACKAGE_PIN} }],
-  optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "content-v1", packagePin: TEST_CONTENT_PACKAGE_PIN, status: "active", startedAt: "2026-07-16T00:00:00.000Z",
+  itemOrder: [{ occurrenceId: "bootstrap-session:0", item: { trackId: "coding-interview-dsa-problem-solving", questionId: "item", contentVersion: "content-v1", artifactSha256: TEST_ARTIFACT_SHA256 } }],
+  optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "content-v1", artifactSha256: TEST_ARTIFACT_SHA256, status: "active", startedAt: "2026-07-16T00:00:00.000Z",
 });
 
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));

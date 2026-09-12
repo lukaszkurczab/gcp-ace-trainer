@@ -21,7 +21,6 @@ import {
   type LearningPlan,
   type LearningPlanSnapshot,
 } from "../domain";
-import { TEST_CONTENT_PACKAGE_PIN } from "../testing/contentPackagePinFixture";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../storage/keys";
 import { writeCanonicalJson } from "../storage/repositories/canonicalRecordCodec";
@@ -32,6 +31,7 @@ import {
 } from "../storage/repositories/notificationSettingsRepository";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as const;
+const ARTIFACT_SHA256 = "a".repeat(64);
 const COPY: PracticeReminderCopy = Object.freeze({ body: "A scheduled learning plan session.", title: "Scheduled session" });
 
 class PlatformSpy implements NotificationPlatform {
@@ -76,7 +76,7 @@ function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
     status: "accepted",
     timezone: "Europe/Warsaw",
     contentVersion: "content-v1",
-    contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: ARTIFACT_SHA256,
     acceptedTarget: { meaning: "event", targetDate: null },
     createdAt: "2027-01-01T10:00:00.000Z",
     updatedAt: "2027-01-01T10:00:00.000Z",
@@ -102,13 +102,13 @@ function fixture(options: { plan?: LearningPlan | null; timezone?: string; permi
   const goal: GoalSnapshot = { record: createDefaultGoal(TRACK_ID), revision: 1 };
   const platform = new PlatformSpy();
   if (options.permission) platform.permission = options.permission;
-  const packageResult: LearningPlanReminderPackage = { trackId: TRACK_ID, contentVersion: "content-v1", packagePin: TEST_CONTENT_PACKAGE_PIN };
+  const packageResult: LearningPlanReminderPackage = { trackId: TRACK_ID, contentVersion: "content-v1", artifactSha256: ARTIFACT_SHA256 };
   const dependencies: LearningPlanReminderDependencies = {
     getActiveTrackId: async () => TRACK_ID,
     getDeviceTimezone: () => timezone,
     getGoalSnapshot: async () => goal,
     getLearningPlanSnapshot: () => currentPlan ? ({ plan: currentPlan, revision: currentPlan.planRevision } satisfies LearningPlanSnapshot) : null,
-    resolveExact: async () => packageResult,
+    resolveExactArtifact: async () => packageResult,
   };
   return { dependencies, goal, platform, setPlan(next) { currentPlan = next; }, setTimezone(next) { timezone = next; } };
 }
@@ -135,7 +135,7 @@ test("explicit enable materializes only the exact accepted plan slots and full i
     commandId: "command:one",
     timezone: "Europe/Warsaw",
     contentVersion: "content-v1",
-    contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: ARTIFACT_SHA256,
   });
 });
 
@@ -252,7 +252,7 @@ test("an expected identity from another active track stays pending and is persis
     commandId: "command:other-track",
     timezone: "Europe/Warsaw",
     contentVersion: "content-v1",
-    contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: ARTIFACT_SHA256,
   };
 
   const result = await reconcileLearningPlanReminders(f.platform, COPY, expected, f.dependencies);
@@ -268,10 +268,10 @@ test("an expected identity from another active track stays pending and is persis
 
 test("full source identity mismatch is fail-closed before scheduling", async () => {
   const f = fixture();
-  const mismatchedPin = { ...TEST_CONTENT_PACKAGE_PIN, contentReleaseId: "different-release" };
+  const mismatchedArtifactSha256 = "b".repeat(64);
   const dependencies: LearningPlanReminderDependencies = {
     ...f.dependencies,
-    resolveExact: async () => ({ trackId: TRACK_ID, contentVersion: "content-v1", packagePin: mismatchedPin }),
+    resolveExactArtifact: async () => ({ trackId: TRACK_ID, contentVersion: "content-v1", artifactSha256: mismatchedArtifactSha256 }),
   };
   saveDeviceReminderSettings({ schemaVersion: 1, enabled: true, identity: null, schedules: [], legacyNotificationIds: [], pending: null }, null);
 
@@ -311,7 +311,7 @@ test("journal-created slots are trusted only when the discovered native identity
     commandId: "command:one",
     timezone: "Europe/Warsaw",
     contentVersion: "content-v1",
-    contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: ARTIFACT_SHA256,
   };
   saveDeviceReminderSettings({ schemaVersion: 1, enabled: true, identity: null, schedules: [], legacyNotificationIds: [], pending: null }, null);
   writeCanonicalJson(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, {

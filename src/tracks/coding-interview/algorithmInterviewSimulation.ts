@@ -1,11 +1,13 @@
 import {
   completeTrainingSession,
   createFamilyEnvelope,
+  resolvedContentRefsEqual,
   createTrainingAttempt,
   createTrainingSession,
   createTrainingSessionDraft,
   createTrainingSessionResult,
   type ReviewQueueEntry,
+  type ResolvedContentRef,
   type TrainingAttempt,
   type TrainingSession,
   type TrainingSessionDraft,
@@ -111,7 +113,7 @@ export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
     requestedLength: 40,
     actualLength: 40,
     currentItemIndex: 0,
-    itemOrder: selection.items.map((item, index) => ({ occurrenceId: `${input.sessionId}:occurrence:${index}`, item: input.catalog.toContentItemRef(item) })),
+    itemOrder: selection.items.map((item, index) => ({ occurrenceId: `${input.sessionId}:occurrence:${index}`, item: input.catalog.toResolvedContentRef(item) })),
     optionOrderByOccurrence: Object.fromEntries(selection.items.map((item, index) => {
       const occurrenceId = `${input.sessionId}:occurrence:${index}`;
       return [occurrenceId, createAlgorithmOptionOrder(item, occurrenceId)];
@@ -119,7 +121,7 @@ export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
     conditionalReinsertSlots: [],
     activeForegroundMs: 0,
     contentVersion: input.contentVersion,
-    packagePin: input.catalog.getPackagePin(),
+    artifactSha256: input.catalog.getArtifactSha256(),
     taxonomyVersion: input.taxonomyVersion,
     status: "active",
     startedAt: input.startedAt,
@@ -147,7 +149,7 @@ export function mutateAlgorithmsInterviewSimulationDraft(input: Readonly<{
   if (input.draft.sessionId !== input.session.id || input.draft.trackId !== input.session.trackId) throw new Error("Algorithms Interview Simulation draft scope is invalid.");
   const occurrence = input.session.itemOrder.find((item) => item.occurrenceId === input.occurrenceId);
   if (!occurrence) throw new Error(`Algorithms Interview Simulation occurrence ${input.occurrenceId} is unknown.`);
-  const question = input.entries.find((entry) => entry.question.id === occurrence.item.itemId)?.question;
+  const question = input.entries.find((entry) => entry.question.id === occurrence.item.questionId)?.question;
   if (!question) throw new Error("Algorithms Interview Simulation content is unavailable for this occurrence.");
   const responses = { ...input.draft.responsesByOccurrenceId } as Record<string, AlgorithmResponse>;
   if (input.response === null) delete responses[input.occurrenceId];
@@ -176,8 +178,8 @@ export function finalizeAlgorithmsInterviewSimulation(input: Readonly<{
   let pointsEarned = 0;
   let maxPoints = 0;
   for (const occurrence of input.session.itemOrder) {
-    const question = entryById.get(occurrence.item.itemId);
-    if (!question) throw new Error(`Algorithms Interview Simulation content ${occurrence.item.itemId} is unavailable.`);
+    const question = entryById.get(occurrence.item.questionId);
+    if (!question) throw new Error(`Algorithms Interview Simulation content ${occurrence.item.questionId} is unavailable.`);
     validateAlgorithmInteractionItem(question);
     maxPoints += maximumPointsFor(question);
     const response = input.frozenDraft.responsesByOccurrenceId[occurrence.occurrenceId] as AlgorithmResponse | undefined;
@@ -241,6 +243,6 @@ function maximumPointsFor(question: AlgorithmQuestion): number {
   return question.scoringContract.maxPoints;
 }
 
-function sameContent(left: { contentVersion: string; itemId: string; trackId: string }, right: { contentVersion: string; itemId: string; trackId: string }): boolean {
-  return left.trackId === right.trackId && left.contentVersion === right.contentVersion && left.itemId === right.itemId;
+function sameContent(left: ResolvedContentRef, right: ResolvedContentRef): boolean {
+  return resolvedContentRefsEqual(left, right);
 }

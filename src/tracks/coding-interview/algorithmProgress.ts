@@ -1,8 +1,8 @@
 import {
-  contentPackagePinsEqual,
-  type ContentPackagePin,
+  createArtifactSha256,
   type EvidenceRef,
   type ReviewQueueEntry,
+  type ResolvedContentRef,
   type TrainingAttempt,
 } from "../../domain";
 import {
@@ -63,7 +63,7 @@ export type BuildAlgorithmProgressFactsInput = Readonly<{
   content: Readonly<{
     contentVersion: string;
     items: readonly AlgorithmQuestion[];
-    packagePin: ContentPackagePin;
+    artifactSha256: ResolvedContentRef["artifactSha256"];
   }>;
   now?: string;
   reviewQueueItems?: readonly ReviewQueueEntry[];
@@ -76,6 +76,7 @@ export function buildAlgorithmProgressFacts(
   const content = input.content;
   const items = content.items;
   const contentVersion = content.contentVersion;
+  const artifactSha256 = createArtifactSha256(content.artifactSha256);
   const roadmapNodes = input.roadmapNodes ?? ALGORITHM_ROADMAP.nodes;
   const reviewQueueItems = input.reviewQueueItems ?? [];
   const now = input.now ?? new Date().toISOString();
@@ -84,8 +85,8 @@ export function buildAlgorithmProgressFacts(
   const algorithmAttempts = input.attempts.filter((attempt) =>
     attempt.trackId === "coding-interview-dsa-problem-solving" &&
     attempt.item.contentVersion === contentVersion &&
-    contentPackagePinsEqual(attempt.item.packagePin, content.packagePin) &&
-    questionIds.has(attempt.item.itemId),
+    attempt.item.artifactSha256 === artifactSha256 &&
+    questionIds.has(attempt.item.questionId),
   );
   const latestAttemptByItemId = getLatestAttemptByItemId(algorithmAttempts);
   const nodeProgress = getRoadmapNodesWithActiveItems(items)
@@ -96,7 +97,7 @@ export function buildAlgorithmProgressFacts(
       latestAttemptByItemId,
       reviewQueueItems,
       contentVersion,
-      content.packagePin,
+      artifactSha256,
       now,
     ));
   const activeNode = getActiveNode(nodeProgress, entries, algorithmAttempts);
@@ -118,17 +119,18 @@ export function buildAlgorithmWeakAreaRecommendation(
   attempts: readonly TrainingAttempt[],
   items: readonly AlgorithmQuestion[],
   contentVersion: string,
-  packagePin: ContentPackagePin,
+  artifactSha256: ResolvedContentRef["artifactSha256"],
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
   preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
 ): AlgorithmWeakAreaRecommendation {
+  const exactArtifactSha256 = createArtifactSha256(artifactSha256);
   const entries = getKnownRoadmapEntries(items, roadmapNodes);
   const defaultNodeId = getDefaultRoadmapNodeId(entries, roadmapNodes, preferredRoadmapNodeId);
   const latestAttemptByItemId = getLatestAttemptByItemId(
     attempts.filter((attempt) =>
       attempt.trackId === "coding-interview-dsa-problem-solving" &&
       attempt.item.contentVersion === contentVersion &&
-      contentPackagePinsEqual(attempt.item.packagePin, packagePin),
+      attempt.item.artifactSha256 === exactArtifactSha256,
     ),
   );
   const statsByNodeId = buildWeakAreaStats(entries, latestAttemptByItemId);
@@ -176,7 +178,7 @@ function buildNodeProgress(
   latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
   reviewQueueItems: readonly ReviewQueueEntry[],
   contentVersion: string,
-  packagePin: ContentPackagePin,
+  artifactSha256: ResolvedContentRef["artifactSha256"],
   now: string,
 ): AlgorithmRoadmapNodeProgress {
   const questions = entries
@@ -198,8 +200,8 @@ function buildNodeProgress(
     item.trackId === "coding-interview-dsa-problem-solving" &&
     item.sourceItem.trackId === "coding-interview-dsa-problem-solving" &&
     item.sourceItem.contentVersion === contentVersion &&
-    contentPackagePinsEqual(item.sourceItem.packagePin, packagePin) &&
-    questionIds.has(item.sourceItem.itemId) &&
+    item.sourceItem.artifactSha256 === artifactSha256 &&
+    questionIds.has(item.sourceItem.questionId) &&
     item.dueAt <= now,
   );
   const remediationDue = dueReviews.filter((item) => item.persistent);
@@ -253,7 +255,7 @@ function getActiveNode(
     right.answeredAt.localeCompare(left.answeredAt),
   )[0];
   const latestEntry = latestAttempt
-    ? entries.find((entry) => entry.question.id === latestAttempt.item.itemId)
+    ? entries.find((entry) => entry.question.id === latestAttempt.item.questionId)
     : undefined;
   const active = latestEntry
     ? nodeProgress.find((progress) => progress.nodeId === latestEntry.roadmapNodeId)
@@ -274,7 +276,7 @@ function getLatestAttemptByItemId(
   for (const attempt of [...attempts].sort((left, right) =>
     right.answeredAt.localeCompare(left.answeredAt),
   )) {
-    if (!latest.has(attempt.item.itemId)) latest.set(attempt.item.itemId, attempt);
+    if (!latest.has(attempt.item.questionId)) latest.set(attempt.item.questionId, attempt);
   }
 
   return latest;

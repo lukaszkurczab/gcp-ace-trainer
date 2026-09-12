@@ -1,4 +1,3 @@
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import assert from "node:assert/strict";
 import test, { before } from "node:test";
 
@@ -29,7 +28,7 @@ function certificationSession(input: Readonly<{
     activeForegroundMs: 0,
     actualLength: input.requestedLength,
     configurationSnapshot: input.configuration,
-    contentVersion: "gcp-ace-test", packagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: "a".repeat(64), contentVersion: "gcp-ace-test",
     currentItemIndex: 0,
     id: input.id,
     itemOrder: [],

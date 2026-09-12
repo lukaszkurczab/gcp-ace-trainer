@@ -6,7 +6,7 @@ import type { LearningPlanMutationRuntimeDependencies } from "./learningPlanMuta
 import type { LearningPlanAcceptResult, LearningPlanEditorCommitResult, LearningPlanSnapshot } from "./LearningPlanEditorCoordinator";
 import type { LearningPlanReminderResult, PracticeReminderCopy } from "../notificationPreferences";
 import { createLearningPlanSlotId, type LearningPlan, type TrackId } from "../../domain";
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
+const ARTIFACT_SHA256 = "a".repeat(64);
 
 const trackId = "backend-system-design-interview" as TrackId;
 const snapshot: LearningPlanSnapshot = {
@@ -18,7 +18,7 @@ const snapshot: LearningPlanSnapshot = {
     status: "accepted",
     timezone: "Europe/Warsaw",
     contentVersion: "content-v1",
-    contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: ARTIFACT_SHA256,
     acceptedTarget: { meaning: "none", targetDate: null },
     createdAt: "2027-01-01T10:00:00.000Z",
     updatedAt: "2027-01-01T10:00:00.000Z",
@@ -66,7 +66,7 @@ test("plan accept saves first and returns the synced reminder outcome", async ()
       commandId: "command:runtime",
       timezone: "Europe/Warsaw",
       contentVersion: "content-v1",
-      contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+      artifactSha256: ARTIFACT_SHA256,
     },
   });
 });

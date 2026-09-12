@@ -132,7 +132,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
       state: "editable", title: "Interview Simulation", modeLabel: "Interview Simulation", position: simulationPosition(projection),
       progress: projection.position.current / projection.position.total, timer: simulationTimer(projection.remainingForegroundMs),
       notice: { tone: changed ? "neutral" : "success", message: changed ? "Not saved yet" : response ? "Saved" : "No saved response" },
-      question: question(projection, response), navigator: navigator(projection), runtimeIdentity: { itemId: projection.item.itemId, sessionId: projection.session.id },
+      question: question(projection, response), navigator: navigator(projection), runtimeIdentity: { itemId: projection.item.questionId, sessionId: projection.session.id },
       onOccurrencePress: async (occurrenceId) => {
         const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId);
         return target ? goTo(target.index) : "save_failed";
@@ -146,7 +146,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   return <SimulationSessionSurface projection={surface} />;
 }
 
-function base(projection: AlgorithmsSimulationProjection) { return { title: "Interview Simulation", modeLabel: "Interview Simulation", position: simulationPosition(projection), progress: projection.position.current / projection.position.total, runtimeIdentity: { itemId: projection.item.itemId, sessionId: projection.session.id }, timer: simulationTimer(projection.remainingForegroundMs), navigator: frozenNavigator(projection) }; }
+function base(projection: AlgorithmsSimulationProjection) { return { title: "Interview Simulation", modeLabel: "Interview Simulation", position: simulationPosition(projection), progress: projection.position.current / projection.position.total, runtimeIdentity: { itemId: projection.item.questionId, sessionId: projection.session.id }, timer: simulationTimer(projection.remainingForegroundMs), navigator: frozenNavigator(projection) }; }
 type SimulationActionHandlers = Readonly<{ onClose: () => void; onContinueNavigation: () => void; onLeave: () => void; onRecover: () => void; onResumeEditing: () => void; onRetryFinalization: () => void; onRetrySave: () => void }>;
 function operationSurface(projection: AlgorithmsSimulationProjection, operation: SimulationDurableOperationState, callbacks: SimulationActionHandlers): SimulationSurfaceProjection {
   const lockedLeave: SimulationAction = { id: "simulation-leave-resumable", label: "Leave and resume later", disabled: true, onPress: noop, variant: "secondary" };

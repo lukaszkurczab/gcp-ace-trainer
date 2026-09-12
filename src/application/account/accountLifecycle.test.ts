@@ -17,6 +17,7 @@ import { bindGuestInstallationToAccount, clearGuestAccountBinding, getGuestInsta
 
 const accountId = "55555555-5555-4555-8555-555555555555";
 const uid = "firebase-fixture-uid";
+const TEST_ARTIFACT_SHA256 = "a".repeat(64);
 
 function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
   return {
@@ -306,7 +307,6 @@ test("an uncertain server deletion failure resolves through the bound operation 
 import { completeTrainingSession, createDefaultGoal, createFamilyEnvelope, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult } from "../../domain";
 import { commitSessionCompletion } from "../learningMutations/commitSessionLifecycle";
 import { commitTrainingSessionStart } from "../learningMutations/commitTrainingSessionStart";
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { discardGuestDataAndLoadAccount, retryPendingAccountDataSync } from "./accountDataService";
@@ -328,8 +328,8 @@ function guestSession(status: "active" | "abandoned") {
   return createTrainingSession({
     id: "guest-session", trackId: guestTrack, modeId: "guided", configurationSnapshot: { kind: "practice" },
     requestedLength: 1, actualLength: 1, currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "one", item: { trackId: guestTrack, itemId: "two-sum-001", contentVersion: "test", packagePin: TEST_CONTENT_PACKAGE_PIN } }],
-    optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "test", packagePin: TEST_CONTENT_PACKAGE_PIN,
+    itemOrder: [{ occurrenceId: "one", item: { trackId: guestTrack, questionId: "two-sum-001", contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256 } }],
+    optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256,
     status, startedAt: "2026-01-01T00:00:00.000Z",
   });
 }
@@ -339,8 +339,8 @@ function resumableSession() {
     id: "resumable-session", trackId: guestTrack, modeId: "guided",
     configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "practice", submission: "manualOrForegroundTimeout" },
     requestedLength: 1, actualLength: 1, currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "resumable-occurrence", item: { trackId: guestTrack, itemId: "two-sum-001", contentVersion: "test", packagePin: TEST_CONTENT_PACKAGE_PIN } }],
-    optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "test", packagePin: TEST_CONTENT_PACKAGE_PIN,
+    itemOrder: [{ occurrenceId: "resumable-occurrence", item: { trackId: guestTrack, questionId: "two-sum-001", contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256 } }],
+    optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256,
     status: "active", startedAt: "2026-01-01T00:00:00.000Z",
   });
 }

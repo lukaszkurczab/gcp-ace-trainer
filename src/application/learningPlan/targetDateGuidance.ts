@@ -1,12 +1,10 @@
 import {
   acceptedTargetFromGoal,
-  contentPackagePinsEqual,
-  createContentPackagePin,
+  createArtifactSha256,
   isIsoDate,
   normalizeGoalRecord,
   normalizeLearningPlan,
   type AcceptedTargetSnapshot,
-  type ContentPackagePin,
   type GoalSnapshot,
   type LearningPlan,
 } from "../../domain";
@@ -16,13 +14,14 @@ import type {
   CompletedSessionFact,
   ImmutableCompletedFacts,
   PaceForecast,
+  ForecastSource,
   PaceForecastUnavailableReason,
 } from "../../domain/learning/paceForecast";
 
 export type TargetDateGuidanceInput = Readonly<{
   currentGoal: GoalSnapshot | null;
   acceptedPlan: LearningPlan | null;
-  currentVerifiedPackagePin: ContentPackagePin;
+  currentVerifiedArtifactSha256: string;
   c3Result: C3Result;
   today: string;
   completedFacts: ImmutableCompletedFacts;
@@ -143,15 +142,14 @@ export function projectTargetDateGuidance(input: TargetDateGuidanceInput): Targe
   } catch {
     return buildCalculationError();
   }
-  if (!isRecord(input.currentVerifiedPackagePin) || !hasOnlyKeys(input.currentVerifiedPackagePin, ["packageIdentity", "packageVersion", "contentReleaseId"])) return buildCalculationError(plan.acceptedTarget);
-  try { createContentPackagePin(input.currentVerifiedPackagePin); } catch { return buildCalculationError(plan.acceptedTarget); }
+  try { createArtifactSha256(input.currentVerifiedArtifactSha256); } catch { return buildCalculationError(plan.acceptedTarget); }
   if (goalRecord.trackId !== plan.trackId) return buildCalculationError(plan.acceptedTarget);
   if (!isPositiveInteger(input.currentGoal.revision)) return buildCalculationError(plan.acceptedTarget);
   if (!isIsoDate(input.today)) return buildCalculationError(plan.acceptedTarget);
   if (input.c3Result !== "unknown" && input.c3Result !== "in_progress" && input.c3Result !== "completed") return buildCalculationError(plan.acceptedTarget);
 
   const currentTarget = acceptedTargetFromGoal(goalRecord);
-  const freshnessReason = getFreshnessReason(input.currentGoal.revision, plan, currentTarget, input.currentVerifiedPackagePin);
+  const freshnessReason = getFreshnessReason(input.currentGoal.revision, plan, currentTarget, input.currentVerifiedArtifactSha256);
   if (freshnessReason !== null) return buildUpdateRequired(freshnessReason);
   if (plan.status === "paused") return buildPlanPaused(plan.acceptedTarget);
 
@@ -184,10 +182,10 @@ function getFreshnessReason(
   currentGoalRevision: number,
   plan: LearningPlan,
   currentTarget: AcceptedTargetSnapshot,
-  currentPin: ContentPackagePin,
+  currentArtifactSha256: string,
 ): "target_changed" | "package_changed" | "cadence_changed" | null {
   if (plan.acceptedTarget.meaning !== currentTarget.meaning || plan.acceptedTarget.targetDate !== currentTarget.targetDate) return "target_changed";
-  if (!contentPackagePinsEqual(plan.contentPackagePin, currentPin)) return "package_changed";
+  if (plan.artifactSha256 !== currentArtifactSha256) return "package_changed";
   if (currentGoalRevision !== plan.goalRevision) return "cadence_changed";
   return null;
 }
@@ -201,7 +199,8 @@ function validateForecast(forecast: PaceForecast, plan: LearningPlan): Validated
   const keys = ["kind", "source", "requiredQuestionsPerSession", "requiredQuestionsPerWeek", "actualQuestionsPerWeek", "projectedCompletionDate", "targetDate", "remainingRequiredAttempts", "remainingPlannedCapacity", "status", "trend"] as const;
   if (!hasOnlyKeys(forecast, keys) || !isRecord(forecast.source)) return null;
   const source = forecast.source;
-  if (!hasOnlyKeys(source, ["planId", "planRevision", "goalRevision", "target", "contentPackagePin"]) ||
+  if (!hasOnlyKeys(source, ["planId", "planRevision", "goalRevision", "target", "artifactSha256"]) ||
+    !isNonEmptyString(source.planId) || !isPositiveInteger(source.planRevision) || !isPositiveInteger(source.goalRevision) ||
     source.planId !== plan.planId || source.planRevision !== plan.planRevision || source.goalRevision !== plan.goalRevision ||
     !isTargetEqual(source.target, plan.acceptedTarget) || !isIsoDate(forecast.projectedCompletionDate) ||
     !isIsoDate(forecast.targetDate) || forecast.targetDate !== plan.acceptedTarget.targetDate ||
@@ -210,13 +209,21 @@ function validateForecast(forecast: PaceForecast, plan: LearningPlan): Validated
     !isNonNegativeInteger(forecast.remainingPlannedCapacity) ||
     (forecast.status !== "on_track" && forecast.status !== "at_risk") ||
     (forecast.trend !== "improving" && forecast.trend !== "stable" && forecast.trend !== "slowing")) return null;
-  let sourcePin: ContentPackagePin;
+  let sourceArtifactSha256: string;
   try {
-    if (!isRecord(source.contentPackagePin) || !hasOnlyKeys(source.contentPackagePin, ["packageIdentity", "packageVersion", "contentReleaseId"])) return null;
-    sourcePin = createContentPackagePin(source.contentPackagePin as ContentPackagePin);
+    sourceArtifactSha256 = createArtifactSha256(source.artifactSha256);
   } catch { return null; }
-  if (!contentPackagePinsEqual(sourcePin, plan.contentPackagePin)) return null;
-  return Object.freeze({ kind: "available", value: Object.freeze({ ...forecast, source: Object.freeze({ ...source, target: Object.freeze({ ...source.target }), contentPackagePin: sourcePin }) }) as Extract<PaceForecast, { kind: "available" }> });
+  if (sourceArtifactSha256 !== plan.artifactSha256) return null;
+  const target = parseTarget(source.target);
+  if (target === null) return null;
+  const sourceValue: ForecastSource = Object.freeze({
+    planId: source.planId,
+    planRevision: source.planRevision,
+    goalRevision: source.goalRevision,
+    target,
+    artifactSha256: sourceArtifactSha256,
+  });
+  return Object.freeze({ kind: "available", value: Object.freeze({ ...forecast, source: sourceValue }) });
 }
 
 function isOverdue(target: AcceptedTargetSnapshot, today: string): boolean {
@@ -332,10 +339,16 @@ function isForecastReason(value: unknown): value is PaceForecastUnavailableReaso
 }
 
 function isTargetEqual(left: unknown, right: AcceptedTargetSnapshot): boolean {
-  return isRecord(left) && hasOnlyKeys(left, ["meaning", "targetDate"]) &&
-    (left.meaning === "event" || left.meaning === "deadline" || left.meaning === "checkpoint" || left.meaning === "none") &&
-    (left.targetDate === null || isIsoDate(left.targetDate)) &&
-    left.meaning === right.meaning && left.targetDate === right.targetDate;
+  const target = parseTarget(left);
+  return target !== null && target.meaning === right.meaning && target.targetDate === right.targetDate;
+}
+
+function parseTarget(value: unknown): AcceptedTargetSnapshot | null {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["meaning", "targetDate"]) ||
+    (value.meaning !== "event" && value.meaning !== "deadline" && value.meaning !== "checkpoint" && value.meaning !== "none") ||
+    (value.targetDate !== null && !isIsoDate(value.targetDate)) ||
+    (value.meaning === "none" && value.targetDate !== null)) return null;
+  return Object.freeze({ meaning: value.meaning, targetDate: value.targetDate });
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -349,6 +362,10 @@ function hasOnlyKeys(value: Record<string, unknown>, expected: readonly string[]
 
 function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 function isPositiveInteger(value: unknown): value is number {

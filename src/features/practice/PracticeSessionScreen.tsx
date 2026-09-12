@@ -362,11 +362,11 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       position={{ accessibilityLabel: `${t("Question")} ${projection.position.current} ${t("of")} ${projection.position.total}`, label: `${projection.position.current} ${t("of")} ${projection.position.total}` }}
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
-      question={{ constraints: projection.constraints, itemId: projection.item.itemId, prompt: projection.prompt, responseControl }}
+      question={{ constraints: projection.constraints, itemId: projection.item.questionId, prompt: projection.prompt, responseControl }}
       retryLabel={completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Restore session" : undefined}
       retryVariant={completionFailure || ("error" in projection.operation && projection.operation.error.allowedAction === "recover") ? "primary" : "secondary"}
       runtimeIdentity={{
-        itemId: projection.item.itemId,
+        itemId: projection.item.questionId,
         actualLength: projection.session.actualLength,
         feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode),
         modeId: projection.session.modeId,

@@ -1,50 +1,40 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
-import { recoverPendingMutation } from "../../application/learningMutations";
-import { buildMutationJournal } from "../../application/learningMutations/mutationJournalBuilder";
-import { createTrainingAttempt, createTrainingSession, type ContentPackagePin, type ReviewQueueEntry } from "../../domain";
+import type { ResolvedContentRef, ReviewQueueEntry } from "../../domain";
 import { getKeyValueStorage, MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../keys";
+import { UnsupportedStoredRecordError } from "../errors";
+import { writeCanonicalJson } from "./canonicalRecordCodec";
 import {
   addReviewQueueItems,
-  applyRemoteAccountData,
-  buildAccountDataSnapshot,
-  getActiveMutationJournal,
+  clearReviewQueueItems,
+  getDueReviewQueueItems,
   getReviewQueueItems,
-  getTrainingAttempts,
-  getTrainingSessions,
-  persistMutationJournal,
-} from "..";
-import { provisionGuestInstallation } from "./guestInstallationRepository";
+  removeReviewQueueEntry,
+} from "./reviewQueueRepository";
 
-const trackId = "google-cloud-associate-cloud-engineer" as const;
-const itemId = "gcp-ace-gcpace-n01-b02-002";
-const oldPin: ContentPackagePin = Object.freeze({
-  packageIdentity: "a".repeat(64),
-  packageVersion: "gcp-free-node-0004",
-  contentReleaseId: "gcp-release-0004",
-});
-const currentPin: ContentPackagePin = Object.freeze({
-  packageIdentity: "b".repeat(64),
-  packageVersion: "gcp-free-node-0006",
-  contentReleaseId: "gcp-release-0006",
-});
-const oldItem = { trackId, itemId, contentVersion: "gcp-core-0004", packagePin: oldPin };
-const currentItem = { trackId, itemId, contentVersion: "gcp-core-0006", packagePin: currentPin };
-const timestamp = "2026-09-03T08:00:00.000Z";
+const TRACK_ID = "google-cloud-associate-cloud-engineer" as const;
+const QUESTION_ID = "gcp-ace-gcpace-n01-b02-002";
+const OLD_SHA256 = "a".repeat(64);
+const CURRENT_SHA256 = "b".repeat(64);
+const TIMESTAMP = "2026-09-03T08:00:00.000Z";
 
-function review(id: string, sourceAttemptId: string, sourceSessionId: string, sourceItem: typeof oldItem | typeof currentItem): ReviewQueueEntry {
+function item(artifactSha256: string, contentVersion = "gcp-core-0006"): ResolvedContentRef {
+  return { trackId: TRACK_ID, questionId: QUESTION_ID, contentVersion, artifactSha256 };
+}
+
+function review(id: string, sourceAttemptId: string, sourceSessionId: string, sourceItem: ResolvedContentRef): ReviewQueueEntry {
   return {
     id,
-    trackId,
+    trackId: TRACK_ID,
     sourceAttemptId,
     sourceSessionId,
     sourceItem,
     taxonomyOrSkillRefs: [],
     reasons: ["incorrect"],
-    dueAt: timestamp,
-    createdAt: timestamp,
+    dueAt: TIMESTAMP,
+    createdAt: TIMESTAMP,
     consecutiveAfterDueSuccesses: 0,
     persistent: true,
   };
@@ -52,24 +42,25 @@ function review(id: string, sourceAttemptId: string, sourceSessionId: string, so
 
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
 
-test("keeps same item reviews from distinct immutable content packages", async () => {
-  const oldReview = review("review:gcp:0004", "attempt:gcp:0004", "session:gcp:0004", oldItem);
-  const currentReview = review("review:gcp:0006", "attempt:gcp:0006", "session:gcp:0006", currentItem);
+test("keeps the same question distinct across immutable artifact SHA-256 values", async () => {
+  const oldReview = review("review:gcp:0004", "attempt:gcp:0004", "session:gcp:0004", item(OLD_SHA256, "gcp-core-0004"));
+  const currentReview = review("review:gcp:0006", "attempt:gcp:0006", "session:gcp:0006", item(CURRENT_SHA256));
 
   await addReviewQueueItems([oldReview]);
   await addReviewQueueItems([currentReview]);
 
-  assert.deepEqual((await getReviewQueueItems()).value.map((entry) => entry.id), [oldReview.id, currentReview.id]);
-  assert.deepEqual((await getReviewQueueItems()).value.map((entry) => entry.sourceItem.packagePin.packageVersion), [oldPin.packageVersion, currentPin.packageVersion]);
+  const stored = (await getReviewQueueItems()).value;
+  assert.deepEqual(stored.map((entry) => entry.id), [oldReview.id, currentReview.id]);
+  assert.deepEqual(stored.map((entry) => entry.sourceItem.artifactSha256), [OLD_SHA256, CURRENT_SHA256]);
 });
 
-test("still rejects a same package durable ID replacement and immutable evidence change", async () => {
-  const first = review("review:gcp:current", "attempt:gcp:current", "session:gcp:current", currentItem);
+test("preserves durable identity conflicts for one resolved content reference", async () => {
+  const first = review("review:gcp:current", "attempt:gcp:current", "session:gcp:current", item(CURRENT_SHA256));
   await addReviewQueueItems([first]);
 
   await assert.rejects(
     () => addReviewQueueItems([{ ...first, id: "review:gcp:replacement", sourceAttemptId: "attempt:gcp:replacement" }]),
-    /retain its durable review identity/,
+    /retain its durable resolved content identity/,
   );
   await assert.rejects(
     () => addReviewQueueItems([{ ...first, sourceAttemptId: "attempt:gcp:changed" }]),
@@ -78,9 +69,9 @@ test("still rejects a same package durable ID replacement and immutable evidence
   assert.deepEqual((await getReviewQueueItems()).value, [first]);
 });
 
-test("rejects a same durable ID across packages within one batch before writing", async () => {
-  const oldReview = review("review:gcp:batch", "attempt:gcp:0004", "session:gcp:0004", oldItem);
-  const currentReview = review("review:gcp:batch", "attempt:gcp:0006", "session:gcp:0006", currentItem);
+test("rejects a durable ID rewrite across artifact identities before writing either entry", async () => {
+  const oldReview = review("review:gcp:batch", "attempt:gcp:0004", "session:gcp:0004", item(OLD_SHA256, "gcp-core-0004"));
+  const currentReview = review("review:gcp:batch", "attempt:gcp:0006", "session:gcp:0006", item(CURRENT_SHA256));
 
   await assert.rejects(
     () => addReviewQueueItems([oldReview, currentReview]),
@@ -89,97 +80,69 @@ test("rejects a same durable ID across packages within one batch before writing"
   assert.deepEqual((await getReviewQueueItems()).value, []);
 });
 
-test("rejects an immutable source attempt rewrite for one durable ID within a batch before writing", async () => {
-  const first = review("review:gcp:batch", "attempt:gcp:one", "session:gcp:batch", currentItem);
-  const conflicting = { ...first, sourceAttemptId: "attempt:gcp:two" };
+test("preserves index order while updating and removing canonical entries", async () => {
+  const first = review("review:first", "attempt:first", "session:first", item(OLD_SHA256, "gcp-core-0004"));
+  const second = review("review:second", "attempt:second", "session:second", item(CURRENT_SHA256));
+  await addReviewQueueItems([first, second]);
 
-  await assert.rejects(
-    () => addReviewQueueItems([first, conflicting]),
-    /conflicting immutable evidence/,
-  );
+  await addReviewQueueItems([{ ...first, dueAt: "2026-09-04T08:00:00.000Z" }]);
+  assert.deepEqual((await getReviewQueueItems()).value.map((entry) => entry.id), [first.id, second.id]);
+  assert.deepEqual((await getDueReviewQueueItems(TRACK_ID, "2026-09-05T09:00:00.000Z")).value.map((entry) => entry.id), [second.id, first.id]);
+
+  await removeReviewQueueEntry(first.id);
+  assert.deepEqual((await getReviewQueueItems()).value.map((entry) => entry.id), [second.id]);
+});
+
+test("rejects legacy identity fields, mixed records, tombstones, and non-lowercase artifact hashes", async () => {
+  const canonical = review("review:canonical", "attempt:canonical", "session:canonical", item(CURRENT_SHA256));
+  const legacy = {
+    ...canonical,
+    sourceItem: {
+      trackId: TRACK_ID,
+      itemId: QUESTION_ID,
+      contentVersion: "gcp-core-0006",
+      packagePin: { packageIdentity: CURRENT_SHA256, packageVersion: "gcp-core-0006", contentReleaseId: "release" },
+    },
+  };
+  const mixed = { ...canonical, sourceItem: { ...canonical.sourceItem, itemId: QUESTION_ID } };
+  const tombstone = {
+    ...canonical,
+    sourceItem: {
+      kind: "unavailable_review",
+      trackId: TRACK_ID,
+      questionId: QUESTION_ID,
+      contentVersion: "gcp-core-0006",
+      reason: "unknown_artifact_hash",
+      migrationVersion: 1,
+      legacyIdentityDigest: CURRENT_SHA256,
+      reviewId: canonical.id,
+    },
+  };
+  const uppercase = { ...canonical, sourceItem: { ...canonical.sourceItem, artifactSha256: CURRENT_SHA256.toUpperCase() } };
+
+  await assert.rejects(() => addReviewQueueItems([legacy as unknown as ReviewQueueEntry]), /invalid/);
+  await assert.rejects(() => addReviewQueueItems([mixed as unknown as ReviewQueueEntry]), /invalid/);
+  await assert.rejects(() => addReviewQueueItems([tombstone as unknown as ReviewQueueEntry]), /invalid/);
+  await assert.rejects(() => addReviewQueueItems([uppercase as unknown as ReviewQueueEntry]), /invalid/);
   assert.deepEqual((await getReviewQueueItems()).value, []);
 });
 
-test("replays a pending journal after a cross package review write failure without duplicating either review", async () => {
-  const oldReview = review("review:gcp:0004", "attempt:gcp:0004", "session:gcp:0004", oldItem);
-  await addReviewQueueItems([oldReview]);
-
-  const session = createTrainingSession({
-    id: "session:gcp:0006",
-    trackId,
-    modeId: "certification-diagnostic-baseline",
-    configurationSnapshot: { kind: "certificationPractice" },
-    requestedLength: 1,
-    actualLength: 1,
-    currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "session:gcp:0006:occurrence:0", item: currentItem }],
-    optionOrderByOccurrence: { "session:gcp:0006:occurrence:0": ["a", "b"] },
-    activeForegroundMs: 0,
-    contentVersion: currentItem.contentVersion,
-    packagePin: currentPin,
-    status: "active",
-    startedAt: timestamp,
+test("reads only strict canonical entries from durable storage", async () => {
+  const canonical = review("review:stored", "attempt:stored", "session:stored", item(CURRENT_SHA256));
+  const { sourceItem: _sourceItem, ...withoutSourceItem } = canonical;
+  writeCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, [canonical.id]);
+  writeCanonicalJson(STORAGE_KEYS.reviewEntry(canonical.id), {
+    ...withoutSourceItem,
+    sourceItem: { ...canonical.sourceItem, artifactSha256: CURRENT_SHA256.toUpperCase() },
   });
-  const attempt = createTrainingAttempt({
-    id: "attempt:gcp:0006",
-    sessionId: session.id,
-    trackId,
-    modeId: session.modeId,
-    occurrenceId: session.itemOrder[0]!.occurrenceId,
-    item: currentItem,
-    response: { selectedOptionIds: ["a"] },
-    result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 },
-    reviewEvidence: { sourceItem: currentItem, taxonomyOrSkillRefs: [] },
-    answeredAt: timestamp,
-    committedAt: timestamp,
-  });
-  const currentReview = review("review:gcp:0006", attempt.id, session.id, currentItem);
-  const journal = await buildMutationJournal({
-    operation: "submit_training_outcome",
-    sessionId: session.id,
-    trackId,
-    identity: attempt.response,
-    writes: [
-      { kind: "put_attempt", record: attempt },
-      { kind: "put_review_entry", record: currentReview },
-      { kind: "put_session", record: session },
-    ],
-    createdAt: timestamp,
-  });
-  await persistMutationJournal(journal);
 
-  const storage = getKeyValueStorage() as MemoryKeyValueStorage;
-  storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.reviewEntry(currentReview.id) });
-  await assert.rejects(() => recoverPendingMutation(), /materializ/i);
-  assert.equal((await getActiveMutationJournal())?.status, "journal_durable");
-  storage.setFailurePlan(null);
-
-  await recoverPendingMutation();
-  await recoverPendingMutation();
-  assert.equal(await getActiveMutationJournal(), null);
-  assert.deepEqual((await getTrainingAttempts()).value.map((entry) => entry.id), [attempt.id]);
-  assert.deepEqual((await getTrainingSessions()).value.map((entry) => entry.id), [session.id]);
-  assert.deepEqual((await getReviewQueueItems()).value.map((entry) => entry.id), [oldReview.id, currentReview.id]);
+  await assert.rejects(() => getReviewQueueItems(), UnsupportedStoredRecordError);
+  assert.equal(getKeyValueStorage().getString(STORAGE_KEYS.REVIEW_INDEX) !== undefined, true);
 });
 
-test("roundtrips same item reviews from distinct packages through account data replacement", async () => {
-  await provisionGuestInstallation({
-    async create() {
-      return {
-        installationId: "11111111-1111-4111-8111-111111111111",
-        localDatasetId: "22222222-2222-4222-8222-222222222222",
-      };
-    },
-  });
-  const oldReview = review("review:gcp:0004", "attempt:gcp:0004", "session:gcp:0004", oldItem);
-  const currentReview = review("review:gcp:0006", "attempt:gcp:0006", "session:gcp:0006", currentItem);
-  await addReviewQueueItems([oldReview, currentReview]);
-
-  const snapshot = await buildAccountDataSnapshot();
-  const reviewRecords = snapshot.records.filter((record) => record.recordType === "review_queue_entry");
-  assert.equal(reviewRecords.length, 2);
-  await applyRemoteAccountData(snapshot.records);
-
-  assert.deepEqual((await getReviewQueueItems()).value, [oldReview, currentReview]);
-  assert.deepEqual(reviewRecords.map((record) => (record.state as ReviewQueueEntry).sourceItem.packagePin.packageVersion), [oldPin.packageVersion, currentPin.packageVersion]);
+test("clears all canonical review records and the index", async () => {
+  await addReviewQueueItems([review("review:one", "attempt:one", "session:one", item(CURRENT_SHA256))]);
+  await clearReviewQueueItems();
+  assert.deepEqual((await getReviewQueueItems()).value, []);
+  assert.equal(getKeyValueStorage().getString(STORAGE_KEYS.REVIEW_INDEX), undefined);
 });

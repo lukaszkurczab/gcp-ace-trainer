@@ -15,7 +15,7 @@ export type ReviewTaxonomyLabel =
 export type ReviewQueueRow = {
   dueAt: string;
   id: string;
-  itemId: string;
+  questionId: string;
   mistakeTypeLabels: string[];
   promptPreview: string;
   reasonLabels: string[];
@@ -41,7 +41,7 @@ export type ReviewQueueViewItem = {
   id: string;
   isDue: boolean;
   isOverdue: boolean;
-  itemId: string;
+  questionId: string;
   mistakeTypeRefs: EvidenceRef[];
   prompt?: string;
   reasons: ReviewReason[];
@@ -100,7 +100,7 @@ function buildReviewQueueRow(
   return {
     dueAt: item.dueAt,
     id: item.id,
-    itemId: item.itemId,
+    questionId: item.questionId,
     mistakeTypeLabels: item.mistakeTypeRefs.map(formatTaxonomyNodeLabel),
     promptPreview:
       status === "unavailable"

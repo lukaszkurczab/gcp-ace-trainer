@@ -1,4 +1,4 @@
-import { createContentPackagePin, type TrackId } from "../../domain";
+import type { TrackId } from "../../domain";
 import type {
   LearningPlanAcceptResult,
   LearningPlanEditorCommitResult,
@@ -32,7 +32,7 @@ export function reminderIdentityFromSnapshot(snapshot: LearningPlanSnapshot): No
     commandId: snapshot.plan.commandId,
     timezone: snapshot.plan.timezone,
     contentVersion: snapshot.plan.contentVersion,
-    contentPackagePin: createContentPackagePin(snapshot.plan.contentPackagePin),
+    artifactSha256: snapshot.plan.artifactSha256,
   });
 }
 

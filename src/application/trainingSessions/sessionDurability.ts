@@ -2,6 +2,7 @@ import {
   accumulateTrainingSessionForegroundTime,
   advanceTrainingSession,
   areTrainingSessionConfigurationsEqual,
+  resolvedContentRefsEqual,
   type TrainingAttempt,
   type TrainingSession,
 } from "../../domain";
@@ -92,7 +93,7 @@ function areItemPlansEqual(left: TrainingSession, right: TrainingSession): boole
 }
 
 function equalItemRef(left: TrainingAttempt["item"], right: TrainingAttempt["item"]): boolean {
-  return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion;
+  return resolvedContentRefsEqual(left, right);
 }
 
 export async function advanceTrainingSessionDurably(

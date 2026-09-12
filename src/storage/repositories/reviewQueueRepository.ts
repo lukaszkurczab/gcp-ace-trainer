@@ -1,27 +1,24 @@
 import type { ReviewQueueEntry, TrackId } from "../../domain";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { isReviewQueueEntry } from "./trainingModelGuards";
 import type { StorageRepositoryResult } from "./result";
 const isIds = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string");
 function reviewQueueItemIdentity(entry: Pick<ReviewQueueEntry, "trackId" | "sourceItem">): string {
-  return canonicalSerialize({
-    trackId: entry.trackId,
-    sourceItemTrackId: entry.sourceItem.trackId,
-    itemId: entry.sourceItem.itemId,
-    contentVersion: entry.sourceItem.contentVersion,
-    packagePin: entry.sourceItem.packagePin,
-  });
+  return `${entry.trackId}:${resolvedContentRefKey(entry.sourceItem)}`;
 }
 export async function getReviewQueueItems(): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { const ids = readCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, isIds) ?? []; return { ok: true, value: ids.map((id) => { const entry = readCanonicalJson(STORAGE_KEYS.reviewEntry(id), isReviewQueueEntry); if (!entry) throw new Error(`Review index references missing entry ${id}.`); return entry; }) }; }
 export async function addReviewQueueItems(items: ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
+  if (!items.every((item) => isReviewQueueEntry(item) && item.trackId === item.sourceItem.trackId)) {
+    throw new Error("Review queue entry is invalid.");
+  }
   const current = (await getReviewQueueItems()).value;
   const byIdentity = new Map(current.map((entry) => [reviewQueueItemIdentity(entry), entry]));
   for (const item of items) {
     const identity = reviewQueueItemIdentity(item);
     const existingByIdentity = byIdentity.get(identity);
-    if (existingByIdentity && existingByIdentity.id !== item.id) throw new Error(`Review item ${item.sourceItem.itemId} must retain its durable review identity.`);
+    if (existingByIdentity && existingByIdentity.id !== item.id) throw new Error(`Review item ${item.id} must retain its durable resolved content identity.`);
     const existing = [...byIdentity.values()].find((entry) => entry.id === item.id);
     if (existing) {
       const immutableExisting = { id: existing.id, trackId: existing.trackId, sourceAttemptId: existing.sourceAttemptId, sourceSessionId: existing.sourceSessionId, sourceItem: existing.sourceItem, taxonomyOrSkillRefs: existing.taxonomyOrSkillRefs, createdAt: existing.createdAt };

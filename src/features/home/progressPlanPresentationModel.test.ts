@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  createContentPackagePin,
   createDefaultGoal,
   createLearningPlanSlotId,
   createTrainingSession,
@@ -16,7 +15,7 @@ import type { HomePlanReady, HomePlanSnapshot } from "../../application/homePlan
 import { buildProgressPlanPresentationModel } from "./progressPlanPresentationModel";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as TrackId;
-const PIN = createContentPackagePin({ packageIdentity: "a".repeat(64), packageVersion: "1.0.0", contentReleaseId: "release-1" });
+const ARTIFACT_SHA256 = "a".repeat(64);
 
 function plan(): LearningPlan {
   return normalizeLearningPlan({
@@ -27,7 +26,7 @@ function plan(): LearningPlan {
     status: "accepted",
     timezone: "Europe/Warsaw",
     contentVersion: "content-v1",
-    contentPackagePin: PIN,
+    artifactSha256: ARTIFACT_SHA256,
     acceptedTarget: { meaning: "event", targetDate: null },
     createdAt: "2026-01-01T10:00:00.000Z",
     updatedAt: "2026-01-01T10:00:00.000Z",
@@ -45,7 +44,7 @@ function guidanceFor(currentGoal: GoalSnapshot | null, acceptedPlan: LearningPla
   return projectTargetDateGuidance({
     currentGoal,
     acceptedPlan,
-    currentVerifiedPackagePin: PIN,
+    currentVerifiedArtifactSha256: ARTIFACT_SHA256,
     c3Result,
     today: "2026-09-09",
     completedFacts: { sessions: [], attempts: [] },
@@ -66,7 +65,7 @@ function ready(completion: HomePlanReady["completion"] = { kind: "in_progress", 
       planRevision: acceptedPlan.planRevision,
       planStorageRevision: 2,
       contentVersion: acceptedPlan.contentVersion,
-      contentPackagePin: acceptedPlan.contentPackagePin,
+      artifactSha256: acceptedPlan.artifactSha256,
       timezone: acceptedPlan.timezone,
     },
     goal: currentGoal,
@@ -117,11 +116,11 @@ test("Progress model does not offer a new plan session while one is active", () 
     requestedLength: 1,
     actualLength: 1,
     currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "occurrence:active", item: { trackId: TRACK_ID, itemId: "item:active", contentVersion: "content-v1", packagePin: PIN } }],
+    itemOrder: [{ occurrenceId: "occurrence:active", item: { trackId: TRACK_ID, questionId: "item:active", contentVersion: "content-v1", artifactSha256: ARTIFACT_SHA256 } }],
     optionOrderByOccurrence: {},
     activeForegroundMs: 0,
     contentVersion: "content-v1",
-    packagePin: PIN,
+    artifactSha256: ARTIFACT_SHA256,
     status: "active",
     startedAt: "2026-09-09T08:00:00.000Z",
   });
@@ -146,7 +145,7 @@ test("Progress model does not offer a new plan session while one is active", () 
   const targetedGuidance = projectTargetDateGuidance({
     currentGoal: targetedGoal,
     acceptedPlan: targetedPlan,
-    currentVerifiedPackagePin: PIN,
+    currentVerifiedArtifactSha256: ARTIFACT_SHA256,
     c3Result: "in_progress",
     today: "2026-09-09",
     completedFacts: { sessions: [], attempts: [] },
@@ -157,7 +156,7 @@ test("Progress model does not offer a new plan session while one is active", () 
         planRevision: targetedPlan.planRevision,
         goalRevision: targetedPlan.goalRevision,
         target: targetedPlan.acceptedTarget,
-        contentPackagePin: targetedPlan.contentPackagePin,
+        artifactSha256: targetedPlan.artifactSha256,
       },
       requiredQuestionsPerSession: 2,
       requiredQuestionsPerWeek: 4,

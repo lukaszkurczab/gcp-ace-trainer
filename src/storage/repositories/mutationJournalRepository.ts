@@ -1,5 +1,6 @@
-import type { ContentPackagePin, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
-import { contentPackagePinsEqual, getTrainingSessionFinalizationCleanupKind, isRegisteredTrackId } from "../../domain";
+import type { ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
+import { getTrainingSessionFinalizationCleanupKind, isArtifactSha256, isRegisteredTrackId } from "../../domain";
+import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
 import { canonicalFingerprintPayload, canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../keys";
@@ -33,7 +34,7 @@ export type MutationJournalPlan = Readonly<{
   createdAt: string;
   sessionId: string;
   trackId: string;
-  packagePin: ContentPackagePin | null;
+  artifactSha256: string | null;
   commandIdentity: MutationCommandIdentity;
   expectedRevisions: readonly MutationExpectedRevision[];
   writes: readonly JournalWrite[];
@@ -49,7 +50,6 @@ function isRecord(value: unknown): value is Record<string, unknown> { return typ
 function hasExactKeys(value: Record<string, unknown>, required: readonly string[]): boolean { const keys = Object.keys(value); return keys.length === required.length && required.every((key) => keys.includes(key)); }
 function isNonEmptyString(value: unknown): value is string { return typeof value === "string" && value.trim().length > 0; }
 function isTimestamp(value: unknown): value is string { return isNonEmptyString(value) && !Number.isNaN(Date.parse(value)); }
-function isPackagePin(value: unknown): value is ContentPackagePin { return isRecord(value) && hasExactKeys(value, ["packageIdentity", "packageVersion", "contentReleaseId"]) && typeof value.packageIdentity === "string" && SHA_256.test(value.packageIdentity) && isNonEmptyString(value.packageVersion) && isNonEmptyString(value.contentReleaseId); }
 function isExpectedRevision(value: unknown): value is MutationExpectedRevision {
   return isRecord(value) && hasExactKeys(value, ["target", "revision"]) && isNonEmptyString(value.target) &&
     (value.revision === null || (Number.isSafeInteger(value.revision) && Number(value.revision) >= 1));
@@ -169,11 +169,11 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
   const sessionWrite = record.writes.find((write): write is Extract<JournalWrite, { kind: "put_session" }> => write.kind === "put_session");
   const resultWrite = record.writes.find((write): write is Extract<JournalWrite, { kind: "put_session_result" }> => write.kind === "put_session_result");
   const attemptWrites = record.writes.filter((write): write is Extract<JournalWrite, { kind: "put_attempt" }> => write.kind === "put_attempt");
-  const attemptItemIds = new Set(record.writes.filter((write): write is Extract<JournalWrite, { kind: "put_attempt" }> => write.kind === "put_attempt").map((write) => write.record.item.itemId));
+  const attemptItemKeys = new Set(record.writes.filter((write): write is Extract<JournalWrite, { kind: "put_attempt" }> => write.kind === "put_attempt").map((write) => resolvedContentRefKey(write.record.item)));
   const attemptOccurrenceIds = attemptWrites.map((write) => write.record.occurrenceId);
-  const reviewItemKeys = record.writes.filter((write): write is Extract<JournalWrite, { kind: "put_review_entry" | "put_review_entry_for_attempt" | "update_review_entry" | "delete_review_entry_for_attempt" }> => write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt" || write.kind === "update_review_entry" || write.kind === "delete_review_entry_for_attempt").map((write) => `${write.record.sourceItem.trackId}:${write.record.sourceItem.contentVersion}:${write.record.sourceItem.itemId}`);
+  const reviewItemKeys = record.writes.filter((write): write is Extract<JournalWrite, { kind: "put_review_entry" | "put_review_entry_for_attempt" | "update_review_entry" | "delete_review_entry_for_attempt" }> => write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt" || write.kind === "update_review_entry" || write.kind === "delete_review_entry_for_attempt").map((write) => resolvedContentRefKey(write.record.sourceItem));
   const hasUniqueOutcomeSemantics = new Set(attemptOccurrenceIds).size === attemptOccurrenceIds.length && new Set(reviewItemKeys).size === reviewItemKeys.length;
-  const deletedReviewsMatchPlannedItems = record.writes.every((write) => write.kind !== "delete_review_entry" || attemptItemIds.has(write.record.sourceItem.itemId));
+  const deletedReviewsMatchPlannedItems = record.writes.every((write) => write.kind !== "delete_review_entry" || attemptItemKeys.has(resolvedContentRefKey(write.record.sourceItem)));
   const attemptsMatchSessionPlan = Boolean(sessionWrite) && attemptWrites.every((write) =>
     write.record.modeId === sessionWrite?.record.modeId &&
     sessionWrite?.record.itemOrder.some((occurrence) => occurrence.occurrenceId === write.record.occurrenceId && equalItemRef(occurrence.item, write.record.item)) &&
@@ -248,18 +248,19 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
 }
 
 function equalItemRef(left: TrainingAttempt["item"], right: TrainingAttempt["item"]): boolean {
-  return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion && contentPackagePinsEqual(left.packagePin, right.packagePin);
+  return resolvedContentRefsEqual(left, right);
 }
 
 function hasConsistentScope(record: MutationJournalPlan): boolean {
-  if (record.operation === "reset_learning_state") return record.packagePin === null && record.writes.every((write) => write.kind === "clear_learning_state");
-  if (!record.packagePin) return false;
+  if (record.operation === "reset_learning_state") return record.artifactSha256 === null && record.writes.every((write) => write.kind === "clear_learning_state");
+  if (!isArtifactSha256(record.artifactSha256)) return false;
+  const artifactSha256 = record.artifactSha256;
   return record.writes.every((write) => {
-    if (write.kind === "put_session") return write.record.id === record.sessionId && write.record.trackId === record.trackId && contentPackagePinsEqual(write.record.packagePin, record.packagePin!);
+    if (write.kind === "put_session") return write.record.id === record.sessionId && write.record.trackId === record.trackId && write.record.artifactSha256 === artifactSha256;
     if (write.kind === "put_session_result") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
-    if (write.kind === "put_attempt") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId && contentPackagePinsEqual(write.record.item.packagePin, record.packagePin!);
-    if (write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt") return write.record.sourceSessionId === record.sessionId && write.record.trackId === record.trackId && contentPackagePinsEqual(write.record.sourceItem.packagePin, record.packagePin!);
-    if (write.kind === "update_review_entry" || write.kind === "delete_review_entry" || write.kind === "delete_review_entry_for_attempt") return write.record.trackId === record.trackId && contentPackagePinsEqual(write.record.sourceItem.packagePin, record.packagePin!);
+    if (write.kind === "put_attempt") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId && write.record.item.artifactSha256 === artifactSha256;
+    if (write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt") return write.record.sourceSessionId === record.sessionId && write.record.trackId === record.trackId && write.record.sourceItem.artifactSha256 === artifactSha256;
+    if (write.kind === "update_review_entry" || write.kind === "delete_review_entry" || write.kind === "delete_review_entry_for_attempt") return write.record.trackId === record.trackId && write.record.sourceItem.artifactSha256 === artifactSha256;
     if (write.kind === "clear_active_session" || write.kind === "clear_active_session_draft") return write.sessionId === record.sessionId;
     if (write.kind === "put_active_session_draft" || write.kind === "delete_active_session_draft") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
     if (write.kind === "clear_learning_state") return record.sessionId === "learning-state-reset";
@@ -278,11 +279,11 @@ function persistedPlan(record: MutationJournalRecord): MutationJournalPlan {
 }
 
 export function hasValidMutationJournalIntegrity(value: unknown): value is MutationJournalRecord {
-  if (!isRecord(value) || !hasExactKeys(value, ["journalId", "operation", "status", "createdAt", "sessionId", "trackId", "packagePin", "commandIdentity", "expectedRevisions", "planFingerprint", "writes"])) return false;
+  if (!isRecord(value) || !hasExactKeys(value, ["journalId", "operation", "status", "createdAt", "sessionId", "trackId", "artifactSha256", "commandIdentity", "expectedRevisions", "planFingerprint", "writes"])) return false;
   if (!isRecord(value.commandIdentity) || !hasExactKeys(value.commandIdentity, ["version", "fingerprint"]) || value.commandIdentity.version !== 1 || !isNonEmptyString(value.commandIdentity.fingerprint) || !SHA_256.test(value.commandIdentity.fingerprint) || value.journalId !== `journal:${value.commandIdentity.fingerprint}` ||
     !isNonEmptyString(value.planFingerprint) || !PLAN_FINGERPRINT.test(value.planFingerprint) || !(OPERATIONS as readonly unknown[]).includes(value.operation) ||
     !["journal_durable", "materialized", "verified_pending_clear"].includes(value.status as string) || !isTimestamp(value.createdAt) || !isNonEmptyString(value.sessionId) || !isNonEmptyString(value.trackId) ||
-    !isRegisteredTrackId(value.trackId) || !(value.packagePin === null || isPackagePin(value.packagePin)) || !Array.isArray(value.expectedRevisions) || !value.expectedRevisions.every(isExpectedRevision) || !Array.isArray(value.writes) || !value.writes.every(isJournalWrite)) return false;
+    !isRegisteredTrackId(value.trackId) || !(value.artifactSha256 === null || isArtifactSha256(value.artifactSha256)) || !Array.isArray(value.expectedRevisions) || !value.expectedRevisions.every(isExpectedRevision) || !Array.isArray(value.writes) || !value.writes.every(isJournalWrite)) return false;
   const record = value as MutationJournalRecord;
   return hasConsistentScope(record) && hasExpectedRevisionPlan(record) && createMutationPlanFingerprint(persistedPlan(record)) === record.planFingerprint;
 }

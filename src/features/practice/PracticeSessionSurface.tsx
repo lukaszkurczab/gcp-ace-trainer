@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 import { Button, Icon, LoadingState, SkeletonShape, useSkeletonGlassMotion } from "../../components";
-import type { ContentItemRef, TrackId } from "../../domain";
+import type { ResolvedContentRef, TrackId } from "../../domain";
 import type { SessionMetricPresentation } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
 import { radius, spacing, typography } from "../../theme";
@@ -50,7 +50,7 @@ export type PracticeSessionSurfaceProps = Readonly<{
   allowLeave?: boolean;
   exit: PracticeExitPresentation;
   feedback?: PracticeFeedback;
-  feedbackItem?: ContentItemRef;
+  feedbackItem?: ResolvedContentRef;
   isFinalPosition: boolean;
   modeLabel?: string;
   notice?: PracticeNotice;
@@ -83,14 +83,15 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   const styles = useThemedStyles(createStyles);
   const editable = allowsPracticeResponseEditing(props.phase);
   const visibleFeedback = allowsPracticeFeedback(props.phase) ? props.feedback : undefined;
-  const itemId = props.runtimeIdentity?.itemId ?? props.question?.itemId;
+  // These UI-only IDs are explicitly mapped from the canonical questionId by each screen.
+  const displayedQuestionId = props.runtimeIdentity?.itemId ?? props.question?.itemId;
   const controls = props.question && props.phase !== "preparing" && props.phase !== "completing" ? (
     <>
       <PracticeQuestionCard question={props.question} />
       <PracticeResponseControls
         control={props.question.responseControl}
         editable={editable}
-        itemId={itemId}
+        itemId={displayedQuestionId}
         onChoicePress={props.onChoicePress}
         onComplexityValuePress={props.onComplexityValuePress}
         onOrderingMove={props.onOrderingMove}
@@ -101,7 +102,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   return (
     <SessionShell
       actionBar={props.phase === "preparing" ? undefined : <ActionBar {...props} />}
-      key={itemId}
+      key={displayedQuestionId}
       modeTestID={props.runtimeIdentity ? runtimeSelectors.session.mode(props.runtimeIdentity.modeId) : undefined}
       modeLabel={props.modeLabel}
       position={props.position}
@@ -120,7 +121,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
         </View>
       ) : controls ? <View style={styles.questionAndResponse}>{controls}</View> : null}
       {props.notice && props.phase !== "completing" ? <DurabilityNotice notice={props.notice} /> : null}
-      {visibleFeedback && props.feedbackItem && itemId ? <PracticeFeedbackBlock feedback={visibleFeedback} item={props.feedbackItem} itemId={itemId} reportSurface={{ modeRoute: "practice_feedback_details", trackNode: props.runtimeIdentity?.roadmapNodeId ?? null }} /> : null}
+      {visibleFeedback && props.feedbackItem && displayedQuestionId ? <PracticeFeedbackBlock feedback={visibleFeedback} item={props.feedbackItem} itemId={displayedQuestionId} reportSurface={{ modeRoute: "practice_feedback_details", trackNode: props.runtimeIdentity?.roadmapNodeId ?? null }} /> : null}
       {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} sessionId={props.runtimeIdentity?.sessionId} trackId={props.runtimeIdentity?.trackId} /> : null}
     </SessionShell>
   );

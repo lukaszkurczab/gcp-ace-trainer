@@ -4,7 +4,6 @@ import test from "node:test";
 import { createDefaultGoal } from "../goals/goalContracts";
 import { acceptedTargetFromGoal, InvalidLearningPlanError, isLearningPlanV1, normalizeLearningPlan, type LearningPlan } from "./learningPlan";
 import { createLearningPlanSlotId } from "./slotIdentity";
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 
@@ -17,7 +16,7 @@ function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
     status: "accepted",
     timezone: "Europe/Warsaw",
     contentVersion: "content-v1",
-    contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: "a".repeat(64),
     acceptedTarget: { meaning: "event", targetDate: "2027-03-15" },
     createdAt: "2027-01-01T10:00:00.000Z",
     updatedAt: "2027-01-01T10:00:00.000Z",

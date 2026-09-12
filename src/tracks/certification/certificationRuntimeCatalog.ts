@@ -1,4 +1,4 @@
-import type { ContentItemRef, ContentPackagePin } from "../../domain/learning";
+import type { ResolvedContentRef } from "../../domain/learning";
 import type {
   PublishedCertificationDiagnosticBaseline,
   PublishedCertificationExamExperienceProfile,
@@ -12,5 +12,5 @@ import type { CertificationQuestion } from "./domain";
 
 /** Closed catalog contract supplied only by an exact verified content package. */
 export interface CertificationRuntimeCatalog {
-  getTrackId(): string; getContentVersion(): string; getPackagePin(): ContentPackagePin; getExamExperienceProfile(): PublishedCertificationExamExperienceProfile; getDiagnosticBaseline(): PublishedCertificationDiagnosticBaseline; getFocusPractice(): PublishedCertificationFocusPractice; getScenarioPractice(): PublishedCertificationScenarioPractice; getWeakAreaReview(): PublishedCertificationWeakAreaReview; getMixedPractice(): PublishedCertificationMixedPractice; getQuickReview(): PublishedCertificationQuickReview; getItems(): readonly CertificationQuestion[]; getItemsForMode(modeId: string): readonly CertificationQuestion[]; getItemById(itemId: string): CertificationQuestion; toContentItemRef(item: CertificationQuestion): ContentItemRef;
+  getTrackId(): string; getContentVersion(): string; getArtifactSha256(): ResolvedContentRef["artifactSha256"]; getExamExperienceProfile(): PublishedCertificationExamExperienceProfile; getDiagnosticBaseline(): PublishedCertificationDiagnosticBaseline; getFocusPractice(): PublishedCertificationFocusPractice; getScenarioPractice(): PublishedCertificationScenarioPractice; getWeakAreaReview(): PublishedCertificationWeakAreaReview; getMixedPractice(): PublishedCertificationMixedPractice; getQuickReview(): PublishedCertificationQuickReview; getItems(): readonly CertificationQuestion[]; getItemsForMode(modeId: string): readonly CertificationQuestion[]; getQuestionById(questionId: string): CertificationQuestion; toResolvedContentRef(item: CertificationQuestion): ResolvedContentRef;
 }

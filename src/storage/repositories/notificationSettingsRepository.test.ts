@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
 import { createLearningPlanSlotId } from "../../domain";
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalEnvelope, writeCanonicalJson } from "./canonicalRecordCodec";
@@ -20,6 +19,7 @@ import {
 } from "./notificationSettingsRepository";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as const;
+const ARTIFACT_SHA256 = "a".repeat(64);
 
 function identity(overrides: Partial<NotificationPlanIdentity> = {}): NotificationPlanIdentity {
   return {
@@ -31,7 +31,7 @@ function identity(overrides: Partial<NotificationPlanIdentity> = {}): Notificati
     commandId: "learning-plan:command:one",
     timezone: "Europe/Warsaw",
     contentVersion: "content-v4",
-    contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: ARTIFACT_SHA256,
     ...overrides,
   };
 }
@@ -144,12 +144,13 @@ test("rejects duplicate days or slot IDs in a canonical settings record", () => 
   assert.throws(() => saveDeviceReminderSettings(duplicateSlotId), /INVALID_DEVICE_REMINDER_SETTINGS/);
 });
 
-test("rejects identity without commandId, contentVersion, or a complete package pin", () => {
+test("rejects identity without commandId, contentVersion, or a valid artifact SHA", () => {
   for (const invalid of [
     { commandId: "" },
     { contentVersion: "" },
-    { contentPackagePin: { ...TEST_CONTENT_PACKAGE_PIN, contentReleaseId: "" } },
-    { contentPackagePin: { ...TEST_CONTENT_PACKAGE_PIN, packageVersion: "" } },
+    { artifactSha256: "" },
+    { artifactSha256: "A".repeat(64) },
+    { artifactSha256: "a".repeat(63) },
   ] as const) {
     const candidate = settings({ identity: identity(invalid) });
     assert.equal(isCanonicalDeviceReminderSettings(candidate), false);

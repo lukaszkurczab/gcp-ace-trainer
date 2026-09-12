@@ -7,7 +7,7 @@ import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, Vi
 import { readContentReportTransport, retryContentReport, submitContentReportFromConfiguredRuntime } from "../../application/contentReports";
 import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { CONTENT_REPORT_DESCRIPTION_MAX_LENGTH, contentReportDescriptionIssue, type ContentItemRef, type ContentReportInput, type ContentReportModeRoute, type ContentReportOutboxEntry, type ContentReportReason } from "../../domain";
+import { CONTENT_REPORT_DESCRIPTION_MAX_LENGTH, contentReportDescriptionIssue, type ContentReportInput, type ContentReportModeRoute, type ContentReportOutboxEntry, type ContentReportReason, type ResolvedContentRef } from "../../domain";
 import { Button } from "../../components";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../theme";
@@ -24,7 +24,7 @@ const REASON_LABELS: Readonly<Record<ContentReportReason, string>> = {
   other: "Other",
 };
 
-export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentItemRef; surface: ContentReportSurfaceContext }>) {
+export function ContentReportSheet({ item, surface }: Readonly<{ item: ResolvedContentRef; surface: ContentReportSurfaceContext }>) {
   const styles = useThemedStyles(createStyles);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const account = usePatternlyAccount();
@@ -94,7 +94,7 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
 
   return (
     <>
-      <Button onPress={open} style={styles.trigger} testID={`content-report-open-${item.itemId}`} variant="ghost">{t("Report an issue")}</Button>
+      <Button onPress={open} style={styles.trigger} testID={`content-report-open-${item.questionId}`} variant="ghost">{t("Report an issue")}</Button>
       <Modal accessibilityViewIsModal animationType="slide" onRequestClose={close} transparent visible={visible}>
         <View style={styles.backdrop}>
           <Pressable accessibilityLabel={t("Close report form")} accessibilityRole="button" onPress={close} style={styles.dismissArea} />
@@ -127,12 +127,12 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ContentIt
                 ))}
               </View>
               <Text maxFontSizeMultiplier={2} style={styles.label}>{t("Extra details (optional)")}</Text>
-              <TextInput accessibilityLabel={t("Report description")} editable={!pending} maxLength={CONTENT_REPORT_DESCRIPTION_MAX_LENGTH} multiline onChangeText={setDescription} placeholder={t("Write only what is wrong with this question.")} placeholderTextColor={styles.placeholder.color as string} style={styles.input} testID={`content-report-input-${item.itemId}`} value={description} />
+              <TextInput accessibilityLabel={t("Report description")} editable={!pending} maxLength={CONTENT_REPORT_DESCRIPTION_MAX_LENGTH} multiline onChangeText={setDescription} placeholder={t("Write only what is wrong with this question.")} placeholderTextColor={styles.placeholder.color as string} style={styles.input} testID={`content-report-input-${item.questionId}`} value={description} />
               <Text maxFontSizeMultiplier={2} style={styles.privacy}>{t("Do not include private information or your answer.")}</Text>
               <Text maxFontSizeMultiplier={2} style={styles.privacy}>{t("By default, we do not link reports to your account or contact details.")}</Text>
               {entry ? <ReportStatus entry={entry} /> : null}
               {error ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.error}>{error}</Text> : null}
-              <Button disabled={pending} loading={pending} onPress={() => void submit()} testID={`content-report-submit-${item.itemId}`}>{t("Send report")}</Button>
+              <Button disabled={pending} loading={pending} onPress={() => void submit()} testID={`content-report-submit-${item.questionId}`}>{t("Send report")}</Button>
               {entry?.status === "failed" ? <Button disabled={pending} onPress={() => void retry()} variant="secondary">{t("Retry report")}</Button> : null}
               <Button disabled={pending} onPress={close} variant="ghost">{t("Cancel")}</Button>
             </ScrollView>
@@ -156,15 +156,17 @@ function ReportStatus({ entry }: Readonly<{ entry: ContentReportOutboxEntry }>) 
   return <Text accessibilityLiveRegion="polite" maxFontSizeMultiplier={2} style={entry.status === "accepted" ? styles.statusAccepted : styles.statusPending}>{message}</Text>;
 }
 
-function buildInput(item: ContentItemRef, surface: ContentReportSurfaceContext, reason: ContentReportReason, description: string, locale: "en" | "pl", platform: "ios" | "android"): Omit<ContentReportInput, "clientSubmissionId"> {
+function buildInput(item: ResolvedContentRef, surface: ContentReportSurfaceContext, reason: ContentReportReason, description: string, locale: "en" | "pl", platform: "ios" | "android"): Omit<ContentReportInput, "clientSubmissionId"> {
   return {
     trackId: item.trackId,
     contentVersion: item.contentVersion,
-    itemId: item.itemId,
+    itemId: item.questionId,
     reason,
     description: description.trim(),
     context: {
-      releasePackageId: item.packagePin.contentReleaseId,
+      // The transport keeps its historical releasePackageId field; the exact
+      // canonical artifact SHA is the only package identity available here.
+      releasePackageId: item.artifactSha256,
       trackNode: surface.trackNode,
       modeRoute: surface.modeRoute,
       locale,

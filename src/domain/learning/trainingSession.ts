@@ -1,14 +1,14 @@
-import type { ContentItemRef } from "./contentItemRef";
+import { createArtifactSha256 } from "./contentItemRef";
 import { InvalidTrainingSessionError } from "./errors";
+import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "./resolvedContentRef";
 import type { TrackId } from "./trackIdentity";
-import { contentPackagePinsEqual, createContentPackagePin, type ContentPackagePin } from "./contentPackagePin";
 
 export type TrainingSessionStatus = "active" | "completed" | "abandoned";
 export type TrainingSessionConfigurationValue = string | number | boolean | readonly string[];
 export type TrainingSessionConfigurationSnapshot = Readonly<Record<string, TrainingSessionConfigurationValue>>;
 export type TrainingSessionItemOccurrence = Readonly<{
   occurrenceId: string;
-  item: ContentItemRef;
+  item: ResolvedContentRef;
 }>;
 
 /** A branch is prepared with the session, never created while a session runs. */
@@ -44,7 +44,7 @@ export type TrainingSession = Readonly<{
   conditionalReinsertSlots?: readonly TrainingSessionConditionalReinsertSlot[];
   activeForegroundMs: number;
   contentVersion: string;
-  packagePin: ContentPackagePin;
+  artifactSha256: string;
   /** Required for resumability against a bundled artifact; old records remain explicitly unavailable. */
   taxonomyVersion?: string;
   planFingerprint?: string;
@@ -89,9 +89,29 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   if (session.status === "completed" && session.currentItemIndex !== session.actualLength - 1) {
     throw new InvalidTrainingSessionError("A completed session must remain positioned at its final item.");
   }
-  const packagePin = createContentPackagePin(session.packagePin);
-  if (session.itemOrder.some((occurrence) => !occurrence.occurrenceId.trim() || occurrence.item.trackId !== session.trackId || occurrence.item.contentVersion !== session.contentVersion || !contentPackagePinsEqual(occurrence.item.packagePin, packagePin))) {
-    throw new InvalidTrainingSessionError("Every item reference must match the session track and content version.");
+  if (typeof session.trackId !== "string" || !session.trackId.trim() || typeof session.contentVersion !== "string" || !session.contentVersion.trim()) {
+    throw new InvalidTrainingSessionError("Training session content identity is incomplete.");
+  }
+  let artifactSha256: string;
+  try {
+    artifactSha256 = createArtifactSha256(session.artifactSha256);
+  } catch {
+    throw new InvalidTrainingSessionError("Training session artifact SHA-256 is invalid.");
+  }
+  let itemOrder: readonly TrainingSessionItemOccurrence[];
+  try {
+    itemOrder = session.itemOrder.map((occurrence) => {
+      if (typeof occurrence.occurrenceId !== "string" || !occurrence.occurrenceId.trim()) {
+        throw new Error("invalid occurrence");
+      }
+      const item = createResolvedContentRef(occurrence.item);
+      if (item.trackId !== session.trackId || item.contentVersion !== session.contentVersion || item.artifactSha256 !== artifactSha256) {
+        throw new Error("mismatched identity");
+      }
+      return Object.freeze({ occurrenceId: occurrence.occurrenceId, item });
+    });
+  } catch {
+    throw new InvalidTrainingSessionError("Every item reference must match the session track, content version, and artifact.");
   }
   if ((session.taxonomyVersion === undefined) !== (session.planFingerprint === undefined) || (session.taxonomyVersion !== undefined && !session.taxonomyVersion.trim()) || (session.planFingerprint !== undefined && !/^[a-f0-9]{64}$/.test(session.planFingerprint))) {
     throw new InvalidTrainingSessionError("Session content identity must contain a taxonomy version and SHA-256 plan fingerprint.");
@@ -110,9 +130,9 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   validateConditionalReinsertSlots(session, conditionalReinsertSlots, occurrenceIds);
   return Object.freeze({
     ...session,
-    packagePin,
+    artifactSha256,
     configurationSnapshot: freezeConfigurationSnapshot(session.configurationSnapshot),
-    itemOrder: Object.freeze(session.itemOrder.map((occurrence) => Object.freeze({ ...occurrence, item: Object.freeze({ ...occurrence.item }) }))),
+    itemOrder: Object.freeze(itemOrder),
     optionOrderByOccurrence: Object.freeze(Object.fromEntries(Object.entries(session.optionOrderByOccurrence).map(([occurrenceId, optionIds]) => [occurrenceId, Object.freeze([...optionIds])]))),
     conditionalReinsertSlots: Object.freeze(conditionalReinsertSlots.map(freezeConditionalReinsertSlot)),
   });
@@ -129,7 +149,7 @@ export function areTrainingSessionConfigurationsEqual(left: TrainingSessionConfi
   return [...keys].every((key) => JSON.stringify(left[key]) === JSON.stringify(right[key]));
 }
 
-export function getCurrentSessionItem(session: TrainingSession): ContentItemRef {
+export function getCurrentSessionItem(session: TrainingSession): ResolvedContentRef {
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new InvalidTrainingSessionError("The current session item is unavailable.");
   return occurrence.item;
@@ -226,7 +246,13 @@ function assertBranchMatchesSession(
   alternate: boolean,
   alternateOccurrenceIds: Set<string>,
 ): void {
-  if (!branch.occurrence.occurrenceId.trim() || branch.occurrence.item.trackId !== session.trackId || branch.occurrence.item.contentVersion !== session.contentVersion ||
+  let item: ResolvedContentRef;
+  try {
+    item = createResolvedContentRef(branch.occurrence.item);
+  } catch {
+    throw new InvalidTrainingSessionError("A conditional reinsert branch must contain a valid resolved content reference.");
+  }
+  if (!branch.occurrence.occurrenceId.trim() || item.trackId !== session.trackId || item.contentVersion !== session.contentVersion || item.artifactSha256 !== session.artifactSha256 ||
     new Set(branch.optionOrder).size !== branch.optionOrder.length || branch.optionOrder.some((id) => !id.trim())) {
     throw new InvalidTrainingSessionError("A conditional reinsert branch must contain a valid session-versioned occurrence and unique option order.");
   }
@@ -243,8 +269,8 @@ function sameOccurrence(left: TrainingSessionItemOccurrence, right: TrainingSess
   return left.occurrenceId === right.occurrenceId && sameContentItem(left.item, right.item);
 }
 
-function sameContentItem(left: ContentItemRef, right: ContentItemRef): boolean {
-  return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion && contentPackagePinsEqual(left.packagePin, right.packagePin);
+function sameContentItem(left: ResolvedContentRef, right: ResolvedContentRef): boolean {
+  return resolvedContentRefsEqual(left, right);
 }
 
 function sameOptionOrder(left: readonly string[], right: readonly string[]): boolean {
@@ -262,7 +288,7 @@ function freezeConditionalReinsertSlot(slot: TrainingSessionConditionalReinsertS
 
 function freezeConditionalReinsertBranch(branch: TrainingSessionConditionalReinsertBranch): TrainingSessionConditionalReinsertBranch {
   return Object.freeze({
-    occurrence: Object.freeze({ ...branch.occurrence, item: Object.freeze({ ...branch.occurrence.item }) }),
+    occurrence: Object.freeze({ ...branch.occurrence, item: createResolvedContentRef(branch.occurrence.item) }),
     optionOrder: Object.freeze([...branch.optionOrder]),
   });
 }

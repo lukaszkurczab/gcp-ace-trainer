@@ -1,4 +1,4 @@
-import type { ContentItemRef, TrackId } from "../../domain";
+import type { ResolvedContentRef, TrackId } from "../../domain";
 import type { AlgorithmFeedbackMode } from "../../tracks/coding-interview/domain";
 import type { AlgorithmReviewSource } from "../../tracks/coding-interview/algorithmReviewSelection";
 import type { AlgorithmSelectionScope } from "../../tracks/coding-interview/algorithmSessionSelection";
@@ -13,4 +13,4 @@ export type HomeRecommendationAction =
   | Readonly<{ kind: "unavailable"; reason: string }>;
 export type CodingInterviewDashboardRecommendation = Readonly<{ action: HomeRecommendationAction; explanation: string; modeId: CanonicalPracticeModeId; reason: CanonicalRecommendationReason; sessionId?: string; trackId: TrackId }>;
 export type CodingInterviewDashboard = Readonly<{ recommendation: CodingInterviewDashboardRecommendation }>;
-export type AlgorithmsLifecyclePreparationRequest = Readonly<{ feedbackMode?: AlgorithmFeedbackMode; sessionId: string; requestedLength: 10 | 20 | 40; reviewItemRefs?: readonly ContentItemRef[]; reviewSource?: AlgorithmReviewSource; scope?: AlgorithmSelectionScope }>;
+export type AlgorithmsLifecyclePreparationRequest = Readonly<{ feedbackMode?: AlgorithmFeedbackMode; sessionId: string; requestedLength: 10 | 20 | 40; reviewItemRefs?: readonly ResolvedContentRef[]; reviewSource?: AlgorithmReviewSource; scope?: AlgorithmSelectionScope }>;

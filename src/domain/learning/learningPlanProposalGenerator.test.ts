@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  createContentPackagePin,
   generateLearningPlanProposal,
   InvalidLearningPlanProposalInputError,
   type GeneratorInput,
@@ -11,7 +10,7 @@ import type { GoalRecord, GoalSnapshot } from "../goals/goalContracts";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const CERTIFICATION_TRACK_ID = "google-cloud-associate-cloud-engineer";
-const PIN = createContentPackagePin({ packageIdentity: "a".repeat(64), packageVersion: "1.0.0", contentReleaseId: "release-1" });
+const ARTIFACT_SHA256 = "a".repeat(64);
 
 function snapshot(goalType: GoalRecord["goalType"], preferredDays: GoalRecord["preferredDays"] = ["mon", "wed", "sat"], targetDate?: string, trackId = TRACK_ID): GoalSnapshot {
   return Object.freeze({
@@ -23,7 +22,7 @@ function snapshot(goalType: GoalRecord["goalType"], preferredDays: GoalRecord["p
 function input(overrides: Partial<GeneratorInput> = {}): GeneratorInput {
   return {
     goalSnapshot: snapshot("build_foundations"),
-    packagePin: PIN,
+    artifactSha256: ARTIFACT_SHA256,
     contentVersion: "content-v1",
     primaryModeId: "coding-interview-learn-approach",
     requestedLength: 10,
@@ -125,7 +124,7 @@ test("does not mutate preferred day order or mutable input values and returns fr
   assert.deepEqual(result.slots.map((slot) => slot.day), ["mon", "sat"]);
   assert.ok(Object.isFrozen(result));
   assert.ok(Object.isFrozen(result.identity));
-  assert.ok(Object.isFrozen(result.identity.packagePin));
+  assert.equal(result.identity.artifactSha256, ARTIFACT_SHA256);
   assert.ok(Object.isFrozen(result.slots));
   assert.ok(Object.isFrozen(result.slots[0]));
 });
@@ -133,7 +132,7 @@ test("does not mutate preferred day order or mutable input values and returns fr
 test("rejects malformed or inconsistent input with the one explicit error class", () => {
   const invalidCases: readonly [string, unknown, InvalidLearningPlanProposalInputError["code"]][] = [
     ["track", input({ goalSnapshot: { record: { ...snapshot("build_foundations").record, trackId: "unknown-track" }, revision: 7 } as GoalSnapshot }), "invalid_goal_snapshot"],
-    ["pin", input({ packagePin: { packageIdentity: "wrong", packageVersion: "1", contentReleaseId: "r" } }), "invalid_package_pin"],
+    ["artifact", input({ artifactSha256: "wrong" }), "invalid_artifact_sha256"],
     ["timezone", input({ timezone: "Mars/Olympus" }), "invalid_timezone"],
     ["local date", input({ localToday: "2024-02-30" }), "invalid_local_today"],
     ["target date", input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2024-02-30") }), "invalid_goal_snapshot"],

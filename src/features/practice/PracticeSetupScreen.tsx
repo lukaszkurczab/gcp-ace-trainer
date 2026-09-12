@@ -247,8 +247,9 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   } catch (error) {
     return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
   }
+  const expectedArtifactSha256 = route.params?.expectedArtifactSha256;
   if ((route.params?.expectedContentVersion !== undefined && route.params.expectedContentVersion !== canonicalTrack.contentVersion) ||
-    (route.params?.expectedContentPackagePin !== undefined && route.params.expectedContentPackagePin.packageIdentity !== canonicalTrack.packagePin.packageIdentity)) {
+    (expectedArtifactSha256 !== undefined && expectedArtifactSha256 !== canonicalTrack.artifactSha256)) {
     return renderUnavailable(t("This learning plan uses a different content package. Review the plan before starting."));
   }
   const canonicalNodeMode = canonicalTrack.modes.find((mode) => mode.selection.kind === "node");

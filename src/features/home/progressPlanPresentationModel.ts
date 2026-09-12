@@ -9,7 +9,7 @@ import type {
   HomePlanSnapshot,
   HomePlanUnavailableReason,
 } from "../../application/homePlanSnapshotReader";
-import { contentPackagePinsEqual, type PackageCompletionState, type TrackId } from "../../domain";
+import type { PackageCompletionState, TrackId } from "../../domain";
 
 export type ProgressPlanCompletionPresentation = Readonly<{
   kind: PackageCompletionState["kind"];
@@ -126,8 +126,8 @@ function identityMatches(snapshot: HomePlanReady, activeTrackId: TrackId): boole
     snapshot.planSnapshot.plan.planRevision === snapshot.identity.planRevision &&
     snapshot.plan.contentVersion === snapshot.identity.contentVersion &&
     snapshot.planSnapshot.plan.contentVersion === snapshot.identity.contentVersion &&
-    contentPackagePinsEqual(snapshot.plan.contentPackagePin, snapshot.identity.contentPackagePin) &&
-    contentPackagePinsEqual(snapshot.planSnapshot.plan.contentPackagePin, snapshot.identity.contentPackagePin) &&
+    snapshot.plan.artifactSha256 === snapshot.identity.artifactSha256 &&
+    snapshot.planSnapshot.plan.artifactSha256 === snapshot.identity.artifactSha256 &&
     snapshot.plan.timezone === snapshot.identity.timezone &&
     snapshot.planSnapshot.plan.timezone === snapshot.identity.timezone;
 }

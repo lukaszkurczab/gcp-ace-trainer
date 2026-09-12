@@ -3,7 +3,6 @@ import test from "node:test";
 
 import { normalizeLearningPlan, type LearningPlan } from "./learningPlan";
 import { createLearningPlanSlotId } from "./slotIdentity";
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import {
   calculatePaceForecast,
   InvalidPaceForecastInputError,
@@ -26,7 +25,7 @@ function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
     status: "accepted",
     timezone: ZONE,
     contentVersion: "content-v1",
-    contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: "a".repeat(64),
     acceptedTarget: { meaning: "deadline", targetDate: "2026-02-20" },
     createdAt,
     updatedAt,
@@ -230,7 +229,7 @@ test("uses full immutable facts and does not double-count session questions", ()
   if (result.kind === "available") {
     assert.equal(Object.isFrozen(result.source), true);
     assert.equal(Object.isFrozen(result.source.target), true);
-    assert.equal(Object.isFrozen(result.source.contentPackagePin), true);
+    assert.equal(typeof result.source.artifactSha256, "string");
   }
 });
 

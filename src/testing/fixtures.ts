@@ -10,7 +10,7 @@ export function makeQuestion(overrides: Partial<CertificationQuestion> = {}): Ce
 
 export function makeCompletedExamProjectionInputs(questions: readonly CertificationQuestion[], selected: Record<string, string[]> = {}) {
   const startedAt = "2026-01-01T10:00:00.000Z";
-  const active = createTrainingSession({ id: "exam-1", trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, modeId: "certification-exam-simulation", configurationSnapshot: { kind: "certificationSimulation" }, requestedLength: questions.length, actualLength: questions.length, currentItemIndex: 0, itemOrder: questions.map((question, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, itemId: question.id, contentVersion: "test" , packagePin: TEST_CONTENT_PACKAGE_PIN} })), optionOrderByOccurrence: Object.fromEntries(questions.map((question, index) => [`occurrence-${index}`, question.options.map((option) => option.id).reverse()])), activeForegroundMs: 0, contentVersion: "test", packagePin: TEST_CONTENT_PACKAGE_PIN, status: "active", startedAt });
+  const active = createTrainingSession({ id: "exam-1", trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, modeId: "certification-exam-simulation", configurationSnapshot: { kind: "certificationSimulation" }, requestedLength: questions.length, actualLength: questions.length, currentItemIndex: 0, itemOrder: questions.map((question, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, questionId: question.id, contentVersion: "test", artifactSha256: TEST_CONTENT_PACKAGE_PIN.packageIdentity } })), optionOrderByOccurrence: Object.fromEntries(questions.map((question, index) => [`occurrence-${index}`, question.options.map((option) => option.id).reverse()])), activeForegroundMs: 0, contentVersion: "test", artifactSha256: TEST_CONTENT_PACKAGE_PIN.packageIdentity, status: "active", startedAt });
   const session = completeTrainingSession(active, "2026-01-01T12:00:00.000Z");
   const attempts = session.itemOrder.flatMap((occurrence, index) => {
     const question = questions[index]!;
@@ -23,9 +23,9 @@ export function makeCompletedExamProjectionInputs(questions: readonly Certificat
   return {
     session,
     attempts,
-    resolveItem: async (ref: { itemId: string }) => {
-      const question = byId.get(ref.itemId);
-      if (!question) throw new Error(`Fixture certification item ${ref.itemId} is unavailable.`);
+    resolveItem: async (ref: { questionId: string }) => {
+      const question = byId.get(ref.questionId);
+      if (!question) throw new Error(`Fixture certification item ${ref.questionId} is unavailable.`);
       return question;
     },
   };

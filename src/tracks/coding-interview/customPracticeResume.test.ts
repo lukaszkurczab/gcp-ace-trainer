@@ -1,4 +1,3 @@
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import assert from "node:assert/strict";
 import test, { before } from "node:test";
 
@@ -7,6 +6,8 @@ import { feedbackTimingFromDurableSession } from "../../features/home/resumeFeed
 import { buildPracticeSessionConfig } from "../../features/practice/sessionConfig";
 import { ALGORITHM_MODE_IDS } from "./";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+
+const TEST_ARTIFACT_SHA256 = "a".repeat(64);
 
 before(async () => { await contentPackageRuntimeOwner.verifyBundledPackages(); });
 
@@ -19,11 +20,11 @@ test("Custom Practice resume preserves the selected durable at-session-end timin
     requestedLength: 10,
     actualLength: 10,
     currentItemIndex: 1,
-    itemOrder: Array.from({ length: 10 }, (_, index) => ({ occurrenceId: `occurrence:${index}`, item: { trackId: "coding-interview-dsa-problem-solving" as const, itemId: `item-${index}`, contentVersion: "algorithms-core-0002" , packagePin: TEST_CONTENT_PACKAGE_PIN} })),
+    itemOrder: Array.from({ length: 10 }, (_, index) => ({ occurrenceId: `occurrence:${index}`, item: { trackId: "coding-interview-dsa-problem-solving" as const, questionId: `item-${index}`, contentVersion: "algorithms-core-0002", artifactSha256: TEST_ARTIFACT_SHA256 } })),
     optionOrderByOccurrence: {},
     conditionalReinsertSlots: [],
     activeForegroundMs: 0,
-    contentVersion: "algorithms-core-0002", packagePin: TEST_CONTENT_PACKAGE_PIN,
+    contentVersion: "algorithms-core-0002", artifactSha256: TEST_ARTIFACT_SHA256,
     taxonomyVersion: "algorithms-taxonomy-v2",
     planFingerprint: "a".repeat(64),
     status: "active",

@@ -1,27 +1,34 @@
 import { deepFreeze } from "./familyEnvelope";
-import type { TrackId } from "./trackIdentity";
-import { createContentPackagePin, type ContentPackagePin } from "./contentPackagePin";
+import { createResolvedContentRef, type ResolvedContentRef } from "./resolvedContentRef";
 
-export type ContentItemRef = Readonly<{
-  trackId: TrackId;
-  itemId: string;
-  contentVersion: string;
-  packagePin: ContentPackagePin;
-}>;
-
+/**
+ * An occurrence is a durable position in a session, bound to one resolved
+ * canonical question. Legacy package identities are intentionally not part of
+ * this active-domain contract.
+ */
 export type ContentOccurrenceRef = Readonly<{
   occurrenceId: string;
-  item: ContentItemRef;
+  item: ResolvedContentRef;
 }>;
 
-export function createContentItemRef(input: ContentItemRef): ContentItemRef {
-  if (!input.trackId.trim() || !input.itemId.trim() || !input.contentVersion.trim()) {
-    throw new Error("A content item reference requires track, item, and content-version identities.");
+export function createContentOccurrenceRef(input: ContentOccurrenceRef): ContentOccurrenceRef {
+  if (typeof input.occurrenceId !== "string" || !input.occurrenceId.trim()) {
+    throw new Error("A content occurrence reference requires an occurrence identity.");
   }
-  return deepFreeze({ ...input, packagePin: createContentPackagePin(input.packagePin) });
+  return deepFreeze({
+    occurrenceId: input.occurrenceId,
+    item: createResolvedContentRef(input.item),
+  });
 }
 
-export function createContentOccurrenceRef(input: ContentOccurrenceRef): ContentOccurrenceRef {
-  if (!input.occurrenceId.trim()) throw new Error("A content occurrence reference requires an occurrence identity.");
-  return deepFreeze({ occurrenceId: input.occurrenceId, item: createContentItemRef(input.item) });
+/** Validates an aggregate-level artifact provenance value without normalization. */
+export function createArtifactSha256(value: unknown): string {
+  if (typeof value !== "string" || !/^[a-f0-9]{64}$/u.test(value)) {
+    throw new Error("artifactSha256 must be a lowercase 64-hex SHA-256.");
+  }
+  return value;
+}
+
+export function isArtifactSha256(value: unknown): value is string {
+  return typeof value === "string" && /^[a-f0-9]{64}$/u.test(value);
 }

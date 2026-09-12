@@ -3,11 +3,11 @@ import {
   advanceTrainingSession,
   moveTrainingSessionToIndex,
   createTrainingSession,
+  type ResolvedContentRef,
   type TrackId,
   type TrainingSession,
   type TrainingSessionDraft,
   StaleDraftRevisionError,
-  contentPackagePinsEqual,
 } from "../../domain";
 import {
   TrainingApplicationFailure,
@@ -150,7 +150,7 @@ export class TrainingLifecycleUseCases {
     const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId);
     const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts: this.forPackage(attempts, resolution.track.packagePin), reviews: this.forPackage(reviews, resolution.track.packagePin), now: this.ports.clock.now() }));
+    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts: this.forResolvedContent(attempts, resolution.track), reviews: this.forResolvedContent(reviews, resolution.track), now: this.ports.clock.now() }));
     await this.assertSessionPackage(prepared.session, resolution.track);
     return prepared;
   }
@@ -166,7 +166,7 @@ export class TrainingLifecycleUseCases {
     const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId);
     const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, attempts: this.forPackage(attempts, resolution.track.packagePin), reviews: this.forPackage(reviews, resolution.track.packagePin), now: this.ports.clock.now() }));
+    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, attempts: this.forResolvedContent(attempts, resolution.track), reviews: this.forResolvedContent(reviews, resolution.track), now: this.ports.clock.now() }));
     if (prepared.session.id !== sessionId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime changed the lifecycle-owned session identity.");
     if (prepared.session.trackId !== input.trackId || prepared.firstOccurrence.trackId !== input.trackId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime prepared a session outside the requested track.");
     await this.assertSessionPackage(prepared.session, resolution.track);
@@ -192,7 +192,7 @@ export class TrainingLifecycleUseCases {
     let outcome;
     try {
       const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-      outcome = await this.run("invalid_response", () => runtime.submitPractice({ session, response, attempts: this.forPackage(attempts, session.packagePin), reviews: this.forPackage(reviews, session.packagePin), now: this.ports.clock.now() }));
+      outcome = await this.run("invalid_response", () => runtime.submitPractice({ session, response, attempts: this.forResolvedContent(attempts, session), reviews: this.forResolvedContent(reviews, session), now: this.ports.clock.now() }));
     } catch (error) {
       this.operationStates.set(session.id, error instanceof TrainingApplicationFailure && error.code === "invalid_response" ? practice("unanswered") : practiceRecovery("submit_journal_failed"));
       throw error;
@@ -291,7 +291,7 @@ export class TrainingLifecycleUseCases {
     try {
       const attempts = await this.run("persistence_failure", () => this.ports.repositories.getAttempts());
       const runtime = await this.resolveRuntimeForSession(session);
-      const finalized = await this.run("persistence_failure", () => runtime.finalizePractice({ session, attempts: this.forPackage(attempts, session.packagePin), now: this.ports.clock.now() }));
+      const finalized = await this.run("persistence_failure", () => runtime.finalizePractice({ session, attempts: this.forResolvedContent(attempts, session), now: this.ports.clock.now() }));
       if (finalized.session.id !== session.id || finalized.result.sessionId !== session.id) throw new TrainingApplicationFailure("verification_failure", "Practice completion changed the expected session identity.");
       await this.ports.mutations.completeWithResult(finalized);
       this.operationStates.publish(session.id, practice("completed"));
@@ -360,7 +360,7 @@ export class TrainingLifecycleUseCases {
     const draft = await this.run("resume_unavailable", () => this.ports.repositories.getDraft(session.id));
     if (!draft) throw new TrainingApplicationFailure("resume_unavailable", "Simulation finalization requires the exact active draft.");
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const outcome = await this.run("persistence_failure", () => runtime.finalizeSimulation({ session, draft, attempts: this.forPackage(attempts, session.packagePin), reviews: this.forPackage(reviews, session.packagePin), now: this.ports.clock.now() }));
+    const outcome = await this.run("persistence_failure", () => runtime.finalizeSimulation({ session, draft, attempts: this.forResolvedContent(attempts, session), reviews: this.forResolvedContent(reviews, session), now: this.ports.clock.now() }));
     if (outcome.session.id !== session.id) throw new TrainingApplicationFailure("persistence_failure", "Simulation finalization changed session identity.");
     try {
       this.operationStates.set(session.id, simulation("finalization_journal_pending", operationError("simulation_finalization", "not_durable", "retry_same_command")));
@@ -451,7 +451,7 @@ export class TrainingLifecycleUseCases {
     const resolution = await this.run("missing_content", () => this.ports.packages.resolveForDiscovery(trackId, registration.familyId));
     const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const input = { trackId, attempts: this.forPackage(attempts.filter((attempt) => attempt.trackId === trackId), resolution.track.packagePin), reviews: this.forPackage(reviews.filter((review) => review.trackId === trackId), resolution.track.packagePin), now: this.ports.clock.now() };
+    const input = { trackId, attempts: this.forResolvedContent(attempts.filter((attempt) => attempt.trackId === trackId), resolution.track), reviews: this.forResolvedContent(reviews.filter((review) => review.trackId === trackId), resolution.track), now: this.ports.clock.now() };
     if (method === "queryDashboard") {
       const activeSession = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
       return this.run("persistence_failure", () => runtime.queryDashboard({ ...input, activeSession: activeSession?.trackId === trackId && activeSession.status === "active" ? activeSession : null }));
@@ -510,7 +510,7 @@ export class TrainingLifecycleUseCases {
 
   private async resolveRuntimeForSession(session: TrainingSession): Promise<TrainingFamilyRuntime> {
     const registration = this.trackRegistration(session.trackId);
-    const resolution = await this.run("resume_unavailable", () => this.ports.packages.resolveExact(session.packagePin));
+    const resolution = await this.run("resume_unavailable", () => this.ports.packages.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 }));
     if (resolution.runtime.familyId !== registration.familyId || resolution.track.trackId !== session.trackId) {
       throw new TrainingApplicationFailure("resume_unavailable", "Exact package pin resolved outside the session track family.");
     }
@@ -518,12 +518,15 @@ export class TrainingLifecycleUseCases {
     return resolution.runtime;
   }
 
-  private async assertSessionPackage(session: TrainingSession, track: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExact"]>>["track"]): Promise<void> {
-    if (!contentPackagePinsEqual(session.packagePin, track.packagePin) || session.trackId !== track.trackId) throw new TrainingApplicationFailure("version_mismatch", "Session changed its exact canonical content pin.");
+  private async assertSessionPackage(session: TrainingSession, track: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExactArtifact"]>>["track"]): Promise<void> {
+    if (session.trackId !== track.trackId || session.contentVersion !== track.contentVersion || session.artifactSha256 !== track.artifactSha256) throw new TrainingApplicationFailure("version_mismatch", "Session changed its exact canonical content artifact.");
   }
 
-  private forPackage<T extends { item: { packagePin: TrainingSession["packagePin"] } } | { sourceItem: { packagePin: TrainingSession["packagePin"] } }>(records: readonly T[], pin: TrainingSession["packagePin"]): readonly T[] {
-    return records.filter((record) => contentPackagePinsEqual("item" in record ? record.item.packagePin : record.sourceItem.packagePin, pin));
+  private forResolvedContent<T extends { item: ResolvedContentRef } | { sourceItem: ResolvedContentRef }>(records: readonly T[], identity: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): readonly T[] {
+    return records.filter((record) => {
+      const ref = "item" in record ? record.item : record.sourceItem;
+      return ref.trackId === identity.trackId && ref.contentVersion === identity.contentVersion && ref.artifactSha256 === identity.artifactSha256;
+    });
   }
 
   private serializeSessionMutation<T>(sessionId: string, operation: () => Promise<T>): Promise<T> {

@@ -294,7 +294,7 @@ test("explicit plan, notification, and active-journal handlers remove package pi
       "active_session", "active_session_draft", "active_foreground_timer", "session_index", "attempt_index", "review_index",
     ].map((target) => ({ target, revision: null as number | null })), writes: [{ kind: "clear_learning_state" as const }],
   };
-  const journal = { journalId: `journal:${SHA}`, ...journalPlan, planFingerprint: createMutationPlanFingerprint(journalPlan) };
+  const journal = { journalId: `journal:${SHA}`, ...journalPlan, planFingerprint: createMutationPlanFingerprint(journalPlan as unknown as Parameters<typeof createMutationPlanFingerprint>[0]) };
   const source = [
     ...baseSource(),
     { key: STORAGE_KEYS.NOTIFICATION_SETTINGS, raw: envelope(notification) },

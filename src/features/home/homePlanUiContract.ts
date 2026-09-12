@@ -14,7 +14,7 @@ export function buildHomePlanPracticeSetupParams(
   trackId: TrackId,
 ): NonNullable<RootStackParamList[typeof ROUTES.PRACTICE_SETUP]> {
   return Object.freeze({
-    expectedContentPackagePin: plan.identity.contentPackagePin,
+    expectedArtifactSha256: plan.identity.artifactSha256,
     expectedContentVersion: plan.identity.contentVersion,
     mode: plan.session.modeId as never,
     sessionLength: plan.session.sessionLength,

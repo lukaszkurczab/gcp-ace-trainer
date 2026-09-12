@@ -4,17 +4,17 @@ import test from "node:test";
 import { LearningPlanEditorCoordinator, type LearningPlanEditorDependencies } from "./LearningPlanEditorCoordinator";
 import type { LearningPlanProposalCoordinator } from "./LearningPlanProposalCoordinator";
 import { createDefaultGoal, createProposalSlotId, type GoalSnapshot, type LearningPlan, type ProposalOutcome } from "../../domain";
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { installKeyValueStorageForTests, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { getGoalSnapshot, getLearningPlanSnapshot, saveGoalSnapshot, saveLearningPlanAtomically, type LearningPlanSnapshot } from "../../storage/repositories";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const OTHER_TRACK_ID = "google-cloud-associate-cloud-engineer";
+const ARTIFACT_SHA256 = "a".repeat(64);
 
 function proposal(goal: GoalSnapshot): ProposalOutcome {
   return {
     kind: "ready",
-    identity: { trackId: TRACK_ID, goalRevision: goal.revision, contentVersion: "content-v1", packagePin: TEST_CONTENT_PACKAGE_PIN, timezone: "Europe/Warsaw" },
+    identity: { trackId: TRACK_ID, goalRevision: goal.revision, contentVersion: "content-v1", artifactSha256: ARTIFACT_SHA256, timezone: "Europe/Warsaw" },
     goal: goal.record,
     primaryModeId: "guided",
     requestedLength: 10,
@@ -41,7 +41,7 @@ async function fixture() {
   let uncertainSave = false;
   let resolveGate: (() => void) | null = null;
   let resolutionGate: Promise<void> | null = null;
-  let contentContext = { contentVersion: "content-v1", contentPackagePin: TEST_CONTENT_PACKAGE_PIN, timezone: "Europe/Warsaw" };
+  let contentContext = { contentVersion: "content-v1", artifactSha256: ARTIFACT_SHA256, timezone: "Europe/Warsaw" };
   let outcome = proposal(goal);
   let proposalId = "proposal:one";
   const proposalCoordinator = {
@@ -229,7 +229,7 @@ test("accepted-plan retry reconciles its durable command before checking refresh
   const durableAfterUncertainty = f.getPlan();
   assert.equal(durableAfterUncertainty?.plan.commandId, started.session.commandId);
 
-  f.setContentContext({ contentVersion: "content-v2", contentPackagePin: TEST_CONTENT_PACKAGE_PIN, timezone: "Europe/Warsaw" });
+  f.setContentContext({ contentVersion: "content-v2", artifactSha256: ARTIFACT_SHA256, timezone: "Europe/Warsaw" });
   const retry = await f.coordinator.commit(started.session.editorId, TRACK_ID);
   assert.equal(retry.kind, "saved");
   assert.equal(f.saveCount(), 3);
@@ -286,14 +286,14 @@ test("a target-date replacement remains explicit and atomically updates the acce
   assert.equal(replacement.snapshot.plan.planRevision, first.snapshot.plan.planRevision + 1);
   assert.equal(replacement.snapshot.plan.goalRevision, changedGoal.revision);
   assert.deepEqual(replacement.snapshot.plan.acceptedTarget, { meaning: "deadline", targetDate: "2027-03-31" });
-  assert.deepEqual(replacement.snapshot.plan.contentPackagePin, first.snapshot.plan.contentPackagePin);
+  assert.equal(replacement.snapshot.plan.artifactSha256, first.snapshot.plan.artifactSha256);
 });
 
-test("accepted plan freshness checks content version, full package pin, and timezone", async () => {
+test("accepted plan freshness checks content version, artifact SHA, and timezone", async () => {
   const f = await fixture();
   const accepted = await f.coordinator.acceptProposal("proposal:one", TRACK_ID);
   assert.equal(accepted.kind, "accepted");
   if (accepted.kind !== "accepted") return;
-  f.setContentContext({ contentVersion: "content-v2", contentPackagePin: TEST_CONTENT_PACKAGE_PIN, timezone: "Europe/Warsaw" });
+  f.setContentContext({ contentVersion: "content-v2", artifactSha256: ARTIFACT_SHA256, timezone: "Europe/Warsaw" });
   assert.deepEqual(await f.coordinator.startExistingEdit(TRACK_ID), { kind: "stale", reason: "identity" });
 });

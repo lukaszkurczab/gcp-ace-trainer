@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
 import { createDefaultGoal, createLearningPlanSlotId, type LearningPlan } from "../../domain";
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests, type KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { saveGoalSnapshot } from "./goalRepository";
 import {
@@ -15,6 +14,7 @@ import { STORAGE_KEYS } from "../keys";
 import { withCanonicalWriteLocks } from "./canonicalRecordCodec";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
+const TEST_ARTIFACT_SHA256 = "a".repeat(64);
 
 function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
   return {
@@ -25,7 +25,7 @@ function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
     status: "accepted",
     timezone: "Europe/Warsaw",
     contentVersion: "content-v1",
-    contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: TEST_ARTIFACT_SHA256,
     acceptedTarget: { meaning: "event", targetDate: null },
     createdAt: "2027-01-01T10:00:00.000Z",
     updatedAt: "2027-01-01T10:00:00.000Z",

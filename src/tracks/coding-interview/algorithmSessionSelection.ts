@@ -1,4 +1,4 @@
-import type { ContentItemRef, ReviewQueueEntry, TrainingAttempt } from "../../domain";
+import type { ResolvedContentRef, ReviewQueueEntry, TrainingAttempt } from "../../domain";
 import type { AlgorithmRuntimeCatalog } from "./algorithmRuntimeCatalog";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 import { ALGORITHM_ROADMAP, type AlgorithmRoadmapNode } from "./algorithmRoadmap";
@@ -11,7 +11,7 @@ export const ALGORITHM_ENTRY_MODE_IDS = Object.freeze({ approach_primer: ALGORIT
 export type AlgorithmSelectionScope = Readonly<{ mentalUnitId?: string; roadmapNodeId?: string; recognitionSetId?: string; contrastRoadmapNodeId?: string; interleavedScopeId?: string; simulationProfileId?: string }>;
 export type AlgorithmShorteningReason = "insufficient_compatible_content";
 export type AlgorithmSessionSelection = Readonly<{ actualLength: number; items: readonly AlgorithmQuestion[]; requestedLength: number; shorteningReason?: AlgorithmShorteningReason }>;
-export type SelectAlgorithmSessionItemsInput = Readonly<{ attempts?: readonly TrainingAttempt[]; contentCatalog?: AlgorithmRuntimeCatalog; mode: AlgorithmModeId; now?: string; reviewItemRefs?: readonly ContentItemRef[]; reviewQueueItems?: readonly ReviewQueueEntry[]; reviewSource?: AlgorithmReviewSource; scope?: AlgorithmSelectionScope; sessionLength: number }>;
+export type SelectAlgorithmSessionItemsInput = Readonly<{ attempts?: readonly TrainingAttempt[]; contentCatalog?: AlgorithmRuntimeCatalog; mode: AlgorithmModeId; now?: string; reviewItemRefs?: readonly ResolvedContentRef[]; reviewQueueItems?: readonly ReviewQueueEntry[]; reviewSource?: AlgorithmReviewSource; scope?: AlgorithmSelectionScope; sessionLength: number }>;
 export function getAlgorithmModeIdForEntryPoint(entryPoint: AlgorithmSessionEntryPoint): AlgorithmModeId { return ALGORITHM_ENTRY_MODE_IDS[entryPoint]; }
 export function resolveAlgorithmSessionNode(nodeId: string): AlgorithmRoadmapNode { const node = ALGORITHM_ROADMAP.nodes.find((candidate) => candidate.id === nodeId); if (!node) throw new Error(`Unknown Algorithms topic: ${nodeId}`); return node; }
 export const getAlgorithmSessionNodeById = resolveAlgorithmSessionNode;

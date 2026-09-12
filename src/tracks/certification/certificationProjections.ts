@@ -1,6 +1,5 @@
-import type { TrainingAttempt, TrainingSession } from "../../domain";
+import type { ResolvedContentRef, TrainingAttempt, TrainingSession } from "../../domain";
 import { calculatePercent } from "../../utils";
-import type { ContentItemRef } from "../../domain";
 import { isCertificationPracticeModeId } from "./domain/certificationModes";
 import type { CertificationResponse } from "./domain/certificationResponse";
 import type { Question } from "../../content/canonical";
@@ -9,7 +8,7 @@ import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel, C
 export async function buildCertificationExamSummaries(
   sessions: readonly TrainingSession[],
   attempts: readonly TrainingAttempt<unknown>[],
-  resolveItem: (ref: ContentItemRef) => Promise<Question>,
+  resolveItem: (ref: ResolvedContentRef) => Promise<Question>,
 ): Promise<CertificationExamSummaryViewModel[]> {
   const summaries = await Promise.all(sessions.filter((session) => session.modeId === "certification-exam-simulation" && session.status === "completed").map(async (session): Promise<CertificationExamSummaryViewModel> => {
     const byOccurrence = new Map(attempts.filter((attempt) => attempt.sessionId === session.id).map((attempt) => [attempt.occurrenceId, attempt]));
@@ -18,7 +17,7 @@ export async function buildCertificationExamSummaries(
       const question = await resolveItem(occurrence.item);
       const attempt = byOccurrence.get(occurrence.occurrenceId);
       const response = attempt && isCertificationResponse(attempt.response) ? attempt.response : undefined;
-      return { questionId: occurrence.item.itemId, questionNumber: index + 1, questionSnapshot: question, selectedOptionIds: response?.selectedOptionIds ?? [], correctOptionIds: canonicalOptionIds(question), isAnswered: Boolean(response), isCorrect: attempt?.result.kind === "correct", wasFlagged: attempt?.reviewEvidence.taxonomyOrSkillRefs.some((ref) => ref.axisId === "exam-state" && ref.nodeId === "flagged") ?? false, answeredAt, attemptId: attempt?.id, item: occurrence.item };
+      return { questionId: occurrence.item.questionId, questionNumber: index + 1, questionSnapshot: question, selectedOptionIds: response?.selectedOptionIds ?? [], correctOptionIds: canonicalOptionIds(question), isAnswered: Boolean(response), isCorrect: attempt?.result.kind === "correct", wasFlagged: attempt?.reviewEvidence.taxonomyOrSkillRefs.some((ref) => ref.axisId === "exam-state" && ref.nodeId === "flagged") ?? false, answeredAt, attemptId: attempt?.id, item: occurrence.item };
     }));
     const correctCount = answers.filter((answer) => answer.isCorrect).length;
     const scorePercent = calculatePercent(correctCount, answers.length);
@@ -29,7 +28,7 @@ export async function buildCertificationExamSummaries(
 
 export async function buildCertificationPracticeHistory(
   attempts: readonly TrainingAttempt<unknown>[],
-  resolveItem: (ref: ContentItemRef) => Promise<Question>,
+  resolveItem: (ref: ResolvedContentRef) => Promise<Question>,
 ): Promise<CertificationPracticeAnswerViewModel[]> {
   const histories = await Promise.all(attempts.map(async (attempt) => {
     if (!isCertificationPracticeModeId(attempt.modeId) || !isCertificationResponse(attempt.response)) return [];

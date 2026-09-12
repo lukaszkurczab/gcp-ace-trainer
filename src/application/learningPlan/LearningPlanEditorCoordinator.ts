@@ -9,7 +9,6 @@ import {
   type ProposalOutcome,
   type TrackId,
   type AcceptedTargetSnapshot,
-  type ContentPackagePin,
 } from "../../domain";
 import { GOAL_DAY_IDS } from "../../domain/goals/goalContracts";
 import {
@@ -28,7 +27,6 @@ import {
   LearningPlanCommandConflictError,
 } from "../../storage/repositories";
 import { StaleGoalRevisionError } from "../../storage/repositories/goalRepository";
-import { contentPackagePinsEqual } from "../../domain/learning/contentPackagePin";
 import { createLearningPlanSlotId } from "../../domain/learning/slotIdentity";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { getTrackRegistration } from "../../domain/tracks/trackRegistry";
@@ -49,7 +47,7 @@ export type AcceptedPlanIdentity = Readonly<{
   trackId: TrackId;
   timezone: string;
   contentVersion: string;
-  contentPackagePin: LearningPlan["contentPackagePin"];
+  artifactSha256: LearningPlan["artifactSha256"];
   planId: string;
   planRevision: number;
   acceptedTarget: AcceptedTargetSnapshot;
@@ -99,7 +97,7 @@ export type LearningPlanEditorValidationCode =
 
 export type LearningPlanContentContext = Readonly<{
   contentVersion: string;
-  contentPackagePin: ContentPackagePin;
+  artifactSha256: string;
   timezone: string;
 }>;
 
@@ -210,7 +208,7 @@ export class LearningPlanEditorCoordinator {
     }
     if (plan.plan.trackId !== trackId) return stale("identity");
     if (plan.plan.goalRevision !== goal.revision) return stale("goal");
-    if (plan.plan.contentVersion !== contentContext.contentVersion || !contentPackagePinsEqual(plan.plan.contentPackagePin, contentContext.contentPackagePin) || plan.plan.timezone !== contentContext.timezone) return stale("identity");
+    if (plan.plan.contentVersion !== contentContext.contentVersion || plan.plan.artifactSha256 !== contentContext.artifactSha256 || plan.plan.timezone !== contentContext.timezone) return stale("identity");
     const currentTarget = acceptedTargetFromGoal(goal.record);
     if (plan.plan.acceptedTarget.meaning !== currentTarget.meaning || plan.plan.acceptedTarget.targetDate !== currentTarget.targetDate) return stale("identity");
 
@@ -230,7 +228,7 @@ export class LearningPlanEditorCoordinator {
           trackId,
           timezone: plan.plan.timezone,
           contentVersion: plan.plan.contentVersion,
-          contentPackagePin: plan.plan.contentPackagePin,
+          artifactSha256: plan.plan.artifactSha256,
           planId: plan.plan.planId,
           planRevision: plan.plan.planRevision,
           acceptedTarget: plan.plan.acceptedTarget,
@@ -349,7 +347,7 @@ export class LearningPlanEditorCoordinator {
       } catch {
         return frozen({ kind: "storage_error" });
       }
-      if (!currentPlan || currentPlan.revision !== session.source.expectedPlanStorageRevision || currentPlan.plan.planId !== identity.planId || currentPlan.plan.planRevision !== identity.planRevision || currentPlan.plan.trackId !== trackId || currentPlan.plan.contentVersion !== identity.contentVersion || currentPlan.plan.contentVersion !== contentContext.contentVersion || currentPlan.plan.timezone !== identity.timezone || currentPlan.plan.timezone !== contentContext.timezone || !contentPackagePinsEqual(currentPlan.plan.contentPackagePin, identity.contentPackagePin) || !contentPackagePinsEqual(currentPlan.plan.contentPackagePin, contentContext.contentPackagePin) || currentPlan.plan.acceptedTarget.meaning !== identity.acceptedTarget.meaning || currentPlan.plan.acceptedTarget.targetDate !== identity.acceptedTarget.targetDate) {
+      if (!currentPlan || currentPlan.revision !== session.source.expectedPlanStorageRevision || currentPlan.plan.planId !== identity.planId || currentPlan.plan.planRevision !== identity.planRevision || currentPlan.plan.trackId !== trackId || currentPlan.plan.contentVersion !== identity.contentVersion || currentPlan.plan.contentVersion !== contentContext.contentVersion || currentPlan.plan.timezone !== identity.timezone || currentPlan.plan.timezone !== contentContext.timezone || currentPlan.plan.artifactSha256 !== identity.artifactSha256 || currentPlan.plan.artifactSha256 !== contentContext.artifactSha256 || currentPlan.plan.acceptedTarget.meaning !== identity.acceptedTarget.meaning || currentPlan.plan.acceptedTarget.targetDate !== identity.acceptedTarget.targetDate) {
         if (pending && currentPlan?.plan.commandId === pending.commandId) return this.persistEditorPlan(session, pending, goal.revision, currentPlan.revision);
         return stale("plan");
       }
@@ -498,7 +496,7 @@ export class LearningPlanEditorCoordinator {
       status: "accepted",
       timezone: outcome.identity.timezone,
       contentVersion: outcome.identity.contentVersion,
-      contentPackagePin: outcome.identity.packagePin,
+      artifactSha256: outcome.identity.artifactSha256,
       acceptedTarget: acceptedTargetFromGoal(goal.record),
       createdAt: source?.createdAt ?? now,
       updatedAt: now,
@@ -588,7 +586,7 @@ export const learningPlanEditorCoordinator = new LearningPlanEditorCoordinator({
     const registration = getTrackRegistration(trackId);
     const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, registration.familyId);
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return Object.freeze({ contentVersion: resolved.track.contentVersion, contentPackagePin: resolved.track.packagePin, timezone });
+    return Object.freeze({ contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256, timezone });
   },
   saveLearningPlan: saveLearningPlanAtomically,
   createEditorId: () => `editor:${Date.now()}:${++editorSequence}`,

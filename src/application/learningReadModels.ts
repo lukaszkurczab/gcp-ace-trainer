@@ -62,7 +62,7 @@ export async function loadCloudCertificationProgress(input: { now?: string; rece
     attempts: attempts.value,
     issues: [...(attempts.issues ?? []), ...(reviews.issues ?? [])],
     now: input.now,
-    packagePin: contentPackageRuntimeOwner.getPreparedDiscovery("google-cloud-associate-cloud-engineer").track.packagePin,
+    artifactSha256: contentPackageRuntimeOwner.getPreparedDiscovery("google-cloud-associate-cloud-engineer").track.artifactSha256,
     recentAttemptCount: input.recentAttemptCount,
     reviewQueueItems: reviews.value,
   });

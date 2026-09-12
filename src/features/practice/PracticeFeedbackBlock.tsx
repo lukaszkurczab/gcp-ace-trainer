@@ -8,11 +8,11 @@ import type { PracticeFeedback } from "./practiceSessionPresentation";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
-import type { ContentItemRef } from "../../domain";
+import type { ResolvedContentRef } from "../../domain";
 import { ContentReportSheet, type ContentReportSurfaceContext } from "../reports/ContentReportSheet";
 
 
-export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }: Readonly<{ feedback: PracticeFeedback; item: ContentItemRef; itemId: string; reportSurface: ContentReportSurfaceContext }>) {
+export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }: Readonly<{ feedback: PracticeFeedback; item: ResolvedContentRef; itemId: string; reportSurface: ContentReportSurfaceContext }>) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
   const { t } = useTranslation("common");

@@ -1,12 +1,7 @@
 import {
-  calculatePaceForecast,
-  contentPackagePinsEqual,
-  evaluatePackageCompletion,
   isIsoDate,
   normalizeGoalRecord,
   normalizeLearningPlan,
-  type AcceptedTargetSnapshot,
-  type ContentPackagePin,
   type GoalDay,
   type GoalSnapshot,
   type LearningPlan,
@@ -18,6 +13,7 @@ import {
   type TrackId,
   isRegisteredTrackId,
 } from "../domain";
+import type { ResolvedContentRef } from "../domain/learning/resolvedContentRef";
 import type { PaceForecast, ImmutableCompletedFacts } from "../domain/learning/paceForecast";
 import {
   getActiveTrainingSession,
@@ -66,7 +62,7 @@ export type HomePlanIdentity = Readonly<{
   planRevision: number;
   planStorageRevision: number;
   contentVersion: string;
-  contentPackagePin: ContentPackagePin;
+  artifactSha256: string;
   timezone: string;
 }>;
 
@@ -121,7 +117,7 @@ export type HomePlanSnapshotReaderDependencies = Readonly<{
   getTrainingSessions(): Awaitable<ReadCollection<TrainingSession>>;
   getTrainingAttempts(): Awaitable<ReadCollection<TrainingAttempt<unknown>>>;
   getReviewQueueItems(): Awaitable<ReadCollection<ReviewQueueEntry>>;
-  resolveExact(pin: ContentPackagePin): Promise<ResolvedPackageRuntime>;
+  resolveExactArtifact(identity: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ResolvedPackageRuntime>;
 }>;
 
 type HomeReadGeneration = Readonly<{
@@ -140,14 +136,10 @@ const defaultDependencies: HomePlanSnapshotReaderDependencies = {
   getTrainingSessions: async () => (await getTrainingSessions()),
   getTrainingAttempts: async () => (await getTrainingAttempts()),
   getReviewQueueItems: async () => (await getReviewQueueItems()),
-  resolveExact: (pin) => contentPackageRuntimeOwner.resolveExact(pin),
+  resolveExactArtifact: (identity) => contentPackageRuntimeOwner.resolveExactArtifact(identity),
 };
 
-const EMPTY_GUIDANCE_PIN: ContentPackagePin = Object.freeze({
-  packageIdentity: "0".repeat(64),
-  packageVersion: "none",
-  contentReleaseId: "none",
-});
+const EMPTY_GUIDANCE_ARTIFACT_SHA256 = "0".repeat(64);
 
 const EMPTY_COMPLETED_FACTS: ImmutableCompletedFacts = Object.freeze({
   sessions: Object.freeze([]),
@@ -212,7 +204,7 @@ export class HomePlanSnapshotReader {
       const guidance = projectTargetDateGuidance({
         currentGoal: goal,
         acceptedPlan: null,
-        currentVerifiedPackagePin: EMPTY_GUIDANCE_PIN,
+        currentVerifiedArtifactSha256: EMPTY_GUIDANCE_ARTIFACT_SHA256,
         c3Result: "unknown",
         today: instant.slice(0, 10),
         completedFacts: EMPTY_COMPLETED_FACTS,
@@ -234,7 +226,7 @@ export class HomePlanSnapshotReader {
     const plan = planSnapshot.plan;
     let resolved: ResolvedPackageRuntime;
     try {
-      resolved = await this.dependencies.resolveExact(plan.contentPackagePin);
+      resolved = await this.dependencies.resolveExactArtifact({ trackId: plan.trackId, contentVersion: plan.contentVersion, artifactSha256: plan.artifactSha256 });
     } catch (error) {
       return unavailable(trackId, isPackageUnavailable(error) ? "package_unavailable" : "package_error");
     }
@@ -289,7 +281,7 @@ export class HomePlanSnapshotReader {
       guidance = projectTargetDateGuidance({
         currentGoal: goal,
         acceptedPlan: plan,
-        currentVerifiedPackagePin: plan.contentPackagePin,
+        currentVerifiedArtifactSha256: plan.artifactSha256,
         c3Result,
         today,
         completedFacts,
@@ -376,7 +368,7 @@ function freezeIdentity(snapshot: LearningPlanSnapshot, plan: LearningPlan): Hom
     planRevision: plan.planRevision,
     planStorageRevision: snapshot.revision,
     contentVersion: plan.contentVersion,
-    contentPackagePin: Object.freeze({ ...plan.contentPackagePin }),
+    artifactSha256: plan.artifactSha256,
     timezone: plan.timezone,
   });
 }
@@ -384,7 +376,7 @@ function freezeIdentity(snapshot: LearningPlanSnapshot, plan: LearningPlan): Hom
 function isResolvedPackageForPlan(resolved: ResolvedPackageRuntime, plan: LearningPlan): boolean {
   return resolved.track.trackId === plan.trackId &&
     resolved.track.contentVersion === plan.contentVersion &&
-    contentPackagePinsEqual(resolved.track.packagePin, plan.contentPackagePin);
+    resolved.track.artifactSha256 === plan.artifactSha256;
 }
 
 function isSupportedHomeAction(action: TargetDateGuidance["home"]["primary"]): boolean {
@@ -410,15 +402,15 @@ function selectActiveSession(
 }
 
 function matchesSessionIdentity(session: TrainingSession, identity: HomePlanIdentity): boolean {
-  return session.trackId === identity.trackId && session.contentVersion === identity.contentVersion && contentPackagePinsEqual(session.packagePin, identity.contentPackagePin) && matchesOptionalIdentity(session, identity);
+  return session.trackId === identity.trackId && session.contentVersion === identity.contentVersion && session.artifactSha256 === identity.artifactSha256 && matchesOptionalIdentity(session, identity);
 }
 
 function matchesAttemptIdentity(attempt: TrainingAttempt<unknown>, identity: HomePlanIdentity): boolean {
-  return attempt.trackId === identity.trackId && attempt.item.trackId === identity.trackId && attempt.item.contentVersion === identity.contentVersion && contentPackagePinsEqual(attempt.item.packagePin, identity.contentPackagePin) && matchesOptionalIdentity(attempt, identity) && matchesOptionalIdentity(attempt.item, identity);
+  return attempt.trackId === identity.trackId && attempt.item.trackId === identity.trackId && attempt.item.contentVersion === identity.contentVersion && attempt.item.artifactSha256 === identity.artifactSha256 && matchesOptionalIdentity(attempt, identity) && matchesOptionalIdentity(attempt.item, identity);
 }
 
 function matchesReviewIdentity(entry: ReviewQueueEntry, identity: HomePlanIdentity): boolean {
-  return entry.trackId === identity.trackId && entry.sourceItem.trackId === identity.trackId && entry.sourceItem.contentVersion === identity.contentVersion && contentPackagePinsEqual(entry.sourceItem.packagePin, identity.contentPackagePin) && matchesOptionalIdentity(entry, identity) && matchesOptionalIdentity(entry.sourceItem, identity);
+  return entry.trackId === identity.trackId && entry.sourceItem.trackId === identity.trackId && entry.sourceItem.contentVersion === identity.contentVersion && entry.sourceItem.artifactSha256 === identity.artifactSha256 && matchesOptionalIdentity(entry, identity) && matchesOptionalIdentity(entry.sourceItem, identity);
 }
 
 function matchesOptionalIdentity(value: unknown, identity: HomePlanIdentity): boolean {
@@ -431,7 +423,7 @@ function matchesOptionalIdentity(value: unknown, identity: HomePlanIdentity): bo
     optionalEqual(candidate, snapshot, "planRevision", identity.planRevision) &&
     optionalEqual(candidate, snapshot, "planStorageRevision", identity.planStorageRevision) &&
     optionalEqual(candidate, snapshot, "contentVersion", identity.contentVersion) &&
-    optionalPinEqual(candidate, snapshot, identity.contentPackagePin) &&
+    optionalEqual(candidate, snapshot, "artifactSha256", identity.artifactSha256) &&
     optionalEqual(candidate, snapshot, "timezone", identity.timezone);
 }
 
@@ -439,16 +431,6 @@ function optionalEqual(value: Record<string, unknown>, nested: Record<string, un
   const direct = value[key];
   const nestedValue = nested?.[key];
   return (direct === undefined || direct === expected) && (nestedValue === undefined || nestedValue === expected);
-}
-
-function optionalPinEqual(value: Record<string, unknown>, nested: Record<string, unknown> | null, expected: ContentPackagePin): boolean {
-  const direct = value.contentPackagePin ?? value.packagePin;
-  const nestedPin = nested?.contentPackagePin ?? nested?.packagePin;
-  return (direct === undefined || isPinEqual(direct, expected)) && (nestedPin === undefined || isPinEqual(nestedPin, expected));
-}
-
-function isPinEqual(value: unknown, expected: ContentPackagePin): boolean {
-  return isRecord(value) && contentPackagePinsEqual(value as ContentPackagePin, expected);
 }
 
 function buildCompletedFacts(sessions: readonly TrainingSession[], attempts: readonly TrainingAttempt<unknown>[]): ImmutableCompletedFacts {

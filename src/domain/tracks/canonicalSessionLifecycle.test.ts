@@ -1,4 +1,3 @@
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -11,10 +10,11 @@ import {
   moveTrainingSessionToIndex,
 } from "..";
 
-const refs = ["one", "two", "three"].map((itemId) => ({ trackId: "coding-interview-dsa-problem-solving", itemId, contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN}));
+const TEST_ARTIFACT_SHA256 = "a".repeat(64);
+const refs = ["one", "two", "three"].map((questionId) => ({ trackId: "coding-interview-dsa-problem-solving", questionId, contentVersion: "v1", artifactSha256: TEST_ARTIFACT_SHA256 }));
 const occurrences = refs.map((item, index) => ({ occurrenceId: `occurrence-${index}`, item }));
 function active() {
-  return createTrainingSession({ id: "session", trackId: "coding-interview-dsa-problem-solving", modeId: "guided", configurationSnapshot: { kind: "practice" }, requestedLength: 5, actualLength: 3, currentItemIndex: 0, itemOrder: occurrences, optionOrderByOccurrence: { "occurrence-0": ["b", "a"] }, activeForegroundMs: 12, contentVersion: "v1", packagePin: TEST_CONTENT_PACKAGE_PIN, status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
+  return createTrainingSession({ id: "session", trackId: "coding-interview-dsa-problem-solving", modeId: "guided", configurationSnapshot: { kind: "practice" }, requestedLength: 5, actualLength: 3, currentItemIndex: 0, itemOrder: occurrences, optionOrderByOccurrence: { "occurrence-0": ["b", "a"] }, activeForegroundMs: 12, contentVersion: "v1", artifactSha256: TEST_ARTIFACT_SHA256, status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
 }
 
 test("session creation preserves requested and actual lengths, immutable item order, option order, and no response", () => {
@@ -29,7 +29,7 @@ test("session creation preserves requested and actual lengths, immutable item or
 test("active session advances and persisted current position resumes deterministically", () => {
   const advanced = advanceTrainingSession(active());
   assert.equal(advanced.currentItemIndex, 1);
-  assert.equal(getCurrentSessionItem(advanced).itemId, "two");
+  assert.equal(getCurrentSessionItem(advanced).questionId, "two");
   assert.equal(createTrainingSession({ ...advanced }).currentItemIndex, 1);
 });
 
@@ -56,7 +56,7 @@ test("abandonment preserves committed position and cannot advance", () => {
 test("session rejects mismatched track, content version, duplicate references, and invalid completion position", () => {
   const session = active();
   assert.throws(() => createTrainingSession({ ...session, itemOrder: [{ ...occurrences[0]!, item: { ...refs[0]!, trackId: "google-cloud-associate-cloud-engineer" } }, occurrences[1]!, occurrences[2]!] }), InvalidTrainingSessionError);
-  assert.throws(() => createTrainingSession({ ...session, itemOrder: [{ ...occurrences[0]!, item: { ...refs[0]!, contentVersion: "v2" , packagePin: TEST_CONTENT_PACKAGE_PIN} }, occurrences[1]!, occurrences[2]!] }), InvalidTrainingSessionError);
+  assert.throws(() => createTrainingSession({ ...session, itemOrder: [{ ...occurrences[0]!, item: { ...refs[0]!, contentVersion: "v2" } }, occurrences[1]!, occurrences[2]!] }), InvalidTrainingSessionError);
   assert.throws(() => createTrainingSession({ ...session, itemOrder: [occurrences[0]!, occurrences[0]!, occurrences[2]!] }), InvalidTrainingSessionError);
   assert.throws(() => createTrainingSession({ ...session, status: "completed", currentItemIndex: 1 }), InvalidTrainingSessionError);
 });

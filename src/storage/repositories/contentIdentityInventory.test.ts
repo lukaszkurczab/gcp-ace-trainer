@@ -78,7 +78,7 @@ function validJournal(overrides: Readonly<{ packagePin?: ContentPackagePin; trac
     expectedRevisions: [{ target: "review:review-1", revision: null }, { target: "review_index", revision: null }],
     writes: [{ kind: "put_review_entry" as const, record: review }],
   };
-  return { ...plan, journalId: `journal:${plan.commandIdentity.fingerprint}`, planFingerprint: createMutationPlanFingerprint(plan) };
+  return { ...plan, journalId: `journal:${plan.commandIdentity.fingerprint}`, planFingerprint: createMutationPlanFingerprint(plan as unknown as Parameters<typeof createMutationPlanFingerprint>[0]) };
 }
 
 function validSession(overrides: Readonly<{ id?: string; trackId?: string }> = {}): Record<string, unknown> {
@@ -91,12 +91,12 @@ function validSession(overrides: Readonly<{ id?: string; trackId?: string }> = {
     requestedLength: 1,
     actualLength: 1,
     currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: sessionTrackId, itemId: "question-1", contentVersion, packagePin: pin() } }],
+    itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: sessionTrackId, questionId: "question-1", contentVersion, artifactSha256 } }],
     optionOrderByOccurrence: {},
     conditionalReinsertSlots: [],
     activeForegroundMs: 0,
     contentVersion,
-    packagePin: pin(),
+    artifactSha256,
     status: "active",
     startedAt: "2026-01-01T09:00:00.000Z",
   }) as unknown as Record<string, unknown>;

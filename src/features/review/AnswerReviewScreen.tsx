@@ -8,7 +8,7 @@ import { AnswerOption, Button, EmptyState, ReviewLoadingSkeleton, ReviewNavigato
 import { setQuestionNeedsReview } from "../../application/certification";
 import { loadExamSummaries as getAttempts, loadReviewQueueItems as getReviewQueueItems } from "../../application/learningReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { contentPackagePinsEqual } from "../../domain";
+import { resolvedContentRefsEqual } from "../../domain";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -40,8 +40,8 @@ export function AnswerReviewScreen({ navigation, route }: Props) {
         const selected = attempts.find((item) => item.id === route.params?.attemptId) ?? attempts[0] ?? null;
         setAttempt(selected);
         setReviewIds(new Set(reviews.value
-          .filter((entry) => selected?.answers.some((answer) => answer.item.itemId === entry.sourceItem.itemId && answer.item.contentVersion === entry.sourceItem.contentVersion && contentPackagePinsEqual(answer.item.packagePin, entry.sourceItem.packagePin)))
-          .map((entry) => entry.sourceItem.itemId)));
+          .filter((entry) => selected?.answers.some((answer) => resolvedContentRefsEqual(answer.item, entry.sourceItem)))
+          .map((entry) => entry.sourceItem.questionId)));
         setSelectedIndex(0);
         setHasLoadedReviewData(true);
       })

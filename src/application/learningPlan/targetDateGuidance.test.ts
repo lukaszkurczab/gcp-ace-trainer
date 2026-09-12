@@ -3,12 +3,11 @@ import test from "node:test";
 
 import { createLearningPlanSlotId } from "../../domain/learning/slotIdentity";
 import { normalizeLearningPlan, type GoalSnapshot, type LearningPlan } from "../../domain";
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { projectTargetDateGuidance, type TargetDateGuidanceInput } from "./targetDateGuidance";
 import type { PaceForecast } from "../../domain/learning/paceForecast";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
-const PIN = TEST_CONTENT_PACKAGE_PIN;
+const ARTIFACT_SHA256 = "a".repeat(64);
 
 function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
   return normalizeLearningPlan({
@@ -19,7 +18,7 @@ function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
     status: "accepted",
     timezone: "Europe/Warsaw",
     contentVersion: "content-v1",
-    contentPackagePin: PIN,
+    artifactSha256: ARTIFACT_SHA256,
     acceptedTarget: { meaning: "deadline", targetDate: "2026-02-20" },
     createdAt: "2026-01-01T10:00:00.000Z",
     updatedAt: "2026-01-01T10:00:00.000Z",
@@ -53,7 +52,7 @@ function availableForecast(currentPlan: LearningPlan = plan(), overrides: Partia
       planRevision: currentPlan.planRevision,
       goalRevision: currentPlan.goalRevision,
       target: currentPlan.acceptedTarget,
-      contentPackagePin: currentPlan.contentPackagePin,
+      artifactSha256: currentPlan.artifactSha256,
     },
     requiredQuestionsPerSession: 2,
     requiredQuestionsPerWeek: 4,
@@ -73,7 +72,7 @@ function input(overrides: Partial<TargetDateGuidanceInput> = {}): TargetDateGuid
   return {
     currentGoal: goal(),
     acceptedPlan: currentPlan,
-    currentVerifiedPackagePin: PIN,
+    currentVerifiedArtifactSha256: ARTIFACT_SHA256,
     c3Result: "in_progress",
     today: "2026-02-01",
     completedFacts: { sessions: [], attempts: [] },
@@ -87,9 +86,9 @@ test("applies no-goal, paused-goal, no-plan and freshness precedence", () => {
   assert.equal(projectTargetDateGuidance(input({ currentGoal: goal({ status: "paused" }), acceptedPlan: null })).state, "goal_paused");
   assert.equal(projectTargetDateGuidance(input({ acceptedPlan: null })).state, "no_plan");
   assert.equal(projectTargetDateGuidance(input({ currentGoal: goal({ targetDate: "2026-02-21" }) })).reason, "target_changed");
-  assert.equal(projectTargetDateGuidance(input({ currentVerifiedPackagePin: { ...PIN, contentReleaseId: "other-release" } })).reason, "package_changed");
+  assert.equal(projectTargetDateGuidance(input({ currentVerifiedArtifactSha256: "b".repeat(64) })).reason, "package_changed");
   assert.equal(projectTargetDateGuidance(input({ currentGoal: goal({}, 4) })).reason, "cadence_changed");
-  const both = projectTargetDateGuidance(input({ currentGoal: goal({ targetDate: "2026-02-21" }, 4), currentVerifiedPackagePin: { ...PIN, contentReleaseId: "other-release" } }));
+  const both = projectTargetDateGuidance(input({ currentGoal: goal({ targetDate: "2026-02-21" }, 4), currentVerifiedArtifactSha256: "b".repeat(64) }));
   assert.equal(both.reason, "target_changed");
 });
 
@@ -162,8 +161,8 @@ test("requires full forecast identity and maps malformed foreign forecasts to ca
   assert.equal(guidance.home.primary.kind, "try_again");
   assert.deepEqual(guidance.facts.target, { kind: "date", value: "2026-02-20" });
 
-  const mismatchedPin = availableForecast(currentPlan, { source: { ...availableForecast(currentPlan).source, contentPackagePin: { ...PIN, packageVersion: "other-version" } } });
-  assert.equal(projectTargetDateGuidance(input({ paceForecast: mismatchedPin })).reason, "calculation_error");
+  const mismatchedArtifact = availableForecast(currentPlan, { source: { ...availableForecast(currentPlan).source, artifactSha256: "b".repeat(64) } });
+  assert.equal(projectTargetDateGuidance(input({ paceForecast: mismatchedArtifact })).reason, "calculation_error");
   assert.equal(projectTargetDateGuidance(input({ paceForecast: { kind: "available", source: {} } as unknown as PaceForecast })).reason, "calculation_error");
 });
 

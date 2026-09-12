@@ -1,6 +1,8 @@
 import {
+  createResolvedContentRef,
   createTrainingSession,
-  type ContentItemRef,
+  resolvedContentRefKey,
+  type ResolvedContentRef,
   type TrainingAttempt,
   type TrainingSession,
   type TrainingSessionConditionalReinsertBranch,
@@ -17,7 +19,7 @@ const REINSERT_RESOLUTION_RULE = "incorrect_or_partial_after_three_materialized_
 export type AlgorithmsConditionalReinsertPlanInput = Readonly<{
   entries: readonly AlgorithmQuestionEntry[];
   mode: AlgorithmModeId;
-  reviewedItemRefs: readonly ContentItemRef[];
+  reviewedItemRefs: readonly ResolvedContentRef[];
   reviewSource?: AlgorithmReviewSource;
   session: TrainingSession;
   /** Prepared deterministic option orders for catalog items used only in alternate branches. */
@@ -55,21 +57,21 @@ export function prepareAlgorithmsConditionalReinsertPlan(input: AlgorithmsCondit
   }
   if (!isReinsertEnabled(input.mode, input.reviewSource)) return createTrainingSession({ ...input.session, conditionalReinsertSlots: [] });
 
-  const entryByItemId = new Map(input.entries.map((entry) => [entry.question.id, entry]));
+  const entryByQuestionId = new Map(input.entries.map((entry) => [entry.question.id, entry]));
   const planItemIds = new Set<string>();
   for (const occurrence of input.session.itemOrder) {
-    const entry = getValidatedEntry(occurrence, entryByItemId, "planned");
+    const entry = getValidatedEntry(occurrence, entryByQuestionId, input.session, "planned");
     if (planItemIds.has(entry.question.id)) throw new Error("Algorithms reinsert-capable plans cannot duplicate ordinary content identities.");
     planItemIds.add(entry.question.id);
   }
-  const reviewedKeys = new Set(input.reviewedItemRefs.map(contentItemRefKey));
+  const reviewedKeys = new Set(input.reviewedItemRefs.map(resolvedContentRefKey));
   const sortedEntries = reviewedKeys.size > 0 ? [...input.entries].sort(compareEntries) : [];
   const reservedReviewedVariantIds = new Set<string>();
   const slots: TrainingSessionConditionalReinsertSlot[] = [];
   for (let sourceIndex = 0; sourceIndex + 4 < input.session.itemOrder.length; sourceIndex += 1) {
     const sourceOccurrence = input.session.itemOrder[sourceIndex]!;
     const ordinaryOccurrence = input.session.itemOrder[sourceIndex + 4]!;
-    const sourceEntry = getValidatedEntry(sourceOccurrence, entryByItemId, "source");
+    const sourceEntry = getValidatedEntry(sourceOccurrence, entryByQuestionId, input.session, "source");
     const compatibleIds = new Set(sourceEntry.question.compatibilityMemberships.flatMap((membership) => {
       const relation = input.compatibilitySets.find((entry) => entry.id === membership);
       if (!relation || relation.relation !== "reviewed_variant") return [];
@@ -77,13 +79,13 @@ export function prepareAlgorithmsConditionalReinsertPlan(input: AlgorithmsCondit
     }));
     const reviewedVariant = sortedEntries
       .find((candidate) => candidate.question.id !== sourceEntry.question.id && compatibleIds.has(candidate.question.id) &&
-        reviewedKeys.has(contentItemRefKey(toContentItemRef(candidate, input.session))) &&
+        reviewedKeys.has(resolvedContentRefKey(toResolvedContentRef(candidate, input.session))) &&
         !planItemIds.has(candidate.question.id) && !reservedReviewedVariantIds.has(candidate.question.id));
     const slotId = `${input.session.id}:conditional:${sourceIndex + 4}`;
     const ordinaryBranch = branch(ordinaryOccurrence, input.session.optionOrderByOccurrence[ordinaryOccurrence.occurrenceId] ?? []);
     const alternativeOccurrenceId = reviewedVariant ? `${slotId}:reviewed` : `${slotId}:exact`;
     const alternativeBranch = reviewedVariant
-      ? branch({ occurrenceId: alternativeOccurrenceId, item: toContentItemRef(reviewedVariant, input.session) }, requiredOptionOrder(reviewedVariant.question.id, input.optionOrderByItemId))
+      ? branch({ occurrenceId: alternativeOccurrenceId, item: toResolvedContentRef(reviewedVariant, input.session) }, requiredOptionOrder(reviewedVariant.question.id, input.optionOrderByItemId))
       : branch({ occurrenceId: alternativeOccurrenceId, item: sourceOccurrence.item }, input.session.optionOrderByOccurrence[sourceOccurrence.occurrenceId] ?? []);
     if (reviewedVariant) reservedReviewedVariantIds.add(reviewedVariant.question.id);
     slots.push(Object.freeze({
@@ -191,13 +193,16 @@ function isReinsertEnabled(mode: AlgorithmModeId, reviewSource: AlgorithmReviewS
 
 function getValidatedEntry(
   occurrence: TrainingSessionItemOccurrence,
-  entryByItemId: ReadonlyMap<string, AlgorithmQuestionEntry>,
+  entryByQuestionId: ReadonlyMap<string, AlgorithmQuestionEntry>,
+  session: TrainingSession,
   role: "planned" | "source",
 ): AlgorithmQuestionEntry {
   if (occurrence.item.trackId !== "coding-interview-dsa-problem-solving") throw new Error(`Algorithms reinsert ${role} occurrence ${occurrence.occurrenceId} belongs to track ${occurrence.item.trackId}.`);
-  const entry = entryByItemId.get(occurrence.item.itemId);
-  if (!entry) throw new Error(`Algorithms reinsert ${role} item ${occurrence.item.itemId} is unavailable in the active catalog.`);
-  if (occurrence.item.contentVersion === "") throw new Error(`Algorithms reinsert ${role} item ${occurrence.item.itemId} has no content version.`);
+  const entry = entryByQuestionId.get(occurrence.item.questionId);
+  if (!entry) throw new Error(`Algorithms reinsert ${role} item ${occurrence.item.questionId} is unavailable in the active catalog.`);
+  if (occurrence.item.contentVersion !== session.contentVersion || occurrence.item.artifactSha256 !== session.artifactSha256) {
+    throw new Error(`Algorithms reinsert ${role} item ${occurrence.item.questionId} does not match the immutable session artifact.`);
+  }
   return entry;
 }
 
@@ -212,12 +217,13 @@ function branch(occurrence: TrainingSessionItemOccurrence, optionOrder: readonly
   return Object.freeze({ occurrence: freezeOccurrence(occurrence), optionOrder: Object.freeze([...optionOrder]) });
 }
 
-function toContentItemRef(entry: AlgorithmQuestionEntry, session: TrainingSession): ContentItemRef {
-  return Object.freeze({ contentVersion: session.contentVersion, itemId: entry.question.id, trackId: "coding-interview-dsa-problem-solving", packagePin: session.packagePin });
-}
-
-function contentItemRefKey(ref: ContentItemRef): string {
-  return `${ref.trackId}:${ref.packagePin.packageIdentity}:${ref.packagePin.packageVersion}:${ref.packagePin.contentReleaseId}:${ref.contentVersion}:${ref.itemId}`;
+function toResolvedContentRef(entry: AlgorithmQuestionEntry, session: TrainingSession): ResolvedContentRef {
+  return createResolvedContentRef({
+    artifactSha256: session.artifactSha256,
+    contentVersion: session.contentVersion,
+    questionId: entry.question.id,
+    trackId: "coding-interview-dsa-problem-solving",
+  });
 }
 
 function compareEntries(left: AlgorithmQuestionEntry, right: AlgorithmQuestionEntry): number {

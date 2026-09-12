@@ -1,4 +1,3 @@
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -18,6 +17,8 @@ import {
   type TrainingSessionPersistenceBoundary,
 } from "../trainingSessions";
 
+const ARTIFACT_SHA256 = "a".repeat(64);
+
 function session(overrides: Partial<TrainingSession> = {}): TrainingSession {
   return createTrainingSession({
     id: "session-1",
@@ -27,10 +28,10 @@ function session(overrides: Partial<TrainingSession> = {}): TrainingSession {
     requestedLength: 2,
     actualLength: 2,
     currentItemIndex: 0,
-    itemOrder: ["one", "two"].map((itemId) => ({ occurrenceId: `occurrence-${itemId}`, item: { trackId: "coding-interview-dsa-problem-solving", itemId, contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN} })),
+    itemOrder: ["one", "two"].map((questionId) => ({ occurrenceId: `occurrence-${questionId}`, item: { trackId: "coding-interview-dsa-problem-solving", questionId, contentVersion: "v1", artifactSha256: ARTIFACT_SHA256 } })),
     optionOrderByOccurrence: { "occurrence-one": ["b", "a"], "occurrence-two": ["d", "c"] },
     activeForegroundMs: 100,
-    contentVersion: "v1", packagePin: TEST_CONTENT_PACKAGE_PIN,
+    contentVersion: "v1", artifactSha256: ARTIFACT_SHA256,
     status: "active",
     startedAt: "2026-07-15T10:00:00.000Z",
     ...overrides,
@@ -71,12 +72,12 @@ test("content validation rejects missing, duplicate, and unknown durable option 
 
 test("durable progress hydrates prior attempts and the answered current item in plan order", () => {
   const active = session({ currentItemIndex: 1 });
-  const makeAttempt = (id: string, itemId: string) => ({
+  const makeAttempt = (id: string, questionId: string) => ({
     id, sessionId: active.id, trackId: active.trackId, modeId: active.modeId,
-    occurrenceId: `occurrence-${itemId}`,
-    item: active.itemOrder.find((occurrence) => occurrence.item.itemId === itemId)!.item, response: { selectedOptionIds: ["a"] },
+    occurrenceId: `occurrence-${questionId}`,
+    item: active.itemOrder.find((occurrence) => occurrence.item.questionId === questionId)!.item, response: { selectedOptionIds: ["a"] },
     result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 },
-    reviewEvidence: { sourceItem: active.itemOrder.find((occurrence) => occurrence.item.itemId === itemId)!.item, taxonomyOrSkillRefs: [] },
+    reviewEvidence: { sourceItem: active.itemOrder.find((occurrence) => occurrence.item.questionId === questionId)!.item, taxonomyOrSkillRefs: [] },
     answeredAt: active.startedAt, committedAt: active.startedAt,
   });
   const prior = makeAttempt("a1", "one");
@@ -86,19 +87,19 @@ test("durable progress hydrates prior attempts and the answered current item in 
   assert.deepEqual(progress.attempts.map((attempt) => attempt.id), ["a1", "a2"]);
   assert.equal(progress.currentAttempt?.id, "a2");
   assert.throws(() => getTrainingSessionProgress(active, [current, { ...current, id: "duplicate" }]), /multiple committed attempts/);
-  assert.throws(() => getTrainingSessionProgress(active, [{ ...current, item: { ...current.item, itemId: "outside-plan" } }]), /does not belong/);
+  assert.throws(() => getTrainingSessionProgress(active, [{ ...current, item: { ...current.item, trackId: "outside-track" } }]), /does not belong/);
 });
 
 test("duplicate exact content items are distinct through immutable occurrence identities", () => {
   const duplicatePlan = session({
-    itemOrder: ["first", "second"].map((suffix) => ({ occurrenceId: `occurrence-${suffix}`, item: { trackId: "coding-interview-dsa-problem-solving", itemId: "one", contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN} })),
+    itemOrder: ["first", "second"].map((suffix) => ({ occurrenceId: `occurrence-${suffix}`, item: { trackId: "coding-interview-dsa-problem-solving", questionId: "one", contentVersion: "v1", artifactSha256: ARTIFACT_SHA256 } })),
     optionOrderByOccurrence: { "occurrence-first": ["a", "b"], "occurrence-second": ["a", "b"] },
   });
   const makeAttempt = (id: string, occurrenceId: string) => ({ id, occurrenceId, sessionId: duplicatePlan.id, trackId: duplicatePlan.trackId, modeId: duplicatePlan.modeId, item: duplicatePlan.itemOrder[0]!.item, response: {}, result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: duplicatePlan.itemOrder[0]!.item, taxonomyOrSkillRefs: [] }, answeredAt: duplicatePlan.startedAt, committedAt: duplicatePlan.startedAt });
   assert.equal(getTrainingSessionProgress(duplicatePlan, [makeAttempt("a1", "occurrence-first"), makeAttempt("a2", "occurrence-second")]).attempts.length, 2);
   assert.throws(() => createTrainingSession({ ...duplicatePlan, itemOrder: [duplicatePlan.itemOrder[0]!, duplicatePlan.itemOrder[0]!] }), /occurrence identities/);
   assert.throws(() => getTrainingSessionProgress(duplicatePlan, [makeAttempt("a1", "occurrence-first"), makeAttempt("a2", "occurrence-first")]), /multiple committed attempts/);
-  assert.throws(() => getTrainingSessionProgress(duplicatePlan, [{ ...makeAttempt("a1", "occurrence-first"), item: { ...duplicatePlan.itemOrder[0]!.item, itemId: "two" } }]), /does not belong/);
+  assert.throws(() => getTrainingSessionProgress(duplicatePlan, [{ ...makeAttempt("a1", "occurrence-first"), item: { ...duplicatePlan.itemOrder[0]!.item, contentVersion: "outside-content" } }]), /does not belong/);
 });
 
 test("foreground accumulation persists only the supplied active interval", async () => {

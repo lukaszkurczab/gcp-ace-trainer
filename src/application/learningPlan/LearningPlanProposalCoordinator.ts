@@ -3,7 +3,6 @@ import type { ResolvedPackageRuntime } from "../contentPackageRuntimeOwner";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import {
   InvalidLearningPlanProposalInputError,
-  contentPackagePinsEqual,
   evaluatePackageCompletion,
   generateLearningPlanProposal,
   type GoalSnapshot,
@@ -84,10 +83,10 @@ export class LearningPlanProposalCoordinator {
       const completionState = Object.freeze({ kind: "unknown" as const });
       const dueReviewCount = reviews.filter((review) => review.trackId === trackId &&
         review.sourceItem.trackId === trackId && review.sourceItem.contentVersion === resolved.track.contentVersion &&
-        contentPackagePinsEqual(review.sourceItem.packagePin, resolved.track.packagePin) && review.dueAt <= now).length;
+        review.sourceItem.artifactSha256 === resolved.track.artifactSha256 && review.dueAt <= now).length;
       const outcome = generateLearningPlanProposal({
         goalSnapshot: snapshot,
-        packagePin: resolved.track.packagePin,
+        artifactSha256: resolved.track.artifactSha256,
         contentVersion: resolved.track.contentVersion,
         primaryModeId: primary.modeId,
         requestedLength: primary.defaultRequestedLength,
@@ -131,7 +130,7 @@ export class LearningPlanProposalCoordinator {
       trackId,
       goalRevision: snapshot.revision,
       contentVersion: resolved.track.contentVersion,
-      packagePin: resolved.track.packagePin,
+      artifactSha256: resolved.track.artifactSha256,
       timezone,
     };
     if (!proposalIdentitiesEqual(proposal.outcome.identity, currentIdentity)) return frozen({ kind: "stale" });
@@ -144,7 +143,7 @@ export class LearningPlanProposalCoordinator {
 export function proposalIdentitiesEqual(left: ProposalIdentity, right: ProposalIdentity): boolean {
   return left.trackId === right.trackId && left.goalRevision === right.goalRevision &&
     left.contentVersion === right.contentVersion && left.timezone === right.timezone &&
-    contentPackagePinsEqual(left.packagePin, right.packagePin);
+    left.artifactSha256 === right.artifactSha256;
 }
 
 let proposalSequence = 0;

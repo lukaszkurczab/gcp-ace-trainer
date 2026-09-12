@@ -39,13 +39,13 @@ export function ResultScreen({ navigation, route }: Props) {
     void Promise.all([useCases.loadSummary(capturedRequestKey), useCases.loadSessionRecord(capturedRequestKey)])
       .then(async ([result, session]) => {
         const exact = isDesignInterviewModeId(session.modeId) || session.modeId.startsWith("certification-") || result.evidence.familyId === "certification"
-          ? await contentPackageRuntimeOwner.resolveExact(session.packagePin)
+          ? await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 })
           : null;
         if (!live) return;
         const designTopicId = isDesignInterviewModeId(session.modeId) && exact ? exact.track.questions[0]?.nodeId ?? null : null;
         const certificationTopicId = session.modeId === "certification-diagnostic-baseline" && exact ? exact.track.questions[0]?.nodeId ?? null : null;
         const certificationMaxPoints = result.evidence.familyId === "certification" && exact
-          ? session.itemOrder.reduce((sum, occurrence) => sum + (exact.track.getQuestion(occurrence.item.itemId) ? 1 : 0), 0)
+          ? session.itemOrder.reduce((sum, occurrence) => sum + (exact.track.getQuestion(occurrence.item.questionId) ? 1 : 0), 0)
           : null;
         setReadState({ kind: "ready", requestKey: capturedRequestKey, summary: { result, session, designTopicId, certificationTopicId, certificationMaxPoints } });
       })

@@ -5,7 +5,6 @@ import { completeTrainingSession, createDefaultGoal, createLearningPlan, createT
 import { createLearningPlanSlotId } from "../../domain/learning/slotIdentity";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { canonicalJsonV1ByteLength } from "../../infrastructure/identity/canonicalSerialization";
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import {
   accountDataRecordFingerprint,
@@ -32,9 +31,10 @@ import { getLearningPlanSnapshot, saveLearningPlanAtomically } from "./learningP
 const accountId = "55555555-5555-4555-8555-555555555555";
 const trackId = "coding-interview-dsa-problem-solving" as const;
 const alternateTrackId = "object-oriented-design-interview" as const;
+const TEST_ARTIFACT_SHA256 = "a".repeat(64);
 
 function activeSession() {
-  const item = { trackId, itemId: "two-sum-001", contentVersion: "test", packagePin: TEST_CONTENT_PACKAGE_PIN };
+  const item = { trackId, questionId: "two-sum-001", contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256 };
   return createTrainingSession({
     id: "active-session",
     trackId,
@@ -47,7 +47,7 @@ function activeSession() {
     optionOrderByOccurrence: {},
     activeForegroundMs: 0,
     contentVersion: "test",
-    packagePin: TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: TEST_ARTIFACT_SHA256,
     status: "active",
     startedAt: "2026-01-01T00:00:00.000Z",
   });
@@ -107,7 +107,7 @@ test("v2 snapshot and materialization preserve one exact goal-plan bundle", asyn
   await saveGoal(goal);
   const plan = createLearningPlan({
     schemaVersion: 1, planId: "plan:sync", trackId, goalRevision: 1, status: "accepted",
-    timezone: "Europe/Warsaw", contentVersion: "test", contentPackagePin: TEST_CONTENT_PACKAGE_PIN,
+    timezone: "Europe/Warsaw", contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256,
     acceptedTarget: { meaning: "none", targetDate: null }, createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z", planRevision: 1, commandId: "command:sync",
     slots: [{ slotId: createLearningPlanSlotId("slot:mon"), day: "mon", localTime: "18:00", sessionLength: 10 }],

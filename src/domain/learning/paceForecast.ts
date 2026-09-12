@@ -1,6 +1,5 @@
 import { isIsoDate } from "../goals/goalContracts";
 import { normalizeLearningPlan, type AcceptedTargetSnapshot, type LearningPlan } from "./learningPlan";
-import type { ContentPackagePin } from "./contentPackagePin";
 
 /** The completion state already resolved by the package-owned C3 calculator. */
 export type C3Result = "unknown" | "in_progress" | "completed";
@@ -19,7 +18,7 @@ export type ForecastSource = Readonly<{
   planRevision: number;
   goalRevision: number;
   target: AcceptedTargetSnapshot;
-  contentPackagePin: ContentPackagePin;
+  artifactSha256: string;
 }>;
 
 export type PaceForecast =
@@ -275,7 +274,7 @@ function freezeSource(plan: LearningPlan): ForecastSource {
     planRevision: plan.planRevision,
     goalRevision: plan.goalRevision,
     target: Object.freeze({ ...plan.acceptedTarget }),
-    contentPackagePin: Object.freeze({ ...plan.contentPackagePin }),
+    artifactSha256: plan.artifactSha256,
   });
 }
 

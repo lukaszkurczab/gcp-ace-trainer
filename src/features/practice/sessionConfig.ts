@@ -1,4 +1,4 @@
-import { CODING_INTERVIEW_TRACK_ID, getTrackRegistration, type ContentItemRef, type TrackId, type TrainingSession } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, getTrackRegistration, type ResolvedContentRef, type TrackId, type TrainingSession } from "../../domain";
 import {
   ALGORITHM_MODE_IDS,
   ALGORITHM_ROADMAP,
@@ -32,7 +32,7 @@ export type PracticeSessionRouteParams = {
   feedbackMode: PracticeFeedbackMode;
   mode: PracticeSessionMode;
   reviewBehaviorEnabled: boolean;
-  reviewItemRefs?: readonly ContentItemRef[];
+  reviewItemRefs?: readonly ResolvedContentRef[];
   reviewSource?: PracticeReviewSource;
   sessionLength: PracticeSessionLength;
   source: PracticeSessionSource;

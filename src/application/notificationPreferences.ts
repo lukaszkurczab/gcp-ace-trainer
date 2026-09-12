@@ -1,4 +1,4 @@
-import { contentPackagePinsEqual, createContentPackagePin, type ContentPackagePin, type GoalDay, type GoalSnapshot, type LearningPlan, type LearningPlanSnapshot, type TrackId } from "../domain";
+import { createArtifactSha256, type GoalDay, type GoalSnapshot, type LearningPlan, type LearningPlanSnapshot, type ResolvedContentRef, type TrackId } from "../domain";
 import { getActiveTrackId, getGoalSnapshot, getLearningPlanSnapshot } from "../storage/repositories";
 import { contentPackageRuntimeOwner, type ResolvedPackageRuntime } from "./contentPackageRuntimeOwner";
 import {
@@ -98,7 +98,7 @@ export type LearningPlanReminderExpectedIdentity = NotificationPlanIdentity | Le
 export type LearningPlanReminderPackage = Readonly<{
   trackId: TrackId;
   contentVersion: string;
-  packagePin: ContentPackagePin;
+  artifactSha256: string;
 }> | ResolvedPackageRuntime;
 
 export type LearningPlanReminderDependencies = Readonly<{
@@ -106,14 +106,14 @@ export type LearningPlanReminderDependencies = Readonly<{
   getDeviceTimezone(): string;
   getGoalSnapshot(trackId: TrackId): Awaitable<GoalSnapshot | null>;
   getLearningPlanSnapshot(trackId: TrackId): Awaitable<LearningPlanSnapshot | null>;
-  resolveExact(pin: ContentPackagePin): Promise<LearningPlanReminderPackage>;
+  resolveExactArtifact(input: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<LearningPlanReminderPackage>;
 }>;
 
 type Awaitable<T> = T | Promise<T>;
 type ReminderPackageIdentity = Readonly<{
   trackId: TrackId;
   contentVersion: string;
-  packagePin: ContentPackagePin;
+  artifactSha256: string;
 }>;
 type ReadyReminderSource = Readonly<{
   goal: GoalSnapshot;
@@ -148,6 +148,11 @@ function nextLocalTime(value: string): DailyReminderTime | null {
   return { hour: Number(value.slice(0, 2)), minute: Number(match[1]) };
 }
 
+function hasExactKeys(value: object, expected: readonly string[]): boolean {
+  const keys = Object.keys(value);
+  return keys.length === expected.length && keys.every((key) => expected.includes(key));
+}
+
 function sameReminderSlot(left: DeviceReminderSlot, right: DeviceReminderSlot): boolean {
   return left.slotId === right.slotId && left.day === right.day && left.localTime === right.localTime;
 }
@@ -157,7 +162,7 @@ function sameReminderIdentity(left: NotificationPlanIdentity | null, right: Noti
     return Boolean(left && right && left.trackId === right.trackId && left.goalRevision === right.goalRevision &&
       left.planId === right.planId && left.planRevision === right.planRevision && left.storageRevision === right.storageRevision &&
       left.commandId === right.commandId && left.timezone === right.timezone && left.contentVersion === right.contentVersion &&
-      contentPackagePinsEqual(left.contentPackagePin, right.contentPackagePin));
+      left.artifactSha256 === right.artifactSha256);
   } catch {
     return false;
   }
@@ -184,13 +189,26 @@ function currentPlanIdentity(
     commandId: planSnapshot.plan.commandId,
     timezone,
     contentVersion: packageContext.contentVersion,
-    contentPackagePin: createContentPackagePin(packageContext.packagePin),
+    artifactSha256: createArtifactSha256(packageContext.artifactSha256),
   });
 }
 
 function packageIdentity(value: LearningPlanReminderPackage): ReminderPackageIdentity {
-  if ("track" in value) return Object.freeze({ trackId: value.track.trackId, contentVersion: value.track.contentVersion, packagePin: value.track.packagePin });
-  return value;
+  if ("track" in value) {
+    return Object.freeze({
+      trackId: value.track.trackId,
+      contentVersion: value.track.contentVersion,
+      artifactSha256: createArtifactSha256(value.track.artifactSha256),
+    });
+  }
+  if (!hasExactKeys(value, ["trackId", "contentVersion", "artifactSha256"])) {
+    throw new Error("Resolved reminder package must contain exactly trackId, contentVersion, and artifactSha256.");
+  }
+  return Object.freeze({
+    trackId: value.trackId,
+    contentVersion: value.contentVersion,
+    artifactSha256: createArtifactSha256(value.artifactSha256),
+  });
 }
 
 function slotsFromPlan(plan: LearningPlan): readonly DeviceReminderSlot[] {
@@ -216,7 +234,7 @@ function defaultLearningPlanReminderDependencies(): LearningPlanReminderDependen
     getDeviceTimezone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
     getGoalSnapshot,
     getLearningPlanSnapshot,
-    resolveExact: (pin) => contentPackageRuntimeOwner.resolveExact(pin),
+    resolveExactArtifact: (input) => contentPackageRuntimeOwner.resolveExactArtifact(input),
   };
 }
 
@@ -323,7 +341,7 @@ export class LearningPlanReminderCoordinator {
       expected.commandId !== planSnapshot.plan.commandId ||
       expected.goalRevision !== goal.revision ||
       expected.contentVersion !== planSnapshot.plan.contentVersion ||
-      !contentPackagePinsEqual(expected.contentPackagePin, planSnapshot.plan.contentPackagePin) ||
+      expected.artifactSha256 !== planSnapshot.plan.artifactSha256 ||
       expected.timezone !== planSnapshot.plan.timezone
     )) return { kind: "concurrent_change", expectedIdentity: expected };
     const timezone = this.dependencies.getDeviceTimezone();
@@ -333,8 +351,12 @@ export class LearningPlanReminderCoordinator {
     if (planSnapshot.plan.slots.length === 0) return { kind: "no_slots" };
     let packageContext: ReminderPackageIdentity;
     try {
-      packageContext = packageIdentity(await this.dependencies.resolveExact(planSnapshot.plan.contentPackagePin));
-      if (packageContext.trackId !== trackId || packageContext.contentVersion !== planSnapshot.plan.contentVersion || !contentPackagePinsEqual(packageContext.packagePin, planSnapshot.plan.contentPackagePin)) return { kind: "identity_mismatch" };
+      packageContext = packageIdentity(await this.dependencies.resolveExactArtifact({
+        trackId,
+        contentVersion: planSnapshot.plan.contentVersion,
+        artifactSha256: planSnapshot.plan.artifactSha256,
+      }));
+      if (packageContext.trackId !== trackId || packageContext.contentVersion !== planSnapshot.plan.contentVersion || packageContext.artifactSha256 !== planSnapshot.plan.artifactSha256) return { kind: "identity_mismatch" };
     } catch {
       return { kind: "identity_mismatch" };
     }

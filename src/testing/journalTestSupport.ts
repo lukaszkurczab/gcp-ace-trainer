@@ -1,9 +1,13 @@
-import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
-import { createTrainingAttempt, createTrainingSession, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../domain";
+import { createTrainingAttempt, createTrainingSession, type ResolvedContentRef, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../infrastructure/storage/mmkvClient";
 import { captureMutationExpectedRevisions, createMutationPlanFingerprint, type MutationJournalPlan, type MutationJournalRecord } from "../storage/repositories/mutationJournalRepository";
 
 export const timestamp = "2026-07-15T10:00:00.000Z";
+const artifactSha256 = "a".repeat(64);
+
+function item(): ResolvedContentRef {
+  return { trackId: "coding-interview-dsa-problem-solving", questionId: "item-1", contentVersion: "v1", artifactSha256 };
+}
 
 export function installMemoryStorage(): MemoryKeyValueStorage {
   const storage = new MemoryKeyValueStorage();
@@ -20,10 +24,10 @@ export function session(status: TrainingSession["status"] = "active", id = "sess
     requestedLength: 1,
     actualLength: 1,
     currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: "coding-interview-dsa-problem-solving", itemId: "item-1", contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN} }],
+    itemOrder: [{ occurrenceId: "occurrence-1", item: item() }],
     optionOrderByOccurrence: { "occurrence-1": ["a", "b"] },
     activeForegroundMs: 0,
-    contentVersion: "v1", packagePin: TEST_CONTENT_PACKAGE_PIN,
+    contentVersion: "v1", artifactSha256,
     status,
     startedAt: timestamp,
     ...(status === "active" ? {} : { completedAt: timestamp }),
@@ -37,10 +41,10 @@ export function attempt(id = "attempt-1", sessionId = "session-1"): TrainingAtte
     trackId: "coding-interview-dsa-problem-solving",
     modeId: "practice",
     occurrenceId: "occurrence-1",
-    item: { trackId: "coding-interview-dsa-problem-solving", itemId: "item-1", contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN},
+    item: item(),
     response: { choice: "a" },
     result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 },
-    reviewEvidence: { sourceItem: { trackId: "coding-interview-dsa-problem-solving", itemId: "item-1", contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN}, taxonomyOrSkillRefs: [{ axisId: "topic", nodeId: "one" }] },
+    reviewEvidence: { sourceItem: item(), taxonomyOrSkillRefs: [{ axisId: "topic", nodeId: "one" }] },
     answeredAt: timestamp,
     committedAt: timestamp,
   });
@@ -52,7 +56,7 @@ export function review(id = "review-1", sourceAttemptId = "attempt-1"): ReviewQu
     trackId: "coding-interview-dsa-problem-solving",
     sourceAttemptId,
     sourceSessionId: "session-1",
-    sourceItem: { trackId: "coding-interview-dsa-problem-solving", itemId: "item-1", contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN},
+    sourceItem: item(),
     taxonomyOrSkillRefs: [{ axisId: "topic", nodeId: "one" }],
     reasons: ["incorrect"],
     dueAt: timestamp,
@@ -73,7 +77,7 @@ export function journal(writes: MutationJournalRecord["writes"], operation: Muta
     createdAt: timestamp,
     sessionId,
     trackId,
-    packagePin: operation === "reset_learning_state" ? null : TEST_CONTENT_PACKAGE_PIN,
+    artifactSha256: operation === "reset_learning_state" ? null : artifactSha256,
     commandIdentity: { version: 1, fingerprint: commandFingerprint },
     expectedRevisions: captureMutationExpectedRevisions(writes),
     writes,

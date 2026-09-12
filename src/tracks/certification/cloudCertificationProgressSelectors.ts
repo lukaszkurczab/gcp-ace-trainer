@@ -1,19 +1,20 @@
-import { contentPackagePinsEqual, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, type ContentPackagePin, type EvidenceRef, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
+import { GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, isArtifactSha256, type EvidenceRef, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { isCertificationPracticeModeId } from "./domain/certificationModes";
 export type CloudCertificationProgressIssue = { key: string; message: string; operation: "read" | "write" | "remove" | "parse" };
 
 export type CloudCertificationTaxonomyPerformance = { axisId: string; correctCount: number; incorrectCount: number; label: string; nodeId: string; partialCount: number; percent: number; taxonomyRef: EvidenceRef; totalAttempts: number };
 export type CloudCertificationProgressViewModel = { correctCount: number; degraded: boolean; dueReviewCount: number; examAttemptCount: number; firstAttemptAccuracy: { correct: number; percent: number; total: number }; highPriorityReviewCount: number; incorrectCount: number; issues: CloudCertificationProgressIssue[]; ok: boolean; partialCount: number; practiceAttemptCount: number; recentAccuracy: { correct: number; percent: number; total: number; windowAttemptCount: number }; repeatedMistakeTypes: { count: number; taxonomyRef: EvidenceRef }[]; scheduledReviewCount: number; taxonomyPerformance: CloudCertificationTaxonomyPerformance[]; totalAttempts: number; weakTaxonomyNodes: CloudCertificationTaxonomyPerformance[] };
-export type CloudCertificationProgressViewModelInput = { attempts: readonly TrainingAttempt<unknown>[]; issues?: readonly CloudCertificationProgressIssue[]; now?: string; packagePin: ContentPackagePin; recentAttemptCount?: number; reviewQueueItems?: readonly ReviewQueueEntry[] };
+export type CloudCertificationProgressViewModelInput = { attempts: readonly TrainingAttempt<unknown>[]; issues?: readonly CloudCertificationProgressIssue[]; now?: string; artifactSha256: string; recentAttemptCount?: number; reviewQueueItems?: readonly ReviewQueueEntry[] };
 
 export function buildCloudCertificationProgressViewModel(input: CloudCertificationProgressViewModelInput): CloudCertificationProgressViewModel {
-  const attempts = input.attempts.filter((attempt) => attempt.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && contentPackagePinsEqual(attempt.item.packagePin, input.packagePin));
-  const reviews = (input.reviewQueueItems ?? []).filter((entry) => entry.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && contentPackagePinsEqual(entry.sourceItem.packagePin, input.packagePin));
+  if (!isArtifactSha256(input.artifactSha256)) throw new Error("Certification progress requires an exact artifact SHA-256.");
+  const attempts = input.attempts.filter((attempt) => attempt.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && attempt.item.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && attempt.item.artifactSha256 === input.artifactSha256);
+  const reviews = (input.reviewQueueItems ?? []).filter((entry) => entry.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && entry.sourceItem.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && entry.sourceItem.artifactSha256 === input.artifactSha256);
   const now = input.now ?? new Date().toISOString();
   const recentCount = input.recentAttemptCount ?? 10;
   const taxonomyPerformance = buildTaxonomyPerformance(attempts);
   const firstByItem = new Map<string, TrainingAttempt<unknown>>();
-  [...attempts].sort((a, b) => a.answeredAt.localeCompare(b.answeredAt)).forEach((attempt) => { if (!firstByItem.has(attempt.item.itemId)) firstByItem.set(attempt.item.itemId, attempt); });
+  [...attempts].sort((a, b) => a.answeredAt.localeCompare(b.answeredAt)).forEach((attempt) => { if (!firstByItem.has(attempt.item.questionId)) firstByItem.set(attempt.item.questionId, attempt); });
   const recent = [...attempts].sort((a, b) => b.answeredAt.localeCompare(a.answeredAt)).slice(0, recentCount);
   const firstAccuracy = accuracy([...firstByItem.values()]);
   const recentAccuracy = accuracy(recent);

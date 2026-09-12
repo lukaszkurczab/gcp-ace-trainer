@@ -4,7 +4,7 @@ import {
   loadTrainingAttempts,
 } from "./learningReadModels";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
-import { contentPackagePinsEqual, type ContentPackagePin, type ReviewQueueEntry, type TrackId, type TrainingAttempt } from "../domain";
+import { type ReviewQueueEntry, type TrackId, type TrainingAttempt } from "../domain";
 
 import { StorageReadError } from "../storage/errors";
 
@@ -51,15 +51,15 @@ export async function loadPracticeReadData(
   assertReadable(trainingAttemptsResult, "training attempts");
   if (reviewResult) assertReadable(reviewResult, "review queue");
 
-  const packagePin = activeTrackId && includeReviews
-    ? contentPackageRuntimeOwner.getPreparedDiscovery(activeTrackId).track.packagePin
+  const artifactSha256 = activeTrackId && includeReviews
+    ? contentPackageRuntimeOwner.getPreparedDiscovery(activeTrackId).track.artifactSha256
     : null;
   const now = input.now ?? Date.now();
 
   return {
     activeTrackId: activeTrackId ?? null,
-    hasReviewEvidence: activeTrackId !== null && packagePin !== null && reviewResult !== undefined
-      ? reviewResult.value.some((entry) => isDueReviewForTrack(entry, activeTrackId, packagePin, now))
+    hasReviewEvidence: activeTrackId !== null && artifactSha256 !== null && reviewResult !== undefined
+      ? reviewResult.value.some((entry) => isDueReviewForTrack(entry, activeTrackId, artifactSha256, now))
       : false,
     trainingAttempts: trainingAttemptsResult.value,
   };
@@ -74,10 +74,10 @@ function assertReadable<T>(result: { issues?: readonly { message: string }[]; va
 function isDueReviewForTrack(
   entry: ReviewQueueEntry,
   activeTrackId: TrackId,
-  packagePin: ContentPackagePin,
+  artifactSha256: string,
   now: number,
 ): boolean {
   return entry.trackId === activeTrackId &&
-    contentPackagePinsEqual(entry.sourceItem.packagePin, packagePin) &&
+    entry.sourceItem.artifactSha256 === artifactSha256 &&
     Date.parse(entry.dueAt) <= now;
 }

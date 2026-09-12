@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
 import { DetailsDisclosure } from "../../components";
-import type { ContentItemRef } from "../../domain";
+import type { ResolvedContentRef } from "../../domain";
 import type { AlgorithmFeedbackDocument } from "../../content/contracts";
 import { useThemedStyles } from "../../preferences";
 import { colorWithOpacity, radius, spacing, typography, type AppColors } from "../../theme";
@@ -12,7 +12,7 @@ import { ContentReportSheet, type ContentReportSurfaceContext } from "../reports
 
 type ReviewFeedbackBlockProps = Readonly<{
   feedback: Readonly<{ details: AlgorithmFeedbackDocument; reason: string }>;
-  item: ContentItemRef;
+  item: ResolvedContentRef;
   reportSurface: ContentReportSurfaceContext;
 }>;
 

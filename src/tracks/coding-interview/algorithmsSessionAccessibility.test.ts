@@ -224,7 +224,7 @@ test("practice runtime selectors are derived from the canonical session projecti
   const controls = source("src/features/practice/PracticeResponseControls.tsx");
   const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
 
-  assert.match(screen, /itemId: projection\.item\.itemId/);
+  assert.match(screen, /itemId: projection\.item\.questionId/);
   assert.match(screen, /actualLength: projection\.session\.actualLength/);
   assert.match(screen, /feedbackTiming: feedbackTiming\(projection\.session\.configurationSnapshot\.feedbackMode\)/);
   assert.match(screen, /ordinal: projection\.position\.current/);

@@ -1,4 +1,4 @@
-import type { ContentItemRef, ContentPackagePin } from "../../domain/learning";
+import type { ResolvedContentRef } from "../../domain/learning";
 import type { FeedbackDocument, VerifiedPackageMode, VerifiedPackageModeConfiguration } from "../../content/contracts";
 
 export type DesignChoiceInteraction = Readonly<{
@@ -39,10 +39,10 @@ export type DesignQuestion = Readonly<{
 export interface DesignRuntimeCatalog {
   getTrackId(): string;
   getContentVersion(): string;
-  getPackagePin(): ContentPackagePin;
+  getArtifactSha256(): ResolvedContentRef["artifactSha256"];
   getItems(): readonly DesignQuestion[];
-  getItemById(itemId: string): DesignQuestion;
-  toContentItemRef(item: DesignQuestion): ContentItemRef;
+  getQuestionById(questionId: string): DesignQuestion;
+  toResolvedContentRef(item: DesignQuestion): ResolvedContentRef;
   getMode(modeId: string): VerifiedPackageMode;
   getConfiguration(modeId: string): VerifiedPackageModeConfiguration;
   getFreeNodeId(): string;

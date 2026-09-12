@@ -40,12 +40,12 @@ test("explicit practice routes skip the stored-track read and do not load review
   assert.equal(reviewReads, 0);
 });
 
-test("Hub review evidence is limited to due entries for the active track and exact package pin", async () => {
+test("Hub review evidence is limited to due entries for the active track and exact artifact", async () => {
   const resolution = contentPackageRuntimeOwner.getPreparedDiscovery(TRACK_ID);
   const item = {
     contentVersion: resolution.track.contentVersion,
-    itemId: "practice-item",
-    packagePin: resolution.track.packagePin,
+    questionId: "practice-item",
+    artifactSha256: resolution.track.artifactSha256,
     trackId: TRACK_ID,
   } as const;
   const dueReview: ReviewQueueEntry = {
@@ -65,7 +65,7 @@ test("Hub review evidence is limited to due entries for the active track and exa
   const staleReview: ReviewQueueEntry = {
     ...dueReview,
     id: "review-stale",
-    sourceItem: { ...item, packagePin: { ...item.packagePin, contentReleaseId: `${item.packagePin.contentReleaseId}-stale` } },
+    sourceItem: { ...item, artifactSha256: "e".repeat(64) },
   };
   const wrongTrackReview: ReviewQueueEntry = {
     ...dueReview,

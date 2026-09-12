@@ -1,4 +1,4 @@
-import type { ContentItemRef } from "../../domain";
+import type { ResolvedContentRef } from "../../domain";
 import type { Question } from "../../content/canonical";
 
 export type CertificationAnswerViewModel = Readonly<{
@@ -12,7 +12,7 @@ export type CertificationAnswerViewModel = Readonly<{
   answeredAt: string;
   attemptId?: string;
   elapsedSeconds?: number;
-  item: ContentItemRef;
+  item: ResolvedContentRef;
   questionSnapshot: Question;
 }>;
 

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import type { ContentItemRef } from "../../domain";
+import type { ResolvedContentRef } from "../../domain";
 import type { AlgorithmFeedbackBlock, AlgorithmFeedbackCalloutKind, AlgorithmFeedbackDocument } from "../../content/contracts";
 import type { AppColors } from "../../theme";
 import { radius, spacing, typography } from "../../theme";
@@ -17,12 +17,12 @@ const CALLOUT_LABEL: Readonly<Record<AlgorithmFeedbackCalloutKind, string>> = {
   key_takeaway: "Key takeaway",
 };
 
-export function AlgorithmFeedbackDocumentBlock({ document, item }: Readonly<{ document: AlgorithmFeedbackDocument; item: ContentItemRef }>) {
+export function AlgorithmFeedbackDocumentBlock({ document, item }: Readonly<{ document: AlgorithmFeedbackDocument; item: ResolvedContentRef }>) {
   const styles = useThemedStyles(createStyles);
   return <View style={styles.document}>{document.blocks.map((block, index) => <FeedbackBlock block={block} index={index} item={item} key={`${block.type}-${index}`} styles={styles} />)}</View>;
 }
 
-function FeedbackBlock({ block, index, item, styles }: Readonly<{ block: AlgorithmFeedbackBlock; index: number; item: ContentItemRef; styles: ReturnType<typeof createStyles> }>) {
+function FeedbackBlock({ block, index, item, styles }: Readonly<{ block: AlgorithmFeedbackBlock; index: number; item: ResolvedContentRef; styles: ReturnType<typeof createStyles> }>) {
   const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
   if (block.type === "paragraph") return <Text key={`paragraph:${fontScale}`} maxFontSizeMultiplier={2} style={styles.paragraph}>{block.text}</Text>;

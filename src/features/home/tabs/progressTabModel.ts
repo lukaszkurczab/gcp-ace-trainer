@@ -3,7 +3,7 @@ import {
   GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   type TrackDisplay,
 } from "../../../domain";
-import { contentPackagePinsEqual, type ContentPackagePin, type ReviewQueueEntry, type TrainingAttempt } from "../../../domain";
+import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
 import {
   ALGORITHM_MODE_IDS,
   type AlgorithmModeId,
@@ -232,21 +232,21 @@ function buildInstalledPackageProgressTabModel(
     attempt.trackId === trackId &&
     attempt.item.trackId === trackId &&
     attempt.item.contentVersion === packageResolution.track.contentVersion &&
-    contentPackagePinsEqual(attempt.item.packagePin, packageResolution.track.packagePin) &&
-    packageItemIds.has(attempt.item.itemId),
+    attempt.item.artifactSha256 === packageResolution.track.artifactSha256 &&
+    packageItemIds.has(attempt.item.questionId),
   );
   const currentReviews = reviewQueueItems.filter((entry) =>
     entry.trackId === trackId &&
     entry.sourceItem.trackId === trackId &&
     entry.sourceItem.contentVersion === packageResolution.track.contentVersion &&
-    contentPackagePinsEqual(entry.sourceItem.packagePin, packageResolution.track.packagePin) &&
-    packageItemIds.has(entry.sourceItem.itemId),
+    entry.sourceItem.artifactSha256 === packageResolution.track.artifactSha256 &&
+    packageItemIds.has(entry.sourceItem.questionId),
   );
   const dueReviewCount = currentReviews.filter((entry) => entry.dueAt <= now).length;
   const scores = new Map<string, { correct: number; earned: number; max: number; total: number }>();
 
   for (const attempt of currentAttempts) {
-    const item = packageItems.find((candidate) => candidate.id === attempt.item.itemId);
+    const item = packageItems.find((candidate) => candidate.id === attempt.item.questionId);
     const firstNodeId = packageItems[0]?.taxonomy?.roadmapNodeId;
     const nodeId = typeof item?.domain === "string"
       ? item.domain
@@ -359,12 +359,12 @@ function buildAlgorithmsProgressTabModel(
 ): ProgressTabModel {
   const packageResolution = contentPackageRuntimeOwner.getPreparedDiscovery(CODING_INTERVIEW_TRACK_ID);
   const packageItems = packageResolution.track.questions;
-  const facts = buildCanonicalProgressFacts(packageItems, trainingAttempts, reviewQueueItems, now, packageResolution.track.contentVersion);
+  const facts = buildCanonicalProgressFacts(packageItems, trainingAttempts, reviewQueueItems, now, packageResolution.track.contentVersion, packageResolution.track.artifactSha256);
   const algorithmsReviewItems = reviewQueueItems.filter((item) =>
     item.trackId === CODING_INTERVIEW_TRACK_ID &&
     item.sourceItem.trackId === CODING_INTERVIEW_TRACK_ID &&
     item.sourceItem.contentVersion === facts.contentVersion &&
-    contentPackagePinsEqual(item.sourceItem.packagePin, packageResolution.track.packagePin),
+    item.sourceItem.artifactSha256 === packageResolution.track.artifactSha256,
   );
   const dueReviewItems = algorithmsReviewItems.filter((item) => item.dueAt <= now);
   const dueReviewCount = dueReviewItems.length;
@@ -372,15 +372,13 @@ function buildAlgorithmsProgressTabModel(
     attempt.trackId === CODING_INTERVIEW_TRACK_ID &&
     attempt.item.trackId === CODING_INTERVIEW_TRACK_ID &&
     attempt.item.contentVersion === packageResolution.track.contentVersion &&
-    contentPackagePinsEqual(attempt.item.packagePin, packageResolution.track.packagePin) &&
-    packageItems.some((item) => item.questionId === attempt.item.itemId),
+    attempt.item.artifactSha256 === packageResolution.track.artifactSha256 &&
+    packageItems.some((item) => item.questionId === attempt.item.questionId),
   );
   const algorithmsProgress = buildAlgorithmsProgressScreenModel({
     dueReviewItems,
     facts,
-    packageContentVersion: packageResolution.track.contentVersion,
     packageItems,
-    packagePin: packageResolution.track.packagePin,
     trainingAttempts: currentAttempts,
   });
 
@@ -445,15 +443,17 @@ function buildCanonicalProgressFacts(
   reviews: readonly ReviewQueueEntry[],
   now: string,
   contentVersion: string,
+  artifactSha256: string,
 ): CanonicalProgressFacts {
-  const current = attempts.filter((attempt) => attempt.trackId === CODING_INTERVIEW_TRACK_ID && attempt.item.contentVersion === contentVersion);
+  const questionIds = new Set(questions.map((question) => question.questionId));
+  const current = attempts.filter((attempt) => attempt.trackId === CODING_INTERVIEW_TRACK_ID && attempt.item.contentVersion === contentVersion && attempt.item.artifactSha256 === artifactSha256 && questionIds.has(attempt.item.questionId));
   const latest = new Map<string, TrainingAttempt>();
-  for (const attempt of current.sort((a, b) => a.answeredAt.localeCompare(b.answeredAt) || a.id.localeCompare(b.id))) latest.set(attempt.item.itemId, attempt);
+  for (const attempt of current.sort((a, b) => a.answeredAt.localeCompare(b.answeredAt) || a.id.localeCompare(b.id))) latest.set(attempt.item.questionId, attempt);
   const byNode = new Map<string, Question[]>();
   for (const question of questions) (byNode.get(question.nodeId) ?? (byNode.set(question.nodeId, []), byNode.get(question.nodeId)!)).push(question);
   const nodeProgress = [...byNode].map(([nodeId, nodeQuestions]) => {
     const practiced = nodeQuestions.filter((question) => latest.has(question.questionId)).length;
-    const due = reviews.filter((review) => review.dueAt <= now && nodeQuestions.some((question) => question.questionId === review.sourceItem.itemId)).length;
+    const due = reviews.filter((review) => review.dueAt <= now && review.sourceItem.artifactSha256 === artifactSha256 && nodeQuestions.some((question) => question.questionId === review.sourceItem.questionId)).length;
     const status: CanonicalNodeProgress["status"] = due > 0 ? "review_due" : practiced > 0 ? "practicing" : "not_started";
     return { uniquePracticedItemCount: practiced, itemCount: nodeQuestions.length, label: nodeId, nodeId, status, itemCoveragePercent: nodeQuestions.length ? Math.round(practiced / nodeQuestions.length * 100) : 0, sampledCoreSkillAtomCount: 0, coreSkillAtomCount: 0, dueReviewCount: due, remediationDueCount: due, criticalRemediationDueCount: 0 };
   });
@@ -509,9 +509,7 @@ function getAlgorithmsRemediationState(input: {
 function buildAlgorithmsProgressScreenModel(input: {
   dueReviewItems: readonly ReviewQueueEntry[];
   facts: CanonicalProgressFacts;
-  packageContentVersion: string;
   packageItems: readonly Question[];
-  packagePin: ContentPackagePin;
   trainingAttempts: readonly TrainingAttempt[];
 }): AlgorithmsProgressScreenModel {
   const activeIndex = input.facts.nodeProgress.findIndex(
@@ -670,7 +668,7 @@ function groupScoredAlgorithmAttemptsByNode(
 
   for (const attempt of sortAttemptsChronologically(attempts)) {
     if (attempt.result.maxPoints <= 0) continue;
-    const nodeId = itemById.get(attempt.item.itemId)?.nodeId;
+    const nodeId = itemById.get(attempt.item.questionId)?.nodeId;
     if (!nodeId) continue;
     const nodeAttempts = attemptsByNode.get(nodeId) ?? [];
     nodeAttempts.push(attempt);

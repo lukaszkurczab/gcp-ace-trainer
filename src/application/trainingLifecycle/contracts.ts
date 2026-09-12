@@ -1,7 +1,7 @@
 import type {
-  ContentItemRef,
   ReviewMutationCommand,
   ReviewQueueEntry,
+  ResolvedContentRef,
   TrackFamilyId,
   TrackId,
   TrainingAttempt,
@@ -9,7 +9,6 @@ import type {
   TrainingSessionDraft,
   TrainingSessionResult,
   JournalOperation,
-  ContentPackagePin,
 } from "../../domain";
 import type { CanonicalTrackRuntime } from "../../content/canonical";
 
@@ -59,7 +58,7 @@ export interface TrainingSessionIdentityPort { create(input: TrainingSessionIden
 
 export type PreparedSession = Readonly<{
   session: TrainingSession;
-  firstOccurrence: ContentItemRef;
+  firstOccurrence: ResolvedContentRef;
   draft: TrainingSessionDraft | null;
 }>;
 export type PracticeSubmission = Readonly<{
@@ -103,7 +102,7 @@ export type ContentPackageRuntimeResolution = Readonly<{
 /** Sole verified package-to-family-runtime authority for preparation, exact resume, review, and discovery. */
 export interface ContentPackageRuntimePort {
   resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string }>): Promise<ContentPackageRuntimeResolution>;
-  resolveExact(pin: ContentPackagePin): Promise<ContentPackageRuntimeResolution>;
+  resolveExactArtifact(input: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ContentPackageRuntimeResolution>;
   resolveForDiscovery(trackId: TrackId, familyId: TrackFamilyId): Promise<ContentPackageRuntimeResolution>;
 }
 

@@ -1,9 +1,8 @@
 import type { AttemptResult } from "./attemptResult";
-import type { ContentItemRef } from "./contentItemRef";
 import { deepFreeze } from "./familyEnvelope";
 import type { ReviewEvidence } from "./reviewEvidence";
+import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "./resolvedContentRef";
 import type { TrackId } from "./trackIdentity";
-import { contentPackagePinsEqual } from "./contentPackagePin";
 
 export type TrainingAttempt<TResponse = unknown> = Readonly<{
   id: string;
@@ -11,7 +10,7 @@ export type TrainingAttempt<TResponse = unknown> = Readonly<{
   trackId: TrackId;
   modeId: string;
   occurrenceId: string;
-  item: ContentItemRef;
+  item: ResolvedContentRef;
   response: TResponse;
   result: AttemptResult;
   reviewEvidence: ReviewEvidence;
@@ -24,8 +23,18 @@ export function createTrainingAttempt<TResponse>(attempt: TrainingAttempt<TRespo
   if (!attempt.occurrenceId.trim()) {
     throw new Error("Training attempt occurrence identity is required.");
   }
-  if (attempt.item.trackId !== attempt.trackId || attempt.reviewEvidence.sourceItem.trackId !== attempt.item.trackId || attempt.reviewEvidence.sourceItem.itemId !== attempt.item.itemId || attempt.reviewEvidence.sourceItem.contentVersion !== attempt.item.contentVersion || !contentPackagePinsEqual(attempt.reviewEvidence.sourceItem.packagePin, attempt.item.packagePin)) {
-    throw new Error("Training attempt item and review evidence must identify the same track item.");
+  const item = createResolvedContentRef(attempt.item);
+  const sourceItem = createResolvedContentRef(attempt.reviewEvidence.sourceItem);
+  if (item.trackId !== attempt.trackId || !resolvedContentRefsEqual(sourceItem, item)) {
+    throw new Error("Training attempt item and review evidence must identify the same resolved content reference.");
   }
-  return deepFreeze({ ...attempt, item: { ...attempt.item }, reviewEvidence: { ...attempt.reviewEvidence, sourceItem: { ...attempt.reviewEvidence.sourceItem }, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs.map((ref) => ({ ...ref })) } });
+  return deepFreeze({
+    ...attempt,
+    item,
+    reviewEvidence: {
+      ...attempt.reviewEvidence,
+      sourceItem,
+      taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs.map((ref) => ({ ...ref })),
+    },
+  });
 }

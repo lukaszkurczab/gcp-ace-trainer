@@ -7,7 +7,9 @@ import {
   createForegroundTimerState,
   type AttemptResultComponent,
   isRegisteredTrackId,
-  type ContentItemRef,
+  isArtifactSha256,
+  isResolvedContentRef,
+  type ResolvedContentRef,
   type EvidenceRef,
   type ReviewQueueEntry,
   type TrainingAttempt,
@@ -16,9 +18,8 @@ import {
   type TrainingSessionDraftResponse,
   type TrainingSessionResult,
   type ForegroundTimerState,
-  type ContentPackagePin,
-  contentPackagePinsEqual,
 } from "../../domain";
+import { resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
 
 export function isTrainingSessionArray(value: unknown): value is TrainingSession[] {
   return Array.isArray(value) && value.every(isTrainingSession);
@@ -91,14 +92,14 @@ export function isReviewQueueEntryArray(value: unknown): value is ReviewQueueEnt
 
 export function isTrainingSession(value: unknown): value is TrainingSession {
   if (!isRecord(value)) return false;
-  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "packagePin", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"])) return false;
+  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "artifactSha256", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"])) return false;
   if ("itemRefs" in value || value.status === "expired") return false;
   if (!(isNonEmptyString(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
     isNonEmptyString(value.modeId) && isConfigurationSnapshot(value.configurationSnapshot) && typeof value.requestedLength === "number" &&
     typeof value.actualLength === "number" && typeof value.currentItemIndex === "number" && isTimestamp(value.startedAt) &&
     (value.completedAt === undefined || isTimestamp(value.completedAt)) &&
     isOptionOrderByOccurrence(value.optionOrderByOccurrence) && Array.isArray(value.conditionalReinsertSlots) && value.conditionalReinsertSlots.every(isConditionalReinsertSlot) && typeof value.activeForegroundMs === "number" &&
-    typeof value.contentVersion === "string" && isContentPackagePin(value.packagePin) && (value.taxonomyVersion === undefined || isNonEmptyString(value.taxonomyVersion)) &&
+    typeof value.contentVersion === "string" && isArtifactSha256(value.artifactSha256) && (value.taxonomyVersion === undefined || isNonEmptyString(value.taxonomyVersion)) &&
     (value.planFingerprint === undefined || (typeof value.planFingerprint === "string" && /^[a-f0-9]{64}$/.test(value.planFingerprint))) &&
     (value.status === "active" || value.status === "completed" || value.status === "abandoned") &&
     Array.isArray(value.itemOrder) && value.itemOrder.every(isSessionItemOccurrence))) return false;
@@ -116,7 +117,7 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
       conditionalReinsertSlots: value.conditionalReinsertSlots,
       activeForegroundMs: value.activeForegroundMs,
       contentVersion: value.contentVersion,
-      packagePin: value.packagePin,
+      artifactSha256: value.artifactSha256,
       taxonomyVersion: value.taxonomyVersion,
       planFingerprint: typeof value.planFingerprint === "string" ? value.planFingerprint : undefined,
       status: value.status,
@@ -130,10 +131,10 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
 }
 
 export function isTrainingAttempt(value: unknown): value is TrainingAttempt<unknown> {
-  if (!isRecord(value) || "confidence" in value || "itemId" in value || "itemType" in value) return false;
+  if (!isRecord(value) || "confidence" in value || "itemType" in value) return false;
   if (!hasOnlyKeys(value, ["id", "sessionId", "trackId", "modeId", "occurrenceId", "item", "response", "result", "reviewEvidence", "answeredAt", "committedAt", "durationMs"])) return false;
   if (!(isNonEmptyString(value.id) && isNonEmptyString(value.sessionId) && typeof value.trackId === "string" &&
-    isRegisteredTrackId(value.trackId) && isNonEmptyString(value.modeId) && isNonEmptyString(value.occurrenceId) && isContentItemRef(value.item) &&
+    isRegisteredTrackId(value.trackId) && isNonEmptyString(value.modeId) && isNonEmptyString(value.occurrenceId) && isResolvedContentRef(value.item) &&
     isTimestamp(value.answeredAt) && isTimestamp(value.committedAt) && isJsonValue(value.response) &&
     (value.durationMs === undefined || (Number.isFinite(value.durationMs) && Number(value.durationMs) >= 0)) && isExactReviewEvidence(value.reviewEvidence))) return false;
   if (!isRecord(value.result) ||
@@ -150,9 +151,7 @@ export function isTrainingAttempt(value: unknown): value is TrainingAttempt<unkn
     });
     return value.item.trackId === value.trackId &&
       value.reviewEvidence.sourceItem.trackId === value.trackId &&
-      value.reviewEvidence.sourceItem.itemId === value.item.itemId &&
-      value.reviewEvidence.sourceItem.contentVersion === value.item.contentVersion &&
-      contentPackagePinsEqual(value.reviewEvidence.sourceItem.packagePin, value.item.packagePin);
+      resolvedContentRefsEqual(value.reviewEvidence.sourceItem, value.item);
   } catch {
     return false;
   }
@@ -161,7 +160,7 @@ export function isTrainingAttempt(value: unknown): value is TrainingAttempt<unkn
 export function isReviewQueueEntry(value: unknown): value is ReviewQueueEntry {
   return isRecord(value) && !("kind" in value) && !("priority" in value) && !("retentionPassedAt" in value) &&
     hasOnlyKeys(value, ["id", "trackId", "sourceAttemptId", "sourceSessionId", "sourceItem", "taxonomyOrSkillRefs", "reasons", "dueAt", "createdAt", "consecutiveAfterDueSuccesses", "persistent", "lastReviewedAt"]) &&
-    !("itemId" in value) && isNonEmptyString(value.id) && typeof value.trackId === "string" &&
+    isNonEmptyString(value.id) && typeof value.trackId === "string" &&
     isRegisteredTrackId(value.trackId) && isNonEmptyString(value.sourceAttemptId) && isNonEmptyString(value.sourceSessionId) &&
     isReviewEvidence(value) && Array.isArray(value.reasons) && value.reasons.every((reason) =>
       typeof reason === "string" && (REVIEW_REASONS as readonly string[]).includes(reason)) &&
@@ -170,24 +169,13 @@ export function isReviewQueueEntry(value: unknown): value is ReviewQueueEntry {
     typeof value.persistent === "boolean" && (value.lastReviewedAt === undefined || isTimestamp(value.lastReviewedAt));
 }
 
-function isExactReviewEvidence(value: unknown): value is { sourceItem: ContentItemRef; taxonomyOrSkillRefs: EvidenceRef[] } {
-  return isRecord(value) && hasOnlyKeys(value, ["sourceItem", "taxonomyOrSkillRefs"]) && isContentItemRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs) && value.taxonomyOrSkillRefs.every(isEvidenceRef);
+function isExactReviewEvidence(value: unknown): value is { sourceItem: ResolvedContentRef; taxonomyOrSkillRefs: EvidenceRef[] } {
+  return isRecord(value) && hasOnlyKeys(value, ["sourceItem", "taxonomyOrSkillRefs"]) && isResolvedContentRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs) && value.taxonomyOrSkillRefs.every(isEvidenceRef);
 }
 
 function isReviewEvidence(value: unknown): boolean {
-  return isRecord(value) && isContentItemRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs) &&
+  return isRecord(value) && isResolvedContentRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs) &&
     value.taxonomyOrSkillRefs.every(isEvidenceRef);
-}
-
-function isContentItemRef(value: unknown): value is ContentItemRef {
-  return isRecord(value) && hasOnlyKeys(value, ["trackId", "itemId", "contentVersion", "packagePin"]) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
-    isNonEmptyString(value.itemId) && isNonEmptyString(value.contentVersion) && isContentPackagePin(value.packagePin);
-}
-
-function isContentPackagePin(value: unknown): value is ContentPackagePin {
-  return isRecord(value) && hasOnlyKeys(value, ["packageIdentity", "packageVersion", "contentReleaseId"]) &&
-    typeof value.packageIdentity === "string" && /^[a-f0-9]{64}$/.test(value.packageIdentity) &&
-    isNonEmptyString(value.packageVersion) && isNonEmptyString(value.contentReleaseId);
 }
 
 function isEvidenceRef(value: unknown): value is EvidenceRef {
@@ -195,8 +183,8 @@ function isEvidenceRef(value: unknown): value is EvidenceRef {
     (value.role === undefined || isNonEmptyString(value.role));
 }
 
-function isSessionItemOccurrence(value: unknown): value is { occurrenceId: string; item: ContentItemRef } {
-  return isRecord(value) && hasOnlyKeys(value, ["occurrenceId", "item"]) && isNonEmptyString(value.occurrenceId) && isContentItemRef(value.item);
+function isSessionItemOccurrence(value: unknown): value is { occurrenceId: string; item: ResolvedContentRef } {
+  return isRecord(value) && hasOnlyKeys(value, ["occurrenceId", "item"]) && isNonEmptyString(value.occurrenceId) && isResolvedContentRef(value.item);
 }
 
 function isConditionalReinsertSlot(value: unknown): boolean {

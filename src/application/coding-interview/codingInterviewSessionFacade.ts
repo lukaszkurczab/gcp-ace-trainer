@@ -11,7 +11,7 @@ import {
   type PracticeFinalization,
 } from "../trainingLifecycle";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import type { ContentItemRef, TrainingSession } from "../../domain";
+import type { ResolvedContentRef, TrainingSession } from "../../domain";
 import { buildCanonicalInteractionViewModel, composeCanonicalFeedback } from "../canonical/canonicalInteractionPresentation";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/coding-interview/domain";
 import type { AlgorithmsLifecyclePreparationRequest } from "./codingInterviewContracts";
@@ -28,7 +28,7 @@ export type AlgorithmsPracticeProjection = Readonly<{
   operation: PracticeDurableOperationState;
   session: TrainingSession;
   position: AlgorithmsSessionPosition;
-  item: ContentItemRef;
+  item: ResolvedContentRef;
   roadmapNodeId: string;
   prompt: string;
   constraints: readonly string[];
@@ -51,7 +51,7 @@ export type AlgorithmsSimulationProjection = Readonly<{
   session: TrainingSession;
   position: AlgorithmsSessionPosition;
   navigator: readonly Readonly<{ index: number; occurrenceId: string; answered: boolean; current: boolean }>[];
-  item: ContentItemRef;
+  item: ResolvedContentRef;
   prompt: string;
   interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
   durableDraftRevision: number;
@@ -82,8 +82,8 @@ export type AlgorithmsSessionResultProjection = Readonly<{
     correctness: "correct" | "partial" | "incorrect";
     details: Question["feedback"]["details"];
     interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
-    item: ContentItemRef;
-    itemId: string;
+    item: ResolvedContentRef;
+    questionId: string;
     occurrenceId: string;
     ordinal: number;
     prompt: string;
@@ -602,7 +602,7 @@ async function completedFeedbackItems(session: TrainingSession, attempts: readon
         session.optionOrderByOccurrence[occurrence.occurrenceId] ?? [],
       ),
       item: occurrence.item,
-      itemId: occurrence.item.itemId,
+      questionId: occurrence.item.questionId,
       occurrenceId: occurrence.occurrenceId,
       ordinal: index + 1,
       prompt: question.prompt,

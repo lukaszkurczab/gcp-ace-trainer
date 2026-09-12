@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createContentPackagePin, createPackageCompletionRuleV1, evaluatePackageCompletion, type TrainingAttempt } from "..";
+import { createPackageCompletionRuleV1, evaluatePackageCompletion, type TrainingAttempt } from "..";
 
-const pin = createContentPackagePin({ packageIdentity: "a".repeat(64), packageVersion: "1.0.0", contentReleaseId: "release" });
-const profile = Object.freeze({ trackId: "track", contentVersion: "content-v1", packagePin: pin, completionRule: createPackageCompletionRuleV1({ ruleVersion: 1, minimumAttemptCount: 3, rollingWindowSize: 2, qualityThreshold: 0.5 }) });
+const artifactSha256 = "a".repeat(64);
+const profile = Object.freeze({ trackId: "track", contentVersion: "content-v1", artifactSha256, completionRule: createPackageCompletionRuleV1({ ruleVersion: 1, minimumAttemptCount: 3, rollingWindowSize: 2, qualityThreshold: 0.5 }) });
 
 function attempt(id: string, answeredAt: string, kind: "correct" | "partial" | "incorrect" = "correct", overrides: Partial<TrainingAttempt<unknown>> = {}): TrainingAttempt<unknown> {
   const result = kind === "correct" ? { kind, earnedPoints: 1, maxPoints: 1 } : kind === "partial" ? { kind, earnedPoints: 0.5, maxPoints: 1 } : { kind, earnedPoints: 0, maxPoints: 1 };
-  return { id, sessionId: `session-${id}`, occurrenceId: `occurrence-${id}`, trackId: "track", modeId: "mode", item: { trackId: "track", itemId: "same-item-is-allowed", contentVersion: "content-v1", packagePin: pin }, response: {}, result, reviewEvidence: { sourceItem: { trackId: "track", itemId: "same-item-is-allowed", contentVersion: "content-v1", packagePin: pin }, taxonomyOrSkillRefs: [] }, answeredAt, committedAt: answeredAt, ...overrides } as TrainingAttempt<unknown>;
+  return { id, sessionId: `session-${id}`, occurrenceId: `occurrence-${id}`, trackId: "track", modeId: "mode", item: { trackId: "track", questionId: "same-question-is-allowed", contentVersion: "content-v1", artifactSha256 }, response: {}, result, reviewEvidence: { sourceItem: { trackId: "track", questionId: "same-question-is-allowed", contentVersion: "content-v1", artifactSha256 }, taxonomyOrSkillRefs: [] }, answeredAt, committedAt: answeredAt, ...overrides } as TrainingAttempt<unknown>;
 }
 
 test("completion rule validates explicit v1 bounds", () => {

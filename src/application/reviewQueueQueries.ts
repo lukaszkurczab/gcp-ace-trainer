@@ -8,7 +8,7 @@ import { getReviewQueueItems } from "../storage/repositories";
 import type { StorageIssue } from "../storage/repositories/result";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 
-export type ReviewQueueViewItem = { dueAt: string; id: string; isDue: boolean; isOverdue: boolean; itemId: string; mistakeTypeRefs: EvidenceRef[]; prompt: string; reasons: ReviewQueueEntry["reasons"] extends readonly (infer Reason)[] ? Reason[] : never[]; sourceAttemptId: string; taxonomyRefs: EvidenceRef[] };
+export type ReviewQueueViewItem = { dueAt: string; id: string; isDue: boolean; isOverdue: boolean; questionId: string; mistakeTypeRefs: EvidenceRef[]; prompt: string; reasons: ReviewQueueEntry["reasons"] extends readonly (infer Reason)[] ? Reason[] : never[]; sourceAttemptId: string; taxonomyRefs: EvidenceRef[] };
 export type ReviewQueueViewModel = { degraded: boolean; dueItems: ReviewQueueViewItem[]; issues: StorageIssue[]; ok: boolean; overdueItems: ReviewQueueViewItem[]; totalItems: number; trackTitle: string; upcomingItems: ReviewQueueViewItem[] };
 
 export async function loadTrackReviewQueueViewModel(input: { now?: string; trackId: TrackId }): Promise<ReviewQueueViewModel> {
@@ -24,7 +24,7 @@ export async function buildTrackReviewQueueViewModel(input: { issues?: readonly 
 }
 
 async function buildReviewViewItem(entry: ReviewQueueEntry, now: string): Promise<ReviewQueueViewItem> {
-  return { dueAt: entry.dueAt, id: entry.id, isDue: entry.dueAt <= now, isOverdue: entry.dueAt < now, itemId: entry.sourceItem.itemId, mistakeTypeRefs: dedupeRefs(entry.taxonomyOrSkillRefs.filter((ref) => ref.axisId === "mistake_type")), prompt: await resolvePrompt(entry), reasons: [...entry.reasons], sourceAttemptId: entry.sourceAttemptId, taxonomyRefs: dedupeRefs(entry.taxonomyOrSkillRefs) };
+  return { dueAt: entry.dueAt, id: entry.id, isDue: entry.dueAt <= now, isOverdue: entry.dueAt < now, questionId: entry.sourceItem.questionId, mistakeTypeRefs: dedupeRefs(entry.taxonomyOrSkillRefs.filter((ref) => ref.axisId === "mistake_type")), prompt: await resolvePrompt(entry), reasons: [...entry.reasons], sourceAttemptId: entry.sourceAttemptId, taxonomyRefs: dedupeRefs(entry.taxonomyOrSkillRefs) };
 }
 async function resolvePrompt(entry: ReviewQueueEntry): Promise<string> {
   const item = await contentPackageRuntimeOwner.resolveItem(entry.sourceItem);

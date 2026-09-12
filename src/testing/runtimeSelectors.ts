@@ -1,4 +1,4 @@
-import type { ContentItemRef, GoalDay, LearningPlanSlotId, TrackId } from "../domain";
+import type { GoalDay, LearningPlanSlotId, ResolvedContentRef, TrackId } from "../domain";
 import type { AlgorithmFeedbackMode } from "../tracks/coding-interview/domain/algorithmModes";
 import type { TargetDateGuidanceReason, TargetDateGuidanceState } from "../application/learningPlan/targetDateGuidance";
 import type { HomePlanDayStatus, HomePlanUnavailableReason } from "../application/homePlanSnapshotReader";
@@ -35,7 +35,7 @@ export type LearningPlanActionErrorKind = "accept-validation" | "accept-storage"
 export type LearningPlanEditorErrorKind = "validation" | "storage" | "start-existing-storage";
 export type LearningPlanEditorRetryKind = "save" | "start-existing";
 
-type ItemId = ContentItemRef["itemId"];
+type ItemId = ResolvedContentRef["questionId"];
 
 export const runtimeSelectors = Object.freeze({
   content: Object.freeze({

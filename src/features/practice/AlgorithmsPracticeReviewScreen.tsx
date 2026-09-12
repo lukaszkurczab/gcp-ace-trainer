@@ -99,6 +99,7 @@ export function AlgorithmsPracticeReviewScreen({ navigation, route }: Props) {
   }
   const previous = result.feedbackItems[index - 1];
   const next = result.feedbackItems[index + 1];
+  const questionId = item.item.questionId;
 
   return (
     <SessionShell
@@ -115,7 +116,7 @@ export function AlgorithmsPracticeReviewScreen({ navigation, route }: Props) {
         </View>
       )}
     >
-      <PracticeQuestionCard question={{ constraints: item.constraints, itemId: item.occurrenceId, prompt: item.prompt }} />
+      <PracticeQuestionCard question={{ constraints: item.constraints, itemId: questionId, prompt: item.prompt }} />
       <Text maxFontSizeMultiplier={2} style={[styles.result, styles[item.correctness]]}>{t(item.correctness === "correct" ? "Correct" : item.correctness === "partial" ? "Partial" : "Incorrect")}</Text>
       <PracticeResponseControls
         control={buildPracticeResponseControl({
@@ -125,12 +126,12 @@ export function AlgorithmsPracticeReviewScreen({ navigation, route }: Props) {
           renderer: item.interaction.renderer,
         })}
         editable={false}
-        itemId={item.occurrenceId}
+        itemId={questionId}
         onChoicePress={noop}
         onComplexityValuePress={noop}
         onOrderingMove={noop}
       />
-      <PracticeFeedbackBlock feedback={{ details: item.details, reason: item.reason, result: item.correctness }} item={item.item} itemId={item.occurrenceId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
+      <PracticeFeedbackBlock feedback={{ details: item.details, reason: item.reason, result: item.correctness }} item={item.item} itemId={questionId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
     </SessionShell>
   );
 }

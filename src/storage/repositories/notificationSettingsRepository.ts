@@ -1,4 +1,4 @@
-import { GOAL_DAY_IDS, createContentPackagePin, createLearningPlanSlotId, isRegisteredTrackId, type ContentPackagePin, type GoalDay, type LearningPlanSlotId, type TrackId } from "../../domain";
+import { GOAL_DAY_IDS, createArtifactSha256, createLearningPlanSlotId, isArtifactSha256, isRegisteredTrackId, type GoalDay, type LearningPlanSlotId, type TrackId } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalEnvelope, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 
@@ -351,7 +351,7 @@ export type NotificationPlanIdentity = Readonly<{
   commandId: string;
   timezone: string;
   contentVersion: string;
-  contentPackagePin: ContentPackagePin;
+  artifactSha256: string;
 }>;
 
 export type DeviceReminderSlot = Readonly<{
@@ -406,16 +406,11 @@ function isTimezone(value: unknown): value is string {
   try { new Intl.DateTimeFormat("en-US", { timeZone: value }).format(); return true; } catch { return false; }
 }
 
-function isContentPin(value: unknown): value is ContentPackagePin {
-  if (!isRecord(value) || !hasExactKeys(value, ["packageIdentity", "packageVersion", "contentReleaseId"])) return false;
-  try { createContentPackagePin(value as ContentPackagePin); return true; } catch { return false; }
-}
-
 function isNotificationIdentity(value: unknown): value is NotificationPlanIdentity {
-  return isRecord(value) && hasExactKeys(value, ["trackId", "goalRevision", "planId", "planRevision", "storageRevision", "commandId", "timezone", "contentVersion", "contentPackagePin"]) &&
-    isRegisteredTrackId(value.trackId as string) && isPositiveInteger(value.goalRevision) && isNonEmptyString(value.planId) &&
+  return isRecord(value) && hasExactKeys(value, ["trackId", "goalRevision", "planId", "planRevision", "storageRevision", "commandId", "timezone", "contentVersion", "artifactSha256"]) &&
+    typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && isPositiveInteger(value.goalRevision) && isNonEmptyString(value.planId) &&
     isPositiveInteger(value.planRevision) && isPositiveInteger(value.storageRevision) && isNonEmptyString(value.commandId) &&
-    isTimezone(value.timezone) && isNonEmptyString(value.contentVersion) && isContentPin(value.contentPackagePin);
+    isTimezone(value.timezone) && isNonEmptyString(value.contentVersion) && isArtifactSha256(value.artifactSha256);
 }
 
 function isDeviceReminderSlot(value: unknown): value is DeviceReminderSlot {
@@ -468,7 +463,7 @@ function isDeviceReminderJournal(value: unknown): value is DeviceReminderJournal
 }
 
 function normalizeIdentity(value: NotificationPlanIdentity): NotificationPlanIdentity {
-  return Object.freeze({ ...value, contentPackagePin: createContentPackagePin(value.contentPackagePin) });
+  return Object.freeze({ ...value, artifactSha256: createArtifactSha256(value.artifactSha256) });
 }
 
 function normalizeDeviceSlot(value: DeviceReminderSlot): DeviceReminderSlot {

@@ -1,5 +1,5 @@
 import type { TrackId } from "./trackIdentity";
-import { createContentPackagePin, type ContentPackagePin } from "./contentPackagePin";
+import { createArtifactSha256 } from "./contentItemRef";
 
 export const JOURNAL_OPERATIONS = [
   "start_training_session",
@@ -20,15 +20,16 @@ export type JournalOperationContract = Readonly<{
   operation: JournalOperation;
   sessionId: string;
   trackId: TrackId;
-  packagePin: ContentPackagePin;
+  contentVersion: string;
+  artifactSha256: string;
   commandIdentity: Readonly<{ version: 1; fingerprint: string }>;
   planFingerprint: string;
   createdAt: string;
 }>;
 
 export function createJournalOperationContract(input: JournalOperationContract): JournalOperationContract {
-  if (!(JOURNAL_OPERATIONS as readonly string[]).includes(input.operation) || !input.sessionId.trim() || !input.trackId.trim() || input.commandIdentity.version !== 1 || !input.commandIdentity.fingerprint.trim() || !input.planFingerprint.trim()) {
+  if (!(JOURNAL_OPERATIONS as readonly string[]).includes(input.operation) || !input.sessionId.trim() || !input.trackId.trim() || !input.contentVersion.trim() || input.commandIdentity.version !== 1 || !input.commandIdentity.fingerprint.trim() || !input.planFingerprint.trim()) {
     throw new Error("A journal operation contract is incomplete.");
   }
-  return Object.freeze({ ...input, packagePin: createContentPackagePin(input.packagePin) });
+  return Object.freeze({ ...input, artifactSha256: createArtifactSha256(input.artifactSha256) });
 }

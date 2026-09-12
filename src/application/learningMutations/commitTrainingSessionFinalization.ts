@@ -1,5 +1,6 @@
-import type { ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
+import type { ResolvedContentRef, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
 import { getTrainingSessionFinalizationCleanupKind } from "../../domain";
+import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { getActiveTrainingSessionDraft } from "../../storage/repositories";
 import { buildMutationJournal } from "./mutationJournalBuilder";
@@ -43,7 +44,7 @@ export async function commitTrainingSessionFinalization(input: {
   for (const mutation of input.reviewMutations) {
     const attempt = attemptById.get(mutation.transitionAttemptId);
     if (!attempt) throw new Error(`Review transition attempt ${mutation.transitionAttemptId} is outside the finalization attempts.`);
-    if (contentKey(attempt.item) !== contentKey(mutation.record.sourceItem)) {
+    if (!resolvedContentRefsEqual(attempt.item, mutation.record.sourceItem)) {
       throw new Error(`Review transition attempt ${mutation.transitionAttemptId} does not match its review content.`);
     }
     const key = contentKey(mutation.record.sourceItem);
@@ -75,6 +76,6 @@ export async function commitTrainingSessionFinalization(input: {
   }));
 }
 
-function contentKey(item: { trackId: string; contentVersion: string; itemId: string }): string {
-  return `${item.trackId}:${item.contentVersion}:${item.itemId}`;
+function contentKey(item: ResolvedContentRef): string {
+  return resolvedContentRefKey(item);
 }

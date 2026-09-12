@@ -1,8 +1,7 @@
 import type { GoalDay, GoalRecord, GoalSnapshot } from "../goals/goalContracts";
 import { GOAL_DAY_IDS, isGoalDay, isGoalRecordForTrack, normalizeGoalRecord } from "../goals/goalContracts";
 import { projectGoalTargetDate } from "../goals/goalTargetDateSemantics";
-import type { ContentPackagePin } from "./contentPackagePin";
-import { contentPackagePinsEqual, createContentPackagePin } from "./contentPackagePin";
+import { createArtifactSha256 } from "./contentItemRef";
 import type { PackageCompletionState } from "./packageCompletionRule";
 import { createProposalSlotId, type ProposalSlotId } from "./slotIdentity";
 import type { TrackId } from "./trackIdentity";
@@ -25,7 +24,7 @@ export type ProposalIdentity = Readonly<{
   trackId: TrackId;
   goalRevision: number;
   contentVersion: string;
-  packagePin: ContentPackagePin;
+  artifactSha256: string;
   timezone: string;
 }>;
 
@@ -62,7 +61,7 @@ export type ProposalOutcome = Readonly<{
 /** Inputs are read-only by contract; the generator defensively clones every value it returns. */
 export type GeneratorInput = Readonly<{
   goalSnapshot: GoalSnapshot;
-  packagePin: ContentPackagePin;
+  artifactSha256: string;
   contentVersion: string;
   primaryModeId: string;
   requestedLength: number;
@@ -78,7 +77,7 @@ export type InvalidLearningPlanProposalInputCode =
   | "invalid_input"
   | "invalid_goal_snapshot"
   | "invalid_track_identity"
-  | "invalid_package_pin"
+  | "invalid_artifact_sha256"
   | "invalid_content_version"
   | "invalid_mode"
   | "invalid_requested_length"
@@ -120,9 +119,9 @@ export function generateLearningPlanProposal(input: GeneratorInput): ProposalOut
 
 function generate(input: GeneratorInput): ProposalOutcome {
   const value = asRecord(input);
-  if (!hasOnlyKeys(value, ["goalSnapshot", "packagePin", "contentVersion", "primaryModeId", "requestedLength", "sessionCapacity", "completionState", "dueReviewCount", "primaryScopeLabel", "localToday", "timezone"])) fail("invalid_input");
+  if (!hasOnlyKeys(value, ["goalSnapshot", "artifactSha256", "contentVersion", "primaryModeId", "requestedLength", "sessionCapacity", "completionState", "dueReviewCount", "primaryScopeLabel", "localToday", "timezone"])) fail("invalid_input");
   const goalSnapshot = validateGoalSnapshot(value.goalSnapshot);
-  const normalizedPin = validatePackagePin(value.packagePin);
+  const artifactSha256 = validateArtifactSha256(value.artifactSha256);
   const contentVersion = validateNonEmptyText(value.contentVersion, "invalid_content_version");
   const primaryModeId = validateNonEmptyText(value.primaryModeId, "invalid_mode");
   const requestedLength = validatePositiveInteger(value.requestedLength, "invalid_requested_length");
@@ -142,7 +141,7 @@ function generate(input: GeneratorInput): ProposalOutcome {
     trackId: goalSnapshot.record.trackId,
     goalRevision: goalSnapshot.revision,
     contentVersion,
-    packagePin: normalizedPin,
+    artifactSha256,
     timezone,
   });
 
@@ -189,16 +188,12 @@ function validateGoalSnapshot(value: unknown): GoalSnapshot {
   return Object.freeze({ record: normalized, revision: snapshot.revision });
 }
 
-function validatePackagePin(value: unknown): ContentPackagePin {
-  const pin = asRecord(value, "invalid_package_pin") as ContentPackagePin;
-  let normalized: ContentPackagePin;
+function validateArtifactSha256(value: unknown): string {
   try {
-    normalized = createContentPackagePin(pin);
-    if (!contentPackagePinsEqual(pin, normalized)) fail("invalid_package_pin");
+    return createArtifactSha256(value);
   } catch {
-    fail("invalid_package_pin");
+    fail("invalid_artifact_sha256");
   }
-  return normalized;
 }
 
 function validateSessionCapacity(value: unknown, requestedLength: number): ProposalSessionCapacity {

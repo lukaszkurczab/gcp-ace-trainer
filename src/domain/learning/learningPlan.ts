@@ -2,7 +2,7 @@ import type { GoalDay, GoalRecord } from "../goals/goalContracts";
 import { GOAL_DAY_IDS, getTrackGoalTemplates, isGoalDay, isIsoDate } from "../goals/goalContracts";
 import { projectGoalTargetDate } from "../goals/goalTargetDateSemantics";
 import { deepFreeze } from "./familyEnvelope";
-import { createContentPackagePin, contentPackagePinsEqual, type ContentPackagePin } from "./contentPackagePin";
+import { createArtifactSha256 } from "./contentItemRef";
 import { createLearningPlanSlotId, type LearningPlanSlotId } from "./slotIdentity";
 import type { TrackId } from "./trackIdentity";
 
@@ -30,7 +30,7 @@ export type LearningPlan = Readonly<{
   status: LearningPlanStatus;
   timezone: string;
   contentVersion: string;
-  contentPackagePin: ContentPackagePin;
+  artifactSha256: string;
   acceptedTarget: AcceptedTargetSnapshot;
   createdAt: string;
   updatedAt: string;
@@ -52,7 +52,7 @@ export type LearningPlanValidationCode =
   | "invalid_revision"
   | "invalid_status"
   | "invalid_timezone"
-  | "invalid_package_pin"
+  | "invalid_artifact_sha256"
   | "invalid_target"
   | "invalid_timestamp"
   | "invalid_slots";
@@ -67,11 +67,10 @@ export class InvalidLearningPlanError extends Error {
 
 const PLAN_KEYS = [
   "schemaVersion", "planId", "trackId", "goalRevision", "status", "timezone",
-  "contentVersion", "contentPackagePin", "acceptedTarget", "createdAt", "updatedAt", "planRevision", "commandId", "slots",
+  "contentVersion", "artifactSha256", "acceptedTarget", "createdAt", "updatedAt", "planRevision", "commandId", "slots",
 ] as const;
 const SLOT_KEYS = ["slotId", "day", "localTime", "sessionLength"] as const;
 const TARGET_KEYS = ["meaning", "targetDate"] as const;
-const PIN_KEYS = ["packageIdentity", "packageVersion", "contentReleaseId"] as const;
 
 /** Builds the durable target snapshot from the current goal using T4 semantics. */
 export function acceptedTargetFromGoal(goal: GoalRecord): AcceptedTargetSnapshot {
@@ -108,7 +107,7 @@ export function normalizeLearningPlan(value: unknown): LearningPlan {
   if (plan.status !== "accepted" && plan.status !== "paused" && plan.status !== "completed") fail("invalid_status");
   const timezone = validateTimezone(plan.timezone);
   const contentVersion = validateContentVersion(plan.contentVersion);
-  const contentPackagePin = validatePin(plan.contentPackagePin);
+  const artifactSha256 = validateArtifactSha256(plan.artifactSha256);
   const acceptedTarget = validateTarget(plan.acceptedTarget);
   const createdAt = validateTimestamp(plan.createdAt);
   const updatedAt = validateTimestamp(plan.updatedAt);
@@ -122,7 +121,7 @@ export function normalizeLearningPlan(value: unknown): LearningPlan {
     status: plan.status,
     timezone,
     contentVersion,
-    contentPackagePin,
+    artifactSha256,
     acceptedTarget,
     createdAt,
     updatedAt,
@@ -144,7 +143,7 @@ export function learningPlansEqual(left: LearningPlan, right: LearningPlan): boo
     left.status === right.status &&
     left.timezone === right.timezone &&
     left.contentVersion === right.contentVersion &&
-    contentPackagePinsEqual(left.contentPackagePin, right.contentPackagePin) &&
+    left.artifactSha256 === right.artifactSha256 &&
     left.acceptedTarget.meaning === right.acceptedTarget.meaning &&
     left.acceptedTarget.targetDate === right.acceptedTarget.targetDate &&
     left.createdAt === right.createdAt &&
@@ -166,10 +165,12 @@ function validateTarget(value: unknown): AcceptedTargetSnapshot {
   return Object.freeze({ meaning: target.meaning, targetDate: target.targetDate });
 }
 
-function validatePin(value: unknown): ContentPackagePin {
-  const pin = asRecord(value, "invalid_package_pin");
-  if (!hasOnlyKeys(pin, PIN_KEYS)) fail("invalid_package_pin");
-  try { return createContentPackagePin(pin as ContentPackagePin); } catch { fail("invalid_package_pin"); }
+function validateArtifactSha256(value: unknown): string {
+  try {
+    return createArtifactSha256(value);
+  } catch {
+    fail("invalid_artifact_sha256");
+  }
 }
 
 function validateContentVersion(value: unknown): string {
