@@ -596,7 +596,8 @@ function transformAccountSync(payload: unknown, context: TransformContext): Tran
   value.outbox = outbox.map((entry: unknown, index: number) => transformAccountRecord(entry, context, `payload.outbox[${index}]`, identities, accountId));
   if (isRecord(value.syncPlan) && Array.isArray(value.syncPlan.items)) {
     const syncPlan = value.syncPlan;
-    value.syncPlan = recalculateSyncPlan({ ...syncPlan, items: syncPlan.items.map((item, index) => {
+    const syncPlanItems = syncPlan.items as unknown[];
+    value.syncPlan = recalculateSyncPlan({ ...syncPlan, items: syncPlanItems.map((item: unknown, index: number) => {
       if (!isRecord(item)) throw new ContentIdentityV2PlannerError("owner_guard_failed");
       const transformedPayload = transformAccountRecord(item.payload, context, `payload.syncPlan.items[${index}].payload`, identities, accountId);
       if (!isRecord(transformedPayload) || !isRecord(item.payload)) throw new ContentIdentityV2PlannerError("owner_guard_failed");

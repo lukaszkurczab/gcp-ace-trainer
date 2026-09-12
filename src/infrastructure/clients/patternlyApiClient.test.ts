@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  CONTENT_IDENTITY_SCHEMA,
   PatternlyApiClientError,
   createPatternlyApiClient,
+  type SyncRequestDto,
 } from "./";
 import { LOCAL_SAFE_PUBLIC_ENVIRONMENT, parseConfiguredPublicEnvironment } from "./publicEnvironment";
 
@@ -36,12 +38,24 @@ test("generated client uses typed REST paths, bearer auth, timeout and bounded e
     getIdToken: async () => "id-token",
     fetchImplementation: async (url, init) => {
       calls.push({ body: init?.body ? JSON.parse(String(init.body)) : undefined, headers: init?.headers ?? {}, method: init?.method ?? "", url: String(url) });
+      const path = String(url);
+      if (path.includes("/v1/progress?")) return new Response(JSON.stringify({ accountRevision: 0, generation: 0, records: [], nextPageToken: null }), { status: 200 });
+      if (path.endsWith("/v1/progress/sync")) return new Response(JSON.stringify({ accountRevision: 0, applied: [], duplicates: [], conflicts: [] }), { status: 200 });
       return new Response(JSON.stringify({ records: [] }), { status: 200 });
     },
   });
   await client.getProgress();
   await client.exportAccountData();
-  await client.syncProgress({ protocolVersion: 2, expectedAccountRevision: 0, mutations: [] });
+  await client.syncProgress({ protocolVersion: 2, expectedAccountRevision: 0, mutations: [{
+    mutationId: "mutation-0000000001",
+    kind: "node",
+    recordType: "active_track",
+    trackId: "track",
+    targetId: "target",
+    expectedVersion: null,
+    fingerprint: "a".repeat(64),
+    state: {},
+  }] });
   await client.getReady();
   await client.getOpenApi();
   assert.deepEqual(calls.map((call) => [call.method, call.url]), [
@@ -178,7 +192,7 @@ test("privacy request methods use their canonical paths and reject malformed pay
     "https://api.sandbox.patternly.invalid/v1/privacy-requests/pr_1",
   ]);
 
-  const malformed = createPatternlyApiClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => "id-token", fetchImplementation: async () => new Response(JSON.stringify({ requests: [{ ...valid, deadlineAt: "not-a-date" }] })) });
+  const malformed = createPatternlyApiClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => "id-token", fetchImplementation: async () => new Response(JSON.stringify({ requests: [{ ...valid, deadlineAt: "2026-10-06" }] })) });
   await assert.rejects(malformed.getPrivacyRequests(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
@@ -225,4 +239,353 @@ test("public legal requests use App Check with optional bearer authentication", 
   assert.deepEqual(await client.createPublicLegalRequest({ email: "guest@example.com", kind: "complaint", narrative: "The service did not start." }, "app-check-token"), { request: valid });
   assert.deepEqual(headers, { "x-firebase-appcheck": "app-check-token", "content-type": "application/json" });
   assert.deepEqual(body, { email: "guest@example.com", kind: "complaint", narrative: "The service did not start." });
+});
+
+test("account data protocol defaults to stable v3 and samples the mode getter once", async () => {
+  let selected: "v3" | "v4" = "v3";
+  let getterCalls = 0;
+  const urls: string[] = [];
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "id-token",
+    getAccountDataProtocolMode: () => {
+      getterCalls += 1;
+      return selected;
+    },
+    fetchImplementation: async (url) => {
+      urls.push(String(url));
+      return new Response(JSON.stringify({ accountRevision: 0, generation: 0, records: [], nextPageToken: null }));
+    },
+  });
+
+  assert.equal(client.accountDataProtocolMode, "v3");
+  selected = "v4";
+  await client.getProgress();
+  assert.equal(getterCalls, 1);
+  assert.deepEqual(urls, ["https://api.sandbox.patternly.invalid/v1/progress?protocolVersion=2&pageSize=100"]);
+});
+
+test("explicit v4 uses strict paged reads and carries the schema on sync and adoption bodies", async () => {
+  const fingerprint = "a".repeat(64);
+  const progressRecord = {
+    kind: "node" as const,
+    recordType: "active_track" as const,
+    trackId: "coding-interview-dsa-problem-solving",
+    targetId: "current",
+    version: 1,
+    fingerprint,
+    state: {},
+    lastMutationId: "mutation-0000000001",
+    updatedAt: "2026-09-12T10:00:00.000Z",
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+  };
+  const guestRecord = {
+    fingerprint,
+    recordId: "current",
+    recordType: "active_track" as const,
+    state: {},
+    trackId: "coding-interview-dsa-problem-solving",
+    version: 1,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+  };
+  const snapshot = {
+    protocolVersion: 4 as const,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    guestSnapshotVersion: 1,
+    guestUserId: "00000000-0000-4000-8000-000000000001",
+    records: [guestRecord],
+    activeSession: false,
+    pendingJournal: false,
+  };
+  const preview = {
+    accountSnapshotVersion: 3,
+    accountUserId: "00000000-0000-4000-8000-000000000002",
+    conflicts: [],
+    fingerprint,
+    guestSnapshotVersion: 1,
+    guestUserId: "00000000-0000-4000-8000-000000000001",
+    operationId: "00000000-0000-4000-8000-000000000003",
+    protocolVersion: 4 as const,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    goalPlanConflictGroups: [],
+  };
+  const plan = {
+    caseId: "emptyLocalPopulatedRemote" as const,
+    localRecordCount: 1,
+    remoteRecordCount: 1,
+    uploadRecordIds: [],
+    restoreRecordIds: ["current"],
+    deduplicatedRecordIds: [],
+    conflictRecordIds: [],
+    blockingReason: null,
+  };
+  const calls: Array<Readonly<{ body: unknown; url: string }>> = [];
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    accountDataProtocolMode: "v4",
+    getIdToken: async () => "id-token",
+    fetchImplementation: async (url, init) => {
+      const value = String(url);
+      const body = init?.body === undefined ? undefined : JSON.parse(String(init.body));
+      calls.push({ body, url: value });
+      if (value.includes("/v1/progress?")) {
+        const pageToken = new URL(value).searchParams.get("pageToken");
+        return new Response(JSON.stringify({
+          accountRevision: 7,
+          generation: 4,
+          records: [progressRecord],
+          nextPageToken: pageToken === null ? "next-page" : null,
+        }));
+      }
+      if (value.endsWith("/v1/progress/sync")) return new Response(JSON.stringify({ accountRevision: 8, applied: [progressRecord], duplicates: [], conflicts: [] }));
+      if (value.endsWith("/v1/account-data/adoption/preview")) return new Response(JSON.stringify({ preview, plan, remoteRecords: [guestRecord] }));
+      if (value.endsWith("/v1/account-data/adoption/confirm")) return new Response(JSON.stringify({ accountRevision: 9, operationId: "00000000-0000-4000-8000-000000000003", mutationIds: [], records: [guestRecord] }));
+      throw new Error(`unexpected URL ${value}`);
+    },
+  });
+
+  const syncRequest = {
+    protocolVersion: 4 as const,
+    canonicalVersion: "canonical-json-v1" as const,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    expectedAccountRevision: 7,
+    deviceId: "00000000-0000-4000-8000-000000000004",
+    sessionId: "session-1",
+    batchId: "batch-1",
+    planVersion: 4 as const,
+    highWatermark: 1,
+    mutations: [{
+      mutationId: "mutation-0000000001",
+      kind: "node" as const,
+      recordType: "active_track" as const,
+      trackId: "coding-interview-dsa-problem-solving",
+      targetId: "current",
+      expectedVersion: 1,
+      fingerprint,
+      state: {},
+      contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    }],
+  };
+  const confirmation = {
+    operationId: "00000000-0000-4000-8000-000000000003",
+    previewFingerprint: fingerprint,
+    protocolVersion: 4 as const,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    resolutions: [],
+    groupChoices: [],
+  };
+
+  const progress = await client.getProgress();
+  await client.syncProgress(syncRequest);
+  await client.previewAccountAdoption(snapshot);
+  await client.confirmAccountAdoption({ deviceId: "00000000-0000-4000-8000-000000000004", snapshot, confirmation });
+
+  assert.equal(client.accountDataProtocolMode, "v4");
+  assert.equal(progress.records.length, 2);
+  assert.deepEqual(calls.map((call) => call.url), [
+    "https://api.sandbox.patternly.invalid/v1/progress?protocolVersion=4&pageSize=100",
+    "https://api.sandbox.patternly.invalid/v1/progress?protocolVersion=4&pageSize=100&pageToken=next-page",
+    "https://api.sandbox.patternly.invalid/v1/progress/sync",
+    "https://api.sandbox.patternly.invalid/v1/account-data/adoption/preview",
+    "https://api.sandbox.patternly.invalid/v1/account-data/adoption/confirm",
+  ]);
+  assert.equal((calls[2]?.body as { contentIdentitySchema: string }).contentIdentitySchema, CONTENT_IDENTITY_SCHEMA);
+  assert.equal((calls[3]?.body as { protocolVersion: number; contentIdentitySchema: string }).protocolVersion, 4);
+  assert.equal((calls[3]?.body as { contentIdentitySchema: string }).contentIdentitySchema, CONTENT_IDENTITY_SCHEMA);
+  assert.equal((calls[4]?.body as { confirmation: { protocolVersion: number; contentIdentitySchema: string } }).confirmation.protocolVersion, 4);
+  assert.equal((calls[4]?.body as { confirmation: { contentIdentitySchema: string } }).confirmation.contentIdentitySchema, CONTENT_IDENTITY_SCHEMA);
+});
+
+test("v4 schema mismatch surfaces a conflict without a v3 fallback", async () => {
+  const calls: string[] = [];
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    accountDataProtocolMode: "v4",
+    getIdToken: async () => "id-token",
+    fetchImplementation: async (url) => {
+      calls.push(String(url));
+      return new Response(JSON.stringify({
+        accountRevision: 1,
+        generation: 1,
+        records: [{
+          kind: "node",
+          recordType: "active_track",
+          trackId: "coding-interview-dsa-problem-solving",
+          targetId: "current",
+          version: 1,
+          fingerprint: "a".repeat(64),
+          state: {},
+          lastMutationId: "mutation-0000000001",
+          updatedAt: "2026-09-12T10:00:00.000Z",
+          contentIdentitySchema: "patternly:content-identity:v1",
+        }],
+        nextPageToken: null,
+      }));
+    },
+  });
+
+  await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError
+    && error.code === "server_error"
+    && error.status === 409
+    && error.serverCode === "content_identity_schema_conflict");
+  assert.deepEqual(calls, ["https://api.sandbox.patternly.invalid/v1/progress?protocolVersion=4&pageSize=100"]);
+});
+
+test("v3 rejects v4 sync and adoption payloads before transport", async () => {
+  const fingerprint = "a".repeat(64);
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "id-token",
+    fetchImplementation: async () => { throw new Error("transport should not be called"); },
+  });
+  const v4Mutation = {
+    mutationId: "mutation-0000000001",
+    kind: "node" as const,
+    recordType: "active_track" as const,
+    trackId: "coding-interview-dsa-problem-solving",
+    targetId: "current",
+    expectedVersion: null,
+    fingerprint,
+    state: {},
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+  };
+  const v4Request = {
+    protocolVersion: 4 as const,
+    canonicalVersion: "canonical-json-v1" as const,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    expectedAccountRevision: 0,
+    deviceId: "00000000-0000-4000-8000-000000000004",
+    sessionId: "session-1",
+    batchId: "batch-1",
+    planVersion: 4 as const,
+    highWatermark: 0,
+    mutations: [v4Mutation],
+  };
+  const v4Snapshot = {
+    protocolVersion: 4 as const,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    guestSnapshotVersion: 0,
+    guestUserId: "00000000-0000-4000-8000-000000000001",
+    records: [],
+    activeSession: false,
+    pendingJournal: false,
+  };
+  const conflict = (error: unknown) => error instanceof PatternlyApiClientError
+    && error.code === "server_error"
+    && error.status === 409
+    && error.serverCode === "content_identity_schema_conflict";
+  await assert.rejects(client.syncProgress(v4Request), conflict);
+  await assert.rejects(client.previewAccountAdoption(v4Snapshot), conflict);
+});
+
+test("transport codec enforces v2 optional deviceId and strict v4 sync metadata", async () => {
+  let calls = 0;
+  const v3Client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "id-token",
+    fetchImplementation: async () => {
+      calls += 1;
+      return new Response(JSON.stringify({ accountRevision: 1, applied: [], duplicates: [], conflicts: [] }));
+    },
+  });
+  const v2Request = {
+    protocolVersion: 2 as const,
+    expectedAccountRevision: 0,
+    deviceId: "00000000-0000-4000-8000-000000000005",
+    mutations: [{
+      mutationId: "mutation-0000000002",
+      kind: "node" as const,
+      recordType: "active_track" as const,
+      trackId: "track",
+      targetId: "target",
+      expectedVersion: null,
+      fingerprint: "b".repeat(64),
+      state: {},
+    }],
+  };
+  await v3Client.syncProgress(v2Request);
+  assert.equal(calls, 1);
+  await assert.rejects(v3Client.syncProgress({ ...v2Request, deviceId: "short" }), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  await assert.rejects(v3Client.syncProgress({ ...v2Request, mutations: [{ ...v2Request.mutations[0], mutationId: "too-short" }] } as unknown as SyncRequestDto), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+
+  const v4Client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    accountDataProtocolMode: "v4",
+    getIdToken: async () => "id-token",
+    fetchImplementation: async () => new Response(JSON.stringify({ accountRevision: 1, applied: [], duplicates: [], conflicts: [] })),
+  });
+  const v4Request = {
+    protocolVersion: 4 as const,
+    canonicalVersion: "canonical-json-v1" as const,
+    contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    expectedAccountRevision: 0,
+    deviceId: "00000000-0000-4000-8000-000000000006",
+    sessionId: "session-2",
+    batchId: "batch-2",
+    planVersion: 4 as const,
+    highWatermark: 0,
+    mutations: [{
+      mutationId: "mutation-0000000003",
+      kind: "node" as const,
+      recordType: "active_track" as const,
+      trackId: "track",
+      targetId: "target",
+      expectedVersion: null,
+      fingerprint: "c".repeat(64),
+      state: {},
+      contentIdentitySchema: CONTENT_IDENTITY_SCHEMA,
+    }],
+  };
+  await v4Client.syncProgress(v4Request);
+  await assert.rejects(v4Client.syncProgress({ ...v4Request, canonicalVersion: "canonical-json-v2" } as unknown as SyncRequestDto), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  await assert.rejects(v4Client.syncProgress({ ...v4Request, planVersion: 3 } as unknown as SyncRequestDto), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  await assert.rejects(v4Client.syncProgress({ ...v4Request, mutations: [{ ...v4Request.mutations[0], extra: true }] } as unknown as SyncRequestDto), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  await assert.rejects(v4Client.syncProgress({ ...v4Request, mutations: [{ ...v4Request.mutations[0], state: { blob: "x".repeat(128 * 1024) } }] } as unknown as SyncRequestDto), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+});
+
+test("adoption codec parses legacy v1 previews and caps group identity lists", async () => {
+  const accountUserId = "00000000-0000-4000-8000-000000000007";
+  const guestUserId = "00000000-0000-4000-8000-000000000008";
+  const operationId = "00000000-0000-4000-8000-000000000009";
+  const snapshot = {
+    protocolVersion: 1 as const,
+    guestSnapshotVersion: 0,
+    guestUserId,
+    records: [],
+    activeSession: false,
+    pendingJournal: false,
+  };
+  const plan = { caseId: "emptyLocalEmptyRemote" as const, localRecordCount: 0, remoteRecordCount: 0, uploadRecordIds: [], restoreRecordIds: [], deduplicatedRecordIds: [], conflictRecordIds: [], blockingReason: null };
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "id-token",
+    fetchImplementation: async () => new Response(JSON.stringify({
+      preview: { accountSnapshotVersion: 0, accountUserId, conflicts: [], fingerprint: "d".repeat(64), guestSnapshotVersion: 0, guestUserId, operationId, protocolVersion: 1 },
+      plan,
+      remoteRecords: [],
+    })),
+  });
+  const parsed = await client.previewAccountAdoption(snapshot);
+  assert.deepEqual(parsed.preview.goalPlanConflictGroups, []);
+
+  const invalidGroupsClient = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "id-token",
+    fetchImplementation: async () => new Response(JSON.stringify({
+      preview: {
+        accountSnapshotVersion: 0,
+        accountUserId,
+        conflicts: [],
+        fingerprint: "d".repeat(64),
+        guestSnapshotVersion: 0,
+        guestUserId,
+        operationId,
+        protocolVersion: 2,
+        goalPlanConflictGroups: [{ groupId: "track:track", trackId: "track", localRecordIds: ["a", "b", "c"], accountRecordIds: [] }],
+      },
+      plan,
+      remoteRecords: [],
+    })),
+  });
+  await assert.rejects(invalidGroupsClient.previewAccountAdoption({ ...snapshot, protocolVersion: 2 }), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
