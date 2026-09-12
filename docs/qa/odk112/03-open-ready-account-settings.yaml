@@ -1,0 +1,12 @@
+appId: com.lkurczab.patternly
+name: ODK-112 open ready account settings
+tags: [ios, legal, setup]
+---
+- launchApp:
+    stopApp: false
+- tapOn:
+    id: "account-open-settings"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-settings"
+    timeout: 120000

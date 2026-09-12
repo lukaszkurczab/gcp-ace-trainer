@@ -1,6 +1,6 @@
 {
   "close": "Close",
-  "infoBody": "Patternly is an independent learning tool. This screen explains the current privacy, security, and study-use boundaries.",
+  "infoBody": "This is a short guide to Patternly's legal routes. Read the local Privacy Policy and Terms for the full rules; Support opens only the configured external destination.",
   "infoTitle": "Privacy and study use",
   "legal": "Legal information",
   "publicLinksTitle": "Legal documents and public links",
@@ -18,15 +18,15 @@
   "supportLinkDetail": "Open the configured public support destination.",
   "legalRequestsTitle": "Legal requests",
   "complaint": "Service complaint",
-  "complaintDetail": "Report a problem with the service and receive an acknowledgement.",
+  "complaintDetail": "Report a service problem. We answer within 14 days of receipt; this is not a filing deadline.",
   "withdrawal": "Withdraw from the agreement",
-  "withdrawalDetail": "Send a withdrawal notice without giving a reason.",
+  "withdrawalDetail": "Eligible consumers generally have 14 days to withdraw without giving a reason. Read the Terms for the full rules.",
   "privacyRequestsTitle": "GDPR requests",
-  "privacyRequestsDetail": "Exercise or check an existing privacy-right request.",
+  "privacyRequestsDetail": "Exercise or check a privacy right. We normally respond within one month; a legal extension may add up to two months.",
   "dataRecoveryTitle": "Recover non-personal data",
   "dataRecoveryDetail": "Request recovery of eligible non-personal data. Deleted progress is not retained or restored.",
   "suspensionAppeal": "Appeal a suspension",
-  "suspensionAppealDetail": "Ask for a manual review of a suspension decision.",
+  "suspensionAppealDetail": "Ask for a manual review of a suspension decision. No fixed response time is promised.",
   "legalRequests": {
     "create": "Send request",
     "yourRequests": "Your requests",
@@ -65,10 +65,10 @@
       "serverFailure": "The legal request service is temporarily unavailable. Try again."
     },
     "kinds": {
-      "complaint": { "title": "Service complaint", "intro": "Describe the service problem. We will acknowledge receipt and handle it through this request.", "formIntro": "A short description helps us investigate the complaint." },
-      "withdrawal": { "title": "Withdraw from the agreement", "intro": "You can withdraw without giving a reason. We will acknowledge receipt through this request.", "formIntro": "A reason is not required. Add a transaction ID only if you have one." },
-      "data_recovery": { "title": "Recover non-personal data", "intro": "We assess eligible non-personal data manually. Deleted progress is not retained or restored.", "formIntro": "Describe the non-personal data you want us to assess for recovery." },
-      "suspension_appeal": { "title": "Appeal a suspension", "intro": "This appeal is reviewed manually and separately from a complaint.", "formIntro": "Explain why the suspension should be reviewed." }
+      "complaint": { "title": "Service complaint", "intro": "Describe the service problem. We will acknowledge receipt and answer within 14 days. That response period is not a deadline for submitting a complaint.", "formIntro": "A short description helps us investigate the complaint." },
+      "withdrawal": { "title": "Withdraw from the agreement", "intro": "Eligible consumers generally have 14 days to withdraw without giving a reason. Read the local Terms for eligibility, timing, and service-start rules.", "formIntro": "A reason is not required. Add a transaction ID only if you have one." },
+      "data_recovery": { "title": "Recover non-personal data", "intro": "We assess eligible non-personal data manually and provide it within a reasonable time where applicable law requires. No fixed response time is promised. Deleted progress is not retained or restored.", "formIntro": "Describe the non-personal data you want us to assess for recovery." },
+      "suspension_appeal": { "title": "Appeal a suspension", "intro": "This appeal is reviewed manually and separately from a complaint. No fixed response time is promised.", "formIntro": "Explain why the suspension should be reviewed." }
     }
   },
   "settings": "Settings",

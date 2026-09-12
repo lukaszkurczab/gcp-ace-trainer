@@ -111,7 +111,7 @@ export function LegalRequestsScreen({ navigation, route }: Props) {
   return (
     <Screen edges={["top", "bottom"]}>
       <ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("settings")} contextTone="primary" title={title} />
-      <InfoBlock body={isAuthenticated ? t(`legalRequests.kinds.${kind}.intro`) : t("legalRequests.guestIntro")} icon={<Icon name="shield-check" size={18} />} title={title} />
+      <InfoBlock body={`${t(`legalRequests.kinds.${kind}.intro`)}${isAuthenticated ? "" : ` ${t("legalRequests.guestIntro")}`}`} icon={<Icon name="shield-check" size={18} />} title={title} />
       <Button onPress={openForm} testID={`legal-request-create-${kind}`}>{t("legalRequests.create")}</Button>
       {isAuthenticated ? <SettingsGroup title={t("legalRequests.yourRequests")}>
         {items.length === 0 ? <ListRow detail={t("legalRequests.emptyDetail")} leading={<IconTile name="mail" size={32} tone="settings" />} title={t("legalRequests.empty")} variant="grouped" /> : items.map((item) => <ListRow detail={`${t(`legalRequests.status.${item.status}`)} · ${t("legalRequests.received", { date: new Date(item.receivedAt).toLocaleDateString() })}`} key={item.requestId} leading={<IconTile name="shield-check" size={32} tone="settings" />} onPress={() => { void openRequest(item); }} testID={`legal-request-${item.requestId}`} title={title} variant="grouped" />)}

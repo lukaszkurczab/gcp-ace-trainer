@@ -1,6 +1,6 @@
 {
   "close": "Zamknij",
-  "infoBody": "Patternly jest niezależnym narzędziem do nauki. Ten ekran wyjaśnia obecne granice prywatności, bezpieczeństwa i korzystania z materiałów.",
+  "infoBody": "To krótki przewodnik po ścieżkach prawnych Patternly. Pełne zasady znajdziesz w lokalnej Polityce prywatności i Warunkach; Pomoc otwiera wyłącznie skonfigurowany cel zewnętrzny.",
   "infoTitle": "Prywatność i korzystanie z materiałów",
   "legal": "Informacje prawne",
   "publicLinksTitle": "Dokumenty prawne i linki publiczne",
@@ -18,15 +18,15 @@
   "supportLinkDetail": "Otwórz skonfigurowane publiczne miejsce pomocy.",
   "legalRequestsTitle": "Zgłoszenia prawne",
   "complaint": "Reklamacja usługi",
-  "complaintDetail": "Zgłoś problem z usługą i otrzymaj potwierdzenie odbioru.",
+  "complaintDetail": "Zgłoś problem z usługą. Odpowiadamy w ciągu 14 dni od odbioru; nie jest to termin na złożenie reklamacji.",
   "withdrawal": "Odstąpienie od umowy",
-  "withdrawalDetail": "Wyślij oświadczenie o odstąpieniu bez podawania powodu.",
+  "withdrawalDetail": "Uprawniony konsument ma co do zasady 14 dni na odstąpienie bez podawania powodu. Pełne zasady są w Warunkach.",
   "privacyRequestsTitle": "Wnioski RODO",
-  "privacyRequestsDetail": "Złóż lub sprawdź istniejący wniosek dotyczący praw do prywatności.",
+  "privacyRequestsDetail": "Złóż lub sprawdź wniosek dotyczący prywatności. Zwykle odpowiadamy w ciągu miesiąca; ustawowe przedłużenie może dodać do dwóch miesięcy.",
   "dataRecoveryTitle": "Odzyskanie danych nieosobowych",
   "dataRecoveryDetail": "Poproś o ocenę odzyskania kwalifikujących się danych nieosobowych. Usunięty postęp nie jest przechowywany ani przywracany.",
   "suspensionAppeal": "Odwołanie od zawieszenia",
-  "suspensionAppealDetail": "Poproś o ręczną ocenę decyzji o zawieszeniu.",
+  "suspensionAppealDetail": "Poproś o ręczną ocenę decyzji o zawieszeniu. Nie obiecujemy stałego terminu odpowiedzi.",
   "legalRequests": {
     "create": "Wyślij zgłoszenie",
     "yourRequests": "Twoje zgłoszenia",
@@ -65,10 +65,10 @@
       "serverFailure": "Usługa zgłoszeń prawnych jest chwilowo niedostępna. Spróbuj ponownie."
     },
     "kinds": {
-      "complaint": { "title": "Reklamacja usługi", "intro": "Opisz problem z usługą. Potwierdzimy odbiór i obsłużymy reklamację w tym zgłoszeniu.", "formIntro": "Krótki opis ułatwia zbadanie reklamacji." },
-      "withdrawal": { "title": "Odstąpienie od umowy", "intro": "Możesz odstąpić bez podawania powodu. Potwierdzimy odbiór w tym zgłoszeniu.", "formIntro": "Powód nie jest wymagany. Dodaj identyfikator transakcji tylko, jeśli go masz." },
-      "data_recovery": { "title": "Odzyskanie danych nieosobowych", "intro": "Ręcznie oceniamy kwalifikujące się dane nieosobowe. Usunięty postęp nie jest przechowywany ani przywracany.", "formIntro": "Opisz dane nieosobowe, których odzyskanie mamy ocenić." },
-      "suspension_appeal": { "title": "Odwołanie od zawieszenia", "intro": "To odwołanie jest rozpatrywane ręcznie i niezależnie od reklamacji.", "formIntro": "Wyjaśnij, dlaczego decyzja o zawieszeniu powinna zostać sprawdzona." }
+      "complaint": { "title": "Reklamacja usługi", "intro": "Opisz problem z usługą. Potwierdzimy odbiór i odpowiemy w ciągu 14 dni. Ten okres odpowiedzi nie jest terminem na złożenie reklamacji.", "formIntro": "Krótki opis ułatwia zbadanie reklamacji." },
+      "withdrawal": { "title": "Odstąpienie od umowy", "intro": "Uprawniony konsument ma co do zasady 14 dni na odstąpienie bez podawania powodu. Zobacz lokalne Warunki, aby sprawdzić uprawnienie, termin i zasady rozpoczęcia usługi.", "formIntro": "Powód nie jest wymagany. Dodaj identyfikator transakcji tylko, jeśli go masz." },
+      "data_recovery": { "title": "Odzyskanie danych nieosobowych", "intro": "Ręcznie oceniamy kwalifikujące się dane nieosobowe i udostępniamy je w rozsądnym czasie, gdy wymaga tego właściwe prawo. Nie obiecujemy stałego terminu odpowiedzi. Usunięty postęp nie jest przechowywany ani przywracany.", "formIntro": "Opisz dane nieosobowe, których odzyskanie mamy ocenić." },
+      "suspension_appeal": { "title": "Odwołanie od zawieszenia", "intro": "To odwołanie jest rozpatrywane ręcznie i niezależnie od reklamacji. Nie obiecujemy stałego terminu odpowiedzi.", "formIntro": "Wyjaśnij, dlaczego decyzja o zawieszeniu powinna zostać sprawdzona." }
     }
   },
   "settings": "Ustawienia",

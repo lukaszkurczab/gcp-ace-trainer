@@ -11,7 +11,9 @@ import {
   installKeyValueStorageForTests,
 } from "../infrastructure/storage/mmkvClient";
 import i18n, { normalizeNamespace } from "../i18n";
+import enData from "../locales/en/data.json";
 import enLegal from "../locales/en/legal.json";
+import plData from "../locales/pl/data.json";
 import plLegal from "../locales/pl/legal.json";
 import { getSettings } from "../storage/repositories/settingsRepository";
 
@@ -92,6 +94,26 @@ test("Legal information distinguishes device storage, account sync, local reset,
     assert.match(resetCopy, /deletion safeguards|zabezpieczenia przed odtworzeniem konta/u);
     assert.match(resetCopy, /Privacy Policy|Polityka prywatności/u);
   }
+});
+
+test("Legal hub keeps full rules in local documents and presents only proven request timeframes", () => {
+  assert.match(enLegal.infoBody, /short guide.+local Privacy Policy and Terms.+Support.+external/u);
+  assert.match(plLegal.infoBody, /krótki przewodnik.+lokalnej Polityce prywatności i Warunkach.+Pomoc.+zewnętrzny/u);
+
+  for (const legal of [enLegal, plLegal]) {
+    assert.match(legal.complaintDetail, /14 dni|14 days/u);
+    assert.match(legal.complaintDetail, /not a filing deadline|nie jest to termin na złożenie/u);
+    assert.match(legal.withdrawalDetail, /14 dni|14 days/u);
+    assert.match(legal.withdrawalDetail, /Terms|Warunkach/u);
+    assert.match(legal.privacyRequestsDetail, /one month|miesiąca/u);
+    assert.match(legal.privacyRequestsDetail, /two months|dwóch miesięcy/u);
+    assert.match(legal.legalRequests.kinds.data_recovery.intro, /reasonable time|rozsądnym czasie/u);
+    assert.match(legal.legalRequests.kinds.data_recovery.intro, /No fixed response time|Nie obiecujemy stałego terminu/u);
+    assert.match(legal.legalRequests.kinds.suspension_appeal.intro, /No fixed response time|Nie obiecujemy stałego terminu/u);
+  }
+
+  assert.match(enData.privacyRequests.summary, /within one month.+up to two months.+within the first month/u);
+  assert.match(plData.privacyRequests.summary, /w ciągu miesiąca.+do dwóch miesięcy.+w pierwszym miesiącu/u);
 });
 
 test("sentence keys containing dots remain literal in common", () => {

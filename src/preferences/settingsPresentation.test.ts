@@ -94,6 +94,7 @@ test("Legal information scopes missing public configuration to external support 
 });
 
 test("Legal request form keeps validation inline, field-specific, and API-free", () => {
+  assert.match(legalRequestsScreen, /t\(`legalRequests\.kinds\.\$\{kind\}\.intro`\)[\s\S]*?isAuthenticated \? "" : `[\s\S]*?legalRequests\.guestIntro/u);
   assert.match(legalRequestsScreen, /type LegalRequestEmailError = "emailRequired"/u);
   assert.match(legalRequestsScreen, /type LegalRequestNarrativeError = "narrativeRequired"/u);
   assert.match(legalRequestsScreen, /const \[emailError, setEmailError\] = useState<LegalRequestEmailError \| null>\(null\)/u);

@@ -1,0 +1,8 @@
+appId: com.lkurczab.patternly
+name: ODK-112 local Terms continuation — EN
+tags: [ios, legal, guest]
+---
+- launchApp:
+    stopApp: false
+- assertVisible: "Terms of Service"
+- takeScreenshot: "legal__hub-boundary__070__local-terms__en__dark__ios-regular"

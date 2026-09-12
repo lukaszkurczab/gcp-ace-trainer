@@ -1,0 +1,141 @@
+appId: com.lkurczab.patternly
+name: ODK-112 legal hub boundaries and proven timeframes — EN
+tags: [ios, legal, guest]
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        id: "legal-request-email"
+    commands:
+      - tapOn: "Close"
+- runFlow:
+    when:
+      visible: "Recover non-personal data"
+    commands:
+      - tapOn: "Go back"
+- runFlow:
+    when:
+      visible: "Privacy requests"
+    commands:
+      - tapOn: "Go back"
+- runFlow:
+    when:
+      visible: "Legal information"
+    commands:
+      - tapOn: "Go back"
+- runFlow:
+    when:
+      visible:
+        id: "main-tab-bar-settings"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-settings"
+      - waitForAnimationToEnd
+      - tapOn:
+          id: "main-tab-bar-settings"
+      - extendedWaitUntil:
+          visible:
+            id: "settings-language"
+          timeout: 30000
+      - scrollUntilVisible:
+          element:
+            id: "settings-legal-information"
+          direction: DOWN
+          centerElement: true
+      - tapOn:
+          id: "settings-legal-information"
+- assertVisible: ".*short guide.*local Privacy Policy and Terms.*Support.*external destination.*"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-suspension-appeal"
+    direction: DOWN
+    centerElement: true
+- assertVisible: ".*Service complaint.*14 days.*not a filing deadline.*"
+- assertVisible: ".*Withdraw from the agreement.*14 days.*Terms.*"
+- assertVisible: ".*GDPR requests.*one month.*two months.*"
+- assertVisible: ".*Appeal a suspension.*No fixed response time.*"
+- takeScreenshot: "legal__hub-boundary__010__short-guide-and-timeframes__en__dark__ios-regular"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-complaint"
+    direction: UP
+    centerElement: true
+- tapOn:
+    id: "legal-request-complaint"
+- extendedWaitUntil:
+    visible: "Service complaint"
+    timeout: 30000
+- assertVisible: ".*answer within 14 days.*not a deadline for submitting a complaint.*"
+- assertVisible: ".*Send this request using your email address.*"
+- tapOn:
+    id: "legal-request-create-complaint"
+- assertVisible:
+    id: "legal-request-email"
+- tapOn: "Close"
+- takeScreenshot: "legal__hub-boundary__020__complaint-deadline__en__dark__ios-regular"
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-withdrawal"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "legal-request-withdrawal"
+- extendedWaitUntil:
+    visible: "Withdraw from the agreement"
+    timeout: 30000
+- assertVisible: ".*generally have 14 days.*local Terms.*"
+- takeScreenshot: "legal__hub-boundary__030__withdrawal-term__en__dark__ios-regular"
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-data-recovery"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "legal-request-data-recovery"
+- extendedWaitUntil:
+    visible: "Recover non-personal data"
+    timeout: 30000
+- assertVisible: ".*reasonable time.*No fixed response time.*Deleted progress is not retained or restored.*"
+- takeScreenshot: "legal__hub-boundary__040__recovery-no-fixed-sla__en__dark__ios-regular"
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: "legal-request-suspension-appeal"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "legal-request-suspension-appeal"
+- extendedWaitUntil:
+    visible: "Appeal a suspension"
+    timeout: 30000
+- assertVisible: ".*reviewed manually.*No fixed response time.*"
+- takeScreenshot: "legal__hub-boundary__050__suspension-no-fixed-sla__en__dark__ios-regular"
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: "legal-link-privacy"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: "legal-links-unavailable"
+- assertVisible: ".*support link is disabled.*"
+- tapOn:
+    id: "legal-link-privacy"
+- assertVisible:
+    id: "privacy-policy-document"
+- takeScreenshot: "legal__hub-boundary__060__local-privacy__en__dark__ios-regular"
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: "legal-link-terms"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "legal-link-terms"
+- assertVisible: "Terms of Service"
+- takeScreenshot: "legal__hub-boundary__070__local-terms__en__dark__ios-regular"
