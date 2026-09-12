@@ -33,7 +33,7 @@ test("session timers keep the Figma value-only visual label while retaining spok
 });
 
 test("Practice sessions reset their scroll viewport when the canonical item changes", () => {
-  assert.match(practiceSurface, /<SessionShell[\s\S]*key=\{itemId\}/);
+  assert.match(practiceSurface, /<SessionShell[\s\S]*key=\{displayedQuestionId\}/);
 });
 
 test("Button chrome remains usable while supporting up to 200 percent text", () => {

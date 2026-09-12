@@ -35,7 +35,7 @@ function setup() {
     actualLength: 2,
     itemOrder: [
       base.itemOrder[0]!,
-      { occurrenceId: "occurrence-unanswered", item: { ...base.itemOrder[0]!.item, itemId: "item-unanswered" } },
+      { occurrenceId: "occurrence-unanswered", item: { ...base.itemOrder[0]!.item, questionId: "item-unanswered" } },
     ],
     optionOrderByOccurrence: { "occurrence-1": ["a", "b"], "occurrence-unanswered": ["a", "b"] },
   };

@@ -51,7 +51,7 @@ test("ODK-E2E-041 data evidence covers identity, atomic goal-plan validation, re
 
   for (const evidence of [
     "preserve one exact goal-plan bundle",
-    "contentPackagePin: TEST_CONTENT_PACKAGE_PIN",
+    "artifactSha256: TEST_ARTIFACT_SHA256",
     "goalRevision: 1",
     "creates an explicit tombstone",
     "pending mutation IDs stay stable across an uncertain retry",
