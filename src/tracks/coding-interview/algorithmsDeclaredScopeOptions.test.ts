@@ -8,6 +8,6 @@ import { prepareBundledTestPackages } from "../../testing/contentPackageRuntimeT
 test("direct entry to excluded Algorithms declared-scope modes fails without substitution", async () => {
   await prepareBundledTestPackages();
   for (const modeId of [ALGORITHM_MODE_IDS.recognizePatterns, ALGORITHM_MODE_IDS.contrastPractice, ALGORITHM_MODE_IDS.independentPractice]) {
-    assert.throws(() => getCodingInterviewDeclaredScopeOptions({ modeId }), /unavailable in package/u);
+    assert.throws(() => getCodingInterviewDeclaredScopeOptions({ modeId }), /unavailable(?: in package|; restart to load canonical content)/u);
   }
 });

@@ -14,7 +14,6 @@ import { radius, spacing, type AppColors } from "../../theme";
 import { formatSessionTopic, normalizeSessionResultDetails } from "./sessionResultPresentation";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { getDesignModeTitle, isDesignInterviewModeId } from "../../tracks/design-interview";
-import { getCertificationQuestionMaxPoints, type CertificationQuestion } from "../../tracks/certification";
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.RESULT>;
 type Summary = Readonly<{
   certificationMaxPoints: number | null;
@@ -43,10 +42,10 @@ export function ResultScreen({ navigation, route }: Props) {
           ? await contentPackageRuntimeOwner.resolveExact(session.packagePin)
           : null;
         if (!live) return;
-        const designTopicId = isDesignInterviewModeId(session.modeId) && exact ? exact.profile.freeNodeId : null;
-        const certificationTopicId = session.modeId === "certification-diagnostic-baseline" && exact ? exact.package.freeNodeId : null;
+        const designTopicId = isDesignInterviewModeId(session.modeId) && exact ? exact.track.questions[0]?.nodeId ?? null : null;
+        const certificationTopicId = session.modeId === "certification-diagnostic-baseline" && exact ? exact.track.questions[0]?.nodeId ?? null : null;
         const certificationMaxPoints = result.evidence.familyId === "certification" && exact
-          ? session.itemOrder.reduce((sum, occurrence) => sum + getCertificationQuestionMaxPoints(exact.profile.getItemById(occurrence.item.itemId) as CertificationQuestion), 0)
+          ? session.itemOrder.reduce((sum, occurrence) => sum + (exact.track.getQuestion(occurrence.item.itemId) ? 1 : 0), 0)
           : null;
         setReadState({ kind: "ready", requestKey: capturedRequestKey, summary: { result, session, designTopicId, certificationTopicId, certificationMaxPoints } });
       })

@@ -1,5 +1,5 @@
 import { contentPackagePinsEqual, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, type ContentPackagePin, type EvidenceRef, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
-import { isCertificationPracticeModeId } from "./domain";
+import { isCertificationPracticeModeId } from "./domain/certificationModes";
 export type CloudCertificationProgressIssue = { key: string; message: string; operation: "read" | "write" | "remove" | "parse" };
 
 export type CloudCertificationTaxonomyPerformance = { axisId: string; correctCount: number; incorrectCount: number; label: string; nodeId: string; partialCount: number; percent: number; taxonomyRef: EvidenceRef; totalAttempts: number };

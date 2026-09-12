@@ -10,7 +10,7 @@ type AnalyticsAnswer = { domain: CertificationDomain; tags: readonly string[]; i
 
 export function buildAnalyticsData(attempts: readonly CertificationExamSummaryViewModel[], practiceHistory: readonly CertificationPracticeAnswerViewModel[]): AnalyticsData {
   const completed = attempts.filter((attempt) => attempt.completedAt).sort((a, b) => (a.completedAt ?? a.startedAt).localeCompare(b.completedAt ?? b.startedAt));
-  const answers: AnalyticsAnswer[] = [...completed.flatMap((attempt) => attempt.answers.map((answer) => ({ domain: answer.questionSnapshot.domain, tags: answer.questionSnapshot.tags, isCorrect: answer.isCorrect }))), ...practiceHistory.map((answer) => ({ domain: answer.domain, tags: answer.tags, isCorrect: answer.isCorrect }))];
+  const answers: AnalyticsAnswer[] = [...completed.flatMap((attempt) => attempt.answers.map((answer) => ({ domain: "operations" as CertificationDomain, tags: [answer.questionSnapshot.nodeId], isCorrect: answer.isCorrect }))), ...practiceHistory.map((answer) => ({ domain: "operations" as CertificationDomain, tags: [answer.questionId], isCorrect: answer.isCorrect }))];
   const domainPerformance = domains.map((domain) => { const items = answers.filter((answer) => answer.domain === domain); const correct = items.filter((answer) => answer.isCorrect).length; return { id: domain, label: getDomainLabel(domain), correct, total: items.length, percent: calculatePercent(correct, items.length) }; });
   const tagCounts = new Map<string, { correct: number; total: number }>();
   for (const answer of answers) for (const tag of answer.tags) { const current = tagCounts.get(tag) ?? { correct: 0, total: 0 }; current.correct += answer.isCorrect ? 1 : 0; current.total += 1; tagCounts.set(tag, current); }

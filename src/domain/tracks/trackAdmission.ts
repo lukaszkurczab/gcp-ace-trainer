@@ -1,7 +1,6 @@
 import type { TrackFamilyId, TrackId } from "../learning";
 import type { TrackRegistration } from "./trackMetadata";
-import { GENERATED_FREE_NODE_PACKAGES } from "../../content/bundled/generatedFreeNodePackages";
-import { contentHasher } from "../../infrastructure/identity/contentHasher";
+import { loadCanonicalRuntimeCatalog } from "../../content/canonical";
 
 /** The sole application owner of learner-visible launch scope. */
 export const LAUNCH_TRACK_IDS = Object.freeze([
@@ -138,7 +137,7 @@ export function assertTrackDensityDescriptors(descriptors: readonly TrackBriefDe
  * Evaluates admission without changing the visible registry. Current artifacts
  * are whole-track banks, so they cannot prove the brief's complete free node.
  */
-export async function evaluateProductionTrackAdmissions(registrations: readonly TrackRegistration[], evidence: readonly ProductionTrackArtifactEvidence[] = CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE, descriptors: readonly TrackBriefDescriptor[] = TRACK_DENSITY_DESCRIPTORS, packages: readonly typeof GENERATED_FREE_NODE_PACKAGES[number][] = GENERATED_FREE_NODE_PACKAGES): Promise<readonly ProductionTrackAdmissionEvaluation[]> {
+export async function evaluateProductionTrackAdmissions(registrations: readonly TrackRegistration[], evidence: readonly ProductionTrackArtifactEvidence[] = CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE, descriptors: readonly TrackBriefDescriptor[] = TRACK_DENSITY_DESCRIPTORS): Promise<readonly ProductionTrackAdmissionEvaluation[]> {
   const descriptorSet = assertTrackDensityDescriptors(descriptors);
   const descriptorById = new Map(descriptorSet.map((descriptor) => [descriptor.trackId, descriptor]));
   const evidenceById = new Map<string, ProductionTrackArtifactEvidence>();
@@ -159,7 +158,7 @@ export async function evaluateProductionTrackAdmissions(registrations: readonly 
       evaluations.push(Object.freeze({ trackId: registration.id, kind: "missing_artifact_evidence" }));
       continue;
     }
-    evaluations.push(Object.freeze({ trackId: registration.id, kind: await validFreeNodePackageEvidence(registration, descriptor, packages) ? "package_evidence_verified_catalogue_gate_pending" : "unverified_free_node_package" }));
+    evaluations.push(Object.freeze({ trackId: registration.id, kind: await validCanonicalTrackEvidence(registration, descriptor) ? "package_evidence_verified_catalogue_gate_pending" : "unverified_free_node_package" }));
   }
   return Object.freeze(evaluations);
 }
@@ -172,15 +171,11 @@ function nonEmpty(value: unknown): value is string { return typeof value === "st
 function commitSha(value: string): boolean { return /^[a-f0-9]{40}$/u.test(value); }
 function sha256(value: string): boolean { return /^[a-f0-9]{64}$/u.test(value); }
 
-async function validFreeNodePackageEvidence(registration: TrackRegistration, descriptor: TrackBriefDescriptor, packages: readonly typeof GENERATED_FREE_NODE_PACKAGES[number][]): Promise<boolean> {
-  const packageFact = packages.find((candidate) => candidate.trackId === registration.id);
-  if (!packageFact || !sha256(packageFact.packageSha256) || packageFact.packageSize !== packageFact.packageBytes.length || await contentHasher.sha256(packageFact.packageBytes) !== packageFact.packageSha256) return false;
+async function validCanonicalTrackEvidence(registration: TrackRegistration, descriptor: TrackBriefDescriptor): Promise<boolean> {
   try {
-    const record = JSON.parse(packageFact.packageBytes) as { schemaVersion?: unknown; manifest?: Record<string, unknown> };
-    const manifest = record.manifest;
-    if (record.schemaVersion !== "bundled-free-node-v2" || !manifest || manifest.trackId !== registration.id || manifest.familyId !== registration.familyId || manifest.freeNodeId !== descriptor.freeNodeId || manifest.minimumAppVersion !== "0.1.0" || !Array.isArray(manifest.modeIds) || !manifest.modeIds.every((mode) => typeof mode === "string" && descriptor.validModes.includes(mode)) || !Array.isArray(packageFact.profileModes) || JSON.stringify([...manifest.modeIds].sort()) !== JSON.stringify([...packageFact.profileModes].sort())) return false;
-    const provenance = manifest.provenance as Record<string, unknown> | undefined;
-    const expectedProvenance = EXPECTED_FREE_NODE_PACKAGE_PROVENANCE[registration.id];
-    return manifest.bundleKind === "bundled_free_node" && manifest.packageVersion === packageFact.packageVersion && manifest.payloadSchemaVersion === "bundled-free-node-payload-v2" && typeof manifest.profileId === "string" && nonEmpty(manifest.profileVersion) && expectedProvenance !== undefined && provenance?.releaseId === expectedProvenance.releaseId && provenance.sourceRepositoryCommit === expectedProvenance.sourceRepositoryCommit && provenance.profileSourceRepositoryCommit === expectedProvenance.profileSourceRepositoryCommit && provenance.trackBriefCanonicalSha256 === expectedProvenance.trackBriefCanonicalSha256;
-  } catch { return false; }
+    const track = (await loadCanonicalRuntimeCatalog()).getTrack(registration.id);
+    return track.trackId === registration.id && track.questions.length > 0 && track.modes.length > 0 && track.questions.some((question) => question.nodeId === descriptor.freeNodeId) && track.modes.every((mode) => descriptor.validModes.includes(mode.modeId));
+  } catch {
+    return false;
+  }
 }

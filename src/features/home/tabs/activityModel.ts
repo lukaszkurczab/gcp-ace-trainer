@@ -1,6 +1,6 @@
 import type { IconName } from "../../../components";
 import { getTrackDisplay, type TrackId } from "../../../domain";
-import type { CertificationDomain } from "../../../tracks/certification/domain";
+import type { CertificationDomain } from "../../../tracks/certification/domain/certificationModes";
 import type { ActivitySessionRecord } from "../../../application/activityReadModels";
 import { activityTimestamp } from "../../../application/activityReadModels";
 import { calendarDayDifference, isSameCalendarWeek, modeLabel, type ActivityDateLabel } from "./activityPresentation";

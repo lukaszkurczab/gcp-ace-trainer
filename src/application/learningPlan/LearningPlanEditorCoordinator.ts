@@ -588,7 +588,7 @@ export const learningPlanEditorCoordinator = new LearningPlanEditorCoordinator({
     const registration = getTrackRegistration(trackId);
     const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, registration.familyId);
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return Object.freeze({ contentVersion: resolved.package.contentVersion, contentPackagePin: resolved.package.packagePin, timezone });
+    return Object.freeze({ contentVersion: resolved.track.contentVersion, contentPackagePin: resolved.track.packagePin, timezone });
   },
   saveLearningPlan: saveLearningPlanAtomically,
   createEditorId: () => `editor:${Date.now()}:${++editorSequence}`,

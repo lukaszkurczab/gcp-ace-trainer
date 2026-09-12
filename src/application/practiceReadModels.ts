@@ -52,7 +52,7 @@ export async function loadPracticeReadData(
   if (reviewResult) assertReadable(reviewResult, "review queue");
 
   const packagePin = activeTrackId && includeReviews
-    ? contentPackageRuntimeOwner.getPreparedDiscovery(activeTrackId).package.packagePin
+    ? contentPackageRuntimeOwner.getPreparedDiscovery(activeTrackId).track.packagePin
     : null;
   const now = input.now ?? Date.now();
 

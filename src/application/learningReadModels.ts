@@ -1,6 +1,6 @@
 import type { GoalRecord, GoalSnapshot, TrackId } from "../domain";
 import { getTrainingLifecycleUseCases } from "./trainingLifecycle";
-import type { CodingInterviewDashboard } from "./coding-interview/CodingInterviewFamilyRuntime";
+import type { CodingInterviewDashboard } from "./coding-interview/codingInterviewContracts";
 import {
   getCodingInterviewDeclaredScopeOptions,
   type AlgorithmsDeclaredScopeMode,
@@ -62,7 +62,7 @@ export async function loadCloudCertificationProgress(input: { now?: string; rece
     attempts: attempts.value,
     issues: [...(attempts.issues ?? []), ...(reviews.issues ?? [])],
     now: input.now,
-    packagePin: contentPackageRuntimeOwner.getPreparedDiscovery("google-cloud-associate-cloud-engineer").package.packagePin,
+    packagePin: contentPackageRuntimeOwner.getPreparedDiscovery("google-cloud-associate-cloud-engineer").track.packagePin,
     recentAttemptCount: input.recentAttemptCount,
     reviewQueueItems: reviews.value,
   });

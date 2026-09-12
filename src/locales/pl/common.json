@@ -182,6 +182,8 @@
   "Due review": "Powtórki na dziś",
   "Loading review queue": "Ładowanie kolejki powtórek",
   "Review unavailable": "Przegląd jest niedostępny",
+  "Exam review is unavailable": "Przegląd egzaminu jest niedostępny",
+  "This exam mode is not available in the current canonical content release.": "Ten tryb egzaminu nie jest dostępny w bieżącej kanonicznej wersji treści.",
   "All": "Wszystkie",
   "Question": "Pytanie",
   "Review": "Powtórka",

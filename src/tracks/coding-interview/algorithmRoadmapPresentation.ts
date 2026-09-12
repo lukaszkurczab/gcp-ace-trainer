@@ -1,4 +1,4 @@
-import type { AlgorithmQuestionType } from "./algorithmQuestionTypes";
+import type { AlgorithmQuestionType } from "./algorithmContentTypes";
 
 type AlgorithmRoadmapPresentation = Readonly<{
   label: string;

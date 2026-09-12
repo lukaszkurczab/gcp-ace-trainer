@@ -9,7 +9,6 @@ import {
   StaleDraftRevisionError,
   contentPackagePinsEqual,
 } from "../../domain";
-import { assertSessionMatchesContentPackage } from "../../content/application/contentSessionIdentity";
 import {
   TrainingApplicationFailure,
   type ApplicationFailureCode,
@@ -151,8 +150,8 @@ export class TrainingLifecycleUseCases {
     const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId);
     const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts: this.forPackage(attempts, resolution.package.packagePin), reviews: this.forPackage(reviews, resolution.package.packagePin), now: this.ports.clock.now() }));
-    await this.assertSessionPackage(prepared.session, resolution.package);
+    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts: this.forPackage(attempts, resolution.track.packagePin), reviews: this.forPackage(reviews, resolution.track.packagePin), now: this.ports.clock.now() }));
+    await this.assertSessionPackage(prepared.session, resolution.track);
     return prepared;
   }
 
@@ -167,10 +166,10 @@ export class TrainingLifecycleUseCases {
     const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId);
     const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, attempts: this.forPackage(attempts, resolution.package.packagePin), reviews: this.forPackage(reviews, resolution.package.packagePin), now: this.ports.clock.now() }));
+    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, attempts: this.forPackage(attempts, resolution.track.packagePin), reviews: this.forPackage(reviews, resolution.track.packagePin), now: this.ports.clock.now() }));
     if (prepared.session.id !== sessionId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime changed the lifecycle-owned session identity.");
     if (prepared.session.trackId !== input.trackId || prepared.firstOccurrence.trackId !== input.trackId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime prepared a session outside the requested track.");
-    await this.assertSessionPackage(prepared.session, resolution.package);
+    await this.assertSessionPackage(prepared.session, resolution.track);
     await this.run("persistence_failure", () => this.ports.mutations.start(prepared));
     const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
     if (!verified || verified.id !== prepared.session.id || verified.status !== "active") throw new TrainingApplicationFailure("verification_failure", "The active session was not verified before its first occurrence could be exposed.");
@@ -452,7 +451,7 @@ export class TrainingLifecycleUseCases {
     const resolution = await this.run("missing_content", () => this.ports.packages.resolveForDiscovery(trackId, registration.familyId));
     const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const input = { trackId, attempts: this.forPackage(attempts.filter((attempt) => attempt.trackId === trackId), resolution.package.packagePin), reviews: this.forPackage(reviews.filter((review) => review.trackId === trackId), resolution.package.packagePin), now: this.ports.clock.now() };
+    const input = { trackId, attempts: this.forPackage(attempts.filter((attempt) => attempt.trackId === trackId), resolution.track.packagePin), reviews: this.forPackage(reviews.filter((review) => review.trackId === trackId), resolution.track.packagePin), now: this.ports.clock.now() };
     if (method === "queryDashboard") {
       const activeSession = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
       return this.run("persistence_failure", () => runtime.queryDashboard({ ...input, activeSession: activeSession?.trackId === trackId && activeSession.status === "active" ? activeSession : null }));
@@ -503,7 +502,7 @@ export class TrainingLifecycleUseCases {
   private async resolveRuntimeForPreparation(trackId: TrackId, modeId: string) {
     const registration = this.trackRegistration(trackId);
     const resolution = await this.run("missing_content", () => this.ports.packages.resolveForPreparation({ trackId, familyId: registration.familyId, modeId }));
-    if (resolution.runtime.familyId !== registration.familyId || resolution.package.trackId !== trackId || resolution.package.familyId !== registration.familyId) {
+    if (resolution.runtime.familyId !== registration.familyId || resolution.track.trackId !== trackId) {
       throw new TrainingApplicationFailure("unknown_family", "Resolved content package runtime does not own the requested track family.");
     }
     return resolution;
@@ -512,16 +511,15 @@ export class TrainingLifecycleUseCases {
   private async resolveRuntimeForSession(session: TrainingSession): Promise<TrainingFamilyRuntime> {
     const registration = this.trackRegistration(session.trackId);
     const resolution = await this.run("resume_unavailable", () => this.ports.packages.resolveExact(session.packagePin));
-    if (resolution.runtime.familyId !== registration.familyId || resolution.package.trackId !== session.trackId || resolution.package.familyId !== registration.familyId) {
+    if (resolution.runtime.familyId !== registration.familyId || resolution.track.trackId !== session.trackId) {
       throw new TrainingApplicationFailure("resume_unavailable", "Exact package pin resolved outside the session track family.");
     }
-    await this.assertSessionPackage(session, resolution.package);
+    await this.assertSessionPackage(session, resolution.track);
     return resolution.runtime;
   }
 
-  private async assertSessionPackage(session: TrainingSession, pkg: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExact"]>>["package"]): Promise<void> {
-    if (!contentPackagePinsEqual(session.packagePin, pkg.packagePin)) throw new TrainingApplicationFailure("version_mismatch", "Session changed its exact content package pin.");
-    await this.run("resume_unavailable", () => assertSessionMatchesContentPackage(session, pkg));
+  private async assertSessionPackage(session: TrainingSession, track: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExact"]>>["track"]): Promise<void> {
+    if (!contentPackagePinsEqual(session.packagePin, track.packagePin) || session.trackId !== track.trackId) throw new TrainingApplicationFailure("version_mismatch", "Session changed its exact canonical content pin.");
   }
 
   private forPackage<T extends { item: { packagePin: TrainingSession["packagePin"] } } | { sourceItem: { packagePin: TrainingSession["packagePin"] } }>(records: readonly T[], pin: TrainingSession["packagePin"]): readonly T[] {

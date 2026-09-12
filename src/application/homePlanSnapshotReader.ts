@@ -240,9 +240,10 @@ export class HomePlanSnapshotReader {
     }
     if (!isResolvedPackageForPlan(resolved, plan)) return unavailable(trackId, "identity_mismatch");
 
-    const primary = resolved.package.profile.primaryEntry;
-    let primaryMode: ReturnType<ResolvedPackageRuntime["profile"]["getMode"]>;
-    try { primaryMode = resolved.profile.getMode(primary.modeId); }
+    const primary = resolved.track.modes[0];
+    if (!primary) return unavailable(trackId, "unsupported_action");
+    let primaryMode: ReturnType<ResolvedPackageRuntime["track"]["getMode"]>;
+    try { primaryMode = resolved.track.getMode(primary.modeId); }
     catch { return unavailable(trackId, "unsupported_action"); }
     if (plan.slots.some((slot) => !primaryMode.requestedLengths.includes(slot.sessionLength))) {
       return unavailable(trackId, "unsupported_action");
@@ -275,29 +276,10 @@ export class HomePlanSnapshotReader {
     let completion: PackageCompletionState;
     let completedFacts: ImmutableCompletedFacts;
     try {
-      const completionRule = resolved.package.profile.completionRule;
       completedFacts = buildCompletedFacts(matchingSessions, matchingAttempts);
-      if (completionRule === undefined) {
-        completion = Object.freeze({ kind: "unknown" });
-        c3Result = "unknown";
-        paceForecast = Object.freeze({ kind: "unavailable", reason: "unknown_completion_rule" });
-      } else {
-        completion = evaluatePackageCompletion({
-          trackId: plan.trackId,
-          contentVersion: plan.contentVersion,
-          packagePin: plan.contentPackagePin,
-          completionRule,
-        }, matchingAttempts);
-        c3Result = completion.kind === "completed" ? "completed" : "in_progress";
-        paceForecast = calculatePaceForecast({
-          acceptedPlan: plan,
-          c3Result,
-          requiredAttemptCount: completionRule.minimumAttemptCount,
-          today,
-          timezone: plan.timezone,
-          completedFacts,
-        });
-      }
+      completion = Object.freeze({ kind: "unknown" });
+      c3Result = "unknown";
+      paceForecast = Object.freeze({ kind: "unavailable", reason: "unknown_completion_rule" });
     } catch {
       return unavailable(trackId, "calculation_error");
     }
@@ -336,9 +318,9 @@ export class HomePlanSnapshotReader {
       completion,
       session: Object.freeze({
         modeId: primary.modeId,
-        topicId: resolved.package.freeNodeId,
-        sessionLength: day.slot?.sessionLength ?? primary.requestedLength,
-        areaLabel: humanizeScope(resolved.package.freeNodeId),
+        topicId: primary.selection.kind === "node" ? primary.selection.nodeId : "",
+        sessionLength: day.slot?.sessionLength ?? primary.defaultRequestedLength,
+        areaLabel: humanizeScope(primary.selection.kind === "node" ? primary.selection.nodeId : "track"),
       }),
       paceForecast,
       guidance,
@@ -400,10 +382,9 @@ function freezeIdentity(snapshot: LearningPlanSnapshot, plan: LearningPlan): Hom
 }
 
 function isResolvedPackageForPlan(resolved: ResolvedPackageRuntime, plan: LearningPlan): boolean {
-  return resolved.package.trackId === plan.trackId &&
-    resolved.package.contentVersion === plan.contentVersion &&
-    contentPackagePinsEqual(resolved.package.packagePin, plan.contentPackagePin) &&
-    resolved.package.profile !== undefined;
+  return resolved.track.trackId === plan.trackId &&
+    resolved.track.contentVersion === plan.contentVersion &&
+    contentPackagePinsEqual(resolved.track.packagePin, plan.contentPackagePin);
 }
 
 function isSupportedHomeAction(action: TargetDateGuidance["home"]["primary"]): boolean {

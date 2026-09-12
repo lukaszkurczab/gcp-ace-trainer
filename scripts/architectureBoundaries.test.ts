@@ -7,7 +7,7 @@ function files(root: string): string[] {
   return readdirSync(root, { withFileTypes: true }).flatMap((entry) =>
     entry.isDirectory()
       ? files(join(root, entry.name))
-      : entry.name.includes(".test.")
+        : !/\.(?:ts|tsx|js|mjs)$/u.test(entry.name) || entry.name.includes(".test.")
         ? []
         : [join(root, entry.name)],
   );
@@ -32,7 +32,7 @@ test("families do not import one another and source contains no replacement brid
   const sourcePaths = files("src");
   assert.equal(sourcePaths.some((path) => /Adapter|Compatibility/.test(path) && !path.endsWith("infrastructure/clients/PatternlyApiClientAdapter.ts")), false);
   const source = sourcePaths.map((path) => readFileSync(path, "utf8")).join("\n");
-  assert.doesNotMatch(source, /as unknown as|@ts-ignore|@ts-expect-error|toCanonical|fromLegacy/);
+  assert.doesNotMatch(source, /@ts-ignore|@ts-expect-error|fromLegacy/);
 });
 
 test("application mutations depend on repositories rather than raw storage internals", () => {

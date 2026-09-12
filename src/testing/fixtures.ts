@@ -1,6 +1,7 @@
 import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
 import { GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, completeTrainingSession, createTrainingAttempt, createTrainingSession, type TrainingAttempt, type TrainingSession } from "../domain";
-import { scoreCertificationQuestion, type CertificationQuestion } from "../tracks/certification";
+import { scoreCertificationQuestion } from "../tracks/certification/certificationScoring";
+import type { CertificationQuestion } from "../tracks/certification/domain/certificationQuestion";
 
 export function makeQuestion(overrides: Partial<CertificationQuestion> = {}): CertificationQuestion {
   const id = overrides.id ?? "q-1";

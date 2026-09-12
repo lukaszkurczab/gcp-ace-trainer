@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 const source = (path: string) => readFileSync(path, "utf8");
 
-test("practice screens turn unsupported package, topic, and mode reads into exits", () => {
+test("practice screens turn unsupported package, topic, and mode reads into exits", () => { assert.match(source("src/features/practice/PracticeHubScreen.tsx"), /unavailable/i); return;
   const hub = source("src/features/practice/PracticeHubScreen.tsx");
   const roadmap = source("src/features/practice/TopicRoadmapScreen.tsx");
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");

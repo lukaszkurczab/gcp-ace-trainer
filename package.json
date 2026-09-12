@@ -28,7 +28,8 @@
     "e2e:rc:algorithms:ios": "node scripts/runRcAlgorithmsIos.mjs",
     "validate:content-boundary": "node scripts/validateContentBoundary.mjs",
     "validate:runtime-privacy-boundary": "node scripts/validateRuntimePrivacyBoundary.mjs",
-    "sync:content-release": "node scripts/syncBundledContentRelease.mjs"
+    "sync:content-release": "node scripts/syncBundledContentRelease.mjs sync",
+    "check:content-release": "node scripts/syncBundledContentRelease.mjs check"
   },
   "dependencies": {
     "@react-native-firebase/app": "^26.3.2",

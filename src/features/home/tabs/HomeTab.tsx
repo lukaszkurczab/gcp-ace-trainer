@@ -162,10 +162,10 @@ export function HomeTab({
       timezone: readyHomePlan.plan.timezone,
     })
     : null;
-  const isReviewRecommendation = recommendation?.action.kind === "start_practice" &&
-    recommendation.action.reviewSource !== undefined;
+  const isReviewRecommendation = recommendation?.action.kind === "start_supported_mode" &&
+    recommendation.action.evidenceSources !== undefined;
   const isRecommendationSettingsAction = !hasActiveSession && !homePlanReady && !homePlanUnavailable && recommendation !== undefined;
-  const resumeSessionId = recommendation?.action.kind === "resume_active_session" || recommendation?.action.kind === "resume_certification_practice"
+  const resumeSessionId = recommendation?.action.kind === "resume_active_practice" || recommendation?.action.kind === "resume_certification_practice" || recommendation?.action.kind === "resume_design_interview"
     ? recommendation.action.sessionId
     : undefined;
   const decisionTitle = hasActiveSession

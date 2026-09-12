@@ -21,6 +21,6 @@ export function getCodingInterviewDeclaredScopeOptions(input: Readonly<{
 }>): readonly AlgorithmsDeclaredScopeOption[] {
   contentPackageRuntimeOwner
     .getPreparedDiscovery("coding-interview-dsa-problem-solving")
-    .profile.getMode(input.modeId);
+    .track.getMode(input.modeId);
   throw new Error(`Algorithms mode ${input.modeId} has no declared scope in the bundled Free package.`);
 }

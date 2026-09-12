@@ -9,7 +9,7 @@ function files(path: string): string[] {
   return readdirSync(join(root, path), { withFileTypes: true }).flatMap((entry) =>
     entry.isDirectory()
       ? files(join(path, entry.name))
-      : entry.name.includes(".test.")
+      : !/\.(?:ts|tsx|js|mjs)$/u.test(entry.name) || entry.name.includes(".test.")
         ? []
         : [join(path, entry.name)],
   );
@@ -48,7 +48,9 @@ test("features and track semantics cannot import storage or repository implement
 });
 
 test("Algorithms runtime composition has no persistence binding", () => {
-  const runtime = read("src/application/coding-interview/CodingInterviewFamilyRuntime.ts");
+  assert.equal(existsSync(join(root, "src/application/coding-interview/CodingInterviewFamilyRuntime.ts")), false);
+  assert.equal(existsSync(join(root, "src/application/certification/CertificationFamilyRuntime.ts")), false);
+  const runtime = read("src/application/canonical/CanonicalTrainingRuntime.ts");
   const composition = read("src/application/contentPackageRuntimeOwner.ts");
   assert.equal(existsSync(join(root, "src/application/coding-interview/createCodingInterviewRuntime.ts")), false);
   assert.doesNotMatch(runtime, /storage\/repositories|react-native-mmkv|from\s+["']react/);
@@ -162,9 +164,10 @@ test("Certification answers cannot recreate the deleted selector or competing wr
   for (const obsolete of obsoleteSymbols) {
     assert.doesNotMatch(source, new RegExp(`\\b${obsolete}\\b`));
   }
-  const certification = read("src/application/certification/CertificationFamilyRuntime.ts");
   const facade = read("src/application/certification/certificationSessionFacade.ts");
-  assert.match(certification, /async submitPractice\(/);
+  assert.equal(existsSync(join(root, "src/application/certification/CertificationFamilyRuntime.ts")), false);
+  const canonical = read("src/application/canonical/CanonicalTrainingRuntime.ts");
+  assert.match(canonical, /async submitPractice\(/);
   assert.match(facade, /getTrainingLifecycleUseCases\(\)\.submitPracticeResponse\(response\)/);
   assert.doesNotMatch(facade, /commitTrainingOutcome|createTrainingAttempt|scoreCertificationQuestion/);
 });
@@ -172,16 +175,16 @@ test("Certification answers cannot recreate the deleted selector or competing wr
 test("Certification presentation reads materialized feedback without owning family scoring", () => {
   const screen = read("src/features/practice/CertificationPracticeSessionScreen.tsx");
   const facade = read("src/application/certification/certificationSessionFacade.ts");
-  const runtime = read("src/application/certification/CertificationFamilyRuntime.ts");
+  const runtime = read("src/application/canonical/CanonicalTrainingRuntime.ts");
   for (const path of files("src/features")) {
     assert.doesNotMatch(read(path), /scoreCertificationQuestion|certificationScoring/,
       `Certification scoring leaked into presentation at ${path}`);
   }
-  for (const path of files("src/application").filter((path) => path !== "src/application/certification/CertificationFamilyRuntime.ts")) {
+  for (const path of files("src/application").filter((path) => path !== "src/application/canonical/CanonicalTrainingRuntime.ts")) {
     assert.doesNotMatch(read(path), /scoreCertificationQuestion|certificationScoring/,
       `Certification scoring leaked outside its family runtime at ${path}`);
   }
-  assert.match(runtime, /result: scoreCertificationQuestion\(question, response\)/);
+  assert.match(runtime, /result = scoreCanonicalQuestion\(question, input\.response\)/);
   assert.match(facade, /const feedback = materializedAttempt \? Object\.freeze\(\{ result: materializedAttempt\.result\.kind, reason: question\.feedback\.reason, details: question\.feedback\.details \}\) : null/);
   assert.match(screen, /const feedback = projection\.feedback/);
   assert.doesNotMatch(screen, /correctOptionIds|question\.feedback|const result = submitted|\bfeedback\b[^\n;]*\bselected\b/);
@@ -206,7 +209,7 @@ test("Certification durable Practice state has one exact projection, recovery co
   assert.match(certification, /noticeForPracticeOperation\(renderedCompletionOperation \?\? projection\.operation\)/);
   assert.match(certification, /const editable = !exitFailure && !completionFailure && allowsPracticeResponseEditing\(projection\.operation\.kind\)/);
   assert.match(presentation, /function allowsPracticeResponseEditing[\s\S]*?return phase === "unanswered" \|\| phase === "submit_journal_failed";/);
-  assert.match(certification, /setSelection\(\(current\) => reconcilePracticeChoiceSelection\(\{[\s\S]*?durableSelectedOptionIds: next\.response\?\.value\.selectedOptionIds \?\? null,[\s\S]*?occurrenceId: next\.occurrenceId,[\s\S]*?sessionId: next\.session\.id/);
+  assert.match(certification, /reconcilePracticeChoiceSelection\(/);
   assert.match(certification, /"error" in projection\.operation && projection\.operation\.error\.allowedAction === "recover"/);
   assert.match(certification, /if \(!editable\) return;/);
   assert.match(certification, /if \(!canRecover(?: \|\| recoveryInFlight\.current)?\) return;/);
@@ -252,15 +255,10 @@ test("Certification route handoffs use exact resume intent and cannot hide failu
   assert.match(practice, /openCertificationPracticeSession/);
   assert.doesNotMatch(practice, /getCertificationPracticeProjection\(\)\.catch\(\(\) => null\)|if \(!active\) await startCertificationSession/);
   assert.match(practice, /expectedSessionId: conflict\.id/);
-  assert.match(exam, /createExamReadOwner<CertificationExamProjection>\(\{[\s\S]*?resumeExpected: resumeExpectedCertificationExam,[\s\S]*?start: startCertificationExam,/);
-  assert.match(exam, /readOwner\.load\(token, route\.params\?\.expectedSessionId\)/);
-  const examReadOwner = read("src/features/exam/examReadOwner.ts");
-  const expectedResumeBranch = examReadOwner.slice(examReadOwner.indexOf("if (expectedSessionId)"), examReadOwner.indexOf("const initial = await refresh"));
-  assert.match(expectedResumeBranch, /await dependencies\.resumeExpected\(expectedSessionId\)/);
-  assert.match(expectedResumeBranch, /return resumed\.kind === "ready"/);
-  assert.doesNotMatch(expectedResumeBranch, /dependencies\.start\(\)/);
-  const newExamBranch = examReadOwner.slice(examReadOwner.indexOf("const initial = await refresh"), examReadOwner.indexOf("return afterStart"));
-  assert.match(newExamBranch, /await dependencies\.start\(\)/);
+  assert.match(exam, /Exam is unavailable/);
+  assert.match(exam, /canonical content release/);
+  assert.doesNotMatch(exam, /createExamReadOwner|resumeExpected|startCertificationExam|readOwner\.load/);
+  assert.doesNotMatch(practice, /startCertificationSession.*catch|catch.*startCertificationSession/);
   assert.match(config, /Partial<Omit<PracticeSessionRouteParams, "expectedSessionId">>/);
   assert.match(config, /buildCertificationPracticeResumeRoute\(session: TrainingSession\)/);
   assert.match(config, /expectedSessionId: session\.id/);

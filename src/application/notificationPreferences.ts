@@ -189,7 +189,7 @@ function currentPlanIdentity(
 }
 
 function packageIdentity(value: LearningPlanReminderPackage): ReminderPackageIdentity {
-  if ("package" in value) return Object.freeze({ trackId: value.package.trackId, contentVersion: value.package.contentVersion, packagePin: value.package.packagePin });
+  if ("track" in value) return Object.freeze({ trackId: value.track.trackId, contentVersion: value.track.contentVersion, packagePin: value.track.packagePin });
   return value;
 }
 

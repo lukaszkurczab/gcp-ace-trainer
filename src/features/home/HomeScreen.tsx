@@ -298,47 +298,22 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         navigation.navigate(ROUTES.PRACTICE_SESSION, buildDesignInterviewPracticeResumeRoute(session));
         return;
       }
-      if (action.kind === "choose_declared_scope") {
-        navigation.navigate(ROUTES.ALGORITHMS_SCOPE_SELECTION, {
-          modeId: action.modeId,
-          source: "home",
-          targetMentalUnitId: action.targetMentalUnitId,
-        });
-        return;
-      }
-      if (action.kind === "resume_active_session") {
+      if (action.kind === "resume_active_practice") {
         const session = await resumeActiveTrainingSession();
-        if (session.id !== action.sessionId || session.trackId !== CODING_INTERVIEW_TRACK_ID || session.modeId !== action.modeId) {
+        if (session.id !== action.sessionId || session.trackId !== action.trackId || session.modeId !== action.modeId) {
           throw new Error("The active Coding Interview session changed before it could be resumed.");
         }
-        if (action.modeId === "coding-interview-simulation") {
-          if (!action.simulationProfileId) throw new Error("The active Interview Simulation profile is unavailable.");
-          navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: action.simulationProfileId });
-          return;
-        }
-        if (action.modeId === "coding-interview-custom-practice") {
-          navigation.navigate(
-            ROUTES.PRACTICE_SESSION,
-            buildPracticeSessionConfig({
-              feedbackMode: feedbackTimingFromDurableSession(session),
-              mode: action.modeId,
-              source: "home",
-              topicId: action.topicId,
-              trackId: CODING_INTERVIEW_TRACK_ID,
-            }),
-          );
-          return;
-        }
+        navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ feedbackMode: feedbackTimingFromDurableSession(session), mode: action.modeId, source: "home", topicId: action.trackId === CODING_INTERVIEW_TRACK_ID ? "complexity_and_constraints" : "", trackId: action.trackId }));
+        return;
       }
       navigation.navigate(
         ROUTES.PRACTICE_SESSION,
         buildPracticeSessionConfig({
           mode: action.modeId,
-          reviewSource: action.kind === "start_practice" ? action.reviewSource : undefined,
-          algorithmScope: action.kind === "start_practice" ? action.scope : undefined,
+          reviewSource: action.kind === "start_supported_mode" && action.evidenceSources?.includes("due_queue") ? "due_queue" : undefined,
           source: "home",
-          topicId: action.topicId,
-          trackId: CODING_INTERVIEW_TRACK_ID,
+          topicId: action.kind === "start_supported_mode" ? action.nodeId ?? "" : "",
+          trackId: action.trackId,
         }),
       );
     } catch (error) {

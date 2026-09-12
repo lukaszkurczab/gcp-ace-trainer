@@ -5,7 +5,7 @@ import test from "node:test";
 
 import type { PublishedAlgorithmsBank } from "../../content/contracts";
 import { validateAlgorithmsBank } from "../../content/validation";
-import { submitAlgorithmInteraction } from "./";
+import { submitAlgorithmInteraction } from "./algorithmInteractionHandlers";
 
 function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "unsupported"; taxonomyId?: string; taxonomy?: Readonly<Record<string, unknown>>; duplicateId?: boolean; poolCount?: number }> = {}): PublishedAlgorithmsBank {
   const count = input.itemCount ?? 40;

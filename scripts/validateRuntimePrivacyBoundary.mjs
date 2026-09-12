@@ -23,9 +23,7 @@ export function validateRuntimePrivacyBoundary(root = process.cwd()) {
     if (candidate === "" || candidate.startsWith("..") || isAbsolute(candidate) || candidate.includes("/")) return undefined;
     return approvedClientAdapters.get(candidate);
   };
-  const excludedSourceFiles = new Set([
-    join(sourceRoot, "content", "bundled", "generatedFreeNodePackages.ts"),
-  ]);
+  const excludedSourceFiles = new Set();
   const failures = [];
 
   for (const path of walk(sourceRoot).filter((candidate) => /\.(ts|tsx)$/.test(candidate) && !/\.test\.(?:[cm]?[jt]sx?)$/.test(candidate) && !excludedSourceFiles.has(candidate))) {

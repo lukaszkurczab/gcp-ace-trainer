@@ -35,6 +35,7 @@ import type { PracticeDurableOperationState } from "../../application/trainingLi
 import { allowsPracticeResponseEditing, formatPracticeElapsedTime, getPracticePrimaryAction, noticeForPracticeCompletionCheckpoint, noticeForPracticeOperation, reconcilePracticeChoiceSelection, type PracticeChoiceSelection, type PracticeSurfacePhase } from "./practiceSessionPresentation";
 import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./PracticeSessionSurface";
 import { getCertificationMode } from "../../tracks/certification";
+import { toCanonicalQuestionViewModel } from "./canonicalQuestionViewModel";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
 type CompletionFailure = Exclude<Awaited<ReturnType<typeof completeCertificationPracticeSession>>, { kind: "verified" }>;
@@ -60,7 +61,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     setProjection(next);
     setSelection((current) => reconcilePracticeChoiceSelection({
       current,
-      durableSelectedOptionIds: next.response?.value.selectedOptionIds ?? null,
+      durableSelectedOptionIds: next.response?.value.type === "choice_multiple" ? next.response.value.optionIds : next.response?.value.type === "choice_single" ? [next.response.value.optionId] : null,
       editable: allowsPracticeResponseEditing(next.operation.kind),
       occurrenceId: next.occurrenceId,
       sessionId: next.session.id,
@@ -137,7 +138,8 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   }
   if (error) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Cloud Practice unavailable")} description={t(error)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (!projection) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><PracticeSessionLoadingSkeleton /></Screen>;
-  const multiple = projection.question.type === "multiple";
+  const questionView = toCanonicalQuestionViewModel(projection.question);
+  const multiple = projection.question.interaction.type === "choice_multiple";
   const feedback = projection.feedback;
   const renderedCompletionOperation = completionFailure?.kind === "retry_completion" || completionFailure?.kind === "recover_completion" ? completionFailure.operation : completionOperation;
   const phase: PracticeSurfacePhase = exitFailure === "retry_abandon" || exitFailure === "retry_checkpoint"
@@ -179,7 +181,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const submit = async () => {
     if (!editable) return;
     if (!selected.length) { setSelectionError(t("Choose an answer before submitting.")); return; }
-    try { await submitCertificationPracticeResponse({ kind: "option_selection", selectedOptionIds: selected }); }
+    try { await submitCertificationPracticeResponse(projection.question.interaction.type === "choice_multiple" ? { type: "choice_multiple", optionIds: selected } : { type: "choice_single", optionId: selected[0]! }); }
     catch { await refreshAfterCommand("We couldn't display your answer. Try again."); return; }
     await refreshAfterCommand("We couldn't display your answer. Try again.");
   };
@@ -326,10 +328,10 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} ${t("of")} ${projection.total}` }}
     primaryAction={primaryAction}
     progress={projection.ordinal / projection.total}
-    question={{ itemId: projection.question.id, prompt: projection.question.question, responseControl: { kind: "choice", options: projection.question.options.map((option) => ({ id: option.id, state: selected.includes(option.id) ? "selected" : "neutral", text: option.text })), selectionMode: multiple ? "multiple" : "single" } }}
+    question={{ itemId: questionView.itemId, prompt: questionView.prompt, constraints: questionView.constraints, responseControl: questionView.interaction.kind === "choice" ? { ...questionView.interaction, options: questionView.interaction.options.map((option) => ({ ...option, state: selected.includes(option.id) ? "selected" as const : "neutral" as const })) , selectionMode: multiple ? "multiple" : "single" } : { kind: "choice", options: [], selectionMode: "single" } }}
     retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : canRecover ? "Restore session" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}
-    runtimeIdentity={{ actualLength: projection.session.actualLength, feedbackTiming: "afterEachAnswer", itemId: projection.question.id, modeId: projection.session.modeId, ordinal: projection.ordinal, roadmapNodeId: projection.question.domain, sessionId: projection.session.id, trackId: projection.session.trackId }}
+    runtimeIdentity={{ actualLength: projection.session.actualLength, feedbackTiming: "afterEachAnswer", itemId: questionView.itemId, modeId: projection.session.modeId, ordinal: projection.ordinal, roadmapNodeId: projection.question.nodeId, sessionId: projection.session.id, trackId: projection.session.trackId }}
     timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatPracticeElapsedTime(projection.elapsedForegroundMs)}`, label: formatPracticeElapsedTime(projection.elapsedForegroundMs) }}
   />;
 }

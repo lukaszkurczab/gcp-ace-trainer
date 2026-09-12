@@ -1,18 +1,15 @@
+import { loadCanonicalRuntimeCatalog, type CanonicalTrackRuntime } from "../content/canonical";
 import { contentPackageRuntimeOwner } from "../application/contentPackageRuntimeOwner";
-import { createCertificationPackageRuntimeCatalog, createCodingPackageRuntimeCatalog } from "../content/application";
 
 export async function prepareBundledTestPackages(): Promise<void> {
+  await loadCanonicalRuntimeCatalog();
   await contentPackageRuntimeOwner.verifyBundledPackages();
 }
 
-export function getCodingPackageTestCatalog() {
-  const resolution = contentPackageRuntimeOwner.getPreparedDiscovery("coding-interview-dsa-problem-solving");
-  if (resolution.package.familyId !== "coding_interview") throw new Error("Coding package family mismatch.");
-  return createCodingPackageRuntimeCatalog(resolution.package);
+export async function getCodingPackageTestCatalog(): Promise<CanonicalTrackRuntime> {
+  return (await loadCanonicalRuntimeCatalog()).getTrack("coding-interview-dsa-problem-solving");
 }
 
-export function getCertificationPackageTestCatalog() {
-  const resolution = contentPackageRuntimeOwner.getPreparedDiscovery("google-cloud-associate-cloud-engineer");
-  if (resolution.package.familyId !== "certification") throw new Error("Certification package family mismatch.");
-  return createCertificationPackageRuntimeCatalog(resolution.package);
+export async function getCertificationPackageTestCatalog(): Promise<CanonicalTrackRuntime> {
+  return (await loadCanonicalRuntimeCatalog()).getTrack("google-cloud-associate-cloud-engineer");
 }

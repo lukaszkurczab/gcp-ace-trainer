@@ -11,7 +11,7 @@ import type {
   JournalOperation,
   ContentPackagePin,
 } from "../../domain";
-import type { VerifiedContentPackage } from "../../content/contracts";
+import type { CanonicalTrackRuntime } from "../../content/canonical";
 
 export const APPLICATION_FAILURE_CODES = [
   "unknown_track",
@@ -62,7 +62,6 @@ export type PreparedSession = Readonly<{
   firstOccurrence: ContentItemRef;
   draft: TrainingSessionDraft | null;
 }>;
-
 export type PracticeSubmission = Readonly<{
   attempt: TrainingAttempt<unknown>;
   session: TrainingSession;
@@ -97,7 +96,7 @@ export interface TrainingFamilyRuntime {
 }
 
 export type ContentPackageRuntimeResolution = Readonly<{
-  package: VerifiedContentPackage;
+  track: CanonicalTrackRuntime;
   runtime: TrainingFamilyRuntime;
 }>;
 

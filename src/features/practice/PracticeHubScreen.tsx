@@ -158,18 +158,22 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const { activeTrackId, hasReviewEvidence, trainingAttempts } = readState;
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   let activeTrack: ReturnType<typeof getTrackDisplay>;
-  let packageProfile: ReturnType<typeof contentPackageRuntimeOwner.getPreparedDiscovery>["profile"];
+  let canonicalTrack: ReturnType<typeof contentPackageRuntimeOwner.getPreparedDiscovery>["track"];
   try {
     activeTrack = getTrackDisplay(activeTrackId);
-    packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
+    canonicalTrack = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track;
   } catch (error) {
     return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
   }
-  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) {
+  const canonicalNodeMode = canonicalTrack.modes.find((mode) => mode.selection.kind === "node");
+  const canonicalNodeId = canonicalNodeMode?.selection.kind === "node"
+    ? canonicalNodeMode.selection.nodeId
+    : "";
+  if (route.params?.topicId !== undefined && route.params.topicId !== canonicalNodeId) {
     return renderUnavailable(
       t("This topic is not included in your free content."),
       t("Choose another topic"),
-      () => navigation.navigate(ROUTES.TOPIC_ROADMAP, { topicId: packageProfile.freeNodeId, trackId: activeTrack.id }),
+      () => navigation.navigate(ROUTES.TOPIC_ROADMAP, { topicId: canonicalNodeId, trackId: activeTrack.id }),
     );
   }
   const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
@@ -205,7 +209,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       return;
     }
     if (activeTrack.familyId === "certification" && resolvedMode === "certification-diagnostic-baseline") {
-      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source: "modeShortcut", topicId: packageProfile.freeNodeId, trackId: activeTrack.id });
+      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source: "modeShortcut", topicId: canonicalNodeId, trackId: activeTrack.id });
       return;
     }
     if (activeTrack.familyId === "certification" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
@@ -295,7 +299,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    mode: isDesignInterviewTrack ? packageProfile.primaryEntry.modeId as PracticeSessionMode : "certification-focus-practice",
+                    mode: isDesignInterviewTrack ? (modes[0]?.mode as PracticeSessionMode) : "certification-focus-practice",
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,

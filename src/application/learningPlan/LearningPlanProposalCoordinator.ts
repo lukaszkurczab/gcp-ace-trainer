@@ -1,5 +1,4 @@
 import { ContentError } from "../../content/errors";
-import { createVerifiedSessionCapacity, resolveVerifiedSessionCapacity } from "../../content/application";
 import type { ResolvedPackageRuntime } from "../contentPackageRuntimeOwner";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import {
@@ -76,30 +75,26 @@ export class LearningPlanProposalCoordinator {
     try {
       const timezone = this.dependencies.getTimezone();
       const localToday = localDateFor(now, timezone);
-      const primary = resolved.package.profile.primaryEntry;
-      const capacity = resolveVerifiedSessionCapacity(
-        createVerifiedSessionCapacity(resolved.package, primary.modeId, primary.requestedLength, resolved.profile.itemIds.length),
-        resolved.package.packagePin,
-      );
-      const completionState = evaluatePackageCompletion({
-        trackId,
-        contentVersion: resolved.package.contentVersion,
-        packagePin: resolved.package.packagePin,
-        completionRule: resolved.package.profile.completionRule,
-      }, attempts);
+      const primary = resolved.track.modes[0];
+      if (!primary) throw new Error("Canonical track has no exposed mode.");
+      const pool = resolved.track.getPool(primary.modeId);
+      const capacity = pool.length >= primary.defaultRequestedLength
+        ? Object.freeze({ kind: "exact" as const, actualLength: primary.defaultRequestedLength })
+        : Object.freeze({ kind: "shortfall" as const, requestedLength: primary.defaultRequestedLength, eligibleItemCount: pool.length, missingItemCount: Math.max(0, primary.defaultRequestedLength - pool.length) });
+      const completionState = Object.freeze({ kind: "unknown" as const });
       const dueReviewCount = reviews.filter((review) => review.trackId === trackId &&
-        review.sourceItem.trackId === trackId && review.sourceItem.contentVersion === resolved.package.contentVersion &&
-        contentPackagePinsEqual(review.sourceItem.packagePin, resolved.package.packagePin) && review.dueAt <= now).length;
+        review.sourceItem.trackId === trackId && review.sourceItem.contentVersion === resolved.track.contentVersion &&
+        contentPackagePinsEqual(review.sourceItem.packagePin, resolved.track.packagePin) && review.dueAt <= now).length;
       const outcome = generateLearningPlanProposal({
         goalSnapshot: snapshot,
-        packagePin: resolved.package.packagePin,
-        contentVersion: resolved.package.contentVersion,
+        packagePin: resolved.track.packagePin,
+        contentVersion: resolved.track.contentVersion,
         primaryModeId: primary.modeId,
-        requestedLength: primary.requestedLength,
+        requestedLength: primary.defaultRequestedLength,
         sessionCapacity: capacity,
         completionState,
         dueReviewCount,
-        primaryScopeLabel: humanizeScope(resolved.package.freeNodeId),
+        primaryScopeLabel: humanizeScope(resolved.track.modes[0]?.selection.kind === "node" ? resolved.track.modes[0].selection.nodeId : "track"),
         localToday,
         timezone,
       });
@@ -135,8 +130,8 @@ export class LearningPlanProposalCoordinator {
     const currentIdentity: ProposalIdentity = {
       trackId,
       goalRevision: snapshot.revision,
-      contentVersion: resolved.package.contentVersion,
-      packagePin: resolved.package.packagePin,
+      contentVersion: resolved.track.contentVersion,
+      packagePin: resolved.track.packagePin,
       timezone,
     };
     if (!proposalIdentitiesEqual(proposal.outcome.identity, currentIdentity)) return frozen({ kind: "stale" });

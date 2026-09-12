@@ -13,9 +13,7 @@ import type { TrainingAttempt } from "../../domain";
 import {
   ALGORITHM_MODE_IDS,
   ALGORITHM_ROADMAP,
-  buildAlgorithmProgressFacts,
   getAlgorithmMode,
-  getAlgorithmItemsForRoadmapNode,
 } from "../../tracks/coding-interview";
 import type { CloudCertificationProgressViewModel } from "../../tracks/certification";
 import type { CertificationModeId } from "../../tracks/certification";
@@ -24,12 +22,24 @@ import { getDomainLabel } from "../../utils";
 import type { AnalyticsData } from "../analytics/analyticsService";
 import type { PracticeSessionMode } from "./sessionConfig";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
-import type { AlgorithmQuestion } from "../../tracks/coding-interview/algorithmQuestionTypes";
+import type { Question } from "../../content/canonical";
 import { getTrackRoadmapCatalog } from "./trackRoadmapCatalog";
 
 function codingPackageContent() {
   const resolution = contentPackageRuntimeOwner.getPreparedDiscovery(CODING_INTERVIEW_TRACK_ID);
-  return { contentVersion: resolution.package.contentVersion, items: resolution.profile.items as readonly AlgorithmQuestion[], packagePin: resolution.package.packagePin };
+  return { contentVersion: resolution.track.contentVersion, items: resolution.track.questions, packagePin: resolution.track.packagePin };
+}
+
+function canonicalOutcomeFacts(attempts: readonly TrainingAttempt[]) {
+  const current = attempts.filter((attempt) => attempt.trackId === CODING_INTERVIEW_TRACK_ID);
+  const ids = new Set(current.map((attempt) => attempt.item.itemId));
+  return {
+    correctCount: current.filter((attempt) => attempt.result.kind === "correct").length,
+    incorrectCount: current.filter((attempt) => attempt.result.kind === "incorrect").length,
+    partialCount: current.filter((attempt) => attempt.result.kind === "partial").length,
+    itemsCompleted: ids.size,
+    nodeProgress: [] as readonly { coreSkillAtomCount: number; itemCount: number; nodeId: string; sampledCoreSkillAtomCount: number; uniquePracticedItemCount: number }[],
+  };
 }
 
 export type PracticeTopic = {
@@ -162,7 +172,8 @@ export function getCurrentPracticeTopic(
 
   switch (track.kind) {
     case "coding_interview": {
-      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile.freeNodeId;
+      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track.modes[0];
+      const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
       const freeNode = ALGORITHM_ROADMAP.nodes.find((node) => node.id === freeNodeId);
       if (!freeNode) throw new Error("Coding Interview Free package node is absent from the roadmap.");
 
@@ -179,7 +190,8 @@ export function getCurrentPracticeTopic(
       };
     }
     case "certification": {
-      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile.freeNodeId;
+      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track.modes[0];
+      const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
       const knownTopic = getTrackRoadmapCatalog(activeTrack.id).find((topic) => topic.id === freeNodeId);
       return {
         detail: {
@@ -192,7 +204,8 @@ export function getCurrentPracticeTopic(
       };
     }
     case "design_interview": {
-      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile.freeNodeId;
+      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track.modes[0];
+      const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
       return {
         detail: {
           key: "Practice designing solutions in",
@@ -258,7 +271,7 @@ export function hasTrackProgress(input: {
 
 export function buildPracticeModes(activeTrack: TrackDisplay, hasReviewEvidence = false): PracticeModeModel[] {
   const track = resolvePracticeFlowTrack(activeTrack.id);
-  const profile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
+  const profile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track;
   const availability = (modeId: string) => {
     const mode = profile.getMode(modeId);
     return mode.availability === "immediate" || hasReviewEvidence;
@@ -301,7 +314,7 @@ export function buildPracticeStatsSummary(input: {
 
   switch (track.kind) {
     case "coding_interview": {
-      const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts, content: codingPackageContent() });
+      const progress = canonicalOutcomeFacts(input.trainingAttempts);
 
       return {
         detail: {
@@ -350,11 +363,8 @@ export function buildTrackProgressPercent(input: {
 
   switch (track.kind) {
     case "coding_interview": {
-      const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts, content: codingPackageContent() });
-      const totalItems = progress.nodeProgress.reduce(
-        (sum, node) => sum + node.itemCount,
-        0,
-      );
+      const progress = canonicalOutcomeFacts(input.trainingAttempts);
+      const totalItems = codingPackageContent().items.length;
 
       return totalItems > 0
         ? Math.round((progress.itemsCompleted / totalItems) * 100)
@@ -380,7 +390,8 @@ export function buildTopicRoadmapNodes(input: {
 
   switch (track.kind) {
     case "certification": {
-      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
+      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).track.modes[0];
+      const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
       const attempts = input.trainingAttempts.filter((attempt) => attempt.trackId === input.activeTrackId);
       return getTrackRoadmapCatalog(input.activeTrackId).map((node) => {
         const isFreeNode = node.id === freeNodeId;
@@ -398,7 +409,8 @@ export function buildTopicRoadmapNodes(input: {
       });
     }
     case "design_interview": {
-      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
+      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).track.modes[0];
+      const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
       const practiced = input.trainingAttempts.filter((attempt) => attempt.trackId === input.activeTrackId && attempt.item.itemId).length;
       return getTrackRoadmapCatalog(input.activeTrackId).map((node) => {
         const isFreeNode = node.id === freeNodeId;
@@ -416,11 +428,12 @@ export function buildTopicRoadmapNodes(input: {
     }
     case "coding_interview": {
       const content = codingPackageContent();
-      const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts, content });
+      const progress = canonicalOutcomeFacts(input.trainingAttempts);
 
-      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
+      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).track.modes[0];
+      const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
       return getTrackRoadmapCatalog(input.activeTrackId).map((node) => {
-        const itemCount = getAlgorithmItemsForRoadmapNode(node.id, content.items).length;
+        const itemCount = content.items.filter((question: Question) => question.nodeId === node.id).length;
         const nodeProgress = progress.nodeProgress.find((item) => item.nodeId === node.id);
         const isFreeNode = node.id === freeNodeId;
         const status = isFreeNode ? "current" : "locked" as const;

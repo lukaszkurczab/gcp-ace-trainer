@@ -1,4 +1,4 @@
-import type { CertificationDomain } from "../tracks/certification/domain";
+import type { CertificationDomain } from "../tracks/certification/domain/certificationModes";
 
 export const EXAM_DOMAIN_LABELS: Record<CertificationDomain, string> = {
   setup_environment: "Setting up a cloud solution environment",

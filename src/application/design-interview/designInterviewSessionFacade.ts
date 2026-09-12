@@ -15,20 +15,19 @@ import {
   type PreparedSession,
 } from "../trainingLifecycle";
 import { DESIGN_INTERVIEW_MODE_IDS, type DesignInterviewModeId } from "../../tracks/design-interview/designModes";
-import type { DesignQuestion } from "../../tracks/design-interview/designRuntimeCatalog";
-import type { DesignResponse } from "../../tracks/design-interview/designTypes";
+import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
 
 type DesignOpenInput = Readonly<{ modeId: DesignInterviewModeId; requestedLength?: number; source?: string; expectedSessionId?: string; trackId: TrackId }>;
 export type DesignInterviewPracticeProjection = Readonly<{
   session: TrainingSession;
-  question: DesignQuestion;
+  question: Question;
   occurrenceId: string;
   ordinal: number;
   total: number;
   elapsedForegroundMs: number;
   operation: PracticeDurableOperationState;
-  response: Readonly<{ source: "committed" | "materialized"; value: DesignResponse }> | null;
-  feedback: Readonly<{ result: AttemptResultKind; reason: DesignQuestion["feedback"]["reason"]; details: DesignQuestion["feedback"]["details"] }> | null;
+  response: Readonly<{ source: "committed" | "materialized"; value: CanonicalQuestionResponse }> | null;
+  feedback: Readonly<{ result: AttemptResultKind; reason: string; details: Question["feedback"]["details"] }> | null;
 }>;
 export type DesignInterviewOpenResult = Readonly<{ kind: "ready"; projection: DesignInterviewPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type DesignInterviewAbandonmentResult = Readonly<{ kind: "abandoned"; session: TrainingSession }> | Readonly<{ kind: "retry_same_command"; retry: "abandonment" | "foreground_checkpoint"; session: TrainingSession }> | Readonly<{ kind: "recovery_required"; recovery: "abandonment" | "active_operation"; expectedSessionId: string }>;
@@ -73,14 +72,14 @@ export async function getDesignInterviewPracticeProjection(): Promise<DesignInte
   const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId) ?? null;
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const responseAttempt = materializedAttempt ?? committedAttempt;
-  const question = await contentPackageRuntimeOwner.resolveItem<DesignQuestion>(occurrence.item);
+  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
   const feedback = materializedAttempt ? Object.freeze({ result: materializedAttempt.result.kind, reason: question.feedback.reason, details: question.feedback.details }) : null;
   const [operation, time] = await Promise.all([lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)), getForegroundSessionTimerFacade().projection(session)]);
-  const response = responseAttempt ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: responseAttempt.response as DesignResponse }) : null;
+  const response = responseAttempt ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: responseAttempt.response as CanonicalQuestionResponse }) : null;
   return Object.freeze({ session, question, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, elapsedForegroundMs: time.elapsedForegroundMs, operation, response, feedback });
 }
 
-export async function submitDesignInterviewPracticeResponse(response: DesignResponse): Promise<void> {
+export async function submitDesignInterviewPracticeResponse(response: CanonicalQuestionResponse): Promise<void> {
   await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireActiveDesignSession());
   await getTrainingLifecycleUseCases().submitPracticeResponse(response);
 }

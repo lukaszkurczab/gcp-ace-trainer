@@ -1,7 +1,6 @@
-import { ALGORITHM_CONTENT_VERSION, type AlgorithmApproachId, type AlgorithmLearningStage, type AlgorithmPatternFamilyId } from "./algorithmContentTypes";
+import { ALGORITHM_CONTENT_VERSION, ALGORITHM_QUESTION_TYPES, type AlgorithmApproachId, type AlgorithmLearningStage, type AlgorithmPatternFamilyId, type AlgorithmQuestionType } from "./algorithmContentTypes";
 import { algorithmTaxonomyStructure } from "./generated/algorithmTaxonomyStructure.generated";
 import { ALGORITHM_ROADMAP_PRESENTATION } from "./algorithmRoadmapPresentation";
-import { ALGORITHM_QUESTION_TYPES, type AlgorithmQuestionType } from "./algorithmQuestionTypes";
 
 export const ALGORITHM_FORBIDDEN_MODEL_TERMS = [
   "readiness", "retention", "mastery", "streak", "leaderboard", "leetcode", "ai-generated", "llm-generated", "mock", "demo", "legacy", "compatibility", "migration", "alias", "temporary", "provisional", "placeholder", "fallback", "draft",

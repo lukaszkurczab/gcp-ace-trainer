@@ -1,7 +1,7 @@
 import { CODING_INTERVIEW_TRACK_ID, getTrackRegistration, type ContentItemRef, type TrackId, type TrainingSession } from "../../domain";
 import {
   ALGORITHM_MODE_IDS,
-  getAlgorithmSessionNodeById,
+  ALGORITHM_ROADMAP,
   getAlgorithmMode,
   isAlgorithmModeId,
   type AlgorithmModeId,
@@ -71,8 +71,10 @@ export function buildPracticeSessionConfig(
   input: PracticeSessionConfigInput,
 ): PracticeSessionRouteParams {
   if (input.trackId === CODING_INTERVIEW_TRACK_ID) {
-    const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(input.trackId).profile;
-    const mode = input.mode ?? packageProfile.primaryEntry.modeId as AlgorithmModeId;
+    const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(input.trackId).track;
+    const primaryMode = packageProfile.modes[0];
+    if (!primaryMode) throw new Error("Canonical track has no exposed mode.");
+    const mode = input.mode ?? primaryMode.modeId as AlgorithmModeId;
     if (!isAlgorithmModeId(mode)) {
       throw new Error(`Unknown Algorithms mode id: ${mode}`);
     }
@@ -102,7 +104,8 @@ export function buildPracticeSessionConfig(
     if (input.reviewItemRefs && input.reviewSource !== "session_misses") {
       throw new Error("Algorithms review item refs require session_misses source.");
     }
-    const topicId = getAlgorithmSessionNodeById(input.topicId).id;
+    const topicId = ALGORITHM_ROADMAP.nodes.find((node) => node.id === input.topicId)?.id;
+    if (!topicId) throw new Error(`Unknown Algorithms topic: ${input.topicId}`);
 
     return {
       feedbackMode,
@@ -118,13 +121,16 @@ export function buildPracticeSessionConfig(
     };
   }
 
-  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(input.trackId).profile;
-  const mode = input.mode ?? packageProfile.primaryEntry.modeId as CertificationPracticeSessionMode;
+  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(input.trackId).track;
+  const primaryMode = packageProfile.modes[0];
+  if (!primaryMode) throw new Error("Canonical track has no exposed mode.");
+  const mode = input.mode ?? primaryMode.modeId as CertificationPracticeSessionMode;
   if (isDesignInterviewModeId(mode)) {
     const packageMode = packageProfile.getMode(mode);
     const sessionLength = input.sessionLength ?? packageMode.defaultRequestedLength;
     if (!packageMode.requestedLengths.includes(sessionLength)) throw new Error(`Design Interview mode ${mode} length is unavailable in this package.`);
-    return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: mode === "design-interview-weak-area-review" ? "" : input.topicId || packageProfile.freeNodeId, trackId: input.trackId };
+    const nodeId = packageMode.selection.kind === "node" ? packageMode.selection.nodeId : "";
+    return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: mode === "design-interview-weak-area-review" ? "" : input.topicId || nodeId, trackId: input.trackId };
   }
   if (!certificationPracticeModes.some((candidate) => candidate === mode)) {
     throw new Error(`Unknown Certification practice mode id: ${mode}`);
@@ -136,7 +142,7 @@ export function buildPracticeSessionConfig(
     return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength: 40, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
   }
   if (mode === "certification-focus-practice") {
-    if (!isCloudTopicId(input.topicId) && input.topicId !== packageProfile.freeNodeId) throw new Error("Certification Focus Practice requires an explicitly selected installed topic.");
+    if (!isCloudTopicId(input.topicId) && !packageProfile.questions.some((question) => question.nodeId === input.topicId)) throw new Error("Certification Focus Practice requires an explicitly selected installed topic.");
     if (input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Focus Practice does not render or accept undeclared setup controls.");
     const sessionLength = input.sessionLength ?? packageMode.defaultRequestedLength as PracticeSessionLength;
     if (!sessionLength || !packageMode.requestedLengths.includes(sessionLength)) throw new Error("Certification Focus Practice length is unavailable in this package.");
@@ -230,8 +236,8 @@ export function buildDesignInterviewPracticeResumeRoute(session: TrainingSession
   if (session.status !== "active") throw new Error("Only an active Design Interview session can be resumed.");
   if (!isDesignInterviewModeId(session.modeId)) throw new Error("Design Interview resume requires an ordinary Design Interview session.");
   if (!session.id.trim()) throw new Error("Design Interview resume requires an exact session identity.");
-  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(session.trackId).profile;
-  if (packageProfile.familyId !== "design_interview") throw new Error("Design Interview resume requires a Design Interview package.");
+  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(session.trackId).track;
+  if (getTrackRegistration(session.trackId).familyId !== "design_interview") throw new Error("Design Interview resume requires a Design Interview package.");
   const packageMode = packageProfile.getMode(session.modeId);
   if (!packageMode.requestedLengths.includes(session.requestedLength) || !Number.isInteger(session.actualLength) || session.actualLength < 1 || session.actualLength > session.requestedLength) {
     throw new Error("Design Interview resume requires its immutable supported session length.");
@@ -244,7 +250,7 @@ export function buildDesignInterviewPracticeResumeRoute(session: TrainingSession
       mode: session.modeId,
       sessionLength: session.requestedLength,
       source: "home",
-      topicId: session.modeId === "design-interview-weak-area-review" ? "" : packageProfile.freeNodeId,
+      topicId: session.modeId === "design-interview-weak-area-review" ? "" : (packageMode.selection.kind === "node" ? packageMode.selection.nodeId : ""),
       trackId: session.trackId,
     }),
     expectedSessionId: session.id,

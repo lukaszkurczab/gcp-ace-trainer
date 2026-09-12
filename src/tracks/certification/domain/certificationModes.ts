@@ -1,3 +1,6 @@
+/** Provider/exam-specific domains are content-owned and may expand per certification track. */
+export type CertificationDomain = string;
+
 export type CertificationModeDefinition = Readonly<{
   id: string;
   title: string;

@@ -1,5 +1,5 @@
 import type { ContentItemRef } from "../../domain";
-import type { CertificationDomain, CertificationQuestion } from "./domain/certificationQuestion";
+import type { Question } from "../../content/canonical";
 
 export type CertificationAnswerViewModel = Readonly<{
   questionId: string;
@@ -13,7 +13,7 @@ export type CertificationAnswerViewModel = Readonly<{
   attemptId?: string;
   elapsedSeconds?: number;
   item: ContentItemRef;
-  questionSnapshot: CertificationQuestion;
+  questionSnapshot: Question;
 }>;
 
 export type CertificationExamSummaryViewModel = Readonly<{
@@ -29,16 +29,14 @@ export type CertificationExamSummaryViewModel = Readonly<{
   unansweredQuestionIds: readonly string[];
   flaggedQuestionIds: readonly string[];
   answers: readonly CertificationAnswerViewModel[];
-  domainScores: readonly { domain: CertificationDomain; correct: number; total: number; percent: number }[];
+  domainScores: readonly { domain: string; correct: number; total: number; percent: number }[];
   tagScores: readonly { tag: string; correct: number; total: number; percent: number }[];
 }>;
 
 export type CertificationPracticeAnswerViewModel = Readonly<{
   id: string;
   questionId: string;
-  questionSnapshot: CertificationQuestion;
-  domain: CertificationDomain;
-  tags: readonly string[];
+  questionSnapshot: Question;
   selectedOptionIds: readonly string[];
   correctOptionIds: readonly string[];
   isCorrect: boolean;

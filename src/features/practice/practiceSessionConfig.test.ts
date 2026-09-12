@@ -145,7 +145,7 @@ test("Independent Practice direct entry fails because it is excluded from the bu
       topicId: "hash_map_and_set",
       trackId: "coding-interview-dsa-problem-solving",
     }),
-    /unavailable in package/,
+    /unavailable(?: in package|; restart to load canonical content)/,
   );
 });
 

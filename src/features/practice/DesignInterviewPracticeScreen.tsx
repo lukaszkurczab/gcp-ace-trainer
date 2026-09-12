@@ -31,6 +31,7 @@ import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { getDesignModeTitle, isDesignInterviewModeId, type DesignInterviewModeId } from "../../tracks/design-interview";
 import type { DesignResponse } from "../../tracks/design-interview";
+import { toCanonicalQuestionViewModel } from "./canonicalQuestionViewModel";
 import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./PracticeSessionSurface";
 import {
   allowsPracticeResponseEditing,
@@ -321,10 +322,10 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} ${t("of")} ${projection.total}` }}
     primaryAction={primaryAction}
     progress={projection.ordinal / projection.total}
-    question={{ constraints: [], itemId: projection.question.id, prompt: projection.question.prompt, responseControl }}
+    question={{ constraints: projection.question.constraints ?? [], itemId: projection.question.questionId, prompt: projection.question.prompt, responseControl }}
     retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : canRecover ? "Restore session" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}
-    runtimeIdentity={{ actualLength: projection.session.actualLength, feedbackTiming: "afterEachAnswer", itemId: projection.question.id, modeId: projection.session.modeId, ordinal: projection.ordinal, roadmapNodeId: projection.question.taxonomy.roadmapNodeId, sessionId: projection.session.id, trackId: projection.session.trackId }}
+    runtimeIdentity={{ actualLength: projection.session.actualLength, feedbackTiming: "afterEachAnswer", itemId: projection.question.questionId, modeId: projection.session.modeId, ordinal: projection.ordinal, roadmapNodeId: projection.question.nodeId, sessionId: projection.session.id, trackId: projection.session.trackId }}
     timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.elapsedForegroundMs)}`, label: formatElapsed(projection.elapsedForegroundMs) }}
   />;
 
@@ -339,42 +340,40 @@ function Unavailable({ navigation, title, description }: Readonly<{ navigation: 
 }
 
 function designRenderer(projection: DesignInterviewPracticeProjection): PracticeInteractionRenderer {
-  const interaction = projection.question.interaction;
-  if (interaction.type === "choice") return { kind: "choice", options: interaction.options.map((option) => ({ id: option.id, selected: false, text: option.text })) };
-  if (interaction.type === "ordering") return { kind: "ordering", elements: interaction.elements.map((element) => ({ id: element.id, text: element.text })) };
-  return { kind: "complexity", dimensions: interaction.dimensions.map((dimension) => ({ id: dimension.dimensionId, label: dimension.label, values: dimension.values.map((value) => value.valueId) })) };
+  return toCanonicalQuestionViewModel(projection.question).interaction;
 }
 
-function designResponseToLocal(response: DesignResponse | null): PracticeLocalResponse {
+function designResponseToLocal(response: import("../../content/canonical").CanonicalQuestionResponse | null): PracticeLocalResponse {
   if (!response) return null;
-  if (response.kind === "choice") return { kind: "choice", selectedOptionIds: response.selectedOptionIds };
-  if (response.kind === "ordering") return { kind: "ordering", orderedSubgoalIds: response.orderedElementIds };
-  return { kind: "complexity", selectedValuesByDimension: response.selectedValueIdsByDimension };
+  if (response.type === "choice_single") return { kind: "choice", selectedOptionIds: [response.optionId] };
+  if (response.type === "choice_multiple") return { kind: "choice", selectedOptionIds: response.optionIds };
+  if (response.type === "ordering") return { kind: "ordering", orderedSubgoalIds: response.orderedElementIds };
+  return { kind: "complexity", selectedValuesByDimension: Object.fromEntries(Object.entries(response.selectedValueIdsByDimension).map(([key, values]) => [key, values[0] ?? ""])) };
 }
 
-function toDesignResponse(response: Exclude<PracticeLocalResponse, null>): import("../../tracks/design-interview").DesignResponse {
-  if (response.kind === "choice") return response;
-  if (response.kind === "ordering") return { kind: "ordering", orderedElementIds: response.orderedSubgoalIds };
-  return { kind: "decision_matrix", selectedValueIdsByDimension: response.selectedValuesByDimension };
+function toDesignResponse(response: Exclude<PracticeLocalResponse, null>): import("../../content/canonical").CanonicalQuestionResponse {
+  if (response.kind === "choice") return response.selectedOptionIds.length > 1 ? { type: "choice_multiple", optionIds: response.selectedOptionIds } : { type: "choice_single", optionId: response.selectedOptionIds[0]! };
+  if (response.kind === "ordering") return { type: "ordering", orderedElementIds: response.orderedSubgoalIds };
+  return { type: "decision_matrix", selectedValueIdsByDimension: Object.fromEntries(Object.entries(response.selectedValuesByDimension).map(([key, value]) => [key, [value]])) };
 }
 
 function hasCompleteDesignResponse(projection: DesignInterviewPracticeProjection, response: PracticeLocalResponse): response is Exclude<PracticeLocalResponse, null> {
   if (!response) return false;
-  if (projection.question.interaction.type === "choice") return response.kind === "choice" && response.selectedOptionIds.length > 0;
+  if (projection.question.interaction.type === "choice_single" || projection.question.interaction.type === "choice_multiple") return response.kind === "choice" && response.selectedOptionIds.length > 0;
   if (projection.question.interaction.type === "ordering") return response.kind === "ordering" && response.orderedSubgoalIds.length === projection.question.interaction.elements.length;
   return response.kind === "complexity" && projection.question.interaction.dimensions.every((dimension) => typeof response.selectedValuesByDimension[dimension.dimensionId] === "string");
 }
 
 function toggleChoice(projection: DesignInterviewPracticeProjection, current: PracticeLocalResponse, optionId: string): Exclude<PracticeLocalResponse, null> {
   const ids = current?.kind === "choice" ? current.selectedOptionIds : [];
-  const next = projection.question.interaction.type === "choice" && projection.question.interaction.selectionMode === "multiple"
+  const next = projection.question.interaction.type === "choice_multiple"
     ? ids.includes(optionId) ? ids.filter((id) => id !== optionId) : [...ids, optionId]
     : [optionId];
   return { kind: "choice", selectedOptionIds: Object.freeze(next) };
 }
 
 function moveOrdering(projection: DesignInterviewPracticeProjection, current: PracticeLocalResponse, elementId: string, direction: "up" | "down"): Exclude<PracticeLocalResponse, null> {
-  const source = current?.kind === "ordering" ? [...current.orderedSubgoalIds] : projection.question.interaction.type === "ordering" ? projection.question.interaction.elements.map((element) => element.id) : [];
+  const source = current?.kind === "ordering" ? [...current.orderedSubgoalIds] : projection.question.interaction.type === "ordering" ? projection.question.interaction.elements.map((element) => element.elementId) : [];
   const index = source.indexOf(elementId);
   const target = direction === "up" ? index - 1 : index + 1;
   if (index < 0 || target < 0 || target >= source.length) return { kind: "ordering", orderedSubgoalIds: Object.freeze(source) };

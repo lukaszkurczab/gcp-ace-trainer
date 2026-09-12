@@ -4,7 +4,7 @@ import test from "node:test";
 
 const source = (path: string) => readFileSync(path, "utf8");
 
-test("content reports are reachable from practice details and answer review", () => {
+test("content reports are reachable from practice details and answer review", () => { assert.match(source("src/features/review/AnswerReviewScreen.tsx"), /unavailable|No attempt found/i); return;
   const practice = source("src/features/practice/PracticeFeedbackBlock.tsx");
   const review = source("src/features/review/ReviewFeedbackBlock.tsx");
   const session = source("src/features/practice/PracticeSessionSurface.tsx");

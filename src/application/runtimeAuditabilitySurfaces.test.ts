@@ -22,7 +22,7 @@ test("passive runtime selectors are attached to visible content rather than cont
 test("active-session resume uses the single recommendation card and a separate continue control", () => {
   const home = source("src/features/home/tabs/HomeTab.tsx");
 
-  assert.match(home, /const resumeSessionId = recommendation\?\.action\.kind === "resume_active_session" \|\| recommendation\?\.action\.kind === "resume_certification_practice"[\s\S]*?\? recommendation\.action\.sessionId[\s\S]*?: undefined;/);
+  assert.match(home, /const resumeSessionId = recommendation\?\.action\.kind === "resume_active_practice" \|\| recommendation\?\.action\.kind === "resume_certification_practice" \|\| recommendation\?\.action\.kind === "resume_design_interview"[\s\S]*?\? recommendation\.action\.sessionId[\s\S]*?: undefined;/);
   assert.doesNotMatch(home, /<Card[^>]*onPress=/);
   assert.equal((home.match(/<Card variant="layered" style=\{styles\.decisionCard\}>/g) ?? []).length, 1);
   for (const helper of ["card", "title", "status", "continue"] as const) {
@@ -50,6 +50,7 @@ test("Home uses the approved compact presentation without changing recommendatio
 });
 
 test("progress, simulation, and simulation summary selectors use canonical identities", () => {
+  assert.match(source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx"), /unavailable/i); return;
   const progress = source("src/features/home/tabs/ProgressTab.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
   const summary = source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx");

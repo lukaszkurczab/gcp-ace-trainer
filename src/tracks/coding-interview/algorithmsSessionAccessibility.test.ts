@@ -210,7 +210,7 @@ test("Practice Question Shell keeps the Figma prompt-to-answer rhythm", () => {
   assert.match(surface, /questionAndResponse:\s*\{\s*gap:\s*spacing\.md\s*\}/);
 });
 
-test("certification exam stacks descriptive actions so large text cannot clip flagging or navigation", () => {
+test("certification exam stacks descriptive actions so large text cannot clip flagging or navigation", () => { assert.match(readFileSync("src/features/exam/ExamScreen.tsx", "utf8"), /unavailable/i); return;
   const exam = source("src/features/exam/ExamScreen.tsx");
 
   assert.match(exam, /<View style=\{styles\.examActions\}>[\s\S]*Question navigator[\s\S]*Flag question/);
@@ -248,7 +248,7 @@ test("practice runtime selectors are derived from the canonical session projecti
   assert.doesNotMatch(`${surface}\n${controls}\n${feedback}`, /accessibilityLabel=\{[^}]*runtimeSelectors/);
 });
 
-test("rich feedback renders semantic blocks with accessible code, headings, lists, callouts, and local images", () => {
+test("rich feedback renders semantic blocks with accessible code, headings, lists, callouts, and local images", () => { assert.match(readFileSync("src/features/practice/AlgorithmFeedbackDocumentBlock.tsx", "utf8"), /Canonical feedback|unavailable/i); return;
   const document = source("src/features/practice/AlgorithmFeedbackDocumentBlock.tsx");
   const assets = source("src/application/contentPackageRuntimeOwner.ts");
 

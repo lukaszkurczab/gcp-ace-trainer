@@ -15,7 +15,8 @@ import {
   type PracticeFinalization,
   type PreparedSession,
 } from "../trainingLifecycle";
-import { isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId, type CertificationQuestion, type CertificationResponse } from "../../tracks/certification";
+import { isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
+import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
 
 type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; competency?: string; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
@@ -27,27 +28,27 @@ export type CertificationAbandonmentResult =
 
 export type CertificationPracticeProjection = Readonly<{
   session: TrainingSession;
-  question: CertificationQuestion;
+  question: Question;
   occurrenceId: string;
   ordinal: number;
   total: number;
   elapsedForegroundMs: number;
   operation: PracticeDurableOperationState;
-  response: Readonly<{ source: "committed" | "materialized"; value: CertificationResponse }> | null;
+  response: Readonly<{ source: "committed" | "materialized"; value: CanonicalQuestionResponse }> | null;
   feedback: Readonly<{
     result: AttemptResultKind;
-    reason: CertificationQuestion["feedback"]["reason"];
-    details: CertificationQuestion["feedback"]["details"];
+    reason: Question["feedback"]["reason"];
+    details: Question["feedback"]["details"];
   }> | null;
 }>;
 export type CertificationExamProjection = Readonly<{
   session: TrainingSession;
   draft: TrainingSessionDraft;
-  question: CertificationQuestion;
+  question: Question;
   occurrenceId: string;
   ordinal: number;
   total: number;
-  response: CertificationResponse | null;
+  response: CanonicalQuestionResponse | null;
   flaggedOccurrenceIds: readonly string[];
   now: string;
 }>;
@@ -110,16 +111,16 @@ export async function getCertificationPracticeProjection(): Promise<Certificatio
   const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId) ?? null;
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const responseAttempt = materializedAttempt ?? committedAttempt;
-  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item) as CertificationQuestion;
+  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
   const feedback = materializedAttempt ? Object.freeze({ result: materializedAttempt.result.kind, reason: question.feedback.reason, details: question.feedback.details }) : null;
   const [operation, time] = await Promise.all([
     lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),
     getForegroundSessionTimerFacade().projection(session),
   ]);
-  const response = responseAttempt ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: responseAttempt.response as CertificationResponse }) : null;
+  const response = responseAttempt ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: responseAttempt.response as CanonicalQuestionResponse }) : null;
   return Object.freeze({ session, question, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, elapsedForegroundMs: time.elapsedForegroundMs, operation, response, feedback });
 }
-export async function submitCertificationPracticeResponse(response: CertificationResponse): Promise<void> {
+export async function submitCertificationPracticeResponse(response: CanonicalQuestionResponse): Promise<void> {
   await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireCertificationPractice());
   await getTrainingLifecycleUseCases().submitPracticeResponse(response);
 }
@@ -269,9 +270,9 @@ export async function getCertificationExamProjection(): Promise<CertificationExa
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("Cloud exam occurrence is unavailable.");
   const raw = draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null;
-  return Object.freeze({ session, draft, question: await contentPackageRuntimeOwner.resolveItem(occurrence.item) as CertificationQuestion, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw as CertificationResponse | null, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: getTrainingLifecycleUseCases().currentTime() });
+  return Object.freeze({ session, draft, question: await contentPackageRuntimeOwner.resolveItem(occurrence.item), occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw as CanonicalQuestionResponse | null, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: getTrainingLifecycleUseCases().currentTime() });
 }
-export async function saveCertificationExamResponse(input: Readonly<{ occurrenceId: string; response: CertificationResponse }>): Promise<void> {
+export async function saveCertificationExamResponse(input: Readonly<{ occurrenceId: string; response: CanonicalQuestionResponse }>): Promise<void> {
   await assertCertificationExamIsActive();
   const projection = await getCertificationExamProjection();
   if (projection.occurrenceId !== input.occurrenceId) throw new Error("Cloud exam response does not belong to the active occurrence.");

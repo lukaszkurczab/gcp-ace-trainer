@@ -43,9 +43,9 @@ test("explicit practice routes skip the stored-track read and do not load review
 test("Hub review evidence is limited to due entries for the active track and exact package pin", async () => {
   const resolution = contentPackageRuntimeOwner.getPreparedDiscovery(TRACK_ID);
   const item = {
-    contentVersion: resolution.package.contentVersion,
+    contentVersion: resolution.track.contentVersion,
     itemId: "practice-item",
-    packagePin: resolution.package.packagePin,
+    packagePin: resolution.track.packagePin,
     trackId: TRACK_ID,
   } as const;
   const dueReview: ReviewQueueEntry = {

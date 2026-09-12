@@ -1,5 +1,5 @@
 import type { ReviewQueueEntry, TrainingAttempt } from "../../domain/learning";
-import type { CertificationResponse } from "./domain";
+import type { CertificationResponse } from "./domain/certificationResponse";
 
 export function createCertificationReviewEntry(
   attempt: TrainingAttempt<CertificationResponse>,

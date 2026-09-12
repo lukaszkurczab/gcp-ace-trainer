@@ -1,5 +1,4 @@
-/** Provider/exam-specific domains are content-owned and may expand per certification track. */
-export type CertificationDomain = string;
+import type { CertificationDomain } from "./certificationModes";
 
 export type CertificationQuestionType = "single" | "multiple";
 export type CertificationDifficulty = "easy" | "medium" | "hard";

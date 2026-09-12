@@ -182,6 +182,8 @@
   "Due review": "Due review",
   "Loading review queue": "Loading review queue",
   "Review unavailable": "Review unavailable",
+  "Exam review is unavailable": "Exam review is unavailable",
+  "This exam mode is not available in the current canonical content release.": "This exam mode is not available in the current canonical content release.",
   "All": "All",
   "Question": "Question",
   "Review": "Review",

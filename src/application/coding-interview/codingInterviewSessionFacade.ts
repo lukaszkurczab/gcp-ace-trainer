@@ -12,18 +12,13 @@ import {
 } from "../trainingLifecycle";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import type { ContentItemRef, TrainingSession } from "../../domain";
-import {
-  buildAlgorithmInteractionViewModel,
-  composeCommittedAlgorithmPracticeFeedback,
-  getAlgorithmsInterviewSimulationRemainingMs,
-  mutateAlgorithmsInterviewSimulationDraft,
-} from "../../tracks/coding-interview";
+import { buildCanonicalInteractionViewModel, composeCanonicalFeedback } from "../canonical/canonicalInteractionPresentation";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/coding-interview/domain";
-import type { AlgorithmsLifecyclePreparationRequest } from "./CodingInterviewFamilyRuntime";
+import type { AlgorithmsLifecyclePreparationRequest } from "./codingInterviewContracts";
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
-import type { AlgorithmFeedbackDocument } from "../../content/contracts";
-import type { AlgorithmQuestion } from "../../tracks/coding-interview/algorithmQuestionTypes";
+import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
+import { ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
 
@@ -38,16 +33,16 @@ export type AlgorithmsPracticeProjection = Readonly<{
   prompt: string;
   constraints: readonly string[];
   elapsedForegroundMs: number;
-  interaction: ReturnType<typeof buildAlgorithmInteractionViewModel>;
+  interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
   feedback: Readonly<{
     correctness: "correct" | "partial" | "incorrect";
     reason: string;
-    details: AlgorithmFeedbackDocument;
+    details: Question["feedback"]["details"];
     wrongOptionExplanations: readonly Readonly<{ optionId: string; text: string }>[];
     omittedCorrectOptionExplanations: readonly Readonly<{ optionId: string; text: string }>[];
     controls: readonly Readonly<{ id: string; state: "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" }> [];
   }> | null;
-  response: Readonly<{ source: "local" | "committed" | "materialized"; value: AlgorithmResponse }> | null;
+  response: Readonly<{ source: "local" | "committed" | "materialized"; value: CanonicalQuestionResponse }> | null;
 }>;
 
 export type AlgorithmsSimulationProjection = Readonly<{
@@ -58,7 +53,7 @@ export type AlgorithmsSimulationProjection = Readonly<{
   navigator: readonly Readonly<{ index: number; occurrenceId: string; answered: boolean; current: boolean }>[];
   item: ContentItemRef;
   prompt: string;
-  interaction: ReturnType<typeof buildAlgorithmInteractionViewModel>;
+  interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
   durableDraftRevision: number;
   elapsedForegroundMs: number;
   remainingForegroundMs: number;
@@ -85,15 +80,15 @@ export type AlgorithmsSessionResultProjection = Readonly<{
   feedbackItems: readonly Readonly<{
     constraints: readonly string[];
     correctness: "correct" | "partial" | "incorrect";
-    details: AlgorithmFeedbackDocument;
-    interaction: ReturnType<typeof buildAlgorithmInteractionViewModel>;
+    details: Question["feedback"]["details"];
+    interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
     item: ContentItemRef;
     itemId: string;
     occurrenceId: string;
     ordinal: number;
     prompt: string;
     reason: string;
-    controls: ReturnType<typeof composeCommittedAlgorithmPracticeFeedback>["controls"];
+    controls: readonly Readonly<{ id: string; state: "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" }>[];
   }>[];
   score: Readonly<{ correctCount: number; partialCount: number; incorrectCount: number; pointsEarned: number; maxPoints: number }> | null;
 }>;
@@ -132,15 +127,15 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
   if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("The active Algorithms session is an Interview Simulation.");
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
-  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item) as AlgorithmQuestion;
+  const question: Question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
   const lifecycle = getTrainingLifecycleUseCases();
   const pending = await lifecycle.getPendingMutationProjection(session.id);
   const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId);
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const attempt = materializedAttempt ?? committedAttempt;
-  const response = (attempt?.response ?? null) as AlgorithmResponse | null;
+  const response = (attempt?.response ?? null) as CanonicalQuestionResponse | null;
   const feedback = attempt && feedbackIsAvailableDuringPractice(session)
-    ? composeCommittedAlgorithmPracticeFeedback({ question, attempt: attempt as import("../../domain").TrainingAttempt<AlgorithmResponse> })
+    ? { ...composeCanonicalFeedback(question, response!), wrongOptionExplanations: Object.freeze([]), omittedCorrectOptionExplanations: Object.freeze([]), controls: Object.freeze([]) }
     : null;
   const [operation, time] = await Promise.all([
     lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),
@@ -152,19 +147,45 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
     session,
     position: position(session),
     item: occurrence.item,
-    roadmapNodeId: question.taxonomy.roadmapNodeId,
+    roadmapNodeId: question.nodeId,
     prompt: question.prompt,
     constraints: Object.freeze([...(question.constraints ?? [])]),
     elapsedForegroundMs: time.elapsedForegroundMs,
-    interaction: buildAlgorithmInteractionViewModel(question, response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
+    interaction: buildCanonicalInteractionViewModel(question, response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
     feedback,
     response: response ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: response }) : null,
   });
 }
 
 export async function submitAlgorithmsPracticeResponse(response: AlgorithmResponse): Promise<void> {
-  await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireAlgorithmsSession());
-  await getTrainingLifecycleUseCases().submitPracticeResponse(response);
+  const session = await requireAlgorithmsSession();
+  const occurrence = session.itemOrder[session.currentItemIndex];
+  if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
+  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+  await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
+  await getTrainingLifecycleUseCases().submitPracticeResponse(toCanonicalPracticeResponse(question, response));
+}
+
+export function toCanonicalPracticeResponse(question: Question, response: AlgorithmResponse): CanonicalQuestionResponse {
+  if (response.kind === "choice") {
+    if (question.interaction.type === "choice_single") {
+      if (response.selectedOptionIds.length !== 1) throw new Error("A canonical single-choice response requires exactly one option.");
+      return Object.freeze({ type: "choice_single", optionId: response.selectedOptionIds[0]! });
+    }
+    if (question.interaction.type === "choice_multiple") {
+      return Object.freeze({ type: "choice_multiple", optionIds: Object.freeze([...response.selectedOptionIds]) });
+    }
+  }
+  if (response.kind === "ordering" && question.interaction.type === "ordering") {
+    return Object.freeze({ type: "ordering", orderedElementIds: Object.freeze([...response.orderedSubgoalIds]) });
+  }
+  if (response.kind === "complexity" && (question.interaction.type === "complexity" || question.interaction.type === "decision_matrix")) {
+    const selectedValueIdsByDimension = Object.freeze(Object.fromEntries(
+      Object.entries(response.selectedValuesByDimension).map(([dimensionId, valueId]) => [dimensionId, Object.freeze([valueId])]),
+    ));
+    return Object.freeze({ type: question.interaction.type, selectedValueIdsByDimension });
+  }
+  throw new Error(`Response kind ${response.kind} does not match canonical interaction ${question.interaction.type}.`);
 }
 
 /** Replays the single durable practice operation that is already journaled. */
@@ -230,6 +251,9 @@ export async function recoverAlgorithmsPracticeCompletion(expectedSessionId: str
 }
 
 export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSimulationProjection> {
+  throw new ProductModeUnavailableError("Coding interview simulation is unavailable in the canonical product mode catalog.");
+  /* istanbul ignore next -- retained type boundary for the unavailable legacy route. */
+  /* eslint-disable no-unreachable */
   const session = await requireAlgorithmsSession();
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("The active Algorithms session is not an Interview Simulation.");
   const lifecycle = getTrainingLifecycleUseCases();
@@ -238,7 +262,7 @@ export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSim
   const index = session.currentItemIndex;
   if (!Number.isInteger(index) || index < 0 || index >= session.itemOrder.length) throw new Error("Interview Simulation navigator position is outside the immutable session.");
   const occurrence = session.itemOrder[index]!;
-  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item) as AlgorithmQuestion;
+  const question: Question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
   const time = await getForegroundSessionTimerFacade().projection(session);
   if (time.remainingForegroundMs === undefined) throw new Error("Interview Simulation countdown projection is unavailable.");
   const operation = await lifecycle.getSimulationOperationState(session);
@@ -255,10 +279,10 @@ export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSim
     }))),
     item: occurrence.item,
     prompt: question.prompt,
-    interaction: buildAlgorithmInteractionViewModel(question, (draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null) as AlgorithmResponse | null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
+    interaction: buildCanonicalInteractionViewModel(question, (draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null) as CanonicalQuestionResponse | null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
     durableDraftRevision: draft.revision,
     elapsedForegroundMs: time.elapsedForegroundMs,
-    remainingForegroundMs: time.remainingForegroundMs,
+    remainingForegroundMs: time.remainingForegroundMs!,
   });
 }
 
@@ -303,14 +327,12 @@ export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurre
   const session = await requireAlgorithmsSession();
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation has a persisted response draft.");
   const draft = await requireSimulationDraft(session.id);
-  const nextDraft = mutateAlgorithmsInterviewSimulationDraft({
-    entries: ((await contentPackageRuntimeOwner.resolveExact(session.packagePin)).profile.items as readonly AlgorithmQuestion[]).map((question) => ({ question, roadmapNodeId: question.taxonomy.roadmapNodeId })),
-    occurrenceId: input.occurrenceId,
-    response: input.response,
-    session,
-    draft,
-    updatedAt: getTrainingLifecycleUseCases().currentTime(),
-  });
+  const occurrence = session.itemOrder.find((item) => item.occurrenceId === input.occurrenceId);
+  if (!occurrence) throw new Error(`Algorithms Interview Simulation occurrence ${input.occurrenceId} is unknown.`);
+  const responses = { ...draft.responsesByOccurrenceId };
+  if (input.response === null) delete responses[input.occurrenceId];
+  else responses[input.occurrenceId] = input.response;
+  const nextDraft = Object.freeze({ ...draft, revision: draft.revision + 1, responsesByOccurrenceId: Object.freeze(responses), updatedAt: getTrainingLifecycleUseCases().currentTime() });
   await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
   await getTrainingLifecycleUseCases().saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision });
 }
@@ -564,22 +586,19 @@ async function completedFeedbackItems(session: TrainingSession, attempts: readon
     if (attemptsByOccurrenceId.has(attempt.occurrenceId)) throw new Error("Completed Algorithms session has duplicate attempts for one occurrence.");
     attemptsByOccurrenceId.set(attempt.occurrenceId, attempt);
   }
-  const questions = await Promise.all(session.itemOrder.map((occurrence) => contentPackageRuntimeOwner.resolveItem(occurrence.item) as Promise<AlgorithmQuestion>));
+  const questions: readonly Question[] = await Promise.all(session.itemOrder.map((occurrence) => contentPackageRuntimeOwner.resolveItem(occurrence.item)));
   return Object.freeze(session.itemOrder.flatMap((occurrence, index) => {
     const attempt = attemptsByOccurrenceId.get(occurrence.occurrenceId);
     if (!attempt) return [];
     const question = questions[index]!;
-    const feedback = composeCommittedAlgorithmPracticeFeedback({
-      question,
-      attempt: attempt as import("../../domain").TrainingAttempt<AlgorithmResponse>,
-    });
+    const feedback = composeCanonicalFeedback(question, attempt.response as CanonicalQuestionResponse);
     return [Object.freeze({
       constraints: Object.freeze([...(question.constraints ?? [])]),
       correctness: feedback.correctness,
       details: feedback.details,
-      interaction: buildAlgorithmInteractionViewModel(
+      interaction: buildCanonicalInteractionViewModel(
         question,
-        attempt.response as AlgorithmResponse,
+        attempt.response as CanonicalQuestionResponse,
         session.optionOrderByOccurrence[occurrence.occurrenceId] ?? [],
       ),
       item: occurrence.item,
@@ -588,7 +607,7 @@ async function completedFeedbackItems(session: TrainingSession, attempts: readon
       ordinal: index + 1,
       prompt: question.prompt,
       reason: feedback.reason,
-      controls: feedback.controls,
+      controls: Object.freeze([]),
     })];
   }));
 }

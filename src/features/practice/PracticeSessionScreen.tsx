@@ -47,6 +47,7 @@ import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { CertificationPracticeSessionScreen } from "./CertificationPracticeSessionScreen";
 import { DesignInterviewPracticeScreen } from "./DesignInterviewPracticeScreen";
+import { canonicalResponseToPracticeLocalResponse } from "./canonicalQuestionViewModel";
 
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
@@ -192,7 +193,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const responseControl = buildPracticeResponseControl({
     choiceSelectionMode: projection.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single",
     feedbackControls: projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" ? projection.feedback?.controls : undefined,
-    localResponse: localResponse ?? projection.response?.value ?? null,
+    localResponse: localResponse ?? canonicalResponseToPracticeLocalResponse(projection.response?.value ?? null),
     renderer: projection.interaction.renderer,
   });
   const effectiveLocalResponse = resolvePracticeLocalResponse(localResponse, responseControl);

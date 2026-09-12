@@ -1,5 +1,5 @@
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
-import type { FeedbackDocument } from "../../content/contracts";
+import type { JsonValue } from "../../content/canonical";
 export type PracticeSurfacePhase = "preparing" | PracticeDurableOperationState["kind"];
 
 export type PracticeOptionState = "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct";
@@ -31,9 +31,10 @@ export type PracticeResponseControl =
   | PracticeComplexityControl;
 
 export type PracticeFeedback = Readonly<{
-  details: FeedbackDocument;
+  details: JsonValue;
   reason: string;
   result: "correct" | "partial" | "incorrect";
+  messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[];
 }>;
 
 export type PracticeInteractionRenderer =

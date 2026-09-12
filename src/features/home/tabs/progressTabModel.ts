@@ -6,17 +6,14 @@ import {
 import { contentPackagePinsEqual, type ContentPackagePin, type ReviewQueueEntry, type TrainingAttempt } from "../../../domain";
 import {
   ALGORITHM_MODE_IDS,
-  buildAlgorithmProgressFacts,
-  buildAlgorithmWeakAreaRecommendation,
   type AlgorithmModeId,
-  type AlgorithmRoadmapNodeProgressStatus,
 } from "../../../tracks/coding-interview";
+import type { Question } from "../../../content/canonical";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
 import { getDomainLabel } from "../../../utils";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { contentPackageRuntimeOwner } from "../../../application/contentPackageRuntimeOwner";
-import type { AlgorithmQuestion } from "../../../tracks/coding-interview/algorithmQuestionTypes";
 import {
   buildPracticeSessionConfig,
   type PracticeSessionMode,
@@ -229,20 +226,20 @@ function buildInstalledPackageProgressTabModel(
   now: string,
 ): ProgressTabModel {
   const packageResolution = contentPackageRuntimeOwner.getPreparedDiscovery(trackId);
-  const packageItems = packageResolution.profile.items as readonly PackageProgressItem[];
+  const packageItems = packageResolution.track.questions.map((question) => ({ id: question.questionId, taxonomy: { roadmapNodeId: question.nodeId } })) as readonly PackageProgressItem[];
   const packageItemIds = new Set(packageItems.map((item) => item.id));
   const currentAttempts = trainingAttempts.filter((attempt) =>
     attempt.trackId === trackId &&
     attempt.item.trackId === trackId &&
-    attempt.item.contentVersion === packageResolution.package.contentVersion &&
-    contentPackagePinsEqual(attempt.item.packagePin, packageResolution.package.packagePin) &&
+    attempt.item.contentVersion === packageResolution.track.contentVersion &&
+    contentPackagePinsEqual(attempt.item.packagePin, packageResolution.track.packagePin) &&
     packageItemIds.has(attempt.item.itemId),
   );
   const currentReviews = reviewQueueItems.filter((entry) =>
     entry.trackId === trackId &&
     entry.sourceItem.trackId === trackId &&
-    entry.sourceItem.contentVersion === packageResolution.package.contentVersion &&
-    contentPackagePinsEqual(entry.sourceItem.packagePin, packageResolution.package.packagePin) &&
+    entry.sourceItem.contentVersion === packageResolution.track.contentVersion &&
+    contentPackagePinsEqual(entry.sourceItem.packagePin, packageResolution.track.packagePin) &&
     packageItemIds.has(entry.sourceItem.itemId),
   );
   const dueReviewCount = currentReviews.filter((entry) => entry.dueAt <= now).length;
@@ -250,11 +247,12 @@ function buildInstalledPackageProgressTabModel(
 
   for (const attempt of currentAttempts) {
     const item = packageItems.find((candidate) => candidate.id === attempt.item.itemId);
+    const firstNodeId = packageItems[0]?.taxonomy?.roadmapNodeId;
     const nodeId = typeof item?.domain === "string"
       ? item.domain
       : typeof item?.taxonomy?.roadmapNodeId === "string"
         ? item.taxonomy.roadmapNodeId
-        : packageResolution.profile.freeNodeId;
+        : typeof firstNodeId === "string" ? firstNodeId : "unknown";
     const score = scores.get(nodeId) ?? { correct: 0, earned: 0, max: 0, total: 0 };
     scores.set(nodeId, {
       correct: score.correct + (attempt.result.kind === "correct" ? 1 : 0),
@@ -264,7 +262,7 @@ function buildInstalledPackageProgressTabModel(
     });
   }
 
-  const freeNodeLabel = getDomainLabel(packageResolution.profile.freeNodeId as CertificationDomain);
+  const freeNodeLabel = getDomainLabel((packageItems[0]?.taxonomy?.roadmapNodeId ?? "operations") as CertificationDomain);
   return {
     activity: buildActivityItems(activityRecords, trackId, now),
     activitySummary: {
@@ -360,38 +358,29 @@ function buildAlgorithmsProgressTabModel(
   now: string,
 ): ProgressTabModel {
   const packageResolution = contentPackageRuntimeOwner.getPreparedDiscovery(CODING_INTERVIEW_TRACK_ID);
-  const packageItems = packageResolution.profile.items as readonly AlgorithmQuestion[];
-  const facts = buildAlgorithmProgressFacts({
-    attempts: trainingAttempts,
-    content: {
-      contentVersion: packageResolution.package.contentVersion,
-      items: packageItems,
-      packagePin: packageResolution.package.packagePin,
-    },
-    now,
-    reviewQueueItems,
-  });
+  const packageItems = packageResolution.track.questions;
+  const facts = buildCanonicalProgressFacts(packageItems, trainingAttempts, reviewQueueItems, now, packageResolution.track.contentVersion);
   const algorithmsReviewItems = reviewQueueItems.filter((item) =>
     item.trackId === CODING_INTERVIEW_TRACK_ID &&
     item.sourceItem.trackId === CODING_INTERVIEW_TRACK_ID &&
     item.sourceItem.contentVersion === facts.contentVersion &&
-    contentPackagePinsEqual(item.sourceItem.packagePin, packageResolution.package.packagePin),
+    contentPackagePinsEqual(item.sourceItem.packagePin, packageResolution.track.packagePin),
   );
   const dueReviewItems = algorithmsReviewItems.filter((item) => item.dueAt <= now);
   const dueReviewCount = dueReviewItems.length;
   const currentAttempts = trainingAttempts.filter((attempt) =>
     attempt.trackId === CODING_INTERVIEW_TRACK_ID &&
     attempt.item.trackId === CODING_INTERVIEW_TRACK_ID &&
-    attempt.item.contentVersion === packageResolution.package.contentVersion &&
-    contentPackagePinsEqual(attempt.item.packagePin, packageResolution.package.packagePin) &&
-    packageItems.some((item) => item.id === attempt.item.itemId),
+    attempt.item.contentVersion === packageResolution.track.contentVersion &&
+    contentPackagePinsEqual(attempt.item.packagePin, packageResolution.track.packagePin) &&
+    packageItems.some((item) => item.questionId === attempt.item.itemId),
   );
   const algorithmsProgress = buildAlgorithmsProgressScreenModel({
     dueReviewItems,
     facts,
-    packageContentVersion: packageResolution.package.contentVersion,
+    packageContentVersion: packageResolution.track.contentVersion,
     packageItems,
-    packagePin: packageResolution.package.packagePin,
+    packagePin: packageResolution.track.packagePin,
     trainingAttempts: currentAttempts,
   });
 
@@ -426,6 +415,52 @@ function buildAlgorithmsProgressTabModel(
   };
 }
 
+type CanonicalNodeProgress = {
+  uniquePracticedItemCount: number;
+  itemCount: number;
+  label: string;
+  nodeId: string;
+  status: "not_started" | "practicing" | "review_due";
+  itemCoveragePercent: number;
+  sampledCoreSkillAtomCount: number;
+  coreSkillAtomCount: number;
+  dueReviewCount: number;
+  remediationDueCount: number;
+  criticalRemediationDueCount: number;
+};
+type CanonicalProgressFacts = {
+  activeRoadmapNode: { id: string; label: string };
+  contentVersion: string;
+  correctCount: number;
+  incorrectCount: number;
+  itemsCompleted: number;
+  nodeProgress: CanonicalNodeProgress[];
+  partialCount: number;
+  roadmapNodesStarted: number;
+};
+
+function buildCanonicalProgressFacts(
+  questions: readonly Question[],
+  attempts: readonly TrainingAttempt[],
+  reviews: readonly ReviewQueueEntry[],
+  now: string,
+  contentVersion: string,
+): CanonicalProgressFacts {
+  const current = attempts.filter((attempt) => attempt.trackId === CODING_INTERVIEW_TRACK_ID && attempt.item.contentVersion === contentVersion);
+  const latest = new Map<string, TrainingAttempt>();
+  for (const attempt of current.sort((a, b) => a.answeredAt.localeCompare(b.answeredAt) || a.id.localeCompare(b.id))) latest.set(attempt.item.itemId, attempt);
+  const byNode = new Map<string, Question[]>();
+  for (const question of questions) (byNode.get(question.nodeId) ?? (byNode.set(question.nodeId, []), byNode.get(question.nodeId)!)).push(question);
+  const nodeProgress = [...byNode].map(([nodeId, nodeQuestions]) => {
+    const practiced = nodeQuestions.filter((question) => latest.has(question.questionId)).length;
+    const due = reviews.filter((review) => review.dueAt <= now && nodeQuestions.some((question) => question.questionId === review.sourceItem.itemId)).length;
+    const status: CanonicalNodeProgress["status"] = due > 0 ? "review_due" : practiced > 0 ? "practicing" : "not_started";
+    return { uniquePracticedItemCount: practiced, itemCount: nodeQuestions.length, label: nodeId, nodeId, status, itemCoveragePercent: nodeQuestions.length ? Math.round(practiced / nodeQuestions.length * 100) : 0, sampledCoreSkillAtomCount: 0, coreSkillAtomCount: 0, dueReviewCount: due, remediationDueCount: due, criticalRemediationDueCount: 0 };
+  });
+  const active = nodeProgress.find((node) => node.uniquePracticedItemCount > 0) ?? nodeProgress[0] ?? { nodeId: "", label: "", itemCount: 0 };
+  return { activeRoadmapNode: { id: active.nodeId, label: active.label }, contentVersion, correctCount: current.filter((a) => a.result.kind === "correct").length, incorrectCount: current.filter((a) => a.result.kind === "incorrect").length, partialCount: current.filter((a) => a.result.kind === "partial").length, itemsCompleted: latest.size, roadmapNodesStarted: nodeProgress.filter((node) => node.uniquePracticedItemCount > 0).length, nodeProgress };
+}
+
 function buildActivityItems(
   records: readonly ActivitySessionRecord[],
   trackId: TrackDisplay["id"],
@@ -445,7 +480,7 @@ type AlgorithmsRemediationState = {
 
 function getAlgorithmsRemediationState(input: {
   dueReviewItems: readonly ReviewQueueEntry[];
-  nodeProgress: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"];
+  nodeProgress: CanonicalProgressFacts["nodeProgress"];
 }): AlgorithmsRemediationState {
   const remediationItems = input.dueReviewItems.filter(
     (item) => item.persistent,
@@ -473,9 +508,9 @@ function getAlgorithmsRemediationState(input: {
 
 function buildAlgorithmsProgressScreenModel(input: {
   dueReviewItems: readonly ReviewQueueEntry[];
-  facts: ReturnType<typeof buildAlgorithmProgressFacts>;
+  facts: CanonicalProgressFacts;
   packageContentVersion: string;
-  packageItems: readonly AlgorithmQuestion[];
+  packageItems: readonly Question[];
   packagePin: ContentPackagePin;
   trainingAttempts: readonly TrainingAttempt[];
 }): AlgorithmsProgressScreenModel {
@@ -495,14 +530,7 @@ function buildAlgorithmsProgressScreenModel(input: {
     dueReviewItems: input.dueReviewItems,
     nodeProgress: input.facts.nodeProgress,
   });
-  const weakRecommendation = buildAlgorithmWeakAreaRecommendation(
-    input.trainingAttempts,
-    input.packageItems,
-    input.packageContentVersion,
-    input.packagePin,
-    undefined,
-    focusNode.nodeId,
-  );
+  const weakRecommendation = undefined;
   const focusStatus = getCurrentFocusStatus(focusNode);
   return {
     priority: buildLearningPriority({
@@ -547,7 +575,7 @@ function buildAlgorithmsProgressScreenModel(input: {
     diagnostics: {
       collapsedByDefault: true,
       hideActionLabel: "Hide details",
-      mistakePatterns: weakRecommendation.selectedMistakeTypes.map(formatAlgorithmSignalLabel),
+      mistakePatterns: [],
       outcomeSummary: [
         { label: "Correct", value: input.facts.correctCount },
         { label: "Partial", value: input.facts.partialCount },
@@ -571,9 +599,9 @@ const ALGORITHM_TREND_WINDOW = 40;
 const ALGORITHM_TREND_POINT_COUNT = 4;
 
 function buildAlgorithmEvidenceModel(input: {
-  facts: ReturnType<typeof buildAlgorithmProgressFacts>;
-  focusNode: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number];
-  packageItems: readonly AlgorithmQuestion[];
+  facts: CanonicalProgressFacts;
+  focusNode: CanonicalProgressFacts["nodeProgress"][number];
+  packageItems: readonly Question[];
   trainingAttempts: readonly TrainingAttempt[];
 }): Pick<AlgorithmsProgressScreenModel, "effectivenessTrend" | "evidenceSummary" | "trackNodes"> {
   const attemptsByNode = groupScoredAlgorithmAttemptsByNode(input.trainingAttempts, input.packageItems);
@@ -635,14 +663,14 @@ function buildAlgorithmEvidenceModel(input: {
 
 function groupScoredAlgorithmAttemptsByNode(
   attempts: readonly TrainingAttempt[],
-  packageItems: readonly AlgorithmQuestion[],
+  packageItems: readonly Question[],
 ): Map<string, TrainingAttempt[]> {
-  const itemById = new Map(packageItems.map((item) => [item.id, item]));
+  const itemById = new Map(packageItems.map((item) => [item.questionId, item]));
   const attemptsByNode = new Map<string, TrainingAttempt[]>();
 
   for (const attempt of sortAttemptsChronologically(attempts)) {
     if (attempt.result.maxPoints <= 0) continue;
-    const nodeId = itemById.get(attempt.item.itemId)?.taxonomy.roadmapNodeId;
+    const nodeId = itemById.get(attempt.item.itemId)?.nodeId;
     if (!nodeId) continue;
     const nodeAttempts = attemptsByNode.get(nodeId) ?? [];
     nodeAttempts.push(attempt);
@@ -698,8 +726,8 @@ function formatTrackNodeEvidence(
 
 function buildLearningPriority(input: {
   dueReviewItems: readonly ReviewQueueEntry[];
-  focusNode: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number];
-  nextNode?: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number];
+  focusNode: CanonicalProgressFacts["nodeProgress"][number];
+  nextNode?: CanonicalProgressFacts["nodeProgress"][number];
   remediationState: AlgorithmsRemediationState;
 }): LearningPriorityModel {
   if (input.remediationState.remediationCount > 0) {
@@ -791,13 +819,13 @@ function buildAlgorithmsAction(
 }
 
 function buildContinuePriorityDetail(
-  node: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number],
+  node: CanonicalProgressFacts["nodeProgress"][number],
 ): string {
   return `${node.uniquePracticedItemCount} ${node.uniquePracticedItemCount === 1 ? "item records" : "items record"} evidence across ${node.sampledCoreSkillAtomCount} ${node.sampledCoreSkillAtomCount === 1 ? "core skill" : "core skills"}. Continue here for more varied practice, or choose another topic.`;
 }
 
 function buildFocusExplanation(
-  node: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number],
+  node: CanonicalProgressFacts["nodeProgress"][number],
 ): string {
   if (node.remediationDueCount > 0) {
     return `${node.remediationDueCount} ${node.remediationDueCount === 1 ? "review item is" : "review items are"} due from this topic. This does not restrict other topics.`;
@@ -811,7 +839,7 @@ function buildFocusExplanation(
 }
 
 function buildRoadmapSummary(
-  nodes: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"],
+  nodes: CanonicalProgressFacts["nodeProgress"],
   focusIndex: number,
 ): RoadmapSummaryNodeModel[] {
   const startIndex = Math.max(0, focusIndex - 1);
@@ -820,7 +848,7 @@ function buildRoadmapSummary(
 }
 
 function buildRoadmapNodes(
-  nodes: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"],
+  nodes: CanonicalProgressFacts["nodeProgress"],
   focusIndex: number,
 ): RoadmapSummaryNodeModel[] {
   return nodes.map((node, index) => {
@@ -846,14 +874,14 @@ function buildRoadmapNodes(
   });
 }
 
-function getNodeTone(status: AlgorithmRoadmapNodeProgressStatus): LearningTone {
+function getNodeTone(status: CanonicalNodeProgress["status"]): LearningTone {
   if (status === "review_due") return "warning";
   if (status === "practicing") return "info";
   return "muted";
 }
 
 function getCurrentFocusStatus(
-  node: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number],
+  node: CanonicalProgressFacts["nodeProgress"][number],
 ): { label: CurrentFocusModel["statusLabel"]; tone: LearningTone } {
   if (node.remediationDueCount > 0) {
     return {
@@ -869,9 +897,9 @@ function getCurrentFocusStatus(
 }
 
 function getNodeEvidenceLabel(node: {
-  status: AlgorithmRoadmapNodeProgressStatus;
+  status: CanonicalNodeProgress["status"];
 }): CurrentFocusModel["statusLabel"] {
-  const labels: Record<AlgorithmRoadmapNodeProgressStatus, CurrentFocusModel["statusLabel"]> = {
+  const labels: Record<CanonicalNodeProgress["status"], CurrentFocusModel["statusLabel"]> = {
     not_started: "Not started",
     practicing: "Practicing",
     review_due: "Review due",

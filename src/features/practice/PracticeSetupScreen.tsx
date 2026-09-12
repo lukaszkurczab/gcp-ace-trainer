@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 
 import { AppShellHeader, Button, Card, ChoiceRow, EmptyState, Screen, ScreenHeader, SectionHeader, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { CODING_INTERVIEW_TRACK_ID, contentPackagePinsEqual, getTrackDisplay } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, getTrackDisplay } from "../../domain";
 import { goBackOrHome } from "../../navigation/goBackOrHome";
 import type { RootStackParamList } from "../../navigation/types";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
@@ -37,7 +37,7 @@ import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import type { VerifiedPackageMode } from "../../content/contracts";
+import type { ProductModeConfig } from "../../content/canonical";
 
 type PracticeSetupScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -240,29 +240,33 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   if (!resolvedTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   if (formIdentity !== activeFormIdentity) return renderLoading();
   let activeTrack: ReturnType<typeof getTrackDisplay>;
-  let packageProfile: ReturnType<typeof contentPackageRuntimeOwner.getPreparedDiscovery>["profile"];
+  let canonicalTrack: ReturnType<typeof contentPackageRuntimeOwner.getPreparedDiscovery>["track"];
   try {
     activeTrack = getTrackDisplay(resolvedTrackId);
-    packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
+    canonicalTrack = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track;
   } catch (error) {
     return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
   }
-  if ((route.params?.expectedContentVersion !== undefined && route.params.expectedContentVersion !== packageProfile.contentVersion) ||
-    (route.params?.expectedContentPackagePin !== undefined && !contentPackagePinsEqual(route.params.expectedContentPackagePin, packageProfile.packagePin))) {
+  if ((route.params?.expectedContentVersion !== undefined && route.params.expectedContentVersion !== canonicalTrack.contentVersion) ||
+    (route.params?.expectedContentPackagePin !== undefined && route.params.expectedContentPackagePin.packageIdentity !== canonicalTrack.packagePin.packageIdentity)) {
     return renderUnavailable(t("This learning plan uses a different content package. Review the plan before starting."));
   }
-  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) {
+  const canonicalNodeMode = canonicalTrack.modes.find((mode) => mode.selection.kind === "node");
+  const canonicalNodeId = canonicalNodeMode?.selection.kind === "node"
+    ? canonicalNodeMode.selection.nodeId
+    : "";
+  if (route.params?.topicId !== undefined && route.params.topicId !== canonicalNodeId) {
     return renderUnavailable(t("This topic is not included in your free content."));
   }
-  const requestedMode = route.params?.mode ?? packageProfile.primaryEntry.modeId;
+  const requestedMode = route.params?.mode ?? canonicalTrack.modes[0]?.modeId;
   if (typeof requestedMode !== "string") return renderUnavailable(t("This practice mode is unavailable."));
   if (activeTrack.familyId === "coding_interview" && !isAlgorithmModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
   if (activeTrack.familyId === "certification" && !isCertificationPracticeModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
   if (activeTrack.familyId === "design_interview" && !isDesignInterviewModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
   const selectedMode = requestedMode as PracticeSessionMode;
-  let selectedPackageMode: VerifiedPackageMode;
+  let selectedPackageMode: ProductModeConfig;
   try {
-    selectedPackageMode = packageProfile.getMode(selectedMode);
+    selectedPackageMode = canonicalTrack.getMode(selectedMode);
   } catch (error) {
     return renderUnavailable(describeOperationalFailure(error, t("This practice mode is unavailable.")));
   }
@@ -292,12 +296,12 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
   }
   const selectedFocusTopicId = focusPractice
-    ? focusTopicId ?? packageProfile.freeNodeId
+    ? focusTopicId ?? canonicalNodeId
     : null;
 
   function startSession() {
     const mode = selectedMode;
-    if (focusPractice && selectedFocusTopicId !== packageProfile.freeNodeId) {
+    if (focusPractice && selectedFocusTopicId !== canonicalNodeId) {
       setSetupError("Choose an available topic to start practicing.");
       return;
     }
@@ -314,7 +318,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
             : diagnosticBaseline || quickReview ? {} : focusPractice || weakAreaReview || designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         mode,
         source: "practiceSetup",
-        topicId: diagnosticBaseline ? packageProfile.freeNodeId : focusPractice ? selectedFocusTopicId! : weakAreaReview || quickReview ? "" : topic.id,
+        topicId: diagnosticBaseline ? canonicalNodeId : focusPractice ? selectedFocusTopicId! : weakAreaReview || quickReview ? "" : topic.id,
         trackId: activeTrack.id,
       }),
     );

@@ -1,6 +1,6 @@
 import type { IconName } from "../../../components";
 import type { TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
-import type { AlgorithmsRecommendationAction, CodingInterviewDashboard } from "../../../application/coding-interview";
+import type { CodingInterviewDashboard, HomeRecommendationAction as CanonicalHomeRecommendationAction, CanonicalRecommendationReason } from "../../../application/coding-interview";
 import { getCertificationMode, isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../../tracks/certification";
 import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../../tracks/design-interview";
 import { buildCertificationPracticeResumeRoute, buildDesignInterviewPracticeResumeRoute } from "../../practice/sessionConfig";
@@ -26,7 +26,7 @@ export type DesignInterviewPracticeResumeAction = Readonly<{
   sessionId: string;
 }>;
 
-export type HomeRecommendationAction = AlgorithmsRecommendationAction | CertificationPracticeResumeAction | DesignInterviewPracticeResumeAction;
+export type HomeRecommendationAction = CanonicalHomeRecommendationAction | CertificationPracticeResumeAction | DesignInterviewPracticeResumeAction;
 
 export type HomeRecommendationModel = {
   detail: string;
@@ -156,41 +156,34 @@ function buildAlgorithmsRecommendations(input: BuildHomeTabModelInput): HomeReco
     label: labelFor(recommendation.reason),
     primaryLabel: primaryLabelFor(recommendation.reason),
     title: titleFor(recommendation.reason),
-    tone: recommendation.reason === "active_session" || recommendation.reason === "overdue_review" || recommendation.reason === "repeated_mistake" ? "primary" : "info",
+    tone: recommendation.reason === "active_session" || recommendation.reason === "due_review" || recommendation.reason === "session_misses" ? "primary" : "info",
     unavailableReason,
   }];
 }
 
-function primaryLabelFor(reason: CodingInterviewDashboard["recommendation"]["reason"]): string {
+function primaryLabelFor(reason: CanonicalRecommendationReason): string {
   if (reason === "active_session") return "Continue session";
-  if (reason === "overdue_review" || reason === "repeated_mistake") return "Start review";
-  if (reason === "learn_approach") return "Start session";
-  if (reason === "guided_practice") return "Start guided practice";
-  if (reason === "contrast_practice") return "Start contrast practice";
-  if (reason === "recognize_patterns") return "Start pattern practice";
-  return "Choose practice scope";
+  if (reason === "due_review" || reason === "session_misses") return "Start review";
+  if (reason === "recommended") return "Start session";
+  return "Choose practice mode";
 }
 
-function iconFor(reason: CodingInterviewDashboard["recommendation"]["reason"]): IconName {
+function iconFor(reason: CanonicalRecommendationReason): IconName {
   if (reason === "active_session") return "play";
-  if (reason === "overdue_review" || reason === "repeated_mistake") return "cpu";
-  if (reason === "learn_approach") return "cpu";
+  if (reason === "due_review" || reason === "session_misses" || reason === "recommended") return "cpu";
   return "route";
 }
 
-function labelFor(reason: CodingInterviewDashboard["recommendation"]["reason"]): string {
+function labelFor(reason: CanonicalRecommendationReason): string {
   if (reason === "active_session") return "Continue";
-  if (reason === "overdue_review") return "Due review";
-  if (reason === "repeated_mistake") return "Priority review";
+  if (reason === "due_review") return "Due review";
+  if (reason === "session_misses") return "Priority review";
   return "Recommended";
 }
 
-function titleFor(reason: CodingInterviewDashboard["recommendation"]["reason"]): string {
+function titleFor(reason: CanonicalRecommendationReason): string {
   if (reason === "active_session") return "Continue active session";
-  if (reason === "overdue_review" || reason === "repeated_mistake") return "Weak Area Review";
-  if (reason === "learn_approach") return "Learn Approach";
-  if (reason === "guided_practice") return "Guided Practice";
-  if (reason === "contrast_practice") return "Contrast Practice";
-  if (reason === "recognize_patterns") return "Recognize Patterns";
-  return "Independent Practice";
+  if (reason === "due_review" || reason === "session_misses") return "Weak Area Review";
+  if (reason === "recommended") return "Recommended Practice";
+  return "Choose Practice Mode";
 }

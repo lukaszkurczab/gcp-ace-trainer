@@ -14,7 +14,7 @@ import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { spacing, typography, type AppColors } from "../../theme";
 import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/certification";
-import { ReviewFeedbackBlock } from "./ReviewFeedbackBlock";
+import { canonicalJsonValueText } from "../practice/canonicalQuestionViewModel";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ANSWER_REVIEW>;
 
@@ -143,26 +143,26 @@ function AnswerReviewContent({ answer, disabled, needsReview, onToggle }: Readon
     <View style={styles.answerContent}>
       <View style={styles.questionBlock}>
         <Text maxFontSizeMultiplier={2} style={styles.questionEyebrow}>{t("Question").toUpperCase()}</Text>
-        <Text maxFontSizeMultiplier={2} style={styles.question}>{answer.questionSnapshot.question}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.question}>{answer.questionSnapshot.prompt}</Text>
       </View>
       <View style={styles.questionOptionsSpacer} />
       <View style={styles.options}>
-        {answer.questionSnapshot.options.map((option, index) => (
+        {(answer.questionSnapshot.interaction.type === "choice_single" || answer.questionSnapshot.interaction.type === "choice_multiple") ? answer.questionSnapshot.interaction.options.map((option, index) => (
           <AnswerOption
             accessibilityLabel={option.text}
-            accessibilityRole={answer.questionSnapshot.type === "multiple" ? "checkbox" : "radio"}
-            accessibilityState={{ checked: selected.has(option.id), disabled: true }}
+            accessibilityRole={answer.questionSnapshot.interaction.type === "choice_multiple" ? "checkbox" : "radio"}
+            accessibilityState={{ checked: selected.has(option.optionId), disabled: true }}
             disabled
-            key={option.id}
+            key={option.optionId}
             letter={String.fromCharCode(65 + index)}
             onPress={() => undefined}
-            state={answerOptionState(selected.has(option.id), correct.has(option.id))}
+            state={answerOptionState(selected.has(option.optionId), correct.has(option.optionId))}
             text={option.text}
           />
-        ))}
+        )) : null}
       </View>
       <View style={styles.optionsFeedbackSpacer} />
-      {answer.isAnswered ? <ReviewFeedbackBlock feedback={answer.questionSnapshot.feedback} item={answer.item} reportSurface={{ modeRoute: "answer_review", trackNode: answer.questionSnapshot.domain }} /> : <Text maxFontSizeMultiplier={2} style={styles.unanswered}>{t("Unanswered")}</Text>}
+      {answer.isAnswered ? <View style={styles.feedbackReason}><Text style={styles.questionEyebrow}>{t("Reason")}</Text><Text style={styles.reason}>{answer.questionSnapshot.feedback.reason}</Text>{canonicalJsonValueText(answer.questionSnapshot.feedback.details) ? <Text style={styles.reason}>{canonicalJsonValueText(answer.questionSnapshot.feedback.details)}</Text> : null}</View> : <Text maxFontSizeMultiplier={2} style={styles.unanswered}>{t("Unanswered")}</Text>}
       <Button disabled={disabled} onPress={onToggle} style={styles.markAction} variant="ghost">{t(needsReview ? "Marked Needs Review" : "Mark Needs Review")}</Button>
     </View>
   );
@@ -177,6 +177,7 @@ function answerOptionState(selected: boolean, correct: boolean) {
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   answerContent: { gap: 0 },
+  feedbackReason: { gap: spacing.sm },
   options: { gap: spacing.sm },
   question: { color: palette.textPrimary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   questionBlock: { gap: 6 },
@@ -184,6 +185,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   markAction: { marginTop: spacing.xl },
   optionsFeedbackSpacer: { height: 28 },
   questionOptionsSpacer: { height: 22 },
+  reason: { ...typography.body, color: palette.textSecondary },
   unavailableContent: { alignItems: "center", backgroundColor: palette.effects.unavailableSurface, borderColor: palette.effects.subtleBorder, borderRadius: 18, gap: spacing.lg, marginTop: 101, paddingHorizontal: spacing.xxxl, paddingVertical: 28 },
   unanswered: { ...typography.bodyStrong, color: palette.textMuted },
 });

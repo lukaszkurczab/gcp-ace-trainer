@@ -8,7 +8,6 @@ import type { PracticeFeedback } from "./practiceSessionPresentation";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
-import { AlgorithmFeedbackDocumentBlock } from "./AlgorithmFeedbackDocumentBlock";
 import type { ContentItemRef } from "../../domain";
 import { ContentReportSheet, type ContentReportSurfaceContext } from "../reports/ContentReportSheet";
 
@@ -28,14 +27,17 @@ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }:
       <View style={styles.detailsSection}>
         <View style={styles.detailsDivider} />
         {detailsDisclosure}
-        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}><AlgorithmFeedbackDocumentBlock document={feedback.details} item={item} /><ContentReportSheet item={item} surface={reportSurface} /></View> : null}
+        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <Text key={`${message.kind}:${message.targetId}`} style={styles.detailText}>{message.text}</Text>)}{isScalar(feedback.details) ? <Text style={styles.detailText}>{String(feedback.details)}</Text> : null}<ContentReportSheet item={item} surface={reportSurface} /></View> : null}
       </View>
     </View>
   );
 }
 
+function isScalar(value: PracticeFeedback["details"]): value is string | number | boolean | null { return value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean"; }
+
 const createStyles = (palette: AppColors) => StyleSheet.create({
   details: { gap: spacing.md, paddingTop: spacing.xs },
+  detailText: { ...typography.body, color: palette.textSecondary },
   detailsDivider: { backgroundColor: palette.border, height: StyleSheet.hairlineWidth, width: "100%" },
   detailsSection: { gap: spacing.md },
   feedbackCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.xl, borderWidth: 1, gap: spacing.md, padding: spacing.lg },
