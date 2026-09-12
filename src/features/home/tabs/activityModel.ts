@@ -1,7 +1,7 @@
 import type { IconName } from "../../../components";
 import { getTrackDisplay, type TrackId } from "../../../domain";
 import type { CertificationDomain } from "../../../tracks/certification/domain/certificationModes";
-import type { ActivitySessionRecord } from "../../../application/activityReadModels";
+import type { ActivityRecord, ActivitySessionRecord, ActivityUnavailableSessionRecord } from "../../../application/activityReadModels";
 import { activityTimestamp } from "../../../application/activityReadModels";
 import { calendarDayDifference, isSameCalendarWeek, modeLabel, type ActivityDateLabel } from "./activityPresentation";
 import { getDomainLabel } from "../../../utils";
@@ -18,6 +18,7 @@ export type ActivityItem = Readonly<{
   group: ActivityGroup;
   icon: IconName;
   id: string;
+  kind: "canonical" | "unavailable";
   modeId: string;
   modeTitle: string;
   sessionId: string;
@@ -27,6 +28,7 @@ export type ActivityItem = Readonly<{
   totalCount: number;
   trackFamily: string;
   trackTitle: string;
+  unavailableReasons: readonly string[];
 }>;
 
 export type ActivityModel = Readonly<{
@@ -35,13 +37,13 @@ export type ActivityModel = Readonly<{
 }>;
 
 export function buildActivityModel(
-  records: readonly ActivitySessionRecord[],
+  records: readonly ActivityRecord[],
   filter: ActivityFilter,
   now = new Date(),
 ): ActivityModel {
   const items = [...records]
     .sort((left, right) => activityTimestamp(right).localeCompare(activityTimestamp(left)))
-    .filter((record) => filter === ALL_ACTIVITY_TRACKS || record.session.trackId === filter)
+    .filter((record) => filter === ALL_ACTIVITY_TRACKS || (isUnavailableRecord(record) ? record.trackId : record.session.trackId) === filter)
     .map((record) => toActivityItem(record, now));
   const groups = (['Today', 'Yesterday', 'This week', 'Earlier'] as const)
     .map((label) => ({ items: items.filter((item) => item.group === label), label }))
@@ -49,7 +51,8 @@ export function buildActivityModel(
   return Object.freeze({ groups: Object.freeze(groups), items: Object.freeze(items) });
 }
 
-function toActivityItem(record: ActivitySessionRecord, now: Date): ActivityItem {
+function toActivityItem(record: ActivityRecord, now: Date): ActivityItem {
+  if (isUnavailableRecord(record)) return toUnavailableActivityItem(record, now);
   const session = record.session;
   const timestamp = activityTimestamp(record);
   const totalCount = record.result?.totalOccurrences ?? session.actualLength;
@@ -64,6 +67,7 @@ function toActivityItem(record: ActivitySessionRecord, now: Date): ActivityItem 
     group,
     icon: activityIcon(session.modeId),
     id: session.id,
+    kind: "canonical",
     modeId: session.modeId,
     modeTitle: modeLabel(session.modeId),
     sessionId: session.id,
@@ -73,6 +77,32 @@ function toActivityItem(record: ActivitySessionRecord, now: Date): ActivityItem 
     totalCount,
     trackFamily: track.familyId,
     trackTitle: track.shortTitle,
+    unavailableReasons: [],
+  };
+}
+
+function toUnavailableActivityItem(record: ActivityUnavailableSessionRecord, now: Date): ActivityItem {
+  const timestamp = activityTimestamp(record);
+  const group = activityGroup(timestamp, now);
+  const track = safeTrackDisplay(record.trackId);
+  return {
+    answerCount: record.answeredCount,
+    dateLabel: activityDateLabel(timestamp, group),
+    duration: "—",
+    group,
+    icon: activityIcon(record.modeId),
+    id: record.id,
+    kind: "unavailable",
+    modeId: record.modeId,
+    modeTitle: "Unavailable session",
+    sessionId: record.sessionId,
+    scopeLabel: null,
+    status: record.status === "completed" ? "completed" : "ended-early",
+    statusLabel: "Unavailable",
+    totalCount: record.totalCount,
+    trackFamily: track.familyId,
+    trackTitle: track.shortTitle,
+    unavailableReasons: record.unavailableReasons,
   };
 }
 
@@ -97,6 +127,18 @@ function activityStatus(record: ActivitySessionRecord): Readonly<{ kind: Activit
     return { kind: "time-expired", label: "Time expired" };
   }
   return { kind: "completed", label: "Completed" };
+}
+
+function isUnavailableRecord(record: ActivityRecord): record is ActivityUnavailableSessionRecord {
+  return "kind" in record && record.kind === "unavailable";
+}
+
+function safeTrackDisplay(trackId: string): Readonly<{ familyId: string; shortTitle: string }> {
+  try {
+    return getTrackDisplay(trackId as TrackId);
+  } catch {
+    return { familyId: "unavailable", shortTitle: trackId || "Unavailable track" };
+  }
 }
 
 function activityGroup(timestamp: string, now: Date): ActivityGroup {

@@ -15,6 +15,7 @@ export type ReviewTaxonomyLabel =
 export type ReviewQueueRow = {
   dueAt: string;
   id: string;
+  kind: "available" | "unavailable";
   questionId: string;
   mistakeTypeLabels: string[];
   promptPreview: string;
@@ -23,6 +24,7 @@ export type ReviewQueueRow = {
   status: ReviewQueueRowStatus;
   taxonomyLabel: ReviewTaxonomyLabel;
   title: string;
+  unavailableReason?: string;
 };
 
 export type ReviewQueueScreenModel = {
@@ -33,6 +35,7 @@ export type ReviewQueueScreenModel = {
   trackTitle: string;
   totalCount: number;
   upcomingRows: ReviewQueueRow[];
+  unavailableRows: ReviewQueueRow[];
   warning?: string;
 };
 
@@ -41,12 +44,14 @@ export type ReviewQueueViewItem = {
   id: string;
   isDue: boolean;
   isOverdue: boolean;
+  kind?: "available" | "unavailable";
   questionId: string;
   mistakeTypeRefs: EvidenceRef[];
   prompt?: string;
   reasons: ReviewReason[];
   sourceAttemptId: string;
   taxonomyRefs: EvidenceRef[];
+  unavailableReason?: string;
 };
 
 export type ReviewQueueViewModel = {
@@ -58,6 +63,7 @@ export type ReviewQueueViewModel = {
   totalItems: number;
   trackTitle: string;
   upcomingItems: ReviewQueueViewItem[];
+  unavailableItems?: ReviewQueueViewItem[];
 };
 
 const EMPTY_TITLE = "No review items yet";
@@ -69,6 +75,7 @@ export function buildReviewQueueScreenModel(
     ...viewModel.overdueItems,
     ...viewModel.dueItems,
   ]).map((item) => buildReviewQueueRow(item, viewModel.trackTitle));
+  const unavailableRows = dedupeRows(viewModel.unavailableItems ?? []).map((item) => buildReviewQueueRow(item, viewModel.trackTitle));
 
   return {
     degraded: viewModel.degraded,
@@ -80,6 +87,7 @@ export function buildReviewQueueScreenModel(
     upcomingRows: viewModel.upcomingItems.map((item) =>
       buildReviewQueueRow(item, viewModel.trackTitle)
     ),
+    unavailableRows,
     warning: viewModel.degraded
       ? "Some local review queue data may be incomplete."
       : undefined,
@@ -100,6 +108,7 @@ function buildReviewQueueRow(
   return {
     dueAt: item.dueAt,
     id: item.id,
+    kind: item.kind === "unavailable" ? "unavailable" : "available",
     questionId: item.questionId,
     mistakeTypeLabels: item.mistakeTypeRefs.map(formatTaxonomyNodeLabel),
     promptPreview:
@@ -111,6 +120,7 @@ function buildReviewQueueRow(
     status,
     taxonomyLabel,
     title,
+    ...(item.unavailableReason ? { unavailableReason: item.unavailableReason } : {}),
   };
 }
 
@@ -132,7 +142,7 @@ function dedupeRows(
 }
 
 function getRowStatus(item: ReviewQueueViewItem): ReviewQueueRowStatus {
-  if (!item.prompt) {
+  if (item.kind === "unavailable" || !item.prompt) {
     return "unavailable";
   }
 

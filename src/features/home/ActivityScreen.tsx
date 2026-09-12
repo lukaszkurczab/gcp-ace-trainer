@@ -4,9 +4,9 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
-import { createActivityReadOwner, loadActivitySessionRecords, type ActivityReadOutcome, type ActivityReadToken, type ActivitySessionRecord } from "../../application/activityReadModels";
+import { createActivityReadOwner, loadActivityRecords, type ActivityReadOutcome, type ActivityReadToken, type ActivityRecord } from "../../application/activityReadModels";
 import { operationalDiagnosticCode, type OperationalDiagnosticCode } from "../../application/operationalDiagnostics";
-import { Button, EmptyState, Icon, Screen, ScreenHeader, SettingsBottomSheet, SkeletonShape, useSkeletonGlassMotion } from "../../components";
+import { Button, Card, EmptyState, Icon, Screen, ScreenHeader, SectionHeader, SettingsBottomSheet, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
 import { getTrackDisplays } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
@@ -20,7 +20,7 @@ import { formatActivityDateLabel } from "./tabs/activityPresentation";
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ACTIVITY>;
 type ViewState =
   | Readonly<{ kind: "loading" }>
-  | Readonly<{ kind: "ready"; records: readonly ActivitySessionRecord[] }>
+  | Readonly<{ kind: "ready"; records: readonly ActivityRecord[] }>
   | Readonly<{ diagnosticCode: OperationalDiagnosticCode; kind: "unavailable" }>;
 
 export function ActivityScreen({ navigation }: Props) {
@@ -30,7 +30,8 @@ export function ActivityScreen({ navigation }: Props) {
   const [state, setState] = useState<ViewState>({ kind: "loading" });
   const [filter, setFilter] = useState<ActivityFilter>(ALL_ACTIVITY_TRACKS);
   const [filterVisible, setFilterVisible] = useState(false);
-  const readOwner = useMemo(() => createActivityReadOwner(loadActivitySessionRecords), []);
+  const [selectedUnavailableSessionId, setSelectedUnavailableSessionId] = useState<string | null>(null);
+  const readOwner = useMemo(() => createActivityReadOwner(loadActivityRecords), []);
   const focusedRef = useRef(false);
   const currentTokenRef = useRef<ActivityReadToken | null>(null);
 
@@ -82,6 +83,7 @@ export function ActivityScreen({ navigation }: Props) {
   }
 
   const model = buildActivityModel(state.records, filter);
+  const selectedUnavailableItem = model.items.find((item) => item.kind === "unavailable" && item.sessionId === selectedUnavailableSessionId) ?? null;
   return (
     <Screen ambientVariant="activity" edges={["top", "bottom"]} style={styles.screen}>
       {header}
@@ -119,7 +121,13 @@ export function ActivityScreen({ navigation }: Props) {
                     item={item}
                     key={item.id}
                     last={index === group.items.length - 1}
-                    onPress={() => navigateToActivityResult(navigation, item)}
+                    onPress={() => {
+                      if (item.kind === "unavailable") {
+                        setSelectedUnavailableSessionId((current) => current === item.sessionId ? null : item.sessionId);
+                        return;
+                      }
+                      navigateToActivityResult(navigation, item);
+                    }}
                   />
                 ))}
               </View>
@@ -135,6 +143,7 @@ export function ActivityScreen({ navigation }: Props) {
           />
         </View>
       )}
+      {selectedUnavailableItem ? <ActivityUnavailableDetails item={selectedUnavailableItem} /> : null}
       <SettingsBottomSheet
         closeLabel={t("Close")}
         intro={t("Choose which track appears in Activity.")}
@@ -157,6 +166,25 @@ export function ActivityScreen({ navigation }: Props) {
         ))}
       </SettingsBottomSheet>
     </Screen>
+  );
+}
+
+function ActivityUnavailableDetails({ item }: Readonly<{ item: ActivityItem }>) {
+  const { colors: palette } = useAppPreferences();
+  const { t } = useTranslation("common");
+  if (item.kind !== "unavailable") return null;
+  return (
+    <Card testID={runtimeSelectors.activity.unavailableDetails(item.sessionId)} variant="warning">
+      <SectionHeader
+        subtitle={t("This archived session cannot be reopened because its content is unavailable.")}
+        title={t("Unavailable session details")}
+      />
+      <View style={{ gap: spacing.xs }}>
+        <Text maxFontSizeMultiplier={2} style={{ color: palette.textSecondary }}>{`${t("Track")}: ${t(item.trackTitle)}`}</Text>
+        <Text maxFontSizeMultiplier={2} style={{ color: palette.textSecondary }}>{`${t("Preserved result")}: ${item.answerCount}/${item.totalCount}`}</Text>
+        {item.unavailableReasons.length > 0 ? <Text maxFontSizeMultiplier={2} style={{ color: palette.textSecondary }}>{`${t("Reason")}: ${item.unavailableReasons.map((reason) => t(reason)).join(", ")}`}</Text> : null}
+      </View>
+    </Card>
   );
 }
 
@@ -240,11 +268,11 @@ function ActivityRow({ item, last, onPress }: Readonly<{ item: ActivityItem; las
   const { t } = useTranslation("common");
   return (
     <Pressable
-      accessibilityLabel={`${t(item.modeTitle)}, ${t(item.trackTitle)}`}
+      accessibilityLabel={`${t(item.modeTitle)}, ${t(item.trackTitle)}${item.kind === "unavailable" ? `, ${t("Unavailable")}` : ""}`}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [styles.row, last ? styles.rowLast : null, pressed ? styles.pressed : null]}
-      testID={runtimeSelectors.activity.row(item.sessionId)}
+      testID={item.kind === "unavailable" ? runtimeSelectors.activity.unavailableRow(item.sessionId) : runtimeSelectors.activity.row(item.sessionId)}
     >
       <View style={[styles.iconTile, item.status === "ended-early" ? styles.endedIconTile : item.status === "time-expired" ? styles.expiredIconTile : null]}>
         <Icon color={palette.onPrimary} name={item.icon} size={20} />
@@ -253,7 +281,7 @@ function ActivityRow({ item, last, onPress }: Readonly<{ item: ActivityItem; las
         <Text maxFontSizeMultiplier={2} style={styles.title}>{t(item.modeTitle)}</Text>
         <Text maxFontSizeMultiplier={2} style={styles.detail}>{[t(item.trackTitle), item.scopeLabel].filter(Boolean).join(" · ")}</Text>
         <Text maxFontSizeMultiplier={2} style={styles.detail}>{`${activityCountLabel(item, t)} · ${item.duration}`}</Text>
-        <Text maxFontSizeMultiplier={2} style={[styles.detail, item.status === "completed" ? null : styles.statusDetail]}>{`${t(item.statusLabel)} · ${formatActivityDateLabel(item.dateLabel, locale, t)}`}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.detail, item.kind === "unavailable" || item.status !== "completed" ? styles.statusDetail : null]}>{`${t(item.statusLabel)} · ${formatActivityDateLabel(item.dateLabel, locale, t)}`}</Text>
       </View>
       <Icon color={palette.textMuted} name="chevron-right" size={18} />
     </Pressable>

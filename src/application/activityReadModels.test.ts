@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
-import { loadActivitySessionRecords, createActivityReadOwner, type ActivitySessionRecord } from "./activityReadModels";
+import { loadActivityRecords, loadActivitySessionRecords, createActivityReadOwner, type ActivitySessionRecord } from "./activityReadModels";
 import { StorageReadError, CorruptStoredRecordError } from "../storage/errors";
 import { addTrainingAttempt, saveTrainingSession } from "../storage/repositories";
+import { createContentIdentityArchivalHistoryRecord } from "../storage/repositories/contentIdentityUnavailableRepository";
 import { STORAGE_KEYS } from "../storage/keys";
 import { installMemoryStorage, attempt, session } from "../testing/journalTestSupport";
 
@@ -71,6 +72,68 @@ test("Activity read model reuses the caller's attempts read when supplied", asyn
   assert.equal(attemptsReads, 1);
   assert.equal(records[0]?.session.id, completed.id);
   assert.equal(records[0]?.attemptCount, 0);
+});
+
+test("Activity full history keeps unavailable sessions as immutable summaries", async () => {
+  const sessionId = "archived-unavailable";
+  const archive = createContentIdentityArchivalHistoryRecord({
+    schemaVersion: 1,
+    kind: "archival_history",
+    sessionId,
+    session: {
+      id: sessionId,
+      modeId: "coding-interview-guided-practice",
+      trackId: "coding-interview-dsa-problem-solving",
+      contentVersion: "content-v0",
+      actualLength: 3,
+      startedAt: "2026-08-20T10:00:00.000Z",
+      completedAt: "2026-08-20T10:05:00.000Z",
+      status: "abandoned",
+      itemOrder: [{
+        occurrenceId: `${sessionId}:0`,
+        item: {
+          kind: "archival_history",
+          sessionId,
+          trackId: "coding-interview-dsa-problem-solving",
+          questionId: "question-1",
+          contentVersion: "content-v0",
+          reason: "unknown_artifact_hash",
+          migrationVersion: 1,
+          legacyIdentityDigest: "a".repeat(64),
+        },
+      }],
+    },
+    attempts: [{
+      id: `${sessionId}:attempt:0`,
+      sessionId,
+      answeredAt: "2026-08-20T10:03:00.000Z",
+      committedAt: "2026-08-20T10:03:01.000Z",
+    }],
+    results: [{
+      id: `${sessionId}:result`,
+      sessionId,
+      completedAt: "2026-08-20T10:05:00.000Z",
+      totalOccurrences: 3,
+      answeredOccurrenceIds: ["occurrence-1"],
+      unansweredOccurrenceIds: ["occurrence-2", "occurrence-3"],
+    }],
+  });
+
+  const records = await loadActivityRecords({
+    getArchivalHistory: async () => ({ ok: true, value: [archive] }),
+    getAttempts: async () => ({ ok: true, value: [] }),
+    getResult: async () => null,
+    getSessions: async () => ({ ok: true, value: [] }),
+  });
+
+  assert.equal(records.length, 1);
+  const record = records[0];
+  if (!record || !("kind" in record) || record.kind !== "unavailable") throw new Error("Expected an unavailable activity summary.");
+  assert.equal(record.sessionId, sessionId);
+  assert.equal(record.status, "abandoned");
+  assert.equal(record.answeredCount, 1);
+  assert.equal(record.totalCount, 3);
+  assert.deepEqual(record.unavailableReasons, ["unknown_artifact_hash"]);
 });
 
 test("Activity read owner invalidates late focus reads and lets the newest retry win", async () => {

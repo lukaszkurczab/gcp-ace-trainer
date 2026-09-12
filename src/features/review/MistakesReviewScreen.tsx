@@ -5,6 +5,7 @@ import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import {
   Badge,
+  Button,
   Card,
   EmptyState,
   ListRow,
@@ -21,10 +22,11 @@ import {
   type ReviewQueueScreenModel,
 } from "./reviewQueueModel";
 import { formatReviewTaxonomyLabel } from "./reviewQueuePresentation";
-import { loadTrackReviewQueueViewModel } from "../../application/reviewQueueQueries";
+import { loadTrackReviewQueueViewModel, removeUnavailableReview } from "../../application/reviewQueueQueries";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 
 export function MistakesReviewScreen() {
@@ -36,6 +38,9 @@ export function MistakesReviewScreen() {
   const [readError, setReadError] = useState<string | null>(null);
   const [hasActiveTrack, setHasActiveTrack] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const [refreshRevision, setRefreshRevision] = useState(0);
+  const [confirmRemoveUnavailable, setConfirmRemoveUnavailable] = useState(false);
+  const [removingUnavailable, setRemovingUnavailable] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,6 +51,7 @@ export function MistakesReviewScreen() {
         setReadError(null);
         setModel(null);
         setSelectedRowId(null);
+        setConfirmRemoveUnavailable(false);
         setHasActiveTrack(false);
 
         try {
@@ -78,7 +84,7 @@ export function MistakesReviewScreen() {
       return () => {
         isActive = false;
       };
-    }, []),
+    }, [refreshRevision]),
   );
 
   const visibleRows = useMemo(() => {
@@ -89,10 +95,26 @@ export function MistakesReviewScreen() {
     return model.dueRows.length > 0 ? model.dueRows : model.upcomingRows;
   }, [model]);
 
-  const selectedRow = visibleRows.find((row) => row.id === selectedRowId) ?? null;
+  const selectedRow = [...visibleRows, ...(model?.unavailableRows ?? [])].find((row) => row.id === selectedRowId) ?? null;
+
+  const removeSelectedUnavailable = async () => {
+    if (!selectedRow || selectedRow.kind !== "unavailable" || removingUnavailable) return;
+    setRemovingUnavailable(true);
+    try {
+      await removeUnavailableReview(selectedRow.id);
+      setSelectedRowId(null);
+      setConfirmRemoveUnavailable(false);
+      setRefreshRevision((revision) => revision + 1);
+    } catch (error) {
+      setReadError(describeOperationalFailure(error, "Unavailable review could not be removed."));
+    } finally {
+      setRemovingUnavailable(false);
+    }
+  };
 
   return (
     <Screen>
+      <View testID={runtimeSelectors.review.root()}>
       <Card>
         <SectionHeader
           title={t("Review queue")}
@@ -108,6 +130,7 @@ export function MistakesReviewScreen() {
             <Badge label={`${model.totalCount} ${t("total")}`} tone="info" />
             <Badge label={`${model.dueRows.length} ${t("due")}`} tone="warning" />
             <Badge label={`${model.upcomingRows.length} ${t("upcoming")}`} tone="neutral" />
+            {model.unavailableRows.length > 0 ? <Badge label={`${model.unavailableRows.length} ${t("unavailable")}`} tone="neutral" /> : null}
           </View>
         ) : null}
       </Card>
@@ -146,9 +169,10 @@ export function MistakesReviewScreen() {
               detail={formatReviewTaxonomyLabel(row.taxonomyLabel, t)}
               key={row.id}
               meta={formatDueAt(row.dueAt, locale)}
-              onPress={() =>
-                setSelectedRowId((current) => (current === row.id ? null : row.id))
-              }
+              onPress={() => {
+                setConfirmRemoveUnavailable(false);
+                setSelectedRowId((current) => (current === row.id ? null : row.id));
+              }}
               title={row.title}
               trailing={
                 <View style={styles.badgeRow}>
@@ -160,7 +184,31 @@ export function MistakesReviewScreen() {
         </View>
       ) : null}
 
-      {!loading && !readError && hasActiveTrack && model && visibleRows.length === 0 ? (
+      {!loading && !readError && hasActiveTrack && model && model.unavailableRows.length > 0 ? (
+        <View style={styles.list} testID={runtimeSelectors.review.unavailableSection()}>
+          <SectionHeader
+            title={t("Unavailable reviews")}
+            subtitle={t("These reviews are kept for your records but cannot become due until their content is available.")}
+            tight
+          />
+          {model.unavailableRows.map((row) => (
+            <ListRow
+              detail={formatReviewTaxonomyLabel(row.taxonomyLabel, t)}
+              key={row.id}
+              meta={t("Unavailable")}
+              onPress={() => {
+                setConfirmRemoveUnavailable(false);
+                setSelectedRowId((current) => current === row.id ? null : row.id);
+              }}
+              testID={runtimeSelectors.review.unavailableRow(row.id)}
+              title={row.title}
+              trailing={<Badge label={t("Unavailable")} tone="neutral" />}
+            />
+          ))}
+        </View>
+      ) : null}
+
+      {!loading && !readError && hasActiveTrack && model && visibleRows.length === 0 && model.unavailableRows.length === 0 ? (
         <Card>
           <EmptyState
             title={t(model.emptyTitle)}
@@ -169,7 +217,15 @@ export function MistakesReviewScreen() {
         </Card>
       ) : null}
 
-      {selectedRow ? <ReviewQueueDetail row={selectedRow} /> : null}
+      {selectedRow ? <ReviewQueueDetail
+        confirmRemove={confirmRemoveUnavailable}
+        onCancelRemove={() => setConfirmRemoveUnavailable(false)}
+        onConfirmRemove={() => { void removeSelectedUnavailable(); }}
+        onRequestRemove={() => setConfirmRemoveUnavailable(true)}
+        removing={removingUnavailable}
+        row={selectedRow}
+      /> : null}
+      </View>
     </Screen>
   );
 }
@@ -211,15 +267,20 @@ export function MistakesLoadingSkeleton() {
 }
 
 type ReviewQueueDetailProps = {
+  confirmRemove: boolean;
+  onCancelRemove: () => void;
+  onConfirmRemove: () => void;
+  onRequestRemove: () => void;
+  removing: boolean;
   row: ReviewQueueRow;
 };
 
-function ReviewQueueDetail({ row }: ReviewQueueDetailProps) {
+function ReviewQueueDetail({ confirmRemove, onCancelRemove, onConfirmRemove, onRequestRemove, removing, row }: ReviewQueueDetailProps) {
   const styles = useThemedStyles(createStyles);
   const { locale } = useAppPreferences();
   const { t } = useTranslation("common");
   return (
-    <Card>
+    <Card testID={row.kind === "unavailable" ? runtimeSelectors.review.unavailableDetails(row.id) : undefined}>
       <SectionHeader
         title={t("Review item")}
         subtitle={formatReviewTaxonomyLabel(row.taxonomyLabel, t)}
@@ -232,6 +293,13 @@ function ReviewQueueDetail({ row }: ReviewQueueDetailProps) {
       <DetailBlock label={t("Mistake types")} value={formatList(row.mistakeTypeLabels, t)} />
       <DetailBlock label={t("Source attempt")} value={row.sourceAttemptId} />
       <DetailBlock label={t("Due")} value={formatDueAt(row.dueAt, locale)} />
+      {row.kind === "unavailable" ? confirmRemove
+        ? <View style={styles.removeActions}>
+            <Text maxFontSizeMultiplier={2} style={styles.warningText}>{t("Remove this unavailable review from this device? Other unavailable reviews will remain.")}</Text>
+            <Button onPress={onCancelRemove} testID={runtimeSelectors.review.removeUnavailableCancel(row.id)} variant="secondary">{t("Cancel")}</Button>
+            <Button loading={removing} onPress={onConfirmRemove} testID={runtimeSelectors.review.removeUnavailableConfirm(row.id)} variant="destructive">{t("Remove unavailable review")}</Button>
+          </View>
+        : <Button onPress={onRequestRemove} testID={runtimeSelectors.review.removeUnavailable(row.id)} variant="secondary">{t("Remove unavailable review")}</Button> : null}
     </Card>
   );
 }
@@ -327,6 +395,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   summaryRow: {
     flexDirection: "row",
     flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  removeActions: {
     gap: spacing.sm,
   },
   warningBanner: {

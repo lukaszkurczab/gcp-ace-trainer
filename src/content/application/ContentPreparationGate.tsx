@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Button, EmptyState, LoadingState, Screen } from "../../components";
-import { bootstrapApplication } from "../../application/bootstrap";
+import { abandonUnavailableActiveTrainingSession, bootstrapApplication } from "../../application/bootstrap";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
 import { getForegroundSessionTimerFacade } from "../../application/trainingLifecycle";
@@ -36,6 +36,7 @@ const CONTENT_PREPARATION_TIMEOUT_MS = 15_000;
 export type ContentPreparationState =
   | { kind: "loading"; phase: ContentPreparationPhase }
   | { kind: "ready" }
+  | { kind: "content_identity_unavailable"; phase: ContentPreparationPhase; sessionIds: readonly string[]; error?: string }
   | { kind: "blocking"; phase: ContentPreparationPhase; reason: string; storageFailureCode?: EncryptedStorageFailureCode };
 
 export function ContentBootstrapLoadingSkeleton({ phase }: Readonly<{ phase: ContentPreparationPhase }>) {
@@ -55,6 +56,8 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const [auditCommandListenerReady, setAuditCommandListenerReady] = useState(false);
   const [confirmUnavailableDataRemoval, setConfirmUnavailableDataRemoval] = useState(false);
   const [removingUnavailableData, setRemovingUnavailableData] = useState(false);
+  const [confirmUnavailableActiveAbandon, setConfirmUnavailableActiveAbandon] = useState(false);
+  const [abandoningUnavailableActive, setAbandoningUnavailableActive] = useState(false);
   const initialUrlHandled = useRef(false);
   const resetInFlight = useRef(false);
   const lifecycleReady = useRef(false);
@@ -120,7 +123,15 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         },
       );
     })().then((result) => {
-      complete(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", phase: currentPhase, reason: result.reason, ...(result.storageFailureCode ? { storageFailureCode: result.storageFailureCode } : {}) });
+      if (result.kind === "ready") {
+        complete({ kind: "ready" });
+        return;
+      }
+      if (result.kind === "content_identity_unavailable") {
+        complete({ kind: "content_identity_unavailable", phase: currentPhase, sessionIds: result.sessionIds });
+        return;
+      }
+      complete({ kind: "blocking", phase: currentPhase, reason: result.reason, ...(result.storageFailureCode ? { storageFailureCode: result.storageFailureCode } : {}) });
     }).catch((error) => {
       complete({ kind: "blocking", phase: currentPhase, reason: describeOperationalFailure(error, "Application bootstrap failed.") });
     });
@@ -165,6 +176,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
 
   const retry = () => {
     setConfirmUnavailableDataRemoval(false);
+    setConfirmUnavailableActiveAbandon(false);
     setState({ kind: "loading", phase: "opening-storage" });
     setBootstrapRevision((revision) => revision + 1);
   };
@@ -180,11 +192,42 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
       setRemovingUnavailableData(false);
     }
   };
+  const abandonUnavailableActive = async () => {
+    if (state.kind !== "content_identity_unavailable" || abandoningUnavailableActive) return;
+    setAbandoningUnavailableActive(true);
+    try {
+      for (const sessionId of state.sessionIds) await abandonUnavailableActiveTrainingSession(sessionId);
+      retry();
+    } catch (error) {
+      setState({
+        error: describeOperationalFailure(error, "The unavailable session could not be abandoned."),
+        kind: "content_identity_unavailable",
+        phase: "opening-storage",
+        sessionIds: state.sessionIds,
+      });
+    } finally {
+      setAbandoningUnavailableActive(false);
+    }
+  };
   const lostKey = state.kind === "blocking" && state.storageFailureCode === "encrypted_storage_key_missing";
   const body = state.kind === "ready"
     ? <View style={{ flex: 1 }} testID={auditResetReady ? runtimeSelectors.content.readyAfterAuditReset() : runtimeSelectors.content.ready()}>{children}</View>
     : state.kind === "loading"
       ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.preparing(state.phase)}><Screen edges={["top", "bottom"]}><ContentBootstrapLoadingSkeleton phase={state.phase} /></Screen></View>
+      : state.kind === "content_identity_unavailable"
+        ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailableActive()}><Screen>
+            <EmptyState
+              description={state.error ?? t("An active session uses content that is no longer available. Abandon it to keep its saved facts and start a new session.")}
+              title={t("Active session needs attention")}
+            />
+            {confirmUnavailableActiveAbandon
+              ? <View style={{ gap: 12 }}>
+                  <Button onPress={() => setConfirmUnavailableActiveAbandon(false)} testID={runtimeSelectors.content.unavailableActiveCancel()} variant="secondary">{t("Cancel")}</Button>
+                  <Button loading={abandoningUnavailableActive} onPress={() => { void abandonUnavailableActive(); }} testID={runtimeSelectors.content.unavailableActiveConfirm()} variant="destructive">{t("Abandon unavailable session")}</Button>
+                </View>
+              : <Button onPress={() => setConfirmUnavailableActiveAbandon(true)} testID={runtimeSelectors.content.unavailableActiveAbandon()} variant="destructive">{t("Abandon unavailable session")}</Button>}
+            {!confirmUnavailableActiveAbandon ? <Button onPress={retry} testID={runtimeSelectors.content.unavailableActiveRetry()} variant="secondary">{t("Try again")}</Button> : null}
+          </Screen></View>
       : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen>
           <EmptyState
             actionLabel={t("Try again")}

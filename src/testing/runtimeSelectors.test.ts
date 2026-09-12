@@ -108,6 +108,32 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
   assert.equal(selectors.size, 28);
 });
 
+test("unavailable recovery and review selectors remain stable and distinct", () => {
+  const sessionId = "session-unavailable";
+  const reviewId = "review-unavailable";
+  const selectors = [
+    runtimeSelectors.content.unavailableActive(),
+    runtimeSelectors.content.unavailableActiveAbandon(),
+    runtimeSelectors.content.unavailableActiveConfirm(),
+    runtimeSelectors.content.unavailableActiveCancel(),
+    runtimeSelectors.content.unavailableActiveRetry(),
+    runtimeSelectors.activity.unavailableRow(sessionId),
+    runtimeSelectors.activity.unavailableDetails(sessionId),
+    runtimeSelectors.review.root(),
+    runtimeSelectors.review.unavailableSection(),
+    runtimeSelectors.review.unavailableRow(reviewId),
+    runtimeSelectors.review.unavailableDetails(reviewId),
+    runtimeSelectors.review.removeUnavailable(reviewId),
+    runtimeSelectors.review.removeUnavailableConfirm(reviewId),
+    runtimeSelectors.review.removeUnavailableCancel(reviewId),
+  ];
+
+  assert.equal(new Set(selectors).size, selectors.length);
+  assert.ok(selectors.every((selector) => isRuntimeSelectorId(selector)));
+  assert.equal(runtimeSelectors.content.unavailableActiveConfirm(), "patternly:content:unavailable-active:confirm");
+  assert.equal(runtimeSelectors.review.removeUnavailableConfirm(reviewId), "patternly:review:remove-unavailable:review-unavailable:confirm");
+});
+
 test("runtime selector factories reject values that cannot be represented in the contract", () => {
   assert.throws(() => runtimeSelectors.session.question("prompt text is not an id"), /Runtime selector identities/);
   assert.throws(() => runtimeSelectors.practice.sessionLength(1.5), /session length/);

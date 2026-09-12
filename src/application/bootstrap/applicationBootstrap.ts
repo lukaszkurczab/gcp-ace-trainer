@@ -10,13 +10,21 @@ import {
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
   getTrainingSessions,
+  getUnavailableActiveRecords,
+  abandonUnavailableActiveSession,
   openCanonicalRepositories,
 } from "../../storage/repositories";
 
 export type ApplicationBootstrapState =
   | Readonly<{ kind: "ready"; activeSessionId: string | null }>
+  | Readonly<{ kind: "content_identity_unavailable"; sessionIds: readonly string[] }>
   | Readonly<{ kind: "blocking"; reason: string; storageFailureCode?: EncryptedStorageFailureCode }>;
 export type ApplicationBootstrapDependencies = Readonly<{ repositories?: CanonicalRepositoryBootstrapDependencies }>;
+
+/** Application command boundary for an unavailable active session. */
+export async function abandonUnavailableActiveTrainingSession(sessionId: string): Promise<void> {
+  await abandonUnavailableActiveSession(sessionId);
+}
 
 /**
  * The bootstrap sequence is deliberately linear.  Do not make recovery or
@@ -31,6 +39,13 @@ export async function bootstrapApplication(
   try {
     try { cleanupOrphanedAccountDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
     await openCanonicalRepositories(dependencies.repositories);
+    const unavailableActive = (await getUnavailableActiveRecords()).value;
+    if (unavailableActive.length > 0) {
+      return {
+        kind: "content_identity_unavailable",
+        sessionIds: Object.freeze(unavailableActive.map((record) => record.sessionId)),
+      };
+    }
     if (prepareLifecycle) {
       await prepareLifecycle();
       const lifecycle = getTrainingLifecycleUseCases();

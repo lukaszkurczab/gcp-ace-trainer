@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type { ActivitySessionRecord } from "../../../application/activityReadModels";
+import type { ActivitySessionRecord, ActivityUnavailableSessionRecord } from "../../../application/activityReadModels";
 import type { EvidenceRef } from "../../../domain";
+import { createContentIdentityArchivalHistoryRecord } from "../../../storage/repositories/contentIdentityUnavailableRepository";
 import { ALL_ACTIVITY_TRACKS, buildActivityModel } from "./activityModel";
 import { formatActivityDateLabel, relativeDay } from "./activityPresentation";
 
@@ -81,6 +82,21 @@ test("Activity date labels format relative words and month names from the select
   assert.equal(formatActivityDateLabel({ kind: "calendar", timestamp }, "pl", translate), `${expectedDate}, 16:07`);
 });
 
+test("Activity keeps unavailable archival summaries separate from runtime navigation facts", () => {
+  const sessionId = "activity-unavailable";
+  const model = buildActivityModel([
+    unavailableRecord(sessionId),
+  ], ALL_ACTIVITY_TRACKS, now);
+
+  assert.equal(model.items.length, 1);
+  assert.equal(model.items[0]?.kind, "unavailable");
+  assert.equal(model.items[0]?.sessionId, sessionId);
+  assert.equal(model.items[0]?.answerCount, 1);
+  assert.equal(model.items[0]?.totalCount, 2);
+  assert.deepEqual(model.items[0]?.unavailableReasons, ["unknown_artifact_hash"]);
+  assert.equal(model.items[0]?.scopeLabel, null);
+});
+
 function record(input: Readonly<{
   answered: number;
   completedAt: string;
@@ -124,4 +140,50 @@ function record(input: Readonly<{
       completedAt: input.completedAt,
     },
   } as unknown as ActivitySessionRecord;
+}
+
+function unavailableRecord(sessionId: string): ActivityUnavailableSessionRecord {
+  return {
+    archive: createContentIdentityArchivalHistoryRecord({
+      schemaVersion: 1,
+      kind: "archival_history",
+      sessionId,
+      session: {
+        id: sessionId,
+        status: "abandoned",
+        trackId: codingTrack,
+        itemOrder: [{
+          occurrenceId: `${sessionId}:0`,
+          item: {
+            kind: "archival_history",
+            sessionId,
+            trackId: codingTrack,
+            questionId: "question-1",
+            contentVersion: "content-v0",
+            reason: "unknown_artifact_hash",
+            migrationVersion: 1,
+            legacyIdentityDigest: "a".repeat(64),
+          },
+        }],
+      },
+      attempts: [],
+      results: [],
+    }),
+    attemptCount: 1,
+    answeredCount: 1,
+    completedAt: "2026-08-23T11:00:00.000Z",
+    contentVersion: "content-v0",
+    id: sessionId,
+    kind: "unavailable",
+    latestAttemptAt: "2026-08-23T10:59:00.000Z",
+    modeId: "coding-interview-guided-practice",
+    result: { answeredCount: 1, completedAt: "2026-08-23T11:00:00.000Z", totalCount: 2, unansweredCount: 1 },
+    scopeRefs: [],
+    sessionId,
+    startedAt: "2026-08-23T10:50:00.000Z",
+    status: "abandoned",
+    totalCount: 2,
+    trackId: codingTrack,
+    unavailableReasons: ["unknown_artifact_hash"],
+  };
 }
