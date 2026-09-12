@@ -7,7 +7,7 @@ import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { getKeyValueStorage, type KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import type { CanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
-import { accountDataRecordKey, isCanonicalAccountSyncState, isGuestOwnedLearningKey, SYNCABLE_RECORD_TYPES, type SyncableRecordType } from "./accountDataRepository";
+import { accountDataRecordFingerprint, accountDataRecordKey, isCanonicalAccountSyncState, isGuestOwnedLearningKey, SYNCABLE_RECORD_TYPES, type SyncableRecordType } from "./accountDataRepository";
 import { isContentReportOutboxEntries } from "./contentReportOutboxRepository";
 import { isMutationJournalRecord } from "./mutationJournalRepository";
 import { isCanonicalNotificationSettings, isCanonicalNotificationSettingsJournal } from "./notificationSettingsRepository";
@@ -252,6 +252,187 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+/*
+ * Runtime repositories now reject legacy packagePin/itemId shapes.  The
+ * inventory is deliberately a pre-marker scanner, however, and must still
+ * validate those shapes before classifying them.  Keep these readers local to
+ * the scanner so public repository guards remain canonical-only.
+ */
+function hasNoUnexpectedKeys(value: Record<string, unknown>, allowed: readonly string[]): boolean {
+  return Object.keys(value).every((key) => allowed.includes(key));
+}
+
+function isLegacyPackagePin(value: unknown): boolean {
+  return isPackagePinShape(value) && SHA_256.test(value.packageIdentity);
+}
+
+function isLegacyContentItemRef(value: unknown): boolean {
+  return isRecord(value) && hasNoUnexpectedKeys(value, ["trackId", "itemId", "contentVersion", "packagePin"]) &&
+    typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && isNonEmptyString(value.itemId) && isNonEmptyString(value.contentVersion) && isLegacyPackagePin(value.packagePin);
+}
+
+function isLegacyConfigurationSnapshot(value: unknown): boolean {
+  return isRecord(value) && Object.keys(value).length > 0 && Object.values(value).every((entry) =>
+    typeof entry === "string" || typeof entry === "boolean" || (typeof entry === "number" && Number.isFinite(entry)) ||
+    (Array.isArray(entry) && entry.every((item) => typeof item === "string")));
+}
+
+function isLegacyOptionOrder(value: unknown): boolean {
+  return isRecord(value) && Object.values(value).every((options) => Array.isArray(options) && options.every(isNonEmptyString) && new Set(options).size === options.length);
+}
+
+function isLegacyOccurrence(value: unknown): boolean {
+  return isRecord(value) && hasNoUnexpectedKeys(value, ["occurrenceId", "item"]) && isNonEmptyString(value.occurrenceId) && isLegacyContentItemRef(value.item);
+}
+
+function isLegacyBranch(value: unknown): boolean {
+  return isRecord(value) && hasNoUnexpectedKeys(value, ["occurrence", "optionOrder"]) && isLegacyOccurrence(value.occurrence) && isStringArray(value.optionOrder) && new Set(value.optionOrder).size === value.optionOrder.length;
+}
+
+function isLegacyConditionalSlot(value: unknown): boolean {
+  return isRecord(value) && hasNoUnexpectedKeys(value, ["slotId", "sourceOccurrenceId", "ordinaryBranch", "reviewedVariantBranch", "exactSourceBranch", "resolutionRule"]) &&
+    isNonEmptyString(value.slotId) && isNonEmptyString(value.sourceOccurrenceId) && isLegacyBranch(value.ordinaryBranch) &&
+    (value.reviewedVariantBranch === undefined || isLegacyBranch(value.reviewedVariantBranch)) &&
+    (value.exactSourceBranch === undefined || isLegacyBranch(value.exactSourceBranch)) &&
+    value.resolutionRule === "incorrect_or_partial_after_three_materialized_submissions";
+}
+
+function isLegacyTrainingSession(value: unknown): value is Record<string, unknown> & { id: string; trackId: string; status: "active" | "completed" | "abandoned"; itemOrder: readonly { occurrenceId: string; item: unknown }[] } {
+  if (!isRecord(value) || !hasNoUnexpectedKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "packagePin", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"]) || "itemRefs" in value || value.status === "expired") return false;
+  return isNonEmptyString(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && isNonEmptyString(value.modeId) &&
+    isLegacyConfigurationSnapshot(value.configurationSnapshot) && Number.isFinite(value.requestedLength) && Number.isFinite(value.actualLength) && Number.isFinite(value.currentItemIndex) &&
+    Array.isArray(value.itemOrder) && value.itemOrder.every(isLegacyOccurrence) && isLegacyOptionOrder(value.optionOrderByOccurrence) &&
+    Array.isArray(value.conditionalReinsertSlots) && value.conditionalReinsertSlots.every(isLegacyConditionalSlot) && Number.isFinite(value.activeForegroundMs) &&
+    isNonEmptyString(value.contentVersion) && isLegacyPackagePin(value.packagePin) &&
+    (value.taxonomyVersion === undefined || isNonEmptyString(value.taxonomyVersion)) &&
+    (value.planFingerprint === undefined || (typeof value.planFingerprint === "string" && SHA_256.test(value.planFingerprint))) &&
+    (value.status === "active" || value.status === "completed" || value.status === "abandoned") && isNonEmptyString(value.startedAt) && !Number.isNaN(Date.parse(value.startedAt)) &&
+    (value.completedAt === undefined || (isNonEmptyString(value.completedAt) && !Number.isNaN(Date.parse(value.completedAt))));
+}
+
+function isLegacyEvidence(value: unknown): boolean {
+  return isRecord(value) && hasNoUnexpectedKeys(value, ["sourceItem", "taxonomyOrSkillRefs"]) && isLegacyContentItemRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs);
+}
+
+function isLegacyAttemptResult(value: unknown): boolean {
+  return isRecord(value) && hasNoUnexpectedKeys(value, ["kind", "earnedPoints", "maxPoints", "components"]) &&
+    ["correct", "partial", "incorrect"].includes(value.kind as string) && typeof value.earnedPoints === "number" && typeof value.maxPoints === "number" &&
+    (value.components === undefined || Array.isArray(value.components));
+}
+
+function isLegacyJsonValue(value: unknown): boolean {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return true;
+  if (typeof value === "number") return Number.isFinite(value);
+  if (Array.isArray(value)) return value.every(isLegacyJsonValue);
+  return isRecord(value) && Object.values(value).every(isLegacyJsonValue);
+}
+
+function isLegacyTrainingAttempt(value: unknown): value is Record<string, unknown> & { id: string; sessionId: string; trackId: string; occurrenceId: string; item: unknown } {
+  if (!isRecord(value) || "confidence" in value || "itemType" in value || !hasNoUnexpectedKeys(value, ["id", "sessionId", "trackId", "modeId", "occurrenceId", "item", "response", "result", "reviewEvidence", "answeredAt", "committedAt", "durationMs"])) return false;
+  return isNonEmptyString(value.id) && isNonEmptyString(value.sessionId) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && isNonEmptyString(value.modeId) && isNonEmptyString(value.occurrenceId) &&
+    isLegacyContentItemRef(value.item) && isLegacyEvidence(value.reviewEvidence) && isLegacyJsonValue(value.response) && isLegacyAttemptResult(value.result) &&
+    isNonEmptyString(value.answeredAt) && !Number.isNaN(Date.parse(value.answeredAt)) && isNonEmptyString(value.committedAt) && !Number.isNaN(Date.parse(value.committedAt)) &&
+    (value.durationMs === undefined || (typeof value.durationMs === "number" && Number.isFinite(value.durationMs)));
+}
+
+function isLegacyReviewQueueEntry(value: unknown): value is Record<string, unknown> & { id: string; trackId: string; sourceAttemptId: string; sourceSessionId: string; sourceItem: unknown } {
+  return isRecord(value) && !("kind" in value || "priority" in value || "retentionPassedAt" in value) && hasNoUnexpectedKeys(value, ["id", "trackId", "sourceAttemptId", "sourceSessionId", "sourceItem", "taxonomyOrSkillRefs", "reasons", "dueAt", "createdAt", "consecutiveAfterDueSuccesses", "persistent", "lastReviewedAt"]) &&
+    isNonEmptyString(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && isNonEmptyString(value.sourceAttemptId) && isNonEmptyString(value.sourceSessionId) &&
+    isLegacyContentItemRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs) && Array.isArray(value.reasons) && value.reasons.every((reason) => typeof reason === "string") &&
+    isNonEmptyString(value.dueAt) && !Number.isNaN(Date.parse(value.dueAt)) && isNonEmptyString(value.createdAt) && !Number.isNaN(Date.parse(value.createdAt)) &&
+    Number.isInteger(value.consecutiveAfterDueSuccesses) && Number(value.consecutiveAfterDueSuccesses) >= 0 && typeof value.persistent === "boolean" &&
+    (value.lastReviewedAt === undefined || (isNonEmptyString(value.lastReviewedAt) && !Number.isNaN(Date.parse(value.lastReviewedAt))));
+}
+
+function isLegacyJournalWrite(value: unknown): boolean {
+  if (!isRecord(value) || !isNonEmptyString(value.kind)) return false;
+  switch (value.kind) {
+    case "put_session": return isLegacyTrainingSession(value.record);
+    case "put_attempt": return isLegacyTrainingAttempt(value.record);
+    case "put_review_entry":
+    case "delete_review_entry": return isLegacyReviewQueueEntry(value.record);
+    case "put_review_entry_for_attempt":
+    case "update_review_entry":
+    case "delete_review_entry_for_attempt": return isLegacyReviewQueueEntry(value.record) && isNonEmptyString(value.transitionId);
+    case "put_session_result": return isTrainingSessionResult(value.record);
+    case "put_active_session_draft": return isTrainingSessionDraft(value.record);
+    case "delete_active_session_draft": return isTrainingSessionDraft(value.record) && isStringArray(value.submittedOccurrenceIds);
+    case "clear_active_session":
+    case "clear_active_session_draft": return isNonEmptyString(value.sessionId);
+    case "clear_learning_state": return Object.keys(value).length === 1;
+    default: return false;
+  }
+}
+
+function isLegacyMutationJournalRecord(value: unknown): boolean {
+  if (!isRecord(value) || !hasNoUnexpectedKeys(value, ["journalId", "operation", "status", "createdAt", "sessionId", "trackId", "packagePin", "commandIdentity", "expectedRevisions", "planFingerprint", "writes"])) return false;
+  return isNonEmptyString(value.journalId) && ["start_training_session", "advance_training_session", "submit_training_outcome", "complete_training_session", "abandon_training_session", "finalize_training_session", "set_review_entry", "remove_review_entry", "reset_learning_state"].includes(value.operation as string) &&
+    ["journal_durable", "materialized", "verified_pending_clear"].includes(value.status as string) && isNonEmptyString(value.createdAt) && !Number.isNaN(Date.parse(value.createdAt)) && isNonEmptyString(value.sessionId) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
+    (value.packagePin === null || isLegacyPackagePin(value.packagePin)) && isRecord(value.commandIdentity) && hasNoUnexpectedKeys(value.commandIdentity, ["version", "fingerprint"]) && value.commandIdentity.version === 1 && SHA_256.test(String(value.commandIdentity.fingerprint)) &&
+    value.journalId === `journal:${value.commandIdentity.fingerprint}` && SHA_256.test(String(value.planFingerprint)) && Array.isArray(value.expectedRevisions) && value.expectedRevisions.every((entry) => isRecord(entry) && hasNoUnexpectedKeys(entry, ["target", "revision"]) && isNonEmptyString(entry.target) && (entry.revision === null || Number.isSafeInteger(entry.revision))) &&
+    Array.isArray(value.writes) && value.writes.length > 0 && value.writes.every(isLegacyJournalWrite);
+}
+
+function isLegacyNotificationIdentity(value: unknown): boolean {
+  return isRecord(value) && hasNoUnexpectedKeys(value, ["trackId", "goalRevision", "planId", "planRevision", "storageRevision", "commandId", "timezone", "contentVersion", "contentPackagePin"]) &&
+    typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && Number.isSafeInteger(value.goalRevision) && Number(value.goalRevision) > 0 &&
+    isNonEmptyString(value.planId) && Number.isSafeInteger(value.planRevision) && Number(value.planRevision) > 0 && Number.isSafeInteger(value.storageRevision) && Number(value.storageRevision) > 0 &&
+    isNonEmptyString(value.commandId) && isNonEmptyString(value.timezone) && isNonEmptyString(value.contentVersion) && isLegacyPackagePin(value.contentPackagePin);
+}
+
+/** Reads the pre-canonical device-reminder owner without widening its runtime guard. */
+export function isLegacyNotificationSettings(value: unknown): boolean {
+  if (!isRecord(value) || !hasNoUnexpectedKeys(value, ["schemaVersion", "enabled", "identity", "schedules", "legacyNotificationIds", "pending"]) || value.schemaVersion !== 1 || typeof value.enabled !== "boolean" ||
+    !(value.identity === null || isLegacyNotificationIdentity(value.identity)) || !Array.isArray(value.schedules) || !value.schedules.every((entry) => isRecord(entry) && hasNoUnexpectedKeys(entry, ["slotId", "day", "localTime", "notificationId"]) && isNonEmptyString(entry.slotId) && isNonEmptyString(entry.day) && isNonEmptyString(entry.localTime) && isNonEmptyString(entry.notificationId)) ||
+    !Array.isArray(value.legacyNotificationIds) || !value.legacyNotificationIds.every(isNonEmptyString) || new Set(value.legacyNotificationIds).size !== value.legacyNotificationIds.length) return false;
+  return value.pending === null;
+}
+
+function isLegacyAccountRecord(value: unknown, exact = true): boolean {
+  if (!isRecord(value) || (exact && !hasNoUnexpectedKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version", "contentIdentitySchema"])) || value.contentIdentitySchema !== undefined ||
+    typeof value.fingerprint !== "string" || !SHA_256.test(value.fingerprint) || !isNonEmptyString(value.recordId) || !(SYNCABLE_RECORD_TYPES as readonly string[]).includes(value.recordType as string) ||
+    !isRecord(value.state) || typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId) || !Number.isSafeInteger(value.version) || Number(value.version) < 0) return false;
+  if (value.state.deleted === true) return true;
+  if (value.recordType !== "goal" && value.recordType !== "learning_plan" && value.state.trackId !== value.trackId) return false;
+  return accountDataRecordFingerprint({ recordId: value.recordId, recordType: value.recordType as SyncableRecordType, state: value.state, trackId: value.trackId }) === value.fingerprint;
+}
+
+function isLegacyAccountOutboxEntry(value: unknown): boolean {
+  return isLegacyAccountRecord(value, false) && isRecord(value) && hasNoUnexpectedKeys(value, ["fingerprint", "recordId", "recordType", "state", "trackId", "version", "contentIdentitySchema", "mutationId", "expectedVersion", "attemptCount", "lastErrorCode", "status", "sequence"]) &&
+    isNonEmptyString(value.mutationId) && (value.expectedVersion === null || (Number.isSafeInteger(value.expectedVersion) && Number(value.expectedVersion) >= 0)) && Number.isSafeInteger(value.attemptCount) && Number(value.attemptCount) >= 0 &&
+    (value.lastErrorCode === null || isNonEmptyString(value.lastErrorCode)) && (value.status === "pending" || value.status === "retrying" || value.status === "failed") && Number.isSafeInteger(value.sequence) && Number(value.sequence) >= 1;
+}
+
+function isLegacySyncPlan(value: unknown): boolean {
+  if (!isRecord(value) || !hasNoUnexpectedKeys(value, ["version", "planId", "snapshotVersion", "expectedAccountRevision", "highWatermark", "items", "contentIdentitySchema"]) || value.contentIdentitySchema !== undefined || value.version !== 3 ||
+    !isNonEmptyString(value.planId) || !Number.isSafeInteger(value.snapshotVersion) || Number(value.snapshotVersion) < 0 || !Number.isSafeInteger(value.expectedAccountRevision) || Number(value.expectedAccountRevision) < 0 || !Number.isSafeInteger(value.highWatermark) || Number(value.highWatermark) < 0 || !Array.isArray(value.items)) return false;
+  return value.items.every((item) => isRecord(item) && hasNoUnexpectedKeys(item, ["sequence", "recordKey", "mutationId", "expectedVersion", "payload", "groupId", "status"]) && Number.isSafeInteger(item.sequence) && Number(item.sequence) >= 1 && isNonEmptyString(item.recordKey) && isNonEmptyString(item.mutationId) &&
+    (item.expectedVersion === null || (Number.isSafeInteger(item.expectedVersion) && Number(item.expectedVersion) >= 0)) && isLegacyAccountRecord(item.payload) && (item.groupId === null || isNonEmptyString(item.groupId)) &&
+    (item.status === "pending" || item.status === "sent" || item.status === "acked") && item.recordKey === accountDataRecordKey(item.payload as { recordId: string; recordType: SyncableRecordType; trackId: string }));
+}
+
+function isLegacyMaterialization(value: unknown): boolean {
+  if (value === null) return true;
+  if (!isRecord(value)) return false;
+  if (value.kind === "discardGuest") {
+    return isNonEmptyString(value.accountId) && (value.installationId === undefined || isNonEmptyString(value.installationId)) && (value.phase === undefined || value.phase === "prepared" || value.phase === "applying") &&
+      (value.guestBackup === undefined || (Array.isArray(value.guestBackup) && value.guestBackup.every((entry) => isRecord(entry) && hasNoUnexpectedKeys(entry, ["key", "value"]) && isNonEmptyString(entry.key) && isGuestOwnedLearningKey(entry.key) && typeof entry.value === "string")));
+  }
+  return isNonEmptyString(value.operationId) && isNonEmptyString(value.previewFingerprint);
+}
+
+function isLegacyAcknowledgedRecord(value: unknown): boolean {
+  return isRecord(value) && hasNoUnexpectedKeys(value, ["fingerprint", "recordId", "recordType", "remoteVersion", "trackId", "contentIdentitySchema"]) && value.contentIdentitySchema === undefined && typeof value.fingerprint === "string" && SHA_256.test(value.fingerprint) && isNonEmptyString(value.recordId) && (SYNCABLE_RECORD_TYPES as readonly string[]).includes(value.recordType as string) && Number.isSafeInteger(value.remoteVersion) && Number(value.remoteVersion) >= 0 && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId);
+}
+
+/** Legacy v1-v3 account state reader used only by migration inventory/planning. */
+export function isLegacyAccountSyncState(value: unknown): boolean {
+  const required = ["protocolVersion", "accountId", "status", "localDatasetVersion", "localDatasetFingerprint", "remoteAccountRevision", "lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode", "acknowledged", "outbox", "materialization", "pendingConfirmation", "syncPlan", "outboxSequence", "highWatermark"];
+  if (!isRecord(value) || !hasNoUnexpectedKeys(value, [...required, "resetGuard"]) || ![1, 2, 3].includes(value.protocolVersion as number) || (value.accountId !== null && !isNonEmptyString(value.accountId)) || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || Number(value.localDatasetVersion) < 0 || (value.localDatasetFingerprint !== null && !(typeof value.localDatasetFingerprint === "string" && SHA_256.test(value.localDatasetFingerprint))) || !Number.isSafeInteger(value.remoteAccountRevision) || Number(value.remoteAccountRevision) < 0 || (value.lastSuccessfulSyncAt !== null && !(isNonEmptyString(value.lastSuccessfulSyncAt) && !Number.isNaN(Date.parse(value.lastSuccessfulSyncAt)))) || !Number.isSafeInteger(value.pendingMutationCount) || Number(value.pendingMutationCount) < 0 || (value.blockingConflictCode !== null && !isNonEmptyString(value.blockingConflictCode)) || (value.lastFailureCode !== null && !isNonEmptyString(value.lastFailureCode)) || !isRecord(value.acknowledged) || !Array.isArray(value.outbox) || !isLegacyMaterialization(value.materialization) || (value.pendingConfirmation !== null && !isRecord(value.pendingConfirmation)) || (value.syncPlan !== null && !isLegacySyncPlan(value.syncPlan)) || !Number.isSafeInteger(value.outboxSequence) || Number(value.outboxSequence) < 0 || !Number.isSafeInteger(value.highWatermark) || Number(value.highWatermark) < 0 || (value.resetGuard !== undefined && value.resetGuard !== null && !isRecord(value.resetGuard))) return false;
+  if (!value.outbox.every(isLegacyAccountOutboxEntry) || !Object.values(value.acknowledged).every(isLegacyAcknowledgedRecord)) return false;
+  return true;
+}
+
 function isStringArray(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.every(isNonEmptyString);
 }
@@ -308,23 +489,23 @@ function payloadShapeIssue(key: string, payload: unknown, entry: RegistryEntry, 
   if (entry.selector === STORAGE_KEYS.ACTIVE_TRAINING_SESSION) return isNonEmptyString(payload) ? null : malformed("invalid_active_session_pointer");
   if (entry.selector === STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT) return isTrainingSessionDraft(payload) ? null : malformed("invalid_session_draft");
   if (entry.selector === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) return isForegroundTimerState(payload) ? null : malformed("invalid_foreground_timer");
-  if (entry.selector === STORAGE_KEYS.NOTIFICATION_SETTINGS) return isCanonicalNotificationSettings(payload) ? null : malformed("invalid_notification_settings", false);
+  if (entry.selector === STORAGE_KEYS.NOTIFICATION_SETTINGS) return isCanonicalNotificationSettings(payload) || isLegacyNotificationSettings(payload) ? null : malformed("invalid_notification_settings", false);
   if (entry.selector === STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL) return isCanonicalNotificationSettingsJournal(payload) ? null : malformed("invalid_notification_settings_journal", false);
   if (entry.selector === STORAGE_KEYS.ACCOUNT_SYNC) {
     if (hasLegacyPendingConfirmation(payload)) return { classification: "unsupported", reason: "legacy_account_pending_confirmation", identityBearing: true };
     // Owner validation remains fail-closed, while inventory-specific legacy
     // identity diagnostics retain their more actionable classification.
     if (hasUnsupportedGuestBackupKey(payload) || hasLegacySyncPlanRecordKey(payload)) return null;
-    return isCanonicalAccountSyncState(payload) ? null : malformed("invalid_account_sync_state", true);
+    return isCanonicalAccountSyncState(payload) || isLegacyAccountSyncState(payload) ? null : malformed("invalid_account_sync_state", true);
   }
-  if (entry.selector === STORAGE_KEYS.ACTIVE_JOURNAL) return isMutationJournalRecord(payload) ? null : malformed("invalid_mutation_journal", true);
+  if (entry.selector === STORAGE_KEYS.ACTIVE_JOURNAL) return isMutationJournalRecord(payload) || isLegacyMutationJournalRecord(payload) ? null : malformed("invalid_mutation_journal", true);
   if (entry.selector === STORAGE_KEYS.CONTENT_REPORT_OUTBOX) return isContentReportOutboxEntries(payload) ? null : malformed("invalid_content_report_outbox", true);
   if (entry.selector === STORAGE_KEYS.TRAINING_SESSION_INDEX || entry.selector === STORAGE_KEYS.TRAINING_ATTEMPT_INDEX || entry.selector === STORAGE_KEYS.REVIEW_INDEX) return null;
   if (entry.kind === "dynamic_prefix") {
-    if (entry.selector === `${STORAGE_NAMESPACE}training-session:`) return isTrainingSession(payload) ? null : malformed("invalid_training_session", true);
+    if (entry.selector === `${STORAGE_NAMESPACE}training-session:`) return isTrainingSession(payload) || isLegacyTrainingSession(payload) ? null : malformed("invalid_training_session", true);
     if (entry.selector === `${STORAGE_NAMESPACE}training-session-result:`) return isTrainingSessionResult(payload) ? null : malformed("invalid_training_session_result", false);
-    if (entry.selector === `${STORAGE_NAMESPACE}training-attempt:`) return isTrainingAttempt(payload) ? null : malformed("invalid_training_attempt", true);
-    if (entry.selector === `${STORAGE_NAMESPACE}review-entry:`) return isReviewQueueEntry(payload) ? null : malformed("invalid_review_entry", true);
+    if (entry.selector === `${STORAGE_NAMESPACE}training-attempt:`) return isTrainingAttempt(payload) || isLegacyTrainingAttempt(payload) ? null : malformed("invalid_training_attempt", true);
+    if (entry.selector === `${STORAGE_NAMESPACE}review-entry:`) return isReviewQueueEntry(payload) || isLegacyReviewQueueEntry(payload) ? null : malformed("invalid_review_entry", true);
     if (entry.selector === `${STORAGE_NAMESPACE}goal:`) return typeof suffix === "string" && isRegisteredTrackId(suffix) && isGoalRecordShapeForTrack(payload, suffix) ? null : malformed("invalid_goal", false);
     if (entry.selector === `${STORAGE_NAMESPACE}learning-plan:`) return typeof suffix === "string" && isRegisteredTrackId(suffix) && isLearningPlanV1ForTrack(payload, suffix) ? null : malformed("invalid_learning_plan", true);
   }
@@ -564,7 +745,7 @@ function accountIdentityKey(value: unknown): string | null {
 }
 
 function accountDuplicateIssues(payload: unknown): readonly ScanIssue[] {
-  if (!isRecord(payload) || !isCanonicalAccountSyncState(payload)) return Object.freeze([]);
+  if (!isRecord(payload) || (!isCanonicalAccountSyncState(payload) && !isLegacyAccountSyncState(payload))) return Object.freeze([]);
   const issues: ScanIssue[] = [];
   const inspect = (entries: readonly unknown[], pathPrefix: string, identityReason: string, mutationReason: string, identityValue: (entry: unknown) => unknown = (entry) => entry): void => {
     const identities = new Set<string>();
@@ -679,6 +860,9 @@ function classifyFinding(input: Readonly<{
 function sameContentIdentity(left: unknown, right: unknown): boolean {
   if (!isRecord(left) || !isRecord(right)) return false;
   try {
+    if ("questionId" in left || "questionId" in right || "artifactSha256" in left || "artifactSha256" in right) {
+      return left.trackId === right.trackId && left.questionId === right.questionId && left.contentVersion === right.contentVersion && left.artifactSha256 === right.artifactSha256;
+    }
     return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion && canonicalSerialize(left.packagePin) === canonicalSerialize(right.packagePin);
   } catch {
     return false;
@@ -710,10 +894,10 @@ function addRelationshipIssues(
       const ids = indexIds.get(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX) ?? [];
       if (!ids.includes(suffix)) orphan("record_missing_from_index");
       if (isRecord(payload) && payload.id !== suffix) issues.push({ classification: "malformed", reason: "record_key_identity_mismatch", identityBearing: true });
-      if (isTrainingAttempt(payload)) {
+      if (isTrainingAttempt(payload) || isLegacyTrainingAttempt(payload)) {
         const sessionKey = `${STORAGE_NAMESPACE}training-session:${payload.sessionId}`;
         const session = payloadByKey.get(sessionKey);
-        if (!knownKeys.has(sessionKey) || !isTrainingSession(session)) orphan("attempt_references_missing_session", "payload.sessionId");
+        if (!knownKeys.has(sessionKey) || (!isTrainingSession(session) && !isLegacyTrainingSession(session))) orphan("attempt_references_missing_session", "payload.sessionId");
         else {
           if (payload.trackId !== session.trackId) issues.push({ classification: "malformed", reason: "attempt_session_scope_mismatch", path: "payload.trackId", identityBearing: true });
           const occurrence = session.itemOrder.find((candidate) => candidate.occurrenceId === payload.occurrenceId);
@@ -725,16 +909,16 @@ function addRelationshipIssues(
       const ids = indexIds.get(STORAGE_KEYS.REVIEW_INDEX) ?? [];
       if (!ids.includes(suffix)) orphan("record_missing_from_index");
       if (isRecord(payload) && payload.id !== suffix) issues.push({ classification: "malformed", reason: "record_key_identity_mismatch", identityBearing: true });
-      if (isReviewQueueEntry(payload)) {
+      if (isReviewQueueEntry(payload) || isLegacyReviewQueueEntry(payload)) {
         const sessionKey = `${STORAGE_NAMESPACE}training-session:${payload.sourceSessionId}`;
         const attemptKey = `${STORAGE_NAMESPACE}training-attempt:${payload.sourceAttemptId}`;
         const session = payloadByKey.get(sessionKey);
         const attempt = payloadByKey.get(attemptKey);
-        if (!knownKeys.has(sessionKey) || !isTrainingSession(session)) orphan("review_references_missing_session", "payload.sourceSessionId");
+        if (!knownKeys.has(sessionKey) || (!isTrainingSession(session) && !isLegacyTrainingSession(session))) orphan("review_references_missing_session", "payload.sourceSessionId");
         else {
           if (payload.trackId !== session.trackId) issues.push({ classification: "malformed", reason: "review_session_scope_mismatch", path: "payload.trackId", identityBearing: true });
         }
-        if (!knownKeys.has(attemptKey) || !isTrainingAttempt(attempt)) orphan("review_references_missing_attempt", "payload.sourceAttemptId");
+        if (!knownKeys.has(attemptKey) || (!isTrainingAttempt(attempt) && !isLegacyTrainingAttempt(attempt))) orphan("review_references_missing_attempt", "payload.sourceAttemptId");
         else {
           if (attempt.sessionId !== payload.sourceSessionId) issues.push({ classification: "malformed", reason: "review_attempt_session_mismatch", path: "payload.sourceAttemptId", identityBearing: true });
           if (attempt.trackId !== payload.trackId || !sameContentIdentity(payload.sourceItem, attempt.item)) issues.push({ classification: "malformed", reason: "review_attempt_identity_mismatch", path: "payload.sourceItem", identityBearing: true });
@@ -745,7 +929,7 @@ function addRelationshipIssues(
       if (isTrainingSessionResult(payload)) {
         const sessionKey = `${STORAGE_NAMESPACE}training-session:${payload.sessionId}`;
         const session = payloadByKey.get(sessionKey);
-        if (!knownKeys.has(sessionKey) || !isTrainingSession(session)) orphan("result_references_missing_session", "payload.sessionId");
+        if (!knownKeys.has(sessionKey) || (!isTrainingSession(session) && !isLegacyTrainingSession(session))) orphan("result_references_missing_session", "payload.sessionId");
         else {
           if (payload.trackId !== session.trackId) issues.push({ classification: "malformed", reason: "result_session_scope_mismatch", path: "payload.trackId", identityBearing: true });
           if (session.status !== "completed") orphan("result_references_non_completed_session", "payload.sessionId");
@@ -756,20 +940,20 @@ function addRelationshipIssues(
   if (key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION && isNonEmptyString(payload)) {
     const sessionKey = `${STORAGE_NAMESPACE}training-session:${payload}`;
     const session = payloadByKey.get(sessionKey);
-    if (!knownKeys.has(sessionKey) || !isTrainingSession(session)) orphan("active_pointer_references_missing_session", "payload");
+    if (!knownKeys.has(sessionKey) || (!isTrainingSession(session) && !isLegacyTrainingSession(session))) orphan("active_pointer_references_missing_session", "payload");
     else if (session.status !== "active") orphan("active_pointer_references_non_active_session", "payload");
   }
   if (key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT && isRecord(payload) && isNonEmptyString(payload.sessionId)) {
     const sessionKey = `${STORAGE_NAMESPACE}training-session:${payload.sessionId}`;
     const session = payloadByKey.get(sessionKey);
-    if (!knownKeys.has(sessionKey) || !isTrainingSession(session)) orphan("draft_references_missing_session", "payload.sessionId");
+    if (!knownKeys.has(sessionKey) || (!isTrainingSession(session) && !isLegacyTrainingSession(session))) orphan("draft_references_missing_session", "payload.sessionId");
     else if (session.trackId !== payload.trackId) issues.push({ classification: "malformed", reason: "draft_session_scope_mismatch", path: "payload.trackId", identityBearing: true });
     else if (session.status !== "active") orphan("draft_references_non_active_session", "payload.sessionId");
   }
   if (key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER && isForegroundTimerState(payload)) {
     const sessionKey = `${STORAGE_NAMESPACE}training-session:${payload.sessionId}`;
     const session = payloadByKey.get(sessionKey);
-    if (!knownKeys.has(sessionKey) || !isTrainingSession(session)) orphan("timer_references_missing_session", "payload.sessionId");
+    if (!knownKeys.has(sessionKey) || (!isTrainingSession(session) && !isLegacyTrainingSession(session))) orphan("timer_references_missing_session", "payload.sessionId");
     else {
       if (session.trackId !== payload.trackId) issues.push({ classification: "malformed", reason: "timer_session_scope_mismatch", path: "payload.trackId", identityBearing: true });
       if (session.status !== "active") orphan("timer_references_non_active_session", "payload.sessionId");

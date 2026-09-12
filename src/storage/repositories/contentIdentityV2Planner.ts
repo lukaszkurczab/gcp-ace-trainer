@@ -1,5 +1,7 @@
 import {
   CONTENT_IDENTITY_INVENTORY_REGISTRY,
+  isLegacyAccountSyncState,
+  isLegacyNotificationSettings,
   type ContentIdentityInventoryKeyKind,
   type ContentIdentityInventoryRegistryEntry,
 } from "./contentIdentityInventory";
@@ -222,7 +224,7 @@ function assertLegacyOwnerPayload(key: string, owner: string, payload: unknown):
     return;
   }
   if (owner === "accountDataRepository") {
-    if (!isCanonicalAccountSyncState(payload)) invalid();
+    if (!isCanonicalAccountSyncState(payload) && !isLegacyAccountSyncState(payload)) invalid();
     return;
   }
   if (owner === "contentReportOutboxRepository") {
@@ -230,12 +232,14 @@ function assertLegacyOwnerPayload(key: string, owner: string, payload: unknown):
     return;
   }
   if (owner === "notificationSettingsRepository") {
-    const valid = key === STORAGE_KEYS.NOTIFICATION_SETTINGS ? isCanonicalNotificationSettings(payload) : key === STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL ? isCanonicalNotificationSettingsJournal(payload) : false;
+    const valid = key === STORAGE_KEYS.NOTIFICATION_SETTINGS
+      ? isCanonicalNotificationSettings(payload) || isLegacyNotificationSettings(payload)
+      : key === STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL ? isCanonicalNotificationSettingsJournal(payload) : false;
     if (!valid) invalid();
     return;
   }
   if (owner === "mutationJournalRepository") {
-    if (!isMutationJournalRecord(payload)) invalid();
+    if (!isLegacyMutationJournalRecord(payload)) invalid();
     return;
   }
   if (owner === "trainingSessionRepository") {
@@ -243,7 +247,7 @@ function assertLegacyOwnerPayload(key: string, owner: string, payload: unknown):
       if (!isStringArray(payload)) invalid();
     } else if (key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION) {
       if (!nonEmpty(payload)) invalid();
-    } else if (!isTrainingSession(payload)) {
+    } else if (!isLegacyTrainingSession(payload)) {
       invalid();
     }
     return;
@@ -257,12 +261,12 @@ function assertLegacyOwnerPayload(key: string, owner: string, payload: unknown):
     return;
   }
   if (owner === "trainingAttemptRepository") {
-    if (ownerInfo.kind === "index" ? !isStringArray(payload) : !isTrainingAttempt(payload)) invalid();
+    if (ownerInfo.kind === "index" ? !isStringArray(payload) : !isLegacyTrainingAttempt(payload)) invalid();
     if (ownerInfo.kind === "dynamic_prefix" && isRecord(payload) && payload.id !== suffix) invalid();
     return;
   }
   if (owner === "reviewQueueRepository") {
-    if (ownerInfo.kind === "index" ? !isStringArray(payload) : !isReviewQueueEntry(payload)) invalid();
+    if (ownerInfo.kind === "index" ? !isStringArray(payload) : !isLegacyReviewQueueEntry(payload)) invalid();
     if (ownerInfo.kind === "dynamic_prefix" && isRecord(payload) && payload.id !== suffix) invalid();
     return;
   }
@@ -275,7 +279,7 @@ function assertLegacyOwnerPayload(key: string, owner: string, payload: unknown):
     return;
   }
   if (owner === "learningPlanRepository") {
-    if (ownerInfo.kind !== "dynamic_prefix" || !isLearningPlanV1ForTrack(payload, suffix ?? "")) invalid();
+    if (ownerInfo.kind !== "dynamic_prefix" || (!isLearningPlanV1ForTrack(payload, suffix ?? "") && !isLegacyLearningPlanForTrack(payload, suffix ?? ""))) invalid();
     return;
   }
   invalid();
@@ -287,6 +291,133 @@ const SETTINGS_APPEARANCES = ["system", "light", "dark"] as const;
 
 function isStringArray(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.every(nonEmpty);
+}
+
+/*
+ * The C1 runtime guards intentionally accept only ResolvedContentRef.  This
+ * planner is the private pre-marker migrator, so its owner fence must retain a
+ * separate legacy reader instead of weakening the public repository guards or
+ * silently accepting arbitrary opaque records.
+ */
+function hasNoUnexpectedKeys(value: JsonRecord, allowed: readonly string[]): boolean {
+  return Object.keys(value).every((key) => allowed.includes(key));
+}
+
+function isLegacyPackagePin(value: unknown): value is JsonRecord & { packageIdentity: string; packageVersion: string; contentReleaseId: string } {
+  return isRecord(value) && hasExactKeys(value, [...LEGACY_PACKAGE_KEYS]) && DIGEST.test(String(value.packageIdentity)) && nonEmpty(value.packageVersion) && nonEmpty(value.contentReleaseId);
+}
+
+function isLegacyLearningPlanForTrack(value: unknown, trackId: string): boolean {
+  if (!isRecord(value) || !isLegacyPackagePin(value.contentPackagePin) || "artifactSha256" in value) return false;
+  const { contentPackagePin, ...rest } = value;
+  return isLearningPlanV1ForTrack({ ...rest, artifactSha256: contentPackagePin.packageIdentity }, trackId);
+}
+
+function isLegacyContentItemRef(value: unknown): boolean {
+  return isRecord(value) && hasExactKeys(value, ["trackId", "itemId", "contentVersion", "packagePin"]) &&
+    typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && nonEmpty(value.itemId) && nonEmpty(value.contentVersion) && isLegacyPackagePin(value.packagePin);
+}
+
+function isLegacyConfigurationSnapshot(value: unknown): boolean {
+  return isRecord(value) && Object.keys(value).length > 0 && Object.values(value).every((entry) =>
+    typeof entry === "string" || typeof entry === "boolean" || (typeof entry === "number" && Number.isFinite(entry)) ||
+    (Array.isArray(entry) && entry.every((item) => typeof item === "string")));
+}
+
+function isLegacyOptionOrder(value: unknown): boolean {
+  return isRecord(value) && Object.values(value).every((options) => Array.isArray(options) && options.every(nonEmpty) && new Set(options).size === options.length);
+}
+
+function isLegacyOccurrence(value: unknown): boolean {
+  return isRecord(value) && hasExactKeys(value, ["occurrenceId", "item"]) && nonEmpty(value.occurrenceId) && isLegacyContentItemRef(value.item);
+}
+
+function isLegacyBranch(value: unknown): boolean {
+  return isRecord(value) && hasExactKeys(value, ["occurrence", "optionOrder"]) && isLegacyOccurrence(value.occurrence) && isStringArray(value.optionOrder) && new Set(value.optionOrder).size === value.optionOrder.length;
+}
+
+function isLegacyConditionalSlot(value: unknown): boolean {
+  return isRecord(value) && hasExactKeys(value, ["slotId", "sourceOccurrenceId", "ordinaryBranch", "reviewedVariantBranch", "exactSourceBranch", "resolutionRule"]) &&
+    nonEmpty(value.slotId) && nonEmpty(value.sourceOccurrenceId) && isLegacyBranch(value.ordinaryBranch) &&
+    (value.reviewedVariantBranch === undefined || isLegacyBranch(value.reviewedVariantBranch)) &&
+    (value.exactSourceBranch === undefined || isLegacyBranch(value.exactSourceBranch)) &&
+    value.resolutionRule === "incorrect_or_partial_after_three_materialized_submissions";
+}
+
+function isLegacyTrainingSession(value: unknown): boolean {
+  if (!isRecord(value) || !hasNoUnexpectedKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "packagePin", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"]) || "itemRefs" in value || value.status === "expired") return false;
+  return nonEmpty(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && nonEmpty(value.modeId) &&
+    isLegacyConfigurationSnapshot(value.configurationSnapshot) && Number.isFinite(value.requestedLength) && Number.isFinite(value.actualLength) && Number.isFinite(value.currentItemIndex) &&
+    Array.isArray(value.itemOrder) && value.itemOrder.every(isLegacyOccurrence) && isLegacyOptionOrder(value.optionOrderByOccurrence) &&
+    Array.isArray(value.conditionalReinsertSlots) && value.conditionalReinsertSlots.every(isLegacyConditionalSlot) && Number.isFinite(value.activeForegroundMs) &&
+    nonEmpty(value.contentVersion) && isLegacyPackagePin(value.packagePin) &&
+    (value.taxonomyVersion === undefined || nonEmpty(value.taxonomyVersion)) &&
+    (value.planFingerprint === undefined || (typeof value.planFingerprint === "string" && DIGEST.test(value.planFingerprint))) &&
+    (value.status === "active" || value.status === "completed" || value.status === "abandoned") && nonEmpty(value.startedAt) && !Number.isNaN(Date.parse(value.startedAt)) &&
+    (value.completedAt === undefined || (nonEmpty(value.completedAt) && !Number.isNaN(Date.parse(value.completedAt))));
+}
+
+function isLegacyEvidence(value: unknown): boolean {
+  return isRecord(value) && hasExactKeys(value, ["sourceItem", "taxonomyOrSkillRefs"]) && isLegacyContentItemRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs);
+}
+
+function isLegacyAttemptResult(value: unknown): boolean {
+  return isRecord(value) && hasNoUnexpectedKeys(value, ["kind", "earnedPoints", "maxPoints", "components"]) &&
+    ["correct", "partial", "incorrect"].includes(value.kind as string) && typeof value.earnedPoints === "number" && typeof value.maxPoints === "number" &&
+    (value.components === undefined || Array.isArray(value.components));
+}
+
+function isLegacyJsonValue(value: unknown): boolean {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return true;
+  if (typeof value === "number") return Number.isFinite(value);
+  if (Array.isArray(value)) return value.every(isLegacyJsonValue);
+  return isRecord(value) && Object.values(value).every(isLegacyJsonValue);
+}
+
+function isLegacyTrainingAttempt(value: unknown): boolean {
+  if (!isRecord(value) || "confidence" in value || "itemType" in value || !hasNoUnexpectedKeys(value, ["id", "sessionId", "trackId", "modeId", "occurrenceId", "item", "response", "result", "reviewEvidence", "answeredAt", "committedAt", "durationMs"])) return false;
+  return nonEmpty(value.id) && nonEmpty(value.sessionId) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && nonEmpty(value.modeId) && nonEmpty(value.occurrenceId) &&
+    isLegacyContentItemRef(value.item) && isLegacyEvidence(value.reviewEvidence) && isLegacyJsonValue(value.response) && isLegacyAttemptResult(value.result) &&
+    nonEmpty(value.answeredAt) && !Number.isNaN(Date.parse(value.answeredAt)) && nonEmpty(value.committedAt) && !Number.isNaN(Date.parse(value.committedAt)) &&
+    (value.durationMs === undefined || (typeof value.durationMs === "number" && Number.isFinite(value.durationMs)));
+}
+
+function isLegacyReviewQueueEntry(value: unknown): boolean {
+  return isRecord(value) && !(("kind" in value) || ("priority" in value) || ("retentionPassedAt" in value)) && hasNoUnexpectedKeys(value, ["id", "trackId", "sourceAttemptId", "sourceSessionId", "sourceItem", "taxonomyOrSkillRefs", "reasons", "dueAt", "createdAt", "consecutiveAfterDueSuccesses", "persistent", "lastReviewedAt"]) &&
+    nonEmpty(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && nonEmpty(value.sourceAttemptId) && nonEmpty(value.sourceSessionId) &&
+    isLegacyContentItemRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs) && Array.isArray(value.reasons) && value.reasons.every((reason) => typeof reason === "string") &&
+    nonEmpty(value.dueAt) && !Number.isNaN(Date.parse(value.dueAt)) && nonEmpty(value.createdAt) && !Number.isNaN(Date.parse(value.createdAt)) &&
+    Number.isInteger(value.consecutiveAfterDueSuccesses) && Number(value.consecutiveAfterDueSuccesses) >= 0 && typeof value.persistent === "boolean" &&
+    (value.lastReviewedAt === undefined || (nonEmpty(value.lastReviewedAt) && !Number.isNaN(Date.parse(value.lastReviewedAt))));
+}
+
+function isLegacyJournalWrite(value: unknown): boolean {
+  if (!isRecord(value) || !nonEmpty(value.kind)) return false;
+  switch (value.kind) {
+    case "put_session": return isLegacyTrainingSession(value.record);
+    case "put_attempt": return isLegacyTrainingAttempt(value.record);
+    case "put_review_entry":
+    case "delete_review_entry": return isLegacyReviewQueueEntry(value.record);
+    case "put_review_entry_for_attempt":
+    case "update_review_entry":
+    case "delete_review_entry_for_attempt": return isLegacyReviewQueueEntry(value.record) && nonEmpty(value.transitionId);
+    case "put_session_result": return isTrainingSessionResult(value.record);
+    case "put_active_session_draft": return isTrainingSessionDraft(value.record);
+    case "delete_active_session_draft": return isTrainingSessionDraft(value.record) && isStringArray(value.submittedOccurrenceIds);
+    case "clear_active_session":
+    case "clear_active_session_draft": return nonEmpty(value.sessionId);
+    case "clear_learning_state": return hasExactKeys(value, ["kind"]);
+    default: return false;
+  }
+}
+
+function isLegacyMutationJournalRecord(value: unknown): boolean {
+  if (!isRecord(value) || !hasExactKeys(value, ["journalId", "operation", "status", "createdAt", "sessionId", "trackId", "packagePin", "commandIdentity", "expectedRevisions", "planFingerprint", "writes"])) return false;
+  return nonEmpty(value.journalId) && ["start_training_session", "advance_training_session", "submit_training_outcome", "complete_training_session", "abandon_training_session", "finalize_training_session", "set_review_entry", "remove_review_entry", "reset_learning_state"].includes(value.operation as string) &&
+    ["journal_durable", "materialized", "verified_pending_clear"].includes(value.status as string) && nonEmpty(value.createdAt) && !Number.isNaN(Date.parse(value.createdAt)) && nonEmpty(value.sessionId) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
+    (value.packagePin === null || isLegacyPackagePin(value.packagePin)) && isRecord(value.commandIdentity) && hasExactKeys(value.commandIdentity, ["version", "fingerprint"]) && value.commandIdentity.version === 1 && DIGEST.test(String(value.commandIdentity.fingerprint)) &&
+    value.journalId === `journal:${value.commandIdentity.fingerprint}` && DIGEST.test(String(value.planFingerprint)) && Array.isArray(value.expectedRevisions) && value.expectedRevisions.every((entry) => isRecord(entry) && hasExactKeys(entry, ["target", "revision"]) && nonEmpty(entry.target) && (entry.revision === null || Number.isSafeInteger(entry.revision))) &&
+    Array.isArray(value.writes) && value.writes.length > 0 && value.writes.every(isLegacyJournalWrite);
 }
 
 function isGuestInstallationPayload(value: unknown): boolean {
