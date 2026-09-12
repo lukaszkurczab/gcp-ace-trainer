@@ -239,7 +239,7 @@ function assertLegacyOwnerPayload(key: string, owner: string, payload: unknown):
     return;
   }
   if (owner === "mutationJournalRepository") {
-    if (!isLegacyMutationJournalRecord(payload)) invalid();
+    if (!isMutationJournalRecord(payload) && !isLegacyMutationJournalRecord(payload)) invalid();
     return;
   }
   if (owner === "trainingSessionRepository") {
@@ -247,7 +247,7 @@ function assertLegacyOwnerPayload(key: string, owner: string, payload: unknown):
       if (!isStringArray(payload)) invalid();
     } else if (key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION) {
       if (!nonEmpty(payload)) invalid();
-    } else if (!isLegacyTrainingSession(payload)) {
+    } else if (!isTrainingSession(payload) && !isLegacyTrainingSession(payload)) {
       invalid();
     }
     return;
@@ -261,12 +261,12 @@ function assertLegacyOwnerPayload(key: string, owner: string, payload: unknown):
     return;
   }
   if (owner === "trainingAttemptRepository") {
-    if (ownerInfo.kind === "index" ? !isStringArray(payload) : !isLegacyTrainingAttempt(payload)) invalid();
+    if (ownerInfo.kind === "index" ? !isStringArray(payload) : !isTrainingAttempt(payload) && !isLegacyTrainingAttempt(payload)) invalid();
     if (ownerInfo.kind === "dynamic_prefix" && isRecord(payload) && payload.id !== suffix) invalid();
     return;
   }
   if (owner === "reviewQueueRepository") {
-    if (ownerInfo.kind === "index" ? !isStringArray(payload) : !isLegacyReviewQueueEntry(payload)) invalid();
+    if (ownerInfo.kind === "index" ? !isStringArray(payload) : !isReviewQueueEntry(payload) && !isLegacyReviewQueueEntry(payload)) invalid();
     if (ownerInfo.kind === "dynamic_prefix" && isRecord(payload) && payload.id !== suffix) invalid();
     return;
   }
@@ -476,6 +476,15 @@ function packageArtifact(pin: unknown, trackId: unknown, contentVersion: unknown
   return found.artifactSha256;
 }
 
+function canonicalArtifact(artifactSha256: unknown, trackId: unknown, contentVersion: unknown, artifacts: readonly ActiveContentArtifactDescriptor[]): string {
+  if (!DIGEST.test(String(artifactSha256)) || !isCanonicalSafeIdentity(trackId) || !isCanonicalSafeIdentity(contentVersion)) throw new ContentIdentityV2PlannerError("owner_guard_failed");
+  // A strict canonical record may be historical and legitimately refer to an
+  // artifact that is no longer active. It is already provenance-complete and
+  // must be preserved byte-for-byte rather than remapped to today's catalog.
+  void artifacts;
+  return String(artifactSha256);
+}
+
 function contextFor(kind: "history" | "active" | "review", payload: JsonRecord, fallback: string): LegacyContentTombstoneContext {
   const sessionId = nonEmpty(payload.sessionId) ? payload.sessionId : nonEmpty(payload.id) ? payload.id : fallback;
   if (kind === "review") return { kind: "unavailable_review", reviewId: nonEmpty(payload.id) ? payload.id : fallback };
@@ -516,7 +525,9 @@ function transformSession(payload: unknown, context: TransformContext): Transfor
   let artifactSha256: string | undefined;
   let topLevelIdentityOverride: LegacyIdentityOverride | undefined;
   try {
-    artifactSha256 = packageArtifact(payload.packagePin, payload.trackId, payload.contentVersion, context.artifacts);
+    artifactSha256 = payload.packagePin === undefined
+      ? canonicalArtifact(payload.artifactSha256, payload.trackId, payload.contentVersion, context.artifacts)
+      : packageArtifact(payload.packagePin, payload.trackId, payload.contentVersion, context.artifacts);
   } catch (error) {
     if (!(error instanceof ContentIdentityV2PlannerError) || error.code !== "unmapped_package_identity") throw error;
     topLevelIdentityOverride = { trackId: payload.trackId, contentVersion: payload.contentVersion, packagePin: payload.packagePin };
@@ -568,7 +579,9 @@ function transformReview(payload: unknown, context: TransformContext): Transform
 
 function transformPlan(payload: unknown, context: TransformContext): TransformResult {
   if (!isRecord(payload) || !nonEmpty(payload.trackId) || !nonEmpty(payload.contentVersion)) throw new ContentIdentityV2PlannerError("owner_guard_failed");
-  const artifactSha256 = packageArtifact(payload.contentPackagePin, payload.trackId, payload.contentVersion, context.artifacts);
+  const artifactSha256 = payload.contentPackagePin === undefined
+    ? canonicalArtifact(payload.artifactSha256, payload.trackId, payload.contentVersion, context.artifacts)
+    : packageArtifact(payload.contentPackagePin, payload.trackId, payload.contentVersion, context.artifacts);
   const { contentPackagePin: _contentPackagePin, ...withoutPin } = cloneJson(payload);
   return { value: { ...withoutPin, artifactSha256 }, identity: [] };
 }
@@ -576,7 +589,9 @@ function transformPlan(payload: unknown, context: TransformContext): TransformRe
 function transformNotificationIdentity(value: unknown, context: TransformContext): unknown {
   if (value === null) return null;
   if (!isRecord(value) || !nonEmpty(value.trackId) || !nonEmpty(value.contentVersion)) throw new ContentIdentityV2PlannerError("owner_guard_failed");
-  const artifactSha256 = packageArtifact(value.contentPackagePin, value.trackId, value.contentVersion, context.artifacts);
+  const artifactSha256 = value.contentPackagePin === undefined
+    ? canonicalArtifact(value.artifactSha256, value.trackId, value.contentVersion, context.artifacts)
+    : packageArtifact(value.contentPackagePin, value.trackId, value.contentVersion, context.artifacts);
   const { contentPackagePin: _contentPackagePin, ...withoutPin } = cloneJson(value);
   return { ...withoutPin, artifactSha256 };
 }
@@ -614,12 +629,14 @@ function transformJournal(payload: unknown, context: TransformContext): Transfor
   if (!isRecord(payload) || !nonEmpty(payload.trackId) || !Array.isArray(payload.writes)) throw new ContentIdentityV2PlannerError("owner_guard_failed");
   const identities: ContentIdentityV2IdentityBinding[] = [];
   let artifactSha256: string | null | undefined;
-  if (payload.packagePin === null) artifactSha256 = null;
+  if (payload.packagePin === null || payload.artifactSha256 === null) artifactSha256 = null;
+  else if (payload.packagePin === undefined && payload.artifactSha256 !== undefined) artifactSha256 = canonicalArtifact(payload.artifactSha256, payload.trackId, inferContentVersion(payload), context.artifacts);
   else {
     try {
       artifactSha256 = packageArtifact(payload.packagePin, payload.trackId, inferContentVersion(payload), context.artifacts);
     } catch (error) {
       if (!(error instanceof ContentIdentityV2PlannerError) || error.code !== "unmapped_package_identity") throw error;
+      if (payload.packagePin === undefined) throw error;
     }
   }
   const writes = payload.writes.map((write, index) => transformJournalWrite(write, context, `payload.writes[${index}]`, identities));
@@ -882,16 +899,18 @@ function buildTargets(source: readonly ContentIdentityMigrationRawRecord[], arti
     const payload = meta.envelope.payload;
     let mapped = false;
     try {
-      packageArtifact(payload.packagePin, payload.trackId, payload.contentVersion, artifacts);
+      if (payload.packagePin === undefined) canonicalArtifact(payload.artifactSha256, payload.trackId, payload.contentVersion, artifacts);
+      else packageArtifact(payload.packagePin, payload.trackId, payload.contentVersion, artifacts);
       mapped = true;
     } catch (error) {
       if (!(error instanceof ContentIdentityV2PlannerError) || error.code !== "unmapped_package_identity") throw error;
+      if (payload.packagePin === undefined) throw error;
     }
     sessionPreflight.set(payload.id as string, Object.freeze({
       kind: payload.status === "active" ? "active" : "history",
       trackId: payload.trackId as string,
       contentVersion: payload.contentVersion as string,
-      packagePin: payload.packagePin,
+      packagePin: payload.packagePin ?? null,
       mapped,
     }));
   }

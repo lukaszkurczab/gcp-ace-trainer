@@ -60,7 +60,7 @@ test("pending and committed v2 metadata are exact, protocol-bound, and typed", a
   await assert.rejects(validateStorageMetadata(), (error: unknown) => errorCode(error) === "storage_migration_pending");
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   writeCanonicalJson(STORAGE_KEYS.METADATA, committed);
-  await assert.rejects(validateStorageMetadata(), (error: unknown) => errorCode(error) === "unsupported_newer_storage_schema");
+  assert.deepEqual(await validateStorageMetadata(), committed);
 });
 
 test("historical malformed metadata remains a typed fail-closed rejection", async () => {
@@ -72,23 +72,16 @@ test("historical malformed metadata remains a typed fail-closed rejection", asyn
   await assert.rejects(validateStorageMetadata(), (error: unknown) => errorCode(error) === "storage_metadata_invalid");
 });
 
-test("current bootstrap blocks pending/newer metadata before lifecycle or content work", async () => {
-  for (const [metadata, reason] of [
-    [createPendingStorageMetadataV2(binding), "storage_migration_pending"],
-    [createCommittedStorageMetadataV2(binding), "unsupported_newer_storage_schema"],
-  ] as const) {
-    storage = new MemoryKeyValueStorage();
-    installKeyValueStorageForTests(storage);
-    writeCanonicalJson(STORAGE_KEYS.METADATA, metadata);
-    storage.resetCounters();
-    const events: string[] = [];
-    const result = await bootstrapApplication(
-      async () => { events.push("content"); },
-      async () => { events.push("resolve"); },
-    );
-    assert.deepEqual(result, { kind: "blocking", reason });
-    assert.deepEqual(events, []);
-    assert.deepEqual(storage.operations.filter((operation) => operation.kind === "write" || operation.kind === "remove"), []);
-  }
-});
+test("bootstrap blocks an orphan pending fence and opens committed metadata", async () => {
+  writeCanonicalJson(STORAGE_KEYS.METADATA, createPendingStorageMetadataV2(binding));
+  let events: string[] = [];
+  assert.deepEqual(await bootstrapApplication(async () => { events.push("content"); }, async () => undefined), { kind: "blocking", reason: "storage_migration_pending" });
+  assert.deepEqual(events, []);
 
+  storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  writeCanonicalJson(STORAGE_KEYS.METADATA, createCommittedStorageMetadataV2(binding));
+  events = [];
+  assert.deepEqual(await bootstrapApplication(async () => { events.push("content"); }, async () => undefined), { kind: "ready", activeSessionId: null });
+  assert.deepEqual(events, ["content"]);
+});

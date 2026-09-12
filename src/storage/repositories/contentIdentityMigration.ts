@@ -15,12 +15,7 @@ import {
   type StorageMetadataV2Binding,
 } from "./storageMetadataRepository";
 
-/**
- * This module is deliberately dormant.  It is an opaque raw-byte transaction
- * engine for the later cutover slice; it does not know any learning record
- * schema, does not transform content, and is not imported by bootstrap or the
- * repository barrel.
- */
+/** Opaque raw-byte transaction engine owned by the quiescent bootstrap cutover. */
 
 export const CONTENT_IDENTITY_MIGRATION_NAMESPACE = "patternly:migration:content-identity:v1:" as const;
 export const CONTENT_IDENTITY_MIGRATION_PROTOCOL_VERSION = 1 as const;
@@ -501,15 +496,19 @@ function readOnlyStorage(storage: KeyValueStorage): ContentIdentityMigrationRead
   });
 }
 
-function verifyTarget(storage: KeyValueStorage, state: ContentIdentityMigrationState, verifier: ContentIdentityMigrationVerifier): void {
+function verifyTargetManifest(storage: KeyValueStorage, state: ContentIdentityMigrationState): void {
   assertState(state);
-  assertSealedVerifier(verifier);
-  if (state.verifierId !== verifier.verifierId) fail("invalid_verifier");
   const current = captureContentIdentityMigrationSnapshot(storage);
   assertRawManifest(current, state.targetManifest, "target_verification_failed");
   const currentMetadata = metadataRecord(current);
   if (!currentMetadata) fail("target_verification_failed");
   assertCommittedMetadataBinding(currentMetadata.raw, state.sourceManifest, state.targetDataManifest, "target_verification_failed");
+}
+
+function verifyTarget(storage: KeyValueStorage, state: ContentIdentityMigrationState, verifier: ContentIdentityMigrationVerifier): void {
+  verifyTargetManifest(storage, state);
+  assertSealedVerifier(verifier);
+  if (state.verifierId !== verifier.verifierId) fail("invalid_verifier");
   const callback = verifierBindings.get(verifier)?.verify;
   if (!callback) fail("invalid_verifier");
   const context: ContentIdentityMigrationVerifierContext = Object.freeze({
@@ -578,17 +577,25 @@ function cleanupUnlocked(storage: KeyValueStorage): ContentIdentityMigrationClea
   return protocolCleanup(storage, state);
 }
 
-function recoverUnlocked(storage: KeyValueStorage, verifier: ContentIdentityMigrationVerifier): ContentIdentityMigrationRecoveryResult {
+function recoverUnlocked(storage: KeyValueStorage, verifier?: ContentIdentityMigrationVerifier): ContentIdentityMigrationRecoveryResult {
   const state = parseState(storage);
   const reserved = reservedKeys(storage);
   if (!state) {
     if (reserved.length !== 0) fail("blocked_recovery");
     return { kind: "not_started" };
   }
-  assertSealedVerifier(verifier);
-  if (state.verifierId !== verifier.verifierId) fail("invalid_verifier");
+  if (verifier) {
+    assertSealedVerifier(verifier);
+    if (state.verifierId !== verifier.verifierId) fail("invalid_verifier");
+  }
   if (state.phase === "committed") {
-    try { verifyTarget(storage, state, verifier); } catch (error) { if (error instanceof ContentIdentityMigrationError && error.code === "invalid_verifier") throw error; fail("manual_recovery_required", error); }
+    // The target was fully verified before the committed marker was written.
+    // On later launches public repositories may have legitimately advanced
+    // records, so marker-only recovery performs cleanup and never replays or
+    // compares the historical target snapshot.
+    if (verifier) {
+      try { verifyTarget(storage, state, verifier); } catch (error) { if (error instanceof ContentIdentityMigrationError && error.code === "invalid_verifier") throw error; fail("manual_recovery_required", error); }
+    }
     return Object.freeze({ kind: "already_committed", cleanup: cleanupUnlocked(storage) });
   }
   if (state.phase === "rollback_verified") {
@@ -673,7 +680,7 @@ export function createContentIdentityMigrationVerifier(input: {
   return verifier;
 }
 
-/** Explicit activation capability; the current bootstrap has no import or token. */
+/** Explicit version-bound activation capability held only by the private planner. */
 export function createContentIdentityMigrationActivation(targetRuntimeSchemaVersion: number): ContentIdentityMigrationActivation {
   if (targetRuntimeSchemaVersion !== CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION) fail("activation_required");
   const activation = Object.freeze({ targetRuntimeSchemaVersion: CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION });
@@ -745,9 +752,9 @@ export function migrateContentIdentityStorage(input: {
 }
 
 /** Rolls pre-commit state back only after a complete semantic backup validation. */
-export function recoverContentIdentityMigration(input: { storage: KeyValueStorage; verifier: ContentIdentityMigrationVerifier }): ContentIdentityMigrationRecoveryResult {
+export function recoverContentIdentityMigration(input: { storage: KeyValueStorage; verifier?: ContentIdentityMigrationVerifier }): ContentIdentityMigrationRecoveryResult {
   if (!isPlainRecord(input)) fail("invalid_verifier");
-  assertSealedVerifier(input.verifier);
+  if (input.verifier) assertSealedVerifier(input.verifier);
   const currentKeys = readKeys(input.storage).filter((key) => isCanonicalKey(key));
   const locks = [STATE_KEY, ...reservedKeys(input.storage), ...currentKeys];
   return withCanonicalWriteLocks(locks, () => recoverUnlocked(input.storage, input.verifier));

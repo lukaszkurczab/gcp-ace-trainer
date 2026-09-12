@@ -465,10 +465,10 @@ test("manifest digests are semantic and deterministic while raw bytes remain opa
   assert.equal(canonicalSerialize(first.sourceManifest.entries), canonicalSerialize(second.sourceManifest.entries));
 });
 
-test("legacy public entry points stay dormant: no bootstrap or barrel import exists", () => {
-  const bootstrap = readFileSync("src/application/bootstrap/applicationBootstrap.ts", "utf8");
+test("migration is activated only by repository bootstrap and remains outside the public barrel", () => {
+  const repositories = readFileSync("src/storage/repositories/canonicalRepositories.ts", "utf8");
   const barrel = readFileSync("src/storage/repositories/index.ts", "utf8");
-  assert.equal(bootstrap.includes("contentIdentityMigration"), false);
+  assert.equal(repositories.includes("initializeAndMigrateContentIdentity"), true);
   assert.equal(barrel.includes("contentIdentityMigration"), false);
   const moduleSource = readFileSync("src/storage/repositories/contentIdentityMigration.ts", "utf8");
   assert.equal(moduleSource.includes("readCanonicalJson"), false);

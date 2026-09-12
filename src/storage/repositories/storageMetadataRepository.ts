@@ -108,7 +108,7 @@ export function createCommittedStorageMetadataV2(binding: StorageMetadataV2Bindi
 }
 
 /** Opens only the current namespace. Old metadata is neither read nor translated. */
-export async function validateStorageMetadata(): Promise<CanonicalStorageMetadataV1> {
+export async function validateStorageMetadata(): Promise<CanonicalStorageMetadataV1 | CommittedStorageMetadataV2> {
   let metadata: CanonicalStorageMetadata | null;
   try {
     // Keep the codec's envelope validation, then classify the payload here so
@@ -127,7 +127,7 @@ export async function validateStorageMetadata(): Promise<CanonicalStorageMetadat
     return canonical;
   }
   if (isPendingStorageMetadataV2(metadata)) throw new StorageMetadataError("storage_migration_pending");
-  if (isCommittedStorageMetadataV2(metadata)) throw new StorageMetadataError("unsupported_newer_storage_schema");
+  if (isCommittedStorageMetadataV2(metadata)) return metadata;
   if (!isCanonicalStorageMetadataV1(metadata)) throw new StorageMetadataError("storage_metadata_invalid");
   return metadata;
 }
