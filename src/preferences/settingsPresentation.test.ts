@@ -73,6 +73,26 @@ test("Legal information exposes exactly four distinct request entries and keeps 
   assert.doesNotMatch(legalRequestsScreen, /mailto:/);
 });
 
+test("Legal information scopes missing public configuration to external support and keeps local documents available", () => {
+  const legalEn = JSON.parse(readFileSync("src/locales/en/legal.json", "utf8")) as Record<string, string>;
+  const legalPl = JSON.parse(readFileSync("src/locales/pl/legal.json", "utf8")) as Record<string, string>;
+
+  assert.equal(legalEn.supportUnavailableTitle, "External support unavailable");
+  assert.equal(legalPl.supportUnavailableTitle, "Zewnętrzna pomoc jest niedostępna");
+  assert.match(legalEn.publicLinksUnconfiguredDescription, /support link is disabled/u);
+  assert.match(legalEn.publicLinksInvalidDescription, /support link is disabled/u);
+  assert.match(legalPl.publicLinksUnconfiguredDescription, /link do pomocy jest wyłączony/u);
+  assert.match(legalPl.publicLinksInvalidDescription, /link do pomocy jest wyłączony/u);
+  assert.equal(legalEn.publicLinksUnavailableTitle, undefined);
+  assert.equal(legalPl.publicLinksUnavailableTitle, undefined);
+
+  assert.match(legalScreen, /available \? null : <InfoBlock[\s\S]*?title=\{text\.supportUnavailableTitle\}/u);
+  assert.match(legalScreen, /navigation\.navigate\(ROUTES\.PRIVACY_POLICY\)[\s\S]*?testID="legal-link-privacy"/u);
+  assert.match(legalScreen, /navigation\.navigate\(ROUTES\.TERMS_OF_SERVICE\)[\s\S]*?testID="legal-link-terms"/u);
+  assert.match(legalScreen, /available=\{link\.url !== null\}/u);
+  assert.doesNotMatch(legalScreen, /publicLinksUnavailableTitle/u);
+});
+
 test("Legal request form keeps validation inline, field-specific, and API-free", () => {
   assert.match(legalRequestsScreen, /type LegalRequestEmailError = "emailRequired"/u);
   assert.match(legalRequestsScreen, /type LegalRequestNarrativeError = "narrativeRequired"/u);

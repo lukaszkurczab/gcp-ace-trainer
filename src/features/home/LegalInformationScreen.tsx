@@ -19,7 +19,7 @@ export function LegalInformationScreen({ navigation }: LegalInformationScreenPro
   infoTitle: t("infoTitle"),
   legal: t("legal"),
   publicLinksTitle: t("publicLinksTitle"),
-  publicLinksUnavailableTitle: t("publicLinksUnavailableTitle"),
+  supportUnavailableTitle: t("supportUnavailableTitle"),
   publicLinksUnconfiguredDescription: t("publicLinksUnconfiguredDescription"),
   publicLinksInvalidDescription: t("publicLinksInvalidDescription"),
   publicLinkOpenFailedTitle: t("publicLinkOpenFailedTitle"),
@@ -62,7 +62,7 @@ export function LegalInformationScreen({ navigation }: LegalInformationScreenPro
 
   const supplementalContent = (
     <SettingsGroup title={text.publicLinksTitle}>
-      {available ? null : <InfoBlock body={publicLinks.reason === "invalid_public_environment" ? text.publicLinksInvalidDescription : text.publicLinksUnconfiguredDescription} title={text.publicLinksUnavailableTitle} testID="legal-links-unavailable" tone="warning" />}
+      {available ? null : <InfoBlock body={publicLinks.reason === "invalid_public_environment" ? text.publicLinksInvalidDescription : text.publicLinksUnconfiguredDescription} title={text.supportUnavailableTitle} testID="legal-links-unavailable" tone="warning" />}
       {openFailure ? <InfoBlock body={text.publicLinkOpenFailedDescription} title={text.publicLinkOpenFailedTitle} testID="legal-link-open-failed" tone="warning" /> : null}
       <ListRow detail={text.privacyLinkDetail} leading={<IconTile iconSize={20} name="shield-check" size={32} tone="settings" />} onPress={() => navigation.navigate(ROUTES.PRIVACY_POLICY)} testID="legal-link-privacy" title={text.privacyLink} trailing={<Icon name="chevron-right" size={20} />} variant="grouped" />
       <ListRow detail={text.termsLinkDetail} leading={<IconTile iconSize={20} name="book-open" size={32} tone="settings" />} onPress={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE)} testID="legal-link-terms" title={text.termsLink} trailing={<Icon name="chevron-right" size={20} />} variant="grouped" />

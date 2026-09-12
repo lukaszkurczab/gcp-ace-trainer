@@ -4,7 +4,7 @@
   "infoTitle": "Prywatność i korzystanie z materiałów",
   "legal": "Informacje prawne",
   "publicLinksTitle": "Dokumenty prawne i linki publiczne",
-  "publicLinksUnavailableTitle": "Publiczne linki prawne są niedostępne",
+  "supportUnavailableTitle": "Zewnętrzna pomoc jest niedostępna",
   "publicLinksUnconfiguredDescription": "Ta lokalna wersja nie ma zweryfikowanego publicznego środowiska, więc link do pomocy jest wyłączony.",
   "publicLinksInvalidDescription": "Konfiguracja publicznego środowiska jest nieprawidłowa, więc link do pomocy jest wyłączony.",
   "publicLinkOpenFailedTitle": "Publiczny link jest niedostępny",

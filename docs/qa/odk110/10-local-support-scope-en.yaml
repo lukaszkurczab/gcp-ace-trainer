@@ -1,0 +1,66 @@
+appId: com.lkurczab.patternly
+name: ODK-110 local Support unavailable scope — EN
+tags: [ios, legal, local-config]
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    when:
+      visible: "Terms of Service"
+    commands:
+      - tapOn: "Go back"
+- runFlow:
+    when:
+      visible: "Privacy Policy"
+    commands:
+      - tapOn: "Go back"
+- runFlow:
+    when:
+      visible:
+        id: "settings-bottom-sheet-close"
+    commands:
+      - tapOn:
+          id: "settings-bottom-sheet-close"
+- runFlow:
+    when:
+      visible:
+        id: "main-tab-bar-settings"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-settings"
+      - extendedWaitUntil:
+          visible:
+            id: "settings-language"
+          timeout: 30000
+      - scrollUntilVisible:
+          element:
+            id: "settings-legal-information"
+          direction: DOWN
+      - tapOn:
+          id: "settings-legal-information"
+- scrollUntilVisible:
+    element:
+      id: "legal-links-unavailable"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "External support unavailable"
+- assertVisible: ".*support link is disabled.*"
+- assertVisible: ".*Privacy policy.*Read the Privacy Policy in Patternly.*"
+- assertVisible: ".*Terms.*Read the Terms of Service in Patternly.*"
+- assertVisible: ".*Support.*Unavailable in this local build.*"
+- takeScreenshot: "legal__support-unavailable__010__local-scope__en__dark__ios-regular"
+- tapOn:
+    id: "legal-link-privacy"
+- assertVisible:
+    id: "privacy-policy-document"
+- takeScreenshot: "legal__support-unavailable__020__local-privacy__en__dark__ios-regular"
+- tapOn: "Go back"
+- scrollUntilVisible:
+    element:
+      id: "legal-link-terms"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "legal-link-terms"
+- assertVisible: "Terms of Service"
+- takeScreenshot: "legal__support-unavailable__030__local-terms__en__dark__ios-regular"

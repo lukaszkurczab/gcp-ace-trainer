@@ -4,7 +4,7 @@
   "infoTitle": "Privacy and study use",
   "legal": "Legal information",
   "publicLinksTitle": "Legal documents and public links",
-  "publicLinksUnavailableTitle": "Public legal links unavailable",
+  "supportUnavailableTitle": "External support unavailable",
   "publicLinksUnconfiguredDescription": "This local build has no validated public environment, so the support link is disabled.",
   "publicLinksInvalidDescription": "The public environment configuration is invalid, so the support link is disabled.",
   "publicLinkOpenFailedTitle": "Public link unavailable",
