@@ -61,6 +61,7 @@ type LegacyContentIdentity = Readonly<{
 const LEGACY_IDENTITY_KEYS = ["trackId", "itemId", "contentVersion", "packagePin"] as const;
 const LEGACY_PACKAGE_PIN_KEYS = ["packageIdentity", "packageVersion", "contentReleaseId"] as const;
 const SHA_256 = /^[a-f0-9]{64}$/u;
+const LEGACY_IDENTITY_DIGEST_SCHEMA = "patternly:legacy-content-identity-digest:v1" as const;
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -123,8 +124,9 @@ function validateActiveArtifactSet(value: readonly ActiveContentArtifactDescript
 
 function validateTombstoneContext(value: LegacyContentTombstoneContext | undefined): LegacyContentTombstoneContext {
   if (value === undefined) throw new LegacyContentIdentityError("tombstone_context_required", "An unmapped identity requires an explicit history or unavailable record context.");
+  if (!isPlainRecord(value)) throw new LegacyContentIdentityError("invalid_tombstone_context", "Tombstone context has an invalid exact shape.");
   const expectedKeys = value.kind === "unavailable_review" ? ["kind", "reviewId"] : value.kind === "archival_history" || value.kind === "unavailable_active" ? ["kind", "sessionId"] : [];
-  if (expectedKeys.length === 0 || !isPlainRecord(value) || !hasExactKeys(value, expectedKeys)) throw new LegacyContentIdentityError("invalid_tombstone_context", "Tombstone context has an invalid exact shape.");
+  if (expectedKeys.length === 0 || !hasExactKeys(value, expectedKeys)) throw new LegacyContentIdentityError("invalid_tombstone_context", "Tombstone context has an invalid exact shape.");
   const id = value.kind === "unavailable_review" ? value.reviewId : value.sessionId;
   if (!isCanonicalSafeIdentity(id)) throw new LegacyContentIdentityError("invalid_tombstone_context", "Tombstone context identifier is not canonical-safe.");
   return value;
@@ -151,7 +153,7 @@ function buildTombstone(identity: LegacyContentIdentity, reason: ContentIdentity
     contentVersion: identity.contentVersion,
     reason,
     migrationVersion: CONTENT_IDENTITY_MIGRATION_VERSION,
-    legacyIdentityDigest: sha256Utf8(canonicalSerialize(identity)),
+    legacyIdentityDigest: sha256Utf8(canonicalSerialize({ schemaIdentity: LEGACY_IDENTITY_DIGEST_SCHEMA, identity })),
   };
   const tombstone = tombstoneContext.kind === "unavailable_review"
     ? { ...common, kind: tombstoneContext.kind, reviewId: tombstoneContext.reviewId }

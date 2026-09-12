@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
+import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import {
   LegacyContentIdentityError,
   mapLegacyContentIdentity,
@@ -105,6 +107,11 @@ test("legacy decoder validates only the identity object exact shape and fails cl
   assert.throws(() => mapLegacyContentIdentity({ ...identity, itemId: "missing-question" }, artifacts), (error: unknown) => {
     return error instanceof LegacyContentIdentityError && error.code === "tombstone_context_required";
   });
+  for (const invalidContext of [null, [], "context", { kind: "unknown", sessionId: "session-1" }] as const) {
+    assert.throws(() => mapLegacyContentIdentity({ ...identity, itemId: "missing-question" }, artifacts, invalidContext as never), (error: unknown) => {
+      return error instanceof LegacyContentIdentityError && error.code === "invalid_tombstone_context";
+    });
+  }
 });
 
 test("mapper produces deterministic legacy digests and is idempotent for resolved/tombstone values", async () => {
@@ -133,11 +140,13 @@ test("mapper produces deterministic legacy digests and is idempotent for resolve
   };
   const unmapped = mapLegacyContentIdentity(unmappedIdentity, artifacts, context("unavailable_review"));
   const reorderedUnmapped = mapLegacyContentIdentity(reorderedUnmappedIdentity, artifacts, context("unavailable_review"));
+  const repeatedUnmapped = mapLegacyContentIdentity(unmappedIdentity, artifacts, context("unavailable_review"));
   assertTombstoneResult(unmapped, "question_not_in_active_artifact");
   assertTombstoneResult(reorderedUnmapped, "question_not_in_active_artifact");
-  if (unmapped.kind !== "tombstone") throw new Error("Expected a tombstone result.");
-  if (reorderedUnmapped.kind !== "tombstone") throw new Error("Expected a tombstone result.");
+  assertTombstoneResult(repeatedUnmapped, "question_not_in_active_artifact");
   assert.equal(unmapped.tombstone.legacyIdentityDigest, reorderedUnmapped.tombstone.legacyIdentityDigest);
+  assert.equal(unmapped.tombstone.legacyIdentityDigest, repeatedUnmapped.tombstone.legacyIdentityDigest);
+  assert.notEqual(unmapped.tombstone.legacyIdentityDigest, sha256Utf8(canonicalSerialize(unmappedIdentity)));
   assert.deepEqual(mapLegacyContentIdentity(unmapped, [], undefined), unmapped);
   assert.deepEqual(mapLegacyContentIdentity(unmapped.tombstone, [], undefined), unmapped);
   assert.deepEqual(mapLegacyContentIdentity(firstResult, [], undefined), firstResult);
