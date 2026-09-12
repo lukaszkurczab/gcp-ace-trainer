@@ -120,6 +120,7 @@ const CLASSIFIABLE_ACCOUNT_DATA_FAILURE_CODES: readonly string[] = [
   "account_data_goal_invalid", "account_data_plan_invalid", "account_data_goal_plan_invalid",
   "account_sync_record_too_large", "account_sync_group_too_large",
   "account_materialization_verification_failed",
+  "account_deletion_local_preparation_failed",
 ];
 
 let accountDataOperationLane: Promise<void> = Promise.resolve();
@@ -588,8 +589,10 @@ async function completeRemoteRevokedSignOutUnlocked(): Promise<boolean> {
   }
 }
 
-export function deleteBoundAccount(api: PatternlyApiClient, accountId: string, uid: string): Promise<AccountDeletionResult> {
-  return withAccountDataOperation(() => deleteBoundAccountUnlocked(api, accountId, uid, true));
+export type PrepareAccountDeletionLocalState = () => Promise<boolean>;
+
+export function deleteBoundAccount(api: PatternlyApiClient, accountId: string, uid: string, prepareLocalState: PrepareAccountDeletionLocalState): Promise<AccountDeletionResult> {
+  return withAccountDataOperation(() => deleteBoundAccountUnlocked(api, accountId, uid, true, prepareLocalState));
 }
 
 /**
@@ -597,14 +600,14 @@ export function deleteBoundAccount(api: PatternlyApiClient, accountId: string, u
  * A missing, failed, completed, or mismatched marker is not a deletion
  * request and must never cause a new remote operation to be created.
  */
-export function retryPendingAccountDeletion(api: PatternlyApiClient, accountId: string, uid: string): Promise<AccountDeletionResult | null> {
-  return withAccountDataOperation(() => retryPendingAccountDeletionUnlocked(api, accountId, uid));
+export function retryPendingAccountDeletion(api: PatternlyApiClient, accountId: string, uid: string, prepareLocalState: PrepareAccountDeletionLocalState): Promise<AccountDeletionResult | null> {
+  return withAccountDataOperation(() => retryPendingAccountDeletionUnlocked(api, accountId, uid, prepareLocalState));
 }
 
-async function retryPendingAccountDeletionUnlocked(api: PatternlyApiClient, accountId: string, uid: string): Promise<AccountDeletionResult | null> {
+async function retryPendingAccountDeletionUnlocked(api: PatternlyApiClient, accountId: string, uid: string, prepareLocalState: PrepareAccountDeletionLocalState): Promise<AccountDeletionResult | null> {
   const pending = getAccountDeletionState();
   if (!pending || pending.accountId !== accountId || pending.accountUidHash !== sha256Utf8(uid) || !isResumableDeletionState(pending)) return null;
-  return deleteBoundAccountUnlocked(api, accountId, uid, false);
+  return deleteBoundAccountUnlocked(api, accountId, uid, false, prepareLocalState);
 }
 
 type DeletionRemoteResolution = Readonly<{ pending: NonNullable<ReturnType<typeof getAccountDeletionState>>; proofId: string | null }>;
@@ -669,7 +672,7 @@ async function clearDeletionOwnedLocalDataAndBinding(accountId: string): Promise
   else if (installation.accountId !== null) throw new AccountDataFailure("account_binding_mismatch");
 }
 
-async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: string, uid: string, allowBegin: boolean): Promise<AccountDeletionResult> {
+async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: string, uid: string, allowBegin: boolean, prepareLocalState: PrepareAccountDeletionLocalState): Promise<AccountDeletionResult> {
   if ((await getAccountSyncState()).materialization) return { ok: false, failure: "conflict" };
   const uidHash = sha256Utf8(uid);
   let pending = getAccountDeletionState();
@@ -758,6 +761,7 @@ async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: st
     }
 
     try {
+      if (!(await prepareLocalState())) throw new AccountDataFailure("account_deletion_local_preparation_failed");
       await clearDeletionOwnedLocalDataAndBinding(accountId);
     } catch (error) {
       const failure = classifyDataFailure(error);

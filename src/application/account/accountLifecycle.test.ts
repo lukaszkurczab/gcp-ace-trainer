@@ -18,6 +18,7 @@ import { bindGuestInstallationToAccount, clearGuestAccountBinding, getGuestInsta
 const accountId = "55555555-5555-4555-8555-555555555555";
 const uid = "firebase-fixture-uid";
 const TEST_ARTIFACT_SHA256 = "a".repeat(64);
+const prepareDeletionLocalState = async () => true;
 
 function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
   return {
@@ -133,7 +134,7 @@ test("deletion retries after a revoked or stale session and leaves a verified lo
     getDeletionProof: async (proofId) => ({ status: "deleted", operationId: observedOperationId, proofId }),
   });
 
-  const result = await deleteBoundAccount(client, accountId, uid);
+  const result = await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState);
   assert.deepEqual(result, { ok: true, proofId: "proof_fixture_12345678901234567890" });
   assert.equal(deleteCalls, 1);
   assert.equal(statusCalls, 1);
@@ -164,6 +165,7 @@ test("deletion cleanup removes the complete canonical learning namespace while p
     STORAGE_KEYS.trainingAttempt("orphan-attempt"),
     STORAGE_KEYS.reviewEntry("orphan-review"),
     STORAGE_KEYS.goal("orphan-goal"),
+    STORAGE_KEYS.learningPlan("orphan-plan"),
   ];
   for (const key of learningKeys) storage.setString(key, "learning");
   storage.setString(STORAGE_KEYS.SETTINGS, "device-settings");
@@ -203,10 +205,10 @@ test("a preflight journal failure does not create a deletion operation and pendi
   let deleteCalls = 0;
   const client = api({ deleteAccount: async (operationId) => { deleteCalls++; return { status: "deleted", operationId, proofId: "proof_fixture_12345678901234567890" }; } });
 
-  const first = await deleteBoundAccount(client, accountId, uid);
+  const first = await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState);
   assert.deepEqual(first, { ok: false, failure: "journalRecoveryFailure" });
   assert.equal(getAccountDeletionState(), null);
-  assert.equal(await retryPendingAccountDeletion(client, accountId, uid), null);
+  assert.equal(await retryPendingAccountDeletion(client, accountId, uid, prepareDeletionLocalState), null);
   assert.equal(deleteCalls, 0);
 });
 
@@ -228,7 +230,7 @@ test("response loss resolves a matching remote operation and rejects mismatched 
     getDeletionProof: async (proofId) => ({ status: "deleted", operationId, proofId }),
   });
 
-  assert.deepEqual(await deleteBoundAccount(client, accountId, uid), { ok: true, proofId: "proof_fixture_12345678901234567890" });
+  assert.deepEqual(await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState), { ok: true, proofId: "proof_fixture_12345678901234567890" });
   assert.equal(statusCalls, 1);
   assert.equal(storage.contains(orphanKey), false);
   assert.equal(getAccountDeletionState()?.status, "complete");
@@ -245,7 +247,7 @@ test("response loss resolves a matching remote operation and rejects mismatched 
     deleteAccount: async () => { mismatchDeleteCalls++; throw new PatternlyApiClientError("transport_failed"); },
     getDeletionOperationStatus: async (requestedOperationId) => ({ status: "remote_deleted", operationId: `${requestedOperationId}-other`, proofId: "proof_fixture_12345678901234567890" }),
   });
-  const mismatch = await retryPendingAccountDeletion(mismatchClient, accountId, uid);
+  const mismatch = await retryPendingAccountDeletion(mismatchClient, accountId, uid, prepareDeletionLocalState);
   assert.deepEqual(mismatch, { ok: false, failure: "pendingSyncRequiresNetwork" });
   assert.equal(mismatchDeleteCalls, 1);
   assert.equal(mismatchStorage.contains(mismatchKey), true);
@@ -268,18 +270,58 @@ test("local deletion cleanup resumes after a failed key removal without issuing 
   });
 
   storage.setFailurePlan({ kind: "fail_on_key_remove", key: orphanKey });
-  assert.deepEqual(await deleteBoundAccount(client, accountId, uid), { ok: false, failure: "localCleanupFailure" });
+  assert.deepEqual(await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState), { ok: false, failure: "localCleanupFailure" });
   assert.equal(getAccountDeletionState()?.status, "localCleanupPending");
   storage.setFailurePlan(null);
-  assert.deepEqual(await retryPendingAccountDeletion(client, accountId, uid), { ok: true, proofId: "proof_fixture_12345678901234567890" });
+  assert.deepEqual(await retryPendingAccountDeletion(client, accountId, uid, prepareDeletionLocalState), { ok: true, proofId: "proof_fixture_12345678901234567890" });
   assert.equal(deleteCalls, 1);
   assert.equal(storage.contains(orphanKey), false);
   assert.equal(getAccountDeletionState()?.status, "complete");
 });
 
+test("account deletion remains pending until reminders are disabled and retry does not repeat remote deletion", async () => {
+  const storage = getKeyValueStorage() as MemoryKeyValueStorage;
+  const learningKey = STORAGE_KEYS.trainingSession("reminder-cleanup-session");
+  storage.setString(learningKey, "must-remain-until-reminders-are-disabled");
+  let operationId = "";
+  let deleteCalls = 0;
+  let preparationCalls = 0;
+  const client = api({
+    deleteAccount: async (requestedOperationId) => {
+      deleteCalls++;
+      operationId = requestedOperationId;
+      return { status: "deleted", operationId: requestedOperationId, proofId: "proof_fixture_12345678901234567890" };
+    },
+    getDeletionProof: async (proofId) => ({ status: "deleted", operationId, proofId }),
+  });
+
+  const preparationFails = async () => {
+    preparationCalls++;
+    return false;
+  };
+  assert.deepEqual(await deleteBoundAccount(client, accountId, uid, preparationFails), { ok: false, failure: "localCleanupFailure" });
+  assert.equal(preparationCalls, 1);
+  assert.equal(deleteCalls, 1);
+  assert.equal(getAccountDeletionState()?.status, "localCleanupPending");
+  assert.equal(getAccountDeletionState()?.lastFailureCode, "account_deletion_local_preparation_failed");
+  assert.equal(storage.contains(learningKey), true);
+  assert.equal((await getGuestInstallation())?.accountId, accountId);
+
+  const preparationSucceeds = async () => {
+    preparationCalls++;
+    return true;
+  };
+  assert.deepEqual(await retryPendingAccountDeletion(client, accountId, uid, preparationSucceeds), { ok: true, proofId: "proof_fixture_12345678901234567890" });
+  assert.equal(preparationCalls, 2);
+  assert.equal(deleteCalls, 1);
+  assert.equal(storage.contains(learningKey), false);
+  assert.equal((await getGuestInstallation())?.accountId, null);
+  assert.equal(getAccountDeletionState()?.status, "complete");
+});
+
 test("server reauthentication failures remain reauthentication failures with the pending marker intact", async () => {
   const client = api({ deleteAccount: async () => { throw new PatternlyApiClientError("server_error", 400, "recent_reauthentication_required"); } });
-  const result = await deleteBoundAccount(client, accountId, uid);
+  const result = await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState);
   assert.deepEqual(result, { ok: false, failure: "reauthenticationRequired" });
   assert.equal(getAccountDeletionState()?.status, "remotePending");
 });
@@ -299,7 +341,7 @@ test("an uncertain server deletion failure resolves through the bound operation 
     getDeletionProof: async (proofId) => ({ status: "deleted", operationId, proofId }),
   });
 
-  assert.deepEqual(await deleteBoundAccount(client, accountId, uid), { ok: true, proofId: "proof_fixture_12345678901234567890" });
+  assert.deepEqual(await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState), { ok: true, proofId: "proof_fixture_12345678901234567890" });
   assert.equal(statusCalls, 1);
 });
 
@@ -845,7 +887,7 @@ test("pending materialization blocks lifecycle revoke and deletion without losin
   const forbidden = async (): Promise<never> => { calls++; throw new Error("lifecycle forbidden while materializing"); };
   const client = api({ revokeSessions: forbidden, deleteAccount: forbidden });
   assert.equal((await prepareAccountSignOut(client, accountId)).ok, false);
-  assert.equal((await deleteBoundAccount(client, accountId, uid)).ok, false);
+  assert.equal((await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState)).ok, false);
   assert.equal(calls, 0);
   assert.equal(await getActiveTrackId(), guestTrack);
   assert.deepEqual((await getAccountSyncState()).materialization, { kind: "discardGuest", accountId });

@@ -404,6 +404,9 @@ test("auth command composition keeps provider credentials and hold-only deletion
   assert.match(provider, /prepareDeletion: \(credentials\)/);
   assert.match(provider, /deleteAccount: \(\) =>/);
   assert.match(provider, /deletionAuthorization\.consume\(user\.uid, token\.generation\)/);
+  assert.match(provider, /async function disableAccountRemindersForDeletion\(\): Promise<boolean>/);
+  assert.match(provider, /disableLearningPlanReminders\(expoNotificationPlatform\)/);
+  assert.equal([...provider.matchAll(/(?:deleteBoundAccount|retryPendingAccountDeletion)\([^;]+disableAccountRemindersForDeletion\)/g)].length, 3);
   assert.match(provider, /issueRecoveryCodes: \(credentials: FirebaseAuthCredentials\)/);
   assert.match(provider, /next: "verificationSent"/);
   assert.match(provider, /holdAccountIdentityRefresh/);

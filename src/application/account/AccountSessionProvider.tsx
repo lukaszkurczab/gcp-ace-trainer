@@ -13,6 +13,18 @@ async function reconcileMaterializedAccountReminders(): Promise<void> {
   const { reconcileDeviceReminder } = await import("../../preferences/reconcileDeviceReminder");
   await reconcileDeviceReminder();
 }
+
+async function disableAccountRemindersForDeletion(): Promise<boolean> {
+  try {
+    const [{ disableLearningPlanReminders }, { expoNotificationPlatform }] = await Promise.all([
+      import("../notificationPreferences"),
+      import("../../infrastructure/notifications/expoNotificationPlatform"),
+    ]);
+    return (await disableLearningPlanReminders(expoNotificationPlatform)).kind === "disabled";
+  } catch {
+    return false;
+  }
+}
 import { clearAccountDeletionState, getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
@@ -1065,7 +1077,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       try {
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
         setState({ kind: "deleting", backendUser: state.backendUser, user, accountData: state.accountData });
-        const result = await deleteBoundAccount(api, state.backendUser.id, user.uid);
+        const result = await deleteBoundAccount(api, state.backendUser.id, user.uid, disableAccountRemindersForDeletion);
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
         if (!result.ok) {
           setState({ kind: "authenticated", backendUser: state.backendUser, user, accountData: { ...state.accountData, status: result.failure === "remoteDeletionPending" ? "remoteDeletionPending" : result.failure === "localCleanupFailure" ? "localCleanupPending" : state.accountData.status, lastFailureCode: result.failure } });
@@ -1110,7 +1122,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       };
       try {
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
-        const result = await retryPendingAccountDeletion(api, accountId, user.uid);
+        const result = await retryPendingAccountDeletion(api, accountId, user.uid, disableAccountRemindersForDeletion);
         if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
         if (!result) return { kind: "failure", failure: "providerUnavailable" };
         if (!result.ok) {
@@ -1232,7 +1244,7 @@ async function reconcileAuthenticatedUser(
       // cannot create a new deletion operation here.
       if (deletion.status === "remotePending" || deletion.status === "remoteDeleted" || deletion.status === "localCleanupPending") {
         if (!canContinue()) return;
-        const recovered = await retryPendingAccountDeletion(api, deletion.accountId, user.uid);
+        const recovered = await retryPendingAccountDeletion(api, deletion.accountId, user.uid, disableAccountRemindersForDeletion);
         if (!canContinue()) return;
         if (recovered?.ok) {
           await auth.signOut();

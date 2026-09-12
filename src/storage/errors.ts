@@ -24,6 +24,7 @@ export type AccountDataFailureCode =
   | "active_session_adoption_blocked"
   | "journal_recovery_required"
   | "remote_deletion_pending"
+  | "account_deletion_local_preparation_failed"
   | "account_data_records_invalid"
   | "account_data_record_invalid"
   | "account_data_fingerprint_invalid"

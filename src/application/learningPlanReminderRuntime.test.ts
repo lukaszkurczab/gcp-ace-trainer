@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
 import {
+  disableLearningPlanReminders,
   enableLearningPlanReminders,
   reconcileLearningPlanReminders,
   retryLearningPlanReminders,
@@ -35,6 +36,7 @@ const ARTIFACT_SHA256 = "a".repeat(64);
 const COPY: PracticeReminderCopy = Object.freeze({ body: "A scheduled learning plan session.", title: "Scheduled session" });
 
 class PlatformSpy implements NotificationPlatform {
+  cancelFailure = false;
   permission: NotificationPermission = "granted";
   permissionRequests = 0;
   scheduleFailure = false;
@@ -43,6 +45,7 @@ class PlatformSpy implements NotificationPlatform {
   readonly live = new Map<string, ScheduledReminderIdentity & { transactionId: string; slotId?: string }>();
 
   async cancelReminder(notificationId: string): Promise<void> {
+    if (this.cancelFailure) throw new Error("cancellation failed");
     this.cancelled.push(notificationId);
     this.live.delete(notificationId);
   }
@@ -161,6 +164,28 @@ test("explicit enable is the only path that requests permission and persists a d
   assert.equal(f.platform.permissionRequests, 1);
   assert.equal(getDeviceReminderSettings()?.pending?.reason, "permission_denied");
   assert.equal(getDeviceReminderJournal(), null);
+});
+
+test("disable cancels every native reminder before persisting disabled state and fails closed on cancellation errors", async () => {
+  const f = fixture();
+  assert.equal((await enableLearningPlanReminders(f.platform, COPY, f.dependencies)).kind, "synced");
+  const scheduledIds = [...f.platform.live.keys()];
+
+  const disabled = await disableLearningPlanReminders(f.platform, COPY, f.dependencies);
+  assert.deepEqual(disabled, { kind: "disabled", status: "disabled" });
+  assert.deepEqual(f.platform.cancelled, scheduledIds);
+  assert.equal(f.platform.live.size, 0);
+  assert.equal(getDeviceReminderSettings()?.enabled, false);
+  assert.deepEqual(getDeviceReminderSettings()?.schedules, []);
+
+  installKeyValueStorageForTests(new MemoryKeyValueStorage());
+  const failing = fixture();
+  assert.equal((await enableLearningPlanReminders(failing.platform, COPY, failing.dependencies)).kind, "synced");
+  failing.platform.cancelFailure = true;
+  const pending = await disableLearningPlanReminders(failing.platform, COPY, failing.dependencies);
+  assert.equal(pending.kind, "scheduler_failure");
+  assert.equal(pending.status, "pending");
+  assert.equal(failing.platform.live.size, 2);
 });
 
 test("permission pending retains existing native IDs for a later retry", async () => {
