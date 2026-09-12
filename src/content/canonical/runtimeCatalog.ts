@@ -20,7 +20,7 @@ export type CanonicalTrackRuntime = Readonly<{
   trackId: string;
   contentVersion: string;
   artifactSha256: string;
-  packagePin: CanonicalQuestionCatalog["packagePin"];
+  contentReleaseId: string;
   questions: readonly Question[];
   modes: readonly ProductModeConfig[];
   getQuestion(questionId: string): Question | undefined;
@@ -38,7 +38,6 @@ export type CanonicalRuntimeCatalog = Readonly<{
   getMentalUnit(trackId: string, mentalUnitId: string): readonly Question[];
   getMode(trackId: string, modeId: string): ProductModeConfig;
   getPool(trackId: string, modeId: string): readonly Question[];
-  getTrackByPin(pin: CanonicalQuestionCatalog["packagePin"]): CanonicalTrackRuntime;
 }>;
 export type CanonicalRuntimeBuildDependencies = Readonly<{ artifacts?: readonly unknown[]; locks?: readonly CanonicalContentLockRecord[]; sha256Utf8?: (value: string) => Promise<string> }>;
 
@@ -94,11 +93,6 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
     getMentalUnit(trackId: string, mentalUnitId: string) { return this.getTrack(trackId).getQuestionsForMentalUnit(mentalUnitId); },
     getMode(trackId: string, modeId: string) { return this.getTrack(trackId).getMode(modeId); },
     getPool(trackId: string, modeId: string) { return this.getTrack(trackId).getPool(modeId); },
-    getTrackByPin(pin: CanonicalQuestionCatalog["packagePin"]) {
-      const result = catalogs.find((candidate) => candidate.packagePin.packageIdentity === pin.packageIdentity && candidate.packagePin.packageVersion === pin.packageVersion && candidate.packagePin.contentReleaseId === pin.contentReleaseId);
-      if (!result) throw new Error("Canonical package pin is unavailable; restart to load canonical content.");
-      return byTrack.get(result.trackId)!;
-    },
   });
 }
 
@@ -109,7 +103,7 @@ function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly
     trackId: catalog.trackId,
     contentVersion: catalog.contentVersion,
     artifactSha256: catalog.artifactSha256,
-    packagePin: catalog.packagePin,
+    contentReleaseId: catalog.packagePin.contentReleaseId,
     questions: catalog.questions,
     modes,
     getQuestion: catalog.getQuestionById,

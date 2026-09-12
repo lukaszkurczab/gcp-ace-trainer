@@ -21,7 +21,7 @@ async function activeArtifacts(): Promise<readonly ActiveContentArtifactDescript
       trackId: track.trackId,
       contentVersion: track.contentVersion,
       artifactSha256: track.artifactSha256,
-      contentReleaseId: track.packagePin.contentReleaseId,
+      contentReleaseId: track.contentReleaseId,
       questionIds: Object.freeze(track.questions.map((question) => question.questionId)),
     });
   }));

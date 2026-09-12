@@ -13,7 +13,7 @@ import ai901 from "../generated/canonical-content/microsoft-azure-ai-fundamental
 import lockFile from "../generated/canonical-content/content-lock.json";
 import objectDesign from "../generated/canonical-content/object-oriented-design-interview.json";
 
-test("canonical runtime catalog exposes all locked tracks, modes, pools, and one-way pins", async () => {
+test("canonical runtime catalog exposes all locked tracks, modes, pools, and exact artifact identities", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
   assert.equal(catalog.tracks.length, 9);
   assert.equal(new Set(catalog.tracks).size, 9);
@@ -21,9 +21,8 @@ test("canonical runtime catalog exposes all locked tracks, modes, pools, and one
   for (const trackId of catalog.tracks) {
     const track = catalog.getTrack(trackId);
     assert.equal(track.trackId, trackId);
-    assert.equal(track.packagePin.contentReleaseId, "canonical-content-v1");
-    assert.equal(track.packagePin.packageIdentity, track.artifactSha256);
-    assert.equal(track.packagePin.packageVersion, track.contentVersion);
+    assert.equal(track.contentReleaseId, "canonical-content-v1");
+    assert.match(track.artifactSha256, /^[a-f0-9]{64}$/u);
     assert.ok(Object.isFrozen(track.questions));
     assert.ok(track.modes.length > 0);
     for (const mode of track.modes) {
@@ -39,8 +38,7 @@ test("canonical runtime catalog exposes all locked tracks, modes, pools, and one
   }
   assert.throws(() => catalog.getTrack("legacy-track"), /unavailable; restart/);
   assert.throws(() => catalog.getMode(catalog.tracks[0]!, "legacy-mode"), /unavailable; restart/);
-  assert.equal(catalog.getTrackByPin(catalog.getTrack(catalog.tracks[0]!).packagePin).trackId, catalog.tracks[0]);
-  assert.throws(() => catalog.getTrackByPin({ ...catalog.getTrack(catalog.tracks[0]!).packagePin, packageVersion: "legacy" }), /unavailable; restart/);
+  assert.equal("getTrackByPin" in catalog, false);
 });
 
 test("injected loader failures are visible and do not poison the active cache", async () => {

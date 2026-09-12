@@ -9,7 +9,7 @@ import type {
   PublishedAlgorithmsSimulationProfile,
 } from "../../content/contracts";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
-import type { SessionCapacityResolution } from "../../content/application/verifiedSessionCapacity";
+export type SessionCapacityResolution = Readonly<{ kind: "exact"; actualLength: number }> | Readonly<{ kind: "shortened"; actualLength: number; requestedLength: number }> | Readonly<{ kind: "shortfall"; requestedLength: number; eligibleItemCount: number; missingItemCount: number }>;
 
 /** Closed catalog contract supplied only by an exact verified content package. */
 export interface AlgorithmRuntimeCatalog {

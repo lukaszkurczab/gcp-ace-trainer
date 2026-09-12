@@ -18,8 +18,6 @@ test("bundled canonical release matches the producer repository lock", async () 
     assert.equal(producer.contentVersion, entry.contentVersion);
     assert.equal(track.artifactSha256, entry.sha256);
     assert.equal(track.contentVersion, entry.contentVersion);
-    assert.equal(track.packagePin.packageIdentity, entry.sha256);
-    assert.equal(track.packagePin.packageVersion, entry.contentVersion);
-    assert.equal(track.packagePin.contentReleaseId, "canonical-content-v1");
+    assert.equal(track.contentReleaseId, "canonical-content-v1");
   }
 });

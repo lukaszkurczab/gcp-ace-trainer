@@ -31,7 +31,7 @@ export class ContentPackageRuntimeOwner {
     return q;
   }
   resolveTextAsset(_ref: ResolvedContentRef, _assetId: string): never { throw new Error("Canonical content does not provide text assets."); }
-  private materialize(track: CanonicalTrackRuntime): ResolvedPackageRuntime { const key = `${track.packagePin.packageIdentity}:${track.packagePin.packageVersion}:${track.packagePin.contentReleaseId}`; const cached = this.exact.get(key); if (cached) return cached; const r = Object.freeze({ track, runtime: new CanonicalTrainingRuntime(track) }); this.exact.set(key, r); return r; }
+  private materialize(track: CanonicalTrackRuntime): ResolvedPackageRuntime { const key = `${track.trackId}:${track.contentVersion}:${track.artifactSha256}`; const cached = this.exact.get(key); if (cached) return cached; const r = Object.freeze({ track, runtime: new CanonicalTrainingRuntime(track) }); this.exact.set(key, r); return r; }
 }
 function assertFamily(track: CanonicalTrackRuntime, familyId: TrackFamilyId): void { if (new CanonicalTrainingRuntime(track).familyId !== familyId) throw new Error(`Canonical family routing does not own ${track.trackId}.`); }
 export const contentPackageRuntimeOwner = new ContentPackageRuntimeOwner();
