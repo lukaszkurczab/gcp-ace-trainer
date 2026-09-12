@@ -182,11 +182,13 @@ test("one legacy record can yield multiple typed tombstone bindings and no activ
   }).filter((record) => record.key !== STORAGE_KEYS.trainingSessionResult("session-1"));
   const withPointer = [...source, { key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION, raw: envelope("session-1") }];
   const bundle = planContentIdentityV2({ source: withPointer, artifacts: ARTIFACTS });
-  const session = bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.trainingSession("session-1"));
+  const session = bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.unavailableActive("session-1"));
   assert.ok(session);
-  const payload = (JSON.parse(session.raw) as { payload: { itemOrder: readonly { item: { kind: string } }[] } }).payload;
-  assert.equal(payload.itemOrder.length, 2);
-  assert.equal(payload.itemOrder.every((entry) => entry.item.kind === "unavailable_active"), true);
+  const payload = (JSON.parse(session.raw) as { payload: { session: { itemOrder: readonly { item: { kind: string } }[] } } }).payload;
+  assert.equal(payload.session.itemOrder.length, 2);
+  assert.equal(payload.session.itemOrder.every((entry) => entry.item.kind === "unavailable_active"), true);
+  assert.equal(bundle.targetRecords.some((record) => record.key === STORAGE_KEYS.trainingSession("session-1")), false);
+  assert.deepEqual(JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX)!.raw).payload, ["session-1"]);
   assert.equal(bundle.targetRecords.some((record) => record.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false);
 });
 
@@ -226,13 +228,15 @@ test("version and hash mismatches become typed tombstones without fallback artif
     },
   }).filter((record) => ![STORAGE_KEYS.trainingAttempt("attempt-1"), STORAGE_KEYS.reviewEntry("review-1"), STORAGE_KEYS.trainingSessionResult("session-1")].includes(record.key));
   const bundle = planContentIdentityV2({ source, artifacts: ARTIFACTS });
-  const session = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.trainingSession("session-1"))!.raw) as { payload: { itemOrder: readonly { item: { reason: string } }[] } };
-  assert.equal(session.payload.itemOrder[0]?.item.reason, "stale_content_version");
+  const session = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.archivalHistory("session-1"))!.raw) as { payload: { session: { itemOrder: readonly { item: { reason: string } }[] } } };
+  assert.equal(session.payload.session.itemOrder[0]?.item.reason, "stale_content_version");
   assert.equal(JSON.stringify(session.payload).includes("packagePin"), false);
   // The top-level session preflight failed, so no resolved artifact may leak
   // into the value or any child binding.
-  assert.equal(JSON.stringify(session.payload).includes("artifactSha256"), false);
-  assert.equal(session.payload.itemOrder.every((entry) => entry.item.reason === "stale_content_version"), true);
+  assert.equal(JSON.stringify(session.payload.session).includes("artifactSha256"), false);
+  assert.equal(session.payload.session.itemOrder.every((entry) => entry.item.reason === "stale_content_version"), true);
+  assert.equal(bundle.targetRecords.some((record) => record.key === STORAGE_KEYS.trainingSession("session-1")), false);
+  assert.deepEqual(JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.ARCHIVAL_HISTORY_INDEX)!.raw).payload, ["session-1"]);
 });
 
 test("content report keeps itemId only inside its named transport owner", () => {

@@ -17,6 +17,7 @@ export * from "./goalRepository";
 export * from "./learningPlanRepository";
 export * from "./goalOnboardingPreferenceRepository";
 export * from "./contentReportOutboxRepository";
+export * from "./contentIdentityUnavailableRepository";
 export * from "./accountDataRepository";
 export * from "./accountLifecycleRepository";
 export * from "./contentIdentityInventory";

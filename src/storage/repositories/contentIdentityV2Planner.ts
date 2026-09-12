@@ -51,6 +51,11 @@ import { isMutationJournalRecord } from "./mutationJournalRepository";
 import { isContentReportOutboxEntries } from "./contentReportOutboxRepository";
 import { isCanonicalStorageMetadataV1 } from "./storageMetadataRepository";
 import {
+  createContentIdentityArchivalHistoryRecord,
+  createContentIdentityUnavailableActiveRecord,
+  createContentIdentityUnavailableReviewRecord,
+} from "./contentIdentityUnavailableRepository";
+import {
   isForegroundTimerState,
   isReviewQueueEntry,
   isTrainingAttempt,
@@ -128,6 +133,10 @@ const V2_OWNER_NAMES = Object.freeze([
   "accountLifecycleRepository", "contentReportOutboxRepository", "trainingSessionResultRepository", "reviewQueueRepository",
   "goalRepository", "learningPlanRepository",
 ] as const);
+
+const CONTENT_IDENTITY_ARCHIVAL_HISTORY_OWNER = "contentIdentityArchivalHistoryRepository" as const;
+const CONTENT_IDENTITY_UNAVAILABLE_ACTIVE_OWNER = "contentIdentityUnavailableActiveRepository" as const;
+const CONTENT_IDENTITY_UNAVAILABLE_REVIEW_OWNER = "contentIdentityUnavailableReviewRepository" as const;
 
 const PRESERVATION_PATHS: Readonly<Record<string, Readonly<{
   ids: readonly string[];
@@ -880,8 +889,130 @@ function targetHasTombstone(record: ContentIdentityV2Record | undefined): boolea
   return Boolean(record?.identity.some((binding) => binding.resolution.kind === "tombstone"));
 }
 
+function targetOwnerForKey(key: string): string {
+  if (key === STORAGE_KEYS.ARCHIVAL_HISTORY_INDEX) return CONTENT_IDENTITY_ARCHIVAL_HISTORY_OWNER;
+  if (key.startsWith(`${STORAGE_KEYS.archivalHistory("")}`)) return CONTENT_IDENTITY_ARCHIVAL_HISTORY_OWNER;
+  if (key === STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX) return CONTENT_IDENTITY_UNAVAILABLE_ACTIVE_OWNER;
+  if (key.startsWith(`${STORAGE_KEYS.unavailableActive("")}`)) return CONTENT_IDENTITY_UNAVAILABLE_ACTIVE_OWNER;
+  if (key === STORAGE_KEYS.UNAVAILABLE_REVIEW_INDEX) return CONTENT_IDENTITY_UNAVAILABLE_REVIEW_OWNER;
+  if (key.startsWith(`${STORAGE_KEYS.unavailableReview("")}`)) return CONTENT_IDENTITY_UNAVAILABLE_REVIEW_OWNER;
+  return ownerForKey(key).entry.owner;
+}
+
+function replaceTargetValue(record: ContentIdentityV2Record, value: unknown): ContentIdentityV2Record {
+  return createContentIdentityV2Record({ ...record, value });
+}
+
+function generatedTargetRecord(key: string, owner: string, value: unknown): ContentIdentityV2Record {
+  return makeV2Payload(key, owner, 1, value, [], preservationFor(owner, key, 1, value));
+}
+
+function filterTargetIndex(transformed: Map<string, ContentIdentityV2Record>, indexKey: string, removedIds: ReadonlySet<string>): void {
+  if (removedIds.size === 0) return;
+  const index = transformed.get(indexKey);
+  if (!index || !Array.isArray(index.value)) return;
+  transformed.set(indexKey, replaceTargetValue(index, index.value.filter((id): id is string => typeof id === "string" && !removedIds.has(id))));
+}
+
+function relocateUnavailableTargets(transformed: Map<string, ContentIdentityV2Record>): void {
+  const sessionPrefix = `${STORAGE_NAMESPACE}training-session:`;
+  const attemptPrefix = `${STORAGE_NAMESPACE}training-attempt:`;
+  const resultPrefix = `${STORAGE_NAMESPACE}training-session-result:`;
+  const reviewPrefix = `${STORAGE_NAMESPACE}review-entry:`;
+  const unavailableSessionIds = new Set<string>();
+  const archivalSessionIds = new Set<string>();
+  const removedSessionIds = new Set<string>();
+  const removedAttemptIds = new Set<string>();
+  const unavailableReviewIds = new Set<string>();
+  const removedReviewIds = new Set<string>();
+
+  for (const [key, record] of [...transformed.entries()]) {
+    if (!key.startsWith(sessionPrefix) || !targetHasTombstone(record) || !isRecord(record.value) || !nonEmpty(record.value.id)) continue;
+    const sessionId = record.value.id;
+    unavailableSessionIds.add(sessionId);
+    const attempts: JsonRecord[] = [];
+    const results: JsonRecord[] = [];
+    for (const [attemptKey, attemptRecord] of transformed) {
+      if (!attemptKey.startsWith(attemptPrefix) || !isRecord(attemptRecord.value) || attemptRecord.value.sessionId !== sessionId) continue;
+      attempts.push(cloneJson(attemptRecord.value));
+      removedAttemptIds.add(attemptKey.slice(attemptPrefix.length));
+    }
+    for (const [resultKey, resultRecord] of transformed) {
+      if (!resultKey.startsWith(resultPrefix) || !isRecord(resultRecord.value) || resultRecord.value.sessionId !== sessionId) continue;
+      results.push(cloneJson(resultRecord.value));
+    }
+    const value = record.value;
+    const source = {
+      schemaVersion: 1 as const,
+      sessionId,
+      session: cloneJson(value),
+      attempts,
+      results,
+    };
+    const relocated = value.status === "active"
+      ? createContentIdentityUnavailableActiveRecord({ ...source, kind: "unavailable_active" })
+      : createContentIdentityArchivalHistoryRecord({ ...source, kind: "archival_history", session: cloneJson(value) });
+    const targetKey = value.status === "active" ? STORAGE_KEYS.unavailableActive(sessionId) : STORAGE_KEYS.archivalHistory(sessionId);
+    const targetOwner = value.status === "active" ? CONTENT_IDENTITY_UNAVAILABLE_ACTIVE_OWNER : CONTENT_IDENTITY_ARCHIVAL_HISTORY_OWNER;
+    transformed.set(targetKey, generatedTargetRecord(targetKey, targetOwner, relocated));
+    if (value.status === "active") unavailableSessionIds.add(sessionId);
+    else archivalSessionIds.add(sessionId);
+    transformed.delete(key);
+    removedSessionIds.add(sessionId);
+  }
+
+  for (const [key, record] of [...transformed.entries()]) {
+    if (!key.startsWith(reviewPrefix) || !isRecord(record.value)) continue;
+    const reviewId = nonEmpty(record.value.id) ? record.value.id : key.slice(reviewPrefix.length);
+    if (!targetHasTombstone(record)) continue;
+    const relocated = createContentIdentityUnavailableReviewRecord({
+      schemaVersion: 1,
+      kind: "unavailable_review",
+      reviewId,
+      review: cloneJson(record.value),
+    });
+    const targetKey = STORAGE_KEYS.unavailableReview(reviewId);
+    transformed.set(targetKey, generatedTargetRecord(targetKey, CONTENT_IDENTITY_UNAVAILABLE_REVIEW_OWNER, relocated));
+    unavailableReviewIds.add(reviewId);
+    transformed.delete(key);
+    removedReviewIds.add(reviewId);
+  }
+
+  for (const [key, record] of [...transformed.entries()]) {
+    const value = record.value;
+    if (key.startsWith(attemptPrefix) && isRecord(value) && unavailableSessionIds.has(String(value.sessionId))) {
+      removedAttemptIds.add(key.slice(attemptPrefix.length));
+      transformed.delete(key);
+    }
+    if (key.startsWith(resultPrefix) && isRecord(value) && unavailableSessionIds.has(String(value.sessionId))) {
+      transformed.delete(key);
+    }
+  }
+
+  for (const [key, record] of [...transformed.entries()]) {
+    if (!key.startsWith(sessionPrefix) || !isRecord(record.value) || !unavailableSessionIds.has(String(record.value.id))) continue;
+    transformed.delete(key);
+  }
+  filterTargetIndex(transformed, STORAGE_KEYS.TRAINING_SESSION_INDEX, removedSessionIds);
+  filterTargetIndex(transformed, STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, removedAttemptIds);
+  filterTargetIndex(transformed, STORAGE_KEYS.REVIEW_INDEX, removedReviewIds);
+  if (archivalSessionIds.size > 0) {
+    const key = STORAGE_KEYS.ARCHIVAL_HISTORY_INDEX;
+    transformed.set(key, generatedTargetRecord(key, CONTENT_IDENTITY_ARCHIVAL_HISTORY_OWNER, [...archivalSessionIds].sort()));
+  }
+  if (unavailableSessionIds.size > 0) {
+    const key = STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX;
+    transformed.set(key, generatedTargetRecord(key, CONTENT_IDENTITY_UNAVAILABLE_ACTIVE_OWNER, [...unavailableSessionIds].sort()));
+  }
+  if (unavailableReviewIds.size > 0) {
+    const key = STORAGE_KEYS.UNAVAILABLE_REVIEW_INDEX;
+    transformed.set(key, generatedTargetRecord(key, CONTENT_IDENTITY_UNAVAILABLE_REVIEW_OWNER, [...unavailableReviewIds].sort()));
+  }
+}
+
 function sourceSessionIsUnavailable(key: string, transformed: ReadonlyMap<string, ContentIdentityV2Record>): boolean {
   const record = transformed.get(key);
+  if (!record) return true;
   return targetHasTombstone(record) || (isRecord(record?.value) && record.value.status === "active" && !DIGEST.test(String(record.value.artifactSha256)));
 }
 
@@ -928,6 +1059,10 @@ function buildTargets(source: readonly ContentIdentityMigrationRawRecord[], arti
     const target = makeV2Payload(record.key, meta.owner.entry.owner, meta.envelope.revision, result.value, result.identity, preservationEntry);
     transformed.set(record.key, target);
   }
+  // Tombstoned learning records are private migration output, never public
+  // TrainingSession/Attempt/Review values.  Relocate them before pointer and
+  // relationship verification so strict runtime keys remain canonical-only.
+  relocateUnavailableTargets(transformed);
   for (const record of ordered) {
     if (record.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION || record.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT || record.key === STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER) {
       const envelope = sourceMeta.get(record.key)!.envelope;
@@ -1054,8 +1189,7 @@ function verifyTargetRecords(expected: ReadonlyMap<string, string>, evidence: Re
     if (contextStorage.getString(key) !== raw) return false;
     const record = evidence.get(key);
     if (!record) return false;
-    const owner = ownerForKey(key);
-    if (record.owner !== owner.entry.owner || record.key !== key) return false;
+    if (record.owner !== targetOwnerForKey(key) || record.key !== key) return false;
   }
   try { verifyRelationships(evidence); } catch { return false; }
   return true;
