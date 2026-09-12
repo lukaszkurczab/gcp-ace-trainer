@@ -1,8 +1,19 @@
 import type { KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { STORAGE_NAMESPACE } from "../keys";
+import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { CANONICAL_RECORD_SCHEMA, withCanonicalWriteLocks } from "./canonicalRecordCodec";
+import {
+  createCommittedStorageMetadataV2,
+  createPendingStorageMetadataV2,
+  decodeStorageMetadataEnvelope,
+  encodeStorageMetadataEnvelope,
+  isCanonicalStorageMetadataV1,
+  isCommittedStorageMetadataV2,
+  isPendingStorageMetadataV2,
+  type StorageMetadataEnvelope,
+  type StorageMetadataV2Binding,
+} from "./storageMetadataRepository";
 
 /**
  * This module is deliberately dormant.  It is an opaque raw-byte transaction
@@ -20,6 +31,7 @@ export const CONTENT_IDENTITY_TARGET_RUNTIME_SCHEMA_VERSION = CONTENT_IDENTITY_M
 
 const SOURCE_NAMESPACE = STORAGE_NAMESPACE;
 const PROTOCOL_IDENTITY = "patternly:migration:content-identity:v1" as const;
+const METADATA_KEY = STORAGE_KEYS.METADATA;
 const STATE_KEY = `${CONTENT_IDENTITY_MIGRATION_NAMESPACE}state`;
 const BACKUP_PREFIX = `${CONTENT_IDENTITY_MIGRATION_NAMESPACE}backup:`;
 const DIGEST_PATTERN = /^[0-9a-f]{64}$/u;
@@ -41,6 +53,11 @@ export type ContentIdentityMigrationManifest = Readonly<{
   aggregateDigest: string;
 }>;
 
+export type ContentIdentityMigrationMetadataSnapshot = Readonly<{
+  raw: string;
+  revision: number;
+}>;
+
 export type ContentIdentityMigrationPhase =
   | "backup_verified"
   | "publishing"
@@ -57,6 +74,7 @@ export type ContentIdentityMigrationState = Readonly<{
   planId: string;
   verifierId: string;
   sourceManifest: ContentIdentityMigrationManifest;
+  targetDataManifest: ContentIdentityMigrationManifest;
   targetManifest: ContentIdentityMigrationManifest;
   backupKeys: readonly string[];
   targetAbsentKeys: readonly string[];
@@ -123,6 +141,7 @@ export type ContentIdentityMigrationPlan = Readonly<{
   planId: string;
   verifierId: string;
   sourceManifest: ContentIdentityMigrationManifest;
+  targetDataManifest: ContentIdentityMigrationManifest;
   targetManifest: ContentIdentityMigrationManifest;
   targetAbsentKeys: readonly string[];
 }>;
@@ -150,6 +169,10 @@ export type ContentIdentityMigrationRunResult = Readonly<{
 type PlanBinding = Readonly<{
   source: readonly ContentIdentityMigrationRawRecord[];
   target: readonly ContentIdentityMigrationRawRecord[];
+  targetData: readonly ContentIdentityMigrationRawRecord[];
+  sourceMetadata: StorageMetadataEnvelope;
+  pendingMetadataRaw: string;
+  committedMetadataRaw: string;
   verifier: ContentIdentityMigrationVerifier;
 }>;
 
@@ -178,6 +201,62 @@ function exactKeys(value: Record<string, unknown>, expected: readonly string[]):
 
 function isCanonicalKey(key: unknown): key is string {
   return typeof key === "string" && key.startsWith(SOURCE_NAMESPACE) && key.length > SOURCE_NAMESPACE.length && !key.startsWith(CONTENT_IDENTITY_MIGRATION_NAMESPACE);
+}
+
+function metadataRecord(records: readonly ContentIdentityMigrationRawRecord[]): ContentIdentityMigrationRawRecord | null {
+  const matches = records.filter((record) => record.key === METADATA_KEY);
+  if (matches.length > 1) fail("invalid_plan");
+  return matches[0] ?? null;
+}
+
+function decodeV1Metadata(raw: string): StorageMetadataEnvelope {
+  let envelope: StorageMetadataEnvelope;
+  try { envelope = decodeStorageMetadataEnvelope(raw); } catch (error) { fail("invalid_plan", error); }
+  if (!isCanonicalStorageMetadataV1(envelope.metadata)) fail("invalid_plan");
+  return envelope;
+}
+
+function decodeV1MetadataSnapshot(value: unknown): StorageMetadataEnvelope {
+  if (!isPlainRecord(value) || !exactKeys(value, ["raw", "revision"]) || typeof value.raw !== "string" || typeof value.revision !== "number" || !Number.isSafeInteger(value.revision) || value.revision < 1) fail("invalid_plan");
+  const envelope = decodeV1Metadata(value.raw);
+  if (envelope.revision !== value.revision) fail("invalid_plan");
+  return envelope;
+}
+
+function metadataBinding(sourceManifest: ContentIdentityMigrationManifest, targetDataManifest: ContentIdentityMigrationManifest): StorageMetadataV2Binding {
+  return {
+    sourceManifestDigest: sourceManifest.aggregateDigest,
+    targetManifestDigest: targetDataManifest.aggregateDigest,
+    targetKeySetDigest: targetDataManifest.keySetDigest,
+  };
+}
+
+function makeMetadataRaw(sourceManifest: ContentIdentityMigrationManifest, targetDataManifest: ContentIdentityMigrationManifest, sourceRevision: number, committed: boolean): string {
+  const binding = metadataBinding(sourceManifest, targetDataManifest);
+  const metadata = committed ? createCommittedStorageMetadataV2(binding) : createPendingStorageMetadataV2(binding);
+  return encodeStorageMetadataEnvelope(metadata, sourceRevision + (committed ? 2 : 1));
+}
+
+function fullRecords(content: readonly ContentIdentityMigrationRawRecord[], metadataRaw: string): readonly ContentIdentityMigrationRawRecord[] {
+  return Object.freeze([...content, Object.freeze({ key: METADATA_KEY, raw: metadataRaw })].sort((left, right) => left.key < right.key ? -1 : left.key > right.key ? 1 : 0));
+}
+
+function metadataEntry(manifest: ContentIdentityMigrationManifest): ContentIdentityMigrationManifestEntry {
+  const entry = manifest.entries.find((candidate) => candidate.key === METADATA_KEY);
+  if (!entry) fail("protocol_state_invalid");
+  return entry;
+}
+
+function assertCommittedMetadataBinding(raw: string, sourceManifest: ContentIdentityMigrationManifest, targetDataManifest: ContentIdentityMigrationManifest, code: ContentIdentityMigrationErrorCode = "protocol_state_invalid"): void {
+  let envelope: StorageMetadataEnvelope;
+  try { envelope = decodeStorageMetadataEnvelope(raw); } catch (error) { fail(code, error); }
+  const sourceRevision = metadataEntry(sourceManifest).revision;
+  if (sourceRevision === null || !isCommittedStorageMetadataV2(envelope.metadata) || envelope.revision !== sourceRevision + 2 || canonicalSerialize(envelope.metadata) !== canonicalSerialize(createCommittedStorageMetadataV2(metadataBinding(sourceManifest, targetDataManifest)))) fail(code);
+}
+
+function writeAndVerifyRaw(storage: KeyValueStorage, key: string, raw: string): void {
+  writeString(storage, key, raw);
+  if (readString(storage, key) !== raw) fail("storage_write_failed");
 }
 
 function isDigest(value: unknown): value is string {
@@ -217,6 +296,7 @@ function digestObject(value: unknown): string {
 function computePlanId(input: {
   verifierId: string;
   sourceManifest: ContentIdentityMigrationManifest;
+  targetDataManifest: ContentIdentityMigrationManifest;
   targetManifest: ContentIdentityMigrationManifest;
   targetAbsentKeys: readonly string[];
 }): string {
@@ -227,6 +307,7 @@ function computePlanId(input: {
     targetRuntimeSchemaVersion: CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION,
     verifierId: input.verifierId,
     sourceManifest: input.sourceManifest,
+    targetDataManifest: input.targetDataManifest,
     targetManifest: input.targetManifest,
     targetAbsentKeys: input.targetAbsentKeys,
   });
@@ -302,18 +383,25 @@ function assertProtocolHeader(value: Record<string, unknown>, code: ContentIdent
 }
 
 function assertState(value: unknown): asserts value is ContentIdentityMigrationState {
-  if (!isPlainRecord(value) || !exactKeys(value, ["backupKeys", "phase", "planId", "protocolVersion", "schemaIdentity", "sourceManifest", "targetAbsentKeys", "targetManifest", "targetRuntimeSchemaVersion", "verifierId", "verifierVersion"])) fail("protocol_state_invalid");
+  if (!isPlainRecord(value) || !exactKeys(value, ["backupKeys", "phase", "planId", "protocolVersion", "schemaIdentity", "sourceManifest", "targetAbsentKeys", "targetDataManifest", "targetManifest", "targetRuntimeSchemaVersion", "verifierId", "verifierVersion"])) fail("protocol_state_invalid");
   assertProtocolHeader(value, "protocol_state_invalid");
   if (value.targetRuntimeSchemaVersion !== CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION || typeof value.planId !== "string" || !isDigest(value.planId) || typeof value.verifierId !== "string" || !isDigest(value.verifierId) || !["backup_verified", "publishing", "target_verified", "rollback_verified", "committed"].includes(value.phase as string) || !Array.isArray(value.backupKeys) || !Array.isArray(value.targetAbsentKeys)) fail("protocol_state_invalid");
   if (!value.backupKeys.every((key): key is string => typeof key === "string" && key.startsWith(BACKUP_PREFIX)) || !sortedUnique(value.backupKeys) || !value.targetAbsentKeys.every((key): key is string => isCanonicalKey(key)) || !sortedUnique(value.targetAbsentKeys)) fail("protocol_state_invalid");
   assertManifest(value.sourceManifest, "protocol_state_invalid");
+  assertManifest(value.targetDataManifest, "protocol_state_invalid");
   assertManifest(value.targetManifest, "protocol_state_invalid");
+  if (value.targetDataManifest.entries.some((entry) => entry.key === METADATA_KEY)) fail("protocol_state_invalid");
+  const sourceMetadataRevision = metadataEntry(value.sourceManifest).revision;
+  if (sourceMetadataRevision === null) fail("protocol_state_invalid");
+  const expectedCommittedMetadata = makeMetadataRaw(value.sourceManifest, value.targetDataManifest, sourceMetadataRevision, true);
+  const targetMetadata = metadataEntry(value.targetManifest);
+  if (targetMetadata.revision !== sourceMetadataRevision + 2 || targetMetadata.digest !== sha256Utf8(expectedCommittedMetadata)) fail("protocol_state_invalid");
   const expectedBackups = backupKeysForManifest(value.sourceManifest);
   if (canonicalSerialize(expectedBackups) !== canonicalSerialize(value.backupKeys)) fail("protocol_state_invalid");
   const sourceKeys = new Set(value.sourceManifest.entries.map((entry) => entry.key));
   const targetKeys = new Set(value.targetManifest.entries.map((entry) => entry.key));
   const expectedAbsent = [...sourceKeys].filter((key) => !targetKeys.has(key)).sort();
-  if (canonicalSerialize(expectedAbsent) !== canonicalSerialize(value.targetAbsentKeys) || computePlanId({ verifierId: value.verifierId, sourceManifest: value.sourceManifest, targetManifest: value.targetManifest, targetAbsentKeys: value.targetAbsentKeys }) !== value.planId) fail("protocol_state_invalid");
+  if (canonicalSerialize(expectedAbsent) !== canonicalSerialize(value.targetAbsentKeys) || computePlanId({ verifierId: value.verifierId, sourceManifest: value.sourceManifest, targetDataManifest: value.targetDataManifest, targetManifest: value.targetManifest, targetAbsentKeys: value.targetAbsentKeys }) !== value.planId) fail("protocol_state_invalid");
 }
 
 function parseState(storage: KeyValueStorage): ContentIdentityMigrationState | null {
@@ -339,6 +427,7 @@ function freezeState(input: {
     planId: input.plan.planId,
     verifierId: input.plan.verifierId,
     sourceManifest: input.plan.sourceManifest,
+    targetDataManifest: input.plan.targetDataManifest,
     targetManifest: input.plan.targetManifest,
     backupKeys: Object.freeze([...input.backupKeys]),
     targetAbsentKeys: input.plan.targetAbsentKeys,
@@ -367,14 +456,21 @@ function assertSealedActivation(value: unknown): asserts value is ContentIdentit
 
 function assertSealedPlan(value: unknown): asserts value is ContentIdentityMigrationPlan {
   if (typeof value !== "object" || value === null || !sealedPlans.has(value) || !isPlainRecord(value)) fail("invalid_plan");
-  if (!exactKeys(value, ["planId", "protocolVersion", "schemaIdentity", "sourceManifest", "targetAbsentKeys", "targetManifest", "targetRuntimeSchemaVersion", "verifierId", "verifierVersion"]) || value.schemaIdentity !== PROTOCOL_IDENTITY || value.protocolVersion !== CONTENT_IDENTITY_MIGRATION_PROTOCOL_VERSION || value.verifierVersion !== CONTENT_IDENTITY_MIGRATION_VERIFIER_VERSION || value.targetRuntimeSchemaVersion !== CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION || !isDigest(value.planId) || !isDigest(value.verifierId) || !Array.isArray(value.targetAbsentKeys)) fail("invalid_plan");
+  if (!exactKeys(value, ["planId", "protocolVersion", "schemaIdentity", "sourceManifest", "targetAbsentKeys", "targetDataManifest", "targetManifest", "targetRuntimeSchemaVersion", "verifierId", "verifierVersion"]) || value.schemaIdentity !== PROTOCOL_IDENTITY || value.protocolVersion !== CONTENT_IDENTITY_MIGRATION_PROTOCOL_VERSION || value.verifierVersion !== CONTENT_IDENTITY_MIGRATION_VERIFIER_VERSION || value.targetRuntimeSchemaVersion !== CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION || !isDigest(value.planId) || !isDigest(value.verifierId) || !Array.isArray(value.targetAbsentKeys)) fail("invalid_plan");
   assertManifest(value.sourceManifest, "invalid_plan");
+  assertManifest(value.targetDataManifest, "invalid_plan");
   assertManifest(value.targetManifest, "invalid_plan");
+  if (value.targetDataManifest.entries.some((entry) => entry.key === METADATA_KEY)) fail("invalid_plan");
+  const sourceMetadataRevision = metadataEntry(value.sourceManifest).revision;
+  if (sourceMetadataRevision === null) fail("invalid_plan");
+  const expectedCommittedMetadata = makeMetadataRaw(value.sourceManifest, value.targetDataManifest, sourceMetadataRevision, true);
+  const targetMetadata = metadataEntry(value.targetManifest);
+  if (targetMetadata.revision !== sourceMetadataRevision + 2 || targetMetadata.digest !== sha256Utf8(expectedCommittedMetadata)) fail("invalid_plan");
   if (!sortedUnique(value.targetAbsentKeys) || !value.targetAbsentKeys.every((key): key is string => isCanonicalKey(key))) fail("invalid_plan");
   const sourceKeys = new Set(value.sourceManifest.entries.map((entry) => entry.key));
   const targetKeys = new Set(value.targetManifest.entries.map((entry) => entry.key));
   const expectedAbsent = [...sourceKeys].filter((key) => !targetKeys.has(key)).sort();
-  if (canonicalSerialize(expectedAbsent) !== canonicalSerialize(value.targetAbsentKeys) || computePlanId({ verifierId: value.verifierId, sourceManifest: value.sourceManifest, targetManifest: value.targetManifest, targetAbsentKeys: value.targetAbsentKeys }) !== value.planId || !planBindings.has(value)) fail("invalid_plan");
+  if (canonicalSerialize(expectedAbsent) !== canonicalSerialize(value.targetAbsentKeys) || computePlanId({ verifierId: value.verifierId, sourceManifest: value.sourceManifest, targetDataManifest: value.targetDataManifest, targetManifest: value.targetManifest, targetAbsentKeys: value.targetAbsentKeys }) !== value.planId || !planBindings.has(value)) fail("invalid_plan");
 }
 
 function assertPlanVerifier(plan: ContentIdentityMigrationPlan, verifier: ContentIdentityMigrationVerifier): PlanBinding {
@@ -383,6 +479,18 @@ function assertPlanVerifier(plan: ContentIdentityMigrationPlan, verifier: Conten
   const binding = planBindings.get(plan);
   if (!binding || binding.verifier !== verifier || plan.verifierId !== verifier.verifierId) fail("invalid_verifier");
   return binding;
+}
+
+function assertPlanBinding(plan: ContentIdentityMigrationPlan, binding: PlanBinding): void {
+  assertRawManifest(binding.source, plan.sourceManifest, "invalid_plan");
+  assertRawManifest(binding.targetData, plan.targetDataManifest, "invalid_plan");
+  assertRawManifest(binding.target, plan.targetManifest, "invalid_plan");
+  const sourceRevision = metadataEntry(plan.sourceManifest).revision;
+  if (sourceRevision === null) fail("invalid_plan");
+  let pending: StorageMetadataEnvelope;
+  try { pending = decodeStorageMetadataEnvelope(binding.pendingMetadataRaw); } catch (error) { fail("invalid_plan", error); }
+  if (!isPendingStorageMetadataV2(pending.metadata) || pending.revision !== sourceRevision + 1 || canonicalSerialize(pending.metadata) !== canonicalSerialize(createPendingStorageMetadataV2(metadataBinding(plan.sourceManifest, plan.targetDataManifest)))) fail("invalid_plan");
+  assertCommittedMetadataBinding(binding.committedMetadataRaw, plan.sourceManifest, plan.targetDataManifest, "invalid_plan");
 }
 
 function readOnlyStorage(storage: KeyValueStorage): ContentIdentityMigrationReadOnlyStorage {
@@ -399,6 +507,9 @@ function verifyTarget(storage: KeyValueStorage, state: ContentIdentityMigrationS
   if (state.verifierId !== verifier.verifierId) fail("invalid_verifier");
   const current = captureContentIdentityMigrationSnapshot(storage);
   assertRawManifest(current, state.targetManifest, "target_verification_failed");
+  const currentMetadata = metadataRecord(current);
+  if (!currentMetadata) fail("target_verification_failed");
+  assertCommittedMetadataBinding(currentMetadata.raw, state.sourceManifest, state.targetDataManifest, "target_verification_failed");
   const callback = verifierBindings.get(verifier)?.verify;
   if (!callback) fail("invalid_verifier");
   const context: ContentIdentityMigrationVerifierContext = Object.freeze({
@@ -433,6 +544,9 @@ function validateFullBackup(storage: KeyValueStorage, state: ContentIdentityMigr
     backup.push(Object.freeze({ key: entry.key, raw }));
   }
   assertRawManifest(backup, state.sourceManifest, "backup_incomplete");
+  const metadata = metadataRecord(backup);
+  if (!metadata) fail("backup_incomplete");
+  try { decodeV1Metadata(metadata.raw); } catch (error) { fail("backup_incomplete", error); }
   return Object.freeze(backup);
 }
 
@@ -510,6 +624,15 @@ function runUnlocked(storage: KeyValueStorage, plan: ContentIdentityMigrationPla
   }
   const current = captureContentIdentityMigrationSnapshot(storage);
   assertRawManifest(current, plan.sourceManifest, "stale_source");
+  const currentMetadata = metadataRecord(current);
+  if (!currentMetadata) fail("stale_source");
+  try {
+    const envelope = decodeV1Metadata(currentMetadata.raw);
+    if (envelope.revision !== binding.sourceMetadata.revision || envelope.raw !== binding.sourceMetadata.raw) fail("stale_source");
+  } catch (error) {
+    if (error instanceof ContentIdentityMigrationError && error.code === "stale_source") throw error;
+    fail("stale_source", error);
+  }
   const backupKeys = backupKeysForManifest(plan.sourceManifest);
   for (let index = 0; index < binding.source.length; index += 1) writeString(storage, backupKeys[index]!, binding.source[index]!.raw);
   const backupVerified = freezeState({ phase: "backup_verified", plan, backupKeys });
@@ -517,8 +640,13 @@ function runUnlocked(storage: KeyValueStorage, plan: ContentIdentityMigrationPla
   validateFullBackup(storage, backupVerified);
   const publishing = freezeState({ phase: "publishing", plan, backupKeys });
   writeState(storage, publishing);
-  for (const record of binding.target) writeString(storage, record.key, record.raw);
+  // The pending v2 metadata is the first public/canonical mutation.  It is a
+  // durable fence: no target content is published until this exact raw byte
+  // is read back successfully.
+  writeAndVerifyRaw(storage, METADATA_KEY, binding.pendingMetadataRaw);
+  for (const record of binding.targetData) writeString(storage, record.key, record.raw);
   for (const key of plan.targetAbsentKeys) removeString(storage, key);
+  writeAndVerifyRaw(storage, METADATA_KEY, binding.committedMetadataRaw);
   verifyTarget(storage, publishing, verifier);
   const targetVerified = freezeState({ phase: "target_verified", plan, backupKeys });
   writeState(storage, targetVerified);
@@ -559,20 +687,33 @@ export function planContentIdentityMigration(input: {
   target: readonly ContentIdentityMigrationRawRecord[];
   verifier: ContentIdentityMigrationVerifier;
   targetRuntimeSchemaVersion: number;
+  sourceMetadata?: ContentIdentityMigrationMetadataSnapshot;
 }): ContentIdentityMigrationPlan {
   if (!isPlainRecord(input)) fail("invalid_plan");
   assertSealedVerifier(input.verifier);
   if (input.targetRuntimeSchemaVersion !== CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION) fail("unsupported_protocol");
-  const source = cloneRawRecords(input.source);
-  const target = cloneRawRecords(input.target);
+  const sourceInput = cloneRawRecords(input.source);
+  const sourceMetadataRecord = metadataRecord(sourceInput);
+  const suppliedSourceMetadata = input.sourceMetadata ? decodeV1MetadataSnapshot(input.sourceMetadata) : null;
+  const sourceMetadata = sourceMetadataRecord ? decodeV1Metadata(sourceMetadataRecord.raw) : suppliedSourceMetadata ?? fail("invalid_plan");
+  if (suppliedSourceMetadata && (suppliedSourceMetadata.raw !== sourceMetadata.raw || suppliedSourceMetadata.revision !== sourceMetadata.revision)) fail("invalid_plan");
+  const sourceContent = Object.freeze(sourceInput.filter((record) => record.key !== METADATA_KEY));
+  const source = fullRecords(sourceContent, sourceMetadata.raw);
+  const targetInput = cloneRawRecords(input.target);
+  if (metadataRecord(targetInput)) fail("invalid_plan");
+  const targetData = Object.freeze(targetInput);
   const sourceManifest = makeManifest(source);
+  const targetDataManifest = makeManifest(targetData);
+  const pendingMetadataRaw = makeMetadataRaw(sourceManifest, targetDataManifest, sourceMetadata.revision, false);
+  const committedMetadataRaw = makeMetadataRaw(sourceManifest, targetDataManifest, sourceMetadata.revision, true);
+  const target = fullRecords(targetData, committedMetadataRaw);
   const targetManifest = makeManifest(target);
   const targetKeys = new Set(target.map((record) => record.key));
   const targetAbsentKeys = Object.freeze(source.map((record) => record.key).filter((key) => !targetKeys.has(key)).sort());
-  const planId = computePlanId({ verifierId: input.verifier.verifierId, sourceManifest, targetManifest, targetAbsentKeys });
-  const plan = Object.freeze({ schemaIdentity: PROTOCOL_IDENTITY, protocolVersion: CONTENT_IDENTITY_MIGRATION_PROTOCOL_VERSION, verifierVersion: CONTENT_IDENTITY_MIGRATION_VERIFIER_VERSION, targetRuntimeSchemaVersion: CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION, planId, verifierId: input.verifier.verifierId, sourceManifest, targetManifest, targetAbsentKeys });
+  const planId = computePlanId({ verifierId: input.verifier.verifierId, sourceManifest, targetDataManifest, targetManifest, targetAbsentKeys });
+  const plan = Object.freeze({ schemaIdentity: PROTOCOL_IDENTITY, protocolVersion: CONTENT_IDENTITY_MIGRATION_PROTOCOL_VERSION, verifierVersion: CONTENT_IDENTITY_MIGRATION_VERIFIER_VERSION, targetRuntimeSchemaVersion: CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION, planId, verifierId: input.verifier.verifierId, sourceManifest, targetDataManifest, targetManifest, targetAbsentKeys });
   sealedPlans.add(plan);
-  planBindings.set(plan, Object.freeze({ source, target, verifier: input.verifier }));
+  planBindings.set(plan, Object.freeze({ source, target, targetData, sourceMetadata, pendingMetadataRaw, committedMetadataRaw, verifier: input.verifier }));
   return plan;
 }
 
@@ -597,6 +738,7 @@ export function migrateContentIdentityStorage(input: {
   if (!isPlainRecord(input)) fail("invalid_plan");
   assertSealedActivation(input.activation);
   const binding = assertPlanVerifier(input.plan, input.verifier);
+  assertPlanBinding(input.plan, binding);
   const currentKeys = readKeys(input.storage).filter((key) => isCanonicalKey(key));
   const locks = [STATE_KEY, ...reservedKeys(input.storage), ...currentKeys, ...binding.source.map((record) => record.key), ...binding.target.map((record) => record.key)];
   return withCanonicalWriteLocks(locks, () => runUnlocked(input.storage, input.plan, input.verifier, binding));
@@ -613,7 +755,7 @@ export function recoverContentIdentityMigration(input: { storage: KeyValueStorag
 
 /** Cleanup is idempotent: committed state remains as the no-rollback marker. */
 export function cleanupContentIdentityMigration(storage: KeyValueStorage): ContentIdentityMigrationCleanupResult {
-  const locks = [STATE_KEY, ...reservedKeys(storage)];
+  const locks = [STATE_KEY, ...reservedKeys(storage), ...readKeys(storage).filter((key) => isCanonicalKey(key))];
   return withCanonicalWriteLocks(locks, () => cleanupUnlocked(storage));
 }
 

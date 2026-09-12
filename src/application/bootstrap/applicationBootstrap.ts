@@ -6,6 +6,7 @@ import { EncryptedStorageBootstrapError, type EncryptedStorageFailureCode } from
 import { cleanupOrphanedAccountDataExports } from "../account/accountDataExportService";
 import {
   type CanonicalRepositoryBootstrapDependencies,
+  StorageMetadataError,
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
   getTrainingSessions,
@@ -61,6 +62,7 @@ export async function bootstrapApplication(
     await resolveActiveSession(activeSession.id);
     return { kind: "ready", activeSessionId: activeSession.id };
   } catch (error) {
+    if (error instanceof StorageMetadataError) return { kind: "blocking", reason: error.code };
     return {
       kind: "blocking",
       reason: describeOperationalFailure(error, "Application bootstrap failed."),

@@ -5,6 +5,7 @@ import test, { beforeEach } from "node:test";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
+import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import {
   CONTENT_IDENTITY_MIGRATION_NAMESPACE,
   CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION,
@@ -34,6 +35,25 @@ const untouchedKey = "patternly:other:v1:untouched";
 
 let storage: MemoryKeyValueStorage;
 
+class PendingFenceReadbackFailureStorage extends MemoryKeyValueStorage {
+  private fenceReadFailed = false;
+
+  override getString(key: string): string | undefined {
+    const value = super.getString(key);
+    if (key === STORAGE_KEYS.METADATA && value !== undefined && !this.fenceReadFailed) {
+      try {
+        if ((JSON.parse(value) as { payload?: { schemaVersion?: unknown } }).payload?.schemaVersion === "pending_v2") {
+          this.fenceReadFailed = true;
+          throw new Error("Injected pending-fence readback failure.");
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message === "Injected pending-fence readback failure.") throw error;
+      }
+    }
+    return value;
+  }
+}
+
 beforeEach(() => {
   storage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(storage);
@@ -43,13 +63,22 @@ function raw(label: string, revision = 1): string {
   return JSON.stringify({ schemaIdentity: "patternly:canonical:v1", revision, payload: { synthetic: label } });
 }
 
+function v1MetadataRaw(revision = 1): string {
+  return canonicalSerialize({ schemaIdentity: "patternly:canonical:v1", revision, payload: { namespace: STORAGE_NAMESPACE, schemaVersion: 1 } });
+}
+
 function record(key: string, value: string): ContentIdentityMigrationRawRecord {
   return { key, raw: value };
 }
 
 function install(records: readonly ContentIdentityMigrationRawRecord[], extra: readonly ContentIdentityMigrationRawRecord[] = []): void {
+  if (![...records, ...extra].some((entry) => entry.key === STORAGE_KEYS.METADATA)) storage.setString(STORAGE_KEYS.METADATA, v1MetadataRaw());
   for (const entry of [...records, ...extra]) storage.setString(entry.key, entry.raw);
   storage.resetCounters();
+}
+
+function contentSnapshot(): readonly ContentIdentityMigrationRawRecord[] {
+  return captureContentIdentityMigrationSnapshot(storage).filter((entry) => entry.key !== STORAGE_KEYS.METADATA);
 }
 
 function verifier(name = "synthetic-verifier", result: true | false = true) {
@@ -73,6 +102,7 @@ function planFor(source: readonly ContentIdentityMigrationRawRecord[], target: r
     target,
     verifier: selectedVerifier,
     targetRuntimeSchemaVersion: CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION,
+    sourceMetadata: { raw: v1MetadataRaw(), revision: 1 },
   });
 }
 
@@ -90,14 +120,19 @@ function reservedStateRaw(): string | undefined {
 
 test("empty synthetic source commits an exact empty target and keeps the engine dormant", () => {
   const selectedVerifier = verifier();
+  install([]);
   const migrationPlan = planFor([], [], selectedVerifier);
   const result = migrateContentIdentityStorage({ storage, plan: migrationPlan, verifier: selectedVerifier, activation: activation() });
   assert.equal(result.kind, "committed");
   assert.equal(result.state.phase, "committed");
-  assert.equal(result.state.sourceManifest.entries.length, 0);
+  assert.equal(result.state.sourceManifest.entries.length, 1);
+  assert.equal(result.state.targetDataManifest.entries.length, 0);
   assert.equal(result.cleanup.status, "complete");
-  assert.deepEqual(captureContentIdentityMigrationSnapshot(storage), []);
-  assert.deepEqual(storage.operations.filter((operation) => operation.kind === "remove"), []);
+  assert.deepEqual(contentSnapshot(), []);
+  const committedMetadata = JSON.parse(storage.getString(STORAGE_KEYS.METADATA)!);
+  assert.equal(committedMetadata.revision, 3);
+  assert.equal(committedMetadata.payload.schemaVersion, "committed_v2");
+  assert.deepEqual(storage.operations.filter((operation) => operation.kind === "remove" && operation.key.startsWith(STORAGE_NAMESPACE)), []);
 });
 
 test("publishes raw target bytes, verifies them, and leaves unrelated namespaces untouched", () => {
@@ -112,7 +147,17 @@ test("publishes raw target bytes, verifies them, and leaves unrelated namespaces
   assert.equal(storage.getString(targetKey), target[1]!.raw);
   assert.equal(storage.getString(secondSourceKey), undefined);
   assert.equal(storage.getString(untouchedKey), "opaque-other-namespace");
-  assert.deepEqual(captureContentIdentityMigrationSnapshot(storage), [target[0], target[1]]);
+  assert.deepEqual(contentSnapshot(), [target[0], target[1]]);
+  assert.deepEqual(
+    storage.operations.filter((operation) => operation.kind === "write" && operation.key.startsWith(STORAGE_NAMESPACE)).map((operation) => operation.key),
+    [STORAGE_KEYS.METADATA, sourceKey, targetKey, STORAGE_KEYS.METADATA],
+  );
+  const committedMetadata = JSON.parse(storage.getString(STORAGE_KEYS.METADATA)!);
+  assert.equal(committedMetadata.revision, 3);
+  assert.equal(committedMetadata.payload.schemaVersion, "committed_v2");
+  assert.equal(committedMetadata.payload.sourceManifestDigest, result.state.sourceManifest.aggregateDigest);
+  assert.equal(committedMetadata.payload.targetManifestDigest, result.state.targetDataManifest.aggregateDigest);
+  assert.equal(committedMetadata.payload.targetKeySetDigest, result.state.targetDataManifest.keySetDigest);
 });
 
 test("planner is pure, deterministic, sealed, and does not retain a public raw payload", () => {
@@ -139,12 +184,59 @@ test("failure during publishing leaves a recoverable phase and rollback restores
   storage.setFailurePlan({ kind: "fail_on_key_write", key: targetKey });
   assert.throws(() => migrateContentIdentityStorage({ storage, plan: migrationPlan, verifier: selectedVerifier, activation: activation() }), (error: unknown) => codeOf(error) === "storage_write_failed");
   assert.equal(readContentIdentityMigrationState(storage)?.phase, "publishing");
+  assert.equal(JSON.parse(storage.getString(STORAGE_KEYS.METADATA)!).payload.schemaVersion, "pending_v2");
   storage.setFailurePlan(null);
   const recovery = recoverContentIdentityMigration({ storage, verifier: selectedVerifier });
   assert.equal(recovery.kind, "rolled_back");
   assert.equal(storage.getString(sourceKey), source[0]!.raw);
   assert.equal(storage.getString(targetKey), undefined);
   assert.equal(reservedStateRaw(), undefined);
+});
+
+test("pending fence readback failure stops before any target write and rolls back to exact v1", () => {
+  storage = new PendingFenceReadbackFailureStorage();
+  installKeyValueStorageForTests(storage);
+  const source = [record(sourceKey, raw("original"))];
+  const target = [record(targetKey, raw("published"))];
+  install(source);
+  const selectedVerifier = verifier();
+  const migrationPlan = planFor(source, target, selectedVerifier);
+  storage.resetCounters();
+  assert.throws(() => migrateContentIdentityStorage({ storage, plan: migrationPlan, verifier: selectedVerifier, activation: activation() }), (error: unknown) => codeOf(error) === "storage_read_failed");
+  assert.equal(readContentIdentityMigrationState(storage)?.phase, "publishing");
+  assert.deepEqual(storage.operations.filter((operation) => operation.kind === "write" && operation.key.startsWith(STORAGE_NAMESPACE)), [{ kind: "write", key: STORAGE_KEYS.METADATA }]);
+  assert.equal(storage.getString(targetKey), undefined);
+  storage.setFailurePlan(null);
+  assert.equal(recoverContentIdentityMigration({ storage, verifier: selectedVerifier }).kind, "rolled_back");
+  assert.equal(JSON.parse(storage.getString(STORAGE_KEYS.METADATA)!).payload.schemaVersion, 1);
+});
+
+test("pending fence write failure leaves publishing state without publishing target data", () => {
+  const source = [record(sourceKey, raw("original"))];
+  const target = [record(targetKey, raw("published"))];
+  install(source);
+  const selectedVerifier = verifier();
+  const migrationPlan = planFor(source, target, selectedVerifier);
+  storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.METADATA });
+  assert.throws(() => migrateContentIdentityStorage({ storage, plan: migrationPlan, verifier: selectedVerifier, activation: activation() }), (error: unknown) => codeOf(error) === "storage_write_failed");
+  assert.equal(readContentIdentityMigrationState(storage)?.phase, "publishing");
+  assert.equal(storage.getString(targetKey), undefined);
+  storage.setFailurePlan(null);
+  assert.equal(recoverContentIdentityMigration({ storage, verifier: selectedVerifier }).kind, "rolled_back");
+  assert.equal(JSON.parse(storage.getString(STORAGE_KEYS.METADATA)!).payload.schemaVersion, 1);
+});
+
+test("metadata mismatch and missing source certificate fail before protocol or canonical mutation", () => {
+  const source = [record(sourceKey, raw("original"))];
+  install(source);
+  const selectedVerifier = verifier();
+  const migrationPlan = planFor(source, [record(targetKey, raw("target"))], selectedVerifier);
+  storage.setString(STORAGE_KEYS.METADATA, v1MetadataRaw(2));
+  storage.resetCounters();
+  assert.throws(() => migrateContentIdentityStorage({ storage, plan: migrationPlan, verifier: selectedVerifier, activation: activation() }), (error: unknown) => codeOf(error) === "stale_source");
+  assert.deepEqual(storage.operations.filter((operation) => operation.kind === "write" || operation.kind === "remove"), []);
+  assert.throws(() => planContentIdentityMigration({ source, target: source, verifier: selectedVerifier, targetRuntimeSchemaVersion: CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION }), (error: unknown) => codeOf(error) === "invalid_plan");
+  assert.throws(() => planContentIdentityMigration({ source, target: source, verifier: selectedVerifier, targetRuntimeSchemaVersion: CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION, sourceMetadata: { raw: v1MetadataRaw(), revision: 1, extra: true } as never }), (error: unknown) => codeOf(error) === "invalid_plan");
 });
 
 test("rollback cleanup retries after the first backup removal fails without another canonical restore", () => {
@@ -245,9 +337,11 @@ test("target verification failure never marks committed and can be rolled back",
   const migrationPlan = planFor(source, target, selectedVerifier);
   assert.throws(() => migrateContentIdentityStorage({ storage, plan: migrationPlan, verifier: selectedVerifier, activation: activation() }), (error: unknown) => codeOf(error) === "target_verification_failed");
   assert.equal(readContentIdentityMigrationState(storage)?.phase, "publishing");
+  assert.equal(JSON.parse(storage.getString(STORAGE_KEYS.METADATA)!).payload.schemaVersion, "committed_v2");
   const recovery = recoverContentIdentityMigration({ storage, verifier: selectedVerifier });
   assert.equal(recovery.kind, "rolled_back");
   assert.equal(storage.getString(sourceKey), source[0]!.raw);
+  assert.equal(JSON.parse(storage.getString(STORAGE_KEYS.METADATA)!).payload.schemaVersion, 1);
 });
 
 test("commit-marker failure leaves target_verified and recovery rolls back", () => {
@@ -356,6 +450,7 @@ test("committed recovery never rolls back a target and reports manual recovery o
   assert.throws(() => recoverContentIdentityMigration({ storage, verifier: selectedVerifier }), (error: unknown) => codeOf(error) === "manual_recovery_required");
   assert.deepEqual(storage.operations.filter((operation) => operation.kind === "write" || operation.kind === "remove"), []);
   assert.equal(storage.getString(targetKey), raw("tampered"));
+  assert.equal(JSON.parse(storage.getString(STORAGE_KEYS.METADATA)!).payload.schemaVersion, "committed_v2");
 });
 
 test("manifest digests are semantic and deterministic while raw bytes remain opaque", () => {
@@ -387,7 +482,7 @@ test("read-only snapshots ignore the reserved migration namespace", () => {
   const source = [record(sourceKey, raw("one"))];
   install(source, [record(untouchedKey, "outside")]);
   storage.setString(`${CONTENT_IDENTITY_MIGRATION_NAMESPACE}foreign`, "reserved-but-not-source");
-  assert.deepEqual(captureContentIdentityMigrationSnapshot(storage), source);
+  assert.deepEqual(contentSnapshot(), source);
 });
 
 test("manifest type remains digest-only and cannot expose synthetic raw payloads", () => {
