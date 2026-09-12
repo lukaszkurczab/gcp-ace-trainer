@@ -755,9 +755,8 @@ function transformGuestBackup(value: unknown, context: TransformContext, path: s
   assertLegacyOwnerPayload(nestedKey, nestedOwner.entry.owner, nestedEnvelope.payload);
   const nestedContext: TransformContext = Object.freeze({ ...context, key: nestedKey, entry: nestedOwner.entry, kind: nestedOwner.kind });
   const result = dispatchOwner(nestedEnvelope.payload, nestedContext);
-  const nestedPayload = makeV2Payload(nestedKey, nestedOwner.entry.owner, nestedEnvelope.revision, result.value, result.identity, preservationFor(nestedOwner.entry.owner, nestedKey, nestedEnvelope.revision, nestedEnvelope.payload));
   identities.push(...result.identity.map((binding) => Object.freeze({ ...binding, path: `${path}.value.payload.${binding.path}` })));
-  return { ...cloneJson(value), value: canonicalSerialize({ schemaIdentity: CANONICAL_RECORD_SCHEMA, revision: nestedEnvelope.revision, payload: nestedPayload }) };
+  return { ...cloneJson(value), value: canonicalSerialize({ schemaIdentity: CANONICAL_RECORD_SCHEMA, revision: nestedEnvelope.revision, payload: result.value }) };
 }
 
 function transformReport(payload: unknown): TransformResult {
@@ -856,7 +855,7 @@ function makeV2Payload(key: string, owner: string, revision: number, value: unkn
   }
 }
 
-function makeEnvelope(revision: number, payload: ContentIdentityV2Record): string {
+function makeEnvelope(revision: number, payload: unknown): string {
   return canonicalSerialize({ schemaIdentity: CANONICAL_RECORD_SCHEMA, revision, payload });
 }
 
@@ -869,7 +868,7 @@ function sourceSessionIsUnavailable(key: string, transformed: ReadonlyMap<string
   return targetHasTombstone(record) || (isRecord(record?.value) && record.value.status === "active" && !DIGEST.test(String(record.value.artifactSha256)));
 }
 
-function buildTargets(source: readonly ContentIdentityMigrationRawRecord[], artifacts: readonly ActiveContentArtifactDescriptor[]): Readonly<{ records: readonly ContentIdentityMigrationRawRecord[]; preservation: readonly ContentIdentityV2Preservation[] }> {
+function buildTargets(source: readonly ContentIdentityMigrationRawRecord[], artifacts: readonly ActiveContentArtifactDescriptor[]): Readonly<{ records: readonly ContentIdentityMigrationRawRecord[]; evidenceRecords: readonly ContentIdentityV2Record[]; preservation: readonly ContentIdentityV2Preservation[] }> {
   const sourceMeta = new Map<string, { envelope: CanonicalEnvelope; owner: Readonly<{ entry: ContentIdentityInventoryRegistryEntry; kind: ContentIdentityInventoryKeyKind }> }>();
   for (const record of source) {
     const owner = ownerForKey(record.key);
@@ -928,15 +927,10 @@ function buildTargets(source: readonly ContentIdentityMigrationRawRecord[], arti
     }
   }
   return Object.freeze({
-    records: Object.freeze([...transformed.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([key, payload]) => Object.freeze({ key, raw: makeEnvelope(payload.sourceRevision, payload) }))),
+    records: Object.freeze([...transformed.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([key, record]) => Object.freeze({ key, raw: makeEnvelope(record.sourceRevision, record.value) }))),
+    evidenceRecords: Object.freeze([...transformed.values()]),
     preservation: Object.freeze(preservation.sort((left, right) => left.sourceKey.localeCompare(right.sourceKey))),
   });
-}
-
-function unwrapTarget(raw: string, key: string): ContentIdentityV2Record {
-  const envelope = parseEnvelope(raw, key);
-  if (!createContentIdentityV2Record || !isRecord(envelope.payload)) throw new ContentIdentityV2PlannerError("malformed_envelope");
-  try { return createContentIdentityV2Record(envelope.payload); } catch { throw new ContentIdentityV2PlannerError("owner_guard_failed"); }
 }
 
 function comparableIdentity(value: unknown): string | null {
@@ -1036,16 +1030,15 @@ function verifyRelationships(records: ReadonlyMap<string, ContentIdentityV2Recor
   }
 }
 
-function verifyTargetRecords(expected: ReadonlyMap<string, string>, contextStorage: { getString(key: string): string | undefined }): boolean {
-  const records = new Map<string, ContentIdentityV2Record>();
+function verifyTargetRecords(expected: ReadonlyMap<string, string>, evidence: ReadonlyMap<string, ContentIdentityV2Record>, contextStorage: { getString(key: string): string | undefined }): boolean {
   for (const [key, raw] of expected) {
     if (contextStorage.getString(key) !== raw) return false;
-    const record = unwrapTarget(raw, key);
+    const record = evidence.get(key);
+    if (!record) return false;
     const owner = ownerForKey(key);
     if (record.owner !== owner.entry.owner || record.key !== key) return false;
-    records.set(key, record);
   }
-  try { verifyRelationships(records); } catch { return false; }
+  try { verifyRelationships(evidence); } catch { return false; }
   return true;
 }
 
@@ -1075,12 +1068,12 @@ export function planContentIdentityV2(input: Readonly<{
     sourceKeys.add(record.key);
   }
   const targets = buildTargets(input.source, artifacts);
-  const targetRecords = new Map(targets.records.map((record) => [record.key, unwrapTarget(record.raw, record.key)]));
+  const targetRecords = new Map(targets.evidenceRecords.map((record) => [record.key, record]));
   try { verifyRelationships(targetRecords); } catch (error) { if (error instanceof ContentIdentityV2PlannerError) throw error; throw new ContentIdentityV2PlannerError("relationship_invalid"); }
   const targetMap = new Map(targets.records.map((record) => [record.key, record.raw]));
   const verifier = createContentIdentityMigrationVerifier({
     name: `content-identity-v2-owner-dispatch:${CONTENT_IDENTITY_V2_PLANNER_VERSION}`,
-    verify: (context) => verifyTargetRecords(targetMap, context.storage),
+    verify: (context) => verifyTargetRecords(targetMap, targetRecords, context.storage),
   });
   const plan = planContentIdentityMigration({
     source: input.source,

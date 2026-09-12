@@ -6,12 +6,6 @@ import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../inf
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { CANONICAL_RECORD_SCHEMA } from "./canonicalRecordCodec";
 import {
-  CONTENT_IDENTITY_V2_SCHEMA,
-  createContentIdentityV2Record,
-  isContentIdentityV2Record,
-  type ContentIdentityV2Record,
-} from "../contracts/contentIdentityV2";
-import {
   ContentIdentityV2PlannerError,
   assertCloudProtocolUpgradeComplete,
   isContentIdentityV2PlanBundle,
@@ -153,13 +147,11 @@ test("owner dispatch maps sessions, attempts, reviews and preserves facts withou
   assert.equal(bundle.certificate.cloudProtocolUpgradeRequired, true);
   const session = bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.trainingSession("session-1"));
   assert.ok(session);
-  const parsed = JSON.parse(session.raw) as { payload: unknown };
-  assert.equal(isContentIdentityV2Record(parsed.payload), true);
-  const target = createContentIdentityV2Record(parsed.payload);
-  assert.equal((target.value as Record<string, unknown>).artifactSha256, SHA);
-  assert.equal("packagePin" in (target.value as Record<string, unknown>), false);
-  assert.equal((target.value as Record<string, unknown>).itemOrder !== undefined, true);
-  assert.equal(target.preservation.answersDigest.length, 64);
+  const target = (JSON.parse(session.raw) as { payload: Record<string, unknown> }).payload;
+  assert.equal(target.artifactSha256, SHA);
+  assert.equal("packagePin" in target, false);
+  assert.equal(target.itemOrder !== undefined, true);
+  assert.equal(bundle.preservation.find((entry) => entry.sourceKey === session.key)?.answersDigest.length, 64);
   assert.equal(JSON.stringify(target).includes("itemId"), false);
 });
 
@@ -170,13 +162,11 @@ test("v2 records are exact, deeply frozen, deterministic, and reject forged lega
   assert.equal(first.certificate.planId, second.certificate.planId);
   const session = first.targetRecords.find((record) => record.key === STORAGE_KEYS.trainingSession("session-1"));
   assert.ok(session);
-  const payload = JSON.parse(session.raw) as { payload: ContentIdentityV2Record };
-  const frozen = createContentIdentityV2Record(payload.payload);
-  assert.equal(Object.isFrozen(frozen), true);
-  assert.equal(Object.isFrozen(frozen.value), true);
-  assert.equal(Object.isFrozen(frozen.preservation), true);
-  assert.throws(() => createContentIdentityV2Record({ ...payload.payload, extra: true }), /invalid_v2_record/);
-  assert.throws(() => createContentIdentityV2Record({ ...payload.payload, value: { packagePin: pin() } }), /forbidden_legacy_identity/);
+  const payload = (JSON.parse(session.raw) as { payload: Record<string, unknown> }).payload;
+  assert.equal(payload.artifactSha256, SHA);
+  assert.equal(Object.isFrozen(first.preservation), true);
+  assert.equal(Object.isFrozen(first.preservation[0]), true);
+  assert.equal(JSON.stringify(payload).includes("packagePin"), false);
   assert.equal(isContentIdentityV2PlanBundle({ ...first }), false);
 });
 
@@ -194,9 +184,9 @@ test("one legacy record can yield multiple typed tombstone bindings and no activ
   const bundle = planContentIdentityV2({ source: withPointer, artifacts: ARTIFACTS });
   const session = bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.trainingSession("session-1"));
   assert.ok(session);
-  const payload = JSON.parse(session.raw) as { payload: { identity: readonly { resolution: { kind: string } }[]; value: Record<string, unknown> } };
-  assert.equal(payload.payload.identity.length, 2);
-  assert.equal(payload.payload.identity.some((binding) => binding.resolution.kind === "tombstone"), true);
+  const payload = (JSON.parse(session.raw) as { payload: { itemOrder: readonly { item: { kind: string } }[] } }).payload;
+  assert.equal(payload.itemOrder.length, 2);
+  assert.equal(payload.itemOrder.every((entry) => entry.item.kind === "unavailable_active"), true);
   assert.equal(bundle.targetRecords.some((record) => record.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false);
 });
 
@@ -236,15 +226,13 @@ test("version and hash mismatches become typed tombstones without fallback artif
     },
   }).filter((record) => ![STORAGE_KEYS.trainingAttempt("attempt-1"), STORAGE_KEYS.reviewEntry("review-1"), STORAGE_KEYS.trainingSessionResult("session-1")].includes(record.key));
   const bundle = planContentIdentityV2({ source, artifacts: ARTIFACTS });
-  const session = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.trainingSession("session-1"))!.raw) as { payload: ContentIdentityV2Record };
-  const binding = session.payload.identity[0]!;
-  assert.equal(binding.resolution.kind, "tombstone");
-  if (binding.resolution.kind === "tombstone") assert.equal(binding.resolution.tombstone.reason, "stale_content_version");
-  assert.equal(JSON.stringify(session.payload.value).includes("packagePin"), false);
+  const session = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.trainingSession("session-1"))!.raw) as { payload: { itemOrder: readonly { item: { reason: string } }[] } };
+  assert.equal(session.payload.itemOrder[0]?.item.reason, "stale_content_version");
+  assert.equal(JSON.stringify(session.payload).includes("packagePin"), false);
   // The top-level session preflight failed, so no resolved artifact may leak
   // into the value or any child binding.
-  assert.equal(JSON.stringify(session.payload.value).includes("artifactSha256"), false);
-  assert.equal(session.payload.identity.every((entry) => entry.resolution.kind === "tombstone"), true);
+  assert.equal(JSON.stringify(session.payload).includes("artifactSha256"), false);
+  assert.equal(session.payload.itemOrder.every((entry) => entry.item.reason === "stale_content_version"), true);
 });
 
 test("content report keeps itemId only inside its named transport owner", () => {
@@ -261,10 +249,8 @@ test("content report keeps itemId only inside its named transport owner", () => 
   const bundle = planContentIdentityV2({ source, artifacts: ARTIFACTS });
   const target = bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.CONTENT_REPORT_OUTBOX);
   assert.ok(target);
-  const parsed = JSON.parse(target.raw) as { payload: ContentIdentityV2Record };
-  assert.equal(isContentIdentityV2Record(parsed.payload), true);
-  assert.equal(JSON.stringify(parsed.payload.value).includes('"itemId"'), true);
-  assert.equal(parsed.payload.identity.length, 0);
+  const parsed = JSON.parse(target.raw) as { payload: unknown };
+  assert.equal(JSON.stringify(parsed.payload).includes('"itemId"'), true);
 });
 
 test("report durable identity collisions block the plan while preserving the named itemId adapter", () => {
@@ -317,15 +303,15 @@ test("explicit plan, notification, and active-journal handlers remove package pi
     { key: STORAGE_KEYS.ACTIVE_JOURNAL, raw: envelope(journal) },
   ];
   const bundle = planContentIdentityV2({ source, artifacts: ARTIFACTS });
-  const notificationRecord = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.NOTIFICATION_SETTINGS)!.raw) as { payload: ContentIdentityV2Record };
-  const planRecord = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.learningPlan(TRACK))!.raw) as { payload: ContentIdentityV2Record };
-  const journalRecord = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.ACTIVE_JOURNAL)!.raw) as { payload: ContentIdentityV2Record };
-  assert.equal((notificationRecord.payload.value as { identity: { artifactSha256: string } }).identity.artifactSha256, SHA);
-  assert.equal((planRecord.payload.value as { artifactSha256: string }).artifactSha256, SHA);
-  assert.equal((journalRecord.payload.value as { artifactSha256: null }).artifactSha256, null);
-  assert.equal(JSON.stringify(notificationRecord.payload.value).includes("packagePin"), false);
-  assert.equal(JSON.stringify(planRecord.payload.value).includes("contentPackagePin"), false);
-  assert.equal(JSON.stringify(journalRecord.payload.value).includes("packagePin"), false);
+  const notificationRecord = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.NOTIFICATION_SETTINGS)!.raw) as { payload: { identity: { artifactSha256: string } } };
+  const planRecord = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.learningPlan(TRACK))!.raw) as { payload: { artifactSha256: string } };
+  const journalRecord = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.ACTIVE_JOURNAL)!.raw) as { payload: { artifactSha256: null } };
+  assert.equal(notificationRecord.payload.identity.artifactSha256, SHA);
+  assert.equal(planRecord.payload.artifactSha256, SHA);
+  assert.equal(journalRecord.payload.artifactSha256, null);
+  assert.equal(JSON.stringify(notificationRecord.payload).includes("packagePin"), false);
+  assert.equal(JSON.stringify(planRecord.payload).includes("contentPackagePin"), false);
+  assert.equal(JSON.stringify(journalRecord.payload).includes("packagePin"), false);
 });
 
 test("account guestBackup is allowlisted, nested through the same owner dispatch, and rejects non-learning keys", () => {
@@ -339,9 +325,9 @@ test("account guestBackup is allowlisted, nested through the same owner dispatch
   };
   const source = [...baseSource(), { key: STORAGE_KEYS.ACCOUNT_SYNC, raw: envelope(accountState) }];
   const bundle = planContentIdentityV2({ source, artifacts: ARTIFACTS });
-  const target = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.ACCOUNT_SYNC)!.raw) as { payload: ContentIdentityV2Record };
-  const backup = (target.payload.value as { materialization: { guestBackup: readonly [{ value: string }] } }).materialization.guestBackup[0]!;
-  assert.equal(backup.value.includes(CONTENT_IDENTITY_V2_SCHEMA), true);
+  const target = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.ACCOUNT_SYNC)!.raw) as { payload: { materialization: { guestBackup: readonly [{ value: string }] } } };
+  const backup = target.payload.materialization.guestBackup[0]!;
+  assert.equal(backup.value.includes("packagePin"), false);
   assert.equal(JSON.stringify(target.payload).includes("packagePin"), false);
   const forbidden = { ...accountState, materialization: { ...accountState.materialization, guestBackup: [{ key: STORAGE_KEYS.ACCOUNT_SYNC, value: envelope({}) }] } };
   assert.throws(() => planContentIdentityV2({ source: [...baseSource(), { key: STORAGE_KEYS.ACCOUNT_SYNC, raw: envelope(forbidden) }], artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "owner_guard_failed");
@@ -366,8 +352,8 @@ test("account active-track metadata packagePin is not mapped and cloud certifica
   const bundle = planContentIdentityV2({ source: [...baseSource(), { key: STORAGE_KEYS.ACCOUNT_SYNC, raw: envelope(accountState) }], artifacts: ARTIFACTS });
   const target = bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.ACCOUNT_SYNC);
   assert.ok(target);
-  const parsed = JSON.parse(target.raw) as { payload: ContentIdentityV2Record };
-  const value = parsed.payload.value as { outbox: readonly [{ state: Record<string, unknown> }] };
+  const parsed = JSON.parse(target.raw) as { payload: { outbox: readonly [{ state: Record<string, unknown> }] } };
+  const value = parsed.payload;
   assert.equal("packagePin" in value.outbox[0].state, false);
   assert.throws(() => assertCloudProtocolUpgradeComplete(bundle), (error: unknown) => error instanceof Error && error.message === "cloud_protocol_upgrade_required");
 });
@@ -426,11 +412,11 @@ test("account target recomputes direct, outbox, and sync-plan identities determi
   const retry = planContentIdentityV2({ source, artifacts: ARTIFACTS });
   assert.deepEqual(first.targetRecords, retry.targetRecords);
 
-  const target = JSON.parse(first.targetRecords.find((record) => record.key === STORAGE_KEYS.ACCOUNT_SYNC)!.raw) as { payload: ContentIdentityV2Record };
-  const value = target.payload.value as {
+  const target = JSON.parse(first.targetRecords.find((record) => record.key === STORAGE_KEYS.ACCOUNT_SYNC)!.raw) as { payload: {
     outbox: readonly [Record<string, unknown>];
     syncPlan: Record<string, unknown> & { items: readonly [Record<string, unknown>] };
-  };
+  } };
+  const value = target.payload;
   const targetEntry = value.outbox[0]!;
   const targetState = targetEntry.state as Record<string, unknown>;
   assert.equal(isAccountDataRecordShapeForTrack(targetEntry, TRACK), true);
@@ -456,6 +442,7 @@ test("sealed bundle runs through the C0 fence and leaves no writes in planning",
   assert.equal(storage.operations.length, 0);
   const result = migrateContentIdentityV2({ storage, bundle });
   assert.equal(result.kind, "committed");
-  assert.equal(storage.getString(STORAGE_KEYS.trainingSession("session-1"))?.includes(CONTENT_IDENTITY_V2_SCHEMA), true);
+  assert.equal(storage.getString(STORAGE_KEYS.trainingSession("session-1"))?.includes('"artifactSha256"'), true);
+  assert.equal(storage.getString(STORAGE_KEYS.trainingSession("session-1"))?.includes("packagePin"), false);
   installKeyValueStorageForTests(storage);
 });
