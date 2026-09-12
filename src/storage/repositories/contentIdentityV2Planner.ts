@@ -24,7 +24,6 @@ import {
   CONTENT_IDENTITY_V2_MIGRATION_VERSION,
   CONTENT_IDENTITY_V2_PROTOCOL_VERSION,
   CONTENT_IDENTITY_V2_SCHEMA,
-  ContentIdentityV2Error,
   createContentIdentityV2Certificate,
   createContentIdentityV2Record,
   contentIdentityV2Digest,
@@ -78,8 +77,7 @@ export type ContentIdentityV2PlannerErrorCode =
   | "unmapped_package_identity"
   | "relationship_invalid"
   | "invalid_artifact_set"
-  | "invalid_source"
-  | "cloud_protocol_upgrade_required";
+  | "invalid_source";
 
 export class ContentIdentityV2PlannerError extends Error {
   readonly code: ContentIdentityV2PlannerErrorCode;
@@ -98,7 +96,6 @@ export type ContentIdentityV2PlanBundle = Readonly<{
   certificate: ContentIdentityV2Certificate;
   targetRecords: readonly ContentIdentityMigrationRawRecord[];
   preservation: readonly ContentIdentityV2Preservation[];
-  cloudProtocolUpgradeRequired: true;
 }>;
 
 type JsonRecord = Record<string, unknown>;
@@ -1244,9 +1241,8 @@ export function planContentIdentityV2(input: Readonly<{
     sourceManifestDigest: plan.sourceManifest.aggregateDigest,
     targetManifestDigest: plan.targetManifest.aggregateDigest,
     preservationDigest,
-    cloudProtocolUpgradeRequired: true,
   });
-  const bundle = freezeBundle({ plan, verifier, activation: createContentIdentityMigrationActivation(CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION), certificate, targetRecords: targets.records, preservation: targets.preservation, cloudProtocolUpgradeRequired: true });
+  const bundle = freezeBundle({ plan, verifier, activation: createContentIdentityMigrationActivation(CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION), certificate, targetRecords: targets.records, preservation: targets.preservation });
   sealedBundles.add(bundle);
   return bundle;
 }
@@ -1256,7 +1252,7 @@ export function migrateContentIdentityV2(input: Readonly<{
   storage: Parameters<typeof migrateContentIdentityStorage>[0]["storage"];
   bundle: ContentIdentityV2PlanBundle;
 }>): ReturnType<typeof migrateContentIdentityStorage> {
-  if (!isContentIdentityV2PlanBundle(input.bundle) || input.bundle.cloudProtocolUpgradeRequired !== true || input.bundle.certificate.cloudProtocolUpgradeRequired !== true) {
+  if (!isContentIdentityV2PlanBundle(input.bundle)) {
     throw new ContentIdentityV2PlannerError("invalid_source");
   }
   return migrateContentIdentityStorage({ storage: input.storage, plan: input.bundle.plan, verifier: input.bundle.verifier, activation: input.bundle.activation });
@@ -1264,10 +1260,4 @@ export function migrateContentIdentityV2(input: Readonly<{
 
 export function isContentIdentityV2PlanBundle(value: unknown): value is ContentIdentityV2PlanBundle {
   return typeof value === "object" && value !== null && sealedBundles.has(value);
-}
-
-/** Explicit B2 gate: C1a can never authorize cloud rollout. */
-export function assertCloudProtocolUpgradeComplete(bundle: ContentIdentityV2PlanBundle): never {
-  if (!sealedBundles.has(bundle)) throw new ContentIdentityV2Error("invalid_v2_record");
-  throw new ContentIdentityV2Error("cloud_protocol_upgrade_required");
 }

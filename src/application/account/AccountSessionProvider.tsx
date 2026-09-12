@@ -462,7 +462,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         authEmulatorOrigin,
         config: firebaseConfiguration.value,
       });
-      const client = createPatternlyApiClient({ allowLocalHttpForSimulator: smokeRuntime, apiOrigin, getIdToken: auth.getIdToken });
+      // This provider is mounted only after ContentPreparationGate has durably
+      // committed the content-identity migration, so every account operation
+      // must use the schema-bound v4 protocol without a v3 fallback.
+      const client = createPatternlyApiClient({ accountDataProtocolMode: "v4", allowLocalHttpForSimulator: smokeRuntime, apiOrigin, getIdToken: auth.getIdToken });
       setAuthClient(auth);
       setApiClient(client);
       initializationTimeout = setTimeout(() => {

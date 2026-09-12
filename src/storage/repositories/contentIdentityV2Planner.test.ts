@@ -7,7 +7,6 @@ import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { CANONICAL_RECORD_SCHEMA } from "./canonicalRecordCodec";
 import {
   ContentIdentityV2PlannerError,
-  assertCloudProtocolUpgradeComplete,
   isContentIdentityV2PlanBundle,
   migrateContentIdentityV2,
   planContentIdentityV2,
@@ -142,9 +141,7 @@ function baseSource(overrides: Readonly<Record<string, unknown>> = {}): readonly
 
 test("owner dispatch maps sessions, attempts, reviews and preserves facts without legacy identity", () => {
   const bundle = planContentIdentityV2({ source: baseSource(), artifacts: ARTIFACTS });
-  assert.equal(bundle.cloudProtocolUpgradeRequired, true);
   assert.equal(isContentIdentityV2PlanBundle(bundle), true);
-  assert.equal(bundle.certificate.cloudProtocolUpgradeRequired, true);
   const session = bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.trainingSession("session-1"));
   assert.ok(session);
   const target = (JSON.parse(session.raw) as { payload: Record<string, unknown> }).payload;
@@ -337,7 +334,7 @@ test("account guestBackup is allowlisted, nested through the same owner dispatch
   assert.throws(() => planContentIdentityV2({ source: [...baseSource(), { key: STORAGE_KEYS.ACCOUNT_SYNC, raw: envelope(forbidden) }], artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "owner_guard_failed");
 });
 
-test("account active-track metadata packagePin is not mapped and cloud certificate blocks rollout", () => {
+test("account active-track metadata packagePin is removed after the versioned cloud protocol upgrade", () => {
   const accountRecord = {
     fingerprint: "",
     recordId: "current",
@@ -359,7 +356,6 @@ test("account active-track metadata packagePin is not mapped and cloud certifica
   const parsed = JSON.parse(target.raw) as { payload: { outbox: readonly [{ state: Record<string, unknown> }] } };
   const value = parsed.payload;
   assert.equal("packagePin" in value.outbox[0].state, false);
-  assert.throws(() => assertCloudProtocolUpgradeComplete(bundle), (error: unknown) => error instanceof Error && error.message === "cloud_protocol_upgrade_required");
 });
 
 test("account target recomputes direct, outbox, and sync-plan identities deterministically", () => {

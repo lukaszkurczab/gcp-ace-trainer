@@ -510,6 +510,7 @@ test("startup waits for persisted auth resolution before choosing the entry scre
   const authClient = readFileSync("src/infrastructure/firebase/firebaseAuthClient.ts", "utf8");
   const rootNavigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
   const app = readFileSync("App.tsx", "utf8");
+  const accountProvider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
 
   assert.match(authClient, /onUserChanged: \(listener\) => onAuthStateChanged\(auth, \(user\) => \{\s*current = user;\s*listener\(user \? snapshot\(user\) : null\);/);
   assert.doesNotMatch(authClient, /onUserChanged:[^\n]*listener\(current \? snapshot\(current\) : null\)/);
@@ -522,6 +523,7 @@ test("startup waits for persisted auth resolution before choosing the entry scre
   assert.match(rootNavigator, /testID="account-session-restore-loading"/);
   assert.match(app, /<AppPreferencesProvider>[\s\S]*?<ContentPreparationGate>[\s\S]*?<PatternlyAccountProvider>[\s\S]*?<AppNavigation/);
   assert.doesNotMatch(app, /<AppNavigation>[\s\S]*?<ContentPreparationGate>/);
+  assert.match(accountProvider, /createPatternlyApiClient\(\{ accountDataProtocolMode: "v4",/);
 });
 
 test("account finalization coordinator shares one in-flight and completed result per generation", async () => {

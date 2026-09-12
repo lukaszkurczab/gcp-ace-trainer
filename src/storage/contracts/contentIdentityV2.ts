@@ -60,7 +60,6 @@ export type ContentIdentityV2Certificate = Readonly<{
   sourceManifestDigest: string;
   targetManifestDigest: string;
   preservationDigest: string;
-  cloudProtocolUpgradeRequired: true;
 }>;
 
 export class ContentIdentityV2Error extends Error {
@@ -68,8 +67,7 @@ export class ContentIdentityV2Error extends Error {
     | "invalid_v2_record"
     | "invalid_v2_resolution"
     | "invalid_preservation"
-    | "forbidden_legacy_identity"
-    | "cloud_protocol_upgrade_required";
+    | "forbidden_legacy_identity";
 
   constructor(code: ContentIdentityV2Error["code"], message: string = code) {
     super(message);
@@ -86,7 +84,7 @@ const PRESERVATION_KEYS = [
 ] as const;
 const RECORD_KEYS = ["identity", "key", "owner", "preservation", "schemaIdentity", "sourceRevision", "value"] as const;
 const CERTIFICATE_KEYS = [
-  "cloudProtocolUpgradeRequired", "migrationVersion", "planId", "preservationDigest",
+  "migrationVersion", "planId", "preservationDigest",
   "protocolVersion", "schemaIdentity", "sourceManifestDigest", "targetManifestDigest",
 ] as const;
 
@@ -178,7 +176,7 @@ export function createContentIdentityV2Certificate(value: unknown): ContentIdent
   if (!isPlainRecord(value) || !hasExactKeys(value, CERTIFICATE_KEYS) || value.schemaIdentity !== CONTENT_IDENTITY_V2_SCHEMA ||
     value.protocolVersion !== CONTENT_IDENTITY_V2_PROTOCOL_VERSION || value.migrationVersion !== CONTENT_IDENTITY_V2_MIGRATION_VERSION ||
     !DIGEST.test(String(value.planId)) || !DIGEST.test(String(value.sourceManifestDigest)) || !DIGEST.test(String(value.targetManifestDigest)) ||
-    !DIGEST.test(String(value.preservationDigest)) || value.cloudProtocolUpgradeRequired !== true) {
+    !DIGEST.test(String(value.preservationDigest))) {
     throw new ContentIdentityV2Error("invalid_v2_record", "Invalid content identity v2 certificate.");
   }
   return Object.freeze({
@@ -189,7 +187,6 @@ export function createContentIdentityV2Certificate(value: unknown): ContentIdent
     sourceManifestDigest: String(value.sourceManifestDigest),
     targetManifestDigest: String(value.targetManifestDigest),
     preservationDigest: String(value.preservationDigest),
-    cloudProtocolUpgradeRequired: true,
   });
 }
 
