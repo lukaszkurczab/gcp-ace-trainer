@@ -87,10 +87,12 @@ test("validator fails closed on exact keys, identities, membership and scoring c
   assert.throws(() => validateCanonicalArtifact(duplicate, inputs[0]!.entry, inputs[0]!.entry.trackId));
 });
 
-test("catalog verifies bytes before exposing frozen lookups and one-way active package pin", async () => {
+test("catalog verifies bytes before exposing frozen lookups and exact artifact metadata", async () => {
   const { entry, artifact } = inputs[0]!; const catalog = await createCanonicalQuestionCatalog(clone(artifact), entry, entry.trackId, sha256Utf8); const first = catalog.questions[0]!;
   assert.equal(catalog.getQuestionById(first.questionId), first); assert.ok(catalog.getQuestionsByNodeId(first.nodeId).includes(first)); assert.ok(catalog.getQuestionsByMentalUnitId(first.mentalUnitId).includes(first)); assert.equal(Object.isFrozen(catalog.questions), true);
-  assert.deepEqual(catalog.packagePin, { packageIdentity: entry.sha256, packageVersion: entry.contentVersion, contentReleaseId: "canonical-content-v1" });
+  assert.deepEqual(catalog.artifactMetadata, { artifactSha256: entry.sha256, contentVersion: entry.contentVersion, contentReleaseId: "canonical-content-v1" });
+  assert.equal(Object.isFrozen(catalog.artifactMetadata), true);
+  assert.equal("packagePin" in catalog, false);
   assert.equal("getByPackagePin" in catalog, false); assert.equal("primaryMentalUnitId" in first, false); assert.equal("learningBlockId" in first, false);
   const mutated = clone(artifact) as { questions: Array<{ prompt: string }> }; mutated.questions[0]!.prompt += "changed";
   await assert.rejects(() => createCanonicalQuestionCatalog(mutated, entry, entry.trackId, sha256Utf8), /SHA-256/);

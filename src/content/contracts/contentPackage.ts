@@ -1,6 +1,3 @@
-/** Immutable identity persisted by sessions and used for exact package lookup. */
-export type { ContentPackagePin } from "../../domain/learning/contentPackagePin";
-import type { ContentPackagePin } from "../../domain/learning/contentPackagePin";
 import type { PackageCompletionRuleV1 } from "../../domain/learning/packageCompletionRule";
 
 export type ContentPackageErrorCode =
@@ -18,6 +15,13 @@ export type ContentPackageErrorCode =
   | "package_minimum_app_version";
 
 export type ContentPackageFamilyId = "coding_interview" | "certification" | "design_interview";
+
+/** Exact content identity owned by the verified artifact boundary. */
+export type ContentArtifactMetadata = Readonly<{
+  artifactSha256: string;
+  contentVersion: string;
+  contentReleaseId: string;
+}>;
 
 export type ContentPackageRuntime = Readonly<{
   sha256Utf8(value: string): Promise<string>;
@@ -72,7 +76,7 @@ export type VerifiedPackageModeConfiguration = Readonly<{
 }>;
 
 export type VerifiedContentPackageBase = Readonly<{
-  packagePin: ContentPackagePin;
+  artifactMetadata: ContentArtifactMetadata;
   trackId: string;
   freeNodeId: string;
   contentVersion: string;

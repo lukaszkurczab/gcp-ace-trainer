@@ -1,6 +1,5 @@
 export * from "./attemptResult";
 export * from "./contentItemRef";
-export * from "./contentPackagePin";
 export * from "./packageCompletionRule";
 export * from "./learningPlanProposalGenerator";
 export * from "./learningPlan";

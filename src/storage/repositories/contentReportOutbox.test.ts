@@ -7,7 +7,7 @@ import { configurePatternlyAppCheckTokenProvider } from "../../infrastructure/cl
 import { installKeyValueStorageForTests, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { getContentReportOutbox, purgeExpiredContentReportOutboxEntries, updateContentReportOutboxStatus, upsertContentReportOutboxEntry } from "./contentReportOutboxRepository";
 import { STORAGE_KEYS } from "../keys";
-import { TEST_CONTENT_PACKAGE_PIN } from "../../testing/contentPackagePinFixture";
+import { TEST_CONTENT_ARTIFACT_METADATA } from "../../testing/contentArtifactMetadataFixture";
 
 const baseInput = {
   trackId: "coding-interview-dsa-problem-solving" as const,
@@ -16,7 +16,7 @@ const baseInput = {
   reason: "unclear_explanation" as const,
   description: "The explanation does not identify why the invariant is safe.",
   context: {
-    releasePackageId: TEST_CONTENT_PACKAGE_PIN.contentReleaseId,
+    releasePackageId: TEST_CONTENT_ARTIFACT_METADATA.contentReleaseId,
     trackNode: "complexity_and_constraints",
     modeRoute: "practice_feedback_details" as const,
     locale: "en" as const,

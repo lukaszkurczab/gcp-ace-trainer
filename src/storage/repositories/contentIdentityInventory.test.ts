@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
-import { CONTENT_REPORT_REASONS, createTrainingSession, createTrainingSessionResult, type ContentPackagePin } from "../../domain";
+import { CONTENT_REPORT_REASONS, createTrainingSession, createTrainingSessionResult } from "../../domain";
 import { createMutationPlanFingerprint } from "./mutationJournalRepository";
 import { canonicalJsonV1 } from "../../infrastructure/identity/canonicalSerialization";
 import { accountDataRecordFingerprint, accountDataRecordKey } from "./accountDataRepository";
@@ -20,6 +20,8 @@ const unknownArtifactSha256 = "b".repeat(64);
 const contentVersion = "test-v1";
 const artifact: ActiveContentArtifact = { trackId, contentVersion, artifactSha256, questionIds: ["question-1"] };
 
+type LegacyPackageIdentity = Readonly<{ packageIdentity: string; packageVersion: string; contentReleaseId: string }>;
+
 let storage: MemoryKeyValueStorage;
 
 beforeEach(() => {
@@ -35,7 +37,7 @@ function seed(key: string, payload: unknown, revision = 1): void {
   storage.setString(key, envelope(payload, revision));
 }
 
-function pin(overrides: Partial<ContentPackagePin> = {}): ContentPackagePin {
+function pin(overrides: Partial<LegacyPackageIdentity> = {}): LegacyPackageIdentity {
   return {
     packageIdentity: overrides.packageIdentity ?? artifactSha256,
     packageVersion: overrides.packageVersion ?? contentVersion,
@@ -51,7 +53,7 @@ function mappedIdentityFor(identityTrackId: string, identitySha: string, identit
   return { trackId: identityTrackId, itemId: "question-1", contentVersion: identityVersion, packagePin: pin({ packageIdentity: identitySha, packageVersion: identityVersion }) };
 }
 
-function validJournal(overrides: Readonly<{ packagePin?: ContentPackagePin; trackId?: string }> = {}): Record<string, unknown> {
+function validJournal(overrides: Readonly<{ packagePin?: LegacyPackageIdentity; trackId?: string }> = {}): Record<string, unknown> {
   const journalTrackId = overrides.trackId ?? trackId;
   const packagePin = overrides.packagePin ?? pin();
   const review = {

@@ -103,7 +103,7 @@ function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly
     trackId: catalog.trackId,
     contentVersion: catalog.contentVersion,
     artifactSha256: catalog.artifactSha256,
-    contentReleaseId: catalog.packagePin.contentReleaseId,
+    contentReleaseId: catalog.artifactMetadata.contentReleaseId,
     questions: catalog.questions,
     modes,
     getQuestion: catalog.getQuestionById,
