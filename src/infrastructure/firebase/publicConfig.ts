@@ -1,6 +1,6 @@
 import type { ConfiguredPublicEnvironment, PublicEnvironment } from "../clients/publicEnvironment";
 import { developmentLoopbackHost } from "../developmentEndpoints";
-import { isPatternlySmokeRuntime } from "../runtime/runtimeMode";
+import { isPatternlySmokeRuntime, parsePatternlyRuntimeMode } from "../runtime/runtimeMode";
 
 export type PublicLegalLinks = Readonly<Pick<ConfiguredPublicEnvironment, "privacyUrl" | "termsUrl" | "supportUrl">>;
 
@@ -89,10 +89,13 @@ export function readPublicEnvironmentFromRuntime(): PublicEnvironment {
  * Never hand it to the normal account composition in an installed build:
  * `EXPO_PUBLIC_*` values are compiled into the bundle.
  */
-export function readDevelopmentFirebaseAuthEmulatorOrigin(): string | undefined {
-  if (typeof __DEV__ === "undefined" || !__DEV__ || !isPatternlySmokeRuntime()) return undefined;
-  if (process.env.EXPO_PUBLIC_PATTERNLY_BACKEND_E2E !== "true") return undefined;
-  const value = process.env.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN;
+export function parseDevelopmentFirebaseAuthEmulatorOrigin(
+  environment: NodeJS.ProcessEnv = process.env,
+  development: boolean = typeof __DEV__ !== "undefined" && __DEV__,
+): string | undefined {
+  if (!development || parsePatternlyRuntimeMode(environment.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE) !== "smoke") return undefined;
+  if (environment.EXPO_PUBLIC_PATTERNLY_BACKEND_E2E !== "true") return undefined;
+  const value = environment.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN;
   if (!value) return undefined;
   try {
     const origin = new URL(value);
@@ -100,6 +103,10 @@ export function readDevelopmentFirebaseAuthEmulatorOrigin(): string | undefined 
   } catch {
     return undefined;
   }
+}
+
+export function readDevelopmentFirebaseAuthEmulatorOrigin(): string | undefined {
+  return parseDevelopmentFirebaseAuthEmulatorOrigin();
 }
 
 export function readPublicLegalLinksFromRuntime(): PublicLegalLinksResult {

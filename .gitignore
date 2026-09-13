@@ -5,6 +5,8 @@ web-build/
 .env
 .env.*
 !.env.example
+!.env.smoke.example
+!.env.sandbox.example
 .maestro
 !.maestro/
 .maestro/*

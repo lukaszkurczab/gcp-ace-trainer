@@ -23,6 +23,10 @@ const smokeEnvironment = {
   GOOGLE_SERVICE_INFO_PLIST: "./GoogleService-Info.plist",
   GOOGLE_SERVICES_JSON: "./google-services.json",
   PATTERNLY_RUNTIME_MODE: "smoke",
+  EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "smoke",
+  EXPO_PUBLIC_PATTERNLY_BACKEND_E2E: "true",
+  EXPO_PUBLIC_PATTERNLY_API_ORIGIN: "http://127.0.0.1:8080",
+  EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN: "http://127.0.0.1:9099",
 };
 
 const APP_ID = "com.lkurczab.patternly";

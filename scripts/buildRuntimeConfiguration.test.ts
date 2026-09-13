@@ -12,9 +12,17 @@ const base = {
   GOOGLE_SERVICE_INFO_PLIST: "/private/GoogleService-Info.plist", GOOGLE_SERVICES_JSON: "/private/google-services.json",
 };
 const publicEnvironment = (environment: "sandbox" | "production") => JSON.stringify({ apiOrigin: `https://api.${environment}.patternly.test`, androidAppLinkHost: `${environment}.patternly.test`, authActionOrigin: `https://${environment}.patternly.test`, authRedirectDomain: `${environment}.patternly.test`, environment, iosAssociatedDomain: `applinks:${environment}.patternly.test`, privacyUrl: `https://${environment}.patternly.test/privacy`, publicWebOrigin: `https://${environment}.patternly.test`, supportUrl: `https://${environment}.patternly.test/support`, termsUrl: `https://${environment}.patternly.test/terms`, transactionalSenderDomain: `${environment}.patternly.test` });
+const smoke = {
+  ...base,
+  PATTERNLY_RUNTIME_MODE: "smoke",
+  EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "smoke",
+  EXPO_PUBLIC_PATTERNLY_BACKEND_E2E: "true",
+  EXPO_PUBLIC_PATTERNLY_API_ORIGIN: "http://127.0.0.1:8080",
+  EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN: "http://127.0.0.1:9099",
+};
 
 test("runtime mode is explicit and persists in public Expo config", () => {
-  const config = createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" });
+  const config = createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" });
   assert.equal(config.expo.extra.patternlyRuntime, "sandbox");
   assert.ok(!config.expo.plugins.includes("./plugins/withAndroidSandboxVariant"));
   assert.ok(!config.expo.plugins.includes("./plugins/withAndroidReleaseSigningBoundary"));
@@ -22,26 +30,28 @@ test("runtime mode is explicit and persists in public Expo config", () => {
 });
 
 test("sandbox and release reject mode/configuration mismatches", () => {
-  assert.throws(() => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production") }), /must equal sandbox/);
-  assert.throws(() => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug" }), /playIntegrity/);
+  assert.throws(() => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production") }), /must equal sandbox/);
+  assert.throws(() => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug" }), /playIntegrity/);
 });
 
-test("smoke is the explicit local default and permits debug App Check", () => {
-  const config = createExpoConfig({ ...base, EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug" });
+test("smoke is explicit, locally bound, and permits debug App Check", () => {
+  const config = createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug" });
   assert.equal(config.expo.extra.patternlyRuntime, "smoke");
-  assert.equal(createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "smoke", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox") }).expo.extra.patternlyRuntime, "smoke");
-  assert.equal(createExpoConfig({}).expo.extra.patternlyRuntime, "smoke");
+  assert.equal(createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox") }).expo.extra.patternlyRuntime, "smoke");
+  assert.throws(() => createExpoConfig({}), /requires PATTERNLY_RUNTIME_MODE/);
+  assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox" }), /must equal/);
+  assert.throws(() => createExpoConfig({ ...smoke, EXPO_PUBLIC_PATTERNLY_API_ORIGIN: "https:\/\/sandbox.patternly.test" }), /127\.0\.0\.1/);
 });
 
 test("remote artifacts require their public Firebase configuration before prebuild", () => {
   assert.throws(
-    () => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY: "" }),
+    () => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY: "" }),
     /requires EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY/,
   );
 });
 
 test("only iOS remote artifacts require the public RevenueCat Apple SDK key before prebuild", () => {
-  const environment = { ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "", EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" };
+  const environment = { ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "", EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" };
   assert.equal(createExpoConfig({ ...environment, EAS_BUILD_PLATFORM: "android" }).expo.extra.patternlyRuntime, "sandbox");
   assert.throws(
     () => createExpoConfig({ ...environment, EAS_BUILD_PLATFORM: "ios" }),
@@ -55,18 +65,18 @@ test("only iOS remote artifacts require the public RevenueCat Apple SDK key befo
 
 test("remote artifacts require production App Check providers before prebuild", () => {
   assert.throws(
-    () => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox") }),
+    () => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox") }),
     /sandbox builds require EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER=playIntegrity/,
   );
 });
 
 test("sandbox uses the one tracked native Firebase registration while release requires production file variables", () => {
   const { GOOGLE_SERVICE_INFO_PLIST: _ios, GOOGLE_SERVICES_JSON: _android, ...withoutRemoteFiles } = base;
-  const sandbox = createExpoConfig({ ...withoutRemoteFiles, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" });
+  const sandbox = createExpoConfig({ ...withoutRemoteFiles, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" });
   assert.equal(sandbox.expo.android.googleServicesFile, "./google-services.json");
   assert.equal(sandbox.expo.ios.googleServicesFile, "./GoogleService-Info.plist");
   assert.throws(
-    () => createExpoConfig({ ...withoutRemoteFiles, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" }),
+    () => createExpoConfig({ ...withoutRemoteFiles, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" }),
     /requires GOOGLE_SERVICES_JSON/,
   );
 });

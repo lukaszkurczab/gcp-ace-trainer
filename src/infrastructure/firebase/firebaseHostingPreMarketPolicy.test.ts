@@ -94,11 +94,16 @@ const evaluatePreMarketHostingPolicy = ({
     errors.push("Pre-market Firebase configuration must not map a Hosting deploy target.");
   }
 
-  if (packageScripts.start !== "expo start --localhost") {
-    errors.push("Canonical npm start must be exactly expo start --localhost.");
+  const profileLauncher = "node scripts/runLocalProfile.mjs";
+  if (packageScripts.start !== profileLauncher) {
+    errors.push("Canonical npm start must require the explicit local-profile launcher.");
   }
-  if (packageScripts.web !== "expo start --web --localhost") {
-    errors.push("Canonical npm run web must be exactly expo start --web --localhost.");
+  if (packageScripts.web !== profileLauncher) {
+    errors.push("Canonical npm run web must require the explicit local-profile launcher.");
+  }
+  const launcherSource = repositoryScriptSources["scripts/runLocalProfile.mjs"];
+  if (typeof launcherSource !== "string" || !/start:\s*\["start",\s*"--localhost"\]/u.test(launcherSource) || !/web:\s*\["start",\s*"--web",\s*"--localhost"\]/u.test(launcherSource)) {
+    errors.push("Local-profile launcher must bind both start and web Expo actions to --localhost.");
   }
 
   for (const [name, source] of Object.entries({ ...packageScripts, ...repositoryScriptSources })) {
@@ -154,11 +159,13 @@ test("keeps pre-market Firebase Hosting unpublished and loopback-only", () => {
     },
     firebaseRc: { projects: { sandbox: "patternly-app-sandbox", production: "patternly-app-production" } },
     packageScripts: {
-      start: "expo start --localhost",
-      web: "expo start --web --localhost",
+      start: "node scripts/runLocalProfile.mjs",
+      web: "node scripts/runLocalProfile.mjs",
       "hosting:local": "firebase emulators:start --only hosting",
     },
-    repositoryScriptSources: {},
+    repositoryScriptSources: {
+      "scripts/runLocalProfile.mjs": "const ACTIONS = { start: [\"start\", \"--localhost\"], web: [\"start\", \"--web\", \"--localhost\"] };",
+    },
   };
   assert.deepEqual(evaluatePreMarketHostingPolicy(localArtifact), []);
 
@@ -195,6 +202,7 @@ test("keeps pre-market Firebase Hosting unpublished and loopback-only", () => {
   assert.deepEqual(evaluatePreMarketHostingPolicy({
     ...localArtifact,
     repositoryScriptSources: {
+      ...localArtifact.repositoryScriptSources,
       ".github/workflows/hosting.yml": "uses: FirebaseExtended/action-hosting-deploy@v0",
     },
   }), [
@@ -234,7 +242,7 @@ test("keeps pre-market Firebase Hosting unpublished and loopback-only", () => {
     const path = `.github/workflows/${name}.yml`;
     assert.deepEqual(evaluatePreMarketHostingPolicy({
       ...localArtifact,
-      repositoryScriptSources: { [path]: action },
+      repositoryScriptSources: { ...localArtifact.repositoryScriptSources, [path]: action },
     }), [
       `Pre-market repository must not expose an alternative public web host or tunnel: ${path}.`,
     ]);
@@ -243,6 +251,7 @@ test("keeps pre-market Firebase Hosting unpublished and loopback-only", () => {
   assert.deepEqual(evaluatePreMarketHostingPolicy({
     ...localArtifact,
     repositoryScriptSources: {
+      ...localArtifact.repositoryScriptSources,
       ".github/workflows/netlify-command.yml": "steps:\n  - run: netlify deploy --prod",
     },
   }), [
@@ -266,8 +275,8 @@ test("keeps pre-market Firebase Hosting unpublished and loopback-only", () => {
     ["web", "expo start --web --tunnel"],
   ] as const) {
     const canonicalError = scriptName === "start"
-      ? "Canonical npm start must be exactly expo start --localhost."
-      : "Canonical npm run web must be exactly expo start --web --localhost.";
+      ? "Canonical npm start must require the explicit local-profile launcher."
+      : "Canonical npm run web must require the explicit local-profile launcher.";
     assert.deepEqual(evaluatePreMarketHostingPolicy({
       ...localArtifact,
       packageScripts: { ...localArtifact.packageScripts, [scriptName]: command },
@@ -279,7 +288,7 @@ test("keeps pre-market Firebase Hosting unpublished and loopback-only", () => {
 
   assert.deepEqual(evaluatePreMarketHostingPolicy({
     ...localArtifact,
-    repositoryScriptSources: { "scripts/unsafe-web.mjs": "expo start --lan" },
+    repositoryScriptSources: { ...localArtifact.repositoryScriptSources, "scripts/unsafe-web.mjs": "expo start --lan" },
   }), [
     "Pre-market executable must bind every Expo start command only with --localhost: scripts/unsafe-web.mjs.",
   ]);

@@ -1,9 +1,13 @@
 export type PatternlyRuntimeMode = "sandbox" | "smoke" | "release";
 
-export function readPatternlyRuntimeMode(): PatternlyRuntimeMode | undefined {
-  const mode = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+export function parsePatternlyRuntimeMode(mode: unknown): PatternlyRuntimeMode | undefined {
   if (mode === "sandbox" || mode === "smoke" || mode === "release") return mode;
-  return typeof __DEV__ !== "undefined" && __DEV__ ? "smoke" : undefined;
+  return undefined;
+}
+
+/** The runtime mode is compiled into the bundle; development never implies smoke. */
+export function readPatternlyRuntimeMode(environment: NodeJS.ProcessEnv = process.env): PatternlyRuntimeMode | undefined {
+  return parsePatternlyRuntimeMode(environment.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE);
 }
 
 export function isPatternlySmokeRuntime(): boolean {

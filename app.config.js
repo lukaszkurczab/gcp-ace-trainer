@@ -24,11 +24,51 @@ function required(environment, key) {
 }
 
 function readRuntimeMode(environment) {
-  const mode = environment.PATTERNLY_RUNTIME_MODE ?? "smoke";
+  const mode = required(environment, "PATTERNLY_RUNTIME_MODE");
   if (!RUNTIME_MODES.includes(mode)) {
     throw new Error(`PATTERNLY_RUNTIME_MODE must be one of ${RUNTIME_MODES.join(", ")}.`);
   }
+  const publicMode = required(environment, "EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE");
+  if (publicMode !== mode) {
+    throw new Error("PATTERNLY_RUNTIME_MODE must equal EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE.");
+  }
   return mode;
+}
+
+function isLoopbackHttpOrigin(value) {
+  if (typeof value !== "string" || value.length === 0) return false;
+  try {
+    const origin = new URL(value);
+    return origin.protocol === "http:" && origin.hostname === "127.0.0.1" && origin.pathname === "/" && origin.search === "" && origin.hash === "";
+  } catch {
+    return false;
+  }
+}
+
+const LOCAL_E2E_KEYS = Object.freeze([
+  "EXPO_PUBLIC_PATTERNLY_BACKEND_E2E",
+  "EXPO_PUBLIC_PATTERNLY_API_ORIGIN",
+  "EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN",
+  "EXPO_PUBLIC_PATTERNLY_E2E_EMAIL",
+  "EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD",
+]);
+
+function assertLocalAuthProfile(environment, mode) {
+  if (mode === "smoke") {
+    if (environment.EXPO_PUBLIC_PATTERNLY_BACKEND_E2E !== "true") {
+      throw new Error("smoke builds require EXPO_PUBLIC_PATTERNLY_BACKEND_E2E=true.");
+    }
+    for (const key of ["EXPO_PUBLIC_PATTERNLY_API_ORIGIN", "EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN"]) {
+      if (!isLoopbackHttpOrigin(environment[key])) throw new Error(`smoke builds require ${key} to be an http://127.0.0.1 origin.`);
+    }
+  }
+  if (mode === "sandbox") {
+    for (const key of LOCAL_E2E_KEYS) {
+      if (environment[key] !== undefined && environment[key] !== "") {
+        throw new Error(`sandbox builds must not set local auth override ${key}.`);
+      }
+    }
+  }
 }
 
 function readConfiguredPublicEnvironment(environment, mode) {
@@ -57,6 +97,7 @@ function nativeFirebaseFile(environment, key, mode) {
 }
 
 function assertRuntimeEnvironment(environment, mode) {
+  assertLocalAuthProfile(environment, mode);
   readConfiguredPublicEnvironment(environment, mode);
   if (mode !== "smoke") {
     for (const key of FIREBASE_PUBLIC_KEYS) required(environment, key);
@@ -149,3 +190,5 @@ module.exports.createExpoConfig = createExpoConfig;
 module.exports.FIREBASE_FILE_KEYS = FIREBASE_FILE_KEYS;
 module.exports.FIREBASE_PUBLIC_KEYS = FIREBASE_PUBLIC_KEYS;
 module.exports.RUNTIME_MODES = RUNTIME_MODES;
+module.exports.LOCAL_E2E_KEYS = LOCAL_E2E_KEYS;
+module.exports.isLoopbackHttpOrigin = isLoopbackHttpOrigin;
