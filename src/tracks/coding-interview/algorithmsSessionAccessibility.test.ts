@@ -113,8 +113,14 @@ test("practice exit makes abandonment a single explicit decision in a modal", ()
 
   assert.match(practiceSurface, /<Modal animationType="fade" onRequestClose=\{onDismiss\} transparent visible>/);
   assert.match(practiceSurface, /<Pressable accessibilityLabel=\{t\("Keep learning"\)\} accessibilityRole="button" onPress=\{onDismiss\} style=\{styles\.modalDismissArea\} \/>/);
+  assert.match(practiceSurface, /import \{ Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions \} from "react-native";/);
+  assert.match(practiceSurface, /<Pressable[\s\S]*?modalDismissArea[\s\S]*?<View accessibilityViewIsModal style=\{styles\.exitModalSheet\}>[\s\S]*?<ScrollView/);
+  assert.match(practiceSurface, /<ScrollView[\s\S]*?alwaysBounceVertical=\{false\}[\s\S]*?bounces=\{false\}[\s\S]*?contentContainerStyle=\{\[styles\.exitModalScrollContent, \{ paddingTop: Math\.max\(insets\.top, spacing\.sm\) \}\]\}[\s\S]*?keyboardShouldPersistTaps="handled"[\s\S]*?showsVerticalScrollIndicator=\{false\}[\s\S]*?style=\{styles\.exitModalScroll\}\s*>/);
+  assert.match(practiceSurface, /exitModalSheet:\s*\{[\s\S]*?maxHeight:\s*"100%"[\s\S]*?width:\s*"100%"/);
+  assert.match(practiceSurface, /exitModalScroll:\s*\{[\s\S]*?flexShrink:\s*1[\s\S]*?width:\s*"100%"/);
+  assert.match(practiceSurface, /exitModalScrollContent:\s*\{[\s\S]*?flexGrow:\s*1[\s\S]*?justifyContent:\s*"flex-end"/);
   assert.match(practiceSurface, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.exitTitle\}>\{t\("Pause or end this session\?"\)\}<\/Text>/);
-  assert.match(practiceSurface, /<View accessibilityViewIsModal style=\{styles\.exitModalStack\}>[\s\S]*?<View style=\{styles\.exitSheetActions\}>[\s\S]*?Keep learning[\s\S]*?Pause and resume later[\s\S]*?<\/View>[\s\S]*?<View style=\{\[styles\.exitDestructiveAction, \{ paddingBottom: Math\.max\(insets\.bottom, spacing\.sm\) \}\]\}>[\s\S]*?variant="destructive"/);
+  assert.match(practiceSurface, /<View style=\{styles\.exitModalStack\}>[\s\S]*?<View style=\{styles\.exitSheetActions\}>[\s\S]*?Keep learning[\s\S]*?Pause and resume later[\s\S]*?<\/View>[\s\S]*?<View style=\{\[styles\.exitDestructiveAction, \{ paddingBottom: Math\.max\(insets\.bottom, spacing\.sm\) \}\]\}>[\s\S]*?variant="destructive"/);
   assert.match(practiceSurface, /exitDestructiveAction:\s*\{[\s\S]*?backgroundColor:\s*palette\.background[\s\S]*?paddingHorizontal:\s*spacing\.xl/);
   assert.match(practiceSurface, /<Button onPress=\{onLeave\} testID=\{sessionId \? runtimeSelectors\.session\.leaveAndResume\(sessionId\) : undefined\} variant="secondary">\{t\("Pause and resume later"\)\}<\/Button>/);
   assert.match(practiceSurface, /<Button onPress=\{onAbandon\} testID=\{sessionId \? runtimeSelectors\.session\.abandon\(sessionId\) : undefined\} variant="destructive">\{t\(copy\.destructiveLabel\)\}<\/Button>/);
@@ -122,6 +128,7 @@ test("practice exit makes abandonment a single explicit decision in a modal", ()
   assert.match(practiceSurface, /import \{ getPracticeSessionExitCopy \} from "\.\/practiceSessionExitCopy";/);
   assert.match(practiceSurface, /const copy = getPracticeSessionExitCopy\(trackId\);/);
   assert.doesNotMatch(practiceSurface, /abandon_confirmation|onRequestAbandon|AbandonSurface/);
+  assert.doesNotMatch(practiceSurface, /KeyboardAvoidingView/);
 });
 
 test("standalone practice conflict and unavailable states respect both safe-area edges", () => {
