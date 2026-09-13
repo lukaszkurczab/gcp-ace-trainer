@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigationState } from "@react-navigation/native";
+import { useNavigationState, usePreventRemove } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import accountCopy from "../../locales/en/account.json";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -83,6 +83,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const text = {
   account: t("account"),
   accountDescription: t("accountDescription"),
+  accountNotFound: t("accountNotFound"),
   accountSignedInAs: t("accountSignedInAs"),
   welcomeTitle: t("welcomeTitle"),
   welcomeDescription: t("welcomeDescription"),
@@ -204,6 +205,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   reset: t("reset"),
   backToSignIn: t("backToSignIn"),
   acceptTermsPrefix: t("acceptTermsPrefix"),
+  privacyAcknowledgementPrefix: t("privacyAcknowledgementPrefix"),
   termsOfService: t("termsOfService"),
   privacyPolicy: t("privacyPolicy"),
   privacyNoticePrefix: t("privacyNoticePrefix"),
@@ -229,8 +231,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const account = usePatternlyAccount();
   const accountRef = useRef(account);
   accountRef.current = account;
+  const initialMode = route.params?.initialMode;
   const [mode, setMode] = useState<AccountMode>(
-    route.params?.initialMode ?? "entry",
+    initialMode === "entry" || initialMode === "register" || initialMode === "signIn" || initialMode === "recovery" || initialMode === "resetPassword" ? initialMode : "entry",
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -241,7 +244,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const [recoveryCode, setRecoveryCode] = useState("");
   const [recoveryMethod, setRecoveryMethod] = useState<"email" | "code">("email");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const backAction = navigationIndex > 0
+  const backAction = mode === "register"
+    ? { onPress: () => { setFeedback(null); setMode("signIn"); } }
+    : navigationIndex > 0
     ? {
         onPress: () => {
           if (navigation.canGoBack()) navigation.goBack();
@@ -261,6 +266,10 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
     setTermsPresentationState("pristine");
     setMode("register");
   };
+  usePreventRemove(mode === "register", () => {
+    setFeedback(null);
+    setMode("signIn");
+  });
   const handleTermsChange = (accepted: boolean) => {
     setAcceptedTerms(accepted);
     setTermsPresentationState(accepted ? "checked" : "uncheckedAfterInteraction");
@@ -403,6 +412,16 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         />
       </Screen>
     );
+  if (account.state.kind === "signOutPending")
+    return (
+      <AuthStatusScreen
+        action={{ label: text.signOut, onPress: () => void account.signOut(), testID: "account-sign-out-retry" }}
+        backAction={backAction}
+        body={text.signOutPendingDescription}
+        testID="account-sign-out-pending"
+        title={text.signOutPending}
+      />
+    );
   if (account.state.kind === "deleting")
     return (
       <Screen edges={screenEdges}>
@@ -541,13 +560,11 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             </Button>
           </View>
           <Divider label={text.or} />
-          <TermsAcceptance accepted={acceptedTerms} onChange={handleTermsChange} onOpenPrivacy={() => navigation.navigate(ROUTES.PRIVACY_POLICY)} onOpenTerms={() => navigation.navigate(ROUTES.TERMS_OF_SERVICE)} presentationState="uncheckedAfterInteraction" text={text} />
           {Platform.OS === "ios" ? (
             <ProviderButton
-              disabled={!acceptedTerms}
               icon="apple"
               onPress={() =>
-                void account.signInWithApple(acceptedTerms).then(setResult(setFeedback))
+                void account.signInWithApple().then(setResult(setFeedback))
               }
               text={text.continueWithApple}
             />
@@ -555,8 +572,10 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           {firebaseConfig.kind === "configured" ? (
             <GoogleProviderButton
               accountRef={accountRef}
-              acceptanceConfirmed={acceptedTerms}
+              mode="signIn"
+              acceptanceConfirmed={true}
               configuration={firebaseConfig.value}
+              locale={locale}
               onFeedback={setFeedback}
               text={text.continueWithGoogle}
             />
@@ -605,7 +624,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       ambient
       ambientVariant="auth"
       edges={screenEdges}
-      footer={
+      footer={mode === "register" ? undefined : (
         <Button
           labelStyle={styles.textActionLabel}
           onPress={() => {
@@ -615,9 +634,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           testID="account-back-to-sign-in"
           variant="ghost"
         >
-          {mode === "register" ? text.alreadyHaveAccount : text.backToSignIn}
+          {text.backToSignIn}
         </Button>
-      }
+      )}
       footerVariant="sticky"
       style={[styles.authScreen, largeText ? styles.authScreenLargeText : null]}
     >
@@ -637,6 +656,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         ) : null}
       {mode === "register" && isRegisterFieldFailure(feedback) ? null : isAuthFieldFailure(mode, recoveryMethod, feedback) ? null : renderFeedback(feedback, text)}
       {mode === "register" ? (
+        <>
         <CredentialsForm
           acceptedTerms={acceptedTerms}
           buttonLabel={text.create}
@@ -655,7 +675,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
               setFeedback({ kind: "failure", failure: "passwordMismatch" });
               return;
             }
-            void account.register(email, password, acceptedTerms).then(setResult(setFeedback));
+            void account.register(email, password, acceptedTerms, locale).then(setResult(setFeedback));
           }}
           password={password}
           placeholderTextColor={styles.authPlaceholder.color as string}
@@ -663,6 +683,38 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           text={text}
           testID="account-register-submit"
         />
+        <Divider label={text.or} />
+        {Platform.OS === "ios" ? (
+          <ProviderButton
+            disabled={!acceptedTerms}
+            icon="apple"
+            onPress={() => void account.registerWithApple(acceptedTerms, locale).then(setResult(setFeedback))}
+            text={text.continueWithApple}
+          />
+        ) : null}
+        {firebaseConfig.kind === "configured" ? (
+          <GoogleProviderButton
+            acceptanceConfirmed={acceptedTerms}
+            accountRef={accountRef}
+            configuration={firebaseConfig.value}
+            locale={locale}
+            mode="register"
+            onFeedback={setFeedback}
+            text={text.continueWithGoogle}
+          />
+        ) : null}
+        <Button
+          labelStyle={styles.textActionLabel}
+          onPress={() => {
+            setFeedback(null);
+            setMode("signIn");
+          }}
+          testID="account-register-back-to-sign-in"
+          variant="ghost"
+        >
+          {text.alreadyHaveAccount}
+        </Button>
+        </>
       ) : null}
       {mode === "recovery" ? (
         <RecoveryForm
@@ -1485,12 +1537,16 @@ function GoogleProviderButton({
   acceptanceConfirmed,
   accountRef,
   configuration,
+  locale,
+  mode,
   onFeedback,
   text,
 }: Readonly<{
   accountRef: AccountContextRef;
   acceptanceConfirmed: boolean;
   configuration: FirebaseClientConfiguration;
+  locale: "en" | "pl";
+  mode: "register" | "signIn";
   onFeedback: (feedback: Feedback) => void;
   text: string;
 }>) {
@@ -1515,14 +1571,15 @@ function GoogleProviderButton({
       return;
     }
     const idToken = googleResponse.params.id_token;
-    void accountRef.current
-      .signInWithGoogle(idToken ?? "", acceptanceConfirmed)
-      .then((result) => feedbackRef.current(result));
-  }, [acceptanceConfirmed, googleResponse]);
+    const command = mode === "register"
+      ? accountRef.current.registerWithGoogle(idToken ?? "", acceptanceConfirmed, locale)
+      : accountRef.current.signInWithGoogle(idToken ?? "");
+    void command.then((result) => feedbackRef.current(result));
+  }, [acceptanceConfirmed, googleResponse, locale, mode]);
 
   return (
     <ProviderButton
-      disabled={!acceptanceConfirmed}
+      disabled={mode === "register" && !acceptanceConfirmed}
       icon="google"
       onPress={() => {
         if (!googleRequest) {
@@ -1667,13 +1724,12 @@ function TermsAcceptance({ accepted, onChange, onOpenPrivacy, onOpenTerms, prese
         <View style={styles.termsLinks}>
           <AuthText style={styles.termsCopy}>{text.acceptTermsPrefix}</AuthText>
           <Pressable accessibilityRole="link" onPress={onOpenTerms} style={styles.termsLinkPressable} testID="account-register-terms-link"><AuthText style={styles.termsLink}>{text.termsOfService}</AuthText></Pressable>
+          <AuthText style={styles.termsCopy}>{text.privacyAcknowledgementPrefix}</AuthText>
+          <Pressable accessibilityRole="link" onPress={onOpenPrivacy} style={styles.termsLinkPressable} testID="account-register-privacy-link"><AuthText style={styles.termsLink}>{text.privacyPolicy}</AuthText></Pressable>
+          <AuthText style={styles.termsCopy}>.</AuthText>
         </View>
       </View>
       {presentationState === "uncheckedAfterInteraction" && !accepted ? <AuthText accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.termsRequired} testID="account-register-terms-error">{text.termsRequired}</AuthText> : null}
-      <View style={styles.termsPrivacyNotice}>
-        <AuthText style={styles.termsCopy}>{text.privacyNoticePrefix}</AuthText>
-        <Pressable accessibilityRole="link" onPress={onOpenPrivacy} style={styles.termsLinkPressable} testID="account-register-privacy-link"><AuthText style={styles.termsLink}>{text.privacyPolicy}</AuthText></Pressable>
-      </View>
     </View>
   );
 }
@@ -1997,7 +2053,6 @@ function isAuthFieldFailure(
     termsLinkPressable: { alignSelf: "flex-start", flexShrink: 1, maxWidth: "100%" },
     termsLink: { color: palette.primary, flexShrink: 1, fontSize: 13, lineHeight: 20, textDecorationLine: "underline" },
     termsRequired: { color: palette.danger, fontSize: 12, lineHeight: 17, marginLeft: 44 + spacing.sm },
-    termsPrivacyNotice: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, marginLeft: 44 + spacing.sm, minWidth: 0 },
     authTitle: {
       ...typography.display,
       color: palette.textPrimary,

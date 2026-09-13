@@ -83,6 +83,25 @@ test("generated client deadline includes token acquisition", async () => {
   await assert.rejects(client.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "request_timeout");
 });
 
+test("account registration uses the explicit bearer endpoint and preserves complete legal evidence", async () => {
+  let call: { body: unknown; headers: HeadersInit; method: string; url: string } | null = null;
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "id-token",
+    fetchImplementation: async (url, init) => {
+      call = { body: JSON.parse(String(init?.body)), headers: init?.headers ?? {}, method: init?.method ?? "", url: String(url) };
+      return new Response(JSON.stringify({ registration: { created: true, user: { id: "user", createdAt: "2026-01-01T00:00:00.000Z", acceptedTermsVersion: "2026-09-05", identity: { provider: "firebase", subject: "uid", email: null, emailVerified: true } }, acceptance: null } }), { status: 201 });
+    },
+  });
+  await client.registerAccount({ termsVersion: "2026-09-05", termsLocale: "pl", privacyPolicyVersion: "2026-09-05", privacyPolicyLocale: "pl", privacyPolicyAcknowledged: true });
+  assert.deepEqual(call, {
+    method: "POST",
+    url: "https://api.sandbox.patternly.invalid/v1/account/registration",
+    headers: { authorization: "Bearer id-token", "content-type": "application/json" },
+    body: { termsVersion: "2026-09-05", termsLocale: "pl", privacyPolicyVersion: "2026-09-05", privacyPolicyLocale: "pl", privacyPolicyAcknowledged: true },
+  });
+});
+
 test("account export preserves a bounded Retry-After value from rate limiting", async () => {
   const client = createPatternlyApiClient({
     apiOrigin: environment.apiOrigin,

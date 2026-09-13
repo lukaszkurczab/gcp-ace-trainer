@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, normalizeAccountSignOutPreparationFailure, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, requiresPasswordEmailVerification, restoreAuthenticatedAfterSignOutFailure, type AccountState } from "./AccountSessionProvider";
+import { AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, normalizeAccountSignOutPreparationFailure, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, requiresPasswordEmailVerification, restoreAuthenticatedAfterSignOutFailure, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
@@ -161,9 +161,15 @@ test("account recovery owns one status message, a truthful retry, and a sign-out
 test("account recovery back action follows live navigator history", () => {
   const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
 
-  assert.match(screen, /import \{ useNavigationState \} from "@react-navigation\/native";/u);
+  assert.match(screen, /import \{ useNavigationState, usePreventRemove \} from "@react-navigation\/native";/u);
   assert.match(screen, /const navigationIndex = useNavigationState\(\(state\) => state\.index\);/u);
-  assert.match(screen, /const backAction = navigationIndex > 0[\s\S]*?if \(navigation\.canGoBack\(\)\) navigation\.goBack\(\);/u);
+  assert.match(screen, /const backAction = mode === "register"[\s\S]*?setMode\("signIn"\)[\s\S]*?navigationIndex > 0[\s\S]*?if \(navigation\.canGoBack\(\)\) navigation\.goBack\(\);/u);
+  assert.match(screen, /usePreventRemove\(mode === "register", \(\) => \{[\s\S]*?setMode\("signIn"\)/u);
+  assert.doesNotMatch(screen, /navigation\.addListener\("beforeRemove"/u);
+  assert.match(screen, /initialMode === "entry"[\s\S]*?initialMode === "register"[\s\S]*?: "entry"/u);
+  assert.match(screen, /footer=\{mode === "register" \? undefined/u);
+  assert.match(screen, /testID="account-register-back-to-sign-in"/u);
+  assert.match(screen, /mode === "register" \? \([\s\S]*?<CredentialsForm[\s\S]*?account-register-submit[\s\S]*?account-register-back-to-sign-in/u);
   assert.doesNotMatch(screen, /const backAction = navigation\.canGoBack\(\)/u);
 });
 
@@ -382,11 +388,18 @@ test("registration keeps consent presentation separate from the boolean domain c
   assert.doesNotMatch(termsAcceptance, /termsCheckboxChecked|termsCheckboxIcon/u);
   assert.match(recoveryCheckbox, /termsCheckboxChecked/u);
   assert.match(recoveryCheckbox, /termsCheckboxIcon/u);
-  assert.equal(en.termsRequired, "Confirm that you are at least 18 and agree to the Terms of Service to create an account.");
-  assert.equal(pl.termsRequired, "Potwierdź, że masz co najmniej 18 lat, i zaakceptuj Warunki korzystania, aby utworzyć konto.");
-  assert.match(screen, /account\.register\(email, password, acceptedTerms\)/u);
+  assert.equal(en.termsRequired, "Accept the Terms of Service and acknowledge the Privacy Policy to create an account.");
+  assert.equal(pl.termsRequired, "Aby utworzyć konto, zaakceptuj Warunki korzystania i potwierdź zapoznanie się z Polityką prywatności.");
+  assert.equal(`${en.acceptTermsPrefix}${en.termsOfService}${en.privacyAcknowledgementPrefix}${en.privacyPolicy}.`, "I agree to the Terms of Service and acknowledge the Privacy Policy.");
+  assert.equal(`${pl.acceptTermsPrefix}${pl.termsOfService}${pl.privacyAcknowledgementPrefix}${pl.privacyPolicy}.`, "Akceptuję Warunki korzystania i potwierdzam zapoznanie się z Polityką prywatności.");
+  assert.match(screen, /account\.register\(email, password, acceptedTerms, locale\)/u);
   assert.match(screen, /ROUTES\.TERMS_OF_SERVICE/gu);
   assert.match(screen, /ROUTES\.PRIVACY_POLICY/gu);
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  assert.match(provider, /registrationIntentRef[\s\S]*?inFlight\?\.uid === user\.uid[\s\S]*?return inFlight\.promise/u);
+  assert.match(provider, /registrationIntentRef\.current = Object\.freeze\(\{ uid: user\.uid, promise \}\)/u);
+  assert.match(provider, /signOutRejectedIdentity[\s\S]*?auth\.getSnapshot\(\)[\s\S]*?failure: "signOutPending"/u);
+  assert.match(provider, /firebaseAuthErrorCode\(error\) === "auth\/email-already-in-use"[\s\S]*?auth\.signIn\(email\.trim\(\)\.toLowerCase\(\), password\)[\s\S]*?registerAuthenticatedIdentity/u);
 });
 
 test("both recovery-code surfaces warn before copying through the guarded clipboard", () => {
@@ -595,4 +608,16 @@ test("account failures expose explicit provider, network, expiry, and revoked-se
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/user-not-found", message: "private provider detail" }), true);
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/invalid-credential", message: "private provider detail" }), true);
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/too-many-requests", message: "private provider detail" }), false);
+});
+
+test("cold account_not_found clears persisted Firebase auth or exposes a truthful sign-out retry", async () => {
+  const user = { uid: "cold-uid", email: "user@example.com", emailVerified: true, providers: [] } as any;
+  const states: AccountState[] = [];
+  let current: typeof user | null = user;
+  await completeUnrecognizedPersistedAuthSignOut({ getSnapshot: () => current, signOut: async () => { current = null; } }, user, (state) => states.push(state), () => true);
+  assert.deepEqual(states, [{ kind: "signedOut" }]);
+  current = user;
+  states.length = 0;
+  await completeUnrecognizedPersistedAuthSignOut({ getSnapshot: () => current, signOut: async () => { throw new Error("offline"); } }, user, (state) => states.push(state), () => true);
+  assert.deepEqual(states, [{ kind: "signOutPending", user }]);
 });

@@ -19,6 +19,7 @@ function state(kind: AccountState["kind"]): AccountState {
     case "deleting":
       return { kind } as AccountState;
     case "verificationPending":
+    case "signOutPending":
       return { kind, user };
     case "deletionPending":
       return { accountId: "account-id", failure: "remoteDeletionPending", kind, status: "remoteDeletionPending", user } as unknown as AccountState;

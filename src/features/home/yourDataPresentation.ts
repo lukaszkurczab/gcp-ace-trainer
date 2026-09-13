@@ -66,6 +66,8 @@ export function getYourDataPresentation(state: AccountState): YourDataPresentati
       return presentation("backendUnavailable", "retryIdentity", "rotate-ccw", "data-retry-identity", "none", false);
     case "revokedSession":
       return presentation("revokedSession", "signOut", "user", "data-sign-out", "none", false);
+    case "signOutPending":
+      return presentation("revokedSession", "signOut", "user", "data-sign-out", "none", false);
   }
   return assertNever(state);
 }

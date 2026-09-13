@@ -34,7 +34,7 @@ import { createDeletionAuthorizationVault, createSensitiveCommandLane, isLiveDel
 import { shareAccountDataExport as shareDownloadedAccountData } from "./accountDataExportService";
 import { legalVariables } from "../../legal/legalVariables";
 
-export type AccountFailure = "backendUnavailable" | "conflict" | "duplicate" | "emailUnavailable" | "expiredAction" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
+export type AccountFailure = "accountNotFound" | "backendUnavailable" | "conflict" | "duplicate" | "emailUnavailable" | "expiredAction" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
 export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "guest" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
 export type AccountDataExportFailure = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed";
 export type AccountDataExportCommandResult = Readonly<
@@ -58,6 +58,7 @@ export type AccountState =
   | Readonly<{ kind: "authenticated"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "deletionPending"; user: FirebaseAuthUserSnapshot; accountId: string; status: "remoteDeletionPending" | "localCleanupPending"; failure: AccountFailure }>
   | Readonly<{ kind: "signingOut"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
+  | Readonly<{ kind: "signOutPending"; user: FirebaseAuthUserSnapshot }>
   | Readonly<{ kind: "deleting"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "backendUnavailable" | "revokedSession"; user: FirebaseAuthUserSnapshot }>;
 
@@ -83,11 +84,13 @@ export type AccountSessionContextValue = Readonly<{
   refreshAccountIdentity: () => Promise<AccountCommandResult>;
   refreshAccountIdentityFailure: AccountFailure | null;
   refreshVerification: () => Promise<AccountCommandResult>;
-  register: (email: string, password: string, acceptanceConfirmed: boolean) => Promise<AccountCommandResult>;
+  register: (email: string, password: string, acceptanceConfirmed: boolean, locale: "en" | "pl") => Promise<AccountCommandResult>;
   resendVerification: () => Promise<AccountCommandResult>;
   signIn: (email: string, password: string) => Promise<AccountCommandResult>;
-  signInWithApple: (acceptanceConfirmed: boolean) => Promise<AccountCommandResult>;
-  signInWithGoogle: (idToken: string, acceptanceConfirmed: boolean) => Promise<AccountCommandResult>;
+  signInWithApple: () => Promise<AccountCommandResult>;
+  signInWithGoogle: (idToken: string) => Promise<AccountCommandResult>;
+  registerWithApple: (acceptanceConfirmed: boolean, locale: "en" | "pl") => Promise<AccountCommandResult>;
+  registerWithGoogle: (idToken: string, acceptanceConfirmed: boolean, locale: "en" | "pl") => Promise<AccountCommandResult>;
   confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[], groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[]) => Promise<AccountCommandResult>;
   continueAsGuest: () => void;
   retryAccountSync: () => Promise<AccountCommandResult>;
@@ -295,6 +298,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const sessionCoordinatorRef = useRef<AccountSessionCoordinator<FinalizationOutcome> | null>(null);
   const observerBlockedUidRef = useRef<string | null>(null);
   const legalAcceptancePendingRef = useRef(false);
+  const registrationIntentRef = useRef<Readonly<{ uid: string; promise: Promise<AccountCommandResult> }> | null>(null);
   const deletionAuthorizationRef = useRef<DeletionAuthorizationVault | null>(null);
   const deletionAuthorizationTokenRef = useRef<AccountSessionGenerationToken | null>(null);
   const sensitiveCommandLaneRef = useRef<SensitiveCommandLane | null>(null);
@@ -534,6 +538,66 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     return sensitiveCommandLane.runWhenIdle(() => runWithAuth(operation));
   }, [runWithAuth, sensitiveCommandLane]);
   const holdAccountIdentityRefresh = useCallback(() => sensitiveCommandLane.holdRefresh(), [sensitiveCommandLane]);
+
+  const registrationEvidence = useCallback((locale: "en" | "pl") => Object.freeze({
+    termsVersion: legalVariables.documentVersion[locale],
+    termsLocale: locale,
+    privacyPolicyVersion: legalVariables.documentVersion[locale],
+    privacyPolicyLocale: locale,
+    privacyPolicyAcknowledged: true as const,
+  }), []);
+
+  // Firebase publishes a new credential before our explicit Patternly
+  // registration request returns.  Block only that UID, then release it after
+  // the atomic backend decision; this prevents the observer from treating a
+  // first-use provider identity as an existing account.
+  const registerAuthenticatedIdentity = useCallback(async (
+    auth: FirebaseAuthClient,
+    api: ReturnType<typeof createPatternlyApiClient>,
+    user: FirebaseAuthUserSnapshot,
+    locale: "en" | "pl",
+    finalize = true,
+  ): Promise<AccountCommandResult> => {
+    const inFlight = registrationIntentRef.current;
+    if (inFlight?.uid === user.uid) return inFlight.promise;
+    let promise!: Promise<AccountCommandResult>;
+    promise = (async (): Promise<AccountCommandResult> => {
+    const generation = sessionCoordinator.restart(user.uid);
+    observerBlockedUidRef.current = user.uid;
+    legalAcceptancePendingRef.current = true;
+    try {
+      await api.registerAccount(registrationEvidence(locale));
+      if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
+      return finalize
+        ? finalizeCurrent(auth, api, user, false, generation)
+        : { kind: "success", next: "authenticated" };
+    } catch (error) {
+      // A timeout/transport failure leaves the server outcome unknown. Do not
+      // let the observer continue with a credential whose account may not have
+      // been created; a later explicit Create account retry is replay-safe.
+      const failure = classifyAccountFailure(error);
+      if (failure === "offline" || failure === "backendUnavailable") {
+        await auth.signOut().catch(() => undefined);
+        if (!auth.getSnapshot()) setState({ kind: "signedOut" });
+        else return { kind: "failure", failure: "signOutPending" };
+      }
+      return { kind: "failure", failure };
+    } finally {
+      legalAcceptancePendingRef.current = false;
+      if (finalize && observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
+      if (registrationIntentRef.current?.promise === promise) registrationIntentRef.current = null;
+    }
+    })();
+    registrationIntentRef.current = Object.freeze({ uid: user.uid, promise });
+    return promise;
+  }, [finalizeCurrent, registrationEvidence, sessionCoordinator]);
+
+  const signOutRejectedIdentity = useCallback(async (auth: FirebaseAuthClient): Promise<AccountCommandResult> => {
+    await auth.signOut().catch(() => undefined);
+    if (auth.getSnapshot()) return { kind: "failure", failure: "signOutPending" };
+    setState({ kind: "signedOut" });
+    return { kind: "failure", failure: "accountNotFound" };
+  }, []);
 
   const value = useMemo<AccountSessionContextValue>(() => ({
     recordPurchaseConfirmation: async (input) => {
@@ -788,24 +852,28 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         return result;
       });
     },
-    register: (email, password, acceptanceConfirmed) => runWithAuth(async (auth, api) => {
+    register: (email, password, acceptanceConfirmed, locale) => runWithAuth(async (auth, api) => {
       if (!acceptanceConfirmed) return { kind: "failure", failure: "invalid" };
       if (!isValidEmail(email)) return { kind: "failure", failure: "invalidEmail" };
       if (!isValidPassword(password)) return { kind: "failure", failure: "weakPassword" };
       revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
-      legalAcceptancePendingRef.current = true;
       let user: FirebaseAuthUserSnapshot;
       try {
         user = await auth.register(email.trim().toLowerCase(), password);
       } catch (error) {
-        if (firebaseAuthErrorCode(error) === "auth/email-already-in-use") return { kind: "failure", failure: "duplicate" };
-        legalAcceptancePendingRef.current = false;
-        throw error;
+        // Retrying an interrupted email registration must use the submitted
+        // credential and the same explicit registration endpoint. Existing
+        // Patternly accounts are a no-op at that endpoint.
+        if (firebaseAuthErrorCode(error) === "auth/email-already-in-use") {
+          try { user = await auth.signIn(email.trim().toLowerCase(), password); }
+          catch { return { kind: "failure", failure: "duplicate" }; }
+        } else {
+          throw error;
+        }
       }
-      try { await api.recordLegalAcceptance(legalVariables.documentVersion.en); }
-      catch (error) { await auth.signOut().catch(() => undefined); setState({ kind: "signedOut" }); throw error; }
-      finally { legalAcceptancePendingRef.current = false; }
+      const registration = await registerAuthenticatedIdentity(auth, api, user, locale, false);
+      if (registration.kind === "failure") return registration;
       const plan = planPasswordVerificationCommand("register", runtimeMode, user);
       if (plan.kind === "finalize") {
         return finalizeCurrent(auth, api, user);
@@ -853,39 +921,43 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
         }
       }
-      return finalizeCurrent(auth, api, user);
+      const result = await finalizeCurrent(auth, api, user);
+      if (result.kind === "failure" && result.failure === "accountNotFound") {
+        return signOutRejectedIdentity(auth);
+      }
+      return result;
     }),
-    signInWithApple: (acceptanceConfirmed) => runWithAuth(async (auth, api) => {
+    signInWithApple: () => runWithAuth(async (auth, api) => {
+      revokeDeletionAuthorization();
+      sessionCoordinator.invalidate();
+      const user = await auth.signInWithApple();
+      const result = await finalizeCurrent(auth, api, user);
+      if (result.kind === "failure" && result.failure === "accountNotFound") {
+        return signOutRejectedIdentity(auth);
+      }
+      return result;
+    }),
+    signInWithGoogle: (idToken) => runWithAuth(async (auth, api) => {
+      revokeDeletionAuthorization();
+      sessionCoordinator.invalidate();
+      const user = await auth.signInWithGoogle(idToken);
+      const result = await finalizeCurrent(auth, api, user);
+      if (result.kind === "failure" && result.failure === "accountNotFound") {
+        return signOutRejectedIdentity(auth);
+      }
+      return result;
+    }),
+    registerWithApple: (acceptanceConfirmed, locale) => runWithAuth(async (auth, api) => {
       if (!acceptanceConfirmed) return { kind: "failure", failure: "invalid" };
       revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
-      legalAcceptancePendingRef.current = true;
-      try {
-        const user = await auth.signInWithApple();
-        await api.recordLegalAcceptance(legalVariables.documentVersion.en);
-        legalAcceptancePendingRef.current = false;
-        return finalizeCurrent(auth, api, user);
-      } catch (error) {
-        await auth.signOut().catch(() => undefined);
-        setState({ kind: "signedOut" });
-        throw error;
-      } finally { legalAcceptancePendingRef.current = false; }
+      return registerAuthenticatedIdentity(auth, api, await auth.signInWithApple(), locale);
     }),
-    signInWithGoogle: (idToken, acceptanceConfirmed) => runWithAuth(async (auth, api) => {
+    registerWithGoogle: (idToken, acceptanceConfirmed, locale) => runWithAuth(async (auth, api) => {
       if (!acceptanceConfirmed) return { kind: "failure", failure: "invalid" };
       revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
-      legalAcceptancePendingRef.current = true;
-      try {
-        const user = await auth.signInWithGoogle(idToken);
-        await api.recordLegalAcceptance(legalVariables.documentVersion.en);
-        legalAcceptancePendingRef.current = false;
-        return finalizeCurrent(auth, api, user);
-      } catch (error) {
-        await auth.signOut().catch(() => undefined);
-        setState({ kind: "signedOut" });
-        throw error;
-      } finally { legalAcceptancePendingRef.current = false; }
+      return registerAuthenticatedIdentity(auth, api, await auth.signInWithGoogle(idToken), locale);
     }),
     confirmAdoption: (resolutions, groupChoices) => runWithAuth(async (auth, api) => {
       const current = auth.getSnapshot();
@@ -1209,7 +1281,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return { kind: "failure", failure: "remoteFailure" };
     }),
     state,
-  }), [apiClient, authClient, finalizeCurrent, holdAccountIdentityRefresh, refreshAccountIdentityFailure, retrySessionRestore, revokeDeletionAuthorization, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, state]);
+  }), [apiClient, authClient, finalizeCurrent, holdAccountIdentityRefresh, refreshAccountIdentityFailure, registerAuthenticatedIdentity, retrySessionRestore, revokeDeletionAuthorization, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }
@@ -1273,10 +1345,24 @@ async function reconcileAuthenticatedUser(
       if (canContinue()) setState({ kind: "verificationPending", user });
       return;
     }
-    await finalize(user);
+    const finalized = await finalize(user);
+    if (finalized.kind === "failure" && finalized.failure === "accountNotFound") {
+      await completeUnrecognizedPersistedAuthSignOut(auth, user, setState, canContinue);
+    }
   } catch (error) {
     if (canContinue()) setState({ kind: classifyAccountFailure(error) === "revokedSession" ? "revokedSession" : "backendUnavailable", user });
   }
+}
+
+export async function completeUnrecognizedPersistedAuthSignOut(
+  auth: Pick<FirebaseAuthClient, "getSnapshot" | "signOut">,
+  user: FirebaseAuthUserSnapshot,
+  setState: (state: AccountState) => void,
+  canContinue: () => boolean,
+): Promise<void> {
+  await auth.signOut().catch(() => undefined);
+  if (!canContinue()) return;
+  setState(auth.getSnapshot() ? { kind: "signOutPending", user } : { kind: "signedOut" });
 }
 
 export function requiresPasswordEmailVerification(runtimeMode: PatternlyRuntimeMode | undefined, user: FirebaseAuthUserSnapshot): boolean {
@@ -1297,6 +1383,7 @@ export function planPasswordVerificationCommand(command: PasswordVerificationCom
 
 export function classifyAccountFailure(error: unknown): AccountFailure {
   if (error instanceof PatternlyApiClientError) {
+    if (error.serverCode === "account_not_found") return "accountNotFound";
     if (error.serverCode === "recovery_code_invalid") return "invalidRecoveryCode";
     if (error.serverCode === "recovery_code_used") return "recoveryCodeUsed";
     if (error.serverCode === "purchase_attempt_active") return "conflict";

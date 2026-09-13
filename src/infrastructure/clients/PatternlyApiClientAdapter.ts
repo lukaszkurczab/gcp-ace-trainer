@@ -594,6 +594,14 @@ export type ReadyResponseDto = Readonly<{ status: "ready" | "not_ready"; checks:
 export type OpenApiResponseDto = Readonly<{ openapi: string; paths: Readonly<Record<string, unknown>> }>;
 
 export type PatternlyApiClientErrorCode = "client_unconfigured" | "authentication_required" | "transport_failed" | "invalid_response" | "server_error" | "request_timeout";
+export type AccountRegistrationInputDto = Readonly<{
+  termsVersion: string;
+  termsLocale: "en" | "pl";
+  privacyPolicyVersion: string;
+  privacyPolicyLocale: "en" | "pl";
+  privacyPolicyAcknowledged: true;
+}>;
+export type AccountRegistrationResponseDto = Readonly<{ registration: Readonly<{ created: boolean; user: MeResponseDto["user"]; acceptance: Readonly<{ termsVersion: string; acceptedAt: string }> | null }> }>;
 
 export class PatternlyApiClientError extends Error {
   public constructor(readonly code: PatternlyApiClientErrorCode, readonly status?: number, readonly serverCode?: string, readonly retryAfterSeconds?: number) {
@@ -611,6 +619,7 @@ export type PatternlyApiClient = Readonly<{
   getReady: () => Promise<ReadyResponseDto>;
   getOpenApi: () => Promise<OpenApiResponseDto>;
   getMe: () => Promise<MeResponseDto>;
+  registerAccount: (input: AccountRegistrationInputDto) => Promise<AccountRegistrationResponseDto>;
   recordLegalAcceptance: (termsVersion: string) => Promise<Readonly<{ acceptance: Readonly<{ termsVersion: string; acceptedAt: string }> }>>;
   recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>) => Promise<Readonly<{ confirmation: Readonly<{ confirmationId: string; acceptedAt: string }> }>>;
   getEntitlements: () => Promise<EntitlementsResponseDto>;
@@ -743,6 +752,7 @@ export function createPatternlyApiClient(input: Readonly<{
     getReady: () => requestJson<ReadyResponseDto>("/ready", "GET", undefined, "none"),
     getOpenApi: () => requestJson<OpenApiResponseDto>("/openapi.json", "GET", undefined, "none"),
     getMe: () => requestJson<MeResponseDto>("/v1/me", "GET"),
+    registerAccount: (body) => requestJson<AccountRegistrationResponseDto>("/v1/account/registration", "POST", body),
     recordLegalAcceptance: (termsVersion) => requestJson("/v1/legal-acceptances", "POST", { termsVersion, minimumAgeConfirmed: 18 }),
     recordPurchaseConfirmation: (body) => requestJson("/v1/purchase-confirmations", "POST", body),
     getEntitlements: () => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET"),

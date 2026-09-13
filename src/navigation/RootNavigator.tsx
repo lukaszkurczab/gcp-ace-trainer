@@ -224,7 +224,7 @@ export function RootNavigator() {
         name={ROUTES.ACCOUNT_ENTRY}
         component={AccountEntryScreen}
         initialParams={{ initialMode: "entry" }}
-        options={{ headerShown: false, title: t("Account") }}
+        options={{ headerBackButtonMenuEnabled: false, headerShown: false, title: t("Account") }}
       />
       <Stack.Screen
         name={ROUTES.TERMS_OF_SERVICE}

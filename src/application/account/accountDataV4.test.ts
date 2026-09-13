@@ -70,6 +70,7 @@ function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
     getReady: async () => ({ status: "ready", checks: { database: true, authentication: true } }),
     getOpenApi: async () => ({ openapi: "3.0.3", paths: {} }),
     getMe: async () => ({ user: { id: accountId, createdAt: "2026-01-01T00:00:00.000Z", acceptedTermsVersion: "1", identity: { provider: "firebase", subject: "uid", email: null, emailVerified: true } } }),
+    registerAccount: async () => ({ registration: { created: true, user: { id: accountId, createdAt: "2026-01-01T00:00:00.000Z", acceptedTermsVersion: "1", identity: { provider: "firebase", subject: "uid", email: null, emailVerified: true } }, acceptance: null } }),
     recordLegalAcceptance: async (termsVersion) => ({ acceptance: { termsVersion, acceptedAt: "2026-01-01T00:00:00.000Z" } }),
     recordPurchaseConfirmation: async (input) => ({ confirmation: { confirmationId: input.confirmationId, acceptedAt: "2026-01-01T00:00:00.000Z" } }),
     getEntitlements: async () => ({ entitlements: [] }),
