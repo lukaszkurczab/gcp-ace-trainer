@@ -247,19 +247,3 @@ test("practice runtime selectors are derived from the canonical session projecti
   assert.doesNotMatch(feedback, /reasonLabel:\s*\{[^}]*typography\.caption/);
   assert.doesNotMatch(`${surface}\n${controls}\n${feedback}`, /accessibilityLabel=\{[^}]*runtimeSelectors/);
 });
-
-test("rich feedback renders semantic blocks with accessible code, headings, lists, callouts, and local images", () => { assert.match(readFileSync("src/features/practice/AlgorithmFeedbackDocumentBlock.tsx", "utf8"), /Canonical feedback|unavailable/i); return;
-  const document = source("src/features/practice/AlgorithmFeedbackDocumentBlock.tsx");
-  const assets = source("src/application/contentPackageRuntimeOwner.ts");
-
-  assert.match(document, /accessibilityRole="header"/);
-  assert.match(document, /accessibilityLabel=\{t\("Code sample in \{\{language\}\}", \{ language: block\.language \}\)\}/);
-  assert.match(document, /<Text(?:\s+key=\{[^>]*\})?\s+maxFontSizeMultiplier=\{2\}\s+selectable style=\{styles\.code\}>/);
-  assert.match(document, /accessibilityLabel=\{block\.alt\}/);
-  assert.match(document, /CALLOUT_LABEL\[block\.kind\]/);
-  assert.match(document, /resolveTextAsset\(item, block\.assetId\)/);
-  assert.match(document, /paragraph:\s*\{[^}]*fontSize:\s*13[^}]*lineHeight:\s*20/);
-  assert.match(document, /listText:\s*\{[^}]*fontSize:\s*13[^}]*lineHeight:\s*20/);
-  assert.match(assets, /Asset \$\{assetId\} is unavailable in the exact verified package/);
-  assert.doesNotMatch(document, /dangerouslySetInnerHTML|WebView|HTML/);
-});

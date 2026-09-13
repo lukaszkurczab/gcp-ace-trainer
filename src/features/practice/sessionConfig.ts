@@ -6,7 +6,7 @@ import {
   isAlgorithmModeId,
   type AlgorithmModeId,
 } from "../../tracks/coding-interview";
-import type { AlgorithmSelectionScope } from "../../tracks/coding-interview/algorithmSessionSelection";
+import type { AlgorithmSelectionScope } from "../../application/coding-interview/codingInterviewPreparationRequest";
 import { CERTIFICATION_PRACTICE_MODE_IDS, isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../tracks/design-interview";

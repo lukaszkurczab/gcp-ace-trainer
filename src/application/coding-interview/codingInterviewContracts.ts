@@ -1,8 +1,7 @@
 import type { ResolvedContentRef, TrackId } from "../../domain";
 import type { AlgorithmFeedbackMode } from "../../tracks/coding-interview/domain";
-import type { AlgorithmReviewSource } from "../../tracks/coding-interview/algorithmReviewSelection";
-import type { AlgorithmSelectionScope } from "../../tracks/coding-interview/algorithmSessionSelection";
 import type { PracticeSessionMode } from "../../features/practice/sessionConfig";
+import type { AlgorithmReviewSource, AlgorithmSelectionScope } from "./codingInterviewPreparationRequest";
 export type CanonicalPracticeModeId = PracticeSessionMode;
 export type CanonicalRecommendationReason = "active_session" | "due_review" | "session_misses" | "recommended" | "learner_choice";
 export type AlgorithmsRecommendationAction = Readonly<Record<string, unknown>>;

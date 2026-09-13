@@ -1,6 +1,6 @@
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import type { AlgorithmSelectionScope } from "../../tracks/coding-interview/algorithmSessionSelection";
 import { ALGORITHM_MODE_IDS } from "../../tracks/coding-interview/domain";
+import type { AlgorithmSelectionScope } from "./codingInterviewPreparationRequest";
 
 export type AlgorithmsDeclaredScopeMode =
   | typeof ALGORITHM_MODE_IDS.recognizePatterns

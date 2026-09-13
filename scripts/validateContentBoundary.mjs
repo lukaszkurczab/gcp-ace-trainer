@@ -31,6 +31,12 @@ const LEGACY_CONTENT_IDENTITY_PATTERNS = Object.freeze([
   /\bcontentPackagePin\b/u,
 ]);
 
+const REMOVED_CONTENT_ARCHITECTURE_PATTERNS = Object.freeze([
+  /\bPublished[A-Za-z0-9_]*Bank\b/u,
+  /\b(?:Algorithm|Certification|Design)RuntimeCatalog\b/u,
+  /\b(?:publishedBank|publishedManifest|bundledArtifact|validatePublishedContent|algorithmRuntimeCatalog|certificationRuntimeCatalog|designRuntimeCatalog)\b/u,
+]);
+
 function relativeSourcePath(path) {
   const normalized = path.replaceAll("\\", "/");
   const sourceMarker = "/src/";
@@ -63,13 +69,16 @@ function stripCommentsAndStrings(source) {
 
 export function findLegacyContentIdentityLeaks(entries) {
   return entries.flatMap(({ path, source }) => {
-    if (isAllowlistedLegacySource(path)) return [];
-    const scanSource = isFailClosedRejectionGuard(path) ? stripCommentsAndStrings(source) : stripComments(source);
-    const matches = LEGACY_CONTENT_IDENTITY_PATTERNS
-      .filter((pattern) => pattern.test(scanSource))
+    const sourceWithoutComments = stripComments(source);
+    const identitySource = isFailClosedRejectionGuard(path) ? stripCommentsAndStrings(source) : sourceWithoutComments;
+    const identityMatches = isAllowlistedLegacySource(path) ? [] : LEGACY_CONTENT_IDENTITY_PATTERNS
+      .filter((pattern) => pattern.test(identitySource));
+    const architectureMatches = REMOVED_CONTENT_ARCHITECTURE_PATTERNS
+      .filter((pattern) => pattern.test(sourceWithoutComments));
+    const matches = [...identityMatches, ...architectureMatches]
       .map((pattern) => pattern.source.replace(/\\b/gu, ""));
     return matches.length > 0
-      ? [`${relativeSourcePath(path)}: forbidden active runtime content identity identifier(s): ${matches.join(", ")}`]
+      ? [`${relativeSourcePath(path)}: forbidden content architecture or active runtime identity identifier(s): ${matches.join(", ")}`]
       : [];
   });
 }

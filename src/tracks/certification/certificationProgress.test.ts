@@ -2,9 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createTrainingAttempt, type ReviewQueueEntry } from "../../domain";
 import { buildCloudCertificationProgressViewModel } from "./";
-import { makeQuestion } from "../../testing/fixtures";
 
-const question = makeQuestion({ id: "fixture-certification-progress" });
+const question = Object.freeze({ id: "fixture-certification-progress", domain: "setup_environment" as const });
 const artifactSha256 = "f".repeat(64);
 const ref = { trackId: "google-cloud-associate-cloud-engineer" as const, questionId: question.id, contentVersion: "fixture", artifactSha256 };
 function attempt(kind: "correct" | "partial" | "incorrect", id: string, modeId = "certification-focus-practice") { return createTrainingAttempt({ occurrenceId: "occurrence-1", id, sessionId: id, trackId: "google-cloud-associate-cloud-engineer", modeId, item: ref, response: { kind: "option_selection", selectedOptionIds: [] }, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, { axisId: "mistake_type", nodeId: "confused_services" }] }, answeredAt: `2026-01-0${id.length}T00:00:00.000Z`, committedAt: `2026-01-0${id.length}T00:00:00.000Z` }); }

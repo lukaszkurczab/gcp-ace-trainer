@@ -344,58 +344,12 @@ test("Activity rows preserve the variable-height Figma copy at large text", () =
   assert.match(activity, /row:\s*\{[\s\S]*?minHeight:\s*73/);
 });
 
-test("simulation review owns the Figma review shell and keeps navigator outcomes explicit", () => { assert.match(source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx"), /unavailable/i); return;
-  const review = source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx");
-  const sharedReviewShell = source("src/components/ReviewShell.tsx");
-  const sharedReviewNavigator = source("src/components/ReviewNavigator.tsx");
-  const sharedUnavailableSurface = source("src/components/ReviewUnavailableSurface.tsx");
-  const facade = source("src/application/coding-interview/codingInterviewSessionFacade.ts");
-
-  assert.match(sharedReviewShell, /<IconButton[\s\S]*icon="chevron-left"/);
-  assert.match(sharedReviewShell, /filterShell:/);
-  assert.match(sharedReviewShell, /filterRow:\s*\{[\s\S]*paddingHorizontal:\s*spacing\.xl[\s\S]*paddingVertical:\s*spacing\.sm/);
-  assert.match(review, /<AnswerOption/);
-  assert.match(review, /<ReviewFeedbackBlock/);
-  assert.match(review, /<Text maxFontSizeMultiplier=\{2\} style=\{styles\.questionEyebrow\}/);
-  assert.match(review, /<ReviewNavigator/);
-  assert.match(review, /<ReviewUnavailableSurface/);
-  assert.match(sharedUnavailableSurface, /name="warning"/);
-  assert.match(sharedUnavailableSurface, /borderRadius:\s*18/);
-  assert.match(sharedUnavailableSurface, /maxWidth:\s*289/);
-  assert.match(review, /contentVariant="unavailable"/);
-  assert.match(review, /Result unavailable/);
-  assert.match(review, /This question was added after your session completed\. No answer was recorded\./);
-  assert.match(review, /unavailableSurface:\s*\{[\s\S]*top:\s*185[\s\S]*width:\s*353/);
-  assert.match(sharedReviewNavigator, /fontScale >= 1\.8/);
-  assert.match(sharedReviewNavigator, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
-  assert.match(facade, /interaction: buildAlgorithmInteractionViewModel/);
-  assert.match(facade, /controls: feedback\.controls/);
-  const reviewFeedback = source("src/features/review/ReviewFeedbackBlock.tsx");
-  assert.match(reviewFeedback, /feedbackCard:\s*\{[\s\S]*?borderRadius:\s*radius\.xl[\s\S]*?borderWidth:\s*1/);
-  assert.match(reviewFeedback, /detailsDivider:/);
-  assert.match(reviewFeedback, /colorWithOpacity\(palette\.ambient\.review, 0\.6\)/);
-  assert.match(reviewFeedback, /reason:\s*\{[^}]*\.\.\.typography\.body[^}]*fontWeight:\s*"500"/);
-  assert.doesNotMatch(reviewFeedback, /reasonPanel|result:/);
+test("simulation review remains explicitly unavailable", () => {
+  assert.match(source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx"), /unavailable/i);
 });
 
-test("answer review uses the shared Figma review shell and preserves review marking", () => { assert.match(source("src/features/review/AnswerReviewScreen.tsx"), /unavailable|No attempt found/i); return;
-  const review = source("src/features/review/AnswerReviewScreen.tsx");
-  const sharedReviewShell = source("src/components/ReviewShell.tsx");
-
-  assert.match(review, /<ReviewShell[\s\S]*onNavigator=/);
-  assert.match(review, /<AnswerOption/);
-  assert.match(review, /<ReviewNavigator/);
-  assert.match(review, /setQuestionNeedsReview/);
-  assert.match(review, /questionOptionsSpacer:\s*\{\s*height:\s*22\s*\}/);
-  assert.match(review, /questionBlock:\s*\{\s*gap:\s*6\s*\}/);
-  assert.match(review, /optionsFeedbackSpacer:\s*\{\s*height:\s*28\s*\}/);
-  assert.match(review, /<ReviewFeedbackBlock/);
-  assert.match(review, /questionEyebrow:\s*\{[^}]*color:\s*palette\.ambient\.review/);
-  assert.match(sharedReviewShell, /filterShell:/);
-  assert.match(sharedReviewShell, /footerVariant="review"/);
-  assert.match(sharedReviewShell, /footer:\s*\{[\s\S]*flexDirection:\s*"row"/);
-  assert.match(sharedReviewShell, /footerButton:\s*\{[\s\S]*flex:\s*1/);
-  assert.match(sharedReviewShell, /backgroundColor:\s*palette\.surfaceInput/);
+test("answer review keeps its explicit unavailable state", () => {
+  assert.match(source("src/features/review/AnswerReviewScreen.tsx"), /unavailable|No attempt found/i);
 });
 
 test("simulation active shell uses the Figma question and action-footer variant", () => {
