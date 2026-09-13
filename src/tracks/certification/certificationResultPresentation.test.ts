@@ -12,13 +12,14 @@ test("Certification result keeps truthful session metrics and routes Focus domai
   assert.match(source, /Promise\.all\(\[useCases\.loadSummary\(capturedRequestKey\), useCases\.loadSessionRecord\(capturedRequestKey\)\]\)/);
   assert.match(source, /<SessionResultOverview/);
   assert.match(source, /normalizeSessionResultDetails\(result\.evidence\.details, answeredCount, summary\.certificationMaxPoints \?\? undefined\)/);
+  assert.match(source, /scoreCanonicalQuestion\(question, question\.answer\)\.maxPoints/);
   assert.match(source, /session\.requestedLength/);
   assert.match(source, /session\.actualLength/);
   assert.match(source, /answeredCount/);
   assert.match(source, /result\.unansweredOccurrenceIds\.length/);
   assert.match(source, /formatElapsed\(session\.activeForegroundMs\)/);
   assert.match(source, /formatMode\(session\.modeId\)/);
-  assert.match(source, /formatSessionTopic\(session\.trackId, session\.configurationSnapshot\.domain, t\)/);
+  assert.match(source, /formatSessionTopic\(session\.trackId, summary\.certificationTopicId, t\)/);
   assert.match(source, /formatDomains\(session\.configurationSnapshot\.sectionPresentation\)/);
 });
 

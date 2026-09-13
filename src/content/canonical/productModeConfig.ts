@@ -99,8 +99,8 @@ const designConfigs = (trackId: string, nodeId: string): readonly ProductModeCon
   config({ trackId, modeId: "design-interview-weak-area-review", availability: "evidence_conditioned", requestedLengths: [1, 10], minimumActualLength: 1, defaultRequestedLength: 10, reinsertPolicy: "disabled", selection: reviewSelection(nodeId) }),
 ];
 
-const certificationConfigs = (trackId: string, nodeId: string, lengths: readonly number[], minimum: number): readonly ProductModeConfig[] => [
-  config({ trackId, modeId: "certification-focus-practice", availability: "immediate", requestedLengths: lengths, minimumActualLength: minimum, defaultRequestedLength: minimum, reinsertPolicy: "disabled", selection: nodeSelection(nodeId) }),
+const certificationConfigs = (trackId: string, nodeId: string, lengths: readonly number[], minimum: number, focusFeedbackTiming?: ProductFeedbackTiming): readonly ProductModeConfig[] => [
+  config({ trackId, modeId: "certification-focus-practice", availability: "immediate", requestedLengths: lengths, minimumActualLength: minimum, defaultRequestedLength: minimum, ...(focusFeedbackTiming ? { feedbackTiming: focusFeedbackTiming } : {}), reinsertPolicy: "disabled", selection: nodeSelection(nodeId) }),
   config({ trackId, modeId: "certification-weak-area-review", availability: "evidence_conditioned", requestedLengths: lengths.length === 1 ? lengths : [10, 20], minimumActualLength: minimum, defaultRequestedLength: minimum, reinsertPolicy: "disabled", selection: reviewSelection(nodeId) }),
   config({ trackId, modeId: "certification-quick-review", availability: "evidence_conditioned", requestedLengths: [minimum], minimumActualLength: minimum, defaultRequestedLength: minimum, reinsertPolicy: "disabled", selection: reviewSelection(nodeId) }),
 ];
@@ -118,7 +118,7 @@ const CANDIDATE_CONFIGS: readonly ProductModeConfig[] = [
   ...certificationConfigs(TRACKS.aws.id, TRACKS.aws.freeNodeId, [4], 4),
   ...certificationConfigs(TRACKS.az104.id, TRACKS.az104.freeNodeId, [10, 20, 40], 10),
   ...certificationConfigs(TRACKS.ai901.id, TRACKS.ai901.freeNodeId, [10, 20, 40], 10),
-  ...certificationConfigs(TRACKS.claude.id, TRACKS.claude.freeNodeId, [10, 20, 40], 10),
+  ...certificationConfigs(TRACKS.claude.id, TRACKS.claude.freeNodeId, [10, 20, 40], 10, SELECTABLE_FEEDBACK),
 ];
 
 const EXPECTED_CONFIG_BY_KEY = new Map(CANDIDATE_CONFIGS.map((entry) => [key(entry.trackId, entry.modeId), entry]));

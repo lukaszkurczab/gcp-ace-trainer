@@ -1,5 +1,5 @@
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import type { AttemptResultKind, TrackId, TrainingSession, TrainingSessionDraft } from "../../domain";
+import { resolvedContentRefsEqual, type AttemptResultKind, type TrackId, type TrainingSession, type TrainingSessionDraft } from "../../domain";
 import { getTrackRegistration } from "../../domain";
 import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts } from "../learningReadModels";
 import {
@@ -16,9 +16,9 @@ import {
   type PreparedSession,
 } from "../trainingLifecycle";
 import { isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
-import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
+import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalQuestionResponse, type JsonValue, type Question } from "../../content/canonical";
 
-type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; competency?: string; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
+type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationExamResumeResult = Readonly<{ kind: "ready"; projection: CertificationExamProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationAbandonmentResult =
@@ -28,7 +28,7 @@ export type CertificationAbandonmentResult =
 
 export type CertificationPracticeProjection = Readonly<{
   session: TrainingSession;
-  question: Question;
+  question: CertificationPracticeQuestion;
   occurrenceId: string;
   ordinal: number;
   total: number;
@@ -40,6 +40,37 @@ export type CertificationPracticeProjection = Readonly<{
     reason: Question["feedback"]["reason"];
     details: Question["feedback"]["details"];
   }> | null;
+}>;
+export type CertificationPracticeQuestion = Readonly<{
+  constraints: readonly string[];
+  interaction:
+    | Readonly<{ type: "choice_single"; scoringMethod: "exact_selected_set"; options: readonly Readonly<{ optionId: string; text: string }>[] }>
+    | Readonly<{ type: "choice_multiple"; scoringMethod: "exact_selected_set"; options: readonly Readonly<{ optionId: string; text: string }>[] }>;
+  nodeId: string;
+  prompt: string;
+  questionId: string;
+}>;
+export type CertificationPracticeReviewItem = Readonly<{
+  constraints: readonly string[];
+  correctOptionIds: readonly string[];
+  details: JsonValue;
+  item: TrainingSession["itemOrder"][number]["item"];
+  occurrenceId: string;
+  options: readonly Readonly<{ optionId: string; text: string }>[];
+  ordinal: number;
+  prompt: string;
+  questionId: string;
+  reason: string;
+  result: AttemptResultKind;
+  selectedOptionIds: readonly string[];
+  selectionMode: "single" | "multiple";
+}>;
+export type CertificationPracticeReviewProjection = Readonly<{
+  feedbackMode: "afterEachAnswer" | "atSessionEnd";
+  items: readonly CertificationPracticeReviewItem[];
+  modeId: CertificationPracticeModeId;
+  sessionId: string;
+  total: number;
 }>;
 export type CertificationExamProjection = Readonly<{
   session: TrainingSession;
@@ -61,8 +92,9 @@ export class CertificationExamExpiredError extends Error {
   }
 }
 
-async function startCertificationPracticeSession(input: Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; competency?: string; source?: string; trackId?: TrackId }>): Promise<PreparedSession> {
-  const prepared = await startTrainingSession({ trackId: input.trackId ?? "google-cloud-associate-cloud-engineer", modeId: input.modeId, source: input.source, request: input });
+async function startCertificationPracticeSession(input: Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; source?: string; trackId?: TrackId }>): Promise<PreparedSession> {
+  const feedbackTiming = input.feedbackMode === "atSessionEnd" ? "after_session_completion" : input.feedbackMode === "afterEachAnswer" ? "after_each_durable_submit" : undefined;
+  const prepared = await startTrainingSession({ trackId: input.trackId ?? "google-cloud-associate-cloud-engineer", modeId: input.modeId, source: input.source, request: { ...input, ...(feedbackTiming ? { feedbackTiming } : {}) } });
   await getForegroundSessionTimerFacade().initialize(prepared.session);
   return prepared;
 }
@@ -111,18 +143,89 @@ export async function getCertificationPracticeProjection(): Promise<Certificatio
   const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId) ?? null;
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const responseAttempt = materializedAttempt ?? committedAttempt;
-  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
-  const feedback = materializedAttempt ? Object.freeze({ result: materializedAttempt.result.kind, reason: question.feedback.reason, details: question.feedback.details }) : null;
+  const resolvedQuestion = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+  const feedbackMode = certificationFeedbackModeFromSession(session);
+  const feedback = projectCertificationPracticeFeedback(feedbackMode, materializedAttempt, resolvedQuestion);
   const [operation, time] = await Promise.all([
     lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),
     getForegroundSessionTimerFacade().projection(session),
   ]);
   const response = responseAttempt ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: responseAttempt.response as CanonicalQuestionResponse }) : null;
-  return Object.freeze({ session, question, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, elapsedForegroundMs: time.elapsedForegroundMs, operation, response, feedback });
+  return Object.freeze({ session, question: projectCertificationPracticeQuestion(resolvedQuestion), occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, elapsedForegroundMs: time.elapsedForegroundMs, operation, response, feedback });
 }
 export async function submitCertificationPracticeResponse(response: CanonicalQuestionResponse): Promise<void> {
   await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireCertificationPractice());
   await getTrainingLifecycleUseCases().submitPracticeResponse(response);
+}
+
+/** Reads complete, exact evidence only after verified Certification Practice completion. */
+export async function getCertificationPracticeReviewProjection(sessionId: string): Promise<CertificationPracticeReviewProjection> {
+  const lifecycle = getTrainingLifecycleUseCases();
+  const [result, session, attemptsRecord] = await Promise.all([
+    lifecycle.loadSummary(sessionId),
+    lifecycle.loadSessionRecord(sessionId),
+    loadTrainingAttempts(),
+  ]);
+  if (session.id !== sessionId || session.status !== "completed" || !session.completedAt || getTrackRegistration(session.trackId).familyId !== "certification" || !isCertificationPracticeModeId(session.modeId) || result.sessionId !== session.id || result.trackId !== session.trackId || result.completedAt !== session.completedAt || result.evidence.familyId !== "certification") {
+    throw new TrainingApplicationFailure("summary_unavailable", "Answer review requires one verified completed Certification Practice session.");
+  }
+  const occurrenceIds = session.itemOrder.map((occurrence) => occurrence.occurrenceId);
+  if (result.totalOccurrences !== session.actualLength || JSON.stringify(result.answeredOccurrenceIds) !== JSON.stringify(occurrenceIds) || result.unansweredOccurrenceIds.length !== 0) {
+    throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice completion evidence is incomplete.");
+  }
+
+  const attempts = attemptsRecord.value.filter((attempt) => attempt.sessionId === session.id);
+  const attemptByOccurrenceId = new Map(attempts.map((attempt) => [attempt.occurrenceId, attempt]));
+  if (attempts.length !== session.actualLength || attemptByOccurrenceId.size !== session.actualLength) {
+    throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice answer evidence is missing or duplicated.");
+  }
+
+  const items = await Promise.all(session.itemOrder.map(async (occurrence, index): Promise<CertificationPracticeReviewItem> => {
+    const attempt = attemptByOccurrenceId.get(occurrence.occurrenceId);
+    const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+    if (!attempt || attempt.trackId !== session.trackId || attempt.modeId !== session.modeId || !resolvedContentRefsEqual(attempt.item, occurrence.item) || !isCanonicalResponseComplete(question, attempt.response)) {
+      throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice answer evidence does not match its immutable session plan.");
+    }
+    const response = attempt.response as CanonicalQuestionResponse;
+    const scored = scoreCanonicalQuestion(question, response);
+    if (JSON.stringify(scored) !== JSON.stringify(attempt.result)) {
+      throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice answer evidence has an invalid result.");
+    }
+    if (question.interaction.type !== "choice_single" && question.interaction.type !== "choice_multiple") {
+      throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice review supports only declared choice interactions.");
+    }
+    const selectedOptionIds = response.type === "choice_single" ? [response.optionId] : response.type === "choice_multiple" ? response.optionIds : [];
+    const correctOptionIds = question.answer.type === "choice_single" ? [question.answer.optionId] : question.answer.type === "choice_multiple" ? question.answer.optionIds : [];
+    if (selectedOptionIds.length === 0 || correctOptionIds.length === 0) {
+      throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice review evidence is incomplete.");
+    }
+    return Object.freeze({
+      constraints: Object.freeze([...(question.constraints ?? [])]),
+      correctOptionIds: Object.freeze([...correctOptionIds]),
+      details: question.feedback.details,
+      item: occurrence.item,
+      occurrenceId: occurrence.occurrenceId,
+      options: Object.freeze(question.interaction.options.map((option) => Object.freeze({ optionId: option.optionId, text: option.text }))),
+      ordinal: index + 1,
+      prompt: question.prompt,
+      questionId: question.questionId,
+      reason: question.feedback.reason,
+      result: attempt.result.kind,
+      selectedOptionIds: Object.freeze([...selectedOptionIds]),
+      selectionMode: question.interaction.type === "choice_multiple" ? "multiple" : "single",
+    });
+  }));
+  if (!certificationReviewEvidenceMatches(result.evidence.details, attempts)) {
+    throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice result evidence does not match its committed answers.");
+  }
+
+  return Object.freeze({
+    feedbackMode: certificationFeedbackModeFromSession(session),
+    items: Object.freeze(items),
+    modeId: session.modeId,
+    sessionId: session.id,
+    total: session.actualLength,
+  });
 }
 export async function advanceCertificationPracticeSession(): Promise<TrainingSession> { return getTrainingLifecycleUseCases().advancePracticeSession(); }
 export async function recoverCertificationPracticeOperation(): Promise<void> { await getTrainingLifecycleUseCases().recoverActiveTrainingOperation(); }
@@ -318,6 +421,56 @@ async function resumeCertificationPractice(expected: TrainingSession): Promise<C
   }
   await getForegroundSessionTimerFacade().restoreForResume(resumed);
   return Object.freeze({ kind: "ready", projection: await getCertificationPracticeProjection() });
+}
+
+function certificationFeedbackModeFromSession(session: TrainingSession): "afterEachAnswer" | "atSessionEnd" {
+  const feedbackMode = session.configurationSnapshot.feedbackMode;
+  if (feedbackMode !== "afterEachAnswer" && feedbackMode !== "atSessionEnd") {
+    throw new TrainingApplicationFailure("corrupt_state", "Certification Practice is missing its immutable feedback timing.");
+  }
+  return feedbackMode;
+}
+
+/** Removes all answer and feedback material before a practice question crosses the application boundary. */
+export function projectCertificationPracticeQuestion(question: Question): CertificationPracticeQuestion {
+  if (question.interaction.type !== "choice_single" && question.interaction.type !== "choice_multiple") {
+    throw new TrainingApplicationFailure("missing_content", "Certification Practice requires a declared choice interaction.");
+  }
+  const options = Object.freeze(question.interaction.options.map((option) => Object.freeze({ optionId: option.optionId, text: option.text })));
+  return Object.freeze({
+    constraints: Object.freeze([...(question.constraints ?? [])]),
+    interaction: Object.freeze({ type: question.interaction.type, scoringMethod: "exact_selected_set", options }),
+    nodeId: question.nodeId,
+    prompt: question.prompt,
+    questionId: question.questionId,
+  });
+}
+
+/** Deferred sessions expose committed response state, but never correctness before completion. */
+export function projectCertificationPracticeFeedback(
+  feedbackMode: "afterEachAnswer" | "atSessionEnd",
+  attempt: Readonly<{ result: Readonly<{ kind: AttemptResultKind }> }> | null,
+  question: Question,
+): CertificationPracticeProjection["feedback"] {
+  return attempt && feedbackMode === "afterEachAnswer"
+    ? Object.freeze({ result: attempt.result.kind, reason: question.feedback.reason, details: question.feedback.details })
+    : null;
+}
+
+export function certificationReviewEvidenceMatches(
+  details: unknown,
+  attempts: readonly Readonly<{ result: Readonly<{ earnedPoints: number; kind: AttemptResultKind; maxPoints: number }> }>[],
+): boolean {
+  if (!details || typeof details !== "object" || Array.isArray(details)) return false;
+  const evidence = details as Record<string, unknown>;
+  const expected = {
+    correctCount: attempts.filter((attempt) => attempt.result.kind === "correct").length,
+    incorrectCount: attempts.filter((attempt) => attempt.result.kind === "incorrect").length,
+    maxPoints: attempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0),
+    partialCount: attempts.filter((attempt) => attempt.result.kind === "partial").length,
+    pointsEarned: attempts.reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0),
+  };
+  return Object.entries(expected).every(([key, value]) => evidence[key] === value);
 }
 
 async function requireActive(): Promise<TrainingSession> {

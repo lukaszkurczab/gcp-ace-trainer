@@ -10,6 +10,7 @@ import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { ResolvedContentRef } from "../../domain";
 import { ContentReportSheet, type ContentReportSurfaceContext } from "../reports/ContentReportSheet";
+import { detailLines } from "./feedbackDetails";
 
 
 export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }: Readonly<{ feedback: PracticeFeedback; item: ResolvedContentRef; itemId: string; reportSurface: ContentReportSurfaceContext }>) {
@@ -27,13 +28,11 @@ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }:
       <View style={styles.detailsSection}>
         <View style={styles.detailsDivider} />
         {detailsDisclosure}
-        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <Text key={`${message.kind}:${message.targetId}`} style={styles.detailText}>{message.text}</Text>)}{isScalar(feedback.details) ? <Text style={styles.detailText}>{String(feedback.details)}</Text> : null}<ContentReportSheet item={item} surface={reportSurface} /></View> : null}
+        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <Text key={`${message.kind}:${message.targetId}`} style={styles.detailText}>{message.text}</Text>)}{detailLines(feedback.details).map((line, index) => <Text key={`detail:${index}`} maxFontSizeMultiplier={2} style={styles.detailText}>{line}</Text>)}<ContentReportSheet item={item} surface={reportSurface} /></View> : null}
       </View>
     </View>
   );
 }
-
-function isScalar(value: PracticeFeedback["details"]): value is string | number | boolean | null { return value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean"; }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   details: { gap: spacing.md, paddingTop: spacing.xs },

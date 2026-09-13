@@ -81,7 +81,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     setRecoveryFailure(null);
     void (async () => {
       try {
-    const opened = await openCertificationPracticeSession(mode === "certification-diagnostic-baseline" || mode === "certification-quick-review" ? { modeId: mode, trackId: route.params.trackId, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-scenario-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, competency: route.params.competencyId, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, source: route.params.source, expectedSessionId: route.params.expectedSessionId });
+    const opened = await openCertificationPracticeSession(mode === "certification-diagnostic-baseline" || mode === "certification-quick-review" ? { modeId: mode, trackId: route.params.trackId, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-scenario-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, competency: route.params.competencyId, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId });
         if (opened.kind === "active_session_conflict") { if (live) setConflict(opened.session); return; }
         await enterCertificationPracticeForeground();
         foregroundEntered = true;
@@ -139,6 +139,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   if (error) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Cloud Practice unavailable")} description={t(error)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (!projection) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><PracticeSessionLoadingSkeleton /></Screen>;
   const questionView = toCanonicalQuestionViewModel(projection.question);
+  const feedbackTiming = projection.session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "atSessionEnd" : "afterEachAnswer";
   const multiple = projection.question.interaction.type === "choice_multiple";
   const feedback = projection.feedback;
   const renderedCompletionOperation = completionFailure?.kind === "retry_completion" || completionFailure?.kind === "recover_completion" ? completionFailure.operation : completionOperation;
@@ -306,7 +307,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
         : undefined;
   const primaryAction = completionFailure
     ? undefined
-    : getPracticePrimaryAction({ feedbackTiming: "afterEachAnswer", hasLocalResponse: editable ? selected.length > 0 : false, isFinalPosition: projection.ordinal === projection.total, phase }) ?? undefined;
+    : getPracticePrimaryAction({ feedbackTiming, hasLocalResponse: editable ? selected.length > 0 : false, isFinalPosition: projection.ordinal === projection.total, phase }) ?? undefined;
   return <PracticeSessionSurface
     allowLeave={!completionFailure}
     exit={{ kind: exit }}
@@ -331,7 +332,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     question={{ itemId: questionView.itemId, prompt: questionView.prompt, constraints: questionView.constraints, responseControl: questionView.interaction.kind === "choice" ? { ...questionView.interaction, options: questionView.interaction.options.map((option) => ({ ...option, state: selected.includes(option.id) ? "selected" as const : "neutral" as const })) , selectionMode: multiple ? "multiple" : "single" } : { kind: "choice", options: [], selectionMode: "single" } }}
     retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : canRecover ? "Restore session" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}
-    runtimeIdentity={{ actualLength: projection.session.actualLength, feedbackTiming: "afterEachAnswer", itemId: questionView.itemId, modeId: projection.session.modeId, ordinal: projection.ordinal, roadmapNodeId: projection.question.nodeId, sessionId: projection.session.id, trackId: projection.session.trackId }}
+    runtimeIdentity={{ actualLength: projection.session.actualLength, feedbackTiming, itemId: questionView.itemId, modeId: projection.session.modeId, ordinal: projection.ordinal, roadmapNodeId: projection.question.nodeId, sessionId: projection.session.id, trackId: projection.session.trackId }}
     timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatPracticeElapsedTime(projection.elapsedForegroundMs)}`, label: formatPracticeElapsedTime(projection.elapsedForegroundMs) }}
   />;
 }

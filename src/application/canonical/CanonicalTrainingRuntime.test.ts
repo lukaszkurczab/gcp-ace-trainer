@@ -65,6 +65,67 @@ test("resume and query boundaries reject tampering, foreign attempts and old pin
   const old = reviewFor(prepared.session.itemOrder[0]!.item, NOW); const view = await runtime.queryReview({ trackId: track.trackId, reviews: [old, { ...old, id: "old-artifact", sourceItem: { ...old.sourceItem, artifactSha256: "f".repeat(64) } }], now: NOW }); assert.equal((view as { due: readonly ReviewQueueEntry[] }).due.length, 1);
 });
 
+test("Claude Focus persists selectable feedback, scores single and multi-select, and finalizes complete evidence", async () => {
+  const catalog = await catalogPromise;
+  const track = catalog.getTrack("claude-certified-architect-professional-certification");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const prepare = (sessionId: string, feedbackTiming?: "after_each_durable_submit" | "after_session_completion") => runtime.prepare({
+    trackId: track.trackId,
+    modeId: "certification-focus-practice",
+    request: { sessionId, requestedLength: 40, ...(feedbackTiming ? { feedbackTiming } : {}) },
+    attempts: [],
+    reviews: [],
+    now: NOW,
+  });
+  const immediate = await prepare("claude-focus-immediate", "after_each_durable_submit");
+  const deferred = await prepare("claude-focus-deferred", "after_session_completion");
+  assert.equal(immediate.session.configurationSnapshot.feedbackMode, "afterEachAnswer");
+  assert.equal(deferred.session.configurationSnapshot.feedbackMode, "atSessionEnd");
+  await runtime.validateResume({ session: immediate.session, draft: null });
+  await runtime.validateResume({ session: deferred.session, draft: null });
+
+  const sessionAt = async (index: number) => {
+    const base = createTrainingSession({ ...deferred.session, currentItemIndex: index, planFingerprint: undefined, taxonomyVersion: undefined });
+    const fingerprint = await createContentSessionPlanFingerprint({ ...base, taxonomyVersion: "canonical-content-v1" });
+    return createTrainingSession({ ...base, taxonomyVersion: "canonical-content-v1", planFingerprint: fingerprint });
+  };
+  const attempts: TrainingAttempt<unknown>[] = [];
+  let singleCount = 0;
+  let multipleCount = 0;
+  for (let index = 0; index < deferred.session.itemOrder.length; index += 1) {
+    const occurrence = deferred.session.itemOrder[index]!;
+    const question = track.getQuestion(occurrence.item.questionId)!;
+    if (question.interaction.type === "choice_single") singleCount += 1;
+    if (question.interaction.type === "choice_multiple") multipleCount += 1;
+    const response = question.interaction.type === "choice_multiple" && multipleCount === 1 ? wrongResponse(question) : responseFor(question);
+    const submission = await runtime.submitPractice({ session: await sessionAt(index), response, attempts, reviews: [], now: NOW });
+    attempts.push(submission.attempt);
+  }
+  assert.ok(singleCount > 0);
+  assert.ok(multipleCount > 0);
+  const finalization = await runtime.finalizePractice({ session: await sessionAt(deferred.session.itemOrder.length - 1), attempts, now: NOW });
+  assert.equal(finalization.session.status, "completed");
+  assert.deepEqual(finalization.result.evidence.details, {
+    activeForegroundMs: 0,
+    correctCount: attempts.filter((attempt) => attempt.result.kind === "correct").length,
+    partialCount: attempts.filter((attempt) => attempt.result.kind === "partial").length,
+    incorrectCount: attempts.filter((attempt) => attempt.result.kind === "incorrect").length,
+    pointsEarned: attempts.reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0),
+    maxPoints: attempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0),
+  });
+  assert.equal(attempts.filter((attempt) => attempt.result.kind !== "correct").length, 1);
+
+  const fixedTrack = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  await assert.rejects(new CanonicalTrainingRuntime(fixedTrack).prepare({
+    trackId: fixedTrack.trackId,
+    modeId: "certification-focus-practice",
+    request: { sessionId: "gcp-focus-deferred", requestedLength: 10, feedbackTiming: "after_session_completion" },
+    attempts: [],
+    reviews: [],
+    now: NOW,
+  }), /fixed feedback timing/);
+});
+
 test("reinsert resolves exact branch after three durable intervening submissions and preserves ordinary branch on correct", async () => {
   const catalog = await catalogPromise; const track = catalog.getTrack("coding-interview-dsa-problem-solving"); const runtime = new CanonicalTrainingRuntime(track); const mode = track.getMode("coding-interview-guided-practice");
   const prepare = (id: string) => runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: id, requestedLength: 10 }, attempts: [], reviews: [], now: NOW });

@@ -10,11 +10,14 @@ before(async () => { await contentPackageRuntimeOwner.verifyBundledPackages(); }
 const ordinaryConfiguration = {
   answerChanges: "none",
   feedbackMode: "afterEachAnswer",
+  kind: "practice",
   navigation: "linear",
+  reinsertEnabled: false,
   submission: "perItem",
   timer: "elapsedForeground",
 } as const;
 const GCP_FREE_NODE_ID = "organization_projects_policies_services_quotas_and_assets";
+const CLAUDE_FREE_NODE_ID = "solution_design_and_architecture";
 
 function certificationSession(input: Readonly<{
   configuration: TrainingSession["configurationSnapshot"];
@@ -150,26 +153,54 @@ test("Independent Practice direct entry fails because it is excluded from the bu
 
 test("Certification resume routes preserve exact immutable configuration for package modes", () => {
   const routes = [
-    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationDiagnosticBaseline" }, id: "diagnostic", modeId: "certification-diagnostic-baseline", requestedLength: 40 })),
-    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, domain: GCP_FREE_NODE_ID, kind: "certificationFocusPractice" }, id: "focus", modeId: "certification-focus-practice", requestedLength: 20 })),
-    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationWeakAreaReview" }, id: "weak", modeId: "certification-weak-area-review", requestedLength: 20 })),
-    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationQuickReview", maximumLength: 10 }, id: "quick", modeId: "certification-quick-review", requestedLength: 10 })),
+    buildCertificationPracticeResumeRoute(certificationSession({ configuration: ordinaryConfiguration, id: "diagnostic", modeId: "certification-diagnostic-baseline", requestedLength: 40 })),
+    buildCertificationPracticeResumeRoute(certificationSession({ configuration: ordinaryConfiguration, id: "focus", modeId: "certification-focus-practice", requestedLength: 20 })),
+    buildCertificationPracticeResumeRoute(certificationSession({ configuration: ordinaryConfiguration, id: "weak", modeId: "certification-weak-area-review", requestedLength: 20 })),
+    buildCertificationPracticeResumeRoute(certificationSession({ configuration: ordinaryConfiguration, id: "quick", modeId: "certification-quick-review", requestedLength: 10 })),
+    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, feedbackMode: "atSessionEnd" }, id: "claude-focus-deferred", modeId: "certification-focus-practice", requestedLength: 20, trackId: "claude-certified-architect-professional-certification" })),
   ];
 
-  assert.deepEqual(routes.map((route) => ({ competencyId: route.competencyId, expectedSessionId: route.expectedSessionId, mode: route.mode, sessionLength: route.sessionLength, topicId: route.topicId })), [
-    { competencyId: undefined, expectedSessionId: "diagnostic", mode: "certification-diagnostic-baseline", sessionLength: 40, topicId: "" },
-    { competencyId: undefined, expectedSessionId: "focus", mode: "certification-focus-practice", sessionLength: 20, topicId: GCP_FREE_NODE_ID },
-    { competencyId: undefined, expectedSessionId: "weak", mode: "certification-weak-area-review", sessionLength: 20, topicId: "" },
-    { competencyId: undefined, expectedSessionId: "quick", mode: "certification-quick-review", sessionLength: 10, topicId: "" },
+  assert.deepEqual(routes.map((route) => ({ competencyId: route.competencyId, expectedSessionId: route.expectedSessionId, feedbackMode: route.feedbackMode, mode: route.mode, sessionLength: route.sessionLength, topicId: route.topicId })), [
+    { competencyId: undefined, expectedSessionId: "diagnostic", feedbackMode: "afterEachAnswer", mode: "certification-diagnostic-baseline", sessionLength: 40, topicId: "" },
+    { competencyId: undefined, expectedSessionId: "focus", feedbackMode: "afterEachAnswer", mode: "certification-focus-practice", sessionLength: 20, topicId: GCP_FREE_NODE_ID },
+    { competencyId: undefined, expectedSessionId: "weak", feedbackMode: "afterEachAnswer", mode: "certification-weak-area-review", sessionLength: 20, topicId: "" },
+    { competencyId: undefined, expectedSessionId: "quick", feedbackMode: "afterEachAnswer", mode: "certification-quick-review", sessionLength: 10, topicId: "" },
+    { competencyId: undefined, expectedSessionId: "claude-focus-deferred", feedbackMode: "atSessionEnd", mode: "certification-focus-practice", sessionLength: 20, topicId: CLAUDE_FREE_NODE_ID },
   ]);
 });
 
 test("Certification resume rejects stale, cross-track, exam, and non-active sessions explicitly", () => {
-  const staleFocus = certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice" }, id: "stale-focus", modeId: "certification-focus-practice", requestedLength: 10 });
-  assert.throws(() => buildCertificationPracticeResumeRoute(staleFocus), /immutable topic and length/);
-  assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationSimulation" }, id: "exam", modeId: "certification-exam-simulation", requestedLength: 50 })), /ordinary Certification session/);
-  assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice", domain: "operations" }, id: "cross-track", modeId: "certification-focus-practice", requestedLength: 10, trackId: "coding-interview-dsa-problem-solving" })), /Certification package/);
-  assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice", domain: "operations" }, id: "completed", modeId: "certification-focus-practice", requestedLength: 10, status: "completed" })), /Only an active/);
+  const staleFocus = certificationSession({ configuration: ordinaryConfiguration, id: "stale-focus", modeId: "certification-focus-practice", requestedLength: 15 });
+  assert.throws(() => buildCertificationPracticeResumeRoute(staleFocus), /valid immutable session length/);
+  assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: ordinaryConfiguration, id: "exam", modeId: "certification-exam-simulation", requestedLength: 50 })), /ordinary Certification session/);
+  assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: ordinaryConfiguration, id: "cross-track", modeId: "certification-focus-practice", requestedLength: 10, trackId: "coding-interview-dsa-problem-solving" })), /Certification package/);
+  assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: ordinaryConfiguration, id: "completed", modeId: "certification-focus-practice", requestedLength: 10, status: "completed" })), /Only an active/);
+  assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, feedbackMode: "atSessionEnd" }, id: "fixed-focus", modeId: "certification-focus-practice", requestedLength: 10 })), /canonical immutable interaction configuration/);
+});
+
+test("only Claude Focus exposes selectable feedback while other Certification setup stays fixed", () => {
+  for (const feedbackMode of ["afterEachAnswer", "atSessionEnd"] as const) {
+    assert.equal(buildPracticeSessionConfig({
+      feedbackMode,
+      mode: "certification-focus-practice",
+      sessionLength: 20,
+      source: "practiceSetup",
+      topicId: CLAUDE_FREE_NODE_ID,
+      trackId: "claude-certified-architect-professional-certification",
+    }).feedbackMode, feedbackMode);
+  }
+  assert.throws(() => buildPracticeSessionConfig({
+    feedbackMode: "atSessionEnd",
+    mode: "certification-focus-practice",
+    sessionLength: 20,
+    source: "practiceSetup",
+    topicId: GCP_FREE_NODE_ID,
+    trackId: "google-cloud-associate-cloud-engineer",
+  }), /does not render or accept undeclared setup controls/);
+  for (const mode of ["certification-weak-area-review", "certification-quick-review"] as const) {
+    assert.throws(() => buildPracticeSessionConfig({ feedbackMode: "atSessionEnd", mode, topicId: "", trackId: "claude-certified-architect-professional-certification" }), /does not render or accept/);
+  }
+  assert.throws(() => buildPracticeSessionConfig({ feedbackMode: "atSessionEnd", mode: "certification-diagnostic-baseline", topicId: "", trackId: "claude-certified-architect-professional-certification" }), /unavailable/);
 });
 
 

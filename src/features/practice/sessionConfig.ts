@@ -9,6 +9,7 @@ import {
 import type { AlgorithmSelectionScope } from "../../application/coding-interview/codingInterviewPreparationRequest";
 import { CERTIFICATION_PRACTICE_MODE_IDS, isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+import type { ProductModeConfig } from "../../content/canonical";
 import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../tracks/design-interview";
 
 export type PracticeSessionSource =
@@ -143,10 +144,11 @@ export function buildPracticeSessionConfig(
   }
   if (mode === "certification-focus-practice") {
     if (!isCloudTopicId(input.topicId) && !packageProfile.questions.some((question) => question.nodeId === input.topicId)) throw new Error("Certification Focus Practice requires an explicitly selected installed topic.");
-    if (input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Focus Practice does not render or accept undeclared setup controls.");
+    if (input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Focus Practice does not render or accept undeclared setup controls.");
+    const feedbackMode = resolveCertificationFeedbackMode(packageMode, input.feedbackMode);
     const sessionLength = input.sessionLength ?? packageMode.defaultRequestedLength as PracticeSessionLength;
     if (!sessionLength || !packageMode.requestedLengths.includes(sessionLength)) throw new Error("Certification Focus Practice length is unavailable in this package.");
-    return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
+    return { feedbackMode, mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
   }
   if (mode === "certification-scenario-practice") {
     if (!input.competencyId?.trim()) throw new Error("Certification Scenario Practice requires an explicitly selected competency.");
@@ -180,51 +182,49 @@ export function buildCertificationPracticeResumeRoute(session: TrainingSession):
   if (!isCertificationPracticeModeId(session.modeId)) throw new Error("Certification Practice resume requires an ordinary Certification session.");
   if (!session.id.trim()) throw new Error("Certification Practice resume requires an exact session identity.");
   if (getTrackRegistration(session.trackId).familyId !== "certification") throw new Error("Certification Practice resume requires a Certification package.");
-  assertOrdinaryCertificationConfiguration(session);
+  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(session.trackId).track;
+  const packageMode = packageProfile.getMode(session.modeId);
+  const feedbackMode = assertOrdinaryCertificationConfiguration(session, packageMode);
+
+  if (session.configurationSnapshot.kind !== "practice") {
+    throw new Error("Certification Practice resume requires its canonical immutable practice configuration.");
+  }
 
   if (session.modeId === "certification-diagnostic-baseline") {
-    if (session.configurationSnapshot.kind !== "certificationDiagnosticBaseline" || session.requestedLength !== 40 || session.actualLength !== 40) {
+    if (packageMode.selection.kind !== "exact_ordered_questions" || session.requestedLength !== 40 || session.actualLength !== 40) {
       throw new Error("Certification Diagnostic Baseline resume requires its immutable 40-item configuration.");
     }
-    return exactCertificationResumeRoute({ feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: 40, source: "home", topicId: "", trackId: session.trackId }, session.id);
+    return exactCertificationResumeRoute({ feedbackMode, mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: 40, source: "home", topicId: "", trackId: session.trackId }, session.id);
   }
 
   const exact = (params: PracticeSessionRouteParams): PracticeSessionRouteParams => exactCertificationResumeRoute(params, session.id);
 
   if (session.modeId === "certification-focus-practice") {
-    const domain = session.configurationSnapshot.domain;
-    if (session.configurationSnapshot.kind !== "certificationFocusPractice" || typeof domain !== "string" || !domain.trim()) {
+    if (packageMode.selection.kind !== "node" || !packageMode.selection.nodeId.trim()) {
       throw new Error("Certification Focus Practice resume requires its immutable topic and length.");
     }
-    return exact({ feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: domain, trackId: session.trackId });
+    return exact({ feedbackMode, mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: packageMode.selection.nodeId, trackId: session.trackId });
   }
 
   if (session.modeId === "certification-scenario-practice") {
-    const competencyId = session.configurationSnapshot.competencyId;
-    if (session.configurationSnapshot.kind !== "certificationScenarioPractice" || typeof competencyId !== "string" || !competencyId.trim()) {
-      throw new Error("Certification Scenario Practice resume requires its immutable competency and length.");
-    }
-    return exact({ competencyId, feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: "", trackId: session.trackId });
+    throw new Error("Certification Scenario Practice is not exposed by the canonical package runtime.");
   }
 
   if (session.modeId === "certification-weak-area-review") {
-    if (session.configurationSnapshot.kind !== "certificationWeakAreaReview") {
+    if (packageMode.selection.kind !== "evidence_conditioned") {
       throw new Error("Certification Weak Area Review resume requires its immutable length.");
     }
-    return exact({ feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: "", trackId: session.trackId });
+    return exact({ feedbackMode, mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: "", trackId: session.trackId });
   }
 
   if (session.modeId === "certification-mixed-practice") {
-    if (session.configurationSnapshot.kind !== "certificationMixedPractice") {
-      throw new Error("Certification Mixed Practice resume requires its immutable length.");
-    }
-    return exact({ feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: "", trackId: session.trackId });
+    throw new Error("Certification Mixed Practice is not exposed by the canonical package runtime.");
   }
 
-  if (session.configurationSnapshot.kind !== "certificationQuickReview" || typeof session.configurationSnapshot.maximumLength !== "number" || session.requestedLength !== session.configurationSnapshot.maximumLength) {
+  if (packageMode.selection.kind !== "evidence_conditioned" || session.requestedLength !== packageMode.defaultRequestedLength) {
     throw new Error("Certification Quick Review resume requires its immutable package configuration.");
   }
-  return exact({ feedbackMode: "afterEachAnswer", mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: "", trackId: session.trackId });
+  return exact({ feedbackMode, mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: "", trackId: session.trackId });
 }
 
 function exactCertificationResumeRoute(params: PracticeSessionRouteParams, sessionId: string): PracticeSessionRouteParams {
@@ -257,14 +257,36 @@ export function buildDesignInterviewPracticeResumeRoute(session: TrainingSession
   });
 }
 
-function assertOrdinaryCertificationConfiguration(session: TrainingSession): void {
+function assertOrdinaryCertificationConfiguration(
+  session: TrainingSession,
+  packageMode: ProductModeConfig,
+): PracticeFeedbackMode {
   const configuration = session.configurationSnapshot;
-  if (configuration.navigation !== "linear" || configuration.submission !== "perItem" || configuration.feedbackMode !== "afterEachAnswer" || configuration.answerChanges !== "none" || configuration.timer !== "elapsedForeground") {
+  const feedbackMode = configuration.feedbackMode;
+  const supportedFeedbackModes = packageMode.feedbackTiming.kind === "learner_selectable"
+    ? ["afterEachAnswer", "atSessionEnd"] as const
+    : ["afterEachAnswer"] as const;
+  if (configuration.navigation !== "linear" || configuration.submission !== "perItem" || !supportedFeedbackModes.some((mode) => mode === feedbackMode) || configuration.answerChanges !== "none" || configuration.timer !== "elapsedForeground" || configuration.reinsertEnabled !== (packageMode.reinsertPolicy === "conditional_after_incorrect")) {
     throw new Error("Certification Practice resume requires its canonical immutable interaction configuration.");
   }
-  if (!Number.isInteger(session.requestedLength) || session.actualLength < 1 || session.actualLength > session.requestedLength) {
+  if (!packageMode.requestedLengths.includes(session.requestedLength) || !Number.isInteger(session.requestedLength) || session.actualLength < 1 || session.actualLength > session.requestedLength) {
     throw new Error("Certification Practice resume requires a valid immutable session length.");
   }
+  return feedbackMode as PracticeFeedbackMode;
+}
+
+function resolveCertificationFeedbackMode(
+  packageMode: ProductModeConfig,
+  requested: PracticeFeedbackMode | undefined,
+): PracticeFeedbackMode {
+  if (packageMode.feedbackTiming.kind === "fixed") {
+    if (requested !== undefined) throw new Error("Certification Focus Practice does not render or accept undeclared setup controls.");
+    return "afterEachAnswer";
+  }
+  const resolved = requested ?? "afterEachAnswer";
+  const supported = packageMode.feedbackTiming.options.map((option) => option === "after_session_completion" ? "atSessionEnd" : "afterEachAnswer");
+  if (!supported.includes(resolved)) throw new Error(`Certification Focus Practice does not support feedback mode ${resolved}.`);
+  return resolved;
 }
 
 export function getGeneralPracticeReviewSource(

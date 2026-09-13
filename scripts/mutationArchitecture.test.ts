@@ -185,7 +185,9 @@ test("Certification presentation reads materialized feedback without owning fami
       `Certification scoring leaked outside its family runtime at ${path}`);
   }
   assert.match(runtime, /result = scoreCanonicalQuestion\(question, input\.response\)/);
-  assert.match(facade, /const feedback = materializedAttempt \? Object\.freeze\(\{ result: materializedAttempt\.result\.kind, reason: question\.feedback\.reason, details: question\.feedback\.details \}\) : null/);
+  assert.match(facade, /const feedback = projectCertificationPracticeFeedback\(feedbackMode, materializedAttempt, resolvedQuestion\)/);
+  assert.match(facade, /return attempt && feedbackMode === "afterEachAnswer"[\s\S]*?reason: question\.feedback\.reason, details: question\.feedback\.details/);
+  assert.match(facade, /question: projectCertificationPracticeQuestion\(resolvedQuestion\)/);
   assert.match(screen, /const feedback = projection\.feedback/);
   assert.doesNotMatch(screen, /correctOptionIds|question\.feedback|const result = submitted|\bfeedback\b[^\n;]*\bselected\b/);
 });

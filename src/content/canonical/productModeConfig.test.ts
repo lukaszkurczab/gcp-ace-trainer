@@ -59,6 +59,11 @@ test("ProductModeConfig preserves the complete available 9-track mode matrix", (
 test("mode policies preserve feedback, elapsed timer, reinsert and evidence behavior", () => {
   const custom = getProductModeConfig(coding, "coding-interview-custom-practice");
   assert.deepEqual(custom.feedbackTiming, { kind: "learner_selectable", default: "after_each_durable_submit", options: ["after_each_durable_submit", "after_session_completion"] });
+  const claudeFocus = getProductModeConfig("claude-certified-architect-professional-certification", "certification-focus-practice");
+  assert.deepEqual(claudeFocus.feedbackTiming, { kind: "learner_selectable", default: "after_each_durable_submit", options: ["after_each_durable_submit", "after_session_completion"] });
+  for (const trackId of [gcp, "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901"] as const) {
+    assert.deepEqual(getProductModeConfig(trackId, "certification-focus-practice").feedbackTiming, { kind: "fixed", value: "after_each_durable_submit" });
+  }
   assert.equal(custom.reinsertPolicy, "conditional_after_incorrect");
   assert.deepEqual(custom.timer, { kind: "elapsed_foreground" });
 

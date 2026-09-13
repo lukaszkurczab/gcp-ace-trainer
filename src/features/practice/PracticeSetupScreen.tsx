@@ -281,6 +281,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     : null;
   const compactCodingPractice = algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice;
   const configuredSessionLength = resolvePracticeSessionLength(sessionLength, selectedPackageMode);
+  const selectableFeedback = selectedPackageMode.feedbackTiming.kind === "learner_selectable";
   const designMode = isDesignInterviewModeId(selectedMode);
   let reviewBehaviorCopy: ReturnType<typeof getPracticeReviewBehaviorCopy>;
   let topic: ReturnType<typeof resolvePracticeTopicModel>;
@@ -316,7 +317,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               reviewSource: route.params?.reviewSource,
               sessionLength: configuredSessionLength,
             }
-            : diagnosticBaseline || quickReview ? {} : focusPractice || weakAreaReview || designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
+            : diagnosticBaseline || quickReview ? {} : focusPractice ? { sessionLength: configuredSessionLength, ...(selectableFeedback ? { feedbackMode } : {}) } : weakAreaReview || designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         mode,
         source: "practiceSetup",
         topicId: diagnosticBaseline ? canonicalNodeId : focusPractice ? selectedFocusTopicId! : weakAreaReview || quickReview ? "" : topic.id,
@@ -387,7 +388,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
         {designMode ? <Text key={`design-feedback-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Feedback is shown after each answer.")}</Text> : null}
 
-        {!diagnosticBaseline && !focusPractice && !weakAreaReview && !quickReview && !designMode && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
+        {selectableFeedback ? (
           <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>
             {compactCodingPractice ? <PracticeSetupSectionHeader title={t("Feedback mode")} subtitle={t("Choose when to see feedback on your answers.")} /> : <SectionHeader title={t("Feedback mode")} tight />}
             <SelectablePanel

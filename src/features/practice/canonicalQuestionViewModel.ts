@@ -10,7 +10,7 @@ export type CanonicalQuestionViewModel = Readonly<{
 }>;
 
 /** Projects the canonical union into the one renderer contract owned by practice UI. */
-export function toCanonicalQuestionViewModel(question: Question): CanonicalQuestionViewModel {
+export function toCanonicalQuestionViewModel(question: Pick<Question, "constraints" | "interaction" | "prompt" | "questionId">): CanonicalQuestionViewModel {
   const interaction = question.interaction;
   if (interaction.type === "choice_single" || interaction.type === "choice_multiple") {
     return Object.freeze({
