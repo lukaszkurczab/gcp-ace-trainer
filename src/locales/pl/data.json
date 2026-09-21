@@ -71,7 +71,7 @@
     "extensionNotice": "Ze względu na złożoność lub liczbę żądań termin odpowiedzi został przedłużony o maksymalnie dwa miesiące. Nowy termin jest pokazany powyżej.",
     "extensionReason": "Termin odpowiedzi został przedłużony o maksymalnie dwa miesiące. Powód: {{reason}}. Nowy termin jest pokazany powyżej.",
     "noResponse": "Odpowiedź nie jest jeszcze dostępna. Wróć tutaj po zmianie statusu.",
-    "accountRequired": "Zaloguj się, aby przeglądać wnioski konta. Bez konta skorzystaj z publicznego kanału na ekranie Twoje dane.",
+    "accountRequired": "Zaloguj się, aby przeglądać wnioski konta. Bez konta skorzystaj z formularza w aplikacji.",
     "failureTitle": "Nie udało się wykonać działania",
     "rights": {
       "access": "Dostęp do danych",

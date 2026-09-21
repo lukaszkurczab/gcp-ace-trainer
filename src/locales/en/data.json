@@ -71,7 +71,7 @@
     "extensionNotice": "Because of the complexity or number of requests, the response deadline was extended by up to two months. The new deadline is shown above.",
     "extensionReason": "The response deadline was extended by up to two months. Reason: {{reason}}. The new deadline is shown above.",
     "noResponse": "A response is not available yet. Return after the status changes.",
-    "accountRequired": "Sign in to view account requests. Without an account, use the public channel on the Your data screen.",
+    "accountRequired": "Sign in to view account requests. Without an account, use the request form in this app.",
     "failureTitle": "Could not complete the action",
     "rights": {
       "access": "Access your data",
