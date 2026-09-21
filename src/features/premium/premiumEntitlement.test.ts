@@ -1,136 +1,78 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { PREMIUM_ENTITLEMENT, evaluateOfflinePremiumAccess, isPremiumSnapshot, premiumCacheFromFreshResponse } from "../../domain/entitlements";
+import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
+import { clearPremiumCache, hasOfflinePremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 
-import {
-  PREMIUM_ENTITLEMENT,
-  PREMIUM_ENTITLEMENT_STATES,
-  PREMIUM_OFFLINE_VERIFICATION_GRACE_DAYS,
-  createPremiumProjection,
-  isPremiumAccessAllowed,
-  isPremiumEntitlementState,
-  isPremiumProjection,
-} from "../../domain";
+const observed = "2026-09-22T12:00:00.000Z";
+const expiry = "2026-09-23T12:00:00.000Z";
+const grace = "2026-09-24T12:00:00.000Z";
+const identity = { accountId: "account-1", entitlement: PREMIUM_ENTITLEMENT, productId: "monthly" } as const;
+const item = { ...identity, state: "active" as const, source: "revenuecat" as const, providerExpiresAt: expiry, providerGraceExpiresAt: null, providerObservedAt: observed };
+const response = (replacement: Record<string, unknown> = {}) => ({ serverObservedAt: observed, entitlements: [{ ...item, ...replacement }] });
+const now = Date.parse(observed);
 
-const NOW = new Date("2026-08-25T12:00:00.000Z");
-
-const baseProjection = {
-  accountId: "account-opaque-1",
-  entitlement: PREMIUM_ENTITLEMENT,
-  state: "active" as const,
-  verifiedAt: "2026-08-25T12:00:00.000Z",
-  sourceRevision: "revision-7",
-};
-
-test("Premium keeps one SKU-neutral entitlement without an offer variant in its projection", () => {
-  assert.equal(PREMIUM_ENTITLEMENT, "premium");
-  assert.equal(PREMIUM_OFFLINE_VERIFICATION_GRACE_DAYS, 7);
-  assert.equal(isPremiumProjection({ ...baseProjection, offerKind: "monthly" }), false);
+test("fresh response requires exactly one matching provider-backed item with strict UTC dates", () => {
+  assert.ok(premiumCacheFromFreshResponse(response(), identity, now, null));
+  for (const invalid of [
+    { ...response(), entitlements: [] },
+    { ...response(), entitlements: [item, item] },
+    response({ accountId: "account-2" }),
+    response({ productId: "annual" }),
+    response({ entitlement: "other" }),
+    response({ source: "webhook" }),
+    response({ providerExpiresAt: "2026-09-23T12:00:00+00:00" }),
+    response({ providerExpiresAt: null }),
+    response({ state: "grace", providerGraceExpiresAt: null }),
+    response({ state: "unknown" }),
+    response({ extra: true }),
+  ]) assert.equal(premiumCacheFromFreshResponse(invalid, identity, now, null), null);
+  assert.equal(isPremiumSnapshot({ ...item, serverObservedAt: "2026-02-30T12:00:00.000Z" }), false);
 });
 
-test("projection construction keeps one account-bound Premium record independent of tracks, tiers, and slots", () => {
-  const projection = createPremiumProjection(baseProjection);
-
-  assert.deepEqual(projection, baseProjection);
-  assert.equal("trackId" in projection, false);
-  assert.equal("trackSlots" in projection, false);
-  assert.equal("tier" in projection, false);
-  assert.equal(Object.isFrozen(projection), true);
-
-  assert.equal(isPremiumProjection({ ...baseProjection, trackId: "coding-interview" }), false);
-  assert.equal(isPremiumProjection({ ...baseProjection, trackSlots: 1 }), false);
-  assert.equal(isPremiumProjection({ ...baseProjection, tier: "premium" }), false);
-  assert.throws(() => createPremiumProjection({ ...baseProjection, offerKind: "recurring" }), /Invalid Premium entitlement projection/u);
-});
-
-test("projection validation accepts every documented state and rejects unknown state values", () => {
-  assert.deepEqual(PREMIUM_ENTITLEMENT_STATES, ["active", "grace", "expired", "revoked", "refunded"]);
-  for (const state of PREMIUM_ENTITLEMENT_STATES) {
-    const projection = { ...baseProjection, state };
-    assert.equal(isPremiumEntitlementState(state), true);
-    assert.equal(isPremiumProjection(projection), true);
-    assert.equal(createPremiumProjection(projection).state, state);
-  }
-  assert.equal(isPremiumEntitlementState("unknown"), false);
-  assert.equal(isPremiumProjection({ ...baseProjection, state: "unknown" }), false);
-});
-
-test("malformed, incomplete, and extra-field payloads fail closed", () => {
-  const invalidValues: readonly unknown[] = [
-    null,
-    [],
-    "premium",
-    { ...baseProjection, accountId: " " },
-    { ...baseProjection, accountId: 42 },
-    { ...baseProjection, accountId: "learner@example.com" },
-    { ...baseProjection, entitlement: "free" },
-    { ...baseProjection, verifiedAt: "not-a-timestamp" },
-    { ...baseProjection, verifiedAt: "2026-02-30T12:00:00.000Z" },
-    { ...baseProjection, sourceRevision: null },
-    { ...baseProjection, sourceRevision: " \t " },
-    { ...baseProjection, missing: undefined },
-    { ...baseProjection, state: "active", unsupported: true },
-  ];
-
-  for (const value of invalidValues) {
-    assert.equal(isPremiumProjection(value), false);
-    assert.throws(() => createPremiumProjection(value), /Invalid Premium entitlement projection/u);
+test("active and grace expire exactly at their provider dates; negative states deny", () => {
+  const active = premiumCacheFromFreshResponse(response(), identity, now, null)!;
+  assert.equal(evaluateOfflinePremiumAccess(active, identity, Date.parse(expiry) - 1).allowed, true);
+  assert.equal(evaluateOfflinePremiumAccess(active, identity, Date.parse(expiry)).allowed, false);
+  const graceRecord = premiumCacheFromFreshResponse(response({ state: "grace", providerGraceExpiresAt: grace }), identity, now, null)!;
+  assert.equal(evaluateOfflinePremiumAccess(graceRecord, identity, Date.parse(grace) - 1).allowed, true);
+  assert.equal(evaluateOfflinePremiumAccess(graceRecord, identity, Date.parse(grace)).allowed, false);
+  for (const state of ["hold", "expired", "refunded"]) {
+    const negative = premiumCacheFromFreshResponse(response({ state }), identity, now, active)!;
+    assert.equal(evaluateOfflinePremiumAccess(negative, identity, now).allowed, false);
   }
 });
 
-test("omitted required projection fields fail closed", () => {
-  for (const omittedKey of ["accountId", "entitlement", "state", "verifiedAt", "sourceRevision"] as const) {
-    const value = Object.fromEntries(Object.entries(baseProjection).filter(([key]) => key !== omittedKey));
-    assert.equal(isPremiumProjection(value), false, `omitted ${omittedKey} must be rejected`);
-    assert.throws(() => createPremiumProjection(value), /Invalid Premium entitlement projection/u);
-  }
+test("clock rollback and account switch deny, and a fresh response cannot reduce observed wall time", () => {
+  const first = premiumCacheFromFreshResponse(response(), identity, now + 1000, null)!;
+  const future = evaluateOfflinePremiumAccess(first, identity, now + 5000).nextRecord!;
+  assert.equal(evaluateOfflinePremiumAccess(future, identity, now + 4000).allowed, false);
+  const refreshed = premiumCacheFromFreshResponse(response(), identity, now + 2000, future)!;
+  assert.equal(refreshed.maxObservedWallTime, now + 5000);
+  assert.equal(evaluateOfflinePremiumAccess(refreshed, identity, now + 2000).allowed, false);
+  assert.equal(evaluateOfflinePremiumAccess(refreshed, { ...identity, accountId: "account-2" }, now + 5000).allowed, false);
 });
 
-test("account IDs reject whitespace and email-shaped values without requiring a provider format", () => {
-  assert.equal(isPremiumProjection({ ...baseProjection, accountId: "   " }), false);
-  assert.equal(isPremiumProjection({ ...baseProjection, accountId: " learner-account-1 " }), false);
-  assert.equal(isPremiumProjection({ ...baseProjection, accountId: "learner@example.com" }), false);
-  assert.equal(isPremiumProjection({ ...baseProjection, accountId: "provider|opaque-account-1" }), true);
-});
-
-test("projection timestamps are strict ISO values and access fails closed for malformed or future timestamps", () => {
-  const malformedValues = [
-    "not-a-timestamp",
-    "2026-02-30T12:00:00.000Z",
-    "2026-08-25T12:00:00+00:00",
-  ];
-
-  for (const verifiedAt of malformedValues) {
-    const projection = { ...baseProjection, verifiedAt };
-    assert.equal(isPremiumProjection(projection), false);
-    assert.equal(isPremiumAccessAllowed(projection, NOW), false);
-  }
-
-  const futureProjection = createPremiumProjection({
-    ...baseProjection,
-    verifiedAt: "2026-08-25T12:00:00.001Z",
-  });
-  assert.equal(isPremiumAccessAllowed(futureProjection, NOW), false);
-});
-
-test("active and grace access expires after the inclusive seven-day verification boundary", () => {
-  const exactBoundary = new Date(NOW.getTime() - PREMIUM_OFFLINE_VERIFICATION_GRACE_DAYS * 24 * 60 * 60 * 1000).toISOString();
-  const justOlder = new Date(NOW.getTime() - (PREMIUM_OFFLINE_VERIFICATION_GRACE_DAYS * 24 * 60 * 60 * 1000 + 1)).toISOString();
-
-  for (const state of ["active", "grace"] as const) {
-    assert.equal(isPremiumAccessAllowed(createPremiumProjection({ ...baseProjection, state, verifiedAt: exactBoundary }), NOW), true);
-    assert.equal(isPremiumAccessAllowed(createPremiumProjection({ ...baseProjection, state, verifiedAt: justOlder }), NOW), false);
-  }
-});
-
-test("only active and grace projections allow new Premium access", () => {
-  for (const state of PREMIUM_ENTITLEMENT_STATES) {
-    const projection = createPremiumProjection({ ...baseProjection, state });
-    const before = { ...projection };
-    assert.equal(isPremiumAccessAllowed(projection, NOW), state === "active" || state === "grace");
-    assert.deepEqual(projection, before);
-  }
-
-  assert.equal(isPremiumAccessAllowed({ ...baseProjection, state: "unknown" }, NOW), false);
-  assert.equal(isPremiumAccessAllowed({ ...baseProjection, unsupported: true }, NOW), false);
-  assert.equal(isPremiumAccessAllowed(null, NOW), false);
+test("cache writes before offline authorization; failed writes, invalid refresh and account change fail closed", () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  assert.equal(replacePremiumCacheFromFreshResponse(response(), identity, now), true);
+  const before = storage.snapshot();
+  assert.equal(replacePremiumCacheFromFreshResponse(response({ productId: "annual" }), identity, now), false);
+  assert.deepEqual(storage.snapshot(), before);
+  storage.setFailurePlan({ kind: "fail_on_key_read", key: "patternly:premium-cache:v1" });
+  assert.equal(replacePremiumCacheFromFreshResponse(response(), identity, now + 1000), false);
+  assert.deepEqual(storage.snapshot(), before);
+  storage.setFailurePlan(null);
+  storage.setFailurePlan({ kind: "fail_on_write_number", writeNumber: 2 });
+  assert.equal(hasOfflinePremiumAccess(identity, now + 1000), false);
+  assert.deepEqual(storage.snapshot(), before);
+  storage.setFailurePlan(null);
+  assert.equal(hasOfflinePremiumAccess(identity, now + 1000), true);
+  assert.equal(replacePremiumCacheFromFreshResponse(response({ state: "refunded" }), identity, now + 2000), true);
+  assert.equal(hasOfflinePremiumAccess(identity, now + 2000), false);
+  assert.equal(replacePremiumCacheFromFreshResponse(response({ accountId: "account-2" }), { ...identity, accountId: "account-2" }, now + 3000), true);
+  assert.equal(hasOfflinePremiumAccess(identity, now + 3000), false);
+  clearPremiumCache();
+  assert.equal(hasOfflinePremiumAccess({ ...identity, accountId: "account-2" }, now + 3000), false);
 });
