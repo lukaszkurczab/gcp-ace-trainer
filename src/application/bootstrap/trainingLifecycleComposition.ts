@@ -2,6 +2,7 @@ import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { OperationProjectionStore } from "../trainingLifecycle/operationProjectionStore";
 import {
   commitLearningStateReset,
+  installLearningStateResetBarrier,
   commitSessionAbandonment,
   commitSessionCompletion,
   commitTrainingOutcome,
@@ -140,7 +141,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
   };
   const lifecycle = new TrainingLifecycleUseCases(ports, new OperationProjectionStore());
   installTrainingLifecycleUseCases(lifecycle);
-  installForegroundSessionTimerFacade(new ForegroundSessionTimerFacade({
+  const timerFacade = new ForegroundSessionTimerFacade({
     repository: { getActive: getActiveForegroundTimer, save: saveActiveForegroundTimer },
     lifecycle,
     tracks: { getTrackRegistration },
@@ -149,7 +150,9 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     schedule: (callback) => setInterval(callback, 1_000),
     cancel: (handle) => clearInterval(handle),
     finalize: async () => lifecycle.finalizeSimulation(),
-  }));
+  });
+  installForegroundSessionTimerFacade(timerFacade);
+  installLearningStateResetBarrier((reset) => timerFacade.runLocalLearningReset(reset));
   return lifecycle;
 }
 

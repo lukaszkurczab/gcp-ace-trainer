@@ -344,7 +344,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     <PracticeSessionSurface
       allowLeave={!completionFailure}
       exit={{ kind: exit }}
-      feedback={projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" && projection.feedback ? { details: projection.feedback.details, reason: projection.feedback.reason, result: projection.feedback.correctness } : undefined}
+      feedback={projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" && projection.feedback ? { details: projection.feedback.details, reason: projection.feedback.reason, result: projection.feedback.correctness, sources: projection.feedback.sources } : undefined}
       feedbackItem={projection.item}
       isFinalPosition={projection.position.current === projection.position.total}
       modeLabel={t(getAlgorithmMode(algorithmsMode).title)}

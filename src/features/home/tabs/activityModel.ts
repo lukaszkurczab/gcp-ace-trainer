@@ -18,6 +18,10 @@ export type ActivityItem = Readonly<{
   group: ActivityGroup;
   icon: IconName;
   id: string;
+  interaction:
+    | Readonly<{ destination: "algorithms_practice_summary" | "canonical_result"; kind: "open_result" }>
+    | Readonly<{ kind: "toggle_session_details" }>
+    | Readonly<{ kind: "toggle_unavailable_details" }>;
   kind: "canonical" | "unavailable";
   modeId: string;
   modeTitle: string;
@@ -67,6 +71,7 @@ function toActivityItem(record: ActivityRecord, now: Date): ActivityItem {
     group,
     icon: activityIcon(session.modeId),
     id: session.id,
+    interaction: activityInteraction(record, track.familyId),
     kind: "canonical",
     modeId: session.modeId,
     modeTitle: modeLabel(session.modeId),
@@ -92,6 +97,7 @@ function toUnavailableActivityItem(record: ActivityUnavailableSessionRecord, now
     group,
     icon: activityIcon(record.modeId),
     id: record.id,
+    interaction: { kind: "toggle_unavailable_details" },
     kind: "unavailable",
     modeId: record.modeId,
     modeTitle: "Unavailable session",
@@ -104,6 +110,29 @@ function toUnavailableActivityItem(record: ActivityUnavailableSessionRecord, now
     trackTitle: track.shortTitle,
     unavailableReasons: record.unavailableReasons,
   };
+}
+
+function activityInteraction(record: ActivitySessionRecord, trackFamily: string): ActivityItem["interaction"] {
+  const { session, result } = record;
+  if (trackFamily === "coding_interview" && session.modeId !== "coding-interview-simulation") {
+    if (session.status === "abandoned" && record.attemptCount > 0) {
+      return { destination: "algorithms_practice_summary", kind: "open_result" };
+    }
+    if (session.status === "completed" && resultMatchesSession(result, session, "coding_interview")) {
+      return { destination: "algorithms_practice_summary", kind: "open_result" };
+    }
+  }
+  if ((trackFamily === "certification" || trackFamily === "design_interview") && session.status === "completed" && resultMatchesSession(result, session, trackFamily)) {
+    return { destination: "canonical_result", kind: "open_result" };
+  }
+  return { kind: "toggle_session_details" };
+}
+
+function resultMatchesSession(result: ActivitySessionRecord["result"], session: ActivitySessionRecord["session"], familyId: string): boolean {
+  return result !== null &&
+    result.sessionId === session.id &&
+    result.trackId === session.trackId &&
+    result.evidence.familyId === familyId;
 }
 
 function activityScopeLabel(record: ActivitySessionRecord, trackFamily: string): string | null {
@@ -137,7 +166,7 @@ function safeTrackDisplay(trackId: string): Readonly<{ familyId: string; shortTi
   try {
     return getTrackDisplay(trackId as TrackId);
   } catch {
-    return { familyId: "unavailable", shortTitle: trackId || "Unavailable track" };
+    return { familyId: "unavailable", shortTitle: "Unavailable track" };
   }
 }
 

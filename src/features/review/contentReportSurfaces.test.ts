@@ -14,6 +14,25 @@ test("content reports are reachable from canonical practice details", () => {
   assert.match(answerReview, /unavailable|No attempt found/i);
 });
 
+test("report affordance uses the canonical bounded button without changing its open-only action", () => {
+  const reportSheet = source("src/features/reports/ContentReportSheet.tsx");
+  const button = source("src/components/Button.tsx");
+
+  assert.match(reportSheet, /<Button leadingIcon="flag" onPress=\{open\}[\s\S]*?variant="secondary">\{t\("Report an issue"\)\}<\/Button>/);
+  assert.match(reportSheet, /function open\(\) \{[\s\S]*?setError\(null\);[\s\S]*?setDetailsVisible\(false\);[\s\S]*?setVisible\(true\);[\s\S]*?\}/);
+  assert.doesNotMatch(reportSheet.match(/function open\(\)[\s\S]*?\n  \}/)?.[0] ?? "", /submit|transport|buildInput/);
+  assert.doesNotMatch(reportSheet, /trigger: \{[^}]*paddingHorizontal:\s*0/);
+
+  assert.match(button, /leadingIcon\?: IconName/);
+  assert.match(button, /leadingIcon && !loading \? <Icon color=\{getContentColor\(variant, palette, isDisabled\)\}/);
+  assert.match(button, /if \(variant === "secondary"\) return palette\.textPrimary/);
+  assert.match(button, /accessibilityState=\{\{ \.\.\.accessibilityState, busy: loading, disabled: isDisabled \}\}/);
+  assert.match(button, /pressed && !isDisabled/);
+  assert.match(button, /minHeight:\s*48/);
+  assert.match(button, /minWidth:\s*48/);
+  assert.match(button, /<ButtonLabel[\s\S]*?>\{children\}<\/ButtonLabel>/);
+});
+
 test("report input is intentionally content-free beyond bounded item context", () => {
   const reportSheet = source("src/features/reports/ContentReportSheet.tsx");
   const reportDomain = source("src/domain/contentReports.ts");

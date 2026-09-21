@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   ENCRYPTED_STORAGE_IDS,
   EncryptedStorageBootstrapError,
+  encryptedStorageFailureCode,
   LEGACY_STORAGE_ID,
   STORAGE_MIGRATION_MARKER_KEY,
   openEncryptedStorage,
@@ -18,13 +19,19 @@ class MemoryManifestStore implements StorageManifestStore {
   readonly values = new Map<string, string>();
   setCount = 0;
   failOnSet: number | null = null;
+  removeCount = 0;
+  failOnRemove: number | null = null;
   async get(key: string) { return this.values.get(key) ?? null; }
   async set(key: string, value: string) {
     this.setCount += 1;
     if (this.failOnSet === this.setCount) throw new Error("injected_secure_store_failure");
     this.values.set(key, value);
   }
-  async remove(key: string) { this.values.delete(key); }
+  async remove(key: string) {
+    this.removeCount += 1;
+    if (this.failOnRemove === this.removeCount) throw new Error("injected_secure_store_remove_failure");
+    this.values.delete(key);
+  }
 }
 
 class MemorySlot implements StorageSlot {
@@ -148,6 +155,22 @@ test("missing keys and corrupt manifests fail closed", async () => {
   await assert.rejects(openEncryptedStorage(orphanedKey), (error) => error instanceof EncryptedStorageBootstrapError && error.code === "storage_manifest_corrupt");
 });
 
+test("closed storage failure codes survive a native module realm boundary without message parsing", () => {
+  const bridged = Object.assign(new Error("opaque native failure"), {
+    code: "encrypted_storage_key_missing",
+    name: "EncryptedStorageBootstrapError",
+  });
+  const forgedName = Object.assign(new Error("encrypted_storage_key_missing"), { code: "encrypted_storage_key_missing" });
+  const unknownCode = Object.assign(new Error("opaque"), { code: "not_a_storage_code", name: "EncryptedStorageBootstrapError" });
+  const crossRealmShape = { code: "encrypted_storage_key_missing", name: "EncryptedStorageBootstrapError" };
+
+  assert.equal(encryptedStorageFailureCode(bridged), "encrypted_storage_key_missing");
+  assert.equal(encryptedStorageFailureCode(forgedName), null);
+  assert.equal(encryptedStorageFailureCode(unknownCode), null);
+  assert.equal(encryptedStorageFailureCode(crossRealmShape), "encrypted_storage_key_missing");
+  assert.equal(encryptedStorageFailureCode("encrypted_storage_key_missing"), null);
+});
+
 test("a completed store still requires its immutable transfer marker", async () => {
   const platform = new MemoryPlatform();
   const opened = await openEncryptedStorage(platform);
@@ -161,4 +184,23 @@ test("explicit unavailable-data reset removes slots, manifests and keys", async 
   await resetUnavailableEncryptedStorage(platform);
   assert.equal(platform.slots.size, 0);
   assert.equal(platform.manifestStore.values.size, 0);
+});
+
+test("failed unavailable-data reset reports the error and a repeated reset completes partial removal", async () => {
+  const platform = new MemoryPlatform();
+  await openEncryptedStorage(platform);
+  platform.manifestStore.values.delete("patternly.storage.key.a");
+  await assert.rejects(openEncryptedStorage(platform), (error) => error instanceof EncryptedStorageBootstrapError && error.code === "encrypted_storage_key_missing");
+
+  platform.manifestStore.failOnRemove = 1;
+  await assert.rejects(resetUnavailableEncryptedStorage(platform), (error) => error instanceof EncryptedStorageBootstrapError && error.code === "secure_store_temporarily_unavailable");
+  assert.equal(platform.slots.size, 0);
+  assert.ok(platform.manifestStore.values.size > 0);
+
+  platform.manifestStore.failOnRemove = null;
+  await resetUnavailableEncryptedStorage(platform);
+  assert.equal(platform.slots.size, 0);
+  assert.equal(platform.manifestStore.values.size, 0);
+  const reopened = await openEncryptedStorage(platform);
+  assert.equal(reopened.storage.isEncrypted, true);
 });

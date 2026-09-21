@@ -15,6 +15,7 @@ import {
 import { radius, spacing, typography } from "../theme";
 import { useAppPreferences, useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
+import { Icon, type IconName } from "./Icon";
 
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
@@ -25,6 +26,7 @@ type ButtonProps = {
   accessibilityState?: Omit<AccessibilityState, "busy" | "disabled">;
   children: ReactNode;
   disabled?: boolean;
+  leadingIcon?: IconName;
   loading?: boolean;
   labelStyle?: StyleProp<TextStyle>;
   onPress: () => void;
@@ -39,6 +41,7 @@ export function Button({
   accessibilityState,
   children,
   disabled = false,
+  leadingIcon,
   loading = false,
   labelStyle,
   onPress,
@@ -69,6 +72,7 @@ export function Button({
       testID={testID}
     >
       {loading ? <ActivityIndicator accessibilityElementsHidden color={getActivityColor(variant, palette, isDisabled)} importantForAccessibility="no" size="small" style={styles.spinner} /> : null}
+      {leadingIcon && !loading ? <Icon color={getContentColor(variant, palette, isDisabled)} name={leadingIcon} size={20} /> : null}
       <ButtonLabel style={[styles.label, styles[`${variant}Label`], labelStyle, isDisabled ? disabledLabelStyle : null]}>{children}</ButtonLabel>
     </Pressable>
   );
@@ -80,9 +84,15 @@ function ButtonLabel({ children, style }: Readonly<{ children: ReactNode; style:
 }
 
 function getActivityColor(variant: ButtonVariant, palette: AppColors, isDisabled: boolean): string {
+  return getContentColor(variant, palette, isDisabled);
+}
+
+function getContentColor(variant: ButtonVariant, palette: AppColors, isDisabled: boolean): string {
   if (variant === "destructive") return palette.onDanger;
-  if (isDisabled) return variant === "primary" ? palette.textPrimary : variant === "secondary" ? palette.textMuted : palette.textSecondary;
-  return variant === "primary" ? palette.onPrimary : palette.primary;
+  if (isDisabled) return variant === "primary" || variant === "secondary" ? palette.textMuted : palette.textSecondary;
+  if (variant === "primary") return palette.onPrimary;
+  if (variant === "secondary") return palette.textPrimary;
+  return palette.textSecondary;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

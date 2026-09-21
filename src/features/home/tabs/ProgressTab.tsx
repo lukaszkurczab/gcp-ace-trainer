@@ -146,6 +146,7 @@ export function ProgressTab({
   const focus = model.algorithmsProgress?.currentFocus;
   const planPresentation = buildProgressPlanPresentationModel({ snapshot: homePlan, activeTrackId: activeTrack.id, locale });
   const focusTitle = focus?.title ?? model.performanceScores[0]?.label ?? activeTrack.shortTitle;
+  const focusDescription = focus ? undefined : model.performanceScores[0]?.description;
   const focusProgress = focus?.showProgress ? focus.progressPercent : model.performanceScores[0]?.percent ?? 0;
   const focusAction = model.algorithmsProgress?.priority.primaryAction ?? model.reviewAction;
   const focusActionLabel = model.algorithmsProgress ? "Open Practice" : model.reviewActionLabel;
@@ -220,6 +221,7 @@ export function ProgressTab({
             <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Current focus")}</Text>
             <Card style={styles.focusCard}>
               <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{t(focusTitle)}</Text>
+              {focusDescription ? <Text maxFontSizeMultiplier={2} style={styles.focusEvidenceDetail}>{t(focusDescription)}</Text> : null}
               {focus && model.algorithmsProgress ? (
                 <>
                   <Text maxFontSizeMultiplier={2} style={styles.focusStatus}>{t(model.algorithmsProgress.evidenceSummary.currentFocus.label)}</Text>
@@ -440,8 +442,8 @@ function ActivitySection({ items, locale, onOpenActivity, onOpenActivityItem }: 
                 <Pressable
                   key={item.id}
                   accessibilityLabel={`${t(item.modeTitle)}, ${t(item.trackTitle)}`}
-                  accessibilityRole={onOpenActivityItem ? "button" : undefined}
-                  onPress={onOpenActivityItem ? () => onOpenActivityItem(item) : undefined}
+                  accessibilityRole={onOpenActivityItem || onOpenActivity ? "button" : undefined}
+                  onPress={item.interaction.kind === "open_result" && onOpenActivityItem ? () => onOpenActivityItem(item) : onOpenActivity}
                   style={({ pressed }) => [styles.activityRow, index === groupItems.length - 1 ? styles.activityRowLast : null, pressed ? styles.pressed : null]}
                   testID={runtimeSelectors.activity.row(item.sessionId)}
                 >
@@ -452,7 +454,7 @@ function ActivitySection({ items, locale, onOpenActivity, onOpenActivityItem }: 
                     <Text maxFontSizeMultiplier={2} style={styles.activityDetail}>{`${activityCountLabel(item, t)} · ${item.duration}`}</Text>
                     <Text maxFontSizeMultiplier={2} style={[styles.activityDetail, item.status === "completed" ? null : styles.activityStatusDetail]}>{`${t(item.statusLabel)} · ${formatActivityDateLabel(item.dateLabel, locale, t)}`}</Text>
                   </View>
-                  <Icon color={styles.activityChevron.color} name="chevron-right" size={18} />
+                  {item.interaction.kind === "open_result" || onOpenActivity ? <Icon color={styles.activityChevron.color} name="chevron-right" size={18} /> : null}
                 </Pressable>
               ))}
             </View>
@@ -581,13 +583,15 @@ function trendPointCoordinate(value: number, index: number, count: number): { x:
   return { x, y };
 }
 
-function PerformanceEvidenceSection({ scores, trackFamily }: Readonly<{ scores: readonly { correct: number; detail?: string; id: string; label: string; percent: number; total: number }[]; trackFamily: string }>) {
+function PerformanceEvidenceSection({ scores, trackFamily }: Readonly<{ scores: readonly { correct: number; description?: string; detail?: string; id: string; label: string; percent: number; total: number }[]; trackFamily: string }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const largeTextLayout = fontScale >= 1.8;
   return (
     <View style={styles.section}>
       <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Performance evidence")}</Text>
-      {scores.length > 0 ? scores.map((score) => <Card key={score.id} style={styles.evidenceRow}><View style={styles.evidenceRowHeader}><IconTile name={trackFamily === "certification" ? "cloud" : "route"} tone="info" /><View style={styles.roadmapCopy}><Text maxFontSizeMultiplier={2} style={styles.roadmapTitle}>{t(score.label)}</Text><Text maxFontSizeMultiplier={2} style={styles.evidenceDetail}>{t(score.detail ?? `${score.correct}/${score.total} correct`)}</Text></View><Text maxFontSizeMultiplier={2} style={styles.evidencePercent}>{score.percent}%</Text></View><ProgressBar progress={score.percent / 100} tone="primary" /></Card>) : <Card style={styles.emptyEvidenceCard}><Text maxFontSizeMultiplier={2} style={styles.roadmapTitle}>{t("No evidence yet")}</Text><Text maxFontSizeMultiplier={2} style={styles.evidenceDetail}>{t("Complete a focused session to build track-aware evidence here.")}</Text></Card>}
+      {scores.length > 0 ? scores.map((score) => <Card key={score.id} style={styles.evidenceRow}><View style={[styles.evidenceRowHeader, largeTextLayout ? styles.evidenceRowHeaderLargeText : null]}><IconTile name={trackFamily === "certification" ? "cloud" : "route"} tone="info" /><View style={styles.roadmapCopy}><Text maxFontSizeMultiplier={2} style={styles.roadmapTitle}>{t(score.label)}</Text>{score.description ? <Text maxFontSizeMultiplier={2} style={styles.evidenceDetail}>{t(score.description)}</Text> : null}<Text maxFontSizeMultiplier={2} style={styles.evidenceDetail}>{t(score.detail ?? `${score.correct}/${score.total} correct`)}</Text></View><Text maxFontSizeMultiplier={2} style={styles.evidencePercent}>{score.percent}%</Text></View><ProgressBar progress={score.percent / 100} tone="primary" /></Card>) : <Card style={styles.emptyEvidenceCard}><Text maxFontSizeMultiplier={2} style={styles.roadmapTitle}>{t("No evidence yet")}</Text><Text maxFontSizeMultiplier={2} style={styles.evidenceDetail}>{t("Complete a focused session to build track-aware evidence here.")}</Text></Card>}
     </View>
   );
 }
@@ -816,10 +820,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   activityHeaderAction: { justifyContent: "center", maxWidth: "100%", minHeight: 44 },
   activityLink: { color: palette.primary, fontSize: 13, fontWeight: "600", lineHeight: 18 },
   focusCard: { ...shadows.none, backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 14, gap: spacing.md, padding: spacing.lg },
-  focusTitle: { color: palette.textPrimary, fontSize: 16, fontWeight: "600", lineHeight: 20 },
+  focusTitle: { color: palette.textPrimary, fontSize: 16, fontWeight: "600" },
   focusStatus: { color: palette.textSecondary, fontSize: 12, fontWeight: "500", lineHeight: 18 },
-  focusEvidenceDetail: { color: palette.primary, fontSize: 13, lineHeight: 18 },
-  focusPercent: { color: palette.textPrimary, fontSize: 36, fontWeight: "700", lineHeight: 40 },
+  focusEvidenceDetail: { color: palette.primary, fontSize: 13 },
+  focusPercent: { color: palette.textPrimary, fontSize: 36, fontWeight: "700" },
   focusEmpty: { ...typography.small, color: palette.textSecondary },
   focusActionLabel: { color: palette.primary, fontSize: 14, fontWeight: "600", lineHeight: 18 },
   evidenceBuildingCard: { ...shadows.none, backgroundColor: palette.surface, borderColor: "transparent", borderRadius: 14, borderWidth: 0, gap: 6, paddingHorizontal: spacing.lg, paddingVertical: 14 },
@@ -835,7 +839,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   evidenceCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.md, padding: spacing.lg },
   roadmapRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   roadmapCopy: { flex: 1, gap: spacing.xs, minWidth: 0 },
-  roadmapTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  roadmapTitle: { ...typography.bodyStrong, color: palette.textPrimary, lineHeight: undefined },
   diagnosticsCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, gap: spacing.md, padding: spacing.md },
   diagnosticsHeader: { alignItems: "center", flexDirection: "row", gap: spacing.md, justifyContent: "space-between" },
   diagnosticsHeaderLarge: { alignItems: "stretch", flexDirection: "column" },
@@ -858,7 +862,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   trendAxisLabel: { color: palette.primary, fontSize: 10, lineHeight: 12 },
   evidenceRow: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.sm, padding: spacing.lg },
   evidenceRowHeader: { alignItems: "center", flexDirection: "row", gap: spacing.md },
-  evidenceDetail: { ...typography.caption, color: palette.textSecondary },
-  evidencePercent: { ...typography.bodyStrong, color: palette.primary },
+  evidenceRowHeaderLargeText: { alignItems: "stretch", flexDirection: "column" },
+  evidenceDetail: { ...typography.caption, color: palette.textSecondary, lineHeight: undefined },
+  evidencePercent: { ...typography.bodyStrong, alignSelf: "flex-start", color: palette.primary, lineHeight: undefined },
   emptyEvidenceCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.xs, padding: spacing.lg },
 });

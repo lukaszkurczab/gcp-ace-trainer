@@ -21,7 +21,10 @@ import { getReviewQueueItems } from "../../storage/repositories/reviewQueueRepos
 import { getTrainingAttempts } from "../../storage/repositories/trainingAttemptRepository";
 import { getTrainingSessions } from "../../storage/repositories/trainingSessionRepository";
 import { prepareAccountSignOut, resetAccountLocalLearningHistory } from "./accountDataService";
+import { installLearningStateResetBarrier } from "../learningMutations";
 import { attempt, review, session } from "../../testing/journalTestSupport";
+
+installLearningStateResetBarrier(async (reset) => reset());
 
 const accountId = "55555555-5555-4555-8555-555555555555";
 

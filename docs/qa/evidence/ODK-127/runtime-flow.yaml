@@ -1,0 +1,19 @@
+appId: com.lkurczab.patternly
+name: ODK-127 canonical source runtime evidence
+---
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:CCARP-D01-O01-boundary"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:details-toggle:CCARP-D01-O01-boundary"
+- scrollUntilVisible:
+    element:
+      id: "question-source-link-CCARP-D01-O01-boundary-0"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "Source"
+- assertVisible: "Open source www.anthropic.com"
+- assertNotVisible: "https://www.anthropic.com/engineering/building-effective-agents"
+- takeScreenshot: docs/qa/evidence/ODK-127/source-link-runtime

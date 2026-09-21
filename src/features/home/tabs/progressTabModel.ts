@@ -1,4 +1,5 @@
 import {
+  CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID,
   CODING_INTERVIEW_TRACK_ID,
   GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   type TrackDisplay,
@@ -21,6 +22,7 @@ import {
 } from "../../practice/sessionConfig";
 import type { ActivitySessionRecord } from "../../../application/activityReadModels";
 import { buildActivityModel, type ActivityItem } from "./activityModel";
+import { resolveCloudProgressDomainMetadata } from "./cloudProgressDomainMetadata";
 
 type MetricTone = "neutral" | "primary" | "success" | "warning" | "danger" | "info";
 type LearningTone = "danger" | "warning" | "info" | "success" | "muted";
@@ -41,6 +43,7 @@ export type ProgressTabActivityItem = ActivityItem;
 
 export type ProgressTabPerformanceScore = {
   correct: number;
+  description?: string;
   detail?: string;
   id: string;
   label: string;
@@ -262,7 +265,11 @@ function buildInstalledPackageProgressTabModel(
     });
   }
 
-  const freeNodeLabel = getDomainLabel((packageItems[0]?.taxonomy?.roadmapNodeId ?? "operations") as CertificationDomain);
+  const firstNodeId = packageItems[0]?.taxonomy?.roadmapNodeId;
+  const freeNodeMetadata = typeof firstNodeId === "string"
+    ? resolveInstalledPackageDomainMetadata(trackId, firstNodeId)
+    : null;
+  const freeNodeLabel = freeNodeMetadata?.title ?? "Domain metadata unavailable";
   return {
     activity: buildActivityItems(activityRecords, trackId, now),
     activitySummary: {
@@ -278,14 +285,18 @@ function buildInstalledPackageProgressTabModel(
       { label: "Due review", tone: dueReviewCount > 0 ? "warning" : "neutral", value: dueReviewCount },
       { label: "Saved review", tone: "primary", value: currentReviews.length },
     ],
-    performanceScores: [...scores.entries()].map(([nodeId, score]) => ({
-      correct: score.correct,
-      detail: `${score.earned}/${score.max} points`,
-      id: nodeId,
-      label: getDomainLabel(nodeId as CertificationDomain),
-      percent: score.max > 0 ? Math.round((score.earned / score.max) * 100) : 0,
-      total: score.total,
-    })),
+    performanceScores: [...scores.entries()].map(([nodeId, score]) => {
+      const metadata = resolveInstalledPackageDomainMetadata(trackId, nodeId);
+      return {
+        correct: score.correct,
+        description: metadata?.description ?? "Domain metadata is unavailable for this evidence.",
+        detail: `${score.earned}/${score.max} points`,
+        id: nodeId,
+        label: metadata?.title ?? "Domain metadata unavailable",
+        percent: score.max > 0 ? Math.round((score.earned / score.max) * 100) : 0,
+        total: score.total,
+      };
+    }),
     performanceSectionTitle: "Performance areas",
     reviewAction: dueReviewCount > 0 ? { kind: "canonicalReviewQueue" } : undefined,
     reviewActionEnabled: dueReviewCount > 0,
@@ -330,13 +341,17 @@ function buildCloudProgressTabModel(
     ],
     performanceScores: progress.taxonomyPerformance
       .filter((score) => score.axisId === "cloud-domain" && score.totalAttempts > 0)
-      .map((score) => ({
-        correct: score.correctCount,
-        id: score.nodeId,
-        label: getCloudDomainLabel(score.nodeId),
-        percent: score.percent,
-        total: score.totalAttempts,
-      })),
+      .map((score) => {
+        const resolution = resolveCloudProgressDomainMetadata(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, score.nodeId);
+        return {
+          correct: score.correctCount,
+          description: resolution.kind === "available" ? resolution.metadata.description : "Domain metadata is unavailable for this evidence.",
+          id: score.nodeId,
+          label: resolution.kind === "available" ? resolution.metadata.title : "Domain metadata unavailable",
+          percent: score.percent,
+          total: score.totalAttempts,
+        };
+      }),
     performanceSectionTitle: "Performance by domain",
     reviewAction: progress.dueReviewCount > 0 ? { kind: "canonicalReviewQueue" } : undefined,
     reviewActionEnabled: progress.dueReviewCount > 0,
@@ -945,19 +960,11 @@ function formatCanonicalReviewQueueCopy(
   return `${dueCount} due review ${dueCount === 1 ? "item" : "items"}.`;
 }
 
-function getCloudDomainLabel(nodeId: string): string {
-  if (isExamDomain(nodeId)) {
-    return getDomainLabel(nodeId);
+function resolveInstalledPackageDomainMetadata(trackId: TrackDisplay["id"], nodeId: string): Readonly<{ description?: string; title: string }> | null {
+  if (trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID) {
+    const resolution = resolveCloudProgressDomainMetadata(trackId, nodeId);
+    return resolution.kind === "available" ? resolution.metadata : null;
   }
 
-  return nodeId;
-}
-
-function isExamDomain(value: string): value is CertificationDomain {
-  return (
-    value === "setup_environment" ||
-    value === "planning_implementation" ||
-    value === "operations" ||
-    value === "access_security"
-  );
+  return { title: getDomainLabel(nodeId as CertificationDomain) };
 }

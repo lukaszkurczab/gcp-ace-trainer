@@ -30,9 +30,10 @@ const appIconOutputFiles = [
 
 const qaAMasterPathFragments = ["M102 231", "M131 24H175.84", "M78.80 24H119.90"];
 const require = createRequire(import.meta.url);
+const { getDefaultConfig } = require("expo/metro-config") as { getDefaultConfig: (directory: string) => { resolver: { blockList: RegExp[] } } };
 const { createExpoConfig } = require(join(repositoryRoot, "app.config.js")) as { createExpoConfig: (environment: Record<string, string>) => { expo: Record<string, unknown> } };
 const metroConfig = require(join(repositoryRoot, "metro.config.js")) as {
-  resolver: { assetExts: string[]; sourceExts: string[] };
+  resolver: { assetExts: string[]; sourceExts: string[]; blockList: RegExp[] };
   transformer: { babelTransformerPath: string };
 };
 const appConfigEnvironment = {
@@ -59,6 +60,36 @@ test("Metro transforms SVG sources into React Native components", () => {
   assert.match(metroConfig.transformer.babelTransformerPath, /react-native-svg-transformer\/expo\/index\.js$/);
   assert.ok(metroConfig.resolver.sourceExts.includes("svg"));
   assert.ok(!metroConfig.resolver.assetExts.includes("svg"));
+});
+
+test("Metro keeps defaults and blocks only absolute local profile dotenv files", () => {
+  const blockListFlags = new Set(metroConfig.resolver.blockList.map((pattern) => pattern.flags));
+  assert.equal(blockListFlags.size, 1, "Metro blockList patterns must use identical RegExp flags");
+
+  const defaultBlockList = getDefaultConfig(repositoryRoot).resolver.blockList;
+  for (const pattern of defaultBlockList) {
+    assert.ok(metroConfig.resolver.blockList.some((candidate) => String(candidate) === String(pattern)), `missing default blockList pattern ${pattern}`);
+  }
+
+  const localProfileBlockList = metroConfig.resolver.blockList.find((pattern) => (
+    pattern.test("/workspace/.env.smoke.local") && pattern.test("/workspace/.env.sandbox.local")
+  ));
+  assert.ok(localProfileBlockList, "local profile dotenv blockList pattern is missing");
+
+  for (const path of ["/workspace/.env.smoke.local", "/workspace/.env.sandbox.local", "C:\\workspace\\.env.smoke.local"]) {
+    assert.equal(localProfileBlockList.test(path), true, `${path} should be blocked`);
+  }
+  for (const path of [
+    ".env.smoke.local",
+    ".env.sandbox.local",
+    "/workspace/.env",
+    "/workspace/.env.example",
+    "/workspace/.env.smoke.local.bak",
+    "/workspace/src/App.tsx",
+    "/workspace/assets/icon.svg",
+  ]) {
+    assert.equal(localProfileBlockList.test(path), false, `${path} should not be blocked by the local profile pattern`);
+  }
 });
 
 test("Patternly mark SVG family stays deterministic and raster-free", () => {

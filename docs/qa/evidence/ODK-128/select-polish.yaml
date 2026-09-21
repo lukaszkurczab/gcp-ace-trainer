@@ -1,0 +1,19 @@
+appId: com.lkurczab.patternly
+---
+- tapOn:
+    id: main-tab-bar-settings
+- swipe:
+    start: 50%, 20%
+    end: 50%, 80%
+    duration: 500
+- swipe:
+    start: 50%, 20%
+    end: 50%, 80%
+    duration: 500
+- swipe:
+    start: 50%, 20%
+    end: 50%, 80%
+    duration: 500
+- tapOn: "Language, Choose the language used in Patternly., English"
+- tapOn: Polish
+- assertVisible: Ustawienia

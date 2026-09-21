@@ -34,7 +34,34 @@ export const CONTENT_IDENTITY_INVENTORY_CLASSIFICATIONS = Object.freeze([
   "unsupported",
 ] as const);
 
+export const CONTENT_IDENTITY_LEGACY_TRAINING_SESSION_GUARD_CODES = Object.freeze([
+  "not_record",
+  "unexpected_keys",
+  "forbidden_item_refs",
+  "expired_status",
+  "id",
+  "track_id",
+  "mode_id",
+  "configuration_snapshot",
+  "requested_length",
+  "actual_length",
+  "current_item_index",
+  "item_order",
+  "item_order_entry",
+  "option_order_by_occurrence",
+  "conditional_reinsert_slots",
+  "active_foreground_ms",
+  "content_version",
+  "package_pin",
+  "taxonomy_version",
+  "plan_fingerprint",
+  "status",
+  "started_at",
+  "completed_at",
+] as const);
+
 export type ContentIdentityInventoryClassification = typeof CONTENT_IDENTITY_INVENTORY_CLASSIFICATIONS[number];
+export type LegacyTrainingSessionGuardCode = typeof CONTENT_IDENTITY_LEGACY_TRAINING_SESSION_GUARD_CODES[number];
 export type ContentIdentityInventoryKeyKind = "fixed" | "dynamic_prefix" | "index" | "unknown";
 export type ContentIdentityInventoryScope = "learning" | "account_sync" | "passthrough" | "unsupported";
 
@@ -297,17 +324,49 @@ function isLegacyConditionalSlot(value: unknown): boolean {
     value.resolutionRule === "incorrect_or_partial_after_three_materialized_submissions";
 }
 
+/**
+ * Returns the first failing legacy-session rule in the same order as the
+ * reader.  The classifier is a projection only: it never mutates input and
+ * converts hostile/throwing structures to one bounded code.
+ */
+export function classifyLegacyTrainingSession(value: unknown): LegacyTrainingSessionGuardCode | null {
+  try {
+    if (!isRecord(value)) return "not_record";
+    if (!hasNoUnexpectedKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "packagePin", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"])) return "unexpected_keys";
+    if ("itemRefs" in value) return "forbidden_item_refs";
+    if (value.status === "expired") return "expired_status";
+    if (!isNonEmptyString(value.id)) return "id";
+    if (typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId)) return "track_id";
+    if (!isNonEmptyString(value.modeId)) return "mode_id";
+    if (!isLegacyConfigurationSnapshot(value.configurationSnapshot)) return "configuration_snapshot";
+    if (!Number.isFinite(value.requestedLength)) return "requested_length";
+    if (!Number.isFinite(value.actualLength)) return "actual_length";
+    if (!Number.isFinite(value.currentItemIndex)) return "current_item_index";
+    if (!Array.isArray(value.itemOrder)) return "item_order";
+    if (!value.itemOrder.every(isLegacyOccurrence)) return "item_order_entry";
+    if (!isLegacyOptionOrder(value.optionOrderByOccurrence)) return "option_order_by_occurrence";
+    if (!Object.hasOwn(value, "conditionalReinsertSlots") || value.conditionalReinsertSlots === undefined) {
+      // Legacy records may omit this transient field.
+    } else if (!Array.isArray(value.conditionalReinsertSlots) || !value.conditionalReinsertSlots.every(isLegacyConditionalSlot)) {
+      return "conditional_reinsert_slots";
+    }
+    if (!Number.isFinite(value.activeForegroundMs)) return "active_foreground_ms";
+    if (!isNonEmptyString(value.contentVersion)) return "content_version";
+    if (!isLegacyPackagePin(value.packagePin)) return "package_pin";
+    if (!(value.taxonomyVersion === undefined || isNonEmptyString(value.taxonomyVersion))) return "taxonomy_version";
+    if (!(value.planFingerprint === undefined || (typeof value.planFingerprint === "string" && SHA_256.test(value.planFingerprint)))) return "plan_fingerprint";
+    if (!(value.status === "active" || value.status === "completed" || value.status === "abandoned")) return "status";
+    if (!isNonEmptyString(value.startedAt)) return "started_at";
+    if (Number.isNaN(Date.parse(value.startedAt))) return "started_at";
+    if (value.completedAt !== undefined && (!isNonEmptyString(value.completedAt) || Number.isNaN(Date.parse(value.completedAt)))) return "completed_at";
+    return null;
+  } catch {
+    return "not_record";
+  }
+}
+
 function isLegacyTrainingSession(value: unknown): value is Record<string, unknown> & { id: string; trackId: string; status: "active" | "completed" | "abandoned"; itemOrder: readonly { occurrenceId: string; item: unknown }[] } {
-  if (!isRecord(value) || !hasNoUnexpectedKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "packagePin", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"]) || "itemRefs" in value || value.status === "expired") return false;
-  return isNonEmptyString(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && isNonEmptyString(value.modeId) &&
-    isLegacyConfigurationSnapshot(value.configurationSnapshot) && Number.isFinite(value.requestedLength) && Number.isFinite(value.actualLength) && Number.isFinite(value.currentItemIndex) &&
-    Array.isArray(value.itemOrder) && value.itemOrder.every(isLegacyOccurrence) && isLegacyOptionOrder(value.optionOrderByOccurrence) &&
-    Array.isArray(value.conditionalReinsertSlots) && value.conditionalReinsertSlots.every(isLegacyConditionalSlot) && Number.isFinite(value.activeForegroundMs) &&
-    isNonEmptyString(value.contentVersion) && isLegacyPackagePin(value.packagePin) &&
-    (value.taxonomyVersion === undefined || isNonEmptyString(value.taxonomyVersion)) &&
-    (value.planFingerprint === undefined || (typeof value.planFingerprint === "string" && SHA_256.test(value.planFingerprint))) &&
-    (value.status === "active" || value.status === "completed" || value.status === "abandoned") && isNonEmptyString(value.startedAt) && !Number.isNaN(Date.parse(value.startedAt)) &&
-    (value.completedAt === undefined || (isNonEmptyString(value.completedAt) && !Number.isNaN(Date.parse(value.completedAt))));
+  return classifyLegacyTrainingSession(value) === null;
 }
 
 function isLegacyEvidence(value: unknown): boolean {
@@ -427,8 +486,14 @@ function isLegacyAcknowledgedRecord(value: unknown): boolean {
 
 /** Legacy v1-v3 account state reader used only by migration inventory/planning. */
 export function isLegacyAccountSyncState(value: unknown): boolean {
-  const required = ["protocolVersion", "accountId", "status", "localDatasetVersion", "localDatasetFingerprint", "remoteAccountRevision", "lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode", "acknowledged", "outbox", "materialization", "pendingConfirmation", "syncPlan", "outboxSequence", "highWatermark"];
-  if (!isRecord(value) || !hasNoUnexpectedKeys(value, [...required, "resetGuard"]) || ![1, 2, 3].includes(value.protocolVersion as number) || (value.accountId !== null && !isNonEmptyString(value.accountId)) || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || Number(value.localDatasetVersion) < 0 || (value.localDatasetFingerprint !== null && !(typeof value.localDatasetFingerprint === "string" && SHA_256.test(value.localDatasetFingerprint))) || !Number.isSafeInteger(value.remoteAccountRevision) || Number(value.remoteAccountRevision) < 0 || (value.lastSuccessfulSyncAt !== null && !(isNonEmptyString(value.lastSuccessfulSyncAt) && !Number.isNaN(Date.parse(value.lastSuccessfulSyncAt)))) || !Number.isSafeInteger(value.pendingMutationCount) || Number(value.pendingMutationCount) < 0 || (value.blockingConflictCode !== null && !isNonEmptyString(value.blockingConflictCode)) || (value.lastFailureCode !== null && !isNonEmptyString(value.lastFailureCode)) || !isRecord(value.acknowledged) || !Array.isArray(value.outbox) || !isLegacyMaterialization(value.materialization) || (value.pendingConfirmation !== null && !isRecord(value.pendingConfirmation)) || (value.syncPlan !== null && !isLegacySyncPlan(value.syncPlan)) || !Number.isSafeInteger(value.outboxSequence) || Number(value.outboxSequence) < 0 || !Number.isSafeInteger(value.highWatermark) || Number(value.highWatermark) < 0 || (value.resetGuard !== undefined && value.resetGuard !== null && !isRecord(value.resetGuard))) return false;
+  const required = ["protocolVersion", "accountId", "status", "localDatasetVersion", "localDatasetFingerprint", "remoteAccountRevision", "lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode", "acknowledged", "outbox", "materialization", "pendingConfirmation"];
+  const optional = ["syncPlan", "outboxSequence", "highWatermark"];
+  if (!isRecord(value) || !hasNoUnexpectedKeys(value, [...required, ...optional, "resetGuard"])) return false;
+  const hasOwn = (key: string): boolean => Object.prototype.hasOwnProperty.call(value, key);
+  const syncPlan = hasOwn("syncPlan") ? value.syncPlan : undefined;
+  const outboxSequence = hasOwn("outboxSequence") ? value.outboxSequence : undefined;
+  const highWatermark = hasOwn("highWatermark") ? value.highWatermark : undefined;
+  if (![1, 2, 3].includes(value.protocolVersion as number) || (value.accountId !== null && !isNonEmptyString(value.accountId)) || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || Number(value.localDatasetVersion) < 0 || (value.localDatasetFingerprint !== null && !(typeof value.localDatasetFingerprint === "string" && SHA_256.test(value.localDatasetFingerprint))) || !Number.isSafeInteger(value.remoteAccountRevision) || Number(value.remoteAccountRevision) < 0 || (value.lastSuccessfulSyncAt !== null && !(isNonEmptyString(value.lastSuccessfulSyncAt) && !Number.isNaN(Date.parse(value.lastSuccessfulSyncAt)))) || !Number.isSafeInteger(value.pendingMutationCount) || Number(value.pendingMutationCount) < 0 || (value.blockingConflictCode !== null && !isNonEmptyString(value.blockingConflictCode)) || (value.lastFailureCode !== null && !isNonEmptyString(value.lastFailureCode)) || !isRecord(value.acknowledged) || !Array.isArray(value.outbox) || !isLegacyMaterialization(value.materialization) || (value.pendingConfirmation !== null && !isRecord(value.pendingConfirmation)) || (syncPlan !== undefined && syncPlan !== null && !isLegacySyncPlan(syncPlan)) || (outboxSequence !== undefined && (!Number.isSafeInteger(outboxSequence) || Number(outboxSequence) < 0)) || (highWatermark !== undefined && (!Number.isSafeInteger(highWatermark) || Number(highWatermark) < 0)) || (value.resetGuard !== undefined && value.resetGuard !== null && !isRecord(value.resetGuard))) return false;
   if (!value.outbox.every(isLegacyAccountOutboxEntry) || !Object.values(value.acknowledged).every(isLegacyAcknowledgedRecord)) return false;
   return true;
 }

@@ -1,0 +1,8 @@
+appId: com.lkurczab.patternly
+---
+- tapOn: ".*Pokaż szczegóły sesji.*"
+- assertVisible: Szczegóły sesji
+- assertVisible: "Status: Zakończono wcześniej"
+- assertVisible: "Odpowiedzi: 1/10"
+- assertNotVisible: Podsumowanie sesji jest niedostępne
+- takeScreenshot: docs/qa/evidence/ODK-129/certification-ended-details-pl

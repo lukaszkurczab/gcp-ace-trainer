@@ -12,13 +12,14 @@ import {
 } from "../trainingLifecycle";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import type { ResolvedContentRef, TrainingSession } from "../../domain";
-import { buildCanonicalInteractionViewModel, composeCanonicalFeedback } from "../canonical/canonicalInteractionPresentation";
+import { buildCanonicalInteractionViewModel, composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls } from "../canonical/canonicalInteractionPresentation";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/coding-interview/domain";
 import type { AlgorithmsLifecyclePreparationRequest } from "./codingInterviewContracts";
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
 import { ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
+import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
 
@@ -38,6 +39,7 @@ export type AlgorithmsPracticeProjection = Readonly<{
     correctness: "correct" | "partial" | "incorrect";
     reason: string;
     details: Question["feedback"]["details"];
+    sources?: readonly CanonicalSourceLink[];
     wrongOptionExplanations: readonly Readonly<{ optionId: string; text: string }>[];
     omittedCorrectOptionExplanations: readonly Readonly<{ optionId: string; text: string }>[];
     controls: readonly Readonly<{ id: string; state: "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" }> [];
@@ -81,6 +83,7 @@ export type AlgorithmsSessionResultProjection = Readonly<{
     constraints: readonly string[];
     correctness: "correct" | "partial" | "incorrect";
     details: Question["feedback"]["details"];
+    sources?: readonly CanonicalSourceLink[];
     interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
     item: ResolvedContentRef;
     questionId: string;
@@ -135,7 +138,7 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
   const attempt = materializedAttempt ?? committedAttempt;
   const response = (attempt?.response ?? null) as CanonicalQuestionResponse | null;
   const feedback = attempt && feedbackIsAvailableDuringPractice(session)
-    ? { ...composeCanonicalFeedback(question, response!), wrongOptionExplanations: Object.freeze([]), omittedCorrectOptionExplanations: Object.freeze([]), controls: Object.freeze([]) }
+    ? { ...composeCanonicalFeedback(question, response!), sources: projectCanonicalSourceLinks(question), wrongOptionExplanations: Object.freeze([]), omittedCorrectOptionExplanations: Object.freeze([]), controls: projectCanonicalChoiceFeedbackControls(question, response!) }
     : null;
   const [operation, time] = await Promise.all([
     lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),
@@ -596,6 +599,7 @@ async function completedFeedbackItems(session: TrainingSession, attempts: readon
       constraints: Object.freeze([...(question.constraints ?? [])]),
       correctness: feedback.correctness,
       details: feedback.details,
+      sources: projectCanonicalSourceLinks(question),
       interaction: buildCanonicalInteractionViewModel(
         question,
         attempt.response as CanonicalQuestionResponse,
@@ -607,7 +611,7 @@ async function completedFeedbackItems(session: TrainingSession, attempts: readon
       ordinal: index + 1,
       prompt: question.prompt,
       reason: feedback.reason,
-      controls: Object.freeze([]),
+      controls: projectCanonicalChoiceFeedbackControls(question, attempt.response as CanonicalQuestionResponse),
     })];
   }));
 }

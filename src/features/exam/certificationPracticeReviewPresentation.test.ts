@@ -31,8 +31,8 @@ test("completed single-select review distinguishes the learner answer from the o
   assert.deepEqual(buildCertificationPracticeReviewControl(item({ correctOptionIds: ["a"], selectedOptionIds: ["b"], selectionMode: "single" })).options.map(({ id, state }) => ({ id, state })), [
     { id: "a", state: "omitted_correct" },
     { id: "b", state: "incorrect" },
-    { id: "c", state: "neutral" },
-    { id: "d", state: "neutral" },
+    { id: "c", state: "not_selected" },
+    { id: "d", state: "not_selected" },
   ]);
 });
 
@@ -41,7 +41,7 @@ test("completed multi-select review preserves every selected, correct and omitte
     { id: "a", state: "correct" },
     { id: "b", state: "incorrect" },
     { id: "c", state: "omitted_correct" },
-    { id: "d", state: "neutral" },
+    { id: "d", state: "not_selected" },
   ]);
   assert.equal(certificationPracticeReviewOptionState(true, true), "correct");
 });

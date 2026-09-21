@@ -22,7 +22,7 @@ import {
 } from "./holdToConfirmGesture";
 
 export type HoldToConfirmButtonProps = Readonly<{
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
   children: ReactNode;
   clock?: HoldToConfirmClock;
   disabled?: boolean;
@@ -156,11 +156,11 @@ export function HoldToConfirmButton({
       style={[styles.root, !isInteractive ? styles.disabled : null, style]}
       testID={testID}
     >
-      <View pointerEvents="none" style={styles.content}>
+      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.content}>
         {loading ? <ActivityIndicator accessibilityElementsHidden color={palette.danger} importantForAccessibility="no" size="small" /> : null}
         <Text maxFontSizeMultiplier={2} style={styles.label}>{children}</Text>
       </View>
-      <View pointerEvents="none" style={[styles.progressFill, { width: `${Math.round(state.progress * 100)}%` }]} testID={progressTestID}>
+      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={[styles.progressFill, { width: `${Math.round(state.progress * 100)}%` }]} testID={progressTestID}>
         <View style={[styles.fillContent, { width: measuredWidth }]}>
           {loading ? <ActivityIndicator accessibilityElementsHidden color={palette.onDanger} importantForAccessibility="no" size="small" /> : null}
           <Text maxFontSizeMultiplier={2} style={styles.fillLabel} testID={fillTestID}>{children}</Text>

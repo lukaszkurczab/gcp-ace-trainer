@@ -1,6 +1,7 @@
 import { getTrainingLifecycleUseCases } from "../trainingLifecycle";
 import { clearForegroundTimers, clearReviewQueueItems, clearTrainingAttempts, clearTrainingSessionDrafts, clearTrainingSessions } from "../../storage/repositories";
 import { clearMutationJournal } from "../../storage/repositories/mutationJournalRepository";
+import { runLearningStateResetBarrier } from "../learningMutations";
 
 export const DEVELOPMENT_RESET_LEARNING_STATE_URL = "com.lkurczab.patternly://audit/reset-learning-state";
 export const DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL = "com.lkurczab.patternly://audit/clock/advance";
@@ -59,10 +60,12 @@ export async function handleRuntimeAuditabilityUrl(url: string | null): Promise<
  * records as the lifecycle reset; it never derives or substitutes learner data.
  */
 async function clearUnrecoverableDevelopmentLearningState(): Promise<void> {
-  await clearMutationJournal();
-  await clearForegroundTimers();
-  await clearTrainingSessionDrafts();
-  await clearTrainingSessions();
-  await clearTrainingAttempts();
-  await clearReviewQueueItems();
+  await runLearningStateResetBarrier(async () => {
+    await clearMutationJournal();
+    await clearForegroundTimers();
+    await clearTrainingSessionDrafts();
+    await clearTrainingSessions();
+    await clearTrainingAttempts();
+    await clearReviewQueueItems();
+  });
 }

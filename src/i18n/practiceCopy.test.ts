@@ -157,7 +157,7 @@ test("practice presentation output strings are keys in both locales", () => {
   for (const kind of ["recover", "retry"] as const) {
     assertTranslationKey(noticeForPracticeCompletionCheckpoint(kind).message, `completionCheckpoint:${kind}`);
   }
-  for (const state of ["neutral", "selected", "correct", "incorrect", "omitted_correct"] as const satisfies readonly PracticeOptionState[]) {
+  for (const state of ["neutral", "selected", "correct", "incorrect", "omitted_correct", "not_selected"] as const satisfies readonly PracticeOptionState[]) {
     const correctness = practiceOptionCorrectnessValue(state);
     if (correctness) assertTranslationKey(correctness, `practiceOptionCorrectnessValue:${state}`);
   }

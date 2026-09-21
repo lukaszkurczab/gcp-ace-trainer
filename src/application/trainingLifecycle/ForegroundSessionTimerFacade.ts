@@ -58,12 +58,58 @@ export class ForegroundSessionTimerFacade {
   private readonly operations = new Map<string, Promise<unknown>>();
   private interval: ReturnType<typeof setInterval> | null = null;
   private foregroundSessionId: string | null = null;
+  private generation = 0;
+  private localResetBarrier: Promise<void> | null = null;
+  private quiescing = false;
 
   constructor(private readonly dependencies: ForegroundSessionTimerDependencies) {}
 
   subscribe(listener: (event: ForegroundSessionTimerEvent) => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  }
+
+  /**
+   * Quiesces every session-owned timer operation before the journaled local
+   * reset starts.  The barrier stays closed for the whole durable reset, so a
+   * late AppState event or periodic callback cannot recreate cleared state.
+   */
+  runLocalLearningReset(reset: () => Promise<void>): Promise<void> {
+    if (this.localResetBarrier) return this.localResetBarrier;
+    this.quiescing = true;
+    this.generation += 1;
+    this.stopPeriodicCheckpoint();
+    const barrier = this.performLocalLearningReset(reset).finally(() => {
+      this.stopPeriodicCheckpoint();
+      this.clearSessionRuntimeState();
+      this.quiescing = false;
+      if (this.localResetBarrier === barrier) this.localResetBarrier = null;
+    });
+    this.localResetBarrier = barrier;
+    return barrier;
+  }
+
+  private async performLocalLearningReset(reset: () => Promise<void>): Promise<void> {
+    // Every root async task is included. Duplicates are harmless and avoid a
+    // hidden finalization/completion lane escaping the reset barrier.
+    const inFlight = [
+      ...this.operations.values(),
+      ...this.finalizations.values(),
+      ...this.practiceCompletions.values(),
+    ];
+    await Promise.allSettled(inFlight);
+    this.stopPeriodicCheckpoint();
+    this.clearSessionRuntimeState();
+    await reset();
+  }
+
+  private clearSessionRuntimeState(): void {
+    this.timers.clear();
+    this.faults.clear();
+    this.completionCheckpointFaults.clear();
+    this.finalizations.clear();
+    this.practiceCompletions.clear();
+    this.operations.clear();
   }
 
   async initialize(session: TrainingSession): Promise<void> {
@@ -301,8 +347,13 @@ export class ForegroundSessionTimerFacade {
   }
 
   private serialize<T>(sessionId: string, operation: () => Promise<T>): Promise<T> {
+    if (this.quiescing) return Promise.reject(new ForegroundSessionTimerRecoveryError("Session timer is unavailable while local learning state is being reset."));
+    const generation = this.generation;
     const previous = this.operations.get(sessionId) ?? Promise.resolve();
-    const result = previous.catch(() => undefined).then(operation);
+    const result = previous.catch(() => undefined).then(() => {
+      if (this.quiescing || generation !== this.generation) throw new ForegroundSessionTimerRecoveryError("Session timer operation was superseded by a local learning-state reset.");
+      return operation();
+    });
     this.operations.set(sessionId, result);
     return result;
   }

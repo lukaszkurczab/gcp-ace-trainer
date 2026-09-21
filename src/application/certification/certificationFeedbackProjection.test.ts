@@ -46,13 +46,18 @@ test("active Certification projection strips answers, explanations and feedback 
 });
 
 test("deferred feedback remains absent after durable submit while immediate feedback is unchanged", () => {
-  const attempt = Object.freeze({ result: Object.freeze({ kind: "incorrect" as const }) });
+  const attempt = Object.freeze({ response: Object.freeze({ optionId: "wrong", type: "choice_single" as const }), result: Object.freeze({ kind: "incorrect" as const }) });
   assert.equal(projectCertificationPracticeFeedback("atSessionEnd", attempt, question), null);
   assert.equal(projectCertificationPracticeFeedback("atSessionEnd", null, question), null);
   assert.deepEqual(projectCertificationPracticeFeedback("afterEachAnswer", attempt, question), {
+    controls: [
+      { id: "correct", state: "omitted_correct" },
+      { id: "wrong", state: "incorrect" },
+    ],
     details: question.feedback.details,
     reason: question.feedback.reason,
     result: "incorrect",
+    sources: [],
   });
 });
 

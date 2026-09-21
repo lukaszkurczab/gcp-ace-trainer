@@ -20,5 +20,5 @@ export function certificationPracticeReviewOptionState(selected: boolean, correc
   if (selected && correct) return "correct";
   if (selected) return "incorrect";
   if (correct) return "omitted_correct";
-  return "neutral";
+  return "not_selected";
 }

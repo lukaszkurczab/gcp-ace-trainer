@@ -32,7 +32,7 @@ import type { PracticeSessionRouteParams } from "./sessionConfig";
 import type { TrainingSession } from "../../domain";
 import { getTrackRegistration } from "../../domain";
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
-import { allowsPracticeResponseEditing, formatPracticeElapsedTime, getPracticePrimaryAction, noticeForPracticeCompletionCheckpoint, noticeForPracticeOperation, reconcilePracticeChoiceSelection, type PracticeChoiceSelection, type PracticeSurfacePhase } from "./practiceSessionPresentation";
+import { allowsPracticeResponseEditing, formatPracticeElapsedTime, getPracticePrimaryAction, noticeForPracticeCompletionCheckpoint, noticeForPracticeOperation, reconcilePracticeChoiceSelection, type PracticeChoiceSelection, type PracticeOptionState, type PracticeSurfacePhase } from "./practiceSessionPresentation";
 import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./PracticeSessionSurface";
 import { getCertificationMode } from "../../tracks/certification";
 import { toCanonicalQuestionViewModel } from "./canonicalQuestionViewModel";
@@ -170,6 +170,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const canRecover = !exitFailure && !completionFailure && "error" in projection.operation && projection.operation.error.allowedAction === "recover";
   const canAdvance = !exitFailure && !completionFailure && (projection.operation.kind === "feedback" || projection.operation.kind === "advance_failed");
   const selected = selection?.sessionId === projection.session.id && selection.occurrenceId === projection.occurrenceId ? selection.selectedOptionIds : [];
+  const feedbackStateById = new Map(feedback?.controls?.map((control) => [control.id, control.state]) ?? []);
   const toggle = (id: string) => setSelection((current) => {
     const currentIds = current?.sessionId === projection.session.id && current.occurrenceId === projection.occurrenceId ? current.selectedOptionIds : [];
     const selectedOptionIds = multiple ? (currentIds.includes(id) ? currentIds.filter((item) => item !== id) : [...currentIds, id]) : [id];
@@ -311,7 +312,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   return <PracticeSessionSurface
     allowLeave={!completionFailure}
     exit={{ kind: exit }}
-    feedback={feedback ? { details: feedback.details, reason: feedback.reason, result: feedback.result } : undefined}
+    feedback={feedback ? { details: feedback.details, reason: feedback.reason, result: feedback.result, sources: feedback.sources } : undefined}
     feedbackItem={projection.session.itemOrder[projection.session.currentItemIndex]?.item}
     isFinalPosition={projection.ordinal === projection.total}
     modeLabel={t(getCertificationMode(mode).title)}
@@ -329,7 +330,10 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} ${t("of")} ${projection.total}` }}
     primaryAction={primaryAction}
     progress={projection.ordinal / projection.total}
-    question={{ itemId: questionView.itemId, prompt: questionView.prompt, constraints: questionView.constraints, responseControl: questionView.interaction.kind === "choice" ? { ...questionView.interaction, options: questionView.interaction.options.map((option) => ({ ...option, state: selected.includes(option.id) ? "selected" as const : "neutral" as const })) , selectionMode: multiple ? "multiple" : "single" } : { kind: "choice", options: [], selectionMode: "single" } }}
+    question={{ itemId: questionView.itemId, prompt: questionView.prompt, constraints: questionView.constraints, responseControl: questionView.interaction.kind === "choice" ? { ...questionView.interaction, options: questionView.interaction.options.map((option) => {
+      const feedbackState = feedbackStateById.get(option.id);
+      return { ...option, state: (feedbackState === "neutral" ? "not_selected" : feedbackState ?? (selected.includes(option.id) ? "selected" : "neutral")) as PracticeOptionState };
+    }) , selectionMode: multiple ? "multiple" : "single" } : { kind: "choice", options: [], selectionMode: "single" } }}
     retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : canRecover ? "Restore session" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}
     runtimeIdentity={{ actualLength: projection.session.actualLength, feedbackTiming, itemId: questionView.itemId, modeId: projection.session.modeId, ordinal: projection.ordinal, roadmapNodeId: projection.question.nodeId, sessionId: projection.session.id, trackId: projection.session.trackId }}

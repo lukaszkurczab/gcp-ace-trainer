@@ -9,6 +9,7 @@ import {
 } from "../runtimeAuditability/developmentResetCommand";
 import { installTrainingLifecycleUseCases, type TrainingLifecycleUseCases } from "./";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
+import { installLearningStateResetBarrier } from "../learningMutations";
 
 const developmentFlag = globalThis as typeof globalThis & { __DEV__?: boolean };
 
@@ -81,10 +82,13 @@ test("development reset still restores a clean baseline when an interrupted jour
   setDevelopment(true);
   try {
     installMemoryStorage();
+    let barrierCalls = 0;
+    installLearningStateResetBarrier(async (reset) => { barrierCalls += 1; await reset(); });
     installTrainingLifecycleUseCases({
       async resetLearningState() { throw new Error("interrupted journal cannot recover"); },
     } as unknown as TrainingLifecycleUseCases);
     assert.deepEqual(await handleRuntimeAuditabilityUrl(DEVELOPMENT_RESET_LEARNING_STATE_URL), { kind: "reset_learning_state" });
+    assert.equal(barrierCalls, 1);
   } finally {
     setDevelopment(previous);
   }

@@ -15,6 +15,7 @@ import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { spacing, typography, type AppColors } from "../../theme";
 import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/certification";
 import { canonicalJsonValueText } from "../practice/canonicalQuestionViewModel";
+import { practiceOptionCorrectnessValue, type PracticeOptionState } from "../practice/practiceSessionPresentation";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ANSWER_REVIEW>;
 
@@ -147,19 +148,23 @@ function AnswerReviewContent({ answer, disabled, needsReview, onToggle }: Readon
       </View>
       <View style={styles.questionOptionsSpacer} />
       <View style={styles.options}>
-        {(answer.questionSnapshot.interaction.type === "choice_single" || answer.questionSnapshot.interaction.type === "choice_multiple") ? answer.questionSnapshot.interaction.options.map((option, index) => (
-          <AnswerOption
-            accessibilityLabel={option.text}
+        {(answer.questionSnapshot.interaction.type === "choice_single" || answer.questionSnapshot.interaction.type === "choice_multiple") ? answer.questionSnapshot.interaction.options.map((option, index) => {
+          const state = answerOptionState(selected.has(option.optionId), correct.has(option.optionId));
+          const status = practiceOptionCorrectnessValue(state)!;
+          return <AnswerOption
+            accessibilityLabel={`${option.text}. ${t(status)}`}
             accessibilityRole={answer.questionSnapshot.interaction.type === "choice_multiple" ? "checkbox" : "radio"}
             accessibilityState={{ checked: selected.has(option.optionId), disabled: true }}
+            accessibilityValue={{ text: t(status) }}
             disabled
             key={option.optionId}
             letter={String.fromCharCode(65 + index)}
             onPress={() => undefined}
-            state={answerOptionState(selected.has(option.optionId), correct.has(option.optionId))}
+            state={state}
+            statusLabel={t(status)}
             text={option.text}
-          />
-        )) : null}
+          />;
+        }) : null}
       </View>
       <View style={styles.optionsFeedbackSpacer} />
       {answer.isAnswered ? <View style={styles.feedbackReason}><Text style={styles.questionEyebrow}>{t("Reason")}</Text><Text style={styles.reason}>{answer.questionSnapshot.feedback.reason}</Text>{canonicalJsonValueText(answer.questionSnapshot.feedback.details) ? <Text style={styles.reason}>{canonicalJsonValueText(answer.questionSnapshot.feedback.details)}</Text> : null}</View> : <Text maxFontSizeMultiplier={2} style={styles.unanswered}>{t("Unanswered")}</Text>}
@@ -168,11 +173,11 @@ function AnswerReviewContent({ answer, disabled, needsReview, onToggle }: Readon
   );
 }
 
-function answerOptionState(selected: boolean, correct: boolean) {
+function answerOptionState(selected: boolean, correct: boolean): Exclude<PracticeOptionState, "neutral" | "selected"> {
   if (correct && selected) return "correct" as const;
   if (correct) return "omitted_correct" as const;
   if (selected) return "incorrect" as const;
-  return "default" as const;
+  return "not_selected" as const;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

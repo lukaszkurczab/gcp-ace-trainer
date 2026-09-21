@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { createTrainingSessionDraft, type TrainingSessionDraft } from "../../domain";
 import { clearPatternlyLocalHistory } from "../../features/home/localReset";
+import { installLearningStateResetBarrier } from "./commitLearningStateReset";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import {
@@ -13,6 +14,8 @@ import {
   saveTrainingSessionDraft as persistTrainingSessionDraft,
 } from "../../storage/repositories";
 import { installMemoryStorage, session, timestamp } from "../../testing/journalTestSupport";
+
+installLearningStateResetBarrier(async (reset) => reset());
 
 const draftConfiguration = { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "coding_interview", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } as const;
 

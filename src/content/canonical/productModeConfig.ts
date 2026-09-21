@@ -95,8 +95,8 @@ const config = (input: ConfigInput): ProductModeConfig => ({ ...input, feedbackT
 
 const designConfigs = (trackId: string, nodeId: string): readonly ProductModeConfig[] => [
   config({ trackId, modeId: "design-interview-learn-framework", availability: "immediate", requestedLengths: [1, 10], minimumActualLength: 1, defaultRequestedLength: 10, reinsertPolicy: "disabled", selection: nodeSelection(nodeId) }),
-  config({ trackId, modeId: "design-interview-tradeoff-practice", availability: "immediate", requestedLengths: [1, 10], minimumActualLength: 1, defaultRequestedLength: 10, reinsertPolicy: "disabled", selection: nodeSelection(nodeId) }),
-  config({ trackId, modeId: "design-interview-weak-area-review", availability: "evidence_conditioned", requestedLengths: [1, 10], minimumActualLength: 1, defaultRequestedLength: 10, reinsertPolicy: "disabled", selection: reviewSelection(nodeId) }),
+  config({ trackId, modeId: "design-interview-tradeoff-practice", availability: "immediate", requestedLengths: [10, 20, 40], minimumActualLength: 10, defaultRequestedLength: 10, reinsertPolicy: "disabled", selection: nodeSelection(nodeId) }),
+  config({ trackId, modeId: "design-interview-weak-area-review", availability: "evidence_conditioned", requestedLengths: [1, 10, 20], minimumActualLength: 1, defaultRequestedLength: 10, reinsertPolicy: "disabled", selection: reviewSelection(nodeId) }),
 ];
 
 const certificationConfigs = (trackId: string, nodeId: string, lengths: readonly number[], minimum: number, focusFeedbackTiming?: ProductFeedbackTiming): readonly ProductModeConfig[] => [

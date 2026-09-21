@@ -39,6 +39,27 @@ test("Activity identifies an absolute-deadline completion without relabeling man
   assert.equal(model.items[1]?.status, "ended-early");
 });
 
+test("Activity interaction matrix opens only summaries supported by durable family evidence", () => {
+  const designTrack = "backend-system-design-interview";
+  const model = buildActivityModel([
+    record({ id: "coding-completed", modeId: "coding-interview-guided-practice", trackId: codingTrack, status: "completed", completedAt: "2026-08-23T11:00:00.000Z", totalOccurrences: 2, answered: 2, resultFamilyId: "coding_interview" }),
+    record({ id: "coding-ended", modeId: "coding-interview-guided-practice", trackId: codingTrack, status: "abandoned", completedAt: "2026-08-23T10:00:00.000Z", totalOccurrences: 2, answered: 1, noResult: true }),
+    record({ id: "simulation", modeId: "coding-interview-simulation", trackId: codingTrack, status: "completed", completedAt: "2026-08-23T09:00:00.000Z", totalOccurrences: 2, answered: 2, resultFamilyId: "coding_interview" }),
+    record({ id: "cert-completed", modeId: "certification-focus-practice", trackId: cloudTrack, status: "completed", completedAt: "2026-08-23T08:00:00.000Z", totalOccurrences: 2, answered: 2, resultFamilyId: "certification" }),
+    record({ id: "cert-ended", modeId: "certification-focus-practice", trackId: cloudTrack, status: "abandoned", completedAt: "2026-08-23T07:00:00.000Z", totalOccurrences: 2, answered: 1, noResult: true }),
+    record({ id: "design-no-result", modeId: "design-interview-guided-practice", trackId: designTrack, status: "completed", completedAt: "2026-08-23T06:00:00.000Z", totalOccurrences: 2, answered: 0, noResult: true }),
+    record({ id: "cert-cross-family-result", modeId: "certification-focus-practice", trackId: cloudTrack, status: "completed", completedAt: "2026-08-23T05:00:00.000Z", totalOccurrences: 2, answered: 2, resultFamilyId: "coding_interview" }),
+  ], ALL_ACTIVITY_TRACKS, now);
+  const interaction = (id: string) => model.items.find((item) => item.id === id)?.interaction;
+  assert.deepEqual(interaction("coding-completed"), { destination: "algorithms_practice_summary", kind: "open_result" });
+  assert.deepEqual(interaction("coding-ended"), { destination: "algorithms_practice_summary", kind: "open_result" });
+  assert.deepEqual(interaction("simulation"), { kind: "toggle_session_details" });
+  assert.deepEqual(interaction("cert-completed"), { destination: "canonical_result", kind: "open_result" });
+  assert.deepEqual(interaction("cert-ended"), { kind: "toggle_session_details" });
+  assert.deepEqual(interaction("design-no-result"), { kind: "toggle_session_details" });
+  assert.deepEqual(interaction("cert-cross-family-result"), { kind: "toggle_session_details" });
+});
+
 test("Activity track filter returns only records for the selected canonical track", () => {
   const model = buildActivityModel([
     record({ id: "coding", modeId: "coding-interview-guided-practice", trackId: codingTrack, status: "completed", completedAt: "2026-08-23T11:00:00.000Z", totalOccurrences: 1, answered: 1 }),
@@ -97,6 +118,13 @@ test("Activity keeps unavailable archival summaries separate from runtime naviga
   assert.equal(model.items[0]?.scopeLabel, null);
 });
 
+test("Activity never exposes an unknown archived track identity", () => {
+  const model = buildActivityModel([unavailableRecord("unknown-track", "private-legacy-track-id")], ALL_ACTIVITY_TRACKS, now);
+
+  assert.equal(model.items[0]?.trackTitle, "Unavailable track");
+  assert.doesNotMatch(model.items[0]?.trackTitle ?? "", /private-legacy-track-id/);
+});
+
 function record(input: Readonly<{
   answered: number;
   completedAt: string;
@@ -107,14 +135,16 @@ function record(input: Readonly<{
   trackId: string;
   scopeRefs?: readonly EvidenceRef[];
   deadline?: string;
+  noResult?: boolean;
+  resultFamilyId?: string;
 }>): ActivitySessionRecord {
   return {
     attemptCount: input.answered,
     latestAttemptAt: input.completedAt,
-    result: {
+    result: input.noResult ? null : {
       answeredOccurrenceIds: Array.from({ length: input.answered }, (_, index) => `answered-${index}`),
       completedAt: input.completedAt,
-      evidence: {},
+      evidence: input.resultFamilyId ? { familyId: input.resultFamilyId } : {},
       id: `result-${input.id}`,
       sessionId: input.id,
       totalOccurrences: input.totalOccurrences,
@@ -142,7 +172,7 @@ function record(input: Readonly<{
   } as unknown as ActivitySessionRecord;
 }
 
-function unavailableRecord(sessionId: string): ActivityUnavailableSessionRecord {
+function unavailableRecord(sessionId: string, trackId = codingTrack): ActivityUnavailableSessionRecord {
   return {
     archive: createContentIdentityArchivalHistoryRecord({
       schemaVersion: 1,
@@ -151,13 +181,13 @@ function unavailableRecord(sessionId: string): ActivityUnavailableSessionRecord 
       session: {
         id: sessionId,
         status: "abandoned",
-        trackId: codingTrack,
+        trackId,
         itemOrder: [{
           occurrenceId: `${sessionId}:0`,
           item: {
             kind: "archival_history",
             sessionId,
-            trackId: codingTrack,
+            trackId,
             questionId: "question-1",
             contentVersion: "content-v0",
             reason: "unknown_artifact_hash",
@@ -183,7 +213,7 @@ function unavailableRecord(sessionId: string): ActivityUnavailableSessionRecord 
     startedAt: "2026-08-23T10:50:00.000Z",
     status: "abandoned",
     totalCount: 2,
-    trackId: codingTrack,
+    trackId,
     unavailableReasons: ["unknown_artifact_hash"],
   };
 }

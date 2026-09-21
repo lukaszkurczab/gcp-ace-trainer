@@ -131,7 +131,7 @@ export function AlgorithmsPracticeReviewScreen({ navigation, route }: Props) {
         onComplexityValuePress={noop}
         onOrderingMove={noop}
       />
-      <PracticeFeedbackBlock feedback={{ details: item.details, reason: item.reason, result: item.correctness }} item={item.item} itemId={questionId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
+      <PracticeFeedbackBlock feedback={{ details: item.details, reason: item.reason, result: item.correctness, sources: item.sources }} item={item.item} itemId={questionId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
     </SessionShell>
   );
 }

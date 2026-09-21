@@ -77,7 +77,7 @@ export function ExamReviewScreen({ navigation, route }: Props) {
       <PracticeQuestionCard question={{ constraints: item.constraints, itemId: item.questionId, prompt: item.prompt }} />
       <Text maxFontSizeMultiplier={2} style={[styles.result, styles[item.result]]}>{t(item.result === "correct" ? "Correct" : item.result === "partial" ? "Partial" : "Incorrect")}</Text>
       <PracticeResponseControls control={buildCertificationPracticeReviewControl(item)} editable={false} itemId={item.questionId} onChoicePress={noop} onComplexityValuePress={noop} onOrderingMove={noop} />
-      <PracticeFeedbackBlock feedback={{ details: item.details, reason: item.reason, result: item.result }} item={item.item} itemId={item.questionId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
+      <PracticeFeedbackBlock feedback={{ details: item.details, reason: item.reason, result: item.result, sources: item.sources }} item={item.item} itemId={item.questionId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
     </SessionShell>
   );
 }

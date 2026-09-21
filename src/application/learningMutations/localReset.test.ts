@@ -7,7 +7,7 @@ import {
   clearPatternlyLocalHistory,
   tryClearPatternlyLocalHistory,
 } from "../../features/home/localReset";
-import { recoverPendingMutation } from "./";
+import { installLearningStateResetBarrier, recoverPendingMutation } from "./";
 import { createTrainingSessionDraft, type TrainingSessionDraft } from "../../domain";
 import {
   addReviewQueueItems,
@@ -24,6 +24,8 @@ import {
 } from "../../storage/repositories";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { attempt, installMemoryStorage, journal, review, session } from "../../testing/journalTestSupport";
+
+installLearningStateResetBarrier(async (reset) => reset());
 
 async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
   return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft())?.revision ?? null);

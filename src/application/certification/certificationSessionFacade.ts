@@ -17,6 +17,8 @@ import {
 } from "../trainingLifecycle";
 import { isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
 import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalQuestionResponse, type JsonValue, type Question } from "../../content/canonical";
+import { projectCanonicalChoiceFeedbackControls, type CanonicalChoiceFeedbackState } from "../canonical/canonicalInteractionPresentation";
+import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 
 type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
@@ -36,9 +38,11 @@ export type CertificationPracticeProjection = Readonly<{
   operation: PracticeDurableOperationState;
   response: Readonly<{ source: "committed" | "materialized"; value: CanonicalQuestionResponse }> | null;
   feedback: Readonly<{
+    controls: readonly Readonly<{ id: string; state: CanonicalChoiceFeedbackState }>[];
     result: AttemptResultKind;
     reason: Question["feedback"]["reason"];
     details: Question["feedback"]["details"];
+    sources: readonly CanonicalSourceLink[];
   }> | null;
 }>;
 export type CertificationPracticeQuestion = Readonly<{
@@ -54,6 +58,7 @@ export type CertificationPracticeReviewItem = Readonly<{
   constraints: readonly string[];
   correctOptionIds: readonly string[];
   details: JsonValue;
+  sources?: readonly CanonicalSourceLink[];
   item: TrainingSession["itemOrder"][number]["item"];
   occurrenceId: string;
   options: readonly Readonly<{ optionId: string; text: string }>[];
@@ -203,6 +208,7 @@ export async function getCertificationPracticeReviewProjection(sessionId: string
       constraints: Object.freeze([...(question.constraints ?? [])]),
       correctOptionIds: Object.freeze([...correctOptionIds]),
       details: question.feedback.details,
+      sources: projectCanonicalSourceLinks(question),
       item: occurrence.item,
       occurrenceId: occurrence.occurrenceId,
       options: Object.freeze(question.interaction.options.map((option) => Object.freeze({ optionId: option.optionId, text: option.text }))),
@@ -449,11 +455,11 @@ export function projectCertificationPracticeQuestion(question: Question): Certif
 /** Deferred sessions expose committed response state, but never correctness before completion. */
 export function projectCertificationPracticeFeedback(
   feedbackMode: "afterEachAnswer" | "atSessionEnd",
-  attempt: Readonly<{ result: Readonly<{ kind: AttemptResultKind }> }> | null,
+  attempt: Readonly<{ response: unknown; result: Readonly<{ kind: AttemptResultKind }> }> | null,
   question: Question,
 ): CertificationPracticeProjection["feedback"] {
   return attempt && feedbackMode === "afterEachAnswer"
-    ? Object.freeze({ result: attempt.result.kind, reason: question.feedback.reason, details: question.feedback.details })
+    ? Object.freeze({ controls: projectCanonicalChoiceFeedbackControls(question, attempt.response as CanonicalQuestionResponse), result: attempt.result.kind, reason: question.feedback.reason, details: question.feedback.details, sources: projectCanonicalSourceLinks(question) })
     : null;
 }
 

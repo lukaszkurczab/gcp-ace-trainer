@@ -25,6 +25,25 @@ export class EncryptedStorageBootstrapError extends Error {
   }
 }
 
+const ENCRYPTED_STORAGE_FAILURE_CODES: readonly EncryptedStorageFailureCode[] = Object.freeze([
+  "secure_store_temporarily_unavailable",
+  "encrypted_storage_key_missing",
+  "encrypted_storage_unavailable",
+  "storage_manifest_corrupt",
+  "storage_migration_incomplete",
+  "legacy_cleanup_failed",
+]);
+
+/** Preserves the closed native storage error contract across JavaScript module/realm boundaries. */
+export function encryptedStorageFailureCode(error: unknown): EncryptedStorageFailureCode | null {
+  if (error instanceof EncryptedStorageBootstrapError) return error.code;
+  if (typeof error !== "object" || error === null || (error as Readonly<{ name?: unknown }>).name !== "EncryptedStorageBootstrapError") return null;
+  const code = (error as Readonly<{ code?: unknown }>).code;
+  return typeof code === "string" && ENCRYPTED_STORAGE_FAILURE_CODES.includes(code as EncryptedStorageFailureCode)
+    ? code as EncryptedStorageFailureCode
+    : null;
+}
+
 export interface StorageSlot {
   readonly id: string;
   readonly isEncrypted: boolean;

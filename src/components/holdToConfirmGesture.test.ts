@@ -322,7 +322,10 @@ test("the component wires native responder cancellation and a simple full-surfac
   assert.match(source, /controller\.activate\(\)/u);
   assert.match(source, /controller\.deactivate\(\)/u);
   assert.match(source, /isInteractiveRef/u);
+  assert.match(source, /accessibilityLabel: string;/u);
   assert.match(source, /accessibilityHint=\{hint\}/u);
+  assert.match(source, /<View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style=\{styles\.content\}>/u);
+  assert.match(source, /<View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style=\{\[styles\.progressFill,/u);
   assert.match(source, /width: `\$\{Math\.round\(state\.progress \* 100\)\}%`/u);
   assert.match(source, /onMoveShouldSetResponder=\{\(\) => false\}/u);
   assert.match(source, /progressFill:\s*\{[\s\S]*backgroundColor: palette\.danger[\s\S]*position: "absolute"/u);

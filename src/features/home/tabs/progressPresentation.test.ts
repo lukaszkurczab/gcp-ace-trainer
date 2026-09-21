@@ -35,7 +35,7 @@ test("Home passes canonical sessions and exact row navigation into Progress", ()
   assert.match(home, /loadActivitySessionRecords\(\{ getAttempts: \(\) => trainingAttemptsRead \}\)/);
   const props = home.slice(home.indexOf("<ProgressTab"), home.indexOf("/>", home.indexOf("<ProgressTab")));
   assert.match(props, /activityRecords=\{data\.activityRecords\}/);
-  assert.match(props, /onOpenActivityItem=\{\(item\) => navigateToActivityResult\(navigation, item\)\}/);
+  assert.match(props, /onOpenActivityItem=\{\(item\) => item\.interaction\.kind === "open_result" \? navigateToActivityResult\(navigation, item\) : navigation\.navigate\(ROUTES\.ACTIVITY\)\}/);
 });
 
 test("Progress receives the single canonical Home plan snapshot and guidance action owner", () => {

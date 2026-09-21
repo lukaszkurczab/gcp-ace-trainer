@@ -184,6 +184,35 @@ test("Practice response renderer consumes application feedback states without sc
   });
 });
 
+test("Single-select feedback projects selected-correct and every remaining disabled state", () => {
+  const control = buildPracticeResponseControl({
+    choiceSelectionMode: "single",
+    feedbackControls: [
+      { id: "a", state: "correct" },
+      { id: "b", state: "neutral" },
+      { id: "c", state: "neutral" },
+    ],
+    localResponse: { kind: "choice", selectedOptionIds: ["a"] },
+    renderer: {
+      kind: "choice",
+      options: [
+        { id: "a", selected: true, text: "A" },
+        { id: "b", selected: false, text: "B" },
+        { id: "c", selected: false, text: "C" },
+      ],
+    },
+  });
+  assert.deepEqual(control, {
+    kind: "choice",
+    selectionMode: "single",
+    options: [
+      { id: "a", state: "correct", text: "A" },
+      { id: "b", state: "not_selected", text: "B" },
+      { id: "c", state: "not_selected", text: "C" },
+    ],
+  });
+});
+
 test("The visible ordering is a complete response before the learner moves an element", () => {
   const control = buildPracticeResponseControl({
     localResponse: null,
@@ -206,10 +235,21 @@ test("The visible ordering is a complete response before the learner moves an el
   );
 });
 
-test("Practice correctness semantics stay separate from the native checked selection state", () => {
+test("Practice feedback labels distinguish selection from correctness", () => {
   assert.equal(practiceOptionCorrectnessValue("neutral"), undefined);
-  assert.equal(practiceOptionCorrectnessValue("selected"), undefined);
-  assert.equal(practiceOptionCorrectnessValue("correct"), "Correct response");
-  assert.equal(practiceOptionCorrectnessValue("incorrect"), "Incorrect response");
-  assert.equal(practiceOptionCorrectnessValue("omitted_correct"), "Correct response");
+  assert.equal(practiceOptionCorrectnessValue("selected"), "Selected");
+  assert.equal(practiceOptionCorrectnessValue("correct"), "Selected, correct");
+  assert.equal(practiceOptionCorrectnessValue("incorrect"), "Selected, incorrect");
+  assert.equal(practiceOptionCorrectnessValue("omitted_correct"), "Correct answer, not selected");
+  assert.equal(practiceOptionCorrectnessValue("not_selected"), "Not selected");
+});
+
+test("Practice checked semantics include only answers the learner selected", async () => {
+  const { practiceOptionIsSelected } = await import("./practiceSessionPresentation");
+  assert.equal(practiceOptionIsSelected("neutral"), false);
+  assert.equal(practiceOptionIsSelected("not_selected"), false);
+  assert.equal(practiceOptionIsSelected("omitted_correct"), false);
+  assert.equal(practiceOptionIsSelected("selected"), true);
+  assert.equal(practiceOptionIsSelected("correct"), true);
+  assert.equal(practiceOptionIsSelected("incorrect"), true);
 });

@@ -1,9 +1,11 @@
 import {
   CONTENT_IDENTITY_INVENTORY_REGISTRY,
+  classifyLegacyTrainingSession,
   isLegacyAccountSyncState,
   isLegacyNotificationSettings,
   type ContentIdentityInventoryKeyKind,
   type ContentIdentityInventoryRegistryEntry,
+  type LegacyTrainingSessionGuardCode,
 } from "./contentIdentityInventory";
 import {
   CONTENT_IDENTITY_MIGRATION_TARGET_RUNTIME_SCHEMA_VERSION,
@@ -89,6 +91,17 @@ export class ContentIdentityV2PlannerError extends Error {
   }
 }
 
+export interface ContentIdentityV2PlannerError {
+  /** Assigned only at an owner-specific build boundary; never serialized. */
+  readonly ownerCode?: ContentIdentityV2PlannerOwnerCode;
+  readonly legacyTrainingSessionGuardCode?: LegacyTrainingSessionGuardCode;
+  readonly trainingSessionRoleCode?: ContentIdentityV2PlannerTrainingSessionRoleCode;
+  readonly trainingSessionTopIdentityCode?: ContentIdentityV2PlannerTrainingSessionTopIdentityCode;
+  readonly trainingSessionItemIdentityCode?: ContentIdentityV2PlannerTrainingSessionItemIdentityCode;
+  readonly trainingSessionProvenanceCode?: ContentIdentityV2PlannerTrainingSessionProvenanceCode;
+  readonly trainingSessionStatusCode?: ContentIdentityV2PlannerTrainingSessionStatusCode;
+}
+
 export type ContentIdentityV2PlanBundle = Readonly<{
   plan: ContentIdentityMigrationPlan;
   verifier: ContentIdentityMigrationVerifier;
@@ -130,6 +143,167 @@ const V2_OWNER_NAMES = Object.freeze([
   "accountLifecycleRepository", "contentReportOutboxRepository", "trainingSessionResultRepository", "reviewQueueRepository",
   "goalRepository", "learningPlanRepository",
 ] as const);
+
+/**
+ * The diagnostic owner surface is closed to the owner names registered for
+ * the v2 inventory.  The runtime value is still taken from the registry entry
+ * at the owner-specific boundary; this type only prevents arbitrary strings
+ * from crossing the diagnostic contract.
+ */
+export type ContentIdentityV2PlannerOwnerCode = Extract<
+  (typeof V2_OWNER_NAMES)[number],
+  (typeof CONTENT_IDENTITY_INVENTORY_REGISTRY)[number]["owner"]
+>;
+
+export const CONTENT_IDENTITY_V2_PLANNER_OWNER_CODES: readonly ContentIdentityV2PlannerOwnerCode[] = Object.freeze(
+  V2_OWNER_NAMES.filter((owner): owner is ContentIdentityV2PlannerOwnerCode =>
+    CONTENT_IDENTITY_INVENTORY_REGISTRY.some((entry) => entry.owner === owner),
+  ),
+);
+
+export type ContentIdentityV2PlannerTrainingSessionRoleCode = "index" | "active_pointer" | "record" | "other";
+export type ContentIdentityV2PlannerTrainingSessionTopIdentityCode = "artifact_sha" | "package_pin" | "both" | "neither";
+export type ContentIdentityV2PlannerTrainingSessionItemIdentityCode = "resolved" | "legacy" | "mixed" | "empty" | "other";
+export type ContentIdentityV2PlannerTrainingSessionProvenanceCode = "both" | "taxonomy_only" | "fingerprint_only" | "neither";
+export type ContentIdentityV2PlannerTrainingSessionStatusCode = "active" | "completed" | "abandoned" | "other";
+
+export const CONTENT_IDENTITY_V2_PLANNER_TRAINING_SESSION_ROLE_CODES: readonly ContentIdentityV2PlannerTrainingSessionRoleCode[] = Object.freeze(["index", "active_pointer", "record", "other"]);
+export const CONTENT_IDENTITY_V2_PLANNER_TRAINING_SESSION_TOP_IDENTITY_CODES: readonly ContentIdentityV2PlannerTrainingSessionTopIdentityCode[] = Object.freeze(["artifact_sha", "package_pin", "both", "neither"]);
+export const CONTENT_IDENTITY_V2_PLANNER_TRAINING_SESSION_ITEM_IDENTITY_CODES: readonly ContentIdentityV2PlannerTrainingSessionItemIdentityCode[] = Object.freeze(["resolved", "legacy", "mixed", "empty", "other"]);
+export const CONTENT_IDENTITY_V2_PLANNER_TRAINING_SESSION_PROVENANCE_CODES: readonly ContentIdentityV2PlannerTrainingSessionProvenanceCode[] = Object.freeze(["both", "taxonomy_only", "fingerprint_only", "neither"]);
+export const CONTENT_IDENTITY_V2_PLANNER_TRAINING_SESSION_STATUS_CODES: readonly ContentIdentityV2PlannerTrainingSessionStatusCode[] = Object.freeze(["active", "completed", "abandoned", "other"]);
+
+function isContentIdentityV2PlannerOwnerCode(value: string): value is ContentIdentityV2PlannerOwnerCode {
+  return CONTENT_IDENTITY_V2_PLANNER_OWNER_CODES.includes(value as ContentIdentityV2PlannerOwnerCode);
+}
+
+function trainingSessionRoleCode(key: string, kind: ContentIdentityInventoryKeyKind): ContentIdentityV2PlannerTrainingSessionRoleCode {
+  if (kind === "index") return "index";
+  if (key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION) return "active_pointer";
+  if (kind === "dynamic_prefix") return "record";
+  return "other";
+}
+
+function trainingSessionTopIdentityCode(payload: unknown): ContentIdentityV2PlannerTrainingSessionTopIdentityCode {
+  try {
+    if (!isRecord(payload)) return "neither";
+    const hasArtifactSha = Object.hasOwn(payload, "artifactSha256");
+    const hasPackagePin = Object.hasOwn(payload, "packagePin");
+    if (hasArtifactSha && hasPackagePin) return "both";
+    if (hasArtifactSha) return "artifact_sha";
+    if (hasPackagePin) return "package_pin";
+    return "neither";
+  } catch {
+    return "neither";
+  }
+}
+
+function trainingSessionItemIdentityCode(payload: unknown): ContentIdentityV2PlannerTrainingSessionItemIdentityCode {
+  try {
+    if (!isRecord(payload) || !Array.isArray(payload.itemOrder)) return "other";
+    if (payload.itemOrder.length === 0) return "empty";
+    let hasResolved = false;
+    let hasLegacy = false;
+    for (const occurrence of payload.itemOrder) {
+      if (!isRecord(occurrence)) return "other";
+      if (isResolvedContentRef(occurrence.item)) hasResolved = true;
+      else if (isLegacyContentItemRef(occurrence.item)) hasLegacy = true;
+      else return "other";
+    }
+    if (hasResolved && hasLegacy) return "mixed";
+    if (hasResolved) return "resolved";
+    if (hasLegacy) return "legacy";
+    return "other";
+  } catch {
+    return "other";
+  }
+}
+
+function trainingSessionProvenanceCode(payload: unknown): ContentIdentityV2PlannerTrainingSessionProvenanceCode {
+  try {
+    if (!isRecord(payload)) return "neither";
+    const hasTaxonomy = Object.hasOwn(payload, "taxonomyVersion");
+    const hasFingerprint = Object.hasOwn(payload, "planFingerprint");
+    if (hasTaxonomy && hasFingerprint) return "both";
+    if (hasTaxonomy) return "taxonomy_only";
+    if (hasFingerprint) return "fingerprint_only";
+    return "neither";
+  } catch {
+    return "neither";
+  }
+}
+
+function trainingSessionStatusCode(payload: unknown): ContentIdentityV2PlannerTrainingSessionStatusCode {
+  try {
+    if (!isRecord(payload)) return "other";
+    if (payload.status === "active") return "active";
+    if (payload.status === "completed") return "completed";
+    if (payload.status === "abandoned") return "abandoned";
+    return "other";
+  } catch {
+    return "other";
+  }
+}
+
+function assignTrainingSessionShapeCodes(
+  error: unknown,
+  owner: string,
+  key: string,
+  kind: ContentIdentityInventoryKeyKind,
+  payload: unknown,
+): void {
+  try {
+    if (!(error instanceof ContentIdentityV2PlannerError) || error.code !== "owner_guard_failed" || owner !== "trainingSessionRepository") return;
+    if ("trainingSessionRoleCode" in error || "trainingSessionTopIdentityCode" in error || "trainingSessionItemIdentityCode" in error || "trainingSessionProvenanceCode" in error || "trainingSessionStatusCode" in error) return;
+    Object.defineProperties(error, {
+      trainingSessionRoleCode: { configurable: false, enumerable: false, value: trainingSessionRoleCode(key, kind), writable: false },
+      trainingSessionTopIdentityCode: { configurable: false, enumerable: false, value: trainingSessionTopIdentityCode(payload), writable: false },
+      trainingSessionItemIdentityCode: { configurable: false, enumerable: false, value: trainingSessionItemIdentityCode(payload), writable: false },
+      trainingSessionProvenanceCode: { configurable: false, enumerable: false, value: trainingSessionProvenanceCode(payload), writable: false },
+      trainingSessionStatusCode: { configurable: false, enumerable: false, value: trainingSessionStatusCode(payload), writable: false },
+    });
+  } catch {
+    // Shape diagnostics are strictly best-effort and never replace the planner error.
+  }
+}
+
+function assignLegacyTrainingSessionGuardCode(
+  error: unknown,
+  owner: string,
+  kind: ContentIdentityInventoryKeyKind,
+  payload: unknown,
+): void {
+  try {
+    if (!(error instanceof ContentIdentityV2PlannerError) || error.code !== "owner_guard_failed" || owner !== "trainingSessionRepository" || kind !== "dynamic_prefix") return;
+    const guardCode = classifyLegacyTrainingSession(payload);
+    if (guardCode === null || "legacyTrainingSessionGuardCode" in error || !Object.isExtensible(error)) return;
+    Object.defineProperty(error, "legacyTrainingSessionGuardCode", {
+      configurable: false,
+      enumerable: false,
+      value: guardCode,
+      writable: false,
+    });
+  } catch {
+    // Guard diagnostics are best-effort and never replace the planner error.
+  }
+}
+
+function assignPlannerOwnerCode(error: unknown, ownerCode: string): void {
+  try {
+    if (!(error instanceof ContentIdentityV2PlannerError) || !isContentIdentityV2PlannerOwnerCode(ownerCode)) return;
+    // Relationship and global planner failures are deliberately ownerless.
+    if (error.code === "relationship_invalid" || error.code === "unregistered_key") return;
+    if ("ownerCode" in error || !Object.isExtensible(error)) return;
+    Object.defineProperty(error, "ownerCode", {
+      configurable: false,
+      enumerable: false,
+      value: ownerCode,
+      writable: false,
+    });
+  } catch {
+    // A frozen/non-extensible or otherwise hostile error remains unchanged.
+  }
+}
 
 const CONTENT_IDENTITY_ARCHIVAL_HISTORY_OWNER = "contentIdentityArchivalHistoryRepository" as const;
 const CONTENT_IDENTITY_UNAVAILABLE_ACTIVE_OWNER = "contentIdentityUnavailableActiveRepository" as const;
@@ -351,16 +525,7 @@ function isLegacyConditionalSlot(value: unknown): boolean {
 }
 
 function isLegacyTrainingSession(value: unknown): boolean {
-  if (!isRecord(value) || !hasNoUnexpectedKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "packagePin", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"]) || "itemRefs" in value || value.status === "expired") return false;
-  return nonEmpty(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) && nonEmpty(value.modeId) &&
-    isLegacyConfigurationSnapshot(value.configurationSnapshot) && Number.isFinite(value.requestedLength) && Number.isFinite(value.actualLength) && Number.isFinite(value.currentItemIndex) &&
-    Array.isArray(value.itemOrder) && value.itemOrder.every(isLegacyOccurrence) && isLegacyOptionOrder(value.optionOrderByOccurrence) &&
-    Array.isArray(value.conditionalReinsertSlots) && value.conditionalReinsertSlots.every(isLegacyConditionalSlot) && Number.isFinite(value.activeForegroundMs) &&
-    nonEmpty(value.contentVersion) && isLegacyPackagePin(value.packagePin) &&
-    (value.taxonomyVersion === undefined || nonEmpty(value.taxonomyVersion)) &&
-    (value.planFingerprint === undefined || (typeof value.planFingerprint === "string" && DIGEST.test(value.planFingerprint))) &&
-    (value.status === "active" || value.status === "completed" || value.status === "abandoned") && nonEmpty(value.startedAt) && !Number.isNaN(Date.parse(value.startedAt)) &&
-    (value.completedAt === undefined || (nonEmpty(value.completedAt) && !Number.isNaN(Date.parse(value.completedAt))));
+  return classifyLegacyTrainingSession(value) === null;
 }
 
 function isLegacyEvidence(value: unknown): boolean {
@@ -540,8 +705,11 @@ function transformSession(payload: unknown, context: TransformContext): Transfor
   }
   const itemOrder = payload.itemOrder.map((occurrence, index) => mapOccurrence(occurrence, tombstoneContext, context.artifacts, `payload.itemOrder[${index}]`, identities, topLevelIdentityOverride));
   if (new Set(itemOrder.map((occurrence) => isRecord(occurrence) ? occurrence.occurrenceId : null)).size !== itemOrder.length) throw new ContentIdentityV2PlannerError("owner_guard_failed");
-  const slots = Array.isArray(payload.conditionalReinsertSlots)
-    ? payload.conditionalReinsertSlots.map((slot, index) => {
+  const rawSlots = payload.conditionalReinsertSlots;
+  if (rawSlots !== undefined && !Array.isArray(rawSlots)) throw new ContentIdentityV2PlannerError("owner_guard_failed");
+  const slots = rawSlots === undefined
+    ? []
+    : rawSlots.map((slot, index) => {
       if (!isRecord(slot)) throw new ContentIdentityV2PlannerError("owner_guard_failed");
       return {
         ...slot,
@@ -549,8 +717,7 @@ function transformSession(payload: unknown, context: TransformContext): Transfor
         ...(slot.reviewedVariantBranch ? { reviewedVariantBranch: mapBranch(slot.reviewedVariantBranch, tombstoneContext, context.artifacts, `payload.conditionalReinsertSlots[${index}].reviewedVariantBranch`, identities, topLevelIdentityOverride) } : {}),
         ...(slot.exactSourceBranch ? { exactSourceBranch: mapBranch(slot.exactSourceBranch, tombstoneContext, context.artifacts, `payload.conditionalReinsertSlots[${index}].exactSourceBranch`, identities, topLevelIdentityOverride) } : {}),
       };
-    })
-    : payload.conditionalReinsertSlots;
+    });
   const { packagePin: _packagePin, ...withoutPin } = cloneJson(payload);
   // The session-level package identity is the provenance boundary for every
   // occurrence and preallocated branch.  A stale/unknown top-level pin must
@@ -558,7 +725,7 @@ function transformSession(payload: unknown, context: TransformContext): Transfor
   if (artifactSha256 === undefined && identities.some((binding) => binding.resolution.kind === "resolved")) {
     throw new ContentIdentityV2PlannerError("owner_guard_failed");
   }
-  return { value: { ...withoutPin, ...(artifactSha256 === undefined ? {} : { artifactSha256 }), itemOrder, ...(slots === undefined ? {} : { conditionalReinsertSlots: slots }) }, identity: identities };
+  return { value: { ...withoutPin, ...(artifactSha256 === undefined ? {} : { artifactSha256 }), itemOrder, conditionalReinsertSlots: slots }, identity: identities };
 }
 
 function transformAttempt(payload: unknown, context: TransformContext): TransformResult {
@@ -747,6 +914,14 @@ function transformAccountSync(payload: unknown, context: TransformContext): Tran
   const value = cloneJson(payload) as JsonRecord;
   const accountId = nonEmpty(value.accountId) ? value.accountId : null;
   const outbox = value.outbox as unknown[];
+  const outboxSequence = Math.max(
+    0,
+    typeof value.outboxSequence === "number" ? value.outboxSequence : 0,
+    ...outbox.map((entry) => isRecord(entry) && typeof entry.sequence === "number" ? entry.sequence : 0),
+  );
+  value.syncPlan = value.syncPlan ?? null;
+  value.outboxSequence = outboxSequence;
+  value.highWatermark = typeof value.highWatermark === "number" ? value.highWatermark : outboxSequence;
   value.outbox = outbox.map((entry: unknown, index: number) => transformAccountRecord(entry, context, `payload.outbox[${index}]`, identities, accountId));
   if (isRecord(value.syncPlan) && Array.isArray(value.syncPlan.items)) {
     const syncPlan = value.syncPlan;
@@ -916,6 +1091,7 @@ function relocateUnavailableTargets(transformed: Map<string, ContentIdentityV2Re
   const attemptPrefix = `${STORAGE_NAMESPACE}training-attempt:`;
   const resultPrefix = `${STORAGE_NAMESPACE}training-session-result:`;
   const reviewPrefix = `${STORAGE_NAMESPACE}review-entry:`;
+  const relocatedSessionIds = new Set<string>();
   const unavailableSessionIds = new Set<string>();
   const archivalSessionIds = new Set<string>();
   const removedSessionIds = new Set<string>();
@@ -926,7 +1102,7 @@ function relocateUnavailableTargets(transformed: Map<string, ContentIdentityV2Re
   for (const [key, record] of [...transformed.entries()]) {
     if (!key.startsWith(sessionPrefix) || !targetHasTombstone(record) || !isRecord(record.value) || !nonEmpty(record.value.id)) continue;
     const sessionId = record.value.id;
-    unavailableSessionIds.add(sessionId);
+    relocatedSessionIds.add(sessionId);
     const attempts: JsonRecord[] = [];
     const results: JsonRecord[] = [];
     for (const [attemptKey, attemptRecord] of transformed) {
@@ -977,17 +1153,17 @@ function relocateUnavailableTargets(transformed: Map<string, ContentIdentityV2Re
 
   for (const [key, record] of [...transformed.entries()]) {
     const value = record.value;
-    if (key.startsWith(attemptPrefix) && isRecord(value) && unavailableSessionIds.has(String(value.sessionId))) {
+    if (key.startsWith(attemptPrefix) && isRecord(value) && relocatedSessionIds.has(String(value.sessionId))) {
       removedAttemptIds.add(key.slice(attemptPrefix.length));
       transformed.delete(key);
     }
-    if (key.startsWith(resultPrefix) && isRecord(value) && unavailableSessionIds.has(String(value.sessionId))) {
+    if (key.startsWith(resultPrefix) && isRecord(value) && relocatedSessionIds.has(String(value.sessionId))) {
       transformed.delete(key);
     }
   }
 
   for (const [key, record] of [...transformed.entries()]) {
-    if (!key.startsWith(sessionPrefix) || !isRecord(record.value) || !unavailableSessionIds.has(String(record.value.id))) continue;
+    if (!key.startsWith(sessionPrefix) || !isRecord(record.value) || !relocatedSessionIds.has(String(record.value.id))) continue;
     transformed.delete(key);
   }
   filterTargetIndex(transformed, STORAGE_KEYS.TRAINING_SESSION_INDEX, removedSessionIds);
@@ -1018,7 +1194,14 @@ function buildTargets(source: readonly ContentIdentityMigrationRawRecord[], arti
   for (const record of source) {
     const owner = ownerForKey(record.key);
     const envelope = parseEnvelope(record.raw, record.key);
-    assertLegacyOwnerPayload(record.key, owner.entry.owner, envelope.payload);
+    try {
+      assertLegacyOwnerPayload(record.key, owner.entry.owner, envelope.payload);
+    } catch (error) {
+      assignPlannerOwnerCode(error, owner.entry.owner);
+      assignTrainingSessionShapeCodes(error, owner.entry.owner, record.key, owner.kind, envelope.payload);
+      assignLegacyTrainingSessionGuardCode(error, owner.entry.owner, owner.kind, envelope.payload);
+      throw error;
+    }
     sourceMeta.set(record.key, { envelope, owner });
   }
   const sessionPreflight = new Map<string, LegacySessionPreflight>();
@@ -1050,11 +1233,16 @@ function buildTargets(source: readonly ContentIdentityMigrationRawRecord[], arti
   for (const record of ordered) {
     const meta = sourceMeta.get(record.key)!;
     const context: TransformContext = Object.freeze({ key: record.key, entry: meta.owner.entry, kind: meta.owner.kind, artifacts, sessionPreflight });
-    const result = dispatchOwner(meta.envelope.payload, context);
-    const preservationEntry = preservationFor(meta.owner.entry.owner, record.key, meta.envelope.revision, meta.envelope.payload);
-    preservation.push(preservationEntry);
-    const target = makeV2Payload(record.key, meta.owner.entry.owner, meta.envelope.revision, result.value, result.identity, preservationEntry);
-    transformed.set(record.key, target);
+    try {
+      const result = dispatchOwner(meta.envelope.payload, context);
+      const preservationEntry = preservationFor(meta.owner.entry.owner, record.key, meta.envelope.revision, meta.envelope.payload);
+      preservation.push(preservationEntry);
+      const target = makeV2Payload(record.key, meta.owner.entry.owner, meta.envelope.revision, result.value, result.identity, preservationEntry);
+      transformed.set(record.key, target);
+    } catch (error) {
+      assignPlannerOwnerCode(error, meta.owner.entry.owner);
+      throw error;
+    }
   }
   // Tombstoned learning records are private migration output, never public
   // TrainingSession/Attempt/Review values.  Relocate them before pointer and

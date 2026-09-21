@@ -430,7 +430,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             goal={data.goal}
             onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
             onOpenActivity={() => navigation.navigate(ROUTES.ACTIVITY)}
-            onOpenActivityItem={(item) => navigateToActivityResult(navigation, item)}
+            onOpenActivityItem={(item) => item.interaction.kind === "open_result" ? navigateToActivityResult(navigation, item) : navigation.navigate(ROUTES.ACTIVITY)}
             onOpenPractice={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
             onOpenGoal={() => navigation.navigate(ROUTES.GOAL_CADENCE, { returnTo: "progress", trackId: activeTrack.id })}
             onHomePlanAction={(action) => { void handleHomePlanAction(action, data.homePlan!, "progress"); }}

@@ -67,10 +67,12 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown",
   let resumeCount = 0;
   let finalizations = 0;
   let checkpointError: Error | null = null;
+  let checkpointGate: Promise<void> | null = null;
   let durableAtFinalization: ForegroundTimerState | null = null;
   const checkpoints: number[] = [];
   const lifecycle = {
     checkpointForegroundTime: async (elapsed: number) => {
+      if (checkpointGate) await checkpointGate;
       if (checkpointError) throw checkpointError;
       checkpoints.push(elapsed);
       active = createTrainingSession({ ...active, activeForegroundMs: elapsed });
@@ -105,6 +107,11 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown",
     setState(value: ForegroundTimerState | null) { state = value; },
     setActiveSession(value: TrainingSession) { active = value; },
     failCheckpoint(error: Error) { checkpointError = error; },
+    blockCheckpoints() {
+      let release = () => {};
+      checkpointGate = new Promise<void>((resolve) => { release = resolve; });
+      return () => { checkpointGate = null; release(); };
+    },
     getSaveCount: () => saveCount,
     getCancelCount: () => cancelCount,
     getResumeCount: () => resumeCount,
@@ -198,6 +205,72 @@ test("periodic checkpoint publishes a live projection refresh", async () => {
   await f.tick();
   assert.equal(f.getState()?.accumulatedForegroundMs, 14_000);
   assert.ok(refreshes >= 2);
+});
+
+test("local reset barrier waits for an in-flight checkpoint before durable clear and blocks late callbacks", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+  f.setNow(14_000);
+  const releaseCheckpoint = f.blockCheckpoints();
+  f.fireScheduled();
+  await f.settle();
+  let durableResetStarted = false;
+  const reset = f.timer.runLocalLearningReset(async () => {
+    durableResetStarted = true;
+    f.setState(null);
+  });
+  await f.settle();
+  assert.equal(durableResetStarted, false);
+
+  releaseCheckpoint();
+  await reset;
+  assert.equal(durableResetStarted, true);
+  assert.equal(f.getState(), null);
+  const saveCountAfterReset = f.getSaveCount();
+  f.fireScheduled();
+  await f.settle();
+  assert.equal(f.getSaveCount(), saveCountAfterReset);
+  assert.equal(f.getState(), null);
+});
+
+test("local reset barrier is single-flight and rejects timer commands until durable reset settles", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  let releaseReset = () => {};
+  let resetCalls = 0;
+  const first = f.timer.runLocalLearningReset(async () => {
+    resetCalls += 1;
+    await new Promise<void>((resolve) => { releaseReset = resolve; });
+  });
+  const second = f.timer.runLocalLearningReset(async () => { resetCalls += 1; });
+  assert.equal(first, second);
+  await assert.rejects(() => f.timer.projection(f.session), /being reset/);
+  releaseReset();
+  await Promise.all([first, second]);
+  assert.equal(resetCalls, 1);
+});
+
+test("failed durable reset releases only cleared runtime state and permits exact durable restore", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  const durableTimer = f.getState();
+  await assert.rejects(() => f.timer.runLocalLearningReset(async () => { throw new Error("durable reset failed"); }), /durable reset failed/);
+  assert.equal(f.getState(), durableTimer);
+  await f.timer.restoreForResume(f.session);
+  assert.deepEqual(await f.timer.projection(f.session), { elapsedForegroundMs: 0 });
+});
+
+test("reset followed by a new session cannot observe or recreate the prior persisted timer", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+  await f.timer.runLocalLearningReset(async () => { f.setState(null); });
+  const next = createTrainingSession({ ...practiceSession(), id: "practice-2" });
+  f.setActiveSession(next);
+  await f.timer.initialize(next);
+  assert.equal(f.getState()?.sessionId, "practice-2");
+  assert.equal(f.getState()?.trackId, next.trackId);
 });
 
 test("controlled timer refreshes consecutive visible labels without a durable write each second", async () => {

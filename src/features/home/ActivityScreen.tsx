@@ -31,6 +31,7 @@ export function ActivityScreen({ navigation }: Props) {
   const [filter, setFilter] = useState<ActivityFilter>(ALL_ACTIVITY_TRACKS);
   const [filterVisible, setFilterVisible] = useState(false);
   const [selectedUnavailableSessionId, setSelectedUnavailableSessionId] = useState<string | null>(null);
+  const [selectedSessionDetailsId, setSelectedSessionDetailsId] = useState<string | null>(null);
   const readOwner = useMemo(() => createActivityReadOwner(loadActivityRecords), []);
   const focusedRef = useRef(false);
   const currentTokenRef = useRef<ActivityReadToken | null>(null);
@@ -84,6 +85,7 @@ export function ActivityScreen({ navigation }: Props) {
 
   const model = buildActivityModel(state.records, filter);
   const selectedUnavailableItem = model.items.find((item) => item.kind === "unavailable" && item.sessionId === selectedUnavailableSessionId) ?? null;
+  const selectedSessionDetailsItem = model.items.find((item) => item.interaction.kind === "toggle_session_details" && item.sessionId === selectedSessionDetailsId) ?? null;
   return (
     <Screen ambientVariant="activity" edges={["top", "bottom"]} style={styles.screen}>
       {header}
@@ -118,12 +120,19 @@ export function ActivityScreen({ navigation }: Props) {
               <View style={styles.groupCard}>
                 {group.items.map((item, index) => (
                   <ActivityRow
+                    expanded={item.interaction.kind === "toggle_unavailable_details" ? selectedUnavailableSessionId === item.sessionId : item.interaction.kind === "toggle_session_details" ? selectedSessionDetailsId === item.sessionId : undefined}
                     item={item}
                     key={item.id}
                     last={index === group.items.length - 1}
                     onPress={() => {
-                      if (item.kind === "unavailable") {
+                      if (item.interaction.kind === "toggle_unavailable_details") {
+                        setSelectedSessionDetailsId(null);
                         setSelectedUnavailableSessionId((current) => current === item.sessionId ? null : item.sessionId);
+                        return;
+                      }
+                      if (item.interaction.kind === "toggle_session_details") {
+                        setSelectedUnavailableSessionId(null);
+                        setSelectedSessionDetailsId((current) => current === item.sessionId ? null : item.sessionId);
                         return;
                       }
                       navigateToActivityResult(navigation, item);
@@ -144,6 +153,7 @@ export function ActivityScreen({ navigation }: Props) {
         </View>
       )}
       {selectedUnavailableItem ? <ActivityUnavailableDetails item={selectedUnavailableItem} /> : null}
+      {selectedSessionDetailsItem ? <ActivitySessionDetails item={selectedSessionDetailsItem} /> : null}
       <SettingsBottomSheet
         closeLabel={t("Close")}
         intro={t("Choose which track appears in Activity.")}
@@ -166,6 +176,29 @@ export function ActivityScreen({ navigation }: Props) {
         ))}
       </SettingsBottomSheet>
     </Screen>
+  );
+}
+
+function ActivitySessionDetails({ item }: Readonly<{ item: ActivityItem }>) {
+  const { colors: palette, locale } = useAppPreferences();
+  const { t } = useTranslation("common");
+  if (item.interaction.kind !== "toggle_session_details") return null;
+  return (
+    <Card>
+      <SectionHeader
+        subtitle={t(item.status === "completed" ? "This session is complete, but no detailed result is available." : "This session ended early. Its saved progress is shown below.")}
+        title={t("Session details")}
+      />
+      <View style={{ gap: spacing.xs }}>
+        <Text maxFontSizeMultiplier={2} style={{ color: palette.textSecondary }}>{`${t("Status")}: ${t(item.statusLabel)}`}</Text>
+        <Text maxFontSizeMultiplier={2} style={{ color: palette.textSecondary }}>{`${t("Track")}: ${t(item.trackTitle)}`}</Text>
+        <Text maxFontSizeMultiplier={2} style={{ color: palette.textSecondary }}>{`${t("Mode")}: ${t(item.modeTitle)}`}</Text>
+        {item.scopeLabel ? <Text maxFontSizeMultiplier={2} style={{ color: palette.textSecondary }}>{`${t("Scope")}: ${t(item.scopeLabel)}`}</Text> : null}
+        <Text maxFontSizeMultiplier={2} style={{ color: palette.textSecondary }}>{`${t("Answered")}: ${item.answerCount}/${item.totalCount}`}</Text>
+        <Text maxFontSizeMultiplier={2} style={{ color: palette.textSecondary }}>{`${t("Active time")}: ${item.duration}`}</Text>
+        <Text maxFontSizeMultiplier={2} style={{ color: palette.textSecondary }}>{`${t("Date")}: ${formatActivityDateLabel(item.dateLabel, locale, t)}`}</Text>
+      </View>
+    </Card>
   );
 }
 
@@ -262,14 +295,15 @@ function ActivityEmptyState({ filtered, onOpenPractice, onShowAll }: Readonly<{ 
   );
 }
 
-function ActivityRow({ item, last, onPress }: Readonly<{ item: ActivityItem; last: boolean; onPress: () => void }>) {
+function ActivityRow({ expanded, item, last, onPress }: Readonly<{ expanded?: boolean; item: ActivityItem; last: boolean; onPress: () => void }>) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette, locale } = useAppPreferences();
   const { t } = useTranslation("common");
   return (
     <Pressable
-      accessibilityLabel={`${t(item.modeTitle)}, ${t(item.trackTitle)}${item.kind === "unavailable" ? `, ${t("Unavailable")}` : ""}`}
+      accessibilityLabel={`${t(item.modeTitle)}, ${t(item.trackTitle)}${item.kind === "unavailable" ? `, ${t("Unavailable")}` : ""}${item.interaction.kind === "open_result" ? `, ${t("View summary")}` : `, ${t("Show session details")}`}`}
       accessibilityRole="button"
+      accessibilityState={expanded === undefined ? undefined : { expanded }}
       onPress={onPress}
       style={({ pressed }) => [styles.row, last ? styles.rowLast : null, pressed ? styles.pressed : null]}
       testID={item.kind === "unavailable" ? runtimeSelectors.activity.unavailableRow(item.sessionId) : runtimeSelectors.activity.row(item.sessionId)}
@@ -283,7 +317,7 @@ function ActivityRow({ item, last, onPress }: Readonly<{ item: ActivityItem; las
         <Text maxFontSizeMultiplier={2} style={styles.detail}>{`${activityCountLabel(item, t)} · ${item.duration}`}</Text>
         <Text maxFontSizeMultiplier={2} style={[styles.detail, item.kind === "unavailable" || item.status !== "completed" ? styles.statusDetail : null]}>{`${t(item.statusLabel)} · ${formatActivityDateLabel(item.dateLabel, locale, t)}`}</Text>
       </View>
-      <Icon color={palette.textMuted} name="chevron-right" size={18} />
+      {item.interaction.kind === "open_result" ? <Icon color={palette.textMuted} name="chevron-right" size={18} /> : null}
     </Pressable>
   );
 }

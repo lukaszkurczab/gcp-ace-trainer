@@ -1,0 +1,69 @@
+appId: com.lkurczab.patternly
+name: ODK-127 disposable runtime bootstrap
+---
+- openLink: "com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- tapOn:
+    text: "Otwórz"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 30000
+- openLink: "com.lkurczab.patternly://audit/reset-learning-state"
+- extendedWaitUntil:
+    visible: "Otwórz"
+    timeout: 12000
+- tapOn: "Otwórz"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:change-track"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:change-track"
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:select-track:claude-certified-architect-professional-certification"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:home:select-track:claude-certified-architect-professional-certification"
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- swipe:
+    start: 50%, 70%
+    end: 50%, 25%
+    duration: 600
+- tapOn:
+    id: "patternly:practice:mode-card:certification-focus-practice"
+- tapOn:
+    id: "patternly:practice:focus-topic:solution_design_and_architecture"
+- swipe:
+    start: 50%, 70%
+    end: 50%, 25%
+    duration: 600
+- swipe:
+    start: 50%, 70%
+    end: 50%, 25%
+    duration: 600
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:start-session"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:CCARP-D01-O01-boundary"
+    timeout: 30000
+- tapOn:
+    id: "patternly:session:option:CCARP-D01-O01-boundary:c"
+- tapOn:
+    id: "patternly:session:submit:CCARP-D01-O01-boundary"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:CCARP-D01-O01-boundary"
+    direction: DOWN
+    centerElement: true

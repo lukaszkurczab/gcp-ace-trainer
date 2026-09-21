@@ -8,8 +8,10 @@ import { accountDataRecordFingerprint, accountDataRecordKey } from "./accountDat
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import {
+  classifyLegacyTrainingSession,
   CONTENT_IDENTITY_INVENTORY_REGISTRY,
   describeBackendProtocolForContentIdentity,
+  isLegacyAccountSyncState,
   scanContentIdentityInventory,
   type ActiveContentArtifact,
 } from "./contentIdentityInventory";
@@ -102,6 +104,28 @@ function validSession(overrides: Readonly<{ id?: string; trackId?: string }> = {
     status: "active",
     startedAt: "2026-01-01T09:00:00.000Z",
   }) as unknown as Record<string, unknown>;
+}
+
+function legacySession(overrides: Readonly<Record<string, unknown>> = {}): Record<string, unknown> {
+  return {
+    id: "session-1",
+    trackId,
+    modeId: "practice",
+    configurationSnapshot: { kind: "practice" },
+    requestedLength: 1,
+    actualLength: 1,
+    currentItemIndex: 0,
+    itemOrder: [{ occurrenceId: "occurrence-1", item: mappedIdentity() }],
+    optionOrderByOccurrence: {},
+    conditionalReinsertSlots: [],
+    activeForegroundMs: 0,
+    contentVersion,
+    packagePin: pin(),
+    status: "completed",
+    startedAt: "2026-01-01T09:00:00.000Z",
+    completedAt: "2026-01-01T10:00:00.000Z",
+    ...overrides,
+  };
 }
 
 function validAttemptState(): Record<string, unknown> {
@@ -450,6 +474,69 @@ test("conditional identity paths are registered and repeated attempts do not bec
   assert.deepEqual(learningPlanPaths, ["payload.contentVersion", "payload.contentPackagePin"]);
 });
 
+test("legacy training sessions accept omitted or undefined conditional slots and reject malformed values", () => {
+  const sessionKey = STORAGE_KEYS.trainingSession("session-1");
+  const omitted = legacySession();
+  delete omitted.conditionalReinsertSlots;
+  seed(STORAGE_KEYS.TRAINING_SESSION_INDEX, ["session-1"]);
+  seed(sessionKey, omitted);
+  let finding = scanContentIdentityInventory({ storage, activeArtifacts: [artifact] }).findings.find((entry) => entry.key === sessionKey);
+  assert.equal(finding?.classification, "mapped");
+
+  storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  seed(STORAGE_KEYS.TRAINING_SESSION_INDEX, ["session-1"]);
+  seed(sessionKey, legacySession({ conditionalReinsertSlots: undefined }));
+  finding = scanContentIdentityInventory({ storage, activeArtifacts: [artifact] }).findings.find((entry) => entry.key === sessionKey);
+  assert.equal(finding?.classification, "mapped");
+
+  for (const invalidSlots of [null, {}, [null], [{ ordinaryBranch: {} }]]) {
+    storage = new MemoryKeyValueStorage();
+    installKeyValueStorageForTests(storage);
+    seed(STORAGE_KEYS.TRAINING_SESSION_INDEX, ["session-1"]);
+    seed(sessionKey, legacySession({ conditionalReinsertSlots: invalidSlots }));
+    finding = scanContentIdentityInventory({ storage, activeArtifacts: [artifact] }).findings.find((entry) => entry.key === sessionKey);
+    assert.equal(finding?.classification, "malformed");
+    assert.equal(finding?.reason, "invalid_training_session");
+  }
+});
+
+test("legacy training-session classifier preserves the exact first-failing rule order", () => {
+  const valid = legacySession();
+  const cases: readonly [string, unknown][] = [
+    ["not_record", null],
+    ["unexpected_keys", { ...valid, unexpected: true }],
+    ["unexpected_keys", { ...valid, itemRefs: [] }],
+    ["expired_status", { ...valid, status: "expired" }],
+    ["id", { ...valid, id: "" }],
+    ["track_id", { ...valid, trackId: "unregistered-track" }],
+    ["mode_id", { ...valid, modeId: "" }],
+    ["configuration_snapshot", { ...valid, configurationSnapshot: {} }],
+    ["requested_length", { ...valid, requestedLength: Number.NaN }],
+    ["actual_length", { ...valid, actualLength: Number.NaN }],
+    ["current_item_index", { ...valid, currentItemIndex: Number.NaN }],
+    ["item_order", { ...valid, itemOrder: "not-an-array" }],
+    ["item_order_entry", { ...valid, itemOrder: [{}] }],
+    ["option_order_by_occurrence", { ...valid, optionOrderByOccurrence: { occurrence: "not-an-array" } }],
+    ["conditional_reinsert_slots", { ...valid, conditionalReinsertSlots: null }],
+    ["active_foreground_ms", { ...valid, activeForegroundMs: Number.NaN }],
+    ["content_version", { ...valid, contentVersion: "" }],
+    ["package_pin", { ...valid, packagePin: {} }],
+    ["taxonomy_version", { ...valid, taxonomyVersion: "" }],
+    ["plan_fingerprint", { ...valid, planFingerprint: "not-a-sha" }],
+    ["status", { ...valid, status: "paused" }],
+    ["started_at", { ...valid, startedAt: "" }],
+    ["completed_at", { ...valid, completedAt: "not-a-date" }],
+  ];
+  for (const [expected, payload] of cases) assert.equal(classifyLegacyTrainingSession(payload), expected, expected);
+  const omitted = legacySession();
+  delete omitted.conditionalReinsertSlots;
+  assert.equal(classifyLegacyTrainingSession(omitted), null);
+  assert.equal(classifyLegacyTrainingSession({ ...valid, conditionalReinsertSlots: undefined }), null);
+  const throwing = new Proxy({}, { ownKeys: () => { throw new Error("raw payload"); } });
+  assert.equal(classifyLegacyTrainingSession(throwing), "not_record");
+});
+
 test("current practice-reminder settings and journal shapes are not treated as malformed", () => {
   seed(STORAGE_KEYS.NOTIFICATION_SETTINGS, {
     practiceReminder: {
@@ -586,10 +673,23 @@ test("cross-record session scope and lifecycle mismatches are blocking", () => {
 });
 
 test("account sync top-level and record identity keys are exact and fail closed", () => {
-  const missingTopLevel = validAccountState();
-  delete missingTopLevel.highWatermark;
-  seed(STORAGE_KEYS.ACCOUNT_SYNC, missingTopLevel);
+  const missingLegacyFields = validAccountState();
+  delete missingLegacyFields.syncPlan;
+  delete missingLegacyFields.outboxSequence;
+  delete missingLegacyFields.highWatermark;
+  assert.equal(isLegacyAccountSyncState(missingLegacyFields), true);
+  seed(STORAGE_KEYS.ACCOUNT_SYNC, missingLegacyFields);
   let finding = scanContentIdentityInventory({ storage, activeArtifacts: [artifact] }).findings[0]!;
+  assert.equal(finding.classification, "mapped");
+
+  const explicitlyUndefined = validAccountState({ syncPlan: undefined, outboxSequence: undefined, highWatermark: undefined });
+  assert.equal(isLegacyAccountSyncState(explicitlyUndefined), true);
+  for (const field of ["outboxSequence", "highWatermark"] as const) {
+    assert.equal(isLegacyAccountSyncState(validAccountState({ [field]: null })), false);
+  }
+
+  seed(STORAGE_KEYS.ACCOUNT_SYNC, validAccountState({ outboxSequence: null }));
+  finding = scanContentIdentityInventory({ storage, activeArtifacts: [artifact] }).findings[0]!;
   assert.equal(finding.classification, "malformed");
 
   const entry = validAccountState().outbox as readonly Record<string, unknown>[];

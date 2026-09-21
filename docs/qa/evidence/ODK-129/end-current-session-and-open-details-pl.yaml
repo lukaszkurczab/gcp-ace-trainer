@@ -1,0 +1,19 @@
+appId: com.lkurczab.patternly
+---
+- assertVisible: Opuść sesję
+- tapOn: Opuść sesję
+- assertVisible: Zakończ sesję
+- tapOn: Zakończ sesję
+- waitForAnimationToEnd
+- tapOn:
+    id: main-tab-bar-progress
+- scrollUntilVisible:
+    element:
+      text: Zobacz całą aktywność
+    direction: DOWN
+- tapOn: Zobacz całą aktywność
+- tapOn: ".*Pokaż szczegóły sesji.*"
+- assertVisible: Szczegóły sesji
+- assertVisible: "Odpowiedzi: 1/10"
+- assertNotVisible: Podsumowanie sesji jest niedostępne
+- takeScreenshot: docs/qa/evidence/ODK-129/certification-ended-details-pl

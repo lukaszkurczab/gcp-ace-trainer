@@ -9,11 +9,14 @@ import {
 } from "../../domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import {
+  CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER,
+  CanonicalRepositoryBootstrapStep,
   addTrainingAttempt,
   getActiveTrackId,
   getActiveTrainingSession,
   getTrainingAttempts,
   getTrainingSessions,
+  openCanonicalRepositories,
   saveActiveTrackId,
   saveTrainingSession,
 } from "..";
@@ -199,4 +202,37 @@ test("strict session reads reject a legacy-shaped stored record without inferenc
   writeCanonicalJson(STORAGE_KEYS.trainingSession(canonical.id), legacyRecord);
 
   await assert.rejects(() => getTrainingSessions(), UnsupportedStoredRecordError);
+});
+
+test("canonical repository bootstrap reports the exact six steps in order", async () => {
+  const steps: CanonicalRepositoryBootstrapStep[] = [];
+
+  await openCanonicalRepositories({ onStep: (step) => { steps.push(step); } });
+
+  assert.deepEqual(steps, CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER);
+  assert.deepEqual(steps, [
+    CanonicalRepositoryBootstrapStep.ContentIdentityMigration,
+    CanonicalRepositoryBootstrapStep.StorageMetadataValidation,
+    CanonicalRepositoryBootstrapStep.AcceptedReportOutboxPurge,
+    CanonicalRepositoryBootstrapStep.ExpiredReportOutboxPurge,
+    CanonicalRepositoryBootstrapStep.GuestAccessRead,
+    CanonicalRepositoryBootstrapStep.GuestInstallationProvisioning,
+  ]);
+});
+
+test("canonical repository bootstrap isolates a throwing step observer without wrapping failures", async () => {
+  const error = new Error("guest payload=session-123");
+  const steps: CanonicalRepositoryBootstrapStep[] = [];
+
+  await assert.rejects(
+    () => openCanonicalRepositories({
+      onStep: (step) => {
+        steps.push(step);
+        throw new Error("observer payload=question-456");
+      },
+      guestInstallationIdentity: { async create() { throw error; } },
+    }),
+    (cause: unknown) => cause === error,
+  );
+  assert.deepEqual(steps, [...CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER]);
 });

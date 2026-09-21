@@ -1,8 +1,9 @@
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
 import type { JsonValue } from "../../content/canonical";
+import type { CanonicalSourceLink } from "../../application/canonical/canonicalSourceLinks";
 export type PracticeSurfacePhase = "preparing" | PracticeDurableOperationState["kind"];
 
-export type PracticeOptionState = "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct";
+export type PracticeOptionState = "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct" | "not_selected";
 
 export type PracticeChoiceControl = Readonly<{
   kind: "choice";
@@ -34,6 +35,7 @@ export type PracticeFeedback = Readonly<{
   details: JsonValue;
   reason: string;
   result: "correct" | "partial" | "incorrect";
+  sources?: readonly CanonicalSourceLink[];
   messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[];
 }>;
 
@@ -134,9 +136,16 @@ export function isPracticeActionPending(phase: PracticeSurfacePhase): boolean {
 }
 
 export function practiceOptionCorrectnessValue(state: PracticeOptionState): string | undefined {
-  if (state === "correct" || state === "omitted_correct") return "Correct response";
-  if (state === "incorrect") return "Incorrect response";
+  if (state === "correct") return "Selected, correct";
+  if (state === "incorrect") return "Selected, incorrect";
+  if (state === "omitted_correct") return "Correct answer, not selected";
+  if (state === "not_selected") return "Not selected";
+  if (state === "selected") return "Selected";
   return undefined;
+}
+
+export function practiceOptionIsSelected(state: PracticeOptionState): boolean {
+  return state === "selected" || state === "correct" || state === "incorrect";
 }
 
 /**
@@ -158,7 +167,9 @@ export function buildPracticeResponseControl(input: Readonly<{
       options: Object.freeze(input.renderer.options.map((option) => Object.freeze({
         id: option.id,
         text: option.text,
-        state: feedbackById.get(option.id) ?? (selected.has(option.id) ? "selected" : "neutral"),
+        state: feedbackById.has(option.id)
+          ? feedbackById.get(option.id) === "neutral" ? "not_selected" : feedbackById.get(option.id)!
+          : selected.has(option.id) ? "selected" : "neutral",
       }))),
     });
   }

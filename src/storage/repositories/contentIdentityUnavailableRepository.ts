@@ -1,7 +1,9 @@
 import { isContentIdentityTombstone, type ContentIdentityTombstone } from "../../domain/learning/resolvedContentRef";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import type { KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { CanonicalWriteConflictError, CorruptStoredRecordError, UnsupportedStoredRecordError } from "../errors";
 import type { StorageRepositoryResult } from "./result";
 
 /**
@@ -257,3 +259,80 @@ export const getUnavailableReviews = getUnavailableReviewRecords;
 export const removeUnavailableReview = removeUnavailableReviewEntry;
 
 export type ContentIdentityTombstoneRecord = ContentIdentityTombstone;
+
+export type ContentIdentityUnavailableActiveIndexRepairCode =
+  | "index_invalid"
+  | "record_invalid"
+  | "record_missing"
+  | "record_conflict"
+  | "write_conflict"
+  | "write_verification_failed";
+
+/** Bounded committed-v2 repair failures; no storage key or record payload crosses this boundary. */
+export class ContentIdentityUnavailableActiveIndexRepairError extends Error {
+  readonly code: ContentIdentityUnavailableActiveIndexRepairCode;
+
+  constructor(code: ContentIdentityUnavailableActiveIndexRepairCode) {
+    super(code);
+    this.name = "ContentIdentityUnavailableActiveIndexRepairError";
+    this.code = code;
+  }
+}
+
+function repairError(code: ContentIdentityUnavailableActiveIndexRepairCode): ContentIdentityUnavailableActiveIndexRepairError {
+  return new ContentIdentityUnavailableActiveIndexRepairError(code);
+}
+
+function readRepairIndex(storage: KeyValueStorage): { revision: number; ids: readonly string[] } | null {
+  try {
+    const envelope = readCanonicalEnvelope(STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX, isStringArray);
+    return envelope === null ? null : { revision: envelope.revision, ids: envelope.payload };
+  } catch (error) {
+    if (error instanceof CorruptStoredRecordError || error instanceof UnsupportedStoredRecordError) throw repairError("index_invalid");
+    throw error;
+  }
+}
+
+function readRepairRecord<T>(key: string, guard: (value: unknown) => value is T): T | null {
+  try {
+    return readCanonicalJson(key, guard);
+  } catch (error) {
+    if (error instanceof CorruptStoredRecordError || error instanceof UnsupportedStoredRecordError) throw repairError("record_invalid");
+    throw error;
+  }
+}
+
+/**
+ * Repairs only the private unavailable-active index after committed v2.  The
+ * active/archive records are read directly so a malformed public index read
+ * cannot recurse into the public unavailable-record getter.  Records are
+ * never written or removed here; only the filtered index may change.
+ */
+export function repairCommittedUnavailableActiveIndex(storage: KeyValueStorage): void {
+  const current = readRepairIndex(storage);
+  if (current === null || current.ids.length === 0) return;
+
+  const retained: string[] = [];
+  for (const id of current.ids) {
+    const active = readRepairRecord(STORAGE_KEYS.unavailableActive(id), isUnavailableActiveRecord);
+    const archive = readRepairRecord(STORAGE_KEYS.archivalHistory(id), isArchivalHistoryRecord);
+    if ((active && active.sessionId !== id) || (archive && archive.sessionId !== id)) throw repairError("record_invalid");
+    if (active && archive) throw repairError("record_conflict");
+    if (!active && !archive) throw repairError("record_missing");
+    if (active) retained.push(id);
+  }
+
+  if (retained.length === current.ids.length) return;
+
+  let written: { revision: number };
+  try {
+    written = writeCanonicalJson(STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX, retained, current.revision);
+  } catch (error) {
+    if (error instanceof CanonicalWriteConflictError || error instanceof UnsupportedStoredRecordError) throw repairError("write_conflict");
+    throw error;
+  }
+  const verified = readRepairIndex(storage);
+  if (verified === null || verified.revision !== written.revision || canonicalSerialize(verified.ids) !== canonicalSerialize(retained)) {
+    throw repairError("write_verification_failed");
+  }
+}

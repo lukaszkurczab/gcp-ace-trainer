@@ -3,7 +3,7 @@ import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Button, EmptyState, LoadingState, Screen } from "../../components";
 import { abandonUnavailableActiveTrainingSession, bootstrapApplication } from "../../application/bootstrap";
-import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { clearDevelopmentBootstrapDiagnostic, describeOperationalFailure, operationalDiagnosticCode, recordDevelopmentBootstrapDiagnostic } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
 import { getForegroundSessionTimerFacade } from "../../application/trainingLifecycle";
 import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditability/developmentResetCommand";
@@ -12,6 +12,7 @@ import { contentPackageRuntimeOwner } from "../../application/contentPackageRunt
 import { useAppPreferences } from "../../preferences";
 import { removeUnavailableEncryptedStorage } from "../../infrastructure/storage/mmkvClient";
 import type { EncryptedStorageFailureCode } from "../../infrastructure/storage/encryptedStorageBootstrap";
+import { EncryptedStorageRecoverySurface, type EncryptedStorageRecoveryStatus } from "./EncryptedStorageRecoverySurface";
 
 export type ContentPreparationPhase =
   | "opening-storage"
@@ -54,15 +55,28 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
   const [auditResetReady, setAuditResetReady] = useState(false);
   const [auditCommandListenerReady, setAuditCommandListenerReady] = useState(false);
-  const [confirmUnavailableDataRemoval, setConfirmUnavailableDataRemoval] = useState(false);
-  const [removingUnavailableData, setRemovingUnavailableData] = useState(false);
+  const [encryptedStorageRecoveryStatus, setEncryptedStorageRecoveryStatus] = useState<EncryptedStorageRecoveryStatus>("base");
+  const [encryptedStorageRemovalError, setEncryptedStorageRemovalError] = useState<string | undefined>();
   const [confirmUnavailableActiveAbandon, setConfirmUnavailableActiveAbandon] = useState(false);
   const [abandoningUnavailableActive, setAbandoningUnavailableActive] = useState(false);
   const initialUrlHandled = useRef(false);
   const resetInFlight = useRef(false);
+  const encryptedStorageRemovalInFlight = useRef(false);
+  const encryptedStorageRemovalAttempt = useRef(0);
+  const removingPresentationWaiter = useRef<{ attempt: number; resolve: (presented: boolean) => void } | null>(null);
+  const mounted = useRef(false);
   const lifecycleReady = useRef(false);
   const pendingRuntimeAuditabilityUrl = useRef<string | null>(null);
   const auditResetAwaitingBootstrap = useRef(false);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      removingPresentationWaiter.current?.resolve(false);
+      removingPresentationWaiter.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     let live = true;
@@ -97,6 +111,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     }, CONTENT_PREPARATION_TIMEOUT_MS);
 
     void (async () => {
+      if (__DEV__) clearDevelopmentBootstrapDiagnostic();
       const initialUrl = __DEV__ && !initialUrlHandled.current ? await Linking.getInitialURL() : null;
       initialUrlHandled.current = true;
       return bootstrapApplication(
@@ -121,9 +136,11 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
           const handling = await handleRuntimeAuditabilityUrl(queuedUrl ?? initialUrl);
           if (handling.kind === "reset_learning_state") auditResetAwaitingBootstrap.current = true;
         },
+        __DEV__ ? { diagnosticObserver: recordDevelopmentBootstrapDiagnostic } : undefined,
       );
     })().then((result) => {
       if (result.kind === "ready") {
+        if (__DEV__) clearDevelopmentBootstrapDiagnostic();
         complete({ kind: "ready" });
         return;
       }
@@ -175,21 +192,37 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   }, [state.kind]);
 
   const retry = () => {
-    setConfirmUnavailableDataRemoval(false);
+    setEncryptedStorageRecoveryStatus("base");
+    setEncryptedStorageRemovalError(undefined);
     setConfirmUnavailableActiveAbandon(false);
     setState({ kind: "loading", phase: "opening-storage" });
     setBootstrapRevision((revision) => revision + 1);
   };
   const removeUnavailableData = async () => {
-    if (removingUnavailableData) return;
-    setRemovingUnavailableData(true);
+    if (encryptedStorageRemovalInFlight.current) return;
+    encryptedStorageRemovalInFlight.current = true;
+    const attempt = ++encryptedStorageRemovalAttempt.current;
+    const presented = new Promise<boolean>((resolve) => { removingPresentationWaiter.current = { attempt, resolve }; });
+    setEncryptedStorageRecoveryStatus("removing");
+    setEncryptedStorageRemovalError(undefined);
     try {
+      if (!await presented) {
+        if (mounted.current && encryptedStorageRemovalAttempt.current === attempt) setEncryptedStorageRecoveryStatus("base");
+        return;
+      }
+      if (!mounted.current || encryptedStorageRemovalAttempt.current !== attempt) return;
       await removeUnavailableEncryptedStorage();
-      retry();
+      if (!mounted.current || encryptedStorageRemovalAttempt.current !== attempt) return;
+      setEncryptedStorageRecoveryStatus("success");
     } catch (error) {
-      setState({ kind: "blocking", phase: "opening-storage", reason: describeOperationalFailure(error, "Unavailable local data could not be removed."), storageFailureCode: "encrypted_storage_key_missing" });
+      if (!mounted.current || encryptedStorageRemovalAttempt.current !== attempt) return;
+      setEncryptedStorageRemovalError(`[${operationalDiagnosticCode(error)}]`);
+      setEncryptedStorageRecoveryStatus("error");
     } finally {
-      setRemovingUnavailableData(false);
+      if (encryptedStorageRemovalAttempt.current === attempt) {
+        if (removingPresentationWaiter.current?.attempt === attempt) removingPresentationWaiter.current = null;
+        encryptedStorageRemovalInFlight.current = false;
+      }
     }
   };
   const abandonUnavailableActive = async () => {
@@ -210,6 +243,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     }
   };
   const lostKey = state.kind === "blocking" && state.storageFailureCode === "encrypted_storage_key_missing";
+  const activeRemovalAttempt = encryptedStorageRemovalAttempt.current;
   const body = state.kind === "ready"
     ? <View style={{ flex: 1 }} testID={auditResetReady ? runtimeSelectors.content.readyAfterAuditReset() : runtimeSelectors.content.ready()}>{children}</View>
     : state.kind === "loading"
@@ -228,20 +262,21 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
               : <Button onPress={() => setConfirmUnavailableActiveAbandon(true)} testID={runtimeSelectors.content.unavailableActiveAbandon()} variant="destructive">{t("Abandon unavailable session")}</Button>}
             {!confirmUnavailableActiveAbandon ? <Button onPress={retry} testID={runtimeSelectors.content.unavailableActiveRetry()} variant="secondary">{t("Try again")}</Button> : null}
           </Screen></View>
-      : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen>
-          <EmptyState
-            actionLabel={t("Try again")}
-            description={lostKey ? t(confirmUnavailableDataRemoval ? "Unsent sessions and guest progress will be permanently lost. Account data previously saved in the cloud will remain." : "The key protecting local data is missing. Try again. If the key cannot be recovered, you can remove the unavailable data from this device.") : state.reason}
-            onActionPress={retry}
-            title={lostKey ? t("Data on this device can’t be opened") : t("Application unavailable")}
-          />
-          {lostKey ? confirmUnavailableDataRemoval
-            ? <View style={{ gap: 12 }}>
-                <Button onPress={() => setConfirmUnavailableDataRemoval(false)} variant="secondary">{t("Cancel")}</Button>
-                <Button loading={removingUnavailableData} onPress={() => { void removeUnavailableData(); }} variant="destructive">{t("Remove data from device")}</Button>
-              </View>
-            : <Button onPress={() => setConfirmUnavailableDataRemoval(true)} variant="secondary">{t("Remove unavailable data")}</Button>
-          : null}
-        </Screen></View>;
+      : lostKey
+        ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><EncryptedStorageRecoverySurface
+            error={encryptedStorageRemovalError}
+            onContinue={retry}
+            onRemovingPresented={(presented) => {
+              const waiter = removingPresentationWaiter.current;
+              if (waiter?.attempt !== activeRemovalAttempt || !mounted.current) return;
+              removingPresentationWaiter.current = null;
+              waiter.resolve(presented);
+            }}
+            onRemove={() => { void removeUnavailableData(); }}
+            onRetryBootstrap={retry}
+            onReturn={() => { setEncryptedStorageRemovalError(undefined); setEncryptedStorageRecoveryStatus("base"); }}
+            status={encryptedStorageRecoveryStatus}
+          /></View>
+        : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen><EmptyState actionLabel={t("Try again")} description={state.reason} onActionPress={retry} title={t("Application unavailable")} /></Screen></View>;
   return <View style={{ backgroundColor: colors.background, flex: 1 }} testID={auditCommandListenerReady ? runtimeSelectors.content.auditCommandListener() : undefined}>{body}</View>;
 }

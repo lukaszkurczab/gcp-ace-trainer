@@ -37,3 +37,23 @@ export function buildCanonicalInteractionViewModel(question: Question, response:
 export function composeCanonicalFeedback(question: Question, response: CanonicalQuestionResponse) {
   return Object.freeze({ correctness: scoreCanonicalQuestion(question, response).kind, reason: question.feedback.reason, details: question.feedback.details });
 }
+
+export type CanonicalChoiceFeedbackState = "correct" | "incorrect" | "omitted_correct" | "neutral";
+
+/** Projects authored answer evidence and the learner response without changing scoring ownership. */
+export function projectCanonicalChoiceFeedbackControls(question: Question, response: CanonicalQuestionResponse): readonly Readonly<{ id: string; state: CanonicalChoiceFeedbackState }>[] {
+  if (question.interaction.type !== "choice_single" && question.interaction.type !== "choice_multiple") return Object.freeze([]);
+  if (response.type !== question.interaction.type) throw new Error(`Canonical feedback response type does not match ${question.questionId}.`);
+  const selected = question.interaction.type === "choice_single"
+    ? new Set([(response as Extract<CanonicalQuestionResponse, { type: "choice_single" }>).optionId])
+    : new Set((response as Extract<CanonicalQuestionResponse, { type: "choice_multiple" }>).optionIds);
+  const correct = question.interaction.type === "choice_single"
+    ? new Set([(question as Extract<Question, { interaction: { type: "choice_single" } }>).answer.optionId])
+    : new Set((question as Extract<Question, { interaction: { type: "choice_multiple" } }>).answer.optionIds);
+  return Object.freeze(question.interaction.options.map((option) => Object.freeze({
+    id: option.optionId,
+    state: selected.has(option.optionId)
+      ? correct.has(option.optionId) ? "correct" as const : "incorrect" as const
+      : correct.has(option.optionId) ? "omitted_correct" as const : "neutral" as const,
+  })));
+}

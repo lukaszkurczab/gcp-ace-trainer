@@ -6,11 +6,13 @@ import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../inf
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { CANONICAL_RECORD_SCHEMA } from "./canonicalRecordCodec";
 import {
+  CONTENT_IDENTITY_V2_PLANNER_OWNER_CODES,
   ContentIdentityV2PlannerError,
   isContentIdentityV2PlanBundle,
   migrateContentIdentityV2,
   planContentIdentityV2,
 } from "./contentIdentityV2Planner";
+import { classifyLegacyTrainingSession, CONTENT_IDENTITY_INVENTORY_REGISTRY } from "./contentIdentityInventory";
 import { CONTENT_IDENTITY_MIGRATION_NAMESPACE } from "./contentIdentityMigration";
 import { accountDataRecordFingerprint, accountDataRecordKey, isCanonicalAccountSyncState } from "./accountDataRepository";
 import { createMutationPlanFingerprint } from "./mutationJournalRepository";
@@ -139,6 +141,55 @@ function baseSource(overrides: Readonly<Record<string, unknown>> = {}): readonly
   return Object.freeze(merged.map((record) => Object.freeze({ key: record.key, raw: envelope(record.payload) })));
 }
 
+function legacyTrainingSessionPayload(overrides: Readonly<Record<string, unknown>> = {}): Record<string, unknown> {
+  const record = baseSource().find((entry) => entry.key === STORAGE_KEYS.trainingSession("session-1"));
+  assert.ok(record);
+  const payload = (JSON.parse(record.raw) as { payload: Record<string, unknown> }).payload;
+  return { ...payload, ...overrides };
+}
+
+function plannerOwnerGuardFailure(key: string, payload: unknown): ContentIdentityV2PlannerError {
+  try {
+    planContentIdentityV2({ source: [{ key, raw: envelope(payload) }], artifacts: ARTIFACTS });
+  } catch (error) {
+    assert.ok(error instanceof ContentIdentityV2PlannerError);
+    return error;
+  }
+  assert.fail("expected a planner owner guard failure");
+}
+
+function trainingSessionShape(error: ContentIdentityV2PlannerError): Readonly<Record<string, unknown>> {
+  return {
+    role: error.trainingSessionRoleCode,
+    topIdentity: error.trainingSessionTopIdentityCode,
+    itemIdentity: error.trainingSessionItemIdentityCode,
+    provenance: error.trainingSessionProvenanceCode,
+    status: error.trainingSessionStatusCode,
+  };
+}
+
+function assertHiddenTrainingSessionShape(error: ContentIdentityV2PlannerError): void {
+  for (const field of ["trainingSessionRoleCode", "trainingSessionTopIdentityCode", "trainingSessionItemIdentityCode", "trainingSessionProvenanceCode", "trainingSessionStatusCode"]) {
+    const descriptor = Object.getOwnPropertyDescriptor(error, field);
+    assert.equal(descriptor?.enumerable, false, field);
+    assert.equal(descriptor?.writable, false, field);
+    assert.equal(descriptor?.configurable, false, field);
+    assert.equal(Object.prototype.propertyIsEnumerable.call(error, field), false, field);
+  }
+  assert.equal(error.message, "owner_guard_failed");
+  assert.doesNotMatch(JSON.stringify(error), /trainingSession|session-1|question-1|packagePin|artifactSha256/);
+}
+
+function assertHiddenLegacyTrainingSessionGuardCode(error: ContentIdentityV2PlannerError, expected: string): void {
+  assert.equal(error.legacyTrainingSessionGuardCode, expected);
+  const descriptor = Object.getOwnPropertyDescriptor(error, "legacyTrainingSessionGuardCode");
+  assert.equal(descriptor?.enumerable, false);
+  assert.equal(descriptor?.writable, false);
+  assert.equal(descriptor?.configurable, false);
+  assert.equal(Object.prototype.propertyIsEnumerable.call(error, "legacyTrainingSessionGuardCode"), false);
+  assert.doesNotMatch(JSON.stringify(error), /legacyTrainingSessionGuardCode|raw payload|session-1|question-1|packagePin/);
+}
+
 test("owner dispatch maps sessions, attempts, reviews and preserves facts without legacy identity", () => {
   const bundle = planContentIdentityV2({ source: baseSource(), artifacts: ARTIFACTS });
   assert.equal(isContentIdentityV2PlanBundle(bundle), true);
@@ -189,19 +240,297 @@ test("one legacy record can yield multiple typed tombstone bindings and no activ
   assert.equal(bundle.targetRecords.some((record) => record.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false);
 });
 
+test("mixed tombstoned session statuses dispatch to exact private targets and clean every public relationship", () => {
+  const statuses = [
+    ["session-active", "active"],
+    ["session-completed", "completed"],
+    ["session-abandoned", "abandoned"],
+  ] as const;
+  const sessionPayload = (id: string, status: (typeof statuses)[number][1]): Record<string, unknown> => ({
+    id,
+    trackId: TRACK,
+    modeId: "guided",
+    configurationSnapshot: { requestedLength: 1 },
+    activeForegroundMs: 0,
+    contentVersion: VERSION,
+    packagePin: pin(UNKNOWN_SHA),
+    status,
+    itemOrder: [{ occurrenceId: `${id}:occurrence`, item: ref("question-1", pin(UNKNOWN_SHA)) }],
+    currentItemIndex: 0,
+    requestedLength: 1,
+    actualLength: 1,
+    optionOrderByOccurrence: {},
+    conditionalReinsertSlots: [],
+    startedAt: "2026-01-01T00:00:00.000Z",
+    ...(status === "active" ? {} : { completedAt: "2026-01-01T00:01:00.000Z" }),
+  });
+  const attemptPayload = (id: string, sessionId: string): Record<string, unknown> => ({
+    id,
+    sessionId,
+    trackId: TRACK,
+    modeId: "guided",
+    occurrenceId: `${sessionId}:occurrence`,
+    item: ref("question-1", pin(UNKNOWN_SHA)),
+    reviewEvidence: { sourceItem: ref("question-1", pin(UNKNOWN_SHA)), taxonomyOrSkillRefs: [] },
+    response: { answer: "user-answer" },
+    result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
+    answeredAt: "2026-01-01T00:00:00.000Z",
+    committedAt: "2026-01-01T00:00:01.000Z",
+  });
+  const sessionIds = statuses.map(([id]) => id);
+  const attemptIds = statuses.map(([id]) => `${id}:attempt`);
+  const base = baseSource({
+    [STORAGE_KEYS.TRAINING_SESSION_INDEX]: sessionIds,
+    [STORAGE_KEYS.TRAINING_ATTEMPT_INDEX]: attemptIds,
+    [STORAGE_KEYS.REVIEW_INDEX]: [],
+  }).filter((record) => ![
+    STORAGE_KEYS.trainingSession("session-1"),
+    STORAGE_KEYS.trainingAttempt("attempt-1"),
+    STORAGE_KEYS.reviewEntry("review-1"),
+    STORAGE_KEYS.trainingSessionResult("session-1"),
+  ].includes(record.key));
+  const source = [
+    ...base,
+    ...statuses.map(([id, status]) => ({ key: STORAGE_KEYS.trainingSession(id), raw: envelope(sessionPayload(id, status)) })),
+    ...statuses.map(([id]) => ({ key: STORAGE_KEYS.trainingAttempt(`${id}:attempt`), raw: envelope(attemptPayload(`${id}:attempt`, id)) })),
+  ];
+
+  const bundle = planContentIdentityV2({ source, artifacts: ARTIFACTS });
+  const targetKeys = new Set(bundle.targetRecords.map((record) => record.key));
+  assert.equal(targetKeys.has(STORAGE_KEYS.trainingSession("session-active")), false);
+  assert.equal(targetKeys.has(STORAGE_KEYS.trainingSession("session-completed")), false);
+  assert.equal(targetKeys.has(STORAGE_KEYS.trainingSession("session-abandoned")), false);
+  assert.equal(targetKeys.has(STORAGE_KEYS.trainingAttempt("session-active:attempt")), false);
+  assert.equal(targetKeys.has(STORAGE_KEYS.trainingAttempt("session-completed:attempt")), false);
+  assert.equal(targetKeys.has(STORAGE_KEYS.trainingAttempt("session-abandoned:attempt")), false);
+  const sessionIndex = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.TRAINING_SESSION_INDEX)!.raw) as { payload: unknown };
+  const attemptIndex = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.TRAINING_ATTEMPT_INDEX)!.raw) as { payload: unknown };
+  const activeIndex = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX)!.raw) as { payload: unknown };
+  const archiveIndex = JSON.parse(bundle.targetRecords.find((record) => record.key === STORAGE_KEYS.ARCHIVAL_HISTORY_INDEX)!.raw) as { payload: unknown };
+  assert.deepEqual(sessionIndex.payload, []);
+  assert.deepEqual(attemptIndex.payload, []);
+  assert.deepEqual(activeIndex.payload, ["session-active"]);
+  assert.deepEqual(archiveIndex.payload, ["session-abandoned", "session-completed"]);
+  for (const id of ["session-active", "session-completed", "session-abandoned"]) {
+    const targetKey = id === "session-active" ? STORAGE_KEYS.unavailableActive(id) : STORAGE_KEYS.archivalHistory(id);
+    const target = bundle.targetRecords.find((record) => record.key === targetKey);
+    assert.ok(target, id);
+    const payload = JSON.parse(target.raw) as { payload: { attempts: readonly unknown[] } };
+    assert.equal(payload.payload.attempts.length, 1, id);
+  }
+});
+
 test("unknown keys and malformed envelopes fail closed before a C0 plan exists", () => {
-  assert.throws(() => planContentIdentityV2({ source: [...baseSource(), { key: `${STORAGE_NAMESPACE}unknown`, raw: envelope({ packagePin: pin() }) }], artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "unregistered_key");
-  assert.throws(() => planContentIdentityV2({ source: [...baseSource(), { key: `${STORAGE_NAMESPACE}settings:bad`, raw: "not-json" }], artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "unregistered_key");
+  assert.throws(() => planContentIdentityV2({ source: [...baseSource(), { key: `${STORAGE_NAMESPACE}unknown`, raw: envelope({ packagePin: pin() }) }], artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "unregistered_key" && error.ownerCode === undefined);
+  assert.throws(() => planContentIdentityV2({ source: [...baseSource(), { key: `${STORAGE_NAMESPACE}settings:bad`, raw: "not-json" }], artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "unregistered_key" && error.ownerCode === undefined);
+});
+
+test("owner guard failures attach only the registry owner as a hidden bounded field", () => {
+  const entriesByOwner = new Map(CONTENT_IDENTITY_INVENTORY_REGISTRY.map((entry) => [entry.owner, entry]));
+  assert.deepEqual([...CONTENT_IDENTITY_V2_PLANNER_OWNER_CODES].sort(), [...entriesByOwner.keys()].sort());
+
+  for (const [owner, entry] of entriesByOwner) {
+    const key = entry.kind === "dynamic_prefix" ? `${entry.selector}owner-test` : entry.selector;
+    let caught: unknown;
+    try {
+      planContentIdentityV2({ source: [{ key, raw: envelope({}) }], artifacts: ARTIFACTS });
+    } catch (error) {
+      caught = error;
+    }
+    assert.ok(caught instanceof ContentIdentityV2PlannerError, owner);
+    assert.equal(caught.code, "owner_guard_failed", owner);
+    assert.equal(caught.ownerCode, owner, owner);
+    assert.equal(Object.prototype.propertyIsEnumerable.call(caught, "ownerCode"), false, owner);
+    const descriptor = Object.getOwnPropertyDescriptor(caught, "ownerCode");
+    assert.equal(descriptor?.enumerable, false, owner);
+    assert.equal(descriptor?.writable, false, owner);
+    assert.equal(descriptor?.configurable, false, owner);
+    assert.equal(JSON.stringify(caught).includes("ownerCode"), false, owner);
+  }
+});
+
+test("training-session owner guards classify each role without exposing payload details", () => {
+  const cases: readonly [string, string, unknown][] = [
+    ["index", STORAGE_KEYS.TRAINING_SESSION_INDEX, {}],
+    ["active_pointer", STORAGE_KEYS.ACTIVE_TRAINING_SESSION, {}],
+    ["record", STORAGE_KEYS.trainingSession("shape-record"), {}],
+  ];
+  for (const [expectedRole, key, payload] of cases) {
+    const error = plannerOwnerGuardFailure(key, payload);
+    assert.equal(error.ownerCode, "trainingSessionRepository");
+    assert.equal(error.trainingSessionRoleCode, expectedRole);
+    assertHiddenTrainingSessionShape(error);
+  }
+});
+
+test("training-session owner guards classify every top-level identity shape independently", () => {
+  const cases: readonly [string, (payload: Record<string, unknown>) => void][] = [
+    ["artifact_sha", (payload) => { delete payload.packagePin; payload.artifactSha256 = SHA; }],
+    ["package_pin", (payload) => { delete payload.artifactSha256; }],
+    ["both", (payload) => { payload.artifactSha256 = SHA; }],
+    ["neither", (payload) => { delete payload.packagePin; delete payload.artifactSha256; }],
+  ];
+  for (const [expectedTopIdentity, shape] of cases) {
+    const payload = legacyTrainingSessionPayload({ id: "" });
+    shape(payload);
+    const error = plannerOwnerGuardFailure(STORAGE_KEYS.trainingSession("shape-top"), payload);
+    assert.equal(error.trainingSessionTopIdentityCode, expectedTopIdentity);
+    assertHiddenTrainingSessionShape(error);
+  }
+});
+
+test("training-session owner guards classify every item identity shape independently", () => {
+  const resolved = { trackId: TRACK, questionId: "question-1", contentVersion: VERSION, artifactSha256: SHA };
+  const legacy = (legacyTrainingSessionPayload().itemOrder as Array<Record<string, unknown>>)[0]!;
+  const cases: readonly [string, Readonly<Record<string, unknown>>][] = [
+    ["resolved", { id: "", itemOrder: [{ occurrenceId: "occurrence-1", item: resolved }] }],
+    ["legacy", { id: "", itemOrder: [legacy] }],
+    ["mixed", { id: "", itemOrder: [legacy, { occurrenceId: "occurrence-2", item: resolved }] }],
+    ["empty", { id: "", itemOrder: [] }],
+    ["other", { id: "", itemOrder: [{ occurrenceId: "occurrence-1", item: {} }] }],
+  ];
+  for (const [expectedItemIdentity, overrides] of cases) {
+    const error = plannerOwnerGuardFailure(STORAGE_KEYS.trainingSession("shape-item"), legacyTrainingSessionPayload(overrides));
+    assert.equal(error.trainingSessionItemIdentityCode, expectedItemIdentity);
+    assertHiddenTrainingSessionShape(error);
+  }
+});
+
+test("training-session owner guards classify every provenance shape independently", () => {
+  const cases: readonly [string, Readonly<Record<string, unknown>>][] = [
+    ["both", { id: "", taxonomyVersion: "taxonomy-v1", planFingerprint: SHA }],
+    ["taxonomy_only", { id: "", taxonomyVersion: "taxonomy-v1" }],
+    ["fingerprint_only", { id: "", planFingerprint: SHA }],
+    ["neither", { id: "" }],
+  ];
+  for (const [expectedProvenance, overrides] of cases) {
+    const error = plannerOwnerGuardFailure(STORAGE_KEYS.trainingSession("shape-provenance"), legacyTrainingSessionPayload(overrides));
+    assert.equal(error.trainingSessionProvenanceCode, expectedProvenance);
+    assertHiddenTrainingSessionShape(error);
+  }
+});
+
+test("training-session owner guards classify every status and non-record fallback", () => {
+  const statuses: readonly [string, string][] = [["active", "active"], ["completed", "completed"], ["abandoned", "abandoned"], ["other", "expired"]];
+  for (const [expectedStatus, status] of statuses) {
+    const error = plannerOwnerGuardFailure(STORAGE_KEYS.trainingSession("shape-status"), legacyTrainingSessionPayload({ id: "", status }));
+    assert.equal(error.trainingSessionStatusCode, expectedStatus);
+    assertHiddenTrainingSessionShape(error);
+  }
+  const nonRecord = plannerOwnerGuardFailure(STORAGE_KEYS.trainingSession("shape-non-record"), "malformed-session-payload");
+  assert.deepEqual(trainingSessionShape(nonRecord), {
+    role: "record",
+    topIdentity: "neither",
+    itemIdentity: "other",
+    provenance: "neither",
+    status: "other",
+  });
+  assertHiddenTrainingSessionShape(nonRecord);
+});
+
+test("completed legacy sessions without conditional slots normalize to an empty target array through migration", () => {
+  const sessionKey = STORAGE_KEYS.trainingSession("session-1");
+  const source = baseSource().map((record) => {
+    if (record.key !== sessionKey) return record;
+    const payload = (JSON.parse(record.raw) as { payload: Record<string, unknown> }).payload;
+    delete payload.conditionalReinsertSlots;
+    return { ...record, raw: envelope(payload) };
+  });
+  const sourceSessionRaw = source.find((record) => record.key === sessionKey)!.raw;
+  const bundle = planContentIdentityV2({ source, artifacts: ARTIFACTS });
+  const targetRecord = bundle.targetRecords.find((record) => record.key === sessionKey);
+  assert.ok(targetRecord);
+  const targetPayload = (JSON.parse(targetRecord.raw) as { payload: Record<string, unknown> }).payload;
+  assert.deepEqual(targetPayload.conditionalReinsertSlots, []);
+  assert.equal(source.find((record) => record.key === sessionKey)!.raw, sourceSessionRaw);
+
+  const storage = new MemoryKeyValueStorage();
+  for (const record of source) storage.setString(record.key, record.raw);
+  const migration = migrateContentIdentityV2({ storage, bundle });
+  assert.equal(migration.kind, "committed");
+  const migratedPayload = JSON.parse(storage.getString(sessionKey)!) as { payload: Record<string, unknown> };
+  assert.deepEqual(migratedPayload.payload.conditionalReinsertSlots, []);
+});
+
+test("legacy conditional slot null, non-array, and malformed entries fail closed before planning", () => {
+  const sessionKey = STORAGE_KEYS.trainingSession("session-1");
+  for (const invalidSlots of [null, {}, [null], [{ ordinaryBranch: {} }]]) {
+    const source = baseSource().map((record) => record.key === sessionKey
+      ? { ...record, raw: envelope(legacyTrainingSessionPayload({ conditionalReinsertSlots: invalidSlots })) }
+      : record);
+    assert.throws(
+      () => planContentIdentityV2({ source, artifacts: ARTIFACTS }),
+      (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "owner_guard_failed",
+    );
+  }
+});
+
+test("planner legacy-session guard code matches the canonical classifier at every first-failing rule", () => {
+  const valid = legacyTrainingSessionPayload();
+  assert.equal(classifyLegacyTrainingSession(valid), null);
+  assert.doesNotThrow(() => planContentIdentityV2({ source: baseSource(), artifacts: ARTIFACTS }));
+  const cases: readonly [string, unknown][] = [
+    ["not_record", null],
+    ["unexpected_keys", { ...valid, unexpected: true }],
+    ["unexpected_keys", { ...valid, itemRefs: [] }],
+    ["expired_status", { ...valid, status: "expired" }],
+    ["id", { ...valid, id: "" }],
+    ["track_id", { ...valid, trackId: "unregistered-track" }],
+    ["mode_id", { ...valid, modeId: "" }],
+    ["configuration_snapshot", { ...valid, configurationSnapshot: {} }],
+    ["requested_length", { ...valid, requestedLength: null }],
+    ["actual_length", { ...valid, actualLength: null }],
+    ["current_item_index", { ...valid, currentItemIndex: null }],
+    ["item_order", { ...valid, itemOrder: "not-an-array" }],
+    ["item_order_entry", { ...valid, itemOrder: [{}] }],
+    ["option_order_by_occurrence", { ...valid, optionOrderByOccurrence: { occurrence: "not-an-array" } }],
+    ["conditional_reinsert_slots", { ...valid, conditionalReinsertSlots: null }],
+    ["active_foreground_ms", { ...valid, activeForegroundMs: null }],
+    ["content_version", { ...valid, contentVersion: "" }],
+    ["package_pin", { ...valid, packagePin: {} }],
+    ["taxonomy_version", { ...valid, taxonomyVersion: "" }],
+    ["plan_fingerprint", { ...valid, planFingerprint: "not-a-sha" }],
+    ["status", { ...valid, status: "paused" }],
+    ["started_at", { ...valid, startedAt: "" }],
+    ["completed_at", { ...valid, completedAt: "not-a-date" }],
+  ];
+  for (const [expectedCode, payload] of cases) {
+    assert.equal(classifyLegacyTrainingSession(payload), expectedCode, expectedCode);
+    const error = plannerOwnerGuardFailure(STORAGE_KEYS.trainingSession("guard-invalid"), payload);
+    assert.equal(error.ownerCode, "trainingSessionRepository");
+    assertHiddenLegacyTrainingSessionGuardCode(error, expectedCode);
+  }
+});
+
+test("dispatch and make-v2 failures retain their planner error and attach the source owner", () => {
+  const source = baseSource({
+    [STORAGE_KEYS.trainingSessionResult("session-1")]: {
+      id: "result-1", sessionId: "session-1", trackId: TRACK, totalOccurrences: 1,
+      answeredOccurrenceIds: ["occurrence-1"], unansweredOccurrenceIds: [], completedAt: "2026-01-01T00:01:00.000Z",
+      evidence: { familyId: "future-family", details: { total: 1, itemId: "question-raw" } },
+    },
+  });
+  let caught: unknown;
+  try {
+    planContentIdentityV2({ source, artifacts: ARTIFACTS });
+  } catch (error) {
+    caught = error;
+  }
+  assert.ok(caught instanceof ContentIdentityV2PlannerError);
+  assert.equal(caught.code, "owner_guard_failed");
+  assert.equal(caught.ownerCode, "trainingSessionResultRepository");
+  assert.equal(caught.message, "owner_guard_failed");
+  assert.doesNotMatch(JSON.stringify(caught), /question-raw|itemId|ownerCode/);
 });
 
 test("known malformed owners, orphan/duplicate indices, and terminal history fail closed deterministically", () => {
   const malformedSettings = baseSource().map((record) => record.key === STORAGE_KEYS.SETTINGS ? { ...record, raw: "not-json" } : record);
-  assert.throws(() => planContentIdentityV2({ source: malformedSettings, artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "malformed_envelope");
+  assert.throws(() => planContentIdentityV2({ source: malformedSettings, artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "malformed_envelope" && error.ownerCode === undefined);
   const settingsWithForeignPin = baseSource().map((record) => record.key === STORAGE_KEYS.SETTINGS ? { ...record, raw: envelope({ packagePin: pin() }) } : record);
   assert.throws(() => planContentIdentityV2({ source: settingsWithForeignPin, artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "owner_guard_failed");
   assert.throws(() => planContentIdentityV2({ source: [...baseSource(), { key: STORAGE_KEYS.ACCOUNT_SYNC, raw: envelope({}) }], artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "owner_guard_failed");
   for (const ids of [["missing-session"], ["session-1", "session-1"]]) {
-    assert.throws(() => planContentIdentityV2({ source: baseSource({ [STORAGE_KEYS.TRAINING_SESSION_INDEX]: ids }), artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "relationship_invalid");
+    assert.throws(() => planContentIdentityV2({ source: baseSource({ [STORAGE_KEYS.TRAINING_SESSION_INDEX]: ids }), artifacts: ARTIFACTS }), (error: unknown) => error instanceof ContentIdentityV2PlannerError && error.code === "relationship_invalid" && error.ownerCode === undefined);
   }
   const abandoned = baseSource({ [STORAGE_KEYS.trainingSession("session-1")]: {
     id: "session-1", trackId: TRACK, modeId: "guided", configurationSnapshot: { requestedLength: 1 }, activeForegroundMs: 0,
@@ -356,6 +685,35 @@ test("account active-track metadata packagePin is removed after the versioned cl
   const parsed = JSON.parse(target.raw) as { payload: { outbox: readonly [{ state: Record<string, unknown> }] } };
   const value = parsed.payload;
   assert.equal("packagePin" in value.outbox[0].state, false);
+});
+
+test("legacy account fixtures without sync-plan counters normalize before planning and migration", () => {
+  const accountRecord = {
+    fingerprint: "",
+    recordId: "current",
+    recordType: "active_track" as const,
+    state: { trackId: TRACK, packagePin: pin() },
+    trackId: TRACK,
+    version: 1,
+  };
+  accountRecord.fingerprint = accountDataRecordFingerprint(accountRecord);
+  const accountState = {
+    protocolVersion: 2, accountId: "account-1", status: "synced", localDatasetVersion: 1, localDatasetFingerprint: null,
+    remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 1, blockingConflictCode: null, lastFailureCode: null,
+    acknowledged: {}, outbox: [{ ...accountRecord, mutationId: "m1", expectedVersion: null, attemptCount: 0, lastErrorCode: null, status: "pending", sequence: 1 }],
+    materialization: null, pendingConfirmation: null,
+  };
+  const source = [...baseSource(), { key: STORAGE_KEYS.ACCOUNT_SYNC, raw: envelope(accountState) }];
+  const bundle = planContentIdentityV2({ source, artifacts: ARTIFACTS });
+  const storage = new MemoryKeyValueStorage();
+  for (const record of source) storage.setString(record.key, record.raw);
+
+  const result = migrateContentIdentityV2({ storage, bundle });
+  assert.equal(result.kind, "committed");
+  const migrated = JSON.parse(storage.getString(STORAGE_KEYS.ACCOUNT_SYNC)!) as { payload: { syncPlan: unknown; outboxSequence: number; highWatermark: number } };
+  assert.equal(migrated.payload.syncPlan, null);
+  assert.equal(migrated.payload.outboxSequence, 1);
+  assert.equal(migrated.payload.highWatermark, 1);
 });
 
 test("account target recomputes direct, outbox, and sync-plan identities deterministically", () => {

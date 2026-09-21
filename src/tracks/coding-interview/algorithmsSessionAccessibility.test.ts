@@ -84,7 +84,7 @@ test("canonical session surfaces expose deterministic state and do not group int
 
   assert.match(button, /accessibilityState=\{\{ \.\.\.accessibilityState, busy: loading, disabled: isDisabled \}\}/);
   assert.match(practice, /orderingMoveAccessibilityLabel\(elementLabel, index, total, direction, t\)/);
-  assert.match(practice, /accessibilityLabel=\{option\.text\}/);
+  assert.match(practice, /accessibilityLabel=\{correctness \? `\$\{option\.text\}\. \$\{t\(correctness\)\}` : option\.text\}/);
   assert.match(practice, /accessibilityState=\{\{ checked: selected, disabled: !editable \}\}/);
   assert.match(practice, /accessibilityValue=\{correctness \? \{ text: t\(correctness\) \} : undefined\}/);
   assert.match(simulation, /accessibilityLabel=\{option\.label\} accessibilityRole=\{role\} accessibilityState=\{\{ checked: option\.selected \}\}/);

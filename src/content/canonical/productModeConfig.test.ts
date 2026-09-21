@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
+import { resolve } from "node:path";
 
 import awsArtifact from "../generated/canonical-content/aws-certified-solutions-architect-associate.json";
 import backendDesignArtifact from "../generated/canonical-content/backend-system-design-interview.json";
@@ -23,6 +25,40 @@ import {
 const coding = "coding-interview-dsa-problem-solving";
 const gcp = "google-cloud-associate-cloud-engineer";
 const artifacts = [codingArtifact, backendDesignArtifact, objectDesignArtifact, frontendDesignArtifact, gcpArtifact, awsArtifact, az104Artifact, ai901Artifact, claudeArtifact] as readonly ProductModeArtifact[];
+const designTracks = [
+  { trackId: "backend-system-design-interview", profileId: "backend-system-design-interview-free-node-v1", freeNodeId: "requirements_capacity_and_architecture_decomposition" },
+  { trackId: "object-oriented-design-interview", profileId: "object-oriented-design-interview-free-node-v1", freeNodeId: "requirements_use_cases_domain_vocabulary_and_model_boundaries" },
+  { trackId: "frontend-system-design-interview", profileId: "frontend-system-design-interview-free-node-v1", freeNodeId: "requirements_user_journeys_constraints_and_frontend_decomposition" },
+] as const;
+
+type ProducerProfile = Readonly<{
+  schemaVersion: string;
+  profileId: string;
+  profileVersion: string;
+  trackId: string;
+  familyId: string;
+  freeNodeId: string;
+  primaryEntry: Readonly<{ modeId: string; requestedLength: number }>;
+  modes: readonly Readonly<{
+    configurationId: string;
+    configurationVersion: string;
+    modeId: string;
+    blueprintModeId: string;
+    availability: string;
+    requestedLengths: readonly number[];
+    defaultRequestedLength: number;
+    selection: Readonly<{
+      kind: string;
+      freeNodeId: string;
+      itemSource: string;
+      requireUniqueItemIds: boolean;
+      reviewSources?: readonly string[];
+      emptyEligibility?: string;
+      shortening?: string;
+    }>;
+    reinsertPolicy: string;
+  }>[];
+}>;
 
 test("ProductModeConfig preserves the complete available 9-track mode matrix", () => {
   const expected = [
@@ -32,8 +68,8 @@ test("ProductModeConfig preserves the complete available 9-track mode matrix", (
     [coding, "coding-interview-weak-area-review", [10, 20]],
     ...["backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview"].flatMap((trackId) => [
       [trackId, "design-interview-learn-framework", [1, 10]],
-      [trackId, "design-interview-tradeoff-practice", [1, 10]],
-      [trackId, "design-interview-weak-area-review", [1, 10]],
+      [trackId, "design-interview-tradeoff-practice", [10, 20, 40]],
+      [trackId, "design-interview-weak-area-review", [1, 10, 20]],
     ]),
     [gcp, "certification-diagnostic-baseline", [40]],
     [gcp, "certification-focus-practice", [10, 20, 40]],
@@ -54,6 +90,55 @@ test("ProductModeConfig preserves the complete available 9-track mode matrix", (
   assert.equal(PRODUCT_MODE_CONFIGS.length, 29);
   assert.equal(new Set(PRODUCT_MODE_CONFIGS.map(({ trackId }) => trackId)).size, 9);
   for (const entry of PRODUCT_MODE_CONFIGS) assert.deepEqual(Object.keys(entry).sort(), ["availability", "defaultRequestedLength", "feedbackTiming", "minimumActualLength", "modeId", "reinsertPolicy", "requestedLengths", "selection", "timer", "trackId"]);
+});
+
+test("ODK-097 app Design modes stay in parity with the current producer profiles", () => {
+  const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? resolve(process.cwd(), "../patternly-content");
+  const modeIds = ["design-interview-learn-framework", "design-interview-tradeoff-practice", "design-interview-weak-area-review"] as const;
+
+  for (const expected of designTracks) {
+    const profile = JSON.parse(readFileSync(resolve(contentRoot, "config/free-node-experience-profiles", `${expected.trackId}.json`), "utf8")) as ProducerProfile;
+    assert.equal(profile.schemaVersion, "patternly-free-node-experience-profile-v1");
+    assert.equal(profile.profileId, expected.profileId);
+    assert.equal(profile.profileVersion, "2");
+    assert.equal(profile.trackId, expected.trackId);
+    assert.equal(profile.familyId, "design_interview");
+    assert.equal(profile.freeNodeId, expected.freeNodeId);
+    assert.deepEqual(profile.primaryEntry, { modeId: modeIds[0], requestedLength: 10 });
+    assert.deepEqual(profile.modes.map((mode) => mode.modeId), modeIds);
+    assert.equal(new Set(profile.modes.map((mode) => mode.configurationId)).size, profile.modes.length);
+
+    for (const producerMode of profile.modes) {
+      const appMode = getProductModeConfig(expected.trackId, producerMode.modeId);
+      assert.equal(appMode.trackId, expected.trackId);
+      assert.equal(appMode.modeId, producerMode.modeId);
+      assert.equal(producerMode.blueprintModeId, producerMode.modeId);
+      assert.equal(producerMode.configurationVersion, producerMode.modeId === modeIds[0] ? "1" : "2");
+      assert.equal(appMode.availability, producerMode.availability);
+      assert.deepEqual(appMode.requestedLengths, producerMode.requestedLengths);
+      assert.equal(appMode.defaultRequestedLength, producerMode.defaultRequestedLength);
+      assert.equal(appMode.reinsertPolicy, producerMode.reinsertPolicy);
+      assert.deepEqual(appMode.timer, { kind: "elapsed_foreground" });
+      assert.equal(producerMode.selection.itemSource, "package_items");
+      assert.equal(producerMode.selection.requireUniqueItemIds, true);
+      assert.equal(producerMode.selection.freeNodeId, expected.freeNodeId);
+
+      if (producerMode.selection.kind === "exact_free_node") {
+        assert.equal(appMode.selection.kind, "node");
+        if (appMode.selection.kind !== "node") throw new Error("Expected an exact app node selection.");
+        assert.equal(appMode.selection.nodeId, producerMode.selection.freeNodeId);
+      } else {
+        assert.equal(producerMode.selection.kind, "free_node_review_evidence");
+        assert.equal(appMode.selection.kind, "evidence_conditioned");
+        if (appMode.selection.kind !== "evidence_conditioned") throw new Error("Expected an evidence-conditioned app selection.");
+        assert.equal(appMode.selection.nodeId, producerMode.selection.freeNodeId);
+        assert.deepEqual(appMode.selection.evidenceSources, producerMode.selection.reviewSources);
+        assert.equal(appMode.minimumActualLength, 1);
+        assert.equal(producerMode.selection.emptyEligibility, "unavailable");
+        assert.equal(producerMode.selection.shortening, "truthful_to_eligible_count");
+      }
+    }
+  }
 });
 
 test("mode policies preserve feedback, elapsed timer, reinsert and evidence behavior", () => {

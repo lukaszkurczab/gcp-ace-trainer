@@ -94,7 +94,7 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ResolvedC
 
   return (
     <>
-      <Button onPress={open} style={styles.trigger} testID={`content-report-open-${item.questionId}`} variant="ghost">{t("Report an issue")}</Button>
+      <Button leadingIcon="flag" onPress={open} style={styles.trigger} testID={`content-report-open-${item.questionId}`} variant="secondary">{t("Report an issue")}</Button>
       <Modal accessibilityViewIsModal animationType="slide" onRequestClose={close} transparent visible={visible}>
         <View style={styles.backdrop}>
           <Pressable accessibilityLabel={t("Close report form")} accessibilityRole="button" onPress={close} style={styles.dismissArea} />
@@ -199,6 +199,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   statusAccepted: { ...typography.body, color: palette.success },
   statusPending: { ...typography.body, color: palette.textSecondary },
   title: { ...typography.title, color: palette.textPrimary },
-  trigger: { alignSelf: "flex-start", marginTop: spacing.sm, paddingHorizontal: 0 },
+  trigger: { alignSelf: "flex-start", marginTop: spacing.sm },
   warning: { ...typography.bodyStrong, color: palette.textPrimary },
 });

@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
 import { DetailsDisclosure } from "../../components";
+import { openCanonicalSourceLink } from "../../application/canonical/canonicalSourceLinks";
 import { radius, spacing, typography } from "../../theme";
 import type { PracticeFeedback } from "./practiceSessionPresentation";
 import { useThemedStyles } from "../../preferences";
@@ -18,6 +19,7 @@ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }:
   const { fontScale } = useWindowDimensions();
   const { t } = useTranslation("common");
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [sourceError, setSourceError] = useState(false);
   const detailsDisclosure = <DetailsDisclosure expanded={detailsOpen} onPress={() => setDetailsOpen((current) => !current)} testID={runtimeSelectors.session.detailsToggle(itemId)} />;
   return (
     <View style={styles.feedbackCard} testID={runtimeSelectors.session.feedback(itemId)}>
@@ -28,7 +30,7 @@ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }:
       <View style={styles.detailsSection}>
         <View style={styles.detailsDivider} />
         {detailsDisclosure}
-        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <Text key={`${message.kind}:${message.targetId}`} style={styles.detailText}>{message.text}</Text>)}{detailLines(feedback.details).map((line, index) => <Text key={`detail:${index}`} maxFontSizeMultiplier={2} style={styles.detailText}>{line}</Text>)}<ContentReportSheet item={item} surface={reportSurface} /></View> : null}
+        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <Text key={`${message.kind}:${message.targetId}`} style={styles.detailText}>{message.text}</Text>)}{detailLines(feedback.details).filter((line) => !feedback.sources?.some((source) => source.url === line)).map((line, index) => <Text key={`detail:${index}`} maxFontSizeMultiplier={2} style={styles.detailText}>{line}</Text>)}<View style={styles.sources}><Text maxFontSizeMultiplier={2} style={styles.sourceLabel}>{t("Source")}</Text>{feedback.sources?.length ? feedback.sources.map((source, index) => <Pressable accessibilityLabel={`${t("Open source")} ${source.host}`} accessibilityRole="link" key={source.url} onPress={() => { setSourceError(false); void openCanonicalSourceLink(source, Linking.openURL).then((result) => setSourceError(result === "failed")); }} testID={`question-source-link-${itemId}-${index}`}><Text maxFontSizeMultiplier={2} style={styles.sourceLink}>{source.host}</Text></Pressable>) : <Text maxFontSizeMultiplier={2} style={styles.sourceUnavailable}>{t("Source unavailable")}</Text>}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View><ContentReportSheet item={item} surface={reportSurface} /></View> : null}
       </View>
     </View>
   );
@@ -43,4 +45,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   reason: { ...typography.body, color: palette.textSecondary },
   reasonLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "600", letterSpacing: 0.5, lineHeight: 16 },
   reasonPanel: { gap: spacing.sm },
+  sourceError: { ...typography.caption, color: palette.danger },
+  sourceLabel: { ...typography.bodyStrong, color: palette.textPrimary },
+  sourceLink: { ...typography.bodyStrong, color: palette.primary, textDecorationLine: "underline" },
+  sources: { gap: spacing.sm },
+  sourceUnavailable: { ...typography.body, color: palette.textMuted },
 });

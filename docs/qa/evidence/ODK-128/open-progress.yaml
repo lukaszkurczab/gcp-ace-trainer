@@ -1,0 +1,6 @@
+appId: com.lkurczab.patternly
+---
+- tapOn:
+    id: main-tab-bar-progress
+- waitForAnimationToEnd
+- assertVisible: Progress

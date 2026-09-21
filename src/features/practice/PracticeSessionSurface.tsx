@@ -14,6 +14,7 @@ import { PracticeResponseControls } from "./PracticeResponseControls";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
+import { CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID } from "../../domain/tracks/trackRegistry";
 
 import {
   allowsPracticeFeedback,
@@ -87,7 +88,10 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   const displayedQuestionId = props.runtimeIdentity?.itemId ?? props.question?.itemId;
   const controls = props.question && props.phase !== "preparing" && props.phase !== "completing" ? (
     <>
-      <PracticeQuestionCard question={props.question} />
+      <PracticeQuestionCard
+        question={props.question}
+        variant={props.runtimeIdentity?.trackId === CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID ? "structuredCertificationPrompt" : "default"}
+      />
       <PracticeResponseControls
         control={props.question.responseControl}
         editable={editable}

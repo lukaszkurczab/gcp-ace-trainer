@@ -7,7 +7,7 @@ import {
   complexityValueAccessibilityLabel,
   orderingMoveAccessibilityLabel,
 } from "../coding-interview/session/sessionAccessibility";
-import { practiceOptionCorrectnessValue, type PracticeResponseControl } from "./practiceSessionPresentation";
+import { practiceOptionCorrectnessValue, practiceOptionIsSelected, type PracticeResponseControl } from "./practiceSessionPresentation";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
@@ -104,15 +104,15 @@ function ChoiceOption({ editable, index, itemId, onPress, option, role }: Readon
   index: number;
   itemId?: string;
   onPress: () => void;
-  option: Readonly<{ id: string; state: "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct"; text: string }>;
+  option: Readonly<{ id: string; state: "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct" | "not_selected"; text: string }>;
   role: "checkbox" | "radio";
 }>) {
-  const selected = option.state === "selected" || option.state === "correct" || option.state === "incorrect" || option.state === "omitted_correct";
+  const selected = practiceOptionIsSelected(option.state);
   const { t } = useTranslation("common");
   const correctness = practiceOptionCorrectnessValue(option.state);
 
   return <AnswerOption
-    accessibilityLabel={option.text}
+    accessibilityLabel={correctness ? `${option.text}. ${t(correctness)}` : option.text}
     accessibilityRole={role}
     accessibilityState={{ checked: selected, disabled: !editable }}
     accessibilityValue={correctness ? { text: t(correctness) } : undefined}
@@ -120,6 +120,7 @@ function ChoiceOption({ editable, index, itemId, onPress, option, role }: Readon
     letter={String.fromCharCode(65 + index)}
     onPress={onPress}
     state={option.state === "neutral" ? "default" : option.state as AnswerOptionState}
+    statusLabel={correctness ? t(correctness) : undefined}
     testID={itemId ? runtimeSelectors.session.option(itemId, option.id) : undefined}
     text={option.text}
   />;
