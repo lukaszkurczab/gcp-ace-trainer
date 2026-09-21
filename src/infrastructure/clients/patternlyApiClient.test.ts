@@ -57,6 +57,26 @@ test("mobile requests fail before transport when App Check is unavailable", asyn
   assert.equal(calls, 0);
 });
 
+test("an explicit retry reaches transport after App Check becomes available", async () => {
+  let token: string | null = null;
+  const sentHeaders: HeadersInit[] = [];
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "id-token",
+    getAppCheckToken: async () => token,
+    fetchImplementation: async (_url, options) => {
+      sentHeaders.push(options?.headers ?? {});
+      return new Response(JSON.stringify({ error: { code: "account_not_found" } }), { status: 404 });
+    },
+  });
+  await assert.rejects(client.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "app_check_unavailable");
+  assert.equal(sentHeaders.length, 0);
+  token = "available-app-check-token";
+  await assert.rejects(client.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.serverCode === "account_not_found");
+  assert.equal(sentHeaders.length, 1);
+  assert.equal(new Headers(sentHeaders[0]).get("x-firebase-appcheck"), token);
+});
+
 test("infrastructure and local admin requests never ask for mobile App Check", async () => {
   const paths: string[] = [];
   let providerCalls = 0;

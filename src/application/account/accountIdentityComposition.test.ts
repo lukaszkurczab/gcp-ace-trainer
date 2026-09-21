@@ -586,6 +586,8 @@ test("account restore has a bounded initialization recovery path", () => {
 test("App Check has an explicit unavailable state and never fabricates a token", async () => {
   configurePatternlyAppCheckTokenProvider(null);
   assert.equal(await getPatternlyAppCheckToken(), null);
+  configurePatternlyAppCheckTokenProvider(async () => { throw new Error("private native provider failure"); });
+  assert.equal(await getPatternlyAppCheckToken(), null);
 });
 
 test("account failures expose explicit provider, network, expiry, and revoked-session states", () => {
@@ -624,6 +626,8 @@ test("cold account_not_found clears persisted Firebase auth or exposes a truthfu
 
 test("privacy requests expose App Check failures as unavailable", () => {
   assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("app_check_unavailable")), "appCheckUnavailable");
+  assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("server_error", 401, "app_check_required")), "appCheckUnavailable");
   assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("server_error", 401, "app_check_invalid")), "appCheckUnavailable");
+  assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("server_error", 503, "app_check_not_configured")), "appCheckUnavailable");
   assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("server_error", 401, "authentication_required")), "authenticationRequired");
 });

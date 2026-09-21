@@ -39,7 +39,9 @@ export async function composePatternlyNativeAppCheck(configuration: PatternlyNat
 }
 
 export async function getPatternlyAppCheckToken(): Promise<string | null> {
-  return provider ? provider() : null;
+  if (!provider) return null;
+  try { return await provider(); }
+  catch { return null; }
 }
 
 type NativeAppCheckModule = Readonly<{

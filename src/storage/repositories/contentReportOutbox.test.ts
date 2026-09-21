@@ -76,6 +76,22 @@ test("report outbox requires App Check, then accepts with the same idempotency k
   assert.equal(storage.contains(STORAGE_KEYS.CONTENT_REPORT_OUTBOX), false);
 });
 
+test("throwing native App Check provider leaves a report failed and retryable", async () => {
+  configurePatternlyAppCheckTokenProvider(async () => { throw new Error("private native token failure"); });
+  let calls = 0;
+  const id = "6f61e3f3-f23e-467c-b92a-9b8fd0514f25";
+  const transport = { create: async (input: { clientSubmissionId: string }) => { calls += 1; assert.equal(input.clientSubmissionId, id); return { duplicate: false }; } };
+  const failed = await submitContentReport({ ...baseInput, clientSubmissionId: id }, transport);
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.entry.lastErrorCode, "app_check_unavailable");
+  assert.equal(calls, 0);
+  configurePatternlyAppCheckTokenProvider(async () => "verified-app-check-token");
+  const accepted = await retryContentReport(id, transport);
+  assert.equal(accepted.status, "accepted");
+  assert.equal(accepted.entry.input.clientSubmissionId, id);
+  assert.equal(calls, 1);
+});
+
 test("failed transport is retryable without creating a new report identity", async () => {
   configurePatternlyAppCheckTokenProvider(async () => "verified-app-check-token");
   let calls = 0;
