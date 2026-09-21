@@ -526,7 +526,19 @@ export type RecoveryCodesResponseDto = Readonly<{ generationId: string; codes: r
 export type AccountDeletionResponseDto = Readonly<{ status: "deleted"; operationId: string; proofId: string }>;
 export type PublicDeletionProofResponseDto = Readonly<{ status: "deleted"; operationId: string; proofId: string }>;
 export type DeletionOperationStatusDto = Readonly<{ status: "pending" | "remote_deleted" | "complete"; operationId: string; proofId: string | null }>;
-export type EntitlementsResponseDto = Readonly<{ entitlements: readonly Readonly<{ entitlement: string; status: string; source: string; expiresAt: string | null; updatedAt: string }>[] }>;
+export type EntitlementsResponseDto = Readonly<{
+  serverObservedAt: string;
+  entitlements: readonly Readonly<{
+    accountId: string;
+    entitlement: string;
+    productId: string;
+    state: "active" | "grace" | "hold" | "expired" | "refunded";
+    source: "revenuecat";
+    providerExpiresAt: string | null;
+    providerGraceExpiresAt: string | null;
+    providerObservedAt: string;
+  }>[];
+}>;
 export type ProgressResponseDto = Readonly<{ accountRevision: number; records: readonly ProgressRecordDto[]; nextPageToken?: string | null; generation?: number }>;
 export type ProgressResponseV4Dto = Readonly<{ accountRevision: number; records: readonly ProgressRecordV4Dto[]; nextPageToken?: string | null; generation?: number }>;
 export type AccountDataExportDto = Readonly<{
