@@ -1,6 +1,6 @@
 # APPCHK-01 — mobile client App Check boundary
 
-**Status:** `partial` — client enforcement implemented locally; backend enforcement and provider evidence remain open.
+**Status:** `done` locally for the client boundary. Backend enforcement is covered by APPCHK-02; provider evidence remains open.
 
 ## Contract and evidence
 
@@ -20,6 +20,6 @@
 
 ## Remaining work
 
-- APPCHK-02 must enforce the same mobile matrix server-side and update OpenAPI, security probes and rejection monitoring. A client header by itself does not secure a direct API request.
+- APPCHK-02 enforces the mobile matrix server-side and updates OpenAPI and security probes. Its independent QA passed; see the backend APPCHK-02 report.
 - APPCHK-03/04 must prove the native/debug configuration boundary and unavailable/retry behavior across mobile flows. Real provider proof belongs to ODK-084 after freeze.
 - WEB-03B must add the user-approved guest privacy form in the app, then remove browser privacy endpoints and links. The public marketing web has no login or account management.

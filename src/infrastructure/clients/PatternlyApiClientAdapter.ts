@@ -688,7 +688,7 @@ export function createPatternlyApiClient(input: Readonly<{
     if (url.origin !== origin.origin || (!path.startsWith("/v1/") && !publicPath)) throw new PatternlyApiClientError("client_unconfigured");
     // This adapter is the mobile client. Local admin and infrastructure calls
     // have their own trust boundaries; every other versioned call needs App Check.
-    const needsAppCheck = url.pathname.startsWith("/v1/") && !url.pathname.startsWith("/v1/admin/");
+    const needsAppCheck = url.pathname.startsWith("/v1/") && url.pathname.split("/")[2] !== "admin";
     const controller = new AbortController();
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const timedOut = new Promise<never>((_, reject) => {
