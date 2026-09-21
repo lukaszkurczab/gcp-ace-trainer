@@ -7,7 +7,7 @@
   "rights": { "title": "Twoje prawa" },
   "actions": {
     "export": { "title": "Udostępnij lub pobierz dane konta", "summary": "Plik JSON z danymi konta, synchronizowaną nauką i aktywnością konta" },
-    "guestSupport": { "title": "Poproś o pomoc w sprawie danych", "summary": "Skontaktuj się z nami bez zakładania konta" },
+    "guestPrivacy": { "title": "Złóż wniosek dotyczący danych", "summary": "Wyślij wniosek w aplikacji bez zakładania konta" },
     "openAccount": { "title": "Otwórz konto", "summary": "Zaloguj się lub załóż konto, aby zarządzać danymi konta" },
     "retryRestore": { "title": "Spróbuj przywrócić sesję", "summary": "Sprawdź ponownie sesję konta" },
     "retryDeletion": { "title": "Ponów czyszczenie konta", "summary": "Kontynuuj oczekujące usuwanie konta" },
@@ -107,8 +107,28 @@
       "appCheckUnavailable": "Nie można teraz bezpiecznie wysłać tego wniosku z tego urządzenia. Spróbuj ponownie później.",
       "offline": "Brak połączenia. Sprawdź sieć i spróbuj ponownie.",
       "invalidResponse": "Otrzymano nieprawidłową odpowiedź. Spróbuj ponownie.",
-      "serverFailure": "Usługa wniosków jest chwilowo niedostępna. Spróbuj ponownie."
+      "serverFailure": "Usługa wniosków jest chwilowo niedostępna. Spróbuj ponownie.",
+      "invalidCode": "Kod jest błędny, wygasł albo został użyty. Poproś o nowy kod i spróbuj ponownie.",
+      "rateLimited": "Zbyt wiele prób. Spróbuj ponownie później.",
+      "conflict": "Wniosek się zmienił. Sprawdź formularz i wyślij go jako nowy wniosek."
     }
+  },
+  "guestPrivacy": {
+    "title": "Wniosek dotyczący prywatności bez konta",
+    "intro": "Wyślij formularz tutaj. Kod otrzymasz e-mailem i wkleisz w aplikacji. Użyj najnowszego kodu. Wniosek oczekuje na potwierdzenie adresu.",
+    "newRequest": "Nowy wniosek",
+    "existingRequest": "Potwierdź lub sprawdź wniosek",
+    "email": "Adres e-mail",
+    "requestId": "Numer wniosku z e-maila",
+    "code": "Kod z e-maila",
+    "resend": "Wyślij nowy kod",
+    "verify": "Potwierdź kod i otwórz wniosek",
+    "refresh": "Odśwież status wniosku",
+    "pending": "Wniosek zapisano. Sprawdź pocztę i użyj najnowszego kodu. Jeśli wiadomość nie dotrze, wyślij kod ponownie.",
+    "sessionExpired": "Sesja potwierdzenia wygasła. Poproś o nowy kod, aby zobaczyć status.",
+    "invalidEmail": "Podaj prawidłowy adres e-mail.",
+    "storageUnavailable": "Bezpieczna pamięć lokalna jest niedostępna. Oczekujący wniosek może nadal być zapisany. Spróbuj ponownie później.",
+    "statusTitle": "Status wniosku"
   },
   "details": {
     "action": "Pokaż szczegóły",
@@ -117,7 +137,7 @@
     "accountIntro": "Eksport jest plikiem JSON przygotowanym dla zalogowanego konta.",
     "accountBody": "Eksport obejmuje profil konta; obsługiwane synchronizowane rekordy nauki, takie jak aktywna ścieżka, cele i plany nauki, podsumowania i wyniki ukończonych sesji, próby oraz kolejka powtórek; a także powiązane zgłoszenia treści. Aktywność i kontekst konta obejmują dostęp do ścieżek, uprawnienia, akceptacje prawne, potwierdzenia zakupów, sprawy konsumenckie, metadane urządzeń, metadane synchronizacji i historię eksportów. Informacje o dostępie opisują cele, kategorie danych, odbiorców, retencję, źródła, transfery, zautomatyzowane decyzje i Twoje prawa. Manifest wskazuje kategorie ujęte i pominięte; dane logowania, sekrety, surowe identyfikatory dostawcy lub urządzenia, zgłoszenia innych osób i zgłoszenia anonimowe nie są dołączane. Aktywne sesje, szkice, ustawienia i inne dane dostępne tylko na urządzeniu nie są synchronizowane. Po zalogowaniu na to samo konto zwykła synchronizacja może przywrócić obsługiwane rekordy z chmury konta. Adopcja danych gościa jest osobną decyzją, która łączy kwalifikujący się postęp z tego urządzenia z kontem. Plik JSON jest przekazywany do systemowego arkusza udostępniania lub zapisu, służy dostępowi i przenoszeniu danych i nie można go zaimportować do Patternly. Ze względów bezpieczeństwa może być wymagane ponowne potwierdzenie tożsamości. Eksport podlega limitowi częstotliwości.",
     "guestIntro": "Konto nie jest potrzebne, aby skontaktować się w sprawie swoich danych.",
-    "guestBody": "Dane zapisane wyłącznie na tym urządzeniu możesz usunąć lokalnie. Szersze żądanie dotyczące prywatności wyślij przez publiczny kanał pomocy. Aplikacja nie dołącza identyfikatora konta ani nie sprawdza, czy adres występuje w systemie."
+    "guestBody": "Dane zapisane wyłącznie na tym urządzeniu możesz usunąć lokalnie. Szerszy wniosek dotyczący prywatności wyślij przez formularz w aplikacji. Aplikacja nie dołącza identyfikatora konta ani nie sprawdza, czy adres występuje w systemie."
   },
   "status": {
     "title": "Nie udało się dokończyć",
@@ -133,7 +153,6 @@
     "fileFailure": "Nie udało się bezpiecznie przygotować pliku tymczasowego.",
     "sharingFailed": "Nie udało się otworzyć systemowego arkusza zapisu lub udostępniania.",
     "cleanupFailed": "Nie udało się usunąć pliku tymczasowego. Aplikacja ponowi bezpieczne czyszczenie przy następnym uruchomieniu.",
-    "supportUnavailable": "Publiczny kanał pomocy nie jest obecnie skonfigurowany.",
     "actionFailed": "Nie udało się wykonać działania na koncie. Spróbuj ponownie."
   }
 }

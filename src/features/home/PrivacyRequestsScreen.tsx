@@ -11,6 +11,7 @@ import type { RootStackParamList } from "../../navigation";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { radius, spacing, typography } from "../../theme";
+import { GuestPrivacyRequestsScreen } from "./GuestPrivacyRequestsScreen";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRIVACY_REQUESTS>;
 const RIGHTS: readonly PrivacyRequestRightDto[] = ["access", "rectification", "erasure", "restriction", "objection", "portability", "consent_withdrawal"];
@@ -76,6 +77,8 @@ export function PrivacyRequestsScreen({ navigation }: Props) {
     }
     setSelectedResponse(result.value);
   }
+
+  if (account.state.kind === "guest") return <GuestPrivacyRequestsScreen onBack={() => navigation.goBack()} />;
 
   if (account.state.kind !== "authenticated") {
     return <Screen edges={["top", "bottom"]}><ScreenHeader backAction={{ onPress: () => navigation.goBack() }} context={t("data")} contextTone="primary" title={t("privacyRequests.title")} /><InfoBlock body={t("privacyRequests.accountRequired")} icon={<Icon name="shield-check" size={18} />} title={t("privacyRequests.title")} /></Screen>;

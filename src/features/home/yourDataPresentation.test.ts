@@ -34,7 +34,7 @@ function state(kind: AccountState["kind"]): AccountState {
 test("Your data presents an explicit action/details/privacy matrix for every account state", () => {
   const expected: Readonly<Record<string, Readonly<{ action: string; icon: string; testID?: string; details: string; privacyRequests: boolean; reset: boolean; stateCopy: string }>>> = {
     authenticated: { action: "export", details: "account", icon: "database", privacyRequests: true, reset: true, stateCopy: "authenticated", testID: "account-data-export" },
-    guest: { action: "guestSupport", details: "guest", icon: "mail", privacyRequests: false, reset: true, stateCopy: "guest", testID: "data-privacy-support" },
+    guest: { action: "guestPrivacy", details: "guest", icon: "mail", privacyRequests: false, reset: true, stateCopy: "guest", testID: "data-privacy-request" },
     signedOut: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "signedOut", testID: "data-open-account" },
     guestAccessBlocked: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "guestAccessBlocked", testID: "data-open-account" },
     verificationPending: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "verificationPending", testID: "data-open-account" },
@@ -85,7 +85,7 @@ test("Your data keeps details and privacy access exclusive to authenticated and 
     stateCopy: "authenticated",
   });
   assert.deepEqual(getYourDataPresentation(state("guest")), {
-    action: { kind: "guestSupport", icon: "mail", testID: "data-privacy-support" },
+    action: { kind: "guestPrivacy", icon: "mail", testID: "data-privacy-request" },
     details: "guest",
     privacyRequests: false,
     reset: { kind: "localReset", icon: "trash", testID: "data-local-reset" },

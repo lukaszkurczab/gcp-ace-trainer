@@ -41,7 +41,7 @@ export type AccountDataExportCommandResult = Readonly<
   | { kind: "success" }
   | { kind: "failure"; failure: AccountDataExportFailure; retryAfterSeconds?: number }
 >;
-export type PrivacyRequestFailure = "authenticationRequired" | "offline" | "recentAuthenticationRequired" | "serverFailure" | "invalidResponse" | "appCheckUnavailable";
+export type PrivacyRequestFailure = "authenticationRequired" | "offline" | "recentAuthenticationRequired" | "serverFailure" | "invalidResponse" | "appCheckUnavailable" | "invalidCode" | "rateLimited" | "conflict";
 export type PrivacyRequestCommandResult<T> = Readonly<{ kind: "success"; value: T } | { kind: "failure"; failure: PrivacyRequestFailure }>;
 export type PasswordVerificationCommand = "register" | "signIn" | "resend" | "persisted" | "refresh";
 export type PasswordVerificationPlan =
@@ -70,6 +70,10 @@ export type AccountSessionContextValue = Readonly<{
   exportAccountData: (isRequestActive?: () => boolean) => Promise<AccountDataExportCommandResult>;
   resetLocalLearningHistory: () => Promise<AccountCommandResult>;
   createPrivacyRequest: (right: PrivacyRequestRightDto, narrative?: string) => Promise<PrivacyRequestCommandResult<PrivacyRequestListItemDto>>;
+  createGuestPrivacyRequest: (input: Readonly<{ clientRequestId: string; email: string; right: PrivacyRequestRightDto; narrative?: string; reportSubmissionIds: readonly string[] }>) => Promise<PrivacyRequestCommandResult<string>>;
+  resendGuestPrivacyCode: (requestId: string, email: string) => Promise<PrivacyRequestCommandResult<void>>;
+  verifyGuestPrivacyCode: (code: string) => Promise<PrivacyRequestCommandResult<Readonly<{ requestId: string; sessionToken: string }>>>;
+  readGuestPrivacyResponse: (requestId: string, sessionToken: string) => Promise<PrivacyRequestCommandResult<PrivacyRequestResponseDto>>;
   listPrivacyRequests: () => Promise<PrivacyRequestCommandResult<readonly PrivacyRequestListItemDto[]>>;
   readPrivacyRequest: (requestId: string) => Promise<PrivacyRequestCommandResult<PrivacyRequestResponseDto>>;
   createLegalRequest: (input: Readonly<{ kind: LegalRequestKindDto; narrative?: string; transactionId?: string }>) => Promise<PrivacyRequestCommandResult<LegalRequestDto>>;
@@ -666,6 +670,26 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       } catch (error) {
         return { kind: "failure", failure: classifyPrivacyRequestFailure(error) };
       }
+    },
+    createGuestPrivacyRequest: async (input) => {
+      if (!apiClient || state.kind !== "guest") return { kind: "failure", failure: "serverFailure" };
+      try { return { kind: "success", value: (await apiClient.createGuestPrivacyRequest(input)).requestId }; }
+      catch (error) { return { kind: "failure", failure: classifyGuestPrivacyRequestFailure(error) }; }
+    },
+    resendGuestPrivacyCode: async (requestId, email) => {
+      if (!apiClient || state.kind !== "guest") return { kind: "failure", failure: "serverFailure" };
+      try { await apiClient.resendGuestPrivacyCode(requestId, email); return { kind: "success", value: undefined }; }
+      catch (error) { return { kind: "failure", failure: classifyGuestPrivacyRequestFailure(error) }; }
+    },
+    verifyGuestPrivacyCode: async (code) => {
+      if (!apiClient || state.kind !== "guest") return { kind: "failure", failure: "serverFailure" };
+      try { return { kind: "success", value: await apiClient.verifyGuestPrivacyCode(code) }; }
+      catch (error) { return { kind: "failure", failure: classifyGuestPrivacyRequestFailure(error) }; }
+    },
+    readGuestPrivacyResponse: async (requestId, sessionToken) => {
+      if (!apiClient || state.kind !== "guest") return { kind: "failure", failure: "serverFailure" };
+      try { return { kind: "success", value: await apiClient.readGuestPrivacyResponse(requestId, sessionToken) }; }
+      catch (error) { return { kind: "failure", failure: classifyGuestPrivacyRequestFailure(error) }; }
     },
     listPrivacyRequests: async () => {
       if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
@@ -1445,12 +1469,19 @@ export function classifyAccountDataExportFailure(error: unknown): Extract<Accoun
 export function classifyPrivacyRequestFailure(error: unknown): PrivacyRequestFailure {
   if (error instanceof PatternlyApiClientError) {
     if (error.code === "app_check_unavailable" || ["app_check_required", "app_check_invalid", "app_check_not_configured"].includes(error.serverCode ?? "")) return "appCheckUnavailable";
+    if (error.status === 429) return "rateLimited";
+    if (error.serverCode === "privacy_request_idempotency_conflict") return "conflict";
     if (error.serverCode === "recent_reauthentication_required") return "recentAuthenticationRequired";
     if (error.status === 401 || error.code === "authentication_required") return "authenticationRequired";
     if (error.code === "transport_failed" || error.code === "request_timeout") return "offline";
     if (error.code === "invalid_response") return "invalidResponse";
   }
   return "serverFailure";
+}
+
+function classifyGuestPrivacyRequestFailure(error: unknown): PrivacyRequestFailure {
+  if (error instanceof PatternlyApiClientError && error.status === 404) return "invalidCode";
+  return classifyPrivacyRequestFailure(error);
 }
 
 export function isNonEnumeratingRecoveryError(error: unknown): boolean {

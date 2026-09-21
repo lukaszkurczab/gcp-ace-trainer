@@ -278,6 +278,30 @@ test("privacy request methods use their canonical paths and reject malformed pay
   await assert.rejects(malformed.getPrivacyRequests(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
+test("guest privacy requests remain in the mobile client with App Check and no account bearer", async () => {
+  const requestId = "pr_75347222-8b93-4d78-9232-36b053107c46";
+  const calls: Array<{ path: string; headers: Headers }> = [];
+  const request = { requestId, right: "access", channel: "public", status: "received", outcome: null, receivedAt: "2026-09-06T10:00:00.000Z", deadlineAt: "2026-10-06T10:00:00.000Z", deliveredAt: null, extendedAt: null, revision: 1 };
+  const client = createTestClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => { throw new Error("guest must not request bearer"); },
+    fetchImplementation: async (url, options) => {
+      const path = new URL(String(url)).pathname;
+      calls.push({ path, headers: new Headers(options?.headers) });
+      if (path.endsWith("/resend")) return new Response(JSON.stringify({ status: "pending_verification" }), { status: 202 });
+      if (path.endsWith("/verify")) return new Response(JSON.stringify({ requestId, sessionToken: "s".repeat(43) }));
+      if (path.endsWith("/response")) return new Response(JSON.stringify({ request, response: null, responseAvailableUntil: null, extensionReason: null, complaintInformationIncluded: false }));
+      return new Response(JSON.stringify({ status: "pending_verification", requestId }), { status: 202 });
+    },
+  });
+  assert.equal((await client.createGuestPrivacyRequest({ clientRequestId: "d39fbfd9-33dc-47f5-9d1c-48e630da2b43", email: "guest@example.com", right: "access", reportSubmissionIds: [] })).requestId, requestId);
+  assert.equal((await client.resendGuestPrivacyCode(requestId, "guest@example.com")).status, "pending_verification");
+  assert.equal((await client.verifyGuestPrivacyCode(`${requestId}.${"x".repeat(43)}`)).requestId, requestId);
+  assert.equal((await client.readGuestPrivacyResponse(requestId, "s".repeat(43))).request.requestId, requestId);
+  assert.deepEqual(calls.map(({ path }) => path), ["/v1/guest/privacy-requests", `/v1/guest/privacy-requests/${requestId}/resend`, "/v1/guest/privacy-requests/verify", `/v1/guest/privacy-requests/${requestId}/response`]);
+  for (const { headers } of calls) { assert.equal(headers.get("x-firebase-appcheck"), "app-check-test-token"); assert.equal(headers.get("authorization"), null); }
+});
+
 test("legal request methods use authenticated canonical paths and validate the response contract", async () => {
   const calls: Array<Readonly<{ body: unknown; url: string }>> = [];
   const valid = { requestId: "lr_1", kind: "withdrawal", status: "received", receivedAt: "2026-09-07T10:00:00.000Z", responseDueAt: null, answeredAt: null, retentionUntil: null, response: null };

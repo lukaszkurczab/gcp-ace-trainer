@@ -1,22 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AccessibilityInfo, Linking } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { AccessibilityInfo } from "react-native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
 import { Button, Icon, IconTile, InfoBlock, ListRow, Screen, ScreenHeader, SettingsBottomSheet, SettingsGroup } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { readPublicLegalLinksFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import type { RootStackParamList } from "../../navigation";
 import { getYourDataPresentation, type YourDataActionKind } from "./yourDataPresentation";
 
 type YourDataScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.YOUR_DATA>;
-type ExportStatus = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed" | "supportUnavailable" | "actionFailed" | null;
+type ExportStatus = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed" | "actionFailed" | null;
 
 export function YourDataScreen({ navigation }: YourDataScreenProps) {
   const { t } = useTranslation("data");
   const account = usePatternlyAccount();
-  const publicLinks = useMemo(readPublicLegalLinksFromRuntime, []);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
@@ -43,7 +41,7 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
     return () => clearInterval(timer);
   }, [remainingSeconds, retryUntil]);
 
-  async function runAction(action: Exclude<YourDataActionKind, "none" | "openAccount">) {
+  async function runAction(action: Exclude<YourDataActionKind, "none" | "openAccount" | "guestPrivacy">) {
     if (busyRef.current || !activeRef.current) return;
     busyRef.current = true;
     setBusy(true);
@@ -64,14 +62,6 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
         }
         return;
       }
-      if (action === "guestSupport") {
-        if (account.state.kind !== "guest") return;
-        if (publicLinks.kind !== "configured") { setStatus("supportUnavailable"); return; }
-        if (!(await Linking.canOpenURL(publicLinks.value.supportUrl))) { if (activeRef.current) setStatus("supportUnavailable"); return; }
-        if (!activeRef.current) return;
-        await Linking.openURL(publicLinks.value.supportUrl);
-        return;
-      }
       if (action === "retryRestore") {
         account.retrySessionRestore();
         return;
@@ -83,7 +73,7 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
           : await account.signOut();
       if (activeRef.current && result.kind === "failure") setStatus("actionFailed");
     } catch {
-      if (activeRef.current) setStatus(action === "guestSupport" ? "supportUnavailable" : "actionFailed");
+      if (activeRef.current) setStatus("actionFailed");
     } finally {
       busyRef.current = false;
       if (activeRef.current) setBusy(false);
@@ -93,6 +83,7 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
   function handleAction(action: YourDataActionKind): void {
     if (action === "none") return;
     if (action === "openAccount") { navigation.navigate(ROUTES.ACCOUNT_ENTRY); return; }
+    if (action === "guestPrivacy") { navigation.navigate(ROUTES.PRIVACY_REQUESTS); return; }
     void runAction(action);
   }
 

@@ -629,6 +629,10 @@ export type PatternlyApiClient = Readonly<{
   createPrivacyRequest: (right: PrivacyRequestRightDto, narrative?: string) => Promise<Readonly<{ request: PrivacyRequestListItemDto }>>;
   getPrivacyRequests: () => Promise<Readonly<{ requests: readonly PrivacyRequestListItemDto[] }>>;
   getPrivacyRequest: (requestId: string) => Promise<PrivacyRequestResponseDto>;
+  createGuestPrivacyRequest: (input: Readonly<{ clientRequestId: string; email: string; right: PrivacyRequestRightDto; narrative?: string; reportSubmissionIds: readonly string[] }>) => Promise<Readonly<{ status: "pending_verification"; requestId: string }>>;
+  resendGuestPrivacyCode: (requestId: string, email: string) => Promise<Readonly<{ status: "pending_verification" }>>;
+  verifyGuestPrivacyCode: (code: string) => Promise<Readonly<{ requestId: string; sessionToken: string }>>;
+  readGuestPrivacyResponse: (requestId: string, sessionToken: string) => Promise<PrivacyRequestResponseDto>;
   createLegalRequest: (input: Readonly<{ kind: LegalRequestKindDto; narrative?: string; transactionId?: string }>) => Promise<Readonly<{ request: LegalRequestDto }>>;
   createPublicLegalRequest: (input: Readonly<{ email: string; kind: LegalRequestKindDto; narrative?: string; transactionId?: string }>, appCheckToken: string) => Promise<Readonly<{ request: LegalRequestDto }>>;
   getLegalRequests: () => Promise<Readonly<{ requests: readonly LegalRequestDto[] }>>;
@@ -800,6 +804,10 @@ export function createPatternlyApiClient(input: Readonly<{
     createPrivacyRequest: async (right, narrative) => parsePrivacyRequestEnvelope(await requestJson<unknown>("/v1/privacy-requests", "POST", { right, ...(narrative === undefined ? {} : { narrative }) })),
     getPrivacyRequests: async () => parsePrivacyRequestList(await requestJson<unknown>("/v1/privacy-requests", "GET")),
     getPrivacyRequest: async (requestId) => parsePrivacyRequestResponse(await requestJson<unknown>(`/v1/privacy-requests/${encodeURIComponent(requestId)}`, "GET")),
+    createGuestPrivacyRequest: async (body) => parseGuestPrivacyCreate(await requestJson<unknown>("/v1/guest/privacy-requests", "POST", body, "none")),
+    resendGuestPrivacyCode: async (requestId, email) => parseGuestPrivacyPending(await requestJson<unknown>(`/v1/guest/privacy-requests/${encodeURIComponent(requestId)}/resend`, "POST", { email }, "none")),
+    verifyGuestPrivacyCode: async (code) => parseGuestPrivacySession(await requestJson<unknown>("/v1/guest/privacy-requests/verify", "POST", { code }, "none")),
+    readGuestPrivacyResponse: async (requestId, sessionToken) => parsePrivacyRequestResponse(await requestJson<unknown>(`/v1/guest/privacy-requests/${encodeURIComponent(requestId)}/response`, "POST", { sessionToken }, "none")),
     createLegalRequest: async (body) => parseLegalRequestEnvelope(await requestJson<unknown>("/v1/legal-requests", "POST", body)),
     createPublicLegalRequest: async (body, appCheckToken) => parseLegalRequestEnvelope(await requestJson<unknown>("/v1/public/legal-requests", "POST", body, "optional", { "x-firebase-appcheck": appCheckToken })),
     getLegalRequests: async () => parseLegalRequestList(await requestJson<unknown>("/v1/legal-requests", "GET")),
@@ -916,6 +924,22 @@ function parsePrivacyRequestResponse(value: unknown): PrivacyRequestResponseDto 
     || (value.extensionReason !== null && typeof value.extensionReason !== "string")
     || typeof value.complaintInformationIncluded !== "boolean") return invalidPrivacyResponse();
   return value as PrivacyRequestResponseDto;
+}
+
+function parseGuestPrivacyPending(value: unknown): Readonly<{ status: "pending_verification" }> {
+  if (!isRecord(value) || value.status !== "pending_verification") return invalidPrivacyResponse();
+  return { status: "pending_verification" };
+}
+
+function parseGuestPrivacyCreate(value: unknown): Readonly<{ status: "pending_verification"; requestId: string }> {
+  parseGuestPrivacyPending(value);
+  if (!isRecord(value) || typeof value.requestId !== "string" || !/^pr_[0-9a-f-]{36}$/u.test(value.requestId)) return invalidPrivacyResponse();
+  return { status: "pending_verification", requestId: value.requestId };
+}
+
+function parseGuestPrivacySession(value: unknown): Readonly<{ requestId: string; sessionToken: string }> {
+  if (!isRecord(value) || typeof value.requestId !== "string" || !/^pr_[0-9a-f-]{36}$/u.test(value.requestId) || typeof value.sessionToken !== "string" || value.sessionToken.length < 32) return invalidPrivacyResponse();
+  return { requestId: value.requestId, sessionToken: value.sessionToken };
 }
 
 const legalRequestKinds = new Set<LegalRequestKindDto>(["complaint", "withdrawal", "data_recovery", "suspension_appeal"]);

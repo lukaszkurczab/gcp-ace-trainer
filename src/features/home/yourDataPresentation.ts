@@ -1,7 +1,7 @@
 import type { AccountState } from "../../application/account/AccountSessionProvider";
 import type { IconName } from "../../components/Icon";
 
-export type YourDataActionKind = "export" | "guestSupport" | "openAccount" | "retryRestore" | "retryDeletion" | "retryIdentity" | "signOut" | "none";
+export type YourDataActionKind = "export" | "guestPrivacy" | "openAccount" | "retryRestore" | "retryDeletion" | "retryIdentity" | "signOut" | "none";
 export type YourDataDetailsAudience = "account" | "guest" | "none";
 export type YourDataStateCopy =
   | "authenticated"
@@ -45,7 +45,7 @@ export function getYourDataPresentation(state: AccountState): YourDataPresentati
     case "authenticated":
       return presentation("authenticated", "export", "database", "account-data-export", "account", true);
     case "guest":
-      return presentation("guest", "guestSupport", "mail", "data-privacy-support", "guest", false);
+      return presentation("guest", "guestPrivacy", "mail", "data-privacy-request", "guest", false);
     case "signedOut":
       return presentation("signedOut", "openAccount", "user", "data-open-account", "none", false);
     case "guestAccessBlocked":
