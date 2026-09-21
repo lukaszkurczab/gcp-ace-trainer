@@ -4,6 +4,7 @@
  */
 
 import { developmentLoopbackHost } from "../developmentEndpoints";
+import { getPatternlyAppCheckToken } from "./patternlyAppCheckToken";
 import { CONTENT_IDENTITY_V2_SCHEMA } from "../../storage/contracts/contentIdentityV2";
 
 /** Exact schema identifier shared with the backend protocol-v4 contract. */
@@ -593,7 +594,7 @@ export type HealthResponseDto = Readonly<{ status: "ok"; service: "patternly-bac
 export type ReadyResponseDto = Readonly<{ status: "ready" | "not_ready"; checks: Readonly<{ database: boolean; authentication: boolean }> }>;
 export type OpenApiResponseDto = Readonly<{ openapi: string; paths: Readonly<Record<string, unknown>> }>;
 
-export type PatternlyApiClientErrorCode = "client_unconfigured" | "authentication_required" | "transport_failed" | "invalid_response" | "server_error" | "request_timeout";
+export type PatternlyApiClientErrorCode = "client_unconfigured" | "authentication_required" | "app_check_unavailable" | "transport_failed" | "invalid_response" | "server_error" | "request_timeout";
 export type AccountRegistrationInputDto = Readonly<{
   termsVersion: string;
   termsLocale: "en" | "pl";
@@ -652,6 +653,7 @@ export function createPatternlyApiClient(input: Readonly<{
   apiOrigin: string;
   allowLocalHttpForSimulator?: boolean;
   getIdToken: () => Promise<string | null>;
+  getAppCheckToken?: () => Promise<string | null>;
   fetchImplementation?: FetchImplementation;
   timeoutMs?: number;
   /** Defaults to v3 while the local committed_v2 marker is absent. */
@@ -668,6 +670,7 @@ export function createPatternlyApiClient(input: Readonly<{
     && origin.hash === "";
   if (origin.protocol !== "https:" && !localSimulatorOrigin) throw new PatternlyApiClientError("client_unconfigured");
   const fetchImplementation = input.fetchImplementation ?? fetch;
+  const getAppCheckToken = input.getAppCheckToken ?? getPatternlyAppCheckToken;
   const timeoutMs = input.timeoutMs ?? 10_000;
   const configuredProtocolMode = normalizeAccountDataProtocolMode(input.accountDataProtocolMode);
   const accountDataProtocolMode = normalizeAccountDataProtocolMode(input.getAccountDataProtocolMode?.() ?? input.accountDataProtocolMode);
@@ -683,6 +686,9 @@ export function createPatternlyApiClient(input: Readonly<{
     const url = new URL(path, origin);
     const publicPath = path === "/health" || path === "/ready" || path === "/openapi.json";
     if (url.origin !== origin.origin || (!path.startsWith("/v1/") && !publicPath)) throw new PatternlyApiClientError("client_unconfigured");
+    // This adapter is the mobile client. Local admin and infrastructure calls
+    // have their own trust boundaries; every other versioned call needs App Check.
+    const needsAppCheck = url.pathname.startsWith("/v1/") && !url.pathname.startsWith("/v1/admin/");
     const controller = new AbortController();
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const timedOut = new Promise<never>((_, reject) => {
@@ -702,13 +708,23 @@ export function createPatternlyApiClient(input: Readonly<{
         throw error;
       }
       if (authentication === "required" && !token) throw new PatternlyApiClientError("authentication_required");
+      let appCheckToken: string | null = null;
+      if (needsAppCheck) {
+        const supplied = Object.entries(extraHeaders).find(([name]) => name.toLowerCase() === "x-firebase-appcheck")?.[1];
+        if (supplied !== undefined) appCheckToken = supplied;
+        else {
+          try { appCheckToken = await withinDeadline(getAppCheckToken()); }
+          catch { throw new PatternlyApiClientError("app_check_unavailable"); }
+        }
+        if (!appCheckToken?.trim()) throw new PatternlyApiClientError("app_check_unavailable");
+      }
       let response: Response;
       try {
         response = await withinDeadline(fetchImplementation(url, {
           method,
           signal: controller.signal,
           ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-          headers: { ...extraHeaders, ...(token ? { authorization: `Bearer ${token}` } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) },
+          headers: { ...extraHeaders, ...(needsAppCheck && !Object.keys(extraHeaders).some((name) => name.toLowerCase() === "x-firebase-appcheck") ? { "x-firebase-appcheck": appCheckToken! } : {}), ...(token ? { authorization: `Bearer ${token}` } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) },
         }));
       } catch (error) {
         if (error instanceof PatternlyApiClientError) throw error;

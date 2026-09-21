@@ -104,6 +104,7 @@
     "failures": {
       "authenticationRequired": "Sesja wygasła. Zaloguj się ponownie.",
       "recentAuthenticationRequired": "Potwierdź tożsamość, a następnie ponów działanie.",
+      "appCheckUnavailable": "Nie można teraz bezpiecznie wysłać tego wniosku z tego urządzenia. Spróbuj ponownie później.",
       "offline": "Brak połączenia. Sprawdź sieć i spróbuj ponownie.",
       "invalidResponse": "Otrzymano nieprawidłową odpowiedź. Spróbuj ponownie.",
       "serverFailure": "Usługa wniosków jest chwilowo niedostępna. Spróbuj ponownie."

@@ -9,6 +9,10 @@ import {
 } from "./";
 import { LOCAL_SAFE_PUBLIC_ENVIRONMENT, parseConfiguredPublicEnvironment } from "./publicEnvironment";
 
+function createTestClient(input: Parameters<typeof createPatternlyApiClient>[0]) {
+  return createPatternlyApiClient({ getAppCheckToken: async () => "app-check-test-token", ...input });
+}
+
 const environment = parseConfiguredPublicEnvironment({
   apiOrigin: "https://api.sandbox.patternly.invalid",
   androidAppLinkHost: "patternly-app-sandbox.firebaseapp.com",
@@ -24,16 +28,55 @@ const environment = parseConfiguredPublicEnvironment({
 });
 
 test("generated client refuses an unconfigured environment and missing token", async () => {
-  assert.throws(() => createPatternlyApiClient({ apiOrigin: "http://127.0.0.1:8080", getIdToken: async () => "token" }), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "client_unconfigured");
-  const localClient = createPatternlyApiClient({ allowLocalHttpForSimulator: true, apiOrigin: "http://127.0.0.1:8080", getIdToken: async () => "token", fetchImplementation: async () => new Response(JSON.stringify({ status: "ok", service: "patternly-backend" })) });
+  assert.throws(() => createTestClient({ apiOrigin: "http://127.0.0.1:8080", getIdToken: async () => "token" }), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "client_unconfigured");
+  const localClient = createTestClient({ allowLocalHttpForSimulator: true, apiOrigin: "http://127.0.0.1:8080", getIdToken: async () => "token", fetchImplementation: async () => new Response(JSON.stringify({ status: "ok", service: "patternly-backend" })) });
   assert.deepEqual(await localClient.getHealth(), { status: "ok", service: "patternly-backend" });
-  const client = createPatternlyApiClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => null, fetchImplementation: async () => new Response("{}") });
+  const client = createTestClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => null, fetchImplementation: async () => new Response("{}") });
   await assert.rejects(client.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "authentication_required");
+});
+
+test("mobile requests fail before transport when App Check is unavailable", async () => {
+  let calls = 0;
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "id-token",
+    getAppCheckToken: async () => null,
+    fetchImplementation: async () => { calls += 1; return new Response("{}"); },
+  });
+  await assert.rejects(client.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "app_check_unavailable");
+  await assert.rejects(client.consumeRecoveryCode("code"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "app_check_unavailable");
+  await assert.rejects(client.createContentReport({} as never, ""), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "app_check_unavailable");
+  assert.equal(calls, 0);
+  const failingProvider = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "id-token",
+    getAppCheckToken: async () => { throw new Error("attestation_failed"); },
+    fetchImplementation: async () => { calls += 1; return new Response("{}"); },
+  });
+  await assert.rejects(failingProvider.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "app_check_unavailable");
+  assert.equal(calls, 0);
+});
+
+test("infrastructure and local admin requests never ask for mobile App Check", async () => {
+  const paths: string[] = [];
+  let providerCalls = 0;
+  const client = createPatternlyApiClient({
+    apiOrigin: environment.apiOrigin,
+    getIdToken: async () => "admin-token",
+    getAppCheckToken: async () => { providerCalls += 1; return null; },
+    fetchImplementation: async (url) => { paths.push(new URL(String(url)).pathname); return new Response("{}"); },
+  });
+  await client.getHealth();
+  await client.getReady();
+  await client.getOpenApi();
+  await client.getAdminContentReports();
+  assert.deepEqual(paths, ["/health", "/ready", "/openapi.json", "/v1/admin/content-reports"]);
+  assert.equal(providerCalls, 0);
 });
 
 test("generated client uses typed REST paths, bearer auth, timeout and bounded errors", async () => {
   const calls: Array<{ body: unknown; headers: HeadersInit; method: string; url: string }> = [];
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     fetchImplementation: async (url, init) => {
@@ -65,16 +108,16 @@ test("generated client uses typed REST paths, bearer auth, timeout and bounded e
     ["GET", "https://api.sandbox.patternly.invalid/ready"],
     ["GET", "https://api.sandbox.patternly.invalid/openapi.json"],
   ]);
-  assert.deepEqual(calls[0]?.headers, { authorization: "Bearer id-token" });
-  assert.deepEqual(calls[1]?.headers, { authorization: "Bearer id-token" });
-  assert.deepEqual(calls[2]?.headers, { authorization: "Bearer id-token", "content-type": "application/json" });
+  assert.deepEqual(calls[0]?.headers, { "x-firebase-appcheck": "app-check-test-token", authorization: "Bearer id-token" });
+  assert.deepEqual(calls[1]?.headers, { "x-firebase-appcheck": "app-check-test-token", authorization: "Bearer id-token" });
+  assert.deepEqual(calls[2]?.headers, { "x-firebase-appcheck": "app-check-test-token", authorization: "Bearer id-token", "content-type": "application/json" });
   assert.deepEqual(calls[3]?.headers, {});
-  const failing = createPatternlyApiClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => "id-token", fetchImplementation: async () => new Response(JSON.stringify({ error: { code: "version_conflict" } }), { status: 409 }) });
+  const failing = createTestClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => "id-token", fetchImplementation: async () => new Response(JSON.stringify({ error: { code: "version_conflict" } }), { status: 409 }) });
   await assert.rejects(failing.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "server_error" && error.status === 409 && error.serverCode === "version_conflict");
 });
 
 test("generated client deadline includes token acquisition", async () => {
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: () => new Promise<string | null>(() => undefined),
     timeoutMs: 20,
@@ -85,7 +128,7 @@ test("generated client deadline includes token acquisition", async () => {
 
 test("account registration uses the explicit bearer endpoint and preserves complete legal evidence", async () => {
   let call: { body: unknown; headers: HeadersInit; method: string; url: string } | null = null;
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     fetchImplementation: async (url, init) => {
@@ -97,13 +140,13 @@ test("account registration uses the explicit bearer endpoint and preserves compl
   assert.deepEqual(call, {
     method: "POST",
     url: "https://api.sandbox.patternly.invalid/v1/account/registration",
-    headers: { authorization: "Bearer id-token", "content-type": "application/json" },
+    headers: { "x-firebase-appcheck": "app-check-test-token", authorization: "Bearer id-token", "content-type": "application/json" },
     body: { termsVersion: "2026-09-05", termsLocale: "pl", privacyPolicyVersion: "2026-09-05", privacyPolicyLocale: "pl", privacyPolicyAcknowledged: true },
   });
 });
 
 test("account export preserves a bounded Retry-After value from rate limiting", async () => {
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     fetchImplementation: async () => new Response(JSON.stringify({ error: { code: "data_export_rate_limited" } }), {
@@ -119,7 +162,7 @@ test("account export preserves a bounded Retry-After value from rate limiting", 
 });
 
 test("malformed 5xx response remains a server failure instead of a client payload failure", async () => {
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     fetchImplementation: async () => new Response("not-json", { status: 503 }),
@@ -131,7 +174,7 @@ test("malformed 5xx response remains a server failure instead of a client payloa
 
 test("generated client preserves token provider failures", async () => {
   const tokenError = { code: "auth/user-token-expired" };
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => { throw tokenError; },
     timeoutMs: 20,
@@ -142,7 +185,7 @@ test("generated client preserves token provider failures", async () => {
 
 test("generated client deadline includes response body parsing and aborts the request", async () => {
   let aborted = false;
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     timeoutMs: 20,
@@ -157,7 +200,7 @@ test("generated client deadline includes response body parsing and aborts the re
 
 test("content reports send App Check and keep bearer identity optional", async () => {
   let observedHeaders: HeadersInit | undefined;
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => null,
     fetchImplementation: async (_url, init) => {
@@ -192,7 +235,7 @@ test("local-safe environment stays explicitly unavailable", () => {
 test("privacy request methods use their canonical paths and reject malformed payloads", async () => {
   const calls: string[] = [];
   const valid = { requestId: "pr_1", right: "access", channel: "account", status: "received", outcome: null, receivedAt: "2026-09-06T10:00:00.000Z", deadlineAt: "2026-10-06T10:00:00.000Z", deliveredAt: null, extendedAt: null, revision: 0 };
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     fetchImplementation: async (url) => {
@@ -211,14 +254,14 @@ test("privacy request methods use their canonical paths and reject malformed pay
     "https://api.sandbox.patternly.invalid/v1/privacy-requests/pr_1",
   ]);
 
-  const malformed = createPatternlyApiClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => "id-token", fetchImplementation: async () => new Response(JSON.stringify({ requests: [{ ...valid, deadlineAt: "2026-10-06" }] })) });
+  const malformed = createTestClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => "id-token", fetchImplementation: async () => new Response(JSON.stringify({ requests: [{ ...valid, deadlineAt: "2026-10-06" }] })) });
   await assert.rejects(malformed.getPrivacyRequests(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
 test("legal request methods use authenticated canonical paths and validate the response contract", async () => {
   const calls: Array<Readonly<{ body: unknown; url: string }>> = [];
   const valid = { requestId: "lr_1", kind: "withdrawal", status: "received", receivedAt: "2026-09-07T10:00:00.000Z", responseDueAt: null, answeredAt: null, retentionUntil: null, response: null };
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     fetchImplementation: async (url, init) => {
@@ -237,7 +280,7 @@ test("legal request methods use authenticated canonical paths and validate the r
     { body: undefined, url: "https://api.sandbox.patternly.invalid/v1/legal-requests/lr_1" },
   ]);
 
-  const malformed = createPatternlyApiClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => "id-token", fetchImplementation: async () => new Response(JSON.stringify({ requests: [{ ...valid, status: "unknown" }] })) });
+  const malformed = createTestClient({ apiOrigin: environment.apiOrigin, getIdToken: async () => "id-token", fetchImplementation: async () => new Response(JSON.stringify({ requests: [{ ...valid, status: "unknown" }] })) });
   await assert.rejects(malformed.getLegalRequests(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
@@ -245,7 +288,7 @@ test("public legal requests use App Check with optional bearer authentication", 
   let headers: HeadersInit | undefined;
   let body: unknown;
   const valid = { requestId: "lr_public", kind: "complaint", status: "received", receivedAt: "2026-09-07T10:00:00.000Z", responseDueAt: "2026-09-21T10:00:00.000Z", answeredAt: null, retentionUntil: null, response: null };
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => null,
     fetchImplementation: async (url, init) => {
@@ -264,7 +307,7 @@ test("account data protocol defaults to stable v3 and samples the mode getter on
   let selected: "v3" | "v4" = "v3";
   let getterCalls = 0;
   const urls: string[] = [];
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     getAccountDataProtocolMode: () => {
@@ -339,7 +382,7 @@ test("explicit v4 uses strict paged reads and carries the schema on sync and ado
     blockingReason: null,
   };
   const calls: Array<Readonly<{ body: unknown; url: string }>> = [];
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     accountDataProtocolMode: "v4",
     getIdToken: async () => "id-token",
@@ -417,7 +460,7 @@ test("explicit v4 uses strict paged reads and carries the schema on sync and ado
 
 test("v4 schema mismatch surfaces a conflict without a v3 fallback", async () => {
   const calls: string[] = [];
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     accountDataProtocolMode: "v4",
     getIdToken: async () => "id-token",
@@ -452,7 +495,7 @@ test("v4 schema mismatch surfaces a conflict without a v3 fallback", async () =>
 
 test("v3 rejects v4 sync and adoption payloads before transport", async () => {
   const fingerprint = "a".repeat(64);
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     fetchImplementation: async () => { throw new Error("transport should not be called"); },
@@ -499,7 +542,7 @@ test("v3 rejects v4 sync and adoption payloads before transport", async () => {
 
 test("transport codec enforces v2 optional deviceId and strict v4 sync metadata", async () => {
   let calls = 0;
-  const v3Client = createPatternlyApiClient({
+  const v3Client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     fetchImplementation: async () => {
@@ -527,7 +570,7 @@ test("transport codec enforces v2 optional deviceId and strict v4 sync metadata"
   await assert.rejects(v3Client.syncProgress({ ...v2Request, deviceId: "short" }), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
   await assert.rejects(v3Client.syncProgress({ ...v2Request, mutations: [{ ...v2Request.mutations[0], mutationId: "too-short" }] } as unknown as SyncRequestDto), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 
-  const v4Client = createPatternlyApiClient({
+  const v4Client = createTestClient({
     apiOrigin: environment.apiOrigin,
     accountDataProtocolMode: "v4",
     getIdToken: async () => "id-token",
@@ -575,7 +618,7 @@ test("adoption codec parses legacy v1 previews and caps group identity lists", a
     pendingJournal: false,
   };
   const plan = { caseId: "emptyLocalEmptyRemote" as const, localRecordCount: 0, remoteRecordCount: 0, uploadRecordIds: [], restoreRecordIds: [], deduplicatedRecordIds: [], conflictRecordIds: [], blockingReason: null };
-  const client = createPatternlyApiClient({
+  const client = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     fetchImplementation: async () => new Response(JSON.stringify({
@@ -587,7 +630,7 @@ test("adoption codec parses legacy v1 previews and caps group identity lists", a
   const parsed = await client.previewAccountAdoption(snapshot);
   assert.deepEqual(parsed.preview.goalPlanConflictGroups, []);
 
-  const invalidGroupsClient = createPatternlyApiClient({
+  const invalidGroupsClient = createTestClient({
     apiOrigin: environment.apiOrigin,
     getIdToken: async () => "id-token",
     fetchImplementation: async () => new Response(JSON.stringify({

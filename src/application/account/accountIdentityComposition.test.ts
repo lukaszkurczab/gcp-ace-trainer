@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, normalizeAccountSignOutPreparationFailure, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, requiresPasswordEmailVerification, restoreAuthenticatedAfterSignOutFailure, type AccountState } from "./AccountSessionProvider";
+import { AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, normalizeAccountSignOutPreparationFailure, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, requiresPasswordEmailVerification, restoreAuthenticatedAfterSignOutFailure, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
@@ -620,4 +620,10 @@ test("cold account_not_found clears persisted Firebase auth or exposes a truthfu
   states.length = 0;
   await completeUnrecognizedPersistedAuthSignOut({ getSnapshot: () => current, signOut: async () => { throw new Error("offline"); } }, user, (state) => states.push(state), () => true);
   assert.deepEqual(states, [{ kind: "signOutPending", user }]);
+});
+
+test("privacy requests expose App Check failures as unavailable", () => {
+  assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("app_check_unavailable")), "appCheckUnavailable");
+  assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("server_error", 401, "app_check_invalid")), "appCheckUnavailable");
+  assert.equal(classifyPrivacyRequestFailure(new PatternlyApiClientError("server_error", 401, "authentication_required")), "authenticationRequired");
 });

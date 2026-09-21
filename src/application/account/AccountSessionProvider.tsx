@@ -1444,6 +1444,7 @@ export function classifyAccountDataExportFailure(error: unknown): Extract<Accoun
 
 export function classifyPrivacyRequestFailure(error: unknown): PrivacyRequestFailure {
   if (error instanceof PatternlyApiClientError) {
+    if (error.code === "app_check_unavailable" || ["app_check_required", "app_check_invalid", "app_check_not_configured"].includes(error.serverCode ?? "")) return "appCheckUnavailable";
     if (error.serverCode === "recent_reauthentication_required") return "recentAuthenticationRequired";
     if (error.status === 401 || error.code === "authentication_required") return "authenticationRequired";
     if (error.code === "transport_failed" || error.code === "request_timeout") return "offline";
