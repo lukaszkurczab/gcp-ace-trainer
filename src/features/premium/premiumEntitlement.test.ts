@@ -4,12 +4,10 @@ import test from "node:test";
 import {
   PREMIUM_ENTITLEMENT,
   PREMIUM_ENTITLEMENT_STATES,
-  PREMIUM_OFFER_KINDS,
   PREMIUM_OFFLINE_VERIFICATION_GRACE_DAYS,
   createPremiumProjection,
   isPremiumAccessAllowed,
   isPremiumEntitlementState,
-  isPremiumOfferKind,
   isPremiumProjection,
 } from "../../domain";
 
@@ -23,14 +21,10 @@ const baseProjection = {
   sourceRevision: "revision-7",
 };
 
-test("Premium is one SKU-neutral entitlement with exactly the canonical offer kinds", () => {
+test("Premium keeps one SKU-neutral entitlement without an offer variant in its projection", () => {
   assert.equal(PREMIUM_ENTITLEMENT, "premium");
   assert.equal(PREMIUM_OFFLINE_VERIFICATION_GRACE_DAYS, 7);
-  assert.deepEqual(PREMIUM_OFFER_KINDS, ["fixedDuration30Day", "fixedDuration90Day", "recurring"]);
-  for (const kind of PREMIUM_OFFER_KINDS) assert.equal(isPremiumOfferKind(kind), true);
-  assert.equal(isPremiumOfferKind("monthly"), false);
-  assert.equal(isPremiumOfferKind("annual"), false);
-  assert.equal(isPremiumOfferKind("store-product-id"), false);
+  assert.equal(isPremiumProjection({ ...baseProjection, offerKind: "monthly" }), false);
 });
 
 test("projection construction keeps one account-bound Premium record independent of tracks, tiers, and slots", () => {

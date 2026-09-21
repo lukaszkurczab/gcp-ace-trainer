@@ -1,13 +1,6 @@
 export const PREMIUM_ENTITLEMENT = "premium" as const;
 export type PremiumEntitlement = typeof PREMIUM_ENTITLEMENT;
 
-export const PREMIUM_OFFER_KINDS = Object.freeze([
-  "fixedDuration30Day",
-  "fixedDuration90Day",
-  "recurring",
-] as const);
-export type PremiumOfferKind = (typeof PREMIUM_OFFER_KINDS)[number];
-
 export const PREMIUM_ENTITLEMENT_STATES = Object.freeze([
   "active",
   "grace",
@@ -53,10 +46,6 @@ function parseStrictIsoTimestamp(value: unknown): number | null {
   const timestamp = Date.parse(value);
   if (!Number.isFinite(timestamp)) return null;
   return new Date(timestamp).toISOString() === value ? timestamp : null;
-}
-
-export function isPremiumOfferKind(value: unknown): value is PremiumOfferKind {
-  return typeof value === "string" && PREMIUM_OFFER_KINDS.includes(value as PremiumOfferKind);
 }
 
 export function isPremiumEntitlementState(value: unknown): value is PremiumEntitlementState {
