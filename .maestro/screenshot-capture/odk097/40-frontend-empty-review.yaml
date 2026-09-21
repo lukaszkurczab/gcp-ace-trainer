@@ -1,0 +1,49 @@
+appId: com.lkurczab.patternly
+name: ODK-097 Frontend Learn and empty Review
+tags:
+  - screenshot
+  - odk097
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "account-unavailable-guest"
+    timeout: 30000
+- tapOn:
+    id: "account-unavailable-guest"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:frontend-system-design-interview"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:select-track:frontend-system-design-interview"
+- tapOn:
+    point: "92%,93%"
+- tapOn:
+    id: "patternly:home:select-track:continue"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-practice"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:mode-card:design-interview-weak-area-review"
+    timeout: 30000
+- tapOn:
+    id: "patternly:practice:mode-card:design-interview-weak-area-review"
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- tapOn:
+    id: "patternly:practice:open-setup"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:setup:root"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:practice:session-length:1"
+- assertVisible:
+    id: "patternly:practice:session-length:10"
+- assertNotVisible:
+    id: "patternly:practice:session-length:20"

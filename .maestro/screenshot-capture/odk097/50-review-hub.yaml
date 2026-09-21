@@ -1,0 +1,11 @@
+appId: com.lkurczab.patternly
+name: ODK-097 Review unavailable evidence
+---
+- tapOn:
+    point: "10%,12%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:practice:mode-card:design-interview-weak-area-review"

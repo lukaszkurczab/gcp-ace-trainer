@@ -34,3 +34,12 @@ test("the canonical Custom Practice hero opens setup without a duplicate mode ro
   const setup = readFileSync("src/features/practice/PracticeSetupScreen.tsx", "utf8");
   assert.match(setup, /buildPracticeSessionConfig\(\{[\s\S]*?feedbackMode,/);
 });
+
+test("Design mode entries open setup so learners can select the configured session length", () => {
+  const hub = readFileSync("src/features/practice/PracticeHubScreen.tsx", "utf8");
+  const designStart = hub.slice(hub.indexOf("if (isDesignInterviewTrack)"), hub.indexOf("if (activeTrack.familyId === \"certification\""));
+  assert.match(designStart, /navigation\.navigate\(ROUTES\.PRACTICE_SETUP/);
+  assert.match(designStart, /mode: resolvedMode/);
+  assert.match(designStart, /topicId: topic\.id/);
+  assert.doesNotMatch(designStart, /PRACTICE_SESSION/);
+});

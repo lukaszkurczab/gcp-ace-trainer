@@ -1,0 +1,80 @@
+{
+  "date": "2026-09-21",
+  "repository": "patternly",
+  "commit_at_capture": "6c8cee2 + uncommitted ODK-097 navigation fix",
+  "platform": "iOS 26.4",
+  "simulator": "Patternly_ODK097_Retest E2C70813-7747-473F-BAD1-26F0BDD692E3",
+  "bundleId": "com.lkurczab.patternly",
+  "build": "/private/tmp/Patternly_ODK114_retest.app dev client + current Metro bundle",
+  "services": "Metro smoke 8081; Firebase Auth emulator 19099",
+  "account": "fresh guest per track; no seeded Review evidence",
+  "theme": "light",
+  "locale": "en",
+  "screenshots": [
+    {
+      "path": "backend-tradeoff-first-of-forty.png",
+      "sha256": "809caa7756c8cf7282ba4aafd3f0bce2ab4f6011d4847540d6f3b1e7860f1e7d",
+      "width": 1206,
+      "height": 2622,
+      "cluster": "Design Free node",
+      "track": "backend",
+      "mode": "Tradeoff",
+      "state": "1/40",
+      "sourceFlow": ".maestro/screenshot-capture/odk097/10-backend-tradeoff.yaml",
+      "capture": "xcrun simctl io screenshot after Maestro checkpoint",
+      "note": "Full-screen unedited simulator capture"
+    },
+    {
+      "path": "ood-tradeoff-first-of-forty.png",
+      "sha256": "be3e259b96c9a2093f360b66644e9fd33e69febcba90a150f12fb9bfdfcd8cd5",
+      "width": 1206,
+      "height": 2622,
+      "cluster": "Design Free node",
+      "track": "ood",
+      "mode": "Tradeoff",
+      "state": "1/40",
+      "sourceFlow": ".maestro/screenshot-capture/odk097/20-ood-tradeoff.yaml",
+      "capture": "xcrun simctl io screenshot after Maestro checkpoint",
+      "note": "Full-screen unedited simulator capture"
+    },
+    {
+      "path": "frontend-tradeoff-first-of-forty.png",
+      "sha256": "ac7d9206ed55a56b23e5c4a21108ddf8c4813e4460e2584af6d0f0618e8691ef",
+      "width": 1206,
+      "height": 2622,
+      "cluster": "Design Free node",
+      "track": "frontend",
+      "mode": "Tradeoff",
+      "state": "1/40",
+      "sourceFlow": ".maestro/screenshot-capture/odk097/30-frontend-tradeoff.yaml",
+      "capture": "xcrun simctl io screenshot after Maestro checkpoint",
+      "note": "Full-screen unedited simulator capture"
+    },
+    {
+      "path": "frontend-learn-lengths.png",
+      "sha256": "0b51737fe7d8d30e49857eceec9d2027018866991d5cb46b9be9abe726b10dd3",
+      "width": 1206,
+      "height": 2622,
+      "cluster": "Design Free node",
+      "track": "frontend",
+      "mode": "Learn",
+      "state": "1/10 options, default 10",
+      "sourceFlow": ".maestro/screenshot-capture/odk097/40-frontend-empty-review.yaml",
+      "capture": "xcrun simctl io screenshot after Maestro checkpoint",
+      "note": "Full-screen unedited simulator capture"
+    },
+    {
+      "path": "frontend-review-unavailable.png",
+      "sha256": "72041a414e14cb5b15e988f69ee481a32772b50b954ca92f80f18a81e4fbab2a",
+      "width": 1206,
+      "height": 2622,
+      "cluster": "Design Free node",
+      "track": "frontend",
+      "mode": "Review",
+      "state": "unavailable without due evidence",
+      "sourceFlow": ".maestro/screenshot-capture/odk097/50-review-hub.yaml",
+      "capture": "xcrun simctl io screenshot after Maestro checkpoint",
+      "note": "Full-screen unedited simulator capture"
+    }
+  ]
+}

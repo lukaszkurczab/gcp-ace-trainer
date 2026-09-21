@@ -1,0 +1,53 @@
+appId: com.lkurczab.patternly
+name: ODK-097 Design Tradeoff capture
+tags:
+  - screenshot
+  - odk097
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "account-unavailable-guest"
+    timeout: 30000
+- tapOn:
+    id: "account-unavailable-guest"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:object-oriented-design-interview"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:select-track:object-oriented-design-interview"
+- tapOn:
+    point: "92%,93%"
+- tapOn:
+    id: "patternly:home:select-track:continue"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-practice"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:mode-card:design-interview-tradeoff-practice"
+    timeout: 30000
+- tapOn:
+    id: "patternly:practice:mode-card:design-interview-tradeoff-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:setup:root"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:practice:session-length:10"
+- assertVisible:
+    id: "patternly:practice:session-length:20"
+- assertVisible:
+    id: "patternly:practice:session-length:40"
+- tapOn:
+    id: "patternly:practice:session-length:40"
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:mode:design-interview-tradeoff-practice"
+    timeout: 30000

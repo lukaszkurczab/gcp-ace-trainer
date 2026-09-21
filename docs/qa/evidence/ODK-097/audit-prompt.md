@@ -1,0 +1,1 @@
+If a separate product audit is requested, inspect the five full-screen captures in this directory with manifest.json and coverage-matrix.md. Evaluate only the captured Design session states; report the missing due Review fixture and unsaved per-track setup screenshots as evidence gaps. No audit was performed as part of ODK-097.

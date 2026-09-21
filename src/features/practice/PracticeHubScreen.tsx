@@ -205,7 +205,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       return;
     }
     if (isDesignInterviewTrack) {
-      navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode as PracticeSessionMode, source, topicId: topic.id, trackId: activeTrack.id }));
+      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode as PracticeSessionMode, source, topicId: topic.id, trackId: activeTrack.id });
       return;
     }
     if (activeTrack.familyId === "certification" && resolvedMode === "certification-diagnostic-baseline") {
