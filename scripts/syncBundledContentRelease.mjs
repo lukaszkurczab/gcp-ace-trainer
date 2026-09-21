@@ -17,7 +17,7 @@ export const EXPECTED_TRACK_IDS = Object.freeze([
   "microsoft-azure-ai-fundamentals-ai-901",
   "object-oriented-design-interview",
 ]);
-export const EXPECTED_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 932, questionCount: 16_041 });
+export const EXPECTED_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 943, questionCount: 16_077 });
 export const GENERATED_DIRECTORY = "src/content/generated/canonical-content";
 export const LOCK_FILE_NAME = "content-lock.json";
 const LOCK_SCHEMA_VERSION = "patternly-content-lock-v1";

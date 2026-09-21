@@ -32,7 +32,7 @@ test("all nine canonical artifacts validate with exact inventory and stable lear
   assert.equal(lock.schemaVersion, "patternly-content-lock-v1"); assert.equal(inputs.length, 9);
   let questions = 0; const nodes = new Set<string>(), units = new Set<string>(); let padded: Question | undefined;
   for (const { entry, artifact } of inputs) { const validated = validateCanonicalArtifact(artifact, entry, entry.trackId); questions += validated.questions.length; for (const question of validated.questions) { nodes.add(`${question.trackId}\0${question.nodeId}`); units.add(`${question.trackId}\0${question.nodeId}\0${question.mentalUnitId}`); if (question.questionId === "alg-linked-list-cycle-detection-11-entry-phase") padded = question; } }
-  assert.deepEqual({ tracks: inputs.length, nodes: nodes.size, mentalUnits: units.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 932, questions: 16_041 });
+  assert.deepEqual({ tracks: inputs.length, nodes: nodes.size, mentalUnits: units.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 943, questions: 16_077 });
   assert.equal(padded?.prompt, "After Floyd's pointers meet, what transformation finds the cycle entry? ");
 });
 

@@ -206,12 +206,12 @@ test("only Claude Focus exposes selectable feedback while other Certification se
 
 test("Practice Setup uses the package default until the learner or route selects a supported length", () => {
   const coding = { requestedLengths: [10, 20, 40], defaultRequestedLength: 10 };
-  const aws = { requestedLengths: [4], defaultRequestedLength: 4 };
+  const aws = { requestedLengths: [10, 20, 40], defaultRequestedLength: 10 };
   for (const missing of [null, undefined]) {
     assert.equal(resolvePracticeSessionLength(missing, coding), 10);
-    assert.equal(resolvePracticeSessionLength(missing, aws), 4);
+    assert.equal(resolvePracticeSessionLength(missing, aws), 10);
   }
   for (const selected of [10, 20, 40]) assert.equal(resolvePracticeSessionLength(selected, coding), selected);
   for (const invalid of [0, 9, 30, 100, NaN]) assert.equal(resolvePracticeSessionLength(invalid, coding), 10);
-  assert.equal(resolvePracticeSessionLength(20, aws), 4);
+  assert.equal(resolvePracticeSessionLength(20, aws), 20);
 });

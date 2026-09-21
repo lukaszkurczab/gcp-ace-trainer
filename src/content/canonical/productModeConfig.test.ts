@@ -40,13 +40,13 @@ test("ProductModeConfig preserves the complete available 9-track mode matrix", (
     [gcp, "certification-weak-area-review", [10, 20]],
     [gcp, "certification-quick-review", [10]],
     ...([
-      ["aws-certified-solutions-architect-associate", [4]],
+      ["aws-certified-solutions-architect-associate", [10, 20, 40]],
       ["microsoft-azure-administrator-associate-az-104", [10, 20, 40]],
       ["microsoft-azure-ai-fundamentals-ai-901", [10, 20, 40]],
       ["claude-certified-architect-professional-certification", [10, 20, 40]],
     ] as const).flatMap(([trackId, focusLengths]) => [
       [trackId, "certification-focus-practice", focusLengths],
-      [trackId, "certification-weak-area-review", focusLengths.length === 1 ? focusLengths : [10, 20]],
+      [trackId, "certification-weak-area-review", [10, 20]],
       [trackId, "certification-quick-review", [focusLengths[0]]],
     ]),
   ];
@@ -80,7 +80,7 @@ test("selection pools are non-empty, local, and large enough for every requested
   const artifactByTrack = new Map(artifacts.map((artifact) => [artifact.trackId, artifact]));
   const expectedFreePoolSizes = new Map<string, number>([
     [coding, 158], ["backend-system-design-interview", 145], ["object-oriented-design-interview", 136],
-    ["frontend-system-design-interview", 150], [gcp, 136], ["aws-certified-solutions-architect-associate", 4],
+    ["frontend-system-design-interview", 150], [gcp, 136], ["aws-certified-solutions-architect-associate", 40],
     ["microsoft-azure-administrator-associate-az-104", 132], ["microsoft-azure-ai-fundamentals-ai-901", 144],
     ["claude-certified-architect-professional-certification", 48],
   ]);

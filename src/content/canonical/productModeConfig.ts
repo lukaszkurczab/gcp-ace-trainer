@@ -115,7 +115,7 @@ const CANDIDATE_CONFIGS: readonly ProductModeConfig[] = [
   ...designConfigs(TRACKS.frontend.id, TRACKS.frontend.freeNodeId),
   config({ trackId: TRACKS.gcp.id, modeId: "certification-diagnostic-baseline", availability: "immediate", requestedLengths: [40], minimumActualLength: 40, defaultRequestedLength: 40, reinsertPolicy: "disabled", selection: { kind: "exact_ordered_questions", questionIds: GCP_DIAGNOSTIC_QUESTION_IDS } }),
   ...certificationConfigs(TRACKS.gcp.id, TRACKS.gcp.freeNodeId, [10, 20, 40], 10),
-  ...certificationConfigs(TRACKS.aws.id, TRACKS.aws.freeNodeId, [4], 4),
+  ...certificationConfigs(TRACKS.aws.id, TRACKS.aws.freeNodeId, [10, 20, 40], 10),
   ...certificationConfigs(TRACKS.az104.id, TRACKS.az104.freeNodeId, [10, 20, 40], 10),
   ...certificationConfigs(TRACKS.ai901.id, TRACKS.ai901.freeNodeId, [10, 20, 40], 10),
   ...certificationConfigs(TRACKS.claude.id, TRACKS.claude.freeNodeId, [10, 20, 40], 10, SELECTABLE_FEEDBACK),
