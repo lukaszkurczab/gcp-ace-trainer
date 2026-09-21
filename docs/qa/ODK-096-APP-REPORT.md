@@ -1,6 +1,6 @@
 # ODK-096 — AWS Free w aplikacji, synchronizacja i retest iOS
 
-Status: `partial` — lokalny bundle i ścieżka Practice Setup/runtime przeszły focused checks, retest na izolowanym iPhonie 17 oraz końcowy niezależny QA; pozostało utrwalenie zmian aplikacji. To nie jest globalna admisja runtime ani wydanie produkcyjne.
+Status: `done` dla lokalnego zakresu ODK-096 — bundle i Practice Setup/runtime przeszły focused checks, retest na izolowanym iPhonie 17 oraz końcowy niezależny QA. Zmiany aplikacji i dowody utrwalono w commicie `a4bbeb2`. To nie jest globalna admisja runtime ani wydanie produkcyjne.
 
 ## Tożsamość i zakres
 
