@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExportDto, type LegalRequestDto, type LegalRequestKindDto, type MeResponseDto, type PrivacyRequestListItemDto, type PrivacyRequestResponseDto, type PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
+import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domain/entitlements";
+import { replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
@@ -81,6 +83,7 @@ export type AccountSessionContextValue = Readonly<{
   listLegalRequests: () => Promise<PrivacyRequestCommandResult<readonly LegalRequestDto[]>>;
   readLegalRequest: (requestId: string) => Promise<PrivacyRequestCommandResult<LegalRequestDto>>;
   recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>) => Promise<AccountCommandResult>;
+  refreshPremiumEntitlement: (accountId: string) => Promise<"verified" | "denied" | "pending">;
   requestPasswordRecovery: (email: string) => Promise<AccountCommandResult>;
   requestEmailChange: (credentials: FirebaseAuthCredentials, email: string) => Promise<AccountCommandResult>;
   retrySessionRestore: () => void;
@@ -604,6 +607,20 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   }, []);
 
   const value = useMemo<AccountSessionContextValue>(() => ({
+    refreshPremiumEntitlement: async (accountId) => {
+      const current = stateRef.current;
+      if (!apiClient || !authClient || current.kind !== "authenticated" || current.backendUser.id !== accountId || authClient.getSnapshot()?.uid !== current.user.uid) return "pending";
+      const generation = sessionCoordinator.begin(current.user.uid);
+      const stillCurrent = () => sessionCoordinator.isCurrent(generation) && authClient.getSnapshot()?.uid === current.user.uid
+        && stateRef.current.kind === "authenticated" && stateRef.current.backendUser.id === accountId;
+      try {
+        const response = await apiClient.getEntitlements();
+        if (!stillCurrent()) return "pending";
+        const identity = { accountId, entitlement: PREMIUM_ENTITLEMENT, productId: legalVariables.terms.premiumProductIdentifier.en };
+        if (!replacePremiumCacheFromFreshResponse(response, identity, Date.now())) return "pending";
+        return isPremiumAccessConfirmedOnline({ ...response.entitlements[0], serverObservedAt: response.serverObservedAt }) ? "verified" : "denied";
+      } catch { return "pending"; }
+    },
     recordPurchaseConfirmation: async (input) => {
       if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
       try { await apiClient.recordPurchaseConfirmation(input); return { kind: "success", next: "authenticated" }; }

@@ -66,6 +66,12 @@ export function premiumCacheFromFreshResponse(response: unknown, identity: Premi
 }
 
 export type PremiumOfflineDecision = Readonly<{ allowed: boolean; nextRecord: PremiumCacheRecord | null }>;
+/** Fresh online confirmation uses provider/server time, independent of the device clock. */
+export function isPremiumAccessConfirmedOnline(value: unknown): boolean {
+  if (!isPremiumSnapshot(value)) return false;
+  const expires = value.state === "active" ? instant(value.providerExpiresAt) : value.state === "grace" ? instant(value.providerGraceExpiresAt) : null;
+  return expires !== null && instant(value.serverObservedAt)! < expires;
+}
 /** Persist nextRecord before honoring allowed. A clock rollback always denies. */
 export function evaluateOfflinePremiumAccess(value: unknown, identity: PremiumIdentity, nowMs: number): PremiumOfflineDecision {
   if (!isPremiumCacheRecord(value) || !matches(value.snapshot, identity) || !Number.isSafeInteger(nowMs) || nowMs < 0) return { allowed: false, nextRecord: null };

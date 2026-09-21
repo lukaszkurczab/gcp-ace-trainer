@@ -1,0 +1,9 @@
+# ODK-119 — purchase/restore verification (partial)
+
+The purchase screen previously displayed success when the RevenueCat SDK completed, before the Patternly backend confirmed current access. After a successful purchase or restore, the account provider now calls the authenticated `/v1/entitlements` endpoint, validates and stores the exact account/product/entitlement response, and reports `verified`, `denied` or `pending`. The screen presents success only for provider-confirmed active/grace access. A negative fresh response updates cache and shows a denial; provider failure or invalid response leaves cache unchanged and shows verification pending. Account generation and account ID are checked after the network call. English and Polish copy distinguish all three outcomes.
+
+This is **not full ODK-119 completion**. Bootstrap, foreground and reconnect refresh; a confirmed offline signal; sign-out clearing; and actual new Premium package/session admission still need implementation. Store and RevenueCat E2E evidence is pending.
+
+The bounded approach was independently validated on the configured `gpt-5.6-luna/max` profile: consistency 0.93, simplicity 0.86, risk control 0.84, maintainability 0.90; minimum **0.84**. Independent implementation QA approved this partial slice with minimum **0.82**. It flagged that future concurrent refresh triggers need sequencing, and that a hypothetical empty entitlement array would be treated as invalid/pending. The current backend returns one explicit `expired` item for an absent provider entitlement, so an empty array is outside its successful response contract.
+
+Verification: app `npm run typecheck` PASS; 8/8 targeted domain and purchase adapter tests PASS; 25/25 account identity composition tests PASS; `git diff --check` PASS. No full app suite claimed.

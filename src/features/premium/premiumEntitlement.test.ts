@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { PREMIUM_ENTITLEMENT, evaluateOfflinePremiumAccess, isPremiumSnapshot, premiumCacheFromFreshResponse } from "../../domain/entitlements";
+import { PREMIUM_ENTITLEMENT, evaluateOfflinePremiumAccess, isPremiumAccessConfirmedOnline, isPremiumSnapshot, premiumCacheFromFreshResponse } from "../../domain/entitlements";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { clearPremiumCache, hasOfflinePremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 
@@ -32,13 +32,17 @@ test("fresh response requires exactly one matching provider-backed item with str
 
 test("active and grace expire exactly at their provider dates; negative states deny", () => {
   const active = premiumCacheFromFreshResponse(response(), identity, now, null)!;
+  assert.equal(isPremiumAccessConfirmedOnline(active.snapshot), true);
   assert.equal(evaluateOfflinePremiumAccess(active, identity, Date.parse(expiry) - 1).allowed, true);
   assert.equal(evaluateOfflinePremiumAccess(active, identity, Date.parse(expiry)).allowed, false);
+  assert.equal(isPremiumAccessConfirmedOnline({ ...active.snapshot, serverObservedAt: expiry }), false);
   const graceRecord = premiumCacheFromFreshResponse(response({ state: "grace", providerGraceExpiresAt: grace }), identity, now, null)!;
+  assert.equal(isPremiumAccessConfirmedOnline(graceRecord.snapshot), true);
   assert.equal(evaluateOfflinePremiumAccess(graceRecord, identity, Date.parse(grace) - 1).allowed, true);
   assert.equal(evaluateOfflinePremiumAccess(graceRecord, identity, Date.parse(grace)).allowed, false);
   for (const state of ["hold", "expired", "refunded"]) {
     const negative = premiumCacheFromFreshResponse(response({ state }), identity, now, active)!;
+    assert.equal(isPremiumAccessConfirmedOnline(negative.snapshot), false);
     assert.equal(evaluateOfflinePremiumAccess(negative, identity, now).allowed, false);
   }
 });

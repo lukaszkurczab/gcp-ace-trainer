@@ -26,6 +26,7 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
   const [loadState, setLoadState] = useState<LoadState>({ kind: "loading" });
   const [busy, setBusy] = useState<"purchase" | "restore" | "manage" | null>(null);
   const [result, setResult] = useState<PurchaseResult | null>(null);
+  const [verification, setVerification] = useState<"verified" | "denied" | "pending" | null>(null);
   const actionLockedRef = useRef(false);
   const terms = legalVariables.terms;
   const accountId = account.state.kind === "authenticated" ? account.state.backendUser.id : undefined;
@@ -40,6 +41,7 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
   useEffect(() => {
     let active = true;
     setResult(null);
+    setVerification(null);
     if (!adapter) {
       setLoadState({ kind: "unavailable" });
       return () => { active = false; };
@@ -58,6 +60,7 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
     const initiatingAccountId = accountId;
     setBusy(action);
     setResult(null);
+    setVerification(null);
     try {
       if (action === "manage") {
         const management = await adapter.managementURL();
@@ -80,6 +83,12 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
         if (confirmation.kind !== "success") { setResult({ status: "failure" }); return; }
         if (!initiatingAccountId || accountIdRef.current !== initiatingAccountId) { setResult({ status: "failure" }); return; }
         next = await adapter.purchasePackage(loadState.package);
+      }
+      if (next.status === "success") {
+        const checked = initiatingAccountId && accountIdRef.current === initiatingAccountId
+          ? await account.refreshPremiumEntitlement(initiatingAccountId) : "pending";
+        if (accountIdRef.current !== initiatingAccountId) return;
+        setVerification(checked);
       }
       setResult(next);
     } catch {
@@ -132,7 +141,9 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
         </Pressable>
       ) : null}
 
-      {result?.status === "success" ? <InfoBlock body={t("premiumSuccessDetail")} title={t("premiumSuccess")} testID="premium-success" tone="success" /> : null}
+      {result?.status === "success" && verification === "verified" ? <InfoBlock body={t("premiumSuccessDetail")} title={t("premiumSuccess")} testID="premium-success" tone="success" /> : null}
+      {result?.status === "success" && verification === "pending" ? <InfoBlock body={t("premiumVerificationPendingDetail")} title={t("premiumVerificationPending")} testID="premium-verification-pending" tone="warning" /> : null}
+      {result?.status === "success" && verification === "denied" ? <InfoBlock body={t("premiumVerificationDeniedDetail")} title={t("premiumVerificationDenied")} testID="premium-verification-denied" tone="warning" /> : null}
       {result?.status === "cancelled" ? <InfoBlock body={t("premiumCancelledDetail")} title={t("premiumCancelled")} testID="premium-cancelled" /> : null}
       {result?.status === "failure" || result?.status === "misconfigured" || result?.status === "unavailable" ? <InfoBlock body={t("premiumActionFailedDetail")} title={t("premiumActionFailed")} testID="premium-action-failed" tone="warning" /> : null}
 
