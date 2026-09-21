@@ -70,6 +70,21 @@ test("remote artifacts require production App Check providers before prebuild", 
   );
 });
 
+test("sandbox and release accept only production App Check provider pairs", () => {
+  for (const mode of ["sandbox", "release"] as const) {
+    const environment = { ...base, PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment(mode === "release" ? "production" : "sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity" };
+    for (const appleProvider of ["deviceCheck", "appAttest", "appAttestWithDeviceCheckFallback"]) {
+      assert.equal(createExpoConfig({ ...environment, EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: appleProvider }).expo.extra.patternlyRuntime, mode);
+    }
+    for (const appleProvider of [undefined, "debug", "unsupported"]) {
+      assert.throws(() => createExpoConfig({ ...environment, EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: appleProvider } as Record<string, string>), /Apple release App Check provider/);
+    }
+    for (const androidProvider of [undefined, "debug", "unsupported"]) {
+      assert.throws(() => createExpoConfig({ ...environment, EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: androidProvider, EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "appAttest" } as Record<string, string>), /APPCHECK_ANDROID_PROVIDER=playIntegrity/);
+    }
+  }
+});
+
 test("sandbox uses the one tracked native Firebase registration while release requires production file variables", () => {
   const { GOOGLE_SERVICE_INFO_PLIST: _ios, GOOGLE_SERVICES_JSON: _android, ...withoutRemoteFiles } = base;
   const sandbox = createExpoConfig({ ...withoutRemoteFiles, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" });
