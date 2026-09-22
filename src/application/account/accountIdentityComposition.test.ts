@@ -9,6 +9,7 @@ import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyA
 import { configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { parseFirebaseClientConfiguration } from "../../infrastructure/firebase/publicConfig";
 import { AUTH_USER_STORAGE_KEY, createSecureAuthPersistence, redactPersistedAuthUser } from "../../infrastructure/firebase/secureAuthPersistence";
+import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { requiresVerifiedPasswordIdentity } from "../../infrastructure/runtime/runtimeMode";
 
 const publicEnvironment = {
@@ -623,6 +624,7 @@ test("account failures expose explicit provider, network, expiry, and revoked-se
 });
 
 test("cold account_not_found clears persisted Firebase auth or exposes a truthful sign-out retry", async () => {
+  installKeyValueStorageForTests(new MemoryKeyValueStorage());
   const user = { uid: "cold-uid", email: "user@example.com", emailVerified: true, providers: [] } as any;
   const states: AccountState[] = [];
   let current: typeof user | null = user;

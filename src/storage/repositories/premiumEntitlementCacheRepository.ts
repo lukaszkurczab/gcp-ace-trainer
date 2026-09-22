@@ -38,3 +38,16 @@ export function hasOfflinePremiumAccess(identity: PremiumIdentity, nowMs: number
 }
 
 export function clearPremiumCache(): void { getKeyValueStorage().remove(KEY); }
+
+/** A confirmed account may never inherit another account's stored snapshot. */
+export function clearPremiumCacheUnlessBoundTo(accountId: string): boolean {
+  try {
+    const storage = getKeyValueStorage();
+    const raw = storage.getString(KEY);
+    if (raw === undefined) return true;
+    const current = read();
+    if (current?.snapshot.accountId === accountId) return true;
+    storage.remove(KEY);
+    return storage.getString(KEY) === undefined;
+  } catch { return false; }
+}

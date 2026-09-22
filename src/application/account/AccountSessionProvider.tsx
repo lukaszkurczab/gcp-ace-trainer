@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExportDto, type LegalRequestDto, type LegalRequestKindDto, type MeResponseDto, type PrivacyRequestListItemDto, type PrivacyRequestResponseDto, type PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domain/entitlements";
-import { replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
+import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
@@ -496,6 +496,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           if (initializationTimeout !== undefined) clearTimeout(initializationTimeout);
         }
         if (!user) {
+          // A previous sign-out may have completed while encrypted storage
+          // removal failed. Retry on every confirmed signed-out observation.
+          try { clearPremiumCache(); } catch { /* The stored owner still prevents access by another account. */ }
           revokeDeletionAuthorization();
           setRefreshAccountIdentityFailure(null);
           observerBlockedUidRef.current = null;
@@ -617,6 +620,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (!apiClient || !authClient || current.kind !== "authenticated" || current.backendUser.id !== accountId || authClient.getSnapshot()?.uid !== current.user.uid) return "pending";
       const generation = sessionCoordinator.current(current.user.uid);
       if (!generation) return "pending";
+      if (!clearPremiumCacheUnlessBoundTo(accountId)) return "pending";
       const stillCurrent = () => sessionCoordinator.isCurrent(generation) && authClient.getSnapshot()?.uid === current.user.uid
         && stateRef.current.kind === "authenticated" && stateRef.current.backendUser.id === accountId;
       try {
@@ -797,6 +801,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         const afterSignOut = auth.getSnapshot();
         if (afterSignOut && user && afterSignOut.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
         setState({ kind: "signedOut" });
+        try { clearPremiumCache(); } catch { return { kind: "failure", failure: "localCleanupFailure" }; }
         return { kind: "success", next: "signedOut" };
       } finally {
         clearBlockedUid();
@@ -1084,6 +1089,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (afterSignOut && user && afterSignOut.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
         revokeGuestAccess();
         setState({ kind: "signedOut" });
+        try { clearPremiumCache(); } catch { return { kind: "failure", failure: "localCleanupFailure" }; }
         return { kind: "success", next: "signedOut" };
       } finally {
         revokeDeletionAuthorization();
@@ -1216,6 +1222,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (afterSignOut && afterSignOut.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
         revokeGuestAccess();
         setState({ kind: "signedOut" });
+        try { clearPremiumCache(); } catch { return { kind: "failure", failure: "localCleanupFailure" }; }
         return { kind: "success", next: "signedOut" };
       } finally {
         revokeDeletionAuthorization();
@@ -1275,6 +1282,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (afterSignOut && afterSignOut.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
         revokeGuestAccess();
         setState({ kind: "signedOut" });
+        try { clearPremiumCache(); } catch { return { kind: "failure", failure: "localCleanupFailure" }; }
         return { kind: "success", next: "signedOut" };
       } finally {
         revokeDeletionAuthorization();
@@ -1356,6 +1364,7 @@ async function reconcileAuthenticatedUser(
       if (deletion.status === "complete") {
         if (!canContinue()) return;
         await auth.signOut();
+        if (auth.getSnapshot() === null) try { clearPremiumCache(); } catch { /* Retried on signed-out hydration. */ }
         if (canContinue()) setState({ kind: "signedOut" });
         return;
       }
@@ -1370,6 +1379,7 @@ async function reconcileAuthenticatedUser(
         if (!canContinue()) return;
         if (recovered?.ok) {
           await auth.signOut();
+          if (auth.getSnapshot() === null) try { clearPremiumCache(); } catch { /* Retried on signed-out hydration. */ }
           if (canContinue()) setState({ kind: "signedOut" });
           return;
         }
@@ -1384,6 +1394,7 @@ async function reconcileAuthenticatedUser(
     if (await completeRemoteRevokedSignOut()) {
       if (!canContinue()) return;
       await auth.signOut();
+      if (auth.getSnapshot() === null) try { clearPremiumCache(); } catch { /* Retried on signed-out hydration. */ }
       if (canContinue()) setState({ kind: "signedOut" });
       return;
     }
@@ -1408,6 +1419,7 @@ export async function completeUnrecognizedPersistedAuthSignOut(
   canContinue: () => boolean,
 ): Promise<void> {
   await auth.signOut().catch(() => undefined);
+  if (!auth.getSnapshot()) try { clearPremiumCache(); } catch { /* Retried on signed-out hydration. */ }
   if (!canContinue()) return;
   setState(auth.getSnapshot() ? { kind: "signOutPending", user } : { kind: "signedOut" });
 }

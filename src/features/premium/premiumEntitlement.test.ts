@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { PREMIUM_ENTITLEMENT, evaluateOfflinePremiumAccess, isPremiumAccessConfirmedOnline, isPremiumSnapshot, premiumCacheFromFreshResponse } from "../../domain/entitlements";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
-import { clearPremiumCache, hasOfflinePremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
+import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 
 const observed = "2026-09-22T12:00:00.000Z";
 const expiry = "2026-09-23T12:00:00.000Z";
@@ -28,6 +28,22 @@ test("fresh response requires exactly one matching provider-backed item with str
     response({ extra: true }),
   ]) assert.equal(premiumCacheFromFreshResponse(invalid, identity, now, null), null);
   assert.equal(isPremiumSnapshot({ ...item, serverObservedAt: "2026-02-30T12:00:00.000Z" }), false);
+});
+
+test("confirmed account change removes the previous account cache and fails closed if removal fails", () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  assert.equal(replacePremiumCacheFromFreshResponse(response(), identity, now), true);
+  assert.equal(clearPremiumCacheUnlessBoundTo(identity.accountId), true);
+  assert.equal(hasOfflinePremiumAccess(identity, now + 1000), true);
+
+  storage.setFailurePlan({ kind: "fail_on_key_remove", key: "patternly:premium-cache:v1" });
+  assert.equal(clearPremiumCacheUnlessBoundTo("account-2"), false);
+  assert.equal(storage.contains("patternly:premium-cache:v1"), true);
+  storage.setFailurePlan(null);
+  assert.equal(clearPremiumCacheUnlessBoundTo("account-2"), true);
+  assert.equal(storage.contains("patternly:premium-cache:v1"), false);
+  assert.equal(hasOfflinePremiumAccess(identity, now + 1000), false);
 });
 
 test("active and grace expire exactly at their provider dates; negative states deny", () => {
