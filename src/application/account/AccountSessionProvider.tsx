@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExportDto, type LegalRequestDto, type LegalRequestKindDto, type MeResponseDto, type PrivacyRequestListItemDto, type PrivacyRequestResponseDto, type PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domain/entitlements";
 import { replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
+import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
@@ -144,6 +145,7 @@ export class AccountSessionGenerationStaleError extends Error {
 export type AccountSessionCoordinator<T> = Readonly<{
   activate: () => void;
   begin: (uid: string) => AccountSessionGenerationToken;
+  current: (uid: string) => AccountSessionGenerationToken | null;
   dispose: () => void;
   invalidate: () => void;
   isCurrent: (token: AccountSessionGenerationToken) => boolean;
@@ -176,6 +178,7 @@ export function createAccountSessionCoordinator<T>(publish: (token: AccountSessi
     }
     return Object.freeze({ generation, uid });
   };
+  const current = (uid: string): AccountSessionGenerationToken | null => !disposed && activeUid === uid ? Object.freeze({ generation, uid }) : null;
   const restart = (uid: string): AccountSessionGenerationToken => {
     generation += 1;
     activeUid = uid;
@@ -201,6 +204,7 @@ export function createAccountSessionCoordinator<T>(publish: (token: AccountSessi
   return Object.freeze({
     activate: () => { disposed = false; invalidate(); },
     begin,
+    current,
     dispose: () => { disposed = true; invalidate(); },
     invalidate,
     isCurrent,
@@ -310,6 +314,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const deletionAuthorizationTokenRef = useRef<AccountSessionGenerationToken | null>(null);
   const sensitiveCommandLaneRef = useRef<SensitiveCommandLane | null>(null);
   const contentReportRegistrationRef = useRef<ContentReportRuntimeRegistration | null>(null);
+  const premiumRefreshQueueRef = useRef(createPremiumRefreshQueue());
   if (!sessionCoordinatorRef.current) {
     sessionCoordinatorRef.current = createAccountSessionCoordinator((_token, outcome) => {
       if (outcome.state) setState(outcome.state);
@@ -607,10 +612,11 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   }, []);
 
   const value = useMemo<AccountSessionContextValue>(() => ({
-    refreshPremiumEntitlement: async (accountId) => {
+    refreshPremiumEntitlement: (accountId) => premiumRefreshQueueRef.current.request(async () => {
       const current = stateRef.current;
       if (!apiClient || !authClient || current.kind !== "authenticated" || current.backendUser.id !== accountId || authClient.getSnapshot()?.uid !== current.user.uid) return "pending";
-      const generation = sessionCoordinator.begin(current.user.uid);
+      const generation = sessionCoordinator.current(current.user.uid);
+      if (!generation) return "pending";
       const stillCurrent = () => sessionCoordinator.isCurrent(generation) && authClient.getSnapshot()?.uid === current.user.uid
         && stateRef.current.kind === "authenticated" && stateRef.current.backendUser.id === accountId;
       try {
@@ -620,7 +626,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (!replacePremiumCacheFromFreshResponse(response, identity, Date.now())) return "pending";
         return isPremiumAccessConfirmedOnline({ ...response.entitlements[0], serverObservedAt: response.serverObservedAt }) ? "verified" : "denied";
       } catch { return "pending"; }
-    },
+    }),
     recordPurchaseConfirmation: async (input) => {
       if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
       try { await apiClient.recordPurchaseConfirmation(input); return { kind: "success", next: "authenticated" }; }

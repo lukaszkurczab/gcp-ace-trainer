@@ -18,11 +18,21 @@ export function AccountForegroundRefreshSidecar() {
   const sessionUidRef = useRef<string | null>(null);
   const sessionGenerationRef = useRef(0);
   const foregroundGenerationRef = useRef(0);
+  const bootstrappedAccountRef = useRef<string | null>(null);
   const currentUid = authenticatedUid(account.state);
+  const currentAccountId = account.state.kind === "authenticated" ? account.state.backendUser.id : null;
   if (currentUid !== sessionUidRef.current) {
     sessionUidRef.current = currentUid;
     sessionGenerationRef.current += 1;
   }
+
+  useEffect(() => {
+    if (!currentUid || !currentAccountId) { bootstrappedAccountRef.current = null; return; }
+    const key = `${currentUid}\u0000${currentAccountId}`;
+    if (bootstrappedAccountRef.current === key) return;
+    bootstrappedAccountRef.current = key;
+    void accountRef.current.refreshPremiumEntitlement(currentAccountId);
+  }, [currentUid, currentAccountId]);
 
   useEffect(() => {
     const scheduler = createAccountForegroundRefreshScheduler<ForegroundRefreshIntent>({
@@ -33,8 +43,12 @@ export function AccountForegroundRefreshSidecar() {
           && foregroundGenerationRef.current === intent.generation
           && sessionGenerationRef.current === intent.sessionGeneration;
       },
-      refresh: async () => {
-        await accountRef.current.refreshAccountIdentity();
+      refresh: async (intent) => {
+        const result = await accountRef.current.refreshAccountIdentity();
+        const current = accountRef.current.state;
+        if (result.kind === "success" && current.kind === "authenticated" && current.user.uid === intent.uid) {
+          await accountRef.current.refreshPremiumEntitlement(current.backendUser.id);
+        }
       },
     });
     let previousState: AppStateStatus = AppState.currentState;

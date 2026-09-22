@@ -574,6 +574,16 @@ test("account finalization coordinator drops late results after invalidation and
   await assert.rejects(coordinator.run(disposedToken, async () => "disposed"), /account_session_generation_stale/u);
 });
 
+test("read-only generation capture cannot reactivate a session during sign-out", () => {
+  const coordinator = createAccountSessionCoordinator<string>(() => undefined);
+  const first = coordinator.begin("account-a");
+  assert.deepEqual(coordinator.current("account-a"), first);
+  assert.equal(coordinator.current("account-b"), null);
+  coordinator.invalidate();
+  assert.equal(coordinator.current("account-a"), null);
+  assert.equal(coordinator.isCurrent(first), false);
+});
+
 test("account restore has a bounded initialization recovery path", () => {
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
   assert.equal(AUTH_INITIALIZATION_TIMEOUT_MS, 15_000);
