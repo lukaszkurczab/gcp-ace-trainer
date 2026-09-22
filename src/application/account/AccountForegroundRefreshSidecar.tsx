@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
 import { AppState, type AppStateStatus } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
 
 import { usePatternlyAccount, type AccountSessionContextValue, type AccountState } from "./AccountSessionProvider";
 import { createAccountForegroundRefreshScheduler, type AccountForegroundRefreshIntent } from "./accountForegroundRefresh";
+import { observeReachability } from "./accountReconnect";
 
 type ForegroundRefreshIntent = AccountForegroundRefreshIntent & Readonly<{ sessionGeneration: number }>;
 
@@ -33,6 +35,19 @@ export function AccountForegroundRefreshSidecar() {
     bootstrappedAccountRef.current = key;
     void accountRef.current.refreshPremiumEntitlement(currentAccountId);
   }, [currentUid, currentAccountId]);
+
+  useEffect(() => {
+    let previousReachability: boolean | null = null;
+    const unsubscribe = NetInfo.addEventListener(({ isInternetReachable }) => {
+      const transition = observeReachability(previousReachability, isInternetReachable);
+      previousReachability = transition.next;
+      if (!transition.reconnected) return;
+      const current = accountRef.current.state;
+      if (current.kind !== "authenticated") return;
+      void accountRef.current.refreshPremiumEntitlement(current.backendUser.id);
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     const scheduler = createAccountForegroundRefreshScheduler<ForegroundRefreshIntent>({
