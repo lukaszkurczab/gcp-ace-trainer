@@ -1,4 +1,0 @@
-appId: com.lkurczab.patternly
----
-- tapOn: ".*Pokaż szczegóły sesji.*"
-- assertNotVisible: Szczegóły sesji

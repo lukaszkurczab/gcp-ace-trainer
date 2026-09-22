@@ -1,6 +1,0 @@
-appId: com.lkurczab.patternly
----
-- tapOn:
-    id: main-tab-bar-settings
-- waitForAnimationToEnd
-- tapOn: "Language, Choose the language used in Patternly., English"
