@@ -11,6 +11,10 @@
 - Briefing niezależnego Luna High ocenił poprawkę: zgodność 0,98; prostota 0,97; ryzyko 0,93; utrzymywalność 0,96; minimum **0,93**.
 - Weryfikacja po zmianie: `make patternly-ios` odpaliło profil i zbudowało JS bundle bez błędu Usage na iPhone 17. Pełny bootstrap nadal podlega blokadzie istniejącego stanu przypisanego do innego konta; dane urządzenia pozostały nienaruszone.
 
+## Nowy wymóg wejścia gościa — AUD-17
+
+Komunikat owner mismatch w powyższym teście opisuje ograniczenie obecnego buildu, a nie akceptowalny produktowy warunek „zaloguj się albo wyczyść dane”. Użytkownik ma móc rozpocząć nowy guest workspace, podczas gdy lokalne dane poprzedniego właściciela pozostają odseparowane i niezmienione. Realizacja i izolacja są śledzone w [pakiecie AUD-17](../../../docs/PATTERNLY-AUDIT-TASKS-2026-09-22.md#aud-17--gość-na-urządzeniu-z-postępem-innego-konta); do czasu poprawki stan urządzenia pozostaje zachowany.
+
 ## Kontynuacja 2026-09-23
 
 - Briefing naprawy owning validatora niezależnie zatwierdzony przez `gpt-6-luna/high`: zgodność 0,95; prostota 0,98; ryzyko 0,90; utrzymywalność 0,94; minimum **0,90**. Briefing izolacji release-manifest fixture także zatwierdzony: 0,88; 0,82; 0,81; 0,84; minimum **0,81**.
