@@ -3,6 +3,17 @@
 **Status:** partial; pierwszy slice preflight zakończony, natywny odbiór i pozostałe bramki otwarte.
 **Data:** 2026-09-22
 
+## Kontynuacja 2026-09-23
+
+- Briefing naprawy owning validatora niezależnie zatwierdzony przez `gpt-6-luna/high`: zgodność 0,95; prostota 0,98; ryzyko 0,90; utrzymywalność 0,94; minimum **0,90**. Briefing izolacji release-manifest fixture także zatwierdzony: 0,88; 0,82; 0,81; 0,84; minimum **0,81**.
+- API lokalne nie działało na początku. Auth `127.0.0.1:19099` i Firestore `127.0.0.1:18081` odpowiadały; uruchomiono backend `npm run dev:smoke` z jawnie przypiętym projektem i emulatorami. `GET http://127.0.0.1:8080/ready` zwrócił `status=ready`, database/authentication/providerReader=true. API pozostawiono działające.
+- `npm run recovery:check`: PASS, 369 active source files, 201 active test files, 1073 test cases.
+- `scripts/releaseManifest.test.mjs`: początkowo 0/10 z powodu brakujących `readFile` i `join` importów w `patternly-content/scripts/review/content-approval.mjs`. Po ich dodaniu ujawniło fixture zależne od brudnych rzeczywistych checkoutów. Testy zmieniono tak, by używały tymczasowych clean Git clones bieżącego HEAD z tracked worktree diff; produkcyjny gate czystości pozostał bez zmian. Zestaw końcowo **10/10 PASS**, w tym dokładne HEAD/clean checks, ACC-02/OpenAPI, CLI create/verify oraz odmowa dirty candidate. Zmiany zawiera app test `scripts/releaseManifest.test.mjs` i content owner `scripts/review/content-approval.mjs`.
+- Istniejący iPhone17 potwierdzony jako booted iOS26.4, UDID `7F315654-3175-4F3C-BB24-B0263F59360C`. Odczyt `simctl` i native build wymagały rozszerzonego dostępu, ponieważ ograniczony proces tracił CoreSimulatorService; bez rozszerzenia status był niestabilny. Oficjalne `npm run ios:smoke -- --device <UDID>` przeszedł preflight, zbudował `Patternly` (`Build Succeeded`, 0 errors, 2 ostrzeżenia skryptów Xcode), zainstalował dev client i otworzył go na tym samym urządzeniu. Metro załadował 1703 moduły JS. Bundle `com.lkurczab.patternly`, build `1`; bieżący mobile HEAD `428445185290d546fa6de6789a323a6711e48d80`. [Screenshot smoke](../../../evidence/aud-02/ios-smoke-2026-09-23.png), SHA-256 `9352d05b182b31618e5d4ec3c95161fa660a7df848ac9ed201dedff5d5075631`.
+- Lokalne RC flow wskazują zgodne IDs length 10 i feedback-after-each-answer. Próba `.maestro/rc-algorithms-bootstrap.yaml` zatrzymała się po tapnięciu guest, bo app jawnie wykrywa istniejący postęp związany z innym kontem: „This device's progress belongs to another account. Sign in with the account that owns this saved progress. Your data remains saved on this device.” Dane pozostały nietknięte. [Screenshot blokady](../../../evidence/aud-02/ios-bootstrap-owner-blocked.png), SHA-256 `62bbc256502b5c64ddf4dec3f35b758238e43ac679c1cd2f2a3eca52e47cd896`. Dalsze testy sesji wymagają dostępu do właściwego konta albo osobnej zgody na wyczyszczenie wyłącznie danych testowych; nie zastępujemy problemu resetem.
+- W porządku natywnym znaleziono i usunięto dwa puste katalogi ignorowane przez Git: `ios/Patternly 2` i `ios/Pods 2` (oba 0 B). Właściwe workspace/schemat/Pods pozostały bez zmian.
+- AUD-02 pozostaje `partial`: build i lokalne bramki działają, ale dokładny driver-form values i RC session flow nie są odebrane z powodu zachowanego owner mismatch. Nie czyściliśmy konta ani danych.
+
 ## Briefing i ocena
 
 - **Cel:** przed startem Expo wykryć brak wymaganej konfiguracji lokalnego klienta oraz niedostępne lub niegotowe usługi Auth/API.

@@ -5,6 +5,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   symlinkSync,
@@ -28,6 +29,8 @@ const contentRoot = resolve(root, "../patternly-content");
 const backendRoot = resolve(root, "../patternly-backend");
 let fixtureRoot;
 let applicationRoot;
+let backendFixtureRoot;
+let contentFixtureRoot;
 let webRoot;
 let outputRoot;
 let manifestPath;
@@ -51,8 +54,26 @@ function makeGitRoot(name, files) {
   return repositoryRoot;
 }
 
+function makeWorkingTreeFixture(name, sourceRoot) {
+  const repositoryRoot = join(fixtureRoot, name);
+  execFileSync("git", ["clone", "--quiet", "--shared", sourceRoot, repositoryRoot]);
+  const trackedDiff = execFileSync("git", ["diff", "HEAD", "--binary"], { cwd: sourceRoot });
+  if (trackedDiff.length > 0) {
+    execFileSync("git", ["apply", "--binary", "-"], { cwd: repositoryRoot, input: trackedDiff });
+    execFileSync("git", ["add", "-u"], { cwd: repositoryRoot });
+    execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "-qm", "working tree fixture"], { cwd: repositoryRoot });
+  }
+  const sourceModules = join(sourceRoot, "node_modules");
+  if (existsSync(sourceModules)) {
+    const fixtureModules = join(repositoryRoot, "node_modules");
+    mkdirSync(fixtureModules);
+    for (const entry of readdirSync(sourceModules)) symlinkSync(join(sourceModules, entry), join(fixtureModules, entry), "dir");
+  }
+  return repositoryRoot;
+}
+
 function roots() {
-  return { application: applicationRoot, backend: backendRoot, content: contentRoot, web: webRoot };
+  return { application: applicationRoot, backend: backendFixtureRoot, content: contentFixtureRoot, web: webRoot };
 }
 
 function readManifest() {
@@ -80,6 +101,8 @@ before(async () => {
   fixtureRoot = mkdtempSync(join(tmpdir(), "patternly-gate03-"));
   outputRoot = join(fixtureRoot, "evidence-output");
   mkdirSync(outputRoot);
+  backendFixtureRoot = makeWorkingTreeFixture("backend", backendRoot);
+  contentFixtureRoot = makeWorkingTreeFixture("content", contentRoot);
   applicationRoot = makeGitRoot("application", {
     "integration/contracts/content-release/release.lock.json": readFileSync(join(root, "integration/contracts/content-release/release.lock.json")),
   });
@@ -121,8 +144,8 @@ test("CLI create output can be copied to another external directory and verified
   const cliCreatedPath = join(outputRoot, "cli-created-release-manifest.json");
   const commonArgs = [
     "--application-root", applicationRoot,
-    "--backend-root", backendRoot,
-    "--content-root", contentRoot,
+    "--backend-root", backendFixtureRoot,
+    "--content-root", contentFixtureRoot,
     "--web-root", webRoot,
   ];
   const createOutput = execFileSync("node", ["scripts/releaseManifest.mjs", "create", ...commonArgs, "--output", cliCreatedPath], {
@@ -176,8 +199,8 @@ function releaseGateArgs(reportPath, includeManifest = true, manifest = manifest
     "--enforce",
     ...(includeManifest ? ["--manifest", manifest] : []),
     "--application-root", applicationRoot,
-    "--backend-root", backendRoot,
-    "--content-root", contentRoot,
+    "--backend-root", backendFixtureRoot,
+    "--content-root", contentFixtureRoot,
     "--web-root", webRoot,
     "--output", reportPath,
   ];
