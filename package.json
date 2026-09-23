@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node scripts/runLocalProfile.mjs",
     "android": "node scripts/runLocalProfile.mjs",
-    "ios": "node scripts/runLocalProfile.mjs",
+    "ios": "node scripts/runLocalProfile.mjs smoke ios",
     "start:smoke": "node scripts/runLocalProfile.mjs smoke start",
     "ios:smoke": "node scripts/runLocalProfile.mjs smoke ios",
     "android:smoke": "node scripts/runLocalProfile.mjs smoke android",

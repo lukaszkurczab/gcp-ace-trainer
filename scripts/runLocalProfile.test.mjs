@@ -27,9 +27,11 @@ test("local profile dotenv parser has no process side effect", () => {
   assert.throws(() => parseDotenv("not-an-assignment"), /invalid dotenv/);
 });
 
-test("generic local commands refuse to select a profile", () => {
+test("the default iOS command uses the local profile and sandbox remains explicit", () => {
   const scripts = JSON.parse(readFileSync("package.json", "utf8")).scripts;
-  for (const command of ["start", "web", "ios", "android"]) assert.equal(scripts[command], "node scripts/runLocalProfile.mjs");
+  assert.equal(scripts.ios, "node scripts/runLocalProfile.mjs smoke ios");
+  for (const command of ["start", "web", "android"]) assert.equal(scripts[command], "node scripts/runLocalProfile.mjs");
+  assert.equal(scripts["ios:sandbox"], "node scripts/runLocalProfile.mjs sandbox ios");
   assert.equal(scripts["start:smoke"], "node scripts/runLocalProfile.mjs smoke start");
   assert.equal(scripts["start:sandbox"], "node scripts/runLocalProfile.mjs sandbox start");
   assert.equal(scripts["web:smoke"], "node scripts/runLocalProfile.mjs smoke web");

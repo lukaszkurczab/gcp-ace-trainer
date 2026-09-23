@@ -3,6 +3,14 @@
 **Status:** partial; pierwszy slice preflight zakończony, natywny odbiór i pozostałe bramki otwarte.
 **Data:** 2026-09-22
 
+## Błąd domyślnego uruchomienia iOS — 2026-09-23
+
+- `make patternly-ios` wywoływał `npm run ios`, ale skrypt `ios` uruchamiał `runLocalProfile.mjs` bez wymaganych argumentów i kończył się komunikatem Usage.
+- `ios` wskazuje teraz jawnie istniejący profil lokalny `smoke ios`, który wiąże aplikację z API `127.0.0.1:8080` oraz Auth emulator `127.0.0.1:19099`; gotowość API sprawdza też dostęp Firestore.
+- `ios:sandbox` pozostaje odrębną ścieżką do testowego backendu na urządzeniu. Usługi lokalne muszą być uruchomione przed aplikacją; launcher wykonuje fail-closed preflight.
+- Briefing niezależnego Luna High ocenił poprawkę: zgodność 0,98; prostota 0,97; ryzyko 0,93; utrzymywalność 0,96; minimum **0,93**.
+- Weryfikacja po zmianie: `make patternly-ios` odpaliło profil i zbudowało JS bundle bez błędu Usage na iPhone 17. Pełny bootstrap nadal podlega blokadzie istniejącego stanu przypisanego do innego konta; dane urządzenia pozostały nienaruszone.
+
 ## Kontynuacja 2026-09-23
 
 - Briefing naprawy owning validatora niezależnie zatwierdzony przez `gpt-6-luna/high`: zgodność 0,95; prostota 0,98; ryzyko 0,90; utrzymywalność 0,94; minimum **0,90**. Briefing izolacji release-manifest fixture także zatwierdzony: 0,88; 0,82; 0,81; 0,84; minimum **0,81**.
