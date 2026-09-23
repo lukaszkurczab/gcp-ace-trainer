@@ -1,0 +1,5 @@
+# Logowanie do lokalnego backendu
+
+Dla lokalnego logowania e-mail uruchom `dev:smoke` w `patternly-backend` na już działających emulatorach (Auth19099/Firestore18081, projekt `patternly-app-sandbox`; instrukcja w README backendu). Ustaw `.env.smoke.local`: API `http://127.0.0.1:8080`, Auth `http://127.0.0.1:19099`, ten sam projekt oraz `EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN` z lokalnego pliku kluczy backendu. Uzupełnij istniejące pola rejestracji Firebase/OAuth — parser wymaga też trzech client IDs Google, nawet gdy test dotyczy e-maila. Uruchom ponownie `npm run start:smoke`.
+
+Token lokalny jest jawnym fixture testowym, nie atestacją Firebase; jest odrzucany poza development/smoke/loopback. Niewłaściwa konfiguracja tokenu nie uruchamia automatycznie realnego providera. Nie kopiuj go do profilu sandbox/release. Testy realnych Apple/Google/App Check pozostają osobnym odbiorem. Konto musi pochodzić z lokalnego emulatora; konta zdalne nie są kopiowane. RevenueCat i SMTP są wyłączone w launcherze lokalnym, więc ich niedostępność nie jest dowodem błędu logowania.

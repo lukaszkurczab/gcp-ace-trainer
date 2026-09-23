@@ -6,6 +6,7 @@ import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domai
 import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
+import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
@@ -451,7 +452,12 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     setAppCheckReady(false);
     const androidProvider = process.env.EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER;
     const appleProvider = process.env.EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER;
-    if (androidProvider === "debug" || androidProvider === "playIntegrity") {
+    const localAppCheckToken = readLocalSmokeAppCheckToken();
+    if (process.env.EXPO_PUBLIC_PATTERNLY_LOCAL_APPCHECK_TOKEN) {
+      // A rejected local configuration must not silently contact a real provider.
+      configurePatternlyAppCheckTokenProvider(localAppCheckToken ? async () => localAppCheckToken : null);
+      setAppCheckReady(localAppCheckToken !== null);
+    } else if (androidProvider === "debug" || androidProvider === "playIntegrity") {
       if (appleProvider === "debug" || appleProvider === "deviceCheck" || appleProvider === "appAttest" || appleProvider === "appAttestWithDeviceCheckFallback") {
         void composePatternlyNativeAppCheck({ androidProvider, appleProvider }).then((result) => { if (live && result === "available") setAppCheckReady(true); });
       } else {
@@ -478,10 +484,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         authEmulatorOrigin,
         config: firebaseConfiguration.value,
       });
-      // This provider is mounted only after ContentPreparationGate has durably
-      // committed the content-identity migration, so every account operation
-      // must use the schema-bound v4 protocol without a v3 fallback.
-      const client = createPatternlyApiClient({ accountDataProtocolMode: "v4", allowLocalHttpForSimulator: smokeRuntime, apiOrigin, getIdToken: auth.getIdToken });
+      const client = createPatternlyApiClient({ allowLocalHttpForSimulator: smokeRuntime, apiOrigin, getIdToken: auth.getIdToken });
       setAuthClient(auth);
       setApiClient(client);
       initializationTimeout = setTimeout(() => {

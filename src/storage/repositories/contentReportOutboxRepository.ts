@@ -23,7 +23,7 @@ const isEntry = (value: unknown): value is ContentReportOutboxEntry => {
 };
 const isEntries = (value: unknown): value is ContentReportOutboxEntry[] => Array.isArray(value) && value.every(isEntry);
 
-/** Pure owner guard for read-only inventory and migration preflight callers. */
+/** Pure owner guard for callers that validate the report outbox boundary. */
 export const isContentReportOutboxEntries = isEntries;
 
 export function getContentReportOutbox(): readonly ContentReportOutboxEntry[] {

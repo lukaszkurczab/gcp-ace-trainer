@@ -113,8 +113,6 @@ test("rejects legacy identity fields, mixed records, tombstones, and non-lowerca
       questionId: QUESTION_ID,
       contentVersion: "gcp-core-0006",
       reason: "unknown_artifact_hash",
-      migrationVersion: 1,
-      legacyIdentityDigest: CURRENT_SHA256,
       reviewId: canonical.id,
     },
   };

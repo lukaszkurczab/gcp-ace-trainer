@@ -162,8 +162,6 @@ test("strict guards accept resolved identities and reject mismatches, tombstones
       questionId: "i",
       contentVersion: "v",
       reason: "unknown_artifact_hash",
-      migrationVersion: 1,
-      legacyIdentityDigest: ARTIFACT_SHA256,
       reviewId: canonicalReview.id,
     },
   }), false);
@@ -210,14 +208,6 @@ test("canonical repository bootstrap reports the exact six steps in order", asyn
   await openCanonicalRepositories({ onStep: (step) => { steps.push(step); } });
 
   assert.deepEqual(steps, CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER);
-  assert.deepEqual(steps, [
-    CanonicalRepositoryBootstrapStep.ContentIdentityMigration,
-    CanonicalRepositoryBootstrapStep.StorageMetadataValidation,
-    CanonicalRepositoryBootstrapStep.AcceptedReportOutboxPurge,
-    CanonicalRepositoryBootstrapStep.ExpiredReportOutboxPurge,
-    CanonicalRepositoryBootstrapStep.GuestAccessRead,
-    CanonicalRepositoryBootstrapStep.GuestInstallationProvisioning,
-  ]);
 });
 
 test("canonical repository bootstrap isolates a throwing step observer without wrapping failures", async () => {

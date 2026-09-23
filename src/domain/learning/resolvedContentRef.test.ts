@@ -3,7 +3,6 @@ import test from "node:test";
 
 import * as domain from "..";
 import {
-  CONTENT_IDENTITY_MIGRATION_VERSION,
   createContentIdentityResolution,
   createContentIdentityTombstone,
   createResolvedContentRef,
@@ -62,8 +61,6 @@ test("tombstones are immutable, tagged, minimal, and contain no recursive legacy
     contentVersion: VALID_REF.contentVersion,
     reviewId: "review-1",
     reason: "unknown_artifact_hash",
-    migrationVersion: CONTENT_IDENTITY_MIGRATION_VERSION,
-    legacyIdentityDigest: "b".repeat(64),
   });
   assert.equal(Object.isFrozen(tombstone), true);
   assert.equal(isContentIdentityTombstone(tombstone), true);
@@ -85,8 +82,6 @@ test("resolution result is exact, frozen, and distinguishes resolved from tombst
     contentVersion: VALID_REF.contentVersion,
     sessionId: "session-1",
     reason: "stale_content_version",
-    migrationVersion: CONTENT_IDENTITY_MIGRATION_VERSION,
-    legacyIdentityDigest: "c".repeat(64),
   });
   const unavailable = createContentIdentityResolution({ kind: "tombstone", tombstone });
   assert.equal(Object.isFrozen(resolved), true);

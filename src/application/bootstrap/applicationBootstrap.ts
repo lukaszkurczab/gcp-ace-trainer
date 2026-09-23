@@ -21,7 +21,6 @@ import {
   abandonUnavailableActiveSession,
   openCanonicalRepositories,
 } from "../../storage/repositories";
-import type { ContentIdentityMigrationBootstrapStep } from "../../storage/repositories/contentIdentityMigrationBootstrap";
 
 export type ApplicationBootstrapState =
   | Readonly<{ kind: "ready"; activeSessionId: string | null }>
@@ -51,28 +50,17 @@ export async function bootstrapApplication(
 ): Promise<ApplicationBootstrapState> {
   let stage = ApplicationBootstrapStage.OpeningStorage;
   let currentRepositoryStep: CanonicalRepositoryBootstrapStep | undefined;
-  let currentContentIdentityMigrationStep: ContentIdentityMigrationBootstrapStep | undefined;
   try {
     try { cleanupOrphanedAccountDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
     const repositoryDependencies = dependencies.repositories;
-    const migrationDependencies = repositoryDependencies?.contentIdentityMigration;
     await openCanonicalRepositories({
       ...repositoryDependencies,
-      contentIdentityMigration: {
-        ...migrationDependencies,
-        onStep: (step) => {
-          currentContentIdentityMigrationStep = step;
-          try { migrationDependencies?.onStep?.(step); } catch { /* diagnostic observers are best-effort */ }
-        },
-      },
       onStep: (step) => {
         currentRepositoryStep = step;
-        if (step !== CanonicalRepositoryBootstrapStep.ContentIdentityMigration) currentContentIdentityMigrationStep = undefined;
         try { repositoryDependencies?.onStep?.(step); } catch { /* diagnostic observers are best-effort */ }
       },
     });
     currentRepositoryStep = undefined;
-    currentContentIdentityMigrationStep = undefined;
     const unavailableActive = (await getUnavailableActiveRecords()).value;
     if (unavailableActive.length > 0) {
       return {
@@ -132,7 +120,6 @@ export async function bootstrapApplication(
       stage,
       error,
       currentRepositoryStep,
-      currentRepositoryStep === CanonicalRepositoryBootstrapStep.ContentIdentityMigration ? currentContentIdentityMigrationStep : undefined,
     );
     return result;
   }

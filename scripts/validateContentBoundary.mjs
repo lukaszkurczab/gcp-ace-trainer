@@ -2,26 +2,15 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { validateBuiltContent, GENERATED_DIRECTORY, EXPECTED_INVENTORY } from "./syncBundledContentRelease.mjs";
 
-/**
- * Legacy content identities may still be decoded by the private migration
- * boundary and transported by the content-report adapter. They must not be
- * imported or produced by the active runtime.
- */
+/** Legacy identity field names are rejected at explicit input boundaries. */
 export const LEGACY_CONTENT_IDENTITY_ALLOWLIST = Object.freeze([
-  "src/domain/learning/legacyContentIdentityMapper.ts",
-  "src/storage/repositories/contentIdentityInventory.ts",
-  "src/storage/repositories/contentIdentityV2Planner.ts",
-  "src/storage/repositories/contentIdentityMigration.ts",
-  "src/storage/repositories/contentIdentityMigrationBootstrap.ts",
   "src/storage/repositories/contentIdentityUnavailableRepository.ts",
   "src/infrastructure/clients/PatternlyApiClientAdapter.ts",
-  "src/storage/repositories/contentReportOutboxRepository.ts",
 ]);
 
 /** These files reject legacy keys; they do not expose or persist them. */
 const FAIL_CLOSED_REJECTION_GUARD_PATHS = Object.freeze([
   "src/domain/learning/resolvedContentRef.ts",
-  "src/storage/contracts/contentIdentityV2.ts",
   "src/storage/repositories/accountDataRepository.ts",
 ]);
 

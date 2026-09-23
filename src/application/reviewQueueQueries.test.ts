@@ -68,8 +68,6 @@ function unavailableReview(reviewId: string): ContentIdentityUnavailableReviewRe
         questionId: "question-1",
         contentVersion: "content-v0",
         reason: "unknown_artifact_hash",
-        migrationVersion: 1,
-        legacyIdentityDigest: "a".repeat(64),
       },
       taxonomyOrSkillRefs: [{ axisId: "roadmap_node", nodeId: "complexity_and_constraints" }],
       reasons: ["incorrect"],

@@ -537,7 +537,8 @@ test("startup waits for persisted auth resolution before choosing the entry scre
   assert.match(rootNavigator, /testID="account-session-restore-loading"/);
   assert.match(app, /<AppPreferencesProvider>[\s\S]*?<ContentPreparationGate>[\s\S]*?<PatternlyAccountProvider>[\s\S]*?<AppNavigation/);
   assert.doesNotMatch(app, /<AppNavigation>[\s\S]*?<ContentPreparationGate>/);
-  assert.match(accountProvider, /createPatternlyApiClient\(\{ accountDataProtocolMode: "v4",/);
+  assert.match(accountProvider, /createPatternlyApiClient\(\{ allowLocalHttpForSimulator:/);
+  assert.doesNotMatch(accountProvider, /accountDataProtocolMode|protocolVersion|contentIdentitySchema/u);
 });
 
 test("account finalization coordinator shares one in-flight and completed result per generation", async () => {

@@ -24,7 +24,7 @@ function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
   return {
     availability: "available",
     getHealth: async () => ({ status: "ok", service: "patternly-backend" }),
-    getReady: async () => ({ status: "ready", checks: { database: true, authentication: true } }),
+    getReady: async () => ({ status: "ready", checks: { database: true, authentication: true, providerReader: true } }),
     getOpenApi: async () => ({ openapi: "3.0.3", paths: {} }),
     getMe: async () => ({ user: { id: accountId, createdAt: "2026-01-01T00:00:00.000Z", acceptedTermsVersion: "1", identity: { provider: "firebase", subject: uid, email: null, emailVerified: true } } }),
     registerAccount: async () => ({ registration: { created: true, user: { id: accountId, createdAt: "2026-01-01T00:00:00.000Z", acceptedTermsVersion: "1", identity: { provider: "firebase", subject: uid, email: null, emailVerified: true } }, acceptance: null } }),
@@ -598,7 +598,7 @@ test("Home pending retry honors binding, state, and durable recovery guards with
   const materializationBlocked = await retryPendingAccountDataSync(client, accountId);
   assert.equal(materializationBlocked?.lastFailureCode, "account_materialization_in_progress");
 
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "offlinePending", materialization: null, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", protocolVersion: 1, resolutions: [], groupChoices: [] } });
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "offlinePending", materialization: null, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [], groupChoices: [] } });
   const confirmationBlocked = await retryPendingAccountDataSync(client, accountId);
   assert.equal(confirmationBlocked?.lastFailureCode, "account_adoption_pending");
   assert.equal(remoteCalls, 0);
@@ -814,7 +814,7 @@ test("discard rejects another account and pending adoption without changing gues
   saveAccountSyncState({ ...state, accountId: "other-account", materialization: { kind: "discardGuest", accountId: "other-account" } });
   assert.notEqual((await discardGuestDataAndLoadAccount(api(), accountId)).status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
-  saveAccountSyncState({ ...state, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", protocolVersion: 1, resolutions: [], groupChoices: [] } });
+  saveAccountSyncState({ ...state, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [], groupChoices: [] } });
   assert.notEqual((await discardGuestDataAndLoadAccount(api(), accountId)).status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
 });
@@ -822,7 +822,7 @@ test("discard rejects another account and pending adoption without changing gues
 test("a stale adoption confirmation is cleared so retry can request a fresh preview", async () => {
   await prepareGuest();
   const state = await getAccountSyncState();
-  saveAccountSyncState({ ...state, accountId, status: "syncing", pendingConfirmation: { operationId: "stale-operation", previewFingerprint: "stale-fingerprint", protocolVersion: 2, resolutions: [], groupChoices: [] } });
+  saveAccountSyncState({ ...state, accountId, status: "syncing", pendingConfirmation: { operationId: "stale-operation", previewFingerprint: "stale-fingerprint", resolutions: [], groupChoices: [] } });
   const result = await loadAccountDataSession(api({ confirmAccountAdoption: async () => {
     throw new PatternlyApiClientError("server_error", 409, "merge_preview_mismatch");
   } }), accountId);
@@ -901,7 +901,7 @@ test("pending materialization blocks lifecycle revoke and deletion without losin
 test("a durable adoption confirmation blocks a new learning commit", async () => {
   await prepareGuest();
   const state = await getAccountSyncState();
-  saveAccountSyncState({ ...state, accountId, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", protocolVersion: 2, resolutions: [], groupChoices: [] } });
+  saveAccountSyncState({ ...state, accountId, pendingConfirmation: { operationId: "pending", previewFingerprint: "fingerprint", resolutions: [], groupChoices: [] } });
   await assert.rejects(() => commitTrainingSessionStart({ session: guestSession("active"), draft: null, createdAt: "2026-01-01T00:00:00.000Z" }));
   assert.equal(await getActiveTrainingSession(), null);
   assert.notEqual((await getAccountSyncState()).pendingConfirmation, null);

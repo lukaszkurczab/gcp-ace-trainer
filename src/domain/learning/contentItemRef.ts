@@ -3,8 +3,7 @@ import { createResolvedContentRef, type ResolvedContentRef } from "./resolvedCon
 
 /**
  * An occurrence is a durable position in a session, bound to one resolved
- * canonical question. Legacy package identities are intentionally not part of
- * this active-domain contract.
+ * canonical question.
  */
 export type ContentOccurrenceRef = Readonly<{
   occurrenceId: string;

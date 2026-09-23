@@ -26,7 +26,7 @@ export const STORAGE_KEYS = {
   ACCOUNT_SIGN_OUT: `${PREFIX}account-sign-out`,
   ACCOUNT_DELETION: `${PREFIX}account-deletion`,
   CONTENT_REPORT_OUTBOX: `${PREFIX}content-report-outbox`,
-  /** Private post-migration stores for identity tombstones; never runtime learning keys. */
+  /** Private stores for identity tombstones; never runtime learning keys. */
   ARCHIVAL_HISTORY_INDEX: `${PREFIX}archival-history-index`,
   archivalHistory: (sessionId: string) => `${PREFIX}archival-history:${sessionId}`,
   UNAVAILABLE_ACTIVE_INDEX: `${PREFIX}unavailable-active-index`,

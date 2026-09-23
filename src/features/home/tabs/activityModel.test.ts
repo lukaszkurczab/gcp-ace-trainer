@@ -191,8 +191,6 @@ function unavailableRecord(sessionId: string, trackId = codingTrack): ActivityUn
             questionId: "question-1",
             contentVersion: "content-v0",
             reason: "unknown_artifact_hash",
-            migrationVersion: 1,
-            legacyIdentityDigest: "a".repeat(64),
           },
         }],
       },

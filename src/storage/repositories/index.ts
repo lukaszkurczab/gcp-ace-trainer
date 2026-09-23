@@ -20,4 +20,3 @@ export * from "./contentReportOutboxRepository";
 export * from "./contentIdentityUnavailableRepository";
 export * from "./accountDataRepository";
 export * from "./accountLifecycleRepository";
-export * from "./contentIdentityInventory";

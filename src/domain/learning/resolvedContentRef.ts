@@ -2,7 +2,7 @@ import { isCanonicalSafeIdentity } from "../../content/canonical/questionValidat
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { deepFreeze } from "./familyEnvelope";
 
-/** The only content identity that may cross the post-migration runtime boundary. */
+/** The only content identity that may cross the runtime boundary. */
 export type ResolvedContentRef = Readonly<{
   trackId: string;
   questionId: string;
@@ -11,7 +11,6 @@ export type ResolvedContentRef = Readonly<{
 }>;
 
 export const RESOLVED_CONTENT_REF_VERSION = 1 as const;
-export const CONTENT_IDENTITY_MIGRATION_VERSION = 1 as const;
 
 const RESOLVED_CONTENT_REF_KEYS = ["trackId", "questionId", "contentVersion", "artifactSha256"] as const;
 const SHA_256 = /^[a-f0-9]{64}$/u;
@@ -101,8 +100,6 @@ type ContentIdentityTombstoneBase = Readonly<{
   questionId: string;
   contentVersion: string;
   reason: ContentIdentityTombstoneReason;
-  migrationVersion: typeof CONTENT_IDENTITY_MIGRATION_VERSION;
-  legacyIdentityDigest: string;
 }>;
 
 export type ArchivalHistoryContentIdentityTombstone = ContentIdentityTombstoneBase & Readonly<{
@@ -143,7 +140,7 @@ function hasForbiddenLegacyField(value: unknown, seen = new Set<unknown>()): boo
 
 function assertTombstone(value: unknown): asserts value is ContentIdentityTombstone {
   if (!isPlainRecord(value) || hasForbiddenLegacyField(value)) throw new TypeError("Content identity tombstone contains forbidden legacy identity fields.");
-  const common = ["trackId", "questionId", "contentVersion", "reason", "migrationVersion", "legacyIdentityDigest"];
+  const common = ["trackId", "questionId", "contentVersion", "reason"];
   const kind = value.kind;
   const ids = kind === "archival_history" || kind === "unavailable_active" ? [...common, "kind", "sessionId"] : kind === "unavailable_review" ? [...common, "kind", "reviewId"] : [];
   if (ids.length === 0 || !hasExactKeys(value, ids)) throw new TypeError("Content identity tombstone has an invalid exact shape.");
@@ -151,8 +148,6 @@ function assertTombstone(value: unknown): asserts value is ContentIdentityTombst
   assertIdentity(value.questionId, "questionId");
   assertIdentity(value.contentVersion, "contentVersion");
   if (!TOMBSTONE_REASONS.includes(value.reason as ContentIdentityTombstoneReason)) throw new TypeError("Content identity tombstone has an invalid reason.");
-  if (value.migrationVersion !== CONTENT_IDENTITY_MIGRATION_VERSION) throw new TypeError("Content identity tombstone has an unsupported migration version.");
-  if (typeof value.legacyIdentityDigest !== "string" || !SHA_256.test(value.legacyIdentityDigest)) throw new TypeError("Content identity tombstone has an invalid legacy identity digest.");
   assertIdentity(kind === "unavailable_review" ? value.reviewId : value.sessionId, kind === "unavailable_review" ? "reviewId" : "sessionId");
 }
 

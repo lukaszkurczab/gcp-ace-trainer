@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { Button, InfoBlock, Screen } from "../../components";
 import { accountDataRecordFingerprint } from "../../application/account/accountDataService";
-import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
+import { PatternlyApiClientError, type ProgressMutationDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { readPatternlyBackendRuntime } from "../../infrastructure/clients/patternlyBackendRuntime";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { spacing, typography, type AppColors } from "../../theme";
@@ -73,7 +73,7 @@ export function BackendDiagnosticsScreen() {
 
     const targetId = `ios-simulator-backend-${Date.now()}`;
     const mutationId = `ios-simulator-${Date.now()}-apply`;
-    const mutation = {
+    const mutation: ProgressMutationDto = {
       mutationId,
       kind: "item" as const,
       trackId: "coding-interview-dsa-problem-solving",
@@ -84,18 +84,19 @@ export function BackendDiagnosticsScreen() {
       state: { source: "ios_simulator", check: "backend_paths" },
     };
     const beforeSync = await client.getProgress();
+    const syncRequest = (expectedAccountRevision: number, requestMutation: ProgressMutationDto = mutation) => ({ canonicalVersion: "canonical-json-v1" as const, expectedAccountRevision, deviceId: "00000000-0000-4000-8000-000000000000", sessionId: "ios-simulator-backend", batchId: `ios-simulator-backend:${requestMutation.mutationId}`, highWatermark: 1, mutations: [requestMutation] });
     await run("sync-apply", text.syncApply, async () => {
-      const response = await client.syncProgress({ protocolVersion: 2, expectedAccountRevision: beforeSync.accountRevision, mutations: [mutation] });
+      const response = await client.syncProgress(syncRequest(beforeSync.accountRevision));
       if (response.applied.length !== 1 || response.duplicates.length !== 0 || response.conflicts.length !== 0) throw new PatternlyApiClientError("invalid_response");
     });
     await run("sync-duplicate", text.syncDuplicate, async () => {
-      const response = await client.syncProgress({ protocolVersion: 2, expectedAccountRevision: beforeSync.accountRevision, mutations: [mutation] });
+      const response = await client.syncProgress(syncRequest(beforeSync.accountRevision));
       if (response.applied.length !== 0 || response.duplicates.length !== 1 || response.duplicates[0] !== mutationId) throw new PatternlyApiClientError("invalid_response");
     });
     await run("sync-conflict", text.syncConflict, async () => {
       const conflictMutation = { ...mutation, expectedVersion: 0, mutationId: `${mutationId}-conflict`, fingerprint: accountDataRecordFingerprint({ recordId: targetId, recordType: "training_attempt", state: { source: "ios_simulator", check: "backend_paths" }, trackId: "coding-interview-dsa-problem-solving" }) };
       try {
-        await client.syncProgress({ protocolVersion: 2, expectedAccountRevision: beforeSync.accountRevision + 1, mutations: [conflictMutation] });
+        await client.syncProgress(syncRequest(beforeSync.accountRevision + 1, conflictMutation));
       } catch (error) {
         if (error instanceof PatternlyApiClientError && error.status === 409 && error.serverCode === "version_conflict") return;
         throw error;

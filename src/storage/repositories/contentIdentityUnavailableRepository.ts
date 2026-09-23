@@ -7,8 +7,8 @@ import { CanonicalWriteConflictError, CorruptStoredRecordError, UnsupportedStore
 import type { StorageRepositoryResult } from "./result";
 
 /**
- * These records are the private durable home for migrated content identities
- * which cannot be served by the strict learning repositories.  They are not
+ * These records are the private durable home for content identities which
+ * cannot be served by the strict learning repositories.  They are not
  * TrainingSession/ReviewQueueEntry values: those public runtime contracts are
  * intentionally canonical-only and reject tombstones.
  */
@@ -268,7 +268,7 @@ export type ContentIdentityUnavailableActiveIndexRepairCode =
   | "write_conflict"
   | "write_verification_failed";
 
-/** Bounded committed-v2 repair failures; no storage key or record payload crosses this boundary. */
+/** Bounded unavailable-active index repair failures; no storage key or record payload crosses this boundary. */
 export class ContentIdentityUnavailableActiveIndexRepairError extends Error {
   readonly code: ContentIdentityUnavailableActiveIndexRepairCode;
 
@@ -303,12 +303,12 @@ function readRepairRecord<T>(key: string, guard: (value: unknown) => value is T)
 }
 
 /**
- * Repairs only the private unavailable-active index after committed v2.  The
+ * Repairs only the private unavailable-active index.  The
  * active/archive records are read directly so a malformed public index read
  * cannot recurse into the public unavailable-record getter.  Records are
  * never written or removed here; only the filtered index may change.
  */
-export function repairCommittedUnavailableActiveIndex(storage: KeyValueStorage): void {
+export function repairUnavailableActiveIndex(storage: KeyValueStorage): void {
   const current = readRepairIndex(storage);
   if (current === null || current.ids.length === 0) return;
 

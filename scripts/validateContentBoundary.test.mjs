@@ -37,10 +37,10 @@ test("content boundary rejects legacy published-bank contracts and family catalo
   assert.match(failures[0], /publishedBank\|publishedManifest/u);
 });
 
-test("content boundary permits legacy shape only at private migration and report transport boundaries", () => {
+test("content boundary permits legacy shape only at fail-closed boundaries", () => {
   const failures = findLegacyContentIdentityLeaks([
     {
-      path: "/workspace/src/domain/learning/legacyContentIdentityMapper.ts",
+      path: "/workspace/src/storage/repositories/contentIdentityUnavailableRepository.ts",
       source: "type ContentPackagePin = { packagePin: unknown; contentPackagePin: unknown };",
     },
     {
@@ -52,9 +52,9 @@ test("content boundary permits legacy shape only at private migration and report
   assert.deepEqual(failures, []);
 });
 
-test("content boundary never permits removed family architecture through migration allowlists", () => {
+test("content boundary never permits removed family architecture through explicit allowlists", () => {
   const failures = findLegacyContentIdentityLeaks([{
-    path: "/workspace/src/domain/learning/legacyContentIdentityMapper.ts",
+    path: "/workspace/src/storage/repositories/contentIdentityUnavailableRepository.ts",
     source: "type DesignRuntimeCatalog = import('../../tracks/design-interview/designRuntimeCatalog').DesignRuntimeCatalog;",
   }]);
 

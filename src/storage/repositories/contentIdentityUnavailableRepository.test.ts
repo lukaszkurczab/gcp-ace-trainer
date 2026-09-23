@@ -13,7 +13,7 @@ import {
   getArchivalHistoryRecords,
   getUnavailableActiveRecords,
   getUnavailableReviewRecords,
-  repairCommittedUnavailableActiveIndex,
+  repairUnavailableActiveIndex,
   removeUnavailableReviewEntry,
   saveArchivalHistoryRecord,
   saveUnavailableActiveRecord,
@@ -31,8 +31,6 @@ function tombstone(kind: "archival_history" | "unavailable_active" | "unavailabl
     questionId: "question-1",
     contentVersion: "content-v0",
     reason: "unknown_artifact_hash",
-    migrationVersion: 1,
-    legacyIdentityDigest: SHA,
     ...(kind === "unavailable_review" ? { reviewId: id } : { sessionId: id }),
   };
 }
@@ -180,7 +178,7 @@ test("committed unavailable-active repair preserves active order and removes onl
   writeCanonicalJson(STORAGE_KEYS.archivalHistory("archive-one"), archive);
   storage.resetCounters();
 
-  repairCommittedUnavailableActiveIndex(storage);
+  repairUnavailableActiveIndex(storage);
 
   const writes = storage.operations.filter((operation) => operation.kind === "write");
   const removes = storage.operations.filter((operation) => operation.kind === "remove");
@@ -197,7 +195,7 @@ test("committed unavailable-active repair is an idempotent no-op for an already 
   writeCanonicalJson(STORAGE_KEYS.unavailableActive("active-one"), createContentIdentityUnavailableActiveRecord(activeRecord("active-one")));
   storage.resetCounters();
 
-  repairCommittedUnavailableActiveIndex(storage);
+  repairUnavailableActiveIndex(storage);
 
   assert.deepEqual(storage.operations.filter((operation) => operation.kind === "write" || operation.kind === "remove"), []);
 });
@@ -212,7 +210,7 @@ test("committed unavailable-active repair treats an expected-revision race as a 
   const before = storage.snapshot();
 
   assert.throws(
-    () => repairCommittedUnavailableActiveIndex(storage),
+    () => repairUnavailableActiveIndex(storage),
     (error: unknown) => error instanceof ContentIdentityUnavailableActiveIndexRepairError && error.code === "write_conflict",
   );
   assert.deepEqual(storage.snapshot(), before);
@@ -228,7 +226,7 @@ test("committed unavailable-active repair reports a verification mismatch after 
   storage.resetRace();
 
   assert.throws(
-    () => repairCommittedUnavailableActiveIndex(storage),
+    () => repairUnavailableActiveIndex(storage),
     (error: unknown) => error instanceof ContentIdentityUnavailableActiveIndexRepairError && error.code === "write_verification_failed",
   );
   assert.deepEqual(storage.operations.filter((operation) => operation.kind === "write" || operation.kind === "remove").map((operation) => operation.key), [STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX]);
@@ -254,7 +252,7 @@ test("committed unavailable-active repair fails typed and makes no partial write
     const before = storage.snapshot();
     storage.resetCounters();
     assert.throws(
-      () => repairCommittedUnavailableActiveIndex(storage),
+      () => repairUnavailableActiveIndex(storage),
       (error: unknown) => error instanceof ContentIdentityUnavailableActiveIndexRepairError && error.code === current.code,
       current.name,
     );
@@ -269,7 +267,7 @@ test("committed unavailable-active repair removes archive-only IDs while preserv
   writeCanonicalJson(STORAGE_KEYS.archivalHistory("archive-only"), createContentIdentityArchivalHistoryRecord(archivalRecord("archive-only")));
   storage.resetCounters();
 
-  repairCommittedUnavailableActiveIndex(storage);
+  repairUnavailableActiveIndex(storage);
 
   assert.deepEqual(JSON.parse(storage.getString(STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX)!).payload, []);
   assert.notEqual(storage.getString(STORAGE_KEYS.archivalHistory("archive-only")), undefined);
