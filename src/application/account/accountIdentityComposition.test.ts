@@ -317,7 +317,10 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.match(screen, /disabled=\{acceptedTerms === false\}/);
   assert.match(screen, /testID="account-register-terms-link"/);
   assert.match(screen, /testID="account-register-privacy-link"/);
-  assert.match(screen, /account\.state\.kind === "guest" && navigation\.canGoBack\(\)[\s\S]*?navigation\.goBack\(\);[\s\S]*?account\.continueAsGuest\(\);/);
+  assert.match(screen, /if \(account\.state\.kind === "guest" && navigation\.canGoBack\(\)\)/);
+  assert.match(screen, /navigation\.goBack\(\);[\s\S]*?account\.continueAsGuest\(\)/);
+  assert.match(screen, /showOwnerPreservationSmokeControl[\s\S]*?testID: "account-owner-preservation-guest"/);
+  assert.match(screen, /ownerPreservationCommandResult\.status === "running"[\s\S]*?text\.ownerPreservationRunning/);
   assert.match(screen, /import GoogleIcon from "\.\.\/\.\.\/assets\/icons\/google\.svg"/);
   assert.match(screen, /<GoogleIcon height=\{18\} width=\{18\} \/>/);
   assert.match(screen, /providerButton:[\s\S]*?backgroundColor: palette\.provider\.brandedSurface[\s\S]*?borderColor: palette\.provider\.brandedBorder/);
@@ -342,6 +345,14 @@ test("sign-in keeps guest access visible and uses the approved Google logo asset
   assert.match(screen, /providerContent:[\s\S]*?minWidth: 0/);
   assert.doesNotMatch(screen, /providerIcon:[\s\S]*?position: "absolute"/);
   assert.doesNotMatch(screen, /themeColors\.(?:dark|light)|#[0-9a-f]{3,8}/i);
+});
+
+test("blocked owner smoke screen replaces the ordinary guest transition with the guarded command", () => {
+  const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  const blocked = screen.slice(screen.indexOf('if (account.state.kind === "guestAccessBlocked" && mode === "entry")'), screen.indexOf('if (account.state.kind === "verificationPending")'));
+
+  assert.match(blocked, /footerAction=\{showOwnerPreservationSmokeControl\s*\?\s*\{[^}]*runOwnerPreservationGuestCommand\(\)[^}]*account-owner-preservation-guest[^}]*\}\s*:\s*\{[^}]*continueWithoutAccount[^}]*account-binding-guest[^}]*\}\}/);
+  assert.doesNotMatch(blocked, /footerAction=\{\{\s*label: text\.continueWithoutAccount/);
 });
 
 test("registration keeps consent presentation separate from the boolean domain contract", () => {
