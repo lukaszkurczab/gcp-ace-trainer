@@ -1,0 +1,24 @@
+{
+  "scope": "ODK-116/A5 local smoke environment",
+  "capturedAt": "2026-09-24T16:57:29Z",
+  "coverage": "partial",
+  "sourceSha": "5038d39f",
+  "installedBuildSha": "unknown",
+  "device": "iPhone 17, iOS 26.4, 7F315654-3175-4F3C-BB24-B0263F59360C",
+  "backend": "local /ready: database, authentication, providerReader true",
+  "screenshots": [
+    {
+      "path": "screenshots/odk-116-a5__guest-restart__010__home-ready__default__iphone-17.png",
+      "cluster": "environment and launch",
+      "flowId": "PROFILE-02/A preserved guest restart",
+      "stepId": "010",
+      "screen": "Home",
+      "state": "content ready after restart",
+      "scenario": "existing Guest, no clearState or account change",
+      "theme": "default",
+      "locale": "en",
+      "sourceFlow": "docs/active/PROFILE-02/evidence/A/guest-restart.yaml",
+      "notes": "Metro debugger-warning banner visible; screenshot confirms Home selectors, not legal page or exact installed source SHA."
+    }
+  ]
+}
