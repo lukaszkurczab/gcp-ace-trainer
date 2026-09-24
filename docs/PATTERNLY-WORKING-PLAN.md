@@ -8,7 +8,7 @@
 
 > **Podstawa statusów:** stan implementacji i wyniki testów przeniesiono z dostarczonego planu z 22–23.09.2026; luki z przeglądu czterech repo z 24.09 potwierdzono tylko statycznie w wskazanych źródłach. Ta rewizja zmienia decyzje, organizację i zależności; nie jest nowym audytem repozytoriów ani dowodem wykonania testów. Nowe zadania i podziały oznaczono jako nowe. Szczegółowe dokumenty podlinkowane z poprzedniego planu trzeba odczytać podczas wykonania; ich aktualnego stanu nie zakładamy.
 
-**Najbliższe działanie:** `PLAN-SYNC/B`, następnie `CI-CONTRACT/A` i `AUD-FIXTURE/A`. Nie wracać do kolejnych prób tych samych niedostępnych flow bez usunięcia ich wspólnej blokady. Brak danych prawnych, fizycznego iPhone’a lub ręcznego testu Androida nie zatrzymuje prac lokalnych i symulatorowych.
+**Najbliższe działanie:** `PLAN-SYNC/B2`, następnie `CI-CONTRACT/A` i `AUD-FIXTURE/A`. Nie wracać do kolejnych prób tych samych niedostępnych flow bez usunięcia ich wspólnej blokady. Brak danych prawnych, fizycznego iPhone’a lub ręcznego testu Androida nie zatrzymuje prac lokalnych i symulatorowych.
 
 **Źródła dowodów:** audyt i macierz (`PATTERNLY-AUDIT-2026-09-22.md` — brak w workspace), kanoniczny pakiet AUD (`PATTERNLY-AUDIT-TASKS-2026-09-22.md` — brak w workspace). Raporty przechowują historię i evidence; wyłącznie ten plan steruje kolejnością.
 
@@ -181,7 +181,7 @@ Właścicielem wykonania jest Codex. `AUD-FIXTURE`, `PLAN-SYNC` i podziały krok
 
 | ID / epik | Status / dostępność | Najbliższy wynik i zależności | Warunek zamknięcia / bramka | Kontrakt i raport |
 | --- | --- | --- | --- | --- |
-| PLAN-SYNC / E01 | `partial` / READY: B | A — wersjonowanie kanonicznego planu i statyczny inventory czterech repo zakończone 24.09; B — rozprowadzić decyzje do aktywnych kontraktów i uzupełnić brakujące pakiety lub jawne verification tasks. Ustalić dokładny zakres SIMP-05, lokalnego RC w AUD-02, pól konfiguracji i brakujących uprawnień. | B kończy się bez sprzecznych aktywnych wymagań Android/PO approval/PO-116, z mapą ODK-082–087 albo jawnym brakiem kontraktu dla każdego ID. Zależności bez cykli. SIM-READY. | [Raport A](active/PLAN-SYNC/A-REPORT.md); aktualizacja pakietu AUD (`PATTERNLY-AUDIT-TASKS-2026-09-22.md` — brak w workspace) z jednym raportem nadrzędnym do wskazania. |
+| PLAN-SYNC / E01 | `partial` / READY: B2 | A — wersjonowanie planu i inventory zakończone; B1 — trwałe linki do planu w backend/content/web zakończone; B2 — rozprowadzić decyzje do aktywnych kontraktów i uzupełnić brakujące pakiety lub jawne verification tasks. Ustalić dokładny zakres SIMP-05, lokalnego RC w AUD-02, pól konfiguracji i brakujących uprawnień. | B2 kończy się bez sprzecznych aktywnych wymagań Android/PO approval/PO-116, z mapą ODK-082–087 albo jawnym brakiem kontraktu dla każdego ID. Zależności bez cykli. SIM-READY. | [Raport A](active/PLAN-SYNC/A-REPORT.md), [raport B1](active/PLAN-SYNC/B1-REPORT.md); aktualizacja pakietu AUD (`PATTERNLY-AUDIT-TASKS-2026-09-22.md` — brak w workspace) z jednym raportem nadrzędnym do wskazania. |
 | CI-CONTRACT / E01/E08 | `planned` / READY po PLAN-SYNC | A — uzgodnić komendy workflow czterech repo z aktualnymi scripts; B — włączyć testy kandydata do obowiązkowej bramki; C — uruchomić właściwy etap dla jawnych czterech SHA. | Nieistniejące komendy nie występują w workflow; celowo uszkodzony manifest daje FAIL; końcowa agregacja `continue-on-error` egzekwuje FAIL. C do SIM-READY, ponowny przebieg dla wydania do FREEZE. | [Przegląd, §3](PATTERNLY-REPO-PLAN-ADDITIONS.md#add-ci-contract--zgodność-pipelineu-z-rzeczywistymi-komendami-repo); raport i QA każdego slice. |
 | AUD-FIXTURE / E01 | `planned` / READY po PLAN-SYNC | **Nowe:** A — kontrakt ochrony ownera i izolacji; B — konta testowe, seed i bezpieczny cleanup w istniejącym środowisku. Nie wymaga ukończenia całego AUD-17. | Powtarzalny dostęp do synthetic owner/guest, sesji, review i ekranów danych; dowód niezmienności chronionych danych ownera. SIM-READY. | Nowa sekcja w pakiecie AUD (`PATTERNLY-AUDIT-TASKS-2026-09-22.md` — brak w workspace); kryteria w 6.1. |
 | AUD-02 / E01 | `partial` / READY: zakres lokalny; WAIT: fixture dla pełnego flow | Dokończyć formularze sterownika, lokalne scenariusze RC i aktualny dziewięciobankowy manifest/preflight. Nie wymaga FREEZE ani realnych sklepów. | Reprodukowalne uruchomienie i lokalna macierz; historyczny test 8 tracków nie pokrywa 9. Wszystkie release-only dowody wydzielone do ODK-082–087. SIM-READY. | Pakiet AUD (`PATTERNLY-AUDIT-TASKS-2026-09-22.md` — brak w workspace), [raport AUD-02](active/AUD-02/REPORT.md). |
@@ -260,6 +260,8 @@ Nazwy kluczy i mechanizm dostarczania Codex ustala na podstawie istniejącej arc
 ### 6.2a PLAN-SYNC/A — zweryfikowany stan wejściowy (24.09.2026)
 
 `done`: jedyny plan i raport źródłowy są wersjonowane w repo aplikacji; poprzednie lokalne ścieżki są symlinkami. [Raport A](active/PLAN-SYNC/A-REPORT.md) zawiera SHA, testy połączeń i luki. Nie jest to PASS dla `PLAN-SYNC/B`, `CI-CONTRACT` ani bramek wydania.
+
+`done` (B1): aktywne pakiety backendu, contentu i webu wskazują bieżący plan przez publiczny adres repo aplikacji; historyczne raporty nie były przepisywane.
 
 `partial`: lokalne AUD-02 pozostaje otwarte na driver forms i RC po odizolowaniu profilu ownera. `SIMP-05` jest `unknown / needs evidence`: pakietu i raportu nie znaleziono, a źródła nadal wspominają legacy; trzeba ustalić aktywne wejście/runtime przed decyzją o implementacji. `ODK-082–087` są `unknown / needs evidence`: poza wzmianką o wspólnym ODK-085/ODK-119 brak pakietów przypisujących pozostałe ID do providerów lub operacji. `PO-ACCESS` pozostaje `unknown / needs evidence` bez konkretnej zablokowanej czynności.
 
@@ -347,7 +349,7 @@ Kolejka nie duplikuje statusów z rejestru. Codex bierze pierwszy **dostępny** 
 
 | Kolejność | Następny task / slice | Wynik i reguła przejścia |
 | --- | --- | --- |
-| 01 | PLAN-SYNC/B | Rozprowadzić zweryfikowane decyzje do aktywnych pakietów; uzupełnić brakujące kontrakty bez wymyślania wyników. [A: raport](active/PLAN-SYNC/A-REPORT.md). |
+| 01 | PLAN-SYNC/B2 | Rozprowadzić zweryfikowane decyzje do aktywnych pakietów; uzupełnić brakujące kontrakty bez wymyślania wyników. [A: raport](active/PLAN-SYNC/A-REPORT.md), [B1: raport](active/PLAN-SYNC/B1-REPORT.md). |
 | 02 | CI-CONTRACT/A | Aktualne komendy workflow i scripts; bez przywracania legacy tylko dla CI. |
 | 03 | AUD-FIXTURE/A | Bezpieczny kontrakt chronionego ownera i izolacji. |
 | 04 | AUD-FIXTURE/B | Własne konta testowe, kontrolowane dane i cleanup; potwierdzenie, że zachowany owner nie został zmieniony. |
