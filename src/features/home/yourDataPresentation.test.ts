@@ -26,6 +26,7 @@ function state(kind: AccountState["kind"]): AccountState {
     case "deletionPending":
       return { accountId: "account-id", failure: "remoteDeletionPending", kind, status: "remoteDeletionPending", user } as unknown as AccountState;
     case "backendUnavailable":
+    case "reauthenticationRequired":
     case "revokedSession":
       return { kind, user };
     case "unavailable":
@@ -46,6 +47,7 @@ test("Your data presents an explicit action/details/privacy matrix for every acc
     signingOut: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "signingOut" },
     deleting: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "deleting" },
     backendUnavailable: { action: "retryIdentity", details: "none", icon: "rotate-ccw", privacyRequests: false, reset: false, stateCopy: "backendUnavailable", testID: "data-retry-identity" },
+    reauthenticationRequired: { action: "signOut", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "reauthenticationRequired", testID: "data-sign-out" },
     revokedSession: { action: "signOut", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "revokedSession", testID: "data-sign-out" },
   };
 

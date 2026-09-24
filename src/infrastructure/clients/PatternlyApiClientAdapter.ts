@@ -392,6 +392,7 @@ export type PatternlyApiClient = Readonly<{
   getReady: () => Promise<ReadyResponseDto>;
   getOpenApi: () => Promise<OpenApiResponseDto>;
   getMe: () => Promise<MeResponseDto>;
+  exchangeAccountSession: () => Promise<Readonly<{ customToken: string }>>;
   registerAccount: (input: AccountRegistrationInputDto) => Promise<AccountRegistrationResponseDto>;
   recordLegalAcceptance: (termsVersion: string) => Promise<Readonly<{ acceptance: Readonly<{ termsVersion: string; acceptedAt: string }> }>>;
   recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>) => Promise<Readonly<{ confirmation: Readonly<{ confirmationId: string; acceptedAt: string }> }>>;
@@ -531,6 +532,13 @@ export function createPatternlyApiClient(input: Readonly<{
     getReady: () => requestJson<ReadyResponseDto>("/ready", "GET", undefined, "none"),
     getOpenApi: () => requestJson<OpenApiResponseDto>("/openapi.json", "GET", undefined, "none"),
     getMe: () => requestJson<MeResponseDto>("/v1/me", "GET"),
+    exchangeAccountSession: async () => {
+      const response = await requestJson<unknown>("/v1/account/session/exchange", "POST");
+      if (!isRecord(response) || typeof response.customToken !== "string" || response.customToken.trim().length === 0) {
+        throw new PatternlyApiClientError("invalid_response");
+      }
+      return Object.freeze({ customToken: response.customToken });
+    },
     registerAccount: (body) => requestJson<AccountRegistrationResponseDto>("/v1/account/registration", "POST", body),
     recordLegalAcceptance: (termsVersion) => requestJson("/v1/legal-acceptances", "POST", { termsVersion, minimumAgeConfirmed: 18 }),
     recordPurchaseConfirmation: (body) => requestJson("/v1/purchase-confirmations", "POST", body),

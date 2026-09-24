@@ -18,6 +18,7 @@ export type YourDataStateCopy =
   | "signingOut"
   | "deleting"
   | "backendUnavailable"
+  | "reauthenticationRequired"
   | "revokedSession";
 
 export type YourDataAction = Readonly<{
@@ -65,6 +66,8 @@ export function getYourDataPresentation(state: AccountState): YourDataPresentati
       return presentation("deleting", "none", "info-circle", undefined, "none", false);
     case "backendUnavailable":
       return presentation("backendUnavailable", "retryIdentity", "rotate-ccw", "data-retry-identity", "none", false);
+    case "reauthenticationRequired":
+      return presentation("reauthenticationRequired", "signOut", "user", "data-sign-out", "none", false);
     case "revokedSession":
       return presentation("revokedSession", "signOut", "user", "data-sign-out", "none", false);
     case "signOutPending":

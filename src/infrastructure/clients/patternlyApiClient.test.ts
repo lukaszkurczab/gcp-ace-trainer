@@ -52,6 +52,28 @@ test("client rejects an unconfigured environment and missing authentication", as
   await assert.rejects(client.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "authentication_required");
 });
 
+test("account session exchange sends an empty authenticated request and parses its custom token", async () => {
+  const captured: Array<{ body: string | undefined; headers: Headers; method: string; url: string }> = [];
+  const client = createTestClient({ fetchImplementation: async (url, init) => {
+    captured.push({ body: init?.body === undefined ? undefined : String(init.body), headers: new Headers(init?.headers), method: init?.method ?? "", url: String(url) });
+    return new Response(JSON.stringify({ customToken: "session-custom-token" }), { status: 200 });
+  } });
+
+  assert.deepEqual(await client.exchangeAccountSession(), { customToken: "session-custom-token" });
+  assert.deepEqual(captured[0] && { body: captured[0].body, method: captured[0].method, url: captured[0].url }, {
+    body: undefined,
+    method: "POST",
+    url: `${API_ORIGIN}/v1/account/session/exchange`,
+  });
+  assert.equal(captured[0]?.headers.get("authorization"), "Bearer id-token");
+  assert.equal(captured[0]?.headers.get("x-firebase-appcheck"), "app-check-token");
+});
+
+test("account session exchange rejects a missing custom token", async () => {
+  const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({}), { status: 200 }) });
+  await assert.rejects(client.exchangeAccountSession(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+});
+
 test("mobile requests fail before transport when App Check is unavailable", async () => {
   let calls = 0;
   const client = createPatternlyApiClient({

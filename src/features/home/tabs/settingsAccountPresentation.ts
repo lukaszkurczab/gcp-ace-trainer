@@ -51,6 +51,7 @@ export function getSettingsAccountPresentation(state: AccountState): SettingsAcc
     case "guestAccessBlocked":
       return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: null, status: "guestAccessBlocked" };
     case "backendUnavailable":
+    case "reauthenticationRequired":
     case "revokedSession":
     case "signOutPending":
       return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: state.user.email, status: "unavailable" };

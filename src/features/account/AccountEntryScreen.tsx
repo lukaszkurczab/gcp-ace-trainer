@@ -501,6 +501,19 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         </Button>
       </AuthStatusScreen>
     );
+  if (account.state.kind === "reauthenticationRequired")
+    return (
+      <AuthStatusScreen
+        backAction={backAction}
+        body={text.reauthenticationRequired}
+        testID="account-reauthentication-required"
+        title={text.reauthenticationRequired}
+      >
+        <Button onPress={() => void account.signOut()} testID="account-reauthentication-sign-out" variant="primary">
+          {text.signOut}
+        </Button>
+      </AuthStatusScreen>
+    );
   if (account.state.kind === "revokedSession")
     return (
       <AuthStatusScreen

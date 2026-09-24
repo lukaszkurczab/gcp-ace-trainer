@@ -6,6 +6,7 @@ import {
   createUserWithEmailAndPassword,
   EmailAuthProvider,
   getAuth,
+  getIdTokenResult,
   initializeAuth,
   onAuthStateChanged,
   OAuthProvider,
@@ -46,6 +47,7 @@ export type FirebaseAuthClient = Readonly<{
   changePassword: (credentials: FirebaseAuthCredentials, newPassword: string) => Promise<void>;
   confirmPasswordReset: (code: string, password: string) => Promise<void>;
   getIdToken: () => Promise<string | null>;
+  getAuthorizationGeneration: () => Promise<number | null>;
   getSnapshot: () => FirebaseAuthUserSnapshot | null;
   onUserChanged: (listener: (user: FirebaseAuthUserSnapshot | null) => void) => () => void;
   register: (email: string, password: string) => Promise<FirebaseAuthUserSnapshot>;
@@ -57,6 +59,7 @@ export type FirebaseAuthClient = Readonly<{
   signInWithApple: () => Promise<FirebaseAuthUserSnapshot>;
   signInWithGoogle: (idToken: string) => Promise<FirebaseAuthUserSnapshot>;
   signInWithRecoveryToken: (customToken: string) => Promise<FirebaseAuthUserSnapshot>;
+  signInWithSessionToken: (customToken: string) => Promise<FirebaseAuthUserSnapshot>;
   signOut: () => Promise<void>;
   refreshAccountIdentity: () => Promise<FirebaseAuthUserSnapshot | null>;
   refreshVerification: () => Promise<FirebaseAuthUserSnapshot | null>;
@@ -72,6 +75,14 @@ export class FirebaseAuthClientError extends Error {
     this.name = "FirebaseAuthClientError";
     this.code = code;
   }
+}
+
+export function parseAuthorizationGenerationClaim(value: unknown): number | null {
+  if (value === undefined) return null;
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1) {
+    throw new FirebaseAuthClientError("auth/authorization-generation-invalid");
+  }
+  return value;
 }
 
 export type FirebaseAuthCurrentUser = Readonly<{ uid: string }>;
@@ -242,6 +253,13 @@ export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClien
     },
     confirmPasswordReset: async (code: string, password: string) => { await confirmPasswordReset(auth, code, password); },
     getIdToken: async () => current ? getIdTokenForCurrentUser(auth, current) : null,
+    getAuthorizationGeneration: async () => {
+      const user = requireCurrentUser();
+      const uid = user.uid;
+      const result = await getIdTokenResult(user);
+      if (auth.currentUser?.uid !== uid) throw new FirebaseAuthClientError("auth/uid-changed");
+      return parseAuthorizationGenerationClaim(result.claims.authorizationGeneration);
+    },
     getSnapshot: () => current ? snapshot(current) : null,
     onUserChanged: (listener) => onAuthStateChanged(auth, (user) => {
       current = user;
@@ -270,6 +288,10 @@ export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClien
       return afterCredential((await signInWithCredential(auth, OAuthProviderCredential.google(idToken))).user);
     },
     signInWithRecoveryToken: async (customToken: string) => {
+      if (!customToken) throw new FirebaseAuthClientError("auth/provider-unavailable");
+      return afterCredential((await signInWithCustomToken(auth, customToken)).user);
+    },
+    signInWithSessionToken: async (customToken: string) => {
       if (!customToken) throw new FirebaseAuthClientError("auth/provider-unavailable");
       return afterCredential((await signInWithCustomToken(auth, customToken)).user);
     },

@@ -5,6 +5,7 @@ import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExpo
 import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domain/entitlements";
 import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
+import { getMeWithExchangedSession } from "./accountSessionExchange";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
@@ -75,7 +76,7 @@ export type AccountState =
   | Readonly<{ kind: "signingOut"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "signOutPending"; user: FirebaseAuthUserSnapshot; operationId?: string }>
   | Readonly<{ kind: "deleting"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
-  | Readonly<{ kind: "backendUnavailable" | "revokedSession"; user: FirebaseAuthUserSnapshot }>;
+  | Readonly<{ kind: "backendUnavailable" | "reauthenticationRequired" | "revokedSession"; user: FirebaseAuthUserSnapshot }>;
 
 export type AccountSessionContextValue = Readonly<{
   applyVerificationCode: (code: string) => Promise<AccountCommandResult>;
@@ -377,6 +378,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const sessionCoordinatorRef = useRef<AccountSessionCoordinator<FinalizationOutcome> | null>(null);
   const profilePreparationRef = useRef<ProfilePreparationAttempt | null>(null);
   const observerBlockedUidRef = useRef<string | null>(null);
+  const sessionExchangeUidRef = useRef<string | null>(null);
   const legalAcceptancePendingRef = useRef(false);
   const registrationIntentRef = useRef<Readonly<{ uid: string; promise: Promise<AccountCommandResult> }> | null>(null);
   const deletionAuthorizationRef = useRef<DeletionAuthorizationVault | null>(null);
@@ -423,7 +425,13 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const outcome = await sessionCoordinator.run(token, async () => {
         if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
         try {
-          const response = await api.getMe();
+          const response = await getMeWithExchangedSession({
+            api,
+            auth,
+            canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
+            onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
+            user,
+          });
           // Keep this guard immediately before local account loading. The data
           // service may persist state, so stale generations must not enter it.
           if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
@@ -467,7 +475,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           const failure = classifyAccountFailure(error);
           return {
             result: { kind: "failure", failure },
-            state: { kind: failure === "revokedSession" ? "revokedSession" : "backendUnavailable", user },
+            state: { kind: failure === "revokedSession" ? "revokedSession" : failure === "reauthenticationRequired" ? "reauthenticationRequired" : "backendUnavailable", user },
           };
         }
       });
@@ -476,6 +484,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return error instanceof AccountSessionGenerationStaleError
         ? { kind: "failure", failure: "revokedSession" }
         : { kind: "failure", failure: classifyAccountFailure(error) };
+    } finally {
+      if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
     }
   }, [sessionCoordinator]);
 
@@ -525,7 +535,15 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const selectedProfile = await prepareAuthenticatedProfileScope({
         canContinue,
         prepareStorage: prepareProfileStorage,
-        getMe: () => api.getMe(),
+        getMe: async () => {
+          return getMeWithExchangedSession({
+            api,
+            auth,
+            canContinue,
+            onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
+            user,
+          });
+        },
         selectAccount: (accountId, guard) => selectPreparedAccountProfile(accountId, guard),
         activate: (profile) => { activatePreparedProfile(profile.id, profile.kind, { deferReadyNotification: true }); },
       });
@@ -572,7 +590,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const failure = error instanceof AccountSessionGenerationStaleError || !canContinue()
         ? "revokedSession"
         : classifyAccountFailure(error);
-      if (ownsPreparation && canContinue()) setState({ kind: failure === "revokedSession" ? "revokedSession" : "backendUnavailable", user });
+      if (ownsPreparation && canContinue()) setState({ kind: failure === "revokedSession" ? "revokedSession" : failure === "reauthenticationRequired" ? "reauthenticationRequired" : "backendUnavailable", user });
+      if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
       attempt.bootstrapFailure = { kind: "failure", failure };
       resolveCompletion(attempt.bootstrapFailure);
       return attempt;
@@ -639,6 +658,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
                 ? { kind: "failure", failure: "accountNotFound" }
                 : { kind: "failure", failure: reconciliationOutcome.state?.kind === "revokedSession" ? "revokedSession" : reconciliationOutcome.state?.kind === "backendUnavailable" ? "backendUnavailable" : "providerUnavailable" };
       if (profilePreparationRef.current === attempt) profilePreparationRef.current = null;
+      if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
       attempt.resolveCompletion(result);
       return result;
     })();
@@ -829,7 +849,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           return;
         }
         if (rejectedRestoreUid !== null && rejectedRestoreUid !== user.uid) rejectedRestoreUid = null;
-        if (legalAcceptancePendingRef.current || observerBlockedUidRef.current === user.uid) return;
+        if (legalAcceptancePendingRef.current || observerBlockedUidRef.current === user.uid || sessionExchangeUidRef.current === user.uid) return;
         const matchingLogoutBlock = findMatchingLocalLogoutBlock(logoutControlSnapshotRef.current, user.uid);
         if (matchingLogoutBlock) {
           observedUid = user.uid;
@@ -1357,7 +1377,13 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         try {
           const user = await auth.refreshAccountIdentity();
           if (!user || !canContinue(auth, user)) return { kind: "failure", failure: "revokedSession" };
-          const response = await api.getMe();
+          const response = await getMeWithExchangedSession({
+            api,
+            auth,
+            canContinue: () => canContinue(auth, user),
+            onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
+            user,
+          });
           if (!canContinue(auth, user)) return { kind: "failure", failure: "revokedSession" };
           setState((latest) => publishRefreshedAuthenticatedState(latest, {
             backendUser: response.user,
@@ -1369,6 +1395,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           return { kind: "failure", failure: classifyAccountFailure(error) };
         } finally {
           if (observerBlockedUidRef.current === previousUser.uid) observerBlockedUidRef.current = null;
+          if (sessionExchangeUidRef.current === previousUser.uid) sessionExchangeUidRef.current = null;
         }
       }).then((result) => {
         const currentAuth = authClient;
@@ -1968,6 +1995,7 @@ export function classifyAccountFailure(error: unknown): AccountFailure {
   if (isPreparedGuestChoiceRequired(error)) return "guestChoiceRequired";
   if (error instanceof PatternlyApiClientError) {
     if (error.serverCode === "account_not_found") return "accountNotFound";
+    if (error.serverCode === "reauthentication_required" || error.serverCode === "recent_reauthentication_required") return "reauthenticationRequired";
     if (error.serverCode === "recovery_code_invalid") return "invalidRecoveryCode";
     if (error.serverCode === "recovery_code_used") return "recoveryCodeUsed";
     if (error.serverCode === "purchase_attempt_active") return "conflict";
@@ -1988,6 +2016,7 @@ export function classifyAccountFailure(error: unknown): AccountFailure {
   if (code === "auth/command-in-flight") return "conflict";
   if (["auth/user-token-expired", "auth/invalid-user-token", "auth/user-disabled"].includes(code)) return "revokedSession";
   if (["auth/requires-recent-login", "auth/reauthentication-provider-unavailable"].includes(code)) return "reauthenticationRequired";
+  if (code === "auth/authorization-generation-invalid") return "providerUnavailable";
   if (["auth/operation-not-allowed", "auth/app-not-authorized", "auth/invalid-api-key", "auth/invalid-app-id", "auth/provider-unavailable", "auth/apple-unavailable"].includes(code)) return "providerUnavailable";
   if (["auth/wrong-password", "auth/invalid-credential", "auth/email-already-in-use", "auth/user-not-found"].includes(code)) return "invalidCredential";
   return "providerUnavailable";
