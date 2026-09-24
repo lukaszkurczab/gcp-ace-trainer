@@ -73,8 +73,14 @@ function parseRegistry(raw: string | null): ProfileRegistry | null {
   } catch { return null; }
 }
 
-function storedGuestInstallation(storage: KeyValueStorage): Readonly<{ bindingState: "guest" | "adoption_pending" | "account_bound"; accountId: string | null }> | null {
-  const raw = storage.getString(STORAGE_KEYS.GUEST_INSTALLATION);
+type StoredGuestInstallation = Readonly<{
+  installationId: string;
+  localDatasetId: string;
+  bindingState: "guest" | "adoption_pending" | "account_bound";
+  accountId: string | null;
+}>;
+
+function parseStoredGuestInstallation(raw: string | undefined): StoredGuestInstallation | null {
   if (!raw) return null;
   try {
     const envelope = JSON.parse(raw) as Record<string, unknown>;
@@ -82,23 +88,73 @@ function storedGuestInstallation(storage: KeyValueStorage): Readonly<{ bindingSt
     if (Object.keys(envelope).sort().join(",") !== "payload,revision,schemaIdentity" || envelope.schemaIdentity !== CANONICAL_ENVELOPE || !Number.isSafeInteger(envelope.revision) || Number(envelope.revision) < 1 || !payload || typeof payload !== "object" || Array.isArray(payload)) return null;
     if (Object.keys(payload).sort().join(",") !== "accountId,bindingState,installationId,localDatasetId") return null;
     if (!uuid(payload.installationId) || !uuid(payload.localDatasetId) || payload.installationId === payload.localDatasetId) return null;
-    if (payload.bindingState === "account_bound" && typeof payload.accountId === "string" && payload.accountId.trim()) return { bindingState: "account_bound", accountId: payload.accountId };
+    if (payload.bindingState === "account_bound" && typeof payload.accountId === "string" && payload.accountId.trim()) {
+      return { installationId: payload.installationId as string, localDatasetId: payload.localDatasetId as string, bindingState: "account_bound", accountId: payload.accountId };
+    }
     if ((payload.bindingState === "guest" || payload.bindingState === "adoption_pending") && payload.accountId === null) {
-      return { bindingState: payload.bindingState, accountId: null };
+      return { installationId: payload.installationId as string, localDatasetId: payload.localDatasetId as string, bindingState: payload.bindingState, accountId: null };
     }
     return null;
   } catch { return null; }
+}
+
+function storedGuestInstallation(storage: KeyValueStorage): StoredGuestInstallation | null {
+  return parseStoredGuestInstallation(storage.getString(STORAGE_KEYS.GUEST_INSTALLATION));
 }
 
 function physicalKey(profileId: string, key: string, legacy: boolean): string {
   return legacy ? key : `${PROFILE_PREFIX}${profileId}:${encodeURIComponent(key)}`;
 }
 
-function provisionGuestAccess(base: KeyValueStorage, profile: StorageProfile): void {
-  const key = physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS, false);
+function validGuestAccess(raw: string | undefined): boolean {
+  if (!raw) return false;
+  try {
+    const envelope = JSON.parse(raw) as Record<string, unknown>;
+    const payload = envelope.payload as Record<string, unknown> | undefined;
+    return Object.keys(envelope).sort().join(",") === "payload,revision,schemaIdentity"
+      && envelope.schemaIdentity === CANONICAL_ENVELOPE
+      && Number.isSafeInteger(envelope.revision) && Number(envelope.revision) >= 1
+      && payload !== undefined && typeof payload === "object" && !Array.isArray(payload)
+      && Object.keys(payload).join(",") === "mode" && payload.mode === "guest";
+  } catch { return false; }
+}
+
+function ensureGuestAccess(base: KeyValueStorage, profile: StorageProfile): void {
+  const key = physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS, profile.kind === "legacy_guest");
+  const existing = base.getString(key);
+  if (existing !== undefined) {
+    if (!validGuestAccess(existing)) throw new ProfileStorageError("profile_scope_unavailable");
+    return;
+  }
   const value = JSON.stringify({ schemaIdentity: CANONICAL_ENVELOPE, revision: 1, payload: { mode: "guest" } });
   base.setString(key, value);
   if (base.getString(key) !== value) throw new ProfileStorageError("profile_scope_unavailable");
+}
+
+async function ensureGuestInstallation(base: KeyValueStorage, profile: StorageProfile, identity: GuestInstallationIdentityPort): Promise<void> {
+  const key = physicalKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION, profile.kind === "legacy_guest");
+  const existing = parseStoredGuestInstallation(base.getString(key));
+  if (existing) {
+    // Older guest provisioning generated a dataset ID independently of the
+    // router's physical scope ID. Keep that identity and its scoped data.
+    if (existing.accountId !== null || (existing.bindingState !== "guest" && existing.bindingState !== "adoption_pending")) {
+      throw new ProfileStorageError("profile_scope_unavailable");
+    }
+    return;
+  }
+  if (base.getString(key) !== undefined) throw new ProfileStorageError("profile_scope_unavailable");
+  const generated = await identity.create();
+  if (!uuid(generated.installationId) || generated.installationId === profile.id) throw new ProfileStorageError("profile_scope_unavailable");
+  const value = JSON.stringify({
+    schemaIdentity: CANONICAL_ENVELOPE,
+    revision: 1,
+    payload: { installationId: generated.installationId, localDatasetId: profile.id, bindingState: "guest", accountId: null },
+  });
+  base.setString(key, value);
+  const verified = parseStoredGuestInstallation(base.getString(key));
+  if (!verified || verified.installationId !== generated.installationId || verified.localDatasetId !== profile.id || verified.bindingState !== "guest" || verified.accountId !== null) {
+    throw new ProfileStorageError("profile_scope_unavailable");
+  }
 }
 
 export function createProfileScopedStorage(base: KeyValueStorage, profile: StorageProfile, isTransitionActive: () => boolean = () => false): KeyValueStorage {
@@ -122,10 +178,13 @@ export function createProfileScopedStorage(base: KeyValueStorage, profile: Stora
 export type ProfileStorageRouter = Readonly<{
   registry: ProfileRegistry;
   profile: StorageProfile;
+  isFreshInstallation: boolean;
   storage: KeyValueStorage;
-  selectGuest(): Promise<StorageProfile>;
+  refresh(): Promise<ProfileStorageRouter>;
+  selectGuest(canContinue?: () => boolean): Promise<StorageProfile>;
   selectExistingGuest(profileId: string, canContinue?: () => boolean): Promise<StorageProfile>;
   selectAccount(accountId: string, canContinue?: () => boolean): Promise<StorageProfile>;
+  hasValidGuestAccess(profileId: string): boolean;
 }>;
 
 export async function openProfileStorageRouter(
@@ -137,16 +196,17 @@ export async function openProfileStorageRouter(
   const readSlots = async () => Promise.all(ROOT_KEYS.map((key) => control.get(key)));
   const raw = await readSlots();
   const parsed = raw.map(parseRegistry);
+  let isFreshInstallation = false;
   let registry: ProfileRegistry;
   if (raw.every((value) => value === null)) {
     const keys = base.getAllKeys();
     const hasCanonical = keys.some((key) => key.startsWith(STORAGE_NAMESPACE));
     if (keys.some((key) => key.startsWith(PROFILE_PREFIX))) throw new ProfileStorageError("profile_registry_corrupt");
+    isFreshInstallation = keys.length === 0;
     if (hasCanonical) {
       const marker = storedGuestInstallation(base);
       if (!marker) throw new ProfileStorageError("legacy_profile_unidentified");
-      const legacyId = (await identity.create()).localDatasetId;
-      const profile: StorageProfile = Object.freeze({ id: legacyId, kind: marker.bindingState === "account_bound" ? "legacy_owner" : "legacy_guest", accountId: marker.accountId });
+      const profile: StorageProfile = Object.freeze({ id: marker.localDatasetId, kind: marker.bindingState === "account_bound" ? "legacy_owner" : "legacy_guest", accountId: marker.accountId });
       registry = withChecksum({ version: ROOT_VERSION, generation: 1, profiles: [profile], legacyProfileId: profile.id, selectedProfileId: profile.id });
     } else {
       const guest = Object.freeze({ id: (await identity.create()).localDatasetId, kind: "guest" as const, accountId: null });
@@ -161,6 +221,7 @@ export async function openProfileStorageRouter(
     if (valid.length === 2 && valid[0]!.generation === valid[1]!.generation) throw new ProfileStorageError("profile_registry_corrupt");
     registry = valid.sort((left, right) => right.generation - left.generation)[0]!;
     if (!registry) throw new ProfileStorageError("profile_registry_corrupt");
+    isFreshInstallation = isUnchosenFreshGuestRegistry(registry, base.getAllKeys());
   }
   const profile = registry.profiles.find((candidate) => candidate.id === registry.selectedProfileId);
   if (!profile) throw new ProfileStorageError("profile_registry_corrupt");
@@ -173,20 +234,47 @@ export async function openProfileStorageRouter(
   return Object.freeze({
     registry,
     profile,
+    isFreshInstallation,
     storage: createProfileScopedStorage(base, profile, dependencies.isTransitionActive),
-    async selectGuest() {
+    async refresh() {
+      return openProfileStorageRouter(base, control, { identity, ...dependencies });
+    },
+    hasValidGuestAccess(profileId) {
+      if (registry.selectedProfileId !== profileId) return false;
+      const candidate = registry.profiles.find((entry) => entry.id === profileId);
+      if (!candidate || (candidate.kind !== "guest" && candidate.kind !== "legacy_guest")) return false;
+      const legacy = candidate.kind === "legacy_guest";
+      const guestInstallation = storedGuestInstallation(createProfileScopedStorage(base, candidate));
+      return validGuestAccess(base.getString(physicalKey(candidate.id, STORAGE_KEYS.GUEST_ACCESS, legacy)))
+        && guestInstallation !== null
+        && guestInstallation.accountId === null
+        && (guestInstallation.bindingState === "guest" || guestInstallation.bindingState === "adoption_pending");
+    },
+    async selectGuest(canContinue: () => boolean = () => true) {
+      if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+      const generated = await identity.create();
+      const guest = Object.freeze({ id: generated.localDatasetId, kind: "guest" as const, accountId: null });
+      if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+      if (registry.profiles.some((candidate) => candidate.id === guest.id)) throw new ProfileStorageError("profile_scope_unavailable");
       claimTransition();
-      const guest = Object.freeze({ id: (await identity.create()).localDatasetId, kind: "guest" as const, accountId: null });
       const next = withChecksum({ ...registryBody(registry, registry.generation + 1), profiles: [...registry.profiles, guest], selectedProfileId: guest.id });
-      provisionGuestAccess(base, guest);
+      const guestKey = physicalKey(guest.id, STORAGE_KEYS.GUEST_INSTALLATION, false);
+      const installation = JSON.stringify({ schemaIdentity: CANONICAL_ENVELOPE, revision: 1, payload: { installationId: generated.installationId, localDatasetId: guest.id, bindingState: "guest", accountId: null } });
+      if (!uuid(generated.installationId) || generated.installationId === guest.id) throw new ProfileStorageError("profile_scope_unavailable");
+      base.setString(guestKey, installation);
+      const verifiedInstallation = parseStoredGuestInstallation(base.getString(guestKey));
+      if (!verifiedInstallation || verifiedInstallation.installationId !== generated.installationId || verifiedInstallation.localDatasetId !== guest.id || verifiedInstallation.bindingState !== "guest" || verifiedInstallation.accountId !== null) throw new ProfileStorageError("profile_scope_unavailable");
+      ensureGuestAccess(base, guest);
       await commitRegistry(control, registry, next);
       return guest;
     },
     async selectExistingGuest(profileId: string, canContinue: () => boolean = () => true) {
       const guest = registry.profiles.find((candidate) => candidate.id === profileId && (candidate.kind === "guest" || candidate.kind === "legacy_guest"));
       if (!guest) throw new ProfileStorageError("profile_scope_unavailable");
-      if (guest.id === registry.selectedProfileId) return guest;
       if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+      await ensureGuestInstallation(base, guest, identity);
+      ensureGuestAccess(base, guest);
+      if (guest.id === registry.selectedProfileId) return guest;
       claimTransition();
       const next = withChecksum({ ...registryBody(registry, registry.generation + 1), selectedProfileId: guest.id });
       await commitRegistry(control, registry, next);
@@ -197,9 +285,15 @@ export async function openProfileStorageRouter(
       if (!accountId.trim()) throw new ProfileStorageError("profile_scope_unavailable");
       const selectedProfile = registry.profiles.find((candidate) => candidate.id === registry.selectedProfileId);
       if (!selectedProfile) throw new ProfileStorageError("profile_registry_corrupt");
-      const currentMarker = storedGuestInstallation(createProfileScopedStorage(base, selectedProfile));
+      // A legacy guest marker can carry an adopted-account identity that is not
+      // yet represented in the registry. Never inspect a selected account scope
+      // or a modern guest scope while switching to another authenticated account.
+      const currentMarker = selectedProfile.kind === "legacy_guest"
+        ? storedGuestInstallation(createProfileScopedStorage(base, selectedProfile))
+        : null;
       if (currentMarker?.bindingState === "account_bound" && currentMarker.accountId === accountId && selectedProfile.accountId !== accountId) {
         if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+        claimTransition();
         const promoted: StorageProfile = Object.freeze({ ...selectedProfile, kind: selectedProfile.kind === "legacy_guest" ? "legacy_owner" : "account", accountId });
         const profiles = registry.profiles.map((candidate) => candidate.id === selectedProfile.id ? promoted : candidate);
         const next = withChecksum({ ...registryBody(registry, registry.generation + 1), profiles });
@@ -208,10 +302,10 @@ export async function openProfileStorageRouter(
       }
       const existing = registry.profiles.find((candidate) => candidate.accountId === accountId && (candidate.kind === "legacy_owner" || candidate.kind === "account"));
       if (existing?.id === registry.selectedProfileId) return existing;
-      claimTransition();
       const account = existing ?? Object.freeze({ id: (await identity.create()).localDatasetId, kind: "account" as const, accountId });
       if (account.id !== registry.selectedProfileId) {
         if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+        claimTransition();
         const profiles = existing ? registry.profiles : [...registry.profiles, account];
         const next = withChecksum({ ...registryBody(registry, registry.generation + 1), profiles, selectedProfileId: account.id });
         await commitRegistry(control, registry, next);
@@ -229,6 +323,12 @@ export async function commitProfileSelection(control: StorageManifestStore, prev
 
 function registryBody(registry: ProfileRegistry, generation: number): Omit<ProfileRegistry, "checksum"> {
   return { version: ROOT_VERSION, generation, profiles: registry.profiles, legacyProfileId: registry.legacyProfileId, selectedProfileId: registry.selectedProfileId };
+}
+
+function isUnchosenFreshGuestRegistry(registry: ProfileRegistry, storageKeys: readonly string[]): boolean {
+  if (storageKeys.length !== 0 || registry.generation !== 1 || registry.legacyProfileId !== null || registry.profiles.length !== 1) return false;
+  const [profile] = registry.profiles;
+  return profile?.kind === "guest" && profile.id === registry.selectedProfileId;
 }
 
 async function commitRegistry(control: StorageManifestStore, previous: ProfileRegistry, next: ProfileRegistry): Promise<void> {

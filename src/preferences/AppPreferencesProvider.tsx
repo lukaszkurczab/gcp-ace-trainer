@@ -12,7 +12,7 @@ import {
   type Settings,
 } from "../application/appPreferences";
 import { colors, type AppColors, type ColorMode } from "../theme";
-import { initializeKeyValueStorage, onKeyValueStorageReady } from "../infrastructure/storage/mmkvClient";
+import { onKeyValueStorageReady } from "../infrastructure/storage/mmkvClient";
 
 export type AppLocale = "en" | "pl";
 
@@ -52,7 +52,6 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
         .finally(() => { loading = false; if (active) setReady(true); });
     };
     const unsubscribe = onKeyValueStorageReady(load);
-    void initializeKeyValueStorage().catch(() => undefined);
     return () => { active = false; unsubscribe(); };
   }, []);
 

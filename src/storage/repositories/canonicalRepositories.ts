@@ -1,5 +1,5 @@
 import type { GuestInstallationIdentityPort } from "../../infrastructure/identity/installationIdentity";
-import { initializeKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { hasGuestAccess } from "./guestAccessRepository";
 import { provisionGuestInstallation } from "./guestInstallationRepository";
 import { validateStorageMetadata } from "./storageMetadataRepository";
@@ -33,9 +33,9 @@ function notifyStep(observer: CanonicalRepositoryBootstrapStepObserver | undefin
   try { observer(step); } catch { /* diagnostic observers are best-effort */ }
 }
 
-/** Initializes storage and opens the only canonical repository set. */
+/** Opens the canonical repository set only after the profile storage scope is active. */
 export async function openCanonicalRepositories(dependencies: CanonicalRepositoryBootstrapDependencies = {}): Promise<void> {
-  await initializeKeyValueStorage();
+  getKeyValueStorage();
   notifyStep(dependencies.onStep, CanonicalRepositoryBootstrapStep.StorageMetadataValidation);
   await validateStorageMetadata();
   notifyStep(dependencies.onStep, CanonicalRepositoryBootstrapStep.AcceptedReportOutboxPurge);

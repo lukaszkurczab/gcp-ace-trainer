@@ -7,7 +7,7 @@ import {
   type TrainingAttempt,
   type TrainingSession,
 } from "../../domain";
-import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
+import { MemoryKeyValueStorage, installKeyValueStorageForTests, setProfileStoragePreparationFactoryForTests } from "../../infrastructure/storage/mmkvClient";
 import {
   CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER,
   CanonicalRepositoryBootstrapStep,
@@ -79,6 +79,24 @@ function attempt(overrides: Partial<TrainingAttempt<unknown>> = {}): TrainingAtt
 }
 
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
+
+test("canonical repository bootstrap requires an already active storage scope", async () => {
+  let preparationCalls = 0;
+  const steps: CanonicalRepositoryBootstrapStep[] = [];
+  setProfileStoragePreparationFactoryForTests(async () => {
+    preparationCalls += 1;
+    throw new Error("bootstrap must not prepare storage");
+  });
+
+  await assert.rejects(
+    () => openCanonicalRepositories({ onStep: (step) => { steps.push(step); } }),
+    /encrypted_storage_not_initialized/u,
+  );
+
+  assert.equal(preparationCalls, 0);
+  assert.deepEqual(steps, []);
+  setProfileStoragePreparationFactoryForTests(null);
+});
 
 test("canonical repositories use individual immutable records and one active session", async () => {
   const active = session();

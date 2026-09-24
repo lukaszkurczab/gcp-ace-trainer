@@ -55,6 +55,7 @@ export function getSettingsAccountPresentation(state: AccountState): SettingsAcc
     case "signOutPending":
       return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: state.user.email, status: "unavailable" };
     case "loading":
+    case "profilePreparing":
     case "unavailable":
       return { accountDataStatus: null, canOpenAccount: false, canSignOut: false, email: null, status: "unavailable" };
   }

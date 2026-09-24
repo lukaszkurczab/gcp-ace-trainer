@@ -53,6 +53,7 @@ export function getYourDataPresentation(state: AccountState): YourDataPresentati
     case "verificationPending":
       return presentation("verificationPending", "openAccount", "user", "data-open-account", "none", false);
     case "loading":
+    case "profilePreparing":
       return presentation("loading", "none", "info-circle", undefined, "none", false);
     case "unavailable":
       return unavailablePresentation(state.reason);

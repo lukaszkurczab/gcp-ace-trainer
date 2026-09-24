@@ -50,10 +50,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export function RootNavigator() {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
-  const { state } = usePatternlyAccount();
+  const { state, accountEntryMode } = usePatternlyAccount();
   const applicationSessionReady = state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting" || (state.kind === "authenticated" && state.accountData.status === "synced") || (state.kind === "authenticated" && ["resumeRequired", "remoteDeletionPending", "localCleanupPending"].includes(state.accountData.status));
 
-  if (state.kind === "loading") {
+  if (state.kind === "loading" || state.kind === "profilePreparing") {
     return (
       <Screen edges={["top", "bottom"]} style={styles.sessionLoading}>
         <LoadingState description={t("Checking saved sign-in.")} showLogo testID="account-session-restore-loading" title={t("Restoring session")} />
@@ -223,7 +223,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.ACCOUNT_ENTRY}
         component={AccountEntryScreen}
-        initialParams={{ initialMode: "entry" }}
+        initialParams={{ initialMode: accountEntryMode === "login" ? "signIn" : "entry" }}
         options={{ headerBackButtonMenuEnabled: false, headerShown: false, title: t("Account") }}
       />
       <Stack.Screen

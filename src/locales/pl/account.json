@@ -143,6 +143,7 @@
   "offline": "Wygląda na to, że jesteś offline. Spróbuj po połączeniu.",
   "expiredAction": "Link wygasł. Poproś o nowy.",
   "providerUnavailable": "Ta metoda logowania jest teraz niedostępna.",
+  "guestChoiceRequired": "Na tym urządzeniu zapisano kilka profili gościa. Patternly nie może jeszcze ustalić, który zawiera Twój postęp. Dane pozostają zachowane; przed kontynuowaniem bez konta trzeba odzyskać właściwy profil gościa.",
   "invalidCredential": "Nie udało się potwierdzić danych logowania.",
   "invalidRecoveryCode": "Ten kod odzyskiwania jest nieprawidłowy. Sprawdź go i spróbuj ponownie albo wybierz odzyskiwanie e-mailem.",
   "recoveryCodeUsed": "Ten kod odzyskiwania został już użyty. Spróbuj innego kodu albo wybierz odzyskiwanie e-mailem.",

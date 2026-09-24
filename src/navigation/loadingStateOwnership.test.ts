@@ -13,7 +13,7 @@ function tsxFiles(root: string): string[] {
   });
 }
 
-const genericPendingPaths = ["src/content/application/ContentPreparationGate.tsx", "src/navigation/RootNavigator.tsx"] as const;
+const genericPendingPaths = ["src/application/account/ProfileStoragePreparationGate.tsx", "src/content/application/ContentPreparationGate.tsx", "src/navigation/RootNavigator.tsx"] as const;
 const specializedLoadingOwners = [
   "src/components/ReviewLoadingSkeleton.tsx#ReviewLoadingSkeleton",
   "src/content/application/ContentPreparationGate.tsx#ContentBootstrapLoadingSkeleton",

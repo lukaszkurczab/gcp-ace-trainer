@@ -14,21 +14,27 @@ let profileRouter: ProfileStorageRouter | null = null;
 type OpenedProfileStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter }>;
 type PreparedProfileStorage = OpenedProfileStorage & Readonly<{ generation: number }>;
 let preparedStorage: PreparedProfileStorage | null = null;
+let activePreparedStorage: PreparedProfileStorage | null = null;
 let preparation: Promise<PreparedProfileStorage> | null = null;
-let productionInitialization: Promise<KeyValueStorage> | null = null;
 let testPreparationFactory: (() => Promise<Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter }>>) | null = null;
+let testProfileTransitionReload: (() => Promise<void>) | null = null;
 let profileStorageGeneration = 0;
-let initializationRequestGeneration = 0;
 const readyListeners = new Set<() => void>();
 const profileTransitionListeners = new Set<() => void>();
 let profileTransitionActive = false;
 
 export type PreparedStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter }>;
+export type PreparedProfileState = Readonly<{
+  profiles: readonly StorageProfile[];
+  selectedProfile: StorageProfile;
+  isFreshInstallation: boolean;
+}>;
 
 function closePublishedProfileStorage(): void {
   profileStorageGeneration += 1;
   client = null;
   profileRouter = null;
+  activePreparedStorage = null;
   installOwnerPreservationSource(null, null);
 }
 
@@ -73,10 +79,44 @@ async function ensurePreparedStorage(): Promise<PreparedProfileStorage> {
   return preparation;
 }
 
+async function preparedStorageForDecision(): Promise<PreparedProfileStorage> {
+  const prepared = preparedStorage ?? await ensurePreparedStorage();
+  if (prepared !== preparedStorage || prepared.generation !== profileStorageGeneration) {
+    closePublishedProfileStorage();
+    preparedStorage = null;
+    preparation = null;
+    throw new Error("prepared_profile_stale");
+  }
+  return prepared;
+}
+
+async function refreshPreparedAfterSelection(
+  prepared: PreparedProfileStorage,
+  canContinue: () => boolean,
+): Promise<void> {
+  let router: ProfileStorageRouter;
+  try {
+    router = await prepared.router.refresh();
+  } catch (error) {
+    if (preparedStorage === prepared) {
+      preparedStorage = null;
+      preparation = null;
+      closePublishedProfileStorage();
+    }
+    throw error;
+  }
+  if (preparedStorage !== prepared || prepared.generation !== profileStorageGeneration || client) {
+    throw new Error("prepared_profile_stale");
+  }
+  const refreshed = { ...prepared, router };
+  preparedStorage = refreshed;
+  preparation = Promise.resolve(refreshed);
+  profileTransitionActive = false;
+  if (!canContinue()) throw new Error("profile_transition_cancelled");
+}
+
 /** Opens encrypted storage and its control registry without publishing profile-scoped storage. */
 export async function prepareProfileStorage(): Promise<StorageProfile> {
-  initializationRequestGeneration += 1;
-  productionInitialization = null;
   if (!preparedStorage && !preparation) closePublishedProfileStorage();
   try {
     return (await ensurePreparedStorage()).router.profile;
@@ -86,8 +126,89 @@ export async function prepareProfileStorage(): Promise<StorageProfile> {
   }
 }
 
+/** Reads only the prepared router registry and never opens a profile-scoped client. */
+export async function inspectPreparedProfileState(): Promise<PreparedProfileState> {
+  const { router } = await preparedStorageForDecision();
+  const selectedProfile = router.registry.profiles.find((profile) => profile.id === router.registry.selectedProfileId);
+  if (!selectedProfile) throw new Error("profile_registry_corrupt");
+  return Object.freeze({
+    profiles: router.registry.profiles,
+    selectedProfile,
+    isFreshInstallation: router.isFreshInstallation,
+  });
+}
+
+/** Validates only the exact selected guest's access and installation markers before publication. */
+export async function validatePreparedGuestAccess(profileId: string): Promise<boolean> {
+  const { router } = await preparedStorageForDecision();
+  if (client || router.registry.selectedProfileId !== profileId) return false;
+  return router.hasValidGuestAccess(profileId);
+}
+
+/** Selects the authenticated backend account profile while storage remains closed. */
+export async function selectPreparedAccountProfile(
+  accountId: string,
+  canContinue: () => boolean = () => true,
+): Promise<Readonly<{ profile: StorageProfile; changed: boolean }>> {
+  const prepared = await preparedStorageForDecision();
+  const { router } = prepared;
+  if (client || !canContinue()) throw new Error("profile_transition_cancelled");
+  const previous = router.registry.profiles.find((profile) => profile.id === router.registry.selectedProfileId);
+  if (!previous) throw new Error("profile_registry_corrupt");
+  const profile = await router.selectAccount(accountId, canContinue);
+  const changed = profile.id !== previous.id || profile.kind !== previous.kind;
+  if (!canContinue() && !changed) throw new Error("profile_transition_cancelled");
+  if (changed) await refreshPreparedAfterSelection(prepared, canContinue);
+  return Object.freeze({ profile, changed });
+}
+
+/**
+ * Reopens a preserved guest without reading its payload. An implicit choice is
+ * allowed only when the selected profile is a guest or exactly one guest exists.
+ */
+export async function selectPreparedGuestProfile(
+  profileId?: string,
+  canContinue: () => boolean = () => true,
+): Promise<Readonly<{ profile: StorageProfile; changed: boolean }>> {
+  const prepared = await preparedStorageForDecision();
+  const { router } = prepared;
+  if (client || !canContinue()) throw new Error("profile_transition_cancelled");
+  const previous = router.registry.profiles.find((profile) => profile.id === router.registry.selectedProfileId);
+  if (!previous) throw new Error("profile_registry_corrupt");
+  const guests = router.registry.profiles.filter((profile) => profile.kind === "guest" || profile.kind === "legacy_guest");
+  const selectedIsGuest = previous.kind === "guest" || previous.kind === "legacy_guest";
+  let targetId = profileId;
+  if (targetId === undefined) {
+    if (selectedIsGuest) targetId = previous.id;
+    else if (guests.length === 1) targetId = guests[0]!.id;
+    else if (guests.length > 1) throw new Error("prepared_guest_choice_required");
+  }
+  const profile = targetId === undefined
+    ? await router.selectGuest(canContinue)
+    : await router.selectExistingGuest(targetId, canContinue);
+  const changed = profile.id !== previous.id || profile.kind !== previous.kind;
+  if (!canContinue() && !changed) throw new Error("profile_transition_cancelled");
+  if (changed) await refreshPreparedAfterSelection(prepared, canContinue);
+  return Object.freeze({ profile, changed });
+}
+
+/** Closes published storage and restores its router metadata for another safe decision. */
+export function closeActiveProfileStorage(): void {
+  if (!client) return;
+  const retained = activePreparedStorage;
+  client = null;
+  profileRouter = null;
+  activePreparedStorage = null;
+  installOwnerPreservationSource(null, null);
+  if (retained && retained.generation === profileStorageGeneration) {
+    preparedStorage = retained;
+    preparation = Promise.resolve(retained);
+  }
+}
+
 /** Publishes only the exact profile prepared by the router. A mismatch leaves storage closed. */
 export function activatePreparedProfile(profileId: string, kind: StorageProfile["kind"]): KeyValueStorage {
+  if (profileTransitionActive) throw new ProfileTransitionActiveError();
   const prepared = preparedStorage;
   const profile = prepared?.router.profile;
   if (!prepared || prepared.generation !== profileStorageGeneration || !profile || profile.id !== profileId || profile.kind !== kind) {
@@ -98,9 +219,10 @@ export function activatePreparedProfile(profileId: string, kind: StorageProfile[
   }
   profileTransitionActive = false;
   profileRouter = prepared.router;
+  activePreparedStorage = prepared;
   const generation = prepared.generation;
   const checkPublished = () => {
-    if (profileStorageGeneration !== generation || profileTransitionActive) throw new ProfileTransitionActiveError();
+    if (profileStorageGeneration !== generation || profileTransitionActive || client !== publishedStorage) throw new ProfileTransitionActiveError();
   };
   const scopedStorage = prepared.router.storage;
   const publishedStorage: KeyValueStorage = {
@@ -121,32 +243,6 @@ export function activatePreparedProfile(profileId: string, kind: StorageProfile[
     throw error;
   }
   return client;
-}
-
-/**
- * Transitional eager adapter for existing providers. This is not a safe startup gate:
- * it immediately activates the router-selected profile before Auth restoration.
- */
-export async function initializeKeyValueStorage(): Promise<KeyValueStorage> {
-  if (client) return client;
-  if (!productionInitialization) {
-    if (!preparedStorage && !preparation) closePublishedProfileStorage();
-    const requestGeneration = initializationRequestGeneration;
-    productionInitialization = (async () => {
-      const prepared = await ensurePreparedStorage();
-      if (requestGeneration !== initializationRequestGeneration) throw new Error("storage_initialization_superseded");
-      const profile = prepared.router.profile;
-      activatePreparedProfile(profile.id, profile.kind);
-      return client!;
-    })().catch((error) => {
-      if (requestGeneration === initializationRequestGeneration) {
-        productionInitialization = null;
-        closePublishedProfileStorage();
-      }
-      throw error;
-    });
-  }
-  return productionInitialization;
 }
 
 export function onKeyValueStorageReady(listener: () => void): () => void {
@@ -192,6 +288,10 @@ export async function selectAccountProfileAndRestart(accountId: string, canConti
 
 export async function reloadForProfileTransition(): Promise<void> {
   if (!profileTransitionActive) throw new Error("profile_transition_not_started");
+  if (testProfileTransitionReload) {
+    await testProfileTransitionReload();
+    return;
+  }
   const { reloadAppAsync } = await import("expo");
   await reloadAppAsync("Patternly local data profile changed");
 }
@@ -212,7 +312,6 @@ export async function removeUnavailableEncryptedStorage(): Promise<void> {
   preparedStorage = null;
   preparation = null;
   profileTransitionActive = false;
-  productionInitialization = null;
 }
 
 /** Test infrastructure. Production always uses the one MMKV instance above. */
@@ -245,17 +344,20 @@ export function installKeyValueStorageForTests(storage: KeyValueStorage): void {
   client = storage;
   profileRouter = null;
   preparedStorage = null;
+  activePreparedStorage = null;
   preparation = null;
   profileTransitionActive = false;
-  productionInitialization = null;
 }
 
 /** Test-only bootstrap seam for exercising the prepare/activate boundary. */
 export function setProfileStoragePreparationFactoryForTests(factory: (() => Promise<PreparedStorage>) | null): void {
   closePublishedProfileStorage();
-  initializationRequestGeneration += 1;
   preparedStorage = null;
   preparation = null;
-  productionInitialization = null;
   testPreparationFactory = factory;
+}
+
+/** Test-only seam that prevents selection tests from reloading the app process. */
+export function setProfileTransitionReloadForTests(reload: (() => Promise<void>) | null): void {
+  testProfileTransitionReload = reload;
 }

@@ -235,6 +235,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   offline: t("offline"),
   expiredAction: t("expiredAction"),
   providerUnavailable: t("providerUnavailable"),
+  guestChoiceRequired: t("guestChoiceRequired"),
   invalidCredential: t("invalidCredential"),
   invalidRecoveryCode: t("invalidRecoveryCode"),
   recoveryCodeUsed: t("recoveryCodeUsed"),
@@ -277,8 +278,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       navigation.goBack();
       return;
     }
+    setFeedback(null);
     void account.continueAsGuest().then((result) => {
-      if (result.kind === "failure") setFeedback(result);
+      setFeedback(result.kind === "failure" ? result : null);
     });
   };
   const beginRegistration = () => {
@@ -360,7 +362,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         testID="account-guest-access-blocked"
         title={text.accountBindingMismatch}
       >
-        {renderFeedback(feedback, text)}
+        {renderFeedback(feedback ?? account.guestTransitionFailure, text)}
         {showOwnerPreservationSmokeControl ? (
           ownerPreservationCommandResult ? (
             <AuthText accessibilityRole="summary" testID="account-owner-preservation-command-result">
@@ -562,7 +564,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           {retainedDataNotice}
           <SignInForm
             email={email}
-            feedback={feedback}
+            feedback={feedback ?? account.guestTransitionFailure}
             inputStyle={styles.authInput}
             onEmailChange={(value) => {
               setFeedback(null);

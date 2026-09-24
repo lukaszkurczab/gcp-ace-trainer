@@ -539,15 +539,15 @@ test("startup waits for persisted auth resolution before choosing the entry scre
 
   assert.match(authClient, /onUserChanged: \(listener\) => onAuthStateChanged\(auth, \(user\) => \{\s*current = user;\s*listener\(user \? snapshot\(user\) : null\);/);
   assert.doesNotMatch(authClient, /onUserChanged:[^\n]*listener\(current \? snapshot\(current\) : null\)/);
-  assert.match(rootNavigator, /state\.kind === "loading"[\s\S]*?<LoadingState[^>]*title=\{t\("Restoring session"\)\}/);
+  assert.match(rootNavigator, /state\.kind === "loading" \|\| state\.kind === "profilePreparing"[\s\S]*?<LoadingState[^>]*title=\{t\("Restoring session"\)\}/);
   assert.match(rootNavigator, /applicationSessionReady = state\.kind === "guest" \|\| state\.kind === "signingOut" \|\| state\.kind === "deleting" \|\| \(state\.kind === "authenticated" && state\.accountData\.status === "synced"\)/);
   assert.match(rootNavigator, /initialRouteName=\{applicationSessionReady \? ROUTES\.HOME : ROUTES\.ACCOUNT_ENTRY\}/);
   assert.match(rootNavigator, /key=\{applicationSessionReady \? "application" : "account"\}/);
   assert.match(rootNavigator, /applicationSessionReady \? \([\s\S]*?<Stack\.Group>[\s\S]*?name=\{ROUTES\.HOME\}[\s\S]*?<\/Stack\.Group>[\s\S]*?\) : null/);
-  assert.match(rootNavigator, /name=\{ROUTES\.ACCOUNT_ENTRY\}[\s\S]*?initialParams=\{\{ initialMode: "entry" \}\}/);
+  assert.match(rootNavigator, /name=\{ROUTES\.ACCOUNT_ENTRY\}[\s\S]*?initialParams=\{\{ initialMode: accountEntryMode === "login" \? "signIn" : "entry" \}\}/);
   assert.match(rootNavigator, /testID="account-session-restore-loading"/);
-  assert.match(app, /<AppPreferencesProvider>[\s\S]*?<ContentPreparationGate>[\s\S]*?<PatternlyAccountProvider>[\s\S]*?<AppNavigation/);
-  assert.doesNotMatch(app, /<AppNavigation>[\s\S]*?<ContentPreparationGate>/);
+  assert.match(app, /<AppPreferencesProvider>[\s\S]*?<ProfileStoragePreparationGate>[\s\S]*?<PatternlyAccountProvider>[\s\S]*?<AppContent/);
+  assert.match(app, /state\.kind === "profilePreparing"[\s\S]*?<ContentPreparationGate><AccountBootstrapCompletion \/><AppNavigation \/><\/ContentPreparationGate>/);
   assert.match(accountProvider, /createPatternlyApiClient\(\{ allowLocalHttpForSimulator:/);
   assert.doesNotMatch(accountProvider, /accountDataProtocolMode|protocolVersion|contentIdentitySchema/u);
 });

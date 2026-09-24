@@ -189,7 +189,7 @@ test("arm requires owner selected; verify reopens the registered owner scope aft
     payload: { installationId: OWNER_ID, localDatasetId: DATASET_ID, bindingState: "account_bound", accountId: "private-owner-account" },
   }));
   const control = new MemoryControlStore();
-  const identity = identitySequence(DATASET_ID, GUEST_ID);
+  const identity = identitySequence(GUEST_ID);
   const ownerRouter = await openProfileStorageRouter(base, control, { identity });
   const store = new MemorySecureStore();
   const oracle = createSmokeOwnerPreservationOracle({ secureStore: store, now: () => 30_000, randomSalt: async () => "b".repeat(64), ownerScope: getLegacyOwnerReadOnlyScope });

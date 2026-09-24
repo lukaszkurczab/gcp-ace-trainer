@@ -14,6 +14,8 @@ function state(kind: AccountState["kind"]): AccountState {
     case "guest":
     case "guestAccessBlocked":
     case "loading":
+    case "profilePreparing":
+      return kind === "profilePreparing" ? { kind, profile: { id: "guest-id", kind: "guest", accountId: null } } : { kind };
     case "signedOut":
     case "signingOut":
     case "deleting":
@@ -39,6 +41,7 @@ test("Your data presents an explicit action/details/privacy matrix for every acc
     guestAccessBlocked: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "guestAccessBlocked", testID: "data-open-account" },
     verificationPending: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "verificationPending", testID: "data-open-account" },
     loading: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "loading" },
+    profilePreparing: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "loading" },
     deletionPending: { action: "retryDeletion", details: "none", icon: "trash", privacyRequests: false, reset: false, stateCopy: "deletionPending", testID: "data-retry-deletion" },
     signingOut: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "signingOut" },
     deleting: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "deleting" },

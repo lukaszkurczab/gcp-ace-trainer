@@ -100,7 +100,7 @@ test("one MMKV native adapter is infrastructure-owned and runtime access stays b
   assert.deepEqual(imports, [join("src", "infrastructure", "storage", "encryptedStorageNative.ts")]);
   for (const path of source) {
     if (path.endsWith("src/infrastructure/storage/mmkvClient.ts")) continue;
-    if (/infrastructure\/storage\/mmkvClient/.test(readFileSync(path, "utf8"))) assert.match(path, /src\/(?:storage\/repositories|testing|content\/application|preferences)\//);
+    if (/infrastructure\/storage\/mmkvClient/.test(readFileSync(path, "utf8"))) assert.match(path, /src\/(?:application\/account|storage\/repositories|testing|content\/application|preferences)\//);
   }
 });
 

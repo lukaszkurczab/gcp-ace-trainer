@@ -1,5 +1,5 @@
 import { NavigationContainer } from "@react-navigation/native";
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -9,6 +9,7 @@ import { ContentPreparationGate } from "./src/content/application/ContentPrepara
 import { AppPreferencesProvider, useAppPreferences } from "./src/preferences";
 import { buildNavigationTheme } from "./src/theme/navigationTheme";
 import { PatternlyAccountProvider, usePatternlyAccount } from "./src/application/account/AccountSessionProvider";
+import { ProfileStoragePreparationGate } from "./src/application/account/ProfileStoragePreparationGate";
 import { AccountForegroundRefreshSidecar } from "./src/application/account/AccountForegroundRefreshSidecar";
 import { RecoveryCodeClipboardGuard } from "./src/infrastructure/security/RecoveryCodeClipboardGuard";
 import { Button, LoadingState, Screen } from "./src/components";
@@ -20,15 +21,38 @@ export default function App() {
     <SafeAreaProvider>
       <RecoveryCodeClipboardGuard />
       <AppPreferencesProvider>
-        <ContentPreparationGate>
+        <ProfileStoragePreparationGate>
           <PatternlyAccountProvider>
             <AccountForegroundRefreshSidecar />
-            <AppNavigation />
+            <AppContent />
           </PatternlyAccountProvider>
-        </ContentPreparationGate>
+        </ProfileStoragePreparationGate>
       </AppPreferencesProvider>
     </SafeAreaProvider>
   );
+}
+
+function AppContent() {
+  const { state } = usePatternlyAccount();
+  const needsContent = state.kind === "profilePreparing" || state.kind === "guest" || state.kind === "authenticated" || state.kind === "signingOut" || state.kind === "deleting";
+  return needsContent
+    ? <ContentPreparationGate><AccountBootstrapCompletion /><AppNavigation /></ContentPreparationGate>
+    : <AppNavigation />;
+}
+
+function AccountBootstrapCompletion() {
+  const { state, completeProfilePreparation } = usePatternlyAccount();
+  const requestedProfile = useRef<string | null>(null);
+  useEffect(() => {
+    if (state.kind !== "profilePreparing") {
+      requestedProfile.current = null;
+      return;
+    }
+    if (requestedProfile.current === state.profile.id) return;
+    requestedProfile.current = state.profile.id;
+    void completeProfilePreparation();
+  }, [state, completeProfilePreparation]);
+  return null;
 }
 
 function AppNavigation() {

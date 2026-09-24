@@ -3,12 +3,13 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const source = readFileSync("src/content/application/ContentPreparationGate.tsx", "utf8");
+const preparationGate = readFileSync("src/application/account/ProfileStoragePreparationGate.tsx", "utf8");
 const surface = readFileSync("src/content/application/EncryptedStorageRecoverySurface.tsx", "utf8");
 
 test("lost-key recovery uses the typed failure code and the canonical hold-to-remove operation", () => {
-  assert.match(source, /storageFailureCode === "encrypted_storage_key_missing"/);
-  assert.match(source, /removeUnavailableEncryptedStorage\(\)/);
-  assert.match(source, /encryptedStorageRemovalInFlight\.current/);
+  assert.match(preparationGate, /storageFailureCode === "encrypted_storage_key_missing"/);
+  assert.match(preparationGate, /removeUnavailableEncryptedStorage\(\)/);
+  assert.match(preparationGate, /removalInFlight\.current/);
   assert.match(surface, /<HoldToConfirmButton/);
   assert.match(surface, /hint=\{t\("Hold for at least 3 seconds, then release\. Releasing early cancels\."\)\}/);
   assert.doesNotMatch(surface, /<Text[^>]*>[^<]*\{t\("Hold for at least 3 seconds/u);
@@ -20,25 +21,26 @@ test("lost-key recovery uses the typed failure code and the canonical hold-to-re
 });
 
 test("lost-key recovery keeps removal, success, error, and bootstrap transitions explicit", () => {
-  const removal = source.slice(source.indexOf("const removeUnavailableData"), source.indexOf("const abandonUnavailableActive"));
-  assert.match(removal, /setEncryptedStorageRecoveryStatus\("removing"\)/);
-  assert.match(removal, /if \(!await presented\) \{\s*if \(mounted\.current && encryptedStorageRemovalAttempt\.current === attempt\) setEncryptedStorageRecoveryStatus\("base"\)/);
-  assert.match(removal, /if \(!mounted\.current \|\| encryptedStorageRemovalAttempt\.current !== attempt\) return;\s*await removeUnavailableEncryptedStorage\(\);\s*if \(!mounted\.current \|\| encryptedStorageRemovalAttempt\.current !== attempt\) return;/);
+  const removal = preparationGate.slice(preparationGate.indexOf("const removeUnavailableData"), preparationGate.indexOf("const lostKey"));
+  assert.match(removal, /setRecoveryStatus\("removing"\)/);
+  assert.match(removal, /if \(!await presented\) \{\s*if \(mounted\.current && removalAttempt\.current === attempt\) setRecoveryStatus\("base"\)/);
+  assert.match(removal, /if \(!mounted\.current \|\| removalAttempt\.current !== attempt\) return;\s*await removeUnavailableEncryptedStorage\(\);\s*if \(!mounted\.current \|\| removalAttempt\.current !== attempt\) return;/);
   assert.match(removal, /await removeUnavailableEncryptedStorage\(\)/);
-  assert.match(removal, /setEncryptedStorageRecoveryStatus\("success"\)/);
-  assert.match(removal, /setEncryptedStorageRecoveryStatus\("error"\)/);
+  assert.match(removal, /setRecoveryStatus\("success"\)/);
+  assert.match(removal, /setRecoveryStatus\("error"\)/);
   assert.doesNotMatch(removal, /retry\(\)/);
-  assert.match(source, /onContinue=\{retry\}/);
-  assert.match(source, /onRetryBootstrap=\{retryLostKeyBootstrap\}/);
-  assert.match(source, /canRetry=\{canStartManualRetry\(encryptedStorageManualRetry\.current\)\}/);
-  assert.match(source, /retryLimitReached=\{encryptedStorageManualRetry\.current\.failedAttempts >= 5\}/);
-  assert.match(source, /onReturn=\{\(\) => \{ setEncryptedStorageRemovalError\(undefined\); setEncryptedStorageRecoveryStatus\("base"\); \}\}/);
+  assert.match(preparationGate, /onContinue=\{retry\}/);
+  assert.match(preparationGate, /onRetryBootstrap=\{retryLostKeyPreparation\}/);
+  assert.match(preparationGate, /canRetry=\{canStartManualRetry\(manualRetry\.current\)\}/);
+  assert.match(preparationGate, /retryLimitReached=\{manualRetry\.current\.failedAttempts >= 5\}/);
+  assert.match(preparationGate, /onReturn=\{\(\) => \{ setRemovalError\(undefined\); setRecoveryStatus\("base"\); \}\}/);
+  assert.doesNotMatch(source, /encrypted_storage_key_missing|EncryptedStorageRecoverySurface/u);
 });
 
 test("manual lost-key retries are process-local and automatic bootstrap does not spend the limit", () => {
-  assert.match(source, /const encryptedStorageManualRetry = useRef\(createManualRetryLimit\(\)\)/);
-  assert.match(source, /settleManualRetry\(encryptedStorageManualRetry\.current, nextState\.kind === "ready"\)/);
-  assert.match(source, /const retryLostKeyBootstrap = \(\) => \{\s*if \(!reserveManualRetry\(encryptedStorageManualRetry\.current\)\) return;/);
+  assert.match(preparationGate, /const manualRetry = useRef\(createManualRetryLimit\(\)\)/);
+  assert.match(preparationGate, /settleManualRetry\(manualRetry\.current, false\)/);
+  assert.match(preparationGate, /const retryLostKeyPreparation = \(\) => \{\s*if \(!reserveManualRetry\(manualRetry\.current\)\) return;/);
   assert.match(surface, /You’ve reached the retry limit/);
   assert.doesNotMatch(surface, /Hold for at least 3 seconds, then release[^<]*<\/Text>/u);
 });
@@ -54,7 +56,7 @@ test("recovery surface preserves one stable, localized, accessible layout for ev
   assert.match(surface, /name="alert-triangle"/);
   assert.match(surface, /recoveryDeviceLocale\(Settings\.get\("AppleLanguages"\), Settings\.get\("AppleLocale"\)\)/);
   assert.match(surface, /i18n\.getFixedT\(locale, "common"\)/);
-  assert.match(source, /operationalDiagnosticCode\(error\)/);
+  assert.match(preparationGate, /operationalDiagnosticCode\(error\)/);
   assert.doesNotMatch(surface, /Nothing else changed/);
   assert.doesNotMatch(source, /Unavailable local data could not be removed/);
   assert.match(surface, /accessibilityRole="header"/);
