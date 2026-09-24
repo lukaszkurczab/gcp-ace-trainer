@@ -32,7 +32,7 @@ Pełną macierz budować z **dokładnej metody i ścieżki** OpenAPI, nie ze str
 
 ## Podział wykonawczy
 
-1. **B1b1 — granica żądania i pierwszy magazyn.** Rozwiązać `userId + expectedAuthorizationGeneration` z aktywnego konta, bez claimless fallbacku, i dodać transakcyjny helper/asercję w `users/store.ts` dla legal/purchase. Zaktualizowany klient B1a jest warunkiem lokalnego testu. Kod egzekwowania nie idzie do produkcyjnego backendu przed B1c i dowodem kanału dystrybucji.
+1. **B1b1 — granica żądania i pierwszy magazyn.** Rozwiązać `userId + expectedAuthorizationGeneration` z aktywnego konta, bez claimless fallbacku, i dodać transakcyjny helper/asercję w `users/store.ts` dla legal/purchase. Zaktualizowany klient B1a jest warunkiem lokalnego testu. Praca pozostaje lokalna; B1c oceni gotowość wydania i kanał dystrybucji przed jakimkolwiek wdrożeniem.
 2. **B1b2 — zwykłe zapisy.** Progress sync i jednorazowa adopcja, recovery issue/session revoke, konto privacy create/read-audit, legal/content-report, export audit/rate limit i check przed odpowiedzią. Każdy aktywny call site ma jawny oczekiwany numer; brak numeru nie wybiera bieżącego z bazy. Niepodłączone `devices.touch` obejmie przyszła integracja przed użyciem.
 3. **B1b3 — wieloetapowy transfer.** Każdy upload/seal/preview/confirm/apply wraz z batchami i finalną promocją sprawdza stan/generację w swojej transakcji; w razie niemożności zapewnienia CAS jawnie odmówić etapu do przebudowy.
 4. **B1b4 — delete i nie-sesyjne mutacje celu.** Delete obraca generację i `deleting` przed providerem; webhook/admin nie odtwarzają usuniętego konta. Public recovery consume/reissue/ACK pozostają B2 według A2.
