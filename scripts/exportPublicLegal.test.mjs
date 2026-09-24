@@ -63,7 +63,13 @@ test("synthetic artifacts are marked test-only and contain rendered EN and PL do
   assert.match(artifact.documents.termsOfService.pl, /Synthetic DO UZUPEŁNIENIA/u);
   assert.deepEqual(artifact.publicLinks, input.publicLinks);
   assert.equal(JSON.stringify(artifact).includes("secret"), false);
-  assert.throws(() => buildPublicLegalArtifactForTest({ ...input, publicLinks: { ...input.publicLinks, privacyUrl: "http://patternly.example/privacy" } }), /invalid HTTPS link/u);
+  assert.throws(() => buildPublicLegalArtifactForTest({ ...input, publicLinks: { ...input.publicLinks, privacyUrl: "http://patternly.example/privacy" } }), /Public legal source is invalid \(publicLinks\.privacyUrl\)/u);
+  for (const invalidPrivacyUrl of ["https://patternly.example/other", "https://patternly.example/privacy?source=app", "https://patternly.example/privacy?", "https://user:pass@patternly.example/privacy"]) {
+    assert.throws(() => buildPublicLegalArtifactForTest({ ...input, publicLinks: { ...input.publicLinks, privacyUrl: invalidPrivacyUrl } }), /publicLinks\.privacyUrl/u);
+  }
+  for (const invalidTermsUrl of ["https://patternly.example/other", "https://patternly.example/terms#section", "https://patternly.example/terms#", "https://user:pass@patternly.example/terms"]) {
+    assert.throws(() => buildPublicLegalArtifactForTest({ ...input, publicLinks: { ...input.publicLinks, termsUrl: invalidTermsUrl } }), /publicLinks\.termsUrl/u);
+  }
 });
 
 test("app legal exports retain the same output as parameterized template rendering", () => {

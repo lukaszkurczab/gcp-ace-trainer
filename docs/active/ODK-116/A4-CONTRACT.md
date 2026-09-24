@@ -1,7 +1,7 @@
 # ODK-116/A4 — publiczne dane i dokumenty na webie
 
 **Data:** 24.09.2026  
-**Status:** A4a producent i A4b konsument ukończone; A4c wyrównanie ścieżek readiness otwarte.
+**Status:** A4a producent, A4b konsument i A4c walidacja ścieżek ukończone; pozostaje odbiór środowiska testowego.
 
 ## Potwierdzona granica
 

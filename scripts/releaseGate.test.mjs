@@ -137,7 +137,13 @@ function releaseLegalFixture() {
     if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, resolvePlaceholders(child)]));
     return typeof value === "string" && /^\[(?:TO BE COMPLETED|DO UZUPEŁNIENIA):/.test(value) ? "Resolved legal value" : value;
   };
-  return resolvePlaceholders(legal);
+  const resolved = resolvePlaceholders(legal);
+  resolved.publicLinks = {
+    privacyUrl: "https://patternly.example/privacy",
+    termsUrl: "https://patternly.example/terms",
+    supportUrl: "https://patternly.example/support",
+  };
+  return resolved;
 }
 
 function writeApplicationLegal(applicationRoot, contents) {
@@ -226,6 +232,13 @@ test("release readiness reports missing, malformed, and complete public legal co
     assert.ok(report.publicLegalVariables.fieldPaths.includes("premiumCheckoutEnabled"));
     assert.ok(report.publicLegalVariables.fieldPaths.includes("terms.adrEntity.en"));
     assert.equal(JSON.stringify(report).includes(mixedIssueSecret), false);
+
+    const invalidPrivacyPath = releaseLegalFixture();
+    invalidPrivacyPath.publicLinks.privacyUrl = "https://patternly.example/legal/privacy";
+    writeApplicationLegal(applicationRoot, JSON.stringify(invalidPrivacyPath));
+    report = JSON.parse(runWithApplicationRoot(applicationRoot).output);
+    assert.equal(report.publicLegalVariables.status, "invalid");
+    assert.deepEqual(report.publicLegalVariables.fieldPaths, ["publicLinks.privacyUrl"]);
 
     writeApplicationLegal(applicationRoot, JSON.stringify(releaseLegalFixture()));
     report = JSON.parse(runWithApplicationRoot(applicationRoot).output);

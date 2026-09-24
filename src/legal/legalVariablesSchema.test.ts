@@ -111,8 +111,29 @@ test("release mode rejects recognized placeholders and test mode allows them", (
   assert.deepEqual(validateLegalVariables(legalVariables, "test"), []);
 });
 
+test("public privacy and terms links require canonical HTTPS paths without query or fragment", () => {
+  for (const [field, invalid] of [
+    ["privacyUrl", ["http://patternly.example/privacy", "https://patternly.example/other", "https://patternly.example/privacy?x=1", "https://patternly.example/privacy?", "https://user:pass@patternly.example/privacy"]],
+    ["termsUrl", ["http://patternly.example/terms", "https://patternly.example/other", "https://patternly.example/terms#section", "https://patternly.example/terms#", "https://user:pass@patternly.example/terms"]],
+  ] as const) {
+    for (const value of invalid) {
+      const candidate = { ...legalVariablesLocalFixture, publicLinks: { ...legalVariablesLocalFixture.publicLinks, [field]: value } };
+      assert.ok(validateLegalVariables(candidate, "release").some(({ path }) => path === `publicLinks.${field}`), `${field}: ${value}`);
+    }
+  }
+  const withCanonicalPaths = {
+    ...legalVariablesLocalFixture,
+    publicLinks: { privacyUrl: "https://patternly.example/privacy", termsUrl: "https://patternly.example/terms", supportUrl: "https://patternly.example/help?topic=account" },
+  };
+  assert.deepEqual(validateLegalVariables(withCanonicalPaths, "test"), []);
+  assert.deepEqual(validateLegalVariables(withCanonicalPaths, "release").filter(({ path }) => path.startsWith("publicLinks.")), []);
+  assert.deepEqual(validateLegalVariables(legalVariablesLocalFixture, "test"), []);
+});
+
 test("accepts complete production-like legal values in release mode", () => {
-  assert.deepEqual(validateLegalVariables(completePlaceholders(legalVariables), "release"), []);
+  const completed = completePlaceholders(legalVariables) as Record<string, any>;
+  completed.publicLinks = { privacyUrl: "https://patternly.example/privacy", termsUrl: "https://patternly.example/terms", supportUrl: "https://patternly.example/support" };
+  assert.deepEqual(validateLegalVariables(completed, "release"), []);
 });
 
 test("CLI passes test mode and release mode rejects placeholders with field paths", () => {

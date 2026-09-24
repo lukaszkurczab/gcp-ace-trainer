@@ -7,7 +7,6 @@ import { legalSourceFingerprint } from "./legalSourceFingerprint.mjs";
 
 const require = createRequire(import.meta.url);
 const { validateLegalVariables } = require("../src/legal/legalVariablesSchema.ts");
-const { validatePublicHttpsUrl } = require("../src/infrastructure/clients/publicEnvironment.ts");
 const { renderPrivacyPolicy } = require("../src/legal/privacyPolicy.ts");
 const { renderTermsOfService } = require("../src/legal/termsOfService.ts");
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -19,13 +18,6 @@ function validateSource(source, mode) {
   if (issues.length > 0) {
     const paths = [...new Set(issues.map(({ path }) => path))].sort();
     throw new Error(`Public legal source is invalid (${paths.join(", ")}).`);
-  }
-  for (const key of ["privacyUrl", "termsUrl", "supportUrl"]) {
-    try {
-      validatePublicHttpsUrl(source.publicLinks[key], `publicLinks.${key}`);
-    } catch {
-      throw new Error(`Public legal source has an invalid HTTPS link (publicLinks.${key}).`);
-    }
   }
 }
 
