@@ -123,6 +123,7 @@ export function createSmokeOwnerPreservationOracle(options: OracleOptions = {}):
 
   return Object.freeze({
     async arm(): Promise<OwnerPreservationOracleResult> {
+      let writeAttempted = false;
       try {
         const scope = ownerScope();
         if (!scope) return "blocked";
@@ -134,11 +135,16 @@ export function createSmokeOwnerPreservationOracle(options: OracleOptions = {}):
         const digest = captureDigest(storage, salt);
         const createdAt = now();
         if (!Number.isSafeInteger(createdAt) || createdAt < 0) return "blocked";
+        writeAttempted = true;
         const saved = await saveAndReadBack({ version: VERSION, phase: "armed", createdAt, salt, digest, result: null });
-        return saved ? "unchanged" : "blocked";
+        if (saved) return "unchanged";
       } catch {
-        return "blocked";
+        // A write may have succeeded before its readback failed. Only this oracle key may be removed.
       }
+      if (writeAttempted) {
+        try { await store().deleteItemAsync(RECORD_KEY); } catch { /* Remain blocked on cleanup failure. */ }
+      }
+      return "blocked";
     },
     async verify(): Promise<OwnerPreservationOracleResult> {
       try {

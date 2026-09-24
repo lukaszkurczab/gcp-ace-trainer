@@ -22,10 +22,11 @@ class MemorySecureStore {
   readonly operations: { kind: "get" | "set" | "delete"; key: string }[] = [];
   failure: "get" | "set" | "delete" | null = null;
   corruptReadback = false;
+  failReadAfterSet = false;
 
   async getItemAsync(key: string): Promise<string | null> {
     this.operations.push({ kind: "get", key });
-    if (this.failure === "get") throw new Error("private injected read error");
+    if (this.failure === "get" || (this.failReadAfterSet && this.operations.some((operation) => operation.kind === "set"))) throw new Error("private injected read error");
     const value = this.values.get(key) ?? null;
     return this.corruptReadback && value !== null ? `${value}corrupt` : value;
   }
@@ -153,6 +154,24 @@ test("fails closed for wrong profile, missing, corrupt, stale, and SecureStore f
   const readbackFailure = makeOracle(storage);
   readbackFailure.store.corruptReadback = true;
   assert.equal(await readbackFailure.oracle.arm(), "blocked");
+  assert.equal(readbackFailure.store.values.has(ORACLE_KEY), false, "failed readback removes only the attempted oracle record");
+
+  const thrownReadback = makeOracle(storage);
+  thrownReadback.store.failReadAfterSet = true;
+  assert.equal(await thrownReadback.oracle.arm(), "blocked");
+  assert.equal(thrownReadback.store.values.has(ORACLE_KEY), false, "thrown readback removes the attempted oracle record");
+
+  const existing = new MemorySecureStore();
+  existing.values.set(ORACLE_KEY, "pre-existing-record");
+  existing.values.set("patternly.owner.unrelated", "preserve");
+  assert.equal(await makeOracle(storage, OWNER, existing).oracle.arm(), "blocked");
+  assert.equal(existing.values.get(ORACLE_KEY), "pre-existing-record");
+  assert.equal(existing.values.get("patternly.owner.unrelated"), "preserve");
+
+  const failedCleanup = makeOracle(storage);
+  failedCleanup.store.corruptReadback = true;
+  failedCleanup.store.failure = "delete";
+  assert.equal(await failedCleanup.oracle.arm(), "blocked");
 
   const storageFailure = makeOracle(storage);
   const failingStorage = { ...storage, getAllKeys() { throw new Error("private storage failure"); } } as unknown as KeyValueStorage;

@@ -22,3 +22,7 @@ Metro wybiera implementację i źródło oracle wyłącznie dla trybu smoke; san
 ## Granica i następne kroki
 
 B1 nie uruchamiało symulatora, nie modyfikowało chronionego profilu ani emulatorów. Jest to lokalny oracle regresji, nie kryptograficzny dowód nienaruszalności. `AUD-FIXTURE/B2` podłącza preflight przed jakimkolwiek efektem ubocznym sesji/Auth, jawny wynik w UI wyłącznie smoke i flow Maestro na tym samym iPhonie 17 z `clearState: false`. `AUD-FIXTURE/B3` przygotuje własne konta i kontrolowane dane oraz cleanup tylko zasobów testowych.
+
+## Korekta B1 po nowym dowodzie
+
+Podczas QA B2a znaleziono lukę: zapis wpisu oracle mógł się udać, lecz błąd odczytu kontrolnego zwracał `blocked` i zostawiał uzbrojony wpis. `arm()` próbuje teraz usunąć wyłącznie własny klucz, jeżeli zapis został podjęty i nie potwierdzono readback. Błąd cleanup nadal daje `blocked`; nie usuwa się wpisu istniejącego przed próbą. Testy obejmują uszkodzony i rzucony readback. Test oracle: **7/7 PASS**, również dla zachowania wcześniej istniejącego i obcego wpisu oraz błędu cleanup. Niezależne QA korekty (`gpt-6-luna` high): **PASS WITH GAPS**. Wskazało nieatomowy wyścig z równoczesną podmianą tego samego klucza; aktualny provider serializuje swoje przejścia, a wynik błędu pozostaje `blocked`. Nie twierdzimy, że SecureStore zapewnia transakcję między niezależnymi wywołaniami oracle.
