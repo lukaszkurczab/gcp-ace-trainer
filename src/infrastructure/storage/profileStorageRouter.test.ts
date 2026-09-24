@@ -13,9 +13,10 @@ const ACCOUNT_ID = "owner-account-1";
 
 class MemoryControlStore implements StorageManifestStore {
   readonly values = new Map<string, string>();
+  failNextSet = false;
   private assertValidKey(key: string) { assert.match(key, /^[\w.-]+$/u, "SecureStore keys may only contain alphanumeric characters, '.', '-', and '_'"); }
   async get(key: string) { this.assertValidKey(key); return this.values.get(key) ?? null; }
-  async set(key: string, value: string) { this.assertValidKey(key); this.values.set(key, value); }
+  async set(key: string, value: string) { this.assertValidKey(key); if (this.failNextSet) { this.failNextSet = false; throw new Error("injected_control_commit_failure"); } this.values.set(key, value); }
   async remove(key: string) { this.assertValidKey(key); this.values.delete(key); }
 }
 
@@ -123,4 +124,52 @@ test("concurrent guest selections claim one transition and cannot commit competi
   assert.equal(results.filter((result) => result.status === "rejected").length, 1);
   const restarted = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
   assert.equal(restarted.profile.id, GUEST_ID);
+});
+
+test("an existing guest can be reselected with the same profile ID and stored data", async () => {
+  const base = legacyOwnerStorage();
+  const control = new MemoryControlStore();
+  const first = await openProfileStorageRouter(base, control, { identity: identitySequence(DATASET_ID, GUEST_ID) });
+  const originalGuest = await first.selectGuest();
+  const afterFirst = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID, "00000000-0000-4000-8000-000000000004") });
+  afterFirst.storage.setString("guest-preserved", "same-profile-data");
+  const secondGuest = await afterFirst.selectGuest();
+  assert.notEqual(secondGuest.id, originalGuest.id);
+
+  const reselector = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
+  const selected = await reselector.selectExistingGuest(originalGuest.id);
+  assert.deepEqual(selected, originalGuest);
+  const reopened = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
+  assert.equal(reopened.profile.id, originalGuest.id);
+  assert.equal(reopened.storage.getString("guest-preserved"), "same-profile-data");
+  assert.equal(reopened.registry.profiles.length, 3);
+});
+
+test("existing guest reselection rejects non-guest IDs without changing the registry", async () => {
+  const base = legacyOwnerStorage();
+  const control = new MemoryControlStore();
+  const router = await openProfileStorageRouter(base, control, { identity: identitySequence(DATASET_ID) });
+  const before = [...control.values];
+  await assert.rejects(router.selectExistingGuest(DATASET_ID), (error) => error instanceof ProfileStorageError && error.code === "profile_scope_unavailable");
+  assert.deepEqual([...control.values], before);
+});
+
+test("failed existing guest registry commit leaves the current scope closed", async () => {
+  const base = legacyOwnerStorage();
+  const control = new MemoryControlStore();
+  const first = await openProfileStorageRouter(base, control, { identity: identitySequence(DATASET_ID, GUEST_ID, "00000000-0000-4000-8000-000000000004") });
+  const guest = await first.selectGuest();
+  const second = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID, "00000000-0000-4000-8000-000000000004") });
+  await second.selectGuest();
+  let transitionActive = false;
+  const reselector = await openProfileStorageRouter(base, control, {
+    identity: identitySequence(OWNER_ID),
+    isTransitionActive: () => transitionActive,
+    onBeforeProfileCommit: () => { transitionActive = true; },
+  });
+  control.failNextSet = true;
+  await assert.rejects(reselector.selectExistingGuest(guest.id), /injected_control_commit_failure/u);
+  assert.throws(() => reselector.storage.getString(STORAGE_KEYS.METADATA), ProfileTransitionActiveError);
+  const unchanged = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
+  assert.notEqual(unchanged.profile.id, guest.id);
 });

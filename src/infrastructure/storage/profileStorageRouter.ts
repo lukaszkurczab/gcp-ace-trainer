@@ -124,6 +124,7 @@ export type ProfileStorageRouter = Readonly<{
   profile: StorageProfile;
   storage: KeyValueStorage;
   selectGuest(): Promise<StorageProfile>;
+  selectExistingGuest(profileId: string, canContinue?: () => boolean): Promise<StorageProfile>;
   selectAccount(accountId: string, canContinue?: () => boolean): Promise<StorageProfile>;
 }>;
 
@@ -178,6 +179,16 @@ export async function openProfileStorageRouter(
       const guest = Object.freeze({ id: (await identity.create()).localDatasetId, kind: "guest" as const, accountId: null });
       const next = withChecksum({ ...registryBody(registry, registry.generation + 1), profiles: [...registry.profiles, guest], selectedProfileId: guest.id });
       provisionGuestAccess(base, guest);
+      await commitRegistry(control, registry, next);
+      return guest;
+    },
+    async selectExistingGuest(profileId: string, canContinue: () => boolean = () => true) {
+      const guest = registry.profiles.find((candidate) => candidate.id === profileId && (candidate.kind === "guest" || candidate.kind === "legacy_guest"));
+      if (!guest) throw new ProfileStorageError("profile_scope_unavailable");
+      if (guest.id === registry.selectedProfileId) return guest;
+      if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+      claimTransition();
+      const next = withChecksum({ ...registryBody(registry, registry.generation + 1), selectedProfileId: guest.id });
       await commitRegistry(control, registry, next);
       return guest;
     },

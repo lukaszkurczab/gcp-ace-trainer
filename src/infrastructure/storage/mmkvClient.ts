@@ -6,42 +6,145 @@ export interface KeyValueStorage {
   getAllKeys(): readonly string[];
 }
 
-import { openProfileStorageRouter, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
+import { openProfileStorageRouter, ProfileTransitionActiveError, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
 import { installOwnerPreservationSource } from "../testing/ownerPreservationSourceRuntime";
 
 let client: KeyValueStorage | null = null;
 let profileRouter: ProfileStorageRouter | null = null;
+type OpenedProfileStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter }>;
+type PreparedProfileStorage = OpenedProfileStorage & Readonly<{ generation: number }>;
+let preparedStorage: PreparedProfileStorage | null = null;
+let preparation: Promise<PreparedProfileStorage> | null = null;
 let productionInitialization: Promise<KeyValueStorage> | null = null;
+let testPreparationFactory: (() => Promise<Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter }>>) | null = null;
+let profileStorageGeneration = 0;
+let initializationRequestGeneration = 0;
 const readyListeners = new Set<() => void>();
 const profileTransitionListeners = new Set<() => void>();
 let profileTransitionActive = false;
 
-/** Initializes the one native client before repositories are opened. */
+export type PreparedStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter }>;
+
+function closePublishedProfileStorage(): void {
+  profileStorageGeneration += 1;
+  client = null;
+  profileRouter = null;
+  installOwnerPreservationSource(null, null);
+}
+
+async function openProductionProfileStorage(generation: number): Promise<PreparedProfileStorage> {
+  const { openEncryptedStorage, STORAGE_MIGRATION_MARKER_KEY } = await import("./encryptedStorageBootstrap");
+  const { createNativeEncryptedStoragePlatform } = await import("./encryptedStorageNative");
+  const platform = createNativeEncryptedStoragePlatform();
+  const result = await openEncryptedStorage(platform);
+  const base: KeyValueStorage = {
+    getString: (key) => result.storage.getString(key),
+    setString: (key, value) => { result.storage.setString(key, value); },
+    remove: (key) => { result.storage.remove(key); },
+    contains: (key) => key !== STORAGE_MIGRATION_MARKER_KEY && result.storage.getString(key) !== undefined,
+    getAllKeys: () => result.storage.getAllKeys().filter((key) => key !== STORAGE_MIGRATION_MARKER_KEY),
+  };
+  profileTransitionActive = false;
+  const router = await openProfileStorageRouter(base, platform.manifestStore, {
+    isTransitionActive: () => profileTransitionActive || profileStorageGeneration !== generation,
+    onBeforeProfileCommit: beginProfileTransition,
+  });
+  return { base, router, generation };
+}
+
+async function ensurePreparedStorage(): Promise<PreparedProfileStorage> {
+  if (preparedStorage) return preparedStorage;
+  if (!preparation) {
+    const generation = profileStorageGeneration;
+    const open = testPreparationFactory
+      ? () => testPreparationFactory!()
+      : () => openProductionProfileStorage(generation);
+    preparation = open().then((opened) => {
+      const prepared = { ...opened, generation };
+      preparedStorage = prepared;
+      return prepared;
+    }).catch((error) => {
+      preparedStorage = null;
+      preparation = null;
+      closePublishedProfileStorage();
+      throw error;
+    });
+  }
+  return preparation;
+}
+
+/** Opens encrypted storage and its control registry without publishing profile-scoped storage. */
+export async function prepareProfileStorage(): Promise<StorageProfile> {
+  initializationRequestGeneration += 1;
+  productionInitialization = null;
+  if (!preparedStorage && !preparation) closePublishedProfileStorage();
+  try {
+    return (await ensurePreparedStorage()).router.profile;
+  } catch (error) {
+    closePublishedProfileStorage();
+    throw error;
+  }
+}
+
+/** Publishes only the exact profile prepared by the router. A mismatch leaves storage closed. */
+export function activatePreparedProfile(profileId: string, kind: StorageProfile["kind"]): KeyValueStorage {
+  const prepared = preparedStorage;
+  const profile = prepared?.router.profile;
+  if (!prepared || prepared.generation !== profileStorageGeneration || !profile || profile.id !== profileId || profile.kind !== kind) {
+    preparedStorage = null;
+    preparation = null;
+    closePublishedProfileStorage();
+    throw new Error("prepared_profile_mismatch");
+  }
+  profileTransitionActive = false;
+  profileRouter = prepared.router;
+  const generation = prepared.generation;
+  const checkPublished = () => {
+    if (profileStorageGeneration !== generation || profileTransitionActive) throw new ProfileTransitionActiveError();
+  };
+  const scopedStorage = prepared.router.storage;
+  const publishedStorage: KeyValueStorage = {
+    getString(key) { checkPublished(); return scopedStorage.getString(key); },
+    setString(key, value) { checkPublished(); scopedStorage.setString(key, value); },
+    remove(key) { checkPublished(); scopedStorage.remove(key); },
+    contains(key) { checkPublished(); return scopedStorage.contains(key); },
+    getAllKeys() { checkPublished(); return scopedStorage.getAllKeys(); },
+  };
+  client = Object.freeze(publishedStorage);
+  installOwnerPreservationSource(prepared.base, prepared.router);
+  preparedStorage = null;
+  preparation = null;
+  try {
+    for (const listener of readyListeners) listener();
+  } catch (error) {
+    closePublishedProfileStorage();
+    throw error;
+  }
+  return client;
+}
+
+/**
+ * Transitional eager adapter for existing providers. This is not a safe startup gate:
+ * it immediately activates the router-selected profile before Auth restoration.
+ */
 export async function initializeKeyValueStorage(): Promise<KeyValueStorage> {
   if (client) return client;
   if (!productionInitialization) {
+    if (!preparedStorage && !preparation) closePublishedProfileStorage();
+    const requestGeneration = initializationRequestGeneration;
     productionInitialization = (async () => {
-      const { openEncryptedStorage, STORAGE_MIGRATION_MARKER_KEY } = await import("./encryptedStorageBootstrap");
-      const { createNativeEncryptedStoragePlatform } = await import("./encryptedStorageNative");
-      const platform = createNativeEncryptedStoragePlatform();
-      const result = await openEncryptedStorage(platform);
-      const storage: KeyValueStorage = {
-        getString: (key) => result.storage.getString(key),
-        setString: (key, value) => { result.storage.setString(key, value); },
-        remove: (key) => { result.storage.remove(key); },
-        contains: (key) => key !== STORAGE_MIGRATION_MARKER_KEY && result.storage.getString(key) !== undefined,
-        getAllKeys: () => result.storage.getAllKeys().filter((key) => key !== STORAGE_MIGRATION_MARKER_KEY),
-      };
-      profileTransitionActive = false;
-      profileRouter = await openProfileStorageRouter(storage, platform.manifestStore, {
-        isTransitionActive: () => profileTransitionActive,
-        onBeforeProfileCommit: beginProfileTransition,
-      });
-      installOwnerPreservationSource(storage, profileRouter);
-      client = profileRouter.storage;
-      for (const listener of readyListeners) listener();
-      return storage;
-    })().catch((error) => { productionInitialization = null; throw error; });
+      const prepared = await ensurePreparedStorage();
+      if (requestGeneration !== initializationRequestGeneration) throw new Error("storage_initialization_superseded");
+      const profile = prepared.router.profile;
+      activatePreparedProfile(profile.id, profile.kind);
+      return client!;
+    })().catch((error) => {
+      if (requestGeneration === initializationRequestGeneration) {
+        productionInitialization = null;
+        closePublishedProfileStorage();
+      }
+      throw error;
+    });
   }
   return productionInitialization;
 }
@@ -105,9 +208,9 @@ export async function removeUnavailableEncryptedStorage(): Promise<void> {
   const { resetUnavailableEncryptedStorage } = await import("./encryptedStorageBootstrap");
   const { createNativeEncryptedStoragePlatform } = await import("./encryptedStorageNative");
   await resetUnavailableEncryptedStorage(createNativeEncryptedStoragePlatform());
-  client = null;
-  installOwnerPreservationSource(null, null);
-  profileRouter = null;
+  closePublishedProfileStorage();
+  preparedStorage = null;
+  preparation = null;
   profileTransitionActive = false;
   productionInitialization = null;
 }
@@ -138,9 +241,21 @@ export type FailurePlan =
   | { kind: "fail_on_key_remove"; key: string };
 
 export function installKeyValueStorageForTests(storage: KeyValueStorage): void {
+  closePublishedProfileStorage();
   client = storage;
-  installOwnerPreservationSource(null, null);
   profileRouter = null;
+  preparedStorage = null;
+  preparation = null;
   profileTransitionActive = false;
   productionInitialization = null;
+}
+
+/** Test-only bootstrap seam for exercising the prepare/activate boundary. */
+export function setProfileStoragePreparationFactoryForTests(factory: (() => Promise<PreparedStorage>) | null): void {
+  closePublishedProfileStorage();
+  initializationRequestGeneration += 1;
+  preparedStorage = null;
+  preparation = null;
+  productionInitialization = null;
+  testPreparationFactory = factory;
 }
