@@ -1,0 +1,35 @@
+# AUD-17 — izolacja gościa od lokalnych danych właściciela
+
+**Status:** `blocking` — błąd startu aplikacji naprawiony, bootstrap i ekran wejścia potwierdzone na istniejącym iPhonie 17 przez Maestro; pełny owner → guest E2E z syntetycznym fixture nadal nie ma odbioru  
+**Data:** 2026-09-23
+
+## Ustalenia i zmiana
+
+- Wcześniejszy błąd wynikał z globalnego `KeyValueStorage`: postęp, sesje, ustawienia, outbox, journal i dane konta używały tego samego zestawu kluczy. `localDatasetId` identyfikował instalację, lecz nie wybierał przestrzeni odczytu/zapisu. Obecna ścieżka `guestAccessBlocked` nie oferowała oddzielnej kontynuacji jako gość.
+- Dodano profile-aware storage router pod istniejącym `KeyValueStorage` kontraktem i pochodną fizyczną przestrzenią kluczy. Router inicjalizuje się po otwarciu zaszyfrowanego storage, ale przed `ready` listeners i otwieraniem repozytoriów. Dwuslotowy, wersjonowany rejestr wybiera profil przed canonical bootstrapem.
+- Istniejący zestaw kluczy pozostaje legacy scope. Poprawne markery `guest`, `adoption_pending` z `accountId: null` oraz `account_bound` pozwalają odtworzyć legacy owner/guest bez zmiany istniejących bajtów. Niejednoznaczny marker, niekompletny albo uszkodzony rejestr kończy się jawnym błędem zamiast wybraniem obcego scope.
+- „Kontynuuj jako gość” wylogowuje istniejącą Firebase sesję z potwierdzeniem, tworzy nowy pusty scope i provisionuje `GUEST_ACCESS`. Przed commit rejestru router aktywuje globalną barierę, która blokuje wszystkie storage operacje aż do reload aplikacji; błędny reload ma jawny ekran ponowienia. Dokładne późniejsze logowanie właściciela wybiera zachowany legacy scope przed account-local reads. Rejestracja konta zachowuje bieżący jawny preview/confirm adopcji.
+- Eksporty tymczasowe otrzymują identyfikator profilu. Sprzątanie odbywa się po otwarciu repozytoriów, gdy wybrany jest już profil, i usuwa tylko pliki z jego prefiksem. Gdy profil nie jest znany, cleanup niczego nie usuwa; starsze niesklasyfikowane pliki pozostają zachowane.
+- Poprawiono lokalne locale pól `profileTransition*` i przywrócono brakujący `accountDescription` w `AccountEntryScreen`, którego wymagał typecheck.
+- Diagnoza błędu startu wykazała niepoprawne nazwy dwóch kluczy rejestru SecureStore: `patternly:profile-root:v1:a/b` zawierały dwukropki, a aktualna walidacja Expo SecureStore dopuszcza wyłącznie `A–Z`, `a–z`, cyfry, `.`, `-` i `_`. Pierwszy odczyt rootu kończył się więc wyjątkiem przed dostępem do wartości. Klucze zmieniono na `patternly.profile-root.v1.a/b`; próba otwarcia nastąpiła przed zapisem, a implementacja routera nie ma historii w repozytorium, zatem nie ma stanu do migracji ze starych nazw.
+- Testowy `MemoryControlStore` egzekwuje teraz tę samą regułę nazw, aby regresja była wykrywana przez test routera.
+
+## Briefing i ocena
+
+Briefing walidowany przed implementacją przez niezależnego agenta `gpt-6-luna/high`, briefing v11: **zaakceptowany**, minima: zgodność/architektura **0,90**, prostota **0,82**, ryzyko **0,84**, utrzymywalność **0,85**; wynik minimalny **0,82**. Decydujące warunki to bariera przed commit profilu, wybór scope przed lokalnymi odczytami konta, zachowanie istniejącego flow adopcji i fail-closed przy nieznanym stanie. Niepełne starsze briefingi 0,76/0,62/0,62 pozostają historią decyzji, nie zatwierdzeniem.
+
+## Weryfikacja
+
+- `npm run typecheck` — PASS po poprawce.
+- `node --import tsx --test src/infrastructure/storage/profileStorageRouter.test.ts src/application/account/accountDataExportService.test.ts src/application/bootstrap/applicationBootstrap.test.ts src/application/operationalDiagnostics.test.ts` — **23/23 PASS**. Pokrycie obejmuje byte-preserving legacy owner/adoption-pending, guest read/write/restart i brak odczytu legacy keys, dokładny powrót właściciela, malformed registry z walidacją kluczy SecureStore, współbieżny wybór guest, profilowane/nieznane eksporty oraz bootstrap/diagnostics.
+- `npm run ios:smoke -- --device 7F315654-3175-4F3C-BB24-B0263F59360C` — **Build Succeeded**, 0 błędów, 2 ostrzeżenia faz Xcode; instalacja i otwarcie istniejącego iPhone’a 17 przebiegły bez kasowania aplikacji ani stanu. Pierwszy preflight nie potrafił rozpoznać Simulator/Device Hub, ale późniejszy build i start na przypiętym urządzeniu przeszły.
+- Niezależne QA `gpt-6-luna/high`: **PASS WITH ISSUES** po poprawkach dwóch findingów. Pierwszy review wykazał ryzyko kasowania eksportów przed inicjalizacją profilu oraz odrzucanie poprawnego `adoption_pending`; oba zostały naprawione i ponownie zaakceptowane. Drugi review zaakceptował kontrakt nazw SecureStore i test, po czym wskazał rozbieżność w raporcie; wpisy zostały zsynchronizowane. Pozostają pełne ścieżki logowania/adopcji na syntetycznym fixture.
+- Maestro 2.10.0 uruchomiono na tym samym iPhonie 17 (`7F315654-3175-4F3C-BB24-B0263F59360C`). Flow bez `clearState`, tapnięć i resetu aplikacji ponownie otworzył aplikację, zaczekał na `Continue without an account` i potwierdził `Sign in`, `Create account` oraz brak `Application unavailable` i `LOCAL_OPERATION_FAILED` — **PASS**. Zrzut: [ekran Account Entry po naprawie](evidence/account-entry-bootstrap-recovered.png). Flow nie wybierał gościa ani nie zmieniał istniejącej tożsamości.
+- API `http://127.0.0.1:8080/ready` odpowiadało `ready` z `database`, `authentication` i `providerReader` jako `true`; użyto istniejących emulatorów i procesu backendu. Nie uruchamiano duplikatów ani nie resetowano usług, emulatora, aplikacji lub danych.
+- Pełny owner-mismatch → guest, zapis i restart w scope guest, powrót właściciela oraz adopcja nadal wymagają bezpiecznego syntetycznego fixture i osobnego Maestro E2E. Aktualny zrzut dowodzi poprawnego bootstrapu i ekranu wejścia, nie końcowego AC izolacji na urządzeniu.
+
+## Ocena i dalszy krok
+
+Podejście profili jest zgodne z architekturą **0,90**, proste **0,82**, ma ryzyko **0,84** i utrzymywalność **0,85**; minimum **0,82**. Centralna fasada jest konieczna, bo istniejące repozytoria współdzielą jeden interfejs key-value, w tym enumerację kluczy. Nie dodano osobnej abstrakcji per repository. Korekta nazw kluczy SecureStore ma ocenę: architektura **0,98**, prostota **0,99**, ryzyko **0,95**, utrzymywalność **0,96**; minimum **0,95**. Niezależny briefing Luna High potwierdził podejście po wykazaniu, że stare identyfikatory nie mogły zostać zapisane przez implementację, która odrzuca je przy pierwszym odczycie.
+
+Nie oznaczam AUD-17 jako zakończonego: kryteria odbioru nadal wymagają syntetycznego owner fixture, przejścia owner-mismatch → guest, guest write/restart, powrotu ownera i dowodu niezmienności bajtów/markera. Naprawiony bootstrap i Account Entry są sprawdzone. Na tym samym urządzeniu ekran jest wylogowany; dostępne fixture routera działają w pamięci testowej, a istniejący pełny flow rejestracyjny ma `clearState: true`. Bez osobnego, zatwierdzonego fixture nie mogę dowieść owner-mismatch bez podmiany tożsamości i potencjalnej ingerencji w zachowany lokalny profil. Pozostawiam ten zakres blokujący i przechodzę do kolejnego niezależnego AUD-15; do AUD-17 wrócę po uzyskaniu bezpiecznego syntetycznego fixture.

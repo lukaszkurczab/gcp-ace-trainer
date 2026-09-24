@@ -4,16 +4,42 @@
   "dataPrivacy": "Data & privacy",
   "settings": "Settings",
   "yourData": "Your data",
-  "rights": { "title": "Your rights" },
+  "rights": {
+    "title": "Your rights"
+  },
   "actions": {
-    "export": { "title": "Share or download account data", "summary": "A JSON file with account data, synced learning, and account activity" },
-    "guestPrivacy": { "title": "Request help with your data", "summary": "Send a privacy request in the app without creating an account" },
-    "openAccount": { "title": "Open account", "summary": "Sign in or create an account to manage account data" },
-    "retryRestore": { "title": "Try restoring the session", "summary": "Check your account session again" },
-    "retryDeletion": { "title": "Retry account cleanup", "summary": "Continue the pending account deletion" },
-    "retryIdentity": { "title": "Retry account check", "summary": "Refresh the account session before using account data" },
-    "signOut": { "title": "Sign out", "summary": "End this expired account session before signing in again" },
-    "none": { "title": "Data actions unavailable", "summary": "No account action is available in this state" }
+    "export": {
+      "title": "Share or download account data",
+      "summary": "A JSON file with account data, synced learning, and account activity"
+    },
+    "guestPrivacy": {
+      "title": "Request help with your data",
+      "summary": "Send a privacy request in the app without creating an account"
+    },
+    "openAccount": {
+      "title": "Open account",
+      "summary": "Sign in or create an account to manage account data"
+    },
+    "retryRestore": {
+      "title": "Try restoring the session",
+      "summary": "Check your account session again"
+    },
+    "retryDeletion": {
+      "title": "Retry account cleanup",
+      "summary": "Continue the pending account deletion"
+    },
+    "retryIdentity": {
+      "title": "Retry account check",
+      "summary": "Refresh the account session before using account data"
+    },
+    "signOut": {
+      "title": "Sign out",
+      "summary": "End this expired account session before signing in again"
+    },
+    "none": {
+      "title": "Data actions unavailable",
+      "summary": "No account action is available in this state"
+    }
   },
   "localReset": {
     "entryTitle": "Reset local learning history",
@@ -34,21 +60,66 @@
     "errorBody": "Some local data may remain. Try again; a signed-in reset keeps its recovery marker until the account copy is restored."
   },
   "state": {
-    "authenticated": { "title": "Your account data", "body": "Learning data is stored on this device. Supported account records can also sync to your account cloud and return through normal sync after you sign in. Use the export, details, and privacy actions below for this account." },
-    "guest": { "title": "Guest data", "body": "Learning data is stored locally on this device. You can use Patternly without an account. Use the privacy form in this app if you need help with your data." },
-    "signedOut": { "title": "Sign in to manage account data", "body": "Sign in or create an account to access account data and privacy actions." },
-    "guestAccessBlocked": { "title": "Account access needed", "body": "This saved guest data is linked to another account. Sign in to continue." },
-    "verificationPending": { "title": "Finish signing in", "body": "Check your email to finish signing in before managing account data." },
-    "loading": { "title": "Preparing your data", "body": "Account state is still loading. No account action is available yet." },
-    "authRestoreTimeout": { "title": "Account state unavailable", "body": "We could not restore your session. Try again to check account data." },
-    "firebaseUnconfigured": { "title": "Account unavailable", "body": "Account services are not configured in this build." },
-    "publicEnvironmentUnconfigured": { "title": "Data actions unavailable", "body": "The public data environment is not configured in this build." },
-    "publicEnvironmentInvalid": { "title": "Data actions unavailable", "body": "The public data environment is invalid in this build." },
-    "deletionPending": { "title": "Account deletion pending", "body": "Your account deletion is waiting to finish. Retry the cleanup before using account data." },
-    "signingOut": { "title": "Signing out", "body": "Signing out is in progress. Account data actions are temporarily unavailable." },
-    "deleting": { "title": "Deleting account", "body": "Account deletion is in progress. Account data actions are temporarily unavailable." },
-    "backendUnavailable": { "title": "Account service unavailable", "body": "We could not refresh your account session. Try again." },
-    "revokedSession": { "title": "Session expired", "body": "Your account session is no longer valid. Sign out, then sign in again." }
+    "authenticated": {
+      "title": "Your account data",
+      "body": "Learning data is stored on this device. Supported account records can also sync to your account cloud and return through normal sync after you sign in. Use the export, details, and privacy actions below for this account."
+    },
+    "guest": {
+      "title": "Guest data",
+      "body": "Learning data is stored locally on this device. You can use Patternly without an account. Use the privacy form in this app if you need help with your data."
+    },
+    "signedOut": {
+      "title": "Sign in to manage account data",
+      "body": "Sign in or create an account to access account data and privacy actions."
+    },
+    "guestAccessBlocked": {
+      "title": "Account access needed",
+      "body": "This saved guest data is linked to another account. Sign in to continue."
+    },
+    "verificationPending": {
+      "title": "Finish signing in",
+      "body": "Check your email to finish signing in before managing account data."
+    },
+    "loading": {
+      "title": "Preparing your data",
+      "body": "Account state is still loading. No account action is available yet."
+    },
+    "authRestoreTimeout": {
+      "title": "Account state unavailable",
+      "body": "We could not restore your session. Try again to check account data."
+    },
+    "firebaseUnconfigured": {
+      "title": "Account unavailable",
+      "body": "Account services are not configured in this build."
+    },
+    "publicEnvironmentUnconfigured": {
+      "title": "Data actions unavailable",
+      "body": "The public data environment is not configured in this build."
+    },
+    "publicEnvironmentInvalid": {
+      "title": "Data actions unavailable",
+      "body": "The public data environment is invalid in this build."
+    },
+    "deletionPending": {
+      "title": "Account deletion pending",
+      "body": "Your account deletion is waiting to finish. Retry the cleanup before using account data."
+    },
+    "signingOut": {
+      "title": "Signing out",
+      "body": "Signing out is in progress. Account data actions are temporarily unavailable."
+    },
+    "deleting": {
+      "title": "Deleting account",
+      "body": "Account deletion is in progress. Account data actions are temporarily unavailable."
+    },
+    "backendUnavailable": {
+      "title": "Account service unavailable",
+      "body": "We could not refresh your account session. Try again."
+    },
+    "revokedSession": {
+      "title": "Session expired",
+      "body": "Your account session is no longer valid. Sign out, then sign in again."
+    }
   },
   "privacyRequests": {
     "title": "Privacy requests",
@@ -115,7 +186,7 @@
   },
   "guestPrivacy": {
     "title": "Privacy request without an account",
-    "intro": "Send the form here. We will email a code that you paste back into the app. Use the newest code. The request is pending until you verify your email.",
+    "intro": "Submit the form here. A verification code may be sent to this email address. Enter the newest code in the app to verify your address. The request stays pending until verification.",
     "newRequest": "New request",
     "existingRequest": "Verify or revisit a request",
     "email": "Email address",
@@ -124,7 +195,7 @@
     "resend": "Send a new code",
     "verify": "Verify code and open request",
     "refresh": "Refresh request status",
-    "pending": "Request recorded. Check your inbox for the newest code. If it does not arrive, send a new code here.",
+    "pending": "Request recorded. Email delivery is not confirmed. If you do not receive a code, request another here.",
     "sessionExpired": "The verification session expired. Request a new code to view the status.",
     "invalidEmail": "Enter a valid email address.",
     "storageUnavailable": "Secure local storage is unavailable. A pending request may still be saved. Try again later.",

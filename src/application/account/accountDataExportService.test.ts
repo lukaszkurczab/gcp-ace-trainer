@@ -106,9 +106,40 @@ test("reports a failed final cleanup and leaves bootstrap responsible for retry"
   assert.deepEqual(await shareAccountDataExport(validExport, broken), { kind: "failure", failure: "cleanupFailed" });
 });
 
-test("bootstrap cleanup only deletes files carrying the owned prefix", () => {
+test("bootstrap cleanup without an active storage profile preserves all export files", () => {
   const deleted: string[] = [];
   const entry = (name: string) => ({ name, uri: `file:///cache/${name}`, exists: () => true, write: () => undefined, delete: () => { deleted.push(name); } });
   cleanupOrphanedAccountDataExports({ listCacheFiles: () => [entry(`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}one.json`), entry("unrelated.json")] });
-  assert.deepEqual(deleted, [`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}one.json`]);
+  assert.deepEqual(deleted, []);
+});
+
+test("account export cache cleanup is limited to the selected local profile", async () => {
+  const names: string[] = [];
+  function file(name: string) {
+    return { name, uri: `file:///cache/${name}`, exists: () => true, write: () => undefined, delete: () => undefined };
+  }
+  const base = harness().dependencies;
+  const dependencies: AccountDataExportFileDependencies = {
+    ...base,
+    createCacheFile: (name) => { names.push(name); return file(name); },
+    listCacheFiles: () => [file(`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}owner-profile-orphan.json`), file(`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}guest-profile-orphan.json`)],
+  };
+  await shareAccountDataExport(validExport, dependencies, () => true, "guest-profile");
+  assert.deepEqual(names, [`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}guest-profile-${validExport.exportId}.json`]);
+  const deleted: string[] = [];
+  cleanupOrphanedAccountDataExports({ listCacheFiles: () => [
+    { ...file(`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}owner-profile-orphan.json`), delete: () => { deleted.push("owner"); } },
+    { ...file(`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}guest-profile-orphan.json`), delete: () => { deleted.push("guest"); } },
+  ] }, { id: "guest-profile", kind: "guest", accountId: null });
+  assert.deepEqual(deleted, ["guest"]);
+});
+
+test("profile cleanup leaves legacy unscoped exports because their owner cannot be proven", () => {
+  const deleted: string[] = [];
+  const entry = (name: string) => ({ name, uri: `file:///cache/${name}`, exists: () => true, write: () => undefined, delete: () => { deleted.push(name); } });
+  cleanupOrphanedAccountDataExports({ listCacheFiles: () => [
+    entry(`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}legacy-export.json`),
+    entry(`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}guest-profile-export.json`),
+  ] }, { id: "guest-profile", kind: "guest", accountId: null });
+  assert.deepEqual(deleted, [`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}guest-profile-export.json`]);
 });

@@ -32,6 +32,7 @@ export type HoldToConfirmButtonProps = Readonly<{
   scheduler?: HoldToConfirmFrameScheduler;
   style?: StyleProp<ViewStyle>;
   testID?: string;
+  variant?: "destructive" | "secondary";
 }>;
 
 type ResponderBounds = Readonly<{ height: number; width: number }>;
@@ -54,6 +55,7 @@ export function HoldToConfirmButton({
   scheduler,
   style,
   testID,
+  variant = "destructive",
 }: HoldToConfirmButtonProps) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
@@ -153,17 +155,17 @@ export function HoldToConfirmButton({
       onResponderTerminate={() => controller.terminate()}
       onResponderTerminationRequest={() => true}
       onStartShouldSetResponder={() => isInteractive}
-      style={[styles.root, !isInteractive ? styles.disabled : null, style]}
+      style={[styles.root, variant === "secondary" ? styles.secondaryRoot : null, !isInteractive ? styles.disabled : null, style]}
       testID={testID}
     >
       <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={styles.content}>
         {loading ? <ActivityIndicator accessibilityElementsHidden color={palette.danger} importantForAccessibility="no" size="small" /> : null}
-        <Text maxFontSizeMultiplier={2} style={styles.label}>{children}</Text>
+        <Text maxFontSizeMultiplier={2} style={variant === "secondary" ? styles.secondaryLabel : styles.label}>{children}</Text>
       </View>
-      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={[styles.progressFill, { width: `${Math.round(state.progress * 100)}%` }]} testID={progressTestID}>
-        <View style={[styles.fillContent, { width: measuredWidth }]}>
-          {loading ? <ActivityIndicator accessibilityElementsHidden color={palette.onDanger} importantForAccessibility="no" size="small" /> : null}
-          <Text maxFontSizeMultiplier={2} style={styles.fillLabel} testID={fillTestID}>{children}</Text>
+      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" style={[styles.progressFill, variant === "secondary" ? styles.secondaryProgressFill : null, { width: `${Math.round(state.progress * 100)}%` }]} testID={progressTestID}>
+        <View style={[styles.fillContent, variant === "secondary" ? styles.secondaryFillContent : null, { width: measuredWidth }]}>
+          {loading ? <ActivityIndicator accessibilityElementsHidden color={variant === "secondary" ? palette.onPrimary : palette.onDanger} importantForAccessibility="no" size="small" /> : null}
+          <Text maxFontSizeMultiplier={2} style={variant === "secondary" ? styles.secondaryFillLabel : styles.fillLabel} testID={fillTestID}>{children}</Text>
         </View>
       </View>
     </View>
@@ -224,5 +226,26 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     minHeight: 64,
     minWidth: 48,
     overflow: "hidden",
+  },
+  secondaryRoot: {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    minHeight: 56,
+  },
+  secondaryFillContent: {
+    minHeight: 56,
+  },
+  secondaryLabel: {
+    ...typography.button,
+    color: palette.textSecondary,
+    textAlign: "center",
+  },
+  secondaryProgressFill: {
+    backgroundColor: palette.primary,
+  },
+  secondaryFillLabel: {
+    ...typography.button,
+    color: palette.onPrimary,
+    textAlign: "center",
   },
 });

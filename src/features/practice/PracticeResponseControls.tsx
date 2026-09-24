@@ -120,7 +120,6 @@ function ChoiceOption({ editable, index, itemId, onPress, option, role }: Readon
     letter={String.fromCharCode(65 + index)}
     onPress={onPress}
     state={option.state === "neutral" ? "default" : option.state as AnswerOptionState}
-    statusLabel={correctness ? t(correctness) : undefined}
     testID={itemId ? runtimeSelectors.session.option(itemId, option.id) : undefined}
     text={option.text}
   />;

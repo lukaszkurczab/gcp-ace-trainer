@@ -161,7 +161,6 @@ function AnswerReviewContent({ answer, disabled, needsReview, onToggle }: Readon
             letter={String.fromCharCode(65 + index)}
             onPress={() => undefined}
             state={state}
-            statusLabel={t(status)}
             text={option.text}
           />;
         }) : null}

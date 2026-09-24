@@ -51,7 +51,6 @@ export async function bootstrapApplication(
   let stage = ApplicationBootstrapStage.OpeningStorage;
   let currentRepositoryStep: CanonicalRepositoryBootstrapStep | undefined;
   try {
-    try { cleanupOrphanedAccountDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
     const repositoryDependencies = dependencies.repositories;
     await openCanonicalRepositories({
       ...repositoryDependencies,
@@ -60,6 +59,9 @@ export async function bootstrapApplication(
         try { repositoryDependencies?.onStep?.(step); } catch { /* diagnostic observers are best-effort */ }
       },
     });
+    // Profile storage is selected while opening repositories. Clean only after
+    // that selection so a launch never removes another profile's export.
+    try { cleanupOrphanedAccountDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
     currentRepositoryStep = undefined;
     const unavailableActive = (await getUnavailableActiveRecords()).value;
     if (unavailableActive.length > 0) {

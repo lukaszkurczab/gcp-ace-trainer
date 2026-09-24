@@ -13,6 +13,7 @@ import { useAppPreferences } from "../../preferences";
 import { removeUnavailableEncryptedStorage } from "../../infrastructure/storage/mmkvClient";
 import type { EncryptedStorageFailureCode } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import { EncryptedStorageRecoverySurface, type EncryptedStorageRecoveryStatus } from "./EncryptedStorageRecoverySurface";
+import { canStartManualRetry, createManualRetryLimit, reserveManualRetry, settleManualRetry } from "./manualRetryLimit";
 
 export type ContentPreparationPhase =
   | "opening-storage"
@@ -63,6 +64,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const resetInFlight = useRef(false);
   const encryptedStorageRemovalInFlight = useRef(false);
   const encryptedStorageRemovalAttempt = useRef(0);
+  const encryptedStorageManualRetry = useRef(createManualRetryLimit());
   const removingPresentationWaiter = useRef<{ attempt: number; resolve: (presented: boolean) => void } | null>(null);
   const mounted = useRef(false);
   const lifecycleReady = useRef(false);
@@ -95,6 +97,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
       if (!live || settled) return;
       settled = true;
       if (timeoutId !== undefined) clearTimeout(timeoutId);
+      settleManualRetry(encryptedStorageManualRetry.current, nextState.kind === "ready");
       setState(nextState);
       if (nextState.kind === "ready" && auditResetAwaitingBootstrap.current) {
         auditResetAwaitingBootstrap.current = false;
@@ -198,6 +201,10 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     setState({ kind: "loading", phase: "opening-storage" });
     setBootstrapRevision((revision) => revision + 1);
   };
+  const retryLostKeyBootstrap = () => {
+    if (!reserveManualRetry(encryptedStorageManualRetry.current)) return;
+    retry();
+  };
   const removeUnavailableData = async () => {
     if (encryptedStorageRemovalInFlight.current) return;
     encryptedStorageRemovalInFlight.current = true;
@@ -273,8 +280,10 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
               waiter.resolve(presented);
             }}
             onRemove={() => { void removeUnavailableData(); }}
-            onRetryBootstrap={retry}
+            canRetry={canStartManualRetry(encryptedStorageManualRetry.current)}
+            onRetryBootstrap={retryLostKeyBootstrap}
             onReturn={() => { setEncryptedStorageRemovalError(undefined); setEncryptedStorageRecoveryStatus("base"); }}
+            retryLimitReached={encryptedStorageManualRetry.current.failedAttempts >= 5}
             status={encryptedStorageRecoveryStatus}
           /></View>
         : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen><EmptyState actionLabel={t("Try again")} description={state.reason} onActionPress={retry} title={t("Application unavailable")} /></Screen></View>;

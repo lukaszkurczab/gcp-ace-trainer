@@ -12,6 +12,7 @@ import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClien
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { completeRemoteRevokedSignOut, confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, prepareAccountSignOut, resetAccountLocalLearningHistory, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion, type AccountDataSession } from "./accountDataService";
 import { commitLearningStateReset } from "../learningMutations";
+import { continueAsGuestInNewProfile, getActiveStorageProfile, selectAccountProfileAndRestart } from "../../infrastructure/storage/mmkvClient";
 
 async function reconcileMaterializedAccountReminders(): Promise<void> {
   const { reconcileDeviceReminder } = await import("../../preferences/reconcileDeviceReminder");
@@ -101,7 +102,7 @@ export type AccountSessionContextValue = Readonly<{
   registerWithApple: (acceptanceConfirmed: boolean, locale: "en" | "pl") => Promise<AccountCommandResult>;
   registerWithGoogle: (idToken: string, acceptanceConfirmed: boolean, locale: "en" | "pl") => Promise<AccountCommandResult>;
   confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[], groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[]) => Promise<AccountCommandResult>;
-  continueAsGuest: () => void;
+  continueAsGuest: () => Promise<AccountCommandResult>;
   retryAccountSync: () => Promise<AccountCommandResult>;
   retryPendingAccountSync: () => Promise<AccountCommandResult>;
   retryPendingDeletion: () => Promise<AccountCommandResult>;
@@ -347,7 +348,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     deletionAuthorizationTokenRef.current = null;
   }, [deletionAuthorization]);
 
-  const finalizeCurrent = useCallback(async (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>, user: FirebaseAuthUserSnapshot | null = auth.getSnapshot(), restart = false, expectedToken?: AccountSessionGenerationToken): Promise<AccountCommandResult> => {
+  const finalizeCurrent = useCallback(async (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>, user: FirebaseAuthUserSnapshot | null = auth.getSnapshot(), restart = false, expectedToken?: AccountSessionGenerationToken, preserveGuestScope = false): Promise<AccountCommandResult> => {
     if (!user || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
     const token = expectedToken ?? (restart ? sessionCoordinator.restart(user.uid) : sessionCoordinator.begin(user.uid));
     if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
@@ -359,6 +360,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           // Keep this guard immediately before local account loading. The data
           // service may persist state, so stale generations must not enter it.
           if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== token.uid) return { result: { kind: "failure", failure: "revokedSession" } };
+          if (!preserveGuestScope && await selectAccountProfileAndRestart(response.user.id, () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid)) {
+            return { result: { kind: "failure", failure: "providerUnavailable" } };
+          }
           let deletion = getAccountDeletionState();
           // A completed marker belongs to the account that was deleted. If a
           // later /me resolves a different account for the same auth subject,
@@ -587,7 +591,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       await api.registerAccount(registrationEvidence(locale));
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
       return finalize
-        ? finalizeCurrent(auth, api, user, false, generation)
+        ? finalizeCurrent(auth, api, user, false, generation, true)
         : { kind: "success", next: "authenticated" };
     } catch (error) {
       // A timeout/transport failure leaves the server outcome unknown. Do not
@@ -639,15 +643,33 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       try { await apiClient.recordPurchaseConfirmation(input); return { kind: "success", next: "authenticated" }; }
       catch (error) { return { kind: "failure", failure: classifyAccountFailure(error) }; }
     },
-    continueAsGuest: () => {
+    continueAsGuest: async () => {
       sessionCoordinator.invalidate();
       revokeDeletionAuthorization();
-      if (!hasUnboundGuestInstallation()) {
+      if (!hasUnboundGuestInstallation() && stateRef.current.kind !== "guestAccessBlocked") {
         setState({ kind: "guestAccessBlocked" });
-        return;
+        return { kind: "failure", failure: "providerUnavailable" };
       }
-      grantGuestAccess();
-      setState({ kind: "guest" });
+      const auth = authClient;
+      if (auth?.getSnapshot()) {
+        try { await auth.signOut(); }
+        catch { return { kind: "failure", failure: "signOutPending" }; }
+        if (auth.getSnapshot() !== null) return { kind: "failure", failure: "signOutPending" };
+      } else if (auth === null && stateRef.current.kind !== "unavailable") {
+        return { kind: "failure", failure: "providerUnavailable" };
+      }
+      const currentProfile = getActiveStorageProfile();
+      if (hasUnboundGuestInstallation() && (currentProfile.kind === "guest" || currentProfile.kind === "legacy_guest")) {
+        grantGuestAccess();
+        setState({ kind: "guest" });
+        return { kind: "success", next: "guest" };
+      }
+      try {
+        await continueAsGuestInNewProfile();
+      } catch {
+        return { kind: "failure", failure: "providerUnavailable" };
+      }
+      return { kind: "failure", failure: "providerUnavailable" };
     },
     exportAccountData: async (isRequestActive = () => true) => {
       if (!authClient || !apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
@@ -659,7 +681,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         try {
           const data: AccountDataExportDto = await apiClient.exportAccountData();
           if (!isCurrent()) return { kind: "failure", failure: "sessionRevoked" };
-          const shared = await shareDownloadedAccountData(data, undefined, isCurrent);
+          const shared = await shareDownloadedAccountData(data, undefined, isCurrent, getActiveStorageProfile().id);
           if (shared.kind === "shared") return { kind: "success" };
           if (shared.failure === "sessionChanged") return { kind: "failure", failure: "sessionRevoked" };
           return { kind: "failure", failure: shared.failure };
@@ -931,7 +953,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (registration.kind === "failure") return registration;
       const plan = planPasswordVerificationCommand("register", runtimeMode, user);
       if (plan.kind === "finalize") {
-        return finalizeCurrent(auth, api, user);
+        return finalizeCurrent(auth, api, user, false, undefined, true);
       }
       const generation = sessionCoordinator.begin(user.uid);
       observerBlockedUidRef.current = user.uid;

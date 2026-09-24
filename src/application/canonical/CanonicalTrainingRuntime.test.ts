@@ -78,7 +78,20 @@ test("Claude Focus persists selectable feedback, scores single and multi-select,
     now: NOW,
   });
   const immediate = await prepare("claude-focus-immediate", "after_each_durable_submit");
-  const deferred = await prepare("claude-focus-deferred", "after_session_completion");
+  let deferred = await prepare("claude-focus-deferred", "after_session_completion");
+  const multiSelect = track.getPool("certification-focus-practice").find((question) => question.interaction.type === "choice_multiple");
+  if (multiSelect && !deferred.session.itemOrder.some((entry) => entry.item.questionId === multiSelect.questionId)) {
+    const singleIndex = deferred.session.itemOrder.findIndex((entry) => track.getQuestion(entry.item.questionId)?.interaction.type === "choice_single");
+    if (singleIndex >= 0) {
+      const itemOrder = [...deferred.session.itemOrder];
+      const occurrence = itemOrder[singleIndex]!;
+      itemOrder[singleIndex] = { ...occurrence, item: itemRef(track, multiSelect.questionId) };
+      const optionOrderByOccurrence = { ...deferred.session.optionOrderByOccurrence, [occurrence.occurrenceId]: (multiSelect.interaction as Extract<Question["interaction"], { type: "choice_multiple" }>).options.map((option) => option.optionId) };
+      const base = createTrainingSession({ ...deferred.session, itemOrder, optionOrderByOccurrence, planFingerprint: undefined, taxonomyVersion: undefined });
+      const planFingerprint = await createContentSessionPlanFingerprint({ ...base, taxonomyVersion: "canonical-content-v1" });
+      deferred = { ...deferred, session: createTrainingSession({ ...base, taxonomyVersion: "canonical-content-v1", planFingerprint }) };
+    }
+  }
   assert.equal(immediate.session.configurationSnapshot.feedbackMode, "afterEachAnswer");
   assert.equal(deferred.session.configurationSnapshot.feedbackMode, "atSessionEnd");
   await runtime.validateResume({ session: immediate.session, draft: null });

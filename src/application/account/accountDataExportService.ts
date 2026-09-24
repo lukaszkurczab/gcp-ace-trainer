@@ -1,4 +1,5 @@
 import type { AccountDataExportDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
+import { getActiveStorageProfileOrNull } from "../../infrastructure/storage/mmkvClient";
 
 export const ACCOUNT_DATA_EXPORT_FILE_PREFIX = "patternly-account-data-";
 
@@ -70,6 +71,7 @@ export async function shareAccountDataExport(
   data: unknown,
   dependencies: AccountDataExportFileDependencies = runtimeDependencies(),
   isCurrent: () => boolean = () => true,
+  profileId?: string,
 ): Promise<ShareAccountDataExportResult> {
   if (!isValidAccountDataExport(data)) return { kind: "failure", failure: "invalidResponse" };
   if (!isCurrent()) return { kind: "failure", failure: "sessionChanged" };
@@ -83,7 +85,8 @@ export async function shareAccountDataExport(
 
   let file: ExportFile | null = null;
   try {
-    file = dependencies.createCacheFile(`${ACCOUNT_DATA_EXPORT_FILE_PREFIX}${data.exportId}.json`);
+    const scopedPrefix = profileId ? `${ACCOUNT_DATA_EXPORT_FILE_PREFIX}${profileId}-` : ACCOUNT_DATA_EXPORT_FILE_PREFIX;
+    file = dependencies.createCacheFile(`${scopedPrefix}${data.exportId}.json`);
     file.write(JSON.stringify(data, null, 2));
   } catch {
     try { if (file?.exists()) file.delete(); } catch { /* bootstrap retries orphan cleanup */ }
@@ -103,9 +106,12 @@ export async function shareAccountDataExport(
 
 export function cleanupOrphanedAccountDataExports(
   dependencies: Pick<AccountDataExportFileDependencies, "listCacheFiles"> = runtimeDependencies(),
+  profile = getActiveStorageProfileOrNull(),
 ): void {
+  if (!profile) return;
+  const scopedPrefix = `${ACCOUNT_DATA_EXPORT_FILE_PREFIX}${profile.id}-`;
   for (const file of dependencies.listCacheFiles()) {
-    if (!file.name.startsWith(ACCOUNT_DATA_EXPORT_FILE_PREFIX)) continue;
+    if (!file.name.startsWith(scopedPrefix)) continue;
     try { if (file.exists()) file.delete(); } catch { /* retry on the next bootstrap */ }
   }
 }

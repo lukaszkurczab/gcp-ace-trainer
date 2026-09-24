@@ -6,9 +6,14 @@ export interface KeyValueStorage {
   getAllKeys(): readonly string[];
 }
 
+import { openProfileStorageRouter, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
+
 let client: KeyValueStorage | null = null;
+let profileRouter: ProfileStorageRouter | null = null;
 let productionInitialization: Promise<KeyValueStorage> | null = null;
 const readyListeners = new Set<() => void>();
+const profileTransitionListeners = new Set<() => void>();
+let profileTransitionActive = false;
 
 /** Initializes the one native client before repositories are opened. */
 export async function initializeKeyValueStorage(): Promise<KeyValueStorage> {
@@ -17,7 +22,8 @@ export async function initializeKeyValueStorage(): Promise<KeyValueStorage> {
     productionInitialization = (async () => {
       const { openEncryptedStorage, STORAGE_MIGRATION_MARKER_KEY } = await import("./encryptedStorageBootstrap");
       const { createNativeEncryptedStoragePlatform } = await import("./encryptedStorageNative");
-      const result = await openEncryptedStorage(createNativeEncryptedStoragePlatform());
+      const platform = createNativeEncryptedStoragePlatform();
+      const result = await openEncryptedStorage(platform);
       const storage: KeyValueStorage = {
         getString: (key) => result.storage.getString(key),
         setString: (key, value) => { result.storage.setString(key, value); },
@@ -25,7 +31,12 @@ export async function initializeKeyValueStorage(): Promise<KeyValueStorage> {
         contains: (key) => key !== STORAGE_MIGRATION_MARKER_KEY && result.storage.getString(key) !== undefined,
         getAllKeys: () => result.storage.getAllKeys().filter((key) => key !== STORAGE_MIGRATION_MARKER_KEY),
       };
-      client = storage;
+      profileTransitionActive = false;
+      profileRouter = await openProfileStorageRouter(storage, platform.manifestStore, {
+        isTransitionActive: () => profileTransitionActive,
+        onBeforeProfileCommit: beginProfileTransition,
+      });
+      client = profileRouter.storage;
       for (const listener of readyListeners) listener();
       return storage;
     })().catch((error) => { productionInitialization = null; throw error; });
@@ -37,6 +48,47 @@ export function onKeyValueStorageReady(listener: () => void): () => void {
   readyListeners.add(listener);
   if (client) listener();
   return () => { readyListeners.delete(listener); };
+}
+
+export function getActiveStorageProfile(): StorageProfile {
+  if (!profileRouter) throw new Error("encrypted_storage_not_initialized");
+  return profileRouter.profile;
+}
+
+export function getActiveStorageProfileOrNull(): StorageProfile | null { return profileRouter?.profile ?? null; }
+
+export function beginProfileTransition(): void {
+  if (profileTransitionActive) return;
+  profileTransitionActive = true;
+  for (const listener of profileTransitionListeners) listener();
+}
+
+export function isProfileTransitionActive(): boolean { return profileTransitionActive; }
+
+export function onProfileTransitionChanged(listener: () => void): () => void {
+  profileTransitionListeners.add(listener);
+  return () => { profileTransitionListeners.delete(listener); };
+}
+
+export async function continueAsGuestInNewProfile(): Promise<void> {
+  if (!profileRouter) throw new Error("encrypted_storage_not_initialized");
+  await profileRouter.selectGuest();
+  await reloadForProfileTransition();
+}
+
+export async function selectAccountProfileAndRestart(accountId: string, canContinue: () => boolean = () => true): Promise<boolean> {
+  if (!profileRouter) throw new Error("encrypted_storage_not_initialized");
+  const selected = await profileRouter.selectAccount(accountId, canContinue);
+  const changed = selected.id !== profileRouter.profile.id;
+  if (!changed) return false;
+  await reloadForProfileTransition();
+  return true;
+}
+
+export async function reloadForProfileTransition(): Promise<void> {
+  if (!profileTransitionActive) throw new Error("profile_transition_not_started");
+  const { reloadAppAsync } = await import("expo");
+  await reloadAppAsync("Patternly local data profile changed");
 }
 
 export function getKeyValueStorage(): KeyValueStorage {
@@ -52,6 +104,8 @@ export async function removeUnavailableEncryptedStorage(): Promise<void> {
   const { createNativeEncryptedStoragePlatform } = await import("./encryptedStorageNative");
   await resetUnavailableEncryptedStorage(createNativeEncryptedStoragePlatform());
   client = null;
+  profileRouter = null;
+  profileTransitionActive = false;
   productionInitialization = null;
 }
 
@@ -80,4 +134,9 @@ export type FailurePlan =
   | { kind: "fail_on_remove_number"; removeNumber: number }
   | { kind: "fail_on_key_remove"; key: string };
 
-export function installKeyValueStorageForTests(storage: KeyValueStorage): void { client = storage; productionInitialization = null; }
+export function installKeyValueStorageForTests(storage: KeyValueStorage): void {
+  client = storage;
+  profileRouter = null;
+  profileTransitionActive = false;
+  productionInitialization = null;
+}

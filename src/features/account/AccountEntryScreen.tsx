@@ -172,6 +172,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   accountBindingMismatch: t("accountBindingMismatch"),
   accountBindingMismatchDescription: t("accountBindingMismatchDescription"),
   accountBindingMismatchGuestDescription: t("accountBindingMismatchGuestDescription"),
+  profileTransitionTitle: t("profileTransitionTitle"),
+  profileTransitionDescription: t("profileTransitionDescription"),
+  profileTransitionRetry: t("profileTransitionRetry"),
   accountRecoveryDescription: t("accountRecoveryDescription"),
   retrySync: t("retrySync"),
   syncing: t("syncing"),
@@ -258,7 +261,9 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       navigation.goBack();
       return;
     }
-    account.continueAsGuest();
+    void account.continueAsGuest().then((result) => {
+      if (result.kind === "failure") setFeedback(result);
+    });
   };
   const beginRegistration = () => {
     setFeedback(null);
@@ -333,9 +338,12 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         action={{ label: text.signIn, onPress: () => setMode("signIn"), testID: "account-binding-sign-in" }}
         backAction={backAction}
         body={text.accountBindingMismatchGuestDescription}
+        footerAction={{ label: text.continueWithoutAccount, onPress: continueWithoutAccount, testID: "account-binding-guest" }}
         testID="account-guest-access-blocked"
         title={text.accountBindingMismatch}
-      />
+      >
+        {renderFeedback(feedback, text)}
+      </AuthStatusScreen>
     );
   if (account.state.kind === "verificationPending")
     return (

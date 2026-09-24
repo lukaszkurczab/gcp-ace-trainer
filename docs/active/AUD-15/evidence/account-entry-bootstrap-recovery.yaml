@@ -1,0 +1,13 @@
+appId: com.lkurczab.patternly
+name: AUD-15 bootstrap readiness evidence
+---
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Continue without an account"
+    timeout: 30000
+- assertVisible: "Sign in"
+- assertVisible: "Create account"
+- assertNotVisible: "Application unavailable"
+- assertNotVisible: "Application bootstrap failed. [LOCAL_OPERATION_FAILED]"
+- takeScreenshot: AUD-15-account-entry-bootstrap-recovered

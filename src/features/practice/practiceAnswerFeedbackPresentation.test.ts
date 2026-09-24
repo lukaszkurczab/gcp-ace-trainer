@@ -6,22 +6,22 @@ const answerOptionSource = readFileSync(new URL("../../components/AnswerOption.t
 const controlsSource = readFileSync(new URL("./PracticeResponseControls.tsx", import.meta.url), "utf8");
 const reviewSource = readFileSync(new URL("../review/AnswerReviewScreen.tsx", import.meta.url), "utf8");
 
-test("answer feedback uses visible text, an icon and distinct outlined surfaces", () => {
-  assert.match(answerOptionSource, /statusLabel \? \(/u);
-  assert.match(answerOptionSource, /statusIcon\(state\)/u);
+test("answer cards show state through the card and letter without a redundant status row", () => {
+  assert.doesNotMatch(answerOptionSource, /statusLabel|statusBadge|statusIcon|statusText|statusCorrect|statusIncorrect|statusNeutral|statusSelected/u);
   assert.match(answerOptionSource, /omittedCorrect: \{[^}]*borderStyle: "dashed"/u);
-  assert.match(answerOptionSource, /statusTextCorrect/u);
-  assert.match(answerOptionSource, /statusTextIncorrect/u);
-  assert.match(answerOptionSource, /statusTextNeutral/u);
-  assert.match(answerOptionSource, /statusBadge: \{[^}]*flexWrap: "wrap"[^}]*maxWidth: "100%"/u);
-  assert.match(answerOptionSource, /statusText: \{[^}]*flexShrink: 1/u);
+  assert.match(answerOptionSource, /notSelected: \{[^}]*borderColor: palette\.borderStrong/u);
+  assert.match(answerOptionSource, /correct: \{[^}]*borderColor: palette\.success[^}]*borderWidth: 2/u);
+  assert.match(answerOptionSource, /incorrect: \{[^}]*borderColor: palette\.danger[^}]*borderWidth: 2/u);
+  assert.match(answerOptionSource, /selected: \{[^}]*borderColor: palette\.primary/u);
 });
 
-test("practice and review expose localized status through label, value and visible badge", () => {
+test("practice and review keep correctness and selection in accessibility semantics", () => {
   assert.match(controlsSource, /accessibilityLabel=\{correctness \? `\$\{option\.text\}\. \$\{t\(correctness\)\}` : option\.text\}/u);
+  assert.match(controlsSource, /accessibilityState=\{\{ checked: selected, disabled: !editable \}\}/u);
   assert.match(controlsSource, /accessibilityValue=\{correctness \? \{ text: t\(correctness\) \} : undefined\}/u);
-  assert.match(controlsSource, /statusLabel=\{correctness \? t\(correctness\) : undefined\}/u);
+  assert.doesNotMatch(controlsSource, /statusLabel/u);
+  assert.match(reviewSource, /accessibilityLabel=\{`\$\{option\.text\}\. \$\{t\(status\)\}`\}/u);
   assert.match(reviewSource, /accessibilityState=\{\{ checked: selected\.has\(option\.optionId\), disabled: true \}\}/u);
   assert.match(reviewSource, /accessibilityValue=\{\{ text: t\(status\) \}\}/u);
-  assert.match(reviewSource, /statusLabel=\{t\(status\)\}/u);
+  assert.doesNotMatch(reviewSource, /statusLabel/u);
 });

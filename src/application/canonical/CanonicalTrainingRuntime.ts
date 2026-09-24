@@ -8,6 +8,7 @@ import { ProductModeUnavailableError, type ProductFeedbackTiming, type ProductMo
 import { retainReviewQueueEntryIdentity } from "../../domain/learning/reviewQueueEntry";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "../../domain/learning/resolvedContentRef";
+import { selectPracticeQuestions } from "./practiceQuestionSelector";
 
 const RELEASE = "canonical-content-v1";
 const families: Record<string, string> = {
@@ -27,7 +28,10 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     if (!mode.requestedLengths.includes(req.requestedLength)) throw new Error("Requested length is unavailable for this canonical mode.");
     const source = mode.selection.kind === "evidence_conditioned" ? eligibleEvidence(this.catalog, mode, input.reviews, input.attempts, input.now) : this.catalog.getPool(mode.modeId);
     const count = Math.min(req.requestedLength, source.length); if (count === 0 || (mode.selection.kind !== "evidence_conditioned" && count < mode.minimumActualLength)) throw new Error("Canonical mode has insufficient eligible content.");
-    const questions = source.slice(0, count); const feedback = feedbackValue(mode.feedbackTiming, req.feedbackTiming);
+    const questions = mode.selection.kind === "node"
+      ? selectPracticeQuestions(source, input.attempts, { trackId: this.catalog.trackId, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256 }, count)
+      : source.slice(0, count);
+    const feedback = feedbackValue(mode.feedbackTiming, req.feedbackTiming);
     const items = questions.map((q, i) => ({ occurrenceId: `${input.request instanceof Object && "sessionId" in input.request ? String(input.request.sessionId) : "session"}:occurrence:${i}`, item: ref(this.catalog, q) }));
     const optionOrderByOccurrence = Object.fromEntries(items.map((o, i) => [o.occurrenceId, optionIds(questions[i]!)]));
     const base = { id: requestSessionId(input.request), trackId: this.catalog.trackId, modeId: mode.modeId, configurationSnapshot: { kind: "practice", timer: "elapsedForeground", feedbackMode: feedback, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect" }, requestedLength: req.requestedLength, actualLength: count, currentItemIndex: 0, itemOrder: items, optionOrderByOccurrence, conditionalReinsertSlots: reinsertionSlots(mode, items, optionOrderByOccurrence), activeForegroundMs: 0, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256, taxonomyVersion: RELEASE, status: "active" as const, startedAt: input.now };

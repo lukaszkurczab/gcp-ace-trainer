@@ -4,16 +4,42 @@
   "dataPrivacy": "Dane i prywatność",
   "settings": "Ustawienia",
   "yourData": "Twoje dane",
-  "rights": { "title": "Twoje prawa" },
+  "rights": {
+    "title": "Twoje prawa"
+  },
   "actions": {
-    "export": { "title": "Udostępnij lub pobierz dane konta", "summary": "Plik JSON z danymi konta, synchronizowaną nauką i aktywnością konta" },
-    "guestPrivacy": { "title": "Złóż wniosek dotyczący danych", "summary": "Wyślij wniosek w aplikacji bez zakładania konta" },
-    "openAccount": { "title": "Otwórz konto", "summary": "Zaloguj się lub załóż konto, aby zarządzać danymi konta" },
-    "retryRestore": { "title": "Spróbuj przywrócić sesję", "summary": "Sprawdź ponownie sesję konta" },
-    "retryDeletion": { "title": "Ponów czyszczenie konta", "summary": "Kontynuuj oczekujące usuwanie konta" },
-    "retryIdentity": { "title": "Ponów sprawdzenie konta", "summary": "Odśwież sesję konta przed użyciem danych konta" },
-    "signOut": { "title": "Wyloguj się", "summary": "Zakończ wygasłą sesję konta przed ponownym logowaniem" },
-    "none": { "title": "Działania na danych niedostępne", "summary": "W tym stanie nie ma dostępnego działania na koncie" }
+    "export": {
+      "title": "Udostępnij lub pobierz dane konta",
+      "summary": "Plik JSON z danymi konta, synchronizowaną nauką i aktywnością konta"
+    },
+    "guestPrivacy": {
+      "title": "Złóż wniosek dotyczący danych",
+      "summary": "Wyślij wniosek w aplikacji bez zakładania konta"
+    },
+    "openAccount": {
+      "title": "Otwórz konto",
+      "summary": "Zaloguj się lub załóż konto, aby zarządzać danymi konta"
+    },
+    "retryRestore": {
+      "title": "Spróbuj przywrócić sesję",
+      "summary": "Sprawdź ponownie sesję konta"
+    },
+    "retryDeletion": {
+      "title": "Ponów czyszczenie konta",
+      "summary": "Kontynuuj oczekujące usuwanie konta"
+    },
+    "retryIdentity": {
+      "title": "Ponów sprawdzenie konta",
+      "summary": "Odśwież sesję konta przed użyciem danych konta"
+    },
+    "signOut": {
+      "title": "Wyloguj się",
+      "summary": "Zakończ wygasłą sesję konta przed ponownym logowaniem"
+    },
+    "none": {
+      "title": "Działania na danych niedostępne",
+      "summary": "W tym stanie nie ma dostępnego działania na koncie"
+    }
   },
   "localReset": {
     "entryTitle": "Zresetuj lokalną historię nauki",
@@ -34,21 +60,66 @@
     "errorBody": "Część danych lokalnych może pozostać. Spróbuj ponownie; reset zalogowanego konta zachowuje znacznik odzyskiwania do czasu przywrócenia kopii konta."
   },
   "state": {
-    "authenticated": { "title": "Dane Twojego konta", "body": "Dane nauki są zapisywane na tym urządzeniu. Obsługiwane rekordy konta mogą być także synchronizowane z chmurą konta i wrócić przez zwykłą synchronizację po zalogowaniu. Użyj poniższych działań eksportu, szczegółów i prywatności dla tego konta." },
-    "guest": { "title": "Dane gościa", "body": "Dane nauki są zapisywane lokalnie na tym urządzeniu. Możesz korzystać z Patternly bez konta. Jeśli potrzebujesz pomocy w sprawie danych, użyj poniższego publicznego kanału pomocy." },
-    "signedOut": { "title": "Zaloguj się, aby zarządzać danymi konta", "body": "Zaloguj się lub załóż konto, aby uzyskać dostęp do danych konta i działań dotyczących prywatności." },
-    "guestAccessBlocked": { "title": "Potrzebny dostęp do konta", "body": "Te zapisane dane gościa są powiązane z innym kontem. Zaloguj się, aby kontynuować." },
-    "verificationPending": { "title": "Dokończ logowanie", "body": "Sprawdź e-mail, aby dokończyć logowanie przed zarządzaniem danymi konta." },
-    "loading": { "title": "Przygotowywanie danych", "body": "Stan konta jest jeszcze ładowany. Działanie na koncie nie jest jeszcze dostępne." },
-    "authRestoreTimeout": { "title": "Stan konta niedostępny", "body": "Nie udało się przywrócić sesji. Spróbuj ponownie sprawdzić dane konta." },
-    "firebaseUnconfigured": { "title": "Konto niedostępne", "body": "Usługi konta nie są skonfigurowane w tej wersji aplikacji." },
-    "publicEnvironmentUnconfigured": { "title": "Działania na danych niedostępne", "body": "Publiczne środowisko danych nie jest skonfigurowane w tej wersji aplikacji." },
-    "publicEnvironmentInvalid": { "title": "Działania na danych niedostępne", "body": "Publiczne środowisko danych jest nieprawidłowe w tej wersji aplikacji." },
-    "deletionPending": { "title": "Usuwanie konta oczekuje", "body": "Usuwanie konta nie zostało jeszcze zakończone. Ponów czyszczenie przed użyciem danych konta." },
-    "signingOut": { "title": "Wylogowywanie", "body": "Wylogowywanie jest w toku. Działania na danych konta są tymczasowo niedostępne." },
-    "deleting": { "title": "Usuwanie konta", "body": "Usuwanie konta jest w toku. Działania na danych konta są tymczasowo niedostępne." },
-    "backendUnavailable": { "title": "Usługa konta niedostępna", "body": "Nie udało się odświeżyć sesji konta. Spróbuj ponownie." },
-    "revokedSession": { "title": "Sesja wygasła", "body": "Sesja konta nie jest już ważna. Wyloguj się, a następnie zaloguj ponownie." }
+    "authenticated": {
+      "title": "Dane Twojego konta",
+      "body": "Dane nauki są zapisywane na tym urządzeniu. Obsługiwane rekordy konta mogą być także synchronizowane z chmurą konta i wrócić przez zwykłą synchronizację po zalogowaniu. Użyj poniższych działań eksportu, szczegółów i prywatności dla tego konta."
+    },
+    "guest": {
+      "title": "Dane gościa",
+      "body": "Dane nauki są zapisywane lokalnie na tym urządzeniu. Możesz korzystać z Patternly bez konta. Jeśli potrzebujesz pomocy w sprawie danych, użyj poniższego publicznego kanału pomocy."
+    },
+    "signedOut": {
+      "title": "Zaloguj się, aby zarządzać danymi konta",
+      "body": "Zaloguj się lub załóż konto, aby uzyskać dostęp do danych konta i działań dotyczących prywatności."
+    },
+    "guestAccessBlocked": {
+      "title": "Potrzebny dostęp do konta",
+      "body": "Te zapisane dane gościa są powiązane z innym kontem. Zaloguj się, aby kontynuować."
+    },
+    "verificationPending": {
+      "title": "Dokończ logowanie",
+      "body": "Sprawdź e-mail, aby dokończyć logowanie przed zarządzaniem danymi konta."
+    },
+    "loading": {
+      "title": "Przygotowywanie danych",
+      "body": "Stan konta jest jeszcze ładowany. Działanie na koncie nie jest jeszcze dostępne."
+    },
+    "authRestoreTimeout": {
+      "title": "Stan konta niedostępny",
+      "body": "Nie udało się przywrócić sesji. Spróbuj ponownie sprawdzić dane konta."
+    },
+    "firebaseUnconfigured": {
+      "title": "Konto niedostępne",
+      "body": "Usługi konta nie są skonfigurowane w tej wersji aplikacji."
+    },
+    "publicEnvironmentUnconfigured": {
+      "title": "Działania na danych niedostępne",
+      "body": "Publiczne środowisko danych nie jest skonfigurowane w tej wersji aplikacji."
+    },
+    "publicEnvironmentInvalid": {
+      "title": "Działania na danych niedostępne",
+      "body": "Publiczne środowisko danych jest nieprawidłowe w tej wersji aplikacji."
+    },
+    "deletionPending": {
+      "title": "Usuwanie konta oczekuje",
+      "body": "Usuwanie konta nie zostało jeszcze zakończone. Ponów czyszczenie przed użyciem danych konta."
+    },
+    "signingOut": {
+      "title": "Wylogowywanie",
+      "body": "Wylogowywanie jest w toku. Działania na danych konta są tymczasowo niedostępne."
+    },
+    "deleting": {
+      "title": "Usuwanie konta",
+      "body": "Usuwanie konta jest w toku. Działania na danych konta są tymczasowo niedostępne."
+    },
+    "backendUnavailable": {
+      "title": "Usługa konta niedostępna",
+      "body": "Nie udało się odświeżyć sesji konta. Spróbuj ponownie."
+    },
+    "revokedSession": {
+      "title": "Sesja wygasła",
+      "body": "Sesja konta nie jest już ważna. Wyloguj się, a następnie zaloguj ponownie."
+    }
   },
   "privacyRequests": {
     "title": "Wnioski dotyczące prywatności",
@@ -115,7 +186,7 @@
   },
   "guestPrivacy": {
     "title": "Wniosek dotyczący prywatności bez konta",
-    "intro": "Wyślij formularz tutaj. Kod otrzymasz e-mailem i wkleisz w aplikacji. Użyj najnowszego kodu. Wniosek oczekuje na potwierdzenie adresu.",
+    "intro": "Wyślij formularz tutaj. Kod potwierdzający może zostać wysłany na ten adres e-mail. Wpisz w aplikacji najnowszy kod, aby potwierdzić adres. Wniosek pozostaje oczekujący do czasu potwierdzenia.",
     "newRequest": "Nowy wniosek",
     "existingRequest": "Potwierdź lub sprawdź wniosek",
     "email": "Adres e-mail",
@@ -124,7 +195,7 @@
     "resend": "Wyślij nowy kod",
     "verify": "Potwierdź kod i otwórz wniosek",
     "refresh": "Odśwież status wniosku",
-    "pending": "Wniosek zapisano. Sprawdź pocztę i użyj najnowszego kodu. Jeśli wiadomość nie dotrze, wyślij kod ponownie.",
+    "pending": "Wniosek zapisano. Dostarczenie wiadomości nie jest potwierdzone. Jeśli nie otrzymasz kodu, poproś tutaj o kolejny.",
     "sessionExpired": "Sesja potwierdzenia wygasła. Poproś o nowy kod, aby zobaczyć status.",
     "invalidEmail": "Podaj prawidłowy adres e-mail.",
     "storageUnavailable": "Bezpieczna pamięć lokalna jest niedostępna. Oczekujący wniosek może nadal być zapisany. Spróbuj ponownie później.",

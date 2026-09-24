@@ -15,7 +15,6 @@ type AnswerOptionProps = Readonly<{
   letter: string;
   onPress: () => void;
   state: AnswerOptionState;
-  statusLabel?: string;
   testID?: string;
   text: string;
 }>;
@@ -30,7 +29,6 @@ export function AnswerOption({
   letter,
   onPress,
   state,
-  statusLabel,
   testID,
   text,
 }: AnswerOptionProps) {
@@ -55,12 +53,6 @@ export function AnswerOption({
       </View>
       <View style={styles.answerContent}>
         <Text key={`answer:${fontScale}`} maxFontSizeMultiplier={2} style={styles.text}>{text}</Text>
-        {statusLabel ? (
-          <View style={[styles.statusBadge, statusStyle(state, styles)]}>
-            <Text accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.statusIcon, statusTextStyle(state, styles)]}>{statusIcon(state)}</Text>
-            <Text maxFontSizeMultiplier={2} style={[styles.statusText, statusTextStyle(state, styles)]}>{statusLabel}</Text>
-          </View>
-        ) : null}
       </View>
     </Pressable>
   );
@@ -73,28 +65,6 @@ function stateStyle(state: AnswerOptionState, styles: ReturnType<typeof createSt
   if (state === "selected") return styles.selected;
   if (state === "not_selected") return styles.notSelected;
   return styles.default;
-}
-
-function statusStyle(state: AnswerOptionState, styles: ReturnType<typeof createStyles>) {
-  if (state === "correct" || state === "omitted_correct") return styles.statusCorrect;
-  if (state === "incorrect") return styles.statusIncorrect;
-  if (state === "selected") return styles.statusSelected;
-  return styles.statusNeutral;
-}
-
-function statusTextStyle(state: AnswerOptionState, styles: ReturnType<typeof createStyles>) {
-  if (state === "correct" || state === "omitted_correct") return styles.statusTextCorrect;
-  if (state === "incorrect") return styles.statusTextIncorrect;
-  if (state === "selected") return styles.statusTextSelected;
-  return styles.statusTextNeutral;
-}
-
-function statusIcon(state: AnswerOptionState): string {
-  if (state === "correct") return "✓";
-  if (state === "incorrect") return "×";
-  if (state === "omitted_correct") return "!";
-  if (state === "selected") return "•";
-  return "–";
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
@@ -114,15 +84,4 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   pressed: { opacity: 0.82 },
   selected: { backgroundColor: palette.surface, borderColor: palette.primary },
   text: { ...typography.body, color: palette.textPrimary, flex: 1 },
-  statusBadge: { alignItems: "center", alignSelf: "flex-start", borderRadius: radius.sm, borderWidth: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, maxWidth: "100%", paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
-  statusCorrect: { backgroundColor: palette.successSoft, borderColor: palette.success },
-  statusIcon: { fontSize: 12, fontWeight: "800", lineHeight: 16 },
-  statusIncorrect: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
-  statusNeutral: { backgroundColor: palette.elevatedSurface, borderColor: palette.borderStrong },
-  statusSelected: { backgroundColor: palette.primarySoft, borderColor: palette.primary },
-  statusText: { ...typography.small, flexShrink: 1, fontWeight: "700" },
-  statusTextCorrect: { color: palette.success },
-  statusTextIncorrect: { color: palette.danger },
-  statusTextNeutral: { color: palette.textSecondary },
-  statusTextSelected: { color: palette.primary },
 });

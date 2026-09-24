@@ -10,7 +10,11 @@ test("lost-key recovery uses the typed failure code and the canonical hold-to-re
   assert.match(source, /removeUnavailableEncryptedStorage\(\)/);
   assert.match(source, /encryptedStorageRemovalInFlight\.current/);
   assert.match(surface, /<HoldToConfirmButton/);
-  assert.match(surface, /Hold for at least 3 seconds, then release/);
+  assert.match(surface, /hint=\{t\("Hold for at least 3 seconds, then release\. Releasing early cancels\."\)\}/);
+  assert.doesNotMatch(surface, /<Text[^>]*>[^<]*\{t\("Hold for at least 3 seconds/u);
+  assert.match(surface, /variant="secondary"/);
+  assert.match(surface, /PatternlyMark decorative size=\{36\}/);
+  assert.match(surface, /justifyContent: "flex-start"/);
   assert.doesNotMatch(source, /setConfirmUnavailableDataRemoval/);
   assert.doesNotMatch(source, /clearPatternlyLocalHistory/);
 });
@@ -25,8 +29,18 @@ test("lost-key recovery keeps removal, success, error, and bootstrap transitions
   assert.match(removal, /setEncryptedStorageRecoveryStatus\("error"\)/);
   assert.doesNotMatch(removal, /retry\(\)/);
   assert.match(source, /onContinue=\{retry\}/);
-  assert.match(source, /onRetryBootstrap=\{retry\}/);
+  assert.match(source, /onRetryBootstrap=\{retryLostKeyBootstrap\}/);
+  assert.match(source, /canRetry=\{canStartManualRetry\(encryptedStorageManualRetry\.current\)\}/);
+  assert.match(source, /retryLimitReached=\{encryptedStorageManualRetry\.current\.failedAttempts >= 5\}/);
   assert.match(source, /onReturn=\{\(\) => \{ setEncryptedStorageRemovalError\(undefined\); setEncryptedStorageRecoveryStatus\("base"\); \}\}/);
+});
+
+test("manual lost-key retries are process-local and automatic bootstrap does not spend the limit", () => {
+  assert.match(source, /const encryptedStorageManualRetry = useRef\(createManualRetryLimit\(\)\)/);
+  assert.match(source, /settleManualRetry\(encryptedStorageManualRetry\.current, nextState\.kind === "ready"\)/);
+  assert.match(source, /const retryLostKeyBootstrap = \(\) => \{\s*if \(!reserveManualRetry\(encryptedStorageManualRetry\.current\)\) return;/);
+  assert.match(surface, /You’ve reached the retry limit/);
+  assert.doesNotMatch(surface, /Hold for at least 3 seconds, then release[^<]*<\/Text>/u);
 });
 
 test("recovery surface preserves one stable, localized, accessible layout for every state", () => {
