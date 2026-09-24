@@ -166,13 +166,16 @@ jobs:
         id: content-authoring-gate
         continue-on-error: true
         working-directory: patternly-content
-        run: npm run authoring:validate
+        env:
+          CONTENT_BUILD_OUTPUT: ${{ runner.temp }}/launch-readiness-content-build
+        run: npm run content:build-all -- --root . --output-root "$CONTENT_BUILD_OUTPUT"
 
-      - name: Run content AWS source gate
+      - name: Run content canonical scoring gate
         id: content-aws-gate
         continue-on-error: true
         working-directory: patternly-content
-        run: npm run audit:aws-workbook-source
+        run: |
+          node --input-type=module -e 'import { readFileSync } from "node:fs"; import { spawnSync } from "node:child_process"; const { tracks } = JSON.parse(readFileSync("content/catalog.json", "utf8")); for (const { trackId } of tracks) { const result = spawnSync("npm", ["run", "content:test", "--", "--track", trackId, "--root", "."], { stdio: "inherit" }); if (result.error) throw result.error; if (result.status !== 0) process.exit(result.status ?? 1); }'
 
       - name: Run web local verification gate
         id: web-verify-gate
