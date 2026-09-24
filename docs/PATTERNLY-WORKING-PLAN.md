@@ -367,7 +367,7 @@ Kolejka nie duplikuje statusów z rejestru. Codex bierze pierwszy **dostępny** 
 | 08 | AUD-05 | Nawigacja trzech runnerów na iOS, w tym leave/resume/result. |
 | 09 | AUD-08/A | Wspólny protokół recovery i briefing/QA, bez pytania PO o techniczną semantykę. |
 | 10 | AUD-08/B | Implementacja mobile/backend i testy scenariuszy awarii zgodnie z zaakceptowanym kontraktem. |
-| 11 | ODK-116-A — A1 done | [Walidacja iOS/Android](active/ODK-116/A1-REPORT.md) i [korekta runtime](active/ODK-116/A1B-REPORT.md) ukończone; [mapa A2](active/ODK-116/A2-CROSS-REPO-CONTRACT.md) i [schema PL/EN](active/ODK-116/A2-SCHEMA-REPORT.md) i [rekord wydania A3a](active/ODK-116/A3A-REPORT.md) i [bramka A3b](active/ODK-116/A3B-REPORT.md) gotowe; dalej web A4 i środowisko testowe. Gotowe wejście dla tłumaczeń dokumentów oraz web. |
+| 11 | ODK-116-A — A1 done | [Walidacja iOS/Android](active/ODK-116/A1-REPORT.md) i [korekta runtime](active/ODK-116/A1B-REPORT.md) ukończone; [mapa A2](active/ODK-116/A2-CROSS-REPO-CONTRACT.md) i [schema PL/EN](active/ODK-116/A2-SCHEMA-REPORT.md) i [rekord wydania A3a](active/ODK-116/A3A-REPORT.md) i [bramka A3b](active/ODK-116/A3B-REPORT.md) gotowe; dalej [web A4](active/ODK-116/A4-CONTRACT.md) i środowisko testowe. Gotowe wejście dla tłumaczeń dokumentów oraz web. |
 | 12 | SIMP-05 — tylko potwierdzony brak | Gdy w PLAN-SYNC znaleziono dowód ukończenia, pominąć implementację i zachować zamknięcie. Gdy aktywne legacy istnieje, usunąć je przed finalizacją formatu kandydata. |
 | 13 | AWS-02/CANDIDATE | Exact artefakty i delegowana decyzja Codex, aktualne readiness/migration. Brak oczekiwania na PO. |
 | 14 | ODK-119-GATE/A | Jedna reguła dostępu i lokalne kontrakty, gotowe dla integracji pakietów. |
