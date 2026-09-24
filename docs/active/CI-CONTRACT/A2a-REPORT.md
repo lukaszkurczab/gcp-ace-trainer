@@ -19,6 +19,7 @@ Nie zmieniono bramek candidate readiness, review packets ani manual release. Obe
 - `content:test` uruchomiony według kanonicznego katalogu zaliczył dziewięć tracków i 16 077 odpowiedzi.
 - `tests/content-builder.test.mjs`: PASS 17/17, w tym negatywne przypadki brakującego i pustego źródła.
 - Niezależne QA (`gpt-6-luna` high): **PASS WITH GAPS** dla A2a. Potwierdzono YAML, dziewięć artefaktów poza checkoutem, scoring wszystkich 16 077 odpowiedzi i zachowaną agregację launch readiness. `validateCatalog` wymaga dokładnie dziewięciu zaakceptowanych ID. Luka dotyczy otwartych bramek A2b, nie wyniku A2a.
+- Hosted [content publishing run 35973400014](https://github.com/lukaszkurczab/patternly-content/actions/runs/35973400014): `npm test`, build dziewięciu tracków i scoring katalogu **SUCCESS**. Cały run **FAIL** na następnym, wciąż nieistniejącym `generate:candidate-readiness`; późniejsze kroki zostały pominięte.
 
 ## Następny krok
 
