@@ -26,6 +26,18 @@ function identitySequence(...ids: string[]) {
   return { async create() { const id = ids[index++]!; return { installationId: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`, localDatasetId: id }; } };
 }
 
+function addRegisteredGuest(control: MemoryControlStore, id: string): void {
+  const slots = ["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"];
+  const current = slots
+    .map((key) => ({ key, raw: control.values.get(key) ?? null, registry: JSON.parse(control.values.get(key) ?? "null") as Record<string, unknown> | null }))
+    .filter((entry): entry is { key: string; raw: string; registry: Record<string, unknown> } => entry.raw !== null && entry.registry !== null)
+    .sort((left, right) => Number(right.registry.generation) - Number(left.registry.generation))[0]!;
+  const profiles = [...current.registry.profiles as Array<Record<string, unknown>>, { id, kind: "guest", accountId: null }];
+  const body = { version: 1, generation: Number(current.registry.generation) + 1, profiles, legacyProfileId: current.registry.legacyProfileId, selectedProfileId: current.registry.selectedProfileId };
+  const target = slots.find((key) => key !== current.key)!;
+  control.values.set(target, JSON.stringify({ ...body, checksum: sha256Utf8(JSON.stringify(body)) }));
+}
+
 function legacyOwnerStorage(): MemoryKeyValueStorage {
   const storage = new MemoryKeyValueStorage();
   storage.setString(STORAGE_KEYS.METADATA, "owner-metadata-bytes");
@@ -265,7 +277,7 @@ test("concurrent guest selections claim one transition and cannot commit competi
   assert.equal(restarted.profile.id, GUEST_ID);
 });
 
-test("an existing guest can be reselected with the same profile ID and stored data", async () => {
+test("selectGuest reuses the selected guest with the same profile ID and stored data", async () => {
   const base = legacyOwnerStorage();
   const control = new MemoryControlStore();
   const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) });
@@ -273,15 +285,83 @@ test("an existing guest can be reselected with the same profile ID and stored da
   const afterFirst = await openProfileStorageRouter(base, control, { identity: identitySequence("00000000-0000-4000-8000-000000000004") });
   afterFirst.storage.setString("guest-preserved", "same-profile-data");
   const secondGuest = await afterFirst.selectGuest();
-  assert.notEqual(secondGuest.id, originalGuest.id);
+  assert.deepEqual(secondGuest, originalGuest);
 
-  const reselector = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
-  const selected = await reselector.selectExistingGuest(originalGuest.id);
-  assert.deepEqual(selected, originalGuest);
   const reopened = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
   assert.equal(reopened.profile.id, originalGuest.id);
   assert.equal(reopened.storage.getString("guest-preserved"), "same-profile-data");
-  assert.equal(reopened.registry.profiles.length, 3);
+  assert.equal(reopened.registry.profiles.length, 2);
+});
+
+test("selectGuest fails closed when the selected guest marker cannot be verified", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  const router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) });
+  const markerKey = `patternly:profile:v1:${GUEST_ID}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`;
+  base.setString(markerKey, "corrupt-marker");
+  const registryBefore = [...control.values];
+  const storageBefore = base.snapshot();
+
+  await assert.rejects(router.selectGuest(), (error) => error instanceof ProfileStorageError && error.code === "profile_scope_unavailable");
+
+  assert.deepEqual([...control.values], registryBefore);
+  assert.deepEqual(base.snapshot(), storageBefore);
+});
+
+test("selectGuest returns a typed ambiguity error without writing when multiple guests are preserved", async () => {
+  const base = legacyOwnerStorage();
+  const control = new MemoryControlStore();
+  const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) });
+  await first.selectGuest();
+  await (await openProfileStorageRouter(base, control)).selectAccount("account-with-multiple-guests");
+  addRegisteredGuest(control, "00000000-0000-4000-8000-000000000004");
+  let identityCalls = 0;
+  const ambiguous = await openProfileStorageRouter(base, control, { identity: { async create() { identityCalls += 1; return { installationId: OWNER_ID, localDatasetId: DATASET_ID }; } } });
+  const registryBefore = [...control.values];
+  const storageBefore = base.snapshot();
+
+  await assert.rejects(ambiguous.selectGuest(), (error) => error instanceof ProfileStorageError && error.code === "prepared_guest_choice_required");
+
+  assert.equal(identityCalls, 0);
+  assert.deepEqual([...control.values], registryBefore);
+  assert.deepEqual(base.snapshot(), storageBefore);
+  assert.equal(ambiguous.registry.profiles.filter((profile) => profile.kind === "guest").length, 2);
+});
+
+test("guest and two account scopes survive repeated selection and restart without cross-reads", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  const ids = identitySequence(GUEST_ID, DATASET_ID, OWNER_ID, "00000000-0000-4000-8000-000000000004");
+  const initial = await openProfileStorageRouter(base, control, { identity: ids });
+  const guest = await initial.selectGuest();
+  let router = await openProfileStorageRouter(base, control, { identity: ids });
+  router.storage.setString("private-value", "guest-data");
+
+  const accountA = await router.selectAccount("exact-account-A");
+  router = await openProfileStorageRouter(base, control, { identity: ids });
+  router.storage.setString("private-value", "account-A-data");
+  const returnedGuestA = await router.selectGuest();
+  assert.equal(returnedGuestA.id, guest.id);
+  router = await openProfileStorageRouter(base, control, { identity: ids });
+  assert.equal(router.storage.getString("private-value"), "guest-data");
+
+  const accountB = await router.selectAccount("exact-account-B");
+  assert.notEqual(accountB.id, accountA.id);
+  router = await openProfileStorageRouter(base, control, { identity: ids });
+  router.storage.setString("private-value", "account-B-data");
+  assert.equal((await router.selectGuest()).id, guest.id);
+
+  const restartedGuest = await openProfileStorageRouter(base, control, { identity: ids });
+  assert.equal(restartedGuest.profile.id, guest.id);
+  assert.equal(restartedGuest.storage.getString("private-value"), "guest-data");
+  const restartedA = await restartedGuest.selectAccount("exact-account-A");
+  assert.equal(restartedA.id, accountA.id);
+  const reopenedA = await openProfileStorageRouter(base, control, { identity: ids });
+  assert.equal(reopenedA.storage.getString("private-value"), "account-A-data");
+  const restartedB = await reopenedA.selectAccount("exact-account-B");
+  assert.equal(restartedB.id, accountB.id);
+  const reopenedB = await openProfileStorageRouter(base, control, { identity: ids });
+  assert.equal(reopenedB.storage.getString("private-value"), "account-B-data");
 });
 
 test("existing guest reselection rejects non-guest IDs without changing the registry", async () => {
@@ -296,10 +376,10 @@ test("existing guest reselection rejects non-guest IDs without changing the regi
 test("failed existing guest registry commit leaves the current scope closed", async () => {
   const base = legacyOwnerStorage();
   const control = new MemoryControlStore();
-  const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, "00000000-0000-4000-8000-000000000004") });
+  const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) });
   const guest = await first.selectGuest();
   const second = await openProfileStorageRouter(base, control, { identity: identitySequence("00000000-0000-4000-8000-000000000004") });
-  await second.selectGuest();
+  await second.selectAccount("account-with-existing-guest");
   let transitionActive = false;
   const reselector = await openProfileStorageRouter(base, control, {
     identity: identitySequence(OWNER_ID),

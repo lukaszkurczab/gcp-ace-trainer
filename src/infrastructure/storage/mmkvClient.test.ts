@@ -21,6 +21,7 @@ import {
 import { openProfileStorageRouter, type ProfileStorageRouter } from "./profileStorageRouter";
 import type { StorageManifestStore } from "./encryptedStorageBootstrap";
 import { STORAGE_KEYS } from "../../storage/keys";
+import { sha256Utf8 } from "../identity/sha256";
 
 const GUEST_ID = "00000000-0000-4000-8000-000000000021";
 
@@ -29,6 +30,16 @@ class MemoryControlStore implements StorageManifestStore {
   async get(key: string) { return this.values.get(key) ?? null; }
   async set(key: string, value: string) { this.values.set(key, value); }
   async remove(key: string) { this.values.delete(key); }
+}
+
+function addRegisteredGuest(control: MemoryControlStore, id: string): void {
+  const slots = ["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"];
+  const registries = slots.map((key) => ({ key, raw: control.values.get(key) ?? null, registry: JSON.parse(control.values.get(key) ?? "null") as Record<string, unknown> | null }));
+  const current = registries.filter((entry) => entry.raw !== null && entry.registry !== null).sort((left, right) => Number(right.registry!.generation) - Number(left.registry!.generation))[0]!;
+  const registry = current.registry!;
+  const profiles = [...registry.profiles as Array<Record<string, unknown>>, { id, kind: "guest", accountId: null }];
+  const body = { version: 1, generation: Number(registry.generation) + 1, profiles, legacyProfileId: registry.legacyProfileId, selectedProfileId: registry.selectedProfileId };
+  control.values.set(slots.find((key) => key !== current.key)!, JSON.stringify({ ...body, checksum: sha256Utf8(JSON.stringify(body)) }));
 }
 
 async function preparedFixture(): Promise<{ base: MemoryKeyValueStorage; control: MemoryControlStore; router: ProfileStorageRouter }> {
@@ -232,6 +243,7 @@ test("implicit prepared guest selection fails closed when multiple preserved gue
   const seed = await preparedFixture();
   await seed.router.selectGuest();
   await (await openProfileStorageRouter(seed.base, seed.control)).selectAccount("backend-account-03");
+  addRegisteredGuest(seed.control, "00000000-0000-4000-8000-000000000027");
   const router = await openProfileStorageRouter(seed.base, seed.control, {
     onBeforeProfileCommit: beginProfileTransition,
   });

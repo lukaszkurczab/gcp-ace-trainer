@@ -1,0 +1,14 @@
+appId: com.lkurczab.patternly
+name: PROFILE-02/A preserved guest restart
+---
+- assertVisible:
+    id: "patternly:content:ready"
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:ready"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:home:primary-action"
+- takeScreenshot: profile-02-a-guest-after-restart

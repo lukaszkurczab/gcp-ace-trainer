@@ -231,6 +231,18 @@ export async function openProfileStorageRouter(
     transitionClaimed = true;
     dependencies.onBeforeProfileCommit?.();
   };
+  const selectExistingGuest = async (profileId: string, canContinue: () => boolean = () => true): Promise<StorageProfile> => {
+    const guest = registry.profiles.find((candidate) => candidate.id === profileId && (candidate.kind === "guest" || candidate.kind === "legacy_guest"));
+    if (!guest) throw new ProfileStorageError("profile_scope_unavailable");
+    if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+    await ensureGuestInstallation(base, guest, identity);
+    ensureGuestAccess(base, guest);
+    if (guest.id === registry.selectedProfileId) return guest;
+    claimTransition();
+    const next = withChecksum({ ...registryBody(registry, registry.generation + 1), selectedProfileId: guest.id });
+    await commitRegistry(control, registry, next);
+    return guest;
+  };
   return Object.freeze({
     registry,
     profile,
@@ -252,6 +264,18 @@ export async function openProfileStorageRouter(
     },
     async selectGuest(canContinue: () => boolean = () => true) {
       if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+      const selected = registry.profiles.find((candidate) => candidate.id === registry.selectedProfileId);
+      if (!selected) throw new ProfileStorageError("profile_registry_corrupt");
+      if (selected.kind === "guest" || selected.kind === "legacy_guest") {
+        await ensureGuestInstallation(base, selected, identity);
+        ensureGuestAccess(base, selected);
+        return selected;
+      }
+
+      const guests = registry.profiles.filter((candidate) => candidate.kind === "guest" || candidate.kind === "legacy_guest");
+      if (guests.length === 1) return selectExistingGuest(guests[0]!.id, canContinue);
+      if (guests.length > 1) throw new ProfileStorageError("prepared_guest_choice_required");
+
       const generated = await identity.create();
       const guest = Object.freeze({ id: generated.localDatasetId, kind: "guest" as const, accountId: null });
       if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
@@ -268,18 +292,7 @@ export async function openProfileStorageRouter(
       await commitRegistry(control, registry, next);
       return guest;
     },
-    async selectExistingGuest(profileId: string, canContinue: () => boolean = () => true) {
-      const guest = registry.profiles.find((candidate) => candidate.id === profileId && (candidate.kind === "guest" || candidate.kind === "legacy_guest"));
-      if (!guest) throw new ProfileStorageError("profile_scope_unavailable");
-      if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
-      await ensureGuestInstallation(base, guest, identity);
-      ensureGuestAccess(base, guest);
-      if (guest.id === registry.selectedProfileId) return guest;
-      claimTransition();
-      const next = withChecksum({ ...registryBody(registry, registry.generation + 1), selectedProfileId: guest.id });
-      await commitRegistry(control, registry, next);
-      return guest;
-    },
+    selectExistingGuest,
     async selectAccount(accountId: string, canContinue: () => boolean = () => true) {
       if (transitionClaimed || dependencies.isTransitionActive?.()) throw new ProfileStorageError("profile_transition_cancelled");
       if (!accountId.trim()) throw new ProfileStorageError("profile_scope_unavailable");
