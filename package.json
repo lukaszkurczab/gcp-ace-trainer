@@ -21,6 +21,7 @@
     "web:sandbox": "node scripts/runLocalProfile.mjs sandbox web",
     "qa:static": "npm run recovery:check && npm run typecheck && npm test && npm run validate:content-boundary && npm run validate:runtime-privacy-boundary",
     "recovery:check": "node scripts/checkRecoveryBaseline.mjs",
+    "check:legal-variables": "node --import tsx scripts/checkLegalVariables.mjs",
     "baseline:report": "node scripts/recoveryBaselineReport.mjs",
     "launch:readiness": "node scripts/releaseGate.mjs",
     "release:gate": "node scripts/releaseGate.mjs --enforce",
