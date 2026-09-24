@@ -32,15 +32,17 @@ async function disableAccountRemindersForDeletion(): Promise<boolean> {
 }
 import { clearAccountDeletionState, getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
+import { isPatternlySmokeRuntime, readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
 import { grantGuestAccess, hasGuestAccess, revokeGuestAccess } from "../../storage/repositories/guestAccessRepository";
 import { hasUnboundGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
 import { createDeletionAuthorizationVault, createSensitiveCommandLane, isLiveDeletionAuthorization, prepareDeletionAuthorization, runReauthenticatedMutation, type DeletionAuthorizationVault, type SensitiveCommandLane } from "./accountCommandGuards";
 import { shareAccountDataExport as shareDownloadedAccountData } from "./accountDataExportService";
 import { legalVariables } from "../../legal/legalVariables";
+import { ownerPreservationOracle } from "../testing/ownerPreservationOracle";
 
 export type AccountFailure = "accountNotFound" | "backendUnavailable" | "conflict" | "duplicate" | "emailUnavailable" | "expiredAction" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
 export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "guest" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
+export type OwnerPreservationGuestCommandResult = Readonly<{ status: "denied" } | { status: "blocked"; oracle: "blocked" } | { status: "pending"; oracle: "armed" }>;
 export type AccountDataExportFailure = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed";
 export type AccountDataExportCommandResult = Readonly<
   | { kind: "success" }
@@ -103,6 +105,7 @@ export type AccountSessionContextValue = Readonly<{
   registerWithGoogle: (idToken: string, acceptanceConfirmed: boolean, locale: "en" | "pl") => Promise<AccountCommandResult>;
   confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[], groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[]) => Promise<AccountCommandResult>;
   continueAsGuest: () => Promise<AccountCommandResult>;
+  runOwnerPreservationGuestCommand: () => Promise<OwnerPreservationGuestCommandResult>;
   retryAccountSync: () => Promise<AccountCommandResult>;
   retryPendingAccountSync: () => Promise<AccountCommandResult>;
   retryPendingDeletion: () => Promise<AccountCommandResult>;
@@ -141,6 +144,59 @@ export class AccountSessionGenerationStaleError extends Error {
   public constructor() {
     super("account_session_generation_stale");
     this.name = "AccountSessionGenerationStaleError";
+  }
+}
+
+export function createGuestTransitionLock(): Readonly<{ tryAcquire: () => (() => void) | null }> {
+  let held = false;
+  return Object.freeze({
+    tryAcquire: (): (() => void) | null => {
+      if (held) return null;
+      held = true;
+      let released = false;
+      return () => {
+        if (released) return;
+        released = true;
+        held = false;
+      };
+    },
+  });
+}
+
+export async function runOwnerPreservationGuestTransition(input: Readonly<{
+  lock: ReturnType<typeof createGuestTransitionLock>;
+  preflight: () => boolean;
+  recheck: () => boolean;
+  arm: () => Promise<"unchanged" | "changed" | "blocked">;
+  cleanup: () => Promise<"unchanged" | "changed" | "blocked">;
+  beginTransition: () => Promise<void>;
+}>): Promise<OwnerPreservationGuestCommandResult> {
+  const release = input.lock.tryAcquire();
+  if (!release) return { status: "denied" };
+  let armed = false;
+  let transitionStarted = false;
+  let cleanupAttempted = false;
+  const cleanupArmedRecord = async (): Promise<"unchanged" | "changed" | "blocked"> => {
+    cleanupAttempted = true;
+    try { return await input.cleanup(); } catch { return "blocked"; }
+  };
+  try {
+    if (!input.preflight()) return { status: "denied" };
+    if (await input.arm() !== "unchanged") return { status: "blocked", oracle: "blocked" };
+    armed = true;
+    if (!input.recheck()) {
+      const cleanup = await cleanupArmedRecord();
+      armed = false;
+      return cleanup === "unchanged" ? { status: "denied" } : { status: "blocked", oracle: "blocked" };
+    }
+    transitionStarted = true;
+    await input.beginTransition();
+    return { status: "pending", oracle: "armed" };
+  } catch {
+    if (armed && !transitionStarted && !cleanupAttempted) await cleanupArmedRecord();
+    return { status: "blocked", oracle: "blocked" };
+  } finally {
+    release();
   }
 }
 
@@ -303,6 +359,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const stateRef = useRef<AccountState>({ kind: "loading" });
   stateRef.current = state;
   const [authClient, setAuthClient] = useState<FirebaseAuthClient | null>(null);
+  const authInitializationResolvedRef = useRef(false);
+  const guestCommandLockRef = useRef(createGuestTransitionLock());
   const [apiClient, setApiClient] = useState<ReturnType<typeof createPatternlyApiClient> | null>(null);
   const [appCheckReady, setAppCheckReady] = useState(false);
   const [refreshAccountIdentityFailure, setRefreshAccountIdentityFailure] = useState<AccountFailure | null>(null);
@@ -421,6 +479,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   }, [revokeDeletionAuthorization, sessionCoordinator]);
 
   useEffect(() => {
+    authInitializationResolvedRef.current = false;
     sessionCoordinator.activate();
     revokeDeletionAuthorization();
     observerBlockedUidRef.current = null;
@@ -500,6 +559,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (!live || observerDetached) return;
         if (!observerResolved) {
           observerResolved = true;
+          authInitializationResolvedRef.current = true;
           if (initializationTimeout !== undefined) clearTimeout(initializationTimeout);
         }
         if (!user) {
@@ -644,6 +704,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       catch (error) { return { kind: "failure", failure: classifyAccountFailure(error) }; }
     },
     continueAsGuest: async () => {
+      const releaseGuestCommand = guestCommandLockRef.current.tryAcquire();
+      if (!releaseGuestCommand) return { kind: "failure", failure: "providerUnavailable" };
+      try {
       sessionCoordinator.invalidate();
       revokeDeletionAuthorization();
       if (!hasUnboundGuestInstallation() && stateRef.current.kind !== "guestAccessBlocked") {
@@ -670,6 +733,36 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         return { kind: "failure", failure: "providerUnavailable" };
       }
       return { kind: "failure", failure: "providerUnavailable" };
+      } finally {
+        releaseGuestCommand();
+      }
+    },
+    runOwnerPreservationGuestCommand: async () => {
+      const auth = authClient;
+      let initialProfile: ReturnType<typeof getActiveStorageProfile> | null = null;
+      return runOwnerPreservationGuestTransition({
+        lock: guestCommandLockRef.current,
+        preflight: () => {
+          initialProfile = getActiveStorageProfile();
+          return typeof __DEV__ !== "undefined" && __DEV__ && isPatternlySmokeRuntime()
+            && stateRef.current.kind === "guestAccessBlocked"
+            && initialProfile.kind === "legacy_owner"
+            && auth !== null && authInitializationResolvedRef.current && auth.getSnapshot() === null;
+        },
+        arm: () => ownerPreservationOracle.arm(),
+        recheck: () => {
+          const profile = getActiveStorageProfile();
+          return initialProfile !== null && stateRef.current.kind === "guestAccessBlocked"
+            && auth !== null && authClient === auth && authInitializationResolvedRef.current && auth.getSnapshot() === null
+            && profile.kind === "legacy_owner" && profile.id === initialProfile.id;
+        },
+        cleanup: () => ownerPreservationOracle.cleanup(),
+        beginTransition: async () => {
+          sessionCoordinator.invalidate();
+          revokeDeletionAuthorization();
+          await continueAsGuestInNewProfile();
+        },
+      });
     },
     exportAccountData: async (isRequestActive = () => true) => {
       if (!authClient || !apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
