@@ -11,6 +11,7 @@ import {
   prepareProfileStorage,
   inspectPreparedProfileState,
   onKeyValueStorageReady,
+  notifyProfileStorageReady,
   selectPreparedAccountProfile,
   selectPreparedGuestProfile,
   setProfileStoragePreparationFactoryForTests,
@@ -115,6 +116,25 @@ test("closing an active profile revokes returned clients and preserves prepared 
   assert.equal(readyEvents, readyBeforeClose);
   assert.equal((await inspectPreparedProfileState()).selectedProfile.id, GUEST_ID);
   unsubscribe();
+  setProfileStoragePreparationFactoryForTests(null);
+});
+
+test("deferred activation does not wake preferences until the caller approves the profile scope", async () => {
+  const fixture = await preparedFixture();
+  setProfileStoragePreparationFactoryForTests(async () => fixture);
+  await prepareProfileStorage();
+  let readyEvents = 0;
+  const unsubscribe = onKeyValueStorageReady(() => { readyEvents += 1; });
+
+  activatePreparedProfile(GUEST_ID, "guest", { deferReadyNotification: true });
+  assert.equal(readyEvents, 0);
+  notifyProfileStorageReady();
+  assert.equal(readyEvents, 1);
+  notifyProfileStorageReady();
+  assert.equal(readyEvents, 1);
+
+  unsubscribe();
+  closeActiveProfileStorage();
   setProfileStoragePreparationFactoryForTests(null);
 });
 

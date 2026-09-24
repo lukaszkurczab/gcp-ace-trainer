@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, normalizeAccountSignOutPreparationFailure, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, requiresPasswordEmailVerification, restoreAuthenticatedAfterSignOutFailure, type AccountState } from "./AccountSessionProvider";
+import { AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, requiresPasswordEmailVerification, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
@@ -174,32 +174,78 @@ test("account recovery back action follows live navigator history", () => {
   assert.doesNotMatch(screen, /const backAction = navigation\.canGoBack\(\)/u);
 });
 
-test("sign-out preparation failures restore the authenticated state before auth sign-out", () => {
+test("remote session revocation warning appears only on signed-out sign-in and explains both states", () => {
+  const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  const en = JSON.parse(readFileSync("src/locales/en/account.json", "utf8")) as Record<string, string>;
+  const pl = JSON.parse(readFileSync("src/locales/pl/account.json", "utf8")) as Record<string, string>;
+
+  assert.match(screen, /account\.state\.kind === "signedOut" && account\.pendingRemoteRevokeCount > 0[\s\S]*?testID="account-remote-revoke-pending"/u);
+  assert.match(en.remoteSessionRevocationPendingDescription ?? "", /device is signed out/u);
+  assert.match(en.remoteSessionRevocationPendingDescription ?? "", /server session is still pending/u);
+  assert.match(pl.remoteSessionRevocationPendingDescription ?? "", /urządzenie jest wylogowane/u);
+  assert.match(pl.remoteSessionRevocationPendingDescription ?? "", /sesji na serwerze nie zostało jeszcze zakończone/u);
+  assert.match(en.signOutPendingDescription ?? "", /safely retry/u);
+  assert.match(en.signOutPendingDescription ?? "", /doesn’t need an internet connection/u);
+  assert.match(pl.signOutPendingDescription ?? "", /bezpiecznie ponowić tę czynność/u);
+  assert.match(pl.signOutPendingDescription ?? "", /nie wymaga połączenia z internetem/u);
+  assert.doesNotMatch(en.remoteSessionRevocationPendingDescription ?? "", /uid|operation|retry in|within/u);
+  assert.doesNotMatch(pl.remoteSessionRevocationPendingDescription ?? "", /uid|operation|za .* minut|w ciągu/u);
+});
+
+test("local sign-out persists its block before closing scope and never invokes remote preparation", () => {
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
-  const authenticated = {
-    accountData: {
-      activeSessionBlocked: false,
-      blockingConflictCode: null,
-      lastFailureCode: null,
-      lastSuccessfulSyncAt: null,
-      pendingMutationCount: 0,
-      preview: null,
-      status: "synced",
-    },
-    backendUser: { id: "backend-user" },
-    kind: "authenticated",
-    user: { email: "learner@example.com", emailVerified: true, provider: "password", providers: ["password"], uid: "firebase-user" },
-  } as unknown as Extract<AccountState, { kind: "authenticated" }>;
-  const restored = restoreAuthenticatedAfterSignOutFailure(authenticated, "localDeletionFailure");
-  assert.equal(restored.kind, "authenticated");
-  assert.equal(restored.accountData.status, "synced");
-  assert.equal(restored.accountData.lastFailureCode, "localDeletionFailure");
-  const bindingMismatch = restoreAuthenticatedAfterSignOutFailure({ ...authenticated, accountData: { ...authenticated.accountData, lastFailureCode: "account_binding_mismatch" } }, "localDeletionFailure");
-  assert.equal(bindingMismatch.accountData.lastFailureCode, "account_binding_mismatch");
-  assert.equal(normalizeAccountSignOutPreparationFailure(new Error("injected storage failure")), "localDeletionFailure");
-  assert.match(provider, /let prepared: Awaited<ReturnType<typeof prepareAccountSignOut>>;/);
-  assert.match(provider, /prepared = await prepareAccountSignOut\(api, state\.backendUser\.id\);[\s\S]*?catch \(error\)[\s\S]*?restoreAuthenticatedAfterSignOutFailure\(state, failure\)/);
-  assert.match(provider, /setState\(restoreAuthenticatedAfterSignOutFailure\(state, prepared\.failure\)\)/);
+  const signOut = provider.slice(provider.indexOf('signOut: () => runAuthMutationWithAuth'), provider.indexOf('changePassword: (credentials, newPassword)'));
+  assert.match(signOut, /getAccountSignOutState\(\)/);
+  assert.match(signOut, /scopedSignOut\?\.accountId === current\.backendUser\.id[\s\S]*?scopedSignOut\.operationId[\s\S]*?beginAccountSignOut\(current\.backendUser\.id\)/);
+  assert.match(signOut, /logoutControl\.blockAndQueueRevoke\(user\.uid, operationId!\)/);
+  assert.match(signOut, /performLocalAccountSignOut\([\s\S]*?publishLockedState:[\s\S]*?closeProfileStorage: closeSignOutProfileStorage[\s\S]*?signOutFirebase:[\s\S]*?auth\.signOut\(\)/);
+  assert.match(signOut, /retainAuthOnControlFailure: durableOperation/);
+  const setupFailure = signOut.slice(signOut.indexOf("finishLocalSignOutSetupFailure({"), signOut.indexOf("const outcome = await performLocalAccountSignOut"));
+  assert.ok(setupFailure.includes("isCurrent: canContinue"));
+  assert.ok(setupFailure.includes("persistFallbackControlPair: async () =>"));
+  assert.ok(setupFailure.includes("logoutControl.blockAndQueueRevoke(user.uid, operationId)"));
+  assert.ok(setupFailure.includes("closeProfileStorage: closeSignOutProfileStorage"));
+  assert.ok(setupFailure.includes("signOutFirebase: () => auth.signOut()"));
+  assert.ok(signOut.includes('recoveryOutcome === "stale" ? "revokedSession" : "localCleanupFailure"'));
+  assert.match(signOut, /return \{ kind: "failure", failure: "localCleanupFailure" \}/);
+  assert.doesNotMatch(signOut, /prepareAccountSignOut|revokeSessions|synchronizeBoundAccount|clearAccountOwnedLocalData/);
+  assert.doesNotMatch(signOut, /revokeGuestAccess/);
+  assert.doesNotMatch(provider, /completeRemoteRevokedSignOut/);
+  assert.match(provider, /pendingRemoteRevokeCount: logoutControlSnapshot\.pending\.length \+ \(state\.kind === "signOutPending"/);
+  assert.match(setupFailure, /publishLockedState:[\s\S]*?setState\(\{ kind: "signOutPending", user,[\s\S]*?closeProfileStorage: closeSignOutProfileStorage/);
+});
+
+test("completed sign-out cannot publish signed-out state over a newly authenticated UID", () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const signOut = provider.slice(provider.indexOf('signOut: () => runAuthMutationWithAuth'), provider.indexOf('changePassword: (credentials, newPassword)'));
+  assert.match(signOut, /if \(auth\.getSnapshot\(\) !== null\) return \{ kind: "failure", failure: "revokedSession" \};[\s\S]*?setAccountEntryMode\("login"\);[\s\S]*?setState\(\{ kind: "signedOut" \}\)/);
+});
+
+test("explicit login and registration Auth mutations serialize with local sign-out", () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  assert.match(provider, /const runAuthMutationWithAuth = useCallback[\s\S]*?sensitiveCommandLane\.runWhenIdle\(\(\) => runWithAuth\(operation\)\)/);
+  const accountCommands = provider.slice(provider.indexOf("const value = useMemo<AccountSessionContextValue>"), provider.indexOf("}), [accountEntryMode"));
+  for (const command of ["register", "signIn", "signInWithApple", "signInWithGoogle", "registerWithApple", "registerWithGoogle", "signOut"]) {
+    assert.match(accountCommands, new RegExp(`${command}: [^\\n]*=> runAuthMutationWithAuth\\(`), command);
+  }
+});
+
+test("restored matching logout block closes scope and remains pending until manual retry", () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const authObserver = provider.slice(provider.indexOf('configuredAuth.onUserChanged'), provider.indexOf('useEffect(() => {\n    if (state.kind === "guest"'));
+  assert.match(authObserver, /findMatchingLocalLogoutBlock\(logoutControlSnapshotRef\.current, user\.uid\)/);
+  assert.match(authObserver, /if \(matchingLogoutBlock\) \{[\s\S]*?closeActiveProfileStorage\(\);[\s\S]*?setState\(\{ kind: "signOutPending", user \}\);[\s\S]*?return;/);
+  assert.match(authObserver, /clearBlockForAuth\(previousObservedUid, logoutBlock\.operationId, canClearLogoutBlock\)/);
+  assert.match(authObserver, /const canClearLogoutBlock = \(\) => live && !observerDetached && eventRevision === authObserverRevision && configuredAuth\.getSnapshot\(\) === null/);
+  assert.match(provider, /const logoutBlock = logoutControlSnapshotRef\.current\.blocked/);
+  const nullAuthBranch = authObserver.slice(authObserver.indexOf("if (!user) {"), authObserver.indexOf("if (rejectedRestoreUid !== null && rejectedRestoreUid !== user.uid)"));
+  assert.ok(nullAuthBranch.indexOf("closeProfileStorage: closeActiveProfileStorage") < nullAuthBranch.indexOf("clearBlockForAuth"));
+  assert.match(nullAuthBranch, /logoutControlSnapshotRef\.current\.blocked[\s\S]*?clearBlockForAuth\(previousObservedUid, logoutBlock\.operationId, canClearLogoutBlock\)/);
+  const preparation = provider.slice(provider.indexOf("const startAuthenticatedProfilePreparation"), provider.indexOf("const completeProfilePreparation"));
+  assert.match(preparation, /activatePreparedProfile\(profile\.id, profile\.kind, \{ deferReadyNotification: true \}\)/);
+  assert.match(preparation, /guardAuthenticatedScopeAgainstIncompleteSignOut\([\s\S]*?readScopedSignOut: getAccountSignOutState/);
+  assert.match(preparation, /guardAuthenticatedScopeAgainstIncompleteSignOut\([\s\S]*?if \(logoutGuard === "blocked"\)[\s\S]*?return attempt;[\s\S]*?notifyProfileStorageReady\(\);[\s\S]*?setState\(\{ kind: "profilePreparing"/);
+  assert.doesNotMatch(provider.slice(provider.indexOf("async function reconcileAuthenticatedUser"), provider.indexOf("export async function completeUnrecognizedPersistedAuthSignOut")), /getAccountSignOutState|shouldLockForIncompleteScopedSignOut/u);
 });
 
 test("foreground identity publication keeps the latest account data and rejects stale generations", () => {

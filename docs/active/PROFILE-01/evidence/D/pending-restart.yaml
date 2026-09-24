@@ -1,0 +1,20 @@
+appId: com.lkurczab.patternly
+name: PROFILE-01/D pending revoke warning survives restart
+tags:
+  - account
+  - profile-01-d
+---
+- assertVisible:
+    id: "account-remote-revoke-pending"
+- assertVisible:
+    id: "account-sign-in-guest"
+- takeScreenshot: profile-01-d-pending-remote-revoke
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "account-remote-revoke-pending"
+    timeout: 30000
+- assertVisible:
+    id: "account-remote-revoke-pending"
+- takeScreenshot: profile-01-d-pending-revoke-after-restart

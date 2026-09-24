@@ -15,7 +15,6 @@ import {
   buildAccountDataSnapshot,
   buildGuestOwnedLocalDataBackup,
   clearAccountDeletionOwnedLocalData,
-  clearAccountOwnedLocalData,
   clearGuestOwnedLocalData,
   ensureAccountOutboxFromLocalDataset,
   finishAccountMaterialization,
@@ -37,14 +36,10 @@ import {
 } from "../../storage/repositories/accountDataRepository";
 import {
   beginAccountDeletion,
-  beginAccountSignOut,
   clearAccountDeletionState,
-  clearAccountSignOutState,
   getAccountDeletionState,
-  getAccountSignOutState,
   markAccountDeletionComplete,
   updateAccountDeletionState,
-  updateAccountSignOutState,
 } from "../../storage/repositories/accountLifecycleRepository";
 import { bindGuestInstallationToAccount, clearGuestAccountBinding, getGuestInstallation, markGuestInstallationAdoptionPending } from "../../storage/repositories/guestInstallationRepository";
 import { getActiveMutationJournal } from "../../storage/repositories/mutationJournalRepository";
@@ -76,7 +71,6 @@ export type AccountDataSession = Readonly<{
   activeSessionBlocked: boolean;
 }>;
 
-export type AccountSignOutResult = Readonly<{ ok: true } | { ok: false; failure: "journalRecoveryFailure" | "pendingSyncRequiresNetwork" | "conflict" | "localDeletionFailure" | "remoteFailure" | "signOutPending" }>;
 export type AccountDeletionResult = Readonly<{ ok: true; proofId: string } | { ok: false; failure: "journalRecoveryFailure" | "pendingSyncRequiresNetwork" | "conflict" | "remoteDeletionPending" | "localCleanupFailure" | "reauthenticationRequired" }>;
 
 const nowIso = () => new Date().toISOString();
@@ -499,62 +493,6 @@ function isDiscardGuardFailure(message: string): boolean {
 
 function explicitFailureSession(state: AccountSyncState | null, failure: string, activeSessionBlocked: boolean): AccountDataSession {
   return Object.freeze({ status: "failed", preview: null, lastSuccessfulSyncAt: state?.lastSuccessfulSyncAt ?? null, pendingMutationCount: state?.pendingMutationCount ?? 0, blockingConflictCode: state?.blockingConflictCode ?? null, lastFailureCode: failure, activeSessionBlocked });
-}
-
-export function prepareAccountSignOut(api: PatternlyApiClient, accountId: string): Promise<AccountSignOutResult> {
-  return withAccountDataOperation(() => prepareAccountSignOutUnlocked(api, accountId));
-}
-
-async function prepareAccountSignOutUnlocked(api: PatternlyApiClient, accountId: string): Promise<AccountSignOutResult> {
-  const initialSyncState = await getAccountSyncState();
-  if (initialSyncState.materialization || initialSyncState.resetGuard) return { ok: false, failure: "pendingSyncRequiresNetwork" };
-  const pending = getAccountSignOutState() ?? beginAccountSignOut(accountId);
-  try {
-    if (await getActiveMutationJournal()) return { ok: false, failure: "journalRecoveryFailure" };
-    const installation = await getGuestInstallation();
-    if (!installation || installation.accountId !== accountId) {
-      await api.revokeSessions(pending.operationId);
-      clearAccountSignOutState();
-      return { ok: true };
-    }
-    const state = await ensureAccountOutboxFromLocalDataset();
-    if (state.outbox.length > 0 || state.status === "offlinePending" || state.status === "conflict") {
-      const synced = await synchronizeBoundAccount(api, accountId);
-      if (synced.status === "conflict") return { ok: false, failure: "conflict" };
-      if (synced.status !== "synced") return { ok: false, failure: "pendingSyncRequiresNetwork" };
-    }
-    await api.revokeSessions(pending.operationId);
-    updateAccountSignOutState(pending, { status: "remoteRevoked", lastFailureCode: null });
-    await clearAccountOwnedLocalData();
-    await clearGuestAccountBinding();
-    clearAccountSignOutState();
-    return { ok: true };
-  } catch (error) {
-    const failure = classifyDataFailure(error);
-    updateAccountSignOutState(pending, { status: pending.status === "remoteRevoked" ? "localCleanupPending" : "pending", lastFailureCode: failure });
-    if (failure === "offline") return { ok: false, failure: "pendingSyncRequiresNetwork" };
-    if (failure === "session_revocation_pending") return { ok: false, failure: "signOutPending" };
-    return { ok: false, failure: "localDeletionFailure" };
-  }
-}
-
-export function completeRemoteRevokedSignOut(): Promise<boolean> {
-  return withAccountDataOperation(() => completeRemoteRevokedSignOutUnlocked());
-}
-
-async function completeRemoteRevokedSignOutUnlocked(): Promise<boolean> {
-  if ((await getAccountSyncState()).materialization) return false;
-  const pending = getAccountSignOutState();
-  if (!pending || pending.status !== "remoteRevoked") return false;
-  try {
-    await clearAccountOwnedLocalData();
-    await clearGuestAccountBinding();
-    clearAccountSignOutState();
-    return true;
-  } catch {
-    updateAccountSignOutState(pending, { status: "localCleanupPending", lastFailureCode: "localDeletionFailure" });
-    return false;
-  }
 }
 
 export type PrepareAccountDeletionLocalState = () => Promise<boolean>;

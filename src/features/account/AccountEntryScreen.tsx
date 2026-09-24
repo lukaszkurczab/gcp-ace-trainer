@@ -136,6 +136,8 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   signOut: t("signOut"),
   signOutPending: t("signOutPending"),
   signOutPendingDescription: t("signOutPendingDescription"),
+  remoteSessionRevocationPending: t("remoteSessionRevocationPending"),
+  remoteSessionRevocationPendingDescription: t("remoteSessionRevocationPendingDescription"),
   deleteAccount: t("deleteAccount"),
   deleting: t("deleting"),
   deletionPending: t("deletionPending"),
@@ -561,6 +563,14 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           <AuthText style={styles.authTitle}>
             {text.signIn}
           </AuthText>
+          {account.state.kind === "signedOut" && account.pendingRemoteRevokeCount > 0 ? (
+            <InfoBlock
+              body={text.remoteSessionRevocationPendingDescription}
+              title={text.remoteSessionRevocationPending}
+              testID="account-remote-revoke-pending"
+              tone="warning"
+            />
+          ) : null}
           {retainedDataNotice}
           <SignInForm
             email={email}

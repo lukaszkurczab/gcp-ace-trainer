@@ -4,13 +4,12 @@ import test, { beforeEach } from "node:test";
 import { PatternlyApiClientError, type PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { clearAccountDeletionOwnedLocalData, deleteBoundAccount, loadAccountDataSession, prepareAccountSignOut, retryPendingAccountDeletion } from "./accountDataService";
+import { clearAccountDeletionOwnedLocalData, deleteBoundAccount, loadAccountDataSession, retryPendingAccountDeletion } from "./accountDataService";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { getAccountSyncState } from "../../storage/repositories/accountDataRepository";
 import {
   beginAccountDeletion,
   getAccountDeletionState,
-  getAccountSignOutState,
   markAccountDeletionComplete,
 } from "../../storage/repositories/accountLifecycleRepository";
 import { bindGuestInstallationToAccount, clearGuestAccountBinding, getGuestInstallation, provisionGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
@@ -75,50 +74,6 @@ test("account sync preserves known validation failures without persisting arbitr
     assert.equal((await getAccountSyncState()).lastFailureCode, expected);
   }
   assert.equal((await loadAccountDataSession(api(), accountId)).status, "synced");
-});
-
-test("sign-out keeps the account bound and exposes a durable pending state when revocation fails", async () => {
-  let revokeFails = true;
-  const client = api({
-    revokeSessions: async (operationId) => {
-      if (revokeFails) throw new PatternlyApiClientError("server_error", 503, "session_revocation_pending");
-      return { status: "revoked", operationId };
-    },
-  });
-
-  const first = await prepareAccountSignOut(client, accountId);
-  assert.deepEqual(first, { ok: false, failure: "signOutPending" });
-  assert.equal(getAccountSignOutState()?.status, "pending");
-  assert.equal((await getGuestInstallation())?.accountId, accountId);
-
-  revokeFails = false;
-  const retry = await prepareAccountSignOut(client, accountId);
-  assert.deepEqual(retry, { ok: true });
-  assert.equal(getAccountSignOutState(), null);
-  assert.equal((await getGuestInstallation())?.accountId, null);
-  assert.equal((await getAccountSyncState()).accountId, null);
-});
-
-test("sign-out preparation retries after an injected ACCOUNT_SYNC read failure without revoking or clearing", async () => {
-  const storage = getKeyValueStorage() as MemoryKeyValueStorage;
-  let revokeCalls = 0;
-  const client = api({
-    revokeSessions: async (operationId) => {
-      revokeCalls++;
-      return { status: "revoked", operationId };
-    },
-  });
-
-  storage.setFailurePlan({ kind: "fail_on_key_read", key: STORAGE_KEYS.ACCOUNT_SYNC });
-  await assert.rejects(() => prepareAccountSignOut(client, accountId));
-  assert.equal(revokeCalls, 0);
-  assert.equal((await getGuestInstallation())?.accountId, accountId);
-
-  storage.setFailurePlan(null);
-  assert.deepEqual(await prepareAccountSignOut(client, accountId), { ok: true });
-  assert.equal(revokeCalls, 1);
-  assert.equal((await getGuestInstallation())?.accountId, null);
-  assert.equal((await getAccountSyncState()).accountId, null);
 });
 
 test("deletion retries after a revoked or stale session and leaves a verified local tombstone", async () => {
@@ -885,13 +840,12 @@ test("malformed remote records are rejected before the guest dataset or marker c
   assert.equal((await getAccountSyncState()).materialization, null);
 });
 
-test("pending materialization blocks lifecycle revoke and deletion without losing the marker", async () => {
+test("pending materialization blocks account deletion without losing the marker", async () => {
   await prepareGuest();
   saveAccountSyncState({ ...await getAccountSyncState(), accountId, materialization: { kind: "discardGuest", accountId } });
   let calls = 0;
-  const forbidden = async (): Promise<never> => { calls++; throw new Error("lifecycle forbidden while materializing"); };
-  const client = api({ revokeSessions: forbidden, deleteAccount: forbidden });
-  assert.equal((await prepareAccountSignOut(client, accountId)).ok, false);
+  const forbidden = async (): Promise<never> => { calls++; throw new Error("deletion forbidden while materializing"); };
+  const client = api({ deleteAccount: forbidden });
   assert.equal((await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState)).ok, false);
   assert.equal(calls, 0);
   assert.equal(await getActiveTrackId(), guestTrack);
@@ -907,20 +861,6 @@ test("a durable adoption confirmation blocks a new learning commit", async () =>
   assert.notEqual((await getAccountSyncState()).pendingConfirmation, null);
 });
 
-test("signout queued with discard runs after materialization and cannot be followed by a stale bind", async () => {
-  await prepareGuest();
-  const events: string[] = [];
-  const client = api({
-    getProgress: async () => { events.push("read"); return { accountRevision: 0, records: [] }; },
-    revokeSessions: async (operationId) => { events.push("revoke"); assert.equal((await getAccountSyncState()).materialization, null); return { status: "revoked", operationId }; },
-  });
-  const [discard, signout] = await Promise.all([discardGuestDataAndLoadAccount(client, accountId), prepareAccountSignOut(client, accountId)]);
-  assert.equal(discard.status, "synced");
-  assert.equal(signout.ok, true);
-  assert.deepEqual(events, ["read", "revoke"]);
-  assert.equal((await getGuestInstallation())?.accountId, null);
-});
-
 test("unreadable mutation journal blocks discard before deleting guest data", async () => {
   const storage = await prepareGuest();
   storage.setString(STORAGE_KEYS.ACTIVE_JOURNAL, "unreadable pending operation");
@@ -929,31 +869,4 @@ test("unreadable mutation journal blocks discard before deleting guest data", as
   assert.equal(reads, 0);
   assert.equal(await getActiveTrackId(), guestTrack);
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), true);
-});
-
-
-test("sign-out discovers locally committed answers before clearing account data even when the outbox has not been built", async () => {
-  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
-  const { commitMutation } = await import("../learningMutations/commitMutation");
-  await commitMutation(makeJournal([
-    { kind: "put_attempt", record: journalAttempt() },
-    { kind: "put_session", record: journalSession() },
-  ]));
-  assert.equal((await getAccountSyncState()).outbox.length, 0);
-  await saveTrainingSession(journalSession("completed"));
-  let uploads = 0;
-  let revocations = 0;
-  const result = await prepareAccountSignOut(api({
-    syncProgress: async (input) => {
-      uploads++;
-      assert.ok(input.mutations.some((entry) => entry.recordType === "training_attempt"));
-      throw new Error("offline");
-    },
-    revokeSessions: async () => { revocations++; throw new Error("must not revoke before sync"); },
-  }), accountId);
-  assert.equal(result.ok, false);
-  assert.equal(uploads, 1);
-  assert.equal(revocations, 0);
-  assert.equal((await getGuestInstallation())?.accountId, accountId);
-  assert.ok((await getAccountSyncState()).outbox.some((entry) => entry.recordType === "training_attempt"));
 });

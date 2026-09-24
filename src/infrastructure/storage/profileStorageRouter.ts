@@ -21,7 +21,7 @@ export type ProfileRegistry = Readonly<{
 }>;
 
 export class ProfileStorageError extends Error {
-  public constructor(public readonly code: "profile_registry_corrupt" | "legacy_profile_unidentified" | "profile_scope_unavailable" | "profile_transition_cancelled") {
+  public constructor(public readonly code: "profile_registry_corrupt" | "legacy_profile_unidentified" | "profile_scope_unavailable" | "profile_transition_cancelled" | "prepared_guest_choice_required") {
     super(code);
     this.name = "ProfileStorageError";
   }

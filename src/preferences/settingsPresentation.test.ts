@@ -137,8 +137,12 @@ test("Settings account presentation names guest, authenticated, and unavailable 
   assert.match(home, /getSettingsAccountPresentation\(account\.state\)/);
   assert.match(home, /initialMode: "signIn"/);
   assert.match(home, /onSignOut=\{\(\) => account\.signOut\(\)\}/);
-  assert.match(accountProvider, /signOut: \(\) => runSensitiveWithAuth/);
-  assert.match(accountProvider, /prepareAccountSignOut\(api, state\.backendUser\.id\)/);
+  assert.match(accountProvider, /signOut: \(\) => runAuthMutationWithAuth/);
+  const localSignOut = accountProvider.slice(accountProvider.indexOf('signOut: () => runAuthMutationWithAuth'), accountProvider.indexOf('changePassword: (credentials, newPassword)'));
+  assert.match(localSignOut, /performLocalAccountSignOut\(/);
+  assert.match(localSignOut, /persistBlock: async \(\) => \{[\s\S]*?logoutControl\.blockAndQueueRevoke/);
+  assert.match(localSignOut, /signOutFirebase: async \(\) => \{[\s\S]*?await auth\.signOut\(\)/);
+  assert.doesNotMatch(localSignOut, /revokeSessions|synchronizeBoundAccount|clearAccountOwnedLocalData/);
 });
 
 test("Settings keeps the backend verification group explicitly development-only", () => {

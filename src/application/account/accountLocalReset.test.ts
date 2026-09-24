@@ -20,7 +20,7 @@ import { saveTrainingSession } from "../../storage/repositories/trainingSessionR
 import { getReviewQueueItems } from "../../storage/repositories/reviewQueueRepository";
 import { getTrainingAttempts } from "../../storage/repositories/trainingAttemptRepository";
 import { getTrainingSessions } from "../../storage/repositories/trainingSessionRepository";
-import { prepareAccountSignOut, resetAccountLocalLearningHistory } from "./accountDataService";
+import { resetAccountLocalLearningHistory } from "./accountDataService";
 import { installLearningStateResetBarrier } from "../learningMutations";
 import { attempt, review, session } from "../../testing/journalTestSupport";
 
@@ -149,16 +149,11 @@ test("authenticated reset exposes the remote-restore guard and keeps it after a 
   assert.equal((await getTrainingSessions()).value.length, 0);
 });
 
-test("sign-out cannot clear a reset guard after remote restore fails", async () => {
+test("a failed remote restore retains the reset guard and account binding", async () => {
   await prepareBoundAccount();
   await seedHistory();
-  let revokeCalls = 0;
   const api = client({
     getProgress: async () => { throw new Error("offline"); },
-    revokeSessions: async (operationId) => {
-      revokeCalls++;
-      return { status: "revoked", operationId };
-    },
   });
 
   const failed = await resetAccountLocalLearningHistory(api, accountId);
@@ -166,10 +161,8 @@ test("sign-out cannot clear a reset guard after remote restore fails", async () 
   const guard = (await getAccountSyncState()).resetGuard;
   assert.equal(guard?.phase, "remoteRestorePending");
 
-  assert.deepEqual(await prepareAccountSignOut(api, accountId), { ok: false, failure: "pendingSyncRequiresNetwork" });
   assert.deepEqual((await getAccountSyncState()).resetGuard, guard);
   assert.equal((await getGuestInstallation())?.accountId, accountId);
-  assert.equal(revokeCalls, 0);
 });
 
 test("a failed local reset keeps the pre-reset marker and retries the same journal safely", async () => {

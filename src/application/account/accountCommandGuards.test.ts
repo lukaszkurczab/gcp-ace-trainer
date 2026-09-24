@@ -173,6 +173,32 @@ test("sensitive command lane rejects a concurrent different command", async () =
   assert.equal(await lane.run(async () => "after"), "after");
 });
 
+test("a second login waits until the first account's Firebase sign-out settles", async () => {
+  let releaseSignOut: (() => void) | undefined;
+  let authUid: string | null = "uid-A";
+  const events: string[] = [];
+  const lane = createSensitiveCommandLane();
+  const signOutA = lane.runWhenIdle(async () => {
+    events.push(`signOut:start:${authUid}`);
+    await new Promise<void>((resolve) => { releaseSignOut = resolve; });
+    authUid = null;
+    events.push("signOut:complete");
+  });
+  const signInB = lane.runWhenIdle(async () => {
+    events.push(`signIn:start:${authUid}`);
+    authUid = "uid-B";
+    events.push("signIn:complete");
+  });
+
+  await Promise.resolve();
+  assert.deepEqual(events, ["signOut:start:uid-A"]);
+  releaseSignOut?.();
+  await Promise.all([signOutA, signInB]);
+
+  assert.equal(authUid, "uid-B");
+  assert.deepEqual(events, ["signOut:start:uid-A", "signOut:complete", "signIn:start:null", "signIn:complete"]);
+});
+
 test("sensitive command lane waits for an active command only through the refresh path", async () => {
   let release: (() => void) | undefined;
   const lane = createSensitiveCommandLane();

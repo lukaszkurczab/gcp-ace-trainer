@@ -8,10 +8,21 @@ const preferences = readFileSync("src/preferences/AppPreferencesProvider.tsx", "
 
 test("preparation gate opens registry metadata without activating or reading a profile", () => {
   assert.match(gate, /prepareProfileStorage\(\)/);
-  assert.match(context, /createContext<PreparedProfileState \| null>/);
-  assert.match(gate, /prepareProfileStorage\(\)\.then\(\(\) => inspectPreparedProfileState\(\)\)/);
-  assert.match(gate, /<PreparedProfileStorageContext\.Provider value=\{state\.profile\}>\{children\}<\/PreparedProfileStorageContext\.Provider>/);
+  assert.match(context, /createContext<ProfileStoragePreparationContextValue \| null>/);
+  assert.match(gate, /createNativeLocalLogoutControl\(\)/);
+  assert.match(gate, /logoutControl\.read\(\)/);
+  assert.ok(gate.indexOf("logoutControl.read()") < gate.indexOf("prepareProfileStorage()"));
+  assert.match(gate, /<PreparedProfileStorageContext\.Provider value=\{\{ profile: state\.profile, logoutControl: state\.logoutControl, logoutControlSnapshot: state\.logoutControlSnapshot \}\}>\{children\}<\/PreparedProfileStorageContext\.Provider>/);
+  assert.match(context, /logoutControl: LocalLogoutControl/);
+  assert.match(context, /logoutControlSnapshot: LocalLogoutControlSnapshot/);
   assert.doesNotMatch(gate, /initializeKeyValueStorage|activatePreparedProfile|getActiveStorageProfile|getKeyValueStorage|bootstrapApplication|ContentPreparationGate/u);
+});
+
+test("logout-control corruption or storage failure fails closed with an explicit retry surface", () => {
+  assert.match(gate, /error instanceof LocalLogoutControlError/);
+  assert.match(gate, /We couldn't check the local sign-out state\. Your account data remains closed\. Try again\./);
+  assert.match(gate, /<EmptyState actionLabel=\{t\("Try again"\)\} description=\{state\.reason\}/);
+  assert.ok(gate.indexOf("logoutControl.read()") < gate.indexOf("setState({ kind: \"ready\""));
 });
 
 test("preferences remain on defaults until storage activation emits the ready event", () => {

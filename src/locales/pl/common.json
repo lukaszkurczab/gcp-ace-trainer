@@ -367,6 +367,7 @@
   "Abandon session": "Porzuć sesję",
   "Cancel": "Anuluj",
   "Try again": "Spróbuj ponownie",
+  "We couldn't check the local sign-out state. Your account data remains closed. Try again.": "Nie udało się sprawdzić stanu wylogowania na tym urządzeniu. Dane konta pozostają niedostępne. Spróbuj ponownie.",
   "You’ve reached the retry limit. You can remove unavailable local data to continue.": "Wykorzystano limit prób. Aby kontynuować, możesz usunąć niżej niedostępne dane lokalne.",
   "We couldn't load your Patternly data. Check your connection and try again.": "Nie udało się wczytać danych Patternly. Sprawdź połączenie i spróbuj ponownie.",
   "We couldn't load your saved track. Check your connection and try again.": "Nie udało się wczytać zapisanej ścieżki. Sprawdź połączenie i spróbuj ponownie.",

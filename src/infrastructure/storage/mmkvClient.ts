@@ -6,7 +6,7 @@ export interface KeyValueStorage {
   getAllKeys(): readonly string[];
 }
 
-import { openProfileStorageRouter, ProfileTransitionActiveError, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
+import { openProfileStorageRouter, ProfileStorageError, ProfileTransitionActiveError, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
 import { installOwnerPreservationSource } from "../testing/ownerPreservationSourceRuntime";
 
 let client: KeyValueStorage | null = null;
@@ -22,6 +22,7 @@ let profileStorageGeneration = 0;
 const readyListeners = new Set<() => void>();
 const profileTransitionListeners = new Set<() => void>();
 let profileTransitionActive = false;
+let profileStorageReadyNotified = false;
 
 export type PreparedStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter }>;
 export type PreparedProfileState = Readonly<{
@@ -35,6 +36,7 @@ function closePublishedProfileStorage(): void {
   client = null;
   profileRouter = null;
   activePreparedStorage = null;
+  profileStorageReadyNotified = false;
   installOwnerPreservationSource(null, null);
 }
 
@@ -181,7 +183,7 @@ export async function selectPreparedGuestProfile(
   if (targetId === undefined) {
     if (selectedIsGuest) targetId = previous.id;
     else if (guests.length === 1) targetId = guests[0]!.id;
-    else if (guests.length > 1) throw new Error("prepared_guest_choice_required");
+    else if (guests.length > 1) throw new ProfileStorageError("prepared_guest_choice_required");
   }
   const profile = targetId === undefined
     ? await router.selectGuest(canContinue)
@@ -207,7 +209,7 @@ export function closeActiveProfileStorage(): void {
 }
 
 /** Publishes only the exact profile prepared by the router. A mismatch leaves storage closed. */
-export function activatePreparedProfile(profileId: string, kind: StorageProfile["kind"]): KeyValueStorage {
+export function activatePreparedProfile(profileId: string, kind: StorageProfile["kind"], options: Readonly<{ deferReadyNotification?: boolean }> = {}): KeyValueStorage {
   if (profileTransitionActive) throw new ProfileTransitionActiveError();
   const prepared = preparedStorage;
   const profile = prepared?.router.profile;
@@ -236,18 +238,26 @@ export function activatePreparedProfile(profileId: string, kind: StorageProfile[
   installOwnerPreservationSource(prepared.base, prepared.router);
   preparedStorage = null;
   preparation = null;
+  profileStorageReadyNotified = false;
+  if (!options.deferReadyNotification) notifyProfileStorageReady();
+  return client;
+}
+
+/** Notifies preferences/content listeners after the account access gate has approved the active scope. */
+export function notifyProfileStorageReady(): void {
+  if (!client || profileStorageReadyNotified) return;
+  profileStorageReadyNotified = true;
   try {
     for (const listener of readyListeners) listener();
   } catch (error) {
     closePublishedProfileStorage();
     throw error;
   }
-  return client;
 }
 
 export function onKeyValueStorageReady(listener: () => void): () => void {
   readyListeners.add(listener);
-  if (client) listener();
+  if (client && profileStorageReadyNotified) listener();
   return () => { readyListeners.delete(listener); };
 }
 

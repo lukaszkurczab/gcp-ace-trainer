@@ -50,13 +50,6 @@ export function beginAccountSignOut(accountId: string): AccountSignOutState {
   writeCanonicalJson(STORAGE_KEYS.ACCOUNT_SIGN_OUT, state);
   return state;
 }
-export function updateAccountSignOutState(state: AccountSignOutState, values: Partial<Pick<AccountSignOutState, "status" | "lastFailureCode">>): AccountSignOutState {
-  const next = { ...state, ...values };
-  writeCanonicalJson(STORAGE_KEYS.ACCOUNT_SIGN_OUT, next);
-  return next;
-}
-export function clearAccountSignOutState(): void { removeCanonicalValue(STORAGE_KEYS.ACCOUNT_SIGN_OUT); }
-
 export function getAccountDeletionState(): AccountDeletionState | null { return readCanonicalJson(STORAGE_KEYS.ACCOUNT_DELETION, isDeletionState); }
 export function beginAccountDeletion(accountId: string, uid: string): AccountDeletionState {
   const state: AccountDeletionState = { accountId, accountUidHash: sha256Utf8(uid), operationId: operationId(), operationSecret: operationSecret(), status: "remotePending", proofId: null, lastFailureCode: null };

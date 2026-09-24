@@ -367,6 +367,7 @@
   "Abandon session": "Abandon session",
   "Cancel": "Cancel",
   "Try again": "Try again",
+  "We couldn't check the local sign-out state. Your account data remains closed. Try again.": "We couldn't check the local sign-out state. Your account data remains closed. Try again.",
   "You’ve reached the retry limit. You can remove unavailable local data to continue.": "The retry limit has been reached. You can remove the unavailable local data below to continue.",
   "We couldn't load your Patternly data. Check your connection and try again.": "We couldn't load your Patternly data. Check your connection and try again.",
   "We couldn't load your saved track. Check your connection and try again.": "We couldn't load your saved track. Check your connection and try again.",

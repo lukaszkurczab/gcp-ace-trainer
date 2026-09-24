@@ -8,13 +8,14 @@ import { useAppPreferences } from "../../preferences";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { encryptedStorageFailureCode } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import { inspectPreparedProfileState, prepareProfileStorage, removeUnavailableEncryptedStorage, type PreparedProfileState } from "../../infrastructure/storage/mmkvClient";
+import { createNativeLocalLogoutControl, LocalLogoutControlError, type LocalLogoutControl, type LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
 import { EncryptedStorageRecoverySurface, type EncryptedStorageRecoveryStatus } from "../../content/application/EncryptedStorageRecoverySurface";
 import { canStartManualRetry, createManualRetryLimit, reserveManualRetry, settleManualRetry } from "../../content/application/manualRetryLimit";
 import { PreparedProfileStorageContext } from "./profileStoragePreparationContext";
 
 type PreparationState =
   | { kind: "loading" }
-  | { kind: "ready"; profile: PreparedProfileState }
+  | { kind: "ready"; profile: PreparedProfileState; logoutControl: LocalLogoutControl; logoutControlSnapshot: LocalLogoutControlSnapshot }
   | { kind: "unavailable"; reason: string; storageFailureCode?: string };
 
 export function ProfileStoragePreparationGate({ children }: { children: ReactNode }) {
@@ -42,16 +43,22 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
   useEffect(() => {
     let active = true;
     setState({ kind: "loading" });
-    void prepareProfileStorage().then(() => inspectPreparedProfileState()).then((profileState) => {
+    void Promise.resolve().then(() => {
+      const logoutControl = createNativeLocalLogoutControl();
+      return logoutControl.read().then((logoutControlSnapshot) => ({ logoutControl, logoutControlSnapshot }));
+    }).then(({ logoutControl, logoutControlSnapshot }) => prepareProfileStorage().then(() => inspectPreparedProfileState()).then((profileState) => ({ profileState, logoutControl, logoutControlSnapshot }))).then(({ profileState, logoutControl, logoutControlSnapshot }) => {
       if (active) {
         settleManualRetry(manualRetry.current, true);
-        setState({ kind: "ready", profile: profileState });
+        setState({ kind: "ready", profile: profileState, logoutControl, logoutControlSnapshot });
       }
     }).catch((error: unknown) => {
       if (active) {
         settleManualRetry(manualRetry.current, false);
         const storageFailureCode = encryptedStorageFailureCode(error) ?? undefined;
-        setState({ kind: "unavailable", reason: describeOperationalFailure(error, "Local profile storage could not be prepared."), ...(storageFailureCode ? { storageFailureCode } : {}) });
+        const reason = error instanceof LocalLogoutControlError
+          ? t("We couldn't check the local sign-out state. Your account data remains closed. Try again.")
+          : describeOperationalFailure(error, "Local profile storage could not be prepared.");
+        setState({ kind: "unavailable", reason, ...(storageFailureCode ? { storageFailureCode } : {}) });
       }
     });
     return () => { active = false; };
@@ -98,7 +105,7 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
   const lostKey = state.kind === "unavailable" && state.storageFailureCode === "encrypted_storage_key_missing";
   const activeRemovalAttempt = removalAttempt.current;
   const body = state.kind === "ready"
-    ? <PreparedProfileStorageContext.Provider value={state.profile}>{children}</PreparedProfileStorageContext.Provider>
+    ? <PreparedProfileStorageContext.Provider value={{ profile: state.profile, logoutControl: state.logoutControl, logoutControlSnapshot: state.logoutControlSnapshot }}>{children}</PreparedProfileStorageContext.Provider>
     : state.kind === "loading"
       ? <Screen edges={["top", "bottom"]}><LoadingState description={t("Opening local profile storage…")} showLogo testID="profile-storage-preparing" title={t("Preparing your profile…")} /></Screen>
       : lostKey

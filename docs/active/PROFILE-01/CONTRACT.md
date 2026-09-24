@@ -7,7 +7,7 @@
 
 Po restarcie aplikacja ma odczytać dane konta tylko przy zgodnym Firebase Auth UID, zachować postęp gościa, odróżnić pierwsze uruchomienie od powrotu po wylogowaniu i pozwolić lokalnie wylogować się offline bez udawania zdalnego unieważnienia.
 
-Obecnie `App.tsx` montuje `AppPreferencesProvider` → `ContentPreparationGate` → `PatternlyAccountProvider`. Preferencje inicjalizują `mmkvClient`, który od razu wiąże zapisany `selectedProfileId` z aktywnym storage. Content bootstrap czyta repozytoria i może wznowić sesję nauki przed odtworzeniem Auth. Samo przekierowanie na ekran logowania ani zmiana kolejności dwóch providerów nie zabezpiecza odczytu profilu. `prepareAccountSignOut` synchronizuje outbox, wywołuje `/v1/account/session/revoke` i usuwa lokalne dane; offline może odmówić wylogowania. Backend wymaga uwierzytelnienia, przyjmuje trwały `operationId` i może zwrócić `503 session_revocation_pending`.
+Stan wejściowy przed `PROFILE-01/B–D`: `App.tsx` montował `AppPreferencesProvider` → `ContentPreparationGate` → `PatternlyAccountProvider`. Preferencje inicjalizowały `mmkvClient`, który od razu wiązał zapisany `selectedProfileId` z aktywnym storage. Content bootstrap mógł czytać repozytoria i wznowić sesję nauki przed odtworzeniem Auth. Samo przekierowanie na ekran logowania ani zmiana kolejności dwóch providerów nie zabezpieczały odczytu profilu. Dawny `prepareAccountSignOut` synchronizował outbox, wywoływał `/v1/account/session/revoke` i usuwał lokalne dane; offline mógł odmówić wylogowania. Backend wymaga uwierzytelnienia, przyjmuje trwały `operationId` i może zwrócić `503 session_revocation_pending`.
 
 ## Kanoniczny kontrakt
 

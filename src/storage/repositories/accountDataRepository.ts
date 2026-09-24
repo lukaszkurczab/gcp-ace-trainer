@@ -867,12 +867,8 @@ export async function clearGuestOwnedLocalData(): Promise<void> {
 
 /**
  * Clears the account-owned learning namespace after the remote account has
- * been deleted.  This intentionally has a separate entry point from
- * clearAccountOwnedLocalData: sign-out must retain pending learning state so
- * it can be synchronized on the next account session, while deletion must
- * remove every learning record, including records no longer present in an
- * index.  The deletion marker, installation identity, preferences, and
- * mutation journal are outside this allow-list and remain durable.
+ * been deleted. The deletion marker, installation identity, preferences,
+ * and mutation journal are outside this allow-list and remain durable.
  */
 export async function clearAccountDeletionOwnedLocalData(): Promise<void> {
   // Enumerate before removing so a failed individual delete leaves the
@@ -880,12 +876,4 @@ export async function clearAccountDeletionOwnedLocalData(): Promise<void> {
   // to the whole canonical namespace: settings, installation, journal, and
   // lifecycle markers have different ownership and recovery semantics.
   clearCanonicalLearningNamespace(true);
-}
-
-export async function clearAccountOwnedLocalData(): Promise<void> {
-  await clearActiveTrackId();
-  await clearTrainingSessions();
-  await clearTrainingAttempts();
-  await clearReviewQueueItems();
-  removeCanonicalValue(STORAGE_KEYS.ACCOUNT_SYNC);
 }
