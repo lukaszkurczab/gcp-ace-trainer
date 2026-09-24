@@ -1,4 +1,5 @@
 const RUNTIME_MODES = Object.freeze(["sandbox", "smoke", "release"]);
+const path = require("node:path");
 const PUBLIC_ENVIRONMENT_KEY = "EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT";
 const REVENUECAT_IOS_API_KEY = "EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY";
 const FIREBASE_FILE_KEYS = Object.freeze({
@@ -128,9 +129,32 @@ function assertRuntimeEnvironment(environment, mode) {
   }
 }
 
+function validateReleaseLegalVariables(legalVariables) {
+  require("tsx/cjs");
+  const { validateLegalVariables } = require("./src/legal/legalVariablesSchema.ts");
+  const issues = validateLegalVariables(legalVariables, "release");
+  if (issues.length > 0) {
+    const summary = issues.map(({ path: fieldPath, message }) => `${fieldPath}: ${message}`).join("\n");
+    throw new Error(`Release legal variables are invalid:\n${summary}`);
+  }
+}
+
+function readReleaseLegalVariables() {
+  const fs = require("node:fs");
+  const filename = path.join(__dirname, "config", "public-legal.release.json");
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(filename, "utf8"));
+  } catch (error) {
+    throw new Error(`Release legal variables could not be read from ${filename}: ${error.message}`);
+  }
+  return parsed;
+}
+
 function createExpoConfig(environment = process.env) {
   const runtimeMode = readRuntimeMode(environment);
   assertRuntimeEnvironment(environment, runtimeMode);
+  if (runtimeMode === "release") validateReleaseLegalVariables(readReleaseLegalVariables());
   return {
     expo: {
       name: "Patternly",

@@ -31,7 +31,13 @@ test("runtime mode is explicit and persists in public Expo config", () => {
 
 test("sandbox and release reject mode/configuration mismatches", () => {
   assert.throws(() => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production") }), /must equal sandbox/);
+  assert.throws(() => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production") }), /must equal EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE/);
   assert.throws(() => createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug" }), /playIntegrity/);
+});
+
+test("release app config always rejects the checked-in public legal payload", () => {
+  const releaseEnvironment = { ...base, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" };
+  assert.throws(() => createExpoConfig(releaseEnvironment), /Release legal variables are invalid:[\s\S]*terms\.operatorLegalName\.en: Unresolved legal placeholder/);
 });
 
 test("smoke is explicit, locally bound, and permits debug App Check", () => {
@@ -74,7 +80,11 @@ test("sandbox and release accept only production App Check provider pairs", () =
   for (const mode of ["sandbox", "release"] as const) {
     const environment = { ...base, PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment(mode === "release" ? "production" : "sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity" };
     for (const appleProvider of ["deviceCheck", "appAttest", "appAttestWithDeviceCheckFallback"]) {
-      assert.equal(createExpoConfig({ ...environment, EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: appleProvider }).expo.extra.patternlyRuntime, mode);
+      if (mode === "release") {
+        assert.throws(() => createExpoConfig({ ...environment, EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: appleProvider }), /Release legal variables are invalid/);
+      } else {
+        assert.equal(createExpoConfig({ ...environment, EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: appleProvider }).expo.extra.patternlyRuntime, mode);
+      }
     }
     for (const appleProvider of [undefined, "debug", "unsupported"]) {
       assert.throws(() => createExpoConfig({ ...environment, EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: appleProvider } as Record<string, string>), /Apple release App Check provider/);
@@ -102,9 +112,12 @@ test("explicit iOS sandbox and release require iOS configuration and ignore Andr
     delete (environment as Record<string, string | undefined>).EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID;
     delete (environment as Record<string, string | undefined>).EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER;
     if (mode === "release") delete (environment as Record<string, string | undefined>).GOOGLE_SERVICES_JSON;
-    const config = createExpoConfig(environment);
-    assert.equal(config.expo.extra.patternlyRuntime, mode);
-    if (mode === "release") assert.equal("googleServicesFile" in config.expo.android, false);
+    if (mode === "release") {
+      assert.throws(() => createExpoConfig(environment), /Release legal variables are invalid/);
+    } else {
+      const config = createExpoConfig(environment);
+      assert.equal(config.expo.extra.patternlyRuntime, mode);
+    }
     for (const [key, pattern] of [
       ["EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID", /requires EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID/],
       ["EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER", /Apple release App Check provider/],
@@ -125,10 +138,13 @@ test("explicit Android sandbox and release require Android configuration and ign
     delete (environment as Record<string, string | undefined>).EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID;
     delete (environment as Record<string, string | undefined>).EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER;
     if (mode === "release") delete (environment as Record<string, string | undefined>).GOOGLE_SERVICE_INFO_PLIST;
-    const config = createExpoConfig(environment);
-    assert.equal(config.expo.extra.patternlyRuntime, mode);
-    if (mode === "release") assert.equal("googleServicesFile" in config.expo.ios, false);
-    assert.equal(createExpoConfig({ ...environment, EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "" }).expo.extra.patternlyRuntime, mode);
+    if (mode === "release") {
+      assert.throws(() => createExpoConfig(environment), /Release legal variables are invalid/);
+    } else {
+      const config = createExpoConfig(environment);
+      assert.equal(config.expo.extra.patternlyRuntime, mode);
+    }
+    if (mode === "sandbox") assert.equal(createExpoConfig({ ...environment, EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "" }).expo.extra.patternlyRuntime, mode);
     for (const [key, pattern] of [
       ["EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID", /requires EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID/],
       ["EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER", /APPCHECK_ANDROID_PROVIDER=playIntegrity/],
