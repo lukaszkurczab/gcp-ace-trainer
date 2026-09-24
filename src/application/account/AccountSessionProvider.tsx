@@ -38,7 +38,7 @@ import { hasUnboundGuestInstallation } from "../../storage/repositories/guestIns
 import { createDeletionAuthorizationVault, createSensitiveCommandLane, isLiveDeletionAuthorization, prepareDeletionAuthorization, runReauthenticatedMutation, type DeletionAuthorizationVault, type SensitiveCommandLane } from "./accountCommandGuards";
 import { shareAccountDataExport as shareDownloadedAccountData } from "./accountDataExportService";
 import { legalVariables } from "../../legal/legalVariables";
-import { ownerPreservationOracle } from "../testing/ownerPreservationOracle";
+import { ownerPreservationOracle, type OwnerPreservationRestartResult } from "../testing/ownerPreservationOracle";
 
 export type AccountFailure = "accountNotFound" | "backendUnavailable" | "conflict" | "duplicate" | "emailUnavailable" | "expiredAction" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
 export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "guest" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
@@ -106,6 +106,7 @@ export type AccountSessionContextValue = Readonly<{
   confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[], groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[]) => Promise<AccountCommandResult>;
   continueAsGuest: () => Promise<AccountCommandResult>;
   runOwnerPreservationGuestCommand: () => Promise<OwnerPreservationGuestCommandResult>;
+  ownerPreservationResult: OwnerPreservationRestartResult | null;
   retryAccountSync: () => Promise<AccountCommandResult>;
   retryPendingAccountSync: () => Promise<AccountCommandResult>;
   retryPendingDeletion: () => Promise<AccountCommandResult>;
@@ -163,6 +164,12 @@ export function createGuestTransitionLock(): Readonly<{ tryAcquire: () => (() =>
   });
 }
 
+export async function runWithGuestTransitionLock<T>(lock: ReturnType<typeof createGuestTransitionLock>, denied: T, operation: () => Promise<T>): Promise<T> {
+  const release = lock.tryAcquire();
+  if (!release) return denied;
+  try { return await operation(); } finally { release(); }
+}
+
 export async function runOwnerPreservationGuestTransition(input: Readonly<{
   lock: ReturnType<typeof createGuestTransitionLock>;
   preflight: () => boolean;
@@ -171,8 +178,6 @@ export async function runOwnerPreservationGuestTransition(input: Readonly<{
   cleanup: () => Promise<"unchanged" | "changed" | "blocked">;
   beginTransition: () => Promise<void>;
 }>): Promise<OwnerPreservationGuestCommandResult> {
-  const release = input.lock.tryAcquire();
-  if (!release) return { status: "denied" };
   let armed = false;
   let transitionStarted = false;
   let cleanupAttempted = false;
@@ -180,6 +185,7 @@ export async function runOwnerPreservationGuestTransition(input: Readonly<{
     cleanupAttempted = true;
     try { return await input.cleanup(); } catch { return "blocked"; }
   };
+  return runWithGuestTransitionLock(input.lock, { status: "denied" }, async () => {
   try {
     if (!input.preflight()) return { status: "denied" };
     if (await input.arm() !== "unchanged") return { status: "blocked", oracle: "blocked" };
@@ -195,9 +201,8 @@ export async function runOwnerPreservationGuestTransition(input: Readonly<{
   } catch {
     if (armed && !transitionStarted && !cleanupAttempted) await cleanupArmedRecord();
     return { status: "blocked", oracle: "blocked" };
-  } finally {
-    release();
   }
+  });
 }
 
 export type AccountSessionCoordinator<T> = Readonly<{
@@ -356,6 +361,8 @@ function deletionPendingState(user: FirebaseAuthUserSnapshot, deletion: NonNulla
 
 export function PatternlyAccountProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [state, setState] = useState<AccountState>({ kind: "loading" });
+  const [ownerPreservationResult, setOwnerPreservationResult] = useState<OwnerPreservationRestartResult | null>(null);
+  const ownerPreservationRestartCheckRef = useRef<Promise<OwnerPreservationRestartResult> | null>(null);
   const stateRef = useRef<AccountState>({ kind: "loading" });
   stateRef.current = state;
   const [authClient, setAuthClient] = useState<FirebaseAuthClient | null>(null);
@@ -607,6 +614,16 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     }
   }, [authInitializationRevision, finalizeCurrent, revokeDeletionAuthorization, runtimeMode, sessionCoordinator]);
 
+  useEffect(() => {
+    if (state.kind !== "guest" || runtimeMode !== "smoke" || typeof __DEV__ === "undefined" || !__DEV__ || ownerPreservationResult !== null) return;
+    let active = true;
+    ownerPreservationRestartCheckRef.current ??= ownerPreservationOracle.verifyAfterRestart();
+    void ownerPreservationRestartCheckRef.current.then((result) => {
+      if (active && result !== "not_armed") setOwnerPreservationResult(result);
+    });
+    return () => { active = false; };
+  }, [ownerPreservationResult, runtimeMode, state.kind]);
+
   const runWithAuth = useCallback(async (operation: (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>) => Promise<AccountCommandResult>): Promise<AccountCommandResult> => {
     if (!authClient || !apiClient) return { kind: "failure", failure: "providerUnavailable" };
     try { return await operation(authClient, apiClient); } catch (error) { return { kind: "failure", failure: classifyAccountFailure(error) }; }
@@ -704,9 +721,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       catch (error) { return { kind: "failure", failure: classifyAccountFailure(error) }; }
     },
     continueAsGuest: async () => {
-      const releaseGuestCommand = guestCommandLockRef.current.tryAcquire();
-      if (!releaseGuestCommand) return { kind: "failure", failure: "providerUnavailable" };
-      try {
+      return runWithGuestTransitionLock(guestCommandLockRef.current, { kind: "failure", failure: "providerUnavailable" } as const, async () => {
       sessionCoordinator.invalidate();
       revokeDeletionAuthorization();
       if (!hasUnboundGuestInstallation() && stateRef.current.kind !== "guestAccessBlocked") {
@@ -733,9 +748,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         return { kind: "failure", failure: "providerUnavailable" };
       }
       return { kind: "failure", failure: "providerUnavailable" };
-      } finally {
-        releaseGuestCommand();
-      }
+      });
     },
     runOwnerPreservationGuestCommand: async () => {
       const auth = authClient;
@@ -764,6 +777,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         },
       });
     },
+    ownerPreservationResult,
     exportAccountData: async (isRequestActive = () => true) => {
       if (!authClient || !apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
       return sensitiveCommandLane.run(async (): Promise<AccountDataExportCommandResult> => {

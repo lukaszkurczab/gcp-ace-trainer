@@ -232,6 +232,38 @@ test("explicit cleanup deletes only the oracle SecureStore key", async () => {
   assert.equal(await oracle.cleanup(), "blocked");
 });
 
+test("restart verification captures the owner result then removes only the oracle record", async () => {
+  const storage = new ReadOnlyOwnerStorage();
+  const store = new MemorySecureStore();
+  const { oracle, select } = makeOracle(storage, OWNER, store);
+  assert.equal(await oracle.arm(), "unchanged");
+  select(GUEST);
+  const result = await oracle.verifyAfterRestart();
+  assert.equal(result, "unchanged");
+  assert.equal(store.values.has(ORACLE_KEY), false);
+  assert.deepEqual(store.operations.filter((operation) => operation.kind === "delete").map((operation) => operation.key), [ORACLE_KEY]);
+  assert.equal(await oracle.verifyAfterRestart(), "not_armed");
+});
+
+test("restart verification reuses a terminal result and reports blocked when cleanup fails", async () => {
+  const storage = new ReadOnlyOwnerStorage();
+  const terminalStore = new MemorySecureStore();
+  const { oracle, select } = makeOracle(storage, OWNER, terminalStore);
+  assert.equal(await oracle.arm(), "unchanged");
+  select(GUEST);
+  assert.equal(await oracle.verify(), "unchanged");
+  assert.equal(await oracle.verifyAfterRestart(), "unchanged");
+  assert.equal(terminalStore.values.has(ORACLE_KEY), false);
+
+  const blockedStore = new MemorySecureStore();
+  const blocked = makeOracle(storage, OWNER, blockedStore);
+  assert.equal(await blocked.oracle.arm(), "unchanged");
+  blocked.select(GUEST);
+  blockedStore.failure = "delete";
+  assert.equal(await blocked.oracle.verifyAfterRestart(), "blocked");
+  assert.equal(blockedStore.values.has(ORACLE_KEY), true);
+});
+
 class MemoryControlStore implements StorageManifestStore {
   readonly values = new Map<string, string>();
   async get(key: string) { return this.values.get(key) ?? null; }

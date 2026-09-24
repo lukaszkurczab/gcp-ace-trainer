@@ -1,6 +1,7 @@
 import { ownerPreservationOracleRuntime } from "../../infrastructure/testing/ownerPreservationOracleRuntime";
 
 export type OwnerPreservationOracleResult = "unchanged" | "changed" | "blocked";
+export type OwnerPreservationRestartResult = OwnerPreservationOracleResult | "not_armed";
 
 /**
  * Smoke-only, read-only check of the logical legacy-owner storage scope.
@@ -10,6 +11,7 @@ export type OwnerPreservationOracleResult = "unchanged" | "changed" | "blocked";
 export type OwnerPreservationOracle = Readonly<{
   arm(): Promise<OwnerPreservationOracleResult>;
   verify(): Promise<OwnerPreservationOracleResult>;
+  verifyAfterRestart(): Promise<OwnerPreservationRestartResult>;
   cleanup(): Promise<OwnerPreservationOracleResult>;
 }>;
 

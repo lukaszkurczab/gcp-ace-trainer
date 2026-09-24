@@ -1,4 +1,4 @@
-import type { OwnerPreservationOracle, OwnerPreservationOracleResult } from "../../application/testing/ownerPreservationOracle";
+import type { OwnerPreservationOracle, OwnerPreservationOracleResult, OwnerPreservationRestartResult } from "../../application/testing/ownerPreservationOracle";
 import type { KeyValueStorage } from "../storage/mmkvClient";
 import { getLegacyOwnerReadOnlyScope } from "./ownerPreservationSourceRuntime";
 import type { OwnerPreservationScope } from "./ownerPreservationSourceRuntime.disabled";
@@ -168,6 +168,21 @@ export function createSmokeOwnerPreservationOracle(options: OracleOptions = {}):
       } catch {
         return "blocked";
       }
+    },
+    async verifyAfterRestart(): Promise<OwnerPreservationRestartResult> {
+      let result: OwnerPreservationOracleResult;
+      try {
+        const raw = await store().getItemAsync(RECORD_KEY);
+        if (raw === null) return "not_armed";
+        const record = parseRecord(raw);
+        if (!record || !isFresh(record, now())) result = "blocked";
+        else if (record.phase === "terminal") result = record.result ?? "blocked";
+        else result = await this.verify();
+      } catch {
+        result = "blocked";
+      }
+      const cleanup = await this.cleanup();
+      return cleanup === "blocked" ? "blocked" : result;
     },
     async cleanup(): Promise<OwnerPreservationOracleResult> {
       try {

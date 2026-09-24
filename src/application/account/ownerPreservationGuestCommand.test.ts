@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createGuestTransitionLock, runOwnerPreservationGuestTransition } from "./AccountSessionProvider";
+import { createGuestTransitionLock, runOwnerPreservationGuestTransition, runWithGuestTransitionLock } from "./AccountSessionProvider";
 
 function harness(overrides: Partial<Parameters<typeof runOwnerPreservationGuestTransition>[0]> = {}) {
   const calls: string[] = [];
@@ -74,4 +74,44 @@ test("transition failure leaves the armed oracle record reportable", async () =>
   assert.deepEqual(await runOwnerPreservationGuestTransition(input), { status: "blocked", oracle: "blocked" });
   assert.equal(calls.includes("cleanup"), false);
   assert.deepEqual(calls, ["preflight", "arm", "recheck", "transition"]);
+});
+
+test("normal guest command winning the shared lock denies guarded command before its side effects", async () => {
+  const lock = createGuestTransitionLock();
+  const order: string[] = [];
+  let finish!: () => void;
+  const pending = new Promise<void>((resolve) => { finish = resolve; });
+  const normal = runWithGuestTransitionLock(lock, "denied", async () => { order.push("normal"); await pending; return "normal"; });
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  const guarded = await runOwnerPreservationGuestTransition({
+    ...harness().input,
+    lock,
+    preflight: () => { order.push("guarded-preflight"); return true; },
+    arm: async () => { order.push("guarded-arm"); return "unchanged"; },
+    beginTransition: async () => { order.push("guarded-transition"); },
+  });
+  assert.deepEqual(guarded, { status: "denied" });
+  assert.deepEqual(order, ["normal"]);
+  finish();
+  assert.equal(await normal, "normal");
+});
+
+test("guarded guest command winning the shared lock denies normal command before its side effects", async () => {
+  const lock = createGuestTransitionLock();
+  const order: string[] = [];
+  let finish!: () => void;
+  const pending = new Promise<void>((resolve) => { finish = resolve; });
+  const guarded = runOwnerPreservationGuestTransition({
+    ...harness().input,
+    lock,
+    preflight: () => { order.push("guarded-preflight"); return true; },
+    arm: async () => { order.push("guarded-arm"); return "unchanged"; },
+    beginTransition: async () => { order.push("guarded-transition"); await pending; },
+  });
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  const normal = await runWithGuestTransitionLock(lock, "denied", async () => { order.push("normal"); return "normal"; });
+  assert.equal(normal, "denied");
+  assert.deepEqual(order, ["guarded-preflight", "guarded-arm", "guarded-transition"]);
+  finish();
+  assert.deepEqual(await guarded, { status: "pending", oracle: "armed" });
 });
