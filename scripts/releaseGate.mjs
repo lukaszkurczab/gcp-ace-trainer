@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
@@ -6,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import "tsx/cjs";
 import { createRequire } from "node:module";
 import { verifyReleaseManifest } from "./releaseManifest.mjs";
+import { legalSourceFingerprint } from "./legalSourceFingerprint.mjs";
 
 const require = createRequire(import.meta.url);
 const { validateLegalVariables } = require("../src/legal/legalVariablesSchema.ts");
@@ -134,15 +134,7 @@ function portableError(error) {
   return portableManifestError(error);
 }
 
-function canonicalize(value) {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (value && typeof value === "object") return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalize(value[key])]));
-  return value;
-}
-
-function canonicalHash(value) {
-  return createHash("sha256").update(JSON.stringify(canonicalize(value))).digest("hex");
-}
+const canonicalHash = legalSourceFingerprint;
 
 function hasExactKeys(value, expectedKeys) {
   return value && typeof value === "object" && !Array.isArray(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...expectedKeys].sort());

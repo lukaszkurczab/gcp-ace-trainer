@@ -24,6 +24,7 @@
     "check:legal-variables": "node --import tsx scripts/checkLegalVariables.mjs",
     "baseline:report": "node scripts/recoveryBaselineReport.mjs",
     "launch:readiness": "node scripts/releaseGate.mjs",
+    "export:legal": "node --import tsx scripts/exportPublicLegal.mjs",
     "release:gate": "node scripts/releaseGate.mjs --enforce",
     "release:manifest": "node scripts/releaseManifest.mjs",
     "release:manifest:create": "node scripts/releaseManifest.mjs create",

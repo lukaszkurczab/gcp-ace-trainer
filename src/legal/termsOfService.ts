@@ -1,9 +1,10 @@
-import { legalVariables } from "./legalVariables";
+import { legalVariables, type LegalVariables } from "./legalVariables";
 
-export const termsOfService = Object.freeze({
-  en: String.raw`Patternly Terms of Service
+export function renderTermsOfService(vars: LegalVariables) {
+  return Object.freeze({
+    en: String.raw`Patternly Terms of Service
 
-Effective ${legalVariables.terms.effectiveDate.en}. Version ${legalVariables.documentVersion.en}. These Terms form an agreement between you and ${legalVariables.terms.operatorLegalName.en}, ${legalVariables.terms.operatorBusinessForm.en}, at ${legalVariables.terms.operatorRegisteredAddress.en} (the “Operator”) for your use of Patternly.
+Effective ${vars.terms.effectiveDate.en}. Version ${vars.documentVersion.en}. These Terms form an agreement between you and ${vars.terms.operatorLegalName.en}, ${vars.terms.operatorBusinessForm.en}, at ${vars.terms.operatorRegisteredAddress.en} (the “Operator”) for your use of Patternly.
 
 1. Accepting these Terms
 
@@ -11,7 +12,7 @@ By creating an account or otherwise using account-based Patternly services, you 
 
 2. Eligibility
 
-Patternly requires you to be at least ${legalVariables.terms.minimumUserAge.en} to create an account on your own. This is a product rule, not a statement that every person below that age is legally barred from learning. Account-free guest learning may remain available to younger users. Patternly does not provide a parent-or-guardian consent flow, so users below that age cannot create an account. Policy scope: ${legalVariables.terms.minimumUserAgeScope.en}. You must provide accurate account information and keep access credentials secure.
+Patternly requires you to be at least ${vars.terms.minimumUserAge.en} to create an account on your own. This is a product rule, not a statement that every person below that age is legally barred from learning. Account-free guest learning may remain available to younger users. Patternly does not provide a parent-or-guardian consent flow, so users below that age cannot create an account. Policy scope: ${vars.terms.minimumUserAgeScope.en}. You must provide accurate account information and keep access credentials secure.
 
 3. The service
 
@@ -42,9 +43,9 @@ You may quote limited portions where permitted by law, but you may not republish
 
 7. Premium and subscriptions
 
-Patternly Premium is a monthly, automatically renewing digital service sold through the Apple App Store in Poland and the other European Union countries where the offer is available. The offer is ${legalVariables.terms.premiumProductName.en} (product identifier ${legalVariables.terms.premiumProductIdentifier.en}). It includes: ${legalVariables.terms.premiumServiceScope.en}. Its billing period is ${legalVariables.terms.premiumBillingPeriod.en}. There is no trial period. The initial total price including applicable taxes is ${legalVariables.terms.premiumPriceIncludingTaxes.en}; the renewal price including applicable taxes is ${legalVariables.terms.premiumRenewalPriceIncludingTaxes.en} for each ${legalVariables.terms.premiumBillingPeriod.en}. Before you order, the purchase screen shows these current prices, the renewal period, the Premium scope, the payment method and timing, when the service starts, and the payment obligation.
+Patternly Premium is a monthly, automatically renewing digital service sold through the Apple App Store in Poland and the other European Union countries where the offer is available. The offer is ${vars.terms.premiumProductName.en} (product identifier ${vars.terms.premiumProductIdentifier.en}). It includes: ${vars.terms.premiumServiceScope.en}. Its billing period is ${vars.terms.premiumBillingPeriod.en}. There is no trial period. The initial total price including applicable taxes is ${vars.terms.premiumPriceIncludingTaxes.en}; the renewal price including applicable taxes is ${vars.terms.premiumRenewalPriceIncludingTaxes.en} for each ${vars.terms.premiumBillingPeriod.en}. Before you order, the purchase screen shows these current prices, the renewal period, the Premium scope, the payment method and timing, when the service starts, and the payment obligation.
 
-The merchant-of-record arrangement is: ${legalVariables.terms.merchantOfRecord.en}. Apple provides the payment and subscription-management channel, but this does not remove the Operator’s responsibility for Patternly’s conformity or your statutory claims against the responsible trader.
+The merchant-of-record arrangement is: ${vars.terms.merchantOfRecord.en}. Apple provides the payment and subscription-management channel, but this does not remove the Operator’s responsibility for Patternly’s conformity or your statutory claims against the responsible trader.
 
 A subscription renews automatically only on the terms clearly displayed before purchase. You can stop future renewals through your Apple account settings. Deleting the app or your Patternly account does not cancel an App Store subscription. A material price increase is never accepted merely by continuing to use Patternly; it requires the legally applicable affirmative-consent, re-purchase, or renewal mechanism.
 
@@ -68,7 +69,7 @@ If you submit a content report or support message, you confirm that it is lawful
 
 You may stop using Patternly and delete your account at any time, subject to separate cancellation of any platform subscription. The Operator may proportionately restrict access only for a material breach, a verified security threat, unlawful use, non-payment, or a binding legal requirement.
 
-Except where immediate action is necessary to prevent harm or comply with law, the Operator will explain the reason, give reasonable prior notice and an opportunity to remedy the breach. You may appeal through ${legalVariables.terms.complaintEmail.en}. Access will be restored when the ground ends. Suspension does not remove statutory conformity, refund, data-return, complaint, or cancellation rights and does not by itself cancel future Apple renewals.
+Except where immediate action is necessary to prevent harm or comply with law, the Operator will explain the reason, give reasonable prior notice and an opportunity to remedy the breach. You may appeal through ${vars.terms.complaintEmail.en}. Access will be restored when the ground ends. Suspension does not remove statutory conformity, refund, data-return, complaint, or cancellation rights and does not by itself cancel future Apple renewals.
 
 11. Responsibility and statutory rights
 
@@ -82,7 +83,7 @@ Patternly may rely on Apple, authentication, hosting, notification, and billing 
 
 13. Governing law and disputes
 
-These Terms are governed by ${legalVariables.terms.governingLaw.en}. The courts described as ${legalVariables.terms.competentCourts.en} have jurisdiction, without depriving you of mandatory consumer protections or the right to bring a claim before a court available under applicable law in your place of residence.
+These Terms are governed by ${vars.terms.governingLaw.en}. The courts described as ${vars.terms.competentCourts.en} have jurisdiction, without depriving you of mandatory consumer protections or the right to bring a claim before a court available under applicable law in your place of residence.
 
 Before filing a formal claim, you may contact the Operator so the issue can be reviewed. This does not limit statutory complaint, regulatory, alternative-dispute-resolution, or court rights.
 
@@ -102,40 +103,40 @@ The Operator must provide confirmation on a durable medium and retain an auditab
 
 16. Technical requirements
 
-Technical and compatibility requirements: ${legalVariables.terms.technicalRequirements.en}. Internet access is required for account authentication, synchronization, purchases, restoring purchases, and communications with the Operator. Supported offline features may remain limited to data already available on the device.
+Technical and compatibility requirements: ${vars.terms.technicalRequirements.en}. Internet access is required for account authentication, synchronization, purchases, restoring purchases, and communications with the Operator. Supported offline features may remain limited to data already available on the device.
 
-Support and update commitment: ${legalVariables.terms.supportCommitment.en}. Required security and conformity updates will be supplied for the period required by the contract and mandatory law.
+Support and update commitment: ${vars.terms.supportCommitment.en}. Required security and conformity updates will be supplied for the period required by the contract and mandatory law.
 
 17. Consumer withdrawal
 
-If you are an eligible consumer, you generally have 14 days to withdraw from a distance contract without giving a reason. Send an unambiguous statement to ${legalVariables.terms.withdrawalEmail.en} or the Operator’s postal address before the deadline. You may state: ‘I hereby withdraw from the contract for [service], ordered on [date], name, address, date and signature if sent on paper.’ This model is optional.
+If you are an eligible consumer, you generally have 14 days to withdraw from a distance contract without giving a reason. Send an unambiguous statement to ${vars.terms.withdrawalEmail.en} or the Operator’s postal address before the deadline. You may state: ‘I hereby withdraw from the contract for [service], ordered on [date], name, address, date and signature if sent on paper.’ This model is optional.
 
 18. Digital-service conformity
 
-Patternly must conform to its description, agreed paid-service scope, functionality, compatibility, accessibility, continuity, security, and updates that you can reasonably expect under the contract and mandatory law. If it does not, notify ${legalVariables.terms.complaintEmail.en}. You may require conformity within a reasonable time and without significant inconvenience.
+Patternly must conform to its description, agreed paid-service scope, functionality, compatibility, accessibility, continuity, security, and updates that you can reasonably expect under the contract and mandatory law. If it does not, notify ${vars.terms.complaintEmail.en}. You may require conformity within a reasonable time and without significant inconvenience.
 
 Where statutory conditions are met, you may seek a proportionate price reduction or terminate and obtain the applicable refund. These remedies are against the responsible trader and are not replaced by Apple’s transaction tools.
 
 19. Complaints
 
-Submit a complaint to ${legalVariables.terms.complaintEmail.en} or the Operator’s postal address. Identify the account or transaction where possible, describe the issue and requested remedy, and avoid sending passwords. The Operator will confirm receipt on a durable medium and answer within 14 days from receipt unless a shorter mandatory period applies. The 14-day response period is not a deadline for submitting a complaint.
+Submit a complaint to ${vars.terms.complaintEmail.en} or the Operator’s postal address. Identify the account or transaction where possible, describe the issue and requested remedy, and avoid sending passwords. The Operator will confirm receipt on a durable medium and answer within 14 days from receipt unless a shorter mandatory period applies. The 14-day response period is not a deadline for submitting a complaint.
 
 20. Data after termination
 
-Where applicable law gives you a right to retrieve non-personal content you supplied or created, request it through ${legalVariables.terms.complaintEmail.en}. The Operator provides the applicable content free of charge, without hindrance, within a reasonable time and in a commonly used machine-readable format, subject to statutory exceptions.
+Where applicable law gives you a right to retrieve non-personal content you supplied or created, request it through ${vars.terms.complaintEmail.en}. The Operator provides the applicable content free of charge, without hindrance, within a reasonable time and in a commonly used machine-readable format, subject to statutory exceptions.
 
 21. Out-of-court dispute resolution
 
-The Operator’s position on participation in consumer ADR is: ${legalVariables.terms.adrPosition.en}. Relevant entity or information point: ${legalVariables.terms.adrEntity.en}. This section does not refer to the discontinued EU ODR platform and does not restrict your right to contact a consumer authority or court.
+The Operator’s position on participation in consumer ADR is: ${vars.terms.adrPosition.en}. Relevant entity or information point: ${vars.terms.adrEntity.en}. This section does not refer to the discontinued EU ODR platform and does not restrict your right to contact a consumer authority or court.
 
 22. Operator and contact
 
-Operator: ${legalVariables.terms.operatorLegalName.en}, ${legalVariables.terms.operatorBusinessForm.en}. Address: ${legalVariables.terms.operatorRegisteredAddress.en}. Email: ${legalVariables.terms.operatorEmail.en}. Phone: ${legalVariables.terms.operatorPhone.en}.
+Operator: ${vars.terms.operatorLegalName.en}, ${vars.terms.operatorBusinessForm.en}. Address: ${vars.terms.operatorRegisteredAddress.en}. Email: ${vars.terms.operatorEmail.en}. Phone: ${vars.terms.operatorPhone.en}.
 
-Patternly is offered in: ${legalVariables.terms.distributionTerritories.en}. Registration number: ${legalVariables.terms.operatorRegistrationNumber.en}. Tax identifier: ${legalVariables.terms.operatorTaxIdentifier.en}.`,
-  pl: String.raw`Warunki korzystania z Patternly
+Patternly is offered in: ${vars.terms.distributionTerritories.en}. Registration number: ${vars.terms.operatorRegistrationNumber.en}. Tax identifier: ${vars.terms.operatorTaxIdentifier.en}.`,
+    pl: String.raw`Warunki korzystania z Patternly
 
-Obowiązują od ${legalVariables.terms.effectiveDate.pl}. Wersja ${legalVariables.documentVersion.pl}. Niniejsze Warunki stanowią umowę między Tobą a ${legalVariables.terms.operatorLegalName.pl}, ${legalVariables.terms.operatorBusinessForm.pl}, pod adresem ${legalVariables.terms.operatorRegisteredAddress.pl} („Operator”), dotyczącą korzystania z Patternly.
+Obowiązują od ${vars.terms.effectiveDate.pl}. Wersja ${vars.documentVersion.pl}. Niniejsze Warunki stanowią umowę między Tobą a ${vars.terms.operatorLegalName.pl}, ${vars.terms.operatorBusinessForm.pl}, pod adresem ${vars.terms.operatorRegisteredAddress.pl} („Operator”), dotyczącą korzystania z Patternly.
 
 1. Akceptacja Warunków
 
@@ -143,7 +144,7 @@ Tworząc konto lub korzystając z usług Patternly powiązanych z kontem, akcept
 
 2. Uprawnienie do korzystania
 
-Patternly wymaga ukończenia co najmniej ${legalVariables.terms.minimumUserAge.pl}, aby samodzielnie utworzyć konto. Jest to zasada produktu, a nie stwierdzenie, że prawo bezwzględnie zakazuje młodszym osobom nauki. Nauka w trybie gościa bez konta może pozostać dostępna dla młodszych użytkowników. Patternly nie udostępnia procesu zgody rodzica lub opiekuna, dlatego osoba poniżej tego wieku nie może utworzyć konta. Zakres zasady: ${legalVariables.terms.minimumUserAgeScope.pl}. Podawaj prawidłowe dane konta i chroń dane dostępowe.
+Patternly wymaga ukończenia co najmniej ${vars.terms.minimumUserAge.pl}, aby samodzielnie utworzyć konto. Jest to zasada produktu, a nie stwierdzenie, że prawo bezwzględnie zakazuje młodszym osobom nauki. Nauka w trybie gościa bez konta może pozostać dostępna dla młodszych użytkowników. Patternly nie udostępnia procesu zgody rodzica lub opiekuna, dlatego osoba poniżej tego wieku nie może utworzyć konta. Zakres zasady: ${vars.terms.minimumUserAgeScope.pl}. Podawaj prawidłowe dane konta i chroń dane dostępowe.
 
 3. Usługa
 
@@ -174,9 +175,9 @@ Możesz cytować ograniczone fragmenty, jeżeli pozwala na to prawo, ale bez pis
 
 7. Premium i subskrypcje
 
-Patternly Premium jest miesięczną, automatycznie odnawianą usługą cyfrową sprzedawaną przez Apple App Store w Polsce i pozostałych krajach Unii Europejskiej, w których oferta jest dostępna. Ofertą jest ${legalVariables.terms.premiumProductName.pl} (identyfikator produktu ${legalVariables.terms.premiumProductIdentifier.pl}). Obejmuje: ${legalVariables.terms.premiumServiceScope.pl}. Okres rozliczeniowy: ${legalVariables.terms.premiumBillingPeriod.pl}. Nie ma okresu próbnego. Początkowa łączna cena z podatkami wynosi ${legalVariables.terms.premiumPriceIncludingTaxes.pl}; cena odnowienia z podatkami wynosi ${legalVariables.terms.premiumRenewalPriceIncludingTaxes.pl} za każdy ${legalVariables.terms.premiumBillingPeriod.pl}. Przed zamówieniem ekran zakupu pokazuje te aktualne ceny, okres odnowienia, zakres Premium, sposób i moment płatności, moment rozpoczęcia świadczenia oraz obowiązek zapłaty.
+Patternly Premium jest miesięczną, automatycznie odnawianą usługą cyfrową sprzedawaną przez Apple App Store w Polsce i pozostałych krajach Unii Europejskiej, w których oferta jest dostępna. Ofertą jest ${vars.terms.premiumProductName.pl} (identyfikator produktu ${vars.terms.premiumProductIdentifier.pl}). Obejmuje: ${vars.terms.premiumServiceScope.pl}. Okres rozliczeniowy: ${vars.terms.premiumBillingPeriod.pl}. Nie ma okresu próbnego. Początkowa łączna cena z podatkami wynosi ${vars.terms.premiumPriceIncludingTaxes.pl}; cena odnowienia z podatkami wynosi ${vars.terms.premiumRenewalPriceIncludingTaxes.pl} za każdy ${vars.terms.premiumBillingPeriod.pl}. Przed zamówieniem ekran zakupu pokazuje te aktualne ceny, okres odnowienia, zakres Premium, sposób i moment płatności, moment rozpoczęcia świadczenia oraz obowiązek zapłaty.
 
-Model merchant of record: ${legalVariables.terms.merchantOfRecord.pl}. Apple zapewnia kanał płatności i zarządzania subskrypcją, ale nie znosi to odpowiedzialności Operatora za zgodność Patternly ani Twoich ustawowych roszczeń wobec właściwego przedsiębiorcy.
+Model merchant of record: ${vars.terms.merchantOfRecord.pl}. Apple zapewnia kanał płatności i zarządzania subskrypcją, ale nie znosi to odpowiedzialności Operatora za zgodność Patternly ani Twoich ustawowych roszczeń wobec właściwego przedsiębiorcy.
 
 Subskrypcja odnawia się automatycznie wyłącznie na warunkach jasno przedstawionych przed zakupem. Przyszłe odnowienia możesz zatrzymać w ustawieniach konta Apple. Usunięcie aplikacji lub konta Patternly nie anuluje subskrypcji. Istotna podwyżka ceny nie może zostać zaakceptowana przez samo dalsze korzystanie; wymaga właściwego mechanizmu wyraźnej zgody, ponownego zakupu albo odnowienia.
 
@@ -200,7 +201,7 @@ Wysyłając zgłoszenie treści lub wiadomość do pomocy, potwierdzasz, że jes
 
 Możesz przestać korzystać z Patternly i usunąć konto, pamiętając o osobnym anulowaniu subskrypcji. Operator może proporcjonalnie ograniczyć dostęp wyłącznie z powodu istotnego naruszenia, potwierdzonego zagrożenia bezpieczeństwa, bezprawnego użycia, braku płatności lub wiążącego wymogu prawnego.
 
-Poza sytuacją wymagającą natychmiastowej reakcji dla zapobieżenia szkodzie lub wykonania prawa Operator wyjaśni powód, uprzedzi z rozsądnym wyprzedzeniem i umożliwi usunięcie naruszenia. Odwołanie można wysłać na ${legalVariables.terms.complaintEmail.pl}. Dostęp zostanie przywrócony po ustaniu podstawy. Zawieszenie nie usuwa ustawowych praw do zgodności, zwrotu, odzyskania danych, reklamacji ani anulowania i samo nie zatrzymuje odnowień Apple.
+Poza sytuacją wymagającą natychmiastowej reakcji dla zapobieżenia szkodzie lub wykonania prawa Operator wyjaśni powód, uprzedzi z rozsądnym wyprzedzeniem i umożliwi usunięcie naruszenia. Odwołanie można wysłać na ${vars.terms.complaintEmail.pl}. Dostęp zostanie przywrócony po ustaniu podstawy. Zawieszenie nie usuwa ustawowych praw do zgodności, zwrotu, odzyskania danych, reklamacji ani anulowania i samo nie zatrzymuje odnowień Apple.
 
 11. Odpowiedzialność i prawa ustawowe
 
@@ -214,7 +215,7 @@ Patternly może korzystać z Apple oraz dostawców uwierzytelniania, hostingu, p
 
 13. Prawo właściwe i spory
 
-Warunki podlegają prawu: ${legalVariables.terms.governingLaw.pl}. Właściwe sądy: ${legalVariables.terms.competentCourts.pl}, bez pozbawiania Cię bezwzględnej ochrony konsumenckiej ani prawa do wniesienia sprawy przed sąd dostępny zgodnie z właściwym prawem w miejscu Twojego zamieszkania.
+Warunki podlegają prawu: ${vars.terms.governingLaw.pl}. Właściwe sądy: ${vars.terms.competentCourts.pl}, bez pozbawiania Cię bezwzględnej ochrony konsumenckiej ani prawa do wniesienia sprawy przed sąd dostępny zgodnie z właściwym prawem w miejscu Twojego zamieszkania.
 
 Przed formalnym zgłoszeniem roszczenia możesz skontaktować się z Operatorem, aby umożliwić rozpatrzenie sprawy. Nie ogranicza to ustawowego prawa do reklamacji, regulatora, alternatywnego rozstrzygania sporów ani sądu.
 
@@ -234,35 +235,38 @@ Operator musi przekazać potwierdzenie na trwałym nośniku i zachować audytowa
 
 16. Wymagania techniczne
 
-Wymagania techniczne i kompatybilność: ${legalVariables.terms.technicalRequirements.pl}. Internet jest wymagany do uwierzytelniania konta, synchronizacji, zakupów, odtwarzania zakupów i kontaktu z Operatorem. Obsługiwane funkcje offline mogą ograniczać się do danych dostępnych już na urządzeniu.
+Wymagania techniczne i kompatybilność: ${vars.terms.technicalRequirements.pl}. Internet jest wymagany do uwierzytelniania konta, synchronizacji, zakupów, odtwarzania zakupów i kontaktu z Operatorem. Obsługiwane funkcje offline mogą ograniczać się do danych dostępnych już na urządzeniu.
 
-Zobowiązanie wsparcia i aktualizacji: ${legalVariables.terms.supportCommitment.pl}. Aktualizacje bezpieczeństwa i zgodności będą dostarczane przez okres wymagany umową i bezwzględnie obowiązującym prawem.
+Zobowiązanie wsparcia i aktualizacji: ${vars.terms.supportCommitment.pl}. Aktualizacje bezpieczeństwa i zgodności będą dostarczane przez okres wymagany umową i bezwzględnie obowiązującym prawem.
 
 17. Odstąpienie konsumenta
 
-Jeśli jesteś uprawnionym konsumentem, co do zasady masz 14 dni na odstąpienie od umowy zawartej na odległość bez podania przyczyny. Przed terminem wyślij jednoznaczne oświadczenie na ${legalVariables.terms.withdrawalEmail.pl} lub adres pocztowy Operatora. Możesz użyć treści: „Niniejszym odstępuję od umowy dotyczącej [usługi], zamówionej [data], imię i nazwisko, adres, data i podpis w przypadku wersji papierowej”. Wzór nie jest obowiązkowy.
+Jeśli jesteś uprawnionym konsumentem, co do zasady masz 14 dni na odstąpienie od umowy zawartej na odległość bez podania przyczyny. Przed terminem wyślij jednoznaczne oświadczenie na ${vars.terms.withdrawalEmail.pl} lub adres pocztowy Operatora. Możesz użyć treści: „Niniejszym odstępuję od umowy dotyczącej [usługi], zamówionej [data], imię i nazwisko, adres, data i podpis w przypadku wersji papierowej”. Wzór nie jest obowiązkowy.
 
 18. Zgodność usługi cyfrowej
 
-Patternly musi być zgodne z opisem, umówionym zakresem usługi płatnej, funkcjonalnością, kompatybilnością, dostępnością, ciągłością, bezpieczeństwem i aktualizacjami, których można rozsądnie oczekiwać na podstawie umowy i prawa. Brak zgodności zgłoś na ${legalVariables.terms.complaintEmail.pl}. Możesz żądać doprowadzenia do zgodności w rozsądnym czasie i bez nadmiernych niedogodności.
+Patternly musi być zgodne z opisem, umówionym zakresem usługi płatnej, funkcjonalnością, kompatybilnością, dostępnością, ciągłością, bezpieczeństwem i aktualizacjami, których można rozsądnie oczekiwać na podstawie umowy i prawa. Brak zgodności zgłoś na ${vars.terms.complaintEmail.pl}. Możesz żądać doprowadzenia do zgodności w rozsądnym czasie i bez nadmiernych niedogodności.
 
 Po spełnieniu ustawowych przesłanek możesz żądać proporcjonalnego obniżenia ceny albo rozwiązać umowę i otrzymać należny zwrot. Środki przysługują wobec właściwego przedsiębiorcy i nie są zastępowane przez narzędzia transakcyjne Apple.
 
 19. Reklamacje
 
-Reklamację wyślij na ${legalVariables.terms.complaintEmail.pl} lub adres pocztowy Operatora. W miarę możliwości wskaż konto lub transakcję, opisz problem i żądane rozwiązanie; nie wysyłaj hasła. Operator potwierdzi odbiór na trwałym nośniku i odpowie w ciągu 14 dni od otrzymania, chyba że obowiązuje krótszy termin. Termin odpowiedzi 14 dni nie jest terminem na złożenie reklamacji.
+Reklamację wyślij na ${vars.terms.complaintEmail.pl} lub adres pocztowy Operatora. W miarę możliwości wskaż konto lub transakcję, opisz problem i żądane rozwiązanie; nie wysyłaj hasła. Operator potwierdzi odbiór na trwałym nośniku i odpowie w ciągu 14 dni od otrzymania, chyba że obowiązuje krótszy termin. Termin odpowiedzi 14 dni nie jest terminem na złożenie reklamacji.
 
 20. Dane po zakończeniu umowy
 
-Jeżeli właściwe prawo daje Ci prawo odzyskania nieosobowych treści dostarczonych lub utworzonych przez Ciebie, złóż wniosek przez ${legalVariables.terms.complaintEmail.pl}. Operator udostępnia właściwe treści bezpłatnie, bez przeszkód, w rozsądnym czasie i powszechnie używanym formacie do odczytu maszynowego, z uwzględnieniem wyjątków ustawowych.
+Jeżeli właściwe prawo daje Ci prawo odzyskania nieosobowych treści dostarczonych lub utworzonych przez Ciebie, złóż wniosek przez ${vars.terms.complaintEmail.pl}. Operator udostępnia właściwe treści bezpłatnie, bez przeszkód, w rozsądnym czasie i powszechnie używanym formacie do odczytu maszynowego, z uwzględnieniem wyjątków ustawowych.
 
 21. Pozasądowe rozstrzyganie sporów
 
-Stanowisko Operatora wobec udziału w konsumenckim ADR: ${legalVariables.terms.adrPosition.pl}. Właściwy podmiot lub punkt informacyjny: ${legalVariables.terms.adrEntity.pl}. Sekcja nie odsyła do zamkniętej unijnej platformy ODR i nie ogranicza prawa kontaktu z organem konsumenckim ani sądem.
+Stanowisko Operatora wobec udziału w konsumenckim ADR: ${vars.terms.adrPosition.pl}. Właściwy podmiot lub punkt informacyjny: ${vars.terms.adrEntity.pl}. Sekcja nie odsyła do zamkniętej unijnej platformy ODR i nie ogranicza prawa kontaktu z organem konsumenckim ani sądem.
 
 22. Operator i kontakt
 
-Operator: ${legalVariables.terms.operatorLegalName.pl}, ${legalVariables.terms.operatorBusinessForm.pl}. Adres: ${legalVariables.terms.operatorRegisteredAddress.pl}. E-mail: ${legalVariables.terms.operatorEmail.pl}. Telefon: ${legalVariables.terms.operatorPhone.pl}.
+Operator: ${vars.terms.operatorLegalName.pl}, ${vars.terms.operatorBusinessForm.pl}. Adres: ${vars.terms.operatorRegisteredAddress.pl}. E-mail: ${vars.terms.operatorEmail.pl}. Telefon: ${vars.terms.operatorPhone.pl}.
 
-Patternly jest oferowane na terytoriach: ${legalVariables.terms.distributionTerritories.pl}. Numer rejestrowy: ${legalVariables.terms.operatorRegistrationNumber.pl}. Identyfikator podatkowy: ${legalVariables.terms.operatorTaxIdentifier.pl}.`,
-});
+Patternly jest oferowane na terytoriach: ${vars.terms.distributionTerritories.pl}. Numer rejestrowy: ${vars.terms.operatorRegistrationNumber.pl}. Identyfikator podatkowy: ${vars.terms.operatorTaxIdentifier.pl}.`,
+  });
+}
+
+export const termsOfService = renderTermsOfService(legalVariables);

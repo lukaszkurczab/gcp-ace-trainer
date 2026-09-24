@@ -43,6 +43,11 @@ const exactHttpsUrl = (value: unknown, name: string, allowPath = false): string 
   return text;
 };
 
+/** Validates one public HTTPS link using the same URL rules as runtime configuration. */
+export function validatePublicHttpsUrl(value: unknown, name: string): string {
+  return exactHttpsUrl(value, name, true);
+}
+
 const hostname = (value: unknown, name: string): string => {
   if (typeof value !== "string" || value.trim() !== value || value.length === 0 || /[/:?#@]/u.test(value)) invalid(name);
   const text = value as string;

@@ -5,7 +5,7 @@ export type LegalLocale = "en" | "pl";
 
 export { localReportOutboxRetentionDays };
 
-type LegalVariables = typeof legalVariablesLocalFixture;
+export type LegalVariables = typeof legalVariablesLocalFixture;
 
 const isReleaseRuntime = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "release";
 
