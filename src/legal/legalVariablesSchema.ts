@@ -29,6 +29,7 @@ const localizedKeys = (keys: readonly string[]) => Object.fromEntries(keys.map((
 const expectedLegalVariables = {
   documentVersion: { en: "", pl: "" },
   premiumCheckoutEnabled: false,
+  publicLinks: { privacyUrl: "", termsUrl: "", supportUrl: "" },
   terms: localizedKeys(termsKeys),
   privacy: localizedKeys(privacyKeys),
 };
@@ -95,6 +96,17 @@ export function validateLegalVariables(
 
     if (path === "premiumCheckoutEnabled") {
       if (typeof candidate !== "boolean") issues.push({ path, message: "Expected a boolean." });
+      return;
+    }
+
+    if (path.startsWith("publicLinks.")) {
+      if (typeof candidate !== "string") {
+        issues.push({ path, message: "Expected a string." });
+      } else if (candidate.length === 0 || candidate.trim().length === 0 || candidate !== candidate.trim()) {
+        issues.push({ path, message: "Expected a non-empty string without leading or trailing whitespace." });
+      } else if (mode === "release" && placeholder.test(candidate)) {
+        issues.push({ path, message: "Unresolved legal placeholder." });
+      }
       return;
     }
 

@@ -5,6 +5,11 @@ export const localReportOutboxRetentionDays = 30 as const;
 export const legalVariablesLocalFixture = {
   documentVersion: { en: "2026-09-05", pl: "2026-09-05" },
   premiumCheckoutEnabled: false,
+  publicLinks: {
+    privacyUrl: "[TO BE COMPLETED: privacyUrl]",
+    termsUrl: "[TO BE COMPLETED: termsUrl]",
+    supportUrl: "[TO BE COMPLETED: supportUrl]",
+  },
   terms: {
     adrEntity: { en: "[TO BE COMPLETED: adrEntity]", pl: "[DO UZUPEŁNIENIA: adrEntity]" },
     adrPosition: { en: "[TO BE COMPLETED: adrPosition]", pl: "[DO UZUPEŁNIENIA: adrPosition]" },

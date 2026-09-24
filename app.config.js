@@ -77,9 +77,8 @@ function assertLocalAuthProfile(environment, mode) {
 }
 
 function readConfiguredPublicEnvironment(environment, mode) {
-  const encoded = environment[PUBLIC_ENVIRONMENT_KEY];
   if (mode === "smoke") {
-    return;
+    return undefined;
   }
   const value = required(environment, PUBLIC_ENVIRONMENT_KEY);
   let parsed;
@@ -92,6 +91,7 @@ function readConfiguredPublicEnvironment(environment, mode) {
   if (parsed?.environment !== expectedEnvironment) {
     throw new Error(`${PUBLIC_ENVIRONMENT_KEY}.environment must equal ${expectedEnvironment}.`);
   }
+  return parsed;
 }
 
 function nativeFirebaseFile(environment, key, mode) {
@@ -103,7 +103,7 @@ function nativeFirebaseFile(environment, key, mode) {
 
 function assertRuntimeEnvironment(environment, mode) {
   assertLocalAuthProfile(environment, mode);
-  readConfiguredPublicEnvironment(environment, mode);
+  const publicEnvironment = readConfiguredPublicEnvironment(environment, mode);
   const platform = environment.EAS_BUILD_PLATFORM;
   if (mode !== "smoke") {
     for (const key of FIREBASE_PUBLIC_KEYS) {
@@ -127,6 +127,7 @@ function assertRuntimeEnvironment(environment, mode) {
   if (mode !== "smoke" && ((platform !== "ios" && androidAppCheck === "debug") || (platform !== "android" && appleAppCheck === "debug"))) {
     throw new Error("Only smoke builds may use a debug App Check provider.");
   }
+  return publicEnvironment;
 }
 
 function validateReleaseLegalVariables(legalVariables) {
@@ -151,10 +152,26 @@ function readReleaseLegalVariables() {
   return parsed;
 }
 
+function validateReleasePublicLegalLinks(legalVariables, publicEnvironment) {
+  require("tsx/cjs");
+  const { parseConfiguredPublicEnvironment } = require("./src/infrastructure/clients/publicEnvironment.ts");
+  const configured = parseConfiguredPublicEnvironment(publicEnvironment);
+  const legalLinks = legalVariables?.publicLinks;
+  for (const field of ["privacyUrl", "termsUrl", "supportUrl"]) {
+    if (typeof legalLinks?.[field] !== "string" || legalLinks[field] !== configured[field]) {
+      throw new Error(`Release public legal link mismatch: ${field}.`);
+    }
+  }
+}
+
 function createExpoConfig(environment = process.env) {
   const runtimeMode = readRuntimeMode(environment);
-  assertRuntimeEnvironment(environment, runtimeMode);
-  if (runtimeMode === "release") validateReleaseLegalVariables(readReleaseLegalVariables());
+  const publicEnvironment = assertRuntimeEnvironment(environment, runtimeMode);
+  if (runtimeMode === "release") {
+    const legalVariables = readReleaseLegalVariables();
+    validateReleaseLegalVariables(legalVariables);
+    validateReleasePublicLegalLinks(legalVariables, publicEnvironment);
+  }
   return {
     expo: {
       name: "Patternly",
@@ -225,3 +242,4 @@ module.exports.FIREBASE_PUBLIC_KEYS = FIREBASE_PUBLIC_KEYS;
 module.exports.RUNTIME_MODES = RUNTIME_MODES;
 module.exports.LOCAL_E2E_KEYS = LOCAL_E2E_KEYS;
 module.exports.isLoopbackHttpOrigin = isLoopbackHttpOrigin;
+module.exports.validateReleasePublicLegalLinks = validateReleasePublicLegalLinks;

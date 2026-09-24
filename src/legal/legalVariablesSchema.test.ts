@@ -101,9 +101,13 @@ test("rejects empty, whitespace-only and padded localized values", () => {
 test("release mode rejects recognized placeholders and test mode allows them", () => {
   const issues = validateLegalVariables(legalVariables, "release");
   const checkedInReleaseIssues = validateLegalVariables(releaseLegalVariables, "release");
+  const publicLinkIssues = validateLegalVariables({ ...legalVariablesLocalFixture, publicLinks: { ...legalVariablesLocalFixture.publicLinks, privacyUrl: "[TO BE COMPLETED: privacyUrl]" } }, "release");
   assert.ok(issues.some(({ path }) => path === "terms.operatorLegalName.en"));
   assert.ok(issues.some(({ path }) => path === "privacy.controllerLegalName.pl"));
   assert.ok(checkedInReleaseIssues.some(({ path }) => path === "terms.operatorLegalName.en"));
+  assert.ok(checkedInReleaseIssues.some(({ path }) => path === "publicLinks.privacyUrl"));
+  assert.ok(publicLinkIssues.some(({ path }) => path === "publicLinks.privacyUrl"));
+  assert.deepEqual(validateLegalVariables(legalVariablesLocalFixture, "test"), []);
   assert.deepEqual(validateLegalVariables(legalVariables, "test"), []);
 });
 

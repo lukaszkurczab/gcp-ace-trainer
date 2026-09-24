@@ -3,7 +3,8 @@ import test from "node:test";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-const { createExpoConfig } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: { android: { googleServicesFile: string }; extra: { patternlyRuntime: string }; ios: { googleServicesFile: string }; plugins: unknown[] } } };
+const { createExpoConfig, validateReleasePublicLegalLinks } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: { android: { googleServicesFile: string }; extra: { patternlyRuntime: string }; ios: { googleServicesFile: string }; plugins: unknown[] } }; validateReleasePublicLegalLinks: (legalVariables: unknown, publicEnvironment: unknown) => void };
+const releaseLegalVariables = require("../config/public-legal.release.json");
 
 const base = {
   EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY: "key", EXPO_PUBLIC_PATTERNLY_FIREBASE_APP_ID: "1:1:android:test", EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_DOMAIN: "patternly-app-sandbox.firebaseapp.com", EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID: "patternly-app-sandbox",
@@ -38,6 +39,19 @@ test("sandbox and release reject mode/configuration mismatches", () => {
 test("release app config always rejects the checked-in public legal payload", () => {
   const releaseEnvironment = { ...base, PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("production"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" };
   assert.throws(() => createExpoConfig(releaseEnvironment), /Release legal variables are invalid:[\s\S]*terms\.operatorLegalName\.en: Unresolved legal placeholder/);
+});
+
+test("release public legal links use the configured public environment parser and match the legal record", () => {
+  const configured = JSON.parse(publicEnvironment("production"));
+  const legal = { ...releaseLegalVariables, publicLinks: { privacyUrl: configured.privacyUrl, termsUrl: configured.termsUrl, supportUrl: configured.supportUrl } };
+
+  assert.doesNotThrow(() => validateReleasePublicLegalLinks(legal, configured));
+  for (const field of ["privacyUrl", "termsUrl", "supportUrl"] as const) {
+    const mismatch = { ...legal, publicLinks: { ...legal.publicLinks, [field]: `https://different.patternly.test/${field}` } };
+    assert.throws(() => validateReleasePublicLegalLinks(mismatch, configured), new RegExp(`Release public legal link mismatch: ${field}\\.`));
+  }
+  assert.throws(() => validateReleasePublicLegalLinks(legal, { ...configured, privacyUrl: "http://production.patternly.test/privacy" }), /invalid_public_environment:privacyUrl/);
+  assert.throws(() => validateReleasePublicLegalLinks(legal, { ...configured, supportUrl: "not a url" }), /invalid_public_environment:supportUrl/);
 });
 
 test("smoke is explicit, locally bound, and permits debug App Check", () => {

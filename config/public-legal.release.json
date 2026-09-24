@@ -4,6 +4,11 @@
     "pl": "2026-09-05"
   },
   "premiumCheckoutEnabled": false,
+  "publicLinks": {
+    "privacyUrl": "[TO BE COMPLETED: privacyUrl]",
+    "termsUrl": "[TO BE COMPLETED: termsUrl]",
+    "supportUrl": "[TO BE COMPLETED: supportUrl]"
+  },
   "terms": {
     "adrEntity": {
       "en": "[TO BE COMPLETED: adrEntity]",
