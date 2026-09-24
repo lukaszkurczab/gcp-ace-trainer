@@ -33,6 +33,7 @@ Doprowadzić pełne przepływy produktu do potwierdzonego działania na symulato
 6. Zakończony task otwieramy ponownie tylko przy nowym dowodzie, regresji lub zmianie wymagań. Problem o niepotwierdzonej przyczynie dostaje ograniczoną diagnostykę, nie spekulacyjną przebudowę wspólnych komponentów.
 7. Brak zewnętrznego wejścia blokuje tylko krok, który rzeczywiście go potrzebuje. Codex przechodzi do pierwszego niezależnego, dostępnego taska z kolejki. Nie powtarza identycznie zablokowanej próby i nie wraca do PO po już udzieloną zgodę.
 8. Po zmianie SHA, artefaktu lub istotnej konfiguracji wyniki oceniamy według wpływu. Nie przenosimy PASS automatycznie, ale też nie uruchamiamy pełnego programu od początku bez uzasadnienia.
+9. Gdy decyzja rzeczywiście wymaga konsultacji z PO, pytanie zawiera dokładny opis problemu, realne warianty i ich skutki oraz konkretny przykład z życia użytkownika. W oczekiwaniu na odpowiedź Codex wykonuje niezależną pracę.
 
 ### 1.2 Status, dostępność i bramka to osobne informacje
 

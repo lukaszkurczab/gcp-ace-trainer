@@ -5,3 +5,4 @@
 - The validator assesses only that briefing: no repository or external inspection, searches, reads or execution. Report missing evidence as a briefing limitation.
 - Return separate 0–1 scores for consistency, simplicity, risk and maintainability; final score is their minimum. Include decisive reasons, material risks and approval or a concrete redesign.
 - A score below 0.8 rejects the approach. The primary agent supplies accurate evidence and resolves recommendations against the repository before proceeding.
+- When a decision genuinely requires the owner's input, ask with a precise description of the problem, the available choices and their consequences, and a concrete real-life use case that makes the trade-off clear. Continue independent work while awaiting the answer.
