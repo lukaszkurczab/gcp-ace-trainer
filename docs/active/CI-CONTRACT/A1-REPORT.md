@@ -2,7 +2,7 @@
 
 **Data:** 24.09.2026
 
-**Status:** lokalny slice gotowy do niezależnego QA i push; cały `CI-CONTRACT` pozostaje `partial`.
+**Status:** `done` dla A1 po lokalnej weryfikacji, QA i hosted PASS naprawionego kroku; cały `CI-CONTRACT` pozostaje `partial`.
 
 **Walidacja podejścia:** `gpt-6-luna` high, zgodność 0,96; prostota 0,94; ryzyko 0,90; utrzymywalność 0,93; minimum 0,90. Implementacja: `gpt-6-luna` medium.
 
@@ -16,7 +16,7 @@ App QA run [35970716778](https://github.com/lukaszkurczab/gcp-ace-trainer/action
 - `scripts/buildRuntimeConfiguration.test.ts` PASS 8/8, w tym brak trybu i niezgodny tryb jako FAIL.
 - Clean `git archive HEAD` + `expo prebuild --no-install --clean` z jawnym profilem smoke i dotychczasowymi kontrolami native: PASS lokalnie.
 - `git diff --check`: PASS.
-- Niezależny QA (`gpt-6-luna` high): PASS WITH GAPS — zakres smoke pozostaje w jednym kroku, native assertions i release config bez zmian. Lokalny pełny prebuild wykonano przed korektą portu Auth z `9099` na kanoniczne `19099`; ponowna walidacja konfiguracji z `19099` oraz testy runtime 8/8 przeszły. Hosted CI: do sprawdzenia po push.
+- Niezależny QA (`gpt-6-luna` high): PASS WITH GAPS — zakres smoke pozostaje w jednym kroku, native assertions i release config bez zmian. Lokalny pełny prebuild wykonano przed korektą portu Auth z `9099` na kanoniczne `19099`; ponowna walidacja konfiguracji z `19099` oraz testy runtime 8/8 przeszły. Hosted CI: w runie [35972213538](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/35972213538) naprawiony krok clean prebuild ma **PASS**. Cały QA run ma **FAIL** z powodu osobnego testu historycznego content SHA/current builder; A1 nie rozstrzyga tego błędu.
 
 ## Granice i następny task
 
