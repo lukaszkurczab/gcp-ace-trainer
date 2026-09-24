@@ -130,6 +130,22 @@ function createCleanApplicationRoot() {
   return applicationRoot;
 }
 
+function releaseLegalFixture() {
+  const legal = JSON.parse(readFileSync(join(root, "config", "public-legal.release.json"), "utf8"));
+  const resolvePlaceholders = (value) => {
+    if (Array.isArray(value)) return value.map(resolvePlaceholders);
+    if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, resolvePlaceholders(child)]));
+    return typeof value === "string" && /^\[(?:TO BE COMPLETED|DO UZUPEŁNIENIA):/.test(value) ? "Resolved legal value" : value;
+  };
+  return resolvePlaceholders(legal);
+}
+
+function writeApplicationLegal(applicationRoot, contents) {
+  const configDirectory = join(applicationRoot, "config");
+  mkdirSync(configDirectory, { recursive: true });
+  writeFileSync(join(configDirectory, "public-legal.release.json"), contents);
+}
+
 test("launch readiness report is deterministic and exposes the unresolved release blockers", () => {
   const contentRoot = createAdmittedContentRoot();
   try {
@@ -140,11 +156,18 @@ test("launch readiness report is deterministic and exposes the unresolved releas
     const report = JSON.parse(first.output);
     assert.equal(report.schemaVersion, "patternly-launch-readiness-v1");
     assert.equal(report.status, "not_ready");
+    assert.equal(report.publicLegalVariables.status, "incomplete");
+    assert.equal(report.publicLegalVariables.path, "config/public-legal.release.json");
+    assert.deepEqual(report.publicLegalVariables.version, { en: "2026-09-05", pl: "2026-09-05" });
+    assert.match(report.publicLegalVariables.fingerprint, /^[a-f0-9]{64}$/u);
+    assert.ok(report.publicLegalVariables.fieldPaths.includes("terms.adrEntity.en"));
+    assert.ok(report.blockers.some((blocker) => blocker.kind === "public_legal_variables_incomplete"));
+    assert.equal(JSON.stringify(report.publicLegalVariables).includes("TO BE COMPLETED"), false);
     assert.equal(report.launchTrackIds.length, 9);
     assert.ok(["clean", "dirty"].includes(report.applicationRepository.status));
     assert.match(report.applicationRepository.headCommit, /^[a-f0-9]{40}$/u);
     assert.match(report.contentReadiness.headCommit, /^[a-f0-9]{40}$/u);
-    assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing"].includes(blocker.kind)), true);
+    assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing", "public_legal_variables_incomplete"].includes(blocker.kind)), true);
     assert.deepEqual(
       report.blockers.filter((blocker) => blocker.kind === "application_worktree_dirty").map((blocker) => blocker.kind),
       report.applicationRepository.status === "dirty" ? ["application_worktree_dirty"] : [],
@@ -164,6 +187,54 @@ test("launch readiness report is deterministic and exposes the unresolved releas
     assert.equal(first.output.includes(root), false);
   } finally {
     rmSync(contentRoot, { recursive: true, force: true });
+  }
+});
+
+test("release readiness reports missing, malformed, and complete public legal configuration safely", () => {
+  const applicationRoot = createCleanApplicationRoot();
+  try {
+    let report = JSON.parse(runWithApplicationRoot(applicationRoot).output);
+    assert.equal(report.publicLegalVariables.status, "missing");
+    assert.deepEqual(report.blockers.find((blocker) => blocker.kind === "public_legal_variables_missing"), {
+      kind: "public_legal_variables_missing",
+      path: "config/public-legal.release.json",
+    });
+
+    const malformedSecret = "private-secret-marker";
+    writeApplicationLegal(applicationRoot, `{ "secret": "${malformedSecret}" `);
+    report = JSON.parse(runWithApplicationRoot(applicationRoot).output);
+    assert.equal(report.publicLegalVariables.status, "malformed");
+    assert.equal(report.blockers.some((blocker) => blocker.kind === "public_legal_variables_malformed"), true);
+    assert.equal(JSON.stringify(report).includes(malformedSecret), false);
+
+    const invalidVersionSecret = "private-version-secret";
+    const invalidVersion = releaseLegalFixture();
+    invalidVersion.documentVersion = { en: invalidVersionSecret, pl: "2026-09-05", unexpected: "invalid-shape" };
+    writeApplicationLegal(applicationRoot, JSON.stringify(invalidVersion));
+    report = JSON.parse(runWithApplicationRoot(applicationRoot).output);
+    assert.equal(report.publicLegalVariables.status, "invalid");
+    assert.equal(report.publicLegalVariables.version, null);
+    assert.equal(JSON.stringify(report).includes(invalidVersionSecret), false);
+
+    const mixedIssueSecret = "private-invalid-field-secret";
+    const mixedIssues = releaseLegalFixture();
+    mixedIssues.premiumCheckoutEnabled = mixedIssueSecret;
+    mixedIssues.terms.adrEntity.en = "[TO BE COMPLETED: adrEntity]";
+    writeApplicationLegal(applicationRoot, JSON.stringify(mixedIssues));
+    report = JSON.parse(runWithApplicationRoot(applicationRoot).output);
+    assert.equal(report.publicLegalVariables.status, "invalid");
+    assert.ok(report.publicLegalVariables.fieldPaths.includes("premiumCheckoutEnabled"));
+    assert.ok(report.publicLegalVariables.fieldPaths.includes("terms.adrEntity.en"));
+    assert.equal(JSON.stringify(report).includes(mixedIssueSecret), false);
+
+    writeApplicationLegal(applicationRoot, JSON.stringify(releaseLegalFixture()));
+    report = JSON.parse(runWithApplicationRoot(applicationRoot).output);
+    assert.equal(report.publicLegalVariables.status, "valid");
+    assert.deepEqual(report.publicLegalVariables.fieldPaths, []);
+    assert.match(report.publicLegalVariables.fingerprint, /^[a-f0-9]{64}$/u);
+    assert.equal(report.blockers.some((blocker) => blocker.kind.startsWith("public_legal_variables_")), false);
+  } finally {
+    rmSync(applicationRoot, { recursive: true, force: true });
   }
 });
 

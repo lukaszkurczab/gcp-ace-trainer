@@ -3,7 +3,12 @@ import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import "tsx/cjs";
+import { createRequire } from "node:module";
 import { verifyReleaseManifest } from "./releaseManifest.mjs";
+
+const require = createRequire(import.meta.url);
+const { validateLegalVariables } = require("../src/legal/legalVariablesSchema.ts");
 
 const root = process.cwd();
 let applicationRootInput = process.env.PATTERNLY_APPLICATION_ROOT ?? root;
@@ -62,6 +67,7 @@ const applicationRoot = realpathSync(resolve(applicationRootInput));
 const contentRoot = realpathSync(resolve(contentRootInput));
 
 const applicationReleaseLockRelativePath = "integration/contracts/content-release/release.lock.json";
+const publicLegalRelativePath = "config/public-legal.release.json";
 const contentReadinessRelativePath = "evidence/readiness/candidate-readiness.json";
 const releaseEvidenceRelativeDirectory = "evidence/release";
 
@@ -219,6 +225,47 @@ function inspectReleaseLock() {
   };
 }
 
+function inspectPublicLegalVariables() {
+  const path = resolve(applicationRoot, publicLegalRelativePath);
+  let encoded;
+  try {
+    encoded = readFileSync(path, "utf8");
+  } catch (error) {
+    return {
+      status: error?.code === "ENOENT" ? "missing" : "unavailable",
+      path: publicLegalRelativePath,
+      version: null,
+      fingerprint: null,
+      fieldPaths: [],
+    };
+  }
+
+  let value;
+  try {
+    value = JSON.parse(encoded);
+  } catch {
+    return { status: "malformed", path: publicLegalRelativePath, version: null, fingerprint: null, fieldPaths: [] };
+  }
+
+  const issues = validateLegalVariables(value, "release");
+  const fieldPaths = uniqueSorted(issues.map(({ path: fieldPath }) => fieldPath));
+  const hasUnresolvedPlaceholders = issues.some(({ message }) => message === "Unresolved legal placeholder.");
+  const hasOtherIssues = issues.some(({ message }) => message !== "Unresolved legal placeholder.");
+  const documentVersion = value?.documentVersion;
+  const versionIsDatePair = documentVersion
+    && typeof documentVersion === "object"
+    && !Array.isArray(documentVersion)
+    && hasExactKeys(documentVersion, ["en", "pl"])
+    && [documentVersion.en, documentVersion.pl].every((version) => typeof version === "string" && /^\d{4}-\d{2}-\d{2}$/u.test(version));
+  return {
+    status: hasOtherIssues ? "invalid" : hasUnresolvedPlaceholders ? "incomplete" : "valid",
+    path: publicLegalRelativePath,
+    version: versionIsDatePair ? { en: documentVersion.en, pl: documentVersion.pl } : null,
+    fingerprint: canonicalHash(value),
+    fieldPaths,
+  };
+}
+
 function externalEvidenceStatus(id, expectedApplicationCommit) {
   const path = resolve(evidenceRoot, `${id}.json`);
   const portablePath = `${releaseEvidenceRelativeDirectory}/${id}.json`;
@@ -254,6 +301,17 @@ function externalEvidenceStatus(id, expectedApplicationCommit) {
 const blockers = [];
 const applicationRepository = repositoryStatus(applicationRoot);
 const applicationCommit = applicationHeadCommit();
+const publicLegalVariables = inspectPublicLegalVariables();
+if (publicLegalVariables.status === "missing") blockers.push({ kind: "public_legal_variables_missing", path: publicLegalVariables.path });
+else if (publicLegalVariables.status === "malformed") blockers.push({ kind: "public_legal_variables_malformed", path: publicLegalVariables.path });
+else if (publicLegalVariables.status === "unavailable") blockers.push({ kind: "public_legal_variables_unavailable", path: publicLegalVariables.path });
+else if (publicLegalVariables.status === "incomplete" || publicLegalVariables.status === "invalid") {
+  blockers.push({
+    kind: publicLegalVariables.status === "incomplete" ? "public_legal_variables_incomplete" : "public_legal_variables_invalid",
+    path: publicLegalVariables.path,
+    fieldPaths: publicLegalVariables.fieldPaths,
+  });
+}
 if (applicationRepository.status === "unavailable") blockers.push({ kind: "application_repository_unavailable", error: applicationRepository.error });
 if (applicationRepository.status === "dirty") blockers.push({ kind: "application_worktree_dirty", changedPathCount: applicationRepository.changedPathCount });
 const contentReleaseLock = inspectReleaseLock();
@@ -348,6 +406,7 @@ const report = {
   status: blockers.length === 0 ? "ready" : "not_ready",
   launchTrackIds,
   applicationRepository: { repositoryRole: "application", path: ".", headCommit: applicationCommit, ...applicationRepository },
+  publicLegalVariables,
   contentReadiness: readiness ? { repositoryRole: "content", path: contentReadinessRelativePath, candidateId: readiness.candidateId, trackIds: readiness.trackIds, headCommit: contentRepository.headCommit, repository: contentRepository.status } : null,
   contentReleaseLock,
   applicationReleaseLockTrackIds: lockedTrackIds,
