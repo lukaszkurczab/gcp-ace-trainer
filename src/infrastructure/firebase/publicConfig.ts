@@ -13,16 +13,24 @@ export type FirebaseClientConfiguration = Readonly<{
   appId: string;
   authDomain: string;
   projectId: string;
-  googleAndroidClientId: string;
-  googleIosClientId: string;
-  googleWebClientId: string;
+  googleAndroidClientId?: string;
+  googleIosClientId?: string;
+  googleWebClientId?: string;
 }>;
 
 export type FirebaseClientConfigurationResult =
   | Readonly<{ kind: "configured"; value: FirebaseClientConfiguration }>
   | Readonly<{ kind: "unavailable"; reason: "missing_configuration" | "invalid_configuration" }>;
 
+export function getFirebaseGoogleClientId(configuration: FirebaseClientConfiguration, platform: string): string | undefined {
+  if (platform === "android") return configuration.googleAndroidClientId;
+  if (platform === "ios") return configuration.googleIosClientId;
+  if (platform === "web") return configuration.googleWebClientId;
+  return undefined;
+}
+
 const isNonEmptyString = (value: unknown): value is string => typeof value === "string" && value.length > 0 && value.trim() === value;
+const isGoogleClientId = (value: unknown): value is string => isNonEmptyString(value) && /^[A-Za-z0-9-]+\.apps\.googleusercontent\.com$/u.test(value);
 const isHostname = (value: unknown): value is string => {
   if (!isNonEmptyString(value) || /[/:?#@]/u.test(value)) return false;
   try {
@@ -38,7 +46,7 @@ export function parseFirebaseClientConfiguration(input: unknown): FirebaseClient
     return Object.freeze({ kind: "unavailable", reason: "invalid_configuration" });
   }
   const source = input as Record<string, unknown>;
-  const required = ["apiKey", "appId", "authDomain", "projectId", "googleAndroidClientId", "googleIosClientId", "googleWebClientId"] as const;
+  const required = ["apiKey", "appId", "authDomain", "projectId"] as const;
   if (required.some((key) => !isNonEmptyString(source[key]))) {
     return Object.freeze({ kind: "unavailable", reason: "missing_configuration" });
   }
@@ -51,10 +59,10 @@ export function parseFirebaseClientConfiguration(input: unknown): FirebaseClient
       apiKey: source.apiKey as string,
       appId: source.appId as string,
       authDomain: source.authDomain as string,
-      googleAndroidClientId: source.googleAndroidClientId as string,
-      googleIosClientId: source.googleIosClientId as string,
-      googleWebClientId: source.googleWebClientId as string,
       projectId: source.projectId as string,
+      ...(isGoogleClientId(source.googleAndroidClientId) ? { googleAndroidClientId: source.googleAndroidClientId } : {}),
+      ...(isGoogleClientId(source.googleIosClientId) ? { googleIosClientId: source.googleIosClientId } : {}),
+      ...(isGoogleClientId(source.googleWebClientId) ? { googleWebClientId: source.googleWebClientId } : {}),
     }),
   });
 }

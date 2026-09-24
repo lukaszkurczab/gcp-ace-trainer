@@ -6,8 +6,8 @@ import { AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, clas
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
-import { configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
-import { parseFirebaseClientConfiguration } from "../../infrastructure/firebase/publicConfig";
+import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, createPatternlyNativeAppCheckProviderConfiguration, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
+import { getFirebaseGoogleClientId, parseFirebaseClientConfiguration } from "../../infrastructure/firebase/publicConfig";
 import { AUTH_USER_STORAGE_KEY, createSecureAuthPersistence, redactPersistedAuthUser } from "../../infrastructure/firebase/secureAuthPersistence";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { requiresVerifiedPasswordIdentity } from "../../infrastructure/runtime/runtimeMode";
@@ -45,6 +45,58 @@ test("public environment and Firebase client configuration fail closed", () => {
   assert.equal(invalidFirebase.kind, "unavailable");
   if (invalidFirebase.kind === "unavailable") assert.equal(invalidFirebase.reason, "invalid_configuration");
   assert.equal(parseFirebaseClientConfiguration(firebaseConfiguration).kind, "configured");
+});
+
+test("Firebase account configuration requires core fields and accepts only valid optional Google IDs", () => {
+  const { googleAndroidClientId: _android, googleIosClientId: _ios, googleWebClientId: _web, ...coreConfiguration } = firebaseConfiguration;
+  const coreOnly = parseFirebaseClientConfiguration(coreConfiguration);
+  assert.equal(coreOnly.kind, "configured");
+  if (coreOnly.kind === "configured") {
+    assert.equal(getFirebaseGoogleClientId(coreOnly.value, "ios"), undefined);
+    assert.equal(getFirebaseGoogleClientId(coreOnly.value, "android"), undefined);
+  }
+
+  const iosOnly = parseFirebaseClientConfiguration({ ...coreConfiguration, googleIosClientId: firebaseConfiguration.googleIosClientId });
+  assert.equal(iosOnly.kind, "configured");
+  if (iosOnly.kind === "configured") {
+    assert.equal(getFirebaseGoogleClientId(iosOnly.value, "ios"), firebaseConfiguration.googleIosClientId);
+    assert.equal(getFirebaseGoogleClientId(iosOnly.value, "android"), undefined);
+  }
+  const androidOnly = parseFirebaseClientConfiguration({ ...coreConfiguration, googleAndroidClientId: firebaseConfiguration.googleAndroidClientId });
+  assert.equal(androidOnly.kind, "configured");
+  if (androidOnly.kind === "configured") {
+    assert.equal(getFirebaseGoogleClientId(androidOnly.value, "android"), firebaseConfiguration.googleAndroidClientId);
+    assert.equal(getFirebaseGoogleClientId(androidOnly.value, "ios"), undefined);
+  }
+  const invalidActiveIosId = parseFirebaseClientConfiguration({ ...coreConfiguration, googleIosClientId: "not-a-google-client-id" });
+  assert.equal(invalidActiveIosId.kind, "configured");
+  if (invalidActiveIosId.kind === "configured") assert.equal(getFirebaseGoogleClientId(invalidActiveIosId.value, "ios"), undefined);
+
+  const validIosWithInvalidOtherIds = parseFirebaseClientConfiguration({
+    ...coreConfiguration,
+    googleAndroidClientId: "malformed-inactive-android-id",
+    googleIosClientId: firebaseConfiguration.googleIosClientId,
+    googleWebClientId: "malformed-web-id",
+  });
+  assert.equal(validIosWithInvalidOtherIds.kind, "configured");
+  if (validIosWithInvalidOtherIds.kind === "configured") {
+    assert.equal(getFirebaseGoogleClientId(validIosWithInvalidOtherIds.value, "ios"), firebaseConfiguration.googleIosClientId);
+    assert.equal(getFirebaseGoogleClientId(validIosWithInvalidOtherIds.value, "android"), undefined);
+    assert.equal(getFirebaseGoogleClientId(validIosWithInvalidOtherIds.value, "web"), undefined);
+  }
+});
+
+test("native App Check composes either provider, both providers, or an explicit unavailable state", async () => {
+  assert.deepEqual(createPatternlyNativeAppCheckProviderConfiguration({ appleProvider: "deviceCheck" }), { apple: { provider: "deviceCheck" } });
+  assert.deepEqual(createPatternlyNativeAppCheckProviderConfiguration({ androidProvider: "playIntegrity" }), { android: { provider: "playIntegrity" } });
+  assert.deepEqual(createPatternlyNativeAppCheckProviderConfiguration({ androidProvider: "debug", appleProvider: "appAttest" }), {
+    android: { provider: "debug" },
+    apple: { provider: "appAttest" },
+  });
+  assert.equal(createPatternlyNativeAppCheckProviderConfiguration({}), null);
+  configurePatternlyAppCheckTokenProvider(async () => "stale-token");
+  assert.equal(await composePatternlyNativeAppCheck({}), "unavailable");
+  assert.equal(await getPatternlyAppCheckToken(), null);
 });
 
 test("only the explicit local smoke runtime finalizes every password-identity command without verification side effects", () => {
@@ -474,6 +526,7 @@ test("both recovery-code surfaces warn before copying through the guarded clipbo
 
 test("unconfigured account entry never composes Google OAuth without typed provider configuration", () => {
   const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  const securityScreen = readFileSync("src/features/account/AccountSecurityScreen.tsx", "utf8");
   const providerStart = screen.indexOf("function GoogleProviderButton");
   const providerEnd = screen.indexOf("function CredentialsForm", providerStart);
 
@@ -482,7 +535,8 @@ test("unconfigured account entry never composes Google OAuth without typed provi
   const provider = screen.slice(providerStart, providerEnd);
 
   assert.doesNotMatch(accountEntry, /Google\.useIdTokenAuthRequest/);
-  assert.match(accountEntry, /firebaseConfig\.kind === "configured" \? \([\s\S]*?<GoogleProviderButton[\s\S]*?configuration=\{firebaseConfig\.value\}/);
+  assert.match(accountEntry, /firebaseConfig\.kind === "configured" && getFirebaseGoogleClientId\(firebaseConfig\.value, Platform\.OS\) \? \([\s\S]*?<GoogleProviderButton[\s\S]*?configuration=\{firebaseConfig\.value\}/);
+  assert.match(securityScreen, /usesGoogle && configuration\.kind === "configured" && getFirebaseGoogleClientId\(configuration\.value, Platform\.OS\)[\s\S]*?<GoogleVerification/u);
   assert.match(provider, /configuration: FirebaseClientConfiguration/);
   assert.match(provider, /Google\.useIdTokenAuthRequest\([\s\S]*?androidClientId: configuration\.googleAndroidClientId[\s\S]*?iosClientId: configuration\.googleIosClientId[\s\S]*?webClientId: configuration\.googleWebClientId/);
   assert.match(provider, /googleResponse\.type !== "success"[\s\S]*?googleResponse\.type === "error"/);

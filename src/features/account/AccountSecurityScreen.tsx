@@ -9,7 +9,7 @@ import { Button, HoldToConfirmButton, InfoBlock, Screen, ScreenHeader } from "..
 import { usePatternlyAccount, type AccountCommandResult } from "../../application/account/AccountSessionProvider";
 import { createRefreshHoldLifecycle, DELETION_AUTHORIZATION_TTL_MS, type RefreshHoldLifecycle } from "../../application/account/accountCommandGuards";
 import type { FirebaseAuthCredentials } from "../../infrastructure/firebase/firebaseAuthClient";
-import { readFirebaseClientConfiguration, type FirebaseClientConfiguration } from "../../infrastructure/firebase/publicConfig";
+import { getFirebaseGoogleClientId, readFirebaseClientConfiguration, type FirebaseClientConfiguration } from "../../infrastructure/firebase/publicConfig";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation/types";
 import { useThemedStyles } from "../../preferences";
@@ -184,7 +184,7 @@ function SecurityForm({ route, navigation }: Props) {
               <Button disabled={busy} onPress={() => { void recoveryCodeClipboard.copy(codes).then(() => { if (focused.current) setSuccess("codesCopied"); }).catch(() => { if (focused.current) setFailure("remoteFailure"); }); }} variant="secondary">{ta("copyRecoveryCodes")}</Button>
             </View> : <>
               {usesPassword && !prepared ? field(t(mode === "delete" ? "password" : "currentPassword"), password, setPassword, "security-password", true) : null}
-              {!prepared ? usesGoogle && configuration.kind === "configured" ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" || mode === "export" || mode === "privacy" ? "verifyIdentity" : mode === "recovery" ? "generateCodes" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} /> : null}
+              {!prepared ? usesGoogle && configuration.kind === "configured" && getFirebaseGoogleClientId(configuration.value, Platform.OS) ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" || mode === "export" || mode === "privacy" ? "verifyIdentity" : mode === "recovery" ? "generateCodes" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} /> : null}
               {mode === "delete" && prepared ? <HoldToConfirmButton accessibilityLabel={t("holdDelete")} disabled={blocked} hint={t("holdDeleteHint")} loading={busy} onConfirm={() => { setPrepared(false); void run(() => account.deleteAccount(), () => {}); }} testID="security-delete-hold">{t("holdDelete")}</HoldToConfirmButton> : null}
             </>}
           </>}

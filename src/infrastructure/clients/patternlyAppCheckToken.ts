@@ -1,9 +1,16 @@
 export type PatternlyAppCheckTokenProvider = () => Promise<string | null>;
 
 export type PatternlyNativeAppCheckConfiguration = Readonly<{
-  androidProvider: "debug" | "playIntegrity";
+  androidProvider?: "debug" | "playIntegrity";
   appleProvider?: "appAttest" | "appAttestWithDeviceCheckFallback" | "debug" | "deviceCheck";
 }>;
+
+export function createPatternlyNativeAppCheckProviderConfiguration(configuration: PatternlyNativeAppCheckConfiguration): Readonly<Record<string, unknown>> | null {
+  const nativeConfiguration: Record<string, unknown> = {};
+  if (configuration.androidProvider) nativeConfiguration.android = { provider: configuration.androidProvider };
+  if (configuration.appleProvider) nativeConfiguration.apple = { provider: configuration.appleProvider };
+  return Object.keys(nativeConfiguration).length > 0 ? Object.freeze(nativeConfiguration) : null;
+}
 
 let provider: PatternlyAppCheckTokenProvider | null = null;
 
@@ -18,13 +25,14 @@ export function configurePatternlyAppCheckTokenProvider(next: PatternlyAppCheckT
  * unavailable state without fabricating a token.
  */
 export async function composePatternlyNativeAppCheck(configuration: PatternlyNativeAppCheckConfiguration): Promise<"available" | "unavailable"> {
+  const nativeConfiguration = createPatternlyNativeAppCheckProviderConfiguration(configuration);
+  if (!nativeConfiguration) {
+    configurePatternlyAppCheckTokenProvider(null);
+    return "unavailable";
+  }
   try {
     const module = require("@react-native-firebase/app-check") as NativeAppCheckModule;
     const nativeProvider = new module.ReactNativeFirebaseAppCheckProvider();
-    const nativeConfiguration: Record<string, unknown> = {
-      android: { provider: configuration.androidProvider },
-    };
-    if (configuration.appleProvider) nativeConfiguration.apple = { provider: configuration.appleProvider };
     nativeProvider.configure(nativeConfiguration);
     const appCheck = module.initializeAppCheck(undefined, { provider: nativeProvider, isTokenAutoRefreshEnabled: true });
     configurePatternlyAppCheckTokenProvider(async () => {

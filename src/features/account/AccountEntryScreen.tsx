@@ -43,6 +43,7 @@ import {
 import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
 import type { AccountDataSession } from "../../application/account/accountDataService";
 import {
+  getFirebaseGoogleClientId,
   readFirebaseClientConfiguration,
   type FirebaseClientConfiguration,
 } from "../../infrastructure/firebase/publicConfig";
@@ -618,7 +619,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
               text={text.continueWithApple}
             />
           ) : null}
-          {firebaseConfig.kind === "configured" ? (
+          {firebaseConfig.kind === "configured" && getFirebaseGoogleClientId(firebaseConfig.value, Platform.OS) ? (
             <GoogleProviderButton
               accountRef={accountRef}
               mode="signIn"
@@ -741,7 +742,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             text={text.continueWithApple}
           />
         ) : null}
-        {firebaseConfig.kind === "configured" ? (
+        {firebaseConfig.kind === "configured" && getFirebaseGoogleClientId(firebaseConfig.value, Platform.OS) ? (
           <GoogleProviderButton
             acceptanceConfirmed={acceptedTerms}
             accountRef={accountRef}

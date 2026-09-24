@@ -745,14 +745,16 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       // A rejected local configuration must not silently contact a real provider.
       configurePatternlyAppCheckTokenProvider(localAppCheckToken ? async () => localAppCheckToken : null);
       setAppCheckReady(localAppCheckToken !== null);
-    } else if (androidProvider === "debug" || androidProvider === "playIntegrity") {
-      if (appleProvider === "debug" || appleProvider === "deviceCheck" || appleProvider === "appAttest" || appleProvider === "appAttestWithDeviceCheckFallback") {
-        void composePatternlyNativeAppCheck({ androidProvider, appleProvider }).then((result) => { if (live && result === "available") setAppCheckReady(true); });
-      } else {
-        void composePatternlyNativeAppCheck({ androidProvider }).then((result) => { if (live && result === "available") setAppCheckReady(true); });
-      }
     } else {
-      configurePatternlyAppCheckTokenProvider(null);
+      const configuration = {
+        ...(androidProvider === "debug" || androidProvider === "playIntegrity" ? { androidProvider } : {}),
+        ...(appleProvider === "debug" || appleProvider === "deviceCheck" || appleProvider === "appAttest" || appleProvider === "appAttestWithDeviceCheckFallback" ? { appleProvider } : {}),
+      };
+      if (Object.keys(configuration).length > 0) {
+        void composePatternlyNativeAppCheck(configuration).then((result) => { if (live && result === "available") setAppCheckReady(true); });
+      } else {
+        configurePatternlyAppCheckTokenProvider(null);
+      }
     }
     try {
       const authEmulatorOrigin = readDevelopmentFirebaseAuthEmulatorOrigin();
