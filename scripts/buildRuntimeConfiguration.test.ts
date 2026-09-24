@@ -95,3 +95,76 @@ test("sandbox uses the one tracked native Firebase registration while release re
     /requires GOOGLE_SERVICES_JSON/,
   );
 });
+
+test("explicit iOS sandbox and release require iOS configuration and ignore Android-only configuration", () => {
+  for (const mode of ["sandbox", "release"] as const) {
+    const environment = { ...base, PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment(mode === "release" ? "production" : "sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck", EAS_BUILD_PLATFORM: "ios" };
+    delete (environment as Record<string, string | undefined>).EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID;
+    delete (environment as Record<string, string | undefined>).EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER;
+    if (mode === "release") delete (environment as Record<string, string | undefined>).GOOGLE_SERVICES_JSON;
+    const config = createExpoConfig(environment);
+    assert.equal(config.expo.extra.patternlyRuntime, mode);
+    if (mode === "release") assert.equal("googleServicesFile" in config.expo.android, false);
+    for (const [key, pattern] of [
+      ["EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID", /requires EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID/],
+      ["EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER", /Apple release App Check provider/],
+      ...(mode === "release" ? [["GOOGLE_SERVICE_INFO_PLIST", /requires GOOGLE_SERVICE_INFO_PLIST/] as const] : []),
+    ] as const) {
+      const missing = { ...environment } as Record<string, string>;
+      delete missing[key];
+      assert.throws(() => createExpoConfig(missing), pattern);
+    }
+    const missingRevenueCat = { ...environment, EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "" };
+    assert.throws(() => createExpoConfig(missingRevenueCat), /requires EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY/);
+  }
+});
+
+test("explicit Android sandbox and release require Android configuration and ignore iOS-only configuration", () => {
+  for (const mode of ["sandbox", "release"] as const) {
+    const environment = { ...base, PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment(mode === "release" ? "production" : "sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EAS_BUILD_PLATFORM: "android" };
+    delete (environment as Record<string, string | undefined>).EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID;
+    delete (environment as Record<string, string | undefined>).EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER;
+    if (mode === "release") delete (environment as Record<string, string | undefined>).GOOGLE_SERVICE_INFO_PLIST;
+    const config = createExpoConfig(environment);
+    assert.equal(config.expo.extra.patternlyRuntime, mode);
+    if (mode === "release") assert.equal("googleServicesFile" in config.expo.ios, false);
+    assert.equal(createExpoConfig({ ...environment, EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "" }).expo.extra.patternlyRuntime, mode);
+    for (const [key, pattern] of [
+      ["EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID", /requires EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID/],
+      ["EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER", /APPCHECK_ANDROID_PROVIDER=playIntegrity/],
+      ...(mode === "release" ? [["GOOGLE_SERVICES_JSON", /requires GOOGLE_SERVICES_JSON/] as const] : []),
+    ] as const) {
+      const missing = { ...environment } as Record<string, string>;
+      delete missing[key];
+      assert.throws(() => createExpoConfig(missing), pattern);
+    }
+  }
+});
+
+test("without an explicit native target, sandbox and release require both platform configurations", () => {
+  for (const mode of ["sandbox", "release"] as const) {
+    const environment = { ...base, PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: mode, EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment(mode === "release" ? "production" : "sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" };
+    for (const [key, pattern] of [
+      ["EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID", /requires EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID/],
+      ["EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID", /requires EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID/],
+      ["EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER", /APPCHECK_ANDROID_PROVIDER=playIntegrity/],
+      ["EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER", /Apple release App Check provider/],
+      ...(mode === "release" ? [
+        ["GOOGLE_SERVICES_JSON", /requires GOOGLE_SERVICES_JSON/],
+        ["GOOGLE_SERVICE_INFO_PLIST", /requires GOOGLE_SERVICE_INFO_PLIST/],
+      ] as const : []),
+    ] as const) {
+      const missing = { ...environment } as Record<string, string>;
+      delete missing[key];
+      assert.throws(() => createExpoConfig(missing), pattern, `${mode} without target must require ${key}`);
+    }
+  }
+});
+
+test("explicit iOS and Android builds always require shared Firebase public configuration", () => {
+  for (const platform of ["ios", "android"] as const) {
+    const environment = { ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck", EAS_BUILD_PLATFORM: platform };
+    const missing = { ...environment, EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY: "" };
+    assert.throws(() => createExpoConfig(missing), /requires EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY/, `${platform} must require the shared Firebase API key`);
+  }
+});

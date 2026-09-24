@@ -14,6 +14,10 @@ const FIREBASE_PUBLIC_KEYS = Object.freeze([
   "EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID",
   "EXPO_PUBLIC_PATTERNLY_GOOGLE_WEB_CLIENT_ID",
 ]);
+const GOOGLE_CLIENT_ID_KEYS = Object.freeze({
+  android: "EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID",
+  ios: "EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID",
+});
 
 function required(environment, key) {
   const value = environment[key];
@@ -99,22 +103,27 @@ function nativeFirebaseFile(environment, key, mode) {
 function assertRuntimeEnvironment(environment, mode) {
   assertLocalAuthProfile(environment, mode);
   readConfiguredPublicEnvironment(environment, mode);
+  const platform = environment.EAS_BUILD_PLATFORM;
   if (mode !== "smoke") {
-    for (const key of FIREBASE_PUBLIC_KEYS) required(environment, key);
-    if (environment.EAS_BUILD_PLATFORM !== "android") required(environment, REVENUECAT_IOS_API_KEY);
+    for (const key of FIREBASE_PUBLIC_KEYS) {
+      if (platform === "android" && key === GOOGLE_CLIENT_ID_KEYS.ios) continue;
+      if (platform === "ios" && key === GOOGLE_CLIENT_ID_KEYS.android) continue;
+      required(environment, key);
+    }
+    if (platform !== "android") required(environment, REVENUECAT_IOS_API_KEY);
   }
-  nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.android, mode);
-  nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.ios, mode);
+  if (platform !== "ios" || mode !== "release") nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.android, mode);
+  if (platform !== "android" || mode !== "release") nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.ios, mode);
 
   const androidAppCheck = environment.EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER;
   const appleAppCheck = environment.EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER;
   if (mode !== "smoke") {
-    if (androidAppCheck !== "playIntegrity") throw new Error(`${mode} builds require EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER=playIntegrity.`);
-    if (appleAppCheck !== "deviceCheck" && appleAppCheck !== "appAttest" && appleAppCheck !== "appAttestWithDeviceCheckFallback") {
+    if (platform !== "ios" && androidAppCheck !== "playIntegrity") throw new Error(`${mode} builds require EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER=playIntegrity.`);
+    if (platform !== "android" && appleAppCheck !== "deviceCheck" && appleAppCheck !== "appAttest" && appleAppCheck !== "appAttestWithDeviceCheckFallback") {
       throw new Error(`${mode} builds require an Apple release App Check provider.`);
     }
   }
-  if (mode !== "smoke" && (androidAppCheck === "debug" || appleAppCheck === "debug")) {
+  if (mode !== "smoke" && ((platform !== "ios" && androidAppCheck === "debug") || (platform !== "android" && appleAppCheck === "debug"))) {
     throw new Error("Only smoke builds may use a debug App Check provider.");
   }
 }
@@ -162,12 +171,12 @@ function createExpoConfig(environment = process.env) {
         supportsTablet: false,
         bundleIdentifier: "com.lkurczab.patternly",
         buildNumber: "1",
-        googleServicesFile: nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.ios, runtimeMode),
+        ...(environment.EAS_BUILD_PLATFORM === "android" && runtimeMode === "release" ? {} : { googleServicesFile: nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.ios, runtimeMode) }),
         appleTeamId: "4KJFN6SXMH",
       },
       android: {
         package: "com.lkurczab.patternly",
-        googleServicesFile: nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.android, runtimeMode),
+        ...(environment.EAS_BUILD_PLATFORM === "ios" && runtimeMode === "release" ? {} : { googleServicesFile: nativeFirebaseFile(environment, FIREBASE_FILE_KEYS.android, runtimeMode) }),
         versionCode: 1,
         adaptiveIcon: {
           foregroundImage: "./assets/brand/app-icon/patternly-app-icon-foreground.png",
