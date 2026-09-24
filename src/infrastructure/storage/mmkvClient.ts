@@ -7,6 +7,7 @@ export interface KeyValueStorage {
 }
 
 import { openProfileStorageRouter, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
+import { installOwnerPreservationSource } from "../testing/ownerPreservationSourceRuntime";
 
 let client: KeyValueStorage | null = null;
 let profileRouter: ProfileStorageRouter | null = null;
@@ -36,6 +37,7 @@ export async function initializeKeyValueStorage(): Promise<KeyValueStorage> {
         isTransitionActive: () => profileTransitionActive,
         onBeforeProfileCommit: beginProfileTransition,
       });
+      installOwnerPreservationSource(storage, profileRouter);
       client = profileRouter.storage;
       for (const listener of readyListeners) listener();
       return storage;
@@ -104,6 +106,7 @@ export async function removeUnavailableEncryptedStorage(): Promise<void> {
   const { createNativeEncryptedStoragePlatform } = await import("./encryptedStorageNative");
   await resetUnavailableEncryptedStorage(createNativeEncryptedStoragePlatform());
   client = null;
+  installOwnerPreservationSource(null, null);
   profileRouter = null;
   profileTransitionActive = false;
   productionInitialization = null;
@@ -136,6 +139,7 @@ export type FailurePlan =
 
 export function installKeyValueStorageForTests(storage: KeyValueStorage): void {
   client = storage;
+  installOwnerPreservationSource(null, null);
   profileRouter = null;
   profileTransitionActive = false;
   productionInitialization = null;
