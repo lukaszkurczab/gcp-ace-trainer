@@ -6,11 +6,20 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Repozytoria
 
-| Repozytorium | Stan po SIMP-05 |
+| Repozytorium | Stan po AWS-02/CANDIDATE |
 | --- | --- |
-| `patternly` | B1c wypchnięte jako `aa5b26e3`; bieżący diff dokumentuje ponowną walidację SIMP-05 i synchronizuje plan. |
+| `patternly` | SIMP-05 wypchnięte jako `2d78c873`; bieżący diff synchronizuje wynik AWS-02/CANDIDATE i następną kolejkę. |
 | `patternly-backend` | B1c wypchnięte na `main` jako `2a8c035`: test wyścigu wymiany sesji z obrotem generacji. |
-| `patternly-content` | Czysty `master` `36fd693`; SIMP-05 bez zmian runtime, ponownie zweryfikowane z aktualnego consumer graph, ingressu i historii. |
+| `patternly-content` | AWS-02/CANDIDATE wypchnięte na `master` jako `b0341ad`. |
+
+## AWS-02/CANDIDATE — wynik
+
+- Status: **done / PASS WITH ISSUES**; exact candidate `11d56baa82f897482a6def37d2af6bd90977b855a2fd5ddcb151838c7108a5f1`.
+- Decyzja `delegated_codex` według DEC-23 wiąże 9 tracków, source snapshot `79060003…`, release `617f2216…` i wszystkie hashe pytań/artefaktów.
+- Readiness v2 zatwierdza wyłącznie kandydata. Publishing/runtime pozostają `not_granted`, app release lock bez zmian; historyczne v1 i human approval nietknięte.
+- Pierwsze QA wykryło, że `git diff` pomija untracked JSON. Pełny guard ścieżek, trybów i Git blob IDs oraz izolowany test regresji naprawiły lukę; retest QA: PASS WITH ISSUES.
+- Weryfikacja: targeted 2/2 i 1/1, pełny content 63/63, migration 9/117/943/16 077 z 36 dodatkami ODK-096, draft/readiness generators i diff check — PASS.
+- Briefing: 0,94 / 0,84 / 0,84 / 0,84, minimum 0,84 — APPROVE.
 
 ## SIMP-05 — wynik
 
@@ -22,7 +31,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Niezależne QA: PASS WITH ISSUES. `validateContentBoundary.mjs` i diff check
   przeszły; `checkRecoveryBaseline.mjs` wskazał cztery istniejące importy MMKV
   w obszarze konta, poza dokumentacyjnym diffem SIMP-05.
-- Stare odwołania workflow do usuniętych generatorów i release gate pozostają luką `CI-CONTRACT/A2b`, zależną od `AWS-02/CANDIDATE`.
+- Stare odwołania workflow do usuniętych generatorów i release gate pozostają luką `CI-CONTRACT/A2b`; zależność od `AWS-02/CANDIDATE` jest spełniona.
 
 ## AUD-08/B1c — wynik
 
@@ -46,14 +55,14 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 ## Otwarte decyzje i blokady
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.
-- `CI-CONTRACT/A2b` — WAIT na `AWS-02/CANDIDATE`.
+- `CI-CONTRACT/A2b` — READY po `AWS-02/CANDIDATE`; nie nadawać admission.
 - `PROFILE-02/B` — WAIT na zapisaną w planie decyzję PO.
 - Brak wdrożenia jest granicą zakresu, nie defektem lokalnego B1c.
 
 ## Następne działania
 
-1. Rozpocząć `AWS-02/CANDIDATE`; nie naprawiać CI przez odtworzenie legacy publishera.
-2. Po jego kandydacie wrócić do `CI-CONTRACT/A2b` według zależności planu.
+1. Rozpocząć `CI-CONTRACT/A2b`: podłączyć readiness/review/manual release bez odtwarzania legacy publishera i bez nadawania admission.
+2. Następnie wykonać dalszą kolejkę z planu; AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 3. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
 
 Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymaganych dowodów.
