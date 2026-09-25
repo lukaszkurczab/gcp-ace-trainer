@@ -31,8 +31,8 @@ test("lost-key recovery keeps removal, success, error, and bootstrap transitions
   assert.doesNotMatch(removal, /retry\(\)/);
   assert.match(preparationGate, /onContinue=\{retry\}/);
   assert.match(preparationGate, /onRetryBootstrap=\{retryLostKeyPreparation\}/);
-  assert.match(preparationGate, /canRetry=\{canStartManualRetry\(manualRetry\.current\)\}/);
-  assert.match(preparationGate, /retryLimitReached=\{manualRetry\.current\.failedAttempts >= 5\}/);
+  assert.match(preparationGate, /canRetry=\{auditPresentation !== "retry-limit" && canStartManualRetry\(manualRetry\.current\)\}/);
+  assert.match(preparationGate, /retryLimitReached=\{auditPresentation === "retry-limit" \|\| manualRetry\.current\.failedAttempts >= 5\}/);
   assert.match(preparationGate, /onReturn=\{\(\) => \{ setRemovalError\(undefined\); setRecoveryStatus\("base"\); \}\}/);
   assert.doesNotMatch(source, /encrypted_storage_key_missing|EncryptedStorageRecoverySurface/u);
 });
@@ -84,4 +84,16 @@ test("bootstrap diagnostics are wired only through the development branch as one
   assert.match(source, /if \(__DEV__\) clearDevelopmentBootstrapDiagnostic\(\);[\s\S]*?return bootstrapApplication/);
   assert.match(source, /if \(result\.kind === "ready"\) \{\s*if \(__DEV__\) clearDevelopmentBootstrapDiagnostic\(\);[\s\S]*?complete\(\{ kind: "ready" \}\)/);
   assert.doesNotMatch(source, /console\.(?:log|debug|info|warn|error)\s*\(/);
+});
+
+test("the recovery presentation fixture is development-smoke only and never calls storage operations", () => {
+  const auditEffect = preparationGate.slice(
+    preparationGate.indexOf("if (!__DEV__ || !isPatternlySmokeRuntime()) return;"),
+    preparationGate.indexOf("}, []);", preparationGate.indexOf("if (!__DEV__ || !isPatternlySmokeRuntime()) return;")),
+  );
+  assert.match(auditEffect, /parseStorageRecoveryAuditCommand/);
+  assert.match(auditEffect, /storageFailureCode: "encrypted_storage_key_missing"/);
+  assert.doesNotMatch(auditEffect, /prepareProfileStorage|inspectPreparedProfileState|removeUnavailableEncryptedStorage|createNativeLocalLogoutControl/);
+  assert.match(preparationGate, /canRetry=\{auditPresentation !== "retry-limit" && canStartManualRetry\(manualRetry\.current\)\}/);
+  assert.match(preparationGate, /auditPresentation === "retry-limit" \|\| manualRetry\.current\.failedAttempts >= 5/);
 });

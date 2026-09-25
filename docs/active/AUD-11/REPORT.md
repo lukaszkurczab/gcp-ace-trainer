@@ -1,33 +1,47 @@
 # AUD-11 — ekran odzyskiwania niedostępnych danych
 
-**Status:** `blocking` dla odbioru wizualnego; implementacja lokalna gotowa  
-**Data:** 23 września 2026  
-**Repozytorium:** `patternly`  
+**Status:** `done` / niezależne QA `PASS`
 
-## Zmiany
+**Data odbioru:** 25 września 2026
 
-- Na `EncryptedStorageRecoverySurface` marka jest większa (36 pt zamiast 28) i zaczyna się wyżej; ekran układa treść od góry zamiast centrować cały długi przepływ.
-- EN/PL krótko nazywają brak lokalnego klucza i konsekwencję dla niesynchronizowanych sesji/postępu gościa. Drugi opis wyjaśnia, że dane konta zapisane w chmurze pozostaną dostępne.
-- Widoczny opis „Przytrzymaj przez co najmniej 3 sekundy…” usunięto z powierzchni. `HoldToConfirmButton` nadal udostępnia go jako `accessibilityHint`, a kontroler zachowuje minimum 3 sekundy i anulowanie po wcześniejszym puszczeniu.
-- Destrukcyjna akcja przytrzymania ma neutralny, obramowany wariant o mniejszej wysokości zamiast czerwonej, dominującej karty. Zwykłe użycie `HoldToConfirmButton` zachowuje swój domyślny wariant destrukcyjny.
-- W `ContentPreparationGate` ręczne retry utraty klucza ma licznik w `useRef`: initial automatic bootstrap go nie zużywa; próba rezerwuje się tylko raz, licznik zwiększa się po nieudanym zakończeniu, retry znika po piątej porażce, a udany bootstrap zeruje epizod. Stan pozostaje przy rerenderze i powrocie aplikacji z tła; nie zapisuje się do storage. Usuwanie danych i reset deweloperski nie rezerwują retry.
-- Usunięto nieużywane wpisy tekstów EN/PL po sprawdzeniu wszystkich konsumentów. Pozostałe katalogi locale w aplikacji nie istnieją (runtime obecnie zawiera `en` i `pl`).
+**Repozytorium:** `patternly`
 
-## Niezależna ocena przed implementacją
+**Zakres:** lokalny smoke na istniejącym iPhonie 17; bez wdrożenia, reinstalacji i czyszczenia danych
 
-Repo-specific briefing-only Luna High review zatwierdził zakres: zgodność `0.92`, prostota `0.84`, akceptowalność ryzyka `0.82`, utrzymywalność `0.86`; minimum `0.82`. Ryzyko liczników podwójnie rozliczonych prób ograniczono jedną ścieżką `complete`: zadziała najwyżej raz dla danego zakończonego bootstrapu; helper ignoruje settlement, gdy nie ma aktywnej rezerwacji. Walidator nie przeglądał repozytorium.
+## Wynik
+
+- Układ zaczyna się od góry, marka ma 36 pt, a długi przepływ nie jest już centrowany jako jeden blok.
+- EN/PL wyjaśniają brak klucza, ryzyko dla niewysłanych sesji i postępu Gościa oraz zachowanie danych konta w chmurze. Odbiór urządzeniowy ujawnił brak polskiego tłumaczenia ostatniego zdania; dodano brakujący klucz równolegle do EN/PL i ponowiono dowód.
+- Akcja usunięcia ma neutralny wariant secondary. Instrukcja minimum trzech sekund pozostaje `accessibilityHint`, bez redundantnego tekstu na ekranie.
+- Piąta nieudana ręczna próba ukrywa retry i pokazuje jawny limit. Automatyczny bootstrap nie zużywa limitu; udany bootstrap zeruje epizod.
+- Krótkie dotknięcie przycisku hold pozostawia stan bazowy i nie uruchamia sukcesu/usuwania.
+
+## Fixture i granica bezpieczeństwa
+
+Dodano dokładną komendę `com.lkurczab.patternly://audit/show-encrypted-storage-recovery` z prezentacjami `base` i `retry-limit`. Parser oraz listener działają wyłącznie w `__DEV__` i runtime `smoke`; odrzucają inne środowiska, ścieżki, warianty i dodatkowe parametry. Komenda ustawia tylko stan prezentacyjny. Nie wywołuje `prepareProfileStorage`, odczytu Keychain/MMKV ani `removeUnavailableEncryptedStorage`.
+
+Fixture potwierdza odbiór UI, nie reprodukuje rzeczywistej utraty klucza. Rzeczywistego storage nie usuwano. VoiceOver nie był uruchamiany i nie jest zaliczony; kod i hierarchy potwierdzają role, etykiety, live regions, stan i hint. Ewentualny fizyczny test VoiceOver pozostaje dokładnym przypadkiem ODK-088, a nie bramką lokalnego AUD-11.
+
+## Dowody urządzeniowe
+
+Wszystkie prywatne zrzuty wykonano i obejrzano na tym samym iPhonie 17 `7F315654-3175-4F3C-BB24-B0263F59360C`, 402×874, przy rozmiarze tekstu `large`. Nie zapisano ich w repozytorium.
+
+- PL przed: `/tmp/patternly-aud11-pl-before.png`; PL po: `/tmp/patternly-aud11-pl-base.png`.
+- EN przed: `/tmp/patternly-aud11-en-before.png`; EN po: `/tmp/patternly-aud11-en-base-large.png`.
+- EN limit: `/tmp/patternly-aud11-en-retry-limit-large.png`; retry nie jest obecne, komunikat limitu i neutralny hold są czytelne.
+- Historyczny wariant „przed” odtworzono chwilowo z rodzica commita `488bdc17` na tym samym runtime: logo 28 pt, centrowanie, czerwony hold i widoczny hint. Po zrzutach finalny kod oraz ustawienia `pl-PL / pl_PL / large` natychmiast przywrócono.
+- Maestro `/tmp/patternly-aud11-hold-cancel.yaml`: krótki tap → `removal:base` nadal widoczny, `success` niewidoczny — PASS.
+- Hierarchy potwierdziła nagłówki, opis, komunikat limitu, `removal:base` i `encrypted-storage:hold`; w stanie limitu brak selektora retry.
 
 ## Weryfikacja
 
-- `node --import tsx --test src/content/application/contentPreparationRecovery.test.ts src/content/application/manualRetryLimit.test.ts src/components/holdToConfirmGesture.test.ts` — PASS, 27/27.
+- Ukierunkowane testy końcowe: 31/31 według niezależnego QA; kontrolny zestaw controller 12/12 — PASS.
 - `npm run typecheck` — PASS.
-- JSON EN/PL — poprawny; `git diff --check` — PASS.
-- Nie wykonywano screenshotów po zmianie, testu dużej czcionki ani runtime kontroli PL/EN: CoreSimulatorService było niedostępne przy początku pracy. API `127.0.0.1:8080/ready` również nie odpowiadało. Firebase Auth/Firestore emulatory (19099/18081) pozostawiono działające. Nie uruchamiano ani nie resetowano usług, aplikacji, iPhone’a 17 ani danych konta.
+- `git diff --check` — PASS.
+- Pełny `npm test`: 1262/1266. Cztery błędy dotyczą cross-repo/release gate uruchomionej na celowo brudnym worktree i brakujących jawnych wejściach historycznego content root/current SHA; testy AUD-11 przechodzą. Nie raportujemy pełnego suite jako PASS.
 
-## Warunek odblokowania
+## Niezależne QA i ocena
 
-Na tym samym istniejącym iPhonie 17, po bezpiecznym przywróceniu dostępu do działającego symulatora, zebrać porównywalny screenshot przed/po w PL i EN, sprawdzić dużą czcionkę, wizualne przesunięcie logo, drugorzędną hierarchię akcji, czytelność stanu limitu oraz zachowanie VoiceOver/destructive hold. Nie resetować danych. Do czasu tego retestu lokalny PASS nie zamyka visual/runtime acceptance AUD-11.
+Pierwszy końcowy QA wydał `FAIL`, ponieważ brakowało porównywalnych zrzutów „przed”. Po odtworzeniu historycznego wariantu PL/EN i obejrzeniu czterech zrzutów re-QA wydał `PASS`. Kryteria PL/EN, duży tekst, hierarchia, limit, anulowanie hold i semantyka zostały pokryte proporcjonalnym dowodem.
 
-## Ocena podejścia
-
-Zgodność `0.92`, prostota `0.84`, akceptowalność ryzyka `0.82`, utrzymywalność `0.86`; minimum `0.82`. Licznik pozostał procesowy, bez tworzenia nowego źródła danych. Główne ryzyko resztkowe to brak dowodu z istniejącego urządzenia na odczyt i hierarchię wizualną po zmianach.
+Briefing fixture’a: zgodność `0,91`, prostota `0,86`, ryzyko `0,83`, utrzymywalność `0,85`; minimum `0,83`, warunkowo zatwierdzone. Końcowa ocena podejścia pozostaje powyżej progu; fixture nie tworzy nowego źródła danych ani produkcyjnej nawigacji.

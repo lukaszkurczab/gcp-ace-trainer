@@ -648,6 +648,7 @@
   "Hold for at least 3 seconds, then release. Releasing early cancels.": "Przytrzymaj przez co najmniej 3 sekundy, a potem puść. Wcześniejsze puszczenie anuluje.",
   "Removing unavailable data": "Usuwanie niedostępnych danych",
   "Removing…": "Usuwanie…",
+  "Account data previously saved in the cloud will remain.": "Dane konta zapisane wcześniej w chmurze pozostaną.",
   "Unsent sessions and guest progress are being removed. Account data saved in the cloud will remain.": "Niewysłane sesje i postęp gościa są usuwane. Dane konta zapisane w chmurze pozostaną.",
   "Keep Patternly open while this finishes.": "Nie zamykaj Patternly do zakończenia operacji.",
   "Unavailable data removed": "Niedostępne dane usunięto",

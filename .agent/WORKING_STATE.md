@@ -209,6 +209,15 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - `PROFILE-02/B` — cancelled by owner; bez selektora, migracji i odzyskiwania wielu historycznych Gości. Następny jest PROFILE-02/C.
 - Brak wdrożenia jest granicą zakresu, nie defektem lokalnego B1c.
 
+## AUD-11 — wynik
+
+- Status: **done / niezależne QA PASS**; lokalnie, bez wdrożenia, reinstalacji i czyszczenia danych.
+- Izolowana komenda działa tylko w `__DEV__` + smoke i ustawia wyłącznie prezentację `base` albo `retry-limit`; testy potwierdzają odrzucenie pozostałych środowisk i brak wywołań storage w handlerze.
+- Obejrzano porównania przed/po PL i EN na tym samym iPhonie 17 przy tekście `large`. Historyczny widok odtworzono chwilowo z rodzica `488bdc17`, a finalny kod i `pl-PL / pl_PL / large` przywrócono.
+- Pierwszy odczyt wykrył brak polskiego zdania o danych chmurowych; poprawiono EN/PL. Stan limitu ukrywa retry. Maestro potwierdziło anulowanie krótkiego tapnięcia bez wejścia w usuwanie.
+- Targeted QA 31/31, controller 12/12, typecheck i diff check — PASS. Pełny suite 1262/1266 ma cztery niezależne błędy cross-repo/release na brudnym worktree/brakujących wejściach; nie jest raportowany jako pełny PASS.
+- VoiceOver i rzeczywista utrata klucza nie były symulowane. Raport: [AUD-11](../docs/active/AUD-11/REPORT.md).
+
 ## AWS-02/ADMISSION — done / PASS WITH ISSUES
 
 - Candidate `11d56baa…` ma osobny admission v3 dla zweryfikowanych lokalnych bajtów; granica `local_verified_artifacts_no_deployment` nie oznacza storage, backendu ani dystrybucji.
@@ -220,7 +229,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Wybrać następny dostępny slice z planu po zakończonym `AWS-02/ADMISSION`; `B1b4c` nadal WAIT/PO.
+1. Wybrać następny dostępny slice z planu po zakończonym `AUD-11`; `B1b4c` nadal WAIT/PO.
 2. `ODK-117/A1` nadal wymaga osobnego odbioru ekranu Language settings na istniejącym iPhonie 17.
 3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.

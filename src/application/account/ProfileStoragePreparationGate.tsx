@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View } from "react-native";
+import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { EmptyState, LoadingState, Screen } from "../../components";
@@ -12,6 +12,8 @@ import { createNativeLocalLogoutControl, LocalLogoutControlError, type LocalLogo
 import { EncryptedStorageRecoverySurface, type EncryptedStorageRecoveryStatus } from "../../content/application/EncryptedStorageRecoverySurface";
 import { canStartManualRetry, createManualRetryLimit, reserveManualRetry, settleManualRetry } from "../../content/application/manualRetryLimit";
 import { PreparedProfileStorageContext } from "./profileStoragePreparationContext";
+import { parseStorageRecoveryAuditCommand, type StorageRecoveryAuditPresentation } from "./storageRecoveryAuditCommand";
+import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
 
 type PreparationState =
   | { kind: "loading" }
@@ -25,6 +27,7 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
   const [revision, setRevision] = useState(0);
   const [recoveryStatus, setRecoveryStatus] = useState<EncryptedStorageRecoveryStatus>("base");
   const [removalError, setRemovalError] = useState<string | undefined>();
+  const [auditPresentation, setAuditPresentation] = useState<StorageRecoveryAuditPresentation>();
   const removalInFlight = useRef(false);
   const removalAttempt = useRef(0);
   const manualRetry = useRef(createManualRetryLimit());
@@ -38,6 +41,24 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
       presentationWaiter.current?.resolve(false);
       presentationWaiter.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    if (!__DEV__ || !isPatternlySmokeRuntime()) return;
+    const apply = (url: string | null) => {
+      const presentation = parseStorageRecoveryAuditCommand(url, { development: __DEV__, smoke: isPatternlySmokeRuntime() });
+      if (!presentation) return;
+      setRecoveryStatus("base");
+      setRemovalError(undefined);
+      setAuditPresentation(presentation);
+      setState({
+        kind: "unavailable",
+        reason: "Development-only encrypted storage recovery presentation.",
+        storageFailureCode: "encrypted_storage_key_missing",
+      });
+    };
+    const subscription = Linking.addEventListener("url", ({ url }) => { apply(url); });
+    return () => { subscription.remove(); };
   }, []);
 
   useEffect(() => {
@@ -65,6 +86,7 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
   }, [revision]);
 
   const retry = () => {
+    setAuditPresentation(undefined);
     setRecoveryStatus("base");
     setRemovalError(undefined);
     setState({ kind: "loading" });
@@ -119,10 +141,10 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
               waiter.resolve(presented);
             }}
             onRemove={() => { void removeUnavailableData(); }}
-            canRetry={canStartManualRetry(manualRetry.current)}
+            canRetry={auditPresentation !== "retry-limit" && canStartManualRetry(manualRetry.current)}
             onRetryBootstrap={retryLostKeyPreparation}
             onReturn={() => { setRemovalError(undefined); setRecoveryStatus("base"); }}
-            retryLimitReached={manualRetry.current.failedAttempts >= 5}
+            retryLimitReached={auditPresentation === "retry-limit" || manualRetry.current.failedAttempts >= 5}
             status={recoveryStatus}
           />
         : <Screen><EmptyState actionLabel={t("Try again")} description={state.reason} onActionPress={retry} title={t("Profile storage unavailable")} /></Screen>;

@@ -648,6 +648,7 @@
   "Hold for at least 3 seconds, then release. Releasing early cancels.": "Hold for at least 3 seconds, then release. Releasing early cancels.",
   "Removing unavailable data": "Removing unavailable data",
   "Removing…": "Removing…",
+  "Account data previously saved in the cloud will remain.": "Account data previously saved in the cloud will remain.",
   "Unsent sessions and guest progress are being removed. Account data saved in the cloud will remain.": "Unsent sessions and guest progress are being removed. Account data saved in the cloud will remain.",
   "Keep Patternly open while this finishes.": "Keep Patternly open while this finishes.",
   "Unavailable data removed": "Unavailable data removed",
