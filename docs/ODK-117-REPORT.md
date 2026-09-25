@@ -19,7 +19,7 @@ Obsłużyć UI w `pl/en/de/fr/es/it/et`, prześledzić pochodzenie każdego zwyk
 
 Kolejność i kryteria znajdują się w [kanonicznym pakiecie zadań](../../docs/PATTERNLY-AUDIT-TASKS-2026-09-22.md#pakiet-zadań-odk-117--siedem-locale-i-pełne-pochodzenie-tekstów-ui):
 
-1. **ODK-117-A0** — inwentaryzacja pochodzenia wszystkich tekstów i jawnych wyjątków. To następne zadanie.
+1. **ODK-117-A0 — done / niezależne QA PASS** — [mapa źródeł](active/ODK-117/A0-SOURCE-MAP.md) obejmuje kanały aplikacyjne i natywne, odtwarzalny inventory kandydatów, właścicieli i jawne wyjątki. Pierwsze QA wykryło brak pełności oraz pominięte copy sesji/powiadomień; drugie granicę natywną. Po korektach końcowy QA: PASS.
 2. **ODK-117-A1** — jeden kontrakt runtime locale, wybór i mapowanie języka urządzenia.
 3. **ODK-117-A2** — pięć kompletnych pakietów namespace z niezależnym przeglądem językowym.
 4. **ODK-117-A3** — migracja wszystkich zwykłych literałów UI do locale oraz automatyczna kontrola regresji.

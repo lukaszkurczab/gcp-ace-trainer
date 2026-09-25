@@ -110,6 +110,21 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Targeted/architecture 35/35, content-boundary, typecheck i diff check — PASS; backend emulator 1/1 i OpenAPI 58 — PASS. Szeroki suite miał 1219 przejść i 11 failures: dwa związane z C naprawiono; pozostałe obejmowały istniejące release/legal/dirty-worktree oraz timeout Metro i nie są raportowane jako PASS.
 - Ograniczenia QA: brak jeszcze wywołującego flow (właściciel D), brak native device proof dla adaptera oraz neutralny fixture nie jest admission Premium.
 
+## AUD-04-D — stan oczekujący
+
+- Status: **WAIT/DEVICE; ponowny niezależny QA BLOCKED**. Nie ma commitu ani push jako ukończonego zadania.
+- Lokalna ścieżka smoke pokazuje jawną ofertę, instaluje exact pakiet i prowadzi przygotowanie przez wspólnego runtime ownera. Release/sandbox mają pustą mapę ofert; rzeczywiste bundle smoke/release potwierdziły fixture wyłącznie w smoke.
+- Pierwszy QA wykrył utratę `nodeId` między route i lifecycle, która mogła wybrać Free i ominąć Gate A. Naprawa przenosi osobny jawny `nodeId`; integracyjna regresja sprawdza exact version/hash/pytanie, autoryzację przed mutacją oraz odmowę bez aktywnej sesji.
+- Typecheck, ukierunkowane testy, locale, content boundary i diff check przechodzą. Neutralny fixture nie jest admission ani treścią Premium.
+- Na jedynym iPhonie 17 formularz izolowanego konta został sprawdzony hierarchy i prywatnym zrzutem przed submit. Zachowany `account-remote-revoke-pending` zwraca aplikację do Sign in, więc nie osiągnięto Home/oferty i brakuje Maestro success/denial. Nie usuwać tego stanu ani nie stosować takeover poza bezpiecznym protokołem recovery.
+
+## ODK-117-A0 — wynik
+
+- Status: **done / niezależne QA PASS**; wyłącznie dokumentacja, bez zmiany runtime lub locale.
+- Mapa obejmuje zasoby EN/PL, konsumentów `t/translate`, lokalne presentery i walidacje, accessibility, alerty, powiadomienia wraz z Android channel name, formatowanie, metadane tracków, generated content, backend code → local copy, legal oraz natywne iOS/Android prompty.
+- Pierwsze QA wykryło nieuprawniony status DONE i brak `practiceSessionExitCopy`/`Practice reminders`; drugie wykryło pominięcie `Info.plist`. Wszystkie luki zamknięto. Face ID prompt jest jawnie oznaczony jako potencjalny/stale, local-network prompt jako dev-only.
+- Powtarzalny inventory scan mapuje pełne klasy plików-kandydatów; semantyczna klasyfikacja każdego string expression, AST guard i migracja pozostają A3. Istniejący parytet EN/PL 1/1 PASS; diff check PASS.
+
 ## Weryfikacja
 
 - Aplikacja: testy ukierunkowane 44/44, typecheck i `git diff --check` — PASS.
@@ -128,8 +143,8 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Rozpocząć `AUD-04-D`: discovery/preparation, wywołujący flow instalatora i właściwe błędy pakietów, bez wdrożenia.
-2. Po D wykonać ODK-119-GATE/B.
+1. `AUD-04-D` pozostaje WAIT/DEVICE do dowodu Maestro success/denial na tym samym iPhonie 17; zachować bieżący diff.
+2. W czasie blokady wykonać pierwszy niezależny dostępny slice z kolejki; ODK-119-GATE/B pozostaje po D.
 3. Wrócić do `CI-CONTRACT/C`, gdy można wykonać właściwy exact-SHA etap bez omijania jego bramek.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 5. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
