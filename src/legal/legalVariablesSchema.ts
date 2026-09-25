@@ -1,11 +1,13 @@
 export type LegalVariablesValidationMode = "test" | "release";
+export const LEGAL_TRANSLATION_LOCALES = ["en", "pl", "de", "fr", "es", "it", "et"] as const;
+export type LegalTranslationLocale = (typeof LEGAL_TRANSLATION_LOCALES)[number];
 
 export interface LegalVariablesIssue {
   path: string;
   message: string;
 }
 
-const locales = ["en", "pl"] as const;
+const releaseLocales = ["en", "pl"] as const;
 const placeholder = /^\[(?:TO BE COMPLETED|DO UZUPEŁNIENIA):\s*[A-Za-z][A-Za-z0-9]*\]$/;
 const termsKeys = [
   "adrEntity", "adrPosition", "competentCourts", "complaintEmail", "distributionTerritories", "effectiveDate",
@@ -25,14 +27,16 @@ const privacyKeys = [
   "registrationNumber", "retentionRegisterDisclosure", "revenueCatStatus", "securityLogRetentionDays", "supervisoryAuthority",
   "taxIdentifier",
 ] as const;
-const localizedKeys = (keys: readonly string[]) => Object.fromEntries(keys.map((key) => [key, { en: "", pl: "" }]));
-const expectedLegalVariables = {
-  documentVersion: { en: "", pl: "" },
+const localizedKeys = (keys: readonly string[], locales: readonly string[]) => Object.fromEntries(keys.map((key) => [key, Object.fromEntries(locales.map((locale) => [locale, ""]))]));
+function expectedLegalVariables(locales: readonly string[]) {
+ return {
+  documentVersion: Object.fromEntries(locales.map((locale) => [locale, ""])),
   premiumCheckoutEnabled: false,
   publicLinks: { privacyUrl: "", termsUrl: "", supportUrl: "" },
-  terms: localizedKeys(termsKeys),
-  privacy: localizedKeys(privacyKeys),
-};
+  terms: localizedKeys(termsKeys, locales),
+  privacy: localizedKeys(privacyKeys, locales),
+ };
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -53,9 +57,10 @@ function publicLinkIssue(value: string, path: string): string | null {
 }
 
 /** Validates legal variables against the explicit legal variable contract and locale shape. */
-export function validateLegalVariables(
+function validateLegalVariablesForLocales(
   value: unknown,
   mode: LegalVariablesValidationMode = "test",
+  locales: readonly string[] = releaseLocales,
 ): LegalVariablesIssue[] {
   const issues: LegalVariablesIssue[] = [];
   const visit = (candidate: unknown, reference: unknown, path: string): void => {
@@ -96,7 +101,7 @@ export function validateLegalVariables(
         if (!Object.hasOwn(candidate, key)) issues.push({ path: `${path}.${key}`, message: "Required key is missing." });
       }
       for (const key of Object.keys(candidate)) {
-        if (!Object.hasOwn(reference, key)) issues.push({ path: `${path}.${key}`, message: "Unexpected key." });
+        if (!Object.hasOwn(reference, key)) issues.push({ path: path ? `${path}.${key}` : key, message: "Unexpected key." });
       }
       for (const key of expectedKeys) {
         if (Object.hasOwn(candidate, key)) visit(candidate[key], reference[key], path ? `${path}.${key}` : key);
@@ -129,6 +134,20 @@ export function validateLegalVariables(
   if (mode !== "test" && mode !== "release") {
     return [{ path: "mode", message: "Expected test or release mode." }];
   }
-  visit(value, expectedLegalVariables, "");
+  visit(value, expectedLegalVariables(locales), "");
   return issues;
+}
+
+/** Validates the stable EN/PL release contract. Draft locales must use the explicit test-only validator. */
+export function validateLegalVariables(value: unknown, mode: LegalVariablesValidationMode = "test"): LegalVariablesIssue[] {
+  return validateLegalVariablesForLocales(value, mode, releaseLocales);
+}
+
+/** Validates a synthetic seven-locale fixture without changing the EN/PL release schema. */
+export function validateLegalVariablesTestDraft(value: unknown): LegalVariablesIssue[] {
+  if (!isRecord(value) || value.testOnly !== true || value.approvalStatus !== "UNAPPROVED") {
+    return [{ path: "approvalStatus", message: "Expected an explicitly unapproved test-only draft." }];
+  }
+  const { testOnly: _testOnly, approvalStatus: _approvalStatus, ...variables } = value;
+  return validateLegalVariablesForLocales(variables, "test", LEGAL_TRANSLATION_LOCALES);
 }

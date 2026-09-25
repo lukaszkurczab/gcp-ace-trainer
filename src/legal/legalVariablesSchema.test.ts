@@ -9,7 +9,8 @@ import releaseLegalVariables from "../../config/public-legal.release.json";
 import { resolveLegalVariables } from "../../scripts/checkLegalVariables.mjs";
 import { legalVariables } from "./legalVariables";
 import { legalVariablesLocalFixture } from "./legalVariablesLocalFixture";
-import { validateLegalVariables } from "./legalVariablesSchema";
+import { validateLegalVariables, validateLegalVariablesTestDraft } from "./legalVariablesSchema";
+import { createLegalVariablesTestDraft } from "./legalTranslationDrafts.testOnly";
 
 function copyLegalVariables(): Record<string, any> {
   return JSON.parse(JSON.stringify(legalVariables));
@@ -31,6 +32,23 @@ test("accepts the current legal variable shape in test mode and preserves checko
   const malformed = copyLegalVariables();
   malformed.premiumCheckoutEnabled = "false";
   assert.ok(validateLegalVariables(malformed).some(({ path }) => path === "premiumCheckoutEnabled"));
+});
+
+test("seven-locale legal drafts require all locales and explicit unapproved test-only markers", () => {
+  const draft = createLegalVariablesTestDraft(legalVariablesLocalFixture);
+  assert.deepEqual(validateLegalVariablesTestDraft(draft), []);
+  assert.ok(validateLegalVariables(draft, "release").some(({ path }) => path === "testOnly"));
+
+  const missingLocale = JSON.parse(JSON.stringify(draft));
+  delete missingLocale.privacy.controllerLegalName.et;
+  assert.ok(validateLegalVariablesTestDraft(missingLocale).some(({ path }) => path === "privacy.controllerLegalName.et"));
+
+  const padded = JSON.parse(JSON.stringify(draft));
+  padded.terms.operatorLegalName.de = " value ";
+  assert.ok(validateLegalVariablesTestDraft(padded).some(({ path }) => path === "terms.operatorLegalName.de"));
+
+  const unmarked = { ...draft, approvalStatus: "APPROVED" };
+  assert.ok(validateLegalVariablesTestDraft(unmarked).some(({ path }) => path === "approvalStatus"));
 });
 
 test("legal variables select the local fixture for local mode and the checked-in JSON for release mode", () => {

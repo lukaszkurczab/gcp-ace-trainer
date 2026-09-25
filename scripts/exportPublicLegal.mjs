@@ -6,9 +6,10 @@ import "tsx/cjs";
 import { legalSourceFingerprint } from "./legalSourceFingerprint.mjs";
 
 const require = createRequire(import.meta.url);
-const { validateLegalVariables } = require("../src/legal/legalVariablesSchema.ts");
+const { validateLegalVariables, validateLegalVariablesTestDraft } = require("../src/legal/legalVariablesSchema.ts");
 const { renderPrivacyPolicy } = require("../src/legal/privacyPolicy.ts");
 const { renderTermsOfService } = require("../src/legal/termsOfService.ts");
+const { legalTranslationDraftsTestOnly, renderLegalTranslationDraftTestOnly } = require("../src/legal/legalTranslationDrafts.testOnly.ts");
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const canonicalSourcePath = resolve(appRoot, "config/public-legal.release.json");
 const locales = ["en", "pl"];
@@ -44,31 +45,46 @@ function publicProfileFrom(source) {
   };
 }
 
-function renderedDocuments(source) {
+function renderedDocuments(source, testOnly) {
   const privacy = renderPrivacyPolicy(source);
   const terms = renderTermsOfService(source);
+  const locales = testOnly ? ["en", "pl", ...legalTranslationDraftsTestOnly.locales] : ["en", "pl"];
+  const drafts = testOnly
+    ? Object.fromEntries(legalTranslationDraftsTestOnly.locales.map((locale) => [locale, renderLegalTranslationDraftTestOnly(locale, source)]))
+    : {};
   return {
-    privacyPolicy: Object.fromEntries(locales.map((locale) => [locale, privacy[locale]])),
-    termsOfService: Object.fromEntries(locales.map((locale) => [locale, terms[locale]])),
+    privacyPolicy: Object.fromEntries(locales.map((locale) => [locale, drafts[locale]?.privacyPolicy ?? privacy[locale]])),
+    termsOfService: Object.fromEntries(locales.map((locale) => [locale, drafts[locale]?.termsOfService ?? terms[locale]])),
   };
 }
 
 function createArtifact(source, testOnly) {
-  validateSource(source, testOnly ? "test" : "release");
-  return {
+  if (testOnly) {
+    const issues = validateLegalVariablesTestDraft(source);
+    if (issues.length > 0) {
+      const paths = [...new Set(issues.map(({ path }) => path))].sort();
+      throw new Error(`Test-only legal draft is invalid (${paths.join(", ")}).`);
+    }
+  } else {
+    validateSource(source, "release");
+  }
+  const artifact = {
     schemaVersion: "patternly-public-legal-export-v1",
     testOnly,
     documentVersion: source.documentVersion,
-    sourceFingerprint: legalSourceFingerprint(source),
+    sourceFingerprint: legalSourceFingerprint(testOnly ? { source, drafts: legalTranslationDraftsTestOnly.documents } : source),
     publicProfile: publicProfileFrom(source),
     publicLinks: source.publicLinks,
-    documents: renderedDocuments(source),
+    documents: renderedDocuments(source, testOnly),
   };
+  if (testOnly) artifact.approvalStatus = "UNAPPROVED";
+  return artifact;
 }
 
 /** Builds an explicitly test-only artifact from synthetic data. */
 export function buildPublicLegalArtifactForTest(syntheticSource) {
-  return createArtifact(syntheticSource, true);
+  const { createLegalVariablesTestDraft } = require("../src/legal/legalTranslationDrafts.testOnly.ts");
+  return createArtifact(createLegalVariablesTestDraft(syntheticSource), true);
 }
 
 /** Reads the one canonical release source and builds a production artifact. */

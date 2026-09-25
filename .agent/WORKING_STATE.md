@@ -125,6 +125,21 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Pierwsze QA wykryło nieuprawniony status DONE i brak `practiceSessionExitCopy`/`Practice reminders`; drugie wykryło pominięcie `Info.plist`. Wszystkie luki zamknięto. Face ID prompt jest jawnie oznaczony jako potencjalny/stale, local-network prompt jako dev-only.
 - Powtarzalny inventory scan mapuje pełne klasy plików-kandydatów; semantyczna klasyfikacja każdego string expression, AST guard i migracja pozostają A3. Istniejący parytet EN/PL 1/1 PASS; diff check PASS.
 
+## ODK-117-A1 — stan oczekujący
+
+- Status: **WAIT/DEVICE; niezależne QA BLOCKED**. Bez commitu i push.
+- Lokalny kontrakt rozdziela siedem target locale od dostępnych EN/PL, zachowuje storage `system|en|pl`, jawnie zwraca powód tymczasowego EN i wyłącza ukryty fallback i18next.
+- Testy A1/prezentacji/parytetu 27/27, typecheck i diff check — PASS. QA nie znalazł defektu kodu.
+- Wymagany render Language settings i prywatny zrzut nie są dostępne, ponieważ ten sam iPhone 17 zatrzymuje się na `account-remote-revoke-pending`. A2 nie startuje przed odbiorem A1.
+
+## ODK-117/B-CONTRACT — wynik
+
+- Status: **done / niezależne QA PASS WITH ISSUES**, przy czym jedyną naprawialną kwestią były nieaktualne raporty, poprawione przed commitem.
+- TestOnly/UNAPPROVED drafty DE/FR/ES/IT/ET zachowują pełną strukturę EN: 14/22 sekcje, 38/65 akapitów i identyczne tokeny interpolacji. Syntetyczne zmienne mają wszystkie siedem locale.
+- Schema pozostaje `patternly-public-legal-export-v1`; stary artefakt EN/PL nadal działa. Produkcyjny app runtime/export nie importuje draftów, a web odrzuca artefakt `testOnly` w trybie production.
+- Rzeczywisty artefakt app i niezależnie przeliczony fingerprint przeszły hook web 2/2; web testy 6/6 i `verify:local` PASS. App export 4/4, schema 10/10, legal variables, typecheck i diff check PASS.
+- Release gate pozostaje `not_ready`: poza nieuzupełnionymi rzeczywistymi wartościami ODK-116-B bieżący lokalny wynik wskazuje też brudny worktree i brak pięciu wymaganych zewnętrznych evidence. B-CONTRACT nie jest dowodem gotowości wydania. Bez backend change i bez wdrożenia.
+
 ## Weryfikacja
 
 - Aplikacja: testy ukierunkowane 44/44, typecheck i `git diff --check` — PASS.
