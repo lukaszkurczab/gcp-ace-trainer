@@ -121,6 +121,13 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Istniejący iPhone 17 osiągnął Home i wykonał smoke offer → exact install/preparation → Gate A. Obejrzany screenshot pokazuje `unavailable`, nie `denied`; brak mutacji dla `denied` i kolejność przed zapisem potwierdza test integracyjny.
 - Poprawiono profil Metro, układ karty, rozdwojony alias z cichym fallbackiem oraz `Uint8Array` dla natywnego `expo-crypto`. Target 7/7, typecheck i diff check przechodzą. Pełny suite 1255/1258 ma trzy niezależne błędy cross-repo content. Neutralny fixture nie jest admission ani treścią Premium.
 
+## ODK-119-GATE/B — done / PASS WITH ISSUES
+
+- Jedynym wejściem nowej sesji jest `startTrainingSession` → `TrainingLifecycleUseCases.startSession`; jedynym aplikacyjnym wejściem downloadu jest account-owned `installPremiumNodePackage` → `installPremiumNodeOffer`.
+- Usunięto nieużywane publiczne `prepareSession` i `installAuthenticatedNodePackage`, które utrzymywały przyszłe boczne wejścia. Kontrakt źródłowy pilnuje listy konsumentów.
+- Backend bez zmian: świeży RevenueCat read poprzedza odczyt bajtów. App 8/8 i typecheck PASS; backend unit 16/16 oraz emulator 1/1 PASS po podaniu hostów. Bez wdrożenia i provider E2E.
+- Briefing: 0,94 / 0,85 / 0,84 / 0,89, minimum 0,84 — APPROVE. Końcowe niezależne QA: PASS WITH ISSUES; ryzyko rezydualne to realny RevenueCat/store E2E poza lokalnym zakresem.
+
 ## ODK-117-A0 — wynik
 
 - Status: **done / niezależne QA PASS**; wyłącznie dokumentacja, bez zmiany runtime lub locale.
@@ -204,7 +211,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Rozpocząć `ODK-119-GATE/B`, pierwszy dostępny slice po zakończonym AUD-04/D.
+1. Rozpocząć `AWS-02/ADMISSION`, pierwszy dostępny slice po zakończonym ODK-119-GATE/B.
 2. `ODK-117/A1` nadal wymaga osobnego odbioru ekranu Language settings na istniejącym iPhonie 17.
 3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.

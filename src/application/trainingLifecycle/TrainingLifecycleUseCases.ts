@@ -147,15 +147,6 @@ export class TrainingLifecycleUseCases {
     this.operationStates.publish(active.id, simulation("editable"));
   }
 
-  async prepareSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
-    const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId, requestedNodeId(input.request));
-    const runtime = resolution.runtime;
-    const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts: this.forResolvedContent(attempts, resolution.track), reviews: this.forResolvedContent(reviews, resolution.track), now: this.ports.clock.now() }));
-    await this.assertSessionPackage(prepared.session, resolution.track);
-    return prepared;
-  }
-
   async startSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
     const existing = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
     if (existing) throw new TrainingApplicationFailure("active_session_conflict", `Active session ${existing.id} must be resumed or abandoned first.`);

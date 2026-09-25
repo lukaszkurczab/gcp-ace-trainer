@@ -6,24 +6,6 @@ import { installNodePackage } from "../runtime/nodeContentPackage";
 import { findPremiumNodeOfferForIdentity, getLocalSmokePremiumNodePackageTransport } from "./premiumNodeOffers";
 import { getAvailablePremiumNodeOffer } from "./premiumNodeOfferAccess";
 
-/** Installs an exact node package through the authenticated Patternly API path. It does not add the node to discovery or offer a mode. */
-export function installAuthenticatedNodePackage(input: Readonly<{ api: Pick<PatternlyApiClient, "getContentPackage">; trackId: string; nodeId: string; appVersion: string; expectedContentVersion?: string; expectedArtifactSha256?: string; assertActivationAllowed?: () => void }>) {
-  const scopeKey = getActiveNodePackageScopeKey();
-  if (!scopeKey) throw new Error("encrypted_storage_not_initialized");
-  return installNodePackage({
-    trackId: input.trackId,
-    nodeId: input.nodeId,
-    appVersion: input.appVersion,
-    expectedContentVersion: input.expectedContentVersion,
-    expectedArtifactSha256: input.expectedArtifactSha256,
-    assertActivationAllowed: input.assertActivationAllowed,
-    transport: { getNodePackage: (trackId, nodeId) => input.api.getContentPackage(trackId, nodeId) },
-    hash: contentHasher,
-    store: createProfileNodePackageStore(),
-    activateRuntime: (record) => contentPackageRuntimeOwner.registerInstalledNodePackage(record, scopeKey),
-  });
-}
-
 export async function installPremiumNodeOffer(input: Readonly<{ api: Pick<PatternlyApiClient, "getContentPackage">; offerId: string; appVersion: string; assertActivationAllowed?: () => void }>) {
   const offer = getAvailablePremiumNodeOffer(input.offerId);
   if (!offer) throw new Error("premium_node_offer_unavailable");
