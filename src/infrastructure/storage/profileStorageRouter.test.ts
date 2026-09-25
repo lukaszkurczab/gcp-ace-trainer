@@ -328,40 +328,94 @@ test("selectGuest returns a typed ambiguity error without writing when multiple 
   assert.equal(ambiguous.registry.profiles.filter((profile) => profile.kind === "guest").length, 2);
 });
 
-test("guest and two account scopes survive repeated selection and restart without cross-reads", async () => {
+test("one canonical guest and two account scopes survive restart without cross-scope access", async () => {
   const base = new MemoryKeyValueStorage();
   const control = new MemoryControlStore();
   const ids = identitySequence(GUEST_ID, DATASET_ID, OWNER_ID, "00000000-0000-4000-8000-000000000004");
+  const prefix = (profileId: string) => `patternly:profile:v1:${profileId}:`;
+  const assertOnlyProfileAccessed = (profileId: string) => {
+    const scopedOperations = base.operations.filter((operation) => operation.key.startsWith("patternly:profile:v1:"));
+    assert.equal(scopedOperations.length > 0, true);
+    assert.equal(scopedOperations.every((operation) => operation.key.startsWith(prefix(profileId))), true);
+  };
+  const writeFixture = (router: Awaited<ReturnType<typeof openProfileStorageRouter>>, owner: string) => {
+    router.storage.setString(STORAGE_KEYS.METADATA, `${owner}-metadata`);
+    router.storage.setString(STORAGE_KEYS.ACTIVE_TRACK, `${owner}-track`);
+    router.storage.setString(STORAGE_KEYS.SETTINGS, `${owner}-settings`);
+    router.storage.setString(`exclusive:${owner}`, `${owner}-only`);
+  };
+  const assertFixture = (router: Awaited<ReturnType<typeof openProfileStorageRouter>>, owner: string, otherOwners: readonly string[]) => {
+    assert.equal(router.storage.getString(STORAGE_KEYS.METADATA), `${owner}-metadata`);
+    assert.equal(router.storage.getString(STORAGE_KEYS.ACTIVE_TRACK), `${owner}-track`);
+    assert.equal(router.storage.getString(STORAGE_KEYS.SETTINGS), `${owner}-settings`);
+    assert.equal(router.storage.getString(`exclusive:${owner}`), `${owner}-only`);
+    assert.equal(router.storage.contains(`exclusive:${owner}`), true);
+    const visibleKeys = router.storage.getAllKeys();
+    assert.equal(visibleKeys.includes(`exclusive:${owner}`), true);
+    for (const other of otherOwners) {
+      assert.equal(router.storage.contains(`exclusive:${other}`), false);
+      assert.equal(visibleKeys.includes(`exclusive:${other}`), false);
+    }
+  };
   const initial = await openProfileStorageRouter(base, control, { identity: ids });
   const guest = await initial.selectGuest();
   let router = await openProfileStorageRouter(base, control, { identity: ids });
-  router.storage.setString("private-value", "guest-data");
+  writeFixture(router, "guest");
 
+  base.resetCounters();
   const accountA = await router.selectAccount("exact-account-A");
+  assert.equal(base.operations.some((operation) => operation.key.startsWith(prefix(guest.id))), false);
   router = await openProfileStorageRouter(base, control, { identity: ids });
-  router.storage.setString("private-value", "account-A-data");
+  writeFixture(router, "account-A");
+  base.resetCounters();
   const returnedGuestA = await router.selectGuest();
   assert.equal(returnedGuestA.id, guest.id);
+  assert.equal(base.operations.some((operation) => operation.key.startsWith(prefix(accountA.id))), false);
   router = await openProfileStorageRouter(base, control, { identity: ids });
-  assert.equal(router.storage.getString("private-value"), "guest-data");
+  base.resetCounters();
+  assertFixture(router, "guest", ["account-A", "account-B"]);
+  assertOnlyProfileAccessed(guest.id);
 
+  base.resetCounters();
   const accountB = await router.selectAccount("exact-account-B");
   assert.notEqual(accountB.id, accountA.id);
+  assert.equal(base.operations.some((operation) => operation.key.startsWith(prefix(guest.id))), false);
+  assert.equal(base.operations.some((operation) => operation.key.startsWith(prefix(accountA.id))), false);
   router = await openProfileStorageRouter(base, control, { identity: ids });
-  router.storage.setString("private-value", "account-B-data");
+  writeFixture(router, "account-B");
+  base.resetCounters();
   assert.equal((await router.selectGuest()).id, guest.id);
+  assert.equal(base.operations.some((operation) => operation.key.startsWith(prefix(accountA.id))), false);
+  assert.equal(base.operations.some((operation) => operation.key.startsWith(prefix(accountB.id))), false);
 
   const restartedGuest = await openProfileStorageRouter(base, control, { identity: ids });
   assert.equal(restartedGuest.profile.id, guest.id);
-  assert.equal(restartedGuest.storage.getString("private-value"), "guest-data");
+  assert.equal(restartedGuest.registry.profiles.filter((profile) => profile.kind === "guest" || profile.kind === "legacy_guest").length, 1);
+  assert.equal(restartedGuest.registry.profiles.filter((profile) => profile.accountId === "exact-account-A").length, 1);
+  assert.equal(restartedGuest.registry.profiles.filter((profile) => profile.accountId === "exact-account-B").length, 1);
+  base.resetCounters();
+  assertFixture(restartedGuest, "guest", ["account-A", "account-B"]);
+  assertOnlyProfileAccessed(guest.id);
+
+  base.resetCounters();
   const restartedA = await restartedGuest.selectAccount("exact-account-A");
   assert.equal(restartedA.id, accountA.id);
+  assert.equal(base.operations.some((operation) => operation.key.startsWith(prefix(guest.id))), false);
+  assert.equal(base.operations.some((operation) => operation.key.startsWith(prefix(accountB.id))), false);
   const reopenedA = await openProfileStorageRouter(base, control, { identity: ids });
-  assert.equal(reopenedA.storage.getString("private-value"), "account-A-data");
+  base.resetCounters();
+  assertFixture(reopenedA, "account-A", ["guest", "account-B"]);
+  assertOnlyProfileAccessed(accountA.id);
+
+  base.resetCounters();
   const restartedB = await reopenedA.selectAccount("exact-account-B");
   assert.equal(restartedB.id, accountB.id);
+  assert.equal(base.operations.some((operation) => operation.key.startsWith(prefix(guest.id))), false);
+  assert.equal(base.operations.some((operation) => operation.key.startsWith(prefix(accountA.id))), false);
   const reopenedB = await openProfileStorageRouter(base, control, { identity: ids });
-  assert.equal(reopenedB.storage.getString("private-value"), "account-B-data");
+  base.resetCounters();
+  assertFixture(reopenedB, "account-B", ["guest", "account-A"]);
+  assertOnlyProfileAccessed(accountB.id);
 });
 
 test("existing guest reselection rejects non-guest IDs without changing the registry", async () => {

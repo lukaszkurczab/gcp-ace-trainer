@@ -150,7 +150,15 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Zakres to 8 namespace’ów × 1 521 wartości × 5 języków, czyli 7 605 nowych wartości DE/FR/ES/IT/ET. W repo nie ma app draftów, procesu recenzji ani kompetentnych recenzentów.
 - Plan zabrania niezweryfikowanych tłumaczeń. Niezależny briefing potwierdził, że modelowy self-review może wspierać propozycje i kontrole, ale nie spełnia językowej bramki A2.
 - A3 pozostaje za A2; nie migrować kolejnych tekstów do niezweryfikowanych pakietów. Pakiet odblokowania: [A2](../docs/active/ODK-117/A2-REVIEW-BLOCKER.md).
-- Następny niezależny dostępny slice: PROFILE-02/C.
+- Następny niezależny dostępny slice po zamknięciu PROFILE-02/C: PROFILE-03.
+
+## PROFILE-02/C — wynik
+
+- Status: **done / niezależne QA PASS**.
+- Runtime po PROFILE-02/A już utrzymywał jednego bieżącego Gościa, więc C wzmacnia dowód bez dodawania równoległej logiki. Test przechodzi Guest→A→Guest→B→Guest, restartuje router i sprawdza trzy wspólne oraz unikalne klucze per scope, dokładnie jeden Guest/jedno A/jedno B, brak obcych prefiksów oraz izolację `contains/getAllKeys`.
+- Celowane router/MMKV/koordynacja 56/56, typecheck, content/privacy boundary i diff check — PASS. Pełny suite 1263/1268: pięć niezależnych istniejących niepowodzeń (retry-limit source assertion, route shell count i trzy content-release inputs/SHA).
+- Maestro na istniejącym iPhonie 17 po zamknięciu nakładającego się dev overlayu: wybór zachowanego Gościa, Home, `stopApp`/`launchApp` bez `clearState`, ponownie Home — PASS. Hierarchy i screenshot obejrzano; prywatne artefakty nie są w repo.
+- PROFILE-02/B pozostaje anulowane. Następny slice: PROFILE-03.
 
 ## ODK-117/B-CONTRACT — wynik
 
@@ -216,7 +224,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.
 - `CI-CONTRACT/A2b`, `A3`, `B` i `C` — done; C ma lokalny PASS WITH ISSUES, nie hosted PASS.
-- `PROFILE-02/B` — cancelled by owner; bez selektora, migracji i odzyskiwania wielu historycznych Gości. Następny jest PROFILE-02/C.
+- `PROFILE-02/B` — cancelled by owner; PROFILE-02/C zamknięte bez selektora, migracji i odzyskiwania wielu historycznych Gości.
 - Brak wdrożenia jest granicą zakresu, nie defektem lokalnego B1c.
 
 ## AUD-11 — wynik
@@ -239,8 +247,8 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Wybrać następny dostępny slice z planu po zakończonym `AUD-11`; `B1b4c` nadal WAIT/PO.
-2. `ODK-117/A2` czeka na kompetentny przegląd pięciu języków; w międzyczasie wykonać `PROFILE-02/C`.
+1. Rozpocząć `PROFILE-03`; `B1b4c` nadal WAIT/PO.
+2. `ODK-117/A2` czeka na kompetentny przegląd pięciu języków.
 3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 5. `PROFILE-02/B` jest anulowane decyzją właściciela. Tylko `B1b4c` nadal oczekuje na decyzję PO.

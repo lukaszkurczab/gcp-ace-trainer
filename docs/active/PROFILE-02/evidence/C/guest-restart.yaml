@@ -1,0 +1,23 @@
+appId: com.lkurczab.patternly
+name: PROFILE-02/C preserved guest restart
+---
+- assertVisible:
+    id: "patternly:content:ready"
+- assertVisible:
+    id: "patternly:home:primary-action"
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:ready"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:home:primary-action"
+- runFlow:
+    when:
+      visible: "!, Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- takeScreenshot: profile-02-c-guest-after-restart

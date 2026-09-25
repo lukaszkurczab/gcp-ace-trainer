@@ -38,4 +38,4 @@ Dla każdego z pięciu języków potrzebny jest kompetentny, niezależny recenze
 
 ## Następny niezależny slice
 
-`PROFILE-02/C` jest oznaczony w planie jako READY i nie zależy od ODK-117. `ODK-117/A3` pozostaje za A2, ponieważ migracja kolejnych tekstów do niezweryfikowanych pakietów utrwaliłaby tę samą lukę jakościową.
+`PROFILE-02/C` zostało zamknięte niezależnie od ODK-117; kolejnym READY jest `PROFILE-03`. `ODK-117/A3` pozostaje za A2, ponieważ migracja kolejnych tekstów do niezweryfikowanych pakietów utrwaliłaby tę samą lukę jakościową.
