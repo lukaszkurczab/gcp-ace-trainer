@@ -1,6 +1,7 @@
+import { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
-import { StyleSheet } from "react-native";
+import { Linking, StyleSheet } from "react-native";
 
 import { AppShellHeader, LoadingState, Screen } from "../components";
 import { usePatternlyAccount } from "../application/account/AccountSessionProvider";
@@ -44,6 +45,8 @@ import { AlgorithmsInterviewSimulationScreen } from "../features/simulation/Algo
 import { TopicRoadmapScreen } from "../features/practice/TopicRoadmapScreen";
 import { useAppPreferences } from "../preferences";
 import type { RootStackParamList } from "./types";
+import { isPatternlySmokeRuntime } from "../infrastructure/runtime/runtimeMode";
+import { isLanguageSettingsAuditCommand } from "./languageSettingsAuditCommand";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -51,6 +54,30 @@ export function RootNavigator() {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
   const { state, accountEntryMode } = usePatternlyAccount();
+  const [auditLanguageSettings, setAuditLanguageSettings] = useState(false);
+
+  useEffect(() => {
+    if (!__DEV__ || !isPatternlySmokeRuntime()) return;
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      if (isLanguageSettingsAuditCommand(url, { development: __DEV__, smoke: isPatternlySmokeRuntime() })) {
+        setAuditLanguageSettings(true);
+      }
+    });
+    return () => { subscription.remove(); };
+  }, []);
+
+  if (auditLanguageSettings) {
+    return (
+      <Stack.Navigator initialRouteName={ROUTES.LANGUAGE_SETTINGS}>
+        <Stack.Screen
+          name={ROUTES.LANGUAGE_SETTINGS}
+          component={LanguageSettingsScreen}
+          options={{ headerShown: false, title: t("Language") }}
+        />
+      </Stack.Navigator>
+    );
+  }
+
   const applicationSessionReady = state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting" || (state.kind === "authenticated" && state.accountData.status === "synced") || (state.kind === "authenticated" && ["resumeRequired", "remoteDeletionPending", "localCleanupPending"].includes(state.accountData.status));
 
   if (state.kind === "loading" || state.kind === "profilePreparing") {

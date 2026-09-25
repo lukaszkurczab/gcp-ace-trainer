@@ -135,12 +135,14 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Pierwsze QA wykryło nieuprawniony status DONE i brak `practiceSessionExitCopy`/`Practice reminders`; drugie wykryło pominięcie `Info.plist`. Wszystkie luki zamknięto. Face ID prompt jest jawnie oznaczony jako potencjalny/stale, local-network prompt jako dev-only.
 - Powtarzalny inventory scan mapuje pełne klasy plików-kandydatów; semantyczna klasyfikacja każdego string expression, AST guard i migracja pozostają A3. Istniejący parytet EN/PL 1/1 PASS; diff check PASS.
 
-## ODK-117-A1 — gotowe do odblokowania Maestro
+## ODK-117-A1 — wynik
 
-- Status: **READY: odblokowanie Maestro; wcześniejsze niezależne QA BLOCKED**. Kod trafił na `main` w mieszanym commicie `9330fcef`, ale A1 pozostaje nieodebrane. Odbiór wykonać na istniejącym iPhonie 17.
-- Lokalny kontrakt rozdziela siedem target locale od dostępnych EN/PL, zachowuje storage `system|en|pl`, jawnie zwraca powód tymczasowego EN i wyłącza ukryty fallback i18next.
-- Testy A1/prezentacji/parytetu 27/27, typecheck i diff check — PASS. QA nie znalazł defektu kodu.
-- Wymagany render Language settings i prywatny zrzut nie są dostępne, ponieważ ten sam iPhone 17 zatrzymuje się na `account-remote-revoke-pending`. A2 nie startuje przed odbiorem A1.
+- Status: **done / niezależne QA PASS WITH ISSUES**; lokalnie, bez wdrożenia i bez zmiany preferencji/profilu podczas dowodu.
+- Kontrakt rozdziela siedem target locale od dostępnych EN/PL, zachowuje storage `system|en|pl`, jawnie zwraca powód tymczasowego EN i wyłącza ukryty fallback i18next.
+- Fixture działa tylko w `__DEV__` + smoke i renderuje produkcyjny `LanguageSettingsScreen`; nie wykonuje komend konta ani zapisu preferencji.
+- Na istniejącym iPhonie 17, przy `de-DE` i tekście `large`, terminalny flow Maestro potwierdził pełny komunikat System oraz opcje System/EN/PL. Screenshot i hierarchy obejrzano; EN pozostał selected. Potem przywrócono `pl-PL / pl_PL / large`.
+- Testy 29/29, typecheck i diff check — PASS. Ograniczenie QA: hierarchy nie wystawia osobnego węzła radiogroup, choć role radio/selected są widoczne, a rola grupy jest w JSX i teście.
+- Następny slice ODK-117: A2.
 
 ## ODK-117/B-CONTRACT — wynik
 
@@ -230,7 +232,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 ## Następne działania
 
 1. Wybrać następny dostępny slice z planu po zakończonym `AUD-11`; `B1b4c` nadal WAIT/PO.
-2. `ODK-117/A1` nadal wymaga osobnego odbioru ekranu Language settings na istniejącym iPhonie 17.
+2. `ODK-117/A1` jest odebrane; następny dostępny slice tej ścieżki to `ODK-117/A2`.
 3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 5. `PROFILE-02/B` jest anulowane decyzją właściciela. Tylko `B1b4c` nadal oczekuje na decyzję PO.
