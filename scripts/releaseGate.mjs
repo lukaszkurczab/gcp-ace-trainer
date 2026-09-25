@@ -18,6 +18,8 @@ let webRootInput = process.env.PATTERNLY_WEB_ROOT ?? null;
 const evidenceRoot = resolve(process.env.PATTERNLY_RELEASE_EVIDENCE_ROOT ?? "evidence/release");
 const releaseLockPath = resolve(process.env.PATTERNLY_RELEASE_LOCK_PATH ?? "integration/contracts/content-release/release.lock.json");
 let releaseGate = false;
+let requestedStage = null;
+let seenStageArgument = false;
 let outputPath = null;
 let releaseManifestPath = process.env.PATTERNLY_RELEASE_MANIFEST_PATH ? resolve(process.env.PATTERNLY_RELEASE_MANIFEST_PATH) : null;
 const seenRootArguments = new Set();
@@ -25,6 +27,13 @@ let seenManifestArgument = false;
 for (let index = 2; index < process.argv.length; index += 1) {
   const argument = process.argv[index];
   if (argument === "--enforce" && !releaseGate) releaseGate = true;
+  else if (argument === "--stage" && !seenStageArgument) {
+    const value = process.argv[index + 1];
+    if (!value || !["local", "freeze", "go"].includes(value)) throw new Error("--stage requires local, freeze, or go");
+    requestedStage = value;
+    seenStageArgument = true;
+    index += 1;
+  }
   else if (argument === "--output" && outputPath === null) {
     const value = process.argv[index + 1];
     if (!value || value.startsWith("--")) throw new Error("--output requires a path");
@@ -62,6 +71,8 @@ for (let index = 2; index < process.argv.length; index += 1) {
     index += 1;
   } else throw new Error(`Unknown or duplicate argument: ${argument}`);
 }
+
+const stage = requestedStage ?? "go";
 
 const applicationRoot = realpathSync(resolve(applicationRootInput));
 const contentRoot = realpathSync(resolve(contentRootInput));
@@ -358,7 +369,7 @@ if (readiness) {
 if (contentReleaseLock.status === "valid" && JSON.stringify(lockedTrackIds) !== JSON.stringify(launchTrackIds)) blockers.push({ kind: "application_release_lock_scope_mismatch", expected: launchTrackIds, actual: lockedTrackIds });
 
 let releaseManifest = null;
-if (releaseGate && !releaseManifestPath) {
+if (!releaseManifestPath) {
   releaseManifest = { status: "missing" };
   blockers.push({ kind: "release_manifest_missing" });
 }
@@ -392,10 +403,30 @@ if (releaseManifestPath) {
 const external = externalEvidence.map((id) => externalEvidenceStatus(id, applicationCommit));
 for (const evidence of external) if (evidence.status !== "verified") blockers.push({ kind: "external_release_evidence_missing", evidenceId: evidence.id, status: evidence.status, path: evidence.path });
 const optionalExternal = optionalExternalEvidence.map((id) => externalEvidenceStatus(id, applicationCommit));
+for (const evidence of optionalExternal) if (evidence.status !== "verified") blockers.push({ kind: "external_release_evidence_missing", evidenceId: evidence.id, status: evidence.status, path: evidence.path });
+
+const STAGE_ORDER = Object.freeze({ local: 0, freeze: 1, go: 2 });
+function blockerMinimumStage(blocker) {
+  if (blocker.kind.startsWith("public_legal_variables_") || blocker.kind.startsWith("release_manifest_")) return "freeze";
+  if (blocker.kind === "external_release_evidence_missing") return blocker.evidenceId === "signing-and-builds" ? "freeze" : "go";
+  return "local";
+}
+function blockersForStage(targetStage) {
+  return blockers
+    .filter((blocker) => STAGE_ORDER[blockerMinimumStage(blocker)] <= STAGE_ORDER[targetStage])
+    .sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
+}
+const stageResults = Object.freeze(Object.fromEntries(["local", "freeze", "go"].map((targetStage) => {
+  const targetBlockers = blockersForStage(targetStage);
+  return [targetStage, Object.freeze({ status: targetBlockers.length === 0 ? "ready" : "not_ready", blockers: targetBlockers })];
+})));
+const activeBlockers = stageResults[stage].blockers;
 
 const report = {
-  schemaVersion: "patternly-launch-readiness-v1",
-  status: blockers.length === 0 ? "ready" : "not_ready",
+  schemaVersion: "patternly-launch-readiness-v2",
+  stage,
+  status: stageResults[stage].status,
+  stages: stageResults,
   launchTrackIds,
   applicationRepository: { repositoryRole: "application", path: ".", headCommit: applicationCommit, ...applicationRepository },
   publicLegalVariables,
@@ -405,10 +436,10 @@ const report = {
   releaseManifest,
   externalEvidence: external,
   optionalExternalEvidence: optionalExternal,
-  blockers: blockers.sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right))),
+  blockers: activeBlockers,
 };
 
 const serializedReport = `${JSON.stringify(report, null, 2)}\n`;
 if (outputPath) writeFileSync(outputPath, serializedReport);
 process.stdout.write(serializedReport);
-if (releaseGate && blockers.length) process.exitCode = 1;
+if (releaseGate && activeBlockers.length) process.exitCode = 1;

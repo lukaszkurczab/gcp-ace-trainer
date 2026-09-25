@@ -345,6 +345,7 @@ jobs:
           set +e
           node scripts/releaseGate.mjs \
             --enforce \
+            --stage go \
             --manifest "$RELEASE_MANIFEST_PATH" \
             --application-root "$APPLICATION_ROOT" \
             --backend-root "$BACKEND_ROOT" \

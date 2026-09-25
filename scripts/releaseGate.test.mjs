@@ -160,7 +160,8 @@ test("launch readiness report is deterministic and exposes the unresolved releas
     assert.equal(first.status, 0);
     assert.equal(first.output, second.output);
     const report = JSON.parse(first.output);
-    assert.equal(report.schemaVersion, "patternly-launch-readiness-v1");
+    assert.equal(report.schemaVersion, "patternly-launch-readiness-v2");
+    assert.equal(report.stage, "go");
     assert.equal(report.status, "not_ready");
     assert.equal(report.publicLegalVariables.status, "incomplete");
     assert.equal(report.publicLegalVariables.path, "config/public-legal.release.json");
@@ -173,14 +174,15 @@ test("launch readiness report is deterministic and exposes the unresolved releas
     assert.ok(["clean", "dirty"].includes(report.applicationRepository.status));
     assert.match(report.applicationRepository.headCommit, /^[a-f0-9]{40}$/u);
     assert.match(report.contentReadiness.headCommit, /^[a-f0-9]{40}$/u);
-    assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing", "public_legal_variables_incomplete"].includes(blocker.kind)), true);
+    assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing", "public_legal_variables_incomplete", "release_manifest_missing"].includes(blocker.kind)), true);
+    assert.ok(report.blockers.some((blocker) => blocker.kind === "release_manifest_missing"));
     assert.deepEqual(
       report.blockers.filter((blocker) => blocker.kind === "application_worktree_dirty").map((blocker) => blocker.kind),
       report.applicationRepository.status === "dirty" ? ["application_worktree_dirty"] : [],
     );
     const externalBlockers = report.blockers.filter((blocker) => blocker.kind === "external_release_evidence_missing");
-    assert.equal(externalBlockers.length, requiredExternalEvidenceIds.length);
-    assert.deepEqual(externalBlockers.map((blocker) => blocker.evidenceId).sort(), [...requiredExternalEvidenceIds].sort());
+    assert.equal(externalBlockers.length, requiredExternalEvidenceIds.length + 1);
+    assert.deepEqual(externalBlockers.map((blocker) => blocker.evidenceId).sort(), [...requiredExternalEvidenceIds, "physical-device-matrix"].sort());
     assert.equal(report.contentReleaseLock.status, "valid");
     assert.equal(report.contentReadiness.repository, "clean");
     assert.match(report.contentReadiness.candidateId, /^[a-f0-9]{64}$/u);
@@ -455,7 +457,7 @@ test("launch readiness admits external evidence only when its envelope is bound 
   }
 });
 
-test("physical-device evidence is reported and validated as optional external evidence", () => {
+test("physical-device evidence is optional through freeze and mandatory at go", () => {
   const evidenceRoot = mkdtempSync(join(tmpdir(), "patternly-release-evidence-"));
   try {
     const applicationCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
@@ -466,7 +468,9 @@ test("physical-device evidence is reported and validated as optional external ev
     assert.deepEqual(report.externalEvidence.map((evidence) => evidence.id), requiredExternalEvidenceIds);
     assert.deepEqual(report.optionalExternalEvidence.map((evidence) => evidence.id), ["physical-device-matrix"]);
     assert.equal(report.optionalExternalEvidence[0].status, "not_evidenced");
-    assert.ok(!report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing" && blocker.evidenceId === "physical-device-matrix"));
+    assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing" && blocker.evidenceId === "physical-device-matrix"));
+    const freeze = JSON.parse(runArgs(["--stage", "freeze"], { PATTERNLY_RELEASE_EVIDENCE_ROOT: evidenceRoot }).output);
+    assert.ok(!freeze.blockers.some((blocker) => blocker.evidenceId === "physical-device-matrix"));
 
     writeFileSync(join(evidenceRoot, "physical-device-matrix.json"), JSON.stringify(evidenceRecord("physical-device-matrix", applicationCommit)));
     report = JSON.parse(runWithEvidenceRoot(evidenceRoot).output);
@@ -474,4 +478,25 @@ test("physical-device evidence is reported and validated as optional external ev
   } finally {
     rmSync(evidenceRoot, { recursive: true, force: true });
   }
+});
+
+test("stage contract keeps PO, provider, store, and device evidence out of local and freeze", () => {
+  const local = JSON.parse(runArgs(["--stage", "local"]).output);
+  assert.equal(local.stage, "local");
+  assert.ok(!local.blockers.some((blocker) => blocker.kind.startsWith("public_legal_variables_") || blocker.kind.startsWith("release_manifest_") || blocker.kind === "external_release_evidence_missing"));
+
+  const freeze = JSON.parse(runArgs(["--stage", "freeze"]).output);
+  assert.equal(freeze.stage, "freeze");
+  assert.ok(freeze.blockers.some((blocker) => blocker.kind.startsWith("public_legal_variables_")));
+  assert.ok(freeze.blockers.some((blocker) => blocker.kind === "release_manifest_missing"));
+  assert.ok(freeze.blockers.some((blocker) => blocker.evidenceId === "signing-and-builds"));
+  for (const evidenceId of ["provider-and-operations", "store-readiness", "product-owner-go", "physical-device-matrix"]) {
+    assert.ok(!freeze.blockers.some((blocker) => blocker.evidenceId === evidenceId), evidenceId);
+  }
+
+  const go = JSON.parse(runArgs(["--stage", "go"]).output);
+  for (const evidenceId of ["provider-and-operations", "store-readiness", "product-owner-go", "physical-device-matrix"]) {
+    assert.ok(go.blockers.some((blocker) => blocker.evidenceId === evidenceId), evidenceId);
+  }
+  assert.deepEqual(go.stages.local.blockers, local.blockers);
 });

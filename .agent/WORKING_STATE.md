@@ -166,6 +166,14 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Firebase CLI zwraca kod 2 dopiero po zielonych testach i zamknięciu emulatorów podczas update/MOTD config; późniejsze backend gates wykonano osobno. Lokalny JDK 23 różni się od przypiętego JDK 21 workflow.
 - Raport: [CI-CONTRACT/C](../docs/active/CI-CONTRACT/C-REPORT.md). Nowy kandydat wymaga ponownego exact-SHA runu przed FREEZE.
 
+## RELEASE-CONTRACT/A — wynik
+
+- Status: **done / niezależne QA PASS**; lokalnie, bez FREEZE, GO i wdrożenia.
+- Jeden `releaseGate` i raport v2 mają zamknięte etapy local/FREEZE/GO. Local nie wymaga danych PO ani external evidence. FREEZE dodaje dane wydania, manifest i signing/builds, ale nie provider/store/PO/device. GO wymaga także physical-device.
+- Hosted launch-readiness jawnie przekazuje `--stage go`; mutacja do freeze failuje test kontraktu.
+- Release gate/workflow/manifest 36/36, recovery inventory, typecheck i diff check — PASS.
+- Następny slice: RELEASE-CONTRACT/B — rozszerzenie istniejącego manifestu o app/content lock, iOS build, fingerprint niesekretnej konfiguracji i integralne evidence.
+
 ## Otwarte decyzje i blokady
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.

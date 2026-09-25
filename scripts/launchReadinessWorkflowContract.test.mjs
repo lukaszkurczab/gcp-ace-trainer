@@ -242,6 +242,7 @@ function assertManifestAndReleaseContract(source) {
   assert.match(release, /^        continue-on-error: true$/mu);
   assert.match(release, /node scripts\/releaseGate\.mjs/u);
   assert.match(release, /--enforce/u);
+  assert.match(release, /--stage go/u);
   assert.match(release, /--manifest "\$RELEASE_MANIFEST_PATH"/u);
   for (const option of ["application", "backend", "content", "web"]) assert.ok(release.includes(`--${option}-root "$${option.toUpperCase()}_ROOT"`));
   assert.match(release, /--output "\$RELEASE_REPORT_PATH"/u);
@@ -438,6 +439,7 @@ test("mutations of manifest creation, verification and enforced release fail clo
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Create candidate release manifest", "--web-root \"$WEB_ROOT\"", "--output \"$RELEASE_MANIFEST_PATH\"")));
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Verify candidate release manifest", "--manifest \"$RELEASE_MANIFEST_PATH\"", "--manifest \"other.json\"")));
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Run enforced release gate with verified manifest", "--enforce", "--check")));
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Run enforced release gate with verified manifest", "--stage go", "--stage freeze")));
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Run enforced release gate with verified manifest", "--manifest \"$RELEASE_MANIFEST_PATH\"", "--manifest \"other.json\"")));
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Run enforced release gate with verified manifest", "release_status=$?", "release_status=0")));
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Run enforced release gate with verified manifest", "exit \"$release_status\"", "exit 0")));
