@@ -112,7 +112,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## AUD-04-D — stan oczekujący
 
-- Status: **WAIT/DEVICE; ponowny niezależny QA BLOCKED**. Nie ma commitu ani push jako ukończonego zadania.
+- Status: **WAIT/DEVICE; ponowny niezależny QA BLOCKED**. Kod trafił na `main` w mieszanym commicie `9330fcef`, ale nie jest to commit ukończonego zadania ani PASS.
 - Lokalna ścieżka smoke pokazuje jawną ofertę, instaluje exact pakiet i prowadzi przygotowanie przez wspólnego runtime ownera. Release/sandbox mają pustą mapę ofert; rzeczywiste bundle smoke/release potwierdziły fixture wyłącznie w smoke.
 - Pierwszy QA wykrył utratę `nodeId` między route i lifecycle, która mogła wybrać Free i ominąć Gate A. Naprawa przenosi osobny jawny `nodeId`; integracyjna regresja sprawdza exact version/hash/pytanie, autoryzację przed mutacją oraz odmowę bez aktywnej sesji.
 - Typecheck, ukierunkowane testy, locale, content boundary i diff check przechodzą. Neutralny fixture nie jest admission ani treścią Premium.
@@ -127,7 +127,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## ODK-117-A1 — stan oczekujący
 
-- Status: **WAIT/DEVICE; niezależne QA BLOCKED**. Bez commitu i push.
+- Status: **WAIT/DEVICE; niezależne QA BLOCKED**. Kod trafił na `main` w mieszanym commicie `9330fcef`, ale A1 pozostaje nieodebrane.
 - Lokalny kontrakt rozdziela siedem target locale od dostępnych EN/PL, zachowuje storage `system|en|pl`, jawnie zwraca powód tymczasowego EN i wyłącza ukryty fallback i18next.
 - Testy A1/prezentacji/parytetu 27/27, typecheck i diff check — PASS. QA nie znalazł defektu kodu.
 - Wymagany render Language settings i prywatny zrzut nie są dostępne, ponieważ ten sam iPhone 17 zatrzymuje się na `account-remote-revoke-pending`. A2 nie startuje przed odbiorem A1.
@@ -147,7 +147,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Lokalny publiczny preview zwraca 404 dla `/admin*` i `/privacy-request*`; test sprawdza też brak ich kodu w buildzie. Testowy artefakt prawny pochodzi z eksportera aplikacji i pozostaje syntetyczny.
 - Firebase CLI nie potwierdziło dostępu: `projects:list` exit 2 z nieważnymi credentials. Zdalny release, deploy i rollback nie zostały wykonane. Produkcyjny build czeka na prawdziwe wartości ODK-116-B.
 - Briefing po redesignie: 0,92 / 0,84 / 0,88 / 0,86; minimum 0,84, APPROVE. Procedura PUBLISH opisuje przyszłe klonowanie live do kanału rollback i z powrotem.
-- Podczas pracy inne lokalne commity zmieniły HEAD app i web; raport PREP opiera się na stanie odczytanym przy końcowej weryfikacji. Nie przypisywać app HEAD do dokładnego źródła przy dirty tree.
+- Pierwsza wersja PREP zapisywała brudny status zamiast wymagać jednoznacznego źródła. Korekta wymaga czystych app/web HEAD przed i po buildzie; dopiero taki przebieg może być dowodem dokładnego źródła.
 
 ## Weryfikacja
 

@@ -1,6 +1,6 @@
 # AUD-04-D — Premium discovery i przygotowanie node
 
-**Status:** lokalna implementacja; bez niezależnego QA, dowodu Maestro, publikacji treści ani wdrożenia. Nie oznaczać jako PASS.  
+**Status:** lokalna implementacja w commicie `9330fcef`; bez końcowego niezależnego QA, dowodu Maestro, publikacji treści ani wdrożenia. Nie oznaczać jako PASS. Commit zawiera również nieodebrane ODK-117-A1 i nie jest dowodem zakończenia D.
 **Data:** 25 września 2026  
 **Briefing przed zmianą:** APPROVE; zgodność/architektura 0,88, prostota 0,83, ryzyko 0,81, utrzymywalność 0,84.
 

@@ -1,6 +1,6 @@
 # ODK-117-A1 — runtime locale resolver
 
-**Status:** `WAIT/DEVICE`; niezależne QA `BLOCKED` wyłącznie na wymaganym dowodzie Maestro ekranu ustawień. Nie oznaczać jako PASS ani commitować jako ukończone.  
+**Status:** `WAIT/DEVICE`; niezależne QA `BLOCKED` wyłącznie na wymaganym dowodzie Maestro ekranu ustawień. Nie oznaczać jako PASS. Kod i raport zostały omyłkowo wypchnięte w mieszanym commicie `9330fcef`; ten commit nie jest odbiorem A1.
 **Zakres:** jeden kontrakt runtime locale, rozpoznawanie locale systemowego i jawna prezentacja tymczasowego EN. Bez zmian storage, legal, backendu ani A2–A5.  
 **Model implementacji:** GPT-6 Luna Medium.
 
@@ -20,4 +20,4 @@
 
 ## Ograniczenia
 
-Nie wykonano Maestro ani ręcznego sprawdzenia renderu. Jedyny iPhone 17 pozostaje na `account-remote-revoke-pending`, który blokuje dojście do Home/Language settings; tego stanu nie usuwano ani nie przejmowano. QA potwierdził 27/27, typecheck, diff check, storage compatibility i brak ukrytego fallbacku, lecz wymaga rzeczywistego zrzutu widocznego komunikatu System przed akceptacją A1. Nie tworzono zrzutów ani nie wykonywano wdrożenia. Niezapisane zmiany AUD-04-D zachowano; raport i kod A1 pozostają niezatwierdzone i niewypchnięte.
+Nie wykonano Maestro ani ręcznego sprawdzenia renderu. Jedyny iPhone 17 pozostaje na `account-remote-revoke-pending`, który blokuje dojście do Home/Language settings; tego stanu nie usuwano ani nie przejmowano. QA potwierdził 27/27, typecheck, diff check, storage compatibility i brak ukrytego fallbacku, lecz wymaga rzeczywistego zrzutu widocznego komunikatu System przed akceptacją A1. Nie tworzono zrzutów ani nie wykonywano wdrożenia. Wspólny commit `9330fcef` zawiera również AUD-04-D i narusza pierwotną granicę selektywnego commitu; historii `main` nie przepisywano, a oba zadania pozostają nieodebrane.
