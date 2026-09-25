@@ -10,6 +10,7 @@ import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditabil
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { useAppPreferences } from "../../preferences";
+import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
 
 export type ContentPreparationPhase =
   | "opening-storage"
@@ -48,6 +49,9 @@ export function ContentBootstrapLoadingSkeleton({ phase }: Readonly<{ phase: Con
 export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
+  const account = usePatternlyAccount();
+  const accountRef = useRef(account);
+  accountRef.current = account;
   const [state, setState] = useState<ContentPreparationState>({ kind: "loading", phase: "opening-storage" });
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
   const [auditResetReady, setAuditResetReady] = useState(false);
@@ -111,7 +115,11 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         },
         async () => {
           setPhase("recovering-learning-state");
-          lifecycle = composeTrainingLifecycleUseCases();
+          lifecycle = composeTrainingLifecycleUseCases({
+            premiumSessionAdmission: {
+              authorize: () => accountRef.current.authorizePremiumSessionStart(),
+            },
+          });
           lifecycleReady.current = true;
           const queuedUrl = pendingRuntimeAuditabilityUrl.current;
           pendingRuntimeAuditabilityUrl.current = null;

@@ -3,8 +3,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExportDto, type LegalRequestDto, type LegalRequestKindDto, type MeResponseDto, type PrivacyRequestListItemDto, type PrivacyRequestResponseDto, type PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domain/entitlements";
-import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
+import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
+import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
 import { getMeWithExchangedSession } from "./accountSessionExchange";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
@@ -98,6 +99,7 @@ export type AccountSessionContextValue = Readonly<{
   readLegalRequest: (requestId: string) => Promise<PrivacyRequestCommandResult<LegalRequestDto>>;
   recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>) => Promise<AccountCommandResult>;
   refreshPremiumEntitlement: (accountId: string) => Promise<"verified" | "denied" | "pending">;
+  authorizePremiumSessionStart: () => Promise<"allowed" | "denied" | "unavailable">;
   requestPasswordRecovery: (email: string) => Promise<AccountCommandResult>;
   requestEmailChange: (credentials: FirebaseAuthCredentials, email: string) => Promise<AccountCommandResult>;
   retrySessionRestore: () => void;
@@ -1017,23 +1019,44 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     return { kind: "failure", failure: "accountNotFound" };
   }, []);
 
+  const refreshPremiumEntitlement = useCallback((accountId: string) => premiumRefreshQueueRef.current.request(async () => {
+    const current = stateRef.current;
+    if (!apiClient || !authClient || current.kind !== "authenticated" || current.backendUser.id !== accountId || authClient.getSnapshot()?.uid !== current.user.uid) return "pending" as const;
+    const generation = sessionCoordinator.current(current.user.uid);
+    if (!generation) return "pending" as const;
+    if (!clearPremiumCacheUnlessBoundTo(accountId)) return "pending" as const;
+    const stillCurrent = () => sessionCoordinator.isCurrent(generation) && authClient.getSnapshot()?.uid === current.user.uid
+      && stateRef.current.kind === "authenticated" && stateRef.current.backendUser.id === accountId;
+    try {
+      const response = await apiClient.getEntitlements();
+      if (!stillCurrent()) return "pending" as const;
+      const identity = { accountId, entitlement: PREMIUM_ENTITLEMENT, productId: legalVariables.terms.premiumProductIdentifier.en };
+      if (!replacePremiumCacheFromFreshResponse(response, identity, Date.now())) return "pending" as const;
+      return isPremiumAccessConfirmedOnline({ ...response.entitlements[0], serverObservedAt: response.serverObservedAt }) ? "verified" as const : "denied" as const;
+    } catch { return "pending" as const; }
+  }), [apiClient, authClient, sessionCoordinator]);
+
+  const authorizePremiumSessionStart = useCallback(async () => {
+    const current = stateRef.current;
+    if (current.kind !== "authenticated") return "denied" as const;
+    const accountId = current.backendUser.id;
+    const accountUid = current.user.uid;
+    const identity = { accountId, entitlement: PREMIUM_ENTITLEMENT, productId: legalVariables.terms.premiumProductIdentifier.en };
+    return resolvePremiumSessionAdmission({
+      isConfirmedOffline: async () => (await import("@react-native-community/netinfo")).default.fetch().then((network) => network.isInternetReachable === false),
+      hasOfflineAccess: () => {
+        const latest = stateRef.current;
+        return latest.kind === "authenticated" && latest.backendUser.id === accountId && latest.user.uid === accountUid
+          && authClient?.getSnapshot()?.uid === accountUid
+          && hasOfflinePremiumAccess(identity, Date.now());
+      },
+      refresh: () => refreshPremiumEntitlement(accountId),
+    });
+  }, [authClient, refreshPremiumEntitlement]);
+
   const value = useMemo<AccountSessionContextValue>(() => ({
-    refreshPremiumEntitlement: (accountId) => premiumRefreshQueueRef.current.request(async () => {
-      const current = stateRef.current;
-      if (!apiClient || !authClient || current.kind !== "authenticated" || current.backendUser.id !== accountId || authClient.getSnapshot()?.uid !== current.user.uid) return "pending";
-      const generation = sessionCoordinator.current(current.user.uid);
-      if (!generation) return "pending";
-      if (!clearPremiumCacheUnlessBoundTo(accountId)) return "pending";
-      const stillCurrent = () => sessionCoordinator.isCurrent(generation) && authClient.getSnapshot()?.uid === current.user.uid
-        && stateRef.current.kind === "authenticated" && stateRef.current.backendUser.id === accountId;
-      try {
-        const response = await apiClient.getEntitlements();
-        if (!stillCurrent()) return "pending";
-        const identity = { accountId, entitlement: PREMIUM_ENTITLEMENT, productId: legalVariables.terms.premiumProductIdentifier.en };
-        if (!replacePremiumCacheFromFreshResponse(response, identity, Date.now())) return "pending";
-        return isPremiumAccessConfirmedOnline({ ...response.entitlements[0], serverObservedAt: response.serverObservedAt }) ? "verified" : "denied";
-      } catch { return "pending"; }
-    }),
+    refreshPremiumEntitlement,
+    authorizePremiumSessionStart,
     recordPurchaseConfirmation: async (input) => {
       if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
       try { await apiClient.recordPurchaseConfirmation(input); return { kind: "success", next: "authenticated" }; }
@@ -1895,7 +1918,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     pendingRemoteRevokeCount: logoutControlSnapshot.pending.length + (state.kind === "signOutPending" && state.operationId && !logoutControlSnapshot.pending.some((pair) => pair.uid === state.user.uid && pair.operationId === state.operationId) ? 1 : 0),
     completeProfilePreparation,
     state,
-  }), [accountEntryMode, apiClient, authClient, completeProfilePreparation, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, registerAuthenticatedIdentity, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
+  }), [accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, completeProfilePreparation, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }

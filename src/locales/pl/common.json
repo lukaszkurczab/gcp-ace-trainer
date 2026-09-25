@@ -597,6 +597,8 @@
   "Submit answer": "Zatwierdź odpowiedź",
   "The session could not be paused. It remains active; try leaving again.": "Nie udało się przerwać sesji. Nadal jest aktywna. Spróbuj wyjść ponownie.",
   "The session could not be prepared.": "Nie udało się przygotować sesji.",
+  "Choose a free topic to continue.": "Wybierz bezpłatny temat, aby kontynuować.",
+  "Reconnect to verify Premium access, then try again.": "Połącz się ponownie, aby zweryfikować dostęp Premium, a następnie spróbuj jeszcze raz.",
   "This ends the active {{mode}} session. You won't be able to resume it. Your saved answers remain available.": "Zakończysz sesję „{{mode}}”. Nie będzie można jej wznowić. Zapisane odpowiedzi pozostaną dostępne.",
   "This practice mode is unavailable.": "Ten tryb ćwiczeń jest niedostępny.",
   "This session cannot be opened as Interview Simulation.": "Nie można otworzyć tej sesji jako symulacji rozmowy.",

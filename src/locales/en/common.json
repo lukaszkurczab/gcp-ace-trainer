@@ -597,6 +597,8 @@
   "Submit answer": "Submit answer",
   "The session could not be paused. It remains active; try leaving again.": "The session could not be paused. It remains active; try leaving again.",
   "The session could not be prepared.": "The session could not be prepared.",
+  "Choose a free topic to continue.": "Choose a free topic to continue.",
+  "Reconnect to verify Premium access, then try again.": "Reconnect to verify Premium access, then try again.",
   "This ends the active {{mode}} session. You won't be able to resume it. Your saved answers remain available.": "This ends the active {{mode}} session. You won't be able to resume it. Your saved answers remain available.",
   "This practice mode is unavailable.": "This practice mode is unavailable.",
   "This session cannot be opened as Interview Simulation.": "This session cannot be opened as Interview Simulation.",

@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import i18n from "../../i18n";
+import { TrainingApplicationFailure } from "../../application/trainingLifecycle";
 import {
   allowsPracticeFeedback,
   allowsPracticeResponseEditing,
   buildPracticeResponseControl,
+  describeSessionPreparationFailure,
   getPracticePrimaryAction,
   isPracticeActionPending,
   noticeForPracticeOperation,
@@ -91,6 +93,18 @@ test("Durable recovery notices stay learner-facing in English and Polish", () =>
   for (const locale of ["en", "pl"] as const) {
     assert.doesNotMatch(i18n.t(durableNotice.message, { lng: locale }), /LOCAL_OPERATION_FAILED|JOURNAL_/);
     assert.doesNotMatch(i18n.t(failureMessage, { lng: locale }), /LOCAL_OPERATION_FAILED|JOURNAL_/);
+  }
+});
+
+test("Premium session preparation failures map to localized next steps", () => {
+  const cases = [
+    [new TrainingApplicationFailure("premium_entitlement_denied", "denied"), "Choose a free topic to continue.", "Wybierz bezpłatny temat, aby kontynuować."],
+    [new TrainingApplicationFailure("premium_entitlement_unavailable", "unavailable"), "Reconnect to verify Premium access, then try again.", "Połącz się ponownie, aby zweryfikować dostęp Premium, a następnie spróbuj jeszcze raz."],
+  ] as const;
+  for (const [error, english, polish] of cases) {
+    assert.equal(describeSessionPreparationFailure(error, (message) => i18n.t(message, { lng: "en" }), "generic fallback"), english);
+    assert.equal(describeSessionPreparationFailure(error, (message) => i18n.t(message, { lng: "pl" }), "generic fallback"), polish);
+    assert.doesNotMatch(describeSessionPreparationFailure(error, (message) => i18n.t(message, { lng: "en" }), "generic fallback"), /LOCAL_OPERATION_FAILED/u);
   }
 });
 

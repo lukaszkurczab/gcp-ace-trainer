@@ -39,6 +39,8 @@ export const APPLICATION_FAILURE_CODES = [
   "finalization_verification_failed",
   "resume_unavailable",
   "summary_unavailable",
+  "premium_entitlement_denied",
+  "premium_entitlement_unavailable",
 ] as const;
 
 export type ApplicationFailureCode = (typeof APPLICATION_FAILURE_CODES)[number];
@@ -147,6 +149,11 @@ export interface TrainingMutationCoordinatorPort {
   reset(): Promise<void>;
 }
 
+export type PremiumSessionAdmissionResult = "allowed" | "denied" | "unavailable";
+export interface PremiumSessionAdmissionPort {
+  authorize(): Promise<PremiumSessionAdmissionResult>;
+}
+
 /** Development audit commands may adjust only an injected application clock. */
 export interface RuntimeAuditabilityPort {
   advanceWallClockBy(milliseconds: number): string;
@@ -159,5 +166,6 @@ export type TrainingLifecyclePorts = Readonly<{
   packages: ContentPackageRuntimePort;
   repositories: TrainingLifecycleRepositoryPort;
   mutations: TrainingMutationCoordinatorPort;
+  premiumSessionAdmission?: PremiumSessionAdmissionPort;
   runtimeAuditability?: RuntimeAuditabilityPort;
 }>;

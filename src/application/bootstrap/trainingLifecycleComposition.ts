@@ -21,6 +21,7 @@ import {
   type TrainingSessionIdentityPort,
   type TrainingSessionIdentityRequest,
   type TrainingLifecyclePorts,
+  type PremiumSessionAdmissionPort,
 } from "../trainingLifecycle";
 import { getTrackRegistration, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingSession } from "../../domain";
 import {
@@ -43,6 +44,7 @@ export type TrainingLifecycleCompositionDependencies = Readonly<{
   wallClock?: WallClock;
   sessionIds?: TrainingSessionIdentityPort;
   packages?: ContentPackageRuntimePort;
+  premiumSessionAdmission?: PremiumSessionAdmissionPort;
 }>;
 
 const realWallClock: WallClock = Object.freeze({ now: () => new Date().toISOString() });
@@ -87,6 +89,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     sessionIds,
     tracks: { getTrackRegistration },
     packages: dependencies.packages ?? contentPackageRuntimeOwner,
+    premiumSessionAdmission: dependencies.premiumSessionAdmission,
     repositories: {
       async getActiveSession() { return getActiveTrainingSession(); },
       async getSession(sessionId) { return (await getTrainingSessions()).value.find((session) => session.id === sessionId) ?? null; },

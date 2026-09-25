@@ -9,6 +9,7 @@ import {
   type TrainingSessionDraft,
   StaleDraftRevisionError,
 } from "../../domain";
+import { TRACK_DENSITY_DESCRIPTORS } from "../../domain/tracks/trackAdmission";
 import {
   TrainingApplicationFailure,
   type ApplicationFailureCode,
@@ -170,6 +171,13 @@ export class TrainingLifecycleUseCases {
     if (prepared.session.id !== sessionId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime changed the lifecycle-owned session identity.");
     if (prepared.session.trackId !== input.trackId || prepared.firstOccurrence.trackId !== input.trackId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime prepared a session outside the requested track.");
     await this.assertSessionPackage(prepared.session, resolution.track);
+    if (this.requiresPremiumAdmission(prepared.session, resolution.track)) {
+      const admission = this.ports.premiumSessionAdmission;
+      if (!admission) throw new TrainingApplicationFailure("premium_entitlement_unavailable", "Premium access could not be confirmed for this session.");
+      const decision = await this.run("premium_entitlement_unavailable", () => admission.authorize());
+      if (decision === "denied") throw new TrainingApplicationFailure("premium_entitlement_denied", "This session requires confirmed Premium access.");
+      if (decision !== "allowed") throw new TrainingApplicationFailure("premium_entitlement_unavailable", "Premium access could not be confirmed for this session.");
+    }
     await this.run("persistence_failure", () => this.ports.mutations.start(prepared));
     const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
     if (!verified || verified.id !== prepared.session.id || verified.status !== "active") throw new TrainingApplicationFailure("verification_failure", "The active session was not verified before its first occurrence could be exposed.");
@@ -520,6 +528,18 @@ export class TrainingLifecycleUseCases {
 
   private async assertSessionPackage(session: TrainingSession, track: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExactArtifact"]>>["track"]): Promise<void> {
     if (session.trackId !== track.trackId || session.contentVersion !== track.contentVersion || session.artifactSha256 !== track.artifactSha256) throw new TrainingApplicationFailure("version_mismatch", "Session changed its exact canonical content artifact.");
+  }
+
+  private requiresPremiumAdmission(session: TrainingSession, track: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExactArtifact"]>>["track"]): boolean {
+    const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === session.trackId);
+    if (!descriptor || session.itemOrder.length === 0) throw new TrainingApplicationFailure("missing_content", "The prepared session has no canonical Free node scope.");
+    for (const occurrence of session.itemOrder) {
+      if (occurrence.item.trackId !== session.trackId) throw new TrainingApplicationFailure("missing_content", "The prepared session contains content from another track.");
+      const question = track.getQuestion(occurrence.item.questionId);
+      if (!question || question.trackId !== session.trackId) throw new TrainingApplicationFailure("missing_content", "A prepared session item is not present in its verified content artifact.");
+      if (question.nodeId !== descriptor.freeNodeId) return true;
+    }
+    return false;
   }
 
   private forResolvedContent<T extends { item: ResolvedContentRef } | { sourceItem: ResolvedContentRef }>(records: readonly T[], identity: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): readonly T[] {

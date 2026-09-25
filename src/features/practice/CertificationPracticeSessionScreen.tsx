@@ -32,7 +32,7 @@ import type { PracticeSessionRouteParams } from "./sessionConfig";
 import type { TrainingSession } from "../../domain";
 import { getTrackRegistration } from "../../domain";
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
-import { allowsPracticeResponseEditing, formatPracticeElapsedTime, getPracticePrimaryAction, noticeForPracticeCompletionCheckpoint, noticeForPracticeOperation, reconcilePracticeChoiceSelection, type PracticeChoiceSelection, type PracticeOptionState, type PracticeSurfacePhase } from "./practiceSessionPresentation";
+import { allowsPracticeResponseEditing, describeSessionPreparationFailure, formatPracticeElapsedTime, getPracticePrimaryAction, noticeForPracticeCompletionCheckpoint, noticeForPracticeOperation, reconcilePracticeChoiceSelection, type PracticeChoiceSelection, type PracticeOptionState, type PracticeSurfacePhase } from "./practiceSessionPresentation";
 import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./PracticeSessionSurface";
 import { getCertificationMode } from "../../tracks/certification";
 import { toCanonicalQuestionViewModel } from "./canonicalQuestionViewModel";
@@ -86,7 +86,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
         await enterCertificationPracticeForeground();
         foregroundEntered = true;
         if (live) applyProjection(opened.projection);
-      } catch (cause) { if (live) setError(describeOperationalFailure(cause, t("Cloud practice is unavailable."))); }
+      } catch (cause) { if (live) setError(describeSessionPreparationFailure(cause, (message) => t(message), t("Cloud practice is unavailable."))); }
     })();
     return () => {
       live = false;

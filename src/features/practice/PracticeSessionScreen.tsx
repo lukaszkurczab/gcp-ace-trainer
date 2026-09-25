@@ -39,6 +39,7 @@ import {
   noticeForPracticeCompletionCheckpoint,
   noticeForPracticeOperation,
   resolvePracticeLocalResponse,
+  describeSessionPreparationFailure,
   type PracticeLocalResponse,
   type PracticeSurfacePhase,
 } from "./practiceSessionPresentation";
@@ -446,7 +447,7 @@ function toPracticeSurfacePhase(kind: AlgorithmsPracticeProjection["operation"][
 }
 
 function describePreparationFailure(error: unknown, t: TFunction<"common">): string {
-  return describeOperationalFailure(error, t("The session could not be prepared."));
+  return describeSessionPreparationFailure(error, (message) => t(message), t("The session could not be prepared."));
 }
 
 function describePracticeSubmissionFailure(error: unknown, t: TFunction<"common">): string {

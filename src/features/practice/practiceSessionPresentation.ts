@@ -1,6 +1,17 @@
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
+import { TrainingApplicationFailure } from "../../application/trainingLifecycle";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import type { JsonValue } from "../../content/canonical";
 import type { CanonicalSourceLink } from "../../application/canonical/canonicalSourceLinks";
+
+export function describeSessionPreparationFailure(error: unknown, translate: (message: string) => string, fallback: string): string {
+  if (error instanceof TrainingApplicationFailure) {
+    if (error.code === "premium_entitlement_denied") return translate("Choose a free topic to continue.");
+    if (error.code === "premium_entitlement_unavailable") return translate("Reconnect to verify Premium access, then try again.");
+  }
+  return describeOperationalFailure(error, fallback);
+}
+
 export type PracticeSurfacePhase = "preparing" | PracticeDurableOperationState["kind"];
 
 export type PracticeOptionState = "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct" | "not_selected";

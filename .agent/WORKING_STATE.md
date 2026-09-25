@@ -8,7 +8,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 | Repozytorium | Stan po CI-CONTRACT/B |
 | --- | --- |
-| `patternly` | CI-CONTRACT/B wypchnięte jako `4f18da89`; bieżący diff realizuje i dokumentuje AUD-16. |
+| `patternly` | AUD-16 wypchnięte jako `b4328b7c`; bieżący diff realizuje i dokumentuje ODK-119-GATE/A. |
 | `patternly-backend` | B1c wypchnięte na `main` jako `2a8c035`: test wyścigu wymiany sesji z obrotem generacji. |
 | `patternly-content` | CI-CONTRACT/A2b wypchnięte na `master` jako `21707b6`. |
 
@@ -81,6 +81,16 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Testy ukierunkowane 33/33, typecheck i diff check — PASS. Prywatne zrzuty zostały obejrzane i nie trafiły do repozytorium.
 - Briefing: 0,96 / 0,88 / 0,84 / 0,91, minimum 0,84 — APPROVE.
 
+## ODK-119-GATE/A — wynik
+
+- Status: **done / niezależne QA PASS**; lokalnie, bez provider E2E, download admission i wdrożenia.
+- Centralny `startSession` sprawdza cały przygotowany plan względem kanonicznego Free node przed `mutations.start`; Free omija bramkę, każdy element Premium jej wymaga.
+- `AccountSessionProvider` jest właścicielem świeżego odczytu i konta. Tylko jawne offline korzysta z istniejącego cache per konto; online/unknown wymaga fresh read, a błąd nigdy nie wraca do cache.
+- Fresh negative zastępuje cache i odmawia; fresh positive przywraca dostęp. Expiry, refund, hold, mismatch i rollback pozostają fail-closed w kanonicznej domenie.
+- Coding, Certification i Design pokazują PL/EN jawny następny krok: bezpłatny temat albo ponowienie po połączeniu.
+- Targeted controller 30/30, szerszy 46/46, typecheck, locale JSON i diff check — PASS. QA wykryło i domknięto test planu mieszanego oraz komunikaty UX.
+- Briefing po analizie mostu: 0,91 / 0,82 / 0,85 / 0,86, minimum 0,82 — APPROVE.
+
 ## Weryfikacja
 
 - Aplikacja: testy ukierunkowane 44/44, typecheck i `git diff --check` — PASS.
@@ -99,9 +109,10 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Rozpocząć `ODK-119-GATE/A`, pierwszy niezależny READY slice po zapisaniu lokalnych blokad CI-CONTRACT/C.
-2. Wrócić do `CI-CONTRACT/C`, gdy można wykonać właściwy exact-SHA etap bez omijania jego bramek.
-3. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
-4. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
+1. Rozpocząć `AUD-04-B`: backend admission/download według istniejącego kontraktu i bez wdrożenia.
+2. Po B wykonać osobno AUD-04-C i D, a następnie ODK-119-GATE/B.
+3. Wrócić do `CI-CONTRACT/C`, gdy można wykonać właściwy exact-SHA etap bez omijania jego bramek.
+4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
+5. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
 
 Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymaganych dowodów.

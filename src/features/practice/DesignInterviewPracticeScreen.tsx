@@ -36,6 +36,7 @@ import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./Practi
 import {
   allowsPracticeResponseEditing,
   buildPracticeResponseControl,
+  describeSessionPreparationFailure,
   getPracticePrimaryAction,
   noticeForPracticeCompletionCheckpoint,
   noticeForPracticeOperation,
@@ -106,7 +107,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
         foregroundEntered = true;
         if (live) applyProjection(opened.projection);
       } catch (cause) {
-        if (live) setError(describeOperationalFailure(cause, t("Design Interview practice is unavailable.")));
+        if (live) setError(describeSessionPreparationFailure(cause, (message) => t(message), t("Design Interview practice is unavailable.")));
       }
     })();
     return () => {
