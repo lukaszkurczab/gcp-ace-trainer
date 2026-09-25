@@ -247,10 +247,20 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Rozpocząć `PROFILE-03`; `B1b4c` nadal WAIT/PO.
+1. Rozpocząć `OPS-PRODUCTION/B1`; `B1b4c` nadal WAIT/PO.
 2. `ODK-117/A2` czeka na kompetentny przegląd pięciu języków.
 3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 5. `PROFILE-02/B` jest anulowane decyzją właściciela. Tylko `B1b4c` nadal oczekuje na decyzję PO.
 
 Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymaganych dowodów.
+
+## OPS-PRODUCTION/A — wynik
+
+- Status: **done / niezależne QA PASS**; dokumentacyjny kontrakt lokalny, bez wdrożenia i bez dostępu do danych produkcyjnych.
+- Repozytoria nie wykazują produkcyjnego kanału operatorskiego. Panel web i backendowy profil admina pozostają celowo lokalne; nie wolno ich publikować ani omijać przez bezpośredni Firestore.
+- Przyjęty kierunek B: B1 OIDC i per-action allowlista, B2 endpointy nad istniejącymi store’ami, B3 lokalne CLI, B4 syntetyczny odbiór. C dopiero w kontrolowanym środowisku przed GO.
+- Brak ogólnego command-result store jest jawny. Retry mutacji nie jest automatyczny: read-after-uncertain sprawdza postcondition danej akcji, a nierozstrzygalne i zewnętrzne skutki przechodzą do `AMBIGUOUS / RECONCILIATION REQUIRED`.
+- Privacy extension i legal answer wymagają w B bezpiecznego fence/reconciliation albo pozostają niedostępne w CLI. Content report pokazuje użytkownikowi tylko trwałe potwierdzenie przyjęcia, nie nieistniejący status sprawy.
+- Briefing końcowy: 0,92 / 0,86 / 0,90 / 0,84, minimum 0,84, APPROVE. Pierwsze QA FAIL wykryło zbyt szerokie obietnice delivery; po korekcie re-QA PASS.
+- Raport: [OPS-PRODUCTION/A](../docs/active/OPS-PRODUCTION/A-REPORT.md). Następny slice: `OPS-PRODUCTION/B1`.
