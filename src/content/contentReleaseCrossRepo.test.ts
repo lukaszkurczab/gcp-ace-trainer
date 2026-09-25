@@ -57,7 +57,7 @@ const expectedCurrentContentSha = (): string => {
 test("historical content release lock remains covered by frozen release manifests", () => {
   const appRoot = process.cwd();
   const historicalContentRoot = contentRoot("PATTERNLY_CONTENT_HISTORICAL_ROOT");
-  const lockPath = join(appRoot, "integration/contracts/content-release/release.lock.json");
+  const lockPath = join(appRoot, "integration/contracts/content-release/release.lock.historical-0024.json");
   const lockBytes = readFileSync(lockPath);
   assert.equal(sha256Raw(lockBytes), "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195");
   const releaseLock = JSON.parse(lockBytes.toString("utf8")) as {

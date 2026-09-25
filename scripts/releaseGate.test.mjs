@@ -107,24 +107,30 @@ const requiredExternalEvidenceIds = [
   "product-owner-go",
 ];
 
-function createAdmittedContentRoot({ mutateReadiness = null, mutateCandidate = null, mutateApproval = null } = {}) {
+function createAdmittedContentRoot({ mutateReadiness = null, mutateCandidate = null, mutateAdmission = null } = {}) {
   const contentRoot = mkdtempSync(join(tmpdir(), "patternly-release-gate-content-admitted-"));
   const sourceContentRoot = join(root, "..", "patternly-content");
   execFileSync("git", ["init", "-q"], { cwd: contentRoot });
   symlinkSync(join(sourceContentRoot, "scripts"), join(contentRoot, "scripts"));
   symlinkSync(join(sourceContentRoot, "schemas"), join(contentRoot, "schemas"));
-  mkdirSync(join(contentRoot, "evidence", "content-acceptance"), { recursive: true });
-  mkdirSync(join(contentRoot, "evidence", "human-content-approvals"), { recursive: true });
+  mkdirSync(join(contentRoot, "reports", "candidate-reconciliation", "AWS-02-DRAFT", "candidate"), { recursive: true });
+  mkdirSync(join(contentRoot, "reports", "candidate-reconciliation", "AWS-02-DRAFT", "release"), { recursive: true });
+  symlinkSync(join(sourceContentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json"), join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json"));
+  symlinkSync(join(sourceContentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts"), join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts"));
+  mkdirSync(join(contentRoot, "evidence", "candidate-decisions"), { recursive: true });
+  mkdirSync(join(contentRoot, "evidence", "admissions", "runtime"), { recursive: true });
   mkdirSync(join(contentRoot, "evidence", "readiness"), { recursive: true });
-  const candidate = JSON.parse(readFileSync(join(sourceContentRoot, "evidence/content-acceptance/candidate-manifest-v1.json"), "utf8"));
-  const approval = JSON.parse(readFileSync(join(sourceContentRoot, "evidence/human-content-approvals/manifest.json"), "utf8"));
-  const readiness = JSON.parse(readFileSync(join(sourceContentRoot, "evidence/readiness/candidate-readiness.json"), "utf8"));
+  const candidate = JSON.parse(readFileSync(join(sourceContentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
+  const readiness = JSON.parse(readFileSync(join(sourceContentRoot, "evidence/readiness/candidate-readiness-v2.json"), "utf8"));
+  const admission = JSON.parse(readFileSync(join(sourceContentRoot, "evidence/admissions/candidate-admission-v3.json"), "utf8"));
   mutateCandidate?.(candidate);
-  mutateApproval?.(approval);
   mutateReadiness?.(readiness);
-  writeFileSync(join(contentRoot, "evidence", "content-acceptance", "candidate-manifest-v1.json"), JSON.stringify(candidate));
-  writeFileSync(join(contentRoot, "evidence", "human-content-approvals", "manifest.json"), JSON.stringify(approval));
-  writeFileSync(join(contentRoot, "evidence", "readiness", "candidate-readiness.json"), JSON.stringify(readiness));
+  mutateAdmission?.(admission);
+  writeFileSync(join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), JSON.stringify(candidate));
+  writeFileSync(join(contentRoot, "evidence/readiness/candidate-readiness-v2.json"), JSON.stringify(readiness));
+  writeFileSync(join(contentRoot, "evidence/admissions/candidate-admission-v3.json"), JSON.stringify(admission));
+  writeFileSync(join(contentRoot, "evidence/candidate-decisions/aws-02-codex-decision-v2.json"), readFileSync(join(sourceContentRoot, "evidence/candidate-decisions/aws-02-codex-decision-v2.json")));
+  writeFileSync(join(contentRoot, admission.runtimeEvidence.path), readFileSync(join(sourceContentRoot, admission.runtimeEvidence.path)));
   execFileSync("git", ["add", "."], { cwd: contentRoot });
   execFileSync("git", ["-c", "user.name=release-gate-test", "-c", "user.email=release-gate-test@example.com", "commit", "-qm", "readiness"], { cwd: contentRoot });
   return contentRoot;
@@ -262,9 +268,9 @@ test("release readiness reports missing, malformed, and complete public legal co
   }
 });
 
-test("launch readiness rejects a forged editorial approval", () => {
+test("launch readiness rejects a forged runtime admission", () => {
   const trackId = "coding-interview-dsa-problem-solving";
-  const contentRoot = createAdmittedContentRoot({ mutateReadiness: (readiness) => { readiness.tracks.find((track) => track.trackId === trackId).humanApproval = null; } });
+  const contentRoot = createAdmittedContentRoot({ mutateAdmission: (admission) => { admission.tracks.find((track) => track.trackId === trackId).runtimeAdmission = "not_granted"; } });
   try {
     const result = runWithContentRoot(contentRoot);
     assert.equal(result.status, 0);
@@ -295,7 +301,7 @@ test("launch readiness fails closed when the content evidence checkout is dirty"
   try {
     execFileSync("git", ["init", "-q"], { cwd: contentRoot });
     mkdirSync(join(contentRoot, "evidence", "readiness"), { recursive: true });
-    writeFileSync(join(contentRoot, "evidence", "readiness", "candidate-readiness.json"), JSON.stringify({
+    writeFileSync(join(contentRoot, "evidence", "readiness", "candidate-readiness-v2.json"), JSON.stringify({
       schemaVersion: "patternly-candidate-readiness-v2",
       candidateId: "a".repeat(64),
       trackIds: [],
@@ -335,16 +341,14 @@ test("explicit report output is written after inspection and does not dirty eith
 
 test("owning validator rejects stale identity and malformed readiness semantics", () => {
   const cases = [
-    ["manifest path", { mutateReadiness: (value) => { value.candidateManifestPath = "wrong.json"; } }],
+    ["manifest path", { mutateReadiness: (value) => { value.candidatePath = "wrong.json"; } }],
     ["candidate id", { mutateReadiness: (value) => { value.candidateId = "b".repeat(64); } }],
-    ["fake approval", { mutateReadiness: (value) => { value.tracks[0].humanApproval.approvalId = "fake"; } }],
-    ["family", { mutateReadiness: (value) => { value.tracks[0].familyId = "wrong"; } }],
-    ["source", { mutateReadiness: (value) => { value.tracks[0].source.sourceFileCount += 1; } }],
-    ["current source", { mutateReadiness: (value) => { value.tracks[0].currentSource.sourceFileCount += 1; } }],
-    ["structural command", { mutateReadiness: (value) => { value.tracks[0].structuralValidation.command = ""; } }],
+    ["fake approval", { mutateReadiness: (value) => { value.candidateApproval.decisionId = "fake"; } }],
+    ["artifact", { mutateReadiness: (value) => { value.tracks[0].artifactSha256 = "0".repeat(64); } }],
+    ["runtime", { mutateAdmission: (value) => { value.runtimeAdmission = "not_granted"; } }],
+    ["lock", { mutateAdmission: (value) => { value.application.releaseLockSha256 = "0".repeat(64); } }],
     ["extra field", { mutateReadiness: (value) => { value.unexpected = true; } }],
     ["manifest identity", { mutateCandidate: (value) => { value.tracks[0].familyId = "wrong"; } }],
-    ["approval identity", { mutateApproval: (value) => { value.tracks[0].approvalId = "fake"; } }],
   ];
   for (const [name, mutations] of cases) {
     const contentRoot = createAdmittedContentRoot(mutations);

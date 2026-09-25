@@ -135,9 +135,9 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Pierwsze QA wykryło nieuprawniony status DONE i brak `practiceSessionExitCopy`/`Practice reminders`; drugie wykryło pominięcie `Info.plist`. Wszystkie luki zamknięto. Face ID prompt jest jawnie oznaczony jako potencjalny/stale, local-network prompt jako dev-only.
 - Powtarzalny inventory scan mapuje pełne klasy plików-kandydatów; semantyczna klasyfikacja każdego string expression, AST guard i migracja pozostają A3. Istniejący parytet EN/PL 1/1 PASS; diff check PASS.
 
-## ODK-117-A1 — stan oczekujący
+## ODK-117-A1 — gotowe do odblokowania Maestro
 
-- Status: **WAIT/DEVICE; niezależne QA BLOCKED**. Kod trafił na `main` w mieszanym commicie `9330fcef`, ale A1 pozostaje nieodebrane.
+- Status: **READY: odblokowanie Maestro; wcześniejsze niezależne QA BLOCKED**. Kod trafił na `main` w mieszanym commicie `9330fcef`, ale A1 pozostaje nieodebrane. Odbiór wykonać na istniejącym iPhonie 17.
 - Lokalny kontrakt rozdziela siedem target locale od dostępnych EN/PL, zachowuje storage `system|en|pl`, jawnie zwraca powód tymczasowego EN i wyłącza ukryty fallback i18next.
 - Testy A1/prezentacji/parytetu 27/27, typecheck i diff check — PASS. QA nie znalazł defektu kodu.
 - Wymagany render Language settings i prywatny zrzut nie są dostępne, ponieważ ten sam iPhone 17 zatrzymuje się na `account-remote-revoke-pending`. A2 nie startuje przed odbiorem A1.
@@ -206,15 +206,24 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.
 - `CI-CONTRACT/A2b`, `A3`, `B` i `C` — done; C ma lokalny PASS WITH ISSUES, nie hosted PASS.
-- `PROFILE-02/B` — WAIT na zapisaną w planie decyzję PO.
+- `PROFILE-02/B` — cancelled by owner; bez selektora, migracji i odzyskiwania wielu historycznych Gości. Następny jest PROFILE-02/C.
 - Brak wdrożenia jest granicą zakresu, nie defektem lokalnego B1c.
+
+## AWS-02/ADMISSION — done / PASS WITH ISSUES
+
+- Candidate `11d56baa…` ma osobny admission v3 dla zweryfikowanych lokalnych bajtów; granica `local_verified_artifacts_no_deployment` nie oznacza storage, backendu ani dystrybucji.
+- App commit `1a375c99…` zawiera schema-v3 exact lock i runtime test dziewięciu tracków. Stary lock `patternly-app-content-0024` jest zachowany jako historyczny dowód.
+- Content commit `23f46b2…` wiąże runtime evidence z app HEAD, lockami i testem; release gate zwraca `RELEASE_READY` dla exact candidate.
+- App release manifest/readiness przestawiono z historycznego ACC-02 na aktualne candidate/readiness/admission. Ukierunkowane 30/30, runtime 1/1, typecheck i content 70/70 PASS.
+- Pełny app suite: 1259/1262; trzy cross-repo wymagają jawnego historycznego checkoutu i expected current SHA, więc bez tych wejść failują zgodnie z kontraktem.
+- Pierwsze QA wykryło brak porównania per-track `artifactSha256`; naprawiono binding do exact release i dodano negatywny test obcego poprawnie sformatowanego hasha. Re-QA PASS WITH ISSUES; końcowe etykiety ACC-02 usunięto.
 
 ## Następne działania
 
-1. Rozpocząć `AWS-02/ADMISSION`, pierwszy dostępny slice po zakończonym ODK-119-GATE/B.
+1. Wybrać następny dostępny slice z planu po zakończonym `AWS-02/ADMISSION`; `B1b4c` nadal WAIT/PO.
 2. `ODK-117/A1` nadal wymaga osobnego odbioru ekranu Language settings na istniejącym iPhonie 17.
 3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
-5. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
+5. `PROFILE-02/B` jest anulowane decyzją właściciela. Tylko `B1b4c` nadal oczekuje na decyzję PO.
 
 Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymaganych dowodów.

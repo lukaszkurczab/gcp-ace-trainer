@@ -17,7 +17,7 @@ import { signingManifestBinding, validateReleaseEvidence } from "./releaseEviden
  * GATE-03 portable release manifest contract.
  *
  * This module deliberately contains no repository-specific validators. Content
- * acceptance is delegated to the ACC-02 modules in patternly-content and the
+ * acceptance is delegated to the current candidate/admission modules in patternly-content and the
  * OpenAPI check is delegated to patternly-backend's `openapi:check` script.
  */
 
@@ -48,8 +48,9 @@ export const CANDIDATE_TRACK_IDS = Object.freeze([
 export const RELEASE_MANIFEST_REFERENCES = Object.freeze([
   Object.freeze({ repositoryRole: "application", path: "integration/contracts/content-release/release.lock.json" }),
   Object.freeze({ repositoryRole: "backend", path: "openapi/patternly-v1.json" }),
-  Object.freeze({ repositoryRole: "content", path: "evidence/content-acceptance/candidate-manifest-v1.json" }),
-  Object.freeze({ repositoryRole: "content", path: "evidence/readiness/candidate-readiness.json" }),
+  Object.freeze({ repositoryRole: "content", path: "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json" }),
+  Object.freeze({ repositoryRole: "content", path: "evidence/readiness/candidate-readiness-v2.json" }),
+  Object.freeze({ repositoryRole: "content", path: "evidence/admissions/candidate-admission-v3.json" }),
 ]);
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
@@ -388,15 +389,16 @@ function parseJson(bytes, label) {
   }
 }
 
-function validateReleaseLock(lock, { candidate, readiness, trackIds }) {
+function validateReleaseLock(lock, { candidate, admission, trackIds, lockSha256 }) {
   if (!lock || typeof lock !== "object" || Array.isArray(lock)) throw new Error("Application release lock must be an object.");
-  if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content") throw new Error("Application release lock identity is invalid.");
+  if (lock.schemaVersion !== 3 || lock.repository !== "lukaszkurczab/patternly-content" || lock.candidateId !== candidate.candidateId) throw new Error("Application release lock identity is invalid.");
+  if (lock.candidateManifestPath !== "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json" || lock.releaseManifestPath !== "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json" || lock.releaseManifestSha256 !== candidate.release.checksumSha256) throw new Error("Application release lock candidate binding is stale.");
+  if (admission.application.releaseLockSha256 !== lockSha256 || admission.application.bundledContentLockSha256 !== lock.bundledContentLockSha256) throw new Error("Application release lock differs from the admitted application bytes.");
   if (typeof lock.bundleId !== "string" || lock.bundleId.length === 0 || !Array.isArray(lock.artifacts)) throw new Error("Application release lock is incomplete.");
   if (lock.artifacts.length !== trackIds.length) throw new Error("Application release lock must cover exactly nine tracks.");
   const lockTrackIds = lock.artifacts.map((artifact) => artifact?.trackId).sort(compare);
   exactArray(lockTrackIds, [...trackIds].sort(compare), "Application release lock track scope");
   const candidateByTrack = new Map(candidate.tracks.map((track) => [track.trackId, track]));
-  const readinessByTrack = new Map(readiness.tracks.map((track) => [track.trackId, track]));
   for (const artifact of lock.artifacts) {
     const trackId = artifact.trackId;
     for (const field of ["releaseId", "trackId", "contentVersion", "producerCommit", "sourceRepositoryCommit", "checksumSha256"]) {
@@ -405,10 +407,16 @@ function validateReleaseLock(lock, { candidate, readiness, trackIds }) {
     commit(artifact.producerCommit, `Application release lock ${trackId} producerCommit`);
     commit(artifact.sourceRepositoryCommit, `Application release lock ${trackId} sourceRepositoryCommit`);
     sha(artifact.checksumSha256, `Application release lock ${trackId} checksumSha256`);
-    const candidateArtifact = candidateByTrack.get(trackId)?.artifact;
-    const readinessArtifact = readinessByTrack.get(trackId)?.artifact;
+    const candidateTrack = candidateByTrack.get(trackId);
+    const candidateArtifact = candidateTrack && {
+      releaseId: candidate.release.releaseId,
+      trackId,
+      contentVersion: candidateTrack.contentVersion,
+      sourceRepositoryCommit: candidate.release.sourceRepositoryCommit,
+      checksumSha256: candidateTrack.checksumSha256,
+    };
     for (const field of ["releaseId", "trackId", "contentVersion", "sourceRepositoryCommit", "checksumSha256"]) {
-      if (artifact[field] !== candidateArtifact?.[field] || artifact[field] !== readinessArtifact?.[field]) {
+      if (artifact[field] !== candidateArtifact?.[field]) {
         throw new Error(`Application release lock ${trackId} is incoherent with the accepted candidate.`);
       }
     }
@@ -416,29 +424,22 @@ function validateReleaseLock(lock, { candidate, readiness, trackIds }) {
   return lock;
 }
 
-async function loadAndValidateContentContracts(contentRoot, candidateBytes, readinessBytes) {
-  const candidateModulePath = join(contentRoot, "scripts/review/candidate-manifest.mjs");
-  const approvalModulePath = join(contentRoot, "scripts/review/content-approval.mjs");
+async function loadAndValidateContentContracts(contentRoot, candidateBytes, readinessBytes, admissionBytes) {
+  const gateModulePath = join(contentRoot, "scripts/review/candidate-release-gate-v2.mjs");
   try {
-    const candidateContract = await import(pathToFileURL(candidateModulePath).href);
-    const approvalContract = await import(pathToFileURL(approvalModulePath).href);
-    const expectedTracks = candidateContract.CANDIDATE_TRACK_IDS;
-    if (canonicalJson(expectedTracks) !== canonicalJson(CANDIDATE_TRACK_IDS)) throw new Error("ACC-02 owning validator track scope differs from the pinned nine-track scope.");
+    const gate = await import(pathToFileURL(gateModulePath).href);
     const candidateFromReference = parseJson(candidateBytes, "Candidate Manifest");
-    const candidate = await candidateContract.loadCandidateManifest(contentRoot);
-    if (canonicalJson(candidate) !== canonicalJson(candidateFromReference)) throw new Error("Candidate Manifest reference does not name the owning candidate bytes.");
-    if (typeof candidateContract.verifyCandidateManifest !== "function" || typeof candidateContract.verifyCandidateCurrentSource !== "function") {
-      throw new Error("ACC-02 owning candidate verification functions are unavailable.");
-    }
-    await candidateContract.verifyCandidateManifest({ root: contentRoot, candidate });
-    await candidateContract.verifyCandidateCurrentSource({ root: contentRoot, candidate });
-    const approval = await approvalContract.loadHumanApprovalManifest({ root: contentRoot, candidate, trackIds: expectedTracks });
-    const readiness = parseJson(readinessBytes, "Candidate Readiness");
-    candidateContract.validateCandidateReadiness(readiness, { candidate, approval });
-    return { candidate, readiness, approval };
+    const readinessFromReference = parseJson(readinessBytes, "Candidate Readiness");
+    const admissionFromReference = parseJson(admissionBytes, "Candidate Admission");
+    const verified = await gate.verifyCandidateReleaseEvidence({ root: contentRoot });
+    const candidate = await gate.runCandidateReleaseGate({ root: contentRoot });
+    if (canonicalJson(candidate) !== canonicalJson(candidateFromReference) || canonicalJson(verified.readiness) !== canonicalJson(readinessFromReference)) throw new Error("Current candidate references do not name the owning evidence bytes.");
+    const committedAdmission = parseJson(readFileSync(join(contentRoot, "evidence/admissions/candidate-admission-v3.json")), "Candidate Admission");
+    if (canonicalJson(committedAdmission) !== canonicalJson(admissionFromReference)) throw new Error("Candidate Admission reference does not name the owning evidence bytes.");
+    return { candidate, readiness: verified.readiness, admission: committedAdmission };
   } catch (error) {
     if (error?.message?.startsWith("ACC-02") || error?.message?.startsWith("Candidate") || error?.message?.startsWith("Release")) throw error;
-    throw new Error(`ACC-02 owning validator rejected content evidence: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`Current candidate admission validator rejected content evidence: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -487,12 +488,15 @@ function loadSigningEvidence(evidenceRoot, roots, expectedApplicationCommit) {
 
 async function collectContracts(roots, candidatePathFiles) {
   const candidateReference = candidatePathFiles
-    ? referenceFile(candidatePathFiles, "content", "evidence/content-acceptance/candidate-manifest-v1.json")
-    : readRegularReference(roots.content, { repositoryRole: "content", path: "evidence/content-acceptance/candidate-manifest-v1.json" });
+    ? referenceFile(candidatePathFiles, "content", "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json")
+    : readRegularReference(roots.content, { repositoryRole: "content", path: "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json" });
   const readinessReference = candidatePathFiles
-    ? referenceFile(candidatePathFiles, "content", "evidence/readiness/candidate-readiness.json")
-    : readRegularReference(roots.content, { repositoryRole: "content", path: "evidence/readiness/candidate-readiness.json" });
-  return loadAndValidateContentContracts(roots.content, candidateReference.bytes, readinessReference.bytes);
+    ? referenceFile(candidatePathFiles, "content", "evidence/readiness/candidate-readiness-v2.json")
+    : readRegularReference(roots.content, { repositoryRole: "content", path: "evidence/readiness/candidate-readiness-v2.json" });
+  const admissionReference = candidatePathFiles
+    ? referenceFile(candidatePathFiles, "content", "evidence/admissions/candidate-admission-v3.json")
+    : readRegularReference(roots.content, { repositoryRole: "content", path: "evidence/admissions/candidate-admission-v3.json" });
+  return loadAndValidateContentContracts(roots.content, candidateReference.bytes, readinessReference.bytes, admissionReference.bytes);
 }
 
 function currentReferenceHashes(roots) {
@@ -536,7 +540,7 @@ export async function createReleaseManifest({
   const referenceMap = new Map(references.map((reference) => [`${reference.repositoryRole}:${reference.path}`, reference]));
   const lockReference = readRegularReference(repositoryRoots.application, RELEASE_MANIFEST_REFERENCES[0]);
   const lock = parseJson(lockReference.bytes, "Application release lock");
-  validateReleaseLock(lock, { ...contractState, trackIds: CANDIDATE_TRACK_IDS });
+  validateReleaseLock(lock, { ...contractState, trackIds: CANDIDATE_TRACK_IDS, lockSha256: sha256(lockReference.bytes) });
   runOwningOpenApiCheck(repositoryRoots.backend);
   const manifest = buildManifest({ commits, candidate: contractState.candidate, files: referenceMap, signingBinding: signing.binding });
   writeFileSync(output, canonicalJsonBytes(manifest), { encoding: "utf8" });
@@ -579,7 +583,7 @@ export async function verifyReleaseManifest({
   if (contractState.readiness.candidateId !== manifest.candidateId) throw new Error("Candidate Readiness candidateId is stale.");
   const lockReference = referenceFile(files, "application", "integration/contracts/content-release/release.lock.json");
   const lock = parseJson(lockReference.bytes, "Application release lock");
-  validateReleaseLock(lock, { ...contractState, trackIds: manifest.trackIds });
+  validateReleaseLock(lock, { ...contractState, trackIds: manifest.trackIds, lockSha256: sha256(lockReference.bytes) });
   const openApiReference = referenceFile(files, "backend", "openapi/patternly-v1.json");
   if (sha256(readFileSync(openApiReference.path)) !== openApiReference.reference.sha256) throw new Error("Backend OpenAPI hash changed during verification.");
   runOwningOpenApiCheck(repositoryRoots.backend);

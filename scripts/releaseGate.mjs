@@ -80,7 +80,8 @@ const contentRoot = realpathSync(resolve(contentRootInput));
 
 const applicationReleaseLockRelativePath = "integration/contracts/content-release/release.lock.json";
 const publicLegalRelativePath = "config/public-legal.release.json";
-const contentReadinessRelativePath = "evidence/readiness/candidate-readiness.json";
+const contentReadinessRelativePath = "evidence/readiness/candidate-readiness-v2.json";
+const contentAdmissionRelativePath = "evidence/admissions/candidate-admission-v3.json";
 const releaseEvidenceRelativeDirectory = "evidence/release";
 
 function isWithin(parent, child) {
@@ -193,7 +194,7 @@ function inspectReleaseLock() {
   }
 
   const errors = [];
-  if (lock?.schemaVersion !== 2) errors.push("schemaVersion must be 2");
+  if (lock?.schemaVersion !== 3) errors.push("schemaVersion must be 3");
   if (lock?.repository !== "lukaszkurczab/patternly-content") errors.push("repository must be lukaszkurczab/patternly-content");
   if (typeof lock?.bundleId !== "string" || lock.bundleId.length === 0) errors.push("bundleId must be a non-empty string");
   if (!Array.isArray(lock?.artifacts) || lock.artifacts.length === 0) errors.push("artifacts must be a non-empty array");
@@ -311,12 +312,10 @@ let readiness = null;
 let candidate = null;
 const readinessPath = resolve(contentRoot, contentReadinessRelativePath);
 try {
-  const candidateContract = await import(pathToFileURL(resolve(contentRoot, "scripts/review/candidate-manifest.mjs")));
-  const approvalContract = await import(pathToFileURL(resolve(contentRoot, "scripts/review/content-approval.mjs")));
-  candidate = await candidateContract.loadCandidateManifest(contentRoot);
-  const approval = await approvalContract.loadHumanApprovalManifest({ root: contentRoot, candidate, trackIds: candidateContract.CANDIDATE_TRACK_IDS });
-  readiness = readJson(readinessPath);
-  candidateContract.validateCandidateReadiness(readiness, { candidate, approval });
+  const gate = await import(pathToFileURL(resolve(contentRoot, "scripts/review/candidate-release-gate-v2.mjs")));
+  const verified = await gate.verifyCandidateReleaseEvidence({ root: contentRoot });
+  candidate = await gate.runCandidateReleaseGate({ root: contentRoot });
+  readiness = verified.readiness;
 } catch (error) {
   blockers.push({ kind: existsSync(readinessPath) ? "invalid_content_readiness_report" : "unreadable_content_readiness_report", error: portableError(error) });
   candidate = null;
@@ -330,7 +329,9 @@ if (contentRepository.status === "dirty") blockers.push({ kind: "content_readine
 if (readiness) {
   const reportScope = readiness.trackIds;
   if (JSON.stringify(reportScope) !== JSON.stringify(launchTrackIds)) blockers.push({ kind: "content_readiness_scope_mismatch", expected: launchTrackIds, actual: reportScope });
-  const byTrackId = new Map(readiness.tracks.map((track) => [track?.trackId, track]));
+  const byTrackId = new Map(candidate.tracks.map((track) => [track?.trackId, track]));
+  const admission = readJson(resolve(contentRoot, contentAdmissionRelativePath));
+  const admissionByTrackId = new Map(admission.tracks.map((track) => [track?.trackId, track]));
   const lockByTrackId = new Map((contentReleaseLock.status === "valid" ? readJson(releaseLockPath).artifacts : []).map((artifact) => [artifact.trackId, artifact]));
   for (const trackId of launchTrackIds) {
     const track = byTrackId.get(trackId);
@@ -338,14 +339,17 @@ if (readiness) {
       blockers.push({ kind: "missing_track_readiness", trackId });
       continue;
     }
-    if (track.structuralValidation.result !== "passed") blockers.push({ kind: "technical_validation_not_admitted", trackId, actual: track.structuralValidation.result });
-    if (!track.humanApproval) blockers.push({ kind: "human_editorial_approval_missing", trackId });
     const lockedArtifact = lockByTrackId.get(trackId);
-    const artifactMatchesLock = lockedArtifact && ["releaseId", "trackId", "contentVersion", "sourceRepositoryCommit", "checksumSha256"].every((field) => track.artifact?.[field] === lockedArtifact[field]);
+    const artifactMatchesLock = lockedArtifact
+      && lockedArtifact.releaseId === candidate.release.releaseId
+      && lockedArtifact.trackId === track.trackId
+      && lockedArtifact.contentVersion === track.contentVersion
+      && lockedArtifact.sourceRepositoryCommit === candidate.release.sourceRepositoryCommit
+      && lockedArtifact.checksumSha256 === track.checksumSha256;
     if (!artifactMatchesLock) blockers.push({ kind: "content_readiness_artifact_mismatch", trackId });
-    if (track.publishingAdmission !== "admitted") blockers.push({ kind: "publishing_admission_missing", trackId, actual: track.publishingAdmission ?? null });
-    if (track.runtimeAdmission !== "admitted") blockers.push({ kind: "runtime_admission_missing", trackId, actual: track.runtimeAdmission ?? null });
-    if (track.blockers.length !== 0) blockers.push({ kind: "track_readiness_blocked", trackId, actual: track.blockers });
+    const admitted = admissionByTrackId.get(trackId);
+    if (admitted?.publishingAdmission !== "granted") blockers.push({ kind: "publishing_admission_missing", trackId, actual: admitted?.publishingAdmission ?? null });
+    if (admitted?.runtimeAdmission !== "granted") blockers.push({ kind: "runtime_admission_missing", trackId, actual: admitted?.runtimeAdmission ?? null });
   }
 }
 

@@ -188,7 +188,7 @@ test("creates deterministic portable identity with repositories, locks, build, c
   assert.equal(readFileSync(secondPath, "utf8"), firstBytes);
 });
 
-test("verifies exact HEADs, clean worktrees, hashes and ACC-02/OpenAPI owning checks", async () => {
+test("verifies exact HEADs, clean worktrees, hashes and current content/OpenAPI owning checks", async () => {
   const verified = await verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath });
   assert.equal(verified.status, "verified");
   assert.equal(verified.manifestId, manifest.manifestId);
@@ -276,7 +276,7 @@ test("enforced releaseGate reports a verified manifest identity without absolute
   assert.deepEqual(report.releaseManifest.evidence, manifest.evidence);
   assert.equal(report.releaseManifest.otaPolicy, "embedded-only");
   assert.equal(report.applicationRepository.path, ".");
-  assert.equal(report.contentReadiness.path, "evidence/readiness/candidate-readiness.json");
+  assert.equal(report.contentReadiness.path, "evidence/readiness/candidate-readiness-v2.json");
   assert.equal(report.contentReleaseLock.path, "integration/contracts/content-release/release.lock.json");
   assert.equal(result.output.includes(root), false);
   assert.equal(report.blockers.some((blocker) => blocker.kind === "release_manifest_invalid"), false);
@@ -370,7 +370,7 @@ test("rejects wrong manifest identity, stale candidate/track scope and wrong rep
 
 test("rejects modified evidence before accepting a portable reference", async () => {
   await withMutation((value) => {
-    value.references.find((reference) => reference.path.endsWith("candidate-readiness.json")).sha256 = "0".repeat(64);
+    value.references.find((reference) => reference.path.endsWith("candidate-readiness-v2.json")).sha256 = "0".repeat(64);
   }, async () => {
     await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /Reference hash mismatch/u);
   });
