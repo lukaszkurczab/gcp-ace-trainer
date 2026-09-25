@@ -415,7 +415,7 @@ export type PatternlyApiClient = Readonly<{
   confirmAccountAdoption: (input: Readonly<{ deviceId: string; snapshot: GuestMergeSnapshotRequestDto; confirmation: AdoptionConfirmationDto }>) => Promise<AdoptionExecutionResponseDto>;
   issueRecoveryCodes: () => Promise<RecoveryCodesResponseDto>;
   consumeRecoveryCode: (code: string) => Promise<Readonly<{ customToken: string }>>;
-  revokeSessions: (operationId: string) => Promise<Readonly<{ status: "revoked"; operationId: string }>>;
+  revokeSessions: (operationId: string) => Promise<Readonly<{ status: "revoked"; operationId: string; customToken: string }>>;
   deleteAccount: (operationId: string, operationSecret: string) => Promise<AccountDeletionResponseDto>;
   getDeletionProof: (proofId: string) => Promise<PublicDeletionProofResponseDto>;
   getDeletionOperationStatus: (operationId: string, operationSecret: string) => Promise<DeletionOperationStatusDto>;
@@ -636,7 +636,13 @@ export function createPatternlyApiClient(input: Readonly<{
     },
     issueRecoveryCodes: () => requestJson<RecoveryCodesResponseDto>("/v1/account/recovery-codes", "POST", {}),
     consumeRecoveryCode: (code) => requestJson<Readonly<{ customToken: string }>>("/v1/public/recovery-codes/consume", "POST", { code }, "none"),
-    revokeSessions: (operationId) => requestJson<Readonly<{ status: "revoked"; operationId: string }>>("/v1/account/session/revoke", "POST", { operationId }),
+    revokeSessions: async (operationId) => {
+      const response = await requestJson<unknown>("/v1/account/session/revoke", "POST", { operationId });
+      if (!isRecord(response) || response.status !== "revoked" || response.operationId !== operationId || typeof response.customToken !== "string" || !response.customToken.trim()) {
+        throw new PatternlyApiClientError("invalid_response");
+      }
+      return Object.freeze({ status: "revoked" as const, operationId: response.operationId, customToken: response.customToken });
+    },
     deleteAccount: (operationId, operationSecret) => requestJson<AccountDeletionResponseDto>("/v1/account/deletion", "POST", { operationId, operationSecret }),
     getDeletionProof: (proofId) => requestJson<PublicDeletionProofResponseDto>(`/v1/public/deletion-proofs/${proofId}`, "GET", undefined, "none"),
     getDeletionOperationStatus: (operationId, operationSecret) => requestJson<DeletionOperationStatusDto>("/v1/public/deletion-operations/status", "POST", { operationId, operationSecret }, "none"),

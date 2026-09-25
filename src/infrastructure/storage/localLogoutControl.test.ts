@@ -4,7 +4,7 @@ import test from "node:test";
 import { LocalLogoutControlError, createLocalLogoutControl, type LocalLogoutControlSnapshot } from "./localLogoutControl";
 import type { StorageManifestStore } from "./encryptedStorageBootstrap";
 
-const KEY = "patternly.local-logout-control.v1";
+const KEY = "patternly.local-logout-control.v2";
 
 class MemoryManifestStore implements StorageManifestStore {
   readonly values = new Map<string, string>();
@@ -35,11 +35,11 @@ class MemoryManifestStore implements StorageManifestStore {
 
 function memoryStore(): MemoryManifestStore { return new MemoryManifestStore(); }
 
-function expected(blocked: { uid: string; operationId: string } | null, pending: { uid: string; operationId: string }[] = []): LocalLogoutControlSnapshot {
-  return { blocked, pending, version: 1 };
+function expected(blocked: { uid: string; operationId: string } | null, pending: { uid: string; operationId: string }[] = [], completed: { uid: string; operationId: string }[] = []): LocalLogoutControlSnapshot {
+  return { blocked, completed, pending, version: 2 };
 }
 
-test("stores one strict, versioned record with only block and pending identity metadata", async () => {
+test("stores one strict, versioned record with only operation identity metadata", async () => {
   const store = memoryStore();
   const control = createLocalLogoutControl(store);
 
@@ -48,8 +48,9 @@ test("stores one strict, versioned record with only block and pending identity m
   const raw = store.values.get(KEY)!;
   assert.deepEqual(JSON.parse(raw), {
     blocked: { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" },
+    completed: [],
     pending: [{ uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }],
-    version: 1,
+    version: 2,
   });
   assert.equal(/token|password|payload|outbox/i.test(raw), false);
 });
@@ -76,6 +77,21 @@ test("operation IDs must be UUIDv4 both on writes and when loading persisted rec
     version: 1,
   }));
   await assert.rejects(control.read(), (error: unknown) => error instanceof LocalLogoutControlError && error.code === "local_logout_control_corrupt");
+});
+
+test("a version-one pending record is rejected instead of migrated", async () => {
+  const store = memoryStore();
+  const operationId = "00000000-0000-4000-8000-000000000001";
+  store.values.set(KEY, JSON.stringify({
+    blocked: { uid: "uid-A", operationId },
+    pending: [{ uid: "uid-A", operationId }],
+    version: 1,
+  }));
+  const control = createLocalLogoutControl(store);
+
+  await assert.rejects(control.completePendingRevoke("uid-A", operationId), (error: unknown) => error instanceof LocalLogoutControlError && error.code === "local_logout_control_corrupt");
+  assert.equal(JSON.parse(store.values.get(KEY)!).version, 1);
+  assert.equal(store.sets, 0);
 });
 
 test("a stale UID or operation cannot clear a newer block", async () => {
@@ -148,6 +164,114 @@ test("another UID cannot alter a different UID's pending operation", async () =>
     { uid: "uid-A", operationId: "00000000-0000-4000-8000-00000000000a" },
     { uid: "uid-B", operationId: "00000000-0000-4000-8000-00000000000b" },
   ]));
+});
+
+test("verified remote completion removes only the exact UID and operation pair", async () => {
+  const store = memoryStore();
+  const control = createLocalLogoutControl(store);
+  await control.blockAndQueueRevoke("uid-A", "00000000-0000-4000-8000-00000000000a");
+  await control.blockAndQueueRevoke("uid-A", "00000000-0000-4000-8000-00000000000b");
+  await control.blockAndQueueRevoke("uid-B", "00000000-0000-4000-8000-00000000000c");
+
+  const unchanged = await control.completePendingRevoke("uid-A", "00000000-0000-4000-8000-00000000000b", () => false);
+  assert.equal(unchanged.pending.length, 3);
+  assert.deepEqual(await control.completePendingRevoke("uid-A", "00000000-0000-4000-8000-00000000000a"), expected(
+    { uid: "uid-B", operationId: "00000000-0000-4000-8000-00000000000c" },
+    [
+      { uid: "uid-A", operationId: "00000000-0000-4000-8000-00000000000b" },
+      { uid: "uid-B", operationId: "00000000-0000-4000-8000-00000000000c" },
+    ],
+    [{ uid: "uid-A", operationId: "00000000-0000-4000-8000-00000000000a" }],
+  ));
+  assert.equal(/token|password|payload|outbox/i.test(store.values.get(KEY)!), false);
+});
+
+test("completion rechecks its guard after the async read and keeps the pending marker when stale", async () => {
+  const store = memoryStore();
+  const base = createLocalLogoutControl(store);
+  const operationId = "00000000-0000-4000-8000-000000000001";
+  await base.blockAndQueueRevoke("uid-A", operationId);
+  let releaseRead!: () => void;
+  let markReadStarted!: () => void;
+  const readStarted = new Promise<void>((resolve) => { markReadStarted = resolve; });
+  const readBarrier = new Promise<void>((resolve) => { releaseRead = resolve; });
+  let delayNextRead = true;
+  const delayed = createLocalLogoutControl({
+    get: async (key) => {
+      if (delayNextRead) {
+        delayNextRead = false;
+        markReadStarted();
+        await readBarrier;
+      }
+      return store.get(key);
+    },
+    set: (key, value) => store.set(key, value),
+    remove: (key) => store.remove(key),
+  });
+  let current = true;
+  const completion = delayed.completePendingRevoke("uid-A", operationId, () => current);
+  await readStarted;
+  current = false;
+  releaseRead();
+
+  assert.deepEqual(await completion, expected({ uid: "uid-A", operationId }, [{ uid: "uid-A", operationId }]));
+  assert.deepEqual(await base.read(), expected({ uid: "uid-A", operationId }, [{ uid: "uid-A", operationId }]));
+});
+
+test("completion records a durable tombstone when read-back cannot verify pending removal", async () => {
+  const store = memoryStore();
+  const base = createLocalLogoutControl(store);
+  const operationId = "00000000-0000-4000-8000-000000000001";
+  const pending = expected({ uid: "uid-A", operationId }, [{ uid: "uid-A", operationId }]);
+  await base.blockAndQueueRevoke("uid-A", operationId);
+  let reads = 0;
+  const control = createLocalLogoutControl({
+    get: async (key) => {
+      reads += 1;
+      return reads === 2 ? "{}" : store.get(key);
+    },
+    set: (key, value) => store.set(key, value),
+    remove: (key) => store.remove(key),
+  });
+
+  assert.deepEqual(await control.completePendingRevoke("uid-A", operationId), {
+    blocked: null,
+    completed: [{ uid: "uid-A", operationId }],
+    pending: [],
+    version: 2,
+  });
+  assert.deepEqual(await base.read(), {
+    blocked: null,
+    completed: [{ uid: "uid-A", operationId }],
+    pending: [],
+    version: 2,
+  });
+});
+
+test("an unavailable confirmation read still leaves pending or an exact completed tombstone", async () => {
+  const store = memoryStore();
+  const base = createLocalLogoutControl(store);
+  const operationId = "00000000-0000-4000-8000-000000000001";
+  await base.blockAndQueueRevoke("uid-A", operationId);
+  let reads = 0;
+  const control = createLocalLogoutControl({
+    get: async (key) => {
+      reads += 1;
+      if (reads === 2) return "{}";
+      if (reads === 3) throw new Error("confirmation_unavailable");
+      return store.get(key);
+    },
+    set: (key, value) => store.set(key, value),
+    remove: (key) => store.remove(key),
+  });
+
+  await assert.rejects(control.completePendingRevoke("uid-A", operationId), (error: unknown) => error instanceof LocalLogoutControlError && error.code === "local_logout_control_verification_failed");
+  assert.deepEqual(await base.read(), {
+    blocked: null,
+    completed: [{ uid: "uid-A", operationId }],
+    pending: [],
+    version: 2,
+  });
 });
 
 test("corrupt or unknown-version records fail closed without being overwritten", async () => {

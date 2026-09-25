@@ -7,6 +7,7 @@ import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAcc
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
 import { getMeWithExchangedSession } from "./accountSessionExchange";
+import { resumePendingSessionRevocation } from "./pendingSessionRevocation";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
@@ -18,7 +19,7 @@ import { activatePreparedProfile, closeActiveProfileStorage, continueAsGuestInNe
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
 import { useProfileStoragePreparation } from "./profileStoragePreparationContext";
 import { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, finishLocalSignOutSetupFailure, guardAuthenticatedScopeAgainstIncompleteSignOut, isPreparedGuestChoiceRequired, lockAndCloseProfileAfterAuthLoss, performLocalAccountSignOut, prepareAuthenticatedProfileScope, prepareGuestProfileScope, recoverAfterGuestPreparationFailure, shouldRejectPersistedAuthRestore, shouldShowGuestSelectionLoading } from "./profileStartupCoordination";
-import { beginAccountSignOut, getAccountSignOutState } from "../../storage/repositories/accountLifecycleRepository";
+import { beginAccountSignOut, clearAccountSignOutState, getAccountSignOutState } from "../../storage/repositories/accountLifecycleRepository";
 import type { LocalLogoutControl, LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
 
 export { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, finishLocalSignOutSetupFailure, guardAuthenticatedScopeAgainstIncompleteSignOut, isPreparedGuestChoiceRequired, lockAndCloseProfileAfterAuthLoss, performLocalAccountSignOut, prepareAuthenticatedProfileScope, prepareGuestProfileScope, recoverAfterGuestPreparationFailure, shouldRejectPersistedAuthRestore, shouldShowGuestSelectionLoading } from "./profileStartupCoordination";
@@ -556,8 +557,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         accountId: selectedProfile.accountId ?? "",
         authUid: user.uid,
         canContinue,
+        completed: logoutControlSnapshotRef.current.completed,
         pending: logoutControlSnapshotRef.current.pending,
         readScopedSignOut: getAccountSignOutState,
+        clearScopedSignOut: clearAccountSignOutState,
         persistControlPair: async (operationId) => {
           const snapshot = await logoutControl.blockAndQueueRevoke(user.uid, operationId);
           if (!canContinue()) throw new AccountSessionGenerationStaleError();
@@ -854,6 +857,44 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         }
         if (rejectedRestoreUid !== null && rejectedRestoreUid !== user.uid) rejectedRestoreUid = null;
         if (legalAcceptancePendingRef.current || observerBlockedUidRef.current === user.uid || sessionExchangeUidRef.current === user.uid) return;
+        const pendingRevocations = logoutControlSnapshotRef.current.pending.filter((entry) => entry.uid === user.uid);
+        if (pendingRevocations.length > 0) {
+          observedUid = user.uid;
+          const generation = sessionCoordinator.begin(user.uid);
+          const canContinue = () => live && !observerDetached && sessionCoordinator.isCurrent(generation) && configuredAuth.getSnapshot()?.uid === user.uid;
+          closeActiveProfileStorage();
+          setAccountEntryMode("login");
+          setState({ kind: "signOutPending", user, operationId: pendingRevocations[0]!.operationId });
+          void (async () => {
+            try {
+              for (const pending of pendingRevocations) {
+                if (!canContinue()) throw new AccountSessionGenerationStaleError();
+                const snapshot = await resumePendingSessionRevocation({
+                  api: client,
+                  auth: configuredAuth,
+                  canContinue,
+                  control: logoutControl,
+                  onSessionTokenSignIn: () => { sessionExchangeUidRef.current = user.uid; },
+                  pending,
+                  user,
+                });
+                if (!canContinue()) throw new AccountSessionGenerationStaleError();
+                logoutControlSnapshotRef.current = snapshot;
+                setLogoutControlSnapshot(snapshot);
+              }
+              if (!canContinue()) return;
+              sessionExchangeUidRef.current = null;
+              const currentUser = configuredAuth.getSnapshot();
+              if (!currentUser || currentUser.uid !== user.uid) return;
+              void startAuthenticatedProfilePreparation(configuredAuth, client, currentUser, generation);
+            } catch {
+              if (canContinue()) setState({ kind: "signOutPending", user, operationId: pendingRevocations[0]!.operationId });
+            } finally {
+              if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
+            }
+          })();
+          return;
+        }
         const matchingLogoutBlock = findMatchingLocalLogoutBlock(logoutControlSnapshotRef.current, user.uid);
         if (matchingLogoutBlock) {
           observedUid = user.uid;

@@ -10,7 +10,21 @@ export async function getMeWithExchangedSession(input: Readonly<{
   onExchangeStarting: () => void;
   user: FirebaseAuthUserSnapshot;
 }>): Promise<MeResponseDto> {
-  const authorizationGeneration = await input.auth.getAuthorizationGeneration();
+  await ensureAccountSessionGeneration(input);
+  if (!input.canContinue() || input.auth.getSnapshot()?.uid !== input.user.uid) throw new AccountSessionGenerationStaleError();
+  const response = await input.api.getMe();
+  if (!input.canContinue() || input.auth.getSnapshot()?.uid !== input.user.uid) throw new AccountSessionGenerationStaleError();
+  return response;
+}
+
+export async function ensureAccountSessionGeneration(input: Readonly<{
+  api: Pick<PatternlyApiClient, "exchangeAccountSession">;
+  auth: Pick<FirebaseAuthClient, "getAuthorizationGeneration" | "getSnapshot" | "signInWithSessionToken">;
+  canContinue: () => boolean;
+  onExchangeStarting: () => void;
+  user: FirebaseAuthUserSnapshot;
+}>): Promise<number> {
+  let authorizationGeneration = await input.auth.getAuthorizationGeneration();
   if (!input.canContinue() || input.auth.getSnapshot()?.uid !== input.user.uid) throw new AccountSessionGenerationStaleError();
 
   if (authorizationGeneration === null) {
@@ -24,10 +38,7 @@ export async function getMeWithExchangedSession(input: Readonly<{
     const exchangedGeneration = await input.auth.getAuthorizationGeneration();
     if (!input.canContinue() || input.auth.getSnapshot()?.uid !== input.user.uid) throw new AccountSessionGenerationStaleError();
     if (exchangedGeneration === null) throw new FirebaseAuthClientError("auth/authorization-generation-invalid");
+    authorizationGeneration = exchangedGeneration;
   }
-
-  if (!input.canContinue() || input.auth.getSnapshot()?.uid !== input.user.uid) throw new AccountSessionGenerationStaleError();
-  const response = await input.api.getMe();
-  if (!input.canContinue() || input.auth.getSnapshot()?.uid !== input.user.uid) throw new AccountSessionGenerationStaleError();
-  return response;
+  return authorizationGeneration;
 }

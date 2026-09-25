@@ -1,0 +1,76 @@
+appId: com.lkurczab.patternly
+name: PROFILE-03 logout restart and same-account resume
+env:
+  PROFILE03_EMAIL: ${PROFILE03_EMAIL}
+  PROFILE03_PASSWORD: ${PROFILE03_PASSWORD}
+---
+- assertVisible:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "main-tab-bar-settings"
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- assertVisible:
+    id: "settings-sign-out"
+- tapOn:
+    id: "settings-sign-out"
+- extendedWaitUntil:
+    visible:
+      id: "account-remote-revoke-pending"
+    timeout: 30000
+- assertNotVisible:
+    id: "main-tab-bar-home"
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "account-remote-revoke-pending"
+    timeout: 30000
+- assertNotVisible:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "account-email"
+- eraseText
+- inputText: ${PROFILE03_EMAIL}
+- tapOn: "Show password"
+- tapOn:
+    id: "account-password"
+- eraseText
+- inputText: ${PROFILE03_PASSWORD}
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "account-sign-in-submit"
+- runFlow:
+    when:
+      visible: "Nie teraz"
+    commands:
+      - tapOn: "Nie teraz"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- assertNotVisible:
+    id: "account-remote-revoke-pending"
+- assertNotVisible:
+    id: "account-sign-out-pending"
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- assertNotVisible:
+    id: "account-remote-revoke-pending"
+- assertNotVisible:
+    id: "account-sign-out-pending"
