@@ -8,8 +8,8 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 | Repozytorium | Stan po CI-CONTRACT/B |
 | --- | --- |
-| `patternly` | AUD-16 wypchnięte jako `b4328b7c`; bieżący diff realizuje i dokumentuje ODK-119-GATE/A. |
-| `patternly-backend` | B1c wypchnięte na `main` jako `2a8c035`: test wyścigu wymiany sesji z obrotem generacji. |
+| `patternly` | ODK-119-GATE/A wypchnięte jako `065afbcc`; bieżący diff aktualizuje plan i stan po AUD-04-B. |
+| `patternly-backend` | AUD-04-B wypchnięte na `main` jako `11f988e`: admission/download pakietu po świeżym entitlement. |
 | `patternly-content` | CI-CONTRACT/A2b wypchnięte na `master` jako `21707b6`. |
 
 ## CI-CONTRACT/A2b — wynik
@@ -91,6 +91,16 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Targeted controller 30/30, szerszy 46/46, typecheck, locale JSON i diff check — PASS. QA wykryło i domknięto test planu mieszanego oraz komunikaty UX.
 - Briefing po analizie mostu: 0,91 / 0,82 / 0,85 / 0,86, minimum 0,82 — APPROVE.
 
+## AUD-04-B — wynik
+
+- Status: **done / niezależne QA PASS**; backend `11f988e`, lokalnie i bez wdrożenia.
+- Ścisły manifest `patternly-content-node-package-v1` wiąże identity, exact gzip bytes, bounded decompressed bytes, oba rozmiary i oba SHA-256. Payload pozostaje nieprzezroczysty; jego semantyka i kanonikalny producent należą do AUD-04-C.
+- Publikacja zapisuje i ponownie weryfikuje niezmienne bajty, potem immutable manifest, a na końcu atomowo przełącza current pointer. Poprzednie wersje pozostają; przerwanie przed pointerem może zostawić wyłącznie nieaktywną sierotę.
+- `GET /v1/content/packages/{trackId}/{nodeId}` wymaga App Check i bearer, sprawdza świeży RevenueCat entitlement przed jakimkolwiek odczytem pakietu i zwraca dokładne gzip bytes bez URI. Active/grace wymagają poprawnej przyszłej daty; odmowy nie ujawniają istnienia node.
+- Lokalny filesystem adapter jest zabroniony w konfiguracji produkcyjnej. Cloud storage, realny artefakt Premium, mobile installer i deployment pozostają poza B.
+- Pełny backend 233/233, targeted package 4/4, typecheck, lint, OpenAPI 58 operacji i diff check — PASS. Wcześniejszy pojedynczy błąd concurrency był przejściowy; kontrolowany pełny retest przeszedł.
+- Briefing: 0,88 / 0,84 / 0,82 / 0,86, minimum 0,82 — APPROVE.
+
 ## Weryfikacja
 
 - Aplikacja: testy ukierunkowane 44/44, typecheck i `git diff --check` — PASS.
@@ -109,8 +119,8 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Rozpocząć `AUD-04-B`: backend admission/download według istniejącego kontraktu i bez wdrożenia.
-2. Po B wykonać osobno AUD-04-C i D, a następnie ODK-119-GATE/B.
+1. Rozpocząć `AUD-04-C`: mobile verify pobranego artefaktu i atomowa aktywacja, bez wdrożenia.
+2. Po C wykonać osobno AUD-04-D, a następnie ODK-119-GATE/B.
 3. Wrócić do `CI-CONTRACT/C`, gdy można wykonać właściwy exact-SHA etap bez omijania jego bramek.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 5. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
