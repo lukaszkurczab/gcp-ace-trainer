@@ -166,7 +166,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Offline logout natychmiast zamyka account scope i usuwa lokalną sesję, zachowując dane, outbox, journal i markery pod profilem konta.
 - Ponowne Auth tego samego UID wznawia dokładny pending revoke. Po walidacji aplikacja zapisuje exact completed receipt w jedynym kanonicznym formacie v2, odrzuca v1 bez migracji i usuwa scoped marker przed otwarciem profilu; kolejne wylogowanie dostaje świeże operationId.
 - Token ani Firebase subject nie trafiają do dokumentu operacji. Błąd mintu po revoke jest bezpiecznie wznawialny bez drugiego provider revoke.
-- Backend 234/234, końcowy app targeted 90/90 (szerszy 121/121), typecheck/OpenAPI/diff PASS. Pełny app 1275/1280 z pięcioma istniejącymi niezależnymi błędami.
+- Backend po integracji 244/244, końcowy app targeted 90/90 (szerszy 121/121), typecheck/OpenAPI/diff PASS. Pełny app 1275/1280 z pięcioma istniejącymi niezależnymi błędami.
 - Świeży końcowy Maestro po autoryzowanym usunięciu wyłącznie danych Patternly: dokładne wartości fixture potwierdzone przez hierarchy, logout blokuje Home i pokazuje pending, restart zachowuje pending, same-account resume wraca do Home z `Coding Interview`, a kolejny natywny restart utrzymuje Home bez obu markerów pending — PASS. Screenshoty obejrzano i pozostają poza repo.
 - Pierwszy negatywny wynik pochodził ze starego procesu API uruchomionego przed zmianami PROFILE-03. Po restarcie aktualnego API `/ready` miał trzy kontrole `true`, a scenariusz przeszedł; nie wprowadzono obejścia produktowego.
 - Briefing: 0,92 / 0,84 / 0,81 / 0,87, minimum 0,81 — APPROVE. Raport: [PROFILE-03](../docs/active/PROFILE-03/REPORT.md).
@@ -260,10 +260,30 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Rozpocząć `PROFILE-03`; `B1b4c` nadal WAIT/PO.
+1. Rozpocząć `OPS-PRODUCTION/B2`; `B1b4c` nadal WAIT/PO.
 2. `ODK-117/A2` czeka na kompetentny przegląd pięciu języków.
 3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 5. `PROFILE-02/B` jest anulowane decyzją właściciela. Tylko `B1b4c` nadal oczekuje na decyzję PO.
 
 Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymaganych dowodów.
+
+## OPS-PRODUCTION/A — wynik
+
+- Status: **done / niezależne QA PASS**; dokumentacyjny kontrakt lokalny, bez wdrożenia i bez dostępu do danych produkcyjnych.
+- Repozytoria nie wykazują produkcyjnego kanału operatorskiego. Panel web i backendowy profil admina pozostają celowo lokalne; nie wolno ich publikować ani omijać przez bezpośredni Firestore.
+- Przyjęty kierunek B: B1 OIDC i per-action allowlista, B2 endpointy nad istniejącymi store’ami, B3 lokalne CLI, B4 syntetyczny odbiór. C dopiero w kontrolowanym środowisku przed GO.
+- Brak ogólnego command-result store jest jawny. Retry mutacji nie jest automatyczny: read-after-uncertain sprawdza postcondition danej akcji, a nierozstrzygalne i zewnętrzne skutki przechodzą do `AMBIGUOUS / RECONCILIATION REQUIRED`.
+- Privacy extension i legal answer wymagają w B bezpiecznego fence/reconciliation albo pozostają niedostępne w CLI. Content report pokazuje użytkownikowi tylko trwałe potwierdzenie przyjęcia, nie nieistniejący status sprawy.
+- Briefing końcowy: 0,92 / 0,86 / 0,90 / 0,84, minimum 0,84, APPROVE. Pierwsze QA FAIL wykryło zbyt szerokie obietnice delivery; po korekcie re-QA PASS.
+- Raport: [OPS-PRODUCTION/A](../docs/active/OPS-PRODUCTION/A-REPORT.md). Następny slice: `OPS-PRODUCTION/B1`.
+
+## OPS-PRODUCTION/B1 — wynik
+
+- Status: **done / niezależne QA PASS WITH ISSUES**; backend `e25c28a`, lokalnie i bez wdrożenia.
+- Oddzielny opcjonalny profil operatora waliduje dokładne OIDC `iss/aud/sub`, czasy, `RS256` i podpis JWKS. Konfiguracja jest all-or-none; brak oznacza unavailable, a błąd zatrzymuje bootstrap.
+- Strict allowlista nie ma wildcardów; wynik zawiera wyłącznie pseudonim HMAC, rolę i dozwoloną akcję. Nie ma fallbacku do Firebase ani zmiany istniejących guardów mobile/admin.
+- Produkcyjny loader JWKS używa jednego publicznego zestawu adresów przypiętego custom lookupiem do tego samego HTTPS socketu, bez redirectów, z deadline’em, limitem body/cache i globalnym cooldownem unknown `kid`.
+- Targeted 12/12, lint/typecheck/build/diff PASS. Wcześniejszy full 239/239 PASS; finalny full 240/241 ma powtarzalne 500 wyłącznie w starym concurrent Firestore sync na współdzielonym emulatorze, poza zmienionym obszarem — nie raportować finalnego full jako PASS.
+- QA w czterech iteracjach wykryło i zamknęło body/timeout/refresh amplification, DNS TOCTOU i callback Node 22 `all:true`; końcowy werdykt PASS WITH ISSUES. Rzeczywisty JWKS/token pozostaje C, a guard/routy B2.
+- Raport: [OPS-PRODUCTION/B1](https://github.com/lukaszkurczab/patternly-backend/blob/e25c28a/docs/active/OPS-PRODUCTION/B1-REPORT.md). Następny slice: `OPS-PRODUCTION/B2`.
