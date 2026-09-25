@@ -383,7 +383,7 @@ Kolejka nie duplikuje statusów z rejestru. Codex bierze pierwszy **dostępny** 
 | 24 | ODK-117-A0 — done | Pełna mapa kanałów pochodzenia tekstów, natywnych promptów i wyjątków z odtwarzalnym inventory kandydatów; niezależne QA PASS. [Mapa](active/ODK-117/A0-SOURCE-MAP.md). |
 | 25 | ODK-117-A1 WAIT/DEVICE → A2 → A3 → A4 → A5 | A1 code/tests gotowe; QA BLOCKED na wymaganym Maestro Language settings przez zachowany `account-remote-revoke-pending`. Bez PASS/commitu. Kolejne kroki pozostają oddzielne i A2 nie startuje przed odbiorem A1. |
 | 26 | ODK-117/B-CONTRACT — done | Siedem wersji szablonów i zmiennych na jawnych danych testowych; pełna struktura/tokeny, schema v1, kompatybilność EN/PL i hook app→web. TestOnly/UNAPPROVED nie trafia do release; rzeczywiste dane pozostają B-VALUES. [Raport](active/ODK-117/B-CONTRACT-APP-REPORT.md). |
-| 27 | WEB-03C/PREP | Technicznie gotowy marketing, przygotowany build/rollback i sprawdzony dostęp, bez publikacji fikcyjnych danych. |
+| 27 | WEB-03C/PREP — done | Lokalny manifest 11 plików, granica publicznego Hostingu i procedura rollbacku; QA PASS. Dostęp Firebase odrzucony przez nieważne credentials, więc realny dostęp i zdalny release pozostają do PUBLISH. Bez publikacji. |
 | 28 | CI-CONTRACT/B–C → RELEASE-CONTRACT/A–C → OPS-PRODUCTION/A–B | Oddzielne slice’y: obowiązkowe testy kandydata i pipeline, etapowe bramki/manifest/OTA, operacyjny kanał dla syntetycznych spraw; A release do SIM-READY, B/C przed FREEZE. |
 | 29 | AUD-06 → SIM-READY | Odbiór przekrojowy bez nowych blockerów lokalnych; prośba o iPhone i aktualizacja listy danych publikacyjnych. |
 
