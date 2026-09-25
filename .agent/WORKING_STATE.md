@@ -6,11 +6,19 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Repozytoria
 
-| Repozytorium | Stan po AWS-02/CANDIDATE |
+| Repozytorium | Stan po CI-CONTRACT/A2b |
 | --- | --- |
-| `patternly` | SIMP-05 wypchnięte jako `2d78c873`; bieżący diff synchronizuje wynik AWS-02/CANDIDATE i następną kolejkę. |
+| `patternly` | AWS-02/CANDIDATE wypchnięte jako `eb6e2889`; bieżący diff dokumentuje A2b i synchronizuje kolejkę. |
 | `patternly-backend` | B1c wypchnięte na `main` jako `2a8c035`: test wyścigu wymiany sesji z obrotem generacji. |
-| `patternly-content` | AWS-02/CANDIDATE wypchnięte na `master` jako `b0341ad`. |
+| `patternly-content` | CI-CONTRACT/A2b wypchnięte na `master` jako `21707b6`. |
+
+## CI-CONTRACT/A2b — wynik
+
+- Status: **done / QA PASS**; content `21707b6`.
+- Push/PR odtwarza exact draft/readiness i odrzuca niezgodne lub nieśledzone evidence.
+- Acceptance v2 wiąże 9 Free-node packages z exact package SHA i zaakceptowanymi release artifacts; payload items są porównywane, a limity dekompresji blokują gzip bomb.
+- Manual release kończy się oczekiwanym `RELEASE_BLOCKED` dla candidate `11d56baa…`; publishing/runtime nadal `not_granted`, brak deployu i zmiany app lock.
+- Pełny content 67/67, gate 4/4, Free-node 9/9, migration 9/117/943/16 077, build/scoring 9/9, YAML i diff check — PASS.
 
 ## AWS-02/CANDIDATE — wynik
 
@@ -31,7 +39,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Niezależne QA: PASS WITH ISSUES. `validateContentBoundary.mjs` i diff check
   przeszły; `checkRecoveryBaseline.mjs` wskazał cztery istniejące importy MMKV
   w obszarze konta, poza dokumentacyjnym diffem SIMP-05.
-- Stare odwołania workflow do usuniętych generatorów i release gate pozostają luką `CI-CONTRACT/A2b`; zależność od `AWS-02/CANDIDATE` jest spełniona.
+- Stare odwołania workflow do usuniętych generatorów i release gate zostały zastąpione rzeczywistymi bramkami A2b w `21707b6`.
 
 ## AUD-08/B1c — wynik
 
@@ -55,14 +63,14 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 ## Otwarte decyzje i blokady
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.
-- `CI-CONTRACT/A2b` — READY po `AWS-02/CANDIDATE`; nie nadawać admission.
+- `CI-CONTRACT/A2b` — done; A3/B/C pozostają otwarte.
 - `PROFILE-02/B` — WAIT na zapisaną w planie decyzję PO.
 - Brak wdrożenia jest granicą zakresu, nie defektem lokalnego B1c.
 
 ## Następne działania
 
-1. Rozpocząć `CI-CONTRACT/A2b`: podłączyć readiness/review/manual release bez odtwarzania legacy publishera i bez nadawania admission.
-2. Następnie wykonać dalszą kolejkę z planu; AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
+1. Rozpocząć `CI-CONTRACT/A3`, następny dostępny slice: rozdzielić historyczny release lock od exact SHA bieżącego buildera w app QA.
+2. CI-CONTRACT/B/C i AWS-02/ADMISSION pozostają osobnymi późniejszymi krokami.
 3. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
 
 Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymaganych dowodów.
