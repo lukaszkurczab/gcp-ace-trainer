@@ -20,7 +20,7 @@ import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalQues
 import { projectCanonicalChoiceFeedbackControls, type CanonicalChoiceFeedbackState } from "../canonical/canonicalInteractionPresentation";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 
-type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
+export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; nodeId?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationExamResumeResult = Readonly<{ kind: "ready"; projection: CertificationExamProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationAbandonmentResult =
@@ -97,9 +97,13 @@ export class CertificationExamExpiredError extends Error {
   }
 }
 
-async function startCertificationPracticeSession(input: Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; source?: string; trackId?: TrackId }>): Promise<PreparedSession> {
+export function buildCertificationPracticeStartCommand(input: CertificationPracticeOpenInput) {
   const feedbackTiming = input.feedbackMode === "atSessionEnd" ? "after_session_completion" : input.feedbackMode === "afterEachAnswer" ? "after_each_durable_submit" : undefined;
-  const prepared = await startTrainingSession({ trackId: input.trackId ?? "google-cloud-associate-cloud-engineer", modeId: input.modeId, source: input.source, request: { ...input, ...(feedbackTiming ? { feedbackTiming } : {}) } });
+  return { trackId: input.trackId ?? "google-cloud-associate-cloud-engineer", modeId: input.modeId, source: input.source, request: { ...input, ...(feedbackTiming ? { feedbackTiming } : {}) } } as const;
+}
+
+async function startCertificationPracticeSession(input: CertificationPracticeOpenInput): Promise<PreparedSession> {
+  const prepared = await startTrainingSession(buildCertificationPracticeStartCommand(input));
   await getForegroundSessionTimerFacade().initialize(prepared.session);
   return prepared;
 }

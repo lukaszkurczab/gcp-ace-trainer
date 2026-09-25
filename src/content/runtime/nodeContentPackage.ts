@@ -25,8 +25,10 @@ export type NodePackageManifest = NodePackageIdentity & Readonly<{
 }>;
 export type VerifiedNodePackage = Readonly<{ identity: NodePackageIdentity; payload: NodeContentPayload; manifest: NodePackageManifest; artifactBytes: Uint8Array }>;
 
+export type NodePackageFailureCode = "invalid_response" | "package_unavailable" | "package_identity_mismatch" | "package_corrupt" | "minimum_app_version" | "package_storage_failed" | "entitlement_required" | "entitlement_unavailable" | "not_found" | "authentication_required" | "app_check_unavailable" | "reauthentication_required";
+
 export class NodePackageError extends Error {
-  constructor(readonly code: "invalid_response" | "package_unavailable" | "package_identity_mismatch" | "package_corrupt" | "minimum_app_version" | "package_storage_failed", cause?: unknown) {
+  constructor(readonly code: NodePackageFailureCode, cause?: unknown) {
     super(code, cause === undefined ? undefined : { cause });
     this.name = "NodePackageError";
   }
@@ -41,7 +43,7 @@ export type NodePackageStore = Readonly<{
   listActive(): Promise<readonly VerifiedNodePackage[]>;
 }>;
 
-export type BinaryPackageResponse = Readonly<{ status: number; headers: Headers; bytes: Uint8Array }>;
+export type BinaryPackageResponse = Readonly<{ status: number; headers: Headers; bytes: Uint8Array; serverCode?: string }>;
 export type NodePackageTransport = Readonly<{ getNodePackage(trackId: string, nodeId: string): Promise<BinaryPackageResponse> }>;
 
 const SHA256 = /^[a-f0-9]{64}$/u;
@@ -107,19 +109,44 @@ export function createMemoryNodePackageStore(): NodePackageStore {
   });
 }
 
-export async function installNodePackage(input: Readonly<{ trackId: string; nodeId: string; appVersion: string; transport: NodePackageTransport; hash: NodePackageHash; store: NodePackageStore; activateRuntime: (record: VerifiedNodePackage) => void }>): Promise<VerifiedNodePackage> {
+export async function installNodePackage(input: Readonly<{ trackId: string; nodeId: string; appVersion: string; expectedContentVersion?: string; expectedArtifactSha256?: string; transport: NodePackageTransport; hash: NodePackageHash; store: NodePackageStore; assertActivationAllowed?: () => void; activateRuntime: (record: VerifiedNodePackage) => void }>): Promise<VerifiedNodePackage> {
   let response: BinaryPackageResponse;
-  try { response = await input.transport.getNodePackage(input.trackId, input.nodeId); } catch (error) { throw new NodePackageError("package_unavailable", error); }
-  if (response.status !== 200) throw new NodePackageError(response.status >= 500 ? "package_unavailable" : "invalid_response");
+  try { response = await input.transport.getNodePackage(input.trackId, input.nodeId); } catch (error) { throw mapTransportFailure(error); }
+  if (response.status !== 200) throw mapPackageResponseFailure(response.status, response.serverCode);
   const verified = await verifyNodePackage({ trackId: input.trackId, nodeId: input.nodeId, packageBytes: response.bytes, headers: response.headers, appVersion: input.appVersion, hash: input.hash });
+  if ((input.expectedContentVersion !== undefined && verified.identity.contentVersion !== input.expectedContentVersion) || (input.expectedArtifactSha256 !== undefined && verified.identity.artifactSha256 !== input.expectedArtifactSha256)) throw new NodePackageError("package_identity_mismatch");
   try {
     await input.store.writeImmutable(verified);
     const stored = await input.store.read(verified.identity);
     if (!stored || await input.hash.sha256Bytes(stored.artifactBytes) !== verified.manifest.artifactSha256 || !sameBytes(stored.artifactBytes, verified.artifactBytes)) throw new NodePackageError("package_storage_failed");
+    input.assertActivationAllowed?.();
     await input.store.activate(input.trackId, input.nodeId, verified.identity);
     input.activateRuntime(stored);
     return stored;
   } catch (error) { throw error instanceof NodePackageError ? error : new NodePackageError("package_storage_failed", error); }
+}
+
+function mapTransportFailure(error: unknown): NodePackageError {
+  if (error instanceof NodePackageError) return error;
+  const value = error && typeof error === "object" ? error as Record<string, unknown> : {};
+  if (value.code === "app_check_unavailable") return new NodePackageError("app_check_unavailable", error);
+  if (value.code === "authentication_required") return new NodePackageError("authentication_required", error);
+  if (value.code === "server_error" && typeof value.status === "number") return mapPackageResponseFailure(value.status, typeof value.serverCode === "string" ? value.serverCode : undefined);
+  if (value.code === "request_timeout" || value.code === "transport_failed") return new NodePackageError("package_unavailable", error);
+  return new NodePackageError("package_unavailable", error);
+}
+
+function mapPackageResponseFailure(status: number, serverCode?: string): NodePackageError {
+  if (status === 401) {
+    if (serverCode === "app_check_required" || serverCode === "app_check_invalid" || serverCode === "app_check_not_configured") return new NodePackageError("app_check_unavailable");
+    if (serverCode === "authorization_generation_stale" || serverCode === "recent_reauthentication_required" || serverCode === "reauthentication_required") return new NodePackageError("reauthentication_required");
+    return new NodePackageError("authentication_required");
+  }
+  if (status === 403 && serverCode === "entitlement_required") return new NodePackageError("entitlement_required");
+  if (status === 404 && serverCode === "not_found") return new NodePackageError("not_found");
+  if (status === 503 && serverCode === "entitlement_unavailable") return new NodePackageError("entitlement_unavailable");
+  if (status === 503 && serverCode === "package_unavailable") return new NodePackageError("package_unavailable");
+  return new NodePackageError(status >= 500 ? "package_unavailable" : "invalid_response");
 }
 
 function boundedGunzip(bytes: Uint8Array): Uint8Array {

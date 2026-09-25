@@ -58,7 +58,16 @@ export function LanguageSettingsScreen({ navigation }: LanguageSettingsScreenPro
       <View accessibilityLabel={t("languageOptions")} accessibilityRole="radiogroup" style={styles.choiceGroup}>
         {LANGUAGE_SETTINGS_OPTIONS.map((option) => (
           <ChoiceRow
-            detail={option.detailKey ? t(option.detailKey, { lng: preferences.deviceLocale }) : undefined}
+            detail={option.detailKey
+              ? preferences.systemLocaleResolution.reason === "translation_unavailable"
+                ? t("languageSystemUnavailableDetail", {
+                  lng: preferences.deviceLocale,
+                  locale: preferences.systemLocaleResolution.requestedLocale?.toUpperCase() ?? "unknown",
+                })
+                : preferences.systemLocaleResolution.reason === "system_locale_unrecognized"
+                  ? t("languageSystemUnrecognizedDetail", { lng: preferences.deviceLocale })
+                  : t(option.detailKey, { lng: preferences.deviceLocale })
+              : undefined}
             disabled={savingValue !== null}
             key={option.value}
             loading={savingValue === option.value}

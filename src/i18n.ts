@@ -45,7 +45,8 @@ export function normalizeNamespace(namespace: Readonly<Record<string, unknown>>)
 }
 
 void i18n.use(initReactI18next).init({
-  fallbackLng: "en",
+  fallbackLng: false,
+  fallbackNS: false,
   lng: "en",
   supportedLngs: ["en", "pl"],
   ns: ["common", "account", "appearance", "data", "legal", "learningPlan", "notifications", "settings"],

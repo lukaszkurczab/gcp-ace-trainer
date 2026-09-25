@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import Constants from "expo-constants";
 
 import { AppShellHeader, Button, Card, ChoiceRow, EmptyState, Screen, ScreenHeader, SectionHeader, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
@@ -9,6 +10,9 @@ import { CODING_INTERVIEW_TRACK_ID, getTrackDisplay } from "../../domain";
 import { goBackOrHome } from "../../navigation/goBackOrHome";
 import type { RootStackParamList } from "../../navigation/types";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
+import { getAvailablePremiumNodeOffer, listAvailablePremiumNodeOffers } from "../../content/application/premiumNodeOfferAccess";
+import { describePremiumNodeOfferFailure } from "../../content/application/premiumNodeOfferPresentation";
 import { radius, spacing, typography } from "../../theme";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode, isAlgorithmModeId } from "../../tracks/coding-interview";
 import { isCertificationPracticeModeId } from "../../tracks/certification";
@@ -25,6 +29,7 @@ import {
 } from "./practiceFlowPresentation";
 import {
   buildPracticeSessionConfig,
+  buildPremiumNodePracticeSessionConfig,
   DEFAULT_FEEDBACK_MODE,
   resolvePracticeSessionLength,
   isCloudTopicId,
@@ -172,6 +177,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const { fontScale } = useWindowDimensions();
+  const account = usePatternlyAccount();
   const { readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load the session settings."),
     requestedTrackId: route.params?.trackId,
@@ -191,6 +197,9 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   );
   const [focusTopicId, setFocusTopicId] = useState<string | null>(() => isCloudTopicId(route.params?.topicId ?? "") ? route.params!.topicId! : null);
   const [setupError, setSetupError] = useState<string | null>(null);
+  const [premiumOfferError, setPremiumOfferError] = useState<string | null>(null);
+  const [premiumOfferErrorHasFreeAlternative, setPremiumOfferErrorHasFreeAlternative] = useState(false);
+  const [premiumOfferBusyId, setPremiumOfferBusyId] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeFormIdentity === null) return;
@@ -264,6 +273,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   if (activeTrack.familyId === "coding_interview" && !isAlgorithmModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
   if (activeTrack.familyId === "certification" && !isCertificationPracticeModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
   if (activeTrack.familyId === "design_interview" && !isDesignInterviewModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
+  const premiumOffers = listAvailablePremiumNodeOffers(activeTrack.id);
   const selectedMode = requestedMode as PracticeSessionMode;
   let selectedPackageMode: ProductModeConfig;
   try {
@@ -326,6 +336,33 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     );
   }
 
+  async function prepareAndStartPremiumOffer(offerId: string) {
+    const offer = getAvailablePremiumNodeOffer(offerId);
+    if (!offer || offer.trackId !== activeTrack.id) return;
+    setPremiumOfferBusyId(offer.offerId);
+    setPremiumOfferError(null);
+    setPremiumOfferErrorHasFreeAlternative(false);
+    try {
+      const appVersion = Constants.expoConfig?.version ?? "0.0.0";
+      await account.installPremiumNodePackage(offer.offerId, appVersion);
+      const prepared = await contentPackageRuntimeOwner.resolveForPreparation({ trackId: offer.trackId, familyId: offer.familyId, modeId: offer.mode.modeId, nodeId: offer.nodeId });
+      if (prepared.track.contentVersion !== offer.contentVersion || prepared.track.artifactSha256 !== offer.artifactSha256 || prepared.track.getMode(offer.mode.modeId).modeId !== offer.mode.modeId || !prepared.track.questions.some((question) => question.nodeId === offer.nodeId)) {
+        throw new Error("premium_node_preparation_identity_mismatch");
+      }
+      navigation.navigate(ROUTES.PRACTICE_SESSION, buildPremiumNodePracticeSessionConfig(offer));
+    } catch (error) {
+      const presentation = describePremiumNodeOfferFailure(error);
+      setPremiumOfferError(presentation.message);
+      setPremiumOfferErrorHasFreeAlternative(presentation.freeAlternative);
+    } finally {
+      setPremiumOfferBusyId(null);
+    }
+  }
+
+  function continueWithFreeTopic() {
+    navigation.navigate(ROUTES.TOPIC_ROADMAP, { topicId: canonicalNodeId, trackId: activeTrack.id });
+  }
+
   return (
     <View style={styles.shell} testID={runtimeSelectors.practice.setupRoot()}>
       <Screen
@@ -363,6 +400,16 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
             {diagnosticBaseline ? t("Check your knowledge of {{topic}} with 40 questions.", { topic: formatPracticeTopicTitle(topic.title, t) }) : focusPractice ? t("Practice questions from one topic.") : weakAreaReview || quickReview ? t("Review questions that are ready to revisit.") : t("Set up your session for {{topic}}.", { topic: formatPracticeTopicTitle(topic.title, t) })}
           </Text>
         </View> : null}
+
+        {premiumOffers.map((offer) => <Card key={offer.offerId} style={styles.reviewCard}>
+          <View style={styles.reviewCopy}>
+            <Text key={`premium-offer-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t(offer.source === "local_smoke_fixture" ? "Local package installation test" : "Premium")}</Text>
+            <Text key={`premium-offer-description-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t(offer.source === "local_smoke_fixture" ? "Prepare and start one local Premium package to test download, verification, and session setup." : "Prepare this Premium topic before starting a session.")}</Text>
+          </View>
+          {premiumOfferError ? <Text key={`premium-offer-error-${fontScale}`} maxFontSizeMultiplier={2} accessibilityRole="alert" style={styles.error} testID={runtimeSelectors.practice.premiumOfferError()}>{t(premiumOfferError)}</Text> : null}
+          <Button disabled={premiumOfferBusyId !== null} loading={premiumOfferBusyId === offer.offerId} onPress={() => { void prepareAndStartPremiumOffer(offer.offerId); }} testID={runtimeSelectors.practice.premiumOfferStart()}>{t(premiumOfferBusyId === offer.offerId ? "Preparing Premium topic…" : "Prepare local Premium topic")}</Button>
+          {premiumOfferErrorHasFreeAlternative ? <Button disabled={premiumOfferBusyId !== null} onPress={continueWithFreeTopic} variant="secondary">{t("Continue with a free topic")}</Button> : null}
+        </Card>)}
 
         {focusPractice ? <View style={styles.section}>
           <SectionHeader title={t("Topic")} subtitle={t("Choose a topic for this session.")} tight />

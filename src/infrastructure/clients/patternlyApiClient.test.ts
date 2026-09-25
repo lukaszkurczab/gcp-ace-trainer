@@ -94,6 +94,13 @@ test("content package transport caps streamed response bodies at two MiB", async
   await assert.rejects(client.getContentPackage("track", "node"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
+test("content package transport preserves typed backend admission codes", async () => {
+  for (const [status, code] of [[401, "authorization_generation_stale"], [403, "entitlement_required"], [404, "not_found"], [503, "entitlement_unavailable"]] as const) {
+    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ error: { code } }), { status }) });
+    await assert.rejects(client.getContentPackage("coding-interview-dsa-problem-solving", "package-test-node"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "server_error" && error.status === status && error.serverCode === code);
+  }
+});
+
 test("mobile requests fail before transport when App Check is unavailable", async () => {
   let calls = 0;
   const client = createPatternlyApiClient({

@@ -46,6 +46,7 @@ import { grantGuestAccess, hasGuestAccess, revokeGuestAccess } from "../../stora
 import { hasUnboundGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
 import { createDeletionAuthorizationVault, createSensitiveCommandLane, isLiveDeletionAuthorization, prepareDeletionAuthorization, runReauthenticatedMutation, type DeletionAuthorizationVault, type SensitiveCommandLane } from "./accountCommandGuards";
 import { shareAccountDataExport as shareDownloadedAccountData } from "./accountDataExportService";
+import { installPremiumNodeOffer } from "../../content/application/nodePackageInstaller";
 import { legalVariables } from "../../legal/legalVariables";
 import { ownerPreservationOracle, type OwnerPreservationRestartResult } from "../testing/ownerPreservationOracle";
 
@@ -100,6 +101,7 @@ export type AccountSessionContextValue = Readonly<{
   recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>) => Promise<AccountCommandResult>;
   refreshPremiumEntitlement: (accountId: string) => Promise<"verified" | "denied" | "pending">;
   authorizePremiumSessionStart: () => Promise<"allowed" | "denied" | "unavailable">;
+  installPremiumNodePackage: (offerId: string, appVersion: string) => Promise<void>;
   requestPasswordRecovery: (email: string) => Promise<AccountCommandResult>;
   requestEmailChange: (credentials: FirebaseAuthCredentials, email: string) => Promise<AccountCommandResult>;
   retrySessionRestore: () => void;
@@ -1054,9 +1056,29 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     });
   }, [authClient, refreshPremiumEntitlement]);
 
+  const installPremiumNodePackage = useCallback(async (offerId: string, appVersion: string): Promise<void> => {
+    const current = stateRef.current;
+    const auth = authClient;
+    const api = apiClient;
+    if (!auth || !api || current.kind !== "authenticated" || auth.getSnapshot()?.uid !== current.user.uid) throw new PatternlyApiClientError("authentication_required");
+    const generation = sessionCoordinator.current(current.user.uid);
+    if (!generation) throw new PatternlyApiClientError("authentication_required");
+    await installPremiumNodeOffer({
+      api,
+      offerId,
+      appVersion,
+      assertActivationAllowed() {
+        if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.user.uid || stateRef.current.kind !== "authenticated" || stateRef.current.backendUser.id !== current.backendUser.id) {
+          throw new PatternlyApiClientError("authentication_required");
+        }
+      },
+    });
+  }, [apiClient, authClient, sessionCoordinator]);
+
   const value = useMemo<AccountSessionContextValue>(() => ({
     refreshPremiumEntitlement,
     authorizePremiumSessionStart,
+    installPremiumNodePackage,
     recordPurchaseConfirmation: async (input) => {
       if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
       try { await apiClient.recordPurchaseConfirmation(input); return { kind: "success", next: "authenticated" }; }
@@ -1918,7 +1940,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     pendingRemoteRevokeCount: logoutControlSnapshot.pending.length + (state.kind === "signOutPending" && state.operationId && !logoutControlSnapshot.pending.some((pair) => pair.uid === state.user.uid && pair.operationId === state.operationId) ? 1 : 0),
     completeProfilePreparation,
     state,
-  }), [accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, completeProfilePreparation, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
+  }), [accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, installPremiumNodePackage, completeProfilePreparation, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }

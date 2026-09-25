@@ -13,6 +13,7 @@ import {
 } from "../application/appPreferences";
 import { colors, type AppColors, type ColorMode } from "../theme";
 import { onKeyValueStorageReady } from "../infrastructure/storage/mmkvClient";
+import { resolveLocale, type LocaleResolution } from "./localeResolver";
 
 export type AppLocale = "en" | "pl";
 
@@ -23,6 +24,8 @@ type AppPreferencesContextValue = Readonly<{
   deviceLocale: AppLocale;
   language: LanguagePreference;
   locale: AppLocale;
+  localeResolution: LocaleResolution;
+  systemLocaleResolution: LocaleResolution;
   ready: boolean;
   setAppearance: (appearance: AppearancePreference) => Promise<void>;
   setLanguage: (language: LanguagePreference) => Promise<void>;
@@ -30,14 +33,11 @@ type AppPreferencesContextValue = Readonly<{
 
 const AppPreferencesContext = createContext<AppPreferencesContextValue | null>(null);
 
-function resolveSystemLocale(): AppLocale {
-  const locale = Intl.DateTimeFormat().resolvedOptions().locale.toLowerCase();
-  return locale.startsWith("pl") ? "pl" : "en";
-}
-
 export function AppPreferencesProvider({ children }: { children: ReactNode }) {
   const systemColorScheme = useColorScheme();
-  const deviceLocale = resolveSystemLocale();
+  const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale;
+  const localeResolution = resolveLocale("system", systemLocale);
+  const deviceLocale = localeResolution.effectiveLocale;
   const [settings, setSettings] = useState<Settings>(DEFAULT_APP_SETTINGS);
   const [ready, setReady] = useState(false);
 
@@ -71,7 +71,10 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
   const colorMode: ColorMode = settings.appearance === "system"
     ? systemColorScheme === "dark" ? "dark" : "light"
     : settings.appearance;
-  const locale: AppLocale = settings.language === "system" ? deviceLocale : settings.language;
+  const selectedLocaleResolution = settings.language === "system"
+    ? localeResolution
+    : resolveLocale(settings.language, systemLocale);
+  const locale: AppLocale = selectedLocaleResolution.effectiveLocale;
 
   useEffect(() => {
     void i18n.changeLanguage(locale);
@@ -84,10 +87,12 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
     deviceLocale,
     language: settings.language,
     locale,
+    localeResolution: selectedLocaleResolution,
+    systemLocaleResolution: localeResolution,
     ready,
     setAppearance,
     setLanguage,
-  }), [colorMode, deviceLocale, locale, ready, setAppearance, setLanguage, settings.appearance, settings.language]);
+  }), [colorMode, deviceLocale, locale, localeResolution, ready, setAppearance, setLanguage, settings.appearance, settings.language]);
 
   return <AppPreferencesContext.Provider value={value}>{children}</AppPreferencesContext.Provider>;
 }

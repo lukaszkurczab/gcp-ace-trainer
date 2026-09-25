@@ -14,6 +14,13 @@ test("runtime selectors are deterministic and use the canonical grammar", () => 
   assert.equal(isRuntimeSelectorId("patternly:session"), false);
 });
 
+test("Premium offer setup selectors are deterministic and valid", () => {
+  assert.equal(runtimeSelectors.practice.premiumOfferStart(), "patternly:practice:premium-offer:start");
+  assert.equal(runtimeSelectors.practice.premiumOfferError(), "patternly:practice:premium-offer:error");
+  assert.equal(isRuntimeSelectorId(runtimeSelectors.practice.premiumOfferStart()), true);
+  assert.equal(isRuntimeSelectorId(runtimeSelectors.practice.premiumOfferError()), true);
+});
+
 test("runtime selectors preserve canonical identities without learner-visible copy", () => {
   const itemId = "alg-complexity-amortized-001";
   const prompt = "Which statement about amortized complexity is correct?";
@@ -89,6 +96,8 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.practice.sessionLength(20),
     runtimeSelectors.practice.feedbackTiming("afterEachAnswer"),
     runtimeSelectors.practice.feedbackTiming("atSessionEnd"),
+    runtimeSelectors.practice.premiumOfferStart(),
+    runtimeSelectors.practice.premiumOfferError(),
     runtimeSelectors.session.submit("alg-complexity-amortized-001"),
     runtimeSelectors.session.continue("alg-complexity-amortized-001"),
     runtimeSelectors.session.complexityValue("alg-complexity-amortized-001", "time", "O(n)"),
@@ -105,7 +114,7 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.simulation.navigator("coding-interview-dsa-problem-solving:coding-interview-simulation:2:occurrence:1"),
   ]);
 
-  assert.equal(selectors.size, 28);
+  assert.equal(selectors.size, 30);
 });
 
 test("unavailable recovery and review selectors remain stable and distinct", () => {

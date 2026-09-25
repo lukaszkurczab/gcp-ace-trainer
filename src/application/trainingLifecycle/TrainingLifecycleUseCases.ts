@@ -148,7 +148,7 @@ export class TrainingLifecycleUseCases {
   }
 
   async prepareSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
-    const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId);
+    const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId, requestedNodeId(input.request));
     const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
     const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts: this.forResolvedContent(attempts, resolution.track), reviews: this.forResolvedContent(reviews, resolution.track), now: this.ports.clock.now() }));
@@ -164,7 +164,7 @@ export class TrainingLifecycleUseCases {
     const request = input.request && typeof input.request === "object" && !Array.isArray(input.request)
       ? { ...input.request, sessionId }
       : { sessionId };
-    const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId);
+    const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId, requestedNodeId(request));
     const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
     const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, attempts: this.forResolvedContent(attempts, resolution.track), reviews: this.forResolvedContent(reviews, resolution.track), now: this.ports.clock.now() }));
@@ -507,9 +507,9 @@ export class TrainingLifecycleUseCases {
     }
   }
 
-  private async resolveRuntimeForPreparation(trackId: TrackId, modeId: string) {
+  private async resolveRuntimeForPreparation(trackId: TrackId, modeId: string, nodeId?: string) {
     const registration = this.trackRegistration(trackId);
-    const resolution = await this.run("missing_content", () => this.ports.packages.resolveForPreparation({ trackId, familyId: registration.familyId, modeId }));
+    const resolution = await this.run("missing_content", () => this.ports.packages.resolveForPreparation({ trackId, familyId: registration.familyId, modeId, ...(nodeId ? { nodeId } : {}) }));
     if (resolution.runtime.familyId !== registration.familyId || resolution.track.trackId !== trackId) {
       throw new TrainingApplicationFailure("unknown_family", "Resolved content package runtime does not own the requested track family.");
     }
@@ -560,6 +560,12 @@ export class TrainingLifecycleUseCases {
 
   private async run<T>(code: ApplicationFailureCode, operation: () => Promise<T>): Promise<T> { try { return await operation(); } catch (error) { if (error instanceof TrainingApplicationFailure) throw error; throw new TrainingApplicationFailure(code, "Canonical training operation failed.", error); } }
   private runSync<T>(code: ApplicationFailureCode, operation: () => T): T { try { return operation(); } catch (error) { if (error instanceof TrainingApplicationFailure) throw error; throw new TrainingApplicationFailure(code, "Canonical training operation failed.", error); } }
+}
+
+function requestedNodeId(request: unknown): string | undefined {
+  if (!request || typeof request !== "object" || Array.isArray(request)) return undefined;
+  const nodeId = (request as Readonly<Record<string, unknown>>).nodeId;
+  return typeof nodeId === "string" && nodeId.trim() ? nodeId : undefined;
 }
 
 function isPracticeOperation(value: DurableOperationState): value is PracticeDurableOperationState { return value.family === "practice"; }

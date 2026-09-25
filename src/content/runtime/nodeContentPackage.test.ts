@@ -153,8 +153,26 @@ test("404 and interrupted downloads do not replace an active package", async () 
   const install = (transport: { getNodePackage: (trackId: string, nodeId: string) => Promise<BinaryPackageResponse> }) => installNodePackage({ trackId: TRACK, nodeId: NODE, appVersion: "0.1.0", transport, hash, store, activateRuntime: () => {} });
   const active = await install({ getNodePackage: async () => response(source("1.0.0")) });
   const notFound = response(source("2.0.0"));
-  await assert.rejects(install({ getNodePackage: async () => ({ ...notFound, status: 404 }) }), (error: unknown) => error instanceof NodePackageError && error.code === "invalid_response");
+  await assert.rejects(install({ getNodePackage: async () => ({ ...notFound, status: 404, serverCode: "not_found" }) }), (error: unknown) => error instanceof NodePackageError && error.code === "not_found");
   await assert.rejects(install({ getNodePackage: async () => { throw new Error("interrupted"); } }), (error: unknown) => error instanceof NodePackageError && error.code === "package_unavailable");
   assert.deepEqual(await store.getActive(TRACK, NODE), active.identity);
   assert.equal((await store.listActive()).length, 1);
+});
+
+test("backend package admission failures keep their typed status and code", async () => {
+  const store = createMemoryNodePackageStore();
+  const install = (status: number, serverCode: string) => installNodePackage({ trackId: TRACK, nodeId: NODE, appVersion: "0.1.0", transport: { getNodePackage: async () => ({ status, serverCode, headers: new Headers(), bytes: new Uint8Array() }) }, hash, store, activateRuntime: () => {} });
+  const cases = [
+    [401, "authorization_generation_stale", "reauthentication_required"],
+    [401, "app_check_invalid", "app_check_unavailable"],
+    [401, "authentication_required", "authentication_required"],
+    [403, "entitlement_required", "entitlement_required"],
+    [404, "not_found", "not_found"],
+    [503, "entitlement_unavailable", "entitlement_unavailable"],
+    [503, "package_unavailable", "package_unavailable"],
+  ] as const;
+  for (const [status, serverCode, expected] of cases) {
+    await assert.rejects(install(status, serverCode), (error: unknown) => error instanceof NodePackageError && error.code === expected);
+  }
+  assert.deepEqual(await store.listActive(), []);
 });

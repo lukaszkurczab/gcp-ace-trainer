@@ -11,6 +11,7 @@ import { CERTIFICATION_PRACTICE_MODE_IDS, isCertificationPracticeModeId, type Ce
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import type { ProductModeConfig } from "../../content/canonical";
 import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../tracks/design-interview";
+import type { PremiumNodeOffer } from "../../content/application/premiumNodeOffers";
 
 export type PracticeSessionSource =
   | "home"
@@ -32,6 +33,7 @@ export type PracticeSessionRouteParams = {
   competencyId?: string;
   feedbackMode: PracticeFeedbackMode;
   mode: PracticeSessionMode;
+  nodeId?: string;
   reviewBehaviorEnabled: boolean;
   reviewItemRefs?: readonly ResolvedContentRef[];
   reviewSource?: PracticeReviewSource;
@@ -176,6 +178,22 @@ export function buildPracticeSessionConfig(
   throw new Error(`Certification mode ${mode} has no canonical setup configuration.`);
 }
 
+export function buildPremiumNodePracticeSessionConfig(offer: PremiumNodeOffer): PracticeSessionRouteParams {
+  if (offer.familyId !== "certification" || offer.mode.modeId !== "certification-focus-practice" || offer.mode.selection.kind !== "node" || offer.mode.selection.nodeId !== offer.nodeId || !offer.mode.requestedLengths.includes(offer.mode.defaultRequestedLength)) {
+    throw new Error("Premium node offer does not own a supported app-defined practice mode.");
+  }
+  return Object.freeze({
+    feedbackMode: "afterEachAnswer",
+    mode: "certification-focus-practice",
+    nodeId: offer.nodeId,
+    reviewBehaviorEnabled: false,
+    sessionLength: offer.mode.defaultRequestedLength,
+    source: "practiceSetup",
+    topicId: offer.nodeId,
+    trackId: offer.trackId,
+  });
+}
+
 /** Reconstructs only an exact active ordinary Certification route from its durable immutable snapshot. */
 export function buildCertificationPracticeResumeRoute(session: TrainingSession): PracticeSessionRouteParams {
   if (session.status !== "active") throw new Error("Only an active Certification Practice session can be resumed.");
@@ -297,6 +315,12 @@ export function getGeneralPracticeReviewSource(
 
 export function isCloudTopicId(topicId: string): topicId is CertificationDomain {
   return cloudDomainTopicIds.some((domain) => domain === topicId);
+}
+
+export function buildCertificationPracticeTarget(topicId?: string, exactNodeId?: string): Readonly<{ domain?: CertificationDomain; nodeId?: string }> {
+  if (exactNodeId) return Object.freeze({ nodeId: exactNodeId });
+  if (!topicId) return Object.freeze({});
+  return Object.freeze({ domain: topicId });
 }
 
 export function getCertificationTopicIdForRoute(topicId: string): string {

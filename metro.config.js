@@ -5,9 +5,14 @@ const { assetExts, sourceExts, blockList } = config.resolver;
 const localProfileEnvFiles = /^(?:\/|[A-Za-z]:[\\/])(?:.*[\\/])?\.env\.(?:smoke|sandbox)\.local$/;
 const smokeRuntime = process.env.PATTERNLY_RUNTIME_MODE === "smoke";
 const buildOnlyModules = new Map([
-  ["../../infrastructure/testing/ownerPreservationOracleRuntime", smokeRuntime ? "ownerPreservationOracleRuntime.smoke.ts" : "ownerPreservationOracleRuntime.disabled.ts"],
-  ["../testing/ownerPreservationSourceRuntime", smokeRuntime ? "ownerPreservationSourceRuntime.smoke.ts" : "ownerPreservationSourceRuntime.disabled.ts"],
-  ["./ownerPreservationSourceRuntime", smokeRuntime ? "ownerPreservationSourceRuntime.smoke.ts" : "ownerPreservationSourceRuntime.disabled.ts"],
+  ["../../infrastructure/testing/ownerPreservationOracleRuntime", smokeRuntime ? "src/infrastructure/testing/ownerPreservationOracleRuntime.smoke.ts" : "src/infrastructure/testing/ownerPreservationOracleRuntime.disabled.ts"],
+  ["../testing/ownerPreservationSourceRuntime", smokeRuntime ? "src/infrastructure/testing/ownerPreservationSourceRuntime.smoke.ts" : "src/infrastructure/testing/ownerPreservationSourceRuntime.disabled.ts"],
+  ["./ownerPreservationSourceRuntime", smokeRuntime ? "src/infrastructure/testing/ownerPreservationSourceRuntime.smoke.ts" : "src/infrastructure/testing/ownerPreservationSourceRuntime.disabled.ts"],
+  ["../content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
+  ["./premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
+  ["../../src/content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
+  ["./premiumNodeOfferSmokeTransport", smokeRuntime ? "src/content/application/premiumNodeOfferSmokeTransport.smoke.ts" : "src/content/application/premiumNodeOfferSmokeTransport.disabled.ts"],
+  ["../../src/content/application/premiumNodeOfferSmokeTransport", smokeRuntime ? "src/content/application/premiumNodeOfferSmokeTransport.smoke.ts" : "src/content/application/premiumNodeOfferSmokeTransport.disabled.ts"],
 ]);
 
 config.transformer = {
@@ -24,7 +29,7 @@ config.resolver = {
     if (implementation) {
       return {
         type: "sourceFile",
-        filePath: require("node:path").join(__dirname, "src/infrastructure/testing", implementation),
+        filePath: require("node:path").join(__dirname, implementation),
       };
     }
     return context.resolveRequest(context, moduleName, platform);

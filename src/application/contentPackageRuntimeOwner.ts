@@ -3,8 +3,11 @@ import { createCanonicalRuntimeCatalogOwner, type CanonicalTrackRuntime, type Qu
 import { createResolvedContentRef, isArtifactSha256, type ResolvedContentRef, type TrackFamilyId, type TrackId } from "../domain";
 import type { VerifiedNodePackage } from "../content/runtime/nodeContentPackage";
 import { getActiveNodePackageScopeKey, loadActiveProfileNodePackages } from "../content/application/nodePackageStoreComposition";
+import { findPremiumNodeOfferForIdentity } from "../content/application/premiumNodeOffers";
+import { getAvailablePremiumNodeOfferForMode } from "../content/application/premiumNodeOfferAccess";
 
 export type ResolvedPackageRuntime = Readonly<{ track: CanonicalTrackRuntime; runtime: CanonicalTrainingRuntime }>;
+type PackageOffer = ReturnType<typeof findPremiumNodeOfferForIdentity>;
 export class ContentPackageRuntimeOwner {
   private hydration: Readonly<{ scopeKey: string; promise: Promise<void> }> | null = null;
   private installedScopeKey: string | null = null;
@@ -12,12 +15,41 @@ export class ContentPackageRuntimeOwner {
   constructor(
     private readonly getInstalledScopeKey: () => string | null = getActiveNodePackageScopeKey,
     private readonly loadActiveInstalledPackages: (scopeKey: string) => Promise<readonly VerifiedNodePackage[]> = loadActiveProfileNodePackages,
+    private readonly offerForIdentity: (identity: VerifiedNodePackage["identity"]) => PackageOffer = findPremiumNodeOfferForIdentity,
+    private readonly availableOfferForMode: typeof getAvailablePremiumNodeOfferForMode = getAvailablePremiumNodeOfferForMode,
   ) {}
   private readonly catalogOwner = createCanonicalRuntimeCatalogOwner();
   private readonly exact = new Map<string, ResolvedPackageRuntime>();
   private readonly installedExact = new Map<string, ResolvedPackageRuntime>();
   private readonly discovered = new Map<string, ResolvedPackageRuntime>();
-  async resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string }>): Promise<ResolvedPackageRuntime> { const track = (await this.catalogOwner.load()).getTrack(input.trackId); assertFamily(track, input.familyId); track.getMode(input.modeId); const r = this.materialize(track); this.discovered.set(input.trackId, r); return r; }
+  async resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string }>): Promise<ResolvedPackageRuntime> {
+    const track = (await this.catalogOwner.load()).getTrack(input.trackId);
+    assertFamily(track, input.familyId);
+    if (input.nodeId) {
+      const offeredNode = this.availableOfferForMode(input.trackId, input.modeId);
+      if (offeredNode?.familyId === input.familyId && offeredNode.nodeId === input.nodeId) {
+        const resolved = await this.resolveExactArtifact({ trackId: offeredNode.trackId, contentVersion: offeredNode.contentVersion, artifactSha256: offeredNode.artifactSha256 });
+        resolved.track.getMode(input.modeId);
+        return resolved;
+      }
+      const bundledMode = track.getMode(input.modeId);
+      if (bundledMode.selection.kind !== "node" || bundledMode.selection.nodeId !== input.nodeId) {
+        throw new Error(`Product node ${input.trackId}/${input.nodeId} is unavailable for mode ${input.modeId}.`);
+      }
+    }
+    try {
+      track.getMode(input.modeId);
+      const resolved = this.materialize(track);
+      this.discovered.set(input.trackId, resolved);
+      return resolved;
+    } catch {
+      const offer = this.availableOfferForMode(input.trackId, input.modeId);
+      if (!offer || offer.familyId !== input.familyId) throw new Error(`Product mode ${input.trackId}/${input.modeId} is unavailable.`);
+      const resolved = await this.resolveExactArtifact({ trackId: offer.trackId, contentVersion: offer.contentVersion, artifactSha256: offer.artifactSha256 });
+      resolved.track.getMode(input.modeId);
+      return resolved;
+    }
+  }
   async resolveExactArtifact(input: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ResolvedPackageRuntime> {
     const scopeKey = this.syncInstalledScope();
     if (!input.trackId.trim() || !input.contentVersion.trim() || !isArtifactSha256(input.artifactSha256)) {
@@ -42,21 +74,23 @@ export class ContentPackageRuntimeOwner {
   registerInstalledNodePackage(record: VerifiedNodePackage, scopeKey: string): void {
     if (!scopeKey || this.syncInstalledScope() !== scopeKey) throw new Error("Installed node package profile scope is unavailable or changed.");
     const { payload, identity } = record;
+    const premiumOffer = this.offerForIdentity(identity);
     if (identity.trackId !== payload.trackId || identity.nodeId !== payload.nodeId || identity.contentVersion !== payload.contentVersion || identity.artifactSha256 !== record.manifest.artifactSha256) throw new Error("Installed node package identity is inconsistent.");
     const questions = Object.freeze([...payload.items]);
     const byId = new Map(questions.map((question) => [question.questionId, question]));
+    const getMode = (modeId: string) => { const mode = premiumOffer?.mode; if (!mode || mode.modeId !== modeId) throw new Error(`Product mode ${identity.trackId}/${modeId} is not available for an installed node package.`); return mode; };
     const track: CanonicalTrackRuntime = Object.freeze({
       trackId: identity.trackId,
       contentVersion: identity.contentVersion,
       artifactSha256: identity.artifactSha256,
       contentReleaseId: payload.contentReleaseId,
       questions,
-      modes: Object.freeze([]),
+      modes: Object.freeze(premiumOffer ? [premiumOffer.mode] : []),
       getQuestion: (questionId) => byId.get(questionId),
       getQuestionsForNode: (nodeId) => nodeId === identity.nodeId ? questions : Object.freeze([]),
       getQuestionsForMentalUnit: (mentalUnitId) => Object.freeze(questions.filter((question) => question.mentalUnitId === mentalUnitId)),
-      getMode: (modeId) => { throw new Error(`Product mode ${identity.trackId}/${modeId} is not available for an installed node package.`); },
-      getPool: (modeId) => { throw new Error(`Product mode ${identity.trackId}/${modeId} is not available for an installed node package.`); },
+      getMode,
+      getPool: (modeId) => { const mode = getMode(modeId); const selection = mode.selection; if (selection.kind !== "node" || selection.nodeId !== identity.nodeId) throw new Error(`Product mode ${identity.trackId}/${modeId} does not own this installed node.`); return questions; },
     });
     const key = runtimeKey(identity.trackId, identity.contentVersion, identity.artifactSha256);
     if (!this.installedExact.has(key)) this.installedExact.set(key, Object.freeze({ track, runtime: new CanonicalTrainingRuntime(track) }));

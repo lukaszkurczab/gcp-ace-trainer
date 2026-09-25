@@ -36,6 +36,7 @@ import { allowsPracticeResponseEditing, describeSessionPreparationFailure, forma
 import { PracticeSessionLoadingSkeleton, PracticeSessionSurface } from "./PracticeSessionSurface";
 import { getCertificationMode } from "../../tracks/certification";
 import { toCanonicalQuestionViewModel } from "./canonicalQuestionViewModel";
+import { buildCertificationPracticeTarget } from "./sessionConfig";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
 type CompletionFailure = Exclude<Awaited<ReturnType<typeof completeCertificationPracticeSession>>, { kind: "verified" }>;
@@ -81,7 +82,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     setRecoveryFailure(null);
     void (async () => {
       try {
-    const opened = await openCertificationPracticeSession(mode === "certification-diagnostic-baseline" || mode === "certification-quick-review" ? { modeId: mode, trackId: route.params.trackId, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-scenario-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, competency: route.params.competencyId, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId });
+    const opened = await openCertificationPracticeSession(mode === "certification-diagnostic-baseline" || mode === "certification-quick-review" ? { modeId: mode, trackId: route.params.trackId, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-scenario-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, competency: route.params.competencyId, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, ...buildCertificationPracticeTarget(route.params.topicId, route.params.nodeId), feedbackMode: route.params.feedbackMode, source: route.params.source, expectedSessionId: route.params.expectedSessionId });
         if (opened.kind === "active_session_conflict") { if (live) setConflict(opened.session); return; }
         await enterCertificationPracticeForeground();
         foregroundEntered = true;

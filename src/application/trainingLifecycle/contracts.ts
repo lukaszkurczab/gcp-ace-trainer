@@ -103,7 +103,7 @@ export type ContentPackageRuntimeResolution = Readonly<{
 
 /** Sole verified package-to-family-runtime authority for preparation, exact resume, review, and discovery. */
 export interface ContentPackageRuntimePort {
-  resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string }>): Promise<ContentPackageRuntimeResolution>;
+  resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string }>): Promise<ContentPackageRuntimeResolution>;
   resolveExactArtifact(input: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ContentPackageRuntimeResolution>;
   resolveForDiscovery(trackId: TrackId, familyId: TrackFamilyId): Promise<ContentPackageRuntimeResolution>;
 }

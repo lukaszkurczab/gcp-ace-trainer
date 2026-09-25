@@ -306,9 +306,10 @@ test("language selection owns the typed accessible radio choice flow", () => {
   assert.match(languageSettings, /if \(value === preferences\.language \|\| savingRef\.current !== null\) return/);
   assert.match(languageSettings, /await preferences\.setLanguage\(value\)/);
   assert.match(appPreferencesProvider, /deviceLocale: AppLocale/);
-  assert.match(appPreferencesProvider, /const deviceLocale = resolveSystemLocale\(\)/);
-  assert.match(appPreferencesProvider, /settings\.language === "system" \? deviceLocale : settings\.language/);
-  assert.match(languageSettings, /detail=\{option\.detailKey \? t\(option\.detailKey, \{ lng: preferences\.deviceLocale \}\) : undefined\}/);
+  assert.match(appPreferencesProvider, /const localeResolution = resolveLocale\("system", systemLocale\)/);
+  assert.match(appPreferencesProvider, /const selectedLocaleResolution = settings\.language === "system"/);
+  assert.match(languageSettings, /preferences\.systemLocaleResolution\.reason === "translation_unavailable"/);
+  assert.match(languageSettings, /t\("languageSystemUnavailableDetail"/);
   assert.match(languageSettingsModel, /detailKey\?: string/);
   assert.match(languageSettingsModel, /\{ detailKey: "languageSystemDetail", labelKey: "languageSystem", value: "system" \}/);
   assert.doesNotMatch(languageSettingsModel, /languageEnglishDetail|languagePolishDetail/);
@@ -327,7 +328,7 @@ test("System language detail follows the device locale independently from the se
       assert.equal(appStrings.languageSystem, "System");
       assert.equal(
         deviceStrings.languageSystemDetail,
-        deviceLocale === "en" ? "Follow your device language." : "Użyj języka urządzenia.",
+        deviceLocale === "en" ? "Follow your device language (English or Polish)." : "Użyj języka urządzenia (angielskiego lub polskiego).",
         `${appLocale} app/${deviceLocale} device`,
       );
       assert.equal(appStrings.languageEnglishDetail, undefined);

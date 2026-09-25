@@ -421,7 +421,7 @@ export type PatternlyApiClient = Readonly<{
   getDeletionOperationStatus: (operationId: string, operationSecret: string) => Promise<DeletionOperationStatusDto>;
   getTracks: () => Promise<TracksResponseDto>;
   getContentVersions: () => Promise<ContentVersionsResponseDto>;
-  getContentPackage: (trackId: string, nodeId: string) => Promise<Readonly<{ status: number; headers: Headers; bytes: Uint8Array }>>;
+  getContentPackage: (trackId: string, nodeId: string) => Promise<Readonly<{ status: number; headers: Headers; bytes: Uint8Array; serverCode?: string }>>;
   createContentReport: (input: CreateContentReportDto, appCheckToken: string) => Promise<CreateContentReportResponseDto>;
   getAdminContentReports: () => Promise<AdminContentReportsResponseDto>;
   transitionAdminContentReport: (clientSubmissionId: string, status: ContentReportStatusDto) => Promise<TransitionContentReportResponseDto>;
@@ -527,7 +527,7 @@ export function createPatternlyApiClient(input: Readonly<{
     }
   }
 
-  async function requestContentPackage(trackId: string, nodeId: string): Promise<Readonly<{ status: number; headers: Headers; bytes: Uint8Array }>> {
+  async function requestContentPackage(trackId: string, nodeId: string): Promise<Readonly<{ status: number; headers: Headers; bytes: Uint8Array; serverCode?: string }>> {
     if (!isSafePathIdentity(trackId) || !isSafePathIdentity(nodeId)) throw new PatternlyApiClientError("invalid_response");
     const path = `/v1/content/packages/${encodeURIComponent(trackId)}/${encodeURIComponent(nodeId)}`;
     const url = new URL(path, origin);
@@ -553,6 +553,14 @@ export function createPatternlyApiClient(input: Readonly<{
         if (error instanceof PatternlyApiClientError) throw error;
         if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
         throw new PatternlyApiClientError("transport_failed");
+      }
+      if (!response.ok) {
+        let serverCode: string | undefined;
+        try {
+          const payload = JSON.parse(new TextDecoder().decode(bytes)) as unknown;
+          if (isRecord(payload) && isRecord(payload.error) && typeof payload.error.code === "string") serverCode = payload.error.code;
+        } catch { /* The status remains actionable even when the server error body is malformed. */ }
+        throw new PatternlyApiClientError("server_error", response.status, serverCode);
       }
       return Object.freeze({ status: response.status, headers: response.headers, bytes });
     } finally { if (timeoutId !== undefined) clearTimeout(timeoutId); }
