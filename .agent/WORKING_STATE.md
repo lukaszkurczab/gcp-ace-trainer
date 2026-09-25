@@ -8,8 +8,8 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 | Repozytorium | Stan po CI-CONTRACT/B |
 | --- | --- |
-| `patternly` | ODK-119-GATE/A wypchnięte jako `065afbcc`; bieżący diff aktualizuje plan i stan po AUD-04-B. |
-| `patternly-backend` | AUD-04-B wypchnięte na `main` jako `11f988e`: admission/download pakietu po świeżym entitlement. |
+| `patternly` | AUD-04-C zaimplementowane jako `5de89e5b`; bieżący diff aktualizuje plan i stan. |
+| `patternly-backend` | Korekta metadanych odpowiedzi dla AUD-04-C wypchnięta jako `77c4e4c`; bazowe B to `11f988e`. |
 | `patternly-content` | CI-CONTRACT/A2b wypchnięte na `master` jako `21707b6`. |
 
 ## CI-CONTRACT/A2b — wynik
@@ -101,6 +101,15 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Pełny backend 233/233, targeted package 4/4, typecheck, lint, OpenAPI 58 operacji i diff check — PASS. Wcześniejszy pojedynczy błąd concurrency był przejściowy; kontrolowany pełny retest przeszedł.
 - Briefing: 0,88 / 0,84 / 0,82 / 0,86, minimum 0,82 — APPROVE.
 
+## AUD-04-C — wynik
+
+- Status: **done / niezależne QA PASS WITH ISSUES**; aplikacja `5de89e5b`, backend metadata `77c4e4c`, bez wdrożenia.
+- Transport używa istniejącego Auth/App Check, limitu 2 MiB i wymaganych nagłówków. Verifier sprawdza gzip, dokładne rozmiary, transport/artifact SHA, strict node payload, tożsamość, istniejący question contract oraz minimum app version; dekompresja ma limit 8 MiB.
+- Expo DocumentDirectory zapisuje staging i content-addressed final z reread/verify; dopiero potem pojedynczy profile-scoped MMKV pointer aktywuje wersję. Historia exact refs pozostaje, a orphan bez pointera nie hydruje po restarcie.
+- Ten sam `ContentPackageRuntimeOwner` obsługuje installed exact refs; pakiety nie trafiają do discovery ani nie definiują product modes. Cache jest izolowany A→B→A, podczas async hydration i podczas aktywnego profile transition.
+- Targeted/architecture 35/35, content-boundary, typecheck i diff check — PASS; backend emulator 1/1 i OpenAPI 58 — PASS. Szeroki suite miał 1219 przejść i 11 failures: dwa związane z C naprawiono; pozostałe obejmowały istniejące release/legal/dirty-worktree oraz timeout Metro i nie są raportowane jako PASS.
+- Ograniczenia QA: brak jeszcze wywołującego flow (właściciel D), brak native device proof dla adaptera oraz neutralny fixture nie jest admission Premium.
+
 ## Weryfikacja
 
 - Aplikacja: testy ukierunkowane 44/44, typecheck i `git diff --check` — PASS.
@@ -119,8 +128,8 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Rozpocząć `AUD-04-C`: mobile verify pobranego artefaktu i atomowa aktywacja, bez wdrożenia.
-2. Po C wykonać osobno AUD-04-D, a następnie ODK-119-GATE/B.
+1. Rozpocząć `AUD-04-D`: discovery/preparation, wywołujący flow instalatora i właściwe błędy pakietów, bez wdrożenia.
+2. Po D wykonać ODK-119-GATE/B.
 3. Wrócić do `CI-CONTRACT/C`, gdy można wykonać właściwy exact-SHA etap bez omijania jego bramek.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 5. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
