@@ -8,7 +8,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 | Repozytorium | Stan po CI-CONTRACT/B |
 | --- | --- |
-| `patternly` | A3 wypchnięte jako `4b0d659c`; bieżący diff realizuje i dokumentuje B. |
+| `patternly` | CI-CONTRACT/B wypchnięte jako `4f18da89`; bieżący diff realizuje i dokumentuje AUD-16. |
 | `patternly-backend` | B1c wypchnięte na `main` jako `2a8c035`: test wyścigu wymiany sesji z obrotem generacji. |
 | `patternly-content` | CI-CONTRACT/A2b wypchnięte na `master` jako `21707b6`. |
 
@@ -72,6 +72,15 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Nie było wdrożenia. Starsze instalacje bez wymiany sesji mogą dostać 401 po przyszłym włączeniu egzekwowania claimu; wymaga to osobnej bramki dystrybucji.
 - Recovery takeover i provider revoke nie zostały zmienione.
 
+## AUD-16 — wynik
+
+- Status: **done / niezależne QA PASS**; lokalnie, bez wdrożenia.
+- EN i PL mieszczą pełną zgodę w dwóch liniach standardowego układu. PL brzmi: „Akceptuję Warunki korzystania i znam Politykę prywatności.”
+- Oba linki, walidacja i boolean `acceptedTerms` pozostały zachowane. Etykieta dostępności checkboxa obejmuje pełną zgodę na Warunki i znajomość Polityki.
+- Duży tekst rośnie do czterech linii bez obcięcia. Repozytoryjny flow Maestro przeszedł 1/1 na istniejącym iPhonie 17 bez `clearState`, reinstalacji i tworzenia konta.
+- Testy ukierunkowane 33/33, typecheck i diff check — PASS. Prywatne zrzuty zostały obejrzane i nie trafiły do repozytorium.
+- Briefing: 0,96 / 0,88 / 0,84 / 0,91, minimum 0,84 — APPROVE.
+
 ## Weryfikacja
 
 - Aplikacja: testy ukierunkowane 44/44, typecheck i `git diff --check` — PASS.
@@ -84,13 +93,15 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.
 - `CI-CONTRACT/A2b`, `A3` i `B` — done; C pozostaje otwarte.
+- `CI-CONTRACT/C` — wymagany exact-SHA run nie ma lokalnego PASS: blokują go brak JDK 21, brak Chromium Playwright, konflikty portów emulatorów oraz istniejący `recovery:check` dla czterech importów MMKV. Nie utożsamiać tego z hosted PASS.
 - `PROFILE-02/B` — WAIT na zapisaną w planie decyzję PO.
 - Brak wdrożenia jest granicą zakresu, nie defektem lokalnego B1c.
 
 ## Następne działania
 
-1. Rozpocząć `CI-CONTRACT/C`, następny dostępny slice: uruchomić właściwy etap dla jawnych czterech SHA bez wdrożenia.
-2. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
-3. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
+1. Rozpocząć `ODK-119-GATE/A`, pierwszy niezależny READY slice po zapisaniu lokalnych blokad CI-CONTRACT/C.
+2. Wrócić do `CI-CONTRACT/C`, gdy można wykonać właściwy exact-SHA etap bez omijania jego bramek.
+3. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
+4. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
 
 Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymaganych dowodów.

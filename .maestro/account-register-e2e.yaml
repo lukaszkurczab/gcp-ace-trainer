@@ -6,13 +6,13 @@ tags:
   - registration
 ---
 - launchApp:
-    clearState: true
+    clearState: false
 - extendedWaitUntil:
     visible:
-      id: "^account-register$"
+      id: "^account-entry-register$"
     timeout: 30000
 - tapOn:
-    id: "^account-register$"
+    id: "^account-entry-register$"
 - extendedWaitUntil:
     visible:
       id: "^account-register-submit$"

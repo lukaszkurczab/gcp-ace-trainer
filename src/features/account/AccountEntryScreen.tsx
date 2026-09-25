@@ -67,7 +67,7 @@ type Feedback = AccountCommandResult;
 type TermsPresentationState = "pristine" | "checked" | "uncheckedAfterInteraction";
 
 
-type AccountCopy = Record<keyof typeof accountCopy | "invalidEmail", string>;
+type AccountCopy = Record<Exclude<keyof typeof accountCopy, "privacyNoticePrefix"> | "invalidEmail", string>;
 type AccountContext = ReturnType<typeof usePatternlyAccount>;
 type AccountContextRef = Readonly<{ current: AccountContext }>;
 
@@ -223,7 +223,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   privacyAcknowledgementPrefix: t("privacyAcknowledgementPrefix"),
   termsOfService: t("termsOfService"),
   privacyPolicy: t("privacyPolicy"),
-  privacyNoticePrefix: t("privacyNoticePrefix"),
   and: t("and"),
   showPassword: t("showPassword"),
   hidePassword: t("hidePassword"),
@@ -1790,7 +1789,7 @@ function TermsAcceptance({ accepted, onChange, onOpenPrivacy, onOpenTerms, prese
   return (
     <View style={styles.termsAcceptance}>
       <View style={styles.termsCheckboxRow}>
-        <Pressable accessibilityLabel={`${text.acceptTermsPrefix} ${text.termsOfService}`} accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} hitSlop={8} onPress={() => onChange(!accepted)} style={styles.termsCheckboxControl} testID="account-register-terms-checkbox">
+        <Pressable accessibilityLabel={`${text.acceptTermsPrefix}${text.termsOfService}${text.privacyAcknowledgementPrefix}${text.privacyPolicy}.`} accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} hitSlop={8} onPress={() => onChange(!accepted)} style={styles.termsCheckboxControl} testID="account-register-terms-checkbox">
           <View style={[styles.termsCheckbox, accepted ? styles.termsAcceptanceCheckboxChecked : null]}>{accepted ? <Icon color={styles.termsAcceptanceCheckboxIcon.color as string} name="check" size={16} /> : null}</View>
         </Pressable>
         <View style={styles.termsLinks}>
@@ -2121,7 +2120,7 @@ function isAuthFieldFailure(
     termsAcceptanceCheckboxChecked: { backgroundColor: palette.onPrimary, borderColor: palette.primary },
     termsAcceptanceCheckboxIcon: { color: palette.primary },
     termsCopy: { color: palette.textSecondary, flexShrink: 1, fontSize: 13, lineHeight: 20 },
-    termsLinks: { flex: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, minWidth: 0 },
+    termsLinks: { flex: 1, flexDirection: "row", flexWrap: "wrap", minWidth: 0 },
     termsLinkPressable: { alignSelf: "flex-start", flexShrink: 1, maxWidth: "100%" },
     termsLink: { color: palette.primary, flexShrink: 1, fontSize: 13, lineHeight: 20, textDecorationLine: "underline" },
     termsRequired: { color: palette.danger, fontSize: 12, lineHeight: 17, marginLeft: 44 + spacing.sm },
