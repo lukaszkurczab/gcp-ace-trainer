@@ -6,10 +6,23 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Repozytoria
 
-| Repozytorium | Stan po B1c |
+| Repozytorium | Stan po SIMP-05 |
 | --- | --- |
-| `patternly` | B1c zawarte w bieżącym commicie na bazie `17628a4b`: klient Auth, typed reauth, testy, izolowany harness Firebase SDK, macierz 57 tras, raport, plan i ten stan. |
+| `patternly` | B1c wypchnięte jako `aa5b26e3`; bieżący diff dokumentuje ponowną walidację SIMP-05 i synchronizuje plan. |
 | `patternly-backend` | B1c wypchnięte na `main` jako `2a8c035`: test wyścigu wymiany sesji z obrotem generacji. |
+| `patternly-content` | Czysty `master` `36fd693`; SIMP-05 bez zmian runtime, ponownie zweryfikowane z aktualnego consumer graph, ingressu i historii. |
+
+## SIMP-05 — wynik
+
+- Status: **done**; ponowna walidacja nie wykazała aktywnego równoległego formatu, adaptera ani fallbacku.
+- Aplikacja konsumuje dziewięć artefaktów przez kanoniczny runtime; content ma jeden ingress, wspólny kontrakt i builder.
+- Historyczny raport zatwierdzono w `08020ea` i celowo usunięto w `2623222`; nie przywrócono go jako drugiego aktywnego dokumentu.
+- `patternly-content`: testy 60/60 i migration verifier PASS dla 9 tracków / 117 nodes / 943 mental units / 16 077 pytań.
+- Briefing: 0,93 / 0,94 / 0,84 / 0,91, minimum 0,84 — APPROVE.
+- Niezależne QA: PASS WITH ISSUES. `validateContentBoundary.mjs` i diff check
+  przeszły; `checkRecoveryBaseline.mjs` wskazał cztery istniejące importy MMKV
+  w obszarze konta, poza dokumentacyjnym diffem SIMP-05.
+- Stare odwołania workflow do usuniętych generatorów i release gate pozostają luką `CI-CONTRACT/A2b`, zależną od `AWS-02/CANDIDATE`.
 
 ## AUD-08/B1c — wynik
 
@@ -39,8 +52,8 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Po pushu bieżącego commitu aplikacji potwierdzić oba `origin/main`.
-2. Wybrać pierwszy rzeczywiście dostępny slice z kolejki. Kroki `CI-CONTRACT/A2b`, `PROFILE-02/B` i `B1b4c` ominąć tylko z powodu zapisanych zależności, nie jako porzucone zadania.
-3. Przed następną implementacją wykonać nowy preflight i briefing walidacyjny.
+1. Rozpocząć `AWS-02/CANDIDATE`; nie naprawiać CI przez odtworzenie legacy publishera.
+2. Po jego kandydacie wrócić do `CI-CONTRACT/A2b` według zależności planu.
+3. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
 
 Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymaganych dowodów.
