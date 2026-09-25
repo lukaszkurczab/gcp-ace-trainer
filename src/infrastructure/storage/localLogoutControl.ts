@@ -1,12 +1,13 @@
 import type { StorageManifestStore } from "./encryptedStorageBootstrap";
 
-const CONTROL_KEY = "patternly.local-logout-control.v1";
-const CONTROL_VERSION = 1 as const;
+const CONTROL_KEY = "patternly.local-logout-control.v2";
+const CONTROL_VERSION = 2 as const;
 const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type PendingRevoke = Readonly<{ operationId: string; uid: string }>;
 export type LocalLogoutControlSnapshot = Readonly<{
   blocked: PendingRevoke | null;
+  completed: readonly PendingRevoke[];
   pending: readonly PendingRevoke[];
   version: typeof CONTROL_VERSION;
 }>;
@@ -44,25 +45,28 @@ function freezePair(value: PendingRevoke): PendingRevoke {
   return Object.freeze({ uid: value.uid, operationId: value.operationId });
 }
 
-function freezeSnapshot(blocked: PendingRevoke | null, pending: readonly PendingRevoke[]): LocalLogoutControlSnapshot {
+function freezeSnapshot(blocked: PendingRevoke | null, pending: readonly PendingRevoke[], completed: readonly PendingRevoke[] = []): LocalLogoutControlSnapshot {
   return Object.freeze({
     blocked: blocked ? freezePair(blocked) : null,
+    completed: Object.freeze(completed.map(freezePair)),
     pending: Object.freeze(pending.map(freezePair)),
     version: CONTROL_VERSION,
   });
 }
 
-const EMPTY_SNAPSHOT = freezeSnapshot(null, []);
+const EMPTY_SNAPSHOT = freezeSnapshot(null, [], []);
 
 function parseRecord(raw: string | null): LocalLogoutControlSnapshot {
   if (raw === null) return EMPTY_SNAPSHOT;
   try {
     const value: unknown = JSON.parse(raw);
-    if (!isRecord(value) || Object.keys(value).sort().join(",") !== "blocked,pending,version" || value.version !== CONTROL_VERSION) {
+    if (!isRecord(value) || value.version !== CONTROL_VERSION) {
       return fail("local_logout_control_corrupt");
     }
+    if (Object.keys(value).sort().join(",") !== "blocked,completed,pending,version") return fail("local_logout_control_corrupt");
     if (value.blocked !== null && !validIdentity(value.blocked)) return fail("local_logout_control_corrupt");
     if (!Array.isArray(value.pending) || !value.pending.every(validIdentity)) return fail("local_logout_control_corrupt");
+    if (!Array.isArray(value.completed) || !value.completed.every(validIdentity)) return fail("local_logout_control_corrupt");
 
     const pending = (value.pending as PendingRevoke[]).map(freezePair);
     const seen = new Set<string>();
@@ -71,10 +75,16 @@ function parseRecord(raw: string | null): LocalLogoutControlSnapshot {
       if (seen.has(key)) return fail("local_logout_control_corrupt");
       seen.add(key);
     }
+    const completed = (value.completed as PendingRevoke[]).map(freezePair);
+    for (const pair of completed) {
+      const key = pairKey(pair);
+      if (seen.has(key)) return fail("local_logout_control_corrupt");
+      seen.add(key);
+    }
     const blocked = value.blocked === null ? null : freezePair(value.blocked as PendingRevoke);
-    if (blocked && !seen.has(pairKey(blocked))) return fail("local_logout_control_corrupt");
+    if (blocked && !pending.some((pair) => pairKey(pair) === pairKey(blocked))) return fail("local_logout_control_corrupt");
     const canonicalPending = [...pending].sort(comparePairs);
-    return freezeSnapshot(blocked, canonicalPending);
+    return freezeSnapshot(blocked, canonicalPending, [...completed].sort(comparePairs));
   } catch (error) {
     if (error instanceof LocalLogoutControlError) throw error;
     return fail("local_logout_control_corrupt");
@@ -84,6 +94,7 @@ function parseRecord(raw: string | null): LocalLogoutControlSnapshot {
 function serialize(snapshot: LocalLogoutControlSnapshot): string {
   return JSON.stringify({
     blocked: snapshot.blocked,
+    completed: snapshot.completed,
     pending: snapshot.pending,
     version: snapshot.version,
   });
@@ -123,6 +134,7 @@ export type LocalLogoutControl = Readonly<{
   read(): Promise<LocalLogoutControlSnapshot>;
   blockAndQueueRevoke(uid: string, operationId: string): Promise<LocalLogoutControlSnapshot>;
   clearBlockForAuth(authUid: string | null, operationId: string, canClear?: () => boolean): Promise<LocalLogoutControlSnapshot>;
+  completePendingRevoke(uid: string, operationId: string, canComplete?: () => boolean): Promise<LocalLogoutControlSnapshot>;
 }>;
 
 function requireIdentity(uid: string, operationId: string): void {
@@ -140,9 +152,12 @@ export function createLocalLogoutControl(store: StorageManifestStore): LocalLogo
       requireIdentity(uid, operationId);
       const current = await readFrom(store);
       const pair = freezePair({ uid, operationId });
+      if (current.completed.some((entry) => pairKey(entry) === pairKey(pair))) return current;
       const pending = new Map(current.pending.map((entry) => [pairKey(entry), entry]));
       pending.set(pairKey(pair), pair);
-      return writeVerified(store, freezeSnapshot(pair, [...pending.values()].sort(comparePairs)));
+      // A verified new command supersedes completion receipts from older,
+      // already-settled operations, keeping the control record bounded.
+      return writeVerified(store, freezeSnapshot(pair, [...pending.values()].sort(comparePairs), []));
     }),
     clearBlockForAuth: (authUid: string | null, operationId: string, canClear: () => boolean = () => true) => serialized(async () => {
       if (!canClear()) return readFrom(store);
@@ -150,7 +165,31 @@ export function createLocalLogoutControl(store: StorageManifestStore): LocalLogo
       const current = await readFrom(store);
       const blocked = current.blocked;
       if (!blocked || blocked.operationId !== operationId || (authUid !== null && blocked.uid !== authUid)) return current;
-      return writeVerified(store, freezeSnapshot(null, current.pending));
+      return writeVerified(store, freezeSnapshot(null, current.pending, current.completed));
+    }),
+    completePendingRevoke: (uid: string, operationId: string, canComplete: () => boolean = () => true) => serialized(async () => {
+      if (!canComplete()) return readFrom(store);
+      requireIdentity(uid, operationId);
+      const current = await readFrom(store);
+      if (!canComplete()) return current;
+      const key = pairKey({ uid, operationId });
+      if (!current.pending.some((entry) => pairKey(entry) === key)) return current;
+      const pending = current.pending.filter((entry) => pairKey(entry) !== key);
+      const blocked = current.blocked && pairKey(current.blocked) === key ? null : current.blocked;
+      const completedPairs = [...current.completed.filter((entry) => pairKey(entry) !== key), freezePair({ uid, operationId })].sort(comparePairs);
+      const next = freezeSnapshot(blocked, pending, completedPairs);
+      try {
+        return await writeVerified(store, next);
+      } catch (error) {
+        // The transition is non-destructive: storage contains either the pending
+        // marker or a completed tombstone for this exact operation. A transient
+        // read-back mismatch can therefore be resolved by observing either state.
+        try {
+          const observed = await readFrom(store);
+          if (observed.completed.some((entry) => pairKey(entry) === key)) return observed;
+        } catch { /* Surface the original verification failure. */ }
+        throw error;
+      }
     }),
   });
 }

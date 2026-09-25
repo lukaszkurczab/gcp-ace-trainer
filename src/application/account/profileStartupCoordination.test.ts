@@ -96,7 +96,7 @@ test("local account sign-out verifies the durable block before locking, closing,
     uid: "uid-A",
     persistBlock: async () => {
       operations.push("persist:verified");
-      return { blocked: { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }, pending: [{ uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }], version: 1 };
+      return { blocked: { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }, completed: [], pending: [{ uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }], version: 2 };
     },
     publishLockedState: () => { operations.push("publish:locked"); },
     closeProfileStorage: () => { operations.push("close:scope"); },
@@ -127,7 +127,7 @@ test("unverified local control read-back attempts Firebase sign-out only when no
   const operations: string[] = [];
   const outcome = await performLocalAccountSignOut({
     uid: "uid-A",
-    persistBlock: async () => ({ blocked: { uid: "uid-B", operationId: "00000000-0000-4000-8000-000000000002" }, pending: [], version: 1 }),
+    persistBlock: async () => ({ blocked: { uid: "uid-B", operationId: "00000000-0000-4000-8000-000000000002" }, completed: [], pending: [], version: 2 }),
     publishLockedState: () => { operations.push("publish:locked"); },
     closeProfileStorage: () => { operations.push("close:scope"); },
     signOutFirebase: async () => { operations.push("firebase:signOut"); },
@@ -155,9 +155,10 @@ test("when a scoped operation is durable, control-write failure retains Auth for
 
 test("restore locks only for a matching scoped logout marker missing from the control journal", () => {
   const marker = { accountId: "account-A", operationId: "00000000-0000-4000-8000-000000000001", status: "pending", lastFailureCode: null } as const;
-  assert.equal(shouldLockForIncompleteScopedSignOut({ marker, authenticatedAccountId: "account-A", authUid: "uid-A", pending: [] }), true);
-  assert.equal(shouldLockForIncompleteScopedSignOut({ marker, authenticatedAccountId: "account-A", authUid: "uid-A", pending: [{ uid: "uid-A", operationId: marker.operationId }] }), false);
-  assert.equal(shouldLockForIncompleteScopedSignOut({ marker, authenticatedAccountId: "account-B", authUid: "uid-A", pending: [] }), false);
+  assert.equal(shouldLockForIncompleteScopedSignOut({ marker, authenticatedAccountId: "account-A", authUid: "uid-A", completed: [], pending: [] }), true);
+  assert.equal(shouldLockForIncompleteScopedSignOut({ marker, authenticatedAccountId: "account-A", authUid: "uid-A", completed: [], pending: [{ uid: "uid-A", operationId: marker.operationId }] }), false);
+  assert.equal(shouldLockForIncompleteScopedSignOut({ marker, authenticatedAccountId: "account-A", authUid: "uid-A", completed: [{ uid: "uid-A", operationId: marker.operationId }], pending: [] }), false);
+  assert.equal(shouldLockForIncompleteScopedSignOut({ marker, authenticatedAccountId: "account-B", authUid: "uid-A", completed: [], pending: [] }), false);
 });
 
 test("authenticated scope checks and repairs incomplete logout before publishing profile preparation", async () => {
@@ -167,8 +168,10 @@ test("authenticated scope checks and repairs incomplete logout before publishing
     accountId: "account-A",
     authUid: "uid-A",
     canContinue: () => true,
+    completed: [],
     pending: [],
     readScopedSignOut: () => { operations.push("read:scoped-marker"); return marker; },
+    clearScopedSignOut: () => { operations.push("clear:scoped-marker"); },
     persistControlPair: async (operationId) => { operations.push(`persist:${operationId}`); },
     closeProfileStorage: () => { operations.push("close:scope"); },
     blockAuthObserver: (uid) => { operations.push(`block:${uid}`); },
@@ -191,14 +194,58 @@ test("scope guard rechecks Auth generation after reading an absent marker", asyn
     accountId: "account-A",
     authUid: "uid-A",
     canContinue: () => ++checks === 1,
+    completed: [],
     pending: [],
     readScopedSignOut: () => null,
+    clearScopedSignOut: () => assert.fail("no marker should be cleared"),
     persistControlPair: async () => assert.fail("no marker should be repaired"),
     closeProfileStorage: () => assert.fail("the provider handles stale closure"),
     blockAuthObserver: () => assert.fail("stale Auth must not be blocked"),
     publishPending: () => assert.fail("stale Auth must not be published"),
   });
   assert.equal(result, "stale");
+});
+
+test("a completed revoke receipt clears the scoped marker before profile startup continues", async () => {
+  const operations: string[] = [];
+  const marker = { accountId: "account-A", operationId: "00000000-0000-4000-8000-000000000001", status: "pending", lastFailureCode: null } as const;
+  const result = await guardAuthenticatedScopeAgainstIncompleteSignOut({
+    accountId: "account-A",
+    authUid: "uid-A",
+    canContinue: () => true,
+    completed: [{ uid: "uid-A", operationId: marker.operationId }],
+    pending: [],
+    readScopedSignOut: () => marker,
+    clearScopedSignOut: () => { operations.push("clear:scoped-marker"); },
+    persistControlPair: async () => assert.fail("completed operation must not be requeued"),
+    closeProfileStorage: () => assert.fail("completed operation must not close the profile"),
+    blockAuthObserver: () => assert.fail("completed operation must not block Auth"),
+    publishPending: () => assert.fail("completed operation must not publish pending"),
+  });
+
+  assert.equal(result, "continue");
+  assert.deepEqual(operations, ["clear:scoped-marker"]);
+});
+
+test("failed completed-marker cleanup keeps the authenticated profile closed", async () => {
+  const operations: string[] = [];
+  const marker = { accountId: "account-A", operationId: "00000000-0000-4000-8000-000000000001", status: "pending", lastFailureCode: null } as const;
+  const result = await guardAuthenticatedScopeAgainstIncompleteSignOut({
+    accountId: "account-A",
+    authUid: "uid-A",
+    canContinue: () => true,
+    completed: [{ uid: "uid-A", operationId: marker.operationId }],
+    pending: [],
+    readScopedSignOut: () => marker,
+    clearScopedSignOut: () => { throw new Error("remove_failed"); },
+    persistControlPair: async () => assert.fail("completed operation must not be requeued"),
+    closeProfileStorage: () => { operations.push("close"); },
+    blockAuthObserver: () => { operations.push("block"); },
+    publishPending: () => { operations.push("pending"); },
+  });
+
+  assert.equal(result, "blocked");
+  assert.deepEqual(operations, ["block", "close", "pending"]);
 });
 
 test("a UID switch while fallback control persistence is pending closes only the captured scope", async () => {
@@ -222,7 +269,7 @@ test("stale sign-out completion closes its scope without publishing over the new
   const operations: string[] = [];
   const outcome = await performLocalAccountSignOut({
     uid: "uid-A",
-    persistBlock: async () => ({ blocked: { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }, pending: [{ uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }], version: 1 }),
+    persistBlock: async () => ({ blocked: { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }, completed: [], pending: [{ uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }], version: 2 }),
     publishLockedState: () => { operations.push("publish:stale"); },
     closeProfileStorage: () => { operations.push("close:scope"); },
     signOutFirebase: async () => { operations.push("firebase:signOut"); },
@@ -238,7 +285,7 @@ test("Firebase sign-out failure retains the matching block for manual retry", as
   const operations: string[] = [];
   const outcome = await performLocalAccountSignOut({
     uid: "uid-A",
-    persistBlock: async () => ({ blocked, pending: [blocked], version: 1 }),
+    persistBlock: async () => ({ blocked, completed: [], pending: [blocked], version: 2 }),
     publishLockedState: () => { operations.push("publish:locked"); },
     closeProfileStorage: () => { operations.push("close:scope"); },
     signOutFirebase: async () => { operations.push("firebase:signOut"); throw new Error("offline"); },
@@ -246,8 +293,8 @@ test("Firebase sign-out failure retains the matching block for manual retry", as
   });
 
   assert.equal(outcome, "signOutPending");
-  assert.equal(findMatchingLocalLogoutBlock({ blocked, pending: [blocked], version: 1 }, "uid-A")?.operationId, blocked.operationId);
-  assert.equal(findMatchingLocalLogoutBlock({ blocked, pending: [blocked], version: 1 }, "uid-B"), null);
+  assert.equal(findMatchingLocalLogoutBlock({ blocked, completed: [], pending: [blocked], version: 2 }, "uid-A")?.operationId, blocked.operationId);
+  assert.equal(findMatchingLocalLogoutBlock({ blocked, completed: [], pending: [blocked], version: 2 }, "uid-B"), null);
   assert.deepEqual(operations, ["publish:locked", "close:scope", "firebase:signOut"]);
 });
 

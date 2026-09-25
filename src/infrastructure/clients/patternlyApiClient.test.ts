@@ -74,6 +74,21 @@ test("account session exchange rejects a missing custom token", async () => {
   await assert.rejects(client.exchangeAccountSession(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
+test("session revocation accepts only the exact operation and a nonempty replacement token", async () => {
+  const operationId = "00000000-0000-4000-8000-000000000001";
+  const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ status: "revoked", operationId, customToken: "replacement-token" }), { status: 200 }) });
+  assert.deepEqual(await client.revokeSessions(operationId), { status: "revoked", operationId, customToken: "replacement-token" });
+
+  for (const response of [
+    { status: "revoked", operationId },
+    { status: "revoked", operationId: "00000000-0000-4000-8000-000000000002", customToken: "replacement-token" },
+    { status: "pending", operationId, customToken: "replacement-token" },
+  ]) {
+    const invalid = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(response), { status: 200 }) });
+    await assert.rejects(invalid.revokeSessions(operationId), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  }
+});
+
 test("content package transport uses the authenticated App Check API and returns binary response headers", async () => {
   let request: { url: string; headers: Headers } | undefined;
   const client = createTestClient({ fetchImplementation: async (url, init) => {

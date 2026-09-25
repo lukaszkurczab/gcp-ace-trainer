@@ -32,14 +32,16 @@ export function findMatchingLocalLogoutBlock(snapshot: LocalLogoutControlSnapsho
   return snapshot.blocked?.uid === uid ? snapshot.blocked : null;
 }
 
-/** A scoped sign-out marker without its control-journal pair is an interrupted logout. */
+/** A scoped sign-out marker without a pending pair or completion receipt is interrupted. */
 export function shouldLockForIncompleteScopedSignOut(input: Readonly<{
   marker: AccountSignOutState | null;
   authenticatedAccountId: string;
   authUid: string;
+  completed: LocalLogoutControlSnapshot["completed"];
   pending: LocalLogoutControlSnapshot["pending"];
 }>): boolean {
   if (!input.marker || input.marker.accountId !== input.authenticatedAccountId) return false;
+  if (input.completed.some((pair) => pair.uid === input.authUid && pair.operationId === input.marker!.operationId)) return false;
   return !input.pending.some((pair) => pair.uid === input.authUid && pair.operationId === input.marker!.operationId);
 }
 
@@ -47,8 +49,10 @@ export async function guardAuthenticatedScopeAgainstIncompleteSignOut(input: Rea
   accountId: string;
   authUid: string;
   canContinue: () => boolean;
+  completed: LocalLogoutControlSnapshot["completed"];
   pending: LocalLogoutControlSnapshot["pending"];
   readScopedSignOut: () => AccountSignOutState | null;
+  clearScopedSignOut: () => void;
   persistControlPair: (operationId: string) => Promise<void>;
   closeProfileStorage: () => void;
   blockAuthObserver: (uid: string) => void;
@@ -64,10 +68,24 @@ export async function guardAuthenticatedScopeAgainstIncompleteSignOut(input: Rea
     input.publishPending();
     return "blocked";
   }
+  const completed = marker?.accountId === input.accountId
+    && input.completed.some((pair) => pair.uid === input.authUid && pair.operationId === marker!.operationId);
+  if (completed) {
+    try { input.clearScopedSignOut(); }
+    catch {
+      if (!input.canContinue()) return "stale";
+      input.blockAuthObserver(input.authUid);
+      input.closeProfileStorage();
+      input.publishPending(marker!.operationId);
+      return "blocked";
+    }
+    return input.canContinue() ? "continue" : "stale";
+  }
   if (!shouldLockForIncompleteScopedSignOut({
     marker,
     authenticatedAccountId: input.accountId,
     authUid: input.authUid,
+    completed: input.completed,
     pending: input.pending,
   })) return input.canContinue() ? "continue" : "stale";
   try { await input.persistControlPair(marker!.operationId); } catch { /* Retry from the locked account-entry state. */ }

@@ -4,7 +4,7 @@
 
 Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pętli, lokalnie i bez wdrożenia. Przed każdym zadaniem sprawdzać API, Metro i istniejący iPhone 17. Nie tworzyć drugiego urządzenia ani kopii aplikacji bez konkretnej potrzeby i nowego uzgodnienia. Ogłaszać nazwę i cel każdego użytego skilla. Każdy slice wymaga briefingu `Cel / Ustalenia / Podejście`, niezależnego QA, aktualizacji planu, commitu i push na `main` właściwych repozytoriów.
 
-**Wiążące decyzje właściciela 25.09.2026 — potwierdzić w każdym briefingu:** Patternly nie ma realnych użytkowników ani danych produkcyjnych. Do pierwszego publicznego wydania kompatybilność wsteczna nie jest wymaganiem: usuwać legacy, migratory, adaptery, fallbacki, stare lokalne formaty i syntetyczne ścieżki zamiast je utrzymywać. Zmiany kontraktów wykonać spójnie we wszystkich dotkniętych repozytoriach; nadal obowiązują aktualne schema, bezpieczeństwo, integralność, realne kontrakty providerów i release evidence. `PROFILE-02/B` jest anulowane: aplikacja nie wybiera, nie odzyskuje i nie migruje wielu historycznych profili Gościa. Nie przywracać tego zakresu bez nowej decyzji właściciela. Odbiory Maestro wykonywać na istniejącym iPhonie 17; nie tworzyć drugiego urządzenia bez konkretnej potrzeby i nowego uzgodnienia.
+**Wiążące decyzje właściciela 25.09.2026 — potwierdzić w każdym briefingu:** Patternly nie ma realnych użytkowników ani danych produkcyjnych. Do pierwszego publicznego wydania kompatybilność wsteczna nie jest wymaganiem: usuwać legacy, migratory, adaptery, fallbacki, stare lokalne formaty i syntetyczne ścieżki zamiast je utrzymywać. Zmiany kontraktów wykonać spójnie we wszystkich dotkniętych repozytoriach; nadal obowiązują aktualne schema, bezpieczeństwo, integralność, realne kontrakty providerów i release evidence. `PROFILE-02/B` jest anulowane: aplikacja nie wybiera, nie odzyskuje i nie migruje wielu historycznych profili Gościa. Nie przywracać tego zakresu bez nowej decyzji właściciela. Odbiory Maestro wykonywać na istniejącym iPhonie 17; nie tworzyć drugiego urządzenia bez konkretnej potrzeby i nowego uzgodnienia. Właściciel zezwolił na usuwanie stanu aplikacji Patternly na tym istniejącym symulatorze teraz i w przyszłych odbiorach PROFILE, gdy wymaga tego izolowany test; nie pytać ponownie o dokładnie ten cleanup. Zgoda nie obejmuje repozytoriów, produkcji, cudzych kont, backendowych danych poza fixture ani duplikowania/reinstalacji aplikacji lub urządzenia bez konkretnej potrzeby.
 
 ## Repozytoria
 
@@ -77,7 +77,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## AUD-16 — wynik
 
-- Status: **done / niezależne QA PASS**; lokalnie, bez wdrożenia.
+- Status: **BLOCKED → odblokowane zgodą właściciela / wymaga ponownego dowodu i QA**; lokalnie, bez wdrożenia, commitu i pushu.
 - EN i PL mieszczą pełną zgodę w dwóch liniach standardowego układu. PL brzmi: „Akceptuję Warunki korzystania i znam Politykę prywatności.”
 - Oba linki, walidacja i boolean `acceptedTerms` pozostały zachowane. Etykieta dostępności checkboxa obejmuje pełną zgodę na Warunki i znajomość Polityki.
 - Duży tekst rośnie do czterech linii bez obcięcia. Repozytoryjny flow Maestro przeszedł 1/1 na istniejącym iPhonie 17 bez `clearState`, reinstalacji i tworzenia konta.
@@ -159,6 +159,19 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Celowane router/MMKV/koordynacja 56/56, typecheck, content/privacy boundary i diff check — PASS. Pełny suite 1263/1268: pięć niezależnych istniejących niepowodzeń (retry-limit source assertion, route shell count i trzy content-release inputs/SHA).
 - Maestro na istniejącym iPhonie 17 po zamknięciu nakładającego się dev overlayu: wybór zachowanego Gościa, Home, `stopApp`/`launchApp` bez `clearState`, ponownie Home — PASS. Hierarchy i screenshot obejrzano; prywatne artefakty nie są w repo.
 - PROFILE-02/B pozostaje anulowane. Następny slice: PROFILE-03.
+
+## PROFILE-03 — wynik
+
+- Status: **done / niezależne QA PASS WITH ISSUES**; lokalnie, bez wdrożenia.
+- Offline logout natychmiast zamyka account scope i usuwa lokalną sesję, zachowując dane, outbox, journal i markery pod profilem konta.
+- Ponowne Auth tego samego UID wznawia dokładny pending revoke. Po walidacji aplikacja zapisuje exact completed receipt w jedynym kanonicznym formacie v2, odrzuca v1 bez migracji i usuwa scoped marker przed otwarciem profilu; kolejne wylogowanie dostaje świeże operationId.
+- Token ani Firebase subject nie trafiają do dokumentu operacji. Błąd mintu po revoke jest bezpiecznie wznawialny bez drugiego provider revoke.
+- Backend 234/234, końcowy app targeted 90/90 (szerszy 121/121), typecheck/OpenAPI/diff PASS. Pełny app 1275/1280 z pięcioma istniejącymi niezależnymi błędami.
+- Świeży końcowy Maestro po autoryzowanym usunięciu wyłącznie danych Patternly: dokładne wartości fixture potwierdzone przez hierarchy, logout blokuje Home i pokazuje pending, restart zachowuje pending, same-account resume wraca do Home z `Coding Interview`, a kolejny natywny restart utrzymuje Home bez obu markerów pending — PASS. Screenshoty obejrzano i pozostają poza repo.
+- Pierwszy negatywny wynik pochodził ze starego procesu API uruchomionego przed zmianami PROFILE-03. Po restarcie aktualnego API `/ready` miał trzy kontrole `true`, a scenariusz przeszedł; nie wprowadzono obejścia produktowego.
+- Briefing: 0,92 / 0,84 / 0,81 / 0,87, minimum 0,81 — APPROVE. Raport: [PROFILE-03](../docs/active/PROFILE-03/REPORT.md).
+- Po końcowym QA, commicie i pushu rozpocząć wyłącznie PROFILE-04. Pozostałe serie są poza bieżącym zakresem właściciela.
+- QA issues nieblokujące: pięć wcześniejszych błędów pełnego suite aplikacji, brak produkcyjnego provider E2E i osobnego urządzeniowego scenariusza outbox/journal.
 
 ## ODK-117/B-CONTRACT — wynik
 
