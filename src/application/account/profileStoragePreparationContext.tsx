@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-import type { PreparedProfileState } from "../../infrastructure/storage/mmkvClient";
+import type { PreparedProfileState } from "../../storage/repositories/profileStorageRepository";
 import type { LocalLogoutControl, LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
 
 export type ProfileStoragePreparationContextValue = Readonly<{

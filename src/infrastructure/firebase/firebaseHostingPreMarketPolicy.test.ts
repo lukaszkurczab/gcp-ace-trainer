@@ -32,7 +32,11 @@ const hasForbiddenFirebaseHostingPath = (source: string): boolean => {
 
   return source.split(/\r?\n/u).some((line) => {
     if (!/\bfirebase(?:\.cmd)?\b/u.test(line)) return false;
-    return /(?:^|\s)--(?:config|host)(?:[=\s]|$)/u.test(line)
+    const authOnlyEmulator = /\bemulators:start\b/u.test(line)
+      && /(?:^|\s)--only(?:=|\s+)auth(?:\s|$)/u.test(line)
+      && !/(?:^|\s)--only(?:=|\s+)[^\r\n]*,/u.test(line);
+    return /(?:^|\s)--host(?:[=\s]|$)/u.test(line)
+      || (!authOnlyEmulator && /(?:^|\s)--config(?:[=\s]|$)/u.test(line))
       || /\bdeploy\b/u.test(line)
       || /\bserve\b/u.test(line)
       || /\bhosting:(?:clone|channel:(?:deploy|clone|open))\b/u.test(line);
@@ -168,6 +172,14 @@ test("keeps pre-market Firebase Hosting unpublished and loopback-only", () => {
     },
   };
   assert.deepEqual(evaluatePreMarketHostingPolicy(localArtifact), []);
+
+  assert.deepEqual(evaluatePreMarketHostingPolicy({
+    ...localArtifact,
+    packageScripts: {
+      ...localArtifact.packageScripts,
+      "auth:local": "firebase emulators:start --only auth --project demo-patternly --config scripts/firebaseAuthGeneration.firebase.json",
+    },
+  }), []);
 
   for (const host of [undefined, "localhost", "0.0.0.0", "192.168.1.10", "::1"]) {
     assert.deepEqual(evaluatePreMarketHostingPolicy({

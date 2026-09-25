@@ -55,7 +55,9 @@ test("narrow Metro bundles include smoke oracle modules only in smoke graph", ()
         "--platform", "ios", "--out", output, "--config", "metro.config.js", "--max-workers", "1",
       ], {
         cwd: root,
-        env: { ...process.env, PATTERNLY_RUNTIME_MODE: mode },
+        // This is a finite build, not a watch session. Avoid depending on a
+        // per-user Watchman daemon or its LaunchAgent permissions in CI.
+        env: { ...process.env, PATTERNLY_RUNTIME_MODE: mode, PATTERNLY_METRO_DISABLE_WATCHMAN: "1" },
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
         timeout: 120_000,

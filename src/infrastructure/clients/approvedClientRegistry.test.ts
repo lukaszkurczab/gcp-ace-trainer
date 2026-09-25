@@ -99,4 +99,15 @@ test("runtime privacy keeps console and raw errors forbidden inside adapters and
   });
   assert.equal(unregisteredTransport.status, 1);
   assert.match(String(unregisteredTransport.stderr ?? ""), /network client outside approved adapter boundary/u);
+
+  const propertyFetch = validatePrivacyFixture({
+    "src/application/connectivity.ts": "export const read = () => NetInfo.default.fetch();\n",
+  });
+  assert.equal(propertyFetch.status, 0, String(propertyFetch.stderr ?? ""));
+
+  const globalObjectFetch = validatePrivacyFixture({
+    "src/application/connectivity.ts": "export const read = () => globalThis.fetch('https://example.invalid');\n",
+  });
+  assert.equal(globalObjectFetch.status, 1);
+  assert.match(String(globalObjectFetch.stderr ?? ""), /network client outside approved adapter boundary/u);
 });

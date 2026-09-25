@@ -7,6 +7,8 @@ import { installKeyValueStorageForTests } from "../../infrastructure/storage/mmk
 import { STORAGE_KEYS } from "../../storage/keys";
 import {
   buildAccountDataSnapshot,
+  accountDataRecordFingerprint,
+  accountDataRecordKey,
   ensureAccountOutboxFromLocalDataset,
   getAccountSyncState,
   markAccountResetPending,
@@ -115,10 +117,8 @@ test("authenticated reset rejects pending account context without changing state
   assert.equal(await getActiveTrackId(), activeTrackBefore);
 });
 
-test("legacy clean synced state remains eligible for the guarded reset", async () => {
+test("canonical clean synced state remains eligible for the guarded reset", async () => {
   await prepareBoundAccount();
-  const state = await getAccountSyncState();
-  saveAccountSyncState({ ...state, resetGuard: undefined as never });
   let getProgressCalls = 0;
 
   const result = await resetAccountLocalLearningHistory(client({
@@ -198,15 +198,20 @@ test("concurrent authenticated reset requests share one guarded operation", asyn
   assert.equal(reads, 1);
 });
 
-test("reset guard blocks outbox synthesis for a legacy acknowledged record", async () => {
+test("reset guard blocks outbox synthesis for a canonical acknowledged record", async () => {
   await prepareBoundAccount();
   await saveActiveTrackId("coding-interview-dsa-problem-solving");
   const state = await getAccountSyncState();
   saveAccountSyncState({
     ...state,
     acknowledged: {
-      ["active_track:current"]: {
-        fingerprint: "a".repeat(64),
+      [accountDataRecordKey({ recordId: "current", recordType: "active_track", trackId: "coding-interview-dsa-problem-solving" })]: {
+        fingerprint: accountDataRecordFingerprint({
+          recordId: "current",
+          recordType: "active_track",
+          state: { trackId: "coding-interview-dsa-problem-solving" },
+          trackId: "coding-interview-dsa-problem-solving",
+        }),
         recordId: "current",
         recordType: "active_track",
         remoteVersion: 1,

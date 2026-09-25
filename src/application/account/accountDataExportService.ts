@@ -1,5 +1,5 @@
 import type { AccountDataExportDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
-import { getActiveStorageProfileOrNull } from "../../infrastructure/storage/mmkvClient";
+import { getActiveStorageProfileOrNull } from "../../storage/repositories/profileStorageRepository";
 
 export const ACCOUNT_DATA_EXPORT_FILE_PREFIX = "patternly-account-data-";
 

@@ -7,7 +7,7 @@ import { describeOperationalFailure, operationalDiagnosticCode } from "../../app
 import { useAppPreferences } from "../../preferences";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { encryptedStorageFailureCode } from "../../infrastructure/storage/encryptedStorageBootstrap";
-import { inspectPreparedProfileState, prepareProfileStorage, removeUnavailableEncryptedStorage, type PreparedProfileState } from "../../infrastructure/storage/mmkvClient";
+import { inspectPreparedProfileState, prepareProfileStorage, removeUnavailableEncryptedStorage, type PreparedProfileState } from "../../storage/repositories/profileStorageRepository";
 import { createNativeLocalLogoutControl, LocalLogoutControlError, type LocalLogoutControl, type LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
 import { EncryptedStorageRecoverySurface, type EncryptedStorageRecoveryStatus } from "../../content/application/EncryptedStorageRecoverySurface";
 import { canStartManualRetry, createManualRetryLimit, reserveManualRetry, settleManualRetry } from "../../content/application/manualRetryLimit";

@@ -6,12 +6,11 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { createExpoConfig } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: Record<string, any> } };
 const app = createExpoConfig({
-  EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "appAttest",
-  EXPO_PUBLIC_PATTERNLY_FIREBASE_API_KEY: "key", EXPO_PUBLIC_PATTERNLY_FIREBASE_APP_ID: "1:1:android:test", EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_DOMAIN: "patternly-app-production.firebaseapp.com", EXPO_PUBLIC_PATTERNLY_FIREBASE_PROJECT_ID: "patternly-app-production",
-  EXPO_PUBLIC_PATTERNLY_GOOGLE_ANDROID_CLIENT_ID: "android-client", EXPO_PUBLIC_PATTERNLY_GOOGLE_IOS_CLIENT_ID: "ios-client", EXPO_PUBLIC_PATTERNLY_GOOGLE_WEB_CLIENT_ID: "web-client",
-  EXPO_PUBLIC_PATTERNLY_REVENUECAT_IOS_API_KEY: "appl_test_public_key",
-  EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: JSON.stringify({ apiOrigin: "https://api.patternly.com", androidAppLinkHost: "patternly.com", authActionOrigin: "https://patternly.com", authRedirectDomain: "patternly.com", environment: "production", iosAssociatedDomain: "applinks:patternly.com", privacyUrl: "https://patternly.com/privacy", publicWebOrigin: "https://patternly.com", supportUrl: "https://patternly.com/support", termsUrl: "https://patternly.com/terms", transactionalSenderDomain: "patternly.com" }),
-  GOOGLE_SERVICE_INFO_PLIST: "/private/GoogleService-Info.plist", GOOGLE_SERVICES_JSON: "/private/google-services.json", PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release",
+  EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug",
+  EXPO_PUBLIC_PATTERNLY_BACKEND_E2E: "true", EXPO_PUBLIC_PATTERNLY_API_ORIGIN: "http://127.0.0.1:8080",
+  EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN: "http://127.0.0.1:19099",
+  EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: JSON.stringify({ apiOrigin: "http://127.0.0.1:8080", environment: "local", privacyUrl: "http://127.0.0.1:4173/privacy", publicWebOrigin: "http://127.0.0.1:4173", supportUrl: "mailto:support@patternly.test", termsUrl: "http://127.0.0.1:4173/terms" }),
+  GOOGLE_SERVICE_INFO_PLIST: "/private/GoogleService-Info.plist", GOOGLE_SERVICES_JSON: "/private/google-services.json", PATTERNLY_RUNTIME_MODE: "smoke", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "smoke",
 }).expo as {
   version: string;
   runtimeVersion?: { policy?: string };

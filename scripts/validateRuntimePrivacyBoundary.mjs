@@ -35,7 +35,10 @@ export function validateRuntimePrivacyBoundary(root = process.cwd()) {
     ]) {
       if (pattern.test(source)) failures.push(`${displayPath}: ${label}`);
     }
-    if (/\bfetch\s*\(|\bXMLHttpRequest\b|\bWebSocket\b|\baxios\b/.test(source)) {
+    const hasNetworkClient = /(?<![.\w$])\bfetch\s*\(/u.test(source)
+      || /\b(?:globalThis|window|self)\s*\.\s*fetch\s*\(/u.test(source)
+      || /\bXMLHttpRequest\b|\bWebSocket\b|\baxios\b/u.test(source);
+    if (hasNetworkClient) {
       const expectedExport = approvedNetworkAdapterExport(path);
       if (!expectedExport || !new RegExp(`export\\s+(?:async\\s+)?function\\s+${expectedExport}\\b`, "u").test(source)) {
         failures.push(`${displayPath}: network client outside approved adapter boundary`);

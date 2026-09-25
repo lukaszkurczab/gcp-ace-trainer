@@ -842,7 +842,7 @@ test("malformed remote records are rejected before the guest dataset or marker c
   assert.equal((await getAccountSyncState()).materialization, null);
 });
 
-test("pending materialization blocks account deletion without losing the marker", async () => {
+test("pending materialization blocks lifecycle account deletion without losing the marker", async () => {
   await prepareGuest();
   saveAccountSyncState({ ...await getAccountSyncState(), accountId, materialization: { kind: "discardGuest", accountId } });
   let calls = 0;
