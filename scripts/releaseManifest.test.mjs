@@ -23,6 +23,7 @@ import {
   validateReleaseManifest,
   verifyReleaseManifest,
 } from "./releaseManifest.mjs";
+import { canonicalHash } from "./releaseEvidence.mjs";
 
 const root = process.cwd();
 const contentRoot = resolve(root, "../patternly-content");
@@ -35,6 +36,36 @@ let webRoot;
 let outputRoot;
 let manifestPath;
 let manifest;
+let evidenceRoot;
+
+function signingEvidence(applicationCommit) {
+  const identity = {
+    applicationCommit,
+    evidenceReferences: [{ kind: "eas-build", value: "eas-build:test-ios-build-001" }],
+    id: "signing-and-builds",
+    releaseBinding: {
+      iosBuild: { appVersion: "0.1.0", buildId: "test-ios-build-001", buildNumber: "42", bundleIdentifier: "com.lkurczab.patternly" },
+      configuration: {
+        apiOrigin: "https://api.patternly.test",
+        appCheckAppleProvider: "appAttestWithDeviceCheckFallback",
+        authActionOrigin: "https://auth.patternly.test",
+        channel: "production",
+        environment: "production",
+        firebaseProjectId: "patternly-production",
+        iosAssociatedDomain: "applinks:patternly.test",
+        publicWebOrigin: "https://patternly.test",
+        runtimeMode: "release",
+        runtimeVersion: "0.1.0",
+        updatesUrl: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab",
+      },
+    },
+    schemaVersion: "patternly-release-evidence-v2",
+    status: "verified",
+    verifiedAt: "2026-09-25T00:00:00.000Z",
+    verifiedBy: "test-authority",
+  };
+  return { ...identity, evidenceSha256: canonicalHash(identity) };
+}
 
 function gitCommit(repositoryRoot, message) {
   execFileSync("git", ["add", "."], { cwd: repositoryRoot });
@@ -106,9 +137,13 @@ before(async () => {
   applicationRoot = makeGitRoot("application", {
     "integration/contracts/content-release/release.lock.json": readFileSync(join(root, "integration/contracts/content-release/release.lock.json")),
   });
+  evidenceRoot = join(fixtureRoot, "release-evidence");
+  mkdirSync(evidenceRoot);
+  const applicationCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: applicationRoot, encoding: "utf8" }).trim();
+  writeFileSync(join(evidenceRoot, "signing-and-builds.json"), JSON.stringify(signingEvidence(applicationCommit)));
   webRoot = makeGitRoot("web", { "index.html": "<!doctype html>\n" });
   manifestPath = join(outputRoot, "release-manifest.json");
-  const created = await createReleaseManifest({ roots: roots(), outputPath: manifestPath });
+  const created = await createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: manifestPath });
   manifest = readManifest();
   assert.equal(created.manifestId, manifest.manifestId);
 });
@@ -117,23 +152,26 @@ after(() => {
   rmSync(fixtureRoot, { recursive: true, force: true });
 });
 
-test("creates deterministic portable identity with four exact repositories and four references", async () => {
-  assert.equal(manifest.schemaVersion, "patternly-release-manifest-v1");
+test("creates deterministic portable identity with repositories, locks, build, configuration, and evidence", async () => {
+  assert.equal(manifest.schemaVersion, "patternly-release-manifest-v2");
   assert.match(manifest.manifestId, /^[a-f0-9]{64}$/u);
   assert.match(manifest.candidateId, /^[a-f0-9]{64}$/u);
   assert.deepEqual(manifest.trackIds, CANDIDATE_TRACK_IDS);
   assert.deepEqual(manifest.repositories.map(({ role }) => role), ["application", "backend", "content", "web"]);
   assert.deepEqual(manifest.repositories.map(({ slug }) => slug), ["patternly", "patternly-backend", "patternly-content", "patternly-web"]);
   assert.deepEqual(manifest.references.map(({ repositoryRole, path }) => ({ repositoryRole, path })), RELEASE_MANIFEST_REFERENCES);
+  assert.deepEqual(manifest.iosBuild, { appVersion: "0.1.0", buildId: "test-ios-build-001", buildNumber: "42", bundleIdentifier: "com.lkurczab.patternly" });
+  assert.match(manifest.configurationFingerprint, /^[a-f0-9]{64}$/u);
+  assert.deepEqual(manifest.evidence, [{ id: "signing-and-builds", sha256: signingEvidence(manifest.repositories[0].commit).evidenceSha256 }]);
   assert.equal(manifest.manifestId, manifestIdFor(manifest));
   const firstBytes = readFileSync(manifestPath, "utf8");
   const secondPath = join(outputRoot, "release-manifest-second.json");
-  await createReleaseManifest({ roots: roots(), outputPath: secondPath });
+  await createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: secondPath });
   assert.equal(readFileSync(secondPath, "utf8"), firstBytes);
 });
 
 test("verifies exact HEADs, clean worktrees, hashes and ACC-02/OpenAPI owning checks", async () => {
-  const verified = await verifyReleaseManifest({ roots: roots(), manifestPath });
+  const verified = await verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath });
   assert.equal(verified.status, "verified");
   assert.equal(verified.manifestId, manifest.manifestId);
   assert.equal(verified.candidateId, manifest.candidateId);
@@ -147,6 +185,7 @@ test("CLI create output can be copied to another external directory and verified
     "--backend-root", backendFixtureRoot,
     "--content-root", contentFixtureRoot,
     "--web-root", webRoot,
+    "--evidence-root", evidenceRoot,
   ];
   const createOutput = execFileSync("node", ["scripts/releaseManifest.mjs", "create", ...commonArgs, "--output", cliCreatedPath], {
     cwd: root,
@@ -214,6 +253,9 @@ test("enforced releaseGate reports a verified manifest identity without absolute
   assert.equal(readFileSync(reportPath, "utf8"), result.output);
   assert.equal(report.releaseManifest.status, "verified");
   assert.equal(report.releaseManifest.manifestId, manifest.manifestId);
+  assert.deepEqual(report.releaseManifest.iosBuild, manifest.iosBuild);
+  assert.equal(report.releaseManifest.configurationFingerprint, manifest.configurationFingerprint);
+  assert.deepEqual(report.releaseManifest.evidence, manifest.evidence);
   assert.equal(report.applicationRepository.path, ".");
   assert.equal(report.contentReadiness.path, "evidence/readiness/candidate-readiness.json");
   assert.equal(report.contentReleaseLock.path, "integration/contracts/content-release/release.lock.json");
@@ -269,10 +311,10 @@ test("rejects wrong manifest identity, stale candidate/track scope and wrong rep
   wrongIdentity.manifestId = "f".repeat(64);
   assert.throws(() => validateReleaseManifest(wrongIdentity), /manifestId does not match/u);
   await withMutation((value) => { value.repositories[0].commit = "a".repeat(40); }, async () => {
-    await assert.rejects(verifyReleaseManifest({ roots: roots(), manifestPath }), /HEAD is stale|commit is stale/u);
+    await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /HEAD is stale|commit is stale/u);
   });
   await withMutation((value) => { value.candidateId = "b".repeat(64); }, async () => {
-    await assert.rejects(verifyReleaseManifest({ roots: roots(), manifestPath }), /candidateId is stale|ACC-02/u);
+    await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /candidateId is stale|ACC-02/u);
   });
   await withMutation((value) => { value.trackIds = [...value.trackIds].reverse(); }, async (value) => {
     assert.throws(() => validateReleaseManifest(value), /trackIds/u);
@@ -283,8 +325,44 @@ test("rejects modified evidence before accepting a portable reference", async ()
   await withMutation((value) => {
     value.references.find((reference) => reference.path.endsWith("candidate-readiness.json")).sha256 = "0".repeat(64);
   }, async () => {
-    await assert.rejects(verifyReleaseManifest({ roots: roots(), manifestPath }), /Reference hash mismatch/u);
+    await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /Reference hash mismatch/u);
   });
+});
+
+test("rejects changed iOS build, public configuration, and signing evidence bytes", async () => {
+  const evidencePath = join(evidenceRoot, "signing-and-builds.json");
+  const original = JSON.parse(readFileSync(evidencePath, "utf8"));
+  const assertBindingRejected = async (mutate, pattern) => {
+    const changed = JSON.parse(JSON.stringify(original));
+    mutate(changed);
+    const { evidenceSha256: _old, ...identity } = changed;
+    changed.evidenceSha256 = canonicalHash(identity);
+    writeFileSync(evidencePath, JSON.stringify(changed));
+    try {
+      await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), pattern);
+    } finally {
+      writeFileSync(evidencePath, JSON.stringify(original));
+    }
+  };
+  await assertBindingRejected((value) => { value.releaseBinding.iosBuild.buildId = "different-ios-build"; }, /binding is stale/u);
+  await assertBindingRejected((value) => { value.releaseBinding.configuration.apiOrigin = "https://other-api.patternly.test"; }, /binding is stale/u);
+  const corrupted = { ...original, evidenceSha256: "0".repeat(64) };
+  writeFileSync(evidencePath, JSON.stringify(corrupted));
+  try {
+    await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /hash mismatch/u);
+  } finally {
+    writeFileSync(evidencePath, JSON.stringify(original));
+  }
+  const withSecret = JSON.parse(JSON.stringify(original));
+  withSecret.releaseBinding.configuration.firebaseApiKey = "must-not-enter-release-identity";
+  const { evidenceSha256: _hash, ...secretIdentity } = withSecret;
+  withSecret.evidenceSha256 = canonicalHash(secretIdentity);
+  writeFileSync(evidencePath, JSON.stringify(withSecret));
+  try {
+    await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /unsupported or missing fields/u);
+  } finally {
+    writeFileSync(evidencePath, JSON.stringify(original));
+  }
 });
 
 test("rejects absolute, traversal and symlink references", async () => {
@@ -305,7 +383,7 @@ test("rejects absolute, traversal and symlink references", async () => {
     value.references[0].repositoryRole = "application";
   }, async () => {
     await assert.rejects(
-      verifyReleaseManifest({ roots: { ...roots(), application: alias }, manifestPath }),
+      verifyReleaseManifest({ roots: { ...roots(), application: alias }, evidenceRoot, manifestPath }),
       /repository roots|symbolic-link|checkout root/u,
     );
   });
@@ -315,26 +393,26 @@ test("rejects dirty repositories and output paths inside or through symlinked pa
   const dirtyPath = join(applicationRoot, "unreviewed.txt");
   writeFileSync(dirtyPath, "dirty\n");
   try {
-    await assert.rejects(verifyReleaseManifest({ roots: roots(), manifestPath }), /worktree must be clean/u);
+    await assert.rejects(verifyReleaseManifest({ roots: roots(), evidenceRoot, manifestPath }), /worktree must be clean/u);
   } finally {
     rmSync(dirtyPath, { force: true });
   }
 
   await assert.rejects(
-    createReleaseManifest({ roots: roots(), outputPath: join(applicationRoot, "release-manifest.json") }),
+    createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: join(applicationRoot, "release-manifest.json") }),
     /outside all repository worktrees/u,
   );
   const outputAlias = join(fixtureRoot, "output-alias");
   symlinkSync(outputRoot, outputAlias);
   await assert.rejects(
-    createReleaseManifest({ roots: roots(), outputPath: join(outputAlias, "manifest.json") }),
+    createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: join(outputAlias, "manifest.json") }),
     /symbolic-link/u,
   );
   const danglingOutput = join(outputRoot, "dangling.json");
   symlinkSync(join(outputRoot, "does-not-exist.json"), danglingOutput);
   assert.equal(existsSync(join(outputRoot, "does-not-exist.json")), false);
   await assert.rejects(
-    createReleaseManifest({ roots: roots(), outputPath: danglingOutput }),
+    createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: danglingOutput }),
     /symbolic link/u,
   );
   assert.equal(existsSync(join(outputRoot, "does-not-exist.json")), false);

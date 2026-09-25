@@ -174,6 +174,16 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Release gate/workflow/manifest 36/36, recovery inventory, typecheck i diff check — PASS.
 - Następny slice: RELEASE-CONTRACT/B — rozszerzenie istniejącego manifestu o app/content lock, iOS build, fingerprint niesekretnej konfiguracji i integralne evidence.
 
+## RELEASE-CONTRACT/B — wynik
+
+- Status: **done / niezależne QA PASS WITH ISSUES**; lokalnie, bez rzeczywistego builda, FREEZE, GO i wdrożenia.
+- Manifest v2 wiąże cztery SHA i istniejące locki z dokładnym iOS buildem, fingerprintem zamkniętej publicznej konfiguracji oraz hashem istniejącej koperty `signing-and-builds`.
+- Wspólny walidator evidence obsługuje manifest i release gate; dodatkowe pola konfiguracji (w tym sekret) oraz zmiana build/config/evidence failują.
+- Hosted workflow wymaga jawnego niesekretnego JSON evidence i przekazuje jeden zewnętrzny katalog przez create, verify i release gate.
+- Targeted 37/37; pełne qa:static 1254/1254 z historycznym/current content root; typecheck, recovery inventory, schema JSON, oba boundary checks i diff check — PASS. Pierwszy szeroki run bez wymaganych cross-repo env miał wyłącznie 3 błędy konfiguracji content roots, nie regresje kodu.
+- Następny slice: RELEASE-CONTRACT/C — jedna polityka OTA i tożsamość faktycznie uruchomionego artefaktu.
+- Granica QA: samohashowana koperta zapewnia integralność po związaniu, ale tekstowe `verifiedBy` nie dowodzi pochodzenia z EAS ani osoby. Rzeczywisty build i wiarygodność evidence muszą być potwierdzone przed FREEZE.
+
 ## Otwarte decyzje i blokady
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.

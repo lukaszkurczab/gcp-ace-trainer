@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import "tsx/cjs";
 import { createRequire } from "node:module";
 import { verifyReleaseManifest } from "./releaseManifest.mjs";
+import { validateReleaseEvidence } from "./releaseEvidence.mjs";
 import { legalSourceFingerprint } from "./legalSourceFingerprint.mjs";
 
 const require = createRequire(import.meta.url);
@@ -275,27 +276,8 @@ function externalEvidenceStatus(id, expectedApplicationCommit) {
   if (!existsSync(path)) return { id, repositoryRole: "application", path: portablePath, status: "not_evidenced" };
   try {
     const value = readJson(path);
-    const { evidenceSha256, ...identity } = value ?? {};
-    const referencesValid = Array.isArray(value?.evidenceReferences)
-      && value.evidenceReferences.length > 0
-      && value.evidenceReferences.every((reference) => hasExactKeys(reference, ["kind", "value"]) && typeof reference.kind === "string" && reference.kind.trim().length > 0 && typeof reference.value === "string" && reference.value.trim().length > 0);
-    const timestampValid = typeof value?.verifiedAt === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value.verifiedAt) && !Number.isNaN(Date.parse(value.verifiedAt));
-    if (!hasExactKeys(value, ["applicationCommit", "evidenceReferences", "evidenceSha256", "id", "schemaVersion", "status", "verifiedAt", "verifiedBy"])
-      || value?.schemaVersion !== "patternly-release-evidence-v2"
-      || value?.id !== id
-      || value?.status !== "verified"
-      || value?.applicationCommit !== expectedApplicationCommit
-      || !/^[a-f0-9]{40}$/.test(value?.applicationCommit ?? "")
-      || !timestampValid
-      || typeof value?.verifiedBy !== "string"
-      || value.verifiedBy.trim().length === 0
-      || !referencesValid
-      || typeof evidenceSha256 !== "string"
-      || !/^[a-f0-9]{64}$/.test(evidenceSha256)
-      || evidenceSha256 !== canonicalHash(identity)) {
-      return { id, repositoryRole: "application", path: portablePath, status: "invalid" };
-    }
-    return { id, repositoryRole: "application", path: portablePath, status: "verified", applicationCommit: value.applicationCommit, evidenceSha256 };
+    validateReleaseEvidence(value, { expectedId: id, expectedApplicationCommit });
+    return { id, repositoryRole: "application", path: portablePath, status: "verified", applicationCommit: value.applicationCommit, evidenceSha256: value.evidenceSha256 };
   } catch (error) {
     return { id, repositoryRole: "application", path: portablePath, status: "invalid", error: portableError(error) };
   }
@@ -381,6 +363,7 @@ if (releaseManifestPath) {
     try {
       const verified = await verifyReleaseManifest({
         manifestPath: releaseManifestPath,
+        evidenceRoot,
         applicationRoot,
         backendRoot: backendRootInput,
         contentRoot,
@@ -392,7 +375,10 @@ if (releaseManifestPath) {
         candidateId: verified.candidateId,
         trackIds: verified.trackIds,
         repositories: verified.repositories,
-  };
+        iosBuild: verified.iosBuild,
+        configurationFingerprint: verified.configurationFingerprint,
+        evidence: verified.evidence,
+      };
     } catch (error) {
       releaseManifest = { status: "invalid" };
       blockers.push({ kind: "release_manifest_invalid", reason: portableManifestError(error) });

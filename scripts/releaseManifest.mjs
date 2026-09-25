@@ -11,6 +11,7 @@ import {
 import { basename, dirname, isAbsolute, join, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { signingManifestBinding, validateReleaseEvidence } from "./releaseEvidence.mjs";
 
 /**
  * GATE-03 portable release manifest contract.
@@ -20,7 +21,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
  * OpenAPI check is delegated to patternly-backend's `openapi:check` script.
  */
 
-export const RELEASE_MANIFEST_SCHEMA_VERSION = "patternly-release-manifest-v1";
+export const RELEASE_MANIFEST_SCHEMA_VERSION = "patternly-release-manifest-v2";
 
 export const REPOSITORY_DEFINITIONS = Object.freeze([
   Object.freeze({ role: "application", slug: "patternly" }),
@@ -120,7 +121,7 @@ function nonEmpty(value, label) {
  * checks are performed by verifyReleaseManifest.
  */
 export function validateReleaseManifest(manifest) {
-  exactKeys(manifest, ["schemaVersion", "manifestId", "candidateId", "trackIds", "repositories", "references"], "Release manifest");
+  exactKeys(manifest, ["schemaVersion", "manifestId", "candidateId", "trackIds", "repositories", "references", "iosBuild", "configurationFingerprint", "evidence"], "Release manifest");
   if (manifest.schemaVersion !== RELEASE_MANIFEST_SCHEMA_VERSION) throw new Error("Release manifest schema version is invalid.");
   sha(manifest.manifestId, "Release manifest manifestId");
   sha(manifest.candidateId, "Release manifest candidateId");
@@ -167,6 +168,16 @@ export function validateReleaseManifest(manifest) {
     RELEASE_MANIFEST_REFERENCES.map((reference) => `${reference.repositoryRole}:${reference.path}`),
     "Release manifest references",
   );
+
+  exactKeys(manifest.iosBuild, ["appVersion", "buildId", "buildNumber", "bundleIdentifier"], "Release manifest iOS build");
+  for (const field of ["appVersion", "buildId", "buildNumber", "bundleIdentifier"]) nonEmpty(manifest.iosBuild[field], `Release manifest iOS build ${field}`);
+  if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$/u.test(manifest.iosBuild.buildId)) throw new Error("Release manifest iOS buildId is invalid.");
+  if (!/^\d+$/u.test(manifest.iosBuild.buildNumber)) throw new Error("Release manifest iOS buildNumber must be decimal digits.");
+  sha(manifest.configurationFingerprint, "Release manifest configurationFingerprint");
+  if (!Array.isArray(manifest.evidence) || manifest.evidence.length !== 1) throw new Error("Release manifest must contain exactly one signing evidence identity.");
+  exactKeys(manifest.evidence[0], ["id", "sha256"], "Release manifest evidence identity");
+  if (manifest.evidence[0].id !== "signing-and-builds") throw new Error("Release manifest evidence identity must be signing-and-builds.");
+  sha(manifest.evidence[0].sha256, "Release manifest evidence sha256");
 
   if (manifestIdFor(manifest) !== manifest.manifestId) throw new Error("Release manifest manifestId does not match its canonical identity.");
   return manifest;
@@ -442,7 +453,7 @@ function runOwningOpenApiCheck(backendRoot) {
   }
 }
 
-function buildManifest({ commits, candidate, files }) {
+function buildManifest({ commits, candidate, files, signingBinding }) {
   const manifest = {
     schemaVersion: RELEASE_MANIFEST_SCHEMA_VERSION,
     manifestId: "0".repeat(64),
@@ -453,10 +464,23 @@ function buildManifest({ commits, candidate, files }) {
       ...reference,
       sha256: files.get(`${reference.repositoryRole}:${reference.path}`).sha256,
     })),
+    iosBuild: signingBinding.iosBuild,
+    configurationFingerprint: signingBinding.configurationFingerprint,
+    evidence: signingBinding.evidence,
   };
   manifest.manifestId = manifestIdFor(manifest);
   validateReleaseManifest(manifest);
   return manifest;
+}
+
+function loadSigningEvidence(evidenceRoot, roots, expectedApplicationCommit) {
+  nonEmpty(evidenceRoot, "Release evidence root");
+  const path = validateStandalonePath(join(resolve(evidenceRoot), "signing-and-builds.json"), "Signing evidence", Object.values(roots));
+  if (!existsSync(path) || !statSync(path).isFile()) throw new Error("Signing evidence must be an existing regular file outside repository worktrees.");
+  let value;
+  try { value = JSON.parse(readFileSync(path, "utf8")); } catch { throw new Error("Signing evidence is not valid JSON."); }
+  validateReleaseEvidence(value, { expectedId: "signing-and-builds", expectedApplicationCommit });
+  return { value, binding: signingManifestBinding(value) };
 }
 
 async function collectContracts(roots, candidatePathFiles) {
@@ -485,11 +509,15 @@ function manifestSummary(manifest, status = "verified") {
     candidateId: manifest.candidateId,
     trackIds: [...manifest.trackIds],
     repositories: manifest.repositories.map(({ role, slug, commit }) => ({ role, slug, commit })),
+    iosBuild: { ...manifest.iosBuild },
+    configurationFingerprint: manifest.configurationFingerprint,
+    evidence: manifest.evidence.map((entry) => ({ ...entry })),
   };
 }
 
 export async function createReleaseManifest({
   outputPath,
+  evidenceRoot,
   roots,
   applicationRoot,
   backendRoot,
@@ -499,6 +527,7 @@ export async function createReleaseManifest({
   const repositoryRoots = normalizeRepositoryRoots({ roots, applicationRoot, backendRoot, contentRoot, webRoot });
   const output = validateOutputPath(outputPath, Object.values(repositoryRoots));
   const commits = inspectRepositories(repositoryRoots);
+  const signing = loadSigningEvidence(evidenceRoot, repositoryRoots, commits.application);
   const contractState = await collectContracts(repositoryRoots);
   const references = currentReferenceHashes(repositoryRoots);
   const referenceMap = new Map(references.map((reference) => [`${reference.repositoryRole}:${reference.path}`, reference]));
@@ -506,13 +535,14 @@ export async function createReleaseManifest({
   const lock = parseJson(lockReference.bytes, "Application release lock");
   validateReleaseLock(lock, { ...contractState, trackIds: CANDIDATE_TRACK_IDS });
   runOwningOpenApiCheck(repositoryRoots.backend);
-  const manifest = buildManifest({ commits, candidate: contractState.candidate, files: referenceMap });
+  const manifest = buildManifest({ commits, candidate: contractState.candidate, files: referenceMap, signingBinding: signing.binding });
   writeFileSync(output, canonicalJsonBytes(manifest), { encoding: "utf8" });
   return { ...manifestSummary(manifest, "created"), path: output };
 }
 
 export async function verifyReleaseManifest({
   manifestPath,
+  evidenceRoot,
   roots,
   applicationRoot,
   backendRoot,
@@ -530,6 +560,13 @@ export async function verifyReleaseManifest({
   }
   validateReleaseManifest(manifest);
   const commits = inspectRepositories(repositoryRoots, manifest.repositories);
+  const signing = loadSigningEvidence(evidenceRoot, repositoryRoots, commits.application);
+  const signingBinding = signingManifestBinding(signing.value);
+  if (canonicalJson(signingBinding.iosBuild) !== canonicalJson(manifest.iosBuild)
+    || signingBinding.configurationFingerprint !== manifest.configurationFingerprint
+    || canonicalJson(signingBinding.evidence) !== canonicalJson(manifest.evidence)) {
+    throw new Error("Release manifest signing evidence binding is stale.");
+  }
   for (const repository of manifest.repositories) if (commits[repository.role] !== repository.commit) throw new Error(`Release manifest ${repository.role} commit is stale.`);
   const files = resolveReferences(manifest, repositoryRoots);
   const contractState = await collectContracts(repositoryRoots, files);
@@ -560,13 +597,14 @@ function cliOption(options, key, value, argument) {
 
 function parseCli(argv) {
   const [mode, ...argumentsList] = argv;
-  if (!mode || !["create", "verify"].includes(mode)) throw new Error("Usage: releaseManifest.mjs <create|verify> --application-root <path> --backend-root <path> --content-root <path> --web-root <path> --output|--manifest <path>");
+  if (!mode || !["create", "verify"].includes(mode)) throw new Error("Usage: releaseManifest.mjs <create|verify> --application-root <path> --backend-root <path> --content-root <path> --web-root <path> --evidence-root <path> --output|--manifest <path>");
   const options = { mode };
   const aliases = {
     "--application-root": "applicationRoot",
     "--backend-root": "backendRoot",
     "--content-root": "contentRoot",
     "--web-root": "webRoot",
+    "--evidence-root": "evidenceRoot",
   };
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
@@ -584,7 +622,7 @@ function parseCli(argv) {
       throw new Error(`Unknown or duplicate argument: ${argument}`);
     }
   }
-  for (const key of ["applicationRoot", "backendRoot", "contentRoot", "webRoot"]) if (!options[key]) throw new Error(`--${key.replace(/[A-Z]/g, (value) => `-${value.toLowerCase()}`)} is required`);
+  for (const key of ["applicationRoot", "backendRoot", "contentRoot", "webRoot", "evidenceRoot"]) if (!options[key]) throw new Error(`--${key.replace(/[A-Z]/g, (value) => `-${value.toLowerCase()}`)} is required`);
   if (mode === "create" && !options.outputPath) throw new Error("--output is required");
   if (mode === "verify" && !options.manifestPath) throw new Error("--manifest is required");
   return options;

@@ -88,7 +88,7 @@ function assertInputContract(source) {
   assert.ok(inputMatch, "workflow_dispatch inputs block is required");
   const inputBlock = inputMatch[1];
   const declaredNames = [...inputBlock.matchAll(/^      ([a-z_]+):$/gmu)].map((match) => match[1]);
-  assert.deepEqual(declaredNames, inputs.map(({ name }) => name), "the workflow must declare exactly four commit inputs");
+  assert.deepEqual(declaredNames, [...inputs.map(({ name }) => name), "signing_evidence_json"], "the workflow must declare four commit inputs and exact-build signing evidence");
   for (const { name } of inputs) {
     assert.match(
       inputBlock,
@@ -96,6 +96,7 @@ function assertInputContract(source) {
       `${name} must be a required string input`,
     );
   }
+  assert.match(inputBlock, /^      signing_evidence_json:\n        description: [^\n]+\n        required: true\n        type: string$/mu);
 
   const validate = stepBlock(source, "Validate exact commit inputs");
   for (const { name, variable } of inputs) {
@@ -221,8 +222,12 @@ function assertManifestAndReleaseContract(source) {
   assert.match(create, /^        if: always\(\)$/mu);
   assert.match(create, /^        continue-on-error: true$/mu);
   assert.match(create, /^          RELEASE_MANIFEST_PATH: \$\{\{ runner\.temp \}\}\/launch-readiness-manifest\.json$/mu);
+  assert.match(create, /^          RELEASE_EVIDENCE_ROOT: \$\{\{ runner\.temp \}\}\/release-evidence$/mu);
+  assert.match(create, /^          SIGNING_EVIDENCE_JSON: \$\{\{ inputs\.signing_evidence_json \}\}$/mu);
+  assert.match(create, /signing-and-builds\.json/u);
   assert.match(create, /node scripts\/releaseManifest\.mjs create/u);
   for (const option of ["application", "backend", "content", "web"]) assert.ok(create.includes(`--${option}-root "$${option.toUpperCase()}_ROOT"`));
+  assert.match(create, /--evidence-root "\$RELEASE_EVIDENCE_ROOT"/u);
   assert.match(create, /--output "\$RELEASE_MANIFEST_PATH"/u);
 
   const manifestJson = stepBlock(source, "Validate candidate release manifest JSON");
@@ -235,6 +240,7 @@ function assertManifestAndReleaseContract(source) {
   assert.match(verify, /^        continue-on-error: true$/mu);
   assert.match(verify, /node scripts\/releaseManifest\.mjs verify/u);
   for (const option of ["application", "backend", "content", "web"]) assert.ok(verify.includes(`--${option}-root "$${option.toUpperCase()}_ROOT"`));
+  assert.match(verify, /--evidence-root "\$RELEASE_EVIDENCE_ROOT"/u);
   assert.match(verify, /--manifest "\$RELEASE_MANIFEST_PATH"/u);
 
   const release = stepBlock(source, "Run enforced release gate with verified manifest");
@@ -244,6 +250,7 @@ function assertManifestAndReleaseContract(source) {
   assert.match(release, /--enforce/u);
   assert.match(release, /--stage go/u);
   assert.match(release, /--manifest "\$RELEASE_MANIFEST_PATH"/u);
+  assert.match(release, /^          PATTERNLY_RELEASE_EVIDENCE_ROOT: \$\{\{ runner\.temp \}\}\/release-evidence$/mu);
   for (const option of ["application", "backend", "content", "web"]) assert.ok(release.includes(`--${option}-root "$${option.toUpperCase()}_ROOT"`));
   assert.match(release, /--output "\$RELEASE_REPORT_PATH"/u);
   assert.match(release, /release_status=\$\?/u);
@@ -434,6 +441,10 @@ test("mutations of backend sibling roots and content/web gate commands fail clos
 });
 
 test("mutations of manifest creation, verification and enforced release fail closed", () => {
+  assert.throws(() => assertWorkflowContract(replaceOnce(workflow, "      signing_evidence_json:\n", "      omitted_signing_evidence_json:\n")));
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Create candidate release manifest", "SIGNING_EVIDENCE_JSON: ${{ inputs.signing_evidence_json }}", "SIGNING_EVIDENCE_JSON: {}")));
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Create candidate release manifest", "signing-and-builds.json", "unbound.json")));
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Create candidate release manifest", "--evidence-root \"$RELEASE_EVIDENCE_ROOT\"", "--evidence-root /tmp/other")));
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Create candidate release manifest", "if: always()", "if: success()")));
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Create candidate release manifest", "runner.temp", "app")));
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Create candidate release manifest", "--web-root \"$WEB_ROOT\"", "--output \"$RELEASE_MANIFEST_PATH\"")));

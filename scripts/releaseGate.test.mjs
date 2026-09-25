@@ -82,6 +82,14 @@ function evidenceRecord(id, applicationCommit, evidenceSha256 = undefined) {
     applicationCommit,
     evidenceReferences: [{ kind: "test-proof", value: `synthetic://${id}` }],
     id,
+    ...(id === "signing-and-builds" ? { releaseBinding: {
+      iosBuild: { appVersion: "0.1.0", buildId: "test-ios-build-001", buildNumber: "42", bundleIdentifier: "com.lkurczab.patternly" },
+      configuration: {
+        apiOrigin: "https://api.patternly.test", appCheckAppleProvider: "appAttestWithDeviceCheckFallback", authActionOrigin: "https://auth.patternly.test",
+        channel: "production", environment: "production", firebaseProjectId: "patternly-production", iosAssociatedDomain: "applinks:patternly.test",
+        publicWebOrigin: "https://patternly.test", runtimeMode: "release", runtimeVersion: "0.1.0", updatesUrl: "https://u.expo.dev/test-project",
+      },
+    } } : {}),
     schemaVersion: "patternly-release-evidence-v2",
     status: "verified",
     verifiedAt: "2026-08-21T00:00:00.000Z",

@@ -44,6 +44,52 @@
         }
       }
     },
+    "releaseBinding": {},
     "evidenceSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
-  }
+  },
+  "allOf": [{
+    "if": { "properties": { "id": { "const": "signing-and-builds" } }, "required": ["id"] },
+    "then": {
+      "required": ["releaseBinding"],
+      "properties": {
+        "releaseBinding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["iosBuild", "configuration"],
+          "properties": {
+            "iosBuild": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["appVersion", "buildId", "buildNumber", "bundleIdentifier"],
+              "properties": {
+                "appVersion": { "type": "string", "minLength": 1 },
+                "buildId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$" },
+                "buildNumber": { "type": "string", "pattern": "^[0-9]+$" },
+                "bundleIdentifier": { "type": "string", "minLength": 1 }
+              }
+            },
+            "configuration": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["apiOrigin", "appCheckAppleProvider", "authActionOrigin", "channel", "environment", "firebaseProjectId", "iosAssociatedDomain", "publicWebOrigin", "runtimeMode", "runtimeVersion", "updatesUrl"],
+              "properties": {
+                "apiOrigin": { "type": "string", "pattern": "^https://" },
+                "appCheckAppleProvider": { "enum": ["deviceCheck", "appAttest", "appAttestWithDeviceCheckFallback"] },
+                "authActionOrigin": { "type": "string", "pattern": "^https://" },
+                "channel": { "const": "production" },
+                "environment": { "const": "production" },
+                "firebaseProjectId": { "type": "string", "minLength": 1 },
+                "iosAssociatedDomain": { "type": "string", "minLength": 1 },
+                "publicWebOrigin": { "type": "string", "pattern": "^https://" },
+                "runtimeMode": { "const": "release" },
+                "runtimeVersion": { "type": "string", "minLength": 1 },
+                "updatesUrl": { "type": "string", "pattern": "^https://" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "else": { "not": { "required": ["releaseBinding"] } }
+  }]
 }

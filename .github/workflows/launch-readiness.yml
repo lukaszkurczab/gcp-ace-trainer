@@ -19,6 +19,10 @@ on:
         description: Exact patternly-web commit SHA to evaluate
         required: true
         type: string
+      signing_evidence_json:
+        description: Integrity-bound non-secret signing-and-builds evidence JSON for the exact iOS build
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -288,14 +292,19 @@ jobs:
           BACKEND_ROOT: ${{ github.workspace }}/patternly-backend
           CONTENT_ROOT: ${{ github.workspace }}/patternly-content
           WEB_ROOT: ${{ github.workspace }}/patternly-web
+          RELEASE_EVIDENCE_ROOT: ${{ runner.temp }}/release-evidence
           RELEASE_MANIFEST_PATH: ${{ runner.temp }}/launch-readiness-manifest.json
+          SIGNING_EVIDENCE_JSON: ${{ inputs.signing_evidence_json }}
         run: |
           set -euo pipefail
+          mkdir -p "$RELEASE_EVIDENCE_ROOT"
+          node -e 'const fs = require("node:fs"); const value = JSON.parse(process.env.SIGNING_EVIDENCE_JSON); fs.writeFileSync(`${process.env.RELEASE_EVIDENCE_ROOT}/signing-and-builds.json`, `${JSON.stringify(value)}\n`, { mode: 0o600 });'
           node scripts/releaseManifest.mjs create \
             --application-root "$APPLICATION_ROOT" \
             --backend-root "$BACKEND_ROOT" \
             --content-root "$CONTENT_ROOT" \
             --web-root "$WEB_ROOT" \
+            --evidence-root "$RELEASE_EVIDENCE_ROOT" \
             --output "$RELEASE_MANIFEST_PATH"
 
       - name: Validate candidate release manifest JSON
@@ -318,6 +327,7 @@ jobs:
           BACKEND_ROOT: ${{ github.workspace }}/patternly-backend
           CONTENT_ROOT: ${{ github.workspace }}/patternly-content
           WEB_ROOT: ${{ github.workspace }}/patternly-web
+          RELEASE_EVIDENCE_ROOT: ${{ runner.temp }}/release-evidence
           RELEASE_MANIFEST_PATH: ${{ runner.temp }}/launch-readiness-manifest.json
         run: |
           set -euo pipefail
@@ -326,6 +336,7 @@ jobs:
             --backend-root "$BACKEND_ROOT" \
             --content-root "$CONTENT_ROOT" \
             --web-root "$WEB_ROOT" \
+            --evidence-root "$RELEASE_EVIDENCE_ROOT" \
             --manifest "$RELEASE_MANIFEST_PATH"
 
       - name: Run enforced release gate with verified manifest
@@ -340,6 +351,7 @@ jobs:
           WEB_ROOT: ${{ github.workspace }}/patternly-web
           RELEASE_MANIFEST_PATH: ${{ runner.temp }}/launch-readiness-manifest.json
           RELEASE_REPORT_PATH: ${{ runner.temp }}/launch-readiness-report.json
+          PATTERNLY_RELEASE_EVIDENCE_ROOT: ${{ runner.temp }}/release-evidence
         run: |
           set -euo pipefail
           set +e
