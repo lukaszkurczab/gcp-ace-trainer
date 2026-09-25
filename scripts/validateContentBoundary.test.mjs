@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { findLegacyContentIdentityLeaks } from "./validateContentBoundary.mjs";
+import { findLegacyContentIdentityLeaks, hasDirectFetchIngress } from "./validateContentBoundary.mjs";
+
+test("content boundary rejects global fetch ingress but ignores property fetch methods", () => {
+  assert.equal(hasDirectFetchIngress("const response = fetch(url);"), true);
+  assert.equal(hasDirectFetchIngress("const response = globalThis.fetch(url);"), true);
+  assert.equal(hasDirectFetchIngress("const response = window.fetch(url);"), true);
+  assert.equal(hasDirectFetchIngress("const response = self.fetch(url);"), true);
+  assert.equal(hasDirectFetchIngress("const response = NetInfo.default.fetch();"), false);
+});
 
 test("content boundary rejects legacy identity types and fields in active runtime code", () => {
   const failures = findLegacyContentIdentityLeaks([{

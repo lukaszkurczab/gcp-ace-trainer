@@ -74,6 +74,26 @@ test("account session exchange rejects a missing custom token", async () => {
   await assert.rejects(client.exchangeAccountSession(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
+test("content package transport uses the authenticated App Check API and returns binary response headers", async () => {
+  let request: { url: string; headers: Headers } | undefined;
+  const client = createTestClient({ fetchImplementation: async (url, init) => {
+    request = { url: String(url), headers: new Headers(init?.headers) };
+    return new Response(new Uint8Array([0x1f, 0x8b, 0x00]), { status: 200, headers: { "content-type": "application/gzip", "content-length": "3" } });
+  } });
+  const response = await client.getContentPackage("coding-interview-dsa-problem-solving", "package-test-node");
+  assert.equal(request?.url, `${API_ORIGIN}/v1/content/packages/coding-interview-dsa-problem-solving/package-test-node`);
+  assert.equal(request?.headers.get("authorization"), "Bearer id-token");
+  assert.equal(request?.headers.get("x-firebase-appcheck"), "app-check-token");
+  assert.deepEqual([...response.bytes], [0x1f, 0x8b, 0x00]);
+  assert.equal(response.headers.get("content-type"), "application/gzip");
+  await assert.rejects(client.getContentPackage("track", "../escape"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+});
+
+test("content package transport caps streamed response bodies at two MiB", async () => {
+  const client = createTestClient({ fetchImplementation: async () => new Response(new Uint8Array(2 * 1024 * 1024 + 1), { status: 200 }) });
+  await assert.rejects(client.getContentPackage("track", "node"), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+});
+
 test("mobile requests fail before transport when App Check is unavailable", async () => {
   let calls = 0;
   const client = createPatternlyApiClient({

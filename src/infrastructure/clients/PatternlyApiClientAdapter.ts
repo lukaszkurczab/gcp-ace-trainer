@@ -421,6 +421,7 @@ export type PatternlyApiClient = Readonly<{
   getDeletionOperationStatus: (operationId: string, operationSecret: string) => Promise<DeletionOperationStatusDto>;
   getTracks: () => Promise<TracksResponseDto>;
   getContentVersions: () => Promise<ContentVersionsResponseDto>;
+  getContentPackage: (trackId: string, nodeId: string) => Promise<Readonly<{ status: number; headers: Headers; bytes: Uint8Array }>>;
   createContentReport: (input: CreateContentReportDto, appCheckToken: string) => Promise<CreateContentReportResponseDto>;
   getAdminContentReports: () => Promise<AdminContentReportsResponseDto>;
   transitionAdminContentReport: (clientSubmissionId: string, status: ContentReportStatusDto) => Promise<TransitionContentReportResponseDto>;
@@ -526,6 +527,37 @@ export function createPatternlyApiClient(input: Readonly<{
     }
   }
 
+  async function requestContentPackage(trackId: string, nodeId: string): Promise<Readonly<{ status: number; headers: Headers; bytes: Uint8Array }>> {
+    if (!isSafePathIdentity(trackId) || !isSafePathIdentity(nodeId)) throw new PatternlyApiClientError("invalid_response");
+    const path = `/v1/content/packages/${encodeURIComponent(trackId)}/${encodeURIComponent(nodeId)}`;
+    const url = new URL(path, origin);
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timedOut = new Promise<never>((_, reject) => { timeoutId = setTimeout(() => { controller.abort(); reject(new PatternlyApiClientError("request_timeout")); }, timeoutMs); });
+    const withinDeadline = <TValue>(promise: Promise<TValue>): Promise<TValue> => Promise.race([promise, timedOut]);
+    try {
+      let token: string | null;
+      try { token = await withinDeadline(input.getIdToken()); }
+      catch (error) { if (error instanceof PatternlyApiClientError) throw error; throw new PatternlyApiClientError("transport_failed"); }
+      if (!token) throw new PatternlyApiClientError("authentication_required");
+      let appCheckToken: string | null;
+      try { appCheckToken = await withinDeadline(getAppCheckToken()); }
+      catch { throw new PatternlyApiClientError("app_check_unavailable"); }
+      if (!appCheckToken?.trim()) throw new PatternlyApiClientError("app_check_unavailable");
+      let response: Response;
+      try { response = await withinDeadline(fetchImplementation(url, { method: "GET", signal: controller.signal, headers: { authorization: `Bearer ${token}`, "x-firebase-appcheck": appCheckToken } })); }
+      catch (error) { if (error instanceof PatternlyApiClientError) throw error; throw new PatternlyApiClientError("transport_failed"); }
+      let bytes: Uint8Array;
+      try { bytes = await withinDeadline(readBoundedBytes(response, 2 * 1024 * 1024)); }
+      catch (error) {
+        if (error instanceof PatternlyApiClientError) throw error;
+        if (error instanceof Error && error.name === "AbortError") throw new PatternlyApiClientError("request_timeout");
+        throw new PatternlyApiClientError("transport_failed");
+      }
+      return Object.freeze({ status: response.status, headers: response.headers, bytes });
+    } finally { if (timeoutId !== undefined) clearTimeout(timeoutId); }
+  }
+
   return Object.freeze({
     availability: "available" as const,
     getHealth: () => requestJson<HealthResponseDto>("/health", "GET", undefined, "none"),
@@ -602,6 +634,7 @@ export function createPatternlyApiClient(input: Readonly<{
     getDeletionOperationStatus: (operationId, operationSecret) => requestJson<DeletionOperationStatusDto>("/v1/public/deletion-operations/status", "POST", { operationId, operationSecret }, "none"),
     getTracks: () => requestJson<TracksResponseDto>("/v1/tracks", "GET"),
     getContentVersions: () => requestJson<ContentVersionsResponseDto>("/v1/content/versions", "GET"),
+    getContentPackage: requestContentPackage,
     createContentReport: (body, appCheckToken) => requestJson<CreateContentReportResponseDto>("/v1/content/reports", "POST", body, "optional", { "x-firebase-appcheck": appCheckToken }),
     getAdminContentReports: () => requestJson<AdminContentReportsResponseDto>("/v1/admin/content-reports", "GET"),
     transitionAdminContentReport: (clientSubmissionId, status) => requestJson<TransitionContentReportResponseDto>(`/v1/admin/content-reports/${clientSubmissionId}`, "PATCH", { status }),
@@ -639,6 +672,27 @@ export function createFirebaseEmulatorIdTokenProvider(input: Readonly<{
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function isSafePathIdentity(value: string): boolean { return value.length > 0 && value === value.trim() && value !== "." && value !== ".." && !/[\\/\u0000]/u.test(value); }
+
+async function readBoundedBytes(response: Response, maximum: number): Promise<Uint8Array> {
+  if (!response.body) return new Uint8Array();
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let length = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      length += value.byteLength;
+      if (length > maximum) { await reader.cancel(); throw new PatternlyApiClientError("invalid_response", response.status); }
+      chunks.push(value);
+    }
+  } finally { reader.releaseLock(); }
+  const result = new Uint8Array(length);
+  let offset = 0;
+  for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.byteLength; }
+  return result;
 }
 
 const privacyRights = new Set<PrivacyRequestRightDto>(["access", "rectification", "erasure", "restriction", "objection", "portability", "consent_withdrawal"]);

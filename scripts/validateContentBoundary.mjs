@@ -26,6 +26,9 @@ const REMOVED_CONTENT_ARCHITECTURE_PATTERNS = Object.freeze([
   /\b(?:publishedBank|publishedManifest|bundledArtifact|validatePublishedContent|algorithmRuntimeCatalog|certificationRuntimeCatalog|designRuntimeCatalog)\b/u,
 ]);
 
+const DIRECT_FETCH_PATTERN = /(?<![.\w$])\bfetch\s*\(/u;
+const GLOBAL_OBJECT_FETCH_PATTERN = /\b(?:globalThis|window|self)\s*\.\s*fetch\s*\(/u;
+
 function relativeSourcePath(path) {
   const normalized = path.replaceAll("\\", "/");
   const sourceMarker = "/src/";
@@ -72,6 +75,10 @@ export function findLegacyContentIdentityLeaks(entries) {
   });
 }
 
+export function hasDirectFetchIngress(source) {
+  return DIRECT_FETCH_PATTERN.test(source) || GLOBAL_OBJECT_FETCH_PATTERN.test(source);
+}
+
 const root = process.cwd();
 const failures = [];
 const sourceRoot = join(root, "src");
@@ -84,7 +91,8 @@ const source = sourceEntries.map(({ source }) => source).join("\n");
 const contentSource = sourceEntries.filter(({ path }) => !path.endsWith("src/infrastructure/clients/PatternlyApiClientAdapter.ts")).map(({ source }) => source).join("\n");
 failures.push(...findLegacyContentIdentityLeaks(sourceEntries));
 for (const path of ["src/tracks/coding-interview/content", "src/features/questions/defaultQuestionBank.ts", "data/question-bank"]) if (existsSync(join(root, path))) failures.push(`Production content remains in application: ${path}`);
-for (const pattern of [/algorithmContentGroups/, /defaultQuestionBank/, /HttpContentSource/, /ContentCacheRepository/, /loadTrackContent/, /RemoteQuestionAdapter/, /ContentCompatibilityLayer/, /\bfetch\s*\(/, /XMLHttpRequest/, /axios/, /WebSocket/, /as unknown as/, /@ts-ignore/, /@ts-expect-error/, /\bconsole\.(?:log|debug|info|warn|error)\s*\(/]) if (pattern.test(contentSource)) failures.push(`Forbidden production ingress or diagnostic path remains: ${pattern}`);
+for (const pattern of [/algorithmContentGroups/, /defaultQuestionBank/, /HttpContentSource/, /ContentCacheRepository/, /loadTrackContent/, /RemoteQuestionAdapter/, /ContentCompatibilityLayer/, /XMLHttpRequest/, /axios/, /WebSocket/, /as unknown as/, /@ts-ignore/, /@ts-expect-error/, /\bconsole\.(?:log|debug|info|warn|error)\s*\(/]) if (pattern.test(contentSource)) failures.push(`Forbidden production ingress or diagnostic path remains: ${pattern}`);
+if (hasDirectFetchIngress(contentSource)) failures.push("Forbidden production ingress or diagnostic path remains: direct global fetch().");
 if (!source.includes("contentPackageRuntimeOwner.verifyBundledPackages")) failures.push("The canonical content preparation gate is missing.");
 try {
   const result = await validateBuiltContent(join(root, GENERATED_DIRECTORY), { expectedInventory: EXPECTED_INVENTORY });

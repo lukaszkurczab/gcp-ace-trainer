@@ -32,6 +32,7 @@ function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
     recordPurchaseConfirmation: async (input) => ({ confirmation: { confirmationId: input.confirmationId, acceptedAt: "2026-01-01T00:00:00.000Z" } }),
     getEntitlements: async () => ({ serverObservedAt: "2026-09-21T00:00:00.000Z", entitlements: [] }),
     getProgress: async () => ({ accountRevision: 0, records: [] }),
+    getContentPackage: async () => ({ status: 404, headers: new Headers(), bytes: new Uint8Array() }),
     exportAccountData: async () => { throw new Error("unused"); },
     createPrivacyRequest: async () => { throw new Error("unused"); },
     getPrivacyRequests: async () => ({ requests: [] }),
