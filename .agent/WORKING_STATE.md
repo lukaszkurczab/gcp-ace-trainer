@@ -166,7 +166,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Offline logout natychmiast zamyka account scope i usuwa lokalną sesję, zachowując dane, outbox, journal i markery pod profilem konta.
 - Ponowne Auth tego samego UID wznawia dokładny pending revoke. Po walidacji aplikacja zapisuje exact completed receipt w jedynym kanonicznym formacie v2, odrzuca v1 bez migracji i usuwa scoped marker przed otwarciem profilu; kolejne wylogowanie dostaje świeże operationId.
 - Token ani Firebase subject nie trafiają do dokumentu operacji. Błąd mintu po revoke jest bezpiecznie wznawialny bez drugiego provider revoke.
-- Backend 234/234, końcowy app targeted 90/90 (szerszy 121/121), typecheck/OpenAPI/diff PASS. Pełny app 1275/1280 z pięcioma istniejącymi niezależnymi błędami.
+- Backend po integracji 244/244, końcowy app targeted 90/90 (szerszy 121/121), typecheck/OpenAPI/diff PASS. Pełny app 1275/1280 z pięcioma istniejącymi niezależnymi błędami.
 - Świeży końcowy Maestro po autoryzowanym usunięciu wyłącznie danych Patternly: dokładne wartości fixture potwierdzone przez hierarchy, logout blokuje Home i pokazuje pending, restart zachowuje pending, same-account resume wraca do Home z `Coding Interview`, a kolejny natywny restart utrzymuje Home bez obu markerów pending — PASS. Screenshoty obejrzano i pozostają poza repo.
 - Pierwszy negatywny wynik pochodził ze starego procesu API uruchomionego przed zmianami PROFILE-03. Po restarcie aktualnego API `/ready` miał trzy kontrole `true`, a scenariusz przeszedł; nie wprowadzono obejścia produktowego.
 - Briefing: 0,92 / 0,84 / 0,81 / 0,87, minimum 0,81 — APPROVE. Raport: [PROFILE-03](../docs/active/PROFILE-03/REPORT.md).

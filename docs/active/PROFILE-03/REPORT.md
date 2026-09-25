@@ -17,7 +17,7 @@ Ocena przed zmianą po poprawionym niezależnym briefingu: zgodność 0,92; pros
 
 ## Weryfikacja
 
-- Backend: pełny suite emulatorowy 234/234, typecheck, OpenAPI 58 operacji i `openapi:check` — PASS.
+- Backend po integracji z bieżącym `origin/main`: pełny suite emulatorowy 244/244, typecheck, OpenAPI 58 operacji i `openapi:check` — PASS.
 - Aplikacja: końcowy pakiet celowany tombstone/resume/startup/providera 90/90, wcześniejszy szerszy pakiet 121/121, typecheck i diff check — PASS.
 - Pełny suite aplikacji: 1275/1280. Pięć znanych, niezależnych błędów pozostaje bez zmian: stara asercja tekstu retry-limit, liczba shelli 35→36, historyczny content-release SHA oraz dwa brakujące `PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA`.
 - Test backendu pokrywa przerwanie po trwałym revoke i przed mintem: retry wydaje token bez drugiego revoke; zapis operacji nie zawiera tokenu ani subjectu.
