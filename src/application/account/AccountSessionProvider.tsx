@@ -475,7 +475,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           const failure = classifyAccountFailure(error);
           return {
             result: { kind: "failure", failure },
-            state: { kind: failure === "revokedSession" ? "revokedSession" : failure === "reauthenticationRequired" ? "reauthenticationRequired" : "backendUnavailable", user },
+            state: accountSessionFailureState(failure, user),
           };
         }
       });
@@ -590,7 +590,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const failure = error instanceof AccountSessionGenerationStaleError || !canContinue()
         ? "revokedSession"
         : classifyAccountFailure(error);
-      if (ownsPreparation && canContinue()) setState({ kind: failure === "revokedSession" ? "revokedSession" : failure === "reauthenticationRequired" ? "reauthenticationRequired" : "backendUnavailable", user });
+      if (ownsPreparation && canContinue()) setState(accountSessionFailureState(failure, user));
       if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
       attempt.bootstrapFailure = { kind: "failure", failure };
       resolveCompletion(attempt.bootstrapFailure);
@@ -1991,15 +1991,22 @@ export function planPasswordVerificationCommand(command: PasswordVerificationCom
   return { kind: "verificationPending", action: "none" };
 }
 
+export function accountSessionFailureState(
+  failure: AccountFailure,
+  user: FirebaseAuthUserSnapshot,
+): Extract<AccountState, { kind: "backendUnavailable" | "reauthenticationRequired" | "revokedSession" }> {
+  const kind = failure === "revokedSession" ? "revokedSession" : failure === "reauthenticationRequired" ? "reauthenticationRequired" : "backendUnavailable";
+  return { kind, user };
+}
+
 export function classifyAccountFailure(error: unknown): AccountFailure {
   if (isPreparedGuestChoiceRequired(error)) return "guestChoiceRequired";
   if (error instanceof PatternlyApiClientError) {
     if (error.serverCode === "account_not_found") return "accountNotFound";
-    if (error.serverCode === "reauthentication_required" || error.serverCode === "recent_reauthentication_required") return "reauthenticationRequired";
+    if (error.serverCode === "reauthentication_required" || error.serverCode === "recent_reauthentication_required" || error.serverCode === "authorization_generation_stale") return "reauthenticationRequired";
     if (error.serverCode === "recovery_code_invalid") return "invalidRecoveryCode";
     if (error.serverCode === "recovery_code_used") return "recoveryCodeUsed";
     if (error.serverCode === "purchase_attempt_active") return "conflict";
-    if (error.serverCode === "recent_reauthentication_required") return "reauthenticationRequired";
     if (error.status === 401 || error.serverCode === "account_deleted" || error.serverCode === "authentication_required") return "revokedSession";
     if (error.status !== undefined && error.status >= 500) return "backendUnavailable";
     if (error.code === "transport_failed" || error.code === "request_timeout") return "offline";

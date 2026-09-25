@@ -1,5 +1,6 @@
 # Agent execution policy
 
+- Przy każdym zastosowaniu skilla podaj użytkownikowi w aktualizacji nazwę skilla i konkretny cel jego użycia.
 - Model selection follows the global Agent model policy. Every autonomous delegated implementation, QA, research, review or release task uses `gpt-6-luna`: `medium` for standard work and `high` for difficult analysis or independent validation. Sol and Astra require an explicit user decision. Record the exact model and effort in its evidence report.
 - Before implementation, obtain independent validation from a `gpt-6-luna` agent with `high` reasoning. Send exactly three sections: **Cel** (objective), **Ustalenia** (confirmed facts, constraints, risks and assumptions), **Podejście** (smallest coherent change).
 - The validator assesses only that briefing: no repository or external inspection, searches, reads or execution. Report missing evidence as a briefing limitation.

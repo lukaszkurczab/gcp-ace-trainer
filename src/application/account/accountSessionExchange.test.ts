@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { FirebaseAuthClientError, parseAuthorizationGenerationClaim } from "../../infrastructure/firebase/firebaseAuthClient";
 import { AccountSessionGenerationStaleError } from "./profileStartupCoordination";
 import { getMeWithExchangedSession } from "./accountSessionExchange";
 import type { MeResponseDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
@@ -76,4 +77,32 @@ test("a generation change after exchange prevents token sign-in and /me", async 
     user,
   }), AccountSessionGenerationStaleError);
   assert.deepEqual(calls, ["exchange"]);
+});
+
+test("custom-token exchange requires a valid authorization generation before /me", async (t) => {
+  for (const claim of [undefined, 0, "1"]) {
+    await t.test(`rejects claim ${String(claim)}`, async () => {
+      const calls: string[] = [];
+      let rawGeneration: unknown;
+      await assert.rejects(getMeWithExchangedSession({
+        api: {
+          exchangeAccountSession: async () => { calls.push("exchange"); return { customToken: "session-token" }; },
+          getMe: async () => { calls.push("unexpected-me"); return me; },
+        },
+        auth: {
+          getAuthorizationGeneration: async () => { calls.push("read-generation"); return parseAuthorizationGenerationClaim(rawGeneration); },
+          getSnapshot: () => user,
+          signInWithSessionToken: async () => {
+            calls.push("sign-in-session-token");
+            rawGeneration = claim;
+            return user;
+          },
+        },
+        canContinue: () => true,
+        onExchangeStarting: () => calls.push("block-observer"),
+        user,
+      }), (error: unknown) => error instanceof FirebaseAuthClientError && error.code === "auth/authorization-generation-invalid");
+      assert.deepEqual(calls, ["read-generation", "exchange", "block-observer", "sign-in-session-token", "read-generation"]);
+    });
+  }
 });

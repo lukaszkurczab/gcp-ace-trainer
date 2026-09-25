@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, requiresPasswordEmailVerification, type AccountState } from "./AccountSessionProvider";
+import { accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, requiresPasswordEmailVerification, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
@@ -727,6 +727,13 @@ test("account failures expose explicit provider, network, expiry, and revoked-se
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 401, "authentication_required")), "revokedSession");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 401, "recent_reauthentication_required")), "reauthenticationRequired");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 401, "reauthentication_required")), "reauthenticationRequired");
+  assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 401, "authorization_generation_stale")), "reauthenticationRequired");
+  assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 409, "authorization_generation_stale")), "reauthenticationRequired");
+  const staleGenerationFailure = classifyAccountFailure(new PatternlyApiClientError("server_error", 401, "authorization_generation_stale"));
+  assert.deepEqual(accountSessionFailureState(staleGenerationFailure, { email: "learner@example.com", emailVerified: true, providers: ["password"], uid: "firebase-uid" }), {
+    kind: "reauthenticationRequired",
+    user: { email: "learner@example.com", emailVerified: true, providers: ["password"], uid: "firebase-uid" },
+  });
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 503)), "backendUnavailable");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 400, "recovery_code_invalid")), "invalidRecoveryCode");
   assert.equal(classifyAccountFailure(new PatternlyApiClientError("server_error", 400, "recovery_code_used")), "recoveryCodeUsed");

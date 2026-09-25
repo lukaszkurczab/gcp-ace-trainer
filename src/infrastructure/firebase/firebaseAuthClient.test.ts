@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { OAuthProvider } from "firebase/auth";
 
-import { createAppleCredential, FirebaseAuthClientError, parseAuthorizationGenerationClaim, type AppleCredentialDependencies } from "./firebaseAuthClient";
+import { createAppleCredential, FirebaseAuthClientError, getAuthorizationGenerationForCurrentUser, parseAuthorizationGenerationClaim, type AppleCredentialDependencies } from "./firebaseAuthClient";
 import { sha256Utf8 } from "../identity/sha256";
 
 test("Apple nonce boundary hashes the Expo request and preserves the Firebase raw nonce", async () => {
@@ -38,4 +38,26 @@ test("authorization generation claim identifies exchanged sessions and rejects m
   for (const value of [null, 0, -1, 1.5, "1", Number.MAX_SAFE_INTEGER + 1]) {
     assert.throws(() => parseAuthorizationGenerationClaim(value), (error: unknown) => error instanceof FirebaseAuthClientError && error.code === "auth/authorization-generation-invalid");
   }
+});
+
+test("authorization generation reads force-refresh claims for the same current Firebase identity", async () => {
+  const auth = { currentUser: { uid: "firebase-uid" } };
+  const currentUser = auth.currentUser;
+  const calls: unknown[][] = [];
+  const generation = await getAuthorizationGenerationForCurrentUser(auth, currentUser, async (user, forceRefresh) => {
+    calls.push([user.uid, forceRefresh]);
+    return { claims: { authorizationGeneration: 7 } };
+  });
+
+  assert.equal(generation, 7);
+  assert.deepEqual(calls, [["firebase-uid", true]]);
+});
+
+test("authorization generation refresh rejects a result after the Firebase identity changes", async () => {
+  const auth: { currentUser: { uid: string } | null } = { currentUser: { uid: "firebase-uid" } };
+  const currentUser = auth.currentUser!;
+  await assert.rejects(getAuthorizationGenerationForCurrentUser(auth, currentUser, async () => {
+    auth.currentUser = { uid: "different-uid" };
+    return { claims: { authorizationGeneration: 7 } };
+  }), (error: unknown) => error instanceof FirebaseAuthClientError && error.code === "auth/uid-changed");
 });

@@ -1,8 +1,9 @@
 # AUD-08 B1b0 — OpenAPI route to backend-store matrix
 
 **Status:** read-only execution inventory; no runtime changes.  
-**Backend source:** repository `patternly-backend`, branch `main`, commit `05facbd03e9d5d019ab39004f27fcf1178b6e305` (`feat: prepare authorization generation session exchange`).  
-**Inventory check:** 57 OpenAPI operations at this source revision; the table below contains 57 rows, one per exact method and OpenAPI path.
+**Backend source:** repository `patternly-backend`, branch `main`, initially inventoried at `05facbd03e9d5d019ab39004f27fcf1178b6e305`; revalidated against `6c5566a` after B1b1–B1b4b.
+
+**Inventory check:** 57 OpenAPI operations and 57 rows; current method/path/profile comparison and `npm run openapi:check` pass. Store effects below reflect the B1b1–B1b4b checkpoint.
 
 ## Reading the matrix
 
@@ -12,6 +13,8 @@ Bearer routes (`bearer`, `app_check_bearer`, and `app_check_optional_bearer` whe
 
 The table describes actual calls from `src/api/app.ts` and the called store implementations, not a proposed authorization policy. `R/W` includes reads required to decide or construct a write. External Firebase Auth, RevenueCat, email, and local content-package operations are called out where relevant; they are not Firestore stores.
 
+Authenticated account-dependent store writes recheck the active account and expected authorization generation in their write transaction. A legal-request confirmation email and its `confirmationStatus` update continue an already accepted durable case; they do not create a new account-scoped action after a session rotation.
+
 ## Exact operation mapping
 
 | Method and OpenAPI path | Profile | Handler store effect and material side effects |
@@ -19,7 +22,7 @@ The table describes actual calls from `src/api/app.ts` and the called store impl
 | `GET /health` | `public` | — |
 | `GET /ready` | `public` | —; calls `firestore.ping()` when configured (infrastructure readiness check, not a domain store read). |
 | `GET /openapi.json` | `public` | —; returns the in-memory OpenAPI document. |
-| `POST /v1/webhooks/revenuecat` | `webhook` | `revenueCatWebhook` R/W for event idempotency, account/entitlement projection, and receipt claim; subsequent `markReceiptDelivery` writes receipt status. May send email; no user bearer/account-resolution middleware. |
+| `POST /v1/webhooks/revenuecat` | `webhook` | `revenueCatWebhook` R/W for event idempotency, active target-account/entitlement projection, and receipt claim; subsequent `markReceiptDelivery` writes receipt status. May send email; no user bearer/account-resolution middleware. |
 | `POST /v1/account/registration` | `app_check_verify_only_bearer` | `users` R/W: register/resolve identity and user, and create immutable registration acceptance atomically. |
 | `POST /v1/account/session/exchange` | `app_check_verify_only_bearer` | `users` R: pin active account authorization generation; `firebaseAuth` issues a custom token (external auth operation, not a Firestore store). |
 | `GET /v1/me` | `app_check_bearer` | `users` R: profile and identity projection. |
@@ -51,10 +54,10 @@ The table describes actual calls from `src/api/app.ts` and the called store impl
 | `GET /v1/account-data/adoption/transfer/{sessionId}/status` | `bearer` | `progress` R: read transfer status and device/session ownership. |
 | `POST /v1/account/recovery-codes` | `app_check_bearer` | `accountLifecycle` R/W: account check and replacement of one-time recovery-code records. |
 | `POST /v1/public/recovery-codes/consume` | `app_check_only` | `accountLifecycle` R/W: validate and consume recovery code, update recovery/session state; `firebaseAuth` revokes sessions/issues custom token as part of recovery flow. No account bearer is required. |
-| `POST /v1/account/session/revoke` | `app_check_bearer` | `accountLifecycle` R/W: check account and persist idempotent revocation operation state; invokes Firebase Auth session revocation. Does not update account state. |
-| `POST /v1/account/deletion` | `app_check_bearer` | `accountLifecycle` R/W: stage/perform deletion and persist completion/proof; `contentReports` W: unlink account from reports; invokes Firebase Auth deletion/revocation within lifecycle flow. |
+| `POST /v1/account/session/revoke` | `app_check_bearer` | `accountLifecycle` R/W: check account, claim/clear `users/{userId}.securityOperation`, and persist idempotent revocation operation state; invokes Firebase Auth session revocation. |
+| `POST /v1/account/deletion` | `app_check_bearer` | `accountLifecycle` R/W: atomically claim the delete slot, set `deleting`, advance generation, perform fenced owned-data and report cleanup, and persist completion/proof; invokes Firebase Auth deletion/revocation within lifecycle flow. |
 | `GET /v1/public/deletion-proofs/{proofId}` | `app_check_only` | `accountLifecycle` R/W: read opaque deletion proof; expired or malformed proof may be deleted as cleanup. |
-| `POST /v1/public/deletion-operations/status` | `app_check_only` | `accountLifecycle` R/W: resume/read deletion operation status and persist any completed transition. |
+| `POST /v1/public/deletion-operations/status` | `app_check_only` | `accountLifecycle` R/W: resume/read deletion operation status; may continue Firebase Auth work and fenced owned-data/report cleanup before persisting completion/proof. |
 | `GET /v1/tracks` | `app_check_bearer` | `tracks` R: read account track access. |
 | `GET /v1/content/versions` | `app_check_bearer` | `content` R: read current immutable content-version metadata. |
 | `POST /v1/content/reports` | `app_check_optional_bearer` | `contentReports` R/W: deduplicate submission, apply anonymous rate limit, and create/link report when requested. Optional bearer resolution runs only when supplied. |

@@ -151,6 +151,27 @@ export async function getIdTokenForCurrentUser(auth: FirebaseAuthCurrentUserRead
   return token;
 }
 
+type FirebaseAuthClaimsUser = Readonly<{ uid: string }>;
+type FirebaseAuthClaimsResult = Readonly<{ claims: Record<string, unknown> }>;
+type FirebaseAuthClaimsReader = (user: FirebaseAuthClaimsUser, forceRefresh: boolean) => Promise<FirebaseAuthClaimsResult>;
+
+/**
+ * Authorization claims can change while a refresh token remains persisted.
+ * Always refresh before deciding whether the current identity has entered an
+ * exchanged Patternly session, and reject a result that crossed a UID change.
+ */
+export async function getAuthorizationGenerationForCurrentUser(
+  auth: FirebaseAuthCurrentUserReader,
+  user: FirebaseAuthClaimsUser,
+  readClaims: FirebaseAuthClaimsReader = (currentUser, forceRefresh) => getIdTokenResult(currentUser as User, forceRefresh),
+): Promise<number | null> {
+  const uid = user.uid;
+  if (auth.currentUser?.uid !== uid) throw new FirebaseAuthClientError("auth/uid-changed");
+  const result = await readClaims(user, true);
+  if (auth.currentUser?.uid !== uid) throw new FirebaseAuthClientError("auth/uid-changed");
+  return parseAuthorizationGenerationClaim(result.claims.authorizationGeneration);
+}
+
 function actionSettings(origin: string): Readonly<{ handleCodeInApp: true; url: string }> {
   return Object.freeze({ handleCodeInApp: true, url: origin });
 }
@@ -255,10 +276,7 @@ export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClien
     getIdToken: async () => current ? getIdTokenForCurrentUser(auth, current) : null,
     getAuthorizationGeneration: async () => {
       const user = requireCurrentUser();
-      const uid = user.uid;
-      const result = await getIdTokenResult(user);
-      if (auth.currentUser?.uid !== uid) throw new FirebaseAuthClientError("auth/uid-changed");
-      return parseAuthorizationGenerationClaim(result.claims.authorizationGeneration);
+      return getAuthorizationGenerationForCurrentUser(auth, user);
     },
     getSnapshot: () => current ? snapshot(current) : null,
     onUserChanged: (listener) => onAuthStateChanged(auth, (user) => {

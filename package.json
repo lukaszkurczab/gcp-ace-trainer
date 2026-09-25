@@ -31,6 +31,8 @@
     "release:manifest:verify": "node scripts/releaseManifest.mjs verify",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test 'src/**/*.test.ts' 'src/**/*.test.mjs' 'scripts/**/*.test.ts' 'scripts/**/*.test.mjs'",
+    "test:firebase-auth-generation:emulator": "node --import tsx --test scripts/firebaseAuthAuthorizationGeneration.emulator.mjs",
+    "emulator:firebase-auth-generation": "firebase emulators:start --only auth --project demo-patternly-auth-generation --config scripts/firebaseAuthGeneration.firebase.json",
     "test:content-release-cross-repo": "node --import tsx --test src/content/contentReleaseCrossRepo.test.ts",
     "e2e:rc:certification-exam:android": "node scripts/runCertificationExamRcAndroid.mjs",
     "e2e:rc:certification-exam:ios": "node scripts/runCertificationExamRcIos.mjs",
