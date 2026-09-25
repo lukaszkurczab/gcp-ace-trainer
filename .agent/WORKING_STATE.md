@@ -6,9 +6,9 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Repozytoria
 
-| Repozytorium | Stan po CI-CONTRACT/A2b |
+| Repozytorium | Stan po CI-CONTRACT/A3 |
 | --- | --- |
-| `patternly` | AWS-02/CANDIDATE wypchnięte jako `eb6e2889`; bieżący diff dokumentuje A2b i synchronizuje kolejkę. |
+| `patternly` | A2b wypchnięte jako `1f54d72d`; bieżący diff realizuje i dokumentuje A3. |
 | `patternly-backend` | B1c wypchnięte na `main` jako `2a8c035`: test wyścigu wymiany sesji z obrotem generacji. |
 | `patternly-content` | CI-CONTRACT/A2b wypchnięte na `master` jako `21707b6`. |
 
@@ -19,6 +19,16 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Acceptance v2 wiąże 9 Free-node packages z exact package SHA i zaakceptowanymi release artifacts; payload items są porównywane, a limity dekompresji blokują gzip bomb.
 - Manual release kończy się oczekiwanym `RELEASE_BLOCKED` dla candidate `11d56baa…`; publishing/runtime nadal `not_granted`, brak deployu i zmiany app lock.
 - Pełny content 67/67, gate 4/4, Free-node 9/9, migration 9/117/943/16 077, build/scoring 9/9, YAML i diff check — PASS.
+
+## CI-CONTRACT/A3 — wynik
+
+- Status: **done / QA PASS**.
+- Historyczny release lock używa osobnego checkoutu dokładnego `producerCommit`; bieżący builder używa osobnego checkoutu `patternly-content/main`.
+- Workflow rozpoznaje i loguje pełny SHA bieżącego checkoutu. Oba testy buildera wymagają tego SHA i porównują go z HEAD, więc brak konfiguracji nie daje pozornego PASS.
+- Test cross-repo 3/3, negatywne brak/błąd SHA i root, `check:content-release` 9/117/943/16 077, typecheck, YAML i diff check — PASS.
+- Pierwszy qa-gate wykrył opcjonalne SHA i brak logu; po poprawce końcowy niezależny QA: PASS.
+- Briefing: 0,96 / 0,88 / 0,94 / 0,90, minimum 0,88 — APPROVE.
+- Release lock, generated content, runtime i admission nie zostały zmienione; brak wdrożenia.
 
 ## AWS-02/CANDIDATE — wynik
 
@@ -63,14 +73,14 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 ## Otwarte decyzje i blokady
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.
-- `CI-CONTRACT/A2b` — done; A3/B/C pozostają otwarte.
+- `CI-CONTRACT/A2b` i `A3` — done; B/C pozostają otwarte.
 - `PROFILE-02/B` — WAIT na zapisaną w planie decyzję PO.
 - Brak wdrożenia jest granicą zakresu, nie defektem lokalnego B1c.
 
 ## Następne działania
 
-1. Rozpocząć `CI-CONTRACT/A3`, następny dostępny slice: rozdzielić historyczny release lock od exact SHA bieżącego buildera w app QA.
-2. CI-CONTRACT/B/C i AWS-02/ADMISSION pozostają osobnymi późniejszymi krokami.
+1. Rozpocząć `CI-CONTRACT/B`, następny dostępny slice: włączyć testy kandydata do obowiązkowej bramki bez przyznawania admission.
+2. CI-CONTRACT/C i AWS-02/ADMISSION pozostają osobnymi późniejszymi krokami.
 3. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
 
 Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymaganych dowodów.

@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { loadCanonicalRuntimeCatalog } from "./canonical";
@@ -25,6 +26,8 @@ type HistoricalReleaseEntry = Readonly<{
   checksumSha256: string;
 }>;
 
+type HistoricalReleaseLockEntry = HistoricalReleaseEntry & Readonly<{ producerCommit: string }>;
+
 type HistoricalReleaseManifest = Readonly<{
   manifest: Readonly<{
     releaseId: string;
@@ -35,21 +38,38 @@ type HistoricalReleaseManifest = Readonly<{
 
 const sha256Raw = (value: string | Buffer): string => createHash("sha256").update(value).digest("hex");
 
+const contentRoot = (environmentVariable: string): string => {
+  const configuredRoot = process.env[environmentVariable];
+  const root = resolve(configuredRoot ?? resolve(process.cwd(), "../patternly-content"));
+  assert.ok(existsSync(root), `${environmentVariable} content root does not exist: ${root}`);
+  return root;
+};
+
+const gitHead = (root: string): string => execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+
+const expectedCurrentContentSha = (): string => {
+  const expectedSha = process.env.PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA;
+  assert.ok(expectedSha, "PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA is required");
+  assert.match(expectedSha, /^[a-f0-9]{40}$/u, "expected current content SHA must be a full commit SHA");
+  return expectedSha;
+};
+
 test("historical content release lock remains covered by frozen release manifests", () => {
   const appRoot = process.cwd();
-  const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? resolve(appRoot, "../patternly-content");
+  const historicalContentRoot = contentRoot("PATTERNLY_CONTENT_HISTORICAL_ROOT");
   const lockPath = join(appRoot, "integration/contracts/content-release/release.lock.json");
   const lockBytes = readFileSync(lockPath);
   assert.equal(sha256Raw(lockBytes), "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195");
   const releaseLock = JSON.parse(lockBytes.toString("utf8")) as {
     schemaVersion: number;
     repository: string;
-    artifacts: readonly HistoricalReleaseEntry[];
-    retainedArtifacts: readonly HistoricalReleaseEntry[];
+    artifacts: readonly HistoricalReleaseLockEntry[];
+    retainedArtifacts: readonly HistoricalReleaseLockEntry[];
   };
   assert.equal(releaseLock.schemaVersion, 2);
   assert.equal(releaseLock.repository, "lukaszkurczab/patternly-content");
   assert.equal(releaseLock.artifacts.length, 9);
+  assert.equal(gitHead(historicalContentRoot), releaseLock.artifacts.at(-1)!.producerCommit, "historical content checkout must match the locked producer commit");
   assert.equal(new Set(releaseLock.artifacts.map((entry) => entry.trackId)).size, 9);
   assert.equal(releaseLock.retainedArtifacts.length, 2);
   assert.deepEqual(
@@ -59,7 +79,7 @@ test("historical content release lock remains covered by frozen release manifest
   assert.equal(new Set(releaseLock.retainedArtifacts.map((entry) => entry.trackId)).size, 2);
 
   for (const entry of [...releaseLock.artifacts, ...releaseLock.retainedArtifacts]) {
-    const releasePath = join(contentRoot, "artifacts/releases", entry.releaseId, "release.json");
+    const releasePath = join(historicalContentRoot, "artifacts/releases", entry.releaseId, "release.json");
     const release = JSON.parse(readFileSync(releasePath, "utf8")) as HistoricalReleaseManifest;
     assert.equal(release.manifest.releaseId, entry.releaseId);
     assert.equal(release.manifest.sourceRepositoryCommit, entry.sourceRepositoryCommit);
@@ -77,11 +97,13 @@ test("historical content release lock remains covered by frozen release manifest
 
 test("bundled canonical release matches the current producer builder", async () => {
   const appRoot = process.cwd();
-  const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? resolve(appRoot, "../patternly-content");
+  const currentContentRoot = contentRoot("PATTERNLY_CONTENT_CURRENT_ROOT");
+  const expectedCurrentSha = expectedCurrentContentSha();
+  assert.equal(gitHead(currentContentRoot), expectedCurrentSha, "current content checkout must match its independently resolved SHA");
   const outputRoot = await mkdtemp(join(tmpdir(), "patternly-odk096-current-bundle-"));
   try {
-    const builder = await import(pathToFileURL(join(contentRoot, "scripts/build.mjs")).href) as unknown as CurrentProducerBuilder;
-    const built = await builder.buildAll({ rootDirectory: contentRoot, outputRoot });
+    const builder = await import(pathToFileURL(join(currentContentRoot, "scripts/build.mjs")).href) as unknown as CurrentProducerBuilder;
+    const built = await builder.buildAll({ rootDirectory: currentContentRoot, outputRoot });
     const catalog = await loadCanonicalRuntimeCatalog();
     const generatedLock = JSON.parse(readFileSync(join(appRoot, "src/content/generated/canonical-content/content-lock.json"), "utf8")) as { schemaVersion: string; tracks: readonly { trackId: string; sha256: string; contentVersion: string; questionCount: number }[] };
     assert.equal(generatedLock.schemaVersion, "patternly-content-lock-v1");
@@ -100,11 +122,13 @@ test("bundled canonical release matches the current producer builder", async () 
 
 test("current canonical builder preserves the ODK-096 inventory and approved AWS identity without repinning history", async () => {
   const appRoot = process.cwd();
-  const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? resolve(appRoot, "../patternly-content");
+  const currentContentRoot = contentRoot("PATTERNLY_CONTENT_CURRENT_ROOT");
+  const expectedCurrentSha = expectedCurrentContentSha();
+  assert.equal(gitHead(currentContentRoot), expectedCurrentSha, "current content checkout must match its independently resolved SHA");
   const outputRoot = await mkdtemp(join(tmpdir(), "patternly-odk096-current-builder-"));
   try {
-    const builder = await import(pathToFileURL(join(contentRoot, "scripts/build.mjs")).href) as unknown as CurrentProducerBuilder;
-    const built = await builder.buildAll({ rootDirectory: contentRoot, outputRoot });
+    const builder = await import(pathToFileURL(join(currentContentRoot, "scripts/build.mjs")).href) as unknown as CurrentProducerBuilder;
+    const built = await builder.buildAll({ rootDirectory: currentContentRoot, outputRoot });
     const nodes = new Set<string>();
     const mentalUnits = new Set<string>();
     let questions = 0;

@@ -113,6 +113,20 @@ jobs:
           ref: ${{ steps.content-lock.outputs.commit }}
           path: patternly-content
           fetch-depth: 0
+      - name: Checkout current content producer
+        uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-content
+          ref: main
+          path: patternly-content-current
+          fetch-depth: 0
+      - id: current-content
+        name: Resolve current content producer commit
+        run: |
+          sha="$(git -C "$GITHUB_WORKSPACE/patternly-content-current" rev-parse HEAD)"
+          [[ "$sha" =~ ^[a-f0-9]{40}$ ]]
+          echo "Resolved current content producer commit: $sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with:
           node-version: 22.13.1
@@ -125,5 +139,7 @@ jobs:
       - name: Run pinned multi-track release round-trip
         working-directory: app
         env:
-          PATTERNLY_CONTENT_ROOT: ${{ github.workspace }}/patternly-content
+          PATTERNLY_CONTENT_HISTORICAL_ROOT: ${{ github.workspace }}/patternly-content
+          PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content-current
+          PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ steps.current-content.outputs.sha }}
         run: npm run test:content-release-cross-repo
