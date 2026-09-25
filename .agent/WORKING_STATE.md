@@ -140,6 +140,15 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Rzeczywisty artefakt app i niezależnie przeliczony fingerprint przeszły hook web 2/2; web testy 6/6 i `verify:local` PASS. App export 4/4, schema 10/10, legal variables, typecheck i diff check PASS.
 - Release gate pozostaje `not_ready`: poza nieuzupełnionymi rzeczywistymi wartościami ODK-116-B bieżący lokalny wynik wskazuje też brudny worktree i brak pięciu wymaganych zewnętrznych evidence. B-CONTRACT nie jest dowodem gotowości wydania. Bez backend change i bez wdrożenia.
 
+## WEB-03C/PREP — wynik
+
+- Status: **done / niezależne QA PASS**; lokalny `local-test`, bez publikacji.
+- Web `prepare:web03c:local` buduje i weryfikuje publiczny `dist`, zapisuje SHA-256 i rozmiary wszystkich 11 plików, źródła i stan drzew obu repozytoriów oraz projekt/site `patternly-app-sandbox` i katalog `dist`. Manifest jest jawnie niewdrażalny.
+- Lokalny publiczny preview zwraca 404 dla `/admin*` i `/privacy-request*`; test sprawdza też brak ich kodu w buildzie. Testowy artefakt prawny pochodzi z eksportera aplikacji i pozostaje syntetyczny.
+- Firebase CLI nie potwierdziło dostępu: `projects:list` exit 2 z nieważnymi credentials. Zdalny release, deploy i rollback nie zostały wykonane. Produkcyjny build czeka na prawdziwe wartości ODK-116-B.
+- Briefing po redesignie: 0,92 / 0,84 / 0,88 / 0,86; minimum 0,84, APPROVE. Procedura PUBLISH opisuje przyszłe klonowanie live do kanału rollback i z powrotem.
+- Podczas pracy inne lokalne commity zmieniły HEAD app i web; raport PREP opiera się na stanie odczytanym przy końcowej weryfikacji. Nie przypisywać app HEAD do dokładnego źródła przy dirty tree.
+
 ## Weryfikacja
 
 - Aplikacja: testy ukierunkowane 44/44, typecheck i `git diff --check` — PASS.
