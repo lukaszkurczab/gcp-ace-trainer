@@ -6,11 +6,12 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Repozytoria
 
-| Repozytorium | Stan po CI-CONTRACT/B |
+| Repozytorium | Stan po CI-CONTRACT/C |
 | --- | --- |
-| `patternly` | AUD-04-C zaimplementowane jako `5de89e5b`; bieżący diff aktualizuje plan i stan. |
-| `patternly-backend` | Korekta metadanych odpowiedzi dla AUD-04-C wypchnięta jako `77c4e4c`; bazowe B to `11f988e`. |
+| `patternly` | Kod C `4830f36f`; bieżący diff zapisuje raport, plan i stan. |
+| `patternly-backend` | Kod C `3c75955`; inventory obejmuje binarny package transport. |
 | `patternly-content` | CI-CONTRACT/A2b wypchnięte na `master` jako `21707b6`. |
+| `patternly-web` | Kod C `12c9557`; test Vite i launcher exact local gate naprawione. |
 
 ## CI-CONTRACT/A2b — wynik
 
@@ -157,11 +158,18 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Oba wrappery Firebase CLI zwróciły kod 2 po zielonych testach dzieci, podczas końcowego update/MOTD config check. Nie raportować całych wrapperów jako PASS.
 - Briefing przed wykonaniem: zgodność 0,92; prostota 0,88; ryzyko 0,82; utrzymywalność 0,90; minimum 0,82, APPROVE.
 
+## CI-CONTRACT/C — wynik
+
+- Status: **done / QA PASS WITH ISSUES**; lokalnie, bez hosted runu i wdrożenia.
+- Exact kandydat: app `4830f36f`, backend `3c75955`, content `21707b6`, web `12c9557`; candidate `68524885…`, manifest `cccfcd78…`, create/verify PASS.
+- App `qa:static`: 1252/1252 oraz wszystkie granice PASS. Backend: 233/233 emulator, OpenAPI 58, inventory 50, build PASS. Content: 67/67, build/scoring 9/9. Web: behavior 34/34, config i `verify:local` PASS.
+- Firebase CLI zwraca kod 2 dopiero po zielonych testach i zamknięciu emulatorów podczas update/MOTD config; późniejsze backend gates wykonano osobno. Lokalny JDK 23 różni się od przypiętego JDK 21 workflow.
+- Raport: [CI-CONTRACT/C](../docs/active/CI-CONTRACT/C-REPORT.md). Nowy kandydat wymaga ponownego exact-SHA runu przed FREEZE.
+
 ## Otwarte decyzje i blokady
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.
-- `CI-CONTRACT/A2b`, `A3` i `B` — done; C pozostaje otwarte.
-- `CI-CONTRACT/C` — wymagany exact-SHA run nie ma lokalnego PASS: blokują go brak JDK 21, brak Chromium Playwright, konflikty portów emulatorów oraz istniejący `recovery:check` dla czterech importów MMKV. Nie utożsamiać tego z hosted PASS.
+- `CI-CONTRACT/A2b`, `A3`, `B` i `C` — done; C ma lokalny PASS WITH ISSUES, nie hosted PASS.
 - `PROFILE-02/B` — WAIT na zapisaną w planie decyzję PO.
 - Brak wdrożenia jest granicą zakresu, nie defektem lokalnego B1c.
 
@@ -169,7 +177,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 1. `AUD-04-D` pozostaje WAIT/DEVICE do dowodu Maestro success/denial na tym samym iPhonie 17; zachować bieżący diff.
 2. W czasie blokady wykonać pierwszy niezależny dostępny slice z kolejki; ODK-119-GATE/B pozostaje po D.
-3. Wrócić do `CI-CONTRACT/C`, gdy można wykonać właściwy exact-SHA etap bez omijania jego bramek.
+3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 5. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
 
