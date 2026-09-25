@@ -247,7 +247,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. Rozpocząć `OPS-PRODUCTION/B1`; `B1b4c` nadal WAIT/PO.
+1. Rozpocząć `OPS-PRODUCTION/B2`; `B1b4c` nadal WAIT/PO.
 2. `ODK-117/A2` czeka na kompetentny przegląd pięciu języków.
 3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
@@ -264,3 +264,13 @@ Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymagany
 - Privacy extension i legal answer wymagają w B bezpiecznego fence/reconciliation albo pozostają niedostępne w CLI. Content report pokazuje użytkownikowi tylko trwałe potwierdzenie przyjęcia, nie nieistniejący status sprawy.
 - Briefing końcowy: 0,92 / 0,86 / 0,90 / 0,84, minimum 0,84, APPROVE. Pierwsze QA FAIL wykryło zbyt szerokie obietnice delivery; po korekcie re-QA PASS.
 - Raport: [OPS-PRODUCTION/A](../docs/active/OPS-PRODUCTION/A-REPORT.md). Następny slice: `OPS-PRODUCTION/B1`.
+
+## OPS-PRODUCTION/B1 — wynik
+
+- Status: **done / niezależne QA PASS WITH ISSUES**; backend `e25c28a`, lokalnie i bez wdrożenia.
+- Oddzielny opcjonalny profil operatora waliduje dokładne OIDC `iss/aud/sub`, czasy, `RS256` i podpis JWKS. Konfiguracja jest all-or-none; brak oznacza unavailable, a błąd zatrzymuje bootstrap.
+- Strict allowlista nie ma wildcardów; wynik zawiera wyłącznie pseudonim HMAC, rolę i dozwoloną akcję. Nie ma fallbacku do Firebase ani zmiany istniejących guardów mobile/admin.
+- Produkcyjny loader JWKS używa jednego publicznego zestawu adresów przypiętego custom lookupiem do tego samego HTTPS socketu, bez redirectów, z deadline’em, limitem body/cache i globalnym cooldownem unknown `kid`.
+- Targeted 12/12, lint/typecheck/build/diff PASS. Wcześniejszy full 239/239 PASS; finalny full 240/241 ma powtarzalne 500 wyłącznie w starym concurrent Firestore sync na współdzielonym emulatorze, poza zmienionym obszarem — nie raportować finalnego full jako PASS.
+- QA w czterech iteracjach wykryło i zamknęło body/timeout/refresh amplification, DNS TOCTOU i callback Node 22 `all:true`; końcowy werdykt PASS WITH ISSUES. Rzeczywisty JWKS/token pozostaje C, a guard/routy B2.
+- Raport: [OPS-PRODUCTION/B1](https://github.com/lukaszkurczab/patternly-backend/blob/e25c28a/docs/active/OPS-PRODUCTION/B1-REPORT.md). Następny slice: `OPS-PRODUCTION/B2`.
