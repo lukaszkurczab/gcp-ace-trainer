@@ -15,6 +15,10 @@ export type PremiumNodeOffer = Readonly<{
 /** Production and sandbox do not discover Premium nodes until a producer/admission entry is accepted. */
 export const PREMIUM_NODE_OFFERS: readonly PremiumNodeOffer[] = Object.freeze([]);
 
+export function getLocalSmokePremiumNodePackageTransport(): null {
+  return null;
+}
+
 export function findPremiumNodeOffer(offerId: string): PremiumNodeOffer | undefined {
   return PREMIUM_NODE_OFFERS.find((offer) => offer.offerId === offerId);
 }

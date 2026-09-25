@@ -3,9 +3,8 @@ import type { PatternlyApiClient } from "../../infrastructure/clients/PatternlyA
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { createProfileNodePackageStore, getActiveNodePackageScopeKey } from "./nodePackageStoreComposition";
 import { installNodePackage } from "../runtime/nodeContentPackage";
-import { findPremiumNodeOfferForIdentity } from "./premiumNodeOffers";
+import { findPremiumNodeOfferForIdentity, getLocalSmokePremiumNodePackageTransport } from "./premiumNodeOffers";
 import { getAvailablePremiumNodeOffer } from "./premiumNodeOfferAccess";
-import { getLocalSmokePremiumNodePackageTransport } from "./premiumNodeOfferSmokeTransport";
 
 /** Installs an exact node package through the authenticated Patternly API path. It does not add the node to discovery or offer a mode. */
 export function installAuthenticatedNodePackage(input: Readonly<{ api: Pick<PatternlyApiClient, "getContentPackage">; trackId: string; nodeId: string; appVersion: string; expectedContentVersion?: string; expectedArtifactSha256?: string; assertActivationAllowed?: () => void }>) {
@@ -29,6 +28,7 @@ export async function installPremiumNodeOffer(input: Readonly<{ api: Pick<Patter
   const offer = getAvailablePremiumNodeOffer(input.offerId);
   if (!offer) throw new Error("premium_node_offer_unavailable");
   const localTransport = offer.source === "local_smoke_fixture" ? getLocalSmokePremiumNodePackageTransport() : null;
+  if (offer.source === "local_smoke_fixture" && !localTransport) throw new Error("local_smoke_package_transport_unavailable");
   const scopeKey = getActiveNodePackageScopeKey();
   if (!scopeKey) throw new Error("encrypted_storage_not_initialized");
   const store = createProfileNodePackageStore();

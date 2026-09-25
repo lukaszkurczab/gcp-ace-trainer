@@ -401,7 +401,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </Text>
         </View> : null}
 
-        {premiumOffers.map((offer) => <Card key={offer.offerId} style={styles.reviewCard}>
+        {premiumOffers.map((offer) => <Card key={offer.offerId} style={[styles.reviewCard, styles.premiumOfferCard]}>
           <View style={styles.reviewCopy}>
             <Text key={`premium-offer-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t(offer.source === "local_smoke_fixture" ? "Local package installation test" : "Premium")}</Text>
             <Text key={`premium-offer-description-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t(offer.source === "local_smoke_fixture" ? "Prepare and start one local Premium package to test download, verification, and session setup." : "Prepare this Premium topic before starting a session.")}</Text>
@@ -921,6 +921,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  premiumOfferCard: {
+    alignItems: "stretch",
+    flexDirection: "column",
+    gap: spacing.md,
   },
   reviewCopy: {
     flex: 1,

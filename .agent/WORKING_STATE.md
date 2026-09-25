@@ -2,7 +2,9 @@
 
 ## Cel i zasady
 
-Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pętli, lokalnie i bez wdrożenia. Przed każdym zadaniem sprawdzać API, Metro, emulatory oraz jedyny istniejący iPhone 17. Ogłaszać nazwę i cel każdego użytego skilla. Każdy slice wymaga briefingu `Cel / Ustalenia / Podejście`, niezależnego QA, aktualizacji planu, commitu i push na `main` właściwych repozytoriów.
+Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pętli, lokalnie i bez wdrożenia. Przed każdym zadaniem sprawdzać API, Metro i istniejący iPhone 17. Nie tworzyć drugiego urządzenia ani kopii aplikacji bez konkretnej potrzeby i nowego uzgodnienia. Ogłaszać nazwę i cel każdego użytego skilla. Każdy slice wymaga briefingu `Cel / Ustalenia / Podejście`, niezależnego QA, aktualizacji planu, commitu i push na `main` właściwych repozytoriów.
+
+**Wiążące decyzje właściciela 25.09.2026 — potwierdzić w każdym briefingu:** Patternly nie ma realnych użytkowników ani danych produkcyjnych. Do pierwszego publicznego wydania kompatybilność wsteczna nie jest wymaganiem: usuwać legacy, migratory, adaptery, fallbacki, stare lokalne formaty i syntetyczne ścieżki zamiast je utrzymywać. Zmiany kontraktów wykonać spójnie we wszystkich dotkniętych repozytoriach; nadal obowiązują aktualne schema, bezpieczeństwo, integralność, realne kontrakty providerów i release evidence. `PROFILE-02/B` jest anulowane: aplikacja nie wybiera, nie odzyskuje i nie migruje wielu historycznych profili Gościa. Nie przywracać tego zakresu bez nowej decyzji właściciela. Odbiory Maestro wykonywać na istniejącym iPhonie 17; nie tworzyć drugiego urządzenia bez konkretnej potrzeby i nowego uzgodnienia.
 
 ## Repozytoria
 
@@ -111,13 +113,13 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Targeted/architecture 35/35, content-boundary, typecheck i diff check — PASS; backend emulator 1/1 i OpenAPI 58 — PASS. Szeroki suite miał 1219 przejść i 11 failures: dwa związane z C naprawiono; pozostałe obejmowały istniejące release/legal/dirty-worktree oraz timeout Metro i nie są raportowane jako PASS.
 - Ograniczenia QA: brak jeszcze wywołującego flow (właściciel D), brak native device proof dla adaptera oraz neutralny fixture nie jest admission Premium.
 
-## AUD-04-D — stan oczekujący
+## AUD-04-D — done / PASS WITH ISSUES
 
-- Status: **WAIT/DEVICE; ponowny niezależny QA BLOCKED**. Kod trafił na `main` w mieszanym commicie `9330fcef`, ale nie jest to commit ukończonego zadania ani PASS.
+- Status: **done / PASS WITH ISSUES** według końcowego niezależnego QA. Bazowy mieszany commit `9330fcef` nie był dowodem zakończenia; bieżący slice zawiera urządzeniowe poprawki i właściwy raport.
 - Lokalna ścieżka smoke pokazuje jawną ofertę, instaluje exact pakiet i prowadzi przygotowanie przez wspólnego runtime ownera. Release/sandbox mają pustą mapę ofert; rzeczywiste bundle smoke/release potwierdziły fixture wyłącznie w smoke.
 - Pierwszy QA wykrył utratę `nodeId` między route i lifecycle, która mogła wybrać Free i ominąć Gate A. Naprawa przenosi osobny jawny `nodeId`; integracyjna regresja sprawdza exact version/hash/pytanie, autoryzację przed mutacją oraz odmowę bez aktywnej sesji.
-- Typecheck, ukierunkowane testy, locale, content boundary i diff check przechodzą. Neutralny fixture nie jest admission ani treścią Premium.
-- Na jedynym iPhonie 17 formularz izolowanego konta został sprawdzony hierarchy i prywatnym zrzutem przed submit. Zachowany `account-remote-revoke-pending` zwraca aplikację do Sign in, więc nie osiągnięto Home/oferty i brakuje Maestro success/denial. Nie usuwać tego stanu ani nie stosować takeover poza bezpiecznym protokołem recovery.
+- Istniejący iPhone 17 osiągnął Home i wykonał smoke offer → exact install/preparation → Gate A. Obejrzany screenshot pokazuje `unavailable`, nie `denied`; brak mutacji dla `denied` i kolejność przed zapisem potwierdza test integracyjny.
+- Poprawiono profil Metro, układ karty, rozdwojony alias z cichym fallbackiem oraz `Uint8Array` dla natywnego `expo-crypto`. Target 7/7, typecheck i diff check przechodzą. Pełny suite 1255/1258 ma trzy niezależne błędy cross-repo content. Neutralny fixture nie jest admission ani treścią Premium.
 
 ## ODK-117-A0 — wynik
 
@@ -202,8 +204,8 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Następne działania
 
-1. `AUD-04-D` pozostaje WAIT/DEVICE do dowodu Maestro success/denial na tym samym iPhonie 17; zachować bieżący diff.
-2. W czasie blokady wykonać pierwszy niezależny dostępny slice z kolejki; ODK-119-GATE/B pozostaje po D.
+1. Rozpocząć `ODK-119-GATE/B`, pierwszy dostępny slice po zakończonym AUD-04/D.
+2. `ODK-117/A1` nadal wymaga osobnego odbioru ekranu Language settings na istniejącym iPhonie 17.
 3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 5. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.

@@ -12,7 +12,8 @@ export const contentHasher: ContentHasher = {
     });
   },
   async sha256Bytes(value) {
-    const bytes = value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength) as ArrayBuffer;
+    const bytes = new Uint8Array(value.byteLength);
+    bytes.set(value);
     const digest = new Uint8Array(await Crypto.digest(Crypto.CryptoDigestAlgorithm.SHA256, bytes));
     return [...digest].map((byte) => byte.toString(16).padStart(2, "0")).join("");
   },

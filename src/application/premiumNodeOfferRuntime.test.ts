@@ -3,7 +3,7 @@ import test from "node:test";
 import { ContentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 import { PREMIUM_NODE_OFFERS as smokeOffers } from "../content/application/premiumNodeOffers.smoke";
 import { PREMIUM_NODE_OFFERS as releaseOffers } from "../content/application/premiumNodeOffers.disabled";
-import { getLocalSmokePremiumNodePackageTransport } from "../content/application/premiumNodeOfferSmokeTransport.smoke";
+import { getLocalSmokePremiumNodePackageTransport } from "../content/application/premiumNodeOffers.smoke";
 import { contentHasher } from "../infrastructure/identity/contentHasher";
 import { createMemoryNodePackageStore, installNodePackage } from "../content/runtime/nodeContentPackage";
 

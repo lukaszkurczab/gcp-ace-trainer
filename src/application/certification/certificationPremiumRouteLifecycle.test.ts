@@ -4,7 +4,7 @@ import { ContentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { buildCertificationPracticeStartCommand } from "./certificationSessionFacade";
 import { TrainingApplicationFailure, TrainingLifecycleUseCases, type TrainingLifecyclePorts } from "../trainingLifecycle";
 import { PREMIUM_NODE_OFFERS } from "../../content/application/premiumNodeOffers.smoke";
-import { getLocalSmokePremiumNodePackageTransport } from "../../content/application/premiumNodeOfferSmokeTransport.smoke";
+import { getLocalSmokePremiumNodePackageTransport } from "../../content/application/premiumNodeOffers.smoke";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { createMemoryNodePackageStore, installNodePackage } from "../../content/runtime/nodeContentPackage";
 import { getTrackRegistration } from "../../domain";

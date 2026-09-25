@@ -12,8 +12,6 @@ const buildOnlyModules = new Map([
   ["../content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
   ["./premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
   ["../../src/content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
-  ["./premiumNodeOfferSmokeTransport", smokeRuntime ? "src/content/application/premiumNodeOfferSmokeTransport.smoke.ts" : "src/content/application/premiumNodeOfferSmokeTransport.disabled.ts"],
-  ["../../src/content/application/premiumNodeOfferSmokeTransport", smokeRuntime ? "src/content/application/premiumNodeOfferSmokeTransport.smoke.ts" : "src/content/application/premiumNodeOfferSmokeTransport.disabled.ts"],
 ]);
 
 config.transformer = {
