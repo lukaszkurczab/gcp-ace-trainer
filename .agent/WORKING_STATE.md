@@ -144,6 +144,14 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Testy 29/29, typecheck i diff check — PASS. Ograniczenie QA: hierarchy nie wystawia osobnego węzła radiogroup, choć role radio/selected są widoczne, a rola grupy jest w JSX i teście.
 - Następny slice ODK-117: A2.
 
+## ODK-117-A2 — blocker
+
+- Status: **blocking / WAIT: competent linguistic review**.
+- Zakres to 8 namespace’ów × 1 521 wartości × 5 języków, czyli 7 605 nowych wartości DE/FR/ES/IT/ET. W repo nie ma app draftów, procesu recenzji ani kompetentnych recenzentów.
+- Plan zabrania niezweryfikowanych tłumaczeń. Niezależny briefing potwierdził, że modelowy self-review może wspierać propozycje i kontrole, ale nie spełnia językowej bramki A2.
+- A3 pozostaje za A2; nie migrować kolejnych tekstów do niezweryfikowanych pakietów. Pakiet odblokowania: [A2](../docs/active/ODK-117/A2-REVIEW-BLOCKER.md).
+- Następny niezależny dostępny slice: PROFILE-02/C.
+
 ## ODK-117/B-CONTRACT — wynik
 
 - Status: **done / niezależne QA PASS WITH ISSUES**, przy czym jedyną naprawialną kwestią były nieaktualne raporty, poprawione przed commitem.
@@ -232,7 +240,7 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 ## Następne działania
 
 1. Wybrać następny dostępny slice z planu po zakończonym `AUD-11`; `B1b4c` nadal WAIT/PO.
-2. `ODK-117/A1` jest odebrane; następny dostępny slice tej ścieżki to `ODK-117/A2`.
+2. `ODK-117/A2` czeka na kompetentny przegląd pięciu języków; w międzyczasie wykonać `PROFILE-02/C`.
 3. Dla nowego kandydata powtórzyć exact-SHA etap CI-CONTRACT przed FREEZE; bieżącego lokalnego C nie utożsamiać z hosted runem.
 4. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 5. `PROFILE-02/B` jest anulowane decyzją właściciela. Tylko `B1b4c` nadal oczekuje na decyzję PO.
