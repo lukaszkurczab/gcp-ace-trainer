@@ -45,6 +45,7 @@
       }
     },
     "releaseBinding": {},
+    "runtimeReceipt": {},
     "evidenceSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
   },
   "allOf": [{
@@ -71,7 +72,7 @@
             "configuration": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["apiOrigin", "appCheckAppleProvider", "authActionOrigin", "channel", "environment", "firebaseProjectId", "iosAssociatedDomain", "publicWebOrigin", "runtimeMode", "runtimeVersion", "updatesUrl"],
+              "required": ["apiOrigin", "appCheckAppleProvider", "authActionOrigin", "channel", "environment", "firebaseProjectId", "iosAssociatedDomain", "otaPolicy", "publicWebOrigin", "runtimeMode", "runtimeVersion", "updatesCheckAutomatically", "updatesEnabled", "updatesUrl"],
               "properties": {
                 "apiOrigin": { "type": "string", "pattern": "^https://" },
                 "appCheckAppleProvider": { "enum": ["deviceCheck", "appAttest", "appAttestWithDeviceCheckFallback"] },
@@ -80,9 +81,12 @@
                 "environment": { "const": "production" },
                 "firebaseProjectId": { "type": "string", "minLength": 1 },
                 "iosAssociatedDomain": { "type": "string", "minLength": 1 },
+                "otaPolicy": { "const": "embedded-only" },
                 "publicWebOrigin": { "type": "string", "pattern": "^https://" },
                 "runtimeMode": { "const": "release" },
                 "runtimeVersion": { "type": "string", "minLength": 1 },
+                "updatesCheckAutomatically": { "const": "NEVER" },
+                "updatesEnabled": { "const": false },
                 "updatesUrl": { "type": "string", "pattern": "^https://" }
               }
             }
@@ -91,5 +95,26 @@
       }
     },
     "else": { "not": { "required": ["releaseBinding"] } }
+  }, {
+    "if": { "properties": { "id": { "const": "physical-device-matrix" } }, "required": ["id"] },
+    "then": {
+      "required": ["runtimeReceipt"],
+      "properties": {
+        "runtimeReceipt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["channel", "iosBuildId", "launchedArtifact", "manifestId", "otaPolicy", "runtimeVersion"],
+          "properties": {
+            "channel": { "const": "production" },
+            "iosBuildId": { "type": "string", "minLength": 1 },
+            "launchedArtifact": { "const": "embedded" },
+            "manifestId": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "otaPolicy": { "const": "embedded-only" },
+            "runtimeVersion": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "else": { "not": { "required": ["runtimeReceipt"] } }
   }]
 }

@@ -86,10 +86,11 @@ function evidenceRecord(id, applicationCommit, evidenceSha256 = undefined) {
       iosBuild: { appVersion: "0.1.0", buildId: "test-ios-build-001", buildNumber: "42", bundleIdentifier: "com.lkurczab.patternly" },
       configuration: {
         apiOrigin: "https://api.patternly.test", appCheckAppleProvider: "appAttestWithDeviceCheckFallback", authActionOrigin: "https://auth.patternly.test",
-        channel: "production", environment: "production", firebaseProjectId: "patternly-production", iosAssociatedDomain: "applinks:patternly.test",
-        publicWebOrigin: "https://patternly.test", runtimeMode: "release", runtimeVersion: "0.1.0", updatesUrl: "https://u.expo.dev/test-project",
+        channel: "production", environment: "production", firebaseProjectId: "patternly-production", iosAssociatedDomain: "applinks:patternly.test", otaPolicy: "embedded-only",
+        publicWebOrigin: "https://patternly.test", runtimeMode: "release", runtimeVersion: "0.1.0", updatesCheckAutomatically: "NEVER", updatesEnabled: false, updatesUrl: "https://u.expo.dev/test-project",
       },
     } } : {}),
+    ...(id === "physical-device-matrix" ? { runtimeReceipt: { channel: "production", iosBuildId: "test-ios-build-001", launchedArtifact: "embedded", manifestId: "a".repeat(64), otaPolicy: "embedded-only", runtimeVersion: "0.1.0" } } : {}),
     schemaVersion: "patternly-release-evidence-v2",
     status: "verified",
     verifiedAt: "2026-08-21T00:00:00.000Z",
@@ -482,7 +483,7 @@ test("physical-device evidence is optional through freeze and mandatory at go", 
 
     writeFileSync(join(evidenceRoot, "physical-device-matrix.json"), JSON.stringify(evidenceRecord("physical-device-matrix", applicationCommit)));
     report = JSON.parse(runWithEvidenceRoot(evidenceRoot).output);
-    assert.equal(report.optionalExternalEvidence[0].status, "verified");
+    assert.equal(report.optionalExternalEvidence[0].status, "invalid");
   } finally {
     rmSync(evidenceRoot, { recursive: true, force: true });
   }

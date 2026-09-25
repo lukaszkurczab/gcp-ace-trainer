@@ -164,6 +164,11 @@ function validateReleasePublicLegalLinks(legalVariables, publicEnvironment) {
   }
 }
 
+function updatesConfiguration(runtimeMode) {
+  const url = "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab";
+  return runtimeMode === "release" ? { url, enabled: false, checkAutomatically: "NEVER" } : { url };
+}
+
 function createExpoConfig(environment = process.env) {
   const runtimeMode = readRuntimeMode(environment);
   const publicEnvironment = assertRuntimeEnvironment(environment, runtimeMode);
@@ -230,7 +235,7 @@ function createExpoConfig(environment = process.env) {
         patternlyRuntime: runtimeMode,
         eas: { projectId: "204d9769-4832-4c4a-b932-6359c4ff9dab" },
       },
-      updates: { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab" },
+      updates: updatesConfiguration(runtimeMode),
     },
   };
 }
@@ -243,3 +248,4 @@ module.exports.RUNTIME_MODES = RUNTIME_MODES;
 module.exports.LOCAL_E2E_KEYS = LOCAL_E2E_KEYS;
 module.exports.isLoopbackHttpOrigin = isLoopbackHttpOrigin;
 module.exports.validateReleasePublicLegalLinks = validateReleasePublicLegalLinks;
+module.exports.updatesConfiguration = updatesConfiguration;

@@ -184,6 +184,15 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Następny slice: RELEASE-CONTRACT/C — jedna polityka OTA i tożsamość faktycznie uruchomionego artefaktu.
 - Granica QA: samohashowana koperta zapewnia integralność po związaniu, ale tekstowe `verifiedBy` nie dowodzi pochodzenia z EAS ani osoby. Rzeczywisty build i wiarygodność evidence muszą być potwierdzone przed FREEZE.
 
+## RELEASE-CONTRACT/C — wynik
+
+- Status: **done / niezależne QA PASS WITH ISSUES**; lokalnie, bez builda, publikacji OTA, FREEZE, GO i wdrożenia.
+- Jedna polityka release: `embedded-only`; Expo Updates jest wyłączone dla release (`enabled=false`, `checkAutomatically=NEVER`), bez zmiany sandbox/smoke.
+- Manifest wiąże politykę i fingerprint konfiguracji. Physical evidence wymaga receipt dokładnego manifestu, build ID, runtime, kanału i osadzonego artefaktu; każda rozbieżność failuje GO.
+- Targeted 41/41; pełne qa:static 1256/1256 z przypiętymi content roots; oba boundary checks, schema JSON i diff check — PASS.
+- Następny dostępny slice: OPS-PRODUCTION/A.
+- Granica QA: self-hash receipt nie dowodzi fizycznego uruchomienia; rzeczywiste pochodzenie receipt i test urządzenia pozostają obowiązkowe przed GO.
+
 ## Otwarte decyzje i blokady
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.

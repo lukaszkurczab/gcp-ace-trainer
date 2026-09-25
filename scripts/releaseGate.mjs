@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 import "tsx/cjs";
 import { createRequire } from "node:module";
 import { verifyReleaseManifest } from "./releaseManifest.mjs";
-import { validateReleaseEvidence } from "./releaseEvidence.mjs";
+import { validateReleaseEvidence, validateRuntimeReceipt } from "./releaseEvidence.mjs";
 import { legalSourceFingerprint } from "./legalSourceFingerprint.mjs";
 
 const require = createRequire(import.meta.url);
@@ -270,14 +270,15 @@ function inspectPublicLegalVariables() {
   };
 }
 
-function externalEvidenceStatus(id, expectedApplicationCommit) {
+function externalEvidenceStatus(id, expectedApplicationCommit, verifiedManifest = null) {
   const path = resolve(evidenceRoot, `${id}.json`);
   const portablePath = `${releaseEvidenceRelativeDirectory}/${id}.json`;
   if (!existsSync(path)) return { id, repositoryRole: "application", path: portablePath, status: "not_evidenced" };
   try {
     const value = readJson(path);
     validateReleaseEvidence(value, { expectedId: id, expectedApplicationCommit });
-    return { id, repositoryRole: "application", path: portablePath, status: "verified", applicationCommit: value.applicationCommit, evidenceSha256: value.evidenceSha256 };
+    if (id === "physical-device-matrix") validateRuntimeReceipt(value.runtimeReceipt, verifiedManifest);
+    return { id, repositoryRole: "application", path: portablePath, status: "verified", applicationCommit: value.applicationCommit, evidenceSha256: value.evidenceSha256, ...(id === "physical-device-matrix" ? { runtimeReceipt: value.runtimeReceipt } : {}) };
   } catch (error) {
     return { id, repositoryRole: "application", path: portablePath, status: "invalid", error: portableError(error) };
   }
@@ -378,6 +379,7 @@ if (releaseManifestPath) {
         iosBuild: verified.iosBuild,
         configurationFingerprint: verified.configurationFingerprint,
         evidence: verified.evidence,
+        otaPolicy: verified.otaPolicy,
       };
     } catch (error) {
       releaseManifest = { status: "invalid" };
@@ -386,9 +388,9 @@ if (releaseManifestPath) {
   }
 }
 
-const external = externalEvidence.map((id) => externalEvidenceStatus(id, applicationCommit));
+const external = externalEvidence.map((id) => externalEvidenceStatus(id, applicationCommit, releaseManifest));
 for (const evidence of external) if (evidence.status !== "verified") blockers.push({ kind: "external_release_evidence_missing", evidenceId: evidence.id, status: evidence.status, path: evidence.path });
-const optionalExternal = optionalExternalEvidence.map((id) => externalEvidenceStatus(id, applicationCommit));
+const optionalExternal = optionalExternalEvidence.map((id) => externalEvidenceStatus(id, applicationCommit, releaseManifest));
 for (const evidence of optionalExternal) if (evidence.status !== "verified") blockers.push({ kind: "external_release_evidence_missing", evidenceId: evidence.id, status: evidence.status, path: evidence.path });
 
 const STAGE_ORDER = Object.freeze({ local: 0, freeze: 1, go: 2 });

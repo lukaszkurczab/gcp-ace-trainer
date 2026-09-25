@@ -4,7 +4,7 @@ import test from "node:test";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-const { createExpoConfig } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: Record<string, any> } };
+const { createExpoConfig, updatesConfiguration } = require("../app.config.js") as { createExpoConfig: (environment: Record<string, string>) => { expo: Record<string, any> }; updatesConfiguration: (mode: string) => Record<string, unknown> };
 const app = createExpoConfig({
   EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "debug", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "debug",
   EXPO_PUBLIC_PATTERNLY_BACKEND_E2E: "true", EXPO_PUBLIC_PATTERNLY_API_ORIGIN: "http://127.0.0.1:8080",
@@ -36,6 +36,8 @@ test("EAS release configuration has explicit version, runtime, and channel polic
     sandbox: { distribution: "internal", android: { buildType: "apk" }, channel: "sandbox", environment: "preview", env: { PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox" } },
     release: { distribution: "store", channel: "production", autoIncrement: true, environment: "production", env: { PATTERNLY_RUNTIME_MODE: "release", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "release" } },
   });
+  assert.deepEqual(updatesConfiguration("release"), { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab", enabled: false, checkAutomatically: "NEVER" });
+  assert.deepEqual(updatesConfiguration("sandbox"), { url: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab" });
 });
 
 test("EAS source archives exclude generated native output, artifacts, and credentials", () => {

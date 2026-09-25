@@ -23,7 +23,7 @@ import {
   validateReleaseManifest,
   verifyReleaseManifest,
 } from "./releaseManifest.mjs";
-import { canonicalHash } from "./releaseEvidence.mjs";
+import { canonicalHash, validateRuntimeReceipt } from "./releaseEvidence.mjs";
 
 const root = process.cwd();
 const contentRoot = resolve(root, "../patternly-content");
@@ -53,15 +53,32 @@ function signingEvidence(applicationCommit) {
         environment: "production",
         firebaseProjectId: "patternly-production",
         iosAssociatedDomain: "applinks:patternly.test",
+        otaPolicy: "embedded-only",
         publicWebOrigin: "https://patternly.test",
         runtimeMode: "release",
         runtimeVersion: "0.1.0",
+        updatesCheckAutomatically: "NEVER",
+        updatesEnabled: false,
         updatesUrl: "https://u.expo.dev/204d9769-4832-4c4a-b932-6359c4ff9dab",
       },
     },
     schemaVersion: "patternly-release-evidence-v2",
     status: "verified",
     verifiedAt: "2026-09-25T00:00:00.000Z",
+    verifiedBy: "test-authority",
+  };
+  return { ...identity, evidenceSha256: canonicalHash(identity) };
+}
+
+function physicalEvidence(applicationCommit, runtimeReceipt) {
+  const identity = {
+    applicationCommit,
+    evidenceReferences: [{ kind: "device-run", value: "maestro://iphone-17/release-candidate" }],
+    id: "physical-device-matrix",
+    runtimeReceipt,
+    schemaVersion: "patternly-release-evidence-v2",
+    status: "verified",
+    verifiedAt: "2026-09-25T01:00:00.000Z",
     verifiedBy: "test-authority",
   };
   return { ...identity, evidenceSha256: canonicalHash(identity) };
@@ -162,6 +179,7 @@ test("creates deterministic portable identity with repositories, locks, build, c
   assert.deepEqual(manifest.references.map(({ repositoryRole, path }) => ({ repositoryRole, path })), RELEASE_MANIFEST_REFERENCES);
   assert.deepEqual(manifest.iosBuild, { appVersion: "0.1.0", buildId: "test-ios-build-001", buildNumber: "42", bundleIdentifier: "com.lkurczab.patternly" });
   assert.match(manifest.configurationFingerprint, /^[a-f0-9]{64}$/u);
+  assert.equal(manifest.otaPolicy, "embedded-only");
   assert.deepEqual(manifest.evidence, [{ id: "signing-and-builds", sha256: signingEvidence(manifest.repositories[0].commit).evidenceSha256 }]);
   assert.equal(manifest.manifestId, manifestIdFor(manifest));
   const firstBytes = readFileSync(manifestPath, "utf8");
@@ -256,12 +274,41 @@ test("enforced releaseGate reports a verified manifest identity without absolute
   assert.deepEqual(report.releaseManifest.iosBuild, manifest.iosBuild);
   assert.equal(report.releaseManifest.configurationFingerprint, manifest.configurationFingerprint);
   assert.deepEqual(report.releaseManifest.evidence, manifest.evidence);
+  assert.equal(report.releaseManifest.otaPolicy, "embedded-only");
   assert.equal(report.applicationRepository.path, ".");
   assert.equal(report.contentReadiness.path, "evidence/readiness/candidate-readiness.json");
   assert.equal(report.contentReleaseLock.path, "integration/contracts/content-release/release.lock.json");
   assert.equal(result.output.includes(root), false);
   assert.equal(report.blockers.some((blocker) => blocker.kind === "release_manifest_invalid"), false);
   assert.equal(report.blockers.some((blocker) => blocker.kind === "release_manifest_missing"), false);
+});
+
+test("releaseGate accepts only a physical receipt for the exact embedded manifest and build", () => {
+  const path = join(evidenceRoot, "physical-device-matrix.json");
+  const applicationCommit = manifest.repositories.find(({ role }) => role === "application").commit;
+  const receipt = { channel: "production", iosBuildId: manifest.iosBuild.buildId, launchedArtifact: "embedded", manifestId: manifest.manifestId, otaPolicy: "embedded-only", runtimeVersion: manifest.iosBuild.appVersion };
+  writeFileSync(path, JSON.stringify(physicalEvidence(applicationCommit, receipt)));
+  try {
+    let report = JSON.parse(runReleaseGate(releaseGateArgs(join(outputRoot, "release-gate-physical-valid.json"))).output);
+    assert.equal(report.optionalExternalEvidence[0].status, "verified");
+    assert.deepEqual(report.optionalExternalEvidence[0].runtimeReceipt, receipt);
+
+    writeFileSync(path, JSON.stringify(physicalEvidence(applicationCommit, { ...receipt, iosBuildId: "other-build" })));
+    report = JSON.parse(runReleaseGate(releaseGateArgs(join(outputRoot, "release-gate-physical-invalid.json"))).output);
+    assert.equal(report.optionalExternalEvidence[0].status, "invalid");
+    assert.ok(report.blockers.some((blocker) => blocker.evidenceId === "physical-device-matrix" && blocker.status === "invalid"));
+  } finally {
+    rmSync(path, { force: true });
+  }
+});
+
+test("runtime receipt rejects every mismatch with the verified embedded artifact", () => {
+  const verified = { status: "verified", manifestId: manifest.manifestId, iosBuild: manifest.iosBuild, otaPolicy: manifest.otaPolicy };
+  const receipt = { channel: "production", iosBuildId: manifest.iosBuild.buildId, launchedArtifact: "embedded", manifestId: manifest.manifestId, otaPolicy: "embedded-only", runtimeVersion: manifest.iosBuild.appVersion };
+  assert.deepEqual(validateRuntimeReceipt(receipt, verified), receipt);
+  for (const [field, value] of [["manifestId", "0".repeat(64)], ["iosBuildId", "other-build"], ["runtimeVersion", "9.9.9"], ["channel", "other"], ["otaPolicy", "remote"], ["launchedArtifact", "ota-update"]]) {
+    assert.throws(() => validateRuntimeReceipt({ ...receipt, [field]: value }, verified), /does not match/u, field);
+  }
 });
 
 test("enforced releaseGate writes portable reports for invalid and missing manifests", () => {

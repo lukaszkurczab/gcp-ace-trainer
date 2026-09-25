@@ -121,7 +121,7 @@ function nonEmpty(value, label) {
  * checks are performed by verifyReleaseManifest.
  */
 export function validateReleaseManifest(manifest) {
-  exactKeys(manifest, ["schemaVersion", "manifestId", "candidateId", "trackIds", "repositories", "references", "iosBuild", "configurationFingerprint", "evidence"], "Release manifest");
+  exactKeys(manifest, ["schemaVersion", "manifestId", "candidateId", "trackIds", "repositories", "references", "iosBuild", "configurationFingerprint", "evidence", "otaPolicy"], "Release manifest");
   if (manifest.schemaVersion !== RELEASE_MANIFEST_SCHEMA_VERSION) throw new Error("Release manifest schema version is invalid.");
   sha(manifest.manifestId, "Release manifest manifestId");
   sha(manifest.candidateId, "Release manifest candidateId");
@@ -174,6 +174,7 @@ export function validateReleaseManifest(manifest) {
   if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$/u.test(manifest.iosBuild.buildId)) throw new Error("Release manifest iOS buildId is invalid.");
   if (!/^\d+$/u.test(manifest.iosBuild.buildNumber)) throw new Error("Release manifest iOS buildNumber must be decimal digits.");
   sha(manifest.configurationFingerprint, "Release manifest configurationFingerprint");
+  if (manifest.otaPolicy !== "embedded-only") throw new Error("Release manifest OTA policy must be embedded-only.");
   if (!Array.isArray(manifest.evidence) || manifest.evidence.length !== 1) throw new Error("Release manifest must contain exactly one signing evidence identity.");
   exactKeys(manifest.evidence[0], ["id", "sha256"], "Release manifest evidence identity");
   if (manifest.evidence[0].id !== "signing-and-builds") throw new Error("Release manifest evidence identity must be signing-and-builds.");
@@ -467,6 +468,7 @@ function buildManifest({ commits, candidate, files, signingBinding }) {
     iosBuild: signingBinding.iosBuild,
     configurationFingerprint: signingBinding.configurationFingerprint,
     evidence: signingBinding.evidence,
+    otaPolicy: signingBinding.otaPolicy,
   };
   manifest.manifestId = manifestIdFor(manifest);
   validateReleaseManifest(manifest);
@@ -512,6 +514,7 @@ function manifestSummary(manifest, status = "verified") {
     iosBuild: { ...manifest.iosBuild },
     configurationFingerprint: manifest.configurationFingerprint,
     evidence: manifest.evidence.map((entry) => ({ ...entry })),
+    otaPolicy: manifest.otaPolicy,
   };
 }
 
@@ -564,7 +567,8 @@ export async function verifyReleaseManifest({
   const signingBinding = signingManifestBinding(signing.value);
   if (canonicalJson(signingBinding.iosBuild) !== canonicalJson(manifest.iosBuild)
     || signingBinding.configurationFingerprint !== manifest.configurationFingerprint
-    || canonicalJson(signingBinding.evidence) !== canonicalJson(manifest.evidence)) {
+    || canonicalJson(signingBinding.evidence) !== canonicalJson(manifest.evidence)
+    || signingBinding.otaPolicy !== manifest.otaPolicy) {
     throw new Error("Release manifest signing evidence binding is stale.");
   }
   for (const repository of manifest.repositories) if (commits[repository.role] !== repository.commit) throw new Error(`Release manifest ${repository.role} commit is stale.`);
