@@ -23,8 +23,8 @@ const owningSteps = [
   ["Run application owning gate", "application-gate", "app", "npm run qa:static"],
   ["Run backend owning gate", "backend-gate", "patternly-backend", "npm run ci"],
   ["Run content test gate", "content-test-gate", "patternly-content", "npm test"],
-  ["Run content authoring gate", "content-authoring-gate", "patternly-content", "npm run authoring:validate"],
-  ["Run content AWS source gate", "content-aws-gate", "patternly-content", "npm run audit:aws-workbook-source"],
+  ["Run content authoring gate", "content-authoring-gate", "patternly-content", "npm run content:build-all"],
+  ["Run content canonical scoring gate", "content-aws-gate", "patternly-content", "npm run content:test"],
   ["Run web local verification gate", "web-verify-gate", "patternly-web", "npm run verify:local"],
   ["Run web admin behavior gate", "web-admin-behavior-gate", "patternly-web", "npm run test:admin-behavior"],
   ["Run web admin config gate", "web-admin-config-gate", "patternly-web", "npm run test:admin-config"],
@@ -32,6 +32,8 @@ const owningSteps = [
 
 const finalOutcomeIds = [
   "validate-inputs",
+  "historical-content-lock",
+  "checkout-historical-content",
   "checkout-integrity",
   "setup-java",
   "install-firebase",
@@ -103,7 +105,7 @@ function assertInputContract(source) {
 }
 
 function assertCheckoutContract(source) {
-  assert.equal((source.match(/^        uses: actions\/checkout@v4$/gmu) ?? []).length, 4, "exactly four checkout actions are required");
+  assert.equal((source.match(/^        uses: actions\/checkout@v4$/gmu) ?? []).length, 5, "four exact input checkouts and one historical content checkout are required");
   for (const { name, variable, repository, path } of inputs) {
     const checkout = stepBlock(source, `Checkout ${name.replace("_commit", "")}`);
     assert.match(checkout, /uses: actions\/checkout@v4\n\s+with:\n/u);
@@ -112,7 +114,24 @@ function assertCheckoutContract(source) {
     assert.match(checkout, new RegExp(`^          path: ${escapeRegExp(path)}$`, "mu"));
     assert.match(checkout, /^          fetch-depth: 0$/mu);
   }
+  const historicalCheckout = stepBlock(source, "Checkout historical content producer");
+  assert.match(historicalCheckout, /^        id: checkout-historical-content$/mu);
+  assert.match(historicalCheckout, /uses: actions\/checkout@v4\n\s+with:\n/u);
+  assert.match(historicalCheckout, /^          repository: lukaszkurczab\/patternly-content$/mu);
+  assert.match(historicalCheckout, /^          ref: \$\{\{ steps\.historical-content-lock\.outputs\.commit \}\}$/mu);
+  assert.match(historicalCheckout, /^          path: patternly-content-historical$/mu);
+  assert.match(historicalCheckout, /^          fetch-depth: 0$/mu);
   assert.doesNotMatch(source, /(?:ref:\s*(?:main|master)|github\.sha|github\.ref|refs\/heads\/)/u, "candidate refs must never be moving refs");
+}
+
+function assertHistoricalContentLockContract(source) {
+  const lockStep = stepBlock(source, "Read historical content producer from application lock");
+  assert.match(lockStep, /^        id: historical-content-lock$/mu);
+  assert.match(lockStep, /^        working-directory: app$/mu);
+  assert.match(lockStep, /integration\/contracts\/content-release\/release\.lock\.json/u);
+  assert.match(lockStep, /lock\.artifacts\?\.at\(-1\)\?\.producerCommit/u);
+  assert.match(lockStep, /\^\[a-f0-9\]\{40\}\$/u);
+  assert.match(lockStep, /commit=\$\{commit\}/u);
 }
 
 function assertIntegrityContract(source) {
@@ -122,6 +141,9 @@ function assertIntegrityContract(source) {
       assert.ok(integrity.includes(`test "$(git -C ${path} rev-parse HEAD)" = "$${variable}"`));
       assert.ok(integrity.includes(`test -z "$(git -C ${path} status --porcelain --untracked-files=all)"`));
     }
+    assert.ok(integrity.includes('test "$(git -C patternly-content-historical rev-parse HEAD)" = "$HISTORICAL_CONTENT_COMMIT"'));
+    assert.ok(integrity.includes('test -z "$(git -C patternly-content-historical status --porcelain --untracked-files=all)"'));
+    assert.match(integrity, /^          HISTORICAL_CONTENT_COMMIT: \$\{\{ steps\.historical-content-lock\.outputs\.commit \}\}$/mu);
   }
 }
 
@@ -169,6 +191,13 @@ function assertOwningGateContract(source) {
       assert.match(gate, /sleep 1/u);
       assert.match(gate, /export PATTERNLY_LOCAL_URL="\$local_url"/u);
       assert.match(gate, new RegExp(`^          npm run ${escapeRegExp(command.replace("npm run ", ""))}$`, "mu"));
+    } else if (id === "content-authoring-gate") {
+      assert.match(gate, /^          CONTENT_BUILD_OUTPUT: \$\{\{ runner\.temp \}\}\/launch-readiness-content-build$/mu);
+      assert.match(gate, /^        run: npm run content:build-all -- --root \. --output-root "\$CONTENT_BUILD_OUTPUT"$/mu);
+    } else if (id === "content-aws-gate") {
+      assert.match(gate, /^        run: \|$/mu);
+      assert.match(gate, /const \{ tracks \} = JSON\.parse\(readFileSync\("content\/catalog\.json"/u);
+      assert.match(gate, /\["run", "content:test", "--", "--track", trackId, "--root", "\."\]/u);
     } else {
       assert.match(gate, new RegExp(`^        run: ${escapeRegExp(command)}$`, "mu"));
     }
@@ -176,6 +205,11 @@ function assertOwningGateContract(source) {
   const backend = stepBlock(source, "Run backend owning gate");
   assert.match(backend, /^          PATTERNLY_FRONTEND_ROOT: \$\{\{ github\.workspace \}\}\/app$/mu);
   assert.match(backend, /^          PATTERNLY_WEB_ROOT: \$\{\{ github\.workspace \}\}\/patternly-web$/mu);
+
+  const application = stepBlock(source, "Run application owning gate");
+  assert.match(application, /^          PATTERNLY_CONTENT_HISTORICAL_ROOT: \$\{\{ github\.workspace \}\}\/patternly-content-historical$/mu);
+  assert.match(application, /^          PATTERNLY_CONTENT_CURRENT_ROOT: \$\{\{ github\.workspace \}\}\/patternly-content$/mu);
+  assert.match(application, /^          PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: \$\{\{ inputs\.content_commit \}\}$/mu);
 }
 
 function assertManifestAndReleaseContract(source) {
@@ -258,6 +292,7 @@ function assertWorkflowContract(source) {
   assert.doesNotMatch(source, /secrets\./u);
   assertInputContract(source);
   assertCheckoutContract(source);
+  assertHistoricalContentLockContract(source);
   assertIntegrityContract(source);
   assertToolingContract(source);
   assertOwningGateContract(source);
@@ -297,6 +332,26 @@ test("mutations of each fixed repository slug, ref, path and fetch depth fail cl
     const wrongDepth = replaceInStep(workflow, checkoutName, "fetch-depth: 0", "fetch-depth: 1");
     assert.throws(() => assertWorkflowContract(wrongDepth));
   }
+
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Checkout historical content producer", "repository: lukaszkurczab/patternly-content", "repository: attacker/other")));
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Checkout historical content producer", "steps.historical-content-lock.outputs.commit", "inputs.content_commit")));
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Checkout historical content producer", "path: patternly-content-historical", "path: patternly-content")));
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Checkout historical content producer", "fetch-depth: 0", "fetch-depth: 1")));
+});
+
+test("mutations of historical lock resolution or app content roots fail closed", () => {
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Read historical content producer from application lock", "integration/contracts/content-release/release.lock.json", "integration/contracts/other.lock.json")));
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Read historical content producer from application lock", "lock.artifacts?.at(-1)?.producerCommit", "lock.artifacts?.at(-2)?.producerCommit")));
+
+  const appGate = "Run application owning gate";
+  for (const [from, to] of [
+    ["PATTERNLY_CONTENT_HISTORICAL_ROOT: ", "REMOVED_HISTORICAL_ROOT: "],
+    ["patternly-content-historical", "patternly-content-wrong"],
+    ["PATTERNLY_CONTENT_CURRENT_ROOT: ", "REMOVED_CURRENT_ROOT: "],
+    ["PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ inputs.content_commit }}", "PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ github.sha }}"],
+  ]) {
+    assert.throws(() => assertWorkflowContract(replaceInStep(workflow, appGate, from, to)));
+  }
 });
 
 test("mutations of every exact-head or clean-worktree assertion fail closed", () => {
@@ -315,6 +370,23 @@ test("mutations of every exact-head or clean-worktree assertion fail closed", ()
       "git -C other status --porcelain --untracked-files=all",
     );
     assert.throws(() => assertWorkflowContract(wrongClean));
+  }
+
+  for (const stepName of ["Verify exact checkout SHAs and clean worktrees", "Verify exact HEADs and clean worktrees after owning gates"]) {
+    const wrongHistoricalHead = replaceInStep(
+      workflow,
+      stepName,
+      'git -C patternly-content-historical rev-parse HEAD)" = "$HISTORICAL_CONTENT_COMMIT',
+      'git -C patternly-content rev-parse HEAD)" = "$HISTORICAL_CONTENT_COMMIT',
+    );
+    assert.throws(() => assertWorkflowContract(wrongHistoricalHead));
+    const wrongHistoricalClean = replaceInStep(
+      workflow,
+      stepName,
+      "git -C patternly-content-historical status --porcelain --untracked-files=all",
+      "git -C patternly-content status --porcelain --untracked-files=all",
+    );
+    assert.throws(() => assertWorkflowContract(wrongHistoricalClean));
   }
 });
 
@@ -353,9 +425,11 @@ test("mutations of the web server wait, base URL and cleanup fail closed", () =>
 test("mutations of backend sibling roots and content/web gate commands fail closed", () => {
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Run backend owning gate", "PATTERNLY_FRONTEND_ROOT: ${{ github.workspace }}/app", "PATTERNLY_FRONTEND_ROOT: ../patternly")));
   assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Run backend owning gate", "PATTERNLY_WEB_ROOT: ${{ github.workspace }}/patternly-web", "PATTERNLY_WEB_ROOT: ../patternly-web")));
-  for (const [name, , , command] of owningSteps.slice(2)) {
+  for (const [name, id, , command] of owningSteps.slice(2).filter(([, id]) => !["content-authoring-gate", "content-aws-gate"].includes(id))) {
     assert.throws(() => assertWorkflowContract(replaceInStep(workflow, name, `run: ${command}`, "run: npm run wrong")));
   }
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Run content authoring gate", "npm run content:build-all", "npm run wrong")));
+  assert.throws(() => assertWorkflowContract(replaceInStep(workflow, "Run content canonical scoring gate", "content:test", "content:wrong")));
 });
 
 test("mutations of manifest creation, verification and enforced release fail closed", () => {

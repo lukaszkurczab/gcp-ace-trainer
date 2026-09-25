@@ -6,9 +6,9 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 
 ## Repozytoria
 
-| Repozytorium | Stan po CI-CONTRACT/A3 |
+| Repozytorium | Stan po CI-CONTRACT/B |
 | --- | --- |
-| `patternly` | A2b wypchnięte jako `1f54d72d`; bieżący diff realizuje i dokumentuje A3. |
+| `patternly` | A3 wypchnięte jako `4b0d659c`; bieżący diff realizuje i dokumentuje B. |
 | `patternly-backend` | B1c wypchnięte na `main` jako `2a8c035`: test wyścigu wymiany sesji z obrotem generacji. |
 | `patternly-content` | CI-CONTRACT/A2b wypchnięte na `master` jako `21707b6`. |
 
@@ -29,6 +29,16 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Pierwszy qa-gate wykrył opcjonalne SHA i brak logu; po poprawce końcowy niezależny QA: PASS.
 - Briefing: 0,96 / 0,88 / 0,94 / 0,90, minimum 0,88 — APPROVE.
 - Release lock, generated content, runtime i admission nie zostały zmienione; brak wdrożenia.
+
+## CI-CONTRACT/B — wynik
+
+- Status: **done / QA PASS**.
+- `content-test-gate` uruchamia 67 testów contentu, w tym draft-v2, readiness-v2 i release-gate-v2, a końcowy agregator wymaga sukcesu.
+- App gate używa osobnego historycznego checkoutu z release locka i exact-SHA bieżącego contentu; oba są sprawdzane przed i po gate’ach.
+- Test kontraktu workflow 11/11, test cross-repo 3/3, content 67/67, YAML i diff check — PASS.
+- Pełne `qa:static` nadal FAIL na istniejącym `recovery:check` dla czterech importów MMKV; nie jest raportowane jako PASS i nie wynika z diffu B.
+- Briefing: 0,96 / 0,87 / 0,84 / 0,90, minimum 0,84 — APPROVE. Niezależny QA: PASS.
+- Brak repinu, admission, publikacji i wdrożenia.
 
 ## AWS-02/CANDIDATE — wynik
 
@@ -73,14 +83,14 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 ## Otwarte decyzje i blokady
 
 - `AUD-08/B1b4c` — `WAIT/PO`: po SMTP accepted i awarii przed zapisem retry może dać duplikat/późną wiadomość, a brak retry może pozbawić klienta potwierdzenia. Nie implementować polityki bez odpowiedzi.
-- `CI-CONTRACT/A2b` i `A3` — done; B/C pozostają otwarte.
+- `CI-CONTRACT/A2b`, `A3` i `B` — done; C pozostaje otwarte.
 - `PROFILE-02/B` — WAIT na zapisaną w planie decyzję PO.
 - Brak wdrożenia jest granicą zakresu, nie defektem lokalnego B1c.
 
 ## Następne działania
 
-1. Rozpocząć `CI-CONTRACT/B`, następny dostępny slice: włączyć testy kandydata do obowiązkowej bramki bez przyznawania admission.
-2. CI-CONTRACT/C i AWS-02/ADMISSION pozostają osobnymi późniejszymi krokami.
+1. Rozpocząć `CI-CONTRACT/C`, następny dostępny slice: uruchomić właściwy etap dla jawnych czterech SHA bez wdrożenia.
+2. AWS-02/ADMISSION pozostaje osobnym późniejszym krokiem.
 3. Kroki `PROFILE-02/B` i `B1b4c` pozostają oczekujące wyłącznie na zapisane decyzje PO.
 
 Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymaganych dowodów.
