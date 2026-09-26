@@ -110,6 +110,26 @@ test("prepared guest validation reads only access markers without publishing sto
   setProfileStoragePreparationFactoryForTests(null);
 });
 
+test("prepared authenticated recovery promotes only a matching bound guest", async () => {
+  const seed = await preparedFixture();
+  await seed.router.selectGuest();
+  const accountId = "adopted-account";
+  seed.base.setString(`patternly:profile:v1:${GUEST_ID}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`, JSON.stringify({
+    schemaIdentity: "patternly:canonical:v1", revision: 1,
+    payload: { installationId: "00000000-0000-4000-8000-000000000022", localDatasetId: GUEST_ID, bindingState: "account_bound", accountId },
+  }));
+  const router = await openProfileStorageRouter(seed.base, seed.control);
+  setProfileStoragePreparationFactoryForTests(async () => ({ base: seed.base, router }));
+  await prepareProfileStorage();
+
+  const selected = await selectPreparedAccountProfile(accountId, () => true, { recoverBoundGuest: true });
+  assert.deepEqual(selected, { profile: { id: GUEST_ID, kind: "account", accountId }, changed: true });
+  assert.equal((await inspectPreparedProfileState()).selectedProfile.kind, "account");
+  activatePreparedProfile(GUEST_ID, "account");
+  assert.equal(getActiveStorageProfileOrNull()?.accountId, accountId);
+  setProfileStoragePreparationFactoryForTests(null);
+});
+
 test("closing an active profile revokes returned clients and preserves prepared metadata", async () => {
   const fixture = await preparedFixture();
   setProfileStoragePreparationFactoryForTests(async () => fixture);

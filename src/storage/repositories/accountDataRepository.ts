@@ -56,6 +56,7 @@ export type AccountDataSnapshot = Readonly<{
 
 export type AccountSyncState = Readonly<{
   accountId: string | null;
+  guestAdoptionChoice: "transfer" | "discard";
   status: "initialSyncRequired" | "syncing" | "synced" | "offlinePending" | "conflict" | "failed";
   localDatasetVersion: number;
   localDatasetFingerprint: string | null;
@@ -91,7 +92,7 @@ export type GuestOwnedLocalDataBackupEntry = Readonly<{ key: string; value: stri
 export type AccountAcknowledgedRecord = Readonly<{ fingerprint: string; recordId: string; recordType: SyncableRecordType; remoteVersion: number; trackId: string }>;
 export type AccountOutboxEntry = Readonly<AccountDataRecord & { mutationId: string; expectedVersion: number | null; attemptCount: number; lastErrorCode: string | null; status: "pending" | "retrying" | "failed"; sequence: number }>;
 
-const emptyState = (): AccountSyncState => Object.freeze({ accountId: null, status: "initialSyncRequired", localDatasetVersion: 0, localDatasetFingerprint: null, remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged: Object.freeze({}), outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, outboxSequence: 0, highWatermark: 0, resetGuard: null });
+const emptyState = (): AccountSyncState => Object.freeze({ accountId: null, guestAdoptionChoice: "transfer", status: "initialSyncRequired", localDatasetVersion: 0, localDatasetFingerprint: null, remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged: Object.freeze({}), outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, outboxSequence: 0, highWatermark: 0, resetGuard: null });
 
 const LEARNING_FIXED_KEYS = [
   STORAGE_KEYS.ACTIVE_TRACK,
@@ -186,7 +187,7 @@ function isAccountSyncPlan(value: unknown): value is AccountSyncPlan {
 }
 
 function isAccountSyncState(value: unknown): value is AccountSyncState {
-  if (!isRecord(value) || !hasOnlyKeys(value, ["accountId", "status", "localDatasetVersion", "localDatasetFingerprint", "remoteAccountRevision", "lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode", "acknowledged", "outbox", "materialization", "pendingConfirmation", "syncPlan", "outboxSequence", "highWatermark", "resetGuard"]) || (value.accountId !== null && typeof value.accountId !== "string") || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || Number(value.localDatasetVersion) < 0 || (value.localDatasetFingerprint !== null && typeof value.localDatasetFingerprint !== "string") || !Number.isSafeInteger(value.remoteAccountRevision) || Number(value.remoteAccountRevision) < 0 || !Number.isSafeInteger(value.pendingMutationCount) || Number(value.pendingMutationCount) < 0 || (value.lastSuccessfulSyncAt !== null && typeof value.lastSuccessfulSyncAt !== "string") || (value.blockingConflictCode !== null && typeof value.blockingConflictCode !== "string") || (value.lastFailureCode !== null && typeof value.lastFailureCode !== "string") || !Array.isArray(value.outbox) || !isRecord(value.acknowledged) || (value.syncPlan !== null && !isAccountSyncPlan(value.syncPlan)) || !Number.isSafeInteger(value.outboxSequence) || Number(value.outboxSequence) < 0 || !Number.isSafeInteger(value.highWatermark) || Number(value.highWatermark) < 0 || (value.resetGuard !== null && !isAccountResetGuard(value.resetGuard))) return false;
+  if (!isRecord(value) || !hasOnlyKeys(value, ["accountId", "guestAdoptionChoice", "status", "localDatasetVersion", "localDatasetFingerprint", "remoteAccountRevision", "lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode", "acknowledged", "outbox", "materialization", "pendingConfirmation", "syncPlan", "outboxSequence", "highWatermark", "resetGuard"]) || (value.accountId !== null && typeof value.accountId !== "string") || (value.guestAdoptionChoice !== "transfer" && value.guestAdoptionChoice !== "discard") || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || Number(value.localDatasetVersion) < 0 || (value.localDatasetFingerprint !== null && typeof value.localDatasetFingerprint !== "string") || !Number.isSafeInteger(value.remoteAccountRevision) || Number(value.remoteAccountRevision) < 0 || !Number.isSafeInteger(value.pendingMutationCount) || Number(value.pendingMutationCount) < 0 || (value.lastSuccessfulSyncAt !== null && typeof value.lastSuccessfulSyncAt !== "string") || (value.blockingConflictCode !== null && typeof value.blockingConflictCode !== "string") || (value.lastFailureCode !== null && typeof value.lastFailureCode !== "string") || !Array.isArray(value.outbox) || !isRecord(value.acknowledged) || (value.syncPlan !== null && !isAccountSyncPlan(value.syncPlan)) || !Number.isSafeInteger(value.outboxSequence) || Number(value.outboxSequence) < 0 || !Number.isSafeInteger(value.highWatermark) || Number(value.highWatermark) < 0 || (value.resetGuard !== null && !isAccountResetGuard(value.resetGuard))) return false;
   const pending = value.pendingConfirmation;
   const pendingValid = pending === null || (isRecord(pending) && hasOnlyKeys(pending, ["operationId", "previewFingerprint", "resolutions", "groupChoices"]) && typeof pending.operationId === "string" && typeof pending.previewFingerprint === "string" && Array.isArray(pending.resolutions) && pending.resolutions.every(isResolution) && Array.isArray(pending.groupChoices) && pending.groupChoices.every(isGroupChoice));
   const acknowledgedEntries = Object.entries(value.acknowledged);
@@ -464,6 +465,13 @@ export function saveAccountSyncState(state: AccountSyncState): AccountSyncState 
   if (!isCanonicalAccountSyncState(state)) throw new AccountDataFailure("account_sync_state_invalid");
   const saved = writeCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, state);
   return saved.payload;
+}
+
+export async function saveGuestAdoptionChoice(choice: "transfer" | "discard"): Promise<AccountSyncState> {
+  const current = await getAccountSyncState();
+  const saved = saveAccountSyncState({ ...current, guestAdoptionChoice: choice });
+  if (saved.guestAdoptionChoice !== choice) throw new AccountDataFailure("account_sync_state_invalid");
+  return saved;
 }
 
 function persistSnapshotDatasetVersion(state: AccountSyncState, records: readonly AccountDataRecord[]): number {

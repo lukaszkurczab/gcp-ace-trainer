@@ -10,6 +10,7 @@ import {
   getAccountSyncState,
   isCanonicalAccountSyncState,
   saveAccountSyncState,
+  saveGuestAdoptionChoice,
   splitAccountSyncBatches,
 } from "../../storage/repositories/accountDataRepository";
 import { AccountDataFailure } from "../../storage/errors";
@@ -51,6 +52,15 @@ test("stored account state rejects removed protocol and content schema fields", 
   const invalid = { ...state, protocolVersion: 4, contentIdentitySchema: "patternly:content-identity:v1" } as unknown;
   assert.equal(isCanonicalAccountSyncState(invalid), false);
   assert.throws(() => saveAccountSyncState(invalid as never), (error: unknown) => error instanceof AccountDataFailure && error.code === "account_sync_state_invalid");
+});
+
+test("guest adoption choice is canonical and survives a durable reread", async () => {
+  assert.equal((await getAccountSyncState()).guestAdoptionChoice, "transfer");
+  await saveGuestAdoptionChoice("discard");
+  assert.equal((await getAccountSyncState()).guestAdoptionChoice, "discard");
+  const invalid = { ...await getAccountSyncState(), guestAdoptionChoice: "later" } as never;
+  assert.equal(isCanonicalAccountSyncState(invalid), false);
+  assert.throws(() => saveAccountSyncState(invalid), (error: unknown) => error instanceof AccountDataFailure && error.code === "account_sync_state_invalid");
 });
 
 test("stored account state fails closed instead of assigning missing outbox sequence", async () => {

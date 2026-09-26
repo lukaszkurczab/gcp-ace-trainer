@@ -151,13 +151,15 @@ export async function validatePreparedGuestAccess(profileId: string): Promise<bo
 export async function selectPreparedAccountProfile(
   accountId: string,
   canContinue: () => boolean = () => true,
+  options: Readonly<{ recoverBoundGuest?: boolean }> = {},
 ): Promise<Readonly<{ profile: StorageProfile; changed: boolean }>> {
   const prepared = await preparedStorageForDecision();
   const { router } = prepared;
   if (client || !canContinue()) throw new Error("profile_transition_cancelled");
   const previous = router.registry.profiles.find((profile) => profile.id === router.registry.selectedProfileId);
   if (!previous) throw new Error("profile_registry_corrupt");
-  const profile = await router.selectAccount(accountId, canContinue);
+  const profile = (options.recoverBoundGuest ? await router.promoteSelectedBoundGuest(accountId, canContinue) : null)
+    ?? await router.selectAccount(accountId, canContinue);
   const changed = profile.id !== previous.id || profile.kind !== previous.kind;
   if (!canContinue() && !changed) throw new Error("profile_transition_cancelled");
   if (changed) await refreshPreparedAfterSelection(prepared, canContinue);
@@ -287,10 +289,15 @@ export async function continueAsGuestInNewProfile(): Promise<void> {
   await reloadForProfileTransition();
 }
 
-export async function selectAccountProfileAndRestart(accountId: string, canContinue: () => boolean = () => true): Promise<boolean> {
+export async function selectAccountProfileAndRestart(
+  accountId: string,
+  canContinue: () => boolean = () => true,
+  options: Readonly<{ recoverBoundGuest?: boolean }> = {},
+): Promise<boolean> {
   if (!profileRouter) throw new Error("encrypted_storage_not_initialized");
-  const selected = await profileRouter.selectAccount(accountId, canContinue);
-  const changed = selected.id !== profileRouter.profile.id;
+  const selected = (options.recoverBoundGuest ? await profileRouter.promoteSelectedBoundGuest(accountId, canContinue) : null)
+    ?? await profileRouter.selectAccount(accountId, canContinue);
+  const changed = selected.id !== profileRouter.profile.id || selected.kind !== profileRouter.profile.kind;
   if (!changed) return false;
   await reloadForProfileTransition();
   return true;

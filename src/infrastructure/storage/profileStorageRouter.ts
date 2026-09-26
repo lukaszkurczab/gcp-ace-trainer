@@ -183,6 +183,7 @@ export type ProfileStorageRouter = Readonly<{
   refresh(): Promise<ProfileStorageRouter>;
   selectGuest(canContinue?: () => boolean): Promise<StorageProfile>;
   selectExistingGuest(profileId: string, canContinue?: () => boolean): Promise<StorageProfile>;
+  promoteSelectedBoundGuest(accountId: string, canContinue?: () => boolean): Promise<StorageProfile | null>;
   selectAccount(accountId: string, canContinue?: () => boolean): Promise<StorageProfile>;
   hasValidGuestAccess(profileId: string): boolean;
 }>;
@@ -293,6 +294,21 @@ export async function openProfileStorageRouter(
       return guest;
     },
     selectExistingGuest,
+    async promoteSelectedBoundGuest(accountId: string, canContinue: () => boolean = () => true) {
+      if (!accountId.trim() || !canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+      const selected = registry.profiles.find((candidate) => candidate.id === registry.selectedProfileId);
+      if (!selected || (selected.kind !== "guest" && selected.kind !== "legacy_guest")) return null;
+      const marker = storedGuestInstallation(createProfileScopedStorage(base, selected));
+      if (!marker || marker.bindingState !== "account_bound" || marker.accountId !== accountId) return null;
+      if (registry.profiles.some((candidate) => candidate.id !== selected.id && candidate.accountId === accountId)) throw new ProfileStorageError("profile_scope_unavailable");
+      if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+      claimTransition();
+      const promoted: StorageProfile = Object.freeze({ ...selected, kind: selected.kind === "legacy_guest" ? "legacy_owner" : "account", accountId });
+      const profiles = registry.profiles.map((candidate) => candidate.id === selected.id ? promoted : candidate);
+      const next = withChecksum({ ...registryBody(registry, registry.generation + 1), profiles });
+      await commitRegistry(control, registry, next);
+      return promoted;
+    },
     async selectAccount(accountId: string, canContinue: () => boolean = () => true) {
       if (transitionClaimed || dependencies.isTransitionActive?.()) throw new ProfileStorageError("profile_transition_cancelled");
       if (!accountId.trim()) throw new ProfileStorageError("profile_scope_unavailable");

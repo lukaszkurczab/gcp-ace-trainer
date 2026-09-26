@@ -119,6 +119,36 @@ test("a selected modern guest keeps its earlier independent dataset identity and
   assert.deepEqual(base.snapshot(), before);
 });
 
+test("a completed modern guest adoption promotes only its matching account and permits a new guest", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  await first.selectExistingGuest(GUEST_ID);
+  const key = `patternly:profile:v1:${GUEST_ID}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`;
+  base.setString(key, JSON.stringify({
+    schemaIdentity: "patternly:canonical:v1",
+    revision: 1,
+    payload: { installationId: OWNER_ID, localDatasetId: GUEST_ID, bindingState: "account_bound", accountId: ACCOUNT_ID },
+  }));
+
+  const restarted = await openProfileStorageRouter(base, control, { identity: identitySequence(DATASET_ID) });
+  assert.equal(restarted.profile.kind, "guest");
+  assert.equal(restarted.registry.profiles.filter((profile) => profile.kind === "guest").length, 1);
+  await assert.rejects(restarted.selectGuest(), (error) => error instanceof ProfileStorageError && error.code === "profile_scope_unavailable");
+  assert.equal(await restarted.promoteSelectedBoundGuest("other-account"), null);
+  assert.equal((await restarted.promoteSelectedBoundGuest(ACCOUNT_ID))?.kind, "account");
+  const promoted = await openProfileStorageRouter(base, control, { identity: identitySequence(DATASET_ID, OWNER_ID) });
+  assert.equal(promoted.profile.id, GUEST_ID);
+  assert.equal(promoted.profile.kind, "account");
+  assert.equal(promoted.profile.accountId, ACCOUNT_ID);
+  assert.equal(promoted.registry.profiles.filter((profile) => profile.kind === "guest").length, 0);
+  assert.equal((await promoted.selectGuest()).id, DATASET_ID);
+  const freshGuest = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
+  assert.equal(freshGuest.profile.id, DATASET_ID);
+  assert.equal(freshGuest.hasValidGuestAccess(DATASET_ID), true);
+  assert.equal(freshGuest.registry.profiles.filter((profile) => profile.kind === "guest").length, 1);
+});
+
 test("valid adoption-pending legacy guest marker remains readable during profile registry migration", async () => {
   const base = new MemoryKeyValueStorage();
   base.setString(STORAGE_KEYS.METADATA, "pending-guest-metadata-bytes");

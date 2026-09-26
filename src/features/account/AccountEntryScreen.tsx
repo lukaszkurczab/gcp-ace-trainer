@@ -894,7 +894,7 @@ function AccountAdoptionScreen({
   const { t: tCommon } = useTranslation("common");
   const { colors } = useAppPreferences();
   const plan = accountData.preview?.plan;
-  const [entryChoice, setEntryChoice] = useState<"transfer" | "discard">("transfer");
+  const entryChoice = accountData.guestAdoptionChoice;
   const [conflictChoice, setConflictChoice] = useState<"guest" | "account" | null>(null);
   const [goalPlanChoices, setGoalPlanChoices] = useState<Readonly<Record<string, "guest" | "account">>>({});
   const [recoveryPassword, setRecoveryPassword] = useState("");
@@ -1016,10 +1016,11 @@ function AccountAdoptionScreen({
             accessibilityLabel={text.transferGuestData}
             disabled={busyAction !== null}
             onValueChange={(keepProgress) => {
-              setEntryChoice(keepProgress ? "transfer" : "discard");
+              const choice = keepProgress ? "transfer" : "discard";
               setConflictChoice(null);
               setGoalPlanChoices({});
               setCommandFeedback(null);
+              runCommand("choice", () => account.setGuestAdoptionChoice(choice), setCommandFeedback);
             }}
             testID="account-keep-progress-toggle"
             trackColor={{ false: colors.borderStrong, true: colors.primary }}

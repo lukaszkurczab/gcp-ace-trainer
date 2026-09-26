@@ -173,6 +173,15 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Po końcowym QA, commicie i pushu rozpocząć wyłącznie PROFILE-04. Pozostałe serie są poza bieżącym zakresem właściciela.
 - QA issues nieblokujące: pięć wcześniejszych błędów pełnego suite aplikacji, brak produkcyjnego provider E2E i osobnego urządzeniowego scenariusza outbox/journal.
 
+## PROFILE-04 — zakończony (26.09)
+
+- Oba wybory adopcji mają jeden trwały `guestAdoptionChoice` w kanonicznym `AccountSyncState`; UI publikuje wybór dopiero po zapisie. Dokładna promocja wybranego `account_bound` guest naprawiła przejście do jednego nowego gościa po zakończonym transferze bez otwierania obcego profilu.
+- iPhone 17 `7F315654-3175-4F3C-BB24-B0263F59360C`: transfer zachował cel i plan Backend System Design przez dwa restarty, bez ponownego ekranu adopcji i bez duplikacji w Firestore. Następny jawny gość został utworzony i przetrwał restart jako niezależny profil.
+- Osobny świeży fixture discard: przełącznik pozostał `checked=false` po natywnym restarcie; destrukcyjne potwierdzenie zakończyło discard; drugi restart pokazał `patternly:content:ready` bez `account-entry-choice`. Systemowy prompt Keychain/AutoFill nie jest elementem produktu.
+- Pakiet PROFILE 134/134 i `git diff --check` PASS. Nowe testy dowodzą jawnego konfliktowego transferu oraz offline→retry z tym samym trwałym potwierdzeniem i bez dodatkowego uploadu. Pełny typecheck nadal ma wyłącznie błędy równoległego ODK-117 (locale rozszerzone poza typy EN/PL); także cztery lokalizacje w dotkniętym `AccountEntryScreen` raportują tylko ten poszerzony union. Raport: `docs/active/PROFILE-04/REPORT.md`.
+- Niezależne re-QA po uzupełnieniu konfliktowego transferu i offline retry: **PASS WITH ISSUES**. Nieblokujący residual: brak backendowego integration case „serwer zatwierdził adopcję, odpowiedź zaginęła”; klient zachowuje i ponawia ten sam trwały operation/fingerprint/resolution.
+- Zmiany locale/ustawień oraz `docs/active/UI-REVIEW-TEMP-2026-09-26.md` są obcym, równoległym zakresem i nie należą do PROFILE-04. Następny slice: PROFILE-05.
+
 ## ODK-117/B-CONTRACT — wynik
 
 - Status: **done / niezależne QA PASS WITH ISSUES**, przy czym jedyną naprawialną kwestią były nieaktualne raporty, poprawione przed commitem.

@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
-import { PatternlyApiClientError, type PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
+import { PatternlyApiClientError, type AdoptionPreviewResponseDto, type PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { clearAccountDeletionOwnedLocalData, deleteBoundAccount, loadAccountDataSession, retryPendingAccountDeletion } from "./accountDataService";
+import { clearAccountDeletionOwnedLocalData, confirmAccountDataAdoption, deleteBoundAccount, loadAccountDataSession, retryPendingAccountDeletion } from "./accountDataService";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { getAccountSyncState } from "../../storage/repositories/accountDataRepository";
 import {
@@ -317,7 +317,7 @@ import { discardGuestDataAndLoadAccount, retryPendingAccountDataSync } from "./a
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import { clearTrainingSessions, getActiveTrainingSession, saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
 import { clearActiveTrainingSessionDraft, getActiveTrainingSessionDraft, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
-import { buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, saveAccountSyncState } from "../../storage/repositories/accountDataRepository";
+import { buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, saveAccountSyncState, saveGuestAdoptionChoice } from "../../storage/repositories/accountDataRepository";
 import { persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { saveGoal } from "../../storage/repositories/goalRepository";
 import { attempt as journalAttempt, journal as makeJournal, session as journalSession } from "../../testing/journalTestSupport";
@@ -365,6 +365,43 @@ function remoteRecords(snapshot: Awaited<ReturnType<typeof buildAccountDataSnaps
     lastMutationId: `remote-${record.recordId}`,
     updatedAt: "2026-01-01T00:02:00.000Z",
   }));
+}
+
+function adoptionPreview(
+  snapshot: Awaited<ReturnType<typeof buildAccountDataSnapshot>>,
+  conflictRecord = snapshot.records[0],
+): AdoptionPreviewResponseDto {
+  if (!conflictRecord) throw new Error("adoption preview requires a guest record");
+  const records = remoteRecords(snapshot);
+  return {
+    preview: {
+      accountSnapshotVersion: 4,
+      accountUserId: accountId,
+      conflicts: [{
+        accountVersion: 3,
+        conflictId: "active-track-conflict",
+        guestVersion: conflictRecord.version,
+        recordId: conflictRecord.recordId,
+        recordType: conflictRecord.recordType,
+      }],
+      fingerprint: "profile-04-preview-fingerprint",
+      guestSnapshotVersion: snapshot.guestSnapshotVersion,
+      guestUserId: snapshot.guestUserId,
+      operationId: "profile-04-adoption-operation",
+      goalPlanConflictGroups: [],
+    },
+    plan: {
+      caseId: "divergentRecord",
+      localRecordCount: snapshot.records.length,
+      remoteRecordCount: records.length,
+      uploadRecordIds: [],
+      restoreRecordIds: [],
+      deduplicatedRecordIds: [],
+      conflictRecordIds: ["active-track-conflict"],
+      blockingReason: null,
+    },
+    remoteRecords: records,
+  };
 }
 
 async function prepareBoundSyncedAccount(): Promise<void> {
@@ -714,13 +751,146 @@ test("discard restores existing account records unchanged without uploading gues
   assert.equal(writes, 0);
 });
 
-test("failed account fetch keeps guest data and releases the operation lane for retry", async () => {
+test("failed account fetch keeps guest data and the approved discard plan for retry", async () => {
   await prepareGuest();
   const failed = await discardGuestDataAndLoadAccount(api({ getProgress: async () => { throw new Error("offline"); } }), accountId);
   assert.notEqual(failed.status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
-  assert.equal((await getAccountSyncState()).materialization, null);
+  const pending = (await getAccountSyncState()).materialization;
+  assert.equal(pending && "kind" in pending ? pending.kind : null, "discardGuest");
+  assert.equal(pending && "kind" in pending ? pending.accountId : null, accountId);
+  assert.equal(pending && "kind" in pending ? pending.phase : null, "prepared");
+  assert.ok(pending && "kind" in pending && pending.guestBackup && pending.guestBackup.length > 0);
   assert.equal((await discardGuestDataAndLoadAccount(api(), accountId)).status, "synced");
+});
+
+test("existing-account login restores remote data without offering or uploading guest adoption", async () => {
+  await prepareGuest();
+  const records = (await buildAccountDataSnapshot()).records.map((record) => ({ ...record, version: 4, kind: "node" as const, targetId: record.recordId, lastMutationId: "existing-account", updatedAt: "2026-01-01T00:00:00.000Z" }));
+  let previews = 0;
+  let confirmations = 0;
+  let uploads = 0;
+  const result = await loadAccountDataSession(api({
+    getProgress: async () => ({ accountRevision: 9, records }),
+    previewAccountAdoption: async () => { previews++; throw new Error("adoption preview forbidden"); },
+    confirmAccountAdoption: async () => { confirmations++; throw new Error("adoption confirmation forbidden"); },
+    syncProgress: async () => { uploads++; throw new Error("guest upload forbidden"); },
+  }), accountId, { guestAdoption: "discard" });
+
+  assert.equal(result.status, "synced");
+  assert.equal((await getAccountSyncState()).remoteAccountRevision, 9);
+  assert.equal(previews, 0);
+  assert.equal(confirmations, 0);
+  assert.equal(uploads, 0);
+  assert.equal((await getAccountSyncState()).materialization, null);
+});
+
+test("transfer applies an explicit guest conflict resolution once and completes durably", async () => {
+  await prepareGuest();
+  await saveGuestAdoptionChoice("transfer");
+  const guestSnapshot = await buildAccountDataSnapshot();
+  const preview = adoptionPreview(guestSnapshot);
+  const executedRecords = remoteRecords(guestSnapshot);
+  let previews = 0;
+  let confirmations = 0;
+  let uploads = 0;
+  const client = api({
+    previewAccountAdoption: async (snapshot) => {
+      previews++;
+      assert.equal(snapshot.guestUserId, guestSnapshot.guestUserId);
+      assert.ok(snapshot.records.some((record) => record.recordType === "active_track"));
+      return preview;
+    },
+    confirmAccountAdoption: async (input) => {
+      confirmations++;
+      assert.equal(input.confirmation.operationId, preview.preview.operationId);
+      assert.equal(input.confirmation.previewFingerprint, preview.preview.fingerprint);
+      assert.deepEqual(input.confirmation.resolutions, [{ conflictId: "active-track-conflict", resolution: "keep_guest" }]);
+      assert.deepEqual(input.confirmation.groupChoices, []);
+      return { accountRevision: 5, operationId: preview.preview.operationId, mutationIds: ["adoption-mutation"], records: executedRecords };
+    },
+    syncProgress: async () => { uploads++; throw new Error("transfer must not create a second guest upload"); },
+    getProgress: async () => ({ accountRevision: 5, records: executedRecords }),
+  });
+
+  const offered = await loadAccountDataSession(client, accountId);
+  assert.equal(offered.status, "previewReady");
+  assert.equal(offered.guestAdoptionChoice, "transfer");
+  assert.deepEqual(offered.preview?.plan.conflictRecordIds, ["active-track-conflict"]);
+  const confirmed = await confirmAccountDataAdoption(client, accountId, offered.preview!, [{ conflictId: "active-track-conflict", resolution: "keep_guest" }], []);
+
+  assert.equal(confirmed.status, "synced");
+  assert.equal(await getActiveTrackId(), guestTrack);
+  assert.equal((await getGuestInstallation())?.accountId, accountId);
+  const completed = await getAccountSyncState();
+  assert.equal(completed.guestAdoptionChoice, "transfer");
+  assert.equal(completed.pendingConfirmation, null);
+  assert.equal(completed.materialization, null);
+  assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0);
+  assert.equal((await loadAccountDataSession(client, accountId)).status, "synced");
+  assert.equal(previews, 1);
+  assert.equal(confirmations, 1);
+  assert.equal(uploads, 0);
+});
+
+test("offline transfer retry reuses the durable confirmation and never uploads a duplicate guest snapshot", async () => {
+  await prepareGuest();
+  await saveGuestAdoptionChoice("transfer");
+  const guestSnapshot = await buildAccountDataSnapshot();
+  const preview = adoptionPreview(guestSnapshot);
+  const resolution = [{ conflictId: "active-track-conflict", resolution: "keep_guest" }] as const;
+  const offered = await loadAccountDataSession(api({ previewAccountAdoption: async () => preview }), accountId);
+  assert.equal(offered.status, "previewReady");
+
+  let confirmations = 0;
+  let uploads = 0;
+  const first = await confirmAccountDataAdoption(api({
+    confirmAccountAdoption: async (input) => {
+      confirmations++;
+      assert.deepEqual(input.confirmation, {
+        operationId: preview.preview.operationId,
+        previewFingerprint: preview.preview.fingerprint,
+        resolutions: resolution,
+        groupChoices: [],
+      });
+      throw new PatternlyApiClientError("transport_failed");
+    },
+    syncProgress: async () => { uploads++; throw new Error("guest upload forbidden"); },
+  }), accountId, offered.preview!, resolution, []);
+
+  assert.equal(first.status, "offlinePending");
+  assert.equal(first.lastFailureCode, "offline");
+  assert.equal(await getActiveTrackId(), guestTrack);
+  const interrupted = await getAccountSyncState();
+  assert.equal(interrupted.guestAdoptionChoice, "transfer");
+  assert.deepEqual(interrupted.pendingConfirmation, {
+    operationId: preview.preview.operationId,
+    previewFingerprint: preview.preview.fingerprint,
+    resolutions: resolution,
+    groupChoices: [],
+  });
+  assert.equal(interrupted.materialization, null);
+
+  const executedRecords = remoteRecords(await buildAccountDataSnapshot());
+  const retried = await loadAccountDataSession(api({
+    confirmAccountAdoption: async (input) => {
+      confirmations++;
+      assert.deepEqual(input.confirmation, interrupted.pendingConfirmation);
+      assert.ok(input.snapshot.records.some((record) => record.recordType === "active_track"));
+      return { accountRevision: 6, operationId: preview.preview.operationId, mutationIds: ["adoption-mutation"], records: executedRecords };
+    },
+    syncProgress: async () => { uploads++; throw new Error("guest upload forbidden"); },
+  }), accountId);
+
+  assert.equal(retried.status, "synced");
+  assert.equal(await getActiveTrackId(), guestTrack);
+  assert.equal((await getGuestInstallation())?.accountId, accountId);
+  const completed = await getAccountSyncState();
+  assert.equal(completed.guestAdoptionChoice, "transfer");
+  assert.equal(completed.pendingConfirmation, null);
+  assert.equal(completed.materialization, null);
+  assert.equal(confirmations, 2);
+  assert.equal(uploads, 0);
 });
 
 for (const fault of ["partial-index", "binding", "finish"] as const) {
@@ -834,12 +1004,16 @@ test("a session start requested while discard fetches waits and is preserved aft
   assert.equal((await getAccountSyncState()).status, "offlinePending");
 });
 
-test("malformed remote records are rejected before the guest dataset or marker changes", async () => {
+test("malformed remote records keep the guest dataset and durable approved discard plan", async () => {
   await prepareGuest();
   const invalid = { accountRevision: 1, records: [{ recordType: "active_track", state: { trackId: "unknown" } }] } as unknown as Awaited<ReturnType<PatternlyApiClient["getProgress"]>>;
   assert.notEqual((await discardGuestDataAndLoadAccount(api({ getProgress: async () => invalid }), accountId)).status, "synced");
   assert.equal(await getActiveTrackId(), guestTrack);
-  assert.equal((await getAccountSyncState()).materialization, null);
+  const pending = (await getAccountSyncState()).materialization;
+  assert.equal(pending && "kind" in pending ? pending.kind : null, "discardGuest");
+  assert.equal(pending && "kind" in pending ? pending.accountId : null, accountId);
+  assert.equal(pending && "kind" in pending ? pending.phase : null, "prepared");
+  assert.ok(pending && "kind" in pending && pending.guestBackup && pending.guestBackup.length > 0);
 });
 
 test("pending materialization blocks lifecycle account deletion without losing the marker", async () => {

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { AccountCommandResult } from "../../application/account/AccountSessionProvider";
 
-export type BusyAction = "recovery" | "continue" | "retry" | "delete" | "signOut";
+export type BusyAction = "recovery" | "choice" | "continue" | "retry" | "delete" | "signOut";
 
 export function useAccountCommand() {
   const [busyAction, setBusyAction] = useState<BusyAction | null>(null);

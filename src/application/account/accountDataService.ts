@@ -26,6 +26,7 @@ import {
   markGuestDiscardMaterializationPending,
   restoreGuestOwnedLocalDataBackup,
   saveAccountSyncState,
+  saveGuestAdoptionChoice,
   splitAccountSyncBatches,
   type AccountDataRecord,
   type AccountOutboxEntry,
@@ -69,7 +70,10 @@ export type AccountDataSession = Readonly<{
   blockingConflictCode: string | null;
   lastFailureCode: string | null;
   activeSessionBlocked: boolean;
+  guestAdoptionChoice: "transfer" | "discard";
 }>;
+
+export { saveGuestAdoptionChoice };
 
 export type AccountDeletionResult = Readonly<{ ok: true; proofId: string } | { ok: false; failure: "journalRecoveryFailure" | "pendingSyncRequiresNetwork" | "conflict" | "remoteDeletionPending" | "localCleanupFailure" | "reauthenticationRequired" }>;
 
@@ -117,11 +121,19 @@ function withAccountDataOperation<T>(operation: () => Promise<T>): Promise<T> {
   return current;
 }
 
-export function loadAccountDataSession(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession> {
-  return withAccountDataOperation(() => loadAccountDataSessionUnlocked(api, accountId));
+export function loadAccountDataSession(
+  api: PatternlyApiClient,
+  accountId: string,
+  options: Readonly<{ guestAdoption?: "allow" | "discard" }> = {},
+): Promise<AccountDataSession> {
+  return withAccountDataOperation(() => loadAccountDataSessionUnlocked(api, accountId, options));
 }
 
-async function loadAccountDataSessionUnlocked(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession> {
+async function loadAccountDataSessionUnlocked(
+  api: PatternlyApiClient,
+  accountId: string,
+  options: Readonly<{ guestAdoption?: "allow" | "discard" }> = {},
+): Promise<AccountDataSession> {
   try {
     const initialInstallation = await getGuestInstallation();
     if (!initialInstallation) throw new AccountDataFailure("guest_installation_required");
@@ -173,16 +185,22 @@ async function loadAccountDataSessionUnlocked(api: PatternlyApiClient, accountId
         return failureSession(await recordFailure(currentState, classifyDataFailure(error)), false);
       }
     }
+    if (installation.accountId === null && options.guestAdoption === "discard") {
+      const guestBackup = await buildGuestOwnedLocalDataBackup();
+      await markGuestDiscardMaterializationPending(accountId, installation.installationId, guestBackup);
+      const remote = await api.getProgress();
+      return await materializeRemoteAccountDataUnlocked(accountId, remote.records, remote.accountRevision, true);
+    }
     if (installation.accountId === null) {
       await markGuestInstallationAdoptionPending();
       const snapshot = await buildAccountDataSnapshot();
       const transportSnapshot = transportGuestMergeSnapshot(snapshot);
       if (snapshot.activeSession || snapshot.pendingJournal) {
-        return Object.freeze({ status: "failed", preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: snapshot.activeSession ? "active_session_adoption_blocked" : "journal_recovery_required", lastFailureCode: null, activeSessionBlocked: snapshot.activeSession });
+        return Object.freeze({ status: "failed", preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: snapshot.activeSession ? "active_session_adoption_blocked" : "journal_recovery_required", lastFailureCode: null, activeSessionBlocked: snapshot.activeSession, guestAdoptionChoice: state.guestAdoptionChoice });
       }
       try {
         const preview = await api.previewAccountAdoption(transportSnapshot);
-        return Object.freeze({ status: "previewReady", preview, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: preview.plan.conflictRecordIds.length > 0 || preview.preview.goalPlanConflictGroups.length > 0 ? "adoption_conflict" : null, lastFailureCode: null, activeSessionBlocked: false });
+        return Object.freeze({ status: "previewReady", preview, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: preview.plan.conflictRecordIds.length > 0 || preview.preview.goalPlanConflictGroups.length > 0 ? "adoption_conflict" : null, lastFailureCode: null, activeSessionBlocked: false, guestAdoptionChoice: state.guestAdoptionChoice });
       } catch (error) {
         return failureSession(await recordFailure(state, classifyDataFailure(error)), false);
       }
@@ -331,11 +349,10 @@ async function discardGuestDataAndLoadAccountUnlocked(api: PatternlyApiClient, a
     if (state.outbox.length > 0) throw new AccountDataFailure("account_outbox_pending");
 
     await readDiscardGuards(accountId);
-    const remote = await api.getProgress();
-    toLocalRecords(remote.records);
-    await readDiscardGuards(accountId);
     const guestBackup = await buildGuestOwnedLocalDataBackup();
     await markGuestDiscardMaterializationPending(accountId, installation.installationId, guestBackup);
+    const remote = await api.getProgress();
+    toLocalRecords(remote.records);
     return await materializeRemoteAccountDataUnlocked(accountId, remote.records, remote.accountRevision, true);
   } catch (error) {
     const failure = accountDataFailureCode(error) ?? "remoteFailure";
@@ -492,7 +509,7 @@ function isDiscardGuardFailure(message: string): boolean {
 }
 
 function explicitFailureSession(state: AccountSyncState | null, failure: string, activeSessionBlocked: boolean): AccountDataSession {
-  return Object.freeze({ status: "failed", preview: null, lastSuccessfulSyncAt: state?.lastSuccessfulSyncAt ?? null, pendingMutationCount: state?.pendingMutationCount ?? 0, blockingConflictCode: state?.blockingConflictCode ?? null, lastFailureCode: failure, activeSessionBlocked });
+  return Object.freeze({ status: "failed", preview: null, lastSuccessfulSyncAt: state?.lastSuccessfulSyncAt ?? null, pendingMutationCount: state?.pendingMutationCount ?? 0, blockingConflictCode: state?.blockingConflictCode ?? null, lastFailureCode: failure, activeSessionBlocked, guestAdoptionChoice: state?.guestAdoptionChoice ?? "transfer" });
 }
 
 export type PrepareAccountDeletionLocalState = () => Promise<boolean>;
@@ -816,15 +833,15 @@ async function recordFailure(state: AccountSyncState, code: string): Promise<Acc
 }
 
 function sessionFromState(state: AccountSyncState, activeSessionBlocked: boolean): AccountDataSession {
-  return Object.freeze({ status: state.status, preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: state.blockingConflictCode, lastFailureCode: state.lastFailureCode, activeSessionBlocked });
+  return Object.freeze({ status: state.status, preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: state.blockingConflictCode, lastFailureCode: state.lastFailureCode, activeSessionBlocked, guestAdoptionChoice: state.guestAdoptionChoice });
 }
 
 function resumeRequiredSession(state: AccountSyncState): AccountDataSession {
-  return Object.freeze({ status: "resumeRequired", preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: state.blockingConflictCode, lastFailureCode: null, activeSessionBlocked: true });
+  return Object.freeze({ status: "resumeRequired", preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: state.blockingConflictCode, lastFailureCode: null, activeSessionBlocked: true, guestAdoptionChoice: state.guestAdoptionChoice });
 }
 
 function failureSession(state: AccountSyncState | null, activeSessionBlocked: boolean): AccountDataSession {
-  return Object.freeze({ status: state?.status ?? "failed", preview: null, lastSuccessfulSyncAt: state?.lastSuccessfulSyncAt ?? null, pendingMutationCount: state?.pendingMutationCount ?? 0, blockingConflictCode: state?.blockingConflictCode ?? null, lastFailureCode: state?.lastFailureCode ?? "account_data_unavailable", activeSessionBlocked });
+  return Object.freeze({ status: state?.status ?? "failed", preview: null, lastSuccessfulSyncAt: state?.lastSuccessfulSyncAt ?? null, pendingMutationCount: state?.pendingMutationCount ?? 0, blockingConflictCode: state?.blockingConflictCode ?? null, lastFailureCode: state?.lastFailureCode ?? "account_data_unavailable", activeSessionBlocked, guestAdoptionChoice: state?.guestAdoptionChoice ?? "transfer" });
 }
 
 function toLocalRecords(records: readonly Readonly<{ fingerprint: string; recordId?: string; recordType: string; state: Readonly<Record<string, unknown>>; trackId: string; targetId?: string; version: number }>[]): readonly AccountDataRecord[] {

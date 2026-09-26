@@ -168,6 +168,9 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.doesNotMatch(screen, /<AuthText style=\{styles\.accountHeading\}>\{text\.account\}<\/AuthText>[\s\S]*?accountManagementDescription/);
   assert.match(screen, /testID="account-entry-choice"/);
   assert.match(screen, /testID="account-keep-progress-toggle"/);
+  assert.match(screen, /const entryChoice = accountData\.guestAdoptionChoice/u);
+  assert.match(screen, /runCommand\("choice", \(\) => account\.setGuestAdoptionChoice\(choice\), setCommandFeedback\)/u);
+  assert.doesNotMatch(screen, /useState<"transfer" \| "discard">\("transfer"\)/u);
   assert.match(screen, /testID="account-copy-recovery-codes"/);
   assert.match(screen, /testID="account-entry-continue"/);
   assert.match(screen, /testID="account-recovery-codes-saved-checkbox"/);
@@ -184,6 +187,7 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.doesNotMatch(screen, /text\.(?:preserve|upload|restore|deduplicated|decisions|keepGuest\b|keepAccount\b|confirmAdoption\b)/);
   assert.match(provider, /issueRecoveryCodes: \(credentials: FirebaseAuthCredentials\)/);
   assert.match(provider, /discardGuestData: \(\) => runWithAuth/);
+  assert.match(provider, /setGuestAdoptionChoice: \(choice\) => runWithAuth[\s\S]*?await saveGuestAdoptionChoice\(choice\)[\s\S]*?setState\(\{ \.\.\.state, accountData: \{ \.\.\.state\.accountData, guestAdoptionChoice: choice \} \}\)/u);
   assert.match(provider, /mutation: \(\) => api\.issueRecoveryCodes\(\)/);
 });
 
@@ -515,6 +519,15 @@ test("registration keeps consent presentation separate from the boolean domain c
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
   assert.match(provider, /registrationIntentRef[\s\S]*?inFlight\?\.uid === user\.uid[\s\S]*?return inFlight\.promise/u);
   assert.match(provider, /registrationIntentRef\.current = Object\.freeze\(\{ uid: user\.uid, promise \}\)/u);
+  assert.match(provider, /const registration = await api\.registerAccount\(registrationEvidence\(locale\)\)/u);
+  assert.match(provider, /if \(registration\.registration\.created\) await markGuestInstallationAdoptionPending\(\)/u);
+  assert.match(provider, /registration\.registration\.created[\s\S]*?finalizeCurrent\(auth, api, user, false, generation, true, true\)[\s\S]*?: finalizeExplicitAuthentication\(auth, api, user\)/u);
+  assert.match(provider, /loadAccountDataSession\(api, response\.user\.id, \{ guestAdoption: allowGuestAdoption \? "allow" : "discard" \}\)/u);
+  assert.match(provider, /!activeProfile && \(preparedSelection\.kind === "guest" \|\| preparedSelection\.kind === "legacy_guest"\)[\s\S]*?activatePreparedProfile\(preparedSelection\.id, preparedSelection\.kind, \{ deferReadyNotification: true \}\)/u);
+  assert.match(provider, /guestInstallation\?\.bindingState === "adoption_pending"[\s\S]*?attempt\.guestAdoption = true[\s\S]*?notifyProfileStorageReady\(\)/u);
+  assert.match(provider, /register: \(email,[\s\S]*?legalAcceptancePendingRef\.current = true[\s\S]*?auth\.register\([\s\S]*?legalAcceptancePendingRef\.current = false/u);
+  assert.match(provider, /registerWithApple:[\s\S]*?legalAcceptancePendingRef\.current = true[\s\S]*?auth\.signInWithApple\(\)[\s\S]*?legalAcceptancePendingRef\.current = false/u);
+  assert.match(provider, /registerWithGoogle:[\s\S]*?legalAcceptancePendingRef\.current = true[\s\S]*?auth\.signInWithGoogle\(idToken\)[\s\S]*?legalAcceptancePendingRef\.current = false/u);
   assert.match(provider, /signOutRejectedIdentity[\s\S]*?auth\.getSnapshot\(\)[\s\S]*?failure: "signOutPending"/u);
   assert.match(provider, /firebaseAuthErrorCode\(error\) === "auth\/email-already-in-use"[\s\S]*?auth\.signIn\(email\.trim\(\)\.toLowerCase\(\), password\)[\s\S]*?registerAuthenticatedIdentity/u);
 });
