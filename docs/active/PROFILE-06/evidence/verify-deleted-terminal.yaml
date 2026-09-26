@@ -1,0 +1,11 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/F verify deleted account terminal state
+---
+- extendedWaitUntil:
+    visible:
+      id: "account-remote-revoke-pending"
+    timeout: 20000
+- assertNotVisible:
+    id: "main-tab-bar-home"
+- takeScreenshot:
+    path: profile06-f-account-deleted-terminal

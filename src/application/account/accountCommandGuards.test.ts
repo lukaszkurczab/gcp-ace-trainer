@@ -61,6 +61,7 @@ test("a foreground refresh queued behind prepareDeletion skips the issued grant 
     credentials: "current-password",
     generation: token.generation,
     isCurrent: () => true,
+    prepareSession: async () => undefined,
     reauthenticate: async () => new Promise<void>((resolve) => { releaseReauthentication = resolve; }),
     uid: token.uid,
     vault,
@@ -87,6 +88,7 @@ test("wrong reauthentication never issues a deletion grant or reaches deletion",
     credentials: "wrong-password",
     generation: 1,
     isCurrent: () => true,
+    prepareSession: async () => undefined,
     reauthenticate: async (credentials) => {
       if (credentials !== "correct-password") throw new Error("auth/invalid-credential");
     },
@@ -106,6 +108,7 @@ test("a session change after reauthentication prevents grant issuance", async ()
     credentials: "correct-password",
     generation: 1,
     isCurrent: () => current,
+    prepareSession: async () => undefined,
     reauthenticate: async () => { current = false; },
     uid: "uid-a",
     vault,
@@ -113,6 +116,57 @@ test("a session change after reauthentication prevents grant issuance", async ()
 
   assert.equal(prepared.ok, false);
   assert.equal(vault.consume("uid-a", 1), false);
+});
+
+test("deletion authorization prepares the backend session after reauthentication and before issuing the grant", async () => {
+  const calls: string[] = [];
+  const vault = createDeletionAuthorizationVault(() => 0);
+  const prepared = await prepareDeletionAuthorization({
+    credentials: "current-password",
+    generation: 7,
+    isCurrent: () => true,
+    prepareSession: async () => { calls.push("prepare-session"); },
+    reauthenticate: async () => { calls.push("reauthenticate"); },
+    uid: "uid-a",
+    vault,
+  });
+
+  assert.deepEqual(prepared, { ok: true });
+  assert.deepEqual(calls, ["reauthenticate", "prepare-session"]);
+  assert.equal(vault.consume("uid-a", 7), true);
+});
+
+test("deletion authorization fails closed when backend session preparation fails", async () => {
+  const vault = createDeletionAuthorizationVault(() => 0);
+  const prepared = await prepareDeletionAuthorization({
+    credentials: "current-password",
+    generation: 7,
+    isCurrent: () => true,
+    prepareSession: async () => { throw new Error("session_exchange_failed"); },
+    reauthenticate: async () => undefined,
+    uid: "uid-a",
+    vault,
+  });
+
+  assert.equal(prepared.ok, false);
+  assert.equal(vault.consume("uid-a", 7), false);
+});
+
+test("deletion authorization fails closed when the session changes during backend session preparation", async () => {
+  let current = true;
+  const vault = createDeletionAuthorizationVault(() => 0);
+  const prepared = await prepareDeletionAuthorization({
+    credentials: "current-password",
+    generation: 7,
+    isCurrent: () => current,
+    prepareSession: async () => { current = false; },
+    reauthenticate: async () => undefined,
+    uid: "uid-a",
+    vault,
+  });
+
+  assert.equal(prepared.ok, false);
+  assert.equal(vault.consume("uid-a", 7), false);
 });
 
 test("verify-before email mutation reports pending work while the current email stays unchanged", async () => {

@@ -1,0 +1,60 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/F delete isolated password account
+tags:
+  - e2e
+  - profile
+  - account
+env:
+  PROFILE06_DELETE_PASSWORD: ${PROFILE06_DELETE_PASSWORD}
+---
+- assertVisible:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 30000
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- tapOn:
+    id: "settings-delete-account"
+- extendedWaitUntil:
+    visible:
+      id: "security-password"
+    timeout: 30000
+- tapOn:
+    id: "security-password"
+- inputText: ${PROFILE06_DELETE_PASSWORD}
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "security-submit"
+- extendedWaitUntil:
+    visible:
+      id: "security-delete-hold"
+    timeout: 30000
+- longPressOn:
+    id: "security-delete-hold"
+- extendedWaitUntil:
+    visible:
+      id: "account-remote-revoke-pending"
+    timeout: 60000
+- assertNotVisible:
+    id: "main-tab-bar-home"
+- takeScreenshot:
+    path: profile06-f-account-deleted-terminal

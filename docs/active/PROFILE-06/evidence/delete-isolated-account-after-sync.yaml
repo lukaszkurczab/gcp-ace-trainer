@@ -1,0 +1,71 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/F sync pending account state and retry deletion
+tags:
+  - e2e
+  - profile
+  - account
+env:
+  PROFILE06_DELETE_PASSWORD: ${PROFILE06_DELETE_PASSWORD}
+---
+- assertVisible:
+    id: "security-error-pendingSyncRequiresNetwork"
+- tapOn:
+    point: "10%,12%"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-home"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-home"
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 10000
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 30000
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- tapOn:
+    id: "settings-delete-account"
+- extendedWaitUntil:
+    visible:
+      id: "security-password"
+    timeout: 30000
+- tapOn:
+    id: "security-password"
+- inputText: ${PROFILE06_DELETE_PASSWORD}
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "security-submit"
+- extendedWaitUntil:
+    visible:
+      id: "security-delete-hold"
+    timeout: 30000
+- longPressOn:
+    id: "security-delete-hold"
+- extendedWaitUntil:
+    visible:
+      id: "account-entry-choice"
+    timeout: 60000
+- assertNotVisible:
+    id: "main-tab-bar-home"
+- takeScreenshot:
+    path: profile06-f-account-deleted-terminal

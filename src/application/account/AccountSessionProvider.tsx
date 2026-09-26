@@ -6,7 +6,7 @@ import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domai
 import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
-import { getMeWithExchangedSession } from "./accountSessionExchange";
+import { ensureAccountSessionGeneration, getMeWithExchangedSession } from "./accountSessionExchange";
 import { resumePendingSessionRevocation } from "./pendingSessionRevocation";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
@@ -383,6 +383,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const revokeDeletionAuthorization = useCallback(() => {
     deletionAuthorization.revoke();
     deletionAuthorizationTokenRef.current = null;
+    sessionExchangeUidRef.current = null;
   }, [deletionAuthorization]);
 
   const finalizeCurrent = useCallback(async (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>, user: FirebaseAuthUserSnapshot | null = auth.getSnapshot(), restart = false, expectedToken?: AccountSessionGenerationToken, preserveGuestScope = false, allowGuestAdoption = false): Promise<AccountCommandResult> => {
@@ -1743,7 +1744,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         revokeDeletionAuthorization();
       }
     }),
-    prepareDeletion: (credentials) => runSensitiveWithAuth(async (auth) => {
+    prepareDeletion: (credentials) => runSensitiveWithAuth(async (auth, api) => {
       revokeDeletionAuthorization();
       const user = auth.getSnapshot();
       if (!user || state.kind !== "authenticated" || state.user.uid !== user.uid) return { kind: "failure", failure: "providerUnavailable" };
@@ -1756,6 +1757,13 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         credentials,
         generation: generation.generation,
         isCurrent: canPrepare,
+        prepareSession: () => ensureAccountSessionGeneration({
+          api,
+          auth,
+          canContinue: canPrepare,
+          onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
+          user,
+        }),
         reauthenticate: auth.reauthenticateWithCredential,
         uid: user.uid,
         vault: deletionAuthorization,
@@ -1770,6 +1778,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       } finally {
         deletionAuthorizationTokenRef.current = null;
         deletionAuthorization.revoke();
+        if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
       }
     }),
     reauthenticateForExport: (credentials) => runSensitiveWithAuth(async (auth) => {

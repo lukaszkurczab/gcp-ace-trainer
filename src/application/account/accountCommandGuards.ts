@@ -103,6 +103,7 @@ export async function prepareDeletionAuthorization<TCredentials>(input: Readonly
   credentials: TCredentials;
   generation: number;
   isCurrent: () => boolean;
+  prepareSession: () => Promise<unknown>;
   reauthenticate: (credentials: TCredentials) => Promise<unknown>;
   uid: string;
   vault: DeletionAuthorizationVault;
@@ -111,6 +112,8 @@ export async function prepareDeletionAuthorization<TCredentials>(input: Readonly
     credentials: input.credentials,
     isCurrent: input.isCurrent,
     mutation: async () => {
+      await input.prepareSession();
+      if (!input.isCurrent()) throw new Error("account_session_generation_stale");
       input.vault.issue(input.uid, input.generation);
     },
     reauthenticate: input.reauthenticate,
