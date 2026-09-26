@@ -2,7 +2,7 @@
 
 **Status:** kanoniczna kolejka pozostałej pracy
 
-**Rewizja:** 26 września 2026
+**Rewizja:** 27 września 2026
 
 **Zakres:** `patternly`, `patternly-backend`, `patternly-content`, `patternly-web`
 **Cel:** doprowadzić jeden przypięty kandydat iOS od lokalnego odbioru do autoryzowanej publikacji. Android jest testowany później ręcznie i nie blokuje lokalnego odbioru iOS.
@@ -45,7 +45,6 @@ SHA są punktem orientacyjnym porządków, nie kandydatem release. Przed każdym
 
 | Obszar | Status | Potwierdzona luka |
 | --- | --- | --- |
-| Lokalizacje DE/FR/ES/IT/ET | `partial` | Niedokończone pakiety i rozszerzenie runtime są zachowane w nazwanym stachu; pełny typecheck tego zakresu ma 20 błędów. Nie wykonano jeszcze pięciu niezależnych review językowych przez dedykowane subagenty. |
 | Stare audyty UI/session | `partial` | AUD-02, AUD-05, AUD-13, AUD-14 i AUD-15 zawierają wykonane poprawki, lecz ich końcowe scenariusze lokalne nie zostały odebrane na aktualnym kodzie. |
 | Recovery/reissue autoryzacji | `partial` | Backendowe fundamenty są wykonane; pozostają operacje B2–B4 oraz decyzja o e-mailu po niejednoznacznym wyniku SMTP. |
 | Kanał operatorski | `partial` | B1 jest wykonane; brakuje endpointów, CLI i syntetycznego odbioru end-to-end. |
@@ -56,18 +55,17 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 
 | Kolejność | Zadanie | Status | Zależność | Wynik |
 | --- | --- | --- | --- | --- |
-| 02 | I18N-01 — siedem locale i niezależny review subagentów | `partial` | brak zewnętrznej zależności; pięć izolowanych review po domknięciu technicznym | Zielony runtime i zatwierdzone pakiety. |
-| 02a | UI-26-07 — hierarchia ekranu niedostępnych danych | `planned` | brak; I18N-01 dla finalnego odbioru siedmiu locale | Jedna czytelna decyzja, destrukcyjny hold i odrębny wycentrowany sukces. |
-| 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `planned` | brak; I18N-01 dla finalnego odbioru siedmiu locale | Bez górnej karty błędu, jedno tekstowe ostrzeżenie i akcja `Confirm`. |
-| 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `planned` | brak; I18N-01 dla finalnego odbioru siedmiu locale | Ikona i zrównoważony recovery block bez zmiany działania retry/sign-out. |
+| 02a | UI-26-07 — hierarchia ekranu niedostępnych danych | `planned` | brak | Jedna czytelna decyzja, destrukcyjny hold i odrębny wycentrowany sukces. |
+| 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `planned` | brak | Bez górnej karty błędu, jedno tekstowe ostrzeżenie i akcja `Confirm`. |
+| 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `planned` | brak | Ikona i zrównoważony recovery block bez zmiany działania retry/sign-out. |
 | 02d | UI-26-10 — ukrycie technicznego stanu unieważniania sesji | `planned` | brak | Zwykły ekran logowania bez komunikatu, gdy użytkownik nie ma działania do wykonania. |
-| 02e | UI-26-11 — hierarchia propozycji planu nauki | `planned` | brak; I18N-01 dla finalnego odbioru siedmiu locale | Jeden top inset, naturalny tytuł, rodzaj celu jako nagłówek i jedno primary CTA. |
+| 02e | UI-26-11 — hierarchia propozycji planu nauki | `planned` | brak | Jeden top inset, naturalny tytuł, rodzaj celu jako nagłówek i jedno primary CTA. |
 | 03 | UI-26-02A — kontrakt pierwszego użycia Apple/Google | `planned` | brak | Kontrakt przed implementacją providerów. |
 | 04 | UI-26-02B — implementacja pierwszego użycia providerów | `planned` | UI-26-02A | Provider login bez automatycznej zgody. |
-| 05 | UI-26-01 — welcome | `planned` | I18N-01 dla finalnego odbioru siedmiu locale | Zatwierdzony znak i copy. |
+| 05 | UI-26-01 — welcome | `planned` | brak | Zatwierdzony znak i copy. |
 | 06 | UI-26-03 — wybór tracku | `planned` | brak | Jedna dolna akcja `Start track`. |
 | 07 | UI-26-04 — karta Home | `planned` | brak | Ikona wyrównana do góry zawartości. |
-| 08 | UI-26-05 — kalendarz celu | `planned` | I18N-01 dla finalnego odbioru | Lokalizowany wybór opcjonalnej daty. |
+| 08 | UI-26-05 — kalendarz celu | `planned` | brak | Lokalizowany wybór opcjonalnej daty. |
 | 09 | UI-26-06 — szkic przypomnień | `planned` | rozpoznanie planu i schedulera | Aktywacja dopiero po przyjęciu planu i zgodzie systemowej. |
 | 10 | AUD-13 — odpowiedź nr 5, journal i cold restart | `blocking` | bezpieczny fixture sesji | Przyczyna naprawiona albo historyczny defekt rozstrzygnięty dowodowo. |
 | 11 | AUD-05 — nawigacja i lifecycle sesji | `partial` | AUD-13 | Pełna macierz Back/cancel/resume/finish/rapid tap/unavailable. |
@@ -83,25 +81,9 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 21 | OPS-B4 — syntetyczny odbiór | `planned` | OPS-B3 | Intake → akcja → wynik → audyt dla czterech rodzin. |
 | 22 | AUD-06 — przekrojowy odbiór lokalny | `planned` | 01–21 poza jawnymi blockerami właściciela | Wynik `SIM-READY` albo dokładna lista braków. |
 
-`AUD-08-DEC` nie zatrzymuje niezależnych zadań 01–14 ani OPS-B2–B4. `I18N-01` nie zależy od dostępu do zewnętrznych recenzentów. Locale nie mogą jednak zostać uznane za ukończone ani włączone do kandydata przed pięcioma odrębnymi review subagentów i zamknięciem wszystkich zgłoszonych poprawek.
+`AUD-08-DEC` nie zatrzymuje niezależnych zadań 01–14 ani OPS-B2–B4.
 
 ## 4. Kontrakty zadań
-
-### I18N-01 — siedem locale
-
-- **Priorytet:** P0 dla SIM-READY; `partial`, bez zależności od zewnętrznych recenzentów.
-- **Cel:** kompletne i zatwierdzone `en/pl/de/fr/es/it/et` bez ukrytego fallbacku.
-- **Zakres:** osiem namespace'ów, wszystkie typowane prezentery i dokumenty aplikacyjne, interpolacje/plurale, wybór i trwałość języka, parytet kluczy oraz niezależny review per nowy język.
-- **Poza zakresem:** prawdziwe dane operatora/administratora, SKU i treści dostarczane zdalnie.
-- **Wejścia:** stash `I18N-01 partial seven-locale runtime 2026-09-26`, kanoniczne EN, istniejące PL, glossary/kontrakty produktu i bieżące testy. Przed implementacją przywrócić stash na aktualnym `main` i rozwiązać konflikty bez utraty późniejszych zmian.
-- **Akceptacja techniczna:** typecheck PASS; pełny zestaw kluczy i typów; brak fallbacku dla włączonego locale; parity tokenów, plurali i namespace'ów; wybór ręczny i systemowy przeżywa restart; reprezentatywne ekrany nie klipują tekstu.
-- **Kontrakt review:** DE, FR, ES, IT i ET mają po jednym izolowanym review przez osobnego subagenta `gpt-6-luna` z reasoningiem `high`. Reviewer nie może być autorem ocenianego pakietu. Każdy przebieg otrzymuje EN jako źródło znaczenia, jedno locale docelowe, glossary i rubricę: naturalność, zachowanie znaczenia/pewności, terminologia produktu, legal/privacy, accessibility, CTA, interpolacje, plurale i spójność między ekranami. Reviewer nie edytuje plików i zwraca `PASS` albo konkretne findingi z kluczem, problemem i proponowaną korektą.
-- **Cykl korekt:** findingi poprawia wykonawca techniczny, po czym ten sam język przechodzi świeży re-review. Autor tłumaczeń ani główny wykonawca nie mogą sami zamknąć review. Zbiorczy modelowy self-review pięciu języków nie jest evidence.
-- **Weryfikacja:** parity/type tests, pełny typecheck, test ustawień/restartu, screenshoty reprezentatywnych ekranów oraz pięć raportów review z konfiguracją modelu, zakresem, werdyktem i zamknięciem findingów. Review nie wymaga danych osobowych ani zewnętrznych kontaktów.
-- **Evidence/report:** `docs/active/I18N-01/REPORT.md` oraz `docs/active/I18N-01/reviews/{de,fr,es,it,et}.md`.
-- **Ryzyka:** nadmierna pewność modelu, jeden reviewer przenoszący ten sam błąd między językami, automatyczne tłumaczenia przedstawione jako zatwierdzone oraz rozszerzenie union locale bez aktualizacji konsumentów. Izolacja per locale i obowiązkowy re-review ograniczają, ale nie eliminują ryzyka jakości językowej.
-- **Warunek zakończenia:** techniczny PASS, pięć niezależnych wyników `PASS` bez otwartych findingów i runtime evidence na istniejącym iPhonie 17.
-- **Prompt wykonawczy:** „Przywróć nazwany stash I18N-01 na aktualnym `main`, sprawdź jego pochodzenie i napraw 20 błędów typecheck bez fallbacków. Domknij testy oraz runtime. Następnie uruchom pięć izolowanych review `gpt-6-luna high`, po jednym dla DE/FR/ES/IT/ET, z EN jako źródłem znaczenia i bez prawa edycji. Napraw wszystkie findingi i ponawiaj review danego języka do PASS; nie zastępuj tego zbiorczym self-review.”
 
 ### UI-REVIEW-26
 
@@ -134,7 +116,7 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Sukces:** nie renderować równocześnie historycznego hero błędu, wyłączonego `Spróbuj ponownie` ani dividera. Wycentrować pojedynczą grupę: sukcesowa ikona, `Niedostępne dane usunięto`, potrzebna informacja o wyniku i `Kontynuuj`. Usunąć dolny tekst `Patternly może teraz bezpiecznie się uruchomić`, jeśli po korekcie nadal tylko powtarza znaczenie nagłówka i przycisku.
 - **Error:** zachować alert, błąd diagnostyczny, bezpieczny retry removal oraz powrót. Redukcja bazowego copy nie może usunąć informacji, że część danych mogła już zostać skasowana.
 - **Dostępność:** logiczny focus order, role header/alert/button, live region, busy/disabled, hint hold, kontrast destructive i Dynamic Type do `maxFontSizeMultiplier=2` bez clippingu. Kolor nie jest jedynym nośnikiem destrukcyjności.
-- **Weryfikacja:** testy prezentacji wszystkich czterech stanów (`base`, `removing`, `error`, `success`), test wariantu destructive i exact copy, PL/EN oraz siedem locale po I18N-01, light/dark, standardowy i duży tekst, VoiceOver focus/announcement oraz screenshoty przed/po na istniejącym iPhonie 17.
+- **Weryfikacja:** testy prezentacji wszystkich czterech stanów (`base`, `removing`, `error`, `success`), test wariantu destructive i exact copy, wszystkie siedem locale, light/dark, standardowy i duży tekst, VoiceOver focus/announcement oraz screenshoty przed/po na istniejącym iPhonie 17.
 - **Poza zakresem:** zmiana operacji kryptograficznej, limitu retry, czasu hold, zasad usuwania, routingu po `Kontynuuj`, globalnego `HoldToConfirmButton` dla innych ekranów i dekoracyjnego redesignu recovery.
 - **Warunek zakończenia:** hierarchia i wszystkie stany są przyjęte wizualnie, testy zachowania usuwania pozostają zielone, a niezależne QA nie znajduje utraty ostrzeżenia, semantyki ani stanu błędu.
 - **Prompt wykonawczy:** „Sprawdź aktualny `EncryptedStorageRecoverySurface`, `HoldToConfirmButton`, locale i testy. Uznaj operację usuwania oraz jej cztery stany za istniejące; zmień wyłącznie hierarchię, wskazane copy, destructive hold i izolowany layout sukcesu zgodnie z UI-26-07. Wygeneruj tylko brakujące atomowe kroki, zachowaj ostrzeżenie o utracie danych, accessibility i fail-closed behavior.”
@@ -149,7 +131,7 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Błędy:** usunięcie górnej karty nie upoważnia do ukrycia realnej awarii. Błędy hasła pozostają przy polu. `pendingSyncRequiresNetwork`, provider unavailable i remote failure muszą mieć obserwowalny, zwięzły stan przy akcji lub w jej bezpośrednim sąsiedztwie oraz zostać wyczyszczone po właściwej edycji/retry/nawigacji. Nie pokazywać stale odziedziczonego błędu jako nagłówka `Delete account`.
 - **Przepływ:** `Confirm` wyłącznie potwierdza tożsamość. Nie usuwa konta i nie omija drugiego kroku. Po sukcesie nadal pojawia się destrukcyjny `HoldToConfirmButton`; pending deletion, retry deletion i terminalne zachowanie pozostają bez zmian.
 - **Dostępność:** tekst ostrzeżenia zachowuje logiczny odczyt przed polem i akcją; aktywny błąd ma role/live region stosowne do stanu; `Confirm` ma właściwą nazwę dla VoiceOver; Dynamic Type do `maxFontSizeMultiplier=2` nie obcina konsekwencji ani pola.
-- **Weryfikacja:** test struktury bez warning `InfoBlock` i bez górnego ogólnego alertu dla bazowego delete; exact-copy tests; błędne hasło, pending sync, offline/provider failure; password/Apple/Google; przejście `Confirm` → hold; PL/EN oraz siedem locale po I18N-01; light/dark, standardowy/duży tekst i screenshot na istniejącym iPhonie 17.
+- **Weryfikacja:** test struktury bez warning `InfoBlock` i bez górnego ogólnego alertu dla bazowego delete; exact-copy tests; błędne hasło, pending sync, offline/provider failure; password/Apple/Google; przejście `Confirm` → hold; wszystkie siedem locale; light/dark, standardowy/duży tekst i screenshot na istniejącym iPhonie 17.
 - **Poza zakresem:** zmiana danych rzeczywiście usuwanych lub zachowywanych, reautoryzacji Firebase, synchronizacji przed deletion, czasu hold, deletion grant, retry/cleanup backendu oraz copy eksportu/privacy.
 - **Warunek zakończenia:** uproszczony ekran jest zgodny ze screenshotowym kierunkiem właściciela, realne błędy pozostają zrozumiałe, a pełna dwustopniowa ochrona reauth → hold działa bez regresji.
 - **Prompt wykonawczy:** „Sprawdź aktualny `AccountSecurityScreen`, źródła błędów, locale i testy deletion. Zmień wyłącznie prezentację pierwszego kroku usuwania zgodnie z UI-26-08: bez górnej karty, plain-text warning, skrócone konsekwencje i delete-only `Confirm`. Zachowaj realne inline errors oraz drugi destrukcyjny krok hold-to-delete; nie zmieniaj kontraktu danych ani innych trybów security.”
@@ -164,7 +146,7 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Warianty stanu:** wspólna hierarchia obejmuje `resumeRequired`, `offlinePending`, conflict, initial sync i failure, ale ikona/treatment nie mogą sugerować identycznej przyczyny. Jeżeli jeden wspólny `cloud` byłby mylący dla binding mismatch, deletion pending lub sign-out pending, ograniczyć nowy wariant do retryable sync states i zachować bez zmian pozostałe prezentacje.
 - **Responsywność:** przy standardowym tekście panel jest wycentrowany. Przy `fontScale >= 1.3`, długim locale lub braku miejsca należy preferować układ od góry i przewijanie; nie zmniejszać tekstu, odstępów ani touch targetów.
 - **Dostępność:** logiczny focus order header → status → retry → sign out; status pozostaje rozpoznawalny bez ikony; retry zachowuje busy/disabled; zmiana statusu i błąd akcji mają istniejące ogłoszenia/feedback bez duplikacji.
-- **Weryfikacja:** test struktury panelu i ikony, retry success/failure oraz sign-out failure, retryable i non-retryable recovery presentations, PL/EN oraz siedem locale po I18N-01, light/dark, standardowy/duży tekst, VoiceOver order i screenshot na istniejącym iPhonie 17.
+- **Weryfikacja:** test struktury panelu i ikony, retry success/failure oraz sign-out failure, retryable i non-retryable recovery presentations, wszystkie siedem locale, light/dark, standardowy/duży tekst, VoiceOver order i screenshot na istniejącym iPhonie 17.
 - **Poza zakresem:** zmiana synchronizacji, klasyfikacji błędów, copy, liczby retry, zachowania sign-out, routingu, footeru globalnego lub innych ekranów Account Entry.
 - **Warunek zakończenia:** ekran ma zrównoważony pionowy układ i ikonę w stanach, dla których jest semantycznie poprawna, bez regresji recovery, dużego tekstu i alternatywnego sign-out.
 - **Prompt wykonawczy:** „Sprawdź bieżący `AccountRecoveryScreen`, wszystkie wyniki `getAccountRecoveryPresentation`, komponent `Screen` i testy account recovery. Dodaj wyłącznie adaptacyjne centrowanie recovery block oraz repozytoryjną ikonę zgodnie z UI-26-09. Zachowaj retry, sticky sign-out, feedback i bezpieczny fallback dla dużego tekstu; nie zmieniaj synchronizacji ani copy.”
@@ -193,7 +175,7 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Zakres techniczny:** preferować lokalną korektę kompozycji `LearningPlanProposalScreen`. Nie zmieniać globalnego `Screen` lub `AppShellHeader`, chyba że inspekcja wszystkich konsumentów potwierdzi wspólny defekt i osobne testy zabezpieczą ich layout.
 - **Poza zakresem:** generator planu, dane celu, liczba/długość sesji, kolejność materiału, completion/target assessment, reminder scheduling, zachowanie edytora, zapis planu, redesign przyjętego planu i shortfall oraz globalna zmiana nawigacji.
 - **Akceptacja:** pojedynczy top inset na wszystkich stanach tej trasy; `ready`/`shortened` mają nowy hero; goal type występuje raz jako card heading; footer aktywnej propozycji zawiera dokładnie secondary Edit i primary Accept; żaden wymagany kontekst planu ani stan błędu nie znika.
-- **Weryfikacja:** test struktury i exact copy; edit/accept success/failure/rapid tap; loading, stale, ready, shortened, shortfall, unavailable i accepted regression; EN/PL oraz siedem locale po I18N-01; light/dark; 1 i 7 dni; brak i obecność target date; standardowy i 2× tekst; VoiceOver order; screenshot na istniejącym iPhonie 17.
+- **Weryfikacja:** test struktury i exact copy; edit/accept success/failure/rapid tap; loading, stale, ready, shortened, shortfall, unavailable i accepted regression; wszystkie siedem locale; light/dark; 1 i 7 dni; brak i obecność target date; standardowy i 2× tekst; VoiceOver order; screenshot na istniejącym iPhonie 17.
 - **Evidence/report:** audyt pozostaje w `docs/active/UI-26-11/AUDIT.md`; implementacja zapisuje `docs/active/UI-26-11/REPORT.md` z komendami, stanami i screenshotami bez danych użytkownika.
 - **Ryzyka:** lokalizacja długich nazw goal type, zmniejszona wysokość footera przy scroll position, współdzielenie headera przez stany inne niż ready oraz przypadkowe usunięcie jedynej drogi powrotu w fallback navigation.
 - **Warunek zakończenia:** runtime i testy potwierdzają nową hierarchię bez podwójnego insetu, regresji nawigacji, mutacji, danych planu, błędów, Dynamic Type lub accessibility; niezależne QA wydaje PASS.
@@ -265,4 +247,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**I18N-01** jest pierwsze. Przed implementacją należy przywrócić nazwany stash na aktualnym `main`, rozwiązać konflikty bez utraty późniejszych zmian, ponownie zmierzyć typecheck i podzielić techniczne domknięcie od pięciu niezależnych review językowych GPT-6 Luna High.
+**UI-26-07** jest pierwsze. Przed implementacją należy ponownie sprawdzić aktualny `EncryptedStorageRecoverySurface`, kontrakt czterech stanów, locale, testy oraz runtime na istniejącym iPhonie 17.
