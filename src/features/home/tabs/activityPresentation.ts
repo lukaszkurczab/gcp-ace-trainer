@@ -1,3 +1,5 @@
+import type { AppLocale } from "../../../preferences";
+
 export type ActivityDateLabel =
   | Readonly<{ kind: "relative"; label: "Today" | "Yesterday"; timestamp: string }>
   | Readonly<{ kind: "calendar"; timestamp: string }>;
@@ -36,12 +38,12 @@ export function isSameCalendarWeek(timestamp: string, now = new Date()): boolean
 
 export function formatActivityDateLabel(
   label: ActivityDateLabel,
-  locale: "en" | "pl",
+  locale: AppLocale,
   translate: (value: string) => string,
 ): string {
   const time = activityTime(label.timestamp);
   if (label.kind === "relative") return `${translate(label.label)}, ${time}`;
-  const date = new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-US", { day: "numeric", month: "short" }).format(new Date(label.timestamp));
+  const date = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(new Date(label.timestamp));
   return `${date}, ${time}`;
 }
 

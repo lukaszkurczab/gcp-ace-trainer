@@ -33,10 +33,28 @@ test("app preferences retain an explicitly selected Polish locale", async () => 
   assert.deepEqual(await loadAppSettings(), { appearance: "dark", language: "pl" });
 });
 
+test("settings storage retains every supported manual language", async () => {
+  for (const language of ["en", "pl", "de", "fr", "es", "it", "et"] as const) {
+    await updateAppSettings({ appearance: "dark", language });
+    assert.deepEqual(await getSettings(), { appearance: "dark", language });
+    assert.deepEqual(await loadAppSettings(), { appearance: "dark", language });
+  }
+});
+
 test("translations resolve common UI copy through i18next", () => {
   assert.equal(i18n.t("Settings", { lng: "pl" }), "Ustawienia");
   assert.equal(i18n.t("Settings", { lng: "en" }), "Settings");
   assert.equal(i18n.t("Unmapped learning prompt", { lng: "pl" }), "Unmapped learning prompt");
+});
+
+test("all seven runtime locales expose translated settings, nested legal and data copy", () => {
+  for (const lng of ["en", "pl", "de", "fr", "es", "it", "et"] as const) {
+    assert.equal(Array.isArray(i18n.options.supportedLngs) && i18n.options.supportedLngs.includes(lng), true);
+    assert.notEqual(i18n.t("language", { lng, ns: "settings" }), "language");
+    assert.notEqual(i18n.t("legalRequests.create", { lng, ns: "legal" }), "legalRequests.create");
+    assert.notEqual(i18n.t("rights.title", { lng, ns: "data" }), "rights.title");
+    assert.match(i18n.t("legalRequests.received", { lng, ns: "legal", date: "2026-09-10" }), /2026-09-10/u);
+  }
 });
 
 test("nested legal and data translations resolve and interpolate in English and Polish", () => {

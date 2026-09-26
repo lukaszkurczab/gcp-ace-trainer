@@ -29,6 +29,7 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ResolvedC
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const account = usePatternlyAccount();
   const { locale } = useAppPreferences();
+  const reportLocale = locale === "pl" ? "pl" : "en";
   const { t } = useTranslation("common");
   const [visible, setVisible] = useState(false);
   const [reason, setReason] = useState<ContentReportReason>("unclear_explanation");
@@ -67,7 +68,7 @@ export function ContentReportSheet({ item, surface }: Readonly<{ item: ResolvedC
     setPending(true);
     setError(null);
     try {
-      const result = await submitContentReportFromConfiguredRuntime(buildInput(item, surface, reason, description, locale, platform));
+      const result = await submitContentReportFromConfiguredRuntime(buildInput(item, surface, reason, description, reportLocale, platform));
       setEntry(result.entry);
       if (result.status === "accepted") setDescription("");
     } catch (cause) {

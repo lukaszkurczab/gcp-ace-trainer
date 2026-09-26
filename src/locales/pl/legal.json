@@ -1,4 +1,6 @@
 {
+  "documentUnavailable": "Ten dokument prawny jest niedostępny w tym języku do czasu zatwierdzenia tłumaczenia.",
+  "documentDraftWarning": "NIEZATWIERDZONY DRAFT TESTOWY — to tłumaczenie nie jest zatwierdzone do użycia produkcyjnego.",
   "close": "Zamknij",
   "infoBody": "To krótki przewodnik po ścieżkach prawnych Patternly. Pełne zasady znajdziesz w lokalnej Polityce prywatności i Warunkach; Pomoc otwiera wyłącznie skonfigurowany cel zewnętrzny.",
   "infoTitle": "Prywatność i korzystanie z materiałów",

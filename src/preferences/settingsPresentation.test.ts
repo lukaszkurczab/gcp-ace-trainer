@@ -230,7 +230,7 @@ test("Your data owns an exhaustive account-state action matrix and wires the map
   }
   assert.match(yourDataScreen, /account\.resetLocalLearningHistory\(\)/u);
   assert.doesNotMatch(yourDataScreen, /testID="your-data-none"/u);
-  for (const locale of ["en", "pl"]) {
+  for (const locale of ["en", "pl", "de", "fr", "es", "it", "et"]) {
     const data = JSON.parse(readFileSync(`src/locales/${locale}/data.json`, "utf8")) as Record<string, unknown>;
     assert.ok(data.state);
     assert.ok(data.actions);
@@ -298,6 +298,9 @@ test("language selection owns the typed accessible radio choice flow", () => {
   assert.match(languageSettingsModel, /value: "system"/);
   assert.match(languageSettingsModel, /value: "en"/);
   assert.match(languageSettingsModel, /value: "pl"/);
+  for (const locale of ["de", "fr", "es", "it", "et"]) {
+    assert.match(languageSettingsModel, new RegExp(`value: "${locale}"`));
+  }
   assert.match(languageSettings, /<View accessibilityLabel=\{t\("languageOptions"\)\} accessibilityRole="radiogroup"/);
   assert.match(languageSettings, /<ChoiceRow[\s\S]*selected=\{preferences\.language === option\.value\}[\s\S]*testID=\{`language-option-\$\{option\.value\}`\}/);
   assert.match(languageSettings, /loading=\{savingValue === option\.value\}/);
@@ -308,8 +311,7 @@ test("language selection owns the typed accessible radio choice flow", () => {
   assert.match(appPreferencesProvider, /deviceLocale: AppLocale/);
   assert.match(appPreferencesProvider, /const localeResolution = resolveLocale\("system", systemLocale\)/);
   assert.match(appPreferencesProvider, /const selectedLocaleResolution = settings\.language === "system"/);
-  assert.match(languageSettings, /preferences\.systemLocaleResolution\.reason === "translation_unavailable"/);
-  assert.match(languageSettings, /t\("languageSystemUnavailableDetail"/);
+  assert.doesNotMatch(languageSettings, /translation_unavailable|languageSystemUnavailableDetail/);
   assert.match(languageSettingsModel, /detailKey\?: string/);
   assert.match(languageSettingsModel, /\{ detailKey: "languageSystemDetail", labelKey: "languageSystem", value: "system" \}/);
   assert.doesNotMatch(languageSettingsModel, /languageEnglishDetail|languagePolishDetail/);
@@ -328,7 +330,7 @@ test("System language detail follows the device locale independently from the se
       assert.equal(appStrings.languageSystem, "System");
       assert.equal(
         deviceStrings.languageSystemDetail,
-        deviceLocale === "en" ? "Follow your device language (English or Polish)." : "Użyj języka urządzenia (angielskiego lub polskiego).",
+        deviceLocale === "en" ? "Follow your device language when Patternly supports it." : "Użyj języka urządzenia, jeśli jest obsługiwany przez Patternly.",
         `${appLocale} app/${deviceLocale} device`,
       );
       assert.equal(appStrings.languageEnglishDetail, undefined);

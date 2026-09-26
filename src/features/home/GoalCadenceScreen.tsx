@@ -32,7 +32,7 @@ import {
 } from "../../domain";
 import { getTrackDisplay, isRegisteredTrackId, type TrackId } from "../../domain";
 import type { GoalCadenceReturnTo, RootStackParamList } from "../../navigation";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
+import { useAppPreferences, useThemedStyles, type AppLocale } from "../../preferences";
 import { colorWithOpacity, radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { LearningPlanReminderFailure, LearningPlanReminderResult } from "../../application/notificationPreferences";
@@ -483,7 +483,7 @@ function CreateGoalForm({ dateError, dateInput, onChangeDate, onOpenNotification
 function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, onOpenNotifications, onTogglePause, t }: Readonly<{
   creatingPlan: boolean;
   goal: GoalRecord;
-  locale: "en" | "pl";
+  locale: AppLocale;
   onCreatePlan: () => void;
   onEdit: () => void;
   onOpenNotifications: () => void;
@@ -549,8 +549,8 @@ function SummaryRow({ label, value }: Readonly<{ label: string; value: string }>
   return <View style={styles.summaryRow}><Text maxFontSizeMultiplier={2} style={styles.summaryLabel}>{label}</Text><Text maxFontSizeMultiplier={2} style={styles.summaryValue}>{value}</Text></View>;
 }
 
-function formatGoalDate(value: string, locale: "en" | "pl"): string {
-  return new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-US", { day: "numeric", month: "short", timeZone: "UTC", year: "numeric" }).format(new Date(`${value}T00:00:00Z`));
+function formatGoalDate(value: string, locale: AppLocale): string {
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", timeZone: "UTC", year: "numeric" }).format(new Date(`${value}T00:00:00Z`));
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

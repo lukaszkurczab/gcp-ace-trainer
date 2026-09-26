@@ -10,7 +10,7 @@ import type {
   TargetDateGuidanceState,
 } from "./targetDateGuidance";
 
-export type TargetDateGuidanceLocale = "en" | "pl";
+export type TargetDateGuidanceLocale = "en" | "pl" | "de" | "fr" | "es" | "it" | "et";
 
 export type TargetDateGuidanceFactKey = "requiredPace" | "actualPace" | "forecast" | "target";
 
@@ -361,7 +361,7 @@ function normalizeInput(
 }
 
 function assertLocale(locale: unknown): asserts locale is TargetDateGuidanceLocale {
-  if (locale !== "en" && locale !== "pl") throw new TargetDateGuidancePresentationError("invalid_locale");
+  if (locale !== "en" && locale !== "pl" && locale !== "de" && locale !== "fr" && locale !== "es" && locale !== "it" && locale !== "et") throw new TargetDateGuidancePresentationError("invalid_locale");
 }
 
 function assertTimezone(timezone: unknown): asserts timezone is string {
@@ -535,7 +535,7 @@ function formatCivilDate(value: string, locale: TargetDateGuidanceLocale, timezo
   if (!isIsoDate(value)) throw new TargetDateGuidancePresentationError("invalid_date");
   const candidate = civilDateAtLocalNoon(value, timezone);
   try {
-    return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "pl-PL", {
+    return new Intl.DateTimeFormat(locale, {
       timeZone: timezone,
       year: "numeric",
       month: "long",

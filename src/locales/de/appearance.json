@@ -1,0 +1,14 @@
+{
+  "appearance": "Darstellung",
+  "intro": "Wähle aus, wie Patternly auf diesem Gerät aussieht.",
+  "options": "Darstellung",
+  "settings": "Einstellungen",
+  "system": "System",
+  "systemDetail": "Übernimmt die Darstellung deines Geräts.",
+  "light": "Hell",
+  "lightDetail": "Verwendet immer das helle Design.",
+  "dark": "Dunkel",
+  "darkDetail": "Verwendet immer das dunkle Design.",
+  "saveErrorTitle": "Darstellung konnte nicht gespeichert werden",
+  "saveErrorDetail": "Wähle die Darstellung erneut aus."
+}

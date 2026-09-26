@@ -2,9 +2,9 @@ import type { LanguagePreference } from "../application/appPreferences";
 
 export const TARGET_LOCALES = ["pl", "en", "de", "fr", "es", "it", "et"] as const;
 export type TargetLocale = (typeof TARGET_LOCALES)[number];
-export type AvailableLocale = "en" | "pl";
+export type AvailableLocale = TargetLocale;
 
-export type LocaleResolutionReason = "translation_available" | "translation_unavailable" | "system_locale_unrecognized";
+export type LocaleResolutionReason = "translation_available" | "system_locale_unrecognized";
 
 export type LocaleResolution = Readonly<{
   requestedLocale: TargetLocale | null;
@@ -12,7 +12,6 @@ export type LocaleResolution = Readonly<{
   reason: LocaleResolutionReason;
 }>;
 
-const AVAILABLE_LOCALES = new Set<AvailableLocale>(["en", "pl"]);
 const TARGET_LOCALE_SET = new Set<string>(TARGET_LOCALES);
 
 function parseTargetLocale(rawLocale: string): TargetLocale | null {
@@ -28,7 +27,7 @@ function parseTargetLocale(rawLocale: string): TargetLocale | null {
 }
 
 export function resolveLocale(preference: LanguagePreference, systemLocale: string): LocaleResolution {
-  if (preference === "en" || preference === "pl") {
+  if (preference !== "system") {
     return { requestedLocale: preference, effectiveLocale: preference, reason: "translation_available" };
   }
 
@@ -36,8 +35,5 @@ export function resolveLocale(preference: LanguagePreference, systemLocale: stri
   if (requestedLocale === null) {
     return { requestedLocale: null, effectiveLocale: "en", reason: "system_locale_unrecognized" };
   }
-  if (AVAILABLE_LOCALES.has(requestedLocale as AvailableLocale)) {
-    return { requestedLocale, effectiveLocale: requestedLocale as AvailableLocale, reason: "translation_available" };
-  }
-  return { requestedLocale, effectiveLocale: "en", reason: "translation_unavailable" };
+  return { requestedLocale, effectiveLocale: requestedLocale, reason: "translation_available" };
 }

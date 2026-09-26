@@ -24,7 +24,7 @@ import {
 import { formatReviewTaxonomyLabel } from "./reviewQueuePresentation";
 import { loadTrackReviewQueueViewModel, removeUnavailableReview } from "../../application/reviewQueueQueries";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
+import { useAppPreferences, useThemedStyles, type AppLocale } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
@@ -323,14 +323,14 @@ function formatList(values: readonly string[], t: (value: string) => string): st
   return values.length > 0 ? values.map(t).join(", ") : t("Not recorded.");
 }
 
-function formatDueAt(value: string, locale: "en" | "pl"): string {
+function formatDueAt(value: string, locale: AppLocale): string {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return date.toLocaleString(locale === "pl" ? "pl-PL" : "en-US");
+  return date.toLocaleString(locale);
 }
 
 function formatStatus(status: ReviewQueueRow["status"]): string {

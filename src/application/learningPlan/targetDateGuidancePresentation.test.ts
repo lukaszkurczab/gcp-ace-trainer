@@ -247,11 +247,14 @@ test("formats civil dates in the supplied timezone without UTC day drift", () =>
   assert.equal(en.facts[3]?.value, "February 1, 2026");
   assert.equal(pl.facts[2]?.value, "1 lutego 2026");
   assert.equal(pl.facts[3]?.value, "1 lutego 2026");
+  for (const locale of ["en", "pl", "de", "fr", "es", "it", "et"] as const) {
+    assert.doesNotThrow(() => present(value, locale));
+  }
 });
 
 test("rejects invalid locale, timezone, date and unknown runtime variants explicitly", () => {
   const value = allGuidances()[12]!;
-  assertPresentationError(() => present(value, "de" as TargetDateGuidanceLocale), "invalid_locale");
+  assertPresentationError(() => present(value, "ja" as TargetDateGuidanceLocale), "invalid_locale");
   assertPresentationError(() => present(value, "en", "Mars/Olympus"), "invalid_timezone");
   assertPresentationError(() => present({ ...value, facts: { ...value.facts, forecast: { kind: "date", value: "2026-02-31" } } } as TargetDateGuidance), "invalid_date");
   assertPresentationError(() => present({ ...value, state: "future" } as unknown as TargetDateGuidance), "unknown_state");

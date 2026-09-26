@@ -1,0 +1,229 @@
+{
+  "close": "Chiudi",
+  "data": "Dati",
+  "dataPrivacy": "Dati e privacy",
+  "settings": "Impostazioni",
+  "yourData": "I tuoi dati",
+  "rights": {
+    "title": "I tuoi diritti"
+  },
+  "actions": {
+    "export": {
+      "title": "Condividi o scarica i dati dell’account",
+      "summary": "File JSON con i dati dell’account, i dati di apprendimento sincronizzati e l’attività dell’account"
+    },
+    "guestPrivacy": {
+      "title": "Richiedi assistenza per i tuoi dati",
+      "summary": "Invia una richiesta relativa alla privacy dall’app senza creare un account"
+    },
+    "openAccount": {
+      "title": "Apri account",
+      "summary": "Accedi o crea un account per gestire i dati dell’account"
+    },
+    "retryRestore": {
+      "title": "Prova a ripristinare la sessione",
+      "summary": "Controlla di nuovo la sessione del tuo account"
+    },
+    "retryDeletion": {
+      "title": "Riprova la pulizia dell’account",
+      "summary": "Continua l’eliminazione dell’account in sospeso"
+    },
+    "retryIdentity": {
+      "title": "Riprova il controllo dell’account",
+      "summary": "Aggiorna la sessione dell’account prima di usare i dati dell’account"
+    },
+    "signOut": {
+      "title": "Disconnetti",
+      "summary": "Termina questa sessione dell’account scaduta prima di accedere di nuovo"
+    },
+    "none": {
+      "title": "Azioni sui dati non disponibili",
+      "summary": "In questo stato non è disponibile alcuna azione sull’account"
+    }
+  },
+  "localReset": {
+    "entryTitle": "Reimposta la cronologia di apprendimento locale",
+    "entrySummary": "Rimuovi da questo dispositivo sessioni, tentativi, ripassi, bozze e timer",
+    "title": "Reimpostare la cronologia di apprendimento?",
+    "intro": "Controlla cosa comporta la rimozione della cronologia di apprendimento locale.",
+    "scopeTitle": "Cosa verrà reimpostato",
+    "scopeBody": "Verranno rimosse da questo dispositivo le sessioni di pratica e d’esame, i risultati, i tentativi, gli elementi di ripasso, la sessione attiva, le bozze salvate e i timer.",
+    "confirmationTitle": "Conferma la reimpostazione locale",
+    "confirmationBody": "Saranno mantenuti il percorso attivo, gli obiettivi, i piani, le preferenze, le notifiche, l’identità dell’installazione, il collegamento all’account e la coda di segnalazioni dei contenuti. Per un account connesso, la copia nel cloud non viene mai eliminata; dopo la reimpostazione locale, l’app ripristina questa cronologia dall’account.",
+    "cancel": "Annulla",
+    "confirm": "Reimposta la cronologia di apprendimento",
+    "runningTitle": "Reimpostazione della cronologia di apprendimento",
+    "runningBody": "Tieni aperto questo riquadro mentre la reimpostazione viene completata in sicurezza.",
+    "successTitle": "Cronologia di apprendimento reimpostata",
+    "successBody": "La cronologia di apprendimento locale selezionata è stata reimpostata.",
+    "errorTitle": "Impossibile completare la reimpostazione",
+    "errorBody": "Alcuni dati locali potrebbero restare. Riprova; per un account connesso, la reimpostazione conserva il contrassegno di recupero finché non viene ripristinata la copia dell’account."
+  },
+  "state": {
+    "authenticated": {
+      "title": "I dati del tuo account",
+      "body": "I dati di apprendimento sono salvati su questo dispositivo. I record dell’account supportati possono essere sincronizzati anche con il cloud dell’account e ripristinati tramite la normale sincronizzazione dopo l’accesso. Usa le opzioni di esportazione, dettagli e privacy qui sotto per questo account."
+    },
+    "guest": {
+      "title": "Dati ospite",
+      "body": "I dati di apprendimento sono salvati localmente su questo dispositivo. Puoi usare Patternly senza un account. Se hai bisogno di assistenza per i tuoi dati, usa il modulo privacy nell’app."
+    },
+    "signedOut": {
+      "title": "Accedi per gestire i dati dell’account",
+      "body": "Accedi o crea un account per consultare i dati dell’account e usare le opzioni per la privacy."
+    },
+    "guestAccessBlocked": {
+      "title": "È necessario accedere all’account",
+      "body": "Questi dati ospite salvati sono collegati a un altro account. Accedi per continuare."
+    },
+    "verificationPending": {
+      "title": "Completa l’accesso",
+      "body": "Controlla la tua email per completare l’accesso prima di gestire i dati dell’account."
+    },
+    "loading": {
+      "title": "Preparazione dei tuoi dati",
+      "body": "Lo stato dell’account è ancora in caricamento. Per ora non è disponibile alcuna azione sull’account."
+    },
+    "authRestoreTimeout": {
+      "title": "Stato dell’account non disponibile",
+      "body": "Non è stato possibile ripristinare la sessione. Riprova a controllare i dati dell’account."
+    },
+    "firebaseUnconfigured": {
+      "title": "Account non disponibile",
+      "body": "I servizi dell’account non sono configurati in questa build."
+    },
+    "publicEnvironmentUnconfigured": {
+      "title": "Azioni sui dati non disponibili",
+      "body": "L’ambiente pubblico dei dati non è configurato in questa build."
+    },
+    "publicEnvironmentInvalid": {
+      "title": "Azioni sui dati non disponibili",
+      "body": "L’ambiente pubblico dei dati non è valido in questa build."
+    },
+    "deletionPending": {
+      "title": "Eliminazione dell’account in sospeso",
+      "body": "L’eliminazione dell’account è in attesa di completamento. Riprova la pulizia prima di usare i dati dell’account."
+    },
+    "signingOut": {
+      "title": "Disconnessione",
+      "body": "La disconnessione è in corso. Le azioni sui dati dell’account non sono temporaneamente disponibili."
+    },
+    "deleting": {
+      "title": "Eliminazione dell’account",
+      "body": "L’eliminazione dell’account è in corso. Le azioni sui dati dell’account non sono temporaneamente disponibili."
+    },
+    "backendUnavailable": {
+      "title": "Servizio account non disponibile",
+      "body": "Non è stato possibile aggiornare la sessione dell’account. Riprova."
+    },
+    "revokedSession": {
+      "title": "Sessione scaduta",
+      "body": "La sessione dell’account non è più valida. Disconnettiti e accedi di nuovo."
+    }
+  },
+  "privacyRequests": {
+    "title": "Richieste relative alla privacy",
+    "entryTitle": "Invia una richiesta relativa alla privacy",
+    "entrySummary": "Controlla lo stato o esercita i tuoi diritti",
+    "infoTitle": "I tuoi diritti",
+    "summary": "Scegli un diritto. Di norma rispondiamo entro un mese; ove consentito dalla legge, possiamo prorogare il termine fino a due mesi aggiuntivi, dandotene comunicazione entro il primo mese.",
+    "create": "Invia una richiesta",
+    "yourRequests": "Le tue richieste",
+    "empty": "Nessuna richiesta",
+    "emptyDetail": "Una nuova richiesta apparirà qui dopo l’invio",
+    "formIntro": "Scegli il diritto che vuoi esercitare. Aggiungi dettagli solo se necessario. Il termine di risposta decorre dalla ricezione della richiesta e potrebbe essere necessario verificare la tua identità.",
+    "narrativeLabel": "Informazioni aggiuntive (facoltative)",
+    "narrativePlaceholder": "Spiega brevemente la richiesta. Non inserire password o codici.",
+    "submit": "Invia gratuitamente",
+    "created": "La richiesta è stata ricevuta.",
+    "deadline": "Scadenza: {{date}}",
+    "extended": "termine prorogato; apri per i dettagli",
+    "extendedTitle": "Termine prorogato",
+    "extensionNotice": "A causa della complessità o del numero di richieste, il termine di risposta è stato prorogato fino a due mesi aggiuntivi. La nuova scadenza è indicata sopra.",
+    "extensionReason": "Il termine di risposta è stato prorogato fino a due mesi aggiuntivi. Motivo: {{reason}}. La nuova scadenza è indicata sopra.",
+    "noResponse": "La risposta non è ancora disponibile. Torna dopo che lo stato è cambiato.",
+    "accountRequired": "Accedi per visualizzare le richieste dell’account. Se non hai un account, usa il modulo nell’app.",
+    "failureTitle": "Impossibile completare l’azione",
+    "rights": {
+      "access": "Accedere ai tuoi dati",
+      "rectification": "Rettificare i tuoi dati",
+      "erasure": "Cancellare i tuoi dati",
+      "restriction": "Limitare il trattamento",
+      "objection": "Opporti al trattamento",
+      "portability": "Portabilità dei dati",
+      "consent_withdrawal": "Revocare il consenso"
+    },
+    "rightDetails": {
+      "access": "Una copia dei tuoi dati e informazioni sul relativo trattamento",
+      "rectification": "Correggere dati inesatti o incompleti",
+      "erasure": "Cancellare i dati quando ricorrono le condizioni previste dalla legge",
+      "restriction": "Limitare temporaneamente specifici trattamenti",
+      "objection": "Opporti al trattamento basato sul legittimo interesse",
+      "portability": "Dati idonei in un formato leggibile da dispositivo automatico",
+      "consent_withdrawal": "Interrompere il trattamento futuro basato sul consenso indicato"
+    },
+    "status": {
+      "received": "Ricevuta",
+      "identity_verification_required": "È necessario confermare l’identità",
+      "in_review": "In revisione",
+      "response_ready": "Risposta preparata",
+      "fulfilled": "Evasa",
+      "partially_fulfilled": "Evasa parzialmente",
+      "refused": "Respinta",
+      "closed": "Chiusa"
+    },
+    "failures": {
+      "authenticationRequired": "La sessione è scaduta. Accedi di nuovo.",
+      "recentAuthenticationRequired": "Conferma la tua identità, poi riprova.",
+      "appCheckUnavailable": "Al momento non è possibile inviare questa richiesta in modo sicuro da questo dispositivo. Riprova più tardi.",
+      "offline": "Sembra che tu sia offline. Controlla la connessione e riprova.",
+      "invalidResponse": "Il servizio ha restituito una risposta non valida. Riprova.",
+      "serverFailure": "Il servizio per le richieste relative alla privacy è temporaneamente non disponibile. Riprova.",
+      "invalidCode": "Il codice non è valido, è scaduto o è già stato usato. Richiedi un nuovo codice e riprova.",
+      "rateLimited": "Troppi tentativi. Riprova più tardi.",
+      "conflict": "La richiesta è cambiata. Controlla il modulo e invialo come nuova richiesta."
+    }
+  },
+  "guestPrivacy": {
+    "title": "Richiesta relativa alla privacy senza account",
+    "intro": "Invia il modulo qui. Potremmo inviare un codice di verifica a questo indirizzo email. Inserisci nell’app il codice più recente per verificare l’indirizzo. La richiesta resta in sospeso fino alla verifica.",
+    "newRequest": "Nuova richiesta",
+    "existingRequest": "Verifica o riapri una richiesta",
+    "email": "Indirizzo email",
+    "requestId": "ID della richiesta ricevuta via email",
+    "code": "Codice ricevuto via email",
+    "resend": "Invia un nuovo codice",
+    "verify": "Verifica il codice e apri la richiesta",
+    "refresh": "Aggiorna lo stato della richiesta",
+    "pending": "Richiesta registrata. La consegna dell’email non è confermata. Se non ricevi un codice, richiedine un altro qui.",
+    "sessionExpired": "La sessione di verifica è scaduta. Richiedi un nuovo codice per visualizzare lo stato.",
+    "invalidEmail": "Inserisci un indirizzo email valido.",
+    "storageUnavailable": "L’archiviazione locale sicura non è disponibile. La richiesta in sospeso potrebbe comunque essere salvata. Riprova più tardi.",
+    "statusTitle": "Stato della richiesta"
+  },
+  "details": {
+    "action": "Mostra dettagli",
+    "title": "Dettagli dei dati",
+    "scopeTitle": "Ambito",
+    "accountIntro": "L’esportazione è un file JSON preparato per l’account connesso.",
+    "accountBody": "L’esportazione include il profilo dell’account; i record di apprendimento supportati e sincronizzati, come il percorso attivo, gli obiettivi e i piani di apprendimento, i riepiloghi e i risultati delle sessioni completate, i tentativi e la coda dei ripassi; nonché le segnalazioni di contenuti collegate. L’attività e il contesto dell’account comprendono l’accesso ai percorsi, le autorizzazioni, le accettazioni legali, le conferme di acquisto, le pratiche dei consumatori, i metadati del dispositivo e della sincronizzazione e la cronologia delle esportazioni. Le informazioni sull’accesso descrivono finalità, categorie di dati, destinatari, conservazione, fonti, trasferimenti, decisioni automatizzate e i tuoi diritti. Il manifesto indica le categorie incluse e omesse; non include credenziali, segreti, identificativi grezzi del provider o del dispositivo, segnalazioni di altre persone o segnalazioni anonime. Le sessioni attive, le bozze, le impostazioni e gli altri dati disponibili solo sul dispositivo non vengono sincronizzati. Dopo aver effettuato l’accesso allo stesso account, la normale sincronizzazione può ripristinare dal cloud dell’account i record supportati. L’adozione dei dati ospite è una scelta separata che unisce all’account i progressi idonei di questo dispositivo. Il file JSON viene condiviso tramite il pannello di sistema per condividere o salvare i dati ai fini dell’accesso e della portabilità e non può essere importato in Patternly. Per sicurezza, potrebbe essere necessario confermare di nuovo la tua identità. Le esportazioni sono soggette a limiti di frequenza.",
+    "guestIntro": "Non serve un account per contattarci riguardo ai tuoi dati.",
+    "guestBody": "Puoi rimuovere localmente i dati memorizzati solo su questo dispositivo. Invia una richiesta più ampia relativa alla privacy tramite il modulo nell’app. L’app non associa un identificativo dell’account né verifica se un indirizzo è presente nel sistema."
+  },
+  "status": {
+    "title": "Impossibile completare l’azione",
+    "preparing": "Preparazione…",
+    "authenticationRequired": "Conferma la tua identità, poi torna e scegli di nuovo l’opzione di download.",
+    "sessionRevoked": "La sessione dell’account è scaduta o è cambiata. Accedi di nuovo prima di esportare.",
+    "offline": "Sembra che tu sia offline. Controlla la connessione e riprova.",
+    "rateLimited": "Riprova tra {{seconds}} s.",
+    "responseTooLarge": "L’esportazione è troppo grande per essere scaricata nell’app. Contatta l’assistenza.",
+    "serverFailure": "Il servizio di esportazione è temporaneamente non disponibile. Riprova.",
+    "invalidResponse": "La risposta dell’esportazione era incompleta e il file non è stato salvato.",
+    "sharingUnavailable": "Il pannello di sistema per salvare e condividere non è disponibile.",
+    "fileFailure": "Non è stato possibile preparare il file temporaneo in sicurezza.",
+    "sharingFailed": "Non è stato possibile aprire il pannello di sistema per salvare o condividere.",
+    "cleanupFailed": "Non è stato possibile rimuovere il file temporaneo. Al prossimo avvio l’app riproverà a completare la pulizia in sicurezza.",
+    "actionFailed": "Non è stato possibile completare questa operazione sull’account. Riprova."
+  }
+}

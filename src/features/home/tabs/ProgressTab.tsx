@@ -11,7 +11,7 @@ import type { GoalRecord, ReviewQueueEntry, TrackDisplay, TrainingAttempt } from
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import { useAppPreferences, useThemedStyles } from "../../../preferences";
+import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
 import type { AppColors } from "../../../theme";
 import { radius, shadows, spacing, typography } from "../../../theme";
 import { runtimeSelectors } from "../../../testing/runtimeSelectors";
@@ -417,7 +417,7 @@ function planToneColor(tone: ProgressPlanReadyPresentation["guidance"]["tone"], 
   return palette.info;
 }
 
-function ActivitySection({ items, locale, onOpenActivity, onOpenActivityItem }: Readonly<{ items: readonly ProgressTabActivityItem[]; locale: "en" | "pl"; onOpenActivity?: () => void; onOpenActivityItem?: (item: ActivityItem) => void }>) {
+function ActivitySection({ items, locale, onOpenActivity, onOpenActivityItem }: Readonly<{ items: readonly ProgressTabActivityItem[]; locale: AppLocale; onOpenActivity?: () => void; onOpenActivityItem?: (item: ActivityItem) => void }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
   const groups = ["Today", "Yesterday", "This week", "Earlier"] as const;
@@ -493,7 +493,7 @@ function AlgorithmsEvidenceSection({
   showDiagnostics,
 }: Readonly<{
   activity: readonly ProgressTabActivityItem[];
-  locale: "en" | "pl";
+  locale: AppLocale;
   model: NonNullable<ReturnType<typeof buildProgressTabModel>["algorithmsProgress"]>;
   onOpenActivity?: () => void;
   onOpenActivityItem?: (item: ActivityItem) => void;

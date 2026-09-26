@@ -640,7 +640,7 @@
   "Simulation result": "Wynik symulacji",
   "Application unavailable": "Aplikacja jest niedostępna",
   "Data on this device can’t be opened": "Nie można otworzyć danych na tym urządzeniu",
-  "The key protecting local data is missing. Try again. If the key cannot be recovered, you can remove the unavailable data from this device.": "Brakuje klucza szyfrującego dane lokalne. Jeśli nie uda się go odzyskać, niewysłane sesje i postęp gościa na tym urządzeniu zostaną utracone.",
+  "The key protecting local data is missing. Try again. If the key cannot be recovered, you can remove the unavailable data from this device.": "Brakuje klucza chroniącego dane lokalne. Spróbuj ponownie. Jeśli nie uda się odzyskać klucza, możesz usunąć niedostępne dane z tego urządzenia.",
   "Remove unavailable data": "Usuń niedostępne dane",
   "Remove data from device": "Usuń dane z urządzenia",
   "Hold to remove": "Przytrzymaj, aby usunąć",

@@ -1,0 +1,14 @@
+{
+  "appearance": "Aspetto",
+  "intro": "Scegli l’aspetto di Patternly su questo dispositivo.",
+  "options": "Aspetto",
+  "settings": "Impostazioni",
+  "system": "Sistema",
+  "systemDetail": "Segui l’aspetto del dispositivo.",
+  "light": "Chiaro",
+  "lightDetail": "Usa sempre il tema chiaro.",
+  "dark": "Scuro",
+  "darkDetail": "Usa sempre il tema scuro.",
+  "saveErrorTitle": "Impossibile salvare l’aspetto",
+  "saveErrorDetail": "Prova a scegliere di nuovo l’aspetto."
+}

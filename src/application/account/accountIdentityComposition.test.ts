@@ -514,7 +514,8 @@ test("registration keeps consent presentation separate from the boolean domain c
   assert.equal(pl.termsRequired, "Aby utworzyć konto, zaakceptuj Warunki korzystania i potwierdź zapoznanie się z Polityką prywatności.");
   assert.equal(`${en.acceptTermsPrefix}${en.termsOfService}${en.privacyAcknowledgementPrefix}${en.privacyPolicy}.`, "I agree to the Terms of Service and acknowledge the Privacy Policy.");
   assert.equal(`${pl.acceptTermsPrefix}${pl.termsOfService}${pl.privacyAcknowledgementPrefix}${pl.privacyPolicy}.`, "Akceptuję Warunki korzystania i znam Politykę prywatności.");
-  assert.match(screen, /account\.register\(email, password, acceptedTerms, locale\)/u);
+  assert.match(screen, /const legalLocale = locale === "pl" \? "pl" : "en"/u);
+  assert.match(screen, /account\.register\(email, password, acceptedTerms, legalLocale\)/u);
   assert.match(screen, /ROUTES\.TERMS_OF_SERVICE/gu);
   assert.match(screen, /ROUTES\.PRIVACY_POLICY/gu);
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");

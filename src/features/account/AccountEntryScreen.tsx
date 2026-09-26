@@ -85,6 +85,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
   const { locale } = useAppPreferences();
+  const legalLocale = locale === "pl" ? "pl" : "en";
   const navigationIndex = useNavigationState((state) => state.index);
   const { t } = useTranslation("account");
   const text = {
@@ -614,7 +615,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
               mode="signIn"
               acceptanceConfirmed={true}
               configuration={firebaseConfig.value}
-              locale={locale}
+              locale={legalLocale}
               onFeedback={setFeedback}
               text={text.continueWithGoogle}
             />
@@ -714,7 +715,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
               setFeedback({ kind: "failure", failure: "passwordMismatch" });
               return;
             }
-            void account.register(email, password, acceptedTerms, locale).then(setResult(setFeedback));
+            void account.register(email, password, acceptedTerms, legalLocale).then(setResult(setFeedback));
           }}
           password={password}
           placeholderTextColor={styles.authPlaceholder.color as string}
@@ -727,7 +728,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           <ProviderButton
             disabled={!acceptedTerms}
             icon="apple"
-            onPress={() => void account.registerWithApple(acceptedTerms, locale).then(setResult(setFeedback))}
+            onPress={() => void account.registerWithApple(acceptedTerms, legalLocale).then(setResult(setFeedback))}
             text={text.continueWithApple}
           />
         ) : null}
@@ -736,7 +737,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             acceptanceConfirmed={acceptedTerms}
             accountRef={accountRef}
             configuration={firebaseConfig.value}
-            locale={locale}
+            locale={legalLocale}
             mode="register"
             onFeedback={setFeedback}
             text={text.continueWithGoogle}

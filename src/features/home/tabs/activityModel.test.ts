@@ -101,6 +101,10 @@ test("Activity date labels format relative words and month names from the select
 
   assert.equal(formatActivityDateLabel({ kind: "relative", label: "Today", timestamp }, "pl", translate), "Dzisiaj, 16:07");
   assert.equal(formatActivityDateLabel({ kind: "calendar", timestamp }, "pl", translate), `${expectedDate}, 16:07`);
+  for (const locale of ["en", "pl", "de", "fr", "es", "it", "et"] as const) {
+    const formatted = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(new Date(timestamp));
+    assert.equal(formatActivityDateLabel({ kind: "calendar", timestamp }, locale, translate), `${formatted}, 16:07`);
+  }
 });
 
 test("Activity keeps unavailable archival summaries separate from runtime navigation facts", () => {

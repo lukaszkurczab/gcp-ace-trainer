@@ -1,0 +1,146 @@
+{
+  "documentUnavailable": "See juriidiline dokument ei ole selles keeles saadaval enne tõlke heakskiitmist.",
+  "documentDraftWarning": "KINNITAMATA TESTMUSTAND — see tõlge ei ole tootmiskasutuseks heaks kiidetud.",
+  "close": "Sulge",
+  "infoBody": "See on lühike ülevaade Patternly juriidiliste küsimustega seotud valikutest. Täielikud tingimused leiad rakenduse privaatsusteatest ja kasutustingimustest. Tugi avab ainult seadistatud välise veebiaadressi.",
+  "infoTitle": "Privaatsus ja õppematerjalide kasutamine",
+  "legal": "Juriidiline teave",
+  "publicLinksTitle": "Juriidilised dokumendid ja avalikud lingid",
+  "supportUnavailableTitle": "Väline tugi pole saadaval",
+  "publicLinksUnconfiguredDescription": "Selle kohaliku rakenduse avalikku keskkonda pole kinnitatud, seega on toe link keelatud.",
+  "publicLinksInvalidDescription": "Avaliku keskkonna seadistus on vigane, seega on toe link keelatud.",
+  "publicLinkOpenFailedTitle": "Avalik link pole saadaval",
+  "publicLinkOpenFailedDescription": "Seadistatud avalikku linki ei õnnestunud selles seadmes avada.",
+  "publicLinkUnavailableDetail": "Selles kohalikus rakenduses pole saadaval.",
+  "privacyLink": "Privaatsusteade",
+  "privacyLinkDetail": "Loe Patternly privaatsusteadet.",
+  "termsLink": "Kasutustingimused",
+  "termsLinkDetail": "Loe Patternly teenuse kasutustingimusi.",
+  "supportLink": "Tugi",
+  "supportLinkDetail": "Ava seadistatud avalik tugikanal.",
+  "legalRequestsTitle": "Juriidilised taotlused",
+  "complaint": "Teenuse kohta kaebuse esitamine",
+  "complaintDetail": "Teata teenusega seotud probleemist. Vastame 14 päeva jooksul pärast teate kättesaamist; see ei ole kaebuse esitamise tähtaeg.",
+  "withdrawal": "Lepingust taganemine",
+  "withdrawalDetail": "Taganemisõigusega tarbijal on üldjuhul 14 päeva aega lepingust põhjust nimetamata taganeda. Täielikud tingimused leiad kasutustingimustest.",
+  "privacyRequestsTitle": "IKÜM-i taotlused",
+  "privacyRequestsDetail": "Kasuta oma andmekaitseõigust või vaata taotluse olekut. Vastame tavaliselt ühe kuu jooksul; seadusega lubatud pikendus võib lisada kuni kaks kuud.",
+  "dataRecoveryTitle": "Isikustamata andmete taastamine",
+  "dataRecoveryDetail": "Taotle sobivate isikustamata andmete taastamist. Kustutatud edenemist ei säilitata ega taastata.",
+  "suspensionAppeal": "Peatamisotsuse vaidlustamine",
+  "suspensionAppealDetail": "Taotle peatamisotsuse käsitsi läbivaatamist. Kindlat vastamise tähtaega ei lubata.",
+  "legalRequests": {
+    "create": "Saada taotlus",
+    "yourRequests": "Sinu taotlused",
+    "empty": "Taotlusi pole",
+    "emptyDetail": "Pärast saatmist kuvatakse taotlus siin.",
+    "accountRequired": "See taotluskanal on saadaval ainult turvalises sisselogitud seansis. Rakenduses ei saa taotlusi esitada külalisena.",
+    "guestIntro": "Saada see taotlus oma e-posti aadressi kasutades. Kinnitame kättesaamise sellele aadressile.",
+    "emailLabel": "E-posti aadress",
+    "emailPlaceholder": "nimi@example.com",
+    "emailRequired": "Enne taotluse saatmist sisesta kehtiv e-posti aadress.",
+    "narrativeLabel": "Üksikasjad (kohustuslik)",
+    "narrativeOptionalLabel": "Üksikasjad (valikuline)",
+    "narrativePlaceholder": "Lisa üksikasju, kui need aitavad taotlust käsitleda. Ära lisa paroole ega koode.",
+    "transactionIdLabel": "Tehingu ID (valikuline)",
+    "transactionIdPlaceholder": "Lisa võimaluse korral App Store’i tehingu ID.",
+    "submit": "Saada",
+    "created": "Sinu taotlus on kätte saadud.",
+    "narrativeRequired": "Enne taotluse saatmist lisa lühike kirjeldus.",
+    "received": "Kätte saadud: {{date}}",
+    "responseDue": "Vastamise tähtaeg: {{date}}",
+    "noResponseDue": "Vastamise ajavahemik pole veel teada.",
+    "noResponse": "Vastus pole veel saadaval. Naase, kui olek muutub.",
+    "failureTitle": "Toimingut ei õnnestunud lõpetada",
+    "status": {
+      "received": "Kätte saadud",
+      "in_review": "Läbivaatamisel",
+      "answered": "Vastatud",
+      "closed": "Suletud"
+    },
+    "failures": {
+      "authenticationRequired": "Sinu seanss aegus. Logi uuesti sisse.",
+      "recentAuthenticationRequired": "Kinnita oma isik ja proovi seejärel toimingut uuesti.",
+      "offline": "Tundub, et internetiühendus puudub. Kontrolli ühendust ja proovi uuesti.",
+      "invalidResponse": "Teenus tagastas vigase vastuse. Proovi uuesti.",
+      "appCheckUnavailable": "Seda taotlust ei saa praegu selles seadmes turvaliselt saata.",
+      "serverFailure": "Juriidiliste taotluste teenus pole ajutiselt saadaval. Proovi uuesti."
+    },
+    "kinds": {
+      "complaint": {
+        "title": "Teenuse kohta kaebuse esitamine",
+        "intro": "Kirjelda teenusega seotud probleemi. Kinnitame taotluse kättesaamise ja vastame 14 päeva jooksul. See vastamise tähtaeg ei ole kaebuse esitamise tähtaeg.",
+        "formIntro": "Lühike kirjeldus aitab meil kaebust uurida."
+      },
+      "withdrawal": {
+        "title": "Lepingust taganemine",
+        "intro": "Taganemisõigusega tarbijal on üldjuhul 14 päeva aega lepingust põhjust nimetamata taganeda. Õiguse, tähtaegade ja teenuse alustamise reeglite kohta loe rakenduse kasutustingimustest.",
+        "formIntro": "Põhjendust pole vaja esitada. Lisa tehingu ID ainult siis, kui see on sul olemas."
+      },
+      "data_recovery": {
+        "title": "Isikustamata andmete taastamine",
+        "intro": "Hindame käsitsi, kas isikustamata andmed sobivad taastamiseks, ja edastame need mõistliku aja jooksul, kui kohaldatav õigus seda nõuab. Kindlat vastamise tähtaega ei lubata. Kustutatud edenemist ei säilitata ega taastata.",
+        "formIntro": "Kirjelda isikustamata andmeid, mille taastamise sobivust soovid, et hindaksime."
+      },
+      "suspension_appeal": {
+        "title": "Peatamisotsuse vaidlustamine",
+        "intro": "See vaie vaadatakse käsitsi ja kaebusest eraldi läbi. Kindlat vastamise tähtaega ei lubata.",
+        "formIntro": "Selgita, miks peatamisotsus tuleks uuesti läbi vaadata."
+      }
+    }
+  },
+  "settings": "Seaded",
+  "sections": [
+    {
+      "title": "Privaatsus ja turvalisus",
+      "topics": [
+        {
+          "detailTitle": "Kohalik salvestus ja turvalisus",
+          "icon": "shield-check",
+          "summary": "Õpiandmeid hoitakse selles seadmes; toetatud kontokirjeid saab sünkroonida ka konto pilvega.",
+          "title": "Kohalik salvestus",
+          "paragraphs": [
+            "Patternly kasutab ühtset kohaliku salvestuse piiri. Külalisena õppimise andmed jäävad sellesse seadmesse, kui sa ei vali võrgufunktsiooni. Sisselogitud konto puhul saab toetatud kirjeid, näiteks aktiivset õpiteed, eesmärke ja plaane, lõpetatud sessioone, katseid ja korduselemente sünkroonida ka konto pilvega.",
+            "Kohalik salvestus ei taga iseenesest krüptimist, kaitset rikutud seadmes ega pöördumatut kustutamist. Patternly ei väida, et praegused kohalikud andmed on krüptitud."
+          ]
+        },
+        {
+          "detailTitle": "Kaitse piirid",
+          "icon": "alert-triangle",
+          "summary": "Õpikirjed ei ole võltsimiskindlad tõendid ega ametlikud eksamitulemused.",
+          "title": "Mille eest see ei kaitse",
+          "paragraphs": [
+            "Patternly ei väida, et kaitseb andmeid lukustamata või rikutud seadme, operatsioonisüsteemi tasandi juurdepääsu, root- või jailbreak-juurdepääsu, varukoopiate, silumistööriistade ega andmekandja kohtuekspertiisi eest.",
+            "Järjepidevuskontrollid kaitsevad rakenduse õpikirjeid korduvate või osaliste tulemuste eest. Need ei paku petmisvastast kaitset ega ole sõltumatu pädevustõend."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Patternly kasutamine",
+      "topics": [
+        {
+          "detailTitle": "Harjutustulemused, mitte sertifikaat",
+          "icon": "book-open",
+          "summary": "Tulemused näitavad sinu isiklikke harjutustulemusi, mitte ametlikku sertifikaati ega eksamitulemust.",
+          "title": "Iseseisev õppimine",
+          "paragraphs": [
+            "Patternly sisu on mõeldud iseseisvaks õppimiseks. Õpitulemused näitavad sinu isiklikke harjutustulemusi ega ole võltsimiskindlad tõendid, ametlikud eksamitulemused või sõltumatult kontrollitavad tõendid pädevuse kohta.",
+            "Sisu läbivaatamine ja valideerimine toetavad õppe kvaliteeti ja sisu seaduslikku päritolu. See ei muuda Patternlyt ametlikuks sertifitseerijaks ega heakskiidetud koolituse pakkujaks."
+          ]
+        },
+        {
+          "detailTitle": "Kustutamine ja lähtestamine",
+          "icon": "trash",
+          "summary": "Kohalik lähtestamine, konto kustutamine ja piiratud kustutamistõendid hõlmavad eri ulatust.",
+          "title": "Lähtestamise piirid",
+          "paragraphs": [
+            "Kohaliku õpiajaloo lähtestamine eemaldab sellest seadmest toetatud õpikirjed. See ei kustuta kontot ega selle pilvekoopiat; sisselogitud konto puhul taastab tavaline sünkroonimine pärast lähtestamist toetatud ajaloo.",
+            "Konto kustutamine on eraldi rakendusesisene toiming, mis eemaldab konto ja sünkroonitud õpiandmed. See ei tühista iseenesest App Store’i tellimust.",
+            "Piiratud pseudonüümitud kustutamiskaitsed ja minimaalne tõend kustutamise lõpetamise kohta võivad säilida nende määratud säilitustähtaja jooksul. Rakenduse privaatsusteates on kirjas täpne ulatus, tähtajad, õiguslikud alused, varukoopiate piirangud ja õigused. Kumbki toiming ei tähenda operatsioonisüsteemi koopiate ega välkmälu jääkide turvalist kohtuekspertiisitasemel kustutamist."
+          ]
+        }
+      ]
+    }
+  ]
+}

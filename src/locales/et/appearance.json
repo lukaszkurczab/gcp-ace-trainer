@@ -1,0 +1,14 @@
+{
+  "appearance": "Välimus",
+  "intro": "Vali, kuidas Patternly selles seadmes välja näeb.",
+  "options": "Välimus",
+  "settings": "Seaded",
+  "system": "Süsteem",
+  "systemDetail": "Kasuta seadme välimusseadeid.",
+  "light": "Hele",
+  "lightDetail": "Kasuta alati heledat kujundust.",
+  "dark": "Tume",
+  "darkDetail": "Kasuta alati tumedat kujundust.",
+  "saveErrorTitle": "Välimust ei õnnestunud salvestada",
+  "saveErrorDetail": "Proovi välimus uuesti valida."
+}

@@ -18,6 +18,47 @@ import plLearningPlan from "./locales/pl/learningPlan.json";
 import plNotifications from "./locales/pl/notifications.json";
 import plSettings from "./locales/pl/settings.json";
 
+import deAccount from "./locales/de/account.json";
+import deAppearance from "./locales/de/appearance.json";
+import deCommon from "./locales/de/common.json";
+import deData from "./locales/de/data.json";
+import deLegal from "./locales/de/legal.json";
+import deLearningPlan from "./locales/de/learningPlan.json";
+import deNotifications from "./locales/de/notifications.json";
+import deSettings from "./locales/de/settings.json";
+import frAccount from "./locales/fr/account.json";
+import frAppearance from "./locales/fr/appearance.json";
+import frCommon from "./locales/fr/common.json";
+import frData from "./locales/fr/data.json";
+import frLegal from "./locales/fr/legal.json";
+import frLearningPlan from "./locales/fr/learningPlan.json";
+import frNotifications from "./locales/fr/notifications.json";
+import frSettings from "./locales/fr/settings.json";
+import esAccount from "./locales/es/account.json";
+import esAppearance from "./locales/es/appearance.json";
+import esCommon from "./locales/es/common.json";
+import esData from "./locales/es/data.json";
+import esLegal from "./locales/es/legal.json";
+import esLearningPlan from "./locales/es/learningPlan.json";
+import esNotifications from "./locales/es/notifications.json";
+import esSettings from "./locales/es/settings.json";
+import itAccount from "./locales/it/account.json";
+import itAppearance from "./locales/it/appearance.json";
+import itCommon from "./locales/it/common.json";
+import itData from "./locales/it/data.json";
+import itLegal from "./locales/it/legal.json";
+import itLearningPlan from "./locales/it/learningPlan.json";
+import itNotifications from "./locales/it/notifications.json";
+import itSettings from "./locales/it/settings.json";
+import etAccount from "./locales/et/account.json";
+import etAppearance from "./locales/et/appearance.json";
+import etCommon from "./locales/et/common.json";
+import etData from "./locales/et/data.json";
+import etLegal from "./locales/et/legal.json";
+import etLearningPlan from "./locales/et/learningPlan.json";
+import etNotifications from "./locales/et/notifications.json";
+import etSettings from "./locales/et/settings.json";
+
 type TranslationLeaf = string | readonly unknown[];
 type TranslationEntry = readonly [key: string, value: TranslationLeaf];
 
@@ -48,7 +89,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: false,
   fallbackNS: false,
   lng: "en",
-  supportedLngs: ["en", "pl"],
+  supportedLngs: ["en", "pl", "de", "fr", "es", "it", "et"],
   ns: ["common", "account", "appearance", "data", "legal", "learningPlan", "notifications", "settings"],
   defaultNS: "common",
   resources: {
@@ -61,6 +102,56 @@ void i18n.use(initReactI18next).init({
       learningPlan: enLearningPlan,
       notifications: enNotifications,
       settings: enSettings,
+    },
+    de: {
+      account: deAccount,
+      appearance: deAppearance,
+      common: deCommon,
+      data: normalizeNamespace(deData),
+      legal: normalizeNamespace(deLegal),
+      learningPlan: deLearningPlan,
+      notifications: deNotifications,
+      settings: deSettings,
+    },
+    fr: {
+      account: frAccount,
+      appearance: frAppearance,
+      common: frCommon,
+      data: normalizeNamespace(frData),
+      legal: normalizeNamespace(frLegal),
+      learningPlan: frLearningPlan,
+      notifications: frNotifications,
+      settings: frSettings,
+    },
+    es: {
+      account: esAccount,
+      appearance: esAppearance,
+      common: esCommon,
+      data: normalizeNamespace(esData),
+      legal: normalizeNamespace(esLegal),
+      learningPlan: esLearningPlan,
+      notifications: esNotifications,
+      settings: esSettings,
+    },
+    it: {
+      account: itAccount,
+      appearance: itAppearance,
+      common: itCommon,
+      data: normalizeNamespace(itData),
+      legal: normalizeNamespace(itLegal),
+      learningPlan: itLearningPlan,
+      notifications: itNotifications,
+      settings: itSettings,
+    },
+    et: {
+      account: etAccount,
+      appearance: etAppearance,
+      common: etCommon,
+      data: normalizeNamespace(etData),
+      legal: normalizeNamespace(etLegal),
+      learningPlan: etLearningPlan,
+      notifications: etNotifications,
+      settings: etSettings,
     },
     pl: {
       account: plAccount,

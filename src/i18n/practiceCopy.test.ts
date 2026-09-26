@@ -17,14 +17,13 @@ import {
   type PracticeSurfacePhase,
 } from "../features/practice/practiceSessionPresentation";
 
-type Locale = "en" | "pl";
+type Locale = "en" | "pl" | "de" | "fr" | "es" | "it" | "et";
 type TranslationDictionary = Readonly<Record<string, unknown>>;
 
-const locales = ["en", "pl"] as const;
-const dictionaries: Readonly<Record<Locale, TranslationDictionary>> = {
-  en: JSON.parse(readFileSync(resolve("src/locales/en/common.json"), "utf8")) as TranslationDictionary,
-  pl: JSON.parse(readFileSync(resolve("src/locales/pl/common.json"), "utf8")) as TranslationDictionary,
-};
+const locales: readonly Locale[] = ["en", "pl", "de", "fr", "es", "it", "et"];
+const dictionaries: Readonly<Record<Locale, TranslationDictionary>> = Object.fromEntries(
+  locales.map((locale) => [locale, JSON.parse(readFileSync(resolve(`src/locales/${locale}/common.json`), "utf8")) as TranslationDictionary]),
+) as Record<Locale, TranslationDictionary>;
 
 function assertTranslationKey(key: string, context: string): void {
   for (const locale of locales) {

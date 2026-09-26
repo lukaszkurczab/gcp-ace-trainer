@@ -1,0 +1,14 @@
+{
+  "appearance": "Apparence",
+  "intro": "Choisissez l’apparence de Patternly sur cet appareil.",
+  "options": "Apparence",
+  "settings": "Réglages",
+  "system": "Système",
+  "systemDetail": "Utiliser l’apparence de votre appareil.",
+  "light": "Clair",
+  "lightDetail": "Toujours utiliser le thème clair.",
+  "dark": "Sombre",
+  "darkDetail": "Toujours utiliser le thème sombre.",
+  "saveErrorTitle": "Impossible d’enregistrer l’apparence",
+  "saveErrorDetail": "Essayez de choisir à nouveau une apparence."
+}

@@ -1,0 +1,146 @@
+{
+  "documentUnavailable": "Este documento legal no está disponible en este idioma hasta que se apruebe su traducción.",
+  "documentDraftWarning": "BORRADOR DE PRUEBA NO APROBADO — esta traducción no está aprobada para su uso en producción.",
+  "close": "Cerrar",
+  "infoBody": "Esta es una breve guía de la información legal y las opciones disponibles en Patternly. Consulta la Política de privacidad y las Condiciones locales para conocer las reglas completas; el enlace de asistencia solo abre el destino externo configurado.",
+  "infoTitle": "Privacidad y uso para el estudio",
+  "legal": "Información legal",
+  "publicLinksTitle": "Documentos legales y enlaces públicos",
+  "supportUnavailableTitle": "Asistencia externa no disponible",
+  "publicLinksUnconfiguredDescription": "Esta versión local no tiene un entorno público validado, por lo que el enlace de asistencia está desactivado.",
+  "publicLinksInvalidDescription": "La configuración del entorno público no es válida, por lo que el enlace de asistencia está desactivado.",
+  "publicLinkOpenFailedTitle": "Enlace público no disponible",
+  "publicLinkOpenFailedDescription": "No se pudo abrir el enlace público configurado en este dispositivo.",
+  "publicLinkUnavailableDetail": "No disponible en esta versión local.",
+  "privacyLink": "Política de privacidad",
+  "privacyLinkDetail": "Lee la Política de privacidad en Patternly.",
+  "termsLink": "Condiciones",
+  "termsLinkDetail": "Lee las Condiciones del servicio en Patternly.",
+  "supportLink": "Asistencia",
+  "supportLinkDetail": "Abre el destino público de asistencia configurado.",
+  "legalRequestsTitle": "Solicitudes legales",
+  "complaint": "Reclamación del servicio",
+  "complaintDetail": "Informa de un problema con el servicio. Respondemos en un plazo de 14 días desde la recepción; este no es un plazo para presentar una reclamación.",
+  "withdrawal": "Desistir del contrato",
+  "withdrawalDetail": "Por lo general, los consumidores que cumplen los requisitos disponen de 14 días para desistir sin indicar un motivo. Consulta las Condiciones para conocer las reglas completas.",
+  "privacyRequestsTitle": "Solicitudes conforme al RGPD",
+  "privacyRequestsDetail": "Ejerce o consulta un derecho de privacidad. Normalmente respondemos en el plazo de un mes; una prórroga legal puede añadir hasta dos meses.",
+  "dataRecoveryTitle": "Recuperar datos no personales",
+  "dataRecoveryDetail": "Solicita la recuperación de datos no personales que cumplan los requisitos. El progreso eliminado no se conserva ni se restaura.",
+  "suspensionAppeal": "Apelar una suspensión",
+  "suspensionAppealDetail": "Solicita una revisión manual de la decisión de suspensión. No se garantiza un plazo fijo de respuesta.",
+  "legalRequests": {
+    "create": "Enviar solicitud",
+    "yourRequests": "Tus solicitudes",
+    "empty": "No hay solicitudes",
+    "emptyDetail": "La solicitud aparecerá aquí después de enviarla.",
+    "accountRequired": "Este canal de solicitudes solo está disponible en una sesión segura con la cuenta iniciada. La aplicación no permite enviar solicitudes como invitado.",
+    "guestIntro": "Envía esta solicitud con tu dirección de correo electrónico. Confirmaremos la recepción en esa dirección.",
+    "emailLabel": "Dirección de correo electrónico",
+    "emailPlaceholder": "nombre@example.com",
+    "emailRequired": "Introduce una dirección de correo electrónico válida antes de enviar la solicitud.",
+    "narrativeLabel": "Detalles (obligatorios)",
+    "narrativeOptionalLabel": "Detalles (opcionales)",
+    "narrativePlaceholder": "Añade detalles si nos ayudan a gestionar la solicitud. No incluyas contraseñas ni códigos.",
+    "transactionIdLabel": "ID de transacción (opcional)",
+    "transactionIdPlaceholder": "Añade el ID de transacción del App Store si lo tienes.",
+    "submit": "Enviar",
+    "created": "Hemos recibido tu solicitud.",
+    "narrativeRequired": "Añade una breve descripción antes de enviar esta solicitud.",
+    "received": "Recibida: {{date}}",
+    "responseDue": "Fecha límite de respuesta: {{date}}",
+    "noResponseDue": "El plazo de respuesta aún no está disponible.",
+    "noResponse": "Aún no hay una respuesta disponible. Vuelve cuando cambie el estado.",
+    "failureTitle": "No se pudo completar la acción",
+    "status": {
+      "received": "Recibida",
+      "in_review": "En revisión",
+      "answered": "Respondida",
+      "closed": "Cerrada"
+    },
+    "failures": {
+      "authenticationRequired": "Tu sesión ha caducado. Inicia sesión de nuevo.",
+      "recentAuthenticationRequired": "Confirma tu identidad y vuelve a intentar la acción.",
+      "offline": "Parece que no tienes conexión. Comprueba la conexión e inténtalo de nuevo.",
+      "invalidResponse": "El servicio devolvió una respuesta no válida. Inténtalo de nuevo.",
+      "appCheckUnavailable": "Ahora mismo no se puede enviar esta solicitud de forma segura desde este dispositivo.",
+      "serverFailure": "El servicio de solicitudes legales no está disponible temporalmente. Inténtalo de nuevo."
+    },
+    "kinds": {
+      "complaint": {
+        "title": "Reclamación del servicio",
+        "intro": "Describe el problema con el servicio. Confirmaremos la recepción y responderemos en un plazo de 14 días. Ese plazo de respuesta no es un plazo para presentar una reclamación.",
+        "formIntro": "Una breve descripción nos ayuda a investigar la reclamación."
+      },
+      "withdrawal": {
+        "title": "Desistir del contrato",
+        "intro": "Por lo general, los consumidores que cumplen los requisitos disponen de 14 días para desistir sin indicar un motivo. Consulta las Condiciones locales para conocer los requisitos, los plazos y las reglas sobre el inicio del servicio.",
+        "formIntro": "No es necesario indicar un motivo. Añade un ID de transacción solo si lo tienes."
+      },
+      "data_recovery": {
+        "title": "Recuperar datos no personales",
+        "intro": "Evaluamos manualmente los datos no personales que cumplan los requisitos y, cuando lo exija la legislación aplicable, los proporcionamos en un plazo razonable. No se garantiza un plazo fijo de respuesta. El progreso eliminado no se conserva ni se restaura.",
+        "formIntro": "Describe los datos no personales cuya recuperación quieres que evaluemos."
+      },
+      "suspension_appeal": {
+        "title": "Apelar una suspensión",
+        "intro": "Esta apelación se revisa manualmente y por separado de cualquier reclamación. No se garantiza un plazo fijo de respuesta.",
+        "formIntro": "Explica por qué debería revisarse la suspensión."
+      }
+    }
+  },
+  "settings": "Ajustes",
+  "sections": [
+    {
+      "title": "Privacidad y seguridad",
+      "topics": [
+        {
+          "detailTitle": "Almacenamiento local y seguridad",
+          "icon": "shield-check",
+          "summary": "Los datos de aprendizaje se guardan en este dispositivo; los registros de cuenta compatibles también pueden sincronizarse con la nube de la cuenta.",
+          "title": "Almacenamiento local",
+          "paragraphs": [
+            "Patternly utiliza un único sistema de almacenamiento local. Los datos de aprendizaje de invitado permanecen en este dispositivo, salvo que elijas una función de red. En una cuenta con sesión iniciada, los registros compatibles —como la ruta activa, los objetivos y los planes, las sesiones completadas, los intentos y los elementos de repaso— también pueden sincronizarse con la nube de la cuenta.",
+            "El almacenamiento local, por sí solo, no garantiza el cifrado, la protección en un dispositivo comprometido ni la eliminación irrecuperable. Patternly no afirma que los datos locales actuales estén cifrados."
+          ]
+        },
+        {
+          "detailTitle": "Límites de la protección",
+          "icon": "alert-triangle",
+          "summary": "Los registros de aprendizaje no son credenciales a prueba de manipulaciones ni registros oficiales de exámenes.",
+          "title": "Qué no protege",
+          "paragraphs": [
+            "Patternly no afirma que proteja los datos frente a un dispositivo desbloqueado o comprometido, al acceso a nivel del sistema operativo, al acceso root o jailbreak, a las copias de seguridad, a las herramientas de depuración ni al acceso forense al almacenamiento.",
+            "Las comprobaciones de coherencia protegen los registros de aprendizaje propios de la aplicación frente a resultados duplicados o parciales. No ofrecen protección contra trampas ni una prueba independiente de competencia."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Uso de Patternly",
+      "topics": [
+        {
+          "detailTitle": "Evidencia de práctica, no certificación",
+          "icon": "book-open",
+          "summary": "Los resultados son evidencia personal de práctica, no certificaciones oficiales ni resultados de exámenes.",
+          "title": "Estudio independiente",
+          "paragraphs": [
+            "El contenido de Patternly está destinado al estudio independiente. Los resultados de aprendizaje son evidencia personal de práctica; no son credenciales a prueba de manipulaciones, registros oficiales de exámenes ni pruebas de competencia verificables de forma independiente.",
+            "La revisión y validación del contenido contribuyen a su calidad educativa y a que su procedencia sea lícita. No convierten a Patternly en una fuente oficial de certificación ni en un proveedor de formación avalado."
+          ]
+        },
+        {
+          "detailTitle": "Eliminación y restablecimiento",
+          "icon": "trash",
+          "summary": "El restablecimiento local, la eliminación de la cuenta y las pruebas limitadas de eliminación tienen alcances distintos.",
+          "title": "Límites del restablecimiento",
+          "paragraphs": [
+            "Restablecer el historial de aprendizaje local elimina de este dispositivo los registros de aprendizaje compatibles. No elimina la cuenta ni su copia en la nube; si has iniciado sesión, la sincronización habitual restaura el historial compatible después del restablecimiento.",
+            "Eliminar la cuenta es una acción independiente dentro de la aplicación que elimina la cuenta y los datos de aprendizaje sincronizados. Por sí sola, no cancela una suscripción del App Store.",
+            "Durante los periodos de conservación definidos pueden mantenerse medidas limitadas basadas en datos seudonimizados para proteger la eliminación y pruebas mínimas de que la eliminación se completó. La Política de privacidad local especifica el alcance, los periodos, las bases jurídicas, los límites de las copias de seguridad y tus derechos. Ninguna de estas acciones constituye un borrado forense seguro de las copias del sistema operativo ni de los restos en la memoria flash."
+          ]
+        }
+      ]
+    }
+  ]
+}

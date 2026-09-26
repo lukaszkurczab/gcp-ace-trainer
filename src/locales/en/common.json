@@ -640,7 +640,7 @@
   "Simulation result": "Simulation result",
   "Application unavailable": "Application unavailable",
   "Data on this device can’t be opened": "Data on this device can’t be opened",
-  "The key protecting local data is missing. Try again. If the key cannot be recovered, you can remove the unavailable data from this device.": "The local encryption key is missing. If it can’t be recovered, unsent sessions and guest progress on this device will be lost.",
+  "The key protecting local data is missing. Try again. If the key cannot be recovered, you can remove the unavailable data from this device.": "The key protecting local data is missing. Try again. If the key cannot be recovered, you can remove the unavailable data from this device.",
   "Remove unavailable data": "Remove unavailable data",
   "Remove data from device": "Remove data from device",
   "Hold to remove": "Hold to remove",

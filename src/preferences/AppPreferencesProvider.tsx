@@ -13,9 +13,9 @@ import {
 } from "../application/appPreferences";
 import { colors, type AppColors, type ColorMode } from "../theme";
 import { onKeyValueStorageReady } from "../infrastructure/storage/mmkvClient";
-import { resolveLocale, type LocaleResolution } from "./localeResolver";
+import { resolveLocale, type AvailableLocale, type LocaleResolution } from "./localeResolver";
 
-export type AppLocale = "en" | "pl";
+export type AppLocale = AvailableLocale;
 
 type AppPreferencesContextValue = Readonly<{
   appearance: AppearancePreference;

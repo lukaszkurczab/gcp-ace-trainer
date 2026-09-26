@@ -1,0 +1,229 @@
+{
+  "close": "Cerrar",
+  "data": "Datos",
+  "dataPrivacy": "Datos y privacidad",
+  "settings": "Ajustes",
+  "yourData": "Tus datos",
+  "rights": {
+    "title": "Tus derechos"
+  },
+  "actions": {
+    "export": {
+      "title": "Compartir o descargar los datos de la cuenta",
+      "summary": "Archivo JSON con los datos de la cuenta, los datos de aprendizaje sincronizados y la actividad de la cuenta"
+    },
+    "guestPrivacy": {
+      "title": "Solicitar ayuda con tus datos",
+      "summary": "Enviar una solicitud de privacidad desde la aplicación sin crear una cuenta"
+    },
+    "openAccount": {
+      "title": "Abrir cuenta",
+      "summary": "Inicia sesión o crea una cuenta para gestionar los datos de la cuenta"
+    },
+    "retryRestore": {
+      "title": "Intentar restaurar la sesión",
+      "summary": "Volver a comprobar la sesión de tu cuenta"
+    },
+    "retryDeletion": {
+      "title": "Reintentar la limpieza de la cuenta",
+      "summary": "Continuar con la eliminación pendiente de la cuenta"
+    },
+    "retryIdentity": {
+      "title": "Reintentar la comprobación de la cuenta",
+      "summary": "Actualizar la sesión antes de usar los datos de la cuenta"
+    },
+    "signOut": {
+      "title": "Cerrar sesión",
+      "summary": "Cerrar esta sesión caducada antes de volver a iniciar sesión"
+    },
+    "none": {
+      "title": "Acciones sobre los datos no disponibles",
+      "summary": "No hay ninguna acción de cuenta disponible en este estado"
+    }
+  },
+  "localReset": {
+    "entryTitle": "Restablecer el historial de aprendizaje local",
+    "entrySummary": "Eliminar de este dispositivo las sesiones, los intentos, los repasos, los borradores y los temporizadores",
+    "title": "¿Restablecer el historial de aprendizaje?",
+    "intro": "Revisa qué incluye el restablecimiento antes de eliminar el historial de aprendizaje local.",
+    "scopeTitle": "Qué se restablecerá",
+    "scopeBody": "Esto elimina de este dispositivo las sesiones de práctica y examen, los resultados, los intentos, los elementos de repaso, la sesión activa, los borradores guardados y los temporizadores.",
+    "confirmationTitle": "Confirmar el restablecimiento local",
+    "confirmationBody": "Se conservarán la ruta activa, los objetivos, los planes, las preferencias, las notificaciones, la identidad de instalación, el vínculo con la cuenta y la cola de informes de contenido. Si has iniciado sesión, la copia en la nube nunca se elimina; después del restablecimiento local, la aplicación restaura este historial desde la cuenta.",
+    "cancel": "Cancelar",
+    "confirm": "Restablecer el historial de aprendizaje",
+    "runningTitle": "Restableciendo el historial de aprendizaje",
+    "runningBody": "Mantén esta ventana abierta mientras se completa el restablecimiento de forma segura.",
+    "successTitle": "Historial de aprendizaje restablecido",
+    "successBody": "Se ha restablecido correctamente el historial de aprendizaje local seleccionado.",
+    "errorTitle": "No se pudo completar el restablecimiento",
+    "errorBody": "Es posible que queden algunos datos locales. Inténtalo de nuevo; si has iniciado sesión, el restablecimiento conservará la marca de recuperación hasta que se restaure la copia de la cuenta."
+  },
+  "state": {
+    "authenticated": {
+      "title": "Datos de tu cuenta",
+      "body": "Los datos de aprendizaje se guardan en este dispositivo. Los registros de cuenta compatibles también pueden sincronizarse con la nube de tu cuenta y volver mediante la sincronización habitual cuando inicies sesión. Usa las opciones de exportación, detalles y privacidad de abajo para esta cuenta."
+    },
+    "guest": {
+      "title": "Datos de invitado",
+      "body": "Los datos de aprendizaje se guardan localmente en este dispositivo. Puedes usar Patternly sin una cuenta. Si necesitas ayuda con tus datos, utiliza el formulario de privacidad de esta aplicación."
+    },
+    "signedOut": {
+      "title": "Inicia sesión para gestionar los datos de la cuenta",
+      "body": "Inicia sesión o crea una cuenta para acceder a los datos de la cuenta y a las opciones de privacidad."
+    },
+    "guestAccessBlocked": {
+      "title": "Se necesita acceso a la cuenta",
+      "body": "Estos datos de invitado guardados están vinculados a otra cuenta. Inicia sesión para continuar."
+    },
+    "verificationPending": {
+      "title": "Termina de iniciar sesión",
+      "body": "Revisa tu correo electrónico para terminar de iniciar sesión antes de gestionar los datos de la cuenta."
+    },
+    "loading": {
+      "title": "Preparando tus datos",
+      "body": "El estado de la cuenta aún se está cargando. Todavía no hay ninguna acción de cuenta disponible."
+    },
+    "authRestoreTimeout": {
+      "title": "Estado de la cuenta no disponible",
+      "body": "No se pudo restaurar tu sesión. Inténtalo de nuevo para comprobar los datos de la cuenta."
+    },
+    "firebaseUnconfigured": {
+      "title": "Cuenta no disponible",
+      "body": "Los servicios de cuenta no están configurados en esta versión."
+    },
+    "publicEnvironmentUnconfigured": {
+      "title": "Acciones sobre los datos no disponibles",
+      "body": "El entorno público de datos no está configurado en esta versión."
+    },
+    "publicEnvironmentInvalid": {
+      "title": "Acciones sobre los datos no disponibles",
+      "body": "El entorno público de datos no es válido en esta versión."
+    },
+    "deletionPending": {
+      "title": "Eliminación de la cuenta pendiente",
+      "body": "La eliminación de tu cuenta está pendiente de completarse. Reintenta la limpieza antes de usar los datos de la cuenta."
+    },
+    "signingOut": {
+      "title": "Cerrando sesión",
+      "body": "Se está cerrando la sesión. Las acciones sobre los datos de la cuenta no están disponibles temporalmente."
+    },
+    "deleting": {
+      "title": "Eliminando cuenta",
+      "body": "Se está eliminando la cuenta. Las acciones sobre los datos de la cuenta no están disponibles temporalmente."
+    },
+    "backendUnavailable": {
+      "title": "Servicio de cuenta no disponible",
+      "body": "No se pudo actualizar la sesión de tu cuenta. Inténtalo de nuevo."
+    },
+    "revokedSession": {
+      "title": "Sesión caducada",
+      "body": "La sesión de tu cuenta ya no es válida. Cierra sesión y vuelve a iniciarla."
+    }
+  },
+  "privacyRequests": {
+    "title": "Solicitudes de privacidad",
+    "entryTitle": "Enviar una solicitud de privacidad",
+    "entrySummary": "Consultar el estado o ejercer tus derechos",
+    "infoTitle": "Tus derechos",
+    "summary": "Elige un derecho. Normalmente respondemos en el plazo de un mes; cuando la ley lo permita, podemos ampliar el plazo hasta dos meses más, tras notificártelo durante el primer mes.",
+    "create": "Enviar una solicitud",
+    "yourRequests": "Tus solicitudes",
+    "empty": "No hay solicitudes",
+    "emptyDetail": "Aquí aparecerá una solicitud nueva cuando se envíe.",
+    "formIntro": "Elige el derecho que quieres ejercer. Añade detalles solo si hace falta. El plazo de respuesta comienza cuando recibimos la solicitud y es posible que debamos verificar tu identidad.",
+    "narrativeLabel": "Información adicional (opcional)",
+    "narrativePlaceholder": "Explica brevemente tu solicitud. No incluyas contraseñas ni códigos.",
+    "submit": "Enviar gratis",
+    "created": "Hemos recibido tu solicitud.",
+    "deadline": "Fecha límite: {{date}}",
+    "extended": "plazo ampliado; abre para ver los detalles",
+    "extendedTitle": "Plazo ampliado",
+    "extensionNotice": "Debido a la complejidad o al número de solicitudes, el plazo de respuesta se amplió en un máximo de dos meses. La nueva fecha límite aparece arriba.",
+    "extensionReason": "El plazo de respuesta se amplió en un máximo de dos meses. Motivo: {{reason}}. La nueva fecha límite aparece arriba.",
+    "noResponse": "Aún no hay una respuesta disponible. Vuelve cuando cambie el estado.",
+    "accountRequired": "Inicia sesión para ver las solicitudes de la cuenta. Si no tienes cuenta, utiliza el formulario de solicitud de esta aplicación.",
+    "failureTitle": "No se pudo completar la acción",
+    "rights": {
+      "access": "Acceder a tus datos",
+      "rectification": "Rectificar tus datos",
+      "erasure": "Suprimir tus datos",
+      "restriction": "Limitar el tratamiento",
+      "objection": "Oponerte al tratamiento",
+      "portability": "Portabilidad de los datos",
+      "consent_withdrawal": "Retirar el consentimiento"
+    },
+    "rightDetails": {
+      "access": "Una copia de tus datos e información sobre su tratamiento",
+      "rectification": "Corregir datos inexactos o incompletos",
+      "erasure": "Suprimir datos cuando se cumplan las condiciones legales",
+      "restriction": "Limitar temporalmente determinados tratamientos",
+      "objection": "Oponerte al tratamiento basado en intereses legítimos",
+      "portability": "Datos que cumplen los requisitos en un formato legible por máquina",
+      "consent_withdrawal": "Detener el tratamiento futuro basado en el consentimiento especificado"
+    },
+    "status": {
+      "received": "Recibida",
+      "identity_verification_required": "Se requiere confirmar la identidad",
+      "in_review": "En revisión",
+      "response_ready": "Respuesta preparada",
+      "fulfilled": "Atendida",
+      "partially_fulfilled": "Atendida parcialmente",
+      "refused": "Rechazada",
+      "closed": "Cerrada"
+    },
+    "failures": {
+      "authenticationRequired": "Tu sesión ha caducado. Inicia sesión de nuevo.",
+      "recentAuthenticationRequired": "Confirma tu identidad y vuelve a intentar la acción.",
+      "appCheckUnavailable": "Ahora mismo no se puede enviar esta solicitud de forma segura desde este dispositivo. Inténtalo más tarde.",
+      "offline": "Parece que no tienes conexión. Comprueba la conexión e inténtalo de nuevo.",
+      "invalidResponse": "El servicio devolvió una respuesta no válida. Inténtalo de nuevo.",
+      "serverFailure": "El servicio de solicitudes de privacidad no está disponible temporalmente. Inténtalo de nuevo.",
+      "invalidCode": "El código no es válido, ha caducado o ya se ha usado. Solicita un código nuevo e inténtalo de nuevo.",
+      "rateLimited": "Demasiados intentos. Inténtalo más tarde.",
+      "conflict": "Esta solicitud ha cambiado. Revisa el formulario y envíalo como una solicitud nueva."
+    }
+  },
+  "guestPrivacy": {
+    "title": "Solicitud de privacidad sin cuenta",
+    "intro": "Envía el formulario aquí. Es posible que enviemos un código de verificación a esta dirección de correo electrónico. Introduce en la aplicación el código más reciente para verificar la dirección. La solicitud quedará pendiente hasta que se verifique.",
+    "newRequest": "Nueva solicitud",
+    "existingRequest": "Verificar o consultar una solicitud",
+    "email": "Correo electrónico",
+    "requestId": "ID de la solicitud indicado en el correo electrónico",
+    "code": "Código recibido por correo electrónico",
+    "resend": "Enviar un código nuevo",
+    "verify": "Verificar el código y abrir la solicitud",
+    "refresh": "Actualizar el estado de la solicitud",
+    "pending": "Solicitud registrada. No se ha confirmado la entrega del correo electrónico. Si no recibes un código, solicita otro aquí.",
+    "sessionExpired": "La sesión de verificación ha caducado. Solicita un código nuevo para consultar el estado.",
+    "invalidEmail": "Introduce una dirección de correo electrónico válida.",
+    "storageUnavailable": "El almacenamiento local seguro no está disponible. Es posible que la solicitud pendiente se haya guardado. Inténtalo más tarde.",
+    "statusTitle": "Estado de la solicitud"
+  },
+  "details": {
+    "action": "Mostrar detalles",
+    "title": "Detalles de los datos",
+    "scopeTitle": "Alcance",
+    "accountIntro": "La exportación es un archivo JSON preparado para la cuenta con sesión iniciada.",
+    "accountBody": "La exportación incluye el perfil de tu cuenta; los registros de aprendizaje sincronizados compatibles, como la ruta activa, los objetivos y los planes de aprendizaje, los resúmenes y resultados de sesiones completadas, los intentos y la cola de repaso; además de los informes de contenido vinculados. La actividad y el contexto de la cuenta incluyen el acceso a las rutas, los derechos de acceso, las aceptaciones legales, las confirmaciones de compra, los casos de consumidores, los metadatos del dispositivo y de sincronización, y el historial de exportación. La información de acceso explica las finalidades, las categorías de datos, los destinatarios, los plazos de conservación, las fuentes, las transferencias, las decisiones automatizadas y tus derechos. El manifiesto enumera las categorías incluidas y omitidas; no se incluyen credenciales, secretos, identificadores sin procesar de proveedores o dispositivos, informes de otras personas ni informes anónimos. Las sesiones activas, los borradores, los ajustes y otros datos exclusivos del dispositivo no se sincronizan. Cuando inicies sesión en la misma cuenta, la sincronización habitual puede restaurar los registros compatibles desde la nube de la cuenta. La incorporación de datos de invitado es una opción independiente que combina con la cuenta el progreso admisible de este dispositivo. El archivo JSON se comparte mediante la hoja del sistema para compartir o guardar, para facilitar el acceso y la portabilidad, y no se puede importar a Patternly. Por seguridad, puede que tengas que volver a confirmar tu identidad. Las exportaciones están sujetas a límites de frecuencia.",
+    "guestIntro": "No necesitas una cuenta para ponerte en contacto con nosotros sobre tus datos.",
+    "guestBody": "Puedes eliminar localmente los datos almacenados solo en este dispositivo. Envía una solicitud de privacidad más amplia mediante el formulario de esta aplicación. La aplicación no adjunta un identificador de cuenta ni comprueba si una dirección existe en el sistema."
+  },
+  "status": {
+    "title": "No se pudo completar la acción",
+    "preparing": "Preparando…",
+    "authenticationRequired": "Confirma tu identidad, vuelve y selecciona de nuevo la opción de descarga.",
+    "sessionRevoked": "La sesión de la cuenta ha caducado o ha cambiado. Inicia sesión de nuevo antes de exportar.",
+    "offline": "Parece que no tienes conexión. Comprueba la conexión e inténtalo de nuevo.",
+    "rateLimited": "Inténtalo de nuevo en {{seconds}} s.",
+    "responseTooLarge": "La exportación es demasiado grande para descargarla desde la aplicación. Contacta con el servicio de asistencia.",
+    "serverFailure": "El servicio de exportación no está disponible temporalmente. Inténtalo de nuevo.",
+    "invalidResponse": "La respuesta de exportación estaba incompleta y no se guardó.",
+    "sharingUnavailable": "La hoja del sistema para guardar y compartir no está disponible.",
+    "fileFailure": "No se pudo preparar el archivo temporal de forma segura.",
+    "sharingFailed": "No se pudo abrir la hoja del sistema para guardar o compartir.",
+    "cleanupFailed": "No se pudo eliminar el archivo temporal. La aplicación volverá a intentar limpiarlo de forma segura al iniciarse de nuevo.",
+    "actionFailed": "No se pudo completar esa acción de cuenta. Inténtalo de nuevo."
+  }
+}

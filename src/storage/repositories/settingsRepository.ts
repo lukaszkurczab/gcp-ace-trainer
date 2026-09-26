@@ -1,13 +1,13 @@
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
-export type LanguagePreference = "system" | "en" | "pl";
+export type LanguagePreference = "system" | "en" | "pl" | "de" | "fr" | "es" | "it" | "et";
 export type AppearancePreference = "system" | "light" | "dark";
 export type Settings = Readonly<{
   appearance: AppearancePreference;
   language: LanguagePreference;
 }>;
 
-const languagePreferences: readonly LanguagePreference[] = ["system", "en", "pl"];
+const languagePreferences: readonly LanguagePreference[] = ["system", "en", "pl", "de", "fr", "es", "it", "et"];
 const appearancePreferences: readonly AppearancePreference[] = ["system", "light", "dark"];
 
 const isSettings = (value: unknown): value is Settings => {

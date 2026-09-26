@@ -12,8 +12,8 @@ test("system locale resolver recognizes all supported targets and regional/case 
     const result = resolveLocale("system", locale);
     const target = locale.slice(0, 2).toLowerCase();
     assert.equal(result.requestedLocale, target);
-    assert.equal(result.reason, target === "pl" || target === "en" ? "translation_available" : "translation_unavailable");
-    assert.equal(result.effectiveLocale, target === "pl" ? "pl" : "en");
+    assert.equal(result.reason, "translation_available");
+    assert.equal(result.effectiveLocale, target);
   }
 });
 
@@ -28,7 +28,7 @@ test("unknown and malformed system locale values resolve explicitly to temporary
   }
 });
 
-test("manual choices remain authoritative and settings offer only System, EN, and PL", () => {
+test("all manual choices remain authoritative and settings offer seven languages", () => {
   assert.deepEqual(resolveLocale("en", "fr-FR"), {
     requestedLocale: "en",
     effectiveLocale: "en",
@@ -39,7 +39,14 @@ test("manual choices remain authoritative and settings offer only System, EN, an
     effectiveLocale: "pl",
     reason: "translation_available",
   });
-  assert.deepEqual(LANGUAGE_SETTINGS_OPTIONS.map(({ value }) => value), ["system", "en", "pl"]);
+  for (const locale of TARGET_LOCALES) {
+    assert.deepEqual(resolveLocale(locale, "xx-ZZ"), {
+      requestedLocale: locale,
+      effectiveLocale: locale,
+      reason: "translation_available",
+    });
+  }
+  assert.deepEqual(LANGUAGE_SETTINGS_OPTIONS.map(({ value }) => value), ["system", "en", "pl", "de", "fr", "es", "it", "et"]);
 });
 
 test("i18next does not silently fill missing keys from another locale", () => {

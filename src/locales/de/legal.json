@@ -1,0 +1,146 @@
+{
+  "documentUnavailable": "Dieses Rechtsdokument ist in dieser Sprache nicht verfügbar, bis die Übersetzung genehmigt wurde.",
+  "documentDraftWarning": "NICHT FREIGEGEBENER TESTENTWURF — diese Übersetzung ist nicht für den Produktionseinsatz freigegeben.",
+  "close": "Schließen",
+  "infoBody": "Dieser kurze Überblick erläutert die rechtlichen Kontaktwege von Patternly. Die vollständigen Regelungen findest du in der Datenschutzerklärung und den Nutzungsbedingungen in der App. „Support“ öffnet ausschließlich das konfigurierte externe Ziel.",
+  "infoTitle": "Datenschutz und Nutzung zu Lernzwecken",
+  "legal": "Rechtliche Informationen",
+  "publicLinksTitle": "Rechtsdokumente und öffentliche Links",
+  "supportUnavailableTitle": "Externer Support nicht verfügbar",
+  "publicLinksUnconfiguredDescription": "Für diese lokale Build-Version wurde keine gültige öffentliche Umgebung bestätigt. Daher ist der Support-Link deaktiviert.",
+  "publicLinksInvalidDescription": "Die Konfiguration der öffentlichen Umgebung ist ungültig. Daher ist der Support-Link deaktiviert.",
+  "publicLinkOpenFailedTitle": "Öffentlicher Link nicht verfügbar",
+  "publicLinkOpenFailedDescription": "Der konfigurierte öffentliche Link konnte auf diesem Gerät nicht geöffnet werden.",
+  "publicLinkUnavailableDetail": "In dieser lokalen Build-Version nicht verfügbar.",
+  "privacyLink": "Datenschutzerklärung",
+  "privacyLinkDetail": "Lies die Datenschutzerklärung in Patternly.",
+  "termsLink": "Nutzungsbedingungen",
+  "termsLinkDetail": "Lies die Nutzungsbedingungen in Patternly.",
+  "supportLink": "Support",
+  "supportLinkDetail": "Öffne das konfigurierte öffentliche Support-Ziel.",
+  "legalRequestsTitle": "Rechtliche Anliegen",
+  "complaint": "Beschwerde zum Dienst",
+  "complaintDetail": "Melde ein Problem mit dem Dienst. Wir antworten innerhalb von 14 Tagen nach Eingang. Diese Frist ist keine Ausschlussfrist für das Einreichen einer Beschwerde.",
+  "withdrawal": "Vertrag widerrufen",
+  "withdrawalDetail": "Verbraucher:innen, die zum Widerruf berechtigt sind, haben grundsätzlich 14 Tage Zeit, den Vertrag ohne Angabe von Gründen zu widerrufen. Die vollständigen Regelungen findest du in den Nutzungsbedingungen.",
+  "privacyRequestsTitle": "Datenschutzanfragen nach der DSGVO",
+  "privacyRequestsDetail": "Nimm ein Datenschutzrecht wahr oder prüfe den Status. In der Regel antworten wir innerhalb eines Monats; eine gesetzlich zulässige Verlängerung kann bis zu zwei weitere Monate betragen.",
+  "dataRecoveryTitle": "Nicht personenbezogene Daten wiederherstellen",
+  "dataRecoveryDetail": "Beantrage die Wiederherstellung geeigneter nicht personenbezogener Daten. Gelöschter Lernfortschritt wird weder gespeichert noch wiederhergestellt.",
+  "suspensionAppeal": "Gegen eine Sperrung Einspruch einlegen",
+  "suspensionAppealDetail": "Bitte um eine manuelle Überprüfung der Sperrentscheidung. Eine feste Antwortfrist wird nicht zugesagt.",
+  "legalRequests": {
+    "create": "Anfrage senden",
+    "yourRequests": "Deine Anfragen",
+    "empty": "Keine Anfragen",
+    "emptyDetail": "Eine Anfrage wird hier angezeigt, sobald sie gesendet wurde.",
+    "accountRequired": "Dieser Anfrageweg ist nur in einer sicheren angemeldeten Sitzung verfügbar. Anfragen ohne Konto können in der App nicht eingereicht werden.",
+    "guestIntro": "Sende diese Anfrage mit deiner E-Mail-Adresse. Wir bestätigen den Eingang an diese Adresse.",
+    "emailLabel": "E-Mail-Adresse",
+    "emailPlaceholder": "name@example.com",
+    "emailRequired": "Gib eine gültige E-Mail-Adresse ein, bevor du die Anfrage sendest.",
+    "narrativeLabel": "Angaben (erforderlich)",
+    "narrativeOptionalLabel": "Angaben (optional)",
+    "narrativePlaceholder": "Ergänze Angaben, wenn sie uns bei der Bearbeitung helfen. Gib keine Passwörter oder Codes an.",
+    "transactionIdLabel": "Transaktions-ID (optional)",
+    "transactionIdPlaceholder": "Gib, falls vorhanden, die App-Store-Transaktions-ID an.",
+    "submit": "Senden",
+    "created": "Deine Anfrage ist eingegangen.",
+    "narrativeRequired": "Beschreibe dein Anliegen kurz, bevor du die Anfrage sendest.",
+    "received": "Eingegangen: {{date}}",
+    "responseDue": "Antwort fällig bis: {{date}}",
+    "noResponseDue": "Der Zeitraum für eine Antwort ist noch nicht verfügbar.",
+    "noResponse": "Eine Antwort liegt noch nicht vor. Kehre zurück, wenn sich der Status geändert hat.",
+    "failureTitle": "Aktion konnte nicht abgeschlossen werden",
+    "status": {
+      "received": "Eingegangen",
+      "in_review": "Wird geprüft",
+      "answered": "Beantwortet",
+      "closed": "Abgeschlossen"
+    },
+    "failures": {
+      "authenticationRequired": "Deine Sitzung ist abgelaufen. Melde dich erneut an.",
+      "recentAuthenticationRequired": "Bestätige deine Identität und versuche es anschließend erneut.",
+      "offline": "Du scheinst offline zu sein. Prüfe deine Verbindung und versuche es erneut.",
+      "invalidResponse": "Der Dienst hat eine ungültige Antwort zurückgegeben. Versuche es erneut.",
+      "appCheckUnavailable": "Diese Anfrage kann derzeit nicht sicher von diesem Gerät gesendet werden.",
+      "serverFailure": "Der Dienst für rechtliche Anliegen ist vorübergehend nicht verfügbar. Versuche es erneut."
+    },
+    "kinds": {
+      "complaint": {
+        "title": "Beschwerde zum Dienst",
+        "intro": "Beschreibe das Problem mit dem Dienst. Wir bestätigen den Eingang und antworten innerhalb von 14 Tagen. Diese Antwortfrist ist keine Frist für das Einreichen einer Beschwerde.",
+        "formIntro": "Eine kurze Beschreibung hilft uns, der Beschwerde nachzugehen."
+      },
+      "withdrawal": {
+        "title": "Vertrag widerrufen",
+        "intro": "Verbraucher:innen, die zum Widerruf berechtigt sind, haben grundsätzlich 14 Tage Zeit, ohne Angabe von Gründen zu widerrufen. Lies die Nutzungsbedingungen in der App zu Voraussetzungen, Fristen und Regelungen zum Leistungsbeginn.",
+        "formIntro": "Eine Begründung ist nicht erforderlich. Gib nur dann eine Transaktions-ID an, wenn du eine hast."
+      },
+      "data_recovery": {
+        "title": "Nicht personenbezogene Daten wiederherstellen",
+        "intro": "Wir prüfen manuell, ob die nicht personenbezogenen Daten für eine Wiederherstellung infrage kommen, und stellen sie, sofern das anwendbare Recht dies verlangt, innerhalb einer angemessenen Frist bereit. Eine feste Antwortfrist wird nicht zugesagt. Gelöschter Lernfortschritt wird weder gespeichert noch wiederhergestellt.",
+        "formIntro": "Beschreibe die nicht personenbezogenen Daten, deren Wiederherstellung wir prüfen sollen."
+      },
+      "suspension_appeal": {
+        "title": "Gegen eine Sperrung Einspruch einlegen",
+        "intro": "Dieser Einspruch wird manuell und getrennt von einer Beschwerde geprüft. Eine feste Antwortfrist wird nicht zugesagt.",
+        "formIntro": "Erkläre, warum die Sperrung überprüft werden sollte."
+      }
+    }
+  },
+  "settings": "Einstellungen",
+  "sections": [
+    {
+      "title": "Datenschutz und Sicherheit",
+      "topics": [
+        {
+          "detailTitle": "Lokale Speicherung und Sicherheit",
+          "icon": "shield-check",
+          "summary": "Lerndaten werden auf diesem Gerät gespeichert. Unterstützte Kontodatensätze können außerdem mit der Kontocloud synchronisiert werden.",
+          "title": "Lokale Speicherung",
+          "paragraphs": [
+            "Patternly verwendet eine einheitliche lokale Speichergrenze. Lerndaten im Gastmodus bleiben auf diesem Gerät, sofern du keine Netzwerkfunktion nutzt. Bei einem angemeldeten Konto können unterstützte Datensätze wie der aktive Lernpfad, Ziele und Pläne, abgeschlossene Einheiten, Versuche und Wiederholungselemente auch mit der Kontocloud synchronisiert werden.",
+            "Die lokale Speicherung allein garantiert weder Verschlüsselung noch Schutz auf einem kompromittierten Gerät oder eine unwiederbringliche Löschung. Patternly bezeichnet die derzeit lokal gespeicherten Daten nicht als verschlüsselt."
+          ]
+        },
+        {
+          "detailTitle": "Grenzen des Schutzes",
+          "icon": "alert-triangle",
+          "summary": "Lerndatensätze sind keine manipulationssicheren Nachweise oder offiziellen Prüfungsunterlagen.",
+          "title": "Wovor dies nicht schützt",
+          "paragraphs": [
+            "Patternly beansprucht nicht, Daten vor Zugriff über ein entsperrtes oder kompromittiertes Gerät, auf Betriebssystemebene, mit Root- oder Jailbreak-Zugriff, über Sicherungskopien, Debugging-Werkzeuge oder durch forensische Speicheranalyse zu schützen.",
+            "Konsistenzprüfungen schützen die eigenen Lerndatensätze der App vor doppelten oder unvollständigen Ergebnissen. Sie bieten weder Schutz vor Täuschungsversuchen noch einen unabhängigen Kompetenznachweis."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Patternly nutzen",
+      "topics": [
+        {
+          "detailTitle": "Übungsnachweise, keine Zertifizierung",
+          "icon": "book-open",
+          "summary": "Ergebnisse dokumentieren deine persönliche Übung und sind keine offiziellen Zertifizierungs- oder Prüfungsergebnisse.",
+          "title": "Für selbstständiges Lernen",
+          "paragraphs": [
+            "Die Inhalte von Patternly dienen dem selbstständigen Lernen. Lernergebnisse dokumentieren deine persönliche Übung. Sie sind weder manipulationssichere Nachweise noch offizielle Prüfungsunterlagen oder unabhängig überprüfbare Kompetenznachweise.",
+            "Die Prüfung und Validierung der Inhalte dienen der pädagogischen Qualität und der rechtmäßigen Herkunft der Inhalte. Dadurch wird Patternly weder zu einer offiziellen Zertifizierungsstelle noch zu einem anerkannten Schulungsanbieter."
+          ]
+        },
+        {
+          "detailTitle": "Löschung und Zurücksetzen",
+          "icon": "trash",
+          "summary": "Das lokale Zurücksetzen, die Kontolöschung und begrenzte Löschungsnachweise haben unterschiedliche Auswirkungen.",
+          "title": "Grenzen des Zurücksetzens",
+          "paragraphs": [
+            "Beim Zurücksetzen des lokalen Lernverlaufs werden unterstützte Lerndatensätze von diesem Gerät entfernt. Ein Konto oder seine Cloud-Kopie wird dadurch nicht gelöscht. Bei einem angemeldeten Konto stellt die normale Synchronisierung den unterstützten Verlauf nach dem Zurücksetzen wieder her.",
+            "„Konto löschen“ ist eine separate Aktion in der App, durch die das Konto und synchronisierte Lerndaten entfernt werden. Ein App-Store-Abonnement wird dadurch nicht automatisch gekündigt.",
+            "Begrenzte pseudonymisierte Schutzdaten zur Löschung und ein minimaler Nachweis, dass die Löschung abgeschlossen wurde, können während der jeweils festgelegten Aufbewahrungsfristen bestehen bleiben. Die Datenschutzerklärung in der App nennt den genauen Umfang, die Fristen, Rechtsgrundlagen, Grenzen bei Sicherungskopien und deine Rechte. Keine der beiden Aktionen bewirkt eine forensisch sichere Löschung von Betriebssystemkopien oder Resten im Flash-Speicher."
+          ]
+        }
+      ]
+    }
+  ]
+}

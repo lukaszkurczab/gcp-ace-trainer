@@ -1,0 +1,229 @@
+{
+  "close": "Schließen",
+  "data": "Daten",
+  "dataPrivacy": "Daten und Datenschutz",
+  "settings": "Einstellungen",
+  "yourData": "Deine Daten",
+  "rights": {
+    "title": "Deine Rechte"
+  },
+  "actions": {
+    "export": {
+      "title": "Kontodaten teilen oder herunterladen",
+      "summary": "Eine JSON-Datei mit Kontodaten, synchronisierten Lerndaten und Kontoaktivitäten"
+    },
+    "guestPrivacy": {
+      "title": "Hilfe zu deinen Daten anfordern",
+      "summary": "Sende über die App eine Datenschutzanfrage, ohne ein Konto zu erstellen"
+    },
+    "openAccount": {
+      "title": "Konto öffnen",
+      "summary": "Melde dich an oder erstelle ein Konto, um Kontodaten zu verwalten"
+    },
+    "retryRestore": {
+      "title": "Sitzungswiederherstellung versuchen",
+      "summary": "Prüfe deine Kontositzung erneut"
+    },
+    "retryDeletion": {
+      "title": "Kontobereinigung erneut versuchen",
+      "summary": "Fahre mit der ausstehenden Kontolöschung fort"
+    },
+    "retryIdentity": {
+      "title": "Kontoprüfung erneut versuchen",
+      "summary": "Aktualisiere die Kontositzung, bevor du Kontodaten verwendest"
+    },
+    "signOut": {
+      "title": "Abmelden",
+      "summary": "Beende diese abgelaufene Kontositzung, bevor du dich erneut anmeldest"
+    },
+    "none": {
+      "title": "Datenaktionen nicht verfügbar",
+      "summary": "In diesem Status ist keine Kontoaktion verfügbar"
+    }
+  },
+  "localReset": {
+    "entryTitle": "Lokalen Lernverlauf zurücksetzen",
+    "entrySummary": "Entferne Übungssitzungen, Versuche, Wiederholungen, Entwürfe und Timer von diesem Gerät",
+    "title": "Lernverlauf zurücksetzen?",
+    "intro": "Prüfe den Umfang, bevor du den lokalen Lernverlauf entfernst.",
+    "scopeTitle": "Was zurückgesetzt wird",
+    "scopeBody": "Dadurch werden Übungs- und Prüfungssitzungen, Ergebnisse, Versuche, Wiederholungselemente, die aktive Sitzung, gespeicherte Entwürfe und Timer von diesem Gerät entfernt.",
+    "confirmationTitle": "Lokales Zurücksetzen bestätigen",
+    "confirmationBody": "Dein aktiver Lernpfad, deine Ziele, Pläne, Einstellungen und Benachrichtigungen sowie die Installationskennung, die Kontoverknüpfung und die Warteschlange für Inhaltsmeldungen bleiben erhalten. Bei einem angemeldeten Konto wird die Cloud-Kopie niemals gelöscht. Nach dem lokalen Zurücksetzen stellt die App diesen Verlauf aus dem Konto wieder her.",
+    "cancel": "Abbrechen",
+    "confirm": "Lernverlauf zurücksetzen",
+    "runningTitle": "Lernverlauf wird zurückgesetzt",
+    "runningBody": "Lass dieses Fenster geöffnet, bis das Zurücksetzen sicher abgeschlossen ist.",
+    "successTitle": "Lernverlauf zurückgesetzt",
+    "successBody": "Der ausgewählte lokale Lernverlauf wurde zurückgesetzt.",
+    "errorTitle": "Zurücksetzen konnte nicht abgeschlossen werden",
+    "errorBody": "Einige lokale Daten sind möglicherweise noch vorhanden. Versuche es erneut. Beim Zurücksetzen eines angemeldeten Kontos bleibt die Wiederherstellungsmarkierung erhalten, bis die Kontokopie wiederhergestellt wurde."
+  },
+  "state": {
+    "authenticated": {
+      "title": "Deine Kontodaten",
+      "body": "Lerndaten werden auf diesem Gerät gespeichert. Unterstützte Kontodatensätze können zusätzlich mit der Cloud deines Kontos synchronisiert und nach der Anmeldung durch die normale Synchronisierung wiederhergestellt werden. Nutze unten die Export-, Detail- und Datenschutzaktionen für dieses Konto."
+    },
+    "guest": {
+      "title": "Gastdaten",
+      "body": "Lerndaten werden lokal auf diesem Gerät gespeichert. Du kannst Patternly ohne Konto verwenden. Wenn du Hilfe zu deinen Daten benötigst, nutze das Datenschutzformular in dieser App."
+    },
+    "signedOut": {
+      "title": "Melde dich an, um Kontodaten zu verwalten",
+      "body": "Melde dich an oder erstelle ein Konto, um auf Kontodaten und Datenschutzaktionen zuzugreifen."
+    },
+    "guestAccessBlocked": {
+      "title": "Kontozugriff erforderlich",
+      "body": "Diese gespeicherten Gastdaten sind mit einem anderen Konto verknüpft. Melde dich an, um fortzufahren."
+    },
+    "verificationPending": {
+      "title": "Anmeldung abschließen",
+      "body": "Prüfe deine E-Mail, um die Anmeldung abzuschließen, bevor du Kontodaten verwaltest."
+    },
+    "loading": {
+      "title": "Deine Daten werden vorbereitet",
+      "body": "Der Kontostatus wird noch geladen. Kontoaktionen sind noch nicht verfügbar."
+    },
+    "authRestoreTimeout": {
+      "title": "Kontostatus nicht verfügbar",
+      "body": "Wir konnten deine Sitzung nicht wiederherstellen. Versuche es erneut, um die Kontodaten zu prüfen."
+    },
+    "firebaseUnconfigured": {
+      "title": "Konto nicht verfügbar",
+      "body": "Kontodienste sind in dieser Build-Version nicht konfiguriert."
+    },
+    "publicEnvironmentUnconfigured": {
+      "title": "Datenaktionen nicht verfügbar",
+      "body": "Die öffentliche Datenumgebung ist in dieser Build-Version nicht konfiguriert."
+    },
+    "publicEnvironmentInvalid": {
+      "title": "Datenaktionen nicht verfügbar",
+      "body": "Die Konfiguration der öffentlichen Datenumgebung ist in dieser Build-Version ungültig."
+    },
+    "deletionPending": {
+      "title": "Kontolöschung ausstehend",
+      "body": "Die Löschung deines Kontos muss noch abgeschlossen werden. Wiederhole die Bereinigung, bevor du Kontodaten verwendest."
+    },
+    "signingOut": {
+      "title": "Abmeldung läuft",
+      "body": "Die Abmeldung läuft. Kontoaktionen sind vorübergehend nicht verfügbar."
+    },
+    "deleting": {
+      "title": "Konto wird gelöscht",
+      "body": "Das Konto wird gelöscht. Kontoaktionen sind vorübergehend nicht verfügbar."
+    },
+    "backendUnavailable": {
+      "title": "Kontodienst nicht verfügbar",
+      "body": "Wir konnten deine Kontositzung nicht aktualisieren. Versuche es erneut."
+    },
+    "revokedSession": {
+      "title": "Sitzung abgelaufen",
+      "body": "Deine Kontositzung ist nicht mehr gültig. Melde dich ab und anschließend erneut an."
+    }
+  },
+  "privacyRequests": {
+    "title": "Datenschutzanfragen",
+    "entryTitle": "Datenschutzanfrage stellen",
+    "entrySummary": "Prüfe den Status oder nimm deine Rechte wahr",
+    "infoTitle": "Deine Rechte",
+    "summary": "Wähle ein Recht aus. In der Regel antworten wir innerhalb eines Monats. Soweit gesetzlich zulässig, können wir die Frist um bis zu zwei Monate verlängern und informieren dich darüber innerhalb des ersten Monats.",
+    "create": "Anfrage stellen",
+    "yourRequests": "Deine Anfragen",
+    "empty": "Keine Anfragen",
+    "emptyDetail": "Eine neue Anfrage wird hier angezeigt, sobald sie gesendet wurde",
+    "formIntro": "Wähle das betreffende Recht aus. Ergänze nur bei Bedarf weitere Angaben. Die Antwortfrist beginnt mit Eingang der Anfrage; möglicherweise musst du deine Identität bestätigen.",
+    "narrativeLabel": "Zusätzliche Angaben (optional)",
+    "narrativePlaceholder": "Beschreibe kurz dein Anliegen. Gib keine Passwörter oder Codes an.",
+    "submit": "Kostenlos senden",
+    "created": "Deine Anfrage ist eingegangen.",
+    "deadline": "Frist: {{date}}",
+    "extended": "Frist verlängert; öffne die Details",
+    "extendedTitle": "Frist verlängert",
+    "extensionNotice": "Aufgrund der Komplexität oder Anzahl der Anfragen wurde die Antwortfrist um bis zu zwei Monate verlängert. Die neue Frist steht oben.",
+    "extensionReason": "Die Antwortfrist wurde um bis zu zwei Monate verlängert. Grund: {{reason}}. Die neue Frist steht oben.",
+    "noResponse": "Eine Antwort liegt noch nicht vor. Kehre zurück, wenn sich der Status geändert hat.",
+    "accountRequired": "Melde dich an, um Kontoanfragen einzusehen. Ohne Konto kannst du das Anfrageformular in dieser App verwenden.",
+    "failureTitle": "Aktion konnte nicht abgeschlossen werden",
+    "rights": {
+      "access": "Zugriff auf deine Daten",
+      "rectification": "Berichtigung deiner Daten",
+      "erasure": "Löschung deiner Daten",
+      "restriction": "Einschränkung der Verarbeitung",
+      "objection": "Widerspruch gegen die Verarbeitung",
+      "portability": "Datenübertragbarkeit",
+      "consent_withdrawal": "Einwilligung widerrufen"
+    },
+    "rightDetails": {
+      "access": "Eine Kopie deiner Daten und Informationen zu deren Verarbeitung",
+      "rectification": "Unrichtige oder unvollständige Daten berichtigen",
+      "erasure": "Daten löschen, wenn die gesetzlichen Voraussetzungen erfüllt sind",
+      "restriction": "Eine bestimmte Verarbeitung vorübergehend einschränken",
+      "objection": "Der Verarbeitung auf Grundlage berechtigter Interessen widersprechen",
+      "portability": "Daten, für die das Recht gilt, in einem maschinenlesbaren Format",
+      "consent_withdrawal": "Die künftige Verarbeitung auf Grundlage der angegebenen Einwilligung beenden"
+    },
+    "status": {
+      "received": "Eingegangen",
+      "identity_verification_required": "Identitätsbestätigung erforderlich",
+      "in_review": "Wird geprüft",
+      "response_ready": "Antwort vorbereitet",
+      "fulfilled": "Erledigt",
+      "partially_fulfilled": "Teilweise erledigt",
+      "refused": "Abgelehnt",
+      "closed": "Geschlossen"
+    },
+    "failures": {
+      "authenticationRequired": "Deine Sitzung ist abgelaufen. Melde dich erneut an.",
+      "recentAuthenticationRequired": "Bestätige deine Identität und versuche es anschließend erneut.",
+      "appCheckUnavailable": "Diese Anfrage kann derzeit nicht sicher von diesem Gerät gesendet werden. Versuche es später erneut.",
+      "offline": "Du scheinst offline zu sein. Prüfe deine Verbindung und versuche es erneut.",
+      "invalidResponse": "Der Dienst hat eine ungültige Antwort zurückgegeben. Versuche es erneut.",
+      "serverFailure": "Der Dienst für Datenschutzanfragen ist vorübergehend nicht verfügbar. Versuche es erneut.",
+      "invalidCode": "Der Code ist ungültig, abgelaufen oder wurde bereits verwendet. Fordere einen neuen Code an und versuche es erneut.",
+      "rateLimited": "Zu viele Versuche. Versuche es später erneut.",
+      "conflict": "Diese Anfrage wurde geändert. Prüfe das Formular und sende eine neue Anfrage."
+    }
+  },
+  "guestPrivacy": {
+    "title": "Datenschutzanfrage ohne Konto",
+    "intro": "Sende das Formular hier ab. Möglicherweise wird ein Bestätigungscode an diese E-Mail-Adresse gesendet. Gib den neuesten Code in der App ein, um deine Adresse zu bestätigen. Bis zur Bestätigung bleibt die Anfrage ausstehend.",
+    "newRequest": "Neue Anfrage",
+    "existingRequest": "Anfrage bestätigen oder erneut aufrufen",
+    "email": "E-Mail-Adresse",
+    "requestId": "Anfrage-ID aus deiner E-Mail",
+    "code": "Code aus deiner E-Mail",
+    "resend": "Neuen Code senden",
+    "verify": "Code bestätigen und Anfrage öffnen",
+    "refresh": "Anfragestatus aktualisieren",
+    "pending": "Anfrage erfasst. Der E-Mail-Versand ist nicht bestätigt. Wenn du keinen Code erhältst, fordere hier einen neuen an.",
+    "sessionExpired": "Die Bestätigungssitzung ist abgelaufen. Fordere einen neuen Code an, um den Status aufzurufen.",
+    "invalidEmail": "Gib eine gültige E-Mail-Adresse ein.",
+    "storageUnavailable": "Der sichere lokale Speicher ist nicht verfügbar. Eine ausstehende Anfrage wurde möglicherweise trotzdem gespeichert. Versuche es später erneut.",
+    "statusTitle": "Anfragestatus"
+  },
+  "details": {
+    "action": "Details anzeigen",
+    "title": "Datendetails",
+    "scopeTitle": "Umfang",
+    "accountIntro": "Der Export ist eine JSON-Datei, die für das angemeldete Konto erstellt wurde.",
+    "accountBody": "Der Export umfasst dein Kontoprofil; unterstützte synchronisierte Lerndatensätze wie den aktiven Lernpfad, Ziele und Lernpläne, Zusammenfassungen und Ergebnisse abgeschlossener Einheiten, Versuche und die Wiederholungswarteschlange; sowie verknüpfte Inhaltsmeldungen. Zu den Kontoaktivitäten und ihrem Kontext zählen der Zugriff auf Lernpfade, Berechtigungen, rechtliche Zustimmungen, Kaufbestätigungen, Verbraucherfälle, Gerätemetadaten, Synchronisierungsmetadaten und der Exportverlauf. Die Informationen zum Datenzugriff erläutern Zwecke, Datenkategorien, Empfänger, Speicherdauer, Quellen, Übermittlungen, automatisierte Entscheidungen und deine Rechte. Das Verzeichnis nennt enthaltene und ausgelassene Kategorien. Zugangsdaten, Geheimnisse, unverarbeitete Kennungen von Anbietern oder Geräten, Meldungen anderer Personen und anonyme Meldungen sind nicht enthalten. Aktive Einheiten, Entwürfe, Einstellungen und andere ausschließlich auf dem Gerät gespeicherte Daten werden nicht synchronisiert. Wenn du dich beim selben Konto anmeldest, kann die normale Synchronisierung unterstützte Datensätze aus der Kontocloud wiederherstellen. Die Übernahme von Gastdaten ist eine separate Auswahl, bei der geeigneter Lernfortschritt von diesem Gerät mit dem Konto zusammengeführt wird. Die JSON-Datei wird zum Zugriff und zur Datenübertragbarkeit über das systemeigene Teilen- oder Speichern-Menü bereitgestellt und kann nicht in Patternly importiert werden. Aus Sicherheitsgründen musst du deine Identität möglicherweise erneut bestätigen. Für Exporte gelten Häufigkeitsbeschränkungen.",
+    "guestIntro": "Du brauchst kein Konto, um uns wegen deiner Daten zu kontaktieren.",
+    "guestBody": "Du kannst Daten, die ausschließlich auf diesem Gerät gespeichert sind, lokal entfernen. Eine weitergehende Datenschutzanfrage kannst du über das Formular in dieser App senden. Die App fügt keine Konto-ID hinzu und prüft nicht, ob eine Adresse im System vorhanden ist."
+  },
+  "status": {
+    "title": "Aktion konnte nicht abgeschlossen werden",
+    "preparing": "Wird vorbereitet …",
+    "authenticationRequired": "Bestätige deine Identität. Kehre anschließend zurück und wähle erneut den Download aus.",
+    "sessionRevoked": "Die Kontositzung ist abgelaufen oder hat sich geändert. Melde dich erneut an, bevor du Daten exportierst.",
+    "offline": "Du scheinst offline zu sein. Prüfe deine Verbindung und versuche es erneut.",
+    "rateLimited": "Versuche es in {{seconds}} s erneut.",
+    "responseTooLarge": "Der Export ist zu groß, um ihn in der App herunterzuladen. Wende dich an den Support.",
+    "serverFailure": "Der Exportdienst ist vorübergehend nicht verfügbar. Versuche es erneut.",
+    "invalidResponse": "Die Exportantwort war unvollständig und wurde nicht gespeichert.",
+    "sharingUnavailable": "Das systemeigene Speichern- und Teilen-Menü ist nicht verfügbar.",
+    "fileFailure": "Die temporäre Datei konnte nicht sicher vorbereitet werden.",
+    "sharingFailed": "Das systemeigene Speichern- oder Teilen-Menü konnte nicht geöffnet werden.",
+    "cleanupFailed": "Die temporäre Datei konnte nicht entfernt werden. Beim nächsten Start versucht die App erneut, sie sicher zu löschen.",
+    "actionFailed": "Diese Kontoaktion konnte nicht abgeschlossen werden. Versuche es erneut."
+  }
+}

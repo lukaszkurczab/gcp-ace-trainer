@@ -1,0 +1,229 @@
+{
+  "close": "Sulge",
+  "data": "Andmed",
+  "dataPrivacy": "Andmed ja privaatsus",
+  "settings": "Seaded",
+  "yourData": "Sinu andmed",
+  "rights": {
+    "title": "Sinu õigused"
+  },
+  "actions": {
+    "export": {
+      "title": "Jaga konto andmeid või laadi need alla",
+      "summary": "JSON-fail kontoandmete, sünkroonitud õpiandmete ja kontotegevustega"
+    },
+    "guestPrivacy": {
+      "title": "Küsi abi oma andmetega",
+      "summary": "Saada rakenduses privaatsustaotlus kontot loomata"
+    },
+    "openAccount": {
+      "title": "Ava konto",
+      "summary": "Kontoandmete haldamiseks logi sisse või loo konto"
+    },
+    "retryRestore": {
+      "title": "Proovi seanssi taastada",
+      "summary": "Kontrolli oma kontoseanssi uuesti"
+    },
+    "retryDeletion": {
+      "title": "Proovi kontoandmete puhastamist uuesti",
+      "summary": "Jätka pooleliolevat konto kustutamist"
+    },
+    "retryIdentity": {
+      "title": "Proovi konto kontrolli uuesti",
+      "summary": "Värskenda kontoseanssi enne kontoandmete kasutamist"
+    },
+    "signOut": {
+      "title": "Logi välja",
+      "summary": "Lõpeta aegunud kontoseanss enne uuesti sisselogimist"
+    },
+    "none": {
+      "title": "Andmetoimingud pole saadaval",
+      "summary": "Selles olekus pole kontotoimingud saadaval"
+    }
+  },
+  "localReset": {
+    "entryTitle": "Lähtesta kohalik õpiajalugu",
+    "entrySummary": "Eemalda sellest seadmest sessioonid, katsed, kordused, mustandid ja taimerid",
+    "title": "Kas lähtestada õpiajalugu?",
+    "intro": "Vaata üle, mida kohaliku õpiajaloo eemaldamine hõlmab.",
+    "scopeTitle": "Mida lähtestatakse",
+    "scopeBody": "See eemaldab sellest seadmest harjutus- ja eksamisessioonid, tulemused, katsed, korduselemendid, aktiivse sessiooni, salvestatud mustandid ja taimerid.",
+    "confirmationTitle": "Kinnita kohalik lähtestamine",
+    "confirmationBody": "Sinu aktiivne õpitee, eesmärgid, plaanid, eelistused ja teavitused ning installi tunnus, kontoseos ja sisuprobleemidest teatamise järjekord säilivad. Sisselogitud konto pilvekoopiat ei kustutata kunagi; pärast kohalikku lähtestamist taastab rakendus selle ajaloo kontost.",
+    "cancel": "Tühista",
+    "confirm": "Lähtesta õpiajalugu",
+    "runningTitle": "Õpiajalugu lähtestatakse",
+    "runningBody": "Hoia see vaade avatuna, kuni lähtestamine on turvaliselt lõpetatud.",
+    "successTitle": "Õpiajalugu lähtestatud",
+    "successBody": "Valitud kohalik õpiajalugu lähtestati.",
+    "errorTitle": "Lähtestamist ei õnnestunud lõpetada",
+    "errorBody": "Osa kohalikke andmeid võib alles olla. Proovi uuesti. Sisselogitud konto lähtestamisel säilitatakse taastamismärgis, kuni konto koopia on taastatud."
+  },
+  "state": {
+    "authenticated": {
+      "title": "Sinu konto andmed",
+      "body": "Õpiandmeid hoitakse selles seadmes. Toetatud kontokirjeid saab sünkroonida ka sinu konto pilvega ning pärast sisselogimist tuuakse need tavalise sünkroonimisega tagasi. Selle konto puhul kasuta allpool olevaid ekspordi-, üksikasjade ja privaatsustoiminguid."
+    },
+    "guest": {
+      "title": "Külalise andmed",
+      "body": "Õpiandmeid hoitakse kohalikult selles seadmes. Patternlyt saab kasutada kontota. Kui vajad oma andmetega abi, kasuta selles rakenduses olevat privaatsusvormi."
+    },
+    "signedOut": {
+      "title": "Kontoandmete haldamiseks logi sisse",
+      "body": "Kontoandmetele ja privaatsustoimingutele juurdepääsuks logi sisse või loo konto."
+    },
+    "guestAccessBlocked": {
+      "title": "Vaja on juurdepääsu kontole",
+      "body": "Need salvestatud külalise andmed on seotud teise kontoga. Jätkamiseks logi sisse."
+    },
+    "verificationPending": {
+      "title": "Lõpeta sisselogimine",
+      "body": "Enne kontoandmete haldamist vaata sisselogimise lõpetamiseks oma e-posti."
+    },
+    "loading": {
+      "title": "Sinu andmeid valmistatakse ette",
+      "body": "Konto olekut alles laaditakse. Kontotoimingud pole veel saadaval."
+    },
+    "authRestoreTimeout": {
+      "title": "Konto olek pole saadaval",
+      "body": "Seanssi ei õnnestunud taastada. Kontoandmete kontrollimiseks proovi uuesti."
+    },
+    "firebaseUnconfigured": {
+      "title": "Konto pole saadaval",
+      "body": "Selles rakenduse versioonis pole kontoteenused seadistatud."
+    },
+    "publicEnvironmentUnconfigured": {
+      "title": "Andmetoimingud pole saadaval",
+      "body": "Selles rakenduse versioonis pole avalikku andmekeskkonda seadistatud."
+    },
+    "publicEnvironmentInvalid": {
+      "title": "Andmetoimingud pole saadaval",
+      "body": "Selles rakenduse versioonis on avaliku andmekeskkonna seadistus vigane."
+    },
+    "deletionPending": {
+      "title": "Konto kustutamine pooleli",
+      "body": "Sinu konto kustutamine pole veel lõpetatud. Enne kontoandmete kasutamist proovi puhastamist uuesti."
+    },
+    "signingOut": {
+      "title": "Väljalogimine",
+      "body": "Väljalogimine on pooleli. Kontoga seotud andmetoimingud pole ajutiselt saadaval."
+    },
+    "deleting": {
+      "title": "Konto kustutamine",
+      "body": "Konto kustutamine on pooleli. Kontoga seotud andmetoimingud pole ajutiselt saadaval."
+    },
+    "backendUnavailable": {
+      "title": "Kontoteenus pole saadaval",
+      "body": "Kontoseanssi ei õnnestunud värskendada. Proovi uuesti."
+    },
+    "revokedSession": {
+      "title": "Seanss on aegunud",
+      "body": "Sinu kontoseanss ei kehti enam. Logi välja ja seejärel uuesti sisse."
+    }
+  },
+  "privacyRequests": {
+    "title": "Privaatsustaotlused",
+    "entryTitle": "Esita privaatsustaotlus",
+    "entrySummary": "Kontrolli olekut või kasuta oma õigusi",
+    "infoTitle": "Sinu õigused",
+    "summary": "Vali üks õigus. Vastame tavaliselt ühe kuu jooksul. Kui seadus seda lubab, võime tähtaega pikendada kuni kahe kuu võrra, teatades sellest sulle esimese kuu jooksul.",
+    "create": "Esita taotlus",
+    "yourRequests": "Sinu taotlused",
+    "empty": "Taotlusi pole",
+    "emptyDetail": "Uus taotlus ilmub siia pärast saatmist",
+    "formIntro": "Vali õigus, mida taotlus puudutab. Lisa üksikasju ainult vajaduse korral. Vastamise tähtaeg algab taotluse kättesaamisest ning võib nõuda isikusamasuse kontrollimist.",
+    "narrativeLabel": "Lisateave (valikuline)",
+    "narrativePlaceholder": "Selgita lühidalt oma taotlust. Ära lisa paroole ega koode.",
+    "submit": "Saada tasuta",
+    "created": "Sinu taotlus on kätte saadud.",
+    "deadline": "Tähtaeg: {{date}}",
+    "extended": "tähtaega pikendati; ava üksikasjad",
+    "extendedTitle": "Tähtaega pikendati",
+    "extensionNotice": "Taotluste keerukuse või arvu tõttu pikendati vastamise tähtaega kuni kahe kuu võrra. Uus tähtaeg on näidatud ülal.",
+    "extensionReason": "Vastamise tähtaega pikendati kuni kahe kuu võrra. Põhjus: {{reason}}. Uus tähtaeg on näidatud ülal.",
+    "noResponse": "Vastus pole veel saadaval. Naase, kui olek muutub.",
+    "accountRequired": "Kontotaotluste vaatamiseks logi sisse. Ilma kontota kasuta selle rakenduse taotlusvormi.",
+    "failureTitle": "Toimingut ei õnnestunud lõpetada",
+    "rights": {
+      "access": "Juurdepääs oma andmetele",
+      "rectification": "Oma andmete parandamine",
+      "erasure": "Oma andmete kustutamine",
+      "restriction": "Töötlemise piiramine",
+      "objection": "Töötlemisele vastuväite esitamine",
+      "portability": "Andmete ülekandmine",
+      "consent_withdrawal": "Nõusoleku tagasivõtmine"
+    },
+    "rightDetails": {
+      "access": "Andmete koopia ja teave nende töötlemise kohta",
+      "rectification": "Ebatäpsete või puudulike andmete parandamine",
+      "erasure": "Andmete kustutamine, kui seaduses sätestatud tingimused on täidetud",
+      "restriction": "Määratud andmetöötluse ajutine piiramine",
+      "objection": "Õigustatud huvil põhinevale andmetöötlusele vastuväite esitamine",
+      "portability": "Õiguse alla kuuluvad andmed masinloetavas vormingus",
+      "consent_withdrawal": "Lõpetada tulevikus määratud nõusolekul põhinev töötlemine"
+    },
+    "status": {
+      "received": "Kätte saadud",
+      "identity_verification_required": "Vajalik on isikusamasuse kinnitamine",
+      "in_review": "Läbivaatamisel",
+      "response_ready": "Vastus on koostatud",
+      "fulfilled": "Täidetud",
+      "partially_fulfilled": "Osaliselt täidetud",
+      "refused": "Keeldutud",
+      "closed": "Suletud"
+    },
+    "failures": {
+      "authenticationRequired": "Sinu seanss on aegunud. Logi uuesti sisse.",
+      "recentAuthenticationRequired": "Kinnita oma isik ja proovi seejärel toimingut uuesti.",
+      "appCheckUnavailable": "Seda taotlust ei saa praegu sellest seadmest turvaliselt saata. Proovi hiljem uuesti.",
+      "offline": "Tundub, et internetiühendus puudub. Kontrolli ühendust ja proovi uuesti.",
+      "invalidResponse": "Teenus tagastas vigase vastuse. Proovi uuesti.",
+      "serverFailure": "Privaatsustaotluste teenus pole ajutiselt saadaval. Proovi uuesti.",
+      "invalidCode": "Kood on vigane, aegunud või juba kasutatud. Küsi uus kood ja proovi uuesti.",
+      "rateLimited": "Liiga palju katseid. Proovi hiljem uuesti.",
+      "conflict": "Taotlus muutus. Vaata vorm üle ja esita see uue taotlusena."
+    }
+  },
+  "guestPrivacy": {
+    "title": "Privaatsustaotlus kontota",
+    "intro": "Esita vorm siin. Sellele e-posti aadressile võidakse saata kinnituskood. Aadressi kinnitamiseks sisesta rakendusse kõige uuem kood. Taotlus jääb ootele, kuni aadress on kinnitatud.",
+    "newRequest": "Uus taotlus",
+    "existingRequest": "Kinnita taotlus või ava see uuesti",
+    "email": "E-posti aadress",
+    "requestId": "E-kirjas olev taotluse ID",
+    "code": "E-kirjas olev kood",
+    "resend": "Saada uus kood",
+    "verify": "Kinnita kood ja ava taotlus",
+    "refresh": "Värskenda taotluse olekut",
+    "pending": "Taotlus on registreeritud. E-kirja kohaletoimetamine pole kinnitatud. Kui sa koodi ei saa, küsi siit uus kood.",
+    "sessionExpired": "Kinnitamise seanss aegus. Oleku vaatamiseks küsi uus kood.",
+    "invalidEmail": "Sisesta kehtiv e-posti aadress.",
+    "storageUnavailable": "Turvaline kohalik salvestusruum pole saadaval. Ootel taotlus võib siiski olla salvestatud. Proovi hiljem uuesti.",
+    "statusTitle": "Taotluse olek"
+  },
+  "details": {
+    "action": "Näita üksikasju",
+    "title": "Andmete üksikasjad",
+    "scopeTitle": "Ulatus",
+    "accountIntro": "Eksport on sisselogitud konto jaoks koostatud JSON-fail.",
+    "accountBody": "Eksport sisaldab sinu kontoprofiili; toetatud sünkroonitud õpikirjeid, nagu aktiivne õpitee, eesmärgid ja õppeplaanid, lõpetatud sessioonide kokkuvõtted ja tulemused, katsed ning korduste järjekord; ning seotud sisuteateid. Konto tegevuste ja konteksti hulka kuuluvad õpiteede kasutamine, kasutusõigused, õiguslike tingimustega nõustumine, ostukinnitused, tarbijajuhtumid, seadme metaandmed, sünkroonimise metaandmed ja ekspordiajalugu. Andmetele juurdepääsu teave kirjeldab eesmärke, andmekategooriaid, saajaid, säilitamisaega, allikaid, edastamisi, automatiseeritud otsuseid ja sinu õigusi. Loend nimetab kaasatud ja välja jäetud kategooriad; sisselogimisandmeid, saladusi, teenusepakkuja või seadme töötlemata tunnuseid, teiste inimeste teateid ega anonüümseid teateid ei lisata. Aktiivseid sessioone, mustandeid, seadeid ega muid ainult seadmes olevaid andmeid ei sünkroonita. Kui logid sisse samale kontole, saab tavaline sünkroonimine konto pilvest toetatud kirjed taastada. Külalise andmete kasutuselevõtt on eraldi valik, millega liidetakse selle seadme sobiv edenemine kontoga. JSON-fail jagatakse juurdepääsu ja andmete ülekandmise eesmärgil süsteemi jagamis- või salvestusvaate kaudu ning seda ei saa Patternlysse importida. Turvalisuse huvides võidakse paluda sul oma isik uuesti kinnitada. Eksportidele kehtivad sageduspiirangud.",
+    "guestIntro": "Meiega oma andmete asjus ühenduse võtmiseks pole kontot vaja.",
+    "guestBody": "Ainult selles seadmes salvestatud andmed saad kohalikult eemaldada. Laiema privaatsustaotluse saad esitada selle rakenduse vormi kaudu. Rakendus ei lisa konto tunnust ega kontrolli, kas aadress on süsteemis olemas."
+  },
+  "status": {
+    "title": "Toimingut ei õnnestunud lõpetada",
+    "preparing": "Ettevalmistamine…",
+    "authenticationRequired": "Kinnita oma isik, naase seejärel siia ja vali uuesti allalaadimine.",
+    "sessionRevoked": "Kontoseanss aegus või muutus. Enne eksportimist logi uuesti sisse.",
+    "offline": "Tundub, et internetiühendus puudub. Kontrolli ühendust ja proovi uuesti.",
+    "rateLimited": "Proovi uuesti {{seconds}} sekundi pärast.",
+    "responseTooLarge": "Eksport on rakenduses allalaadimiseks liiga suur. Võta ühendust toega.",
+    "serverFailure": "Eksporditeenus pole ajutiselt saadaval. Proovi uuesti.",
+    "invalidResponse": "Ekspordi vastus oli puudulik ja seda ei salvestatud.",
+    "sharingUnavailable": "Süsteemi salvestus- ja jagamisvaade pole saadaval.",
+    "fileFailure": "Ajutist faili ei õnnestunud turvaliselt ette valmistada.",
+    "sharingFailed": "Süsteemi salvestus- või jagamisvaadet ei õnnestunud avada.",
+    "cleanupFailed": "Ajutist faili ei õnnestunud eemaldada. Rakendus proovib järgmisel käivitamisel seda turvaliselt uuesti teha.",
+    "actionFailed": "Kontotoimingut ei õnnestunud lõpetada. Proovi uuesti."
+  }
+}

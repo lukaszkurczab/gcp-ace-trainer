@@ -1,4 +1,6 @@
 {
+  "documentUnavailable": "This legal document is unavailable in this language until its translation is approved.",
+  "documentDraftWarning": "UNAPPROVED TEST ONLY — this translation is not approved for production use.",
   "close": "Close",
   "infoBody": "This is a short guide to Patternly's legal routes. Read the local Privacy Policy and Terms for the full rules; Support opens only the configured external destination.",
   "infoTitle": "Privacy and study use",

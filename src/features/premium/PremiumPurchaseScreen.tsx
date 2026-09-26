@@ -19,6 +19,7 @@ type LoadState = Readonly<{ kind: "loading" } | { kind: "ready"; package: Revenu
 export function PremiumPurchaseScreen({ navigation }: Props) {
   const styles = useThemedStyles(createStyles);
   const { locale } = useAppPreferences();
+  const legalLocale = locale === "pl" ? "pl" : "en";
   const { t } = useTranslation("settings");
   const account = usePatternlyAccount();
   const [detailsVisible, setDetailsVisible] = useState(false);
@@ -77,7 +78,7 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
           termsVersion: legalVariables.documentVersion.en,
           productIdentifier: loadState.package.product.identifier,
           storefrontPrice: loadState.package.product.priceString,
-          locale,
+          locale: legalLocale,
           immediateStartRequested: true,
         });
         if (confirmation.kind !== "success") { setResult({ status: "failure" }); return; }
@@ -99,8 +100,8 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
     }
   }
 
-  const productName = terms.premiumProductName[locale];
-  const serviceScope = terms.premiumServiceScope[locale];
+  const productName = terms.premiumProductName[legalLocale];
+  const serviceScope = terms.premiumServiceScope[legalLocale];
   const isAuthenticated = account.state.kind === "authenticated";
   const hasCurrentLegalAcceptance = account.state.kind === "authenticated" && account.state.backendUser.acceptedTermsVersion === legalVariables.documentVersion.en;
   const price = loadState.kind === "ready" ? loadState.package.product.priceString : null;
@@ -127,7 +128,7 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
       </Pressable>
       {detailsVisible ? (
         <View style={styles.details} testID="premium-details">
-          <Detail label={t("premiumSeller")} value={terms.merchantOfRecord[locale]} />
+          <Detail label={t("premiumSeller")} value={terms.merchantOfRecord[legalLocale]} />
           <Detail label={t("premiumPayment")} value={t("premiumPaymentDetail")} />
           <Detail label={t("premiumCancellation")} value={t("premiumCancellationDetail")} />
           <Detail label={t("premiumWithdrawal")} value={t("premiumWithdrawalDetail")} />
