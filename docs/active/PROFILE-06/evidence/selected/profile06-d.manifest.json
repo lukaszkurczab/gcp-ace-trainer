@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "taskId": "PROFILE-06/D",
+  "sourceCommitBeforeChanges": "03b8ca4fb89902afcfe3a40880a8c5d786ad3879",
+  "runtime": {
+    "kind": "Expo development build",
+    "expoSdk": "57.0.17",
+    "reactNative": "0.86.3",
+    "profile": "smoke",
+    "platform": "ios-simulator"
+  },
+  "locale": "en",
+  "theme": "dark",
+  "scenarioId": "profile06-d-offline-account-isolation-recovery",
+  "fixtureId": "profile06-d-local-a-b",
+  "device": {
+    "name": "iPhone 17",
+    "udid": "7F315654-3175-4F3C-BB24-B0263F59360C"
+  },
+  "services": {
+    "auth": "127.0.0.1:19099",
+    "firestore": "127.0.0.1:18081",
+    "api": "127.0.0.1:8080",
+    "metro": "[::1]:8081"
+  },
+  "checks": {
+    "targetedTests": { "passed": 50, "failed": 0 },
+    "offlineLogoutRestart": "pass",
+    "accountBIsolation": "pass",
+    "accountARecoveryRestart": "pass",
+    "typecheck": "known-unrelated-locale-failure"
+  },
+  "screenshots": [
+    {
+      "file": "profile06-d-offline-logout-pending-after-restart.png",
+      "sha256": "20695fa95f83ada2b1cdaec02118c8f5ccaabd2b0dfbfac4afaf3beefd6b692d",
+      "sourceFlow": "../logout-offline-restart.yaml",
+      "scenarioStep": "account-a-offline-logout-after-native-restart"
+    },
+    {
+      "file": "profile06-d-account-b-isolated.png",
+      "sha256": "3749787d2950d9425dd58638f098987c53c4d917be115e99ae5546f62439e70a",
+      "sourceFlow": "../login-account-b-isolation.yaml",
+      "scenarioStep": "account-b-home-isolated-from-account-a"
+    },
+    {
+      "file": "profile06-d-account-a-recovered-after-restart.png",
+      "sha256": "16b9ef1b8cfab7c9bc3d7d3989764d3804685376024b635aca66207717d3faa2",
+      "sourceFlow": "../account-b-to-a-recovery-restart.yaml",
+      "scenarioStep": "account-a-home-recovered-after-native-restart"
+    }
+  ],
+  "evidenceNoise": "Expo development warning toast is visible and is not product diagnostics.",
+  "remoteState": {
+    "beforeAccountBLogin": {
+      "accountA": { "revision": 5, "mutations": 5, "recordTypes": ["active_track", "goal", "learning_plan"] },
+      "accountB": { "revision": 1, "mutations": 1, "recordTypes": ["active_track"] }
+    },
+    "afterAccountBLogin": {
+      "accountA": { "revision": 5, "mutations": 5, "recordTypes": ["active_track", "goal", "learning_plan"] },
+      "accountB": { "revision": 1, "mutations": 1, "recordTypes": ["active_track"] }
+    },
+    "afterAccountARecovery": {
+      "accountA": { "revision": 7, "mutations": 7, "recordTypes": ["active_track", "goal", "learning_plan"] },
+      "accountB": { "revision": 1, "mutations": 1, "recordTypes": ["active_track"] }
+    }
+  },
+  "containsSecrets": false
+}

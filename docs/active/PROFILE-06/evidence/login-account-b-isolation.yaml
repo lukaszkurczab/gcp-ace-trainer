@@ -1,0 +1,38 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/D account B cannot see account A data
+env:
+  PROFILE06_ACCOUNT_B_EMAIL: ${PROFILE06_ACCOUNT_B_EMAIL}
+  PROFILE06_ACCOUNT_B_PASSWORD: ${PROFILE06_ACCOUNT_B_PASSWORD}
+---
+- extendedWaitUntil:
+    visible:
+      id: "account-email"
+    timeout: 30000
+- tapOn:
+    id: "account-email"
+- eraseText: 200
+- inputText: ${PROFILE06_ACCOUNT_B_EMAIL}
+- tapOn:
+    id: "account-password"
+- eraseText: 200
+- inputText: ${PROFILE06_ACCOUNT_B_PASSWORD}
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "account-sign-in-submit"
+- runFlow:
+    when:
+      visible: "Nie teraz"
+    commands:
+      - tapOn: "Nie teraz"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- assertVisible: "No goal is set for this track"
+- assertNotVisible: "Open-ended"
+- assertNotVisible: "Continue plan"
+- assertNotVisible:
+    id: "account-entry-choice"
+- takeScreenshot:
+    path: profile06-d-account-b-isolated-from-account-a

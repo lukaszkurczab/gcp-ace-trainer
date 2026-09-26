@@ -288,6 +288,8 @@ test("explicit login and registration Auth mutations serialize with local sign-o
 
 test("restored matching logout block closes scope and remains pending until manual retry", () => {
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const pendingPreparation = provider.slice(provider.indexOf("const startAuthenticatedProfilePreparation"), provider.indexOf("const completeProfilePreparation"));
+  assert.match(pendingPreparation, /findPendingSessionRevocation\(logoutControlSnapshotRef\.current, user\.uid\)[\s\S]*?finishPendingSignOut\(pendingRevoke\.operationId, "signOutPending", false\)[\s\S]*?findMatchingLocalLogoutBlock/u);
   const authObserver = provider.slice(provider.indexOf('configuredAuth.onUserChanged'), provider.indexOf('useEffect(() => {\n    if (state.kind === "guest"'));
   assert.match(authObserver, /findMatchingLocalLogoutBlock\(logoutControlSnapshotRef\.current, user\.uid\)/);
   assert.match(authObserver, /if \(matchingLogoutBlock\) \{[\s\S]*?closeActiveProfileStorage\(\);[\s\S]*?setState\(\{ kind: "signOutPending", user \}\);[\s\S]*?return;/);

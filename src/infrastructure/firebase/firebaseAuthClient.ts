@@ -24,7 +24,7 @@ import {
   type User,
 } from "firebase/auth";
 import type { FirebaseClientConfiguration } from "./publicConfig";
-import { createSecureAuthPersistence } from "./secureAuthPersistence";
+import { clearPersistedFirebaseAuthUser, createSecureAuthPersistence } from "./secureAuthPersistence";
 import { developmentLoopbackHost } from "../developmentEndpoints";
 import { sha256Utf8 } from "../identity/sha256";
 
@@ -172,6 +172,31 @@ export async function getAuthorizationGenerationForCurrentUser(
   return parseAuthorizationGenerationClaim(result.claims.authorizationGeneration);
 }
 
+/**
+ * Completes local Auth sign-out without a network call. If the SDK clears its
+ * in-memory user but persistence removal rejects, retry the app-owned durable
+ * user-record removal and verify it before reporting success.
+ */
+export async function completeLocalFirebaseAuthSignOut<TUser extends Readonly<{ uid: string }>>(input: Readonly<{
+  clearPersistedUser: () => Promise<void>;
+  getCurrentUser: () => TUser | null;
+  publishCurrentUser: (user: TUser | null) => void;
+  signOut: () => Promise<void>;
+}>): Promise<void> {
+  try {
+    await input.signOut();
+  } catch (error) {
+    const current = input.getCurrentUser();
+    input.publishCurrentUser(current);
+    if (current !== null) throw error;
+    await input.clearPersistedUser();
+    return;
+  }
+  const current = input.getCurrentUser();
+  input.publishCurrentUser(current);
+  if (current !== null) throw new FirebaseAuthClientError("auth/sign-out-incomplete");
+}
+
 function actionSettings(origin: string): Readonly<{ handleCodeInApp: true; url: string }> {
   return Object.freeze({ handleCodeInApp: true, url: origin });
 }
@@ -313,7 +338,12 @@ export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClien
       if (!customToken) throw new FirebaseAuthClientError("auth/provider-unavailable");
       return afterCredential((await signInWithCustomToken(auth, customToken)).user);
     },
-    signOut: async () => { await signOut(auth); current = null; },
+    signOut: () => completeLocalFirebaseAuthSignOut({
+      clearPersistedUser: clearPersistedFirebaseAuthUser,
+      getCurrentUser: () => auth.currentUser,
+      publishCurrentUser: (user) => { current = user; },
+      signOut: () => signOut(auth),
+    }),
     refreshAccountIdentity: async () => {
       if (!current) return null;
       const uid = current.uid;

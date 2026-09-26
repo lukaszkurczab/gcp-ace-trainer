@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   AccountSessionGenerationStaleError,
   findMatchingLocalLogoutBlock,
+  findPendingSessionRevocation,
   finishLocalSignOutSetupFailure,
   guardAuthenticatedScopeAgainstIncompleteSignOut,
   isPreparedGuestChoiceRequired,
@@ -161,6 +162,13 @@ test("restore locks only for a matching scoped logout marker missing from the co
   assert.equal(shouldLockForIncompleteScopedSignOut({ marker, authenticatedAccountId: "account-B", authUid: "uid-A", completed: [], pending: [] }), false);
 });
 
+test("pending remote revoke blocks profile preparation only for its matching Auth UID", () => {
+  const pending = { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" };
+  const snapshot = { blocked: null, completed: [], pending: [pending], version: 2 } as const;
+  assert.deepEqual(findPendingSessionRevocation(snapshot, "uid-A"), pending);
+  assert.equal(findPendingSessionRevocation(snapshot, "uid-B"), null);
+});
+
 test("authenticated scope checks and repairs incomplete logout before publishing profile preparation", async () => {
   const operations: string[] = [];
   const marker = { accountId: "account-A", operationId: "00000000-0000-4000-8000-000000000001", status: "pending", lastFailureCode: null } as const;
@@ -295,6 +303,25 @@ test("Firebase sign-out failure retains the matching block for manual retry", as
   assert.equal(outcome, "signOutPending");
   assert.equal(findMatchingLocalLogoutBlock({ blocked, completed: [], pending: [blocked], version: 2 }, "uid-A")?.operationId, blocked.operationId);
   assert.equal(findMatchingLocalLogoutBlock({ blocked, completed: [], pending: [blocked], version: 2 }, "uid-B"), null);
+  assert.deepEqual(operations, ["publish:locked", "close:scope", "firebase:signOut"]);
+});
+
+test("Auth rejection remains pending until durable local sign-out reports success", async () => {
+  const blocked = { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" };
+  const operations: string[] = [];
+  const outcome = await performLocalAccountSignOut({
+    uid: "uid-A",
+    persistBlock: async () => ({ blocked, completed: [], pending: [blocked], version: 2 }),
+    publishLockedState: () => { operations.push("publish:locked"); },
+    closeProfileStorage: () => { operations.push("close:scope"); },
+    signOutFirebase: async () => {
+      operations.push("firebase:signOut");
+      throw new Error("observer_already_cleared_local_auth");
+    },
+    isCurrent: () => true,
+  });
+
+  assert.equal(outcome, "signOutPending");
   assert.deepEqual(operations, ["publish:locked", "close:scope", "firebase:signOut"]);
 });
 

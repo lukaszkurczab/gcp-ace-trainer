@@ -3,7 +3,8 @@ import test from "node:test";
 
 import { OAuthProvider } from "firebase/auth";
 
-import { createAppleCredential, FirebaseAuthClientError, getAuthorizationGenerationForCurrentUser, parseAuthorizationGenerationClaim, type AppleCredentialDependencies } from "./firebaseAuthClient";
+import { completeLocalFirebaseAuthSignOut, createAppleCredential, FirebaseAuthClientError, getAuthorizationGenerationForCurrentUser, parseAuthorizationGenerationClaim, type AppleCredentialDependencies } from "./firebaseAuthClient";
+import { AUTH_USER_STORAGE_KEY, clearPersistedFirebaseAuthUser } from "./secureAuthPersistence";
 import { sha256Utf8 } from "../identity/sha256";
 
 test("Apple nonce boundary hashes the Expo request and preserves the Firebase raw nonce", async () => {
@@ -60,4 +61,57 @@ test("authorization generation refresh rejects a result after the Firebase ident
     auth.currentUser = { uid: "different-uid" };
     return { claims: { authorizationGeneration: 7 } };
   }), (error: unknown) => error instanceof FirebaseAuthClientError && error.code === "auth/uid-changed");
+});
+
+test("local Firebase sign-out retries and verifies persisted-user removal after SDK persistence rejection", async () => {
+  const stored = new Map([[AUTH_USER_STORAGE_KEY, "persisted-refresh-token"]]);
+  const secureStore = {
+    deleteItemAsync: async (key: string) => { stored.delete(key); },
+    getItemAsync: async (key: string) => stored.get(key) ?? null,
+    setItemAsync: async (key: string, value: string) => { stored.set(key, value); },
+  };
+  const sdkUser = { uid: "firebase-user" };
+  let currentUser: typeof sdkUser | null = sdkUser;
+  let publishedUser: typeof sdkUser | null = sdkUser;
+  const calls: string[] = [];
+
+  await completeLocalFirebaseAuthSignOut({
+    clearPersistedUser: async () => {
+      calls.push("clear-persisted-user");
+      await clearPersistedFirebaseAuthUser(secureStore);
+    },
+    getCurrentUser: () => currentUser,
+    publishCurrentUser: (user) => { publishedUser = user; },
+    signOut: async () => {
+      calls.push("firebase-sign-out");
+      currentUser = null;
+      throw new Error("firebase_persistence_remove_rejected");
+    },
+  });
+
+  assert.deepEqual(calls, ["firebase-sign-out", "clear-persisted-user"]);
+  assert.equal(currentUser, null);
+  assert.equal(publishedUser, null);
+  assert.equal(stored.has(AUTH_USER_STORAGE_KEY), false);
+});
+
+test("local Firebase sign-out stays failed if Auth still has a user or persistence cannot be verified", async () => {
+  const sdkUser = { uid: "firebase-user" };
+  let currentUser: typeof sdkUser | null = sdkUser;
+  let clearAttempted = false;
+  await assert.rejects(completeLocalFirebaseAuthSignOut({
+    clearPersistedUser: async () => { clearAttempted = true; },
+    getCurrentUser: () => currentUser,
+    publishCurrentUser: () => undefined,
+    signOut: async () => { throw new Error("sign-out-did-not-clear-auth"); },
+  }), /sign-out-did-not-clear-auth/u);
+  assert.equal(clearAttempted, false);
+
+  currentUser = null;
+  await assert.rejects(completeLocalFirebaseAuthSignOut({
+    clearPersistedUser: async () => { throw new Error("auth-persistence-clear-failed"); },
+    getCurrentUser: () => currentUser,
+    publishCurrentUser: () => undefined,
+    signOut: async () => { throw new Error("firebase-persistence-remove-rejected"); },
+  }), /auth-persistence-clear-failed/u);
 });

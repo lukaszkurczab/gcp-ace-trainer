@@ -288,7 +288,7 @@ export function isCanonicalAccountSyncState(value: unknown): boolean {
   const state = value as AccountSyncState;
   try {
     assertValidAccountDataRecords(state.outbox);
-    for (const item of state.syncPlan?.items ?? []) assertValidAccountDataRecords([item.payload]);
+    assertValidAccountDataRecords(state.syncPlan?.items.map((item) => item.payload) ?? []);
   } catch { return false; }
   if ((state.accountId !== null && state.accountId.trim().length === 0) || state.localDatasetVersion < 0 || state.remoteAccountRevision < 0 || !Number.isSafeInteger(state.pendingMutationCount) || state.pendingMutationCount < 0 || !Number.isSafeInteger(state.outboxSequence) || state.outboxSequence < 0 || !Number.isSafeInteger(state.highWatermark) || state.highWatermark < 0 || (state.localDatasetFingerprint !== null && !/^[a-f0-9]{64}$/u.test(state.localDatasetFingerprint)) || (state.lastSuccessfulSyncAt !== null && (typeof state.lastSuccessfulSyncAt !== "string" || Number.isNaN(Date.parse(state.lastSuccessfulSyncAt)))) || (state.blockingConflictCode !== null && (typeof state.blockingConflictCode !== "string" || state.blockingConflictCode.trim().length === 0)) || (state.lastFailureCode !== null && (typeof state.lastFailureCode !== "string" || state.lastFailureCode.trim().length === 0))) return false;
   if (!state.outbox.every(isCanonicalOutboxEntry) || !Object.values(state.acknowledged).every(isCanonicalAcknowledgedRecord) || !isCanonicalMaterialization(state.materialization) || !isCanonicalPendingConfirmation(state.pendingConfirmation) || (state.resetGuard !== undefined && state.resetGuard !== null && (!isAccountResetGuard(state.resetGuard) || !hasOnlyKeys(state.resetGuard, ["accountId", "createdAt", "operationId", "phase"])))) return false;

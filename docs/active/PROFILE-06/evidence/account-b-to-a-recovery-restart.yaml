@@ -1,0 +1,72 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/D account A resumes its pending revoke and data after account B
+env:
+  PROFILE06_ACCOUNT_A_EMAIL: ${PROFILE06_ACCOUNT_A_EMAIL}
+  PROFILE06_ACCOUNT_A_PASSWORD: ${PROFILE06_ACCOUNT_A_PASSWORD}
+---
+- assertVisible:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- tapOn:
+    id: "settings-sign-out"
+- extendedWaitUntil:
+    visible:
+      id: "account-email"
+    timeout: 30000
+- assertVisible:
+    id: "account-remote-revoke-pending"
+- tapOn:
+    id: "account-email"
+- eraseText: 200
+- inputText: ${PROFILE06_ACCOUNT_A_EMAIL}
+- tapOn:
+    id: "account-password"
+- eraseText: 200
+- inputText: ${PROFILE06_ACCOUNT_A_PASSWORD}
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "account-sign-in-submit"
+- runFlow:
+    when:
+      visible: "Nie teraz"
+    commands:
+      - tapOn: "Nie teraz"
+- extendedWaitUntil:
+    visible: "Open-ended"
+    timeout: 30000
+- assertVisible: "Continue plan"
+- assertNotVisible: "No goal is set for this track"
+- assertNotVisible:
+    id: "account-entry-choice"
+- takeScreenshot:
+    path: profile06-d-account-a-recovered-after-b
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Open-ended"
+    timeout: 30000
+- assertVisible: "Continue plan"
+- assertNotVisible: "No goal is set for this track"
+- assertNotVisible:
+    id: "account-entry-choice"
+- takeScreenshot:
+    path: profile06-d-account-a-recovered-after-b-restart

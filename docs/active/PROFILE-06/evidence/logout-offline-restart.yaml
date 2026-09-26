@@ -1,0 +1,63 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/D offline logout survives native restart
+tags:
+  - e2e
+  - profile
+  - account
+---
+- assertVisible:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- tapOn:
+    id: "settings-sign-out"
+- runFlow:
+    when:
+      visible:
+        id: "account-sign-out-pending"
+    commands:
+      - assertNotVisible:
+          id: "main-tab-bar-home"
+      - takeScreenshot:
+          path: profile06-d-offline-local-cleanup-pending
+      - tapOn:
+          id: "account-sign-out-retry"
+- extendedWaitUntil:
+    visible:
+      id: "account-remote-revoke-pending"
+    timeout: 30000
+- assertVisible:
+    id: "account-email"
+- assertNotVisible:
+    id: "main-tab-bar-home"
+- takeScreenshot:
+    path: profile06-d-offline-logout-pending-before-restart
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "account-remote-revoke-pending"
+    timeout: 30000
+- assertVisible:
+    id: "account-email"
+- assertNotVisible:
+    id: "main-tab-bar-home"
+- takeScreenshot:
+    path: profile06-d-offline-logout-pending-after-restart

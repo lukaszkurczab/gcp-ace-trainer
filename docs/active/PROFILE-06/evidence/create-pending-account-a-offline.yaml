@@ -1,0 +1,30 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/D create a pending account A goal-plan bundle while API is offline
+tags:
+  - e2e
+  - profile
+  - account
+---
+- assertVisible:
+    id: "main-tab-bar-home"
+- tapOn: "Change"
+- tapOn:
+    id: "patternly:goal-editor:meaning:none"
+- tapOn:
+    id: "patternly:goal-editor:continue"
+- tapOn:
+    id: "patternly:plan-editor:save"
+- extendedWaitUntil:
+    visible: "Plan saved"
+    timeout: 30000
+- tapOn: "Go back"
+- tapOn:
+    point: "10%,12%"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-home"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-home"
+- assertVisible: "Open-ended"
+- assertVisible: "Continue plan"

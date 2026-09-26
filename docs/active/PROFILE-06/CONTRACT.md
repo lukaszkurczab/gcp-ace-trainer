@@ -37,8 +37,10 @@ Równoległe zmiany ODK-117/UI w worktree nie należą do PROFILE-06. Testy są 
 ### PROFILE-06/E — częściowe odzyskanie
 
 - Cel: dla potwierdzonej tożsamości odzyskać poprawny podzbiór danych i jawnie obsłużyć brakujący albo uszkodzony podzbiór bez zmiany właściciela i bez wylogowania.
-- Blokada kontraktu: plan nie definiuje, które rekordy są brakujące/uszkodzone ani jaki jawny stan UI ma zobaczyć użytkownik. Nie wolno zastąpić tego pustą historią ani sztuczną etykietą. Wymaga decyzji PO opisanej w raporcie; pozostałe stories są niezależne.
-- Dowód po decyzji: realny fixture brakującego/uszkodzonego podzbioru, zachowany poprawny podzbiór, jawny stan i retry/next action.
+- Decyzja PO 26.09, opcja 1: jeżeli potwierdzone konto odzyskało poprawny stan Home, ale nie odzyskało planu, aplikacja otwiera Home z zachowanym stanem i pokazuje nieblokujący komunikat, że planu nie odzyskano i trzeba utworzyć go ponownie. Brak planu nie jest przedstawiany jako pusty plan i nie powoduje wysłania tombstone'a ani nadpisania danych zdalnych.
+- Komunikat można zamknąć; zamknięcie jest trwałe dla tożsamości tego incydentu i nie wraca po restarcie. Utworzenie nowego planu kończy incydent. Istotnie nowy incydent może mieć nową tożsamość i osobny komunikat.
+- Granica bezpieczeństwa: brak pewnego właściciela, uszkodzenie profilu lub brak możliwości odseparowania podzbioru pozostaje stanem blokującym/login, a nie częściowym sukcesem. Nie dodawać pustego fallbacku, ręcznego resetu brakującego podzbioru ani drugiego systemu synchronizacji.
+- Dowód: fixture nieodzyskanego planu; Home z zachowanym trackiem/celem/postępem; brak uploadu pustego planu; komunikat z dokładną informacją i przejściem do utworzenia planu; trwałe zamknięcie przez restart oraz fail-closed dla naruszonej własności/nieodseparowalnego uszkodzenia.
 
 ### PROFILE-06/F — usunięcie konta
 

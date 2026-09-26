@@ -89,6 +89,36 @@ test("snapshot and materialization preserve one exact goal-plan bundle", async (
   assert.deepEqual(getLearningPlanSnapshot(TRACK_ID), { plan, revision: 1 });
 });
 
+test("bound account sync validates a goal and learning plan as one sync-plan bundle", async () => {
+  await bindSyncedAccount();
+  const goal = createDefaultGoal(TRACK_ID);
+  await saveGoalSnapshot(goal, null);
+  const plan = createLearningPlan({
+    schemaVersion: 1,
+    planId: "plan:pending-sync",
+    trackId: TRACK_ID,
+    goalRevision: 1,
+    status: "accepted",
+    timezone: "Europe/Warsaw",
+    contentVersion: "test",
+    artifactSha256: TEST_ARTIFACT_SHA256,
+    acceptedTarget: { meaning: "none", targetDate: null },
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+    planRevision: 1,
+    commandId: "command:pending-sync",
+    slots: [{ slotId: createLearningPlanSlotId("slot:tue"), day: "tue", localTime: "18:00", sessionLength: 10 }],
+  });
+  saveLearningPlanAtomically({ plan, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
+
+  const pending = await ensureAccountOutboxFromLocalDataset();
+
+  assert.deepEqual(pending.outbox.map((record) => record.recordType), ["goal", "learning_plan"]);
+  assert.deepEqual(pending.syncPlan?.items.map((item) => item.payload.recordType), ["goal", "learning_plan"]);
+  assert.equal(isCanonicalAccountSyncState(pending), true);
+  assert.deepEqual((await getAccountSyncState()).syncPlan, pending.syncPlan);
+});
+
 test("bound account sync builds one retryable canonical outbox and acknowledges it", async () => {
   await bindSyncedAccount();
   await saveActiveTrackId(TRACK_ID);

@@ -169,4 +169,10 @@ export function createSecureAuthPersistence(
   };
 }
 
+/** Removes the durable Firebase user record and verifies that it is gone. */
+export async function clearPersistedFirebaseAuthUser(store: SecureStoreLike = getSecureStore()): Promise<void> {
+  await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
+  if (await store.getItemAsync(AUTH_USER_STORAGE_KEY) !== null) throw new Error("firebase_auth_persistence_clear_failed");
+}
+
 export { AUTH_USER_STORAGE_KEY };

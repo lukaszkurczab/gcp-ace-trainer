@@ -32,6 +32,11 @@ export function findMatchingLocalLogoutBlock(snapshot: LocalLogoutControlSnapsho
   return snapshot.blocked?.uid === uid ? snapshot.blocked : null;
 }
 
+/** A matching revoke must settle before the authenticated profile can reopen. */
+export function findPendingSessionRevocation(snapshot: LocalLogoutControlSnapshot, uid: string): PendingRevoke | null {
+  return snapshot.pending.find((entry) => entry.uid === uid) ?? null;
+}
+
 /** A scoped sign-out marker without a pending pair or completion receipt is interrupted. */
 export function shouldLockForIncompleteScopedSignOut(input: Readonly<{
   marker: AccountSignOutState | null;

@@ -313,7 +313,7 @@ Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymagany
 - Produkcyjna ścieżka hold-to-delete zakończyła remote deletion; dedykowany terminalny flow Maestro 3/3 PASS. Podpisany fixture potwierdził dokładnie jedną nową operację i jeden powiązany proof przed cleanupem; exact fixture cleanup PASS.
 - Pełny typecheck aplikacji pozostaje czerwony wyłącznie na 20 istniejących błędach równoległego rozszerzania locale. Niezależny qa-gate: **PASS WITH ISSUES**; app 92/92, backend fixture 10/10, backend lint/typecheck/diff PASS.
 - Backend fixture jest wypchnięty na `main` jako `ab3362b`; implementacja app jest w `04d3eb89`. Dokumentacja/plan mają wskazać ten immutable SHA i zostać wypchnięte osobnym commitem.
-- PROFILE-06/E nadal czeka na decyzję PO o UX częściowego odzyskania. Po pushu dokumentacji F przejść do kolejnego niezależnego taska; marker server revoke na terminalnym ekranie pozostaje jawnym nieblokującym issue.
+- PROFILE-06/E ma decyzję PO, opcja 1: przy nieodzyskanym planie otworzyć Home z zachowanym stanem i komunikatem, że planu nie odzyskano i trzeba utworzyć go ponownie; nie tworzyć pustego planu ani nadpisywać nim danych zdalnych. Marker server revoke na terminalnym ekranie pozostaje jawnym nieblokującym issue.
 
 ## PROFILE-06/B — wynik (26.09)
 
@@ -328,5 +328,11 @@ Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymagany
 - Transfer: wybór `true` przeżył restart, track/cel/plan zostały zachowane, a kolejny restart nie przywrócił wyboru. Exact account: 1 identity mapping, 3 progress (`active_track`, `goal`, `learning_plan`), 3 mutations, 1 metadata i 1 sync operation obejmująca dokładnie 3 mutation IDs i 3 rekordy.
 - Discard: wybór `false` przeżył restart, jawne „Remove device data” zakończyło operację, a stabilny final state wrócił do wyboru tracku. Exact account: profil istnieje, lecz wszystkie liczniki progress/mutations/metadata/operations/generations/adoption wynoszą 0.
 - Surowe logi, UID, account IDs i dane kont pozostają poza repo. Do selected evidence weszły wyłącznie ręcznie obejrzane screenshoty bez PII/sekretów; odrzucono kadry z debugger toastem i przejściowym stanem restore.
-- Brief po korekcie: APPROVE, 0,94 / 0,84 / 0,88 / 0,89, minimum 0,84. Następny slice po QA/plan/pushu: PROFILE-06/D. PROFILE-06/E nadal WAIT/PO.
+- Brief po korekcie: APPROVE, 0,94 / 0,84 / 0,88 / 0,89, minimum 0,84. PROFILE-06/E jest READY po decyzji PO: Home z zachowanym stanem oraz komunikatem o nieodzyskanym planie wymagającym ponownego utworzenia.
+
+## PROFILE-06/D — wynik (26.09)
+
+- Root cause: `isCanonicalAccountSyncState` walidował każdy payload `syncPlan` osobno, przez co sam `learning_plan` zawsze naruszał kontrakt pary goal-plan. Walidacja obejmuje teraz całą paczkę payloadów razem; test regresyjny potwierdza trwały reread bound outboxu goal+plan.
+- Runtime na istniejącym iPhonie 17: logout A przy wyłączonym API odciął Home i przeżył restart; B widziało tylko własny active_track i nie ruszyło A; powrót A wysłał dwie własne mutacje i zachował Open-ended/Continue plan przez restart.
+- Exact-account: przed i po B A revision/mutations 5/5, B 1/1; po A recovery A 7/7, B 1/1. Targeted 50/50 PASS. Typecheck pozostaje czerwony wyłącznie na 20 równoległych błędach locale.
 - QA: węższy pakiet 73/73 PASS. Nonblocking: prywatny inspector nie pozwala odtworzyć z samego repo konkretnego UID→account mapping/kompletności korzeni; znany statyczny assertion pozostaje 102/103.
