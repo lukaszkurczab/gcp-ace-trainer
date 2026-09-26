@@ -13,7 +13,7 @@ import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localS
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
-import { confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, discardGuestDataAndLoadAccount, loadAccountDataSession, resetAccountLocalLearningHistory, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion, saveGuestAdoptionChoice, type AccountDataSession } from "./accountDataService";
+import { confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, discardGuestDataAndLoadAccount, loadAccountDataSession, resetAccountLocalLearningHistory, retryAccountDataSync, retryLearningPlanRecovery, retryPendingAccountDataSync, retryPendingAccountDeletion, saveGuestAdoptionChoice, type AccountDataSession } from "./accountDataService";
 import { commitLearningStateReset } from "../learningMutations";
 import { activatePreparedProfile, closeActiveProfileStorage, continueAsGuestInNewProfile, getActiveStorageProfile, getActiveStorageProfileOrNull, inspectPreparedProfileState, notifyProfileStorageReady, prepareProfileStorage, selectAccountProfileAndRestart, selectPreparedAccountProfile, selectPreparedGuestProfile, validatePreparedGuestAccess } from "../../storage/repositories/profileStorageRepository";
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
@@ -100,6 +100,7 @@ export type AccountSessionContextValue = Readonly<{
   readLegalRequest: (requestId: string) => Promise<PrivacyRequestCommandResult<LegalRequestDto>>;
   recordPurchaseConfirmation: (input: Readonly<{ confirmationId: string; termsVersion: string; productIdentifier: string; storefrontPrice: string; locale: "en" | "pl"; immediateStartRequested: true }>) => Promise<AccountCommandResult>;
   refreshPremiumEntitlement: (accountId: string) => Promise<"verified" | "denied" | "pending">;
+  retryLearningPlanRecovery: (accountId: string) => Promise<void>;
   authorizePremiumSessionStart: () => Promise<"allowed" | "denied" | "unavailable">;
   installPremiumNodePackage: (offerId: string, appVersion: string) => Promise<void>;
   requestPasswordRecovery: (email: string) => Promise<AccountCommandResult>;
@@ -1089,8 +1090,23 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     });
   }, [apiClient, authClient, sessionCoordinator]);
 
+  const retryLearningPlanRecoveryForAccount = useCallback(async (accountId: string): Promise<void> => {
+    const auth = authClient;
+    const api = apiClient;
+    const current = stateRef.current;
+    if (!auth || !api || current.kind !== "authenticated" || current.backendUser.id !== accountId || auth.getSnapshot()?.uid !== current.user.uid) return;
+    const generation = sessionCoordinator.current(current.user.uid);
+    if (!generation) return;
+    const next = await retryLearningPlanRecovery(api, accountId);
+    if (!next || !sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.user.uid) return;
+    const latest = stateRef.current;
+    if (latest.kind !== "authenticated" || latest.backendUser.id !== accountId || latest.user.uid !== current.user.uid) return;
+    setState({ ...latest, accountData: next });
+  }, [apiClient, authClient, sessionCoordinator]);
+
   const value = useMemo<AccountSessionContextValue>(() => ({
     refreshPremiumEntitlement,
+    retryLearningPlanRecovery: retryLearningPlanRecoveryForAccount,
     authorizePremiumSessionStart,
     installPremiumNodePackage,
     dismissLearningPlanRecovery: (incidentId) => {
@@ -1970,7 +1986,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     pendingRemoteRevokeCount: logoutControlSnapshot.pending.length + (state.kind === "signOutPending" && state.operationId && !logoutControlSnapshot.pending.some((pair) => pair.uid === state.user.uid && pair.operationId === state.operationId) ? 1 : 0),
     completeProfilePreparation,
     state,
-  }), [accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, installPremiumNodePackage, completeProfilePreparation, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
+  }), [accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, installPremiumNodePackage, retryLearningPlanRecoveryForAccount, completeProfilePreparation, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }

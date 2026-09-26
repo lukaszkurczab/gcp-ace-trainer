@@ -17,6 +17,7 @@ import {
   clearAccountDeletionOwnedLocalData,
   clearGuestOwnedLocalData,
   ensureAccountOutboxFromLocalDataset,
+  completeLearningPlanRecovery,
   finishAccountMaterialization,
   getAccountSyncState,
   markAccountResetPending,
@@ -25,6 +26,7 @@ import {
   markGuestDiscardMaterializationApplying,
   markGuestDiscardMaterializationPending,
   partitionRemoteAccountDataForRecovery,
+  reserveLearningPlanRecoveryAttempt,
   dismissLearningPlanRecovery as dismissPersistedLearningPlanRecovery,
   restoreGuestOwnedLocalDataBackup,
   saveAccountSyncState,
@@ -39,6 +41,7 @@ import {
   type RemoteAccountDataRecord,
   type SyncableRecordType,
 } from "../../storage/repositories/accountDataRepository";
+import { isLearningPlanRecoveryRetryDue, nextLearningPlanRecoveryRetryAt } from "./learningPlanRecoveryRetryPolicy";
 import {
   beginAccountDeletion,
   clearAccountDeletionState,
@@ -115,6 +118,7 @@ const CLASSIFIABLE_ACCOUNT_DATA_FAILURE_CODES: readonly string[] = [
 let accountDataOperationLane: Promise<void> = Promise.resolve();
 const pendingHomeSyncAttempts = new Map<string, Promise<AccountDataSession | null>>();
 const pendingLocalResetAttempts = new Map<string, Promise<AccountDataSession>>();
+const pendingLearningPlanRecoveryAttempts = new Map<string, Promise<AccountDataSession | null>>();
 
 const LOCAL_HISTORY_RECORD_TYPES = new Set<SyncableRecordType>([
   "training_session_summary",
@@ -401,6 +405,52 @@ export function retryPendingAccountDataSync(api: PatternlyApiClient, accountId: 
     () => {
       if (pendingHomeSyncAttempts.get(accountId) === attempt) pendingHomeSyncAttempts.delete(accountId);
     },
+  );
+  return attempt;
+}
+
+/** Runs one deduplicated, read-only repair attempt on the account operation lane. */
+export function retryLearningPlanRecovery(api: PatternlyApiClient, accountId: string, now: Date = new Date()): Promise<AccountDataSession | null> {
+  const current = pendingLearningPlanRecoveryAttempts.get(accountId);
+  if (current) return current;
+  const attempt = withAccountDataOperation(async () => {
+    const installation = await getGuestInstallation();
+    const before = await getAccountSyncState();
+    const incident = before.learningPlanRecovery;
+    if (!installation || installation.accountId !== accountId || before.accountId !== accountId || !incident || incident.accountId !== accountId) return null;
+    const reserved = reserveLearningPlanRecoveryAttempt(accountId, incident.incidentId, now, nextLearningPlanRecoveryRetryAt, isLearningPlanRecoveryRetryDue);
+    if (!reserved) return null;
+    try {
+      const remote = await api.getProgress();
+      const latestInstallation = await getGuestInstallation();
+      const latest = await getAccountSyncState();
+      if (!latestInstallation || latestInstallation.accountId !== accountId || latest.accountId !== accountId
+        || latest.learningPlanRecovery?.incidentId !== incident.incidentId) return null;
+      if (remote.generation !== incident.generation) return sessionFromState(latest, false);
+      const candidates = remote.records.filter((record) => record.recordType === "learning_plan"
+        && record.targetId === incident.recordId
+        && record.trackId === incident.trackId);
+      if (candidates.length !== 1) return sessionFromState(latest, false);
+      const candidateRow = candidates[0]!;
+      const candidate: AccountDataRecord = {
+        fingerprint: candidateRow.fingerprint,
+        recordId: candidateRow.targetId,
+        recordType: candidateRow.recordType,
+        state: candidateRow.state,
+        trackId: candidateRow.trackId,
+        version: candidateRow.version,
+      };
+      if (candidate.version <= incident.remoteVersion) return sessionFromState(latest, false);
+      const completed = completeLearningPlanRecovery(accountId, incident.incidentId, candidate);
+      return completed ? sessionFromState(completed, false) : sessionFromState(await getAccountSyncState(), false);
+    } catch {
+      return sessionFromState(await getAccountSyncState(), false);
+    }
+  });
+  pendingLearningPlanRecoveryAttempts.set(accountId, attempt);
+  void attempt.then(
+    () => { if (pendingLearningPlanRecoveryAttempts.get(accountId) === attempt) pendingLearningPlanRecoveryAttempts.delete(accountId); },
+    () => { if (pendingLearningPlanRecoveryAttempts.get(accountId) === attempt) pendingLearningPlanRecoveryAttempts.delete(accountId); },
   );
   return attempt;
 }

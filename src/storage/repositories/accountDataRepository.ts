@@ -4,7 +4,7 @@ import { canonicalJsonV1, canonicalJsonV1ByteLength, canonicalSerialize } from "
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
-import { CANONICAL_RECORD_SCHEMA, readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, restoreCanonicalEnvelopeUnlocked, withCanonicalWriteLocks, writeCanonicalJson } from "./canonicalRecordCodec";
+import { CANONICAL_RECORD_SCHEMA, readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, restoreCanonicalEnvelopeUnlocked, withCanonicalWriteLocks, writeCanonicalJson, writeCanonicalJsonUnlocked } from "./canonicalRecordCodec";
 import { getGuestInstallation } from "./guestInstallationRepository";
 import { getActiveMutationJournal } from "./mutationJournalRepository";
 import { getActiveTrackId } from "./activeTrackRepository";
@@ -77,6 +77,7 @@ export type AccountSyncState = Readonly<{
 }>;
 
 export type LearningPlanRecoveryIncident = Readonly<{
+  attemptCount: number;
   accountId: string;
   dismissed: boolean;
   fingerprint: string;
@@ -84,6 +85,7 @@ export type LearningPlanRecoveryIncident = Readonly<{
   incidentId: string;
   recordId: string;
   remoteVersion: number;
+  nextRetryAt: string | null;
   trackId: string;
 }>;
 
@@ -212,7 +214,8 @@ function isAccountSyncState(value: unknown): value is AccountSyncState {
 }
 function isLearningPlanRecoveryIncident(value: unknown): value is LearningPlanRecoveryIncident {
   return isRecord(value)
-    && hasOnlyKeys(value, ["accountId", "dismissed", "fingerprint", "generation", "incidentId", "recordId", "remoteVersion", "trackId"])
+    && hasOnlyKeys(value, ["accountId", "attemptCount", "dismissed", "fingerprint", "generation", "incidentId", "recordId", "remoteVersion", "nextRetryAt", "trackId"])
+    && Number.isSafeInteger(value.attemptCount) && Number(value.attemptCount) >= 0
     && typeof value.accountId === "string" && value.accountId.trim().length > 0
     && typeof value.dismissed === "boolean"
     && typeof value.fingerprint === "string" && /^[a-f0-9]{64}$/u.test(value.fingerprint)
@@ -220,6 +223,7 @@ function isLearningPlanRecoveryIncident(value: unknown): value is LearningPlanRe
     && typeof value.incidentId === "string" && /^[a-f0-9]{64}$/u.test(value.incidentId)
     && typeof value.recordId === "string" && value.recordId.trim().length > 0
     && Number.isSafeInteger(value.remoteVersion) && Number(value.remoteVersion) >= 0
+    && (value.nextRetryAt === null || (typeof value.nextRetryAt === "string" && !Number.isNaN(Date.parse(value.nextRetryAt))))
     && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId)
     && value.recordId === value.trackId;
 }
@@ -505,6 +509,77 @@ export function dismissLearningPlanRecovery(accountId: string, incidentId: strin
     throw new AccountDataFailure("account_binding_mismatch");
   }
   return saveAccountSyncState({ ...current, learningPlanRecovery: Object.freeze({ ...incident, dismissed: true }) });
+}
+
+/** Reserves one durable read attempt before any recovery request can start. */
+export function reserveLearningPlanRecoveryAttempt(
+  accountId: string,
+  incidentId: string,
+  now: Date,
+  nextRetryAt: (attemptCount: number, now: Date) => string,
+  isDue: (nextRetryAt: string | null, now: Date) => boolean,
+): AccountSyncState | null {
+  if (!Number.isFinite(now.getTime())) throw new RangeError("Recovery clock must be a valid date.");
+  return withCanonicalWriteLocks([STORAGE_KEYS.ACCOUNT_SYNC], () => {
+    const current = readValidatedAccountSyncState();
+    const incident = current.learningPlanRecovery;
+    if (current.accountId !== accountId || !incident || incident.accountId !== accountId || incident.incidentId !== incidentId || !isDue(incident.nextRetryAt, now)) return null;
+    const attemptCount = incident.attemptCount + 1;
+    const reserved = Object.freeze({ ...incident, attemptCount, nextRetryAt: nextRetryAt(attemptCount, now) });
+    return writeCanonicalJsonUnlocked(STORAGE_KEYS.ACCOUNT_SYNC, { ...current, learningPlanRecovery: reserved }).payload;
+  });
+}
+
+/** Commits only the exact valid replacement under one plan + ACCOUNT_SYNC lock. */
+export function completeLearningPlanRecovery(
+  accountId: string,
+  incidentId: string,
+  record: AccountDataRecord,
+): AccountSyncState | null {
+  if (!isCanonicalAccountDataRecord(record)
+    || record.recordType !== "learning_plan"
+    || record.recordId !== record.trackId) return null;
+  const planState = parseLearningPlanCloudState(record.state, record.trackId);
+  if (!planState || planState.plan.trackId !== record.trackId) return null;
+  const planKey = STORAGE_KEYS.learningPlan(record.trackId);
+  const goalKey = STORAGE_KEYS.goal(record.trackId);
+  return withCanonicalWriteLocks([planKey, STORAGE_KEYS.ACCOUNT_SYNC], () => {
+    const current = readValidatedAccountSyncState();
+    const incident = current.learningPlanRecovery;
+    if (current.accountId !== accountId || !incident || incident.accountId !== accountId || incident.incidentId !== incidentId
+      || incident.recordId !== record.recordId || incident.trackId !== record.trackId || record.version <= incident.remoteVersion) return null;
+    const goal = readCanonicalEnvelope(goalKey, (value): value is GoalRecord => isGoalRecordShapeForTrack(value, record.trackId));
+    if (!goal || planState.plan.goalRevision !== goal.revision) return null;
+    const priorPlan = readCanonicalEnvelope(planKey, (value): value is LearningPlan => isLearningPlanV1ForTrack(value, record.trackId));
+    const priorSync = readCanonicalEnvelope(STORAGE_KEYS.ACCOUNT_SYNC, (value): value is Record<string, unknown> => isRecord(value));
+    const key = accountDataRecordKey(record);
+    const acknowledged = Object.freeze({
+      ...current.acknowledged,
+      [key]: Object.freeze({ fingerprint: record.fingerprint, recordId: record.recordId, recordType: "learning_plan" as const, remoteVersion: record.version, trackId: record.trackId }),
+    });
+    // This read-only recovery materializes exactly one plan. Advancing the
+    // account-wide revision would incorrectly acknowledge unrelated remote
+    // records that were fetched but deliberately not applied here.
+    const next = { ...current, acknowledged, learningPlanRecovery: null };
+    if (!isCanonicalAccountSyncState(next)) throw new AccountDataFailure("account_sync_state_invalid");
+    try {
+      restoreCanonicalEnvelopeUnlocked(planKey, { schemaIdentity: CANONICAL_RECORD_SCHEMA, revision: planState.revision, payload: planState.plan });
+      writeCanonicalJsonUnlocked(STORAGE_KEYS.ACCOUNT_SYNC, next);
+      return freezeSyncState(next);
+    } catch (error) {
+      if (priorPlan) restoreCanonicalEnvelopeUnlocked(planKey, priorPlan);
+      else removeCanonicalValue(planKey);
+      if (priorSync) restoreCanonicalEnvelopeUnlocked(STORAGE_KEYS.ACCOUNT_SYNC, priorSync);
+      else removeCanonicalValue(STORAGE_KEYS.ACCOUNT_SYNC);
+      throw error;
+    }
+  });
+}
+
+function readValidatedAccountSyncState(): AccountSyncState {
+  const raw = readCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, (value): value is Record<string, unknown> => isRecord(value));
+  if (raw !== null && !isCanonicalAccountSyncState(raw)) throw new AccountDataFailure("account_sync_state_invalid");
+  return raw ? freezeSyncState({ ...raw as AccountSyncState, learningPlanRecovery: (raw as AccountSyncState).learningPlanRecovery ?? null }) : emptyState();
 }
 
 export async function saveGuestAdoptionChoice(choice: "transfer" | "discard"): Promise<AccountSyncState> {
@@ -904,12 +979,14 @@ export async function partitionRemoteAccountDataForRecovery(
     records: Object.freeze(validRecords.map((record) => Object.freeze(record))),
     incident: Object.freeze({
       accountId: input.accountId,
+      attemptCount: existing?.incidentId === incidentId ? existing.attemptCount : 0,
       dismissed: existing?.dismissed ?? false,
       fingerprint: invalidPlan.fingerprint,
       generation: input.generation,
       incidentId,
       recordId: invalidPlan.recordId,
       remoteVersion: invalidPlan.version,
+      nextRetryAt: existing?.incidentId === incidentId ? existing.nextRetryAt : null,
       trackId: invalidPlan.trackId,
     }),
   });

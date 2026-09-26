@@ -408,6 +408,15 @@ test("email security composition delegates refresh to the global foreground owne
   assert.equal("refreshIdentity" in pl, false);
 });
 
+test("the foreground owner retries plan recovery at bootstrap, reconnect, foreground, and its durable timer", () => {
+  const sidecar = readFileSync("src/application/account/AccountForegroundRefreshSidecar.tsx", "utf8");
+  assert.match(sidecar, /currentRecoveryIncidentId/u);
+  assert.match(sidecar, /NetInfo\.addEventListener[\s\S]*transition\.reconnected[\s\S]*retryLearningPlanRecovery/u);
+  assert.match(sidecar, /refresh: async[\s\S]*refreshAccountIdentity[\s\S]*retryLearningPlanRecovery[\s\S]*AppState\.addEventListener\("change"/u);
+  assert.match(sidecar, /setInterval[\s\S]*retryLearningPlanRecovery[\s\S]*30_000/u);
+  assert.ok(sidecar.match(/retryLearningPlanRecovery/g)?.length === 4, "bootstrap, reconnect, foreground, and timer must be the only trigger owners");
+});
+
 test("sign-in keeps guest access visible and uses the approved Google logo asset", () => {
   const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
   assert.match(screen, /ambientVariant="auth"/);

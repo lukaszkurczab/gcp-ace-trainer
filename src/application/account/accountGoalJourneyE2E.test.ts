@@ -62,7 +62,7 @@ test("ODK-E2E-041 data evidence covers identity, atomic goal-plan validation, re
     "failed account fetch keeps guest data",
     "stale adoption confirmation is cleared",
     "pending materialization blocks lifecycle",
-    "malformed remote records are rejected",
+    "invalid plan recovery fails closed on bad envelope, duplicate identity, uncertain goal, or ownership",
   ]) assert.match(lifecycle, new RegExp(evidence, "u"), evidence);
 
   for (const testID of ["account-sync-pending", "account-sync-conflict", "account-sync-failed", "account-sync-retry"]) {

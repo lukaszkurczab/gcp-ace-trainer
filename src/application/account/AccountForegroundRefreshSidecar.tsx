@@ -23,6 +23,7 @@ export function AccountForegroundRefreshSidecar() {
   const bootstrappedAccountRef = useRef<string | null>(null);
   const currentUid = authenticatedUid(account.state);
   const currentAccountId = account.state.kind === "authenticated" ? account.state.backendUser.id : null;
+  const currentRecoveryIncidentId = account.state.kind === "authenticated" ? account.state.accountData.learningPlanRecovery?.incidentId ?? null : null;
   if (currentUid !== sessionUidRef.current) {
     sessionUidRef.current = currentUid;
     sessionGenerationRef.current += 1;
@@ -30,11 +31,12 @@ export function AccountForegroundRefreshSidecar() {
 
   useEffect(() => {
     if (!currentUid || !currentAccountId) { bootstrappedAccountRef.current = null; return; }
-    const key = `${currentUid}\u0000${currentAccountId}`;
+    const key = `${currentUid}\u0000${currentAccountId}\u0000${currentRecoveryIncidentId ?? ""}`;
     if (bootstrappedAccountRef.current === key) return;
     bootstrappedAccountRef.current = key;
     void accountRef.current.refreshPremiumEntitlement(currentAccountId);
-  }, [currentUid, currentAccountId]);
+    void accountRef.current.retryLearningPlanRecovery(currentAccountId);
+  }, [currentUid, currentAccountId, currentRecoveryIncidentId]);
 
   useEffect(() => {
     let previousReachability: boolean | null = null;
@@ -45,6 +47,7 @@ export function AccountForegroundRefreshSidecar() {
       const current = accountRef.current.state;
       if (current.kind !== "authenticated") return;
       void accountRef.current.refreshPremiumEntitlement(current.backendUser.id);
+      void accountRef.current.retryLearningPlanRecovery(current.backendUser.id);
     });
     return unsubscribe;
   }, []);
@@ -63,6 +66,7 @@ export function AccountForegroundRefreshSidecar() {
         const current = accountRef.current.state;
         if (result.kind === "success" && current.kind === "authenticated" && current.user.uid === intent.uid) {
           await accountRef.current.refreshPremiumEntitlement(current.backendUser.id);
+          await accountRef.current.retryLearningPlanRecovery(current.backendUser.id);
         }
       },
     });
@@ -85,6 +89,18 @@ export function AccountForegroundRefreshSidecar() {
       scheduler.dispose();
     };
   }, []);
+
+  useEffect(() => {
+    if (!currentUid || !currentAccountId || !currentRecoveryIncidentId) return;
+    const timer = setInterval(() => {
+      if (AppState.currentState !== "active") return;
+      const current = accountRef.current.state;
+      if (current.kind !== "authenticated" || current.user.uid !== currentUid || current.backendUser.id !== currentAccountId
+        || current.accountData.learningPlanRecovery?.incidentId !== currentRecoveryIncidentId) return;
+      void accountRef.current.retryLearningPlanRecovery(currentAccountId);
+    }, 30_000);
+    return () => clearInterval(timer);
+  }, [currentUid, currentAccountId, currentRecoveryIncidentId]);
 
   return null;
 }
