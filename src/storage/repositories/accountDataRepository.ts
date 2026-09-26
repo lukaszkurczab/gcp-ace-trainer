@@ -73,6 +73,18 @@ export type AccountSyncState = Readonly<{
   outboxSequence: number;
   highWatermark: number;
   resetGuard: AccountResetGuard | null;
+  learningPlanRecovery: LearningPlanRecoveryIncident | null;
+}>;
+
+export type LearningPlanRecoveryIncident = Readonly<{
+  accountId: string;
+  dismissed: boolean;
+  fingerprint: string;
+  generation: number;
+  incidentId: string;
+  recordId: string;
+  remoteVersion: number;
+  trackId: string;
 }>;
 
 export type AccountResetGuard = Readonly<{
@@ -92,7 +104,7 @@ export type GuestOwnedLocalDataBackupEntry = Readonly<{ key: string; value: stri
 export type AccountAcknowledgedRecord = Readonly<{ fingerprint: string; recordId: string; recordType: SyncableRecordType; remoteVersion: number; trackId: string }>;
 export type AccountOutboxEntry = Readonly<AccountDataRecord & { mutationId: string; expectedVersion: number | null; attemptCount: number; lastErrorCode: string | null; status: "pending" | "retrying" | "failed"; sequence: number }>;
 
-const emptyState = (): AccountSyncState => Object.freeze({ accountId: null, guestAdoptionChoice: "transfer", status: "initialSyncRequired", localDatasetVersion: 0, localDatasetFingerprint: null, remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged: Object.freeze({}), outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, outboxSequence: 0, highWatermark: 0, resetGuard: null });
+const emptyState = (): AccountSyncState => Object.freeze({ accountId: null, guestAdoptionChoice: "transfer", status: "initialSyncRequired", localDatasetVersion: 0, localDatasetFingerprint: null, remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged: Object.freeze({}), outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, outboxSequence: 0, highWatermark: 0, resetGuard: null, learningPlanRecovery: null });
 
 const LEARNING_FIXED_KEYS = [
   STORAGE_KEYS.ACTIVE_TRACK,
@@ -187,14 +199,29 @@ function isAccountSyncPlan(value: unknown): value is AccountSyncPlan {
 }
 
 function isAccountSyncState(value: unknown): value is AccountSyncState {
-  if (!isRecord(value) || !hasOnlyKeys(value, ["accountId", "guestAdoptionChoice", "status", "localDatasetVersion", "localDatasetFingerprint", "remoteAccountRevision", "lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode", "acknowledged", "outbox", "materialization", "pendingConfirmation", "syncPlan", "outboxSequence", "highWatermark", "resetGuard"]) || (value.accountId !== null && typeof value.accountId !== "string") || (value.guestAdoptionChoice !== "transfer" && value.guestAdoptionChoice !== "discard") || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || Number(value.localDatasetVersion) < 0 || (value.localDatasetFingerprint !== null && typeof value.localDatasetFingerprint !== "string") || !Number.isSafeInteger(value.remoteAccountRevision) || Number(value.remoteAccountRevision) < 0 || !Number.isSafeInteger(value.pendingMutationCount) || Number(value.pendingMutationCount) < 0 || (value.lastSuccessfulSyncAt !== null && typeof value.lastSuccessfulSyncAt !== "string") || (value.blockingConflictCode !== null && typeof value.blockingConflictCode !== "string") || (value.lastFailureCode !== null && typeof value.lastFailureCode !== "string") || !Array.isArray(value.outbox) || !isRecord(value.acknowledged) || (value.syncPlan !== null && !isAccountSyncPlan(value.syncPlan)) || !Number.isSafeInteger(value.outboxSequence) || Number(value.outboxSequence) < 0 || !Number.isSafeInteger(value.highWatermark) || Number(value.highWatermark) < 0 || (value.resetGuard !== null && !isAccountResetGuard(value.resetGuard))) return false;
+  const keys = ["accountId", "guestAdoptionChoice", "status", "localDatasetVersion", "localDatasetFingerprint", "remoteAccountRevision", "lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode", "acknowledged", "outbox", "materialization", "pendingConfirmation", "syncPlan", "outboxSequence", "highWatermark", "resetGuard"];
+  if (!isRecord(value) || !hasOnlyKeys(value, Object.hasOwn(value, "learningPlanRecovery") ? [...keys, "learningPlanRecovery"] : keys) || (value.accountId !== null && typeof value.accountId !== "string") || (value.guestAdoptionChoice !== "transfer" && value.guestAdoptionChoice !== "discard") || !["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed"].includes(value.status as string) || !Number.isSafeInteger(value.localDatasetVersion) || Number(value.localDatasetVersion) < 0 || (value.localDatasetFingerprint !== null && typeof value.localDatasetFingerprint !== "string") || !Number.isSafeInteger(value.remoteAccountRevision) || Number(value.remoteAccountRevision) < 0 || !Number.isSafeInteger(value.pendingMutationCount) || Number(value.pendingMutationCount) < 0 || (value.lastSuccessfulSyncAt !== null && typeof value.lastSuccessfulSyncAt !== "string") || (value.blockingConflictCode !== null && typeof value.blockingConflictCode !== "string") || (value.lastFailureCode !== null && typeof value.lastFailureCode !== "string") || !Array.isArray(value.outbox) || !isRecord(value.acknowledged) || (value.syncPlan !== null && !isAccountSyncPlan(value.syncPlan)) || !Number.isSafeInteger(value.outboxSequence) || Number(value.outboxSequence) < 0 || !Number.isSafeInteger(value.highWatermark) || Number(value.highWatermark) < 0 || (value.resetGuard !== null && !isAccountResetGuard(value.resetGuard))) return false;
   const pending = value.pendingConfirmation;
   const pendingValid = pending === null || (isRecord(pending) && hasOnlyKeys(pending, ["operationId", "previewFingerprint", "resolutions", "groupChoices"]) && typeof pending.operationId === "string" && typeof pending.previewFingerprint === "string" && Array.isArray(pending.resolutions) && pending.resolutions.every(isResolution) && Array.isArray(pending.groupChoices) && pending.groupChoices.every(isGroupChoice));
   const acknowledgedEntries = Object.entries(value.acknowledged);
   return value.outbox.every(isOutboxEntry)
     && acknowledgedEntries.every(([key, record]) => isAcknowledgedRecord(record) && key === accountDataRecordKey(record))
     && (value.materialization === null || isAccountMaterialization(value.materialization))
+    && (value.learningPlanRecovery === undefined || value.learningPlanRecovery === null || isLearningPlanRecoveryIncident(value.learningPlanRecovery))
     && pendingValid;
+}
+function isLearningPlanRecoveryIncident(value: unknown): value is LearningPlanRecoveryIncident {
+  return isRecord(value)
+    && hasOnlyKeys(value, ["accountId", "dismissed", "fingerprint", "generation", "incidentId", "recordId", "remoteVersion", "trackId"])
+    && typeof value.accountId === "string" && value.accountId.trim().length > 0
+    && typeof value.dismissed === "boolean"
+    && typeof value.fingerprint === "string" && /^[a-f0-9]{64}$/u.test(value.fingerprint)
+    && Number.isSafeInteger(value.generation) && Number(value.generation) >= 0
+    && typeof value.incidentId === "string" && /^[a-f0-9]{64}$/u.test(value.incidentId)
+    && typeof value.recordId === "string" && value.recordId.trim().length > 0
+    && Number.isSafeInteger(value.remoteVersion) && Number(value.remoteVersion) >= 0
+    && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId)
+    && value.recordId === value.trackId;
 }
 function isResolution(value: unknown): boolean { return isRecord(value) && typeof value.conflictId === "string" && (value.resolution === "keep_guest" || value.resolution === "keep_account"); }
 function isGroupChoice(value: unknown): boolean { return isRecord(value) && typeof value.groupId === "string" && (value.resolution === "keep_guest" || value.resolution === "keep_account"); }
@@ -291,7 +318,7 @@ export function isCanonicalAccountSyncState(value: unknown): boolean {
     assertValidAccountDataRecords(state.syncPlan?.items.map((item) => item.payload) ?? []);
   } catch { return false; }
   if ((state.accountId !== null && state.accountId.trim().length === 0) || state.localDatasetVersion < 0 || state.remoteAccountRevision < 0 || !Number.isSafeInteger(state.pendingMutationCount) || state.pendingMutationCount < 0 || !Number.isSafeInteger(state.outboxSequence) || state.outboxSequence < 0 || !Number.isSafeInteger(state.highWatermark) || state.highWatermark < 0 || (state.localDatasetFingerprint !== null && !/^[a-f0-9]{64}$/u.test(state.localDatasetFingerprint)) || (state.lastSuccessfulSyncAt !== null && (typeof state.lastSuccessfulSyncAt !== "string" || Number.isNaN(Date.parse(state.lastSuccessfulSyncAt)))) || (state.blockingConflictCode !== null && (typeof state.blockingConflictCode !== "string" || state.blockingConflictCode.trim().length === 0)) || (state.lastFailureCode !== null && (typeof state.lastFailureCode !== "string" || state.lastFailureCode.trim().length === 0))) return false;
-  if (!state.outbox.every(isCanonicalOutboxEntry) || !Object.values(state.acknowledged).every(isCanonicalAcknowledgedRecord) || !isCanonicalMaterialization(state.materialization) || !isCanonicalPendingConfirmation(state.pendingConfirmation) || (state.resetGuard !== undefined && state.resetGuard !== null && (!isAccountResetGuard(state.resetGuard) || !hasOnlyKeys(state.resetGuard, ["accountId", "createdAt", "operationId", "phase"])))) return false;
+  if (!state.outbox.every(isCanonicalOutboxEntry) || !Object.values(state.acknowledged).every(isCanonicalAcknowledgedRecord) || !isCanonicalMaterialization(state.materialization) || !isCanonicalPendingConfirmation(state.pendingConfirmation) || (state.resetGuard !== undefined && state.resetGuard !== null && (!isAccountResetGuard(state.resetGuard) || !hasOnlyKeys(state.resetGuard, ["accountId", "createdAt", "operationId", "phase"]))) || (state.learningPlanRecovery !== undefined && state.learningPlanRecovery !== null && (!isLearningPlanRecoveryIncident(state.learningPlanRecovery) || state.learningPlanRecovery.accountId !== state.accountId))) return false;
   if (state.syncPlan && !state.syncPlan.items.every(isCanonicalSyncPlanItem)) return false;
   return true;
 }
@@ -439,7 +466,7 @@ export async function getAccountSyncState(): Promise<AccountSyncState> {
   if (storedValue !== null && !isCanonicalAccountSyncState(storedValue)) throw new AccountDataFailure("account_sync_state_invalid");
   const stored = storedValue as AccountSyncState | null;
   if (!stored) return emptyState();
-  return freezeSyncState(stored);
+  return freezeSyncState({ ...stored, learningPlanRecovery: stored.learningPlanRecovery ?? null });
 }
 
 function freezeSyncState(state: AccountSyncState): AccountSyncState {
@@ -458,6 +485,7 @@ function freezeSyncState(state: AccountSyncState): AccountSyncState {
       ...syncPlan,
       items: Object.freeze(syncPlan.items.map((item) => Object.freeze({ ...item, payload: immutableSyncPayload(item.payload) }))),
     }),
+    learningPlanRecovery: state.learningPlanRecovery === null ? null : Object.freeze({ ...state.learningPlanRecovery }),
   });
 }
 
@@ -465,6 +493,18 @@ export function saveAccountSyncState(state: AccountSyncState): AccountSyncState 
   if (!isCanonicalAccountSyncState(state)) throw new AccountDataFailure("account_sync_state_invalid");
   const saved = writeCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, state);
   return saved.payload;
+}
+
+export function dismissLearningPlanRecovery(accountId: string, incidentId: string): AccountSyncState {
+  const storedValue = readCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, (value): value is Record<string, unknown> => isRecord(value));
+  if (storedValue !== null && !isCanonicalAccountSyncState(storedValue)) throw new AccountDataFailure("account_sync_state_invalid");
+  const stored = storedValue as AccountSyncState | null;
+  const current = stored ? freezeSyncState({ ...stored, learningPlanRecovery: stored.learningPlanRecovery ?? null }) : emptyState();
+  const incident = current.learningPlanRecovery;
+  if (!incident || current.accountId !== accountId || incident.accountId !== accountId || incident.incidentId !== incidentId) {
+    throw new AccountDataFailure("account_binding_mismatch");
+  }
+  return saveAccountSyncState({ ...current, learningPlanRecovery: Object.freeze({ ...incident, dismissed: true }) });
 }
 
 export async function saveGuestAdoptionChoice(choice: "transfer" | "discard"): Promise<AccountSyncState> {
@@ -593,11 +633,31 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
     else outbox.push(entry);
     byKey.set(key, entry);
   }
+  // Goal and plan records are an atomic server-side bundle. When a newly
+  // created replacement plan changes, include its unchanged goal alongside
+  // it so the sync plan remains a valid bundle and both versions advance
+  // together under the existing account contract.
+  for (const planEntry of [...outbox].filter((entry) => entry.recordType === "learning_plan")) {
+    const goal = snapshot.records.find((record) => record.recordType === "goal" && record.trackId === planEntry.trackId);
+    if (!goal) continue;
+    const key = accountDataRecordKey(goal);
+    if (byKey.has(key)) continue;
+    const acknowledged = state.acknowledged[key];
+    const expectedVersion = acknowledged?.remoteVersion ?? null;
+    const entry: AccountOutboxEntry = Object.freeze({ ...goal, mutationId: accountMutationId(boundAccountId, goal, expectedVersion), expectedVersion, attemptCount: 0, lastErrorCode: null, status: "pending", sequence: ++outboxSequence });
+    outbox.push(entry);
+    byKey.set(key, entry);
+  }
   const currentKeys = new Set(snapshot.records.map(accountDataRecordKey));
   const hasCurrentActiveTrack = snapshot.records.some((record) => record.recordType === "active_track");
   for (const acknowledged of Object.values(state.acknowledged)) {
     const key = accountDataRecordKey(acknowledged);
     if (currentKeys.has(key) || byKey.has(key)) continue;
+    const recovery = state.learningPlanRecovery;
+    if (recovery?.accountId === boundAccountId
+      && recovery.trackId === acknowledged.trackId
+      && recovery.recordId === acknowledged.recordId
+      && acknowledged.recordType === "learning_plan") continue;
     // `active_track` is a local selector, not a durable deletion when the
     // learner switches to another track. Only emit its tombstone when the
     // selector is actually cleared (no current active-track record).
@@ -765,6 +825,96 @@ export function assertValidAccountDataRecords(records: unknown): asserts records
   assertGoalPlanRecordBundles(records);
 }
 
+export type RemoteAccountDataRecord = Readonly<{
+  fingerprint: string;
+  recordId?: string;
+  recordType: string;
+  state: Readonly<Record<string, unknown>>;
+  trackId: string;
+  targetId?: string;
+  version: number;
+}>;
+
+export type AccountDataRecoveryPartition = Readonly<{
+  records: readonly AccountDataRecord[];
+  incident: LearningPlanRecoveryIncident | null;
+}>;
+
+/**
+ * Preserves all-or-nothing validation except for one invalid plan whose
+ * account record identity is independently verifiable and whose goal/home
+ * context is valid. This never treats a normal no-plan snapshot as recovery.
+ */
+export async function partitionRemoteAccountDataForRecovery(
+  input: Readonly<{ accountId: string; generation: number; records: readonly RemoteAccountDataRecord[] }>,
+): Promise<AccountDataRecoveryPartition> {
+  if (!input.accountId.trim() || !Number.isSafeInteger(input.generation) || input.generation < 0 || !Array.isArray(input.records)) {
+    throw new AccountDataFailure("account_data_records_invalid");
+  }
+  if (input.records.some((record) => record.recordId !== undefined && record.targetId !== undefined && record.recordId !== record.targetId)) {
+    throw new AccountDataFailure("account_data_record_invalid");
+  }
+  const records = input.records.map((record) => ({
+    fingerprint: record.fingerprint,
+    recordId: record.recordId ?? record.targetId ?? "",
+    recordType: record.recordType,
+    state: record.state,
+    trackId: record.trackId,
+    version: record.version,
+  }));
+  if (!records.every((record): record is AccountDataRecord => isCanonicalAccountDataRecord(record))) throw new AccountDataFailure("account_data_record_invalid");
+  const keys = records.map(accountDataRecordKey);
+  if (new Set(keys).size !== keys.length) throw new AccountDataFailure("account_data_goal_plan_invalid");
+
+  const invalidPlans = records.filter((record) => record.recordType === "learning_plan"
+    && !isDeletedAccountDataRecord(record)
+    && parseLearningPlanCloudState(record.state, record.trackId) === null);
+  if (invalidPlans.length === 0) {
+    assertValidAccountDataRecords(records);
+    return Object.freeze({ records: Object.freeze(records.map((record) => Object.freeze(record))), incident: null });
+  }
+  if (invalidPlans.length !== 1) throw new AccountDataFailure("account_data_goal_plan_invalid");
+
+  const invalidPlan = invalidPlans[0]!;
+  const goal = records.find((record) => record.recordType === "goal" && record.trackId === invalidPlan.trackId);
+  const activeTrack = records.find((record) => record.recordType === "active_track" && !isDeletedAccountDataRecord(record));
+  if (invalidPlan.recordId !== invalidPlan.trackId
+    || !goal || isDeletedAccountDataRecord(goal) || parseGoalCloudState(goal.state, invalidPlan.trackId) === null
+    || !activeTrack || activeTrack.trackId !== invalidPlan.trackId || activeTrack.state.trackId !== invalidPlan.trackId
+    || records.some((record) => record !== invalidPlan && record.recordType === "learning_plan" && record.trackId === invalidPlan.trackId)) {
+    throw new AccountDataFailure("account_data_goal_plan_invalid");
+  }
+
+  const validRecords = records.filter((record) => record !== invalidPlan);
+  assertValidAccountDataRecords(validRecords);
+  const incidentId = sha256Utf8(canonicalSerialize({
+    accountId: input.accountId,
+    fingerprint: invalidPlan.fingerprint,
+    generation: input.generation,
+    recordId: invalidPlan.recordId,
+    remoteVersion: invalidPlan.version,
+    trackId: invalidPlan.trackId,
+  }));
+  const current = await getAccountSyncState();
+  const existing = current.learningPlanRecovery;
+  if (existing && (existing.accountId !== input.accountId || existing.incidentId !== incidentId)) {
+    throw new AccountDataFailure("account_data_goal_plan_invalid");
+  }
+  return Object.freeze({
+    records: Object.freeze(validRecords.map((record) => Object.freeze(record))),
+    incident: Object.freeze({
+      accountId: input.accountId,
+      dismissed: existing?.dismissed ?? false,
+      fingerprint: invalidPlan.fingerprint,
+      generation: input.generation,
+      incidentId,
+      recordId: invalidPlan.recordId,
+      remoteVersion: invalidPlan.version,
+      trackId: invalidPlan.trackId,
+    }),
+  });
+}
+
 export async function applyRemoteAccountData(records: readonly AccountDataRecord[], options: Readonly<{ preserveLocalContext?: boolean }> = {}): Promise<void> {
   assertValidAccountDataRecords(records);
   if (await getActiveTrainingSessionId()) throw new AccountDataFailure("active_session_adoption_blocked");
@@ -854,18 +1004,51 @@ function replaceGoalPlanRecords(records: readonly AccountDataRecord[]): void {
   });
 }
 
-export async function finishAccountMaterialization(records: readonly AccountDataRecord[], accountId: string, remoteAccountRevision: number, syncedAt: string): Promise<AccountSyncState> {
+export async function finishAccountMaterialization(
+  records: readonly AccountDataRecord[],
+  accountId: string,
+  remoteAccountRevision: number,
+  syncedAt: string,
+  incomingRecovery: LearningPlanRecoveryIncident | null = null,
+): Promise<AccountSyncState> {
   assertValidAccountDataRecords(records);
   const current = await getAccountSyncState();
+  if (current.accountId !== null && current.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+  if (incomingRecovery && incomingRecovery.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+  if (incomingRecovery && current.learningPlanRecovery && current.learningPlanRecovery.incidentId !== incomingRecovery.incidentId) {
+    throw new AccountDataFailure("account_data_goal_plan_invalid");
+  }
+  let learningPlanRecovery = incomingRecovery
+    ? Object.freeze({ ...incomingRecovery, dismissed: current.learningPlanRecovery?.dismissed ?? incomingRecovery.dismissed })
+    : current.learningPlanRecovery;
+  if (learningPlanRecovery) {
+    const replacement = records.find((record) => record.recordType === "learning_plan"
+      && record.trackId === learningPlanRecovery!.trackId
+      && record.recordId === learningPlanRecovery!.recordId
+      && !isDeletedAccountDataRecord(record)
+      && record.version > learningPlanRecovery!.remoteVersion);
+    if (replacement) learningPlanRecovery = null;
+  }
   // A paged/partial remote response must not erase ACKs for another track.
   // Full identity keys let later reconciliation retain each independent
   // `(recordType, recordId, trackId)` version without cross-track leakage.
+  const acknowledgedRecords = Object.fromEntries(records.map((record) => [accountDataRecordKey(record), { fingerprint: record.fingerprint, recordId: record.recordId, recordType: record.recordType, remoteVersion: record.version, trackId: record.trackId }]));
+  if (incomingRecovery) {
+    const key = accountDataRecordKey({ recordId: incomingRecovery.recordId, recordType: "learning_plan", trackId: incomingRecovery.trackId });
+    acknowledgedRecords[key] = {
+      fingerprint: incomingRecovery.fingerprint,
+      recordId: incomingRecovery.recordId,
+      recordType: "learning_plan",
+      remoteVersion: incomingRecovery.remoteVersion,
+      trackId: incomingRecovery.trackId,
+    };
+  }
   const acknowledged = Object.freeze({
     ...current.acknowledged,
-    ...Object.fromEntries(records.map((record) => [accountDataRecordKey(record), { fingerprint: record.fingerprint, recordId: record.recordId, recordType: record.recordType, remoteVersion: record.version, trackId: record.trackId }])),
+    ...acknowledgedRecords,
   });
   if (current.resetGuard && current.resetGuard.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
-  return saveAccountSyncState({ ...current, accountId, status: "synced", remoteAccountRevision, lastSuccessfulSyncAt: syncedAt, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged, outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, resetGuard: null });
+  return saveAccountSyncState({ ...current, accountId, status: "synced", remoteAccountRevision, lastSuccessfulSyncAt: syncedAt, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged, outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, resetGuard: null, learningPlanRecovery });
 }
 
 /** Clears only local guest-owned learning and pending report data. The account sync marker is retained for recovery. */

@@ -83,6 +83,9 @@ test("complexity selectors encode authored notation without weakening the select
 test("runtime selectors keep distinct runtime entities distinct", () => {
   const selectors = new Set([
     runtimeSelectors.home.trackCard("coding-interview-dsa-problem-solving"),
+    runtimeSelectors.home.learningPlanRecovery(),
+    runtimeSelectors.home.learningPlanRecoveryCreate(),
+    runtimeSelectors.home.learningPlanRecoveryDismiss(),
     runtimeSelectors.content.preparing("verifying-content"),
     runtimeSelectors.content.unavailable(),
     runtimeSelectors.content.ready(),
@@ -114,7 +117,7 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.simulation.navigator("coding-interview-dsa-problem-solving:coding-interview-simulation:2:occurrence:1"),
   ]);
 
-  assert.equal(selectors.size, 30);
+  assert.equal(selectors.size, 33);
 });
 
 test("unavailable recovery and review selectors remain stable and distinct", () => {

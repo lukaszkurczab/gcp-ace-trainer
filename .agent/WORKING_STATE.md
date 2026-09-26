@@ -336,3 +336,11 @@ Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymagany
 - Runtime na istniejącym iPhonie 17: logout A przy wyłączonym API odciął Home i przeżył restart; B widziało tylko własny active_track i nie ruszyło A; powrót A wysłał dwie własne mutacje i zachował Open-ended/Continue plan przez restart.
 - Exact-account: przed i po B A revision/mutations 5/5, B 1/1; po A recovery A 7/7, B 1/1. Targeted 50/50 PASS. Typecheck pozostaje czerwony wyłącznie na 20 równoległych błędach locale.
 - QA: węższy pakiet 73/73 PASS. Nonblocking: prywatny inspector nie pozwala odtworzyć z samego repo konkretnego UID→account mapping/kompletności korzeni; znany statyczny assertion pozostaje 102/103.
+
+## PROFILE-06/E — wynik (26.09)
+
+- Decyzja PO opcja 1 wdrożona: jeden separowalny niepoprawny plan otwiera Home z zachowanym trackiem, celem i postępem oraz nieblokującym komunikatem; zwykły brak planu nie tworzy incydentu, a niepewne przypadki pozostają fail-closed.
+- iPhone 17 i lokalne Auth/Firestore/API/Metro: Home pokazał `1 answered`, Progress cel i ukończoną aktywność, CTA otworzył propozycję `ready`, a dismiss przeżył natywny restart.
+- Exact remote przed/po zachował account revision 1, wszystkie wersje/fingerprinty/mutation IDs; uszkodzony plan pozostał v9/schema 99 bez tombstone'a.
+- App targeted 70/70 oraz backend typecheck/lint/exact assert PASS; końcowe niezależne QA PASS. Pełny app typecheck pozostaje czerwony wyłącznie przez równoległy zakres locale.
+- Raport: `docs/active/PROFILE-06/E-REPORT.md`. Rodzina PROFILE-01–06 jest zakończona; następny niezależny slice kanonicznego planu: OPS-PRODUCTION/B2.

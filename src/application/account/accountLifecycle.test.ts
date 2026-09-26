@@ -4,9 +4,8 @@ import test, { beforeEach } from "node:test";
 import { PatternlyApiClientError, type AdoptionPreviewResponseDto, type PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { clearAccountDeletionOwnedLocalData, confirmAccountDataAdoption, deleteBoundAccount, loadAccountDataSession, retryPendingAccountDeletion } from "./accountDataService";
+import { clearAccountDeletionOwnedLocalData, confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, loadAccountDataSession, retryPendingAccountDeletion } from "./accountDataService";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
-import { getAccountSyncState } from "../../storage/repositories/accountDataRepository";
 import {
   beginAccountDeletion,
   getAccountDeletionState,
@@ -308,18 +307,20 @@ test("an uncertain server deletion failure resolves through the bound operation 
 });
 
 // The discard path uses the real repositories and injected durable storage faults.
-import { completeTrainingSession, createDefaultGoal, createFamilyEnvelope, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult } from "../../domain";
+import { completeTrainingSession, createDefaultGoal, createFamilyEnvelope, createLearningPlan, createLearningPlanSlotId, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult } from "../../domain";
 import { commitSessionCompletion } from "../learningMutations/commitSessionLifecycle";
 import { commitTrainingSessionStart } from "../learningMutations/commitTrainingSessionStart";
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { discardGuestDataAndLoadAccount, retryPendingAccountDataSync } from "./accountDataService";
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
-import { clearTrainingSessions, getActiveTrainingSession, saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
+import { clearTrainingSessions, getActiveTrainingSession, getTrainingSessions, saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
+import { getTrainingSessionResult } from "../../storage/repositories/trainingSessionResultRepository";
 import { clearActiveTrainingSessionDraft, getActiveTrainingSessionDraft, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
-import { buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, saveAccountSyncState, saveGuestAdoptionChoice } from "../../storage/repositories/accountDataRepository";
+import { accountDataRecordFingerprint, buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, getAccountSyncState, isCanonicalAccountSyncState, saveAccountSyncState, saveGuestAdoptionChoice } from "../../storage/repositories/accountDataRepository";
 import { persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
-import { saveGoal } from "../../storage/repositories/goalRepository";
+import { getGoalSnapshot, saveGoal } from "../../storage/repositories/goalRepository";
+import { getLearningPlanSnapshot, saveLearningPlanAtomically } from "../../storage/repositories/learningPlanRepository";
 import { attempt as journalAttempt, journal as makeJournal, session as journalSession } from "../../testing/journalTestSupport";
 
 const guestTrack = "coding-interview-dsa-problem-solving" as const;
@@ -783,6 +784,150 @@ test("existing-account login restores remote data without offering or uploading 
   assert.equal(confirmations, 0);
   assert.equal(uploads, 0);
   assert.equal((await getAccountSyncState()).materialization, null);
+});
+
+test("one separable invalid remote plan restores Home data, quarantines its version, and resolves after replacement sync", async () => {
+  await prepareGuest();
+  await saveGoal(createDefaultGoal(guestTrack));
+  const { completed, result } = await commitTerminalLearningOutcome();
+  await bindGuestInstallationToAccount(accountId);
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  const homeRecords = remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: 2 }));
+  const invalidPlanState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
+  const invalidPlan = {
+    kind: "node" as const,
+    recordType: "learning_plan" as const,
+    recordId: guestTrack,
+    trackId: guestTrack,
+    targetId: guestTrack,
+    version: 7,
+    fingerprint: accountDataRecordFingerprint({ recordId: guestTrack, recordType: "learning_plan", state: invalidPlanState, trackId: guestTrack }),
+    state: invalidPlanState,
+    lastMutationId: "remote-invalid-plan",
+    updatedAt: "2026-01-01T00:02:00.000Z",
+  };
+  const brokenSnapshot = { accountRevision: 10, generation: 4, records: [...homeRecords, invalidPlan] };
+  const restored = await loadAccountDataSession(api({ getProgress: async () => brokenSnapshot }), accountId);
+
+  assert.equal(restored.status, "synced", restored.lastFailureCode ?? "missing failure code");
+  assert.equal(await getActiveTrackId(), guestTrack);
+  assert.deepEqual(await getGoalSnapshot(guestTrack), { record: createDefaultGoal(guestTrack), revision: 1 });
+  assert.ok((await getTrainingSessions()).value.some((session) => session.id === completed.id && session.status === "completed"));
+  assert.equal((await getTrainingSessionResult(completed.id))?.id, result.id);
+  assert.equal(getLearningPlanSnapshot(guestTrack), null);
+  assert.equal(restored.learningPlanRecovery?.trackId, guestTrack);
+  assert.equal(restored.learningPlanRecovery?.remoteVersion, 7);
+  assert.equal(restored.learningPlanRecovery?.generation, 4);
+  assert.match(restored.learningPlanRecovery?.incidentId ?? "", /^[a-f0-9]{64}$/u);
+  assert.equal(isCanonicalAccountSyncState(await getAccountSyncState()), true);
+  assert.equal((await getAccountSyncState()).acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 7);
+
+  const incidentId = restored.learningPlanRecovery!.incidentId;
+  dismissAccountLearningPlanRecovery(accountId, incidentId);
+  const persisted = await getAccountSyncState();
+  assert.equal(persisted.learningPlanRecovery?.dismissed, true);
+  assert.equal(isCanonicalAccountSyncState(persisted), true);
+  assert.equal((await ensureAccountOutboxFromLocalDataset()).outbox.length, 0, "quarantined absence must not create a tombstone");
+  const restarted = await loadAccountDataSession(api({ getProgress: async () => brokenSnapshot }), accountId);
+  assert.equal(restarted.learningPlanRecovery?.incidentId, incidentId);
+  assert.equal(restarted.learningPlanRecovery?.dismissed, true, "dismissal must survive reloading the account materialization");
+
+  const replacement = createLearningPlan({
+    schemaVersion: 1,
+    planId: "plan:recovered",
+    trackId: guestTrack,
+    goalRevision: 1,
+    status: "accepted",
+    timezone: "Europe/Warsaw",
+    contentVersion: "test",
+    artifactSha256: TEST_ARTIFACT_SHA256,
+    acceptedTarget: { meaning: "none", targetDate: null },
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:03:00.000Z",
+    planRevision: 1,
+    commandId: "command:recovered",
+    slots: [{ slotId: createLearningPlanSlotId("slot:recovered"), day: "mon", localTime: "18:00", sessionLength: 10 }],
+  });
+  saveLearningPlanAtomically({ plan: replacement, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
+  const replacementOutbox = await ensureAccountOutboxFromLocalDataset();
+  const replacementEntry = replacementOutbox.outbox.find((entry) => entry.recordType === "learning_plan");
+  assert.equal(replacementEntry?.expectedVersion, 7);
+  assert.equal(replacementEntry?.state.plan && (replacementEntry.state.plan as { planId?: string }).planId, "plan:recovered");
+
+  let uploads = 0;
+  const synced = await loadAccountDataSession(api({
+    syncProgress: async (input) => {
+      uploads++;
+      assert.equal(input.mutations.length, 2);
+      const planMutation = input.mutations.find((mutation) => mutation.recordType === "learning_plan")!;
+      const goalMutation = input.mutations.find((mutation) => mutation.recordType === "goal")!;
+      assert.equal(planMutation.expectedVersion, 7);
+      assert.equal(goalMutation.expectedVersion, 2);
+      return { accountRevision: 12, applied: input.mutations.map((mutation) => ({ ...mutation, version: mutation.recordType === "learning_plan" ? 8 : 3, lastMutationId: mutation.mutationId, updatedAt: "2026-01-01T00:04:00.000Z" })), duplicates: [], conflicts: [] };
+    },
+    getProgress: async () => ({
+      accountRevision: 12,
+      generation: 4,
+      records: remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: record.recordType === "learning_plan" ? 8 : 3 })),
+    }),
+  }), accountId);
+  assert.equal(uploads, 1);
+  assert.equal(synced.status, "synced");
+  assert.equal((await getAccountSyncState()).learningPlanRecovery, null);
+  assert.equal((await getAccountSyncState()).acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 8);
+});
+
+test("normal no-plan remote state creates no recovery incident", async () => {
+  await prepareGuest();
+  await saveGoal(createDefaultGoal(guestTrack));
+  await bindGuestInstallationToAccount(accountId);
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+  const records = remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: 2 }));
+  const restored = await loadAccountDataSession(api({ getProgress: async () => ({ accountRevision: 2, generation: 1, records }) }), accountId);
+  assert.equal(restored.status, "synced", restored.lastFailureCode ?? "missing failure code");
+  assert.equal(restored.learningPlanRecovery, undefined);
+  assert.equal((await getAccountSyncState()).learningPlanRecovery, null);
+});
+
+test("invalid plan recovery fails closed on bad envelope, duplicate identity, uncertain goal, or ownership", async () => {
+  for (const mode of ["fingerprint", "version", "identity", "duplicate", "goal", "ownership"] as const) {
+    installKeyValueStorageForTests(new MemoryKeyValueStorage());
+    await provisionGuestInstallation({ async create() { return { installationId: "66666666-6666-4666-8666-666666666666", localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
+    await prepareGuest();
+    await saveGoal(createDefaultGoal(guestTrack));
+    await bindGuestInstallationToAccount(accountId);
+    saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+    const validHomeRecords = remoteRecords(await buildAccountDataSnapshot()).map((record) => ({ ...record, version: 2 }));
+    const planState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
+    const invalidPlan = {
+      kind: "node" as const,
+      recordType: "learning_plan" as const,
+      recordId: guestTrack,
+      trackId: guestTrack,
+      targetId: guestTrack,
+      version: 7,
+      fingerprint: accountDataRecordFingerprint({ recordId: guestTrack, recordType: "learning_plan", state: planState, trackId: guestTrack }),
+      state: planState,
+      lastMutationId: "remote-invalid-plan",
+      updatedAt: "2026-01-01T00:02:00.000Z",
+    };
+    const uncertainIdentityPlan = {
+      ...invalidPlan,
+      targetId: "another-track",
+    };
+    const rows = mode === "duplicate" ? [...validHomeRecords, invalidPlan, invalidPlan]
+      : validHomeRecords.map((record) => mode === "goal" && record.recordType === "goal"
+        ? { ...record, state: { schemaVersion: 1 }, fingerprint: accountDataRecordFingerprint({ recordId: record.targetId, recordType: "goal", state: { schemaVersion: 1 }, trackId: record.trackId }) }
+        : record).concat(mode === "identity" ? uncertainIdentityPlan : invalidPlan);
+    const responseRows = mode === "fingerprint" ? rows.map((record) => record.recordType === "learning_plan" ? { ...record, fingerprint: "f".repeat(64) } : record)
+      : mode === "version" ? rows.map((record) => record.recordType === "learning_plan" ? { ...record, version: -1 } : record)
+        : rows;
+    if (mode === "ownership") saveAccountSyncState({ ...await getAccountSyncState(), accountId: "another-account" });
+    const restored = await loadAccountDataSession(api({ getProgress: async () => ({ accountRevision: 10, generation: 4, records: responseRows }) }), accountId);
+    assert.equal(restored.status, "failed", mode);
+    assert.equal(await getActiveTrackId(), guestTrack, `${mode}: fail-closed validation must not clear local Home state`);
+    assert.equal((await getAccountSyncState()).learningPlanRecovery, null, mode);
+  }
 });
 
 test("transfer applies an explicit guest conflict resolution once and completes durably", async () => {

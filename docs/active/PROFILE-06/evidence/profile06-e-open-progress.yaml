@@ -1,0 +1,25 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/E inspect preserved progress
+---
+- runFlow:
+    when:
+      visible: "!, Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- tapOn:
+    id: "main-tab-bar-progress"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:progress:root"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:progress:goal"
+- scrollUntilVisible:
+    element:
+      id: "patternly:progress:activity-section"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:activity:row:profile06-e-preserved-session"
+- takeScreenshot:
+    path: profile06-e-preserved-progress

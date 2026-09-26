@@ -65,7 +65,13 @@ type Feedback = AccountCommandResult;
 type TermsPresentationState = "pristine" | "checked" | "uncheckedAfterInteraction";
 
 
-type AccountCopy = Record<Exclude<keyof typeof accountCopy, "privacyNoticePrefix"> | "invalidEmail", string>;
+type AccountCopy = Record<Exclude<keyof typeof accountCopy,
+  | "privacyNoticePrefix"
+  | "learningPlanRecoveryCreate"
+  | "learningPlanRecoveryDismiss"
+  | "learningPlanRecoveryDescription"
+  | "learningPlanRecoveryTitle"
+> | "invalidEmail", string>;
 type AccountContext = ReturnType<typeof usePatternlyAccount>;
 type AccountContextRef = Readonly<{ current: AccountContext }>;
 

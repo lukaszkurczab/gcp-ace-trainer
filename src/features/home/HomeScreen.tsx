@@ -6,6 +6,7 @@ import { Alert, StyleSheet, View } from "react-native";
 
 import {
   AppShellHeader,
+  Button,
   EmptyState,
   InfoBlock,
   Screen,
@@ -68,6 +69,7 @@ import type { AppColors } from "../../theme";
 import { feedbackTimingFromDurableSession } from "./resumeFeedbackTiming";
 import { navigateToActivityResult } from "./activityNavigation";
 import { buildHomePlanPracticeSetupParams } from "./homePlanUiContract";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 
 type HomeScreenProps = NativeStackScreenProps<
@@ -103,6 +105,9 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   accountRef.current = account;
   const settingsAccount = getSettingsAccountPresentation(account.state);
   const accountResumeRequired = account.state.kind === "authenticated" && account.state.accountData.status === "resumeRequired";
+  const learningPlanRecovery = account.state.kind === "authenticated"
+    ? account.state.accountData.learningPlanRecovery
+    : undefined;
   const [activeTab, setActiveTab] = useState<HomeShellTab>(route.params?.initialTab ?? "home");
   const initialRouteTabRef = useRef<HomeShellTab | null>(route.params?.initialTab ?? null);
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
@@ -367,6 +372,16 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     navigation.navigate(ROUTES.ACCOUNT_ENTRY);
   }
 
+  async function createRecoveredLearningPlan(): Promise<void> {
+    if (!activeTrackId) return;
+    const result = await learningPlanProposalCoordinator.create(activeTrackId);
+    if ("proposal" in result) {
+      navigation.navigate(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId: activeTrackId });
+      return;
+    }
+    Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The learning plan could not be opened. Try again."));
+  }
+
   const homeActiveSession = data.homePlan?.kind === "ready" ? data.homePlan.activeSession : data.homePlan?.kind === "unavailable" ? null : data.activeSession;
 
   return (
@@ -385,6 +400,24 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
                 title={tAccount("resumeRequired")}
                 tone="warning"
               />
+            ) : null}
+            {learningPlanRecovery && !learningPlanRecovery.dismissed && learningPlanRecovery.trackId === activeTrackId ? (
+              <View style={styles.recoveryNotice} testID={runtimeSelectors.home.learningPlanRecovery()}>
+                <InfoBlock
+                  accessibilityAlert
+                  body={tAccount("learningPlanRecoveryDescription")}
+                  title={tAccount("learningPlanRecoveryTitle")}
+                  tone="warning"
+                />
+                <View style={styles.recoveryActions}>
+                  <Button onPress={() => { void createRecoveredLearningPlan(); }} testID={runtimeSelectors.home.learningPlanRecoveryCreate()}>
+                    {tAccount("learningPlanRecoveryCreate")}
+                  </Button>
+                  <Button onPress={() => account.dismissLearningPlanRecovery(learningPlanRecovery.incidentId)} testID={runtimeSelectors.home.learningPlanRecoveryDismiss()} variant="ghost">
+                    {tAccount("learningPlanRecoveryDismiss")}
+                  </Button>
+                </View>
+              </View>
             ) : null}
             <HomeTab
               activeSession={homeActiveSession}
@@ -481,5 +514,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   progressScreenContent: {
     paddingTop: 16,
+  },
+  recoveryNotice: {
+    gap: 8,
+  },
+  recoveryActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
   },
 });

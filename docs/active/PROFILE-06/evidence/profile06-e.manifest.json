@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "taskId": "PROFILE-06/E",
+  "sourceCommitBeforeChanges": "288feb3800d6e6ae69f7f5d6034c2ad885fd9f94",
+  "backendCommitBeforeChanges": "ab3362b2a113cfa2f82e84144b87bf5078e6d25f",
+  "backendFixtureCommit": "42b66c5",
+  "runtime": {
+    "kind": "Expo development build",
+    "expoSdk": "57.0.17",
+    "reactNative": "0.86.3",
+    "profile": "smoke",
+    "platform": "ios-simulator"
+  },
+  "locale": "en",
+  "theme": "dark",
+  "scenarioId": "profile06-e-preserved-home-invalid-plan-recovery",
+  "fixtureAccountHash": "b450594a18582515",
+  "device": {
+    "name": "iPhone 17",
+    "udid": "7F315654-3175-4F3C-BB24-B0263F59360C",
+    "os": "iOS 26.4"
+  },
+  "services": {
+    "auth": "127.0.0.1:19099",
+    "firestore": "127.0.0.1:18081",
+    "api": "127.0.0.1:8080",
+    "metro": "[::1]:8081"
+  },
+  "checks": {
+    "targetedTests": { "passed": 70, "failed": 0 },
+    "backendTypecheck": "pass",
+    "backendLint": "pass",
+    "homeRecovery": "pass",
+    "preservedGoalAndProgress": "pass",
+    "createPlanProposalTransition": "pass",
+    "dismissalAfterRestart": "pass",
+    "remoteExactBeforeAfter": "pass",
+    "fixtureCleanup": "pass",
+    "appTypecheck": "known-unrelated-locale-failure"
+  },
+  "remoteStateBeforeAndAfter": {
+    "accountRevisionBefore": 1,
+    "accountRevisionAfter": 1,
+    "accountRevisionAsserted": true,
+    "activeTrackVersion": 2,
+    "goalVersion": 3,
+    "learningPlanVersion": 9,
+    "learningPlanSchemaVersion": 99,
+    "trainingAttemptVersion": 4,
+    "trainingSessionVersion": 2,
+    "trainingResultVersion": 2,
+    "tombstoneCreated": false,
+    "fingerprintsAndMutationIdsUnchanged": true
+  },
+  "screenshots": [
+    {
+      "file": "profile06-e-recovery-visible.png",
+      "sha256": "8ea2c35d135f29f0c04ae7446999aee8e80ec75e280124d01bf9fc94b931d50f",
+      "sourceFlow": "profile06-e-recovery-visible.yaml",
+      "scenarioStep": "home-preserves-track-and-one-answered-with-recovery-notice"
+    },
+    {
+      "file": "profile06-e-preserved-progress.png",
+      "sha256": "0f640f2fff7cb55f476b93c2396dadd377f84dd045a8082531ac8320e782a358",
+      "sourceFlow": "profile06-e-open-progress.yaml",
+      "scenarioStep": "progress-preserves-goal-evidence-and-completed-activity"
+    },
+    {
+      "file": "profile06-e-create-plan-proposal.png",
+      "sha256": "3b59a540c0846757ad5e9a2f688b6e0ba7eb56cc1276073b805ea31436324ace",
+      "sourceFlow": "profile06-e-create-plan-transition.yaml",
+      "scenarioStep": "recovery-action-opens-ready-plan-proposal"
+    },
+    {
+      "file": "profile06-e-dismissed-after-restart.png",
+      "sha256": "e7b87d5724011f19a9f3f4cd10ca2047589f1ec4d188b03c3beeea075c048748",
+      "sourceFlow": "profile06-e-dismiss-restart.yaml",
+      "scenarioStep": "dismissal-persists-after-native-restart"
+    }
+  ],
+  "evidenceNoise": "Expo development warning toast is visible on the Home frame and is not product diagnostics.",
+  "containsSecrets": false
+}

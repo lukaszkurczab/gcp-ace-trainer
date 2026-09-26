@@ -13,7 +13,7 @@ import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localS
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
-import { confirmAccountDataAdoption, deleteBoundAccount, discardGuestDataAndLoadAccount, loadAccountDataSession, resetAccountLocalLearningHistory, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion, saveGuestAdoptionChoice, type AccountDataSession } from "./accountDataService";
+import { confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, discardGuestDataAndLoadAccount, loadAccountDataSession, resetAccountLocalLearningHistory, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion, saveGuestAdoptionChoice, type AccountDataSession } from "./accountDataService";
 import { commitLearningStateReset } from "../learningMutations";
 import { activatePreparedProfile, closeActiveProfileStorage, continueAsGuestInNewProfile, getActiveStorageProfile, getActiveStorageProfileOrNull, inspectPreparedProfileState, notifyProfileStorageReady, prepareProfileStorage, selectAccountProfileAndRestart, selectPreparedAccountProfile, selectPreparedGuestProfile, validatePreparedGuestAccess } from "../../storage/repositories/profileStorageRepository";
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
@@ -124,6 +124,7 @@ export type AccountSessionContextValue = Readonly<{
   continueAsGuest: () => Promise<AccountCommandResult>;
   retryAccountSync: () => Promise<AccountCommandResult>;
   retryPendingAccountSync: () => Promise<AccountCommandResult>;
+  dismissLearningPlanRecovery: (incidentId: string) => void;
   retryPendingDeletion: () => Promise<AccountCommandResult>;
   prepareDeletion: (credentials: FirebaseAuthCredentials) => Promise<AccountCommandResult>;
   reauthenticateForExport: (credentials: FirebaseAuthCredentials) => Promise<AccountCommandResult>;
@@ -1092,6 +1093,20 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     refreshPremiumEntitlement,
     authorizePremiumSessionStart,
     installPremiumNodePackage,
+    dismissLearningPlanRecovery: (incidentId) => {
+      const current = stateRef.current;
+      if (current.kind !== "authenticated") return;
+      const incident = current.accountData.learningPlanRecovery;
+      if (!incident || incident.incidentId !== incidentId || incident.dismissed) return;
+      dismissAccountLearningPlanRecovery(current.backendUser.id, incidentId);
+      setState({
+        ...current,
+        accountData: {
+          ...current.accountData,
+          learningPlanRecovery: { ...incident, dismissed: true },
+        },
+      });
+    },
     recordPurchaseConfirmation: async (input) => {
       if (!apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "providerUnavailable" };
       try { await apiClient.recordPurchaseConfirmation(input); return { kind: "success", next: "authenticated" }; }

@@ -64,6 +64,9 @@ export const runtimeSelectors = Object.freeze({
     activity: () => selector("home", "activity"),
     selectTrack: (trackId: TrackId) => selector("home", "select-track", trackId),
     selectTrackContinue: () => selector("home", "select-track", "continue"),
+    learningPlanRecovery: () => selector("home", "learning-plan-recovery"),
+    learningPlanRecoveryCreate: () => selector("home", "learning-plan-recovery", "create"),
+    learningPlanRecoveryDismiss: () => selector("home", "learning-plan-recovery", "dismiss"),
   }),
   homePlan: Object.freeze({
     reason: (reason: HomePlanUnavailableReason) => selector("home-plan", "reason", homePlanUnavailableReasonSegment(reason)),
