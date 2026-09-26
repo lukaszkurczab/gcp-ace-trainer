@@ -321,3 +321,12 @@ Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymagany
 - Fresh Guest na istniejącym iPhonie 17 wybrał Coding Interview, zapisał cel i plan, a `stopApp`/`launchApp clearState:false` zachował track, `Open-ended` i `Continue plan` bez Account Entry i ponownego onboardingu.
 - Maestro 38 wykonanych kroków + 3 poprawnie pominięte warunkowe overlay; targeted 35/35 PASS. Szerszy przebieg 55/56 ma jeden stary statyczny assertion tekstu testu, niezależny od B.
 - Następny slice PROFILE-06/C: transfer z exact Firestore no-duplicate oraz osobny discard z dowodem, że rekordy Gościa nie trafiły do konta.
+
+## PROFILE-06/C — wynik (26.09)
+
+- Status: done / niezależny qa-gate PASS WITH ISSUES; implementacja produktu bez zmian; pełne lokalne acceptance transfer i discard PASS na jednym istniejącym iPhonie 17.
+- Transfer: wybór `true` przeżył restart, track/cel/plan zostały zachowane, a kolejny restart nie przywrócił wyboru. Exact account: 1 identity mapping, 3 progress (`active_track`, `goal`, `learning_plan`), 3 mutations, 1 metadata i 1 sync operation obejmująca dokładnie 3 mutation IDs i 3 rekordy.
+- Discard: wybór `false` przeżył restart, jawne „Remove device data” zakończyło operację, a stabilny final state wrócił do wyboru tracku. Exact account: profil istnieje, lecz wszystkie liczniki progress/mutations/metadata/operations/generations/adoption wynoszą 0.
+- Surowe logi, UID, account IDs i dane kont pozostają poza repo. Do selected evidence weszły wyłącznie ręcznie obejrzane screenshoty bez PII/sekretów; odrzucono kadry z debugger toastem i przejściowym stanem restore.
+- Brief po korekcie: APPROVE, 0,94 / 0,84 / 0,88 / 0,89, minimum 0,84. Następny slice po QA/plan/pushu: PROFILE-06/D. PROFILE-06/E nadal WAIT/PO.
+- QA: węższy pakiet 73/73 PASS. Nonblocking: prywatny inspector nie pozwala odtworzyć z samego repo konkretnego UID→account mapping/kompletności korzeni; znany statyczny assertion pozostaje 102/103.

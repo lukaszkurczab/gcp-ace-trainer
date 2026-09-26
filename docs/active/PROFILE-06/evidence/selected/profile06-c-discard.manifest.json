@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "taskId": "PROFILE-06/C",
+  "runtimeBaseCommit": "a3813ac1",
+  "sourceFlowCommit": "a3989fb80b7a1198d597042bfff93f0bafaac5e8",
+  "sourceWorktreePatchSha256": "e024d2f992724a6e115a2f3b29bdaeb2261699d343e896d707062fa79a4c8b95",
+  "sourceWorktreeWasDirty": true,
+  "device": {
+    "name": "iPhone 17",
+    "udid": "7F315654-3175-4F3C-BB24-B0263F59360C",
+    "os": "iOS 26.4"
+  },
+  "runtime": "local smoke: Auth emulator + Firestore emulator + local API + Metro",
+  "locale": "en",
+  "theme": "dark",
+  "scenario": "Guest declines transfer, confirms device-data removal, and returns to an empty account across restart",
+  "fixtureId": "profile06-c-discard-isolated-account",
+  "sourceFlow": "docs/active/PROFILE-06/evidence/adoption-discard-restart.yaml",
+  "exactAccountInspection": {
+    "method": "local Auth sign-in to Firebase UID, one identity mapping to internal account ID, Firestore Admin SDK exact-account reads",
+    "identityMappingCount": 1,
+    "userDocumentExists": true,
+    "progressCount": 0,
+    "mutationCount": 0,
+    "syncMetadataCount": 0,
+    "syncOperationCount": 0,
+    "progressGenerationCount": 0,
+    "generationRecordCount": 0,
+    "adoptionTransferCount": 0,
+    "adoptionIdempotencyCount": 0
+  },
+  "screenshots": [
+    {
+      "path": "profile06-c-discard-choice-before-restart.png",
+      "sha256": "b4e4df0a7548292445c60c836e69b5cc8cbedbe11ff94178f9bf223392cdd608"
+    },
+    {
+      "path": "profile06-c-discard-final-stable.png",
+      "sha256": "4cbedb1f84048f0d485c469e6e197f59812fa5c973ef769b11c38be2dfdbbf62"
+    }
+  ]
+}

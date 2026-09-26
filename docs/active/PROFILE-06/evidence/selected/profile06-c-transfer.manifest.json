@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "taskId": "PROFILE-06/C",
+  "runtimeBaseCommit": "a3813ac1",
+  "sourceFlowCommit": "a3989fb80b7a1198d597042bfff93f0bafaac5e8",
+  "sourceWorktreePatchSha256": "e024d2f992724a6e115a2f3b29bdaeb2261699d343e896d707062fa79a4c8b95",
+  "sourceWorktreeWasDirty": true,
+  "device": {
+    "name": "iPhone 17",
+    "udid": "7F315654-3175-4F3C-BB24-B0263F59360C",
+    "os": "iOS 26.4"
+  },
+  "runtime": "local smoke: Auth emulator + Firestore emulator + local API + Metro",
+  "locale": "en",
+  "theme": "dark",
+  "scenario": "Guest transfers Coding Interview track, goal, and plan exactly once across restarts",
+  "fixtureId": "profile06-c-transfer-isolated-account",
+  "sourceFlow": "docs/active/PROFILE-06/evidence/adoption-transfer-restart.yaml",
+  "exactAccountInspection": {
+    "method": "local Auth sign-in to Firebase UID, one identity mapping to internal account ID, Firestore Admin SDK exact-account reads",
+    "identityMappingCount": 1,
+    "userDocumentExists": true,
+    "progressCount": 3,
+    "progressRecordTypes": ["active_track", "goal", "learning_plan"],
+    "mutationCount": 3,
+    "syncMetadataCount": 1,
+    "syncOperationCount": 1,
+    "operationMutationCounts": [3],
+    "operationRecordCounts": [3]
+  },
+  "screenshots": [
+    {
+      "path": "profile06-c-transfer-choice-before-restart.png",
+      "sha256": "9f71873234e1c6ab742651dbdf2701dea15a0dab6f1ebcb301b72ad28c123733"
+    },
+    {
+      "path": "profile06-c-transfer-goal-preserved.png",
+      "sha256": "f16f1126b2f65ec45ea8fccbf8722321c74f47d21ec571feb91c5c9f3dc2d1fa"
+    }
+  ]
+}
