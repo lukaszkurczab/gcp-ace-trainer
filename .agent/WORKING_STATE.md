@@ -14,7 +14,7 @@ Aktualny kanoniczny plan: [`docs/PATTERNLY-WORKING-PLAN.md`](../docs/PATTERNLY-W
 
 - PROFILE-01–06, AUD-17 i powiązany historyczny fixture są zamkniętym baseline'em. Nie odtwarzać tych tasków ani ich raportów.
 - Brakującym delta-slice jest `RECOVERY-01`: aktualny kod ma trwałe dismiss i ręczne `Create plan`, ale nie ma automatycznego background retry.
-- Równoległy, niezatwierdzony zakres locale `de/fr/es/it/et` jest `partial`: pełny typecheck ma 20 błędów, a kompetentny review językowy nie ma evidence.
+- Niezatwierdzony zakres locale `de/fr/es/it/et` jest zachowany w stachu `I18N-01 partial seven-locale runtime 2026-09-26` i pozostaje `partial`: jego pełny typecheck ma 20 błędów. Zewnętrzni recenzenci nie będą dostępni; po domknięciu technicznym review wykona pięć izolowanych subagentów `gpt-6-luna high`, po jednym na język, niezależnie od autora tłumaczeń i z obowiązkowym re-review po poprawkach.
 - Następna pełna kolejka, kryteria i report targets są wyłącznie w planie.
 
 ## Higiena dokumentacji

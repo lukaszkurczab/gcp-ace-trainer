@@ -46,7 +46,7 @@ SHA są punktem orientacyjnym porządków, nie kandydatem release. Przed każdym
 | Obszar | Status | Potwierdzona luka |
 | --- | --- | --- |
 | Odzyskanie planu | `partial` | Obecny incydent pozwala trwale zamknąć komunikat i utworzyć nowy plan, ale nie wykonuje automatycznych prób odzyskania w tle zgodnie z ostatnią decyzją właściciela. |
-| Lokalizacje DE/FR/ES/IT/ET | `partial` | W worktree istnieją niezatwierdzone pakiety i rozszerzenie runtime; pełny typecheck ma 20 błędów. Brak audytowalnego kompetentnego przeglądu językowego. |
+| Lokalizacje DE/FR/ES/IT/ET | `partial` | Niedokończone pakiety i rozszerzenie runtime są zachowane w nazwanym stachu; pełny typecheck tego zakresu ma 20 błędów. Nie wykonano jeszcze pięciu niezależnych review językowych przez dedykowane subagenty. |
 | Stare audyty UI/session | `partial` | AUD-02, AUD-05, AUD-13, AUD-14 i AUD-15 zawierają wykonane poprawki, lecz ich końcowe scenariusze lokalne nie zostały odebrane na aktualnym kodzie. |
 | Recovery/reissue autoryzacji | `partial` | Backendowe fundamenty są wykonane; pozostają operacje B2–B4 oraz decyzja o e-mailu po niejednoznacznym wyniku SMTP. |
 | Kanał operatorski | `partial` | B1 jest wykonane; brakuje endpointów, CLI i syntetycznego odbioru end-to-end. |
@@ -58,7 +58,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | Kolejność | Zadanie | Status | Zależność | Wynik |
 | --- | --- | --- | --- | --- |
 | 01 | RECOVERY-01 — automatyczne odzyskanie brakującego planu | `partial` | brak | Zgodność produktu z ostatnią decyzją właściciela. |
-| 02 | I18N-01 — siedem locale i kompetentny review | `partial` | dostęp do recenzentów językowych | Zielony runtime i zatwierdzone pakiety. |
+| 02 | I18N-01 — siedem locale i niezależny review subagentów | `partial` | brak zewnętrznej zależności; pięć izolowanych review po domknięciu technicznym | Zielony runtime i zatwierdzone pakiety. |
 | 02a | UI-26-07 — hierarchia ekranu niedostępnych danych | `planned` | brak; I18N-01 dla finalnego odbioru siedmiu locale | Jedna czytelna decyzja, destrukcyjny hold i odrębny wycentrowany sukces. |
 | 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `planned` | brak; I18N-01 dla finalnego odbioru siedmiu locale | Bez górnej karty błędu, jedno tekstowe ostrzeżenie i akcja `Confirm`. |
 | 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `planned` | brak; I18N-01 dla finalnego odbioru siedmiu locale | Ikona i zrównoważony recovery block bez zmiany działania retry/sign-out. |
@@ -85,7 +85,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 21 | OPS-B4 — syntetyczny odbiór | `planned` | OPS-B3 | Intake → akcja → wynik → audyt dla czterech rodzin. |
 | 22 | AUD-06 — przekrojowy odbiór lokalny | `planned` | 01–21 poza jawnymi blockerami właściciela | Wynik `SIM-READY` albo dokładna lista braków. |
 
-`AUD-08-DEC` nie zatrzymuje niezależnych zadań 01–14 ani OPS-B2–B4. `I18N-01` może technicznie postępować bez recenzentów, ale locale nie mogą zostać uznane za ukończone ani włączone do kandydata bez review.
+`AUD-08-DEC` nie zatrzymuje niezależnych zadań 01–14 ani OPS-B2–B4. `I18N-01` nie zależy od dostępu do zewnętrznych recenzentów. Locale nie mogą jednak zostać uznane za ukończone ani włączone do kandydata przed pięcioma odrębnymi review subagentów i zamknięciem wszystkich zgłoszonych poprawek.
 
 ## 4. Kontrakty zadań
 
@@ -105,17 +105,19 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 
 ### I18N-01 — siedem locale
 
-- **Priorytet:** P0 dla SIM-READY; `blocking` na jakości językowej.
+- **Priorytet:** P0 dla SIM-READY; `partial`, bez zależności od zewnętrznych recenzentów.
 - **Cel:** kompletne i zatwierdzone `en/pl/de/fr/es/it/et` bez ukrytego fallbacku.
-- **Zakres:** osiem namespace'ów, wszystkie typowane prezentery i dokumenty aplikacyjne, interpolacje/plurale, wybór i trwałość języka, parytet kluczy oraz review per język.
+- **Zakres:** osiem namespace'ów, wszystkie typowane prezentery i dokumenty aplikacyjne, interpolacje/plurale, wybór i trwałość języka, parytet kluczy oraz niezależny review per nowy język.
 - **Poza zakresem:** prawdziwe dane operatora/administratora, SKU i treści dostarczane zdalnie.
-- **Wejścia:** bieżący niezatwierdzony diff locale oraz źródło EN. Przed pracą ustalić pochodzenie istniejących draftów.
-- **Akceptacja:** typecheck PASS; pełny zestaw kluczy i typów; brak fallbacku dla włączonego locale; każdy z pięciu nowych języków ma audytowalny kompetentny review; poprawne legal/accessibility/interpolacje.
-- **Weryfikacja:** parity/type tests, pełny typecheck, test ustawień/restartu, screenshoty reprezentatywnych ekranów i podpisany wynik review bez danych kontaktowych recenzenta w repo.
-- **Evidence/report:** `docs/active/I18N-01/REPORT.md` i prywatny identyfikator review.
-- **Ryzyka:** automatyczne tłumaczenia przedstawione jako zatwierdzone oraz rozszerzenie union locale bez aktualizacji konsumentów.
-- **Warunek zakończenia:** techniczny PASS i pięć niezależnych wyników językowych.
-- **Prompt wykonawczy:** „Najpierw sprawdź pochodzenie bieżących draftów i 20 błędów typecheck. Nie uznawaj modelowego self-review za review językowy. Wygeneruj tylko pozostałe atomowe zadania techniczne i pakiety dla recenzentów.”
+- **Wejścia:** stash `I18N-01 partial seven-locale runtime 2026-09-26`, kanoniczne EN, istniejące PL, glossary/kontrakty produktu i bieżące testy. Przed implementacją przywrócić stash na aktualnym `main` i rozwiązać konflikty bez utraty późniejszych zmian.
+- **Akceptacja techniczna:** typecheck PASS; pełny zestaw kluczy i typów; brak fallbacku dla włączonego locale; parity tokenów, plurali i namespace'ów; wybór ręczny i systemowy przeżywa restart; reprezentatywne ekrany nie klipują tekstu.
+- **Kontrakt review:** DE, FR, ES, IT i ET mają po jednym izolowanym review przez osobnego subagenta `gpt-6-luna` z reasoningiem `high`. Reviewer nie może być autorem ocenianego pakietu. Każdy przebieg otrzymuje EN jako źródło znaczenia, jedno locale docelowe, glossary i rubricę: naturalność, zachowanie znaczenia/pewności, terminologia produktu, legal/privacy, accessibility, CTA, interpolacje, plurale i spójność między ekranami. Reviewer nie edytuje plików i zwraca `PASS` albo konkretne findingi z kluczem, problemem i proponowaną korektą.
+- **Cykl korekt:** findingi poprawia wykonawca techniczny, po czym ten sam język przechodzi świeży re-review. Autor tłumaczeń ani główny wykonawca nie mogą sami zamknąć review. Zbiorczy modelowy self-review pięciu języków nie jest evidence.
+- **Weryfikacja:** parity/type tests, pełny typecheck, test ustawień/restartu, screenshoty reprezentatywnych ekranów oraz pięć raportów review z konfiguracją modelu, zakresem, werdyktem i zamknięciem findingów. Review nie wymaga danych osobowych ani zewnętrznych kontaktów.
+- **Evidence/report:** `docs/active/I18N-01/REPORT.md` oraz `docs/active/I18N-01/reviews/{de,fr,es,it,et}.md`.
+- **Ryzyka:** nadmierna pewność modelu, jeden reviewer przenoszący ten sam błąd między językami, automatyczne tłumaczenia przedstawione jako zatwierdzone oraz rozszerzenie union locale bez aktualizacji konsumentów. Izolacja per locale i obowiązkowy re-review ograniczają, ale nie eliminują ryzyka jakości językowej.
+- **Warunek zakończenia:** techniczny PASS, pięć niezależnych wyników `PASS` bez otwartych findingów i runtime evidence na istniejącym iPhonie 17.
+- **Prompt wykonawczy:** „Przywróć nazwany stash I18N-01 na aktualnym `main`, sprawdź jego pochodzenie i napraw 20 błędów typecheck bez fallbacków. Domknij testy oraz runtime. Następnie uruchom pięć izolowanych review `gpt-6-luna high`, po jednym dla DE/FR/ES/IT/ET, z EN jako źródłem znaczenia i bez prawa edycji. Napraw wszystkie findingi i ponawiaj review danego języka do PASS; nie zastępuj tego zbiorczym self-review.”
 
 ### UI-REVIEW-26
 
