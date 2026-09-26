@@ -1,0 +1,123 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/B guest goal and plan survive native restart
+tags:
+  - e2e
+  - profile
+  - guest
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:encrypted-storage:removal:base"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "!, Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- swipe:
+    start: "50%,63%"
+    end: "50%,63%"
+    duration: 4000
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:encrypted-storage:success"
+    timeout: 30000
+- tapOn:
+    id: "patternly:content:encrypted-storage:continue"
+- extendedWaitUntil:
+    visible:
+      id: "account-sign-in-guest"
+    timeout: 30000
+- tapOn:
+    id: "account-sign-in-guest"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:root"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:home:select-track:root"
+- runFlow:
+    when:
+      visible: "!, Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- tapOn:
+    id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+- takeScreenshot:
+    path: profile06-b-010-track-selected
+- tapOn:
+    id: "patternly:home:select-track:continue"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:guest-goal-onboarding:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:guest-goal-onboarding:set-goal"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:goal:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:goal:save"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:accept"
+    timeout: 30000
+- tapOn:
+    id: "patternly:learning-plan:accept"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:persisted"
+    timeout: 30000
+- takeScreenshot:
+    path: profile06-b-020-plan-persisted-before-restart
+- tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:goal:root"
+    timeout: 30000
+- tapOn:
+    point: "10%,12%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "!, Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- assertNotVisible:
+    id: "patternly:home:guest-goal-onboarding:root"
+- takeScreenshot:
+    path: profile06-b-030-guest-home-before-restart
+- stopApp
+- launchApp:
+    clearState: false
+- runFlow:
+    when:
+      visible: "!, Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "!, Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- assertNotVisible:
+    id: "account-entry-choice"
+- assertNotVisible:
+    id: "patternly:home:guest-goal-onboarding:root"
+- takeScreenshot:
+    path: profile06-b-040-guest-home-after-restart
