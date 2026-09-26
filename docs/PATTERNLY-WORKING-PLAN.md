@@ -55,7 +55,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 
 | Kolejność | Zadanie | Status | Zależność | Wynik |
 | --- | --- | --- | --- | --- |
-| 02a | UI-26-07 — hierarchia ekranu niedostępnych danych | `planned` | brak | Jedna czytelna decyzja, destrukcyjny hold i odrębny wycentrowany sukces. |
+| 02a | UI-26-07 — hierarchia ekranu niedostępnych danych | `blocking` | fizyczne urządzenie iOS z VoiceOver | Implementacja i pozostałe QA są gotowe w nazwanym stashu; Apple nie udostępnia VoiceOver w Simulatorze, więc wymagany focus/announcement czeka na urządzenie fizyczne. |
 | 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `planned` | brak | Bez górnej karty błędu, jedno tekstowe ostrzeżenie i akcja `Confirm`. |
 | 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `planned` | brak | Ikona i zrównoważony recovery block bez zmiany działania retry/sign-out. |
 | 02d | UI-26-10 — ukrycie technicznego stanu unieważniania sesji | `planned` | brak | Zwykły ekran logowania bez komunikatu, gdy użytkownik nie ma działania do wykonania. |
@@ -119,6 +119,7 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Weryfikacja:** testy prezentacji wszystkich czterech stanów (`base`, `removing`, `error`, `success`), test wariantu destructive i exact copy, wszystkie siedem locale, light/dark, standardowy i duży tekst, VoiceOver focus/announcement oraz screenshoty przed/po na istniejącym iPhonie 17.
 - **Poza zakresem:** zmiana operacji kryptograficznej, limitu retry, czasu hold, zasad usuwania, routingu po `Kontynuuj`, globalnego `HoldToConfirmButton` dla innych ekranów i dekoracyjnego redesignu recovery.
 - **Warunek zakończenia:** hierarchia i wszystkie stany są przyjęte wizualnie, testy zachowania usuwania pozostają zielone, a niezależne QA nie znajduje utraty ostrzeżenia, semantyki ani stanu błędu.
+- **Aktualna blokada:** implementacja, targeted 37/37, typecheck, base/error/success oraz duży tekst zostały zweryfikowane; niezależny `qa-gate` potwierdził je i zatrzymał odbiór wyłącznie na wymaganym przebiegu VoiceOver. Apple dokumentuje, że VoiceOver nie jest dostępny w Simulatorze. Gotowy diff i raport są zachowane jako nazwany stash `UI-26-07 awaiting physical VoiceOver 2026-09-27`; wznowić na fizycznym urządzeniu iOS, potwierdzić kolejność focusu oraz announcement dla base/error/success, a następnie ponowić QA.
 - **Prompt wykonawczy:** „Sprawdź aktualny `EncryptedStorageRecoverySurface`, `HoldToConfirmButton`, locale i testy. Uznaj operację usuwania oraz jej cztery stany za istniejące; zmień wyłącznie hierarchię, wskazane copy, destructive hold i izolowany layout sukcesu zgodnie z UI-26-07. Wygeneruj tylko brakujące atomowe kroki, zachowaj ostrzeżenie o utracie danych, accessibility i fail-closed behavior.”
 
 #### UI-26-08 — szczegółowy kontrakt odbioru
@@ -247,4 +248,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**UI-26-07** jest pierwsze. Przed implementacją należy ponownie sprawdzić aktualny `EncryptedStorageRecoverySurface`, kontrakt czterech stanów, locale, testy oraz runtime na istniejącym iPhonie 17.
+**UI-26-08** jest pierwszym dostępnym zadaniem. `UI-26-07` pozostaje `blocking` wyłącznie do odbioru VoiceOver na fizycznym urządzeniu iOS; nie odtwarzać implementacji, tylko wznowić nazwany stash i domknąć brakujący evidence oraz niezależne QA.

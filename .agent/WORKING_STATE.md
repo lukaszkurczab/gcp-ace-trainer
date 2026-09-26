@@ -15,7 +15,8 @@ Aktualny kanoniczny plan: [`docs/PATTERNLY-WORKING-PLAN.md`](../docs/PATTERNLY-W
 - PROFILE-01–06, AUD-17 i powiązany historyczny fixture są zamkniętym baseline'em. Nie odtwarzać tych tasków ani ich raportów.
 - `RECOVERY-01` jest zamknięte dowodowo i usunięte z aktywnego planu. Read-only retry działa na bootstrapie incydentu, reconnect, foreground i timerze; atomowy merge nie przesuwa globalnej rewizji konta.
 - `I18N-01` jest zamknięte dowodowo. Runtime obsługuje siedem locale bez fallbacku, ręczny i systemowy wybór są trwałe, a DE/FR/ES/IT/ET przeszły osobne review i re-review `gpt-6-luna high`. Dokumenty prawne używają bezpośredniej mapy locale; niezatwierdzone drafty są jawne poza release, a release pozostaje fail-closed.
-- Następne zadanie zgodnie z kolejką: `UI-26-07`.
+- `UI-26-07` ma gotową implementację i zielone targeted 37/37, typecheck oraz runtime base/error/success/duży tekst, ale niezależny `qa-gate` pozostawił status `BLOCKED`: Apple nie udostępnia VoiceOver w Simulatorze, a plan wymaga rzeczywistego focus/announcement. Cały diff z raportem zachowuje nazwany stash `UI-26-07 awaiting physical VoiceOver 2026-09-27`; wznowić wyłącznie na fizycznym urządzeniu iOS i ponowić QA.
+- Następne dostępne zadanie zgodnie z kolejką: `UI-26-08`.
 - Następna pełna kolejka, kryteria i report targets są wyłącznie w planie.
 
 ## Higiena dokumentacji
