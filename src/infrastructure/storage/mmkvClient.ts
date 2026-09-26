@@ -7,7 +7,6 @@ export interface KeyValueStorage {
 }
 
 import { openProfileStorageRouter, ProfileStorageError, ProfileTransitionActiveError, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
-import { installOwnerPreservationSource } from "../testing/ownerPreservationSourceRuntime";
 
 let client: KeyValueStorage | null = null;
 let profileRouter: ProfileStorageRouter | null = null;
@@ -37,7 +36,6 @@ function closePublishedProfileStorage(): void {
   profileRouter = null;
   activePreparedStorage = null;
   profileStorageReadyNotified = false;
-  installOwnerPreservationSource(null, null);
 }
 
 async function openProductionProfileStorage(generation: number): Promise<PreparedProfileStorage> {
@@ -203,7 +201,6 @@ export function closeActiveProfileStorage(): void {
   client = null;
   profileRouter = null;
   activePreparedStorage = null;
-  installOwnerPreservationSource(null, null);
   if (retained && retained.generation === profileStorageGeneration) {
     preparedStorage = retained;
     preparation = Promise.resolve(retained);
@@ -237,7 +234,6 @@ export function activatePreparedProfile(profileId: string, kind: StorageProfile[
     getAllKeys() { checkPublished(); return scopedStorage.getAllKeys(); },
   };
   client = Object.freeze(publishedStorage);
-  installOwnerPreservationSource(prepared.base, prepared.router);
   preparedStorage = null;
   preparation = null;
   profileStorageReadyNotified = false;

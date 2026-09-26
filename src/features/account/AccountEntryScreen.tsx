@@ -38,9 +38,7 @@ import type { RootStackParamList } from "../../navigation";
 import {
   usePatternlyAccount,
   type AccountCommandResult,
-  type OwnerPreservationGuestCommandResult,
 } from "../../application/account/AccountSessionProvider";
-import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
 import type { AccountDataSession } from "../../application/account/accountDataService";
 import {
   getFirebaseGoogleClientId,
@@ -90,13 +88,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   accountSignedInAs: t("accountSignedInAs"),
   welcomeTitle: t("welcomeTitle"),
   welcomeDescription: t("welcomeDescription"),
-  ownerPreservationUnchanged: t("ownerPreservationUnchanged"),
-  ownerPreservationChanged: t("ownerPreservationChanged"),
-  ownerPreservationBlocked: t("ownerPreservationBlocked"),
-  ownerPreservationRun: t("ownerPreservationRun"),
-  ownerPreservationRunning: t("ownerPreservationRunning"),
-  ownerPreservationPending: t("ownerPreservationPending"),
-  ownerPreservationDenied: t("ownerPreservationDenied"),
   continueWithoutAccount: t("continueWithoutAccount"),
   emailFormatError: t("emailFormatError"),
   signInCredentialsError: t("signInCredentialsError"),
@@ -259,13 +250,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const [recoveryCode, setRecoveryCode] = useState("");
   const [recoveryMethod, setRecoveryMethod] = useState<"email" | "code">("email");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [ownerPreservationCommandResult, setOwnerPreservationCommandResult] = useState<OwnerPreservationGuestCommandResult | Readonly<{ status: "running" }> | null>(null);
-  const showOwnerPreservationSmokeControl = typeof __DEV__ !== "undefined" && __DEV__ && isPatternlySmokeRuntime();
-  const runOwnerPreservationGuestCommand = async () => {
-    setOwnerPreservationCommandResult({ status: "running" });
-    const result = await account.runOwnerPreservationGuestCommand();
-    setOwnerPreservationCommandResult(result);
-  };
   const backAction = mode === "register"
     ? { onPress: () => { setFeedback(null); setMode("signIn"); } }
     : navigationIndex > 0
@@ -358,23 +342,11 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         action={{ label: text.signIn, onPress: () => setMode("signIn"), testID: "account-binding-sign-in" }}
         backAction={backAction}
         body={text.accountBindingMismatchGuestDescription}
-        footerAction={showOwnerPreservationSmokeControl
-          ? { label: text.ownerPreservationRun, onPress: () => void runOwnerPreservationGuestCommand(), testID: "account-owner-preservation-guest" }
-          : { label: text.continueWithoutAccount, onPress: continueWithoutAccount, testID: "account-binding-guest" }}
+        footerAction={{ label: text.continueWithoutAccount, onPress: continueWithoutAccount, testID: "account-binding-guest" }}
         testID="account-guest-access-blocked"
         title={text.accountBindingMismatch}
       >
         {renderFeedback(feedback ?? account.guestTransitionFailure, text)}
-        {showOwnerPreservationSmokeControl ? (
-          ownerPreservationCommandResult ? (
-            <AuthText accessibilityRole="summary" testID="account-owner-preservation-command-result">
-              {ownerPreservationCommandResult.status === "running" ? text.ownerPreservationRunning
-                : ownerPreservationCommandResult.status === "pending" ? text.ownerPreservationPending
-                : ownerPreservationCommandResult.status === "denied" ? text.ownerPreservationDenied
-                : text.ownerPreservationBlocked}
-            </AuthText>
-          ) : null
-        ) : null}
       </AuthStatusScreen>
     );
   if (account.state.kind === "verificationPending")
@@ -534,7 +506,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   if (mode === "entry") {
     return (
       <WelcomeScreen
-        ownerPreservationResult={account.ownerPreservationResult}
         onContinueAsGuest={continueWithoutAccount}
         onRegister={beginRegistration}
         onSignIn={() => {
@@ -1307,13 +1278,11 @@ function RadioOption({
 }
 
 function WelcomeScreen({
-  ownerPreservationResult,
   onContinueAsGuest,
   onRegister,
   onSignIn,
   text,
 }: Readonly<{
-  ownerPreservationResult: ReturnType<typeof usePatternlyAccount>["ownerPreservationResult"];
   onContinueAsGuest: () => void;
   onRegister: () => void;
   onSignIn: () => void;
@@ -1341,13 +1310,6 @@ function WelcomeScreen({
         <AuthText style={styles.welcomeDescription}>
           {text.welcomeDescription}
         </AuthText>
-        {ownerPreservationResult ? (
-          <AuthText accessibilityRole="summary" testID="account-owner-preservation-result">
-            {ownerPreservationResult === "unchanged" ? text.ownerPreservationUnchanged
-              : ownerPreservationResult === "changed" ? text.ownerPreservationChanged
-              : text.ownerPreservationBlocked}
-          </AuthText>
-        ) : null}
       </View>
       <View style={styles.welcomeActions}>
         <EntryButton

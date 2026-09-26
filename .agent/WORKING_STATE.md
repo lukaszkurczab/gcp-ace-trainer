@@ -182,6 +182,14 @@ Realizować wszystkie zadania z [planu](../docs/PATTERNLY-WORKING-PLAN.md) w pę
 - Niezależne re-QA po uzupełnieniu konfliktowego transferu i offline retry: **PASS WITH ISSUES**. Nieblokujący residual: brak backendowego integration case „serwer zatwierdził adopcję, odpowiedź zaginęła”; klient zachowuje i ponawia ten sam trwały operation/fingerprint/resolution.
 - Zmiany locale/ustawień oraz `docs/active/UI-REVIEW-TEMP-2026-09-26.md` są obcym, równoległym zakresem i nie należą do PROFILE-04. Następny slice: PROFILE-05.
 
+## PROFILE-05 — zakończony (26.09)
+
+- Usunięto syntetyczny oracle B1/B2 z providera, UI, locale, MMKV, Metro, fixture i testów. W aktywnym kodzie nie pozostał żaden symbol `ownerPreservation`.
+- Zachowano produkcyjny lock przejścia gościa oraz migrację/izolację `legacy_owner` w routerze. Nowy test locka dowodzi odmowy równoległej komendy przed side effectem i zwolnienia po sukcesie oraz błędzie.
+- Targeted 71/71, Metro selection 2/2 i smoke iOS export PASS. Pełny suite 1268/1274 ma 6 wcześniejszych, niezależnych błędów. Typecheck ma wyłącznie równoległe błędy rozszerzenia locale ODK-117.
+- Raport: `docs/active/PROFILE-05/REPORT.md`. Po niezależnym QA, commicie i pushu następny slice: PROFILE-06.
+- Niezależne QA GPT-6 Luna High: **PASS WITH ISSUES**. Zakres oracle, zachowany lock, migracja i B3a potwierdzone; issue ogranicza się do niezielonego repo-wide typecheck/full suite w mieszanym worktree ODK-117.
+
 ## ODK-117/B-CONTRACT — wynik
 
 - Status: **done / niezależne QA PASS WITH ISSUES**, przy czym jedyną naprawialną kwestią były nieaktualne raporty, poprawione przed commitem.

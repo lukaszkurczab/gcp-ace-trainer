@@ -43,18 +43,16 @@ async function disableAccountRemindersForDeletion(): Promise<boolean> {
 }
 import { clearAccountDeletionState, getAccountDeletionState } from "../../storage/repositories/accountLifecycleRepository";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { isPatternlySmokeRuntime, readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
+import { readPatternlyRuntimeMode, requiresVerifiedPasswordIdentity, type PatternlyRuntimeMode } from "../../infrastructure/runtime/runtimeMode";
 import { grantGuestAccess, hasGuestAccess, revokeGuestAccess } from "../../storage/repositories/guestAccessRepository";
 import { hasUnboundGuestInstallation } from "../../storage/repositories/guestInstallationRepository";
 import { createDeletionAuthorizationVault, createSensitiveCommandLane, isLiveDeletionAuthorization, prepareDeletionAuthorization, runReauthenticatedMutation, type DeletionAuthorizationVault, type SensitiveCommandLane } from "./accountCommandGuards";
 import { shareAccountDataExport as shareDownloadedAccountData } from "./accountDataExportService";
 import { installPremiumNodeOffer } from "../../content/application/nodePackageInstaller";
 import { legalVariables } from "../../legal/legalVariables";
-import { ownerPreservationOracle, type OwnerPreservationRestartResult } from "../testing/ownerPreservationOracle";
 
 export type AccountFailure = "accountNotFound" | "backendUnavailable" | "conflict" | "duplicate" | "emailUnavailable" | "expiredAction" | "guestChoiceRequired" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
 export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "guest" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
-export type OwnerPreservationGuestCommandResult = Readonly<{ status: "denied" } | { status: "blocked"; oracle: "blocked" } | { status: "pending"; oracle: "armed" }>;
 export type AccountDataExportFailure = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed";
 export type AccountDataExportCommandResult = Readonly<
   | { kind: "success" }
@@ -124,8 +122,6 @@ export type AccountSessionContextValue = Readonly<{
   confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[], groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[]) => Promise<AccountCommandResult>;
   setGuestAdoptionChoice: (choice: "transfer" | "discard") => Promise<AccountCommandResult>;
   continueAsGuest: () => Promise<AccountCommandResult>;
-  runOwnerPreservationGuestCommand: () => Promise<OwnerPreservationGuestCommandResult>;
-  ownerPreservationResult: OwnerPreservationRestartResult | null;
   retryAccountSync: () => Promise<AccountCommandResult>;
   retryPendingAccountSync: () => Promise<AccountCommandResult>;
   retryPendingDeletion: () => Promise<AccountCommandResult>;
@@ -181,41 +177,6 @@ export async function runWithGuestTransitionLock<T>(lock: ReturnType<typeof crea
   const release = lock.tryAcquire();
   if (!release) return denied;
   try { return await operation(); } finally { release(); }
-}
-
-export async function runOwnerPreservationGuestTransition(input: Readonly<{
-  lock: ReturnType<typeof createGuestTransitionLock>;
-  preflight: () => boolean;
-  recheck: () => boolean;
-  arm: () => Promise<"unchanged" | "changed" | "blocked">;
-  cleanup: () => Promise<"unchanged" | "changed" | "blocked">;
-  beginTransition: () => Promise<void>;
-}>): Promise<OwnerPreservationGuestCommandResult> {
-  let armed = false;
-  let transitionStarted = false;
-  let cleanupAttempted = false;
-  const cleanupArmedRecord = async (): Promise<"unchanged" | "changed" | "blocked"> => {
-    cleanupAttempted = true;
-    try { return await input.cleanup(); } catch { return "blocked"; }
-  };
-  return runWithGuestTransitionLock(input.lock, { status: "denied" }, async () => {
-  try {
-    if (!input.preflight()) return { status: "denied" };
-    if (await input.arm() !== "unchanged") return { status: "blocked", oracle: "blocked" };
-    armed = true;
-    if (!input.recheck()) {
-      const cleanup = await cleanupArmedRecord();
-      armed = false;
-      return cleanup === "unchanged" ? { status: "denied" } : { status: "blocked", oracle: "blocked" };
-    }
-    transitionStarted = true;
-    await input.beginTransition();
-    return { status: "pending", oracle: "armed" };
-  } catch {
-    if (armed && !transitionStarted && !cleanupAttempted) await cleanupArmedRecord();
-    return { status: "blocked", oracle: "blocked" };
-  }
-  });
 }
 
 export type AccountSessionCoordinator<T> = Readonly<{
@@ -372,8 +333,6 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const [state, setState] = useState<AccountState>({ kind: "loading" });
   const [accountEntryMode, setAccountEntryMode] = useState<"welcome" | "login">(preparedProfileState.isFreshInstallation ? "welcome" : "login");
   const [guestTransitionFailure, setGuestTransitionFailure] = useState<Readonly<{ kind: "failure"; failure: AccountFailure }> | null>(null);
-  const [ownerPreservationResult, setOwnerPreservationResult] = useState<OwnerPreservationRestartResult | null>(null);
-  const ownerPreservationRestartCheckRef = useRef<Promise<OwnerPreservationRestartResult> | null>(null);
   const stateRef = useRef<AccountState>({ kind: "loading" });
   stateRef.current = state;
   const [authClient, setAuthClient] = useState<FirebaseAuthClient | null>(null);
@@ -975,16 +934,6 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     }
   }, [authInitializationRevision, finalizeCurrent, logoutControl, preparedProfileState, revokeDeletionAuthorization, runtimeMode, sessionCoordinator, startAuthenticatedProfilePreparation]);
 
-  useEffect(() => {
-    if (state.kind !== "guest" || runtimeMode !== "smoke" || typeof __DEV__ === "undefined" || !__DEV__ || ownerPreservationResult !== null) return;
-    let active = true;
-    ownerPreservationRestartCheckRef.current ??= ownerPreservationOracle.verifyAfterRestart();
-    void ownerPreservationRestartCheckRef.current.then((result) => {
-      if (active && result !== "not_armed") setOwnerPreservationResult(result);
-    });
-    return () => { active = false; };
-  }, [ownerPreservationResult, runtimeMode, state.kind]);
-
   const runWithAuth = useCallback(async (operation: (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>) => Promise<AccountCommandResult>): Promise<AccountCommandResult> => {
     if (!authClient || !apiClient) return { kind: "failure", failure: "providerUnavailable" };
     try { return await operation(authClient, apiClient); } catch (error) { return { kind: "failure", failure: classifyAccountFailure(error) }; }
@@ -1220,34 +1169,6 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       setGuestTransitionFailure(result.kind === "failure" ? { kind: "failure", failure: result.failure } : null);
       return result;
     },
-    runOwnerPreservationGuestCommand: async () => {
-      const auth = authClient;
-      let initialProfile: ReturnType<typeof getActiveStorageProfile> | null = null;
-      return runOwnerPreservationGuestTransition({
-        lock: guestCommandLockRef.current,
-        preflight: () => {
-          initialProfile = getActiveStorageProfile();
-          return typeof __DEV__ !== "undefined" && __DEV__ && isPatternlySmokeRuntime()
-            && stateRef.current.kind === "guestAccessBlocked"
-            && initialProfile.kind === "legacy_owner"
-            && auth !== null && authInitializationResolvedRef.current && auth.getSnapshot() === null;
-        },
-        arm: () => ownerPreservationOracle.arm(),
-        recheck: () => {
-          const profile = getActiveStorageProfile();
-          return initialProfile !== null && stateRef.current.kind === "guestAccessBlocked"
-            && auth !== null && authClient === auth && authInitializationResolvedRef.current && auth.getSnapshot() === null
-            && profile.kind === "legacy_owner" && profile.id === initialProfile.id;
-        },
-        cleanup: () => ownerPreservationOracle.cleanup(),
-        beginTransition: async () => {
-          sessionCoordinator.invalidate();
-          revokeDeletionAuthorization();
-          await continueAsGuestInNewProfile();
-        },
-      });
-    },
-    ownerPreservationResult,
     exportAccountData: async (isRequestActive = () => true) => {
       if (!authClient || !apiClient || state.kind !== "authenticated") return { kind: "failure", failure: "authenticationRequired" };
       return sensitiveCommandLane.run(async (): Promise<AccountDataExportCommandResult> => {

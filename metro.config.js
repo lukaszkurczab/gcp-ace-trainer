@@ -6,9 +6,6 @@ const localProfileEnvFiles = /^(?:\/|[A-Za-z]:[\\/])(?:.*[\\/])?\.env\.(?:smoke|
 const smokeRuntime = process.env.PATTERNLY_RUNTIME_MODE === "smoke";
 const disableWatchman = process.env.PATTERNLY_METRO_DISABLE_WATCHMAN === "1";
 const buildOnlyModules = new Map([
-  ["../../infrastructure/testing/ownerPreservationOracleRuntime", smokeRuntime ? "src/infrastructure/testing/ownerPreservationOracleRuntime.smoke.ts" : "src/infrastructure/testing/ownerPreservationOracleRuntime.disabled.ts"],
-  ["../testing/ownerPreservationSourceRuntime", smokeRuntime ? "src/infrastructure/testing/ownerPreservationSourceRuntime.smoke.ts" : "src/infrastructure/testing/ownerPreservationSourceRuntime.disabled.ts"],
-  ["./ownerPreservationSourceRuntime", smokeRuntime ? "src/infrastructure/testing/ownerPreservationSourceRuntime.smoke.ts" : "src/infrastructure/testing/ownerPreservationSourceRuntime.disabled.ts"],
   ["../content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
   ["./premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
   ["../../src/content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
