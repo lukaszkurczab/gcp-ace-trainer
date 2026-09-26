@@ -56,7 +56,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | Kolejność | Zadanie | Status | Zależność | Wynik |
 | --- | --- | --- | --- | --- |
 | 02a | UI-26-07 — hierarchia ekranu niedostępnych danych | `blocking` | fizyczne urządzenie iOS z VoiceOver | Implementacja i pozostałe QA są gotowe w nazwanym stashu; Apple nie udostępnia VoiceOver w Simulatorze, więc wymagany focus/announcement czeka na urządzenie fizyczne. |
-| 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `planned` | brak | Bez górnej karty błędu, jedno tekstowe ostrzeżenie i akcja `Confirm`. |
+| 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `blocking` | fizyczne urządzenie iOS z VoiceOver | Implementacja i pozostałe QA są gotowe w nazwanym stashu; wymagany focus/announcement czeka na urządzenie fizyczne. |
 | 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `planned` | brak | Ikona i zrównoważony recovery block bez zmiany działania retry/sign-out. |
 | 02d | UI-26-10 — ukrycie technicznego stanu unieważniania sesji | `planned` | brak | Zwykły ekran logowania bez komunikatu, gdy użytkownik nie ma działania do wykonania. |
 | 02e | UI-26-11 — hierarchia propozycji planu nauki | `planned` | brak | Jeden top inset, naturalny tytuł, rodzaj celu jako nagłówek i jedno primary CTA. |
@@ -135,6 +135,7 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Weryfikacja:** test struktury bez warning `InfoBlock` i bez górnego ogólnego alertu dla bazowego delete; exact-copy tests; błędne hasło, pending sync, offline/provider failure; password/Apple/Google; przejście `Confirm` → hold; wszystkie siedem locale; light/dark, standardowy/duży tekst i screenshot na istniejącym iPhonie 17.
 - **Poza zakresem:** zmiana danych rzeczywiście usuwanych lub zachowywanych, reautoryzacji Firebase, synchronizacji przed deletion, czasu hold, deletion grant, retry/cleanup backendu oraz copy eksportu/privacy.
 - **Warunek zakończenia:** uproszczony ekran jest zgodny ze screenshotowym kierunkiem właściciela, realne błędy pozostają zrozumiałe, a pełna dwustopniowa ochrona reauth → hold działa bez regresji.
+- **Aktualna blokada:** implementacja, siedem locale, targeted 53/53, typecheck, password base/error/reauth→hold oraz light/duży tekst zostały odebrane; niezależny `qa-gate` zatrzymał zadanie wyłącznie na wymaganym rzeczywistym VoiceOver focus/announcement. Gotowy diff i raport przechowuje nazwany stash `UI-26-08 awaiting physical VoiceOver 2026-09-27`. Na fizycznym iOS sprawdzić warning → password → `Confirm`, ogłoszenie aktywnego błędu i prepared hold, potem ponowić QA.
 - **Prompt wykonawczy:** „Sprawdź aktualny `AccountSecurityScreen`, źródła błędów, locale i testy deletion. Zmień wyłącznie prezentację pierwszego kroku usuwania zgodnie z UI-26-08: bez górnej karty, plain-text warning, skrócone konsekwencje i delete-only `Confirm`. Zachowaj realne inline errors oraz drugi destrukcyjny krok hold-to-delete; nie zmieniaj kontraktu danych ani innych trybów security.”
 
 #### UI-26-09 — szczegółowy kontrakt odbioru
@@ -248,4 +249,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**UI-26-08** jest pierwszym dostępnym zadaniem. `UI-26-07` pozostaje `blocking` wyłącznie do odbioru VoiceOver na fizycznym urządzeniu iOS; nie odtwarzać implementacji, tylko wznowić nazwany stash i domknąć brakujący evidence oraz niezależne QA.
+**UI-26-09** jest pierwszym dostępnym zadaniem. `UI-26-07` i `UI-26-08` pozostają `blocking` wyłącznie do odbioru VoiceOver na fizycznym urządzeniu iOS; nie odtwarzać implementacji, tylko wznowić odpowiedni nazwany stash i domknąć brakujący evidence oraz niezależne QA.
