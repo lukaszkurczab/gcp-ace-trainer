@@ -304,3 +304,13 @@ Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymagany
 - Targeted 12/12, lint/typecheck/build/diff PASS. Wcześniejszy full 239/239 PASS; finalny full 240/241 ma powtarzalne 500 wyłącznie w starym concurrent Firestore sync na współdzielonym emulatorze, poza zmienionym obszarem — nie raportować finalnego full jako PASS.
 - QA w czterech iteracjach wykryło i zamknęło body/timeout/refresh amplification, DNS TOCTOU i callback Node 22 `all:true`; końcowy werdykt PASS WITH ISSUES. Rzeczywisty JWKS/token pozostaje C, a guard/routy B2.
 - Raport: [OPS-PRODUCTION/B1](https://github.com/lukaszkurczab/patternly-backend/blob/e25c28a/docs/active/OPS-PRODUCTION/B1-REPORT.md). Następny slice: `OPS-PRODUCTION/B2`.
+
+## PROFILE-06/F — bieżący wynik (26.09)
+
+- Istniejący iPhone 17 oraz lokalne Auth/Firestore/API/Metro zostały użyte sekwencyjnie; nie utworzono urządzenia ani kopii aplikacji.
+- Rzeczywisty flow wykrył regresję: password reauth usuwał `authorizationGeneration`, a synchronizacja przed deletion kończyła się 401 i jawnym `pendingSyncRequiresNetwork`.
+- Po walidacji Luna High dodano atomowy ciąg reauth → `ensureAccountSessionGeneration` → ponowny guard UID/generacji → jednorazowy deletion grant. Testy ukierunkowane: 29/29 PASS.
+- Produkcyjna ścieżka hold-to-delete zakończyła remote deletion; dedykowany terminalny flow Maestro 3/3 PASS. Podpisany fixture potwierdził dokładnie jedną nową operację i jeden powiązany proof przed cleanupem; exact fixture cleanup PASS.
+- Pełny typecheck aplikacji pozostaje czerwony wyłącznie na 20 istniejących błędach równoległego rozszerzania locale. Niezależny qa-gate: **PASS WITH ISSUES**; app 92/92, backend fixture 10/10, backend lint/typecheck/diff PASS.
+- Backend fixture jest wypchnięty na `main` jako `ab3362b`; implementacja app jest w `04d3eb89`. Dokumentacja/plan mają wskazać ten immutable SHA i zostać wypchnięte osobnym commitem.
+- PROFILE-06/E nadal czeka na decyzję PO o UX częściowego odzyskania. Po pushu dokumentacji F przejść do kolejnego niezależnego taska; marker server revoke na terminalnym ekranie pozostaje jawnym nieblokującym issue.

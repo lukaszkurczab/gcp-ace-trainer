@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "taskId": "PROFILE-06/F",
+  "implementationCommit": "04d3eb89908d05aa5a7ffae3e3ecad237d4860c5",
+  "device": {
+    "name": "iPhone 17",
+    "udid": "7F315654-3175-4F3C-BB24-B0263F59360C",
+    "os": "iOS 26.4"
+  },
+  "runtime": "local smoke: Auth emulator + Firestore emulator + local API + Metro",
+  "locale": "en",
+  "theme": "dark",
+  "scenario": "isolated password account after successful remote deletion and local sign-out",
+  "fixtureId": "profile06-f-isolated-run",
+  "sourceFlow": "docs/active/PROFILE-06/evidence/verify-deleted-terminal.yaml",
+  "sha256": "f08a390a3e7a195ae6f856c95e44cf1049d148dd767cec4f7ff55e58ba64843a"
+}
