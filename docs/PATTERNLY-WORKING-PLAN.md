@@ -45,7 +45,6 @@ SHA są punktem orientacyjnym porządków, nie kandydatem release. Przed każdym
 
 | Obszar | Status | Potwierdzona luka |
 | --- | --- | --- |
-| Odzyskanie planu | `partial` | Obecny incydent pozwala trwale zamknąć komunikat i utworzyć nowy plan, ale nie wykonuje automatycznych prób odzyskania w tle zgodnie z ostatnią decyzją właściciela. |
 | Lokalizacje DE/FR/ES/IT/ET | `partial` | Niedokończone pakiety i rozszerzenie runtime są zachowane w nazwanym stachu; pełny typecheck tego zakresu ma 20 błędów. Nie wykonano jeszcze pięciu niezależnych review językowych przez dedykowane subagenty. |
 | Stare audyty UI/session | `partial` | AUD-02, AUD-05, AUD-13, AUD-14 i AUD-15 zawierają wykonane poprawki, lecz ich końcowe scenariusze lokalne nie zostały odebrane na aktualnym kodzie. |
 | Recovery/reissue autoryzacji | `partial` | Backendowe fundamenty są wykonane; pozostają operacje B2–B4 oraz decyzja o e-mailu po niejednoznacznym wyniku SMTP. |
@@ -57,7 +56,6 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 
 | Kolejność | Zadanie | Status | Zależność | Wynik |
 | --- | --- | --- | --- | --- |
-| 01 | RECOVERY-01 — automatyczne odzyskanie brakującego planu | `partial` | brak | Zgodność produktu z ostatnią decyzją właściciela. |
 | 02 | I18N-01 — siedem locale i niezależny review subagentów | `partial` | brak zewnętrznej zależności; pięć izolowanych review po domknięciu technicznym | Zielony runtime i zatwierdzone pakiety. |
 | 02a | UI-26-07 — hierarchia ekranu niedostępnych danych | `planned` | brak; I18N-01 dla finalnego odbioru siedmiu locale | Jedna czytelna decyzja, destrukcyjny hold i odrębny wycentrowany sukces. |
 | 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `planned` | brak; I18N-01 dla finalnego odbioru siedmiu locale | Bez górnej karty błędu, jedno tekstowe ostrzeżenie i akcja `Confirm`. |
@@ -88,20 +86,6 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 `AUD-08-DEC` nie zatrzymuje niezależnych zadań 01–14 ani OPS-B2–B4. `I18N-01` nie zależy od dostępu do zewnętrznych recenzentów. Locale nie mogą jednak zostać uznane za ukończone ani włączone do kandydata przed pięcioma odrębnymi review subagentów i zamknięciem wszystkich zgłoszonych poprawek.
 
 ## 4. Kontrakty zadań
-
-### RECOVERY-01 — automatyczne odzyskanie planu
-
-- **Priorytet:** P0.
-- **Cel:** zachować dostęp do poprawnego Home i w tle odzyskać brakujący/uszkodzony, separowalny plan.
-- **Zakres:** trwała tożsamość incydentu; zamykalny jednorazowy komunikat; kontrolowany backoff; retry po restarcie i odzyskaniu sieci; atomowe scalenie poprawnego planu; zakończenie incydentu po sukcesie.
-- **Poza zakresem:** pusty plan, automatyczne nadpisanie zdalnego rekordu, ręczne resetowanie poprawnych danych, retry przy niepewnej własności.
-- **Wejścia:** obecny `learningPlanRecovery`, sync state i aktualne testy częściowego materializowania konta.
-- **Akceptacja:** zamknięty komunikat nie wraca dla tego incydentu; retry nadal działa; nie zapętla żądań; sukces nie duplikuje planu i usuwa incydent; nowy materialnie inny incydent może pokazać nowy komunikat; niepewna własność pozostaje fail-closed.
-- **Weryfikacja:** test zegara/backoffu, restart, offline→online, sukces, trwała awaria, nowy incydent, exact remote before/after oraz Maestro na istniejącym iPhonie 17.
-- **Evidence/report:** `docs/active/RECOVERY-01/REPORT.md`; bez sekretów i surowych danych konta.
-- **Ryzyka:** dwa konkurencyjne systemy synchronizacji i background loop. Retry musi należeć do istniejącego ownera synchronizacji.
-- **Warunek zakończenia:** implementacja, targeted tests, typecheck, runtime evidence i niezależne QA.
-- **Prompt wykonawczy:** „Sprawdź aktualny kod i testy `learningPlanRecovery`; uznaj trwałe dismiss i częściową materializację za istniejące. Zaplanuj i wykonaj wyłącznie brakujący background retry w istniejącym ownerze synchronizacji, z backoffem, restartem i atomowym merge. Nie przywracaj PROFILE ani migracji starych buildów.”
 
 ### I18N-01 — siedem locale
 
@@ -281,4 +265,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**RECOVERY-01** jest pierwsze, ponieważ obecny kod jest sprzeczny z ostatnią decyzją właściciela i plan nie może uznać rodziny profili za całkowicie domkniętą, dopóki retry w tle nie istnieje. Następna sesja ma użyć skilla implementacyjnego, ponownie zbadać aktualny kod i wykonać wyłącznie ten delta-slice.
+**I18N-01** jest pierwsze. Przed implementacją należy przywrócić nazwany stash na aktualnym `main`, rozwiązać konflikty bez utraty późniejszych zmian, ponownie zmierzyć typecheck i podzielić techniczne domknięcie od pięciu niezależnych review językowych GPT-6 Luna High.
