@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "taskId": "PROFILE-06/B",
+  "runtimeBaseCommit": "b234ae36",
+  "sourceFlowCommit": "8a955ccc2ffe82d86f0f0f8d2bc568b14652288c",
+  "sourceWorktreePatchSha256": "e024d2f992724a6e115a2f3b29bdaeb2261699d343e896d707062fa79a4c8b95",
+  "sourceWorktreeWasDirty": true,
+  "device": {
+    "name": "iPhone 17",
+    "udid": "7F315654-3175-4F3C-BB24-B0263F59360C",
+    "os": "iOS 26.4"
+  },
+  "runtime": "local smoke: Auth emulator + Firestore emulator + local API + Metro",
+  "locale": "en",
+  "theme": "dark",
+  "scenario": "fresh Guest saves a Coding Interview goal and plan, then survives native restart",
+  "sourceFlow": "docs/active/PROFILE-06/evidence/guest-goal-restart.yaml",
+  "screenshots": [
+    {
+      "path": "profile06-b-plan-before-restart.png",
+      "sha256": "c83465d290f70f5caf89b4c2dc309fda4d3d9acd82be034f677e53a5c4870fb5"
+    },
+    {
+      "path": "profile06-b-home-after-restart.png",
+      "sha256": "92ca4e0b30f6537c97d88797c9ba2a0c39c47e35c0e2438e627424c28a4b81a0"
+    }
+  ]
+}

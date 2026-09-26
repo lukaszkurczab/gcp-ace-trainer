@@ -314,3 +314,10 @@ Pełny cel pozostaje aktywny, dopóki wszystkie zadania planu nie mają wymagany
 - Pełny typecheck aplikacji pozostaje czerwony wyłącznie na 20 istniejących błędach równoległego rozszerzania locale. Niezależny qa-gate: **PASS WITH ISSUES**; app 92/92, backend fixture 10/10, backend lint/typecheck/diff PASS.
 - Backend fixture jest wypchnięty na `main` jako `ab3362b`; implementacja app jest w `04d3eb89`. Dokumentacja/plan mają wskazać ten immutable SHA i zostać wypchnięte osobnym commitem.
 - PROFILE-06/E nadal czeka na decyzję PO o UX częściowego odzyskania. Po pushu dokumentacji F przejść do kolejnego niezależnego taska; marker server revoke na terminalnym ekranie pozostaje jawnym nieblokującym issue.
+
+## PROFILE-06/B — wynik (26.09)
+
+- Status: **done / niezależny qa-gate PASS WITH ISSUES**.
+- Fresh Guest na istniejącym iPhonie 17 wybrał Coding Interview, zapisał cel i plan, a `stopApp`/`launchApp clearState:false` zachował track, `Open-ended` i `Continue plan` bez Account Entry i ponownego onboardingu.
+- Maestro 38 wykonanych kroków + 3 poprawnie pominięte warunkowe overlay; targeted 35/35 PASS. Szerszy przebieg 55/56 ma jeden stary statyczny assertion tekstu testu, niezależny od B.
+- Następny slice PROFILE-06/C: transfer z exact Firestore no-duplicate oraz osobny discard z dowodem, że rekordy Gościa nie trafiły do konta.
