@@ -1,0 +1,139 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/C discard choice survives restart and keeps account empty
+env:
+  PROFILE06_DISCARD_EMAIL: ${PROFILE06_DISCARD_EMAIL}
+  PROFILE06_DISCARD_PASSWORD: ${PROFILE06_DISCARD_PASSWORD}
+tags:
+  - e2e
+  - profile
+  - account
+---
+- assertVisible:
+    id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+    duration: 700
+- tapOn:
+    id: "settings-sign-out"
+- extendedWaitUntil:
+    visible:
+      id: "account-sign-in-guest"
+    timeout: 30000
+- tapOn:
+    id: "account-sign-in-guest"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:select-track:backend-system-design-interview"
+- tapOn:
+    id: "patternly:home:select-track:continue"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:guest-goal-onboarding:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:guest-goal-onboarding:not-now"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:backend-system-design-interview"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "settings-account-entry"
+    timeout: 30000
+- tapOn:
+    id: "settings-account-entry"
+- tapOn:
+    id: "account-entry-register"
+- tapOn:
+    id: "account-register-terms-checkbox"
+- tapOn:
+    id: "account-email"
+- inputText: ${PROFILE06_DISCARD_EMAIL}
+- tapOn:
+    id: "account-password-visibility"
+- tapOn:
+    id: "account-password"
+- inputText: ${PROFILE06_DISCARD_PASSWORD}
+- tapOn:
+    id: "account-password-confirmation"
+- inputText: ${PROFILE06_DISCARD_PASSWORD}
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "account-register-submit"
+- extendedWaitUntil:
+    visible:
+      id: "account-entry-choice"
+    timeout: 30000
+- tapOn:
+    id: "account-keep-progress-toggle"
+- assertVisible:
+    id: "account-keep-progress-toggle"
+    checked: false
+- takeScreenshot:
+    path: profile06-c-discard-choice-before-restart
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "account-entry-choice"
+    timeout: 30000
+- assertVisible:
+    id: "account-keep-progress-toggle"
+    checked: false
+- takeScreenshot:
+    path: profile06-c-discard-choice-after-restart
+- runFlow:
+    when:
+      visible: "!, Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- tapOn:
+    id: "account-entry-continue"
+- extendedWaitUntil:
+    visible: "Remove device data"
+    timeout: 30000
+- tapOn: "Remove device data"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:ready"
+    timeout: 30000
+- assertNotVisible:
+    id: "account-entry-choice"
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:ready"
+    timeout: 30000
+- assertNotVisible:
+    id: "account-entry-choice"
+- takeScreenshot:
+    path: profile06-c-discard-after-completion-restart

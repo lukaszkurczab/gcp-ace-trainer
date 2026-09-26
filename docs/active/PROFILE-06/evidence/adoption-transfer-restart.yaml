@@ -1,0 +1,117 @@
+appId: com.lkurczab.patternly
+name: PROFILE-06/C transfer choice survives restart and completes once
+env:
+  PROFILE06_TRANSFER_EMAIL: ${PROFILE06_TRANSFER_EMAIL}
+  PROFILE06_TRANSFER_PASSWORD: ${PROFILE06_TRANSFER_PASSWORD}
+tags:
+  - e2e
+  - profile
+  - account
+---
+- assertVisible:
+    id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "settings-account-entry"
+    timeout: 30000
+- tapOn:
+    id: "settings-account-entry"
+- tapOn:
+    id: "account-entry-register"
+- tapOn:
+    id: "account-register-terms-checkbox"
+- tapOn:
+    id: "account-email"
+- inputText: ${PROFILE06_TRANSFER_EMAIL}
+- tapOn:
+    id: "account-password-visibility"
+- tapOn:
+    id: "account-password"
+- inputText: ${PROFILE06_TRANSFER_PASSWORD}
+- tapOn:
+    id: "account-password-confirmation"
+- inputText: ${PROFILE06_TRANSFER_PASSWORD}
+- tapOn:
+    point: "50%,20%"
+- tapOn:
+    id: "account-register-submit"
+- extendedWaitUntil:
+    visible:
+      id: "account-entry-choice"
+    timeout: 30000
+- assertVisible:
+    id: "account-keep-progress-toggle"
+    checked: true
+- takeScreenshot:
+    path: profile06-c-transfer-choice-before-restart
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "account-entry-choice"
+    timeout: 30000
+- assertVisible:
+    id: "account-keep-progress-toggle"
+    checked: true
+- takeScreenshot:
+    path: profile06-c-transfer-choice-after-restart
+- runFlow:
+    when:
+      visible: "!, Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- tapOn:
+    id: "account-entry-continue"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- tapOn:
+    id: "main-tab-bar-settings"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "settings-goal"
+    timeout: 30000
+- tapOn:
+    id: "settings-goal"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:goal:root"
+    timeout: 30000
+- takeScreenshot:
+    path: profile06-c-transfer-goal-preserved
+- tapOn:
+    point: "10%,12%"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-home"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-home"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- assertNotVisible:
+    id: "account-entry-choice"
+- takeScreenshot:
+    path: profile06-c-transfer-home-after-completion-restart
