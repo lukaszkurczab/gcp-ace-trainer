@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { usePreventRemove, type NavigationAction } from "@react-navigation/native";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
@@ -75,8 +76,18 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const [completionOperation, setCompletionOperation] = useState<Extract<PracticeDurableOperationState, { kind: "completing" | "completion_failed" | "completed" }> | null>(null);
   const [exit, setExit] = useState<"none" | "leave">("none");
   const permitRouteExit = useRef(false);
+  const pendingRouteAction = useRef<NavigationAction | null>(null);
   const actionPending = useRef(false);
   const [pendingPhase, setPendingPhase] = useState<PracticeSurfacePhase | null>(null);
+
+  usePreventRemove(!permitRouteExit.current && state?.kind === "session", ({ data }) => {
+    if (permitRouteExit.current) {
+      navigation.dispatch(data.action);
+      return;
+    }
+    pendingRouteAction.current = data.action;
+    setExit("leave");
+  });
 
   const algorithmsMode = route.params.trackId === CODING_INTERVIEW_TRACK_ID && isAlgorithmModeId(route.params.mode)
     ? route.params.mode
@@ -149,12 +160,6 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   // This also continues a locally committed answer after resume or recovery.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, pendingPhase, completionFailure, submissionError]);
-
-  useEffect(() => navigation.addListener("beforeRemove", (event) => {
-    if (permitRouteExit.current || state?.kind !== "session") return;
-    event.preventDefault();
-    setExit("leave");
-  }), [navigation, state]);
 
   if (!algorithmsMode) {
     return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Certification Practice unavailable")} description={t(certificationUnavailableDescription)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
@@ -337,7 +342,10 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
 
   function leave() {
     permitRouteExit.current = true;
-    if (navigation.canGoBack()) navigation.goBack();
+    const action = pendingRouteAction.current;
+    pendingRouteAction.current = null;
+    if (action) navigation.dispatch(action);
+    else if (navigation.canGoBack()) navigation.goBack();
     else navigation.navigate(ROUTES.PRACTICE_HUB);
   }
 
@@ -354,10 +362,10 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       onChoicePress={(optionId) => { setSubmissionError(null); setLocalResponse((current) => toggleChoice(current, optionId, responseControl.kind === "choice" ? responseControl.selectionMode : "single")); }}
       onComplexityValuePress={(dimensionId, value) => { setSubmissionError(null); setLocalResponse((current) => setComplexityValue(current, dimensionId, value)); }}
       onConfirmLeave={leave}
-      onDismissExit={() => setExit("none")}
+      onDismissExit={() => { pendingRouteAction.current = null; setExit("none"); }}
       onOrderingMove={(elementId, direction) => { setSubmissionError(null); setLocalResponse((current) => moveOrderingElement(current, elementId, direction, responseControl)); }}
       onPrimaryAction={() => void ((phase === "unanswered" || phase === "submit_journal_failed") ? submit() : advanceOrFinish())}
-      onRequestLeave={() => setExit("leave")}
+      onRequestLeave={() => { pendingRouteAction.current = null; setExit("leave"); }}
       onRetry={completionFailure ? () => void retryOrRecoverCompletion() : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? () => void recover() : undefined}
       phase={phase}
       position={{ accessibilityLabel: `${t("Question")} ${projection.position.current} ${t("of")} ${projection.position.total}`, label: `${projection.position.current} ${t("of")} ${projection.position.total}` }}

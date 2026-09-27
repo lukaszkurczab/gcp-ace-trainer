@@ -1,6 +1,7 @@
 import { PracticeQuestionCard } from "./PracticeQuestionCard";
 import { getPracticeSessionExitCopy } from "./practiceSessionExitCopy";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useRef } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -19,6 +20,9 @@ import { CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID } from "
 import {
   allowsPracticeFeedback,
   allowsPracticeResponseEditing,
+  acceptPracticePrimaryActionActivation,
+  buildPracticePrimaryActionIdentity,
+  type PracticePrimaryActionActivation,
   type PracticeFeedback,
   type PracticeNotice,
   type PracticeResponseControl,
@@ -81,11 +85,25 @@ export type PracticeSessionSurfaceProps = Readonly<{
  * recovery remain application-owned.
  */
 export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
+  const lastPrimaryActionActivation = useRef<PracticePrimaryActionActivation | null>(null);
   const styles = useThemedStyles(createStyles);
   const editable = allowsPracticeResponseEditing(props.phase);
   const visibleFeedback = allowsPracticeFeedback(props.phase) ? props.feedback : undefined;
   // These UI-only IDs are explicitly mapped from the canonical questionId by each screen.
   const displayedQuestionId = props.runtimeIdentity?.itemId ?? props.question?.itemId;
+  const handlePrimaryAction = () => {
+    if (!props.primaryAction || !props.onPrimaryAction) return;
+    const identity = buildPracticePrimaryActionIdentity({
+      actionLabel: props.primaryAction.label,
+      itemId: displayedQuestionId,
+      phase: props.phase,
+      sessionId: props.runtimeIdentity?.sessionId,
+    });
+    const activation = acceptPracticePrimaryActionActivation(lastPrimaryActionActivation.current, identity, Date.now());
+    if (!activation.accepted) return;
+    lastPrimaryActionActivation.current = activation.lastAccepted;
+    props.onPrimaryAction();
+  };
   const controls = props.question && props.phase !== "preparing" && props.phase !== "completing" ? (
     <>
       <PracticeQuestionCard
@@ -105,7 +123,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
 
   return (
     <SessionShell
-      actionBar={props.phase === "preparing" ? undefined : <ActionBar {...props} />}
+      actionBar={props.phase === "preparing" ? undefined : <ActionBar {...props} onPrimaryAction={handlePrimaryAction} />}
       key={displayedQuestionId}
       modeTestID={props.runtimeIdentity ? runtimeSelectors.session.mode(props.runtimeIdentity.modeId) : undefined}
       modeLabel={props.modeLabel}

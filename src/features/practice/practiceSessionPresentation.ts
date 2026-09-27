@@ -14,6 +14,34 @@ export function describeSessionPreparationFailure(error: unknown, translate: (me
 
 export type PracticeSurfacePhase = "preparing" | PracticeDurableOperationState["kind"];
 
+export const PRACTICE_ACTION_GESTURE_CARRY_OVER_MS = 400;
+
+export type PracticePrimaryActionActivation = Readonly<{
+  identity: string;
+  at: number;
+}>;
+
+/** Suppress only a fast tap carried across a primary-action transition. */
+export function acceptPracticePrimaryActionActivation(
+  previous: PracticePrimaryActionActivation | null,
+  identity: string,
+  at: number,
+): Readonly<{ accepted: boolean; lastAccepted: PracticePrimaryActionActivation }> {
+  if (previous && previous.identity !== identity && at - previous.at < PRACTICE_ACTION_GESTURE_CARRY_OVER_MS) {
+    return { accepted: false, lastAccepted: previous };
+  }
+  return { accepted: true, lastAccepted: { identity, at } };
+}
+
+export function buildPracticePrimaryActionIdentity(input: Readonly<{
+  sessionId?: string;
+  itemId?: string;
+  phase: PracticeSurfacePhase;
+  actionLabel: string;
+}>): string {
+  return JSON.stringify([input.sessionId ?? null, input.itemId ?? null, input.phase, input.actionLabel]);
+}
+
 export type PracticeOptionState = "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct" | "not_selected";
 
 export type PracticeChoiceControl = Readonly<{

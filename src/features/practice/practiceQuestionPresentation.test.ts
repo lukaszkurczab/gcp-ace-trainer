@@ -23,3 +23,13 @@ test("structured constraints have localized semantics and stable identity", () =
   assert.match(card, /runtimeSelectors\.session\.question\(question\.itemId\)\}:constraints/);
   assert.match(card, /maxFontSizeMultiplier=\{2\}/);
 });
+
+test("primary session CTA routes activations through the phase-identity carry-over guard", () => {
+  assert.match(surface, /lastPrimaryActionActivation = useRef<PracticePrimaryActionActivation \| null>\(null\)/);
+  assert.match(surface, /buildPracticePrimaryActionIdentity\(\{[\s\S]*?actionLabel: props\.primaryAction\.label[\s\S]*?itemId: displayedQuestionId[\s\S]*?phase: props\.phase[\s\S]*?sessionId: props\.runtimeIdentity\?\.sessionId/);
+  assert.match(surface, /acceptPracticePrimaryActionActivation\(lastPrimaryActionActivation\.current, identity, Date\.now\(\)\)/);
+  assert.match(surface, /if \(!activation\.accepted\) return;\s*lastPrimaryActionActivation\.current = activation\.lastAccepted;\s*props\.onPrimaryAction\(\)/);
+  assert.match(surface, /<ActionBar \{\.\.\.props\} onPrimaryAction=\{handlePrimaryAction\} \/>/);
+  assert.match(surface, /onPress=\{props\.onPrimaryAction \?\? noop\}/);
+  assert.doesNotMatch(surface, /setTimeout|requestAnimationFrame/);
+});

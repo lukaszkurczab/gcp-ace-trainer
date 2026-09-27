@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { usePreventRemove, type NavigationAction } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
@@ -55,8 +56,20 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const [exit, setExit] = useState<"none" | "leave">("none");
   const [exitFailure, setExitFailure] = useState<"pause" | "retry_abandon" | "retry_checkpoint" | "recover_abandon" | "recover_operation" | null>(null);
   const permitRouteExit = useRef(false);
+  const pendingRouteAction = useRef<NavigationAction | null>(null);
+  const actionPending = useRef(false);
+  const pendingActionProjection = useRef<CertificationPracticeProjection | null>(null);
   const recoveryInFlight = useRef(false);
   const mode = isCertificationPracticeModeId(route.params.mode) ? route.params.mode : null;
+
+  usePreventRemove(!permitRouteExit.current && projection !== null, ({ data }) => {
+    if (permitRouteExit.current) {
+      navigation.dispatch(data.action);
+      return;
+    }
+    pendingRouteAction.current = data.action;
+    setExit("leave");
+  });
 
   const applyProjection = (next: CertificationPracticeProjection) => {
     setProjection(next);
@@ -73,6 +86,11 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     const next = await getCertificationPracticeProjection();
     applyProjection(next);
   };
+  useEffect(() => {
+    if (!projection || pendingActionProjection.current !== projection) return;
+    pendingActionProjection.current = null;
+    actionPending.current = false;
+  }, [projection]);
   useEffect(() => {
     if (!mode) return;
     let live = true;
@@ -104,12 +122,6 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     });
     return () => listener.remove();
   }, [projection?.session.id]);
-
-  useEffect(() => navigation.addListener("beforeRemove", (event) => {
-    if (permitRouteExit.current || !projection) return;
-    event.preventDefault();
-    setExit("leave");
-  }), [navigation, projection?.session.id]);
 
   useEffect(() => {
     if (!projection) return;
@@ -178,34 +190,55 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     return Object.freeze({ sessionId: projection.session.id, occurrenceId: projection.occurrenceId, selectedOptionIds: Object.freeze(selectedOptionIds) });
   });
   const refreshAfterCommand = async (message: string) => {
-    try { await refresh(); }
-    catch (cause) { setError(describeOperationalFailure(cause, t(message))); }
+    try {
+      const next = await getCertificationPracticeProjection();
+      pendingActionProjection.current = next;
+      applyProjection(next);
+    } catch (cause) {
+      pendingActionProjection.current = null;
+      actionPending.current = false;
+      setError(describeOperationalFailure(cause, t(message)));
+    }
   };
   const submit = async () => {
-    if (!editable) return;
+    if (actionPending.current || !editable) return;
     if (!selected.length) { setSelectionError(t("Choose an answer before submitting.")); return; }
-    try { await submitCertificationPracticeResponse(projection.question.interaction.type === "choice_multiple" ? { type: "choice_multiple", optionIds: selected } : { type: "choice_single", optionId: selected[0]! }); }
-    catch { await refreshAfterCommand("We couldn't display your answer. Try again."); return; }
-    await refreshAfterCommand("We couldn't display your answer. Try again.");
+    actionPending.current = true;
+    try {
+      try { await submitCertificationPracticeResponse(projection.question.interaction.type === "choice_multiple" ? { type: "choice_multiple", optionIds: selected } : { type: "choice_single", optionId: selected[0]! }); }
+      catch { await refreshAfterCommand("We couldn't display your answer. Try again."); return; }
+      await refreshAfterCommand("We couldn't display your answer. Try again.");
+    } catch {
+      pendingActionProjection.current = null;
+      actionPending.current = false;
+    }
   };
   const next = async () => {
-    if (!canAdvance) return;
-    if (projection.operation.kind === "advance_failed") {
+    if (actionPending.current || !canAdvance) return;
+    actionPending.current = true;
+    try {
+      if (projection.operation.kind === "advance_failed") {
+        try { await advanceCertificationPracticeSession(); }
+        catch { await refreshAfterCommand("We couldn't open the next question. Try again."); return; }
+        await refreshAfterCommand("We couldn't open the next question. Try again.");
+        return;
+      }
+      if (projection.ordinal === projection.total) {
+        try {
+          const result = await completeCertificationPracticeSession();
+          await applyCompletionResult(result);
+          if (result.kind !== "verified") actionPending.current = false;
+        }
+        catch (cause) { actionPending.current = false; setSelectionError(describeOperationalFailure(cause, t("We couldn't finish the session. Try again."))); }
+        return;
+      }
       try { await advanceCertificationPracticeSession(); }
       catch { await refreshAfterCommand("We couldn't open the next question. Try again."); return; }
       await refreshAfterCommand("We couldn't open the next question. Try again.");
-      return;
+    } catch {
+      pendingActionProjection.current = null;
+      actionPending.current = false;
     }
-    if (projection.ordinal === projection.total) {
-      try {
-        await applyCompletionResult(await completeCertificationPracticeSession());
-      }
-      catch (cause) { setSelectionError(describeOperationalFailure(cause, t("We couldn't finish the session. Try again."))); }
-      return;
-    }
-    try { await advanceCertificationPracticeSession(); }
-    catch { await refreshAfterCommand("We couldn't open the next question. Try again."); return; }
-    await refreshAfterCommand("We couldn't open the next question. Try again.");
   };
   const recover = async () => {
     if (!canRecover || recoveryInFlight.current) return;
@@ -250,7 +283,10 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   };
   const leaveRunner = () => {
     permitRouteExit.current = true;
-    if (navigation.canGoBack()) navigation.goBack();
+    const action = pendingRouteAction.current;
+    pendingRouteAction.current = null;
+    if (action) navigation.dispatch(action);
+    else if (navigation.canGoBack()) navigation.goBack();
     else navigation.navigate(ROUTES.PRACTICE_HUB);
   };
   const pause = async () => {
@@ -322,10 +358,10 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     onChoicePress={(optionId) => { setSelectionError(null); toggle(optionId); }}
     onComplexityValuePress={() => undefined}
     onConfirmLeave={() => void pause()}
-    onDismissExit={() => setExit("none")}
+    onDismissExit={() => { pendingRouteAction.current = null; setExit("none"); }}
     onOrderingMove={() => undefined}
     onPrimaryAction={() => void (editable ? submit() : next())}
-    onRequestLeave={() => setExit("leave")}
+    onRequestLeave={() => { pendingRouteAction.current = null; setExit("leave"); }}
     onRetry={retry ? () => void retry() : undefined}
     phase={phase}
     position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} ${t("of")} ${projection.total}` }}

@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { usePreventRemove, type NavigationAction } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
@@ -66,7 +67,19 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
   const [exitFailure, setExitFailure] = useState<ExitFailure | null>(null);
   const [responseError, setResponseError] = useState<string | null>(null);
   const permitRouteExit = useRef(false);
+  const pendingRouteAction = useRef<NavigationAction | null>(null);
+  const actionPending = useRef(false);
+  const pendingActionProjection = useRef<DesignInterviewPracticeProjection | null>(null);
   const mode = isDesignInterviewModeId(route.params.mode) ? route.params.mode : null;
+
+  usePreventRemove(!permitRouteExit.current && projection !== null, ({ data }) => {
+    if (permitRouteExit.current) {
+      navigation.dispatch(data.action);
+      return;
+    }
+    pendingRouteAction.current = data.action;
+    setExit("leave");
+  });
 
   const applyProjection = (next: DesignInterviewPracticeProjection) => {
     setProjection(next);
@@ -80,6 +93,11 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     setResponseError(null);
   };
   const refresh = async () => applyProjection(await getDesignInterviewPracticeProjection());
+  useEffect(() => {
+    if (!projection || pendingActionProjection.current !== projection) return;
+    pendingActionProjection.current = null;
+    actionPending.current = false;
+  }, [projection]);
 
   useEffect(() => {
     if (!mode) return;
@@ -140,12 +158,6 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     });
   }, [projection?.session.id]);
 
-  useEffect(() => navigation.addListener("beforeRemove", (event) => {
-    if (permitRouteExit.current || !projection) return;
-    event.preventDefault();
-    setExit("leave");
-  }), [navigation, projection?.session.id]);
-
   if (!mode) return <Unavailable navigation={navigation} title="Design Interview practice unavailable" description="This route is not available for Design Interview practice." />;
   if (conflict) {
     const conflictIsDesign = getDesignMode(conflict.modeId) !== null;
@@ -197,25 +209,41 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
                 : operationNotice;
 
   const submit = async () => {
-    if (!canSubmit || !effectiveResponse) return;
-    try { await submitDesignInterviewPracticeResponse(toDesignResponse(effectiveResponse)); }
-    catch (cause) { setResponseError(describeOperationalFailure(cause, t("We couldn't save your answer. Try again."))); }
-    await refreshAfterCommand("We couldn't display your answer. Try again.");
+    if (actionPending.current || !canSubmit || !effectiveResponse) return;
+    actionPending.current = true;
+    try {
+      try { await submitDesignInterviewPracticeResponse(toDesignResponse(effectiveResponse)); }
+      catch (cause) { setResponseError(describeOperationalFailure(cause, t("We couldn't save your answer. Try again."))); }
+      await refreshAfterCommand("We couldn't display your answer. Try again.");
+    } catch {
+      pendingActionProjection.current = null;
+      actionPending.current = false;
+    }
   };
   const next = async () => {
-    if (!canAdvance) return;
-    if (projection.operation.kind === "advance_failed") {
+    if (actionPending.current || !canAdvance) return;
+    actionPending.current = true;
+    try {
+      if (projection.operation.kind === "advance_failed") {
+        try { await advanceDesignInterviewPracticeSession(); } catch { /* Refresh shows the exact durable state. */ }
+        await refreshAfterCommand("We couldn't open the next question. Try again.");
+        return;
+      }
+      if (projection.ordinal === projection.total) {
+        try {
+          const result = await completeDesignInterviewPracticeSession();
+          await applyCompletionResult(result);
+          if (result.kind !== "verified") actionPending.current = false;
+        }
+        catch (cause) { actionPending.current = false; setResponseError(describeOperationalFailure(cause, t("We couldn't finish the session. Try again."))); }
+        return;
+      }
       try { await advanceDesignInterviewPracticeSession(); } catch { /* Refresh shows the exact durable state. */ }
       await refreshAfterCommand("We couldn't open the next question. Try again.");
-      return;
+    } catch {
+      pendingActionProjection.current = null;
+      actionPending.current = false;
     }
-    if (projection.ordinal === projection.total) {
-      try { await applyCompletionResult(await completeDesignInterviewPracticeSession()); }
-      catch (cause) { setResponseError(describeOperationalFailure(cause, t("We couldn't finish the session. Try again."))); }
-      return;
-    }
-    try { await advanceDesignInterviewPracticeSession(); } catch { /* Refresh shows the exact durable state. */ }
-    await refreshAfterCommand("We couldn't open the next question. Try again.");
   };
   const recover = async () => {
     if (!canRecover) return;
@@ -244,7 +272,10 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
   };
   const leaveRunner = () => {
     permitRouteExit.current = true;
-    if (navigation.canGoBack()) navigation.goBack();
+    const action = pendingRouteAction.current;
+    pendingRouteAction.current = null;
+    if (action) navigation.dispatch(action);
+    else if (navigation.canGoBack()) navigation.goBack();
     else navigation.navigate(ROUTES.PRACTICE_HUB);
   };
   const endSession = async () => {
@@ -307,7 +338,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
       }));
     }}
     onConfirmLeave={() => void pause()}
-    onDismissExit={() => setExit("none")}
+    onDismissExit={() => { pendingRouteAction.current = null; setExit("none"); }}
     onOrderingMove={(elementId, direction) => {
       setResponseError(null);
       setLocalResponse((current) => Object.freeze({
@@ -317,7 +348,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
       }));
     }}
     onPrimaryAction={() => void (editable ? submit() : next())}
-    onRequestLeave={() => setExit("leave")}
+    onRequestLeave={() => { pendingRouteAction.current = null; setExit("leave"); }}
     onRetry={retry ? () => void retry() : undefined}
     phase={phase}
     position={{ accessibilityLabel: `${t("Question")} ${projection.ordinal} ${t("of")} ${projection.total}`, label: `${projection.ordinal} ${t("of")} ${projection.total}` }}
@@ -331,7 +362,15 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
   />;
 
   async function refreshAfterCommand(message: string) {
-    try { await refresh(); } catch (cause) { setError(describeOperationalFailure(cause, t(message))); }
+    try {
+      const next = await getDesignInterviewPracticeProjection();
+      pendingActionProjection.current = next;
+      applyProjection(next);
+    } catch (cause) {
+      pendingActionProjection.current = null;
+      actionPending.current = false;
+      setError(describeOperationalFailure(cause, t(message)));
+    }
   }
 }
 

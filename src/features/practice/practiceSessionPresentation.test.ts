@@ -6,6 +6,8 @@ import { TrainingApplicationFailure } from "../../application/trainingLifecycle"
 import {
   allowsPracticeFeedback,
   allowsPracticeResponseEditing,
+  acceptPracticePrimaryActionActivation,
+  buildPracticePrimaryActionIdentity,
   buildPracticeResponseControl,
   describeSessionPreparationFailure,
   getPracticePrimaryAction,
@@ -60,6 +62,31 @@ test("Practice pending phases retain a stable unsafe-action lock", () => {
     assert.equal(isPracticeActionPending(phase), true, phase);
   }
   assert.equal(isPracticeActionPending("feedback"), false);
+});
+
+test("primary action carry-over guard blocks only fast phase changes and permits same-phase retries", () => {
+  const identity = (phase: "unanswered" | "feedback" | "submit_journal_failed", actionLabel: string) => buildPracticePrimaryActionIdentity({
+    actionLabel,
+    itemId: "question-1",
+    phase,
+    sessionId: "session-1",
+  });
+  const submit = identity("unanswered", "Check answer");
+  const next = identity("feedback", "Next");
+  const retry = identity("submit_journal_failed", "Try again");
+
+  const first = acceptPracticePrimaryActionActivation(null, submit, 1_000);
+  assert.equal(first.accepted, true);
+  const carriedTap = acceptPracticePrimaryActionActivation(first.lastAccepted, next, 1_399);
+  assert.equal(carriedTap.accepted, false);
+  assert.equal(carriedTap.lastAccepted, first.lastAccepted, "ignored taps do not become the new baseline");
+  assert.equal(acceptPracticePrimaryActionActivation(first.lastAccepted, next, 1_400).accepted, true, "the 400ms boundary allows a distinct action");
+
+  const firstRetry = acceptPracticePrimaryActionActivation(first.lastAccepted, retry, 1_100);
+  assert.equal(firstRetry.accepted, false, "a different phase is suppressed inside the carry-over window");
+  const retryBaseline = acceptPracticePrimaryActionActivation(first.lastAccepted, retry, 1_400);
+  assert.equal(retryBaseline.accepted, true);
+  assert.equal(acceptPracticePrimaryActionActivation(retryBaseline.lastAccepted, retry, 1_410).accepted, true, "same-phase retries remain allowed");
 });
 
 test("Practice operation notice mapping remains one family-neutral interpretation", () => {
