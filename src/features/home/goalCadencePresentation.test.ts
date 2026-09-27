@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const screen = readFileSync("src/features/home/GoalCadenceScreen.tsx", "utf8");
+const calendar = readFileSync("src/features/home/GoalTargetDateCalendar.tsx", "utf8");
 const progress = readFileSync("src/features/home/tabs/ProgressTab.tsx", "utf8");
 const home = readFileSync("src/features/home/HomeScreen.tsx", "utf8");
 const settings = readFileSync("src/features/home/tabs/SettingsTab.tsx", "utf8");
@@ -11,6 +12,9 @@ const navigationTypes = readFileSync("src/navigation/types.ts", "utf8");
 const repositoryIndex = readFileSync("src/storage/repositories/index.ts", "utf8");
 const enCommon = JSON.parse(readFileSync("src/locales/en/common.json", "utf8")) as Record<string, string>;
 const plCommon = JSON.parse(readFileSync("src/locales/pl/common.json", "utf8")) as Record<string, string>;
+const targetDateLocaleCopy = ["en", "pl", "de", "fr", "es", "it", "et"].map((locale) =>
+  JSON.parse(readFileSync(`src/locales/${locale}/common.json`, "utf8")) as Record<string, string>,
+);
 
 test("goal cadence is a reachable root route backed by the canonical repository", () => {
   assert.match(navigator, /name=\{ROUTES\.GOAL_CADENCE\}[\s\S]*?component=\{GoalCadenceScreen\}/);
@@ -133,26 +137,46 @@ test("preferred-day shortcuts preserve domain ids and translate every EN/PL labe
   assert.match(screen, /persistGoal\(nextGoal\)/);
 });
 
-test("invalid target dates stay field-scoped, block persistence, and clear only on date edits", () => {
+test("target dates use the shared localized calendar with cancellable drafts and an explicit ISO commit", () => {
   const saveStart = screen.indexOf("async function save()");
   const saveEnd = screen.indexOf("async function createAndOpenPlan", saveStart);
   const save = screen.slice(saveStart, saveEnd);
-  assert.match(save, /if \(current\.goalType !== "learn_at_own_pace" && dateInput\.length > 0 && !isIsoDate\(dateInput\)\) \{[\s\S]*?Keyboard\.dismiss\(\);[\s\S]*?setDateError\("Use a valid date in YYYY-MM-DD format\."\);[\s\S]*?return;/);
-  assert.doesNotMatch(save, /setSaveError\(t\("Use a valid date in YYYY-MM-DD format\."\)\)/);
-  assert.doesNotMatch(save.slice(save.indexOf("if (current.goalType"), save.indexOf("const nextGoal")), /persistGoal|createAndOpenPlan/);
-  assert.match(screen, /function handleDateChange\(value: string\): void \{\s*if \(value !== dateInput\) setDateError\(null\);\s*setDateInput\(value\);/);
-  assert.match(screen, /dateError=\{dateError\}[\s\S]*?onChangeDate=\{handleDateChange\}/);
-  const dateSection = screen.slice(screen.indexOf('<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionTitle\}>\{t\("Target date"\)\}</Text>'), screen.indexOf("<View style={styles.formSection}>", screen.indexOf("Preferred days")));
-  assert.match(dateSection, /dateField[\s\S]*?dateError/);
-  assert.match(dateSection, /accessibilityLiveRegion="polite" accessibilityRole="alert"/);
-  assert.match(dateSection, /testID=\{runtimeSelectors\.goal\.dateInput\(\)\}/);
-  assert.match(dateSection, /testID=\{runtimeSelectors\.goal\.dateError\(\)\}/);
-  assert.match(screen, /dateFieldError: \{ borderColor: palette\.danger \}/);
+  const form = screen.slice(screen.indexOf("function CreateGoalForm"), screen.indexOf("function ActiveGoalSummary"));
+  assert.match(form, /t\(dateInput \? "Change target date" : "Add target date"\)/);
+  assert.match(form, /testID="goal-target-date-open"/);
+  assert.match(form, /formatGoalDate\(dateInput, locale\)/);
+  assert.match(form, /onPress=\{clearTargetDate\} testID="goal-target-date-clear"[\s\S]*?t\("Clear date"\)/);
+  assert.match(form, /function openDatePicker\(\): void \{\s*setPendingDate\(targetDatePickerValue\(dateInput, new Date\(\)\)\);\s*setDatePickerVisible\(true\);/);
+  assert.match(form, /function cancelTargetDate\(\): void \{\s*setDatePickerVisible\(false\);\s*\}/);
+  assert.match(form, /<SettingsBottomSheet[\s\S]*?closeLabel=\{t\("Cancel"\)\}[\s\S]*?onClose=\{cancelTargetDate\}[\s\S]*?visible=\{datePickerVisible\}/);
+  assert.match(form, /<GoalTargetDateCalendar\s+locale=\{locale\}\s+onChange=\{setPendingDate\}\s+value=\{pendingDate\}\s+\/>/);
+  assert.match(calendar, /formatGoalCalendarMonth\(visibleMonth, locale\)/);
+  assert.match(calendar, /formatGoalCalendarWeekdayLabels\(locale\)/);
+  assert.match(calendar, /accessibilityLabel=\{formatGoalCalendarAccessibleDate\(date, locale\)\}/);
+  assert.match(calendar, /accessibilityState=\{\{ selected \}\}/);
+  assert.match(calendar, /onChange\(date\)/);
+  assert.doesNotMatch(screen + calendar, /DateTimePicker|@expo\/ui|timeZoneName/);
+  assert.match(form, /function applyTargetDate\(\): void \{\s*onChangeDate\(targetDateToLocalIso\(pendingDate\)\);\s*setDatePickerVisible\(false\);/);
+  assert.match(form, /testID="goal-target-date-set"\s*>\{t\("Set date"\)\}/);
+  assert.match(form, /function clearTargetDate\(\): void \{\s*onChangeDate\(""\);/);
+  assert.doesNotMatch(screen, /TextInput|Keyboard\.dismiss|isIsoDate|dateError|YYYY-MM-DD \(optional\)|Use a valid date in YYYY-MM-DD format\./);
+  assert.match(screen, /onChangeDate=\{setDateInput\}/);
+  assert.match(save, /targetDate: dateInput\.length > 0 \? dateInput : undefined/);
+  assert.match(save, /await persistGoal\(nextGoal\)/);
   assert.match(screen, /selectedGoalType === "learn_at_own_pace"[\s\S]*?This goal type does not use a target date\./);
+  for (const key of ["Add target date", "Change target date", "Clear date", "Choose an optional target date.", "Previous month", "Next month", "Set date"]) {
+    const translations = targetDateLocaleCopy.map((copy) => copy[key]);
+    assert.ok(translations.every((value) => value?.trim()), `${key} must be translated in all locales`);
+    assert.equal(new Set(translations).size, targetDateLocaleCopy.length, `${key} must be translated, not copied from EN`);
+  }
+  for (const copy of targetDateLocaleCopy) {
+    assert.equal("YYYY-MM-DD (optional)" in copy, false);
+    assert.equal("Use a valid date in YYYY-MM-DD format." in copy, false);
+  }
 });
 
 test("goal editing uses local keyboard avoidance while preserving the shared sticky footer", () => {
-  assert.match(screen, /import \{ Keyboard, KeyboardAvoidingView, Platform,[^}]+\} from "react-native"/);
+  assert.match(screen, /import \{ KeyboardAvoidingView, Platform,[^}]+\} from "react-native"/);
   assert.match(screen, /<KeyboardAvoidingView behavior=\{Platform\.OS === "ios" \? "padding" : "height"\} style=\{styles\.keyboardAvoiding\}>[\s\S]*?<Screen[\s\S]*?footerVariant="sticky"/);
   assert.match(screen, /keyboardAvoiding: \{ flex: 1 \}/);
 });

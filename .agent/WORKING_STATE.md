@@ -25,7 +25,8 @@ Aktualny kanoniczny plan: [`docs/PATTERNLY-WORKING-PLAN.md`](../docs/PATTERNLY-W
 - `UI-26-01` jest zamknięte dowodowo. Welcome używa zatwierdzonego znaku QA-A w rozmiarze 96, Mint w Dark i navy w Light, ma zatwierdzone EN copy i semantyczne tłumaczenia siedmiu locale. Targeted 38/38, typecheck, Maestro na iPhonie 17 dla Dark/standard i Light/accessibility-extra-large ze scrollem oraz niezależny `qa-gate` zakończyły się PASS; logika trzech wejść pozostała bez zmian.
 - `UI-26-03` jest zamknięte dowodowo. Footer wyboru tracku ma jedną akcję `Start track`; usunięto redundantne summary i martwe klucze locale, zachowując radio selection i zapis dokładnego `track.id`. Targeted controller 15/15, niezależne QA 19/19, typecheck, Maestro standard/duży tekst z rzeczywistą zmianą dwóch tracków oraz końcowy `qa-gate` zakończyły się PASS.
 - `UI-26-04` jest zamknięte dowodowo. Ikona głównej karty Home jest wyrównana do góry treści w bazowym wierszu; duży tekst zachowuje istniejącą kolumnę `flex-start`, a cztery gałęzie primary action są nietknięte. Testy Home 8/8, typecheck, Maestro i screenshoty standard/duży tekst oraz końcowy `qa-gate` zakończyły się PASS.
-- Następne dostępne zadanie zgodnie z kolejką: `UI-26-05`.
+- `UI-26-05` jest zamknięte dowodowo. Ręczne `YYYY-MM-DD` zastąpił jeden wspólny kalendarz React Native sterowany wybranym locale aplikacji; siedem locale, Cancel/Set/Clear/pusta wartość i dotychczasowy format storage mają testy. Targeted 23/23, typecheck, Maestro na iPhonie 17 dla EN przy polskim systemie i dużego tekstu oraz niezależny `qa-gate` zakończyły się PASS. Android runtime nie był wykonywany i nie stanowił wymaganej bramki.
+- Następne dostępne zadanie zgodnie z kolejką: `UI-26-06`.
 - Następna pełna kolejka, kryteria i report targets są wyłącznie w planie.
 
 ## Higiena dokumentacji

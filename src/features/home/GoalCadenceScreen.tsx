@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import {
   Button,
@@ -11,6 +11,7 @@ import {
   IconButton,
   Screen,
   SkeletonShape,
+  SettingsBottomSheet,
   useSkeletonGlassMotion,
 } from "../../components";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
@@ -22,7 +23,6 @@ import {
   createDefaultGoal,
   getTrackGoalTemplates,
   GOAL_DAY_IDS,
-  isIsoDate,
   normalizeGoalRecord,
   normalizeGoalForExplicitSave,
   projectGoalTargetDate,
@@ -36,6 +36,8 @@ import { useAppPreferences, useThemedStyles, type AppLocale } from "../../prefer
 import { colorWithOpacity, radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { LearningPlanReminderFailure, LearningPlanReminderResult } from "../../application/notificationPreferences";
+import { targetDatePickerValue, targetDateToLocalIso } from "./goalTargetDatePicker";
+import { GoalTargetDateCalendar } from "./GoalTargetDateCalendar";
 
 type GoalCadenceScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.GOAL_CADENCE>;
 
@@ -136,7 +138,6 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const [goal, setGoal] = useState<GoalRecord | null>(null);
   const [draft, setDraft] = useState<GoalRecord | null>(null);
   const [dateInput, setDateInput] = useState("");
-  const [dateError, setDateError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [reminderErrorKind, setReminderErrorKind] = useState<LearningPlanReminderFailure | null>(null);
@@ -222,18 +223,8 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     });
   }
 
-  function handleDateChange(value: string): void {
-    if (value !== dateInput) setDateError(null);
-    setDateInput(value);
-  }
-
   async function save(): Promise<void> {
     if (!current || !track) return;
-    if (current.goalType !== "learn_at_own_pace" && dateInput.length > 0 && !isIsoDate(dateInput)) {
-      Keyboard.dismiss();
-      setDateError("Use a valid date in YYYY-MM-DD format.");
-      return;
-    }
     const nextGoal = normalizeGoalRecord(normalizeGoalForExplicitSave({
       ...current,
       targetDate: dateInput.length > 0 ? dateInput : undefined,
@@ -365,9 +356,9 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
 
         {editing ? (
           <CreateGoalForm
-            dateError={dateError}
             dateInput={dateInput}
-            onChangeDate={handleDateChange}
+            locale={locale}
+            onChangeDate={setDateInput}
             onSelectGoalType={(goalType) => updateDraft((currentDraft) => ({ ...currentDraft, goalType }))}
             onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "goal", trackId: track.id, returnToGoal: returnTo })}
             onToggleDay={toggleDay}
@@ -395,9 +386,9 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   );
 }
 
-function CreateGoalForm({ dateError, dateInput, onChangeDate, onOpenNotifications, onSelectGoalType, onToggleDay, palette, selectedDays, selectedGoalType, templates, t }: Readonly<{
-  dateError: string | null;
+function CreateGoalForm({ dateInput, locale, onChangeDate, onOpenNotifications, onSelectGoalType, onToggleDay, palette, selectedDays, selectedGoalType, templates, t }: Readonly<{
   dateInput: string;
+  locale: AppLocale;
   onChangeDate: (value: string) => void;
   onOpenNotifications: () => void;
   onSelectGoalType: (value: GoalTemplateId) => void;
@@ -409,6 +400,27 @@ function CreateGoalForm({ dateError, dateInput, onChangeDate, onOpenNotification
   t: (value: string) => string;
 }>) {
   const styles = useThemedStyles(createStyles);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [pendingDate, setPendingDate] = useState(() => targetDatePickerValue(dateInput, new Date()));
+
+  function openDatePicker(): void {
+    setPendingDate(targetDatePickerValue(dateInput, new Date()));
+    setDatePickerVisible(true);
+  }
+
+  function applyTargetDate(): void {
+    onChangeDate(targetDateToLocalIso(pendingDate));
+    setDatePickerVisible(false);
+  }
+
+  function cancelTargetDate(): void {
+    setDatePickerVisible(false);
+  }
+
+  function clearTargetDate(): void {
+    onChangeDate("");
+  }
+
   return (
     <View style={styles.form} testID={runtimeSelectors.goal.root()}>
       <View style={styles.formSection}>
@@ -436,11 +448,27 @@ function CreateGoalForm({ dateError, dateInput, onChangeDate, onOpenNotification
       ) : (
         <View style={styles.formSection}>
           <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Target date")}</Text>
-          <View style={[styles.dateField, dateError ? styles.dateFieldError : null]} testID={runtimeSelectors.goal.dateInput()}>
-            <TextInput accessibilityHint={dateError ? t(dateError) : undefined} accessibilityLabel={t("Target date")} onChangeText={(value) => onChangeDate(value.slice(0, 10))} placeholder={t("YYYY-MM-DD (optional)")} placeholderTextColor={palette.textMuted} style={styles.dateInput} value={dateInput} />
-            <Icon color={palette.textSecondary} name="chevron-down" size={18} />
+          <View style={styles.dateField} testID={runtimeSelectors.goal.dateInput()}>
+            {dateInput ? <Text maxFontSizeMultiplier={2} style={styles.targetDateValue}>{formatGoalDate(dateInput, locale)}</Text> : null}
+            <Button onPress={openDatePicker} testID="goal-target-date-open" variant={dateInput ? "secondary" : "primary"}>
+              {t(dateInput ? "Change target date" : "Add target date")}
+            </Button>
+            {dateInput ? <Button onPress={clearTargetDate} testID="goal-target-date-clear" variant="ghost">{t("Clear date")}</Button> : null}
           </View>
-          {dateError ? <Text accessibilityLabel={`${t("Target date")}. ${t(dateError)}`} accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} selectable style={styles.dateError} testID={runtimeSelectors.goal.dateError()}>{t(dateError)}</Text> : null}
+          <SettingsBottomSheet
+            closeLabel={t("Cancel")}
+            intro={t("Choose an optional target date.")}
+            onClose={cancelTargetDate}
+            title={t("Target date")}
+            visible={datePickerVisible}
+          >
+            <GoalTargetDateCalendar
+              locale={locale}
+              onChange={setPendingDate}
+              value={pendingDate}
+            />
+            <Button onPress={applyTargetDate} testID="goal-target-date-set">{t("Set date")}</Button>
+          </SettingsBottomSheet>
         </View>
       )}
 
@@ -594,10 +622,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   sectionTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "700", lineHeight: 18 },
   sectionSubtitle: { ...typography.small, color: palette.primary, lineHeight: 18 },
   choiceGroup: { gap: spacing.md },
-  dateField: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", minHeight: 48, paddingHorizontal: 14 },
-  dateFieldError: { borderColor: palette.danger },
-  dateError: { ...typography.small, color: palette.danger },
-  dateInput: { ...typography.body, color: palette.textPrimary, flex: 1, paddingVertical: 0 },
+  dateField: { alignItems: "flex-start", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.md },
+  targetDateValue: { ...typography.bodyStrong, color: palette.textPrimary },
   daysRow: { flexDirection: "row", gap: 6, justifyContent: "space-between" },
   dayButton: { alignItems: "center", borderRadius: 10, borderWidth: 1, height: 36, justifyContent: "center", width: 44 },
   dayButtonSelected: { backgroundColor: palette.success, borderColor: palette.success },
