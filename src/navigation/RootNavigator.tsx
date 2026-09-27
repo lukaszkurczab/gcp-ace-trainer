@@ -72,9 +72,7 @@ export function RootNavigator() {
     const subscription = Linking.addEventListener("url", ({ url }) => {
       const context = { development: __DEV__, smoke: isPatternlySmokeRuntime() };
       if (isCodingMockCountdownAuditCommand(url, context)) {
-        void handleCodingMockCountdownAuditUrl(url, context).catch((error: unknown) => {
-          console.warn("Coding Mock countdown audit command failed.", error);
-        });
+        void handleCodingMockCountdownAuditUrl(url, context).catch(() => undefined);
       }
     });
     return () => { subscription.remove(); };

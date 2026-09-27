@@ -14,9 +14,17 @@ test("track selection turns an active-track read rejection into an explicit retr
 });
 
 test("track selection retains the local choice and offers the same command again after a save rejection", () => {
-  assert.match(source, /setIsSaving\(true\);\s*setSaveError\(null\);[\s\S]*?await saveActiveTrackId\(track\.id\);[\s\S]*?catch \{\s*setSaveError\("We couldn't save that track\. Your choice is still selected\. Try again\."\);[\s\S]*?finally \{\s*setIsSaving\(false\);/);
+  assert.match(source, /setIsSaving\(true\);\s*commitLock\.current = true;[\s\S]*?await saveActiveTrackId\(track\.id\);[\s\S]*?catch \{\s*setSaveError\("We couldn't save that track\. Your choice is still selected\. Try again\."\);[\s\S]*?finally \{[\s\S]*?setIsSaving\(false\);/);
   assert.match(source, /testID="patternly:home:select-track:save-error"/);
   assert.match(source, /disabled=\{!loaded \|\| isSaving \|\| \(!onboarding && selectedTrackId === activeTrackId\)\}/);
   assert.match(source, /setSelectedTrackId\(track\.id\);\s*setSaveError\(null\);/);
   assert.doesNotMatch(source, /describeOperationalFailure/);
+});
+
+test("track selection waits for clean reminder reconciliation before completing", () => {
+  assert.match(source, /await saveActiveTrackId\(track\.id\);[\s\S]*?reminderResult = await reconcileDeviceReminder\(reminderCopy\)/);
+  assert.match(source, /if \(reminderNeedsAttention\(reminderResult\)\) \{[\s\S]*?setSaveError\(tNotifications\(key\)\);[\s\S]*?return;[\s\S]*?setActiveTrackId\(track\.id\);/);
+  assert.match(source, /catch \{[\s\S]*?setReminderErrorKind\("scheduler_failure"\);[\s\S]*?setSaveError\(tNotifications\("schedulerFailureDetail"\)\);[\s\S]*?return;/);
+  assert.match(source, /setActiveTrackId\(track\.id\);\s*if \(onTrackSelected\) onTrackSelected\(track\.id\);\s*else navigation\.navigate\(ROUTES\.HOME, \{ initialTab: "home" \}\);/);
+  assert.doesNotMatch(source, /completeTrackSelection/);
 });

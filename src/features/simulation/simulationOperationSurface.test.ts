@@ -36,7 +36,7 @@ test("simulation operation surface renders only declared state actions and never
 });
 
 test("navigator jumps retain the current question in an explicit locked presentation", () => {
-  assert.match(screen, /answered: item\.answered, state: item\.current \? "current"/);
+  assert.match(screen, /answered: item\.answered, flagged: item\.flagged, state: item\.current \? "current"/);
   assert.match(screen, /answered: item\.answered, state: "frozen"/);
   assert.match(screen, /operation\.kind === "navigating"/);
   assert.match(screen, /operationProjection\(projection, "navigating", navigatingOperation\(\)/);

@@ -55,6 +55,7 @@ import { SelectTrackScreen } from "./SelectTrackScreen";
 import {
   buildPracticeSessionConfig,
   buildCertificationPracticeResumeRoute,
+  buildCodingInterviewSimulationResumeRoute,
   buildDesignInterviewPracticeResumeRoute,
 } from "../practice/sessionConfig";
 import { HomeLoadingSkeleton, HomeTab } from "./tabs/HomeTab";
@@ -306,6 +307,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         const session = await resumeActiveTrainingSession();
         if (session.id !== action.sessionId || session.trackId !== action.trackId || session.modeId !== action.modeId) {
           throw new Error("The active Coding Interview session changed before it could be resumed.");
+        }
+        if (session.modeId === "coding-interview-simulation") {
+          const route = buildCodingInterviewSimulationResumeRoute(session);
+          navigation.navigate(route.name, route.params);
+          return;
         }
         navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ feedbackMode: feedbackTimingFromDurableSession(session), mode: action.modeId, source: "home", topicId: action.trackId === CODING_INTERVIEW_TRACK_ID ? "complexity_and_constraints" : "", trackId: action.trackId }));
         return;

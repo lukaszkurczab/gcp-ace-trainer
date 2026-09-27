@@ -908,6 +908,7 @@ export type RemoteAccountDataRecord = Readonly<{
   trackId: string;
   targetId?: string;
   version: number;
+  updatedAt: string;
 }>;
 
 export type AccountDataRecoveryPartition = Readonly<{
@@ -929,6 +930,17 @@ export async function partitionRemoteAccountDataForRecovery(
   if (input.records.some((record) => record.recordId !== undefined && record.targetId !== undefined && record.recordId !== record.targetId)) {
     throw new AccountDataFailure("account_data_record_invalid");
   }
+  if (input.records.some((record) => typeof record.updatedAt !== "string" || !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/u.test(record.updatedAt) || !Number.isFinite(Date.parse(record.updatedAt)) || Date.parse(new Date(Date.parse(record.updatedAt)).toISOString()) !== Date.parse(record.updatedAt))) {
+    throw new AccountDataFailure("account_data_record_invalid");
+  }
+  const activeTracks = input.records.filter((record) => record.recordType === "active_track" && record.state.deleted !== true);
+  const currentActiveTrack = [...activeTracks].sort((a, b) => {
+    const time = Date.parse(a.updatedAt) - Date.parse(b.updatedAt);
+    if (time !== 0) return time;
+    const identityA = canonicalJsonV1({ recordId: a.recordId ?? a.targetId ?? "", recordType: a.recordType, trackId: a.trackId });
+    const identityB = canonicalJsonV1({ recordId: b.recordId ?? b.targetId ?? "", recordType: b.recordType, trackId: b.trackId });
+    return identityA < identityB ? -1 : identityA > identityB ? 1 : 0;
+  }).at(-1);
   const records = input.records.map((record) => ({
     fingerprint: record.fingerprint,
     recordId: record.recordId ?? record.targetId ?? "",
@@ -946,13 +958,14 @@ export async function partitionRemoteAccountDataForRecovery(
     && parseLearningPlanCloudState(record.state, record.trackId) === null);
   if (invalidPlans.length === 0) {
     assertValidAccountDataRecords(records);
-    return Object.freeze({ records: Object.freeze(records.map((record) => Object.freeze(record))), incident: null });
+    const orderedRecords = orderCurrentActiveTrackLast(records, currentActiveTrack);
+    return Object.freeze({ records: Object.freeze(orderedRecords.map((record) => Object.freeze(record))), incident: null });
   }
   if (invalidPlans.length !== 1) throw new AccountDataFailure("account_data_goal_plan_invalid");
 
   const invalidPlan = invalidPlans[0]!;
   const goal = records.find((record) => record.recordType === "goal" && record.trackId === invalidPlan.trackId);
-  const activeTrack = records.find((record) => record.recordType === "active_track" && !isDeletedAccountDataRecord(record));
+  const activeTrack = currentActiveTrack ? records.find((record) => record.recordType === "active_track" && record.trackId === currentActiveTrack.trackId && !isDeletedAccountDataRecord(record)) : undefined;
   if (invalidPlan.recordId !== invalidPlan.trackId
     || !goal || isDeletedAccountDataRecord(goal) || parseGoalCloudState(goal.state, invalidPlan.trackId) === null
     || !activeTrack || activeTrack.trackId !== invalidPlan.trackId || activeTrack.state.trackId !== invalidPlan.trackId
@@ -976,7 +989,7 @@ export async function partitionRemoteAccountDataForRecovery(
     throw new AccountDataFailure("account_data_goal_plan_invalid");
   }
   return Object.freeze({
-    records: Object.freeze(validRecords.map((record) => Object.freeze(record))),
+    records: Object.freeze(orderCurrentActiveTrackLast(validRecords, currentActiveTrack).map((record) => Object.freeze(record))),
     incident: Object.freeze({
       accountId: input.accountId,
       attemptCount: existing?.incidentId === incidentId ? existing.attemptCount : 0,
@@ -990,6 +1003,11 @@ export async function partitionRemoteAccountDataForRecovery(
       trackId: invalidPlan.trackId,
     }),
   });
+}
+
+function orderCurrentActiveTrackLast<T extends Readonly<{ recordType: string; trackId: string }>>(records: readonly T[], current: RemoteAccountDataRecord | undefined): T[] {
+  if (!current) return [...records];
+  return [...records.filter((record) => record.recordType !== "active_track"), ...records.filter((record) => record.recordType === "active_track" && record.trackId !== current.trackId), ...records.filter((record) => record.recordType === "active_track" && record.trackId === current.trackId)];
 }
 
 export async function applyRemoteAccountData(records: readonly AccountDataRecord[], options: Readonly<{ preserveLocalContext?: boolean }> = {}): Promise<void> {

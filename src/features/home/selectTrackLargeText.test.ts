@@ -48,9 +48,7 @@ test("track selection mirrors the Figma returning and switching footer states", 
   assert.match(source, /accessibilityRole="radio"[\s\S]*?accessibilityState=\{\{ disabled, selected \}\}/);
   assert.match(source, /getTrackDisplays\(\)\.find\(\(candidate\) => candidate\.id === selectedTrackId\)/);
   assert.match(source, /await saveActiveTrackId\(track\.id\)/);
-  assert.match(source, /onTrackSelected\?\.\(track\.id\)/);
-  assert.match(source, /if \(onTrackSelected\) return;/);
-  assert.match(source, /navigation\.navigate\(ROUTES\.HOME, \{ initialTab: "home" \}\)/);
+  assert.match(source, /if \(onTrackSelected\) onTrackSelected\(track\.id\);\s*else navigation\.navigate\(ROUTES\.HOME, \{ initialTab: "home" \}\);/);
   assert.match(source, /placement="back"/);
   assert.match(source, /footerVariant="sticky"/);
   assert.match(source, /footerContent:\s*\{\s*gap: 14[\s\S]*?paddingBottom: spacing\.xs/);

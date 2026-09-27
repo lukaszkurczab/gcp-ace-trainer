@@ -40,7 +40,7 @@ tags:
     visible:
       id: "patternly:simulation:root:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
     timeout: 30000
-- assertVisible: "1 / 40"
+- assertVisible: "Open question navigator, 1 of 40"
 - assertVisible:
     id: "patternly:simulation:timer:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
 - assertVisible:
@@ -51,31 +51,50 @@ tags:
     id: "patternly:simulation:option:alg-backtracking-base-contract-001:path_nonempty"
 - assertVisible:
     id: "patternly:simulation:option:alg-backtracking-base-contract-001:path_nonempty"
-    checked: true
+    text: "radio button, checked"
 - assertVisible:
     id: "patternly:simulation:option:alg-backtracking-base-contract-001:path_length_n"
-    checked: false
-- tapOn: "Save response"
-- extendedWaitUntil:
-    visible: "Saved"
-    timeout: 10000
-- tapOn: "Flag question"
-- assertVisible: "Remove flag"
+    text: "radio button, unchecked"
+- tapOn:
+    id: "patternly:simulation:action:coding-interview-dsa-problem-solving:coding-interview-simulation:1:save-and-continue"
+- assertVisible: "Open question navigator, 2 of 40"
+- tapOn:
+    id: "patternly:simulation:position:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- assertVisible: "Question 1, answered and saved"
+- tapOn: "Question 1, answered and saved"
+- swipe:
+    start: 50%, 50%
+    end: 50%, 20%
+    duration: 600
+- assertVisible:
+    id: "patternly:simulation:flag:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+    text: "Flag question for review"
+- tapOn:
+    id: "patternly:simulation:flag:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- assertVisible:
+    id: "patternly:simulation:flag:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+    text: "Remove flag from question"
 - tapOn:
     id: "patternly:simulation:position:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
 - assertVisible: "Question 1, current, answered and saved, flagged"
 - takeScreenshot: aud02b-coding-mock-question-one-before-relaunch
 - tapOn: "Question 2, unanswered"
-- assertVisible: "2 / 40"
+- assertVisible: "Open question navigator, 2 of 40"
 - takeScreenshot: aud02b-coding-mock-question-two-before-relaunch
 - stopApp
 - launchApp:
     clearState: false
 - extendedWaitUntil:
     visible:
+      id: "patternly:resume:continue:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+    timeout: 30000
+- tapOn:
+    id: "patternly:resume:continue:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- extendedWaitUntil:
+    visible:
       id: "patternly:simulation:root:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
     timeout: 30000
-- assertVisible: "2 / 40"
+- assertVisible: "Open question navigator, 2 of 40"
 - assertVisible:
     id: "patternly:simulation:timer:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
 - tapOn:
@@ -87,15 +106,22 @@ tags:
 - assertVisible: "Saved"
 - tapOn:
     id: "patternly:simulation:position:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
-- tapOn: "Question 2, current"
-- assertVisible: "2 / 40"
+- tapOn: "Question 2, unanswered"
+- assertVisible: "Open question navigator, 2 of 40"
 - takeScreenshot: aud02b-coding-mock-question-two-after-relaunch
+- tapOn:
+    id: "patternly:simulation:position:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- tapOn: "Question 40, unanswered"
+- assertVisible: "Open question navigator, 40 of 40"
 - scrollUntilVisible:
-    element: "Finish simulation"
+    element:
+      id: "patternly:simulation:action:coding-interview-dsa-problem-solving:coding-interview-simulation:1:finish-simulation"
     direction: DOWN
-- tapOn: "Finish simulation"
+- tapOn:
+    id: "patternly:simulation:action:coding-interview-dsa-problem-solving:coding-interview-simulation:1:finish-simulation"
 - assertVisible: "Action required"
-- tapOn: "Finish simulation"
+- tapOn:
+    id: "patternly:simulation:action:coding-interview-dsa-problem-solving:coding-interview-simulation:1:confirm:finish"
 - extendedWaitUntil:
     visible:
       id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-simulation:1"

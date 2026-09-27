@@ -25,5 +25,5 @@ tags:
     visible:
       id: "patternly:simulation:root:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
     timeout: 30000
-- assertVisible: "1 / 40"
+- assertVisible: "Open question navigator, 1 of 40"
 - takeScreenshot: aud02b-coding-mock-expiry-active-session

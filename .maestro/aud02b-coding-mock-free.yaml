@@ -8,37 +8,6 @@ tags:
 ---
 - runFlow:
     when:
-      visible:
-        id: "patternly:home:select-track:root"
-    commands:
-      - scrollUntilVisible:
-          element:
-            id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
-          direction: DOWN
-          centerElement: true
-      - tapOn:
-          id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
-      - tapOn:
-          id: "patternly:home:select-track:continue"
-          retryTapIfNoChange: true
-      - runFlow:
-          when:
-            visible:
-              id: "patternly:home:select-track:root"
-          commands:
-            - stopApp
-            - launchApp:
-                clearState: false
-      - extendedWaitUntil:
-          notVisible:
-            id: "patternly:home:select-track:root"
-          timeout: 30000
-- extendedWaitUntil:
-    visible:
-      id: "patternly:home:track-card:coding-interview-dsa-problem-solving|patternly:home:change-track|patternly:home:select-track:root"
-    timeout: 30000
-- runFlow:
-    when:
       notVisible:
         id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     commands:
@@ -59,14 +28,6 @@ tags:
       - tapOn:
           id: "patternly:home:select-track:continue"
           retryTapIfNoChange: true
-      - runFlow:
-          when:
-            visible:
-              id: "patternly:home:select-track:root"
-          commands:
-            - stopApp
-            - launchApp:
-                clearState: false
       - extendedWaitUntil:
           notVisible:
             id: "patternly:home:select-track:root"
@@ -75,6 +36,10 @@ tags:
     visible:
       id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
+- tapOn:
+    id: "main-tab-bar-home"
+- assertVisible:
+    id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
 - tapOn:
     id: "main-tab-bar-settings"
 - scrollUntilVisible:
@@ -92,6 +57,8 @@ tags:
     id: "settings-premium-testing:disabled"
 - tapOn:
     id: "main-tab-bar-home"
+- assertVisible:
+    id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
 - tapOn:
     id: "main-tab-bar-practice"
     retryTapIfNoChange: true
@@ -118,6 +85,14 @@ tags:
     visible:
       id: "main-tab-bar-home"
     timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-home"
+- assertVisible:
+    id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
 - tapOn:
     id: "main-tab-bar-practice"
     retryTapIfNoChange: true

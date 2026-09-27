@@ -11,6 +11,7 @@ import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { useAppPreferences } from "../../preferences";
 import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
+import { prepareLifecycleAfterProfileCompletion } from "./profilePreparationBarrier";
 
 export type ContentPreparationPhase =
   | "opening-storage"
@@ -46,7 +47,7 @@ export function ContentBootstrapLoadingSkeleton({ phase }: Readonly<{ phase: Con
   return <LoadingState description={phaseCopy} descriptionTestID="content-bootstrap-phase" showLogo testID="content-bootstrap-loading-skeleton" title={title} />;
 }
 
-export function ContentPreparationGate({ children }: { children: ReactNode }) {
+export function ContentPreparationGate({ children, completeAccountPreparation }: { children: ReactNode; completeAccountPreparation: () => Promise<void> }) {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
   const account = usePatternlyAccount();
@@ -114,11 +115,11 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         },
         async () => {
           setPhase("recovering-learning-state");
-          lifecycle = composeTrainingLifecycleUseCases({
+          lifecycle = await prepareLifecycleAfterProfileCompletion(completeAccountPreparation, async () => composeTrainingLifecycleUseCases({
             premiumSessionAdmission: {
               authorize: () => accountRef.current.authorizePremiumSessionStart(),
             },
-          });
+          }));
           lifecycleReady.current = true;
           const queuedUrl = pendingRuntimeAuditabilityUrl.current;
           pendingRuntimeAuditabilityUrl.current = null;
@@ -146,7 +147,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
       settled = true;
       if (timeoutId !== undefined) clearTimeout(timeoutId);
     };
-  }, [bootstrapRevision]);
+  }, [bootstrapRevision, completeAccountPreparation]);
 
   useEffect(() => {
     // A reset must also be available after bootstrap has reported a blocking

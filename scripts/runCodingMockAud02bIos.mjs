@@ -1,5 +1,7 @@
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { createServer } from "node:net";
+import { setTimeout as delay } from "node:timers/promises";
 import { parseDotenv } from "./runLocalProfile.mjs";
 import { waitForContentPreparationState } from "./waitForContentPreparationState.mjs";
 
@@ -14,11 +16,21 @@ const PREMIUM_FLOW = ".maestro/aud02b-coding-mock-premium.yaml";
 const EXPIRY_FLOW = ".maestro/aud02b-coding-mock-expiry.yaml";
 const EXPIRY_RESULT_FLOW = ".maestro/aud02b-coding-mock-expiry-result.yaml";
 const CREDENTIAL_KEYS = Object.freeze(["EXPO_PUBLIC_PATTERNLY_E2E_EMAIL", "EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD"]);
+const BACKEND_ORIGIN = "http://127.0.0.1:8080";
+const BACKEND_DIRECTORY = "../patternly-backend";
+const BACKEND_ENVIRONMENT = Object.freeze({
+  FIREBASE_PROJECT_ID: "patternly-app-sandbox",
+  FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:19099",
+  FIRESTORE_EMULATOR_HOST: "127.0.0.1:18081",
+});
+const BACKEND_READY_TIMEOUT_MS = 60_000;
 
 const [flag, udid] = process.argv.slice(2);
 if (flag !== "--udid" || udid?.toUpperCase() !== EXPECTED_UDID) {
   throw new Error(`Usage: PATTERNLY_DEV_CLIENT_URL=<local dev-client URL> MAESTRO_TEST_OUTPUT_DIR=<evidence directory> node scripts/runCodingMockAud02bIos.mjs --udid ${EXPECTED_UDID}`);
 }
+
+await assertPortAvailable();
 
 const devClientUrl = required("PATTERNLY_DEV_CLIENT_URL");
 validateDevClientUrl(devClientUrl);
@@ -34,24 +46,122 @@ for (const flow of [AUTH_PREFLIGHT_FLOW, RESET_COMPLETE_FLOW, FREE_FLOW, PREMIUM
 }
 const credentials = loadSmokeCredentials();
 
-runOptional("xcrun", ["simctl", "terminate", udid, APP_ID]);
-run("xcrun", ["simctl", "openurl", udid, devClientUrl]);
-runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
-await waitForContentPreparationState();
+let backendProcess;
+try {
+  backendProcess = startBackend("expired");
+  await waitForBackendReady(backendProcess);
 
-await resetLearningState();
-runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
-runMaestro(FREE_FLOW, credentials);
+  runOptional("xcrun", ["simctl", "terminate", udid, APP_ID]);
+  run("xcrun", ["simctl", "openurl", udid, devClientUrl]);
+  runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
+  run("xcrun", ["simctl", "launch", udid, APP_ID]);
+  await waitForContentPreparationState();
 
-await resetLearningState();
-runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
-runMaestro(PREMIUM_FLOW);
+  await resetLearningState();
+  runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
+  runMaestro(FREE_FLOW, credentials);
 
-await resetLearningState();
-runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
-runMaestro(EXPIRY_FLOW);
-run("xcrun", ["simctl", "openurl", udid, EXPIRE_URL]);
-runMaestro(EXPIRY_RESULT_FLOW);
+  await stopBackend(backendProcess);
+  backendProcess = undefined;
+  await waitForPortAvailable();
+
+  backendProcess = startBackend("active");
+  await waitForBackendReady(backendProcess);
+  await resetLearningState();
+  runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
+  runMaestro(PREMIUM_FLOW);
+
+  await resetLearningState();
+  runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
+  runMaestro(EXPIRY_FLOW);
+  run("xcrun", ["simctl", "openurl", udid, EXPIRE_URL]);
+  runMaestro(EXPIRY_RESULT_FLOW);
+} finally {
+  if (backendProcess) {
+    await stopBackend(backendProcess);
+    await waitForPortAvailable();
+  }
+}
+
+async function assertPortAvailable() {
+  try { await probePort(); }
+  catch { throw new Error("AUD-02B requires 127.0.0.1:8080 to be free at startup; no existing process was stopped."); }
+}
+
+function probePort() {
+  return new Promise((resolveProbe, rejectProbe) => {
+    const server = createServer();
+    server.once("error", rejectProbe);
+    server.listen(8080, "127.0.0.1", () => server.close((error) => error ? rejectProbe(error) : resolveProbe()));
+  });
+}
+
+async function waitForPortAvailable(timeoutMs = 10_000) {
+  const deadline = Date.now() + timeoutMs;
+  do {
+    try { await probePort(); return; } catch { await delay(100); }
+  } while (Date.now() < deadline);
+  throw new Error("AUD-02B backend stopped, but 127.0.0.1:8080 did not become available.");
+}
+
+function startBackend(entitlementState) {
+  const child = spawn("npm", ["run", "dev:smoke"], {
+    cwd: BACKEND_DIRECTORY,
+    detached: process.platform !== "win32",
+    stdio: ["ignore", "pipe", "pipe"],
+    env: {
+      PATH: process.env.PATH,
+      HOME: process.env.HOME,
+      ...BACKEND_ENVIRONMENT,
+      PATTERNLY_LOCAL_SMOKE_ENTITLEMENT_STATE: entitlementState,
+    },
+  });
+  const redact = (output) => CREDENTIAL_KEYS.reduce((sanitized, key) => {
+    const secret = credentials[key];
+    return secret ? sanitized.split(secret).join("[redacted]") : sanitized;
+  }, output);
+  for (const stream of [child.stdout, child.stderr]) stream.setEncoding("utf8").on("data", (chunk) => process.stdout.write(redact(chunk)));
+  child.once("error", (error) => { child.spawnError = error; });
+  return child;
+}
+
+async function waitForBackendReady(child) {
+  const deadline = Date.now() + BACKEND_READY_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    if (child.spawnError) throw new Error("Could not start the local AUD-02B backend with npm.");
+    if (child.exitCode !== null || child.signalCode !== null) throw new Error("Local AUD-02B backend exited before readiness.");
+    try {
+      const response = await fetch(new URL("/ready", BACKEND_ORIGIN), { signal: AbortSignal.timeout(1_000) });
+      const body = await response.json();
+      if (response.ok && body?.status === "ready" && ["database", "authentication", "providerReader"].every((key) => body.checks?.[key] === true)) return;
+    } catch { /* Retry while the local service starts. */ }
+    await delay(200);
+  }
+  throw new Error(`Local AUD-02B backend did not become ready within ${BACKEND_READY_TIMEOUT_MS}ms.`);
+}
+
+async function stopBackend(child) {
+  if (process.platform === "win32") {
+    if (child.exitCode === null && child.signalCode === null) child.kill("SIGTERM");
+  } else if (child.pid !== undefined) {
+    try { process.kill(-child.pid, "SIGTERM"); }
+    catch (error) { if (error?.code !== "ESRCH") throw error; }
+  }
+  if (child.exitCode === null && child.signalCode === null) {
+    await Promise.race([
+      new Promise((resolveExit) => child.once("exit", resolveExit)),
+      delay(5_000),
+    ]);
+  }
+  try {
+    if (process.platform === "win32") {
+      if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
+    } else if (child.pid !== undefined) {
+      process.kill(-child.pid, 0);
+      process.kill(-child.pid, "SIGKILL");
+    }
+  } catch (error) { if (error?.code !== "ESRCH") throw error; }
+}
 
 async function resetLearningState() {
   run("xcrun", ["simctl", "openurl", udid, RESET_URL]);

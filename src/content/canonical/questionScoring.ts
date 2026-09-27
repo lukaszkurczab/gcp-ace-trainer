@@ -1,4 +1,4 @@
-import { createAttemptResult, type AttemptResult } from "../../domain/learning";
+import { createAttemptResult, type AttemptResult } from "../../domain/learning/attemptResult";
 import type { CanonicalQuestionResponse, ChoiceMultipleQuestion, ChoiceSingleQuestion, ComplexityQuestion, DecisionMatrixQuestion, OrderingQuestion, Question } from "./questionTypes";
 
 const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);

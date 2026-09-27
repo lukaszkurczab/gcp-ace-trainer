@@ -1,5 +1,5 @@
 import { NavigationContainer } from "@react-navigation/native";
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -33,26 +33,11 @@ export default function App() {
 }
 
 function AppContent() {
-  const { state } = usePatternlyAccount();
+  const { state, completeProfilePreparation } = usePatternlyAccount();
   const needsContent = state.kind === "profilePreparing" || state.kind === "guest" || state.kind === "authenticated" || state.kind === "signingOut" || state.kind === "deleting";
   return needsContent
-    ? <ContentPreparationGate><AccountBootstrapCompletion /><AppNavigation /></ContentPreparationGate>
+    ? <ContentPreparationGate completeAccountPreparation={completeProfilePreparation}><AppNavigation /></ContentPreparationGate>
     : <AppNavigation />;
-}
-
-function AccountBootstrapCompletion() {
-  const { state, completeProfilePreparation } = usePatternlyAccount();
-  const requestedProfile = useRef<string | null>(null);
-  useEffect(() => {
-    if (state.kind !== "profilePreparing") {
-      requestedProfile.current = null;
-      return;
-    }
-    if (requestedProfile.current === state.profile.id) return;
-    requestedProfile.current = state.profile.id;
-    void completeProfilePreparation();
-  }, [state, completeProfilePreparation]);
-  return null;
 }
 
 function AppNavigation() {

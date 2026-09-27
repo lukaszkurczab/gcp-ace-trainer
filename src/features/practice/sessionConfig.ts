@@ -12,6 +12,7 @@ import { contentPackageRuntimeOwner } from "../../application/contentPackageRunt
 import type { ProductModeConfig } from "../../content/canonical";
 import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../tracks/design-interview";
 import type { PremiumNodeOffer } from "../../content/application/premiumNodeOffers";
+import { ROUTES } from "../../constants/routes";
 
 export type PracticeSessionSource =
   | "home"
@@ -27,6 +28,19 @@ export type PracticeSessionLength = number;
 export type PracticeFeedbackMode = "afterEachAnswer" | "atSessionEnd";
 
 export type PracticeReviewSource = "due_queue" | "session_misses";
+
+export function buildCodingInterviewSimulationResumeRoute(session: TrainingSession): Readonly<{
+  name: typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION;
+  params: Readonly<{ profileId: string }>;
+}> {
+  const profileId = session.configurationSnapshot.simulationProfileId;
+  if (session.status !== "active" || session.modeId !== "coding-interview-simulation"
+    || session.configurationSnapshot.kind !== "algorithmsInterviewSimulation"
+    || typeof profileId !== "string" || !profileId.trim()) {
+    throw new Error("Coding Interview Simulation resume requires its durable active simulation profile.");
+  }
+  return { name: ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, params: { profileId } };
+}
 
 export type PracticeSessionRouteParams = {
   algorithmScope?: AlgorithmSelectionScope;

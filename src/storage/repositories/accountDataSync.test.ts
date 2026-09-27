@@ -18,10 +18,12 @@ import {
   getAccountSyncState,
   isCanonicalAccountSyncState,
   isDeletedAccountDataRecord,
+  partitionRemoteAccountDataForRecovery,
   saveAccountSyncState,
   splitAccountSyncBatches,
 } from "./accountDataRepository";
 import { AccountDataFailure } from "../errors";
+import { GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID } from "../../domain";
 
 const ACCOUNT_ID = "55555555-5555-4555-8555-555555555555";
 const INSTALLATION_ID = "66666666-6666-4666-8666-666666666666";
@@ -56,6 +58,43 @@ test("canonical account records round trip through remote materialization", asyn
   assert.equal(await getActiveTrackId(), TRACK_ID);
   assert.equal(isCanonicalAccountSyncState(await getAccountSyncState()), true);
 });
+
+test("remote materialization keeps the newest active track independent of input order and acknowledges both records", async () => {
+  const older = remoteActiveTrack(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, "2026-01-01T10:00:00.000Z");
+  const newer = remoteActiveTrack(TRACK_ID, "2026-01-02T10:00:00.000Z");
+  for (const records of [[older, newer], [newer, older]]) {
+    const storage = new MemoryKeyValueStorage();
+    installKeyValueStorageForTests(storage);
+    await provisionGuestInstallation({ async create() { return { installationId: INSTALLATION_ID, localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
+    const partition = await partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records });
+    await applyRemoteAccountData(partition.records);
+    const completed = await finishAccountMaterialization(partition.records, ACCOUNT_ID, 2, "2026-01-03T10:00:00.000Z", partition.incident);
+    assert.equal(completed.acknowledged[JSON.stringify({ recordId: "current", recordType: "active_track", trackId: TRACK_ID })]?.remoteVersion, 1);
+    assert.equal(completed.acknowledged[JSON.stringify({ recordId: "current", recordType: "active_track", trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID })]?.remoteVersion, 1);
+    // Reinstalling the adapter models a fresh repository instance over persisted storage.
+    installKeyValueStorageForTests(storage);
+    assert.equal(await getActiveTrackId(), TRACK_ID);
+  }
+});
+
+test("remote materialization rejects missing or invalid updatedAt", async () => {
+  const record = remoteActiveTrack(TRACK_ID, "2026-01-01T10:00:00.000Z");
+  await assert.rejects(partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records: [{ ...record, updatedAt: undefined } as never] }), (error: unknown) => error instanceof AccountDataFailure && error.code === "account_data_record_invalid");
+  await assert.rejects(partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records: [{ ...record, updatedAt: "yesterday" }] }), (error: unknown) => error instanceof AccountDataFailure && error.code === "account_data_record_invalid");
+});
+
+test("equal updatedAt selects the same active track using canonical identity", async () => {
+  const records = [remoteActiveTrack(TRACK_ID, "2026-01-01T10:00:00.000Z"), remoteActiveTrack(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, "2026-01-01T10:00:00.000Z")];
+  const first = await partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records });
+  const second = await partitionRemoteAccountDataForRecovery({ accountId: ACCOUNT_ID, generation: 0, records: [...records].reverse() });
+  assert.equal(first.records.at(-1)?.trackId, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
+  assert.equal(second.records.at(-1)?.trackId, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
+});
+
+function remoteActiveTrack(trackId: string, updatedAt: string) {
+  const record = { recordId: "current", recordType: "active_track" as const, state: { trackId }, trackId, version: 1 };
+  return { ...record, fingerprint: accountDataRecordFingerprint(record), updatedAt };
+}
 
 test("snapshot and materialization preserve one exact goal-plan bundle", async () => {
   const goal = createDefaultGoal(TRACK_ID);

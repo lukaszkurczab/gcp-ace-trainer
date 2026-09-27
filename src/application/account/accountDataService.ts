@@ -4,6 +4,7 @@ import {
 import type {
   AdoptionConfirmationDto,
   AdoptionPreviewResponseDto,
+  GuestMergeRecordDto,
   GuestMergeSnapshotRequestDto,
   PatternlyApiClient,
   SyncResponseDto,
@@ -90,6 +91,7 @@ export function dismissAccountLearningPlanRecovery(accountId: string, incidentId
 export type AccountDeletionResult = Readonly<{ ok: true; proofId: string } | { ok: false; failure: "journalRecoveryFailure" | "pendingSyncRequiresNetwork" | "conflict" | "remoteDeletionPending" | "localCleanupFailure" | "reauthenticationRequired" }>;
 
 const nowIso = () => new Date().toISOString();
+const GUEST_MERGE_PARTITION_TIMESTAMP = "1970-01-01T00:00:00.000Z";
 
 function syncPlanItemAsOutboxEntry(item: AccountSyncPlanItem): AccountOutboxEntry {
   return Object.freeze({
@@ -188,7 +190,7 @@ async function loadAccountDataSessionUnlocked(
       try {
         const executed = await api.confirmAccountAdoption({ deviceId: installation.installationId, snapshot: transportSnapshot, confirmation });
         await markAccountMaterializationPending(executed.operationId, confirmation.previewFingerprint, accountId);
-        return await materializeRemoteAccountData(accountId, executed.records, executed.accountRevision, false);
+        return await materializeGuestMergeResult(accountId, executed.records, executed.accountRevision);
       } catch (error) {
         const currentState = await getAccountSyncState();
         if (isStaleAdoptionPreview(error)) {
@@ -325,7 +327,7 @@ async function confirmAccountDataAdoptionUnlocked(api: PatternlyApiClient, accou
   try {
     const executed = await api.confirmAccountAdoption({ deviceId: snapshot.guestUserId, snapshot: transportSnapshot, confirmation });
     await markAccountMaterializationPending(executed.operationId, confirmation.previewFingerprint, accountId);
-    return await materializeRemoteAccountDataUnlocked(accountId, executed.records, executed.accountRevision, false);
+    return await materializeGuestMergeResultUnlocked(accountId, executed.records, executed.accountRevision);
   } catch (error) {
     const state = await getAccountSyncState();
     if (isStaleAdoptionPreview(error)) {
@@ -527,6 +529,30 @@ async function readDiscardGuards(accountId: string): Promise<void> {
   }
 }
 
+async function materializeGuestMergeResult(accountId: string, records: readonly GuestMergeRecordDto[], remoteAccountRevision: number): Promise<AccountDataSession> {
+  return withLocalLearningWriteOperation(async () => {
+    return materializeGuestMergeResultUnlocked(accountId, records, remoteAccountRevision);
+  });
+}
+
+async function materializeGuestMergeResultUnlocked(accountId: string, records: readonly GuestMergeRecordDto[], remoteAccountRevision: number): Promise<AccountDataSession> {
+  const partition = await partitionRemoteAccountDataForRecovery({
+    accountId,
+    generation: 0,
+    records: toGuestMergePartitionRecords(records),
+  });
+  const localRecords = partition.records;
+  const snapshot = await buildAccountDataSnapshot();
+  if (snapshot.activeSession) throw new AccountDataFailure("active_session_adoption_blocked");
+  if (snapshot.pendingJournal) throw new AccountDataFailure("journal_recovery_required");
+  await assertMaterializationGuards(accountId);
+  await applyRemoteAccountData(localRecords);
+  await assertMaterializationGuards(accountId);
+  await bindGuestInstallationToAccount(accountId);
+  const finished = await finishAccountMaterialization(localRecords, accountId, remoteAccountRevision, nowIso(), partition.incident);
+  return sessionFromState(finished, false);
+}
+
 async function materializeRemoteAccountData(accountId: string, records: readonly RemoteAccountDataRecord[], remoteAccountRevision: number, discardGuest: boolean): Promise<AccountDataSession> {
   return withLocalLearningWriteOperation(async () => {
     try {
@@ -562,6 +588,21 @@ async function materializeRemoteAccountDataUnlocked(accountId: string, records: 
   await bindGuestInstallationToAccount(accountId);
   const finished = await finishAccountMaterialization(localRecords, accountId, remoteAccountRevision, nowIso(), partition.incident);
   return sessionFromState(finished, false);
+}
+
+export function toGuestMergePartitionRecords(records: readonly GuestMergeRecordDto[]): readonly RemoteAccountDataRecord[] {
+  if (records.filter((record) => record.recordType === "active_track" && record.state.deleted !== true).length > 1) {
+    throw new AccountDataFailure("account_data_track_invalid");
+  }
+  return Object.freeze(records.map((record) => Object.freeze({
+    fingerprint: record.fingerprint,
+    recordId: record.recordId,
+    recordType: record.recordType,
+    state: record.state,
+    trackId: record.trackId,
+    version: record.version,
+    updatedAt: GUEST_MERGE_PARTITION_TIMESTAMP,
+  })));
 }
 
 function isDiscardGuardFailure(message: string): boolean {

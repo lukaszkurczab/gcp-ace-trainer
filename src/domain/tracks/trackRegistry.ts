@@ -1,4 +1,5 @@
-import { UnknownTrackError, UnknownTrackFamilyError, type TrackFamilyId, type TrackId } from "../learning";
+import { UnknownTrackError, UnknownTrackFamilyError } from "../learning/errors";
+import type { TrackFamilyId, TrackId } from "../learning/trackIdentity";
 import type { TrackDisplay, TrackRegistration } from "./trackMetadata";
 
 export const GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID = "google-cloud-associate-cloud-engineer";

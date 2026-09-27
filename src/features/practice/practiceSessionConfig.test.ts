@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test, { before } from "node:test";
 
 import type { TrainingSession } from "../../domain";
-import { buildCertificationPracticeResumeRoute, buildPracticeSessionConfig, resolvePracticeSessionLength } from "./sessionConfig";
+import { buildCertificationPracticeResumeRoute, buildCodingInterviewSimulationResumeRoute, buildPracticeSessionConfig, resolvePracticeSessionLength } from "./sessionConfig";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 
 before(async () => { await contentPackageRuntimeOwner.verifyBundledPackages(); });
@@ -61,6 +61,25 @@ test("Custom Practice accepts its package-declared length and persists its selec
       assert.equal(config.reviewBehaviorEnabled, true);
     }
   }
+});
+
+test("Coding Interview simulation resume targets its durable profile route", () => {
+  const session = certificationSession({
+    configuration: { kind: "algorithmsInterviewSimulation", simulationProfileId: "coding-mock-profile-1" },
+    id: "coding-mock-session",
+    modeId: "coding-interview-simulation",
+    requestedLength: 40,
+    trackId: "coding-interview-dsa-problem-solving",
+  });
+
+  assert.deepEqual(buildCodingInterviewSimulationResumeRoute(session), {
+    name: "AlgorithmsInterviewSimulation",
+    params: { profileId: "coding-mock-profile-1" },
+  });
+  assert.throws(() => buildCodingInterviewSimulationResumeRoute({
+    ...session,
+    configurationSnapshot: { kind: "algorithmsInterviewSimulation" },
+  }), /durable active simulation profile/);
 });
 
 test("Custom Practice setup rejects every unsupported session length", () => {

@@ -671,7 +671,8 @@ test("startup waits for persisted auth resolution before choosing the entry scre
   assert.match(rootNavigator, /name=\{ROUTES\.ACCOUNT_ENTRY\}[\s\S]*?initialParams=\{\{ initialMode: accountEntryMode === "login" \? "signIn" : "entry" \}\}/);
   assert.match(rootNavigator, /testID="account-session-restore-loading"/);
   assert.match(app, /<AppPreferencesProvider>[\s\S]*?<ProfileStoragePreparationGate>[\s\S]*?<PatternlyAccountProvider>[\s\S]*?<AppContent/);
-  assert.match(app, /state\.kind === "profilePreparing"[\s\S]*?<ContentPreparationGate><AccountBootstrapCompletion \/><AppNavigation \/><\/ContentPreparationGate>/);
+  assert.match(app, /<ContentPreparationGate completeAccountPreparation=\{completeProfilePreparation\}><AppNavigation \/><\/ContentPreparationGate>/);
+  assert.doesNotMatch(app, /AccountBootstrapCompletion/);
   assert.match(accountProvider, /createPatternlyApiClient\(\{ allowLocalHttpForSimulator:/);
   assert.doesNotMatch(accountProvider, /accountDataProtocolMode|protocolVersion|contentIdentitySchema/u);
 });

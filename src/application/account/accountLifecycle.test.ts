@@ -1086,6 +1086,42 @@ test("transfer applies an explicit guest conflict resolution once and completes 
   assert.equal(uploads, 0);
 });
 
+test("guest adoption quarantines one invalid plan while materializing its goal and unambiguous active track", async () => {
+  await prepareGuest();
+  await saveGuestAdoptionChoice("transfer");
+  await saveGoal(createDefaultGoal(guestTrack));
+  const guestSnapshot = await buildAccountDataSnapshot();
+  const invalidPlanState = { schemaVersion: 1, revision: 4, plan: { schemaVersion: 99, trackId: guestTrack } };
+  const guestMergeRecords = [
+    ...guestSnapshot.records.map(({ fingerprint, recordId, recordType, state, trackId, version }) => ({ fingerprint, recordId, recordType, state, trackId, version })),
+    {
+      fingerprint: accountDataRecordFingerprint({ recordId: guestTrack, recordType: "learning_plan", state: invalidPlanState, trackId: guestTrack }),
+      recordId: guestTrack,
+      recordType: "learning_plan" as const,
+      state: invalidPlanState,
+      trackId: guestTrack,
+      version: 7,
+    },
+  ];
+  const preview = adoptionPreview(guestSnapshot);
+  const client = api({
+    previewAccountAdoption: async () => preview,
+    confirmAccountAdoption: async () => ({ accountRevision: 8, operationId: preview.preview.operationId, mutationIds: ["adoption-mutation"], records: guestMergeRecords }),
+  });
+
+  const offered = await loadAccountDataSession(client, accountId);
+  assert.equal(offered.status, "previewReady");
+  const confirmed = await confirmAccountDataAdoption(client, accountId, offered.preview!, [{ conflictId: "active-track-conflict", resolution: "keep_guest" }], []);
+
+  assert.equal(confirmed.status, "synced", confirmed.lastFailureCode ?? "missing failure code");
+  assert.equal(await getActiveTrackId(), guestTrack);
+  assert.deepEqual(await getGoalSnapshot(guestTrack), { record: createDefaultGoal(guestTrack), revision: 1 });
+  assert.equal(getLearningPlanSnapshot(guestTrack), null);
+  assert.equal(confirmed.learningPlanRecovery?.trackId, guestTrack);
+  assert.equal(confirmed.learningPlanRecovery?.remoteVersion, 7);
+  assert.equal((await getAccountSyncState()).acknowledged[JSON.stringify({ recordId: guestTrack, recordType: "learning_plan", trackId: guestTrack })]?.remoteVersion, 7);
+});
+
 test("offline transfer retry reuses the durable confirmation and never uploads a duplicate guest snapshot", async () => {
   await prepareGuest();
   await saveGuestAdoptionChoice("transfer");

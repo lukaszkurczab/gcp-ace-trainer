@@ -15,6 +15,7 @@ import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { simulationPrimaryAction, simulationTimer, type SimulationAction, type SimulationOperationPresentation, type SimulationQuestionProjection, type SimulationResponseChange, type SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
+import { resolveLocalResponseDraft, runLocalResponseTransition, type LocalResponseDraft } from "./localResponseDraft";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION>;
 type SimulationResponse = Parameters<typeof saveAlgorithmsSimulationResponse>[0]["response"];
@@ -23,7 +24,7 @@ type Overlay = "none" | "finish" | "pause_end";
 /** This route owns only selection and confirmation overlays. Durable state comes from the application projection. */
 export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props) {
   const [screen, setScreen] = useState<AlgorithmsSimulationScreenProjection | null>(null);
-  const [localResponse, setLocalResponse] = useState<SimulationResponse | null>(null);
+  const [localDraft, setLocalDraft] = useState<LocalResponseDraft<SimulationResponse> | null>(null);
   const [overlay, setOverlay] = useState<Overlay>("none");
   const [pendingNavigationIndex, setPendingNavigationIndex] = useState<number | null>(null);
   const load = useCallback(async () => setScreen(await getAlgorithmsSimulationScreenProjection()), []);
@@ -46,9 +47,14 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   }), [load, navigation]);
   const sessionId = screen?.kind === "ready" ? screen.projection.session.id : null;
   useEffect(() => sessionId ? subscribeTrainingOperationProjection(sessionId, () => { void load(); }) : undefined, [load, sessionId]);
+  const currentOccurrenceId = screen?.kind === "ready" ? screen.projection.session.itemOrder[screen.projection.position.current - 1]?.occurrenceId ?? null : null;
+  const projectedResponse = screen?.kind === "ready" ? responseFromProjection(screen.projection) : null;
+  const localResponse = resolveLocalResponseDraft(localDraft, currentOccurrenceId, projectedResponse);
   useEffect(() => {
-    if (screen?.kind === "ready" && localResponse === null) setLocalResponse(responseFromProjection(screen.projection));
-  }, [localResponse, screen]);
+    if (screen?.kind === "ready" && currentOccurrenceId && localDraft?.occurrenceId !== currentOccurrenceId) {
+      setLocalDraft({ occurrenceId: currentOccurrenceId, response: projectedResponse });
+    }
+  }, [currentOccurrenceId, localDraft?.occurrenceId, projectedResponse, screen]);
 
   async function start() {
     try {
@@ -58,34 +64,37 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     await load();
   }
   async function save() {
-    if (screen?.kind !== "ready" || !localResponse) return;
-    const occurrenceId = screen.projection.session.itemOrder[screen.projection.position.current - 1]?.occurrenceId;
-    if (!occurrenceId) return;
-    try { await saveAlgorithmsSimulationResponse({ occurrenceId, response: localResponse }); } catch { /* Durable state is published by lifecycle. */ }
+    if (screen?.kind !== "ready" || !currentOccurrenceId || !localResponse) return;
+    try { await saveAlgorithmsSimulationResponse({ occurrenceId: currentOccurrenceId, response: localResponse }); } catch { /* Durable state is published by lifecycle. */ }
     await load();
   }
   async function saveAndContinue() {
-    if (screen?.kind !== "ready" || !localResponse) return;
-    const occurrenceId = screen.projection.session.itemOrder[screen.projection.position.current - 1]?.occurrenceId;
-    if (!occurrenceId) return;
-    try { await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId, response: localResponse }); setLocalResponse(null); } catch { /* Durable state is published by lifecycle. */ }
+    if (screen?.kind !== "ready" || !currentOccurrenceId || !localResponse) return;
+    const draft = { occurrenceId: currentOccurrenceId, response: localResponse };
+    try {
+      await runLocalResponseTransition(draft, setLocalDraft, () => saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: currentOccurrenceId, response: draft.response }));
+    } catch { /* Durable state is published by lifecycle. */ }
     await load();
   }
   async function goTo(index: number): Promise<"navigated" | "incomplete_response" | "save_failed"> {
     if (screen?.kind !== "ready") return "save_failed";
     const projection = screen.projection;
     const occurrenceId = projection.session.itemOrder[projection.position.current - 1]?.occurrenceId;
-    const response = localResponse ?? responseFromProjection(projection);
+    const response = resolveLocalResponseDraft(localDraft, occurrenceId ?? null, responseFromProjection(projection));
     if (!occurrenceId) return "save_failed";
     const changed = !sameResponse(response, responseFromProjection(projection));
     if (changed && !isComplete(response, projection)) return "incomplete_response";
     setPendingNavigationIndex(index);
     try {
       if (sameResponse(response, responseFromProjection(projection))) await navigateAlgorithmsSimulationTo(index);
-      else await saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId, response, targetIndex: index });
-      setLocalResponse(null);
+      else {
+        const draft = { occurrenceId, response };
+        await runLocalResponseTransition(draft, setLocalDraft, () => saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId, response, targetIndex: index }));
+      }
+      setLocalDraft(null);
       setPendingNavigationIndex(null);
     } catch {
+      if (changed && occurrenceId) setLocalDraft({ occurrenceId, response });
       await load();
       return "save_failed";
     }
@@ -115,7 +124,8 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     if (screen.kind === "unavailable") return unavailableSurface(screen.operation, () => navigation.goBack());
     const projection = screen.projection;
     const operation = projection.operation;
-    const response = localResponse ?? responseFromProjection(projection);
+    const occurrenceId = projection.session.itemOrder[projection.position.current - 1]?.occurrenceId ?? null;
+    const response = resolveLocalResponseDraft(localDraft, occurrenceId, responseFromProjection(projection));
     if (overlay === "finish" && operation.kind === "editable") return confirmationSurface(projection, () => setOverlay("none"), () => { void finish(); });
     if (overlay === "pause_end" && operation.kind === "editable") return pauseEndConfirmationSurface(projection, () => setOverlay("none"), () => navigation.goBack(), () => { void abandon(); });
     if (operation.kind !== "editable") return operationSurface(projection, operation, {
@@ -139,12 +149,15 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
         const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId);
         return target ? goTo(target.index) : "save_failed";
       },
-      onResponseChange: (change) => setLocalResponse(applyResponseChange(response, projection, change)),
+      onResponseChange: (change) => {
+        const occurrenceId = projection.session.itemOrder[projection.position.current - 1]?.occurrenceId;
+        if (occurrenceId) setLocalDraft({ occurrenceId, response: applyResponseChange(response, projection, change) });
+      },
       actions: { primary: simulationPrimaryAction({ complete: isComplete(response, projection), finalOccurrence: projection.position.current === projection.position.total, responseChanged: changed, onSave: () => { void save(); }, onSaveAndContinue: () => { void saveAndContinue(); }, onFinish: () => setOverlay("finish") }), secondary: { accessibilityLabel: "Leave simulation. Opens pause or end actions.", id: "leave-session", label: "Leave simulation", onPress: () => setOverlay("pause_end"), variant: "ghost" } },
     };
   // UI callbacks intentionally refresh with the current application projection.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localResponse, overlay, pendingNavigationIndex, screen]);
+  }, [localDraft, overlay, pendingNavigationIndex, screen]);
   return <SimulationSessionSurface projection={surface} />;
 }
 

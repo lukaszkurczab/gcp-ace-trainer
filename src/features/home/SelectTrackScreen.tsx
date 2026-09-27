@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { AppShellHeader, Button, Icon, Screen, type IconName } from "../../components";
@@ -70,10 +70,13 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [reminderErrorKind, setReminderErrorKind] = useState<LearningPlanReminderFailure | null>(null);
+  const commitLock = useRef(false);
+  const screenFocused = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
+      screenFocused.current = true;
       setLoaded(false);
       setLoadError(null);
       void getActiveTrackId()
@@ -88,39 +91,45 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
           setLoadError("We couldn't load your saved track. Check your connection and try again.");
           setLoaded(true);
         });
-      return () => { active = false; };
+      return () => { active = false; screenFocused.current = false; };
     }, [loadRevision]),
   );
 
   async function commitSelection() {
-    if (!loaded || isSaving) return;
+    if (!loaded || isSaving || commitLock.current) return;
     const track = getTrackDisplays().find((candidate) => candidate.id === selectedTrackId);
     if (!track || track.status === "archived") return;
     setIsSaving(true);
+    commitLock.current = true;
     setSaveError(null);
     setReminderErrorKind(null);
     try {
       await saveActiveTrackId(track.id);
+      let reminderResult: Awaited<ReturnType<typeof reconcileDeviceReminder>>;
       try {
-        const reminderResult = await reconcileDeviceReminder(reminderCopy);
-        if (reminderNeedsAttention(reminderResult)) {
+        reminderResult = await reconcileDeviceReminder(reminderCopy);
+      } catch {
+        if (screenFocused.current) {
+          setReminderErrorKind("scheduler_failure");
+          setSaveError(tNotifications("schedulerFailureDetail"));
+        }
+        return;
+      }
+      if (reminderNeedsAttention(reminderResult)) {
+        if (screenFocused.current) {
           setReminderErrorKind(reminderResult.kind);
           const key = reminderResult.kind === "goal_paused" ? "goalPausedDetail" : reminderResult.kind === "concurrent_change" ? "concurrentChangeDetail" : "schedulerFailureDetail";
           setSaveError(tNotifications(key));
-          return;
         }
-      } catch {
-        setReminderErrorKind("scheduler_failure");
-        setSaveError(tNotifications("schedulerFailureDetail"));
         return;
       }
       setActiveTrackId(track.id);
-      onTrackSelected?.(track.id);
-      if (onTrackSelected) return;
-      navigation.navigate(ROUTES.HOME, { initialTab: "home" });
+      if (onTrackSelected) onTrackSelected(track.id);
+      else navigation.navigate(ROUTES.HOME, { initialTab: "home" });
     } catch {
       setSaveError("We couldn't save that track. Your choice is still selected. Try again.");
     } finally {
+      commitLock.current = false;
       setIsSaving(false);
     }
   }
