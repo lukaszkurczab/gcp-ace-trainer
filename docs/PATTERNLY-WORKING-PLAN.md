@@ -60,7 +60,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `blocking` | runtime recovery fixture i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy i layout są gotowe w nazwanym stashu; pozostają rzeczywisty retry/sign-out failure, długie locale oraz VoiceOver. |
 | 02e | UI-26-11 — hierarchia propozycji planu nauki | `blocking` | runtime state fixtures i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy, ready layout i rzeczywisty edit/back/accept są gotowe w nazwanym stashu; pozostają pozostałe stany/warianty runtime i VoiceOver. |
 | 04 | UI-26-02B — implementacja pierwszego użycia providerów | `blocking` | autoryzowana tożsamość testowa Apple/Google albo pełny fixture emulator-auth dla runtime mapped/new/isolation | Implementacja i testy są gotowe w nazwanych stashach obu repo; brakuje zintegrowanego runtime mapped-existing, unmapped-provisional i Guest A → account B isolation. |
-| 12 | AUD-15 — odpowiedzi i review | `partial` | fixture odpowiedzi/review | Odbiór single/multi, stanów poprawności, review i dużego tekstu. |
+| 12 | AUD-15 — odpowiedzi i review | `blocking` | odseparowany fixture multi/partial i fizyczny iPhone z VoiceOver | Single correct/incorrect i semantyka są potwierdzone na aktualnym iPhonie 17 Simulator; brakuje runtime multi/partial, pełnej macierzy dużego tekstu i fizycznego VoiceOver bez zapisu do chronionego profilu. |
 | 13 | AUD-14 — Your Data i Dynamic Type | `partial` | bezpieczne wejście konta | Brak clippingu i poprawna semantyka. |
 | 14 | AUD-02 — dziewięć tracków i RC local flow | `partial` | aktualny content lock; fixture sesji | Aktualny build przypięty do source SHA i pełny lokalny flow. |
 | 15 | AUD-08-DEC — polityka e-maila po niejednoznacznym SMTP | `blocking` | decyzja właściciela | Jedna jawna polityka produktu i operacji. |
@@ -165,7 +165,7 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 
 | ID | Cel i zakres | Akceptacja i weryfikacja | Ryzyko / report |
 | --- | --- | --- | --- |
-| AUD-15 | Single/multi, correct/incorrect/partial, review, standard/duży tekst po usunięciu badge. | Hierarchia, wyróżnienie kart, semantyka i screenshoty wszystkich stanów. | Fixture nie może modyfikować chronionego profilu. `docs/active/AUD-15/REPORT.md`. |
+| AUD-15 | Single/multi, correct/incorrect/partial, review, standard/duży tekst po usunięciu badge. | Hierarchia, wyróżnienie kart, semantyka i screenshoty wszystkich stanów. | `BLOCKING`: istniejące próby pokrywają tylko single correct/incorrect. Potrzebny odseparowany fixture multi/partial i fizyczny iPhone z VoiceOver, bez modyfikacji chronionego profilu. `docs/active/AUD-15/REPORT.md`. |
 | AUD-14 | Your Data w standardowym i dużym tekście, wszystkie stany i akcje. | Brak clippingu; dostępne etykiety i działające akcje; najpierw reprodukcja, potem najmniejsza poprawka. | Nie traktować problemu wejścia jako problemu layoutu. `docs/active/AUD-14/REPORT.md`. |
 | AUD-02 | Driver-form values i lokalny RC dla dziewięciu tracków oraz obu feedbacków; aktualny JS/native build przypięty do source SHA. | Preflight, manifest, pełny flow i brak zależności od realnego sklepu. | Nie mieszać z publikacją kandydata. `docs/active/AUD-02/REPORT.md`. |
 
@@ -225,4 +225,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**AUD-15** jest pierwszym dostępnym zadaniem: odbiór odpowiedzi i review na aktualnym kodzie po dowodowym zamknięciu AUD-05. `UI-26-02B`, `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiednie nazwane stashe po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.
+**AUD-14** jest pierwszym dostępnym zadaniem: odbiór Your Data i Dynamic Type na aktualnym kodzie. `AUD-15`, `UI-26-02B`, `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiednie wejścia po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.
