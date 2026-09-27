@@ -16,11 +16,13 @@ import {
   PRODUCT_MODE_CONFIGS,
   ProductModeUnavailableError,
   getProductModeConfig,
+  getProductSimulationModeConfig,
   validateProductModeConfigs,
   validateProductModeConfigsAgainstArtifacts,
   type ProductModeArtifact,
   type ProductModeConfig,
 } from "./productModeConfig";
+import type { CanonicalSimulationProfile } from "./questionTypes";
 
 const coding = "coding-interview-dsa-problem-solving";
 const gcp = "google-cloud-associate-cloud-engineer";
@@ -179,6 +181,22 @@ test("selection pools are non-empty, local, and large enough for every requested
     assert.ok(selected.every((question) => question.trackId === entry.trackId));
     assert.ok(Math.max(...entry.requestedLengths) <= selected.length);
   }
+});
+
+test("simulation mode is bound to the exact GCP profile, family, and mode", () => {
+  const profile = (gcpArtifact as typeof gcpArtifact & { simulationProfiles: readonly unknown[] }).simulationProfiles[0] as CanonicalSimulationProfile;
+  const resolved = getProductSimulationModeConfig(gcp, [profile]);
+  assert.deepEqual(resolved.config, {
+    kind: "certification_exam_simulation",
+    trackId: gcp,
+    profileId: profile.profileId,
+    familyId: "certification",
+    modeId: "certification-exam-simulation",
+  });
+  assert.equal(resolved.profile, profile);
+  assert.throws(() => getProductSimulationModeConfig("aws-certified-solutions-architect-associate", [profile]), /unavailable/);
+  assert.throws(() => getProductSimulationModeConfig(gcp, []), /unavailable/);
+  assert.throws(() => getProductSimulationModeConfig(gcp, [{ ...profile, familyId: "coding_interview" as "certification" }]), /does not match/);
 });
 
 test("GCP Diagnostic preserves the verified exact ordered 40-question plan", () => {

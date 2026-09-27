@@ -4,7 +4,7 @@ import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical/questionTypes";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../domain";
-import { createTrainingSession } from "../../domain";
+import { createTrainingSession, createTrainingSessionDraft } from "../../domain";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 
 const NOW = "2026-01-01T00:00:00.000Z";
@@ -149,4 +149,95 @@ test("reinsert resolves exact branch after three durable intervening submissions
   };
   const badRun = await run(wrongResponse(track.getQuestion((await prepare("bad")).session.itemOrder[0]!.item.questionId)!), "bad"); const badSession = badRun.submitted.session; assert.equal(badSession.itemOrder[4]!.item.questionId, badRun.originalOrder[0]!.item.questionId); assert.notEqual(badSession.itemOrder[4]!.occurrenceId, badRun.originalOrder[4]!.occurrenceId); assert.notEqual(badSession.planFingerprint, badRun.initialFingerprint); await runtime.validateResume({ session: badSession, draft: null });
   const correctRun = await run(responseFor(track.getQuestion((await prepare("correct")).session.itemOrder[0]!.item.questionId)!), "correct"); assert.equal(correctRun.submitted.session.itemOrder[4]!.occurrenceId, correctRun.originalOrder[4]!.occurrenceId); assert.equal(correctRun.submitted.session.planFingerprint, correctRun.initialFingerprint);
+});
+
+test("GCP simulation prepares the profile-weighted immutable 50-item plan and exact snapshot", async () => {
+  const catalog = await catalogPromise;
+  const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const input = { trackId: track.trackId, modeId: "certification-exam-simulation", request: { sessionId: "gcp-simulation-stable" }, attempts: [], reviews: [], now: NOW };
+  const prepared = await runtime.prepare(input);
+  const repeated = await runtime.prepare(input);
+  assert.equal(prepared.session.actualLength, 50);
+  assert.deepEqual(prepared.session.itemOrder, repeated.session.itemOrder);
+  assert.equal(prepared.session.planFingerprint, repeated.session.planFingerprint);
+  assert.deepEqual(prepared.session.configurationSnapshot, {
+    kind: "certificationSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free",
+    submission: "manualOrForegroundTimeout", timer: "absoluteDeadline", timerDurationMs: 7_200_000,
+    timerDeadlineAt: "2026-01-01T02:00:00.000Z", simulationProfileId: "google-cloud-associate-cloud-engineer-certification-exam-v1",
+    simulationProfileVersion: "1", simulationPolicyId: "patternly-certification-simulation-v1", simulationPolicyVersion: "1",
+    flagging: "available", navigator: "available", sectionIds: ["domain-1", "domain-2", "domain-3", "domain-4"],
+  });
+  const counts = new Map<string, number>();
+  for (const occurrence of prepared.session.itemOrder) {
+    const question = track.getQuestion(occurrence.item.questionId)!;
+    counts.set(question.contentDomainId!, (counts.get(question.contentDomainId!) ?? 0) + 1);
+  }
+  assert.deepEqual([...counts.values()], [10, 15, 15, 10]);
+  assert.equal(prepared.draft?.revision, 1);
+  assert.equal(Object.isFrozen(prepared.session.itemOrder), true);
+  await runtime.validateResume({ session: prepared.session, draft: prepared.draft });
+
+  const undersizedTrack = { ...track, questions: track.questions.filter((question) => question.contentDomainId !== "gcp-ace-standard-domain-1") };
+  await assert.rejects(new CanonicalTrainingRuntime(undersizedTrack).prepare(input), /requires 10 unique items/);
+
+  const badSnapshot = { ...prepared.session, configurationSnapshot: { ...prepared.session.configurationSnapshot, timerDeadlineAt: "2026-01-01T02:00:01.000Z" } };
+  await assert.rejects(runtime.validateResume({ session: badSnapshot, draft: prepared.draft }), /snapshot or deadline/);
+  await assert.rejects(new CanonicalTrainingRuntime({ ...track, simulationProfiles: [] }).prepare(input), /unavailable/);
+});
+
+test("GCP simulation validates draft occurrence keys, completeness, flags, revision, and deadline", async () => {
+  const catalog = await catalogPromise;
+  const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: "certification-exam-simulation", request: { sessionId: "gcp-simulation-draft" }, attempts: [], reviews: [], now: NOW });
+  const occurrence = prepared.session.itemOrder[0]!;
+  const question = track.getQuestion(occurrence.item.questionId)!;
+  const draft = createTrainingSessionDraft({
+    sessionId: prepared.session.id, trackId: track.trackId, familyId: "certification", revision: 2,
+    responsesByOccurrenceId: { [occurrence.occurrenceId]: responseFor(question) }, flaggedOccurrenceIds: [occurrence.occurrenceId], updatedAt: "2026-01-01T00:30:00.000Z",
+  });
+  await runtime.validateDraftCommand({ session: prepared.session, draft, expectedPreviousRevision: 1 });
+  await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft, expectedPreviousRevision: 0 }), /revision/);
+  await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft: prepared.draft!, expectedPreviousRevision: 0 }), /previous draft revision/);
+  const foreignOccurrence = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: { foreign: responseFor(question) }, flaggedOccurrenceIds: ["foreign"] });
+  await assert.rejects(runtime.validateResume({ session: prepared.session, draft: foreignOccurrence }), /outside its immutable plan/);
+  const atDeadline = createTrainingSessionDraft({ ...draft, revision: 3, updatedAt: "2026-01-01T02:00:00.000Z" });
+  await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft: atDeadline, expectedPreviousRevision: 2 }), /at or after its immutable deadline/);
+  const afterDeadline = createTrainingSessionDraft({ ...draft, revision: 3, updatedAt: "2026-01-01T02:00:00.001Z" });
+  await assert.rejects(runtime.validateDraftCommand({ session: prepared.session, draft: afterDeadline, expectedPreviousRevision: 2 }), /deadline/);
+});
+
+test("GCP simulation finalization scores only complete responses and partitions all 50 occurrences", async () => {
+  const catalog = await catalogPromise;
+  const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: "certification-exam-simulation", request: { sessionId: "gcp-simulation-finalize" }, attempts: [], reviews: [], now: NOW });
+  const answeredOccurrences = prepared.session.itemOrder.slice(0, 2);
+  const answeredQuestions = answeredOccurrences.map((occurrence) => track.getQuestion(occurrence.item.questionId)!);
+  const responses = {
+    [answeredOccurrences[0]!.occurrenceId]: wrongResponse(answeredQuestions[0]!),
+    [answeredOccurrences[1]!.occurrenceId]: responseFor(answeredQuestions[1]!),
+  };
+  const draft = createTrainingSessionDraft({ sessionId: prepared.session.id, trackId: track.trackId, familyId: "certification", revision: 2, responsesByOccurrenceId: responses, flaggedOccurrenceIds: [prepared.session.itemOrder[2]!.occurrenceId], updatedAt: "2026-01-01T01:00:00.000Z" });
+  const malformedDraft = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: { ...responses, [answeredOccurrences[0]!.occurrenceId]: {} } });
+  await assert.rejects(runtime.finalizeSimulation({ session: prepared.session, draft: malformedDraft, attempts: [], reviews: [], now: "2026-01-01T01:30:00.000Z" }), /incomplete or noncanonical response/);
+  const priorReview = reviewFor(answeredOccurrences[0]!.item, NOW);
+  const finalized = await runtime.finalizeSimulation({ session: prepared.session, draft, attempts: [], reviews: [priorReview], now: "2026-01-01T01:30:00.000Z" });
+  assert.equal(finalized.session.status, "completed");
+  assert.equal(finalized.attempts.length, 2);
+  assert.deepEqual(finalized.result.answeredOccurrenceIds, answeredOccurrences.map((occurrence) => occurrence.occurrenceId));
+  assert.deepEqual(finalized.result.unansweredOccurrenceIds, prepared.session.itemOrder.slice(2).map((occurrence) => occurrence.occurrenceId));
+  assert.equal(new Set([...finalized.result.answeredOccurrenceIds, ...finalized.result.unansweredOccurrenceIds]).size, 50);
+  assert.notEqual(finalized.attempts[0]!.result.kind, "correct");
+  assert.equal(finalized.reviewMutations[0]?.kind, "upsert");
+  if (finalized.reviewMutations[0]?.kind === "upsert") {
+    assert.equal(finalized.reviewMutations[0].entry.id, priorReview.id);
+    assert.deepEqual(finalized.reviewMutations[0].entry.reasons, [finalized.attempts[0]!.result.kind]);
+  }
+  assert.equal(finalized.result.evidence.familyId, "certification");
+  assert.equal((finalized.result.evidence.details as { profileId: string }).profileId, "google-cloud-associate-cloud-engineer-certification-exam-v1");
+  assert.equal(finalized.frozenDraft, draft);
+  await assert.rejects(runtime.finalizeSimulation({ session: finalized.session, draft, attempts: finalized.attempts, reviews: [], now: "2026-01-01T01:31:00.000Z" }), /Only an active canonical simulation/);
+  await assert.rejects(runtime.validateDraftCommand({ session: finalized.session, draft, expectedPreviousRevision: 1 }), /active session/);
 });

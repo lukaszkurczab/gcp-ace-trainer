@@ -1,4 +1,5 @@
 import { isCanonicalSafeIdentity } from "./questionValidation";
+import type { CanonicalSimulationProfile } from "./questionTypes";
 
 export type ProductModeAvailability = "immediate" | "evidence_conditioned";
 export type ProductFeedbackTiming =
@@ -33,6 +34,32 @@ export type ProductModeConfig = Readonly<{
   selection: ProductModeSelection;
 }>;
 
+export type ProductSimulationModeConfig = Readonly<{
+  kind: "certification_exam_simulation";
+  trackId: "google-cloud-associate-cloud-engineer";
+  profileId: "google-cloud-associate-cloud-engineer-certification-exam-v1";
+  familyId: "certification";
+  modeId: "certification-exam-simulation";
+}>;
+
+const GCP_SIMULATION_MODE: ProductSimulationModeConfig = Object.freeze({
+  kind: "certification_exam_simulation",
+  trackId: "google-cloud-associate-cloud-engineer",
+  profileId: "google-cloud-associate-cloud-engineer-certification-exam-v1",
+  familyId: "certification",
+  modeId: "certification-exam-simulation",
+});
+
+/** Resolve only the explicitly bound profile. Simulation policy values remain content-owned. */
+export function getProductSimulationModeConfig(trackId: string, profiles: readonly CanonicalSimulationProfile[] | undefined): Readonly<{ config: ProductSimulationModeConfig; profile: CanonicalSimulationProfile }> {
+  if (trackId !== GCP_SIMULATION_MODE.trackId || !profiles) throw new ProductModeUnavailableError(`Simulation mode ${trackId}/${GCP_SIMULATION_MODE.modeId} is unavailable.`);
+  const matches = profiles.filter((profile) => profile.profileId === GCP_SIMULATION_MODE.profileId);
+  if (matches.length !== 1) throw new ProductModeUnavailableError(`Simulation profile ${GCP_SIMULATION_MODE.profileId} is unavailable.`);
+  const profile = matches[0]!;
+  if (profile.familyId !== GCP_SIMULATION_MODE.familyId || profile.modeId !== GCP_SIMULATION_MODE.modeId) throw new ProductModeUnavailableError(`Simulation profile ${profile.profileId} does not match its canonical family and mode.`);
+  return Object.freeze({ config: GCP_SIMULATION_MODE, profile });
+}
+
 export type ProductModeArtifact = Readonly<{
   schemaVersion: string;
   trackId: string;
@@ -44,6 +71,7 @@ export type ProductModeArtifact = Readonly<{
     questionId: string;
     interaction: Readonly<{ type: string }>;
   }>[];
+  simulationProfiles?: readonly CanonicalSimulationProfile[];
 }>;
 
 export class ProductModeUnavailableError extends Error {
@@ -137,7 +165,9 @@ export function validateProductModeConfigsAgainstArtifacts(configs: readonly Pro
   const validatedConfigs = validateProductModeConfigs(configs);
   const artifactByTrack = new Map<string, ProductModeArtifact>();
   for (const artifact of artifacts) {
-    if (!artifact || typeof artifact !== "object" || Array.isArray(artifact) || Object.keys(artifact).sort().join("|") !== ARTIFACT_KEYS.join("|") || artifact.schemaVersion !== "patternly-content-artifact-v1" || !isCanonicalSafeIdentity(artifact.trackId) || !isCanonicalSafeIdentity(artifact.contentVersion) || artifactByTrack.has(artifact.trackId) || !Array.isArray(artifact.questions) || artifact.questions.length === 0) throw new Error("Product mode artifacts must contain nine exact, unique, non-empty canonical tracks with safe identities.");
+    const artifactKeys = artifact && typeof artifact === "object" && !Array.isArray(artifact) ? Object.keys(artifact).sort().join("|") : "";
+    const allowedArtifactKeys = [ARTIFACT_KEYS.join("|"), [...ARTIFACT_KEYS, "simulationProfiles"].sort().join("|")];
+    if (!artifact || typeof artifact !== "object" || Array.isArray(artifact) || !allowedArtifactKeys.includes(artifactKeys) || (Object.hasOwn(artifact, "simulationProfiles") && !Array.isArray(artifact.simulationProfiles)) || artifact.schemaVersion !== "patternly-content-artifact-v1" || !isCanonicalSafeIdentity(artifact.trackId) || !isCanonicalSafeIdentity(artifact.contentVersion) || artifactByTrack.has(artifact.trackId) || !Array.isArray(artifact.questions) || artifact.questions.length === 0) throw new Error("Product mode artifacts must contain nine exact, unique, non-empty canonical tracks with safe identities.");
     artifactByTrack.set(artifact.trackId, artifact);
   }
   if (artifactByTrack.size !== 9 || Object.values(TRACKS).some((track) => !artifactByTrack.has(track.id))) throw new Error("Product mode artifacts are missing a canonical launch track.");
