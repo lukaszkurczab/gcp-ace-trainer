@@ -663,7 +663,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     width: 3,
   },
   decisionHeading: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
     gap: spacing.md,
   },
