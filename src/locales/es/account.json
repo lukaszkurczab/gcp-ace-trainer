@@ -44,8 +44,6 @@
   "signOut": "Cerrar sesión",
   "signOutPending": "Cierre de sesión pendiente",
   "signOutPendingDescription": "No se pudo terminar de cerrar la sesión en este dispositivo. Puedes volver a intentarlo sin riesgo; este paso no necesita conexión a Internet.",
-  "remoteSessionRevocationPending": "Revocación de la sesión del servidor pendiente",
-  "remoteSessionRevocationPendingDescription": "La sesión ya está cerrada en este dispositivo. Aún está pendiente revocar la sesión en el servidor.",
   "deleteAccount": "Eliminar cuenta",
   "deleting": "Eliminando cuenta",
   "deletionPending": "Eliminación de la cuenta pendiente",

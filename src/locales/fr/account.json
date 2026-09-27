@@ -44,8 +44,6 @@
   "signOut": "Se déconnecter",
   "signOutPending": "Déconnexion en attente",
   "signOutPendingDescription": "Nous n’avons pas pu terminer la déconnexion sur cet appareil. Vous pouvez réessayer sans risque ; cette étape ne nécessite pas de connexion Internet.",
-  "remoteSessionRevocationPending": "Révocation de la session serveur en attente",
-  "remoteSessionRevocationPendingDescription": "La session est fermée sur cet appareil. La révocation de la session sur le serveur est encore en attente.",
   "deleteAccount": "Supprimer le compte",
   "deleting": "Suppression du compte",
   "deletionPending": "Suppression du compte en attente",

@@ -44,8 +44,6 @@
   "signOut": "Abmelden",
   "signOutPending": "Abmeldung ausstehend",
   "signOutPendingDescription": "Wir konnten die Abmeldung auf diesem Gerät nicht abschließen. Du kannst sie bedenkenlos erneut versuchen; dafür ist keine Internetverbindung nötig.",
-  "remoteSessionRevocationPending": "Widerruf der Serversitzung ausstehend",
-  "remoteSessionRevocationPendingDescription": "Auf diesem Gerät bist du abgemeldet. Der Widerruf der Serversitzung steht noch aus.",
   "deleteAccount": "Konto löschen",
   "deleting": "Konto wird gelöscht",
   "deletionPending": "Kontolöschung ausstehend",

@@ -230,22 +230,24 @@ test("account recovery back action follows live navigator history", () => {
   assert.doesNotMatch(screen, /const backAction = navigation\.canGoBack\(\)/u);
 });
 
-test("remote session revocation warning appears only on signed-out sign-in and explains both states", () => {
+test("signed-out sign-in presentation is independent of pending remote revocation", () => {
   const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
   const en = JSON.parse(readFileSync("src/locales/en/account.json", "utf8")) as Record<string, string>;
   const pl = JSON.parse(readFileSync("src/locales/pl/account.json", "utf8")) as Record<string, string>;
+  const locales = ["de", "en", "es", "et", "fr", "it", "pl"];
 
-  assert.match(screen, /account\.state\.kind === "signedOut" && account\.pendingRemoteRevokeCount > 0[\s\S]*?testID="account-remote-revoke-pending"/u);
-  assert.match(en.remoteSessionRevocationPendingDescription ?? "", /device is signed out/u);
-  assert.match(en.remoteSessionRevocationPendingDescription ?? "", /server session is still pending/u);
-  assert.match(pl.remoteSessionRevocationPendingDescription ?? "", /urządzenie jest wylogowane/u);
-  assert.match(pl.remoteSessionRevocationPendingDescription ?? "", /sesji na serwerze nie zostało jeszcze zakończone/u);
+  assert.doesNotMatch(screen, /pendingRemoteRevokeCount|account-remote-revoke-pending|remoteSessionRevocationPending/u);
+  for (const locale of locales) {
+    const accountLocale = JSON.parse(readFileSync(`src/locales/${locale}/account.json`, "utf8")) as Record<string, string>;
+    assert.equal("remoteSessionRevocationPending" in accountLocale, false, `${locale} title key removed`);
+    assert.equal("remoteSessionRevocationPendingDescription" in accountLocale, false, `${locale} description key removed`);
+  }
   assert.match(en.signOutPendingDescription ?? "", /safely retry/u);
   assert.match(en.signOutPendingDescription ?? "", /doesn’t need an internet connection/u);
   assert.match(pl.signOutPendingDescription ?? "", /bezpiecznie ponowić tę czynność/u);
   assert.match(pl.signOutPendingDescription ?? "", /nie wymaga połączenia z internetem/u);
-  assert.doesNotMatch(en.remoteSessionRevocationPendingDescription ?? "", /uid|operation|retry in|within/u);
-  assert.doesNotMatch(pl.remoteSessionRevocationPendingDescription ?? "", /uid|operation|za .* minut|w ciągu/u);
+  assert.match(screen, /credentialsError \? <AuthText[\s\S]*?testID="account-password-error"[\s\S]*?text\.signInCredentialsError/u);
+  assert.match(screen, /signInCredentialsError: t\("signInCredentialsError"\)/u);
 });
 
 test("local sign-out persists its block before closing scope and never invokes remote preparation", () => {

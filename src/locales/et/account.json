@@ -44,8 +44,6 @@
   "signOut": "Logi välja",
   "signOutPending": "Väljalogimine pooleli",
   "signOutPendingDescription": "Selles seadmes väljalogimist ei õnnestunud lõpetada. Võid turvaliselt uuesti proovida; internetiühendust pole vaja.",
-  "remoteSessionRevocationPending": "Serveriseansi tühistamine pooleli",
-  "remoteSessionRevocationPendingDescription": "Selles seadmes oled välja logitud. Serveriseansi tühistamine on veel pooleli.",
   "deleteAccount": "Kustuta konto",
   "deleting": "Konto kustutamine",
   "deletionPending": "Konto kustutamine pooleli",

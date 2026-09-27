@@ -44,8 +44,6 @@
   "signOut": "Disconnetti",
   "signOutPending": "Disconnessione in sospeso",
   "signOutPendingDescription": "Non è stato possibile completare la disconnessione su questo dispositivo. Puoi riprovare senza rischi; questo passaggio non richiede una connessione a Internet.",
-  "remoteSessionRevocationPending": "Revoca della sessione sul server in sospeso",
-  "remoteSessionRevocationPendingDescription": "La sessione è stata chiusa su questo dispositivo. La revoca della sessione sul server è ancora in sospeso.",
   "deleteAccount": "Elimina account",
   "deleting": "Eliminazione dell’account",
   "deletionPending": "Eliminazione dell’account in sospeso",
