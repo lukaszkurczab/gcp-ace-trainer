@@ -9,7 +9,7 @@ tags:
 - tapOn:
     id: "main-tab-bar-home"
 - tapOn:
-    id: "patternly:home:primary-action"
+    id: "main-tab-bar-practice"
 - extendedWaitUntil:
     visible:
       id: "patternly:practice:hub:root"
