@@ -58,7 +58,6 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 02a | UI-26-07 — hierarchia ekranu niedostępnych danych | `blocking` | fizyczne urządzenie iOS z VoiceOver | Implementacja i pozostałe QA są gotowe w nazwanym stashu; Apple nie udostępnia VoiceOver w Simulatorze, więc wymagany focus/announcement czeka na urządzenie fizyczne. |
 | 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `blocking` | fizyczne urządzenie iOS z VoiceOver | Implementacja i pozostałe QA są gotowe w nazwanym stashu; wymagany focus/announcement czeka na urządzenie fizyczne. |
 | 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `blocking` | runtime recovery fixture i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy i layout są gotowe w nazwanym stashu; pozostają rzeczywisty retry/sign-out failure, długie locale oraz VoiceOver. |
-| 02d | UI-26-10 — ukrycie technicznego stanu unieważniania sesji | `planned` | brak | Zwykły ekran logowania bez komunikatu, gdy użytkownik nie ma działania do wykonania. |
 | 02e | UI-26-11 — hierarchia propozycji planu nauki | `planned` | brak | Jeden top inset, naturalny tytuł, rodzaj celu jako nagłówek i jedno primary CTA. |
 | 03 | UI-26-02A — kontrakt pierwszego użycia Apple/Google | `planned` | brak | Kontrakt przed implementacją providerów. |
 | 04 | UI-26-02B — implementacja pierwszego użycia providerów | `planned` | UI-26-02A | Provider login bez automatycznej zgody. |
@@ -154,20 +153,6 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Aktualna blokada:** gotowy diff ma zielone targeted 82/82, typecheck i diff-check; Maestro na istniejącym iPhonie 17 potwierdził dark/standard oraz light/duży tekst, a siedem locale ma wymagane copy. Niezależny `qa-gate` pozostawił `BLOCKED`, ponieważ nie wykonano rzeczywistego retry success/failure, sign-out failure, runtime najdłuższego locale ani VoiceOver. Screenshoty korzystały z jawnego fixture wyłącznie do prezentacji i nie są dowodem backendu. Diff, raport i screenshoty zachowuje stash `UI-26-09 awaiting runtime and physical VoiceOver 2026-09-27`; wznowić z bezpiecznym recovery fixture oraz fizycznym iOS, domknąć bramki i ponowić QA.
 - **Prompt wykonawczy:** „Sprawdź bieżący `AccountRecoveryScreen`, wszystkie wyniki `getAccountRecoveryPresentation`, komponent `Screen` i testy account recovery. Dodaj wyłącznie adaptacyjne centrowanie recovery block oraz repozytoryjną ikonę zgodnie z UI-26-09. Zachowaj retry, sticky sign-out, feedback i bezpieczny fallback dla dużego tekstu; nie zmieniaj synchronizacji ani copy.”
 
-#### UI-26-10 — szczegółowy kontrakt odbioru
-
-- **Źródło decyzji:** instrukcja właściciela i screenshot iPhone 17 z 26.09.2026. Stan oczekującego zdalnego unieważnienia nie wymaga działania użytkownika i nie jest błędem logowania; jego ujawnianie zwiększa obciążenie sensoryczne oraz sprawia wrażenie awarii mimo prawidłowego przebiegu.
-- **Potwierdzony stan kodu:** `AccountEntryScreen` renderuje warning `account-remote-revoke-pending`, gdy `account.state.kind === "signedOut" && account.pendingRemoteRevokeCount > 0`. `AccountSessionProvider` utrzymuje trwałą kolejkę niezależnie od prezentacji, a `accountIdentityComposition.test` obecnie wymusza widoczność komunikatu. Copy `remoteSessionRevocationPending*` istnieje w locale.
-- **Cel:** użytkownik po lokalnym wylogowaniu zawsze widzi zwykły ekran `Sign in`; techniczna kolejka unieważnienia sesji nie ma reprezentacji wizualnej, dopóki nie istnieje realna decyzja lub akcja wymagana od użytkownika.
-- **Zakres:** usunąć warunkowy `InfoBlock` z ekranu logowania; usunąć nieużywane mapowanie i klucze locale we wszystkich obsługiwanych językach; zastąpić test żądający bannera testem braku dodatkowej prezentacji przy dodatnim `pendingRemoteRevokeCount`; zachować testy trwałej kolejki i jej wznowienia.
-- **Poza zakresem:** zmiana kolejności lokalnego logoutu, `LocalLogoutControl`, `pendingRemoteRevokeCount`, endpointu revoke, sposobu wznowienia operacji, bezpieczeństwa profilu, ekranu `signOutPending` dla rzeczywiście niedokończonego lokalnego wylogowania oraz dodawanie jakiegokolwiek zastępczego copy/UI.
-- **Akceptacja:** dodatni licznik oczekujących unieważnień nie zmienia struktury, copy, odstępów ani dostępności `Sign in`; użytkownik nadal może się zalogować, utworzyć konto, odzyskać hasło lub wejść jako Gość zgodnie z istniejącymi zasadami; oczekujący wpis pozostaje trwały i jest obsługiwany przez istniejący mechanizm; realna awaria logowania nadal ma dotychczasowy feedback.
-- **Weryfikacja:** test prezentacji dla `signedOut` z licznikiem `0` i `>0`; test braku `account-remote-revoke-pending` i kluczy copy; istniejące testy `pendingSessionRevocation` i `localLogoutControl`; targeted typecheck/testy account; screenshot standardowego `Sign in` po logout na istniejącym iPhonie 17. Nie jest potrzebny nowy symulator ani duplikat aplikacji.
-- **Evidence/report:** `docs/active/UI-26-10/REPORT.md` z komendami, wynikiem testów i jednym screenshotem po zmianie; bez danych konta i surowych identyfikatorów operacji.
-- **Ryzyka:** zbyt szerokie usunięcie mogłoby skasować mechanizm bezpieczeństwa zamiast wyłącznie jego prezentacji. Diff musi pozostać w warstwie ekranu/copy/testu prezentacji; zmiany providera lub storage wymagają osobnego uzasadnienia.
-- **Warunek zakończenia:** standardowy ekran logowania jest identyczny dla `pendingRemoteRevokeCount` równego `0` i większego od `0`, mechanizm trwałego unieważnienia nadal przechodzi swoje testy, a niezależne QA nie znajduje zastępczego komunikatu ani regresji logout/login.
-- **Prompt wykonawczy:** „Sprawdź aktualny `AccountEntryScreen`, locale, test prezentacji oraz testy `pendingSessionRevocation`/`LocalLogoutControl`. Usuń wyłącznie wizualną reprezentację `remoteSessionRevocationPending` i jej martwe copy. Nie zastępuj jej innym tekstem, ikoną, toastem ani spacingiem. Zachowaj całą trwałą kolejkę i logikę wznowienia; potwierdź testem, że licznik oczekujących operacji nie zmienia zwykłego ekranu `Sign in`.”
-
 #### UI-26-11 — szczegółowy kontrakt odbioru
 
 - **Źródło decyzji i audyt:** instrukcja właściciela oraz screenshot iPhone 17 z 26.09.2026; ustalenia i ograniczenia w `docs/active/UI-26-11/AUDIT.md`.
@@ -250,4 +235,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**UI-26-10** jest pierwszym dostępnym zadaniem. `UI-26-07`, `UI-26-08` i `UI-26-09` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiedni nazwany stash po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.
+**UI-26-11** jest pierwszym dostępnym zadaniem. `UI-26-07`, `UI-26-08` i `UI-26-09` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiedni nazwany stash po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.

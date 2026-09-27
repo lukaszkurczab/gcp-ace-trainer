@@ -18,7 +18,8 @@ Aktualny kanoniczny plan: [`docs/PATTERNLY-WORKING-PLAN.md`](../docs/PATTERNLY-W
 - `UI-26-07` ma gotową implementację i zielone targeted 37/37, typecheck oraz runtime base/error/success/duży tekst, ale niezależny `qa-gate` pozostawił status `BLOCKED`: Apple nie udostępnia VoiceOver w Simulatorze, a plan wymaga rzeczywistego focus/announcement. Cały diff z raportem zachowuje nazwany stash `UI-26-07 awaiting physical VoiceOver 2026-09-27`; wznowić wyłącznie na fizycznym urządzeniu iOS i ponowić QA.
 - `UI-26-08` ma gotową implementację, siedem locale, zielone targeted 53/53, typecheck i runtime password base/error/reauth→hold oraz light/duży tekst. Niezależny `qa-gate` pozostawił `BLOCKED` wyłącznie na rzeczywistym VoiceOver; diff i raport zachowuje stash `UI-26-08 awaiting physical VoiceOver 2026-09-27`.
 - `UI-26-09` ma gotową implementację, zielone targeted 82/82, typecheck oraz runtime layout dark/standard i light/duży tekst. Niezależny `qa-gate` pozostawił `BLOCKED`: brakuje rzeczywistego retry success/failure, sign-out failure, runtime najdłuższego locale i VoiceOver na fizycznym iOS. Diff, raport i screenshoty zachowuje stash `UI-26-09 awaiting runtime and physical VoiceOver 2026-09-27`.
-- Następne dostępne zadanie zgodnie z kolejką: `UI-26-10`.
+- `UI-26-10` jest zamknięte dowodowo. Standardowy `Sign in` nie zależy od `pendingRemoteRevokeCount`; usunięto wyłącznie warning i martwe copy, a durable queue pozostała bez zmian. Targeted 54/54, typecheck, realny logout na iPhonie 17 i niezależny `qa-gate` zakończyły się PASS.
+- Następne dostępne zadanie zgodnie z kolejką: `UI-26-11`.
 - Następna pełna kolejka, kryteria i report targets są wyłącznie w planie.
 
 ## Higiena dokumentacji
