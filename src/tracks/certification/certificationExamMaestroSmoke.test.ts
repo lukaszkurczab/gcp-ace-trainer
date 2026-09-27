@@ -5,14 +5,13 @@ import test from "node:test";
 test("RC Certification Maestro flows change, restore, persist, resume, finish, and review the 50-item exam", () => {
   const flow = readFileSync(".maestro/rc-certification-exam-smoke.yaml", "utf8");
   const resumeFlow = readFileSync(".maestro/rc-certification-exam-resume-finish.yaml", "utf8");
-  const listener = readFileSync(".maestro/rc-runtime-audit-listener-ready.yaml", "utf8");
 
   for (const selector of [
     "patternly:home:select-track:google-cloud-associate-cloud-engineer",
     "patternly:home:primary-action",
     "patternly:practice:mode-card:certification-exam-simulation",
   ]) assert.match(flow, new RegExp(selector));
-  assert.match(listener, /patternly:content:audit-command-listener:ready/);
+  assert.match(readFileSync(".maestro/rc-runtime-audit-reset-complete.yaml", "utf8"), /patternly:content:ready-after-audit-reset/);
   assert.match(flow, /visible:\n        id: "patternly:home:change-track"/);
   assert.match(flow, /tapOn:\n          id: "patternly:home:change-track"/);
   assert.match(flow, /scrollUntilVisible:\n    element:\n      id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"/);
@@ -90,6 +89,8 @@ test("Free Certification Exam flow resets once, reaches the Premium paywall, and
   const flow = readFileSync(".maestro/rc-certification-exam-free.yaml", "utf8");
   const runner = readFileSync("scripts/runCertificationExamFreeRcIos.mjs", "utf8");
   const examRunner = readFileSync("scripts/runCertificationExamRcIos.mjs", "utf8");
+  assertRunnerResetGate(runner);
+  assertRunnerResetGate(examRunner);
 
   assert.match(runner, /\.env\.smoke\.local/);
   assert.match(runner, /EXPO_PUBLIC_PATTERNLY_E2E_EMAIL/);
@@ -112,7 +113,7 @@ test("RC iOS timeout runner prepares one local exam, advances the audit clock, a
   const runner = readFileSync("scripts/runCertificationExamTimeoutRcIos.mjs", "utf8");
   const timeoutFlow = readFileSync(".maestro/rc-certification-exam-timeout-result.yaml", "utf8");
   const orderedSteps = [
-    'runMaestro(LISTENER_FLOW)',
+    'await waitForContentPreparationState()',
     'run("xcrun", ["simctl", "openurl", udid, RESET_URL])',
     'runMaestro(PREPARE_FLOW_PATH, smokeCredentials)',
     'run("xcrun", ["simctl", "openurl", udid, TIMEOUT_URL])',
@@ -135,9 +136,22 @@ test("RC iOS timeout runner prepares one local exam, advances the audit clock, a
   assert.equal((runner.match(/run\("xcrun", \["simctl", "openurl", udid, RESET_URL\]\)/g) ?? []).length, 1);
   assert.equal((runner.match(/RESET_URL/g) ?? []).length, 2);
   assert.match(runner, /milliseconds=7200001/);
+  assertRunnerResetGate(runner);
   assert.match(timeoutFlow, /visible: "Session complete"\n    timeout: 120000/);
   assert.match(timeoutFlow, /rc-certification-exam-timeout-result/);
   assert.match(timeoutFlow, /Review answers[\s\S]*?Question 1 \/ 50[\s\S]*?Incorrect/);
   assert.match(timeoutFlow, /repeat:\n    times: 49[\s\S]*?Question 50 \/ 50[\s\S]*?Unanswered/);
   assert.doesNotMatch(timeoutFlow, /Finish exam/);
 });
+
+function assertRunnerResetGate(runner: string) {
+  assert.doesNotMatch(runner, /LISTENER_FLOW|audit-command-listener/);
+  assert.match(runner, /await waitForContentPreparationState\(\)/);
+  assert.match(runner, /openurl", udid, RESET_URL/);
+  assert.match(readFileSync(".maestro/rc-runtime-audit-reset-complete.yaml", "utf8"), /patternly:content:ready-after-audit-reset/);
+  assert.ok(runner.indexOf("await waitForContentPreparationState()") < runner.indexOf('"openurl", udid, RESET_URL'));
+  const resetAssertionIndex = runner.indexOf("RESET_COMPLETE_FLOW], { stdio: \"inherit\" }") >= 0
+    ? runner.indexOf("RESET_COMPLETE_FLOW], { stdio: \"inherit\" }")
+    : runner.indexOf("runMaestro(RESET_COMPLETE_FLOW)");
+  assert.ok(runner.indexOf('"openurl", udid, RESET_URL') < resetAssertionIndex);
+}

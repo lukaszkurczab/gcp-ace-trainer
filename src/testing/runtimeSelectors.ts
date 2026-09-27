@@ -54,7 +54,6 @@ export const runtimeSelectors = Object.freeze({
     encryptedStorageContinue: () => selector("content", "encrypted-storage", "continue"),
     ready: () => selector("content", "ready"),
     readyAfterAuditReset: () => selector("content", "ready-after-audit-reset"),
-    auditCommandListener: () => selector("content", "audit-command-listener", "ready"),
   }),
   home: Object.freeze({
     root: () => selector("home", "root"),

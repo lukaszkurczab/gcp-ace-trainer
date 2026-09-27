@@ -55,7 +55,6 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ContentPreparationState>({ kind: "loading", phase: "opening-storage" });
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
   const [auditResetReady, setAuditResetReady] = useState(false);
-  const [auditCommandListenerReady, setAuditCommandListenerReady] = useState(false);
   const [confirmUnavailableActiveAbandon, setConfirmUnavailableActiveAbandon] = useState(false);
   const [abandoningUnavailableActive, setAbandoningUnavailableActive] = useState(false);
   const initialUrlHandled = useRef(false);
@@ -177,7 +176,6 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
       }
     };
     const subscription = Linking.addEventListener("url", ({ url }) => { void apply(url); });
-    setAuditCommandListenerReady(true);
     return () => { live = false; subscription.remove(); };
   }, [state.kind]);
 
@@ -222,5 +220,5 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
             {!confirmUnavailableActiveAbandon ? <Button onPress={retry} testID={runtimeSelectors.content.unavailableActiveRetry()} variant="secondary">{t("Try again")}</Button> : null}
           </Screen></View>
       : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen><EmptyState actionLabel={t("Try again")} description={state.reason} onActionPress={retry} title={t("Application unavailable")} /></Screen></View>;
-  return <View collapsable={false} style={{ backgroundColor: colors.background, flex: 1 }} testID={auditCommandListenerReady ? runtimeSelectors.content.auditCommandListener() : undefined}>{body}</View>;
+  return <View style={{ backgroundColor: colors.background, flex: 1 }}>{body}</View>;
 }

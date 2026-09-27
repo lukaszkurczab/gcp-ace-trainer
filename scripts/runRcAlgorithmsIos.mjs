@@ -1,10 +1,10 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
+import { waitForContentPreparationState } from "./waitForContentPreparationState.mjs";
 
 const APP_ID = "com.lkurczab.patternly";
 const RESET_URL = "com.lkurczab.patternly://audit/reset-learning-state";
-const LISTENER_FLOW = ".maestro/rc-runtime-audit-listener-ready.yaml";
 const RESET_COMPLETE_FLOW = ".maestro/rc-runtime-audit-reset-complete.yaml";
 const BOOTSTRAP_FLOW = ".maestro/rc-algorithms-bootstrap.yaml";
 const UDID_PATTERN = /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i;
@@ -31,11 +31,11 @@ const captureEnvironmentArgs = [
   "-e", `PATTERNLY_DEV_CLIENT_URL=${devClientUrl}`,
 ];
 if (!availableBootedSimulator(udid)) throw new Error(`iOS simulator ${udid} is not available and booted.`);
-for (const requiredFlow of [LISTENER_FLOW, RESET_COMPLETE_FLOW, BOOTSTRAP_FLOW, flow]) if (!existsSync(requiredFlow)) throw new Error(`RC flow is missing: ${requiredFlow}`);
+for (const requiredFlow of [RESET_COMPLETE_FLOW, BOOTSTRAP_FLOW, flow]) if (!existsSync(requiredFlow)) throw new Error(`RC flow is missing: ${requiredFlow}`);
 
 runOptional("xcrun", ["simctl", "terminate", udid, APP_ID]);
 run("xcrun", ["simctl", "openurl", udid, devClientUrl]);
-run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, LISTENER_FLOW], { stdio: "inherit" });
+await waitForContentPreparationState();
 run("xcrun", ["simctl", "openurl", udid, RESET_URL]);
 run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, RESET_COMPLETE_FLOW], { stdio: "inherit" });
 run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, BOOTSTRAP_FLOW], { stdio: "inherit" });

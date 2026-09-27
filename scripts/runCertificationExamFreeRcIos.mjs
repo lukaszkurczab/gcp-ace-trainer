@@ -1,10 +1,10 @@
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { parseDotenv } from "./runLocalProfile.mjs";
+import { waitForContentPreparationState } from "./waitForContentPreparationState.mjs";
 
 const APP_ID = "com.lkurczab.patternly";
 const RESET_URL = "com.lkurczab.patternly://audit/reset-learning-state";
-const LISTENER_FLOW = ".maestro/rc-runtime-audit-listener-ready.yaml";
 const RESET_COMPLETE_FLOW = ".maestro/rc-runtime-audit-reset-complete.yaml";
 const FLOW_PATH = ".maestro/rc-certification-exam-free.yaml";
 const CREDENTIAL_KEYS = Object.freeze(["EXPO_PUBLIC_PATTERNLY_E2E_EMAIL", "EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD"]);
@@ -24,12 +24,12 @@ mkdirSync(outputDirectory, { recursive: true });
 
 const simulator = availableBootedSimulator(udid);
 if (!simulator) throw new Error(`iOS simulator ${udid} is not available and booted.`);
-for (const flow of [LISTENER_FLOW, RESET_COMPLETE_FLOW, FLOW_PATH]) if (!existsSync(flow)) throw new Error(`Free RC flow is missing: ${flow}`);
+for (const flow of [RESET_COMPLETE_FLOW, FLOW_PATH]) if (!existsSync(flow)) throw new Error(`Free RC flow is missing: ${flow}`);
 const credentials = loadFreeSmokeCredentials();
 
 runOptional("xcrun", ["simctl", "terminate", udid, APP_ID]);
 run("xcrun", ["simctl", "openurl", udid, devClientUrl]);
-run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, LISTENER_FLOW], { stdio: "inherit" });
+await waitForContentPreparationState();
 run("xcrun", ["simctl", "openurl", udid, RESET_URL]);
 run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, RESET_COMPLETE_FLOW], { stdio: "inherit" });
 runMaestro(FLOW_PATH, credentials);

@@ -77,10 +77,6 @@ test("unavailable active content is a typed gate with explicit abandon and retry
   assert.doesNotMatch(source, /contentIdentityUnavailableRepository/);
 });
 
-test("development audit listener test ID stays on a native view", () => {
-  assert.match(source, /<View collapsable=\{false\}[^>]*testID=\{auditCommandListenerReady \? runtimeSelectors\.content\.auditCommandListener\(\) : undefined\}/);
-});
-
 test("bootstrap diagnostics are wired only through the development branch as one structural observer", () => {
   assert.match(source, /__DEV__\s*\?\s*\{\s*diagnosticObserver:\s*recordDevelopmentBootstrapDiagnostic\s*\}\s*:\s*undefined/);
   assert.equal((source.match(/diagnosticObserver:\s*recordDevelopmentBootstrapDiagnostic/g) ?? []).length, 1);
