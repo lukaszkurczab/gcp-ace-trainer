@@ -125,7 +125,6 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
     }
   }
 
-  const selectedTrack = getTrackDisplays().find((track) => track.id === selectedTrackId);
   const showFooter = !loadError && (!loaded || onboarding || selectedTrackId !== activeTrackId);
 
   return (
@@ -134,14 +133,6 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
         edges={["top", "bottom"]}
         footer={showFooter ? (
           <View style={[styles.footerContent, largeText ? styles.actionsLargeText : null]}>
-            {onboarding || selectedTrackId === activeTrackId ? (
-              <View style={[styles.selectedSummary, largeText ? styles.progressHeaderLargeText : null]}>
-                <Text maxFontSizeMultiplier={2} style={styles.selectedLabel}>{t("Selected")}</Text>
-                <Text maxFontSizeMultiplier={2} style={styles.selectedValue}>
-                  {t(selectedTrack?.shortTitle ?? "Coding Interview")}
-                </Text>
-              </View>
-            ) : null}
             {saveError ? <View testID="patternly:home:select-track:save-error"><Text accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.saveError} testID={reminderErrorKind ? runtimeSelectors.notifications.error(reminderErrorKind) : undefined}>{t(saveError)}</Text></View> : null}
             <Button
               disabled={!loaded || isSaving || (!onboarding && selectedTrackId === activeTrackId)}
@@ -150,7 +141,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
               style={[styles.actionButton, largeText ? styles.actionButtonLargeText : null]}
               testID={runtimeSelectors.home.selectTrackContinue()}
             >
-              {t(onboarding ? "Start track" : "Use this track")}
+              {t("Start track")}
             </Button>
           </View>
         ) : undefined}
@@ -279,8 +270,4 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   actionsLargeText: { flexDirection: "column" },
   actionButton: { flex: 1 },
   actionButtonLargeText: { flex: 0, width: "100%" },
-  progressHeaderLargeText: { alignItems: "flex-start", flexDirection: "column", justifyContent: "flex-start" },
-  selectedSummary: { gap: spacing.xxs },
-  selectedLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "400", lineHeight: 15.4 },
-  selectedValue: { color: palette.textPrimary, fontSize: 13, fontWeight: "500", lineHeight: 16 },
 });

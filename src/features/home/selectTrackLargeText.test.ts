@@ -9,7 +9,6 @@ test("track selection stacks dense rows and actions instead of clipping large te
   assert.match(source, /const \{ fontScale \} = useWindowDimensions\(\)/);
   assert.match(source, /const largeText = fontScale >= 1\.3/);
   assert.match(source, /largeText \? styles\.trackMetaRowLargeText : null/);
-  assert.match(source, /largeText \? styles\.progressHeaderLargeText : null/);
   assert.match(source, /largeText \? styles\.actionsLargeText : null/);
   assert.match(source, /largeText \? styles\.actionButtonLargeText : null/);
   assert.match(source, /actionsLargeText:\s*\{\s*flexDirection: "column"/);
@@ -39,7 +38,19 @@ test("track cards use the canonical Figma icon mapping for every active track", 
 test("track selection mirrors the Figma returning and switching footer states", () => {
   assert.match(source, /const \[activeTrackId, setActiveTrackId\]/);
   assert.match(source, /const showFooter = !loadError && \(!loaded \|\| onboarding \|\| selectedTrackId !== activeTrackId\)/);
-  assert.match(source, /onboarding \? "Start track" : "Use this track"/);
+  assert.match(source, /\{t\("Start track"\)\}/);
+  assert.doesNotMatch(source, /Use this track/);
+  assert.doesNotMatch(source, /t\("Selected"\)|selectedSummary|selectedLabel|selectedValue/);
+  const footer = source.match(/footer=\{showFooter \? \([\s\S]*?footerVariant="sticky"/)?.[0];
+  assert.ok(footer, "the sticky footer remains conditional on the existing visibility rule");
+  assert.equal((footer.match(/<Button\b/g) ?? []).length, 1, "the footer has one action");
+  assert.match(footer, /testID=\{runtimeSelectors\.home\.selectTrackContinue\(\)\}/);
+  assert.match(source, /accessibilityRole="radio"[\s\S]*?accessibilityState=\{\{ disabled, selected \}\}/);
+  assert.match(source, /getTrackDisplays\(\)\.find\(\(candidate\) => candidate\.id === selectedTrackId\)/);
+  assert.match(source, /await saveActiveTrackId\(track\.id\)/);
+  assert.match(source, /onTrackSelected\?\.\(track\.id\)/);
+  assert.match(source, /if \(onTrackSelected\) return;/);
+  assert.match(source, /navigation\.navigate\(ROUTES\.HOME, \{ initialTab: "home" \}\)/);
   assert.match(source, /placement="back"/);
   assert.match(source, /footerVariant="sticky"/);
   assert.match(source, /footerContent:\s*\{\s*gap: 14[\s\S]*?paddingBottom: spacing\.xs/);
