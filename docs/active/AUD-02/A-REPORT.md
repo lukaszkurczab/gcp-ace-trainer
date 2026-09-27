@@ -23,13 +23,13 @@
 - Premium prepare/start: `/tmp/patternly-aud02a-evidence/premium/2026-09-27_172806`.
 - Premium answer change, flag/navigator, terminate/restart/resume, manual finish, wynik i review 50/50: `/tmp/patternly-aud02a-evidence/premium/2026-09-27_172905`.
 - Timeout, wynik i review: `/tmp/patternly-aud02a-evidence/timeout/2026-09-27_173522`.
-- Final-HEAD rerun wiążący runtime z końcowym commitem aplikacji: `/tmp/patternly-aud02a-final-head-evidence/free`, `/tmp/patternly-aud02a-final-head-evidence/premium` i `/tmp/patternly-aud02a-final-head-evidence/timeout`. Każdy katalog zawiera output Maestro oraz lokalny manifest dokładnych SHA/UDID/trybu entitlement; manifest nie jest artefaktem produkcyjnym.
+- Final-HEAD rerun wiążący runtime z końcowym commitem aplikacji: `/tmp/patternly-aud02a-final-head-evidence/free-final`, `/tmp/patternly-aud02a-final-head-evidence/premium-final` i `/tmp/patternly-aud02a-final-head-evidence/timeout-final`. Każdy katalog zawiera output Maestro oraz lokalny manifest dokładnych SHA/UDID/trybu entitlement; manifest nie jest artefaktem produkcyjnym.
 - Fixture entitlement potwierdził zgodne konto i produkt dla `expired` oraz `active`. Screenshoty potwierdzają prezentację; zachowanie backendu potwierdzają testy kontraktowe i odpowiedzi endpointu.
 - Użyto wyłącznie istniejącego iPhone'a 17 i jednej instalacji `com.lkurczab.patternly`.
 
 ## Weryfikacja
 
-- Pełne `patternly npm test` z bieżącym content HEAD i osobnym historycznym checkoutem `cc3efca88be7e01137f10ac69a0643f06b61a350` — 1344/1344 PASS.
+- Pełne `patternly npm test` z bieżącym content HEAD i osobnym historycznym checkoutem `cc3efca88be7e01137f10ac69a0643f06b61a350` — 1347/1347 PASS.
 - `npm run typecheck` — PASS.
 - `npm run check:content-release` — PASS; inventory 9 tracków, 117 node'ów, 943 mental units, 16077 pytań.
 - Targeted Exam/entitlement/navigation/review oraz kontrakt Maestro — PASS; wcześniejsze grupy 63/63 i 6/6.
@@ -40,7 +40,7 @@
 
 ## Niezależne QA
 
-Wstępny `qa-gate` na `gpt-6-luna high` wydał `PASS WITH ISSUES`: kryteria runtime i candidate binding są spełnione, a pozostałe uwagi dotyczyły wyłącznie niezsynchronizowanego raportu, planu i trwałego stanu. Po tej synchronizacji admission jest generowane ponownie dla finalnego app HEAD, a końcowy `qa-gate` sprawdza finalne SHA przed push.
+Wstępny `qa-gate` na `gpt-6-luna high` wydał `PASS WITH ISSUES`, a pierwszy końcowy przegląd poprawnie odrzucił evidence sprzed finalnego commita. Po korekcie runnerów finalny Free/Premium/timeout jest powtarzany na dokładnym końcowym app HEAD i admission, a ostatni `qa-gate` sprawdza te same SHA przed push.
 
 ## Granice
 
