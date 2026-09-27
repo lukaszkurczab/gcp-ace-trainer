@@ -20,6 +20,11 @@ tags:
           id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
       - tapOn:
           id: "patternly:home:select-track:continue"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible:
+            id: "patternly:home:select-track:root"
+          timeout: 30000
 - runFlow:
     when:
       notVisible:
@@ -41,6 +46,11 @@ tags:
           id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
       - tapOn:
           id: "patternly:home:select-track:continue"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible:
+            id: "patternly:home:select-track:root"
+          timeout: 30000
 - extendedWaitUntil:
     visible:
       id: "patternly:home:track-card:coding-interview-dsa-problem-solving"

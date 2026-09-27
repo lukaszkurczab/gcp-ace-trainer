@@ -26,10 +26,13 @@ test("AUD-02B executes authenticated Free, Premium, and expiry phases in order w
   const orderedPhases = [
     "runMaestro(AUTH_PREFLIGHT_FLOW, credentials)",
     "await resetLearningState();",
+    "runMaestro(AUTH_PREFLIGHT_FLOW, credentials)",
     "runMaestro(FREE_FLOW, credentials)",
     "await resetLearningState();",
+    "runMaestro(AUTH_PREFLIGHT_FLOW, credentials)",
     "runMaestro(PREMIUM_FLOW)",
     "await resetLearningState();",
+    "runMaestro(AUTH_PREFLIGHT_FLOW, credentials)",
     "runMaestro(EXPIRY_FLOW)",
     "run(\"xcrun\", [\"simctl\", \"openurl\", udid, EXPIRE_URL])",
     "runMaestro(EXPIRY_RESULT_FLOW)",
@@ -47,6 +50,8 @@ test("AUD-02B executes authenticated Free, Premium, and expiry phases in order w
 test("AUD-02B Free evidence selects Coding Mock and repeats the paywall after clearState:false relaunch", () => {
   assert.match(freeFlow, /patternly:home:select-track:coding-interview-dsa-problem-solving/);
   assert.equal((freeFlow.match(/patternly:home:select-track:continue/g) ?? []).length, 2);
+  assert.equal((freeFlow.match(/retryTapIfNoChange: true/g) ?? []).length, 2);
+  assert.equal((freeFlow.match(/notVisible:\n\s+id: "patternly:home:select-track:root"/g) ?? []).length, 2);
   assert.doesNotMatch(freeFlow, /tapOn: "Go back"/);
   assert.match(freeFlow, /patternly:practice:mode-card:coding-interview-simulation/);
   assert.match(freeFlow, /settings-premium-testing:\.\*[\s\S]*?settings-premium-testing:enabled[\s\S]*?tapOn:[\s\S]*?settings-premium-testing:enabled[\s\S]*?settings-premium-testing:disabled[\s\S]*?main-tab-bar-practice/);

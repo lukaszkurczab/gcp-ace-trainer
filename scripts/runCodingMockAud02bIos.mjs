@@ -40,12 +40,15 @@ runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
 await waitForContentPreparationState();
 
 await resetLearningState();
+runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
 runMaestro(FREE_FLOW, credentials);
 
 await resetLearningState();
+runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
 runMaestro(PREMIUM_FLOW);
 
 await resetLearningState();
+runMaestro(AUTH_PREFLIGHT_FLOW, credentials);
 runMaestro(EXPIRY_FLOW);
 run("xcrun", ["simctl", "openurl", udid, EXPIRE_URL]);
 runMaestro(EXPIRY_RESULT_FLOW);
