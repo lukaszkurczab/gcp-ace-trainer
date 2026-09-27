@@ -59,7 +59,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `blocking` | fizyczne urządzenie iOS z VoiceOver | Implementacja i pozostałe QA są gotowe w nazwanym stashu; wymagany focus/announcement czeka na urządzenie fizyczne. |
 | 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `blocking` | runtime recovery fixture i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy i layout są gotowe w nazwanym stashu; pozostają rzeczywisty retry/sign-out failure, długie locale oraz VoiceOver. |
 | 02e | UI-26-11 — hierarchia propozycji planu nauki | `blocking` | runtime state fixtures i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy, ready layout i rzeczywisty edit/back/accept są gotowe w nazwanym stashu; pozostają pozostałe stany/warianty runtime i VoiceOver. |
-| 04 | UI-26-02B — implementacja pierwszego użycia providerów | `planned` | przyjęty `docs/active/UI-26-02A/CONTRACT.md` | Provider login bez automatycznej zgody. |
+| 04 | UI-26-02B — implementacja pierwszego użycia providerów | `blocking` | autoryzowana tożsamość testowa Apple/Google albo pełny fixture emulator-auth dla runtime mapped/new/isolation | Implementacja i testy są gotowe w nazwanych stashach obu repo; brakuje zintegrowanego runtime mapped-existing, unmapped-provisional i Guest A → account B isolation. |
 | 05 | UI-26-01 — welcome | `planned` | brak | Zatwierdzony znak i copy. |
 | 06 | UI-26-03 — wybór tracku | `planned` | brak | Jedna dolna akcja `Start track`. |
 | 07 | UI-26-04 — karta Home | `planned` | brak | Ikona wyrównana do góry zawartości. |
@@ -234,4 +234,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**UI-26-02B** jest pierwszym dostępnym zadaniem. Jego przyjętym wejściem jest `docs/active/UI-26-02A/CONTRACT.md`; ponownie zweryfikować kod obu repozytoriów przed implementacją. `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiedni nazwany stash po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.
+**UI-26-01** jest pierwszym dostępnym zadaniem. `UI-26-02B`, `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiednie nazwane stashe po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.
