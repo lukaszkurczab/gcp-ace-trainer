@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View, type AccessibilityProps, type StyleProp, type ViewStyle } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View, type AccessibilityProps, type StyleProp, type ViewStyle } from "react-native";
 
 import { radius, spacing, typography } from "../theme";
 import { useThemedStyles } from "../preferences";
@@ -38,6 +38,7 @@ export function ListRow({
   variant = "card",
 }: ListRowProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   const rowStyle = [
     styles.row,
     variant === "grouped" ? styles.groupedRow : variant === "settings" ? styles.settingsRow : styles.cardRow,
@@ -49,12 +50,12 @@ export function ListRow({
       {leading ? <View style={styles.leading}>{leading}</View> : null}
       <View style={[styles.copy, variant === "card" ? null : styles.groupedCopy]}>
         <View style={[styles.titleRow, variant === "grouped" ? styles.groupedTitleRow : null]}>
-          <Text maxFontSizeMultiplier={2} numberOfLines={titleNumberOfLines} style={[styles.title, variant === "grouped" ? styles.groupedTitle : variant === "settings" ? styles.settingsTitle : null]}>
+          <Text key={`list-row-title-${fontScale}`} maxFontSizeMultiplier={2} numberOfLines={titleNumberOfLines} style={[styles.title, variant === "grouped" ? styles.groupedTitle : variant === "settings" ? styles.settingsTitle : null]}>
             {title}
           </Text>
-          {meta ? <Text maxFontSizeMultiplier={2} style={styles.meta}>{meta}</Text> : null}
+          {meta ? <Text key={`list-row-meta-${fontScale}`} maxFontSizeMultiplier={2} style={styles.meta}>{meta}</Text> : null}
         </View>
-        {detail ? <Text maxFontSizeMultiplier={2} style={[styles.detail, variant === "grouped" ? styles.groupedDetail : variant === "settings" ? styles.settingsDetail : null, disabled ? styles.disabledDetail : null]}>{detail}</Text> : null}
+        {detail ? <Text key={`list-row-detail-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.detail, variant === "grouped" ? styles.groupedDetail : variant === "settings" ? styles.settingsDetail : null, disabled ? styles.disabledDetail : null]}>{detail}</Text> : null}
       </View>
       {trailing ? <View style={styles.trailing}>{trailing}</View> : null}
     </>

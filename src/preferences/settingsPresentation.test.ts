@@ -169,6 +169,24 @@ test("grouped settings rows follow the Figma 200% text geometry", () => {
   assert.match(settingsGroup, /dividedRows:[\s\S]*?gap:\s*0/);
 });
 
+test("InfoBlock and ListRow remount native text when live Dynamic Type scale changes", () => {
+  assert.match(infoBlock, /useWindowDimensions\(\)/);
+  assert.match(infoBlock, /key=\{`info-block-title-\$\{fontScale\}`\}/);
+  assert.match(infoBlock, /key=\{`info-block-body-\$\{fontScale\}`\}/);
+  assert.match(infoBlock, /maxFontSizeMultiplier=\{2\}[^>]*>\{title\}/);
+  assert.match(infoBlock, /maxFontSizeMultiplier=\{2\} style=\{styles\.body\}>\{body\}/);
+  assert.match(infoBlock, /accessible=\{accessibilityAlert\}[\s\S]*?accessibilityLiveRegion=\{accessibilityAlert \? "polite" : undefined\}[\s\S]*?accessibilityRole=\{accessibilityAlert \? "alert" : undefined\}/);
+
+  assert.match(listRow, /useWindowDimensions\(\)/);
+  assert.match(listRow, /key=\{`list-row-title-\$\{fontScale\}`\} maxFontSizeMultiplier=\{2\} numberOfLines=\{titleNumberOfLines\}/);
+  assert.match(listRow, /key=\{`list-row-detail-\$\{fontScale\}`\} maxFontSizeMultiplier=\{2\}/);
+  assert.match(listRow, /key=\{`list-row-meta-\$\{fontScale\}`\} maxFontSizeMultiplier=\{2\}/);
+  assert.match(listRow, /titleNumberOfLines = 2/);
+  assert.match(listRow, /accessibilityLabel=\{accessibilityLabel\}[\s\S]*?accessibilityLiveRegion=\{accessibilityLiveRegion\}[\s\S]*?accessibilityRole="button"[\s\S]*?accessibilityState=\{\{ disabled \}\}/);
+  assert.match(listRow, /onPress=\{onPress\}/);
+  for (const content of ["title", "meta", "detail"]) assert.match(listRow, new RegExp(`\\{${content}\\}`));
+});
+
 test("Settings heading has no redundant description and locale keeps goal copy", () => {
   assert.doesNotMatch(settingsTab, /settingsDescription/);
   const settingsEn = readFileSync("src/locales/en/settings.json", "utf8");

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 
 import { radius, spacing, typography } from "../theme";
 import { useThemedStyles } from "../preferences";
@@ -19,6 +19,7 @@ type InfoBlockProps = {
 
 export function InfoBlock({ accessibilityAlert = false, body, icon, style, testID, title, tone = "neutral" }: InfoBlockProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   return (
     <View
       accessible={accessibilityAlert}
@@ -29,8 +30,8 @@ export function InfoBlock({ accessibilityAlert = false, body, icon, style, testI
     >
       {icon ? <View style={styles.icon}>{icon}</View> : null}
       <View style={styles.copy}>
-        <Text maxFontSizeMultiplier={2} style={[styles.title, styles[`${tone}Title`]]}>{title}</Text>
-        <Text maxFontSizeMultiplier={2} style={styles.body}>{body}</Text>
+        <Text key={`info-block-title-${fontScale}`} maxFontSizeMultiplier={2} style={[styles.title, styles[`${tone}Title`]]}>{title}</Text>
+        <Text key={`info-block-body-${fontScale}`} maxFontSizeMultiplier={2} style={styles.body}>{body}</Text>
       </View>
     </View>
   );
