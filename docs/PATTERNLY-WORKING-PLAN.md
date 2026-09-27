@@ -47,7 +47,7 @@ SHA są punktem orientacyjnym porządków, nie kandydatem release. Przed każdym
 
 | Obszar | Status | Potwierdzona luka |
 | --- | --- | --- |
-| Stare audyty UI/session | `partial` | AUD-02 i AUD-15 zawierają wykonane poprawki, lecz ich końcowe scenariusze lokalne nie zostały odebrane na aktualnym kodzie. |
+| Stare audyty UI/session | `partial` | AUD-02A jest odebrane na aktualnym kodzie. AUD-02B–D oraz AUD-15 nadal wymagają własnych końcowych scenariuszy lokalnych. |
 | Premium-only learning paths | `partial` | `Exam` ma odebraną jawną regułę Premium i kompletny lokalny RC. `Coding Mock Interview` jest obecnie odłączony również dla Premium. `Design Interview` nadal dopuszcza darmowy node i nie udostępnia pełnej oferty Premium. |
 | Recovery/reissue autoryzacji | `partial` | Backendowe fundamenty i polityka e-maila po niejednoznacznym wyniku SMTP są ustalone; pozostają operacje B2–B4. |
 | Kanał operatorski | `partial` | B1 jest wykonane; brakuje endpointów, CLI i syntetycznego odbioru end-to-end. |

@@ -23,6 +23,7 @@
 - Premium prepare/start: `/tmp/patternly-aud02a-evidence/premium/2026-09-27_172806`.
 - Premium answer change, flag/navigator, terminate/restart/resume, manual finish, wynik i review 50/50: `/tmp/patternly-aud02a-evidence/premium/2026-09-27_172905`.
 - Timeout, wynik i review: `/tmp/patternly-aud02a-evidence/timeout/2026-09-27_173522`.
+- Final-HEAD rerun wiążący runtime z końcowym commitem aplikacji: `/tmp/patternly-aud02a-final-head-evidence/free`, `/tmp/patternly-aud02a-final-head-evidence/premium` i `/tmp/patternly-aud02a-final-head-evidence/timeout`. Każdy katalog zawiera output Maestro oraz lokalny manifest dokładnych SHA/UDID/trybu entitlement; manifest nie jest artefaktem produkcyjnym.
 - Fixture entitlement potwierdził zgodne konto i produkt dla `expired` oraz `active`. Screenshoty potwierdzają prezentację; zachowanie backendu potwierdzają testy kontraktowe i odpowiedzi endpointu.
 - Użyto wyłącznie istniejącego iPhone'a 17 i jednej instalacji `com.lkurczab.patternly`.
 
