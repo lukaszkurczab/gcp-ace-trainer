@@ -136,6 +136,8 @@ export type SimulationSurfaceProjection = Readonly<{
   operation?: SimulationOperationPresentation;
   onOccurrencePress?: (occurrenceId: string) => Promise<SimulationNavigatorSelectionResult>;
   onResponseChange?: (change: SimulationResponseChange) => void;
+  flagged?: boolean;
+  onToggleFlag?: () => void;
   position?: SessionMetricPresentation;
   progress?: number;
   question?: SimulationQuestionProjection;

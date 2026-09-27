@@ -46,8 +46,10 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
         onPositionPress={projection.state === "editable" ? () => setNavigatorVisible(true) : undefined}
         position={projection.position}
         positionAccessibilityLabel={projection.position ? `Open question navigator, ${projection.position.label}` : undefined}
+        positionTestID={runtimeIdentity ? runtimeSelectors.simulation.position(runtimeIdentity.sessionId) : undefined}
         progress={projection.progress}
         timer={projection.timer}
+        timerTestID={runtimeIdentity ? runtimeSelectors.simulation.timer(runtimeIdentity.sessionId) : undefined}
       >
         {preparing ? <SimulationLoadingSkeleton /> : (
           <>
@@ -56,6 +58,7 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
             {savedResponse ? <SavedStatus /> : null}
             {projection.notice && projection.state !== "editable" ? <Notice notice={projection.notice} /> : null}
             {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} variant={savedResponse ? "simulationSaved" : "simulation"} /> : null}
+            {projection.state === "editable" && projection.onToggleFlag && runtimeIdentity ? <Button accessibilityLabel={projection.flagged ? t("Remove flag from question") : t("Flag question for review")} accessibilityState={{ selected: Boolean(projection.flagged) }} leadingIcon="flag" onPress={projection.onToggleFlag} testID={runtimeSelectors.simulation.flag(runtimeIdentity.sessionId)} variant="secondary">{t(projection.flagged ? "Remove flag" : "Flag question")}</Button> : null}
             {projection.operation && !isSimulationOperationNotice(projection.operation) ? <SimulationOperationPanel operation={projection.operation} /> : null}
           </>
         )}

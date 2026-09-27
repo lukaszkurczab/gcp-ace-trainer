@@ -98,6 +98,8 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown",
     schedule(callback) { scheduled = callback; return 0 as unknown as ReturnType<typeof setInterval>; },
     cancel: () => { cancelCount += 1; },
     finalize: async () => lifecycle.finalizeSimulation(),
+    getActiveSession: async () => active,
+    advanceMonotonicClockBy(milliseconds) { now += milliseconds; },
   };
   const create = () => new ForegroundSessionTimerFacade(dependencies);
   return {
@@ -133,6 +135,29 @@ test("foreground enter and leave checkpoint authoritative time outside the UI", 
   assert.deepEqual(projection, { elapsedForegroundMs: 1_250, remainingForegroundMs: 2_698_750 });
   assert.deepEqual(f.checkpoints, [0, 1_250]);
   assert.equal(f.getState()?.accumulatedForegroundMs, 1_250);
+});
+
+test("Coding Mock audit advancement checkpoints the monotonic foreground countdown before canonical expiry finalization", async () => {
+  const f = fixture();
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+
+  await f.timer.advanceActiveCodingMockCountdownForAudit();
+
+  assert.deepEqual(f.checkpoints, [0, 2_700_000]);
+  assert.equal(f.getState()?.accumulatedForegroundMs, 2_700_000);
+  assert.equal(f.getDurableAtFinalization()?.accumulatedForegroundMs, 2_700_000);
+  assert.equal(f.getFinalizations(), 1);
+});
+
+test("Coding Mock audit advancement requires its exact foreground session owner", async () => {
+  const f = fixture();
+  await assert.rejects(() => f.timer.advanceActiveCodingMockCountdownForAudit(), /audit control is unavailable/u);
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+  f.setActiveSession(practiceSession());
+  await assert.rejects(() => f.timer.advanceActiveCodingMockCountdownForAudit(), /active foreground Coding Mock/u);
+  assert.equal(f.getFinalizations(), 0);
 });
 
 test("ordinary practice publishes a live elapsed timer without a countdown", async () => {

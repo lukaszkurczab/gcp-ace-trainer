@@ -248,6 +248,9 @@ export const runtimeSelectors = Object.freeze({
     option: (itemId: ItemId, optionId: string) => selector("simulation", "option", itemId, optionId.toLowerCase()),
     action: (sessionId: string, actionId: string) => selector("simulation", "action", sessionId, actionId),
     navigator: (occurrenceId: string) => selector("simulation", "navigator", occurrenceId),
+    position: (sessionId: string) => selector("simulation", "position", sessionId),
+    timer: (sessionId: string) => selector("simulation", "timer", sessionId),
+    flag: (sessionId: string) => selector("simulation", "flag", sessionId),
   }),
   examReview: Object.freeze({
     root: (sessionId: string) => selector("exam-review", "root", sessionId),

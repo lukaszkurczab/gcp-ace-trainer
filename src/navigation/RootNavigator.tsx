@@ -47,6 +47,7 @@ import { useAppPreferences } from "../preferences";
 import type { RootStackParamList } from "./types";
 import { isPatternlySmokeRuntime } from "../infrastructure/runtime/runtimeMode";
 import { isLanguageSettingsAuditCommand } from "./languageSettingsAuditCommand";
+import { handleCodingMockCountdownAuditUrl, isCodingMockCountdownAuditCommand } from "../application/runtimeAuditability/codingMockCountdownCommand";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -61,6 +62,19 @@ export function RootNavigator() {
     const subscription = Linking.addEventListener("url", ({ url }) => {
       if (isLanguageSettingsAuditCommand(url, { development: __DEV__, smoke: isPatternlySmokeRuntime() })) {
         setAuditLanguageSettings(true);
+      }
+    });
+    return () => { subscription.remove(); };
+  }, []);
+
+  useEffect(() => {
+    if (!__DEV__ || !isPatternlySmokeRuntime()) return;
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      const context = { development: __DEV__, smoke: isPatternlySmokeRuntime() };
+      if (isCodingMockCountdownAuditCommand(url, context)) {
+        void handleCodingMockCountdownAuditUrl(url, context).catch((error: unknown) => {
+          console.warn("Coding Mock countdown audit command failed.", error);
+        });
       }
     });
     return () => { subscription.remove(); };

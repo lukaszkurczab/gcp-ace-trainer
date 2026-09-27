@@ -24,6 +24,7 @@ test("simulation question navigator has the approved states, accessible labels, 
   assert.match(source, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
   assert.match(source, /<ScrollView contentContainerStyle=\{styles\.grid\} style=\{styles\.gridScroll\}>/);
   assert.match(source, /position\.answered/);
+  assert.match(source, /testID=\{runtimeSelectors\.simulation\.navigator\(position\.occurrenceId\)\}/);
   assert.match(source, /height: columns === 5 \? 56 : 48/);
   assert.match(source, /width: columns === 5 \? 56 : 48/);
   assert.match(source, /cell:\s*\{[\s\S]*backgroundColor:\s*palette\.elevatedSurface/);

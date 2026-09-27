@@ -25,6 +25,10 @@ test("active simulation surface fills the viewport and keeps navigator presentat
   assert.match(source, /root: \{ flex: 1 \}/);
   assert.match(source, /layout=\{projection\.confirmation \? "simulationConfirmation" : savedResponse \? "simulationSaved" : "simulation"\}/);
   assert.match(source, /onPositionPress=\{projection\.state === "editable"/);
+  assert.match(source, /positionTestID=\{runtimeIdentity \? runtimeSelectors\.simulation\.position/);
+  assert.match(source, /timerTestID=\{runtimeIdentity \? runtimeSelectors\.simulation\.timer/);
+  assert.match(source, /accessibilityState=\{\{ selected: Boolean\(projection\.flagged\) \}\}/);
+  assert.match(source, /runtimeSelectors\.simulation\.flag\(runtimeIdentity\.sessionId\)/);
   assert.match(source, /actionBar: \{ gap: spacing\.sm, width: "100%" \}/);
   assert.match(source, /questionCard: \{ backgroundColor: "transparent", borderWidth: 0, padding: 0 \}/);
   assert.match(source, /styles\.questionLabel[\s\S]*t\("QUESTION"\)/);

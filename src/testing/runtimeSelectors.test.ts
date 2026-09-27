@@ -28,6 +28,10 @@ test("runtime selectors preserve canonical identities without learner-visible co
     runtimeSelectors.session.question(itemId),
     runtimeSelectors.session.option(itemId, "amortized-o1"),
     runtimeSelectors.session.feedback(itemId),
+    runtimeSelectors.simulation.navigator("occurrence-1"),
+    runtimeSelectors.simulation.position("session-1"),
+    runtimeSelectors.simulation.timer("session-1"),
+    runtimeSelectors.simulation.flag("session-1"),
     runtimeSelectors.resume.card("coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"),
   ];
 

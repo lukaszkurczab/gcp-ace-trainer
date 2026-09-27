@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import { getAlgorithmsPracticeResultProjection, getAlgorithmsPracticeReviewProjection, getAlgorithmsSimulationProjection, startAlgorithmsSession, saveAlgorithmsSimulationResponseAndContinue, finalizeAlgorithmsSimulation } from "./codingInterviewSessionFacade";
+import { getAlgorithmsPracticeResultProjection, getAlgorithmsPracticeReviewProjection, getAlgorithmsSimulationProjection, startAlgorithmsSession, saveAlgorithmsSimulationResponseAndContinue, finalizeAlgorithmsSimulation, toggleAlgorithmsSimulationFlag } from "./codingInterviewSessionFacade";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import type { Question } from "../../content/canonical/questionTypes";
 import type { AlgorithmResponse } from "../../tracks/coding-interview/domain";
@@ -23,6 +23,37 @@ function correctResponse(question: Question): AlgorithmResponse {
       };
   }
 }
+
+test("Coding Mock flags persist in the active draft and reappear after lifecycle resume", async () => {
+  installMemoryStorage();
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const dependencies = { premiumSessionAdmission: { authorize: async () => "allowed" as const } };
+  composeTrainingLifecycleUseCases(dependencies);
+
+  const prepared = await startAlgorithmsSession({
+    modeId: "coding-interview-simulation",
+    requestedLength: 40,
+    scope: { simulationProfileId: PROFILE_ID },
+    source: "flag-resume-integration-test",
+  });
+  const occurrenceId = prepared.session.itemOrder[0]!.occurrenceId;
+
+  const flagged = await toggleAlgorithmsSimulationFlag(occurrenceId);
+  assert.equal(flagged.durableDraftRevision, 2);
+  assert.equal(flagged.navigator[0]?.flagged, true);
+  const unflagged = await toggleAlgorithmsSimulationFlag(occurrenceId);
+  assert.equal(unflagged.durableDraftRevision, 3);
+  assert.equal(unflagged.navigator[0]?.flagged, false);
+  const flaggedAgain = await toggleAlgorithmsSimulationFlag(occurrenceId);
+  assert.equal(flaggedAgain.durableDraftRevision, 4);
+  assert.equal(flaggedAgain.navigator[0]?.flagged, true);
+
+  composeTrainingLifecycleUseCases(dependencies);
+  const resumed = await getAlgorithmsSimulationProjection();
+  assert.equal(resumed.session.id, prepared.session.id);
+  assert.equal(resumed.durableDraftRevision, 4);
+  assert.equal(resumed.navigator[0]?.flagged, true);
+});
 
 test("Coding Mock persists a response, finalizes, and reads all 40 completed review rows", async () => {
   installMemoryStorage();

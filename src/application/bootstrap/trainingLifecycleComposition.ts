@@ -83,6 +83,8 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
   const developmentAuditability = isDevelopmentRuntimeAuditabilityBuild();
   const wallClock = dependencies.wallClock ?? (developmentAuditability ? createAdjustableWallClock() : realWallClock);
   const adjustableWallClock = isAdjustableWallClock(wallClock) ? wallClock : null;
+  let monotonicAuditOffsetMs = 0;
+  const monotonicNow = () => (globalThis.performance?.now?.() ?? Date.now()) + monotonicAuditOffsetMs;
   const sessionIds = dependencies.sessionIds ?? (developmentAuditability ? developmentAuditSessionIdentity : trainingSessionIdentity);
   const ports: TrainingLifecyclePorts = {
     clock: wallClock,
@@ -148,11 +150,20 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     repository: { getActive: getActiveForegroundTimer, save: saveActiveForegroundTimer },
     lifecycle,
     tracks: { getTrackRegistration },
-    monotonicClock: { now: () => globalThis.performance?.now?.() ?? Date.now() },
+    monotonicClock: { now: monotonicNow },
     wallClock,
     schedule: (callback) => setInterval(callback, 1_000),
     cancel: (handle) => clearInterval(handle),
     finalize: async (_session, authorization) => lifecycle.finalizeSimulation(authorization),
+    getActiveSession: getActiveTrainingSession,
+    ...(developmentAuditability ? {
+      advanceMonotonicClockBy(milliseconds: number) {
+        if (!Number.isSafeInteger(milliseconds) || milliseconds <= 0 || !Number.isSafeInteger(monotonicAuditOffsetMs + milliseconds)) {
+          throw new Error("Runtime audit monotonic clock advance must be a positive safe integer.");
+        }
+        monotonicAuditOffsetMs += milliseconds;
+      },
+    } : {}),
   });
   lifecycle.installSimulationDraftSaveBoundary((session, authorization, commit) => timerFacade.saveDraftAtResponseBoundary(session, authorization, commit));
   installForegroundSessionTimerFacade(timerFacade);

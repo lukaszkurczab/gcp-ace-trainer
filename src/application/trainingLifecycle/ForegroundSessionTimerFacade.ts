@@ -41,6 +41,8 @@ export type ForegroundSessionTimerDependencies = Readonly<{
   schedule(callback: () => void): ReturnType<typeof setInterval>;
   cancel(handle: ReturnType<typeof setInterval>): void;
   finalize(session: TrainingSession, authorization?: SimulationCommandAuthorization): Promise<void>;
+  getActiveSession?(): Promise<TrainingSession | null>;
+  advanceMonotonicClockBy?(milliseconds: number): void;
 }>;
 
 /**
@@ -208,6 +210,29 @@ export class ForegroundSessionTimerFacade {
       const timer = await this.requireTimer(session);
       await this.expireIfNeeded(session, timer, authorization);
       return this.project(session, timer);
+    });
+  }
+
+  async advanceActiveCodingMockCountdownForAudit(): Promise<void> {
+    const sessionId = this.foregroundSessionId;
+    if (!sessionId) {
+      throw new ForegroundSessionTimerRecoveryError("Coding Mock countdown audit control is unavailable.");
+    }
+    await this.serialize(sessionId, async () => {
+      if (this.foregroundSessionId !== sessionId || !this.dependencies.getActiveSession || !this.dependencies.advanceMonotonicClockBy) {
+        throw new ForegroundSessionTimerRecoveryError("Coding Mock countdown audit control is unavailable.");
+      }
+      const session = await this.dependencies.getActiveSession();
+      if (!session || session.id !== sessionId || session.modeId !== "coding-interview-simulation" || session.configurationSnapshot.timer !== "countdownForeground") {
+        throw new ForegroundSessionTimerRecoveryError("Coding Mock countdown audit requires the active foreground Coding Mock.");
+      }
+      const duration = session.configurationSnapshot.timerDurationMs;
+      if (typeof duration !== "number" || !Number.isSafeInteger(duration) || duration <= 0) {
+        throw new ForegroundSessionTimerRecoveryError("Coding Mock countdown duration is unavailable.");
+      }
+      this.dependencies.advanceMonotonicClockBy(duration);
+      try { await this.expireIfNeeded(session, await this.requireTimer(session)); }
+      catch (error) { throw this.fail(session.id, error, "Coding Mock countdown audit could not checkpoint and finalize the session."); }
     });
   }
 

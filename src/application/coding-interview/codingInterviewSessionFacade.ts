@@ -53,7 +53,7 @@ export type AlgorithmsSimulationProjection = Readonly<{
   operation: SimulationDurableOperationState;
   session: TrainingSession;
   position: AlgorithmsSessionPosition;
-  navigator: readonly Readonly<{ index: number; occurrenceId: string; answered: boolean; current: boolean }>[];
+  navigator: readonly Readonly<{ index: number; occurrenceId: string; answered: boolean; current: boolean; flagged: boolean }>[];
   item: ResolvedContentRef;
   prompt: string;
   interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
@@ -305,6 +305,7 @@ async function getAlgorithmsSimulationProjectionForSession(
       occurrenceId: candidate.occurrenceId,
       answered: draft.responsesByOccurrenceId[candidate.occurrenceId] !== undefined,
       current: candidateIndex === index,
+      flagged: draft.flaggedOccurrenceIds.includes(candidate.occurrenceId),
     }))),
     item: occurrence.item,
     prompt: question.prompt,
@@ -375,6 +376,31 @@ async function saveAlgorithmsSimulationResponseForSession(session: TrainingSessi
   const nextDraft = Object.freeze({ ...draft, revision: draft.revision + 1, responsesByOccurrenceId: Object.freeze(responses), updatedAt: lifecycle.currentTime() });
   await lifecycle.saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision, authorization });
   return response;
+}
+
+export async function toggleAlgorithmsSimulationFlag(occurrenceId: string): Promise<AlgorithmsSimulationProjection> {
+  const session = await requireAlgorithmsSession();
+  if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation supports durable flags.");
+  return getTrainingLifecycleUseCases().withAuthorizedSimulationCommand(session.id, async (authorization) => {
+    const lifecycle = getTrainingLifecycleUseCases();
+    const draft = await requireSimulationDraft(session.id);
+    if (!session.itemOrder.some((occurrence) => occurrence.occurrenceId === occurrenceId)) {
+      throw new TrainingApplicationFailure("invalid_response", "The requested Interview Simulation flag occurrence is unavailable.");
+    }
+    const flaggedOccurrenceIds = draft.flaggedOccurrenceIds.includes(occurrenceId)
+      ? draft.flaggedOccurrenceIds.filter((candidate) => candidate !== occurrenceId)
+      : [...draft.flaggedOccurrenceIds, occurrenceId];
+    await lifecycle.saveSimulationDraft({
+      draft: Object.freeze({ ...draft, revision: draft.revision + 1, flaggedOccurrenceIds: Object.freeze(flaggedOccurrenceIds), updatedAt: lifecycle.currentTime() }),
+      expectedPreviousRevision: draft.revision,
+      authorization,
+    });
+    const projection = await getAlgorithmsSimulationProjection(authorization);
+    if (projection.durableDraftRevision !== draft.revision + 1 || projection.navigator.find((item) => item.occurrenceId === occurrenceId)?.flagged !== flaggedOccurrenceIds.includes(occurrenceId)) {
+      throw new TrainingApplicationFailure("verification_failure", "Interview Simulation flag could not be verified in the durable projection.");
+    }
+    return projection;
+  });
 }
 
 /** One application command owns the non-final simulation action: save, verify, advance, then publish the next projection. */

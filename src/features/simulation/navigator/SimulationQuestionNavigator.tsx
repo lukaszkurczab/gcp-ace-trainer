@@ -9,6 +9,7 @@ import { radius, spacing, typography } from "../../../theme";
 import type { SimulationNavigatorPosition, SimulationNavigatorSelectionResult } from "../simulationProjection";
 import { hasCanonicalSimulationNavigator } from "../simulationViewModel";
 import { navigatorCellLabel, navigatorGridColumns, navigatorStateLabel } from "./navigatorPresentation";
+import { runtimeSelectors } from "../../../testing/runtimeSelectors";
 
 type NavigatorFeedback = Readonly<{ kind: "incomplete_response" | "save_failed"; occurrenceId: string }> | null;
 
@@ -102,7 +103,7 @@ function NavigatorCell({ columns, disabled, frozen = false, index, onPress, posi
   const isAnswered = position.answered;
   const isCurrent = position.state === "current";
   const effectiveDisabled = disabled || frozen;
-  return <Pressable accessibilityLabel={t(navigatorCellLabel(position, index, frozen))} accessibilityRole="button" accessibilityState={{ disabled: effectiveDisabled, selected: frozen ? false : isCurrent }} disabled={effectiveDisabled} onPress={onPress} style={({ pressed }) => [styles.cell, { height: columns === 5 ? 56 : 48, width: columns === 5 ? 56 : 48 }, frozen ? styles.frozenCell : null, !frozen && isAnswered ? styles.answeredCell : null, !frozen && isCurrent ? styles.currentCell : null, pressed && !effectiveDisabled ? styles.pressedCell : null]}><Text maxFontSizeMultiplier={2} style={[styles.cellText, frozen ? styles.frozenCellText : null, !frozen && isCurrent ? styles.currentCellText : null]}>{index + 1}</Text><Text maxFontSizeMultiplier={2} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.stateMarker}>{navigatorStateLabel(position, frozen)}</Text></Pressable>;
+  return <Pressable accessibilityLabel={t(navigatorCellLabel(position, index, frozen))} accessibilityRole="button" accessibilityState={{ disabled: effectiveDisabled, selected: frozen ? false : isCurrent }} disabled={effectiveDisabled} onPress={onPress} style={({ pressed }) => [styles.cell, { height: columns === 5 ? 56 : 48, width: columns === 5 ? 56 : 48 }, frozen ? styles.frozenCell : null, !frozen && isAnswered ? styles.answeredCell : null, !frozen && isCurrent ? styles.currentCell : null, pressed && !effectiveDisabled ? styles.pressedCell : null]} testID={runtimeSelectors.simulation.navigator(position.occurrenceId)}><Text maxFontSizeMultiplier={2} style={[styles.cellText, frozen ? styles.frozenCellText : null, !frozen && isCurrent ? styles.currentCellText : null]}>{index + 1}</Text><Text maxFontSizeMultiplier={2} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.stateMarker}>{navigatorStateLabel(position, frozen)}</Text></Pressable>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
