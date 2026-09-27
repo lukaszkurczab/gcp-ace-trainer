@@ -46,6 +46,8 @@ test("AUD-02B executes authenticated Free, Premium, and expiry phases in order w
 
 test("AUD-02B Free evidence selects Coding Mock and repeats the paywall after clearState:false relaunch", () => {
   assert.match(freeFlow, /patternly:home:select-track:coding-interview-dsa-problem-solving/);
+  assert.equal((freeFlow.match(/patternly:home:select-track:continue/g) ?? []).length, 2);
+  assert.doesNotMatch(freeFlow, /tapOn: "Go back"/);
   assert.match(freeFlow, /patternly:practice:mode-card:coding-interview-simulation/);
   assert.match(freeFlow, /settings-premium-testing[\s\S]*?visible: "Enabled"[\s\S]*?tapOn:[\s\S]*?settings-premium-testing[\s\S]*?assertVisible: "Disabled"[\s\S]*?patternly:home:primary-action/);
   assert.equal((freeFlow.match(/premium-offer-summary/g) ?? []).length, 2);

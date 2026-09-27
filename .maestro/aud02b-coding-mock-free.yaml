@@ -39,7 +39,8 @@ tags:
           centerElement: true
       - tapOn:
           id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
-      - tapOn: "Go back"
+      - tapOn:
+          id: "patternly:home:select-track:continue"
 - extendedWaitUntil:
     visible:
       id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
