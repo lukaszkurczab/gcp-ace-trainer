@@ -50,10 +50,10 @@ test("Home uses the approved compact presentation without changing recommendatio
 });
 
 test("progress, simulation, and simulation summary selectors use canonical identities", () => {
-  assert.match(source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx"), /unavailable/i); return;
   const progress = source("src/features/home/tabs/ProgressTab.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
   const summary = source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx");
+  const review = summary.slice(summary.indexOf("export function AlgorithmsInterviewSimulationReviewScreen"));
 
   assert.match(progress, /testID=\{runtimeSelectors\.progress\.node\(node\.id\)\}/);
   assert.match(simulation, /runtimeSelectors\.simulation\.root\(runtimeIdentity\.sessionId\)/);
@@ -61,7 +61,8 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.match(simulation, /runtimeSelectors\.simulation\.option\(itemId, optionId\)/);
   assert.doesNotMatch(simulation, /value:\$\{index \+ 1\}/);
   assert.match(simulation, /runtimeSelectors\.simulation\.action\(sessionId, action\.id\)/);
-  assert.match(summary, /runtimeSelectors\.summary\.root\(sessionId\)/);
+  assert.match(summary, /runtimeSelectors\.summary\.root\(result\.sessionId\)/);
+  assert.match(review, /runtimeSelectors\.practiceReview\.root\(result\.sessionId, item\.occurrenceId\)/);
   assert.match(progress, /screenTitle:\s*\{[\s\S]*\.\.\.typography\.title/);
   assert.match(progress, /root:\s*\{\s*gap:\s*28\s*\}/);
   assert.match(progress, /<View style=\{\[styles\.weekSection,[\s\S]*?<Text maxFontSizeMultiplier=\{2\} style=\{styles\.sectionLabel\}>/);

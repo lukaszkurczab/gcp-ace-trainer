@@ -1,5 +1,5 @@
 import type { ContentArtifactMetadata } from "../contracts";
-import type { CanonicalArtifact, CanonicalContentLockRecord, CanonicalSimulationProfile, Question } from "./questionTypes";
+import type { CanonicalArtifact, CanonicalContentLockRecord, CanonicalProductSimulationProfile, Question } from "./questionTypes";
 import { validateCanonicalArtifact } from "./questionValidation";
 
 export type CanonicalQuestionCatalog = Readonly<{
@@ -7,7 +7,7 @@ export type CanonicalQuestionCatalog = Readonly<{
   contentVersion: string;
   artifactSha256: string;
   questions: readonly Question[];
-  simulationProfiles?: readonly CanonicalSimulationProfile[];
+  simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   artifactMetadata: ContentArtifactMetadata;
   getQuestionById(questionId: string): Question | undefined;
   getQuestionsByNodeId(nodeId: string): readonly Question[];

@@ -89,6 +89,33 @@ test("prepares Certification Exam Simulation from the exact canonical artifact p
       modeId: "certification-exam-simulation",
       nodeId: "organization_projects_policies_services_quotas_and_assets",
     }),
-    /does not accept a nodeId/u,
+    /do not accept a nodeId/u,
   );
+});
+
+test("prepares Coding Mock from the exact canonical artifact profile and ordered 40-question pool", async () => {
+  const canonical = contentPackageRuntimeOwner.getPreparedDiscovery(TRACK_ID).track;
+  const validated = getProductSimulationModeConfig(canonical.trackId, canonical.simulationProfiles);
+  assert.equal(validated.profile.profileId, "algorithms-interview-simulation-v1");
+  assert.equal(validated.config.modeId, "coding-interview-simulation");
+  assert.equal(validated.config.familyId, "coding_interview");
+  if (validated.profile.familyId !== "coding_interview") throw new Error("Expected the canonical Coding Mock profile.");
+
+  const resolved = await contentPackageRuntimeOwner.resolveForPreparation({
+    trackId: TRACK_ID,
+    familyId: "coding_interview",
+    modeId: "coding-interview-simulation",
+  });
+  assert.equal(resolved.track.artifactSha256, canonical.artifactSha256);
+  assert.deepEqual(resolved.track.simulationProfiles?.[0]?.familyConfig, validated.profile.familyConfig);
+  const prepared = await resolved.runtime.prepare({
+    trackId: TRACK_ID,
+    modeId: "coding-interview-simulation",
+    request: { sessionId: "owner-coding-simulation", scope: { simulationProfileId: validated.profile.profileId } },
+    attempts: [],
+    reviews: [],
+    now: "2026-09-27T00:00:00.000Z",
+  });
+  assert.equal(prepared.session.actualLength, 40);
+  assert.deepEqual(prepared.session.itemOrder.map((occurrence) => occurrence.item.questionId), validated.profile.familyConfig.eligibleQuestionIds);
 });

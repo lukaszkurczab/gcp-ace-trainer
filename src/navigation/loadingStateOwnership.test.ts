@@ -515,22 +515,19 @@ test("specialized session preparation stays local while completion uses the gene
   assert.doesNotMatch(`${simulationScreen}\n${simulationSurface}\n${operationPanel}`, /LoadingState/);
 });
 
-test("Interview Simulation result keeps pending, scoreless, and failed reads explicit", () => { assert.match(source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx"), /unavailable/i); return;
+test("Interview Simulation result reads stay pending until the verified 40-item projection", () => {
   const result = source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx");
-  const surface = source("src/features/simulation/SimulationSessionSurface.tsx");
-  const operation = source("src/features/simulation/operation/SimulationOperationPanel.tsx");
-
-  assert.match(result, /useSimulationResultRead\(sessionId\)/);
-  assert.match(result, /if \(resolution === "pending"\) return <SimulationResultLoadingSkeleton \/>/);
-  assert.match(result, /export function SimulationResultLoadingSkeleton\(\)/);
-  assert.match(result, /resolveSimulationResultResolution\(result, failure\)/);
-  assert.match(result, /failure \?\? "The session result is not available because verification did not complete\."/);
-  assert.match(result, /Reading the verified session result\./);
-  assert.match(result, /resolveSimulationResultResolution/);
-  assert.doesNotMatch(result, /LoadingState/);
-  assert.match(result, /<SimulationSessionSurface projection=\{projection\}/);
-  assert.match(surface, /export function SimulationLoadingSkeleton\(\)/);
-  assert.match(surface, /projection\.state === "preparing"/);
-  assert.match(operation, /accessibilityRole=\{pending \? "progressbar" : "alert"\}/);
-  assert.match(operation, /accessibilityState=\{pending \? \{ busy: true \} : undefined\}/);
+  const facade = source("src/application/coding-interview/codingInterviewSessionFacade.ts");
+  const review = result.slice(result.indexOf("export function AlgorithmsInterviewSimulationReviewScreen"));
+  assert.match(result, /useSimulationResultRead\(route\.params\.sessionId\)/);
+  assert.match(result, /state\.kind === "pending"\) return <Screen><PracticeResultLoadingSkeleton \/>/);
+  assert.match(result, /state\.kind === "error"/);
+  assert.match(result, /result\.modeId !== "coding-interview-simulation"[\s\S]*?result\.feedbackItems\.length !== 40/);
+  assert.match(result, /ROUTES\.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW/);
+  assert.match(review, /result\.feedbackItems\.length !== 40/);
+  assert.match(review, /outcome === "unanswered" \? "Unanswered"/);
+  assert.match(review, /ROUTES\.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY/);
+  assert.match(facade, /async function validateCodingSimulationResult/);
+  assert.match(facade, /feedbackItems: await completedFeedbackItems\(session, attempts\.value\)/);
+  assert.match(facade, /session\.modeId === ALGORITHM_MODE_IDS\.interviewSimulation\) await validateCodingSimulationResult/);
 });

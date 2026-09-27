@@ -152,8 +152,9 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     wallClock,
     schedule: (callback) => setInterval(callback, 1_000),
     cancel: (handle) => clearInterval(handle),
-    finalize: async () => lifecycle.finalizeSimulation(),
+    finalize: async (_session, authorization) => lifecycle.finalizeSimulation(authorization),
   });
+  lifecycle.installSimulationDraftSaveBoundary((session, authorization, commit) => timerFacade.saveDraftAtResponseBoundary(session, authorization, commit));
   installForegroundSessionTimerFacade(timerFacade);
   installLearningStateResetBarrier((reset) => timerFacade.runLocalLearningReset(reset));
   return lifecycle;

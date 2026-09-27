@@ -117,7 +117,7 @@ export function AlgorithmsPracticeReviewScreen({ navigation, route }: Props) {
       )}
     >
       <PracticeQuestionCard question={{ constraints: item.constraints, itemId: questionId, prompt: item.prompt }} />
-      <Text maxFontSizeMultiplier={2} style={[styles.result, styles[item.correctness]]}>{t(item.correctness === "correct" ? "Correct" : item.correctness === "partial" ? "Partial" : "Incorrect")}</Text>
+      <Text maxFontSizeMultiplier={2} style={[styles.result, styles[item.correctness]]}>{t(item.correctness === "unanswered" ? "Unanswered" : item.correctness === "correct" ? "Correct" : item.correctness === "partial" ? "Partial" : "Incorrect")}</Text>
       <PracticeResponseControls
         control={buildPracticeResponseControl({
           choiceSelectionMode: item.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single",
@@ -160,4 +160,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   correct: { color: palette.success },
   partial: { color: palette.warning },
   incorrect: { color: palette.danger },
+  unanswered: { color: palette.textSecondary },
 });

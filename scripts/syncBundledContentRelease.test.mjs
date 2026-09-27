@@ -12,7 +12,7 @@ import {
   validateBuiltContent,
 } from "./syncBundledContentRelease.mjs";
 
-const SMALL_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 9, mentalUnitCount: 9, questionCount: 9 });
+const SMALL_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 9, mentalUnitCount: 9, questionCount: 48 });
 const HEAD = "1".repeat(40);
 
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
@@ -63,26 +63,64 @@ function validGcpSimulationProfile(contentVersion, nodeId) {
   };
 }
 
+function validCodingSimulationProfile(questionIds) {
+  const selectionPolicy = Object.fromEntries([
+    "requireUniqueItemIds", "requireDeclaredSimulationEligibility", "requireMultipleMentalUnits",
+    "requireMultiplePatternFamilies", "requireEveryActiveInteractionTypeRepresented",
+    "prohibitConsecutiveSameMentalUnitWhenAlternativeExists", "prohibitDuplicateContentIdentity",
+    "prohibitTaxonomyWidening", "prohibitFallbackItems",
+  ].map((key) => [key, true]));
+  return {
+    schemaVersion: "patternly-simulation-profile-envelope-v1",
+    profileId: "algorithms-interview-simulation-v1",
+    profileVersion: "1",
+    familyId: "coding_interview",
+    modeId: "coding-interview-simulation",
+    familyConfig: {
+      schemaVersion: "patternly-coding-interview-simulation-config-v1",
+      blueprintId: "coding-interview-interview-simulation-v1",
+      blueprintVersion: "1",
+      requestedLength: 40,
+      actualLength: 40,
+      shorteningPolicy: "prohibited",
+      uniqueItemsRequired: 40,
+      timerKind: "foreground_countdown",
+      durationMinutes: 45,
+      navigationPolicy: "free_navigation",
+      answerChangePolicy: "editable_until_finalization",
+      reinsertPolicy: "disabled",
+      feedbackTiming: "after_verified_finalization",
+      learningStages: ["simulation"],
+      selectionPolicy,
+      poolId: "algorithms-interview-simulation-v1",
+      poolVersion: "1",
+      eligibleQuestionIds: questionIds,
+    },
+  };
+}
+
 async function createBuiltSet(directory, suffix = "current") {
   await mkdir(directory, { recursive: true });
   const tracks = [];
   for (const trackId of EXPECTED_TRACK_IDS) {
+    const codingQuestionIds = trackId === "coding-interview-dsa-problem-solving" ? Array.from({ length: 40 }, (_, index) => `${trackId}-${suffix}-q-${index + 1}`) : undefined;
     const artifact = {
       schemaVersion: "patternly-content-artifact-v1",
       trackId,
       contentVersion: `2026.09.12-${suffix}`,
-      questions: [{
-        questionId: `${trackId}-${suffix}-q`,
+      questions: (codingQuestionIds ?? [`${trackId}-${suffix}-q`]).map((questionId) => ({
+        questionId,
         trackId,
         nodeId: `${trackId}-node`,
         mentalUnitId: `${trackId}-mu`,
         ...(trackId === "google-cloud-associate-cloud-engineer" ? { contentDomainId: "gcp-ace-standard-domain-3" } : {}),
-      }],
+      })),
     };
     if (trackId === "google-cloud-associate-cloud-engineer") artifact.simulationProfiles = [validGcpSimulationProfile(artifact.contentVersion, `${trackId}-node`)];
+    if (codingQuestionIds) artifact.simulationProfiles = [validCodingSimulationProfile(codingQuestionIds)];
     const bytes = Buffer.from(JSON.stringify(artifact));
     await writeFile(path.join(directory, `${trackId}.json`), bytes);
-    tracks.push({ trackId, contentVersion: artifact.contentVersion, questionCount: 1, sha256: sha256(bytes) });
+    tracks.push({ trackId, contentVersion: artifact.contentVersion, questionCount: artifact.questions.length, sha256: sha256(bytes) });
   }
   tracks.sort((left, right) => left.trackId.localeCompare(right.trackId));
   await writeFile(path.join(directory, "content-lock.json"), JSON.stringify({ schemaVersion: "patternly-content-lock-v1", tracks }));
@@ -137,6 +175,50 @@ test("sync accepts a complete GCP Exam envelope inside the artifact lock boundar
   const synced = JSON.parse(await readFile(path.join(state.targetDirectory, `${trackId}.json`), "utf8"));
   assert.deepEqual(synced.simulationProfiles, artifact.simulationProfiles);
   assert.equal(lock.tracks.find((entry) => entry.trackId === trackId).sha256, sha256(await readFile(path.join(state.targetDirectory, `${trackId}.json`))));
+});
+
+test("sync accepts the exact Coding Mock profile with its ordered 40-question pool", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const trackId = "coding-interview-dsa-problem-solving";
+  const artifact = JSON.parse(await readFile(path.join(state.producerOutput, `${trackId}.json`), "utf8"));
+  assert.equal(artifact.simulationProfiles[0].familyId, "coding_interview");
+  assert.equal(artifact.simulationProfiles[0].modeId, "coding-interview-simulation");
+  assert.equal(artifact.simulationProfiles[0].familyConfig.eligibleQuestionIds.length, 40);
+  await syncCanonicalContent(state.options);
+  const synced = JSON.parse(await readFile(path.join(state.targetDirectory, `${trackId}.json`), "utf8"));
+  assert.deepEqual(synced.simulationProfiles, artifact.simulationProfiles);
+});
+
+test("sync rejects Coding Mock profiles that drift from the declared strict contract", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await syncCanonicalContent(state.options);
+  const targetBefore = await snapshot(state.targetDirectory);
+  const trackId = "coding-interview-dsa-problem-solving";
+  const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
+  const lockPath = path.join(state.producerOutput, "content-lock.json");
+  const originalArtifact = JSON.parse(await readFile(artifactPath, "utf8"));
+  const originalLock = JSON.parse(await readFile(lockPath, "utf8"));
+  const mutations = [
+    (profile) => { profile.familyId = "certification"; },
+    (profile) => { profile.modeId = "coding-interview-guided-practice"; },
+    (profile) => { profile.familyConfig.durationMinutes = 44; },
+    (profile) => { profile.familyConfig.selectionPolicy.prohibitFallbackItems = false; },
+    (profile) => { profile.familyConfig.eligibleQuestionIds[1] = profile.familyConfig.eligibleQuestionIds[0]; },
+    (profile) => { profile.familyConfig.eligibleQuestionIds.pop(); },
+  ];
+  for (const mutate of mutations) {
+    const artifact = structuredClone(originalArtifact);
+    mutate(artifact.simulationProfiles[0]);
+    const bytes = Buffer.from(JSON.stringify(artifact));
+    await writeFile(artifactPath, bytes);
+    const lock = structuredClone(originalLock);
+    lock.tracks.find((entry) => entry.trackId === trackId).sha256 = sha256(bytes);
+    await writeFile(lockPath, JSON.stringify(lock));
+    await assert.rejects(syncCanonicalContent(state.options));
+    assert.deepEqual(await snapshot(state.targetDirectory), targetBefore);
+  }
 });
 
 test("sync continues to accept a legacy GCP artifact without simulation metadata", async (t) => {

@@ -3,3 +3,4 @@ export * from "./TrainingLifecycleUseCases";
 export * from "./applicationLifecycle";
 export * from "./durableOperationState";
 export * from "./ForegroundSessionTimerFacade";
+export * from "./premiumProductModePolicy";

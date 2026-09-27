@@ -80,7 +80,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
         >
           <View style={styles.rowCopy}>
             <ResultText style={styles.feedbackPrompt}>{item.ordinal}. {item.prompt}</ResultText>
-            <ResultText style={[styles.resultLabel, styles[item.correctness]]}>{t(item.correctness === "correct" ? "Correct" : item.correctness === "partial" ? "Partial" : "Incorrect")}</ResultText>
+            <ResultText style={[styles.resultLabel, styles[item.correctness]]}>{t(item.correctness === "unanswered" ? "Unanswered" : item.correctness === "correct" ? "Correct" : item.correctness === "partial" ? "Partial" : "Incorrect")}</ResultText>
           </View>
           <Icon color={styles.feedbackPrompt.color} name="chevron-right" size={20} />
         </Pressable>
@@ -215,6 +215,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   correct: { color: palette.success },
   partial: { color: palette.warning },
   incorrect: { color: palette.danger },
+  unanswered: { color: palette.textSecondary },
   feedbackItems: { gap: spacing.xs },
   feedbackPrompt: { ...typography.bodyStrong, color: palette.textPrimary },
   feedbackTitle: { ...typography.bodyStrong, color: palette.textPrimary },

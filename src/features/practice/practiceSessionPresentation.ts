@@ -73,7 +73,7 @@ export type PracticeResponseControl =
 export type PracticeFeedback = Readonly<{
   details: JsonValue;
   reason: string;
-  result: "correct" | "partial" | "incorrect";
+  result: "correct" | "partial" | "incorrect" | "unanswered";
   sources?: readonly CanonicalSourceLink[];
   messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[];
 }>;

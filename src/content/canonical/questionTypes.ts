@@ -79,6 +79,37 @@ export type CanonicalCertificationSimulationConfig = Readonly<{
   nodeDomainMapEvidence: Readonly<{ artifactPath: string; contentVersion: string; itemCount: number; nodeCount: number; ambiguousNodeCount: number }>;
 }>;
 
+export type CanonicalCodingInterviewSimulationConfig = Readonly<{
+  schemaVersion: "patternly-coding-interview-simulation-config-v1";
+  blueprintId: "coding-interview-interview-simulation-v1";
+  blueprintVersion: "1";
+  requestedLength: 40;
+  actualLength: 40;
+  shorteningPolicy: "prohibited";
+  uniqueItemsRequired: 40;
+  timerKind: "foreground_countdown";
+  durationMinutes: 45;
+  navigationPolicy: "free_navigation";
+  answerChangePolicy: "editable_until_finalization";
+  reinsertPolicy: "disabled";
+  feedbackTiming: "after_verified_finalization";
+  learningStages: readonly ["simulation"];
+  selectionPolicy: Readonly<{
+    requireUniqueItemIds: true;
+    requireDeclaredSimulationEligibility: true;
+    requireMultipleMentalUnits: true;
+    requireMultiplePatternFamilies: true;
+    requireEveryActiveInteractionTypeRepresented: true;
+    prohibitConsecutiveSameMentalUnitWhenAlternativeExists: true;
+    prohibitDuplicateContentIdentity: true;
+    prohibitTaxonomyWidening: true;
+    prohibitFallbackItems: true;
+  }>;
+  poolId: "algorithms-interview-simulation-v1";
+  poolVersion: "1";
+  eligibleQuestionIds: readonly string[];
+}>;
+
 export type CanonicalSimulationProfile = Readonly<{
   schemaVersion: "patternly-simulation-profile-envelope-v1";
   profileId: string;
@@ -87,6 +118,17 @@ export type CanonicalSimulationProfile = Readonly<{
   modeId: "certification-exam-simulation";
   familyConfig: CanonicalCertificationSimulationConfig;
 }>;
+
+export type CanonicalCodingInterviewSimulationProfile = Readonly<{
+  schemaVersion: "patternly-simulation-profile-envelope-v1";
+  profileId: "algorithms-interview-simulation-v1";
+  profileVersion: "1";
+  familyId: "coding_interview";
+  modeId: "coding-interview-simulation";
+  familyConfig: CanonicalCodingInterviewSimulationConfig;
+}>;
+
+export type CanonicalProductSimulationProfile = CanonicalSimulationProfile | CanonicalCodingInterviewSimulationProfile;
 
 export type CanonicalQuestionResponse =
   | Readonly<{ type: "choice_single"; optionId: string }>
@@ -100,7 +142,7 @@ export type CanonicalArtifact = Readonly<{
   trackId: string;
   contentVersion: string;
   questions: readonly Question[];
-  simulationProfiles?: readonly CanonicalSimulationProfile[];
+  simulationProfiles?: readonly CanonicalProductSimulationProfile[];
 }>;
 
 export type CanonicalContentLockRecord = Readonly<{ trackId: string; contentVersion: string; questionCount: number; sha256: string }>;

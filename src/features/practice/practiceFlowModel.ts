@@ -298,12 +298,29 @@ export function buildPracticeModes(activeTrack: TrackDisplay, hasReviewEvidence 
 
   switch (track.kind) {
     case "coding_interview":
+      {
+        let interviewSimulation: PracticeModeModel | null = null;
+        try {
+          const track = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track;
+          getProductSimulationModeConfig(activeTrack.id, track.simulationProfiles);
+          interviewSimulation = {
+            enabled: true,
+            icon: "clipboard",
+            mode: ALGORITHM_MODE_IDS.interviewSimulation,
+            title: "Coding Mock Interview",
+            tone: "info",
+          };
+        } catch (error) {
+          if (!(error instanceof ProductModeUnavailableError)) throw error;
+        }
       return [
         { detail: "Learn how to solve problems in this topic.", enabled: availability(ALGORITHM_MODE_IDS.learnApproach), icon: "practice", mode: ALGORITHM_MODE_IDS.learnApproach, title: getAlgorithmMode(ALGORITHM_MODE_IDS.learnApproach).title, tone: "primary" },
         { enabled: availability(ALGORITHM_MODE_IDS.guidedPractice), icon: "practice", mode: ALGORITHM_MODE_IDS.guidedPractice, title: getAlgorithmMode(ALGORITHM_MODE_IDS.guidedPractice).title, tone: "success" },
         { enabled: availability(ALGORITHM_MODE_IDS.customPractice), icon: "clipboard", mode: ALGORITHM_MODE_IDS.customPractice, title: getAlgorithmMode(ALGORITHM_MODE_IDS.customPractice).title, tone: "info" },
+        ...(interviewSimulation ? [interviewSimulation] : []),
         { enabled: availability(ALGORITHM_MODE_IDS.weakAreaReview), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", tone: "danger" },
       ];
+      }
     case "certification":
       {
         const diagnosticMode = profile.modes.find((mode) => mode.modeId === "certification-diagnostic-baseline");

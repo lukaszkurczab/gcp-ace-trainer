@@ -252,7 +252,7 @@ export async function getCertificationExamReviewProjection(sessionId: string): P
     throw new TrainingApplicationFailure("summary_unavailable", "Answer review requires one verified completed Certification Exam session.");
   }
   const exact = await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 });
-  const profile = exact.track.simulationProfiles?.find((candidate) => candidate.profileId === session.configurationSnapshot.simulationProfileId);
+  const profile = exact.track.simulationProfiles?.find((candidate): candidate is import("../../content/canonical").CanonicalSimulationProfile => candidate.profileId === session.configurationSnapshot.simulationProfileId && candidate.familyId === "certification" && candidate.modeId === "certification-exam-simulation");
   if (!profile) throw new TrainingApplicationFailure("summary_unavailable", "The exact Certification Exam profile is unavailable.");
   return projectCertificationExamReview({
     attempts: attemptsRecord.value,

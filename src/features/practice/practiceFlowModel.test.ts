@@ -41,3 +41,18 @@ test("Certification Exam Simulation is offered only for a validated prepared pro
     false,
   );
 });
+
+test("Coding Mock is offered only for the validated Coding simulation profile without changing practice modes", async () => {
+  const trackId = "coding-interview-dsa-problem-solving";
+  await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "coding_interview");
+  const modes = buildPracticeModes(getTrackDisplay(trackId), false);
+  assert.deepEqual(modes.find((mode) => mode.mode === "coding-interview-simulation"), {
+    enabled: true,
+    icon: "clipboard",
+    mode: "coding-interview-simulation",
+    title: "Coding Mock Interview",
+    tone: "info",
+  });
+  assert.ok(modes.some((mode) => mode.mode === "coding-interview-guided-practice"));
+  assert.ok(modes.some((mode) => mode.mode === "coding-interview-custom-practice"));
+});

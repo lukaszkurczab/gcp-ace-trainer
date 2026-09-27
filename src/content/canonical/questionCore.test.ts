@@ -148,3 +148,67 @@ test("optional GCP simulation profile is strict, complete, immutable and covered
   assert.equal(Object.hasOwn(legacy, "simulationProfiles"), false);
   assert.doesNotThrow(() => validateCanonicalArtifact(legacy, inputs.find(({ entry }) => entry.trackId !== gcp.entry.trackId)!.entry, inputs.find(({ entry }) => entry.trackId !== gcp.entry.trackId)!.entry.trackId));
 });
+
+test("Coding Mock profile validation requires its strict declared ordered 40-question pool", () => {
+  const coding = inputs.find(({ entry }) => entry.trackId === "coding-interview-dsa-problem-solving");
+  assert.ok(coding);
+  const source = coding.artifact as { questions: Question[] };
+  const eligibleQuestionIds = source.questions.slice(0, 40).map((question) => question.questionId);
+  const policy = {
+    requireUniqueItemIds: true,
+    requireDeclaredSimulationEligibility: true,
+    requireMultipleMentalUnits: true,
+    requireMultiplePatternFamilies: true,
+    requireEveryActiveInteractionTypeRepresented: true,
+    prohibitConsecutiveSameMentalUnitWhenAlternativeExists: true,
+    prohibitDuplicateContentIdentity: true,
+    prohibitTaxonomyWidening: true,
+    prohibitFallbackItems: true,
+  };
+  const profile = {
+    schemaVersion: "patternly-simulation-profile-envelope-v1",
+    profileId: "algorithms-interview-simulation-v1",
+    profileVersion: "1",
+    familyId: "coding_interview",
+    modeId: "coding-interview-simulation",
+    familyConfig: {
+      schemaVersion: "patternly-coding-interview-simulation-config-v1",
+      blueprintId: "coding-interview-interview-simulation-v1",
+      blueprintVersion: "1",
+      requestedLength: 40,
+      actualLength: 40,
+      shorteningPolicy: "prohibited",
+      uniqueItemsRequired: 40,
+      timerKind: "foreground_countdown",
+      durationMinutes: 45,
+      navigationPolicy: "free_navigation",
+      answerChangePolicy: "editable_until_finalization",
+      reinsertPolicy: "disabled",
+      feedbackTiming: "after_verified_finalization",
+      learningStages: ["simulation"],
+      selectionPolicy: policy,
+      poolId: "algorithms-interview-simulation-v1",
+      poolVersion: "1",
+      eligibleQuestionIds,
+    },
+  };
+  const artifact = clone(coding.artifact) as Record<string, unknown>;
+  artifact.simulationProfiles = [profile];
+  const validated = validateCanonicalArtifact(artifact, coding.entry, coding.entry.trackId);
+  const codingProfile = validated.simulationProfiles?.[0];
+  assert.ok(codingProfile?.familyId === "coding_interview");
+  assert.deepEqual(codingProfile.familyConfig.eligibleQuestionIds, eligibleQuestionIds);
+
+  for (const mutate of [
+    (copy: typeof profile) => { copy.familyConfig.eligibleQuestionIds[1] = copy.familyConfig.eligibleQuestionIds[0]!; },
+    (copy: typeof profile) => { (copy.familyConfig.selectionPolicy as Record<string, unknown>).prohibitFallbackItems = false; },
+    (copy: typeof profile) => { (copy.familyConfig as unknown as Record<string, unknown>).durationMinutes = 60; },
+    (copy: typeof profile) => { (copy.familyConfig as unknown as Record<string, unknown>).extra = true; },
+  ]) {
+    const changed = clone(profile);
+    mutate(changed);
+    const candidate = clone(coding.artifact) as Record<string, unknown>;
+    candidate.simulationProfiles = [changed];
+    assert.throws(() => validateCanonicalArtifact(candidate, coding.entry, coding.entry.trackId));
+  }
+});

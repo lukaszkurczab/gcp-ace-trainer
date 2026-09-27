@@ -24,6 +24,14 @@ const LOCK_SCHEMA_VERSION = "patternly-content-lock-v1";
 const ARTIFACT_SCHEMA_VERSION = "patternly-content-artifact-v1";
 const HASH = /^[a-f0-9]{64}$/u;
 const TRACK_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const CODING_TRACK_ID = "coding-interview-dsa-problem-solving";
+const CODING_PROFILE_ID = "algorithms-interview-simulation-v1";
+const CODING_SELECTION_POLICY_KEYS = Object.freeze([
+  "requireUniqueItemIds", "requireDeclaredSimulationEligibility", "requireMultipleMentalUnits",
+  "requireMultiplePatternFamilies", "requireEveryActiveInteractionTypeRepresented",
+  "prohibitConsecutiveSameMentalUnitWhenAlternativeExists", "prohibitDuplicateContentIdentity",
+  "prohibitTaxonomyWidening", "prohibitFallbackItems",
+]);
 const execFileAsync = promisify(execFile);
 const scriptRoot = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 
@@ -76,11 +84,32 @@ function validateCertificationSimulationConfig(config, { trackId, contentVersion
   requireExactKeys(evidence, ["artifactPath", "contentVersion", "itemCount", "nodeCount", "ambiguousNodeCount"], `${path}.nodeDomainMapEvidence`);
   if (evidence.artifactPath !== `artifacts/tracks/${trackId}/${contentVersion}/track-artifact.json` || evidence.contentVersion !== contentVersion || evidence.itemCount !== questions.length || evidence.nodeCount !== nodeIds.length || evidence.ambiguousNodeCount !== 0) fail(`${path}.nodeDomainMapEvidence does not match the artifact identity or node coverage`);
 }
+function validateCodingSimulationConfig(config, { questions }) {
+  const label = "simulationProfiles.coding_interview.familyConfig";
+  const configKeys = ["schemaVersion", "blueprintId", "blueprintVersion", "requestedLength", "actualLength", "shorteningPolicy", "uniqueItemsRequired", "timerKind", "durationMinutes", "navigationPolicy", "answerChangePolicy", "reinsertPolicy", "feedbackTiming", "learningStages", "selectionPolicy", "poolId", "poolVersion", "eligibleQuestionIds"];
+  requireExactKeys(config, configKeys, label);
+  if (config.schemaVersion !== "patternly-coding-interview-simulation-config-v1" || config.blueprintId !== "coding-interview-interview-simulation-v1" || config.blueprintVersion !== "1") fail(`${label} blueprint identity is unsupported`);
+  if (config.requestedLength !== 40 || config.actualLength !== 40 || config.shorteningPolicy !== "prohibited" || config.uniqueItemsRequired !== 40) fail(`${label} must require exactly 40 unique questions`);
+  if (config.timerKind !== "foreground_countdown" || config.durationMinutes !== 45 || config.navigationPolicy !== "free_navigation" || config.answerChangePolicy !== "editable_until_finalization" || config.reinsertPolicy !== "disabled" || config.feedbackTiming !== "after_verified_finalization") fail(`${label} interaction or timer policy is unsupported`);
+  if (!Array.isArray(config.learningStages) || JSON.stringify(config.learningStages) !== JSON.stringify(["simulation"])) fail(`${label}.learningStages is unsupported`);
+  requireExactKeys(config.selectionPolicy, CODING_SELECTION_POLICY_KEYS, `${label}.selectionPolicy`);
+  if (CODING_SELECTION_POLICY_KEYS.some((key) => config.selectionPolicy[key] !== true)) fail(`${label}.selectionPolicy must keep every declared constraint enabled`);
+  if (config.poolId !== CODING_PROFILE_ID || config.poolVersion !== "1") fail(`${label} pool identity is unsupported`);
+  if (!Array.isArray(config.eligibleQuestionIds) || config.eligibleQuestionIds.length !== 40 || config.eligibleQuestionIds.some((id) => typeof id !== "string" || !id.trim()) || new Set(config.eligibleQuestionIds).size !== 40) fail(`${label}.eligibleQuestionIds must contain 40 unique identities`);
+  const questionIds = new Set(questions.map((question) => question.questionId));
+  if (config.eligibleQuestionIds.some((id) => !questionIds.has(id))) fail(`${label}.eligibleQuestionIds contains an identity outside the canonical artifact`);
+}
 function validateSimulationProfiles(profiles, { trackId, contentVersion, questions }) {
   if (!Array.isArray(profiles) || profiles.length === 0) fail(`Simulation profile metadata is malformed for ${trackId}`);
-  if (trackId !== "google-cloud-associate-cloud-engineer" || profiles.length !== 1) fail(`Simulation profile family is unsupported for ${trackId}`);
+  if (!["google-cloud-associate-cloud-engineer", CODING_TRACK_ID].includes(trackId) || profiles.length !== 1) fail(`Simulation profile family is unsupported for ${trackId}`);
   const profile = profiles[0];
   requireExactKeys(profile, ["schemaVersion", "profileId", "profileVersion", "familyId", "modeId", "familyConfig"], "simulationProfiles[0]");
+  if (trackId === CODING_TRACK_ID) {
+    if (profile.schemaVersion !== "patternly-simulation-profile-envelope-v1" || profile.profileId !== CODING_PROFILE_ID || profile.profileVersion !== "1") fail("Coding Interview simulation profile envelope or profile version is unsupported");
+    if (profile.familyId !== "coding_interview" || profile.modeId !== "coding-interview-simulation") fail("Coding Interview simulation profile is not bound to Coding Mock");
+    validateCodingSimulationConfig(profile.familyConfig, { questions });
+    return;
+  }
   if (profile.schemaVersion !== "patternly-simulation-profile-envelope-v1" || profile.profileId !== "google-cloud-associate-cloud-engineer-certification-exam-v1" || profile.profileVersion !== "1") fail("GCP simulation profile envelope or profile version is unsupported");
   if (profile.familyId !== "certification") fail("GCP simulation profile family is unsupported");
   if (profile.modeId !== "certification-exam-simulation") fail("GCP simulation profile mode is not bound to Exam Simulation");

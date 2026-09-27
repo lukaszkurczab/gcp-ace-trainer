@@ -11,7 +11,7 @@ import lockFile from "../generated/canonical-content/content-lock.json";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { getProductModeConfig, PRODUCT_MODE_CONFIGS, validateProductModeConfigsAgainstArtifacts, type ProductModeConfig } from "./productModeConfig";
 import { createCanonicalQuestionCatalog, type CanonicalQuestionCatalog } from "./questionCatalog";
-import type { CanonicalContentLockRecord, CanonicalSimulationProfile, Question } from "./questionTypes";
+import type { CanonicalContentLockRecord, CanonicalProductSimulationProfile, Question } from "./questionTypes";
 
 const artifacts: readonly unknown[] = Object.freeze([aws, backend, claude, coding, frontend, gcp, az104, ai901, objectDesign]);
 const locks = new Map((lockFile.tracks as CanonicalContentLockRecord[]).map((entry) => [entry.trackId, entry]));
@@ -22,7 +22,7 @@ export type CanonicalTrackRuntime = Readonly<{
   artifactSha256: string;
   contentReleaseId: string;
   questions: readonly Question[];
-  simulationProfiles?: readonly CanonicalSimulationProfile[];
+  simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   modes: readonly ProductModeConfig[];
   getQuestion(questionId: string): Question | undefined;
   getQuestionsForNode(nodeId: string): readonly Question[];

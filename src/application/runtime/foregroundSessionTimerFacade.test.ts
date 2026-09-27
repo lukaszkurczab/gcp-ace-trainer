@@ -80,6 +80,7 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown",
     },
     resumeActiveSession: async () => { resumeCount += 1; return active; },
     finalizeSimulation: async () => { finalizations += 1; durableAtFinalization = state; },
+    authorizeActiveSimulationCommand: async (sessionId: string) => ({ sessionId }),
   } as unknown as TrainingLifecycleUseCases;
   const dependencies: ForegroundSessionTimerDependencies = {
     repository: {
@@ -344,6 +345,22 @@ test("expiry clamps to zero, checkpoints first, and finalizes exactly once", asy
   assert.equal(projection.remainingForegroundMs, 0);
   assert.equal(f.getState()?.accumulatedForegroundMs, 150);
   assert.equal(f.getDurableAtFinalization()?.accumulatedForegroundMs, 150);
+  assert.equal(f.getFinalizations(), 1);
+});
+
+test("a response-save checkpoint that crosses countdown expiry finalizes before any draft save can follow", async () => {
+  const f = fixture(100);
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+  f.setNow(101);
+  let draftSaves = 0;
+
+  const expired = await f.timer.saveDraftAtResponseBoundary(f.session, { sessionId: f.session.id }, async () => { draftSaves += 1; });
+
+  assert.equal(expired, true);
+  assert.equal(draftSaves, 0);
+  assert.equal(f.getState()?.accumulatedForegroundMs, 101);
+  assert.equal(f.getDurableAtFinalization()?.accumulatedForegroundMs, 101);
   assert.equal(f.getFinalizations(), 1);
 });
 

@@ -8,12 +8,13 @@ import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime"
 const TRACK_ID = "google-cloud-associate-cloud-engineer";
 const MODE_ID = "certification-exam-simulation";
 
-test("Certification Exam Simulation resolves before Premium admission and starts durably only when allowed", async () => {
+test("Certification Exam Simulation authorizes before preparation resolution and starts durably only when allowed", async () => {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK_ID);
   const runtime = new CanonicalTrainingRuntime(track);
   const events: string[] = [];
   let decision: "allowed" | "denied" | "unavailable" = "denied";
   let activeSession: TrainingSession | null = null;
+  let activeDraft: Awaited<ReturnType<typeof runtime.prepare>>["draft"] = null;
   let durableStarts = 0;
   const lifecycle = new TrainingLifecycleUseCases({
     clock: { now: () => "2026-09-27T00:00:00.000Z" },
@@ -24,17 +25,23 @@ test("Certification Exam Simulation resolves before Premium admission and starts
         events.push("resolve");
         return { track, runtime };
       },
+      resolveExactArtifact: async () => {
+        events.push("resolve-exact");
+        return { track, runtime };
+      },
     },
     repositories: {
       getActiveSession: async () => activeSession,
       getAttempts: async () => [],
       getReviews: async () => [],
+      getDraft: async () => activeDraft,
     },
     mutations: {
       start: async (prepared: Parameters<TrainingLifecyclePorts["mutations"]["start"]>[0]) => {
         events.push("start");
         durableStarts += 1;
         activeSession = prepared.session;
+        activeDraft = prepared.draft;
       },
     },
     premiumSessionAdmission: {
@@ -53,7 +60,7 @@ test("Certification Exam Simulation resolves before Premium admission and starts
       (error: unknown) => error instanceof TrainingApplicationFailure
         && error.code === (deniedDecision === "denied" ? "premium_entitlement_denied" : "premium_entitlement_unavailable"),
     );
-    assert.deepEqual(events, ["resolve", "authorize"]);
+    assert.deepEqual(events, ["authorize"]);
     assert.equal(durableStarts, 0);
     assert.equal(activeSession, null);
   }
@@ -61,10 +68,15 @@ test("Certification Exam Simulation resolves before Premium admission and starts
   decision = "allowed";
   events.length = 0;
   const started = await lifecycle.startSession({ trackId: TRACK_ID, modeId: MODE_ID, request: {} });
-  assert.deepEqual(events, ["resolve", "authorize", "start"]);
+  assert.deepEqual(events, ["authorize", "resolve", "start"]);
   assert.equal(durableStarts, 1);
   assert.equal((activeSession as TrainingSession | null)?.id, started.session.id);
   assert.equal(started.session.trackId, TRACK_ID);
   assert.equal(started.session.modeId, MODE_ID);
   assert.equal(started.session.status, "active");
+
+  events.length = 0;
+  const resumed = await lifecycle.resumeActiveSession();
+  assert.equal(resumed.id, started.session.id);
+  assert.deepEqual(events, ["authorize", "resolve-exact"]);
 });

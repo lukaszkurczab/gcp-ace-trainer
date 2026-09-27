@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
-import type { CanonicalQuestionResponse, Question } from "../../content/canonical/questionTypes";
+import type { CanonicalCodingInterviewSimulationProfile, CanonicalQuestionResponse, Question } from "../../content/canonical/questionTypes";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../domain";
 import { createTrainingSession, createTrainingSessionDraft } from "../../domain";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
@@ -240,4 +240,67 @@ test("GCP simulation finalization scores only complete responses and partitions 
   assert.equal(finalized.frozenDraft, draft);
   await assert.rejects(runtime.finalizeSimulation({ session: finalized.session, draft, attempts: finalized.attempts, reviews: [], now: "2026-01-01T01:31:00.000Z" }), /Only an active canonical simulation/);
   await assert.rejects(runtime.validateDraftCommand({ session: finalized.session, draft, expectedPreviousRevision: 1 }), /active session/);
+});
+
+test("Coding Mock consumes its exact ordered 40-question profile with foreground timer and shared draft runtime", async () => {
+  const catalog = await catalogPromise;
+  const baseTrack = catalog.getTrack("coding-interview-dsa-problem-solving");
+  const profile: CanonicalCodingInterviewSimulationProfile = {
+    schemaVersion: "patternly-simulation-profile-envelope-v1",
+    profileId: "algorithms-interview-simulation-v1",
+    profileVersion: "1",
+    familyId: "coding_interview",
+    modeId: "coding-interview-simulation",
+    familyConfig: {
+      schemaVersion: "patternly-coding-interview-simulation-config-v1",
+      blueprintId: "coding-interview-interview-simulation-v1",
+      blueprintVersion: "1",
+      requestedLength: 40,
+      actualLength: 40,
+      shorteningPolicy: "prohibited",
+      uniqueItemsRequired: 40,
+      timerKind: "foreground_countdown",
+      durationMinutes: 45,
+      navigationPolicy: "free_navigation",
+      answerChangePolicy: "editable_until_finalization",
+      reinsertPolicy: "disabled",
+      feedbackTiming: "after_verified_finalization",
+      learningStages: ["simulation"],
+      selectionPolicy: {
+        requireUniqueItemIds: true, requireDeclaredSimulationEligibility: true, requireMultipleMentalUnits: true,
+        requireMultiplePatternFamilies: true, requireEveryActiveInteractionTypeRepresented: true,
+        prohibitConsecutiveSameMentalUnitWhenAlternativeExists: true, prohibitDuplicateContentIdentity: true,
+        prohibitTaxonomyWidening: true, prohibitFallbackItems: true,
+      },
+      poolId: "algorithms-interview-simulation-v1",
+      poolVersion: "1",
+      eligibleQuestionIds: baseTrack.questions.slice(0, 40).map((question) => question.questionId),
+    },
+  };
+  const track = { ...baseTrack, simulationProfiles: [profile] };
+  const runtime = new CanonicalTrainingRuntime(track);
+  const prepared = await runtime.prepare({
+    trackId: track.trackId,
+    modeId: "coding-interview-simulation",
+    request: { sessionId: "coding-mock-profile", scope: { simulationProfileId: profile.profileId } },
+    attempts: [], reviews: [], now: NOW,
+  });
+  assert.equal(prepared.session.actualLength, 40);
+  assert.deepEqual(prepared.session.itemOrder.map((entry) => entry.item.questionId), profile.familyConfig.eligibleQuestionIds);
+  assert.deepEqual(prepared.session.configurationSnapshot, {
+    kind: "algorithmsInterviewSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission",
+    navigation: "free", submission: "manualOrForegroundTimeout", timer: "countdownForeground", timerDurationMs: 2_700_000,
+    simulationProfileId: profile.profileId, simulationProfileVersion: "1", simulationBlueprintId: profile.familyConfig.blueprintId,
+    simulationBlueprintVersion: "1", simulationPoolId: profile.familyConfig.poolId, simulationPoolVersion: "1",
+  });
+  await runtime.validateResume({ session: prepared.session, draft: prepared.draft });
+  await assert.rejects(runtime.prepare({
+    trackId: track.trackId, modeId: "coding-interview-simulation",
+    request: { sessionId: "coding-mock-wrong-profile", scope: { simulationProfileId: "other-profile" } },
+    attempts: [], reviews: [], now: NOW,
+  }), /exact canonical profile identity/);
+  await assert.rejects(runtime.validateResume({
+    session: { ...prepared.session, configurationSnapshot: { ...prepared.session.configurationSnapshot, simulationProfileId: "other-profile" } },
+    draft: prepared.draft,
+  }), /snapshot or deadline/);
 });

@@ -14,7 +14,7 @@ const NOW = "2026-09-27T12:00:00.000Z";
 async function fixture(answeredIndices: readonly number[]) {
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack(TRACK_ID);
-  const profile = track.simulationProfiles?.find((entry) => entry.profileId === PROFILE_ID);
+  const profile = track.simulationProfiles?.find((entry): entry is import("../../content/canonical").CanonicalSimulationProfile => entry.profileId === PROFILE_ID && entry.familyId === "certification" && entry.modeId === "certification-exam-simulation");
   assert.ok(profile);
   const selected = profile.familyConfig.blueprint.sections.flatMap((section) => {
     const count = 50 * section.weightPercent / 100;

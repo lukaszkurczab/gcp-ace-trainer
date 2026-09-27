@@ -3,7 +3,7 @@ import { createTrainingAttempt, createTrainingSession, createTrainingSessionDraf
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
 import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
 import { isCanonicalResponseComplete, scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
-import type { CanonicalSimulationProfile, Question } from "../../content/canonical/questionTypes";
+import type { CanonicalProductSimulationProfile, Question } from "../../content/canonical/questionTypes";
 import { getProductSimulationModeConfig, ProductModeUnavailableError, type ProductFeedbackTiming, type ProductModeConfig } from "../../content/canonical/productModeConfig";
 import { retainReviewQueueEntryIdentity } from "../../domain/learning/reviewQueueEntry";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
@@ -24,7 +24,7 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
 
   async prepare(input: Readonly<{ trackId: string; modeId: string; source?: string; request: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PreparedSession> {
     if (input.trackId !== this.catalog.trackId) throw new Error("Canonical runtime track mismatch.");
-    if (input.modeId === "certification-exam-simulation") return this.prepareSimulation(input);
+    if (input.modeId === "certification-exam-simulation" || input.modeId === "coding-interview-simulation") return this.prepareSimulation(input);
     let mode: ProductModeConfig; try { mode = this.catalog.getMode(input.modeId); } catch { throw new ProductModeUnavailableError(`Canonical mode ${input.trackId}/${input.modeId} is unavailable.`); } const req = requestOf(input.request, mode.defaultRequestedLength);
     if (!mode.requestedLengths.includes(req.requestedLength)) throw new Error("Requested length is unavailable for this canonical mode.");
     const source = mode.selection.kind === "evidence_conditioned" ? eligibleEvidence(this.catalog, mode, input.reviews, input.attempts, input.now) : this.catalog.getPool(mode.modeId);
@@ -41,7 +41,7 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
   }
 
   async validateResume(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft | null }>): Promise<void> {
-    if (input.session.modeId === "certification-exam-simulation") return this.validateSimulationResume(input);
+    if (input.session.modeId === "certification-exam-simulation" || input.session.modeId === "coding-interview-simulation") return this.validateSimulationResume(input);
     if (input.draft) throw new Error("Canonical practice has no simulation draft.");
     if (input.session.trackId !== this.catalog.trackId || input.session.contentVersion !== this.catalog.contentVersion || input.session.artifactSha256 !== this.catalog.artifactSha256 || input.session.taxonomyVersion !== RELEASE || !input.session.planFingerprint) throw new Error("Canonical session content identity is unavailable.");
     let mode: ProductModeConfig; try { mode = this.catalog.getMode(input.session.modeId); } catch { throw new ProductModeUnavailableError(`Canonical mode ${input.session.trackId}/${input.session.modeId} is unavailable.`); } if (!mode.requestedLengths.includes(input.session.requestedLength)) throw new ProductModeUnavailableError("Canonical session mode or requested length is unavailable.");
@@ -136,13 +136,16 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     if (input.session.status !== "active") throw new Error("Only an active session can accept a canonical simulation draft command.");
     if (!Number.isSafeInteger(input.expectedPreviousRevision) || input.expectedPreviousRevision < 1) throw new Error("Canonical simulation previous draft revision is invalid.");
     if (input.draft.sessionId !== input.session.id || input.draft.trackId !== input.session.trackId || input.draft.familyId !== this.familyId || input.draft.revision !== input.expectedPreviousRevision + 1) throw new Error("Canonical simulation draft command identity or revision is invalid.");
-    const deadline = Date.parse(String(input.session.configurationSnapshot.timerDeadlineAt));
-    if (Date.parse(input.draft.updatedAt) >= deadline) throw new Error("Canonical simulation draft cannot be changed at or after its immutable deadline.");
+    if (input.session.configurationSnapshot.timer === "absoluteDeadline") {
+      const deadline = Date.parse(String(input.session.configurationSnapshot.timerDeadlineAt));
+      if (Date.parse(input.draft.updatedAt) >= deadline) throw new Error("Canonical simulation draft cannot be changed at or after its immutable deadline.");
+    }
   }
 
   private async prepareSimulation(input: Readonly<{ trackId: string; modeId: string; source?: string; request: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PreparedSession> {
     const { config, profile } = getProductSimulationModeConfig(this.catalog.trackId, this.catalog.simulationProfiles);
     if (input.trackId !== config.trackId || input.modeId !== config.modeId || this.familyId !== config.familyId) throw new ProductModeUnavailableError(`Simulation mode ${input.trackId}/${input.modeId} is unavailable.`);
+    if (config.kind === "coding_interview_simulation" && requestSimulationProfileId(input.request) !== config.profileId) throw new ProductModeUnavailableError("Coding Interview Simulation requires its exact canonical profile identity.");
     const sessionId = requestSessionId(input.request);
     const questions = selectSimulationQuestions(this.catalog, profile);
     const deadlineAt = new Date(Date.parse(input.now) + profile.familyConfig.durationMinutes * 60_000).toISOString();
@@ -168,11 +171,11 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     const deadline = new Date(Date.parse(session.startedAt) + profile.familyConfig.durationMinutes * 60_000).toISOString();
     if (!Number.isFinite(Date.parse(session.startedAt)) || JSON.stringify(session.configurationSnapshot) !== JSON.stringify(simulationSnapshot(profile, deadline))) throw new Error("Canonical simulation configuration snapshot or deadline is invalid.");
     const questions = selectSimulationQuestions(this.catalog, profile);
-    if (session.actualLength !== 50 || session.requestedLength !== 50 || session.itemOrder.length !== 50 || new Set(session.itemOrder.map((entry) => entry.item.questionId)).size !== 50 || session.itemOrder.some((entry, index) => entry.occurrenceId !== `${session.id}:occurrence:${index}` || entry.item.questionId !== questions[index]?.questionId || entry.item.trackId !== this.catalog.trackId || entry.item.contentVersion !== this.catalog.contentVersion || entry.item.artifactSha256 !== this.catalog.artifactSha256)) throw new Error("Canonical simulation item plan is unavailable or changed.");
+    if (session.actualLength !== questions.length || session.requestedLength !== questions.length || session.itemOrder.length !== questions.length || new Set(session.itemOrder.map((entry) => entry.item.questionId)).size !== questions.length || session.itemOrder.some((entry, index) => entry.occurrenceId !== `${session.id}:occurrence:${index}` || entry.item.questionId !== questions[index]?.questionId || entry.item.trackId !== this.catalog.trackId || entry.item.contentVersion !== this.catalog.contentVersion || entry.item.artifactSha256 !== this.catalog.artifactSha256)) throw new Error("Canonical simulation item plan is unavailable or changed.");
     if (JSON.stringify(Object.keys(session.optionOrderByOccurrence).sort()) !== JSON.stringify(session.itemOrder.map((entry) => entry.occurrenceId).sort()) || session.itemOrder.some((entry) => JSON.stringify(session.optionOrderByOccurrence[entry.occurrenceId]) !== JSON.stringify(optionIds(this.catalog.getQuestion(entry.item.questionId)!))) || (session.conditionalReinsertSlots?.length ?? 0) !== 0) throw new Error("Canonical simulation option order or plan is invalid.");
     if (await createContentSessionPlanFingerprint(session as TrainingSession & { taxonomyVersion: string }) !== session.planFingerprint) throw new Error("Canonical simulation plan fingerprint is invalid.");
     const draft = input.draft;
-    if (!draft || draft.schemaVersion !== 1 || draft.draftVersion !== 1 || draft.sessionId !== session.id || draft.trackId !== session.trackId || draft.familyId !== this.familyId || !Number.isSafeInteger(draft.revision) || draft.revision < 1 || Date.parse(draft.updatedAt) < Date.parse(session.startedAt) || Date.parse(draft.updatedAt) > Date.parse(deadline) || Number.isNaN(Date.parse(draft.updatedAt))) throw new Error("Canonical simulation draft identity, revision, or deadline is unavailable.");
+    if (!draft || draft.schemaVersion !== 1 || draft.draftVersion !== 1 || draft.sessionId !== session.id || draft.trackId !== session.trackId || draft.familyId !== this.familyId || !Number.isSafeInteger(draft.revision) || draft.revision < 1 || Date.parse(draft.updatedAt) < Date.parse(session.startedAt) || (session.configurationSnapshot.timer === "absoluteDeadline" && Date.parse(draft.updatedAt) > Date.parse(deadline)) || Number.isNaN(Date.parse(draft.updatedAt))) throw new Error("Canonical simulation draft identity, revision, or deadline is unavailable.");
     const occurrenceIds = new Set(session.itemOrder.map((entry) => entry.occurrenceId));
     if (Object.keys(draft.responsesByOccurrenceId).some((id) => !occurrenceIds.has(id)) || draft.flaggedOccurrenceIds.some((id) => !occurrenceIds.has(id)) || new Set(draft.flaggedOccurrenceIds).size !== draft.flaggedOccurrenceIds.length) throw new Error("Canonical simulation draft references an occurrence outside its immutable plan.");
     for (const [occurrenceId, response] of Object.entries(draft.responsesByOccurrenceId)) {
@@ -185,7 +188,15 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
   async queryReview(input: Readonly<{ trackId: string; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); return Object.freeze({ trackId: input.trackId, due: Object.freeze(scopedReviews(input.reviews, this.catalog).filter((r) => r.dueAt <= input.now)) }); }
 }
 
-function selectSimulationQuestions(catalog: CanonicalTrackRuntime, profile: CanonicalSimulationProfile): readonly Question[] {
+function selectSimulationQuestions(catalog: CanonicalTrackRuntime, profile: CanonicalProductSimulationProfile): readonly Question[] {
+  if (profile.familyId === "coding_interview" && profile.modeId === "coding-interview-simulation") {
+    const ids = profile.familyConfig.eligibleQuestionIds;
+    if (profile.familyConfig.schemaVersion !== "patternly-coding-interview-simulation-config-v1" || ids.length !== 40 || new Set(ids).size !== 40) throw new ProductModeUnavailableError("Coding Interview Simulation profile does not declare 40 unique questions.");
+    const selected = ids.map((questionId) => catalog.getQuestion(questionId));
+    if (selected.some((question) => !question || question.trackId !== catalog.trackId)) throw new ProductModeUnavailableError("Coding Interview Simulation profile references unavailable canonical questions.");
+    return Object.freeze(selected as Question[]);
+  }
+  if (profile.familyId !== "certification" || profile.modeId !== "certification-exam-simulation") throw new ProductModeUnavailableError("Canonical simulation profile family and mode are unavailable.");
   const { blueprint, nodeDomainMap, questionCount } = profile.familyConfig;
   const targetCount = questionCount.minimum;
   if (blueprint.kind !== "weighted_sections" || !Number.isSafeInteger(targetCount) || targetCount !== 50 || blueprint.sections.reduce((sum, section) => sum + section.weightPercent, 0) !== 100) throw new Error("Canonical simulation profile does not define the validated 50-item weighted blueprint.");
@@ -201,7 +212,27 @@ function selectSimulationQuestions(catalog: CanonicalTrackRuntime, profile: Cano
   return Object.freeze(selected);
 }
 
-function simulationSnapshot(profile: CanonicalSimulationProfile, deadlineAt: string): TrainingSession["configurationSnapshot"] {
+function simulationSnapshot(profile: CanonicalProductSimulationProfile, deadlineAt: string): TrainingSession["configurationSnapshot"] {
+  if (profile.familyId === "coding_interview" && profile.modeId === "coding-interview-simulation") {
+    const config = profile.familyConfig;
+    const durationMs = config.durationMinutes * 60_000;
+    return Object.freeze({
+      kind: "algorithmsInterviewSimulation",
+      feedbackMode: "atSessionEnd",
+      answerChanges: config.answerChangePolicy === "editable_until_finalization" ? "untilFinalSubmission" : "none",
+      navigation: config.navigationPolicy === "free_navigation" ? "free" : "linear",
+      submission: "manualOrForegroundTimeout",
+      timer: "countdownForeground",
+      timerDurationMs: durationMs,
+      simulationProfileId: profile.profileId,
+      simulationProfileVersion: profile.profileVersion,
+      simulationBlueprintId: config.blueprintId,
+      simulationBlueprintVersion: config.blueprintVersion,
+      simulationPoolId: config.poolId,
+      simulationPoolVersion: config.poolVersion,
+    });
+  }
+  if (profile.familyId !== "certification" || profile.modeId !== "certification-exam-simulation") throw new ProductModeUnavailableError("Canonical simulation profile family and mode are unavailable.");
   const config = profile.familyConfig;
   const policy = config.interactionPolicy;
   return Object.freeze({
@@ -221,6 +252,14 @@ function simulationSnapshot(profile: CanonicalSimulationProfile, deadlineAt: str
     navigator: policy.navigator,
     sectionIds: config.blueprint.sections.map((section) => section.id),
   });
+}
+
+function requestSimulationProfileId(value: unknown): string | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const request = value as Record<string, unknown>;
+  if (!request.scope || typeof request.scope !== "object" || Array.isArray(request.scope)) return undefined;
+  const scope = request.scope as Record<string, unknown>;
+  return typeof scope.simulationProfileId === "string" ? scope.simulationProfileId : undefined;
 }
 
 function requestOf(value: unknown, fallback: number): { requestedLength: number; feedbackTiming?: string } { const r = value && typeof value === "object" ? value as Record<string, unknown> : {}; if (r.requestedLength !== undefined && (!Number.isSafeInteger(r.requestedLength) || Number(r.requestedLength) <= 0)) throw new Error("Canonical requestedLength is invalid."); if (r.feedbackTiming !== undefined && r.feedbackTiming !== "after_each_durable_submit" && r.feedbackTiming !== "after_session_completion") throw new Error("Canonical feedbackTiming is invalid."); return { requestedLength: typeof r.requestedLength === "number" ? r.requestedLength : fallback, feedbackTiming: typeof r.feedbackTiming === "string" ? r.feedbackTiming : undefined }; }

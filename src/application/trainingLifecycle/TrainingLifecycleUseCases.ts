@@ -22,14 +22,24 @@ import {
 import { MutationCommitFailure } from "../mutationBoundary";
 import type { DurableOperationError, DurableOperationState, PracticeDurableOperationState, SimulationDurableOperationState } from "./durableOperationState";
 import { OperationProjectionStore } from "./operationProjectionStore";
+import { requiresPremiumProductMode } from "./premiumProductModePolicy";
+
+export type SimulationCommandAuthorization = Readonly<{ sessionId: string }>;
+const simulationCommandAuthorizations = new WeakSet<object>();
+const scopedSimulationCommandAuthorizations = new WeakSet<object>();
 
 export class TrainingLifecycleUseCases {
   private readonly operationStates: OperationProjectionStore;
   private readonly finalizations = new Map<string, Promise<void>>();
   private readonly practiceCompletions = new Map<string, Promise<PracticeFinalization>>();
   private readonly sessionMutationLanes = new Map<string, Promise<unknown>>();
+  private simulationDraftSaveBoundary: ((session: TrainingSession, authorization: SimulationCommandAuthorization, commit: () => Promise<void>) => Promise<boolean>) | null = null;
 
   constructor(private readonly ports: TrainingLifecyclePorts, operationStore = new OperationProjectionStore()) { this.operationStates = operationStore; }
+  installSimulationDraftSaveBoundary(boundary: (session: TrainingSession, authorization: SimulationCommandAuthorization, commit: () => Promise<void>) => Promise<boolean>): void {
+    if (this.simulationDraftSaveBoundary) throw new Error("Simulation draft-save boundary is already installed.");
+    this.simulationDraftSaveBoundary = boundary;
+  }
   getOperationProjection(sessionId: string) { return this.operationStates.getOperationProjection(sessionId); }
   subscribeOperationProjection(sessionId: string, listener: (value: DurableOperationState) => void) { return this.operationStates.subscribeOperationProjection(sessionId, listener); }
   async getPendingMutationProjection(sessionId: string): Promise<PendingMutationProjection | null> { return this.pendingFor(sessionId); }
@@ -55,8 +65,11 @@ export class TrainingLifecycleUseCases {
   }
 
   /** The only recovery retry replays the exact existing immutable journal plan. */
-  async recoverActiveTrainingOperation(): Promise<void> {
+  async recoverActiveTrainingOperation(authorization?: SimulationCommandAuthorization): Promise<void> {
     const active = await this.requireActive();
+    if (authorization) this.consumeSimulationAuthorization(authorization, active);
+    else await this.authorizePremiumProductMode(active.modeId);
+    await this.resolveRuntimeForSession(active);
     const pending = await this.pendingFor(active.id);
     await this.reconstructOperationProjection(active);
     await this.ports.mutations.recover();
@@ -140,6 +153,8 @@ export class TrainingLifecycleUseCases {
     if (active.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
       throw new TrainingApplicationFailure("invalid_response", "Only an Interview Simulation can resume editing after a failed save.");
     }
+    await this.authorizePremiumProductMode(active.modeId);
+    await this.resolveRuntimeForSession(active);
     const operation = await this.getSimulationOperationState(active);
     if ((operation.kind !== "save_failed" && operation.kind !== "stale_revision") || operation.error.allowedAction !== "retry_same_command") {
       throw new TrainingApplicationFailure("invalid_response", "Simulation editing may resume only after an unpersisted save failure.");
@@ -150,6 +165,7 @@ export class TrainingLifecycleUseCases {
   async startSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
     const existing = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
     if (existing) throw new TrainingApplicationFailure("active_session_conflict", `Active session ${existing.id} must be resumed or abandoned first.`);
+    await this.authorizePremiumProductMode(input.modeId);
     const sessionId = await this.run("persistence_failure", () => this.ports.sessionIds.create({ trackId: input.trackId, modeId: input.modeId }));
     if (typeof sessionId !== "string" || !sessionId.trim()) throw new TrainingApplicationFailure("persistence_failure", "Training session identity generation returned an invalid identity.");
     const request = input.request && typeof input.request === "object" && !Array.isArray(input.request)
@@ -162,13 +178,7 @@ export class TrainingLifecycleUseCases {
     if (prepared.session.id !== sessionId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime changed the lifecycle-owned session identity.");
     if (prepared.session.trackId !== input.trackId || prepared.firstOccurrence.trackId !== input.trackId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime prepared a session outside the requested track.");
     await this.assertSessionPackage(prepared.session, resolution.track);
-    if (this.requiresPremiumAdmission(prepared.session, resolution.track)) {
-      const admission = this.ports.premiumSessionAdmission;
-      if (!admission) throw new TrainingApplicationFailure("premium_entitlement_unavailable", "Premium access could not be confirmed for this session.");
-      const decision = await this.run("premium_entitlement_unavailable", () => admission.authorize());
-      if (decision === "denied") throw new TrainingApplicationFailure("premium_entitlement_denied", "This session requires confirmed Premium access.");
-      if (decision !== "allowed") throw new TrainingApplicationFailure("premium_entitlement_unavailable", "Premium access could not be confirmed for this session.");
-    }
+    if (this.requiresNodePremiumAdmission(prepared.session, resolution.track)) await this.authorizePremiumSession();
     await this.run("persistence_failure", () => this.ports.mutations.start(prepared));
     const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
     if (!verified || verified.id !== prepared.session.id || verified.status !== "active") throw new TrainingApplicationFailure("verification_failure", "The active session was not verified before its first occurrence could be exposed.");
@@ -214,6 +224,7 @@ export class TrainingLifecycleUseCases {
 
   private async advancePracticeSessionInLane(): Promise<TrainingSession> {
     const session = await this.requireActive();
+    await this.resolveRuntimeForSession(session);
     this.operationStates.set(session.id, practice("advancing"));
     const next = this.runSync("persistence_failure", () => advanceTrainingSession(session));
     try {
@@ -229,13 +240,16 @@ export class TrainingLifecycleUseCases {
   }
 
   /** Simulation navigation changes only the durable active occurrence, never its immutable item plan. */
-  async moveSimulationSessionTo(index: number): Promise<TrainingSession> {
+  async moveSimulationSessionTo(index: number, authorization?: SimulationCommandAuthorization): Promise<TrainingSession> {
     const initial = await this.requireActive();
     return this.serializeSessionMutation(initial.id, async () => {
     const session = await this.requireActive();
     if (session.configurationSnapshot.navigation !== "free" || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
       throw new TrainingApplicationFailure("invalid_response", "Only a free-navigation simulation can change its active occurrence.");
     }
+    if (authorization) this.consumeSimulationAuthorization(authorization, session);
+    else await this.authorizePremiumProductMode(session.modeId);
+    await this.resolveRuntimeForSession(session);
     const next = this.runSync("invalid_response", () => moveTrainingSessionToIndex(session, index));
     this.operationStates.set(session.id, simulation("navigating"));
     try {
@@ -303,28 +317,67 @@ export class TrainingLifecycleUseCases {
     }
   }
 
-  async saveSimulationDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void> {
+  async saveSimulationDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number; authorization?: SimulationCommandAuthorization }>): Promise<void> {
     const initial = await this.requireActive();
-    await this.serializeSessionMutation(initial.id, async () => {
-    const session = await this.requireActive();
-    this.operationStates.set(session.id, simulation("saving"));
-    if (session.id !== input.draft.sessionId) throw new TrainingApplicationFailure("no_active_session", "The simulation draft does not belong to the active session.");
-    const runtime = await this.resolveRuntimeForSession(session);
-    try {
-      await this.run("invalid_response", () => runtime.validateDraftCommand({ session, ...input }));
-      await this.ports.repositories.saveDraft(input);
-      this.operationStates.set(session.id, simulation("editable"));
-    } catch (error) {
-      const stale = error instanceof StaleDraftRevisionError;
-      this.operationStates.set(session.id, stale
-        ? simulation("stale_revision", operationError("simulation_save", "not_durable", "retry_same_command"))
-        : simulation("save_failed", operationError("simulation_save", "not_durable", "retry_same_command")));
-      throw error instanceof TrainingApplicationFailure ? error : new TrainingApplicationFailure(stale ? "stale_revision" : "persistence_failure", stale ? "The simulation draft revision is stale." : "Simulation draft save failed without changing the durable draft.", error);
-    }
+    if (initial.id !== input.draft.sessionId) throw new TrainingApplicationFailure("no_active_session", "The simulation draft does not belong to the active session.");
+    const authorization = input.authorization ?? await this.authorizeActiveSimulationCommand(initial.id);
+    this.assertSimulationAuthorization(authorization, initial);
+    const commit = () => this.serializeSessionMutation(initial.id, async () => {
+      const session = await this.requireActive();
+      if (session.id !== initial.id) throw new TrainingApplicationFailure("active_session_conflict", "The active simulation changed before its draft could be saved.");
+      this.operationStates.set(session.id, simulation("saving"));
+      this.consumeSimulationAuthorization(authorization, session);
+      const runtime = await this.resolveRuntimeForSession(session);
+      try {
+        await this.run("invalid_response", () => runtime.validateDraftCommand({ session, ...input }));
+        await this.ports.repositories.saveDraft(input);
+        this.operationStates.set(session.id, simulation("editable"));
+      } catch (error) {
+        const stale = error instanceof StaleDraftRevisionError;
+        this.operationStates.set(session.id, stale
+          ? simulation("stale_revision", operationError("simulation_save", "not_durable", "retry_same_command"))
+          : simulation("save_failed", operationError("simulation_save", "not_durable", "retry_same_command")));
+        throw error instanceof TrainingApplicationFailure ? error : new TrainingApplicationFailure(stale ? "stale_revision" : "persistence_failure", stale ? "The simulation draft revision is stale." : "Simulation draft save failed without changing the durable draft.", error);
+      }
     });
+    const expired = this.simulationDraftSaveBoundary
+      ? await this.simulationDraftSaveBoundary(initial, authorization, commit)
+      : (await commit(), false);
+    if (expired) {
+      this.operationStates.set(initial.id, simulation("completed"));
+      throw new TrainingApplicationFailure("invalid_response", "The Interview Simulation countdown expired before the response could be saved.");
+    }
   }
 
-  async finalizeSimulation(): Promise<void> { await this.finalizeSimulationFor(await this.requireActive()); }
+  async authorizeActiveSimulationCommand(sessionId: string): Promise<SimulationCommandAuthorization> {
+    const session = await this.requireActive();
+    if (session.id !== sessionId || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
+      throw new TrainingApplicationFailure("resume_unavailable", "Simulation authorization requires the exact active simulation session.");
+    }
+    await this.authorizePremiumProductMode(session.modeId);
+    const authorization = Object.freeze({ sessionId });
+    simulationCommandAuthorizations.add(authorization);
+    return authorization;
+  }
+
+  async withAuthorizedSimulationCommand<T>(sessionId: string, operation: (authorization: SimulationCommandAuthorization) => Promise<T>): Promise<T> {
+    const session = await this.requireActive();
+    if (session.id !== sessionId || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
+      throw new TrainingApplicationFailure("resume_unavailable", "Simulation authorization requires the exact active simulation session.");
+    }
+    await this.authorizePremiumProductMode(session.modeId);
+    const authorization = Object.freeze({ sessionId });
+    scopedSimulationCommandAuthorizations.add(authorization);
+    try { return await operation(authorization); }
+    finally { scopedSimulationCommandAuthorizations.delete(authorization); }
+  }
+
+  async finalizeSimulation(authorization?: SimulationCommandAuthorization): Promise<void> {
+    const session = await this.requireActive();
+    if (authorization) this.consumeSimulationAuthorization(authorization, session);
+    else await this.authorizePremiumProductMode(session.modeId);
+    await this.finalizeSimulationFor(session);
+  }
 
   /**
    * Absolute-deadline simulations own expiry in the lifecycle, so foreground
@@ -334,12 +387,12 @@ export class TrainingLifecycleUseCases {
   async finalizeExpiredSimulationIfDue(): Promise<string | null> {
     const session = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
     if (!session || session.configurationSnapshot.timer !== "absoluteDeadline") return null;
-    await this.resolveRuntimeForSession(session);
     const deadline = session.configurationSnapshot.timerDeadlineAt;
     if (typeof deadline !== "string" || Number.isNaN(Date.parse(deadline))) {
       throw new TrainingApplicationFailure("resume_unavailable", "An absolute-deadline simulation has no valid immutable deadline.");
     }
     if (Date.parse(this.ports.clock.now()) < Date.parse(deadline)) return null;
+    await this.authorizePremiumProductMode(session.modeId);
     await this.finalizeSimulationFor(session);
     return session.id;
   }
@@ -373,10 +426,12 @@ export class TrainingLifecycleUseCases {
     }
   }
 
-  async resumeActiveSession(): Promise<TrainingSession> {
+  async resumeActiveSession(authorization?: SimulationCommandAuthorization): Promise<TrainingSession> {
     let session: TrainingSession;
     try { session = await this.requireActive(); }
     catch (error) { throw error; }
+    if (authorization) this.consumeSimulationAuthorization(authorization, session);
+    else await this.authorizePremiumProductMode(session.modeId);
     const runtime = await this.resolveRuntimeForSession(session);
     const draft = await this.run("persistence_failure", () => this.ports.repositories.getDraft(session.id));
     try { await this.run("resume_unavailable", () => runtime.validateResume({ session, draft })); }
@@ -397,6 +452,8 @@ export class TrainingLifecycleUseCases {
 
   private async abandonActiveSessionInLane(): Promise<TrainingSession> {
     const active = await this.requireActive();
+    await this.authorizePremiumProductMode(active.modeId);
+    await this.resolveRuntimeForSession(active);
     const abandoned = this.runSync("persistence_failure", () => abandonTrainingSession(active, this.ports.clock.now()));
     const isSimulation = active.configurationSnapshot.submission === "manualOrForegroundTimeout";
     this.operationStates.set(active.id, isSimulation ? simulation("abandoning") : practice("abandoning"));
@@ -480,7 +537,6 @@ export class TrainingLifecycleUseCases {
   private async requireActive(): Promise<TrainingSession> {
     const session = await this.run("no_active_session", () => this.ports.repositories.getActiveSession());
     if (!session || session.status !== "active") throw new TrainingApplicationFailure("no_active_session", "No active session is available.");
-    await this.resolveRuntimeForSession(session);
     return session;
   }
 
@@ -521,7 +577,8 @@ export class TrainingLifecycleUseCases {
     if (session.trackId !== track.trackId || session.contentVersion !== track.contentVersion || session.artifactSha256 !== track.artifactSha256) throw new TrainingApplicationFailure("version_mismatch", "Session changed its exact canonical content artifact.");
   }
 
-  private requiresPremiumAdmission(session: TrainingSession, track: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExactArtifact"]>>["track"]): boolean {
+  private requiresNodePremiumAdmission(session: TrainingSession, track: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExactArtifact"]>>["track"]): boolean {
+    if (requiresPremiumProductMode(session.modeId)) return false;
     const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === session.trackId);
     if (!descriptor || session.itemOrder.length === 0) throw new TrainingApplicationFailure("missing_content", "The prepared session has no canonical Free node scope.");
     for (const occurrence of session.itemOrder) {
@@ -531,6 +588,28 @@ export class TrainingLifecycleUseCases {
       if (question.nodeId !== descriptor.freeNodeId) return true;
     }
     return false;
+  }
+
+  private async authorizePremiumProductMode(modeId: string): Promise<void> {
+    if (!requiresPremiumProductMode(modeId)) return;
+    await this.authorizePremiumSession();
+  }
+
+  private consumeSimulationAuthorization(authorization: SimulationCommandAuthorization, session: TrainingSession): void {
+    this.assertSimulationAuthorization(authorization, session);
+    if (!scopedSimulationCommandAuthorizations.has(authorization)) simulationCommandAuthorizations.delete(authorization);
+  }
+
+  private assertSimulationAuthorization(authorization: SimulationCommandAuthorization, session: TrainingSession): void {
+    if ((!simulationCommandAuthorizations.has(authorization) && !scopedSimulationCommandAuthorizations.has(authorization)) || authorization.sessionId !== session.id) throw new TrainingApplicationFailure("premium_entitlement_unavailable", "Simulation access authorization is missing, stale, or belongs to another session.");
+  }
+
+  private async authorizePremiumSession(): Promise<void> {
+    const admission = this.ports.premiumSessionAdmission;
+    if (!admission) throw new TrainingApplicationFailure("premium_entitlement_unavailable", "Premium access could not be confirmed for this session.");
+    const decision = await this.run("premium_entitlement_unavailable", () => admission.authorize());
+    if (decision === "denied") throw new TrainingApplicationFailure("premium_entitlement_denied", "This session requires confirmed Premium access.");
+    if (decision !== "allowed") throw new TrainingApplicationFailure("premium_entitlement_unavailable", "Premium access could not be confirmed for this session.");
   }
 
   private forResolvedContent<T extends { item: ResolvedContentRef } | { sourceItem: ResolvedContentRef }>(records: readonly T[], identity: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): readonly T[] {

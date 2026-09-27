@@ -9,6 +9,7 @@ import {
   type PreparedSession,
   type PracticeCompletionCommandResult,
   type PracticeFinalization,
+  type SimulationCommandAuthorization,
 } from "../trainingLifecycle";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import type { ResolvedContentRef, TrainingSession } from "../../domain";
@@ -18,7 +19,7 @@ import type { AlgorithmsLifecyclePreparationRequest } from "./codingInterviewCon
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
-import { ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
+import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
@@ -81,7 +82,7 @@ export type AlgorithmsSessionResultProjection = Readonly<{
   }>;
   feedbackItems: readonly Readonly<{
     constraints: readonly string[];
-    correctness: "correct" | "partial" | "incorrect";
+    correctness: "correct" | "partial" | "incorrect" | "unanswered";
     details: Question["feedback"]["details"];
     sources?: readonly CanonicalSourceLink[];
     interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
@@ -136,7 +137,12 @@ export async function startAlgorithmsSession(input: StartAlgorithmsSessionInput)
 
 /** Declared profile identity only; presentation never reinterprets a topic as a simulation profile. */
 export function getAlgorithmsInterviewSimulationEntry(): AlgorithmsInterviewSimulationEntry {
-  throw new Error("Algorithms Interview Simulation is excluded from the bundled Free package profile.");
+  const track = contentPackageRuntimeOwner.getPreparedDiscovery("coding-interview-dsa-problem-solving").track;
+  const simulation = getProductSimulationModeConfig(track.trackId, track.simulationProfiles);
+  if (simulation.config.modeId !== ALGORITHM_MODE_IDS.interviewSimulation || simulation.profile.profileId !== "algorithms-interview-simulation-v1") {
+    throw new ProductModeUnavailableError("Coding Interview Simulation does not match its canonical product profile.");
+  }
+  return Object.freeze({ trackId: "coding-interview-dsa-problem-solving", modeId: ALGORITHM_MODE_IDS.interviewSimulation, profileId: simulation.profile.profileId, requestedLength: 40 });
 }
 
 export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPracticeProjection> {
@@ -267,20 +273,26 @@ export async function recoverAlgorithmsPracticeCompletion(expectedSessionId: str
   return finalized;
 }
 
-export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSimulationProjection> {
-  throw new ProductModeUnavailableError("Coding interview simulation is unavailable in the canonical product mode catalog.");
-  /* istanbul ignore next -- retained type boundary for the unavailable legacy route. */
-  /* eslint-disable no-unreachable */
+export async function getAlgorithmsSimulationProjection(authorization?: SimulationCommandAuthorization): Promise<AlgorithmsSimulationProjection> {
   const session = await requireAlgorithmsSession();
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("The active Algorithms session is not an Interview Simulation.");
   const lifecycle = getTrainingLifecycleUseCases();
-  await lifecycle.resumeActiveSession();
+  if (authorization) return getAlgorithmsSimulationProjectionForSession(session, lifecycle, authorization);
+  return lifecycle.withAuthorizedSimulationCommand(session.id, (ownedAuthorization) => getAlgorithmsSimulationProjectionForSession(session, lifecycle, ownedAuthorization));
+}
+
+async function getAlgorithmsSimulationProjectionForSession(
+  session: TrainingSession,
+  lifecycle: ReturnType<typeof getTrainingLifecycleUseCases>,
+  authorization: SimulationCommandAuthorization,
+): Promise<AlgorithmsSimulationProjection> {
+  await lifecycle.resumeActiveSession(authorization);
   const draft = await requireSimulationDraft(session.id);
   const index = session.currentItemIndex;
   if (!Number.isInteger(index) || index < 0 || index >= session.itemOrder.length) throw new Error("Interview Simulation navigator position is outside the immutable session.");
   const occurrence = session.itemOrder[index]!;
   const question: Question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
-  const time = await getForegroundSessionTimerFacade().projection(session);
+  const time = await getForegroundSessionTimerFacade().projection(session, authorization);
   if (time.remainingForegroundMs === undefined) throw new Error("Interview Simulation countdown projection is unavailable.");
   const operation = await lifecycle.getSimulationOperationState(session);
   return Object.freeze({
@@ -309,49 +321,60 @@ export async function getAlgorithmsSimulationScreenProjection(): Promise<Algorit
   catch (error) { return Object.freeze({ kind: "unavailable", operation: simulationFailureProjection(error) }); }
 }
 
-export async function navigateAlgorithmsSimulationTo(index: number): Promise<TrainingSession> {
-  return getTrainingLifecycleUseCases().moveSimulationSessionTo(index);
+export async function navigateAlgorithmsSimulationTo(index: number, authorization?: SimulationCommandAuthorization): Promise<TrainingSession> {
+  return getTrainingLifecycleUseCases().moveSimulationSessionTo(index, authorization);
 }
 
 /** One navigator command persists a changed response before it changes the durable active occurrence. */
 export async function saveAlgorithmsSimulationResponseAndNavigate(input: Readonly<{ occurrenceId: string; response: AlgorithmResponse | null; targetIndex: number }>): Promise<AlgorithmsSimulationProjection> {
   const session = await requireAlgorithmsSession();
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation can save and jump.");
+  return getTrainingLifecycleUseCases().withAuthorizedSimulationCommand(session.id, (authorization) => saveAlgorithmsSimulationResponseAndNavigateForSession(session, input, authorization));
+}
+
+async function saveAlgorithmsSimulationResponseAndNavigateForSession(session: TrainingSession, input: Readonly<{ occurrenceId: string; response: AlgorithmResponse | null; targetIndex: number }>, authorization: SimulationCommandAuthorization): Promise<AlgorithmsSimulationProjection> {
   const current = session.itemOrder[session.currentItemIndex];
   if (!current || current.occurrenceId !== input.occurrenceId) throw new TrainingApplicationFailure("invalid_response", "Save and jump requires the active Interview Simulation occurrence.");
   if (!Number.isSafeInteger(input.targetIndex) || input.targetIndex < 0 || input.targetIndex >= session.itemOrder.length) {
     throw new TrainingApplicationFailure("invalid_response", "Save and jump requires a valid Interview Simulation target occurrence.");
   }
   const previousRevision = (await requireSimulationDraft(session.id)).revision;
-  await saveAlgorithmsSimulationResponse({ occurrenceId: input.occurrenceId, response: input.response });
+  const expectedResponse = await saveAlgorithmsSimulationResponseForSession(session, { occurrenceId: input.occurrenceId, response: input.response }, authorization);
   const saved = await requireSimulationDraft(session.id);
   const savedResponse = saved.responsesByOccurrenceId[input.occurrenceId];
-  if (saved.revision !== previousRevision + 1 || (input.response === null ? savedResponse !== undefined : JSON.stringify(savedResponse) !== JSON.stringify(input.response))) {
+  if (saved.revision !== previousRevision + 1 || (expectedResponse === null ? savedResponse !== undefined : JSON.stringify(savedResponse) !== JSON.stringify(expectedResponse))) {
     throw new TrainingApplicationFailure("verification_failure", "Save and jump could not verify the durable simulation response revision.");
   }
-  const navigated = input.targetIndex === session.currentItemIndex ? session : await navigateAlgorithmsSimulationTo(input.targetIndex);
+  const navigated = input.targetIndex === session.currentItemIndex ? session : await navigateAlgorithmsSimulationTo(input.targetIndex, authorization);
   if (navigated.currentItemIndex !== input.targetIndex) {
     throw new TrainingApplicationFailure("verification_failure", "Save and jump could not verify the requested simulation position.");
   }
-  const projection = await getAlgorithmsSimulationProjection();
+  const projection = await getAlgorithmsSimulationProjection(authorization);
   if (projection.session.id !== session.id || projection.position.current !== input.targetIndex + 1 || projection.durableDraftRevision !== saved.revision) {
     throw new TrainingApplicationFailure("verification_failure", "Save and jump could not publish the verified simulation projection.");
   }
   return projection;
 }
 
-export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurrenceId: string; response: AlgorithmResponse | null }>): Promise<void> {
+export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurrenceId: string; response: AlgorithmResponse | null }>): Promise<CanonicalQuestionResponse | null> {
   const session = await requireAlgorithmsSession();
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation has a persisted response draft.");
+  return getTrainingLifecycleUseCases().withAuthorizedSimulationCommand(session.id, (authorization) => saveAlgorithmsSimulationResponseForSession(session, input, authorization));
+}
+
+async function saveAlgorithmsSimulationResponseForSession(session: TrainingSession, input: Readonly<{ occurrenceId: string; response: AlgorithmResponse | null }>, authorization: SimulationCommandAuthorization): Promise<CanonicalQuestionResponse | null> {
+  const lifecycle = getTrainingLifecycleUseCases();
   const draft = await requireSimulationDraft(session.id);
   const occurrence = session.itemOrder.find((item) => item.occurrenceId === input.occurrenceId);
   if (!occurrence) throw new Error(`Algorithms Interview Simulation occurrence ${input.occurrenceId} is unknown.`);
+  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+  const response = input.response === null ? null : toCanonicalPracticeResponse(question, input.response);
   const responses = { ...draft.responsesByOccurrenceId };
   if (input.response === null) delete responses[input.occurrenceId];
-  else responses[input.occurrenceId] = input.response;
-  const nextDraft = Object.freeze({ ...draft, revision: draft.revision + 1, responsesByOccurrenceId: Object.freeze(responses), updatedAt: getTrainingLifecycleUseCases().currentTime() });
-  await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
-  await getTrainingLifecycleUseCases().saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision });
+  else responses[input.occurrenceId] = response!;
+  const nextDraft = Object.freeze({ ...draft, revision: draft.revision + 1, responsesByOccurrenceId: Object.freeze(responses), updatedAt: lifecycle.currentTime() });
+  await lifecycle.saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision, authorization });
+  return response;
 }
 
 /** One application command owns the non-final simulation action: save, verify, advance, then publish the next projection. */
@@ -367,18 +390,22 @@ export async function saveAlgorithmsSimulationResponseAndContinue(input: Readonl
 }
 
 async function saveAlgorithmsSimulationResponseAndContinueForSession(session: TrainingSession, input: Readonly<{ occurrenceId: string; response: AlgorithmResponse }>): Promise<AlgorithmsSimulationProjection> {
+  return getTrainingLifecycleUseCases().withAuthorizedSimulationCommand(session.id, (authorization) => saveAlgorithmsSimulationResponseAndContinueAuthorized(session, input, authorization));
+}
+
+async function saveAlgorithmsSimulationResponseAndContinueAuthorized(session: TrainingSession, input: Readonly<{ occurrenceId: string; response: AlgorithmResponse }>, authorization: SimulationCommandAuthorization): Promise<AlgorithmsSimulationProjection> {
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation can save and continue.");
   const current = session.itemOrder[session.currentItemIndex];
   if (!current || current.occurrenceId !== input.occurrenceId) throw new TrainingApplicationFailure("invalid_response", "Save and continue requires the active Interview Simulation occurrence.");
   if (session.currentItemIndex >= session.itemOrder.length - 1) throw new TrainingApplicationFailure("invalid_response", "The final Interview Simulation occurrence cannot save and continue.");
   const previousRevision = (await requireSimulationDraft(session.id)).revision;
-  await saveAlgorithmsSimulationResponse(input);
+  const expectedResponse = await saveAlgorithmsSimulationResponseForSession(session, input, authorization);
   const saved = await requireSimulationDraft(session.id);
-  if (saved.revision !== previousRevision + 1 || saved.responsesByOccurrenceId[input.occurrenceId] === undefined) {
+  if (saved.revision !== previousRevision + 1 || JSON.stringify(saved.responsesByOccurrenceId[input.occurrenceId]) !== JSON.stringify(expectedResponse)) {
     throw new TrainingApplicationFailure("verification_failure", "Save and continue could not verify the durable simulation response revision.");
   }
   let advanced: TrainingSession;
-  try { advanced = await navigateAlgorithmsSimulationTo(session.currentItemIndex + 1); }
+  try { advanced = await navigateAlgorithmsSimulationTo(session.currentItemIndex + 1, authorization); }
   catch (error) {
     getTrainingLifecycleUseCases().markSimulationSaveAndContinueAdvanceRecovery(session.id, error);
     throw error;
@@ -386,7 +413,7 @@ async function saveAlgorithmsSimulationResponseAndContinueForSession(session: Tr
   if (advanced.currentItemIndex !== session.currentItemIndex + 1) {
     throw new TrainingApplicationFailure("verification_failure", "Save and continue could not verify the durable simulation position.");
   }
-  const projection = await getAlgorithmsSimulationProjection();
+  const projection = await getAlgorithmsSimulationProjection(authorization);
   if (projection.session.id !== session.id || projection.position.current !== advanced.currentItemIndex + 1 || projection.durableDraftRevision !== saved.revision) {
     throw new TrainingApplicationFailure("verification_failure", "Save and continue could not publish the verified next simulation projection.");
   }
@@ -395,8 +422,13 @@ async function saveAlgorithmsSimulationResponseAndContinueForSession(session: Tr
 
 /** Recovery continues a response already verified as durable; it never writes that response again. */
 export async function recoverAlgorithmsSimulationSaveAndContinue(input: Readonly<{ occurrenceId: string }>): Promise<AlgorithmsSimulationProjection> {
-  let session = await requireAlgorithmsSession();
+  const session = await requireAlgorithmsSession();
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation can recover save and continue.");
+  return getTrainingLifecycleUseCases().withAuthorizedSimulationCommand(session.id, (authorization) => recoverAlgorithmsSimulationSaveAndContinueAuthorized(session, input, authorization));
+}
+
+async function recoverAlgorithmsSimulationSaveAndContinueAuthorized(initialSession: TrainingSession, input: Readonly<{ occurrenceId: string }>, authorization: SimulationCommandAuthorization): Promise<AlgorithmsSimulationProjection> {
+  let session = initialSession;
   const sourceIndex = session.itemOrder.findIndex((occurrence) => occurrence.occurrenceId === input.occurrenceId);
   if (sourceIndex < 0 || sourceIndex >= session.itemOrder.length - 1 || session.currentItemIndex !== sourceIndex) {
     throw new TrainingApplicationFailure("invalid_response", "Save-and-continue recovery requires its still-active non-final occurrence.");
@@ -406,13 +438,13 @@ export async function recoverAlgorithmsSimulationSaveAndContinue(input: Readonly
     throw new TrainingApplicationFailure("missing_draft", "Save-and-continue recovery requires the durable response it is continuing from.");
   }
   const lifecycle = getTrainingLifecycleUseCases();
-  await lifecycle.recoverActiveTrainingOperation();
+  await lifecycle.recoverActiveTrainingOperation(authorization);
   session = await requireAlgorithmsSession();
-  if (session.currentItemIndex === sourceIndex) await navigateAlgorithmsSimulationTo(sourceIndex + 1);
+  if (session.currentItemIndex === sourceIndex) await navigateAlgorithmsSimulationTo(sourceIndex + 1, authorization);
   if (session.currentItemIndex !== sourceIndex + 1) {
     throw new TrainingApplicationFailure("verification_failure", "Save-and-continue recovery could not verify the next simulation position.");
   }
-  const projection = await getAlgorithmsSimulationProjection();
+  const projection = await getAlgorithmsSimulationProjection(authorization);
   if (projection.durableDraftRevision !== draft.revision || projection.position.current !== sourceIndex + 2) {
     throw new TrainingApplicationFailure("verification_failure", "Save-and-continue recovery could not publish the verified next simulation projection.");
   }
@@ -437,7 +469,8 @@ export async function recoverAlgorithmsSimulationOperation(): Promise<void> {
 
 export async function finalizeAlgorithmsSimulation(): Promise<void> {
   const session = await requireAlgorithmsSession();
-  await getForegroundSessionTimerFacade().finalizeCountdownManually(session);
+  const authorization = await getTrainingLifecycleUseCases().authorizeActiveSimulationCommand(session.id);
+  await getForegroundSessionTimerFacade().finalizeCountdownManually(session, authorization);
 }
 
 export async function abandonAlgorithmsSession(): Promise<TrainingSession> {
@@ -486,6 +519,7 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
   if (!session || session.trackId !== "coding-interview-dsa-problem-solving" || session.status !== "completed" || result.trackId !== "coding-interview-dsa-problem-solving") {
     throw new Error("The completed session is not an Algorithms result.");
   }
+  if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) await validateCodingSimulationResult(session, result);
   const feedbackTiming = feedbackTimingFromSession(session);
   return Object.freeze({
     completionKind: "completed",
@@ -509,7 +543,7 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
 /** Reads a completed practice occurrence without starting or mutating a session. */
 export async function getAlgorithmsPracticeReviewProjection(sessionId: string, occurrenceId: string): Promise<AlgorithmsSessionResultProjection> {
   const result = await getAlgorithmsPracticeSummaryProjection(sessionId);
-  if (result.sessionId !== sessionId || result.completionKind !== "completed" || result.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
+  if (result.sessionId !== sessionId || result.completionKind !== "completed") {
     throw new Error("Answer review requires this completed practice session.");
   }
   if (!result.feedbackItems.some((item) => item.occurrenceId === occurrenceId)) {
@@ -563,8 +597,6 @@ async function requireExactAlgorithmsPractice(expectedSessionId: string): Promis
 
 async function requireSimulationDraft(sessionId: string) {
   const lifecycle = getTrainingLifecycleUseCases();
-  // The lifecycle owns validation; this facade intentionally never infers a draft.
-  await lifecycle.resumeActiveSession();
   const session = await loadActiveTrainingSession();
   if (!session || session.id !== sessionId) throw new TrainingApplicationFailure("corrupt_state", "The active Interview Simulation changed while loading its draft.");
   const draft = await loadActiveTrainingSessionDraft();
@@ -604,19 +636,19 @@ async function completedFeedbackItems(session: TrainingSession, attempts: readon
     attemptsByOccurrenceId.set(attempt.occurrenceId, attempt);
   }
   const questions: readonly Question[] = await Promise.all(session.itemOrder.map((occurrence) => contentPackageRuntimeOwner.resolveItem(occurrence.item)));
-  return Object.freeze(session.itemOrder.flatMap((occurrence, index) => {
+  return Object.freeze(session.itemOrder.map((occurrence, index) => {
     const attempt = attemptsByOccurrenceId.get(occurrence.occurrenceId);
-    if (!attempt) return [];
     const question = questions[index]!;
-    const feedback = composeCanonicalFeedback(question, attempt.response as CanonicalQuestionResponse);
-    return [Object.freeze({
+    const response = (attempt?.response ?? question.answer) as CanonicalQuestionResponse;
+    const feedback = composeCanonicalFeedback(question, response);
+    return Object.freeze({
       constraints: Object.freeze([...(question.constraints ?? [])]),
-      correctness: feedback.correctness,
+      correctness: attempt?.result.kind ?? "unanswered",
       details: feedback.details,
       sources: projectCanonicalSourceLinks(question),
       interaction: buildCanonicalInteractionViewModel(
         question,
-        attempt.response as CanonicalQuestionResponse,
+        response,
         session.optionOrderByOccurrence[occurrence.occurrenceId] ?? [],
       ),
       item: occurrence.item,
@@ -625,9 +657,29 @@ async function completedFeedbackItems(session: TrainingSession, attempts: readon
       ordinal: index + 1,
       prompt: question.prompt,
       reason: feedback.reason,
-      controls: projectCanonicalChoiceFeedbackControls(question, attempt.response as CanonicalQuestionResponse),
-    })];
+      controls: projectCanonicalChoiceFeedbackControls(question, response),
+    });
   }));
+}
+
+async function validateCodingSimulationResult(session: TrainingSession, result: Awaited<ReturnType<ReturnType<typeof getTrainingLifecycleUseCases>["loadSummary"]>>): Promise<void> {
+  const exact = await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 });
+  const profile = getProductSimulationModeConfig(exact.track.trackId, exact.track.simulationProfiles).profile;
+  const details = result.evidence.details as Record<string, unknown>;
+  const occurrenceIds = session.itemOrder.map((occurrence) => occurrence.occurrenceId);
+  const answered = new Set(result.answeredOccurrenceIds);
+  const unanswered = new Set(result.unansweredOccurrenceIds);
+  if (profile.familyId !== "coding_interview" || profile.modeId !== ALGORITHM_MODE_IDS.interviewSimulation ||
+    session.actualLength !== 40 || session.requestedLength !== 40 || session.itemOrder.length !== 40 ||
+    session.configurationSnapshot.kind !== "algorithmsInterviewSimulation" || session.configurationSnapshot.simulationProfileId !== profile.profileId ||
+    session.configurationSnapshot.simulationProfileVersion !== profile.profileVersion || result.totalOccurrences !== 40 ||
+    answered.size !== result.answeredOccurrenceIds.length || unanswered.size !== result.unansweredOccurrenceIds.length ||
+    [...answered].some((id) => unanswered.has(id)) || answered.size + unanswered.size !== 40 ||
+    JSON.stringify(result.answeredOccurrenceIds) !== JSON.stringify(occurrenceIds.filter((id) => answered.has(id))) ||
+    JSON.stringify(result.unansweredOccurrenceIds) !== JSON.stringify(occurrenceIds.filter((id) => unanswered.has(id))) ||
+    details.profileId !== profile.profileId || details.profileVersion !== profile.profileVersion) {
+    throw new TrainingApplicationFailure("summary_unavailable", "Coding Mock result does not match its completed session and exact 40-question profile.");
+  }
 }
 
 function resultScore(value: unknown): AlgorithmsSessionResultProjection["score"] {

@@ -132,6 +132,9 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const examAdmissionPendingRef = useRef(false);
   const [examAdmissionPending, setExamAdmissionPending] = useState(false);
   const [examAccessUnavailable, setExamAccessUnavailable] = useState(false);
+  const codingAdmissionPendingRef = useRef(false);
+  const [codingAdmissionPending, setCodingAdmissionPending] = useState(false);
+  const [codingAccessUnavailable, setCodingAccessUnavailable] = useState(false);
   const { readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load your practice options."),
     includeReviews: true,
@@ -256,8 +259,31 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       return;
     }
     if (isCodingInterviewTrack && resolvedMode === ALGORITHM_MODE_IDS.interviewSimulation) {
-      const entry = getAlgorithmsInterviewSimulationEntry();
-      navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });
+      if (codingAdmissionPendingRef.current) return;
+      codingAdmissionPendingRef.current = true;
+      setCodingAdmissionPending(true);
+      setCodingAccessUnavailable(false);
+      void account.authorizePremiumSessionStart()
+        .then((admission) => {
+          switch (resolveCertificationExamAccess(admission)) {
+            case "startExam": {
+              const entry = getAlgorithmsInterviewSimulationEntry();
+              navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });
+              return;
+            }
+            case "purchasePremium":
+              navigation.navigate(ROUTES.PREMIUM_PURCHASE);
+              return;
+            case "retryAdmission":
+              setCodingAccessUnavailable(true);
+              return;
+          }
+        })
+        .catch(() => setCodingAccessUnavailable(true))
+        .finally(() => {
+          codingAdmissionPendingRef.current = false;
+          setCodingAdmissionPending(false);
+        });
       return;
     }
     const practiceMode = resolvedMode as PracticeSessionMode;
@@ -362,16 +388,16 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 key={mode.mode}
                 leading={<IconTile iconSize={24} name={mode.icon} size={32} tone={mode.enabled ? (isCodingInterviewTrack ? "settings" : mode.tone) : "muted"} />}
                 onPress={mode.enabled ? () => startSession(mode.mode) : undefined}
-                disabled={mode.mode === "certification-exam-simulation" && examAdmissionPending}
+                disabled={(mode.mode === "certification-exam-simulation" && examAdmissionPending) || (mode.mode === ALGORITHM_MODE_IDS.interviewSimulation && codingAdmissionPending)}
                 style={[styles.modeRow, index === secondaryModes.length - 1 ? styles.modeRowLast : null, mode.enabled ? null : styles.disabledRow]}
                 testID={runtimeSelectors.practice.modeCard(mode.mode)}
                 title={t(mode.title)}
                 titleNumberOfLines={0}
                 trailing={
-                  mode.mode === "certification-exam-simulation" ? (
+                  mode.mode === "certification-exam-simulation" || mode.mode === ALGORITHM_MODE_IDS.interviewSimulation ? (
                     <View style={styles.examModeTrailing}>
                       <Badge label={t("Premium")} tone="info" />
-                      {examAdmissionPending ? (
+                      {(mode.mode === "certification-exam-simulation" ? examAdmissionPending : codingAdmissionPending) ? (
                         <ActivityIndicator accessibilityLabel={t("Checking Premium access…")} size="small" color={palette.textMuted} />
                       ) : (
                         <Icon color={palette.textMuted} name="chevron-right" size={20} />
@@ -400,6 +426,20 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 onPress={() => startSession("certification-exam-simulation")}
                 variant="ghost"
               >
+                {t("Try again")}
+              </Button>
+            </View>
+          ) : null}
+          {codingAccessUnavailable ? (
+            <View style={styles.examAccessError}>
+              <InfoBlock
+                accessibilityAlert
+                body={t("We couldn't verify Premium access. Check your connection and try again.")}
+                testID="practice-coding-mock-access-error"
+                title={t("Premium access unavailable")}
+                tone="warning"
+              />
+              <Button onPress={() => startSession(ALGORITHM_MODE_IDS.interviewSimulation)} variant="ghost">
                 {t("Try again")}
               </Button>
             </View>

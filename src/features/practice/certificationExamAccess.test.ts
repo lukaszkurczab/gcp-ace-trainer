@@ -22,6 +22,10 @@ test("Practice Hub keeps the exam offer visible and routes each admission outcom
   assert.match(hub, /examAdmissionPendingRef\.current/);
   assert.match(hub, /authorizePremiumSessionStart\(\)[\s\S]*?catch[\s\S]*?setExamAccessUnavailable\(true\)/);
   assert.match(hub, /mode\.mode === "certification-exam-simulation"/);
+  assert.match(hub, /mode\.mode === ALGORITHM_MODE_IDS\.interviewSimulation/);
+  assert.match(hub, /case "startExam":\s*\{\s*const entry = getAlgorithmsInterviewSimulationEntry\(\);\s*navigation\.navigate\(ROUTES\.ALGORITHMS_INTERVIEW_SIMULATION/);
+  assert.match(hub, /case "retryAdmission":\s*setCodingAccessUnavailable\(true\)/);
+  assert.match(hub, /testID="practice-coding-mock-access-error"/);
   assert.match(hub, /<InfoBlock[\s\S]*?accessibilityAlert[\s\S]*?testID="practice-exam-access-error"/);
   assert.match(hub, /<Button[\s\S]*?onPress=\{\(\) => startSession\("certification-exam-simulation"\)\}[\s\S]*?\{t\("Try again"\)\}/);
 });

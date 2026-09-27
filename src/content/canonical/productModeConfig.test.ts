@@ -22,7 +22,7 @@ import {
   type ProductModeArtifact,
   type ProductModeConfig,
 } from "./productModeConfig";
-import type { CanonicalSimulationProfile } from "./questionTypes";
+import type { CanonicalCodingInterviewSimulationProfile, CanonicalSimulationProfile } from "./questionTypes";
 
 const coding = "coding-interview-dsa-problem-solving";
 const gcp = "google-cloud-associate-cloud-engineer";
@@ -197,6 +197,26 @@ test("simulation mode is bound to the exact GCP profile, family, and mode", () =
   assert.throws(() => getProductSimulationModeConfig("aws-certified-solutions-architect-associate", [profile]), /unavailable/);
   assert.throws(() => getProductSimulationModeConfig(gcp, []), /unavailable/);
   assert.throws(() => getProductSimulationModeConfig(gcp, [{ ...profile, familyId: "coding_interview" as "certification" }]), /does not match/);
+});
+
+test("Coding Mock product mode binds only its declared Coding Interview profile", () => {
+  const profile: CanonicalCodingInterviewSimulationProfile = {
+    schemaVersion: "patternly-simulation-profile-envelope-v1",
+    profileId: "algorithms-interview-simulation-v1",
+    profileVersion: "1",
+    familyId: "coding_interview",
+    modeId: "coding-interview-simulation",
+    familyConfig: {} as CanonicalCodingInterviewSimulationProfile["familyConfig"],
+  };
+  const resolved = getProductSimulationModeConfig(coding, [profile]);
+  assert.deepEqual(resolved.config, {
+    kind: "coding_interview_simulation", trackId: coding, profileId: profile.profileId,
+    familyId: "coding_interview", modeId: "coding-interview-simulation",
+  });
+  assert.equal(resolved.profile, profile);
+  assert.throws(() => getProductSimulationModeConfig(gcp, [profile]), /unavailable/);
+  assert.throws(() => getProductSimulationModeConfig(coding, []), /unavailable/);
+  assert.throws(() => getProductSimulationModeConfig(coding, [{ ...profile, modeId: "coding-interview-guided-practice" } as unknown as CanonicalCodingInterviewSimulationProfile]), /does not match/);
 });
 
 test("GCP Diagnostic preserves the verified exact ordered 40-question plan", () => {

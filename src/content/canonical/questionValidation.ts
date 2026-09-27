@@ -125,11 +125,56 @@ function validateSimulationProfiles(value: unknown, questions: readonly unknown[
     if (!id(profile.profileId, `${path}.profileId`, errors) || profileIds.has(profile.profileId)) errors.push(`${path}.profileId: must be unique`);
     else profileIds.add(profile.profileId);
     if (profile.profileVersion !== "1") errors.push(`${path}.profileVersion: unsupported version`);
-    if (profile.familyId !== "certification") errors.push(`${path}.familyId: unsupported family`);
-    if (profile.modeId !== "certification-exam-simulation") errors.push(`${path}.modeId: unsupported certification mode`);
-    if (profile.profileId !== "google-cloud-associate-cloud-engineer-certification-exam-v1") errors.push(`${path}.profileId: unsupported profile`);
-    if (trackId !== "google-cloud-associate-cloud-engineer") errors.push(`${path}: simulation profile is not supported for this track`);
-    validateCertificationSimulationConfig(profile.familyConfig, questions, nodeIds, trackId, contentVersion, questions.length, path, errors);
+    if (profile.modeId === "certification-exam-simulation") {
+      if (profile.familyId !== "certification") errors.push(`${path}.familyId: unsupported family`);
+      if (profile.profileId !== "google-cloud-associate-cloud-engineer-certification-exam-v1") errors.push(`${path}.profileId: unsupported profile`);
+      if (trackId !== "google-cloud-associate-cloud-engineer") errors.push(`${path}: simulation profile is not supported for this track`);
+      validateCertificationSimulationConfig(profile.familyConfig, questions, nodeIds, trackId, contentVersion, questions.length, path, errors);
+      return;
+    }
+    if (profile.modeId === "coding-interview-simulation") {
+      if (profile.familyId !== "coding_interview") errors.push(`${path}.familyId: unsupported family`);
+      if (profile.profileId !== "algorithms-interview-simulation-v1") errors.push(`${path}.profileId: unsupported profile`);
+      if (trackId !== "coding-interview-dsa-problem-solving") errors.push(`${path}: simulation profile is not supported for this track`);
+      validateCodingInterviewSimulationConfig(profile.familyConfig, questions, path, errors);
+      return;
+    }
+    errors.push(`${path}.modeId: unsupported simulation mode`);
+  });
+}
+
+const CODING_SIMULATION_POLICY_KEYS = [
+  "requireUniqueItemIds", "requireDeclaredSimulationEligibility", "requireMultipleMentalUnits",
+  "requireMultiplePatternFamilies", "requireEveryActiveInteractionTypeRepresented",
+  "prohibitConsecutiveSameMentalUnitWhenAlternativeExists", "prohibitDuplicateContentIdentity",
+  "prohibitTaxonomyWidening", "prohibitFallbackItems",
+] as const;
+
+function validateCodingInterviewSimulationConfig(value: unknown, questions: readonly unknown[], path: string, errors: string[]): void {
+  const configPath = `${path}.familyConfig`;
+  const configKeys = ["schemaVersion", "blueprintId", "blueprintVersion", "requestedLength", "actualLength", "shorteningPolicy", "uniqueItemsRequired", "timerKind", "durationMinutes", "navigationPolicy", "answerChangePolicy", "reinsertPolicy", "feedbackTiming", "learningStages", "selectionPolicy", "poolId", "poolVersion", "eligibleQuestionIds"];
+  if (!exact(value, configKeys, configKeys, configPath, errors)) return;
+  if (value.schemaVersion !== "patternly-coding-interview-simulation-config-v1" || value.blueprintId !== "coding-interview-interview-simulation-v1" || value.blueprintVersion !== "1") errors.push(`${configPath}: unsupported Coding Interview blueprint identity`);
+  if (value.requestedLength !== 40 || value.actualLength !== 40 || value.shorteningPolicy !== "prohibited" || value.uniqueItemsRequired !== 40) errors.push(`${configPath}: must require exactly 40 unique questions without shortening`);
+  if (value.timerKind !== "foreground_countdown" || value.durationMinutes !== 45 || value.navigationPolicy !== "free_navigation" || value.answerChangePolicy !== "editable_until_finalization" || value.reinsertPolicy !== "disabled" || value.feedbackTiming !== "after_verified_finalization") errors.push(`${configPath}: unsupported Coding Interview simulation behavior`);
+  if (!Array.isArray(value.learningStages) || value.learningStages.length !== 1 || value.learningStages[0] !== "simulation") errors.push(`${configPath}.learningStages: must contain only simulation`);
+  if (exact(value.selectionPolicy, CODING_SIMULATION_POLICY_KEYS, CODING_SIMULATION_POLICY_KEYS, `${configPath}.selectionPolicy`, errors)) {
+    const policy = value.selectionPolicy as Record<string, unknown>;
+    if (CODING_SIMULATION_POLICY_KEYS.some((key) => policy[key] !== true)) errors.push(`${configPath}.selectionPolicy: every declared selection constraint must be enabled`);
+  }
+  if (value.poolId !== "algorithms-interview-simulation-v1" || value.poolVersion !== "1") errors.push(`${configPath}: unsupported Coding Interview simulation pool`);
+  if (!Array.isArray(value.eligibleQuestionIds) || value.eligibleQuestionIds.length !== 40) {
+    errors.push(`${configPath}.eligibleQuestionIds: must contain exactly 40 ordered question identities`);
+    return;
+  }
+  const sourceIds = new Set(questions.flatMap((question) => record(question) && typeof question.questionId === "string" ? [question.questionId] : []));
+  const selected = new Set<string>();
+  value.eligibleQuestionIds.forEach((questionId, index) => {
+    id(questionId, `${configPath}.eligibleQuestionIds[${index}]`, errors);
+    if (typeof questionId !== "string") return;
+    if (selected.has(questionId)) errors.push(`${configPath}.eligibleQuestionIds[${index}]: duplicate question identity`);
+    if (!sourceIds.has(questionId)) errors.push(`${configPath}.eligibleQuestionIds[${index}]: question is absent from the canonical artifact`);
+    selected.add(questionId);
   });
 }
 

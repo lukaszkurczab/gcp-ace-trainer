@@ -4,17 +4,19 @@ import test from "node:test";
 
 const source = readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8");
 
-test("simulation routes retain one review header and a neutral result title before verification", () => { assert.match(readFileSync("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx", "utf8"), /unavailable/i); return;
+test("simulation result and review are exposed only through the verified result reader", () => {
   const navigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
   const summary = navigator.match(/name=\{ROUTES\.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY\}[\s\S]*?\/>/)?.[0] ?? "";
   const review = navigator.match(/name=\{ROUTES\.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW\}[\s\S]*?\/>/)?.[0] ?? "";
   assert.ok(summary);
   assert.ok(review);
   assert.match(summary, /title: t\("Simulation result"\)/);
-  assert.doesNotMatch(summary, /Simulation complete/);
   assert.match(review, /headerShown: false/);
   const result = readFileSync("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx", "utf8");
-  assert.match(result, /state: "completed",\s*title: "Simulation complete"/);
+  assert.match(result, /useSimulationResultRead\(route\.params\.sessionId\)/);
+  assert.match(result, /result\.feedbackItems\.length !== 40/);
+  assert.match(result, /<SessionShell/);
+  assert.match(result, /result\.modeId !== "coding-interview-simulation"/);
   assert.match(source, /styles\.summaryTitle\}>\{t\(projection\.title\)\}/);
 });
 

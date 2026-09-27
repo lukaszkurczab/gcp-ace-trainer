@@ -18,7 +18,7 @@ const SEGMENT = /^[A-Za-z0-9][A-Za-z0-9:_-]*$/;
 declare const runtimeSelectorId: unique symbol;
 
 export type RuntimeSelectorId = string & Readonly<{ [runtimeSelectorId]: "RuntimeSelectorId" }>;
-export type ResponseResult = "correct" | "incorrect" | "partial";
+export type ResponseResult = "correct" | "incorrect" | "partial" | "unanswered";
 export type LearningPlanPrimaryState =
   | "loading"
   | "stale"

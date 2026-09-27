@@ -26,9 +26,10 @@ export class ContentPackageRuntimeOwner {
   async resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string }>): Promise<ResolvedPackageRuntime> {
     const track = (await this.catalogOwner.load()).getTrack(input.trackId);
     assertFamily(track, input.familyId);
-    if (input.modeId === "certification-exam-simulation") {
-      if (input.nodeId !== undefined) throw new Error("Certification Exam Simulation does not accept a nodeId.");
-      getProductSimulationModeConfig(track.trackId, track.simulationProfiles);
+    if (input.modeId === "certification-exam-simulation" || input.modeId === "coding-interview-simulation") {
+      if (input.nodeId !== undefined) throw new Error("Product simulations do not accept a nodeId.");
+      const simulation = getProductSimulationModeConfig(track.trackId, track.simulationProfiles);
+      if (simulation.config.modeId !== input.modeId || simulation.config.familyId !== input.familyId) throw new Error("Requested simulation mode does not match its canonical product profile.");
       return this.materialize(track);
     }
     if (input.nodeId) {

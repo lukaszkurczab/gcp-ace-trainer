@@ -1,5 +1,5 @@
 import { isCanonicalSafeIdentity } from "./questionValidation";
-import type { CanonicalSimulationProfile } from "./questionTypes";
+import type { CanonicalProductSimulationProfile } from "./questionTypes";
 
 export type ProductModeAvailability = "immediate" | "evidence_conditioned";
 export type ProductFeedbackTiming =
@@ -42,6 +42,16 @@ export type ProductSimulationModeConfig = Readonly<{
   modeId: "certification-exam-simulation";
 }>;
 
+export type ProductCodingInterviewSimulationModeConfig = Readonly<{
+  kind: "coding_interview_simulation";
+  trackId: "coding-interview-dsa-problem-solving";
+  profileId: "algorithms-interview-simulation-v1";
+  familyId: "coding_interview";
+  modeId: "coding-interview-simulation";
+}>;
+
+export type ProductSimulationConfig = ProductSimulationModeConfig | ProductCodingInterviewSimulationModeConfig;
+
 const GCP_SIMULATION_MODE: ProductSimulationModeConfig = Object.freeze({
   kind: "certification_exam_simulation",
   trackId: "google-cloud-associate-cloud-engineer",
@@ -50,14 +60,25 @@ const GCP_SIMULATION_MODE: ProductSimulationModeConfig = Object.freeze({
   modeId: "certification-exam-simulation",
 });
 
+const CODING_INTERVIEW_SIMULATION_MODE: ProductCodingInterviewSimulationModeConfig = Object.freeze({
+  kind: "coding_interview_simulation",
+  trackId: "coding-interview-dsa-problem-solving",
+  profileId: "algorithms-interview-simulation-v1",
+  familyId: "coding_interview",
+  modeId: "coding-interview-simulation",
+});
+
 /** Resolve only the explicitly bound profile. Simulation policy values remain content-owned. */
-export function getProductSimulationModeConfig(trackId: string, profiles: readonly CanonicalSimulationProfile[] | undefined): Readonly<{ config: ProductSimulationModeConfig; profile: CanonicalSimulationProfile }> {
-  if (trackId !== GCP_SIMULATION_MODE.trackId || !profiles) throw new ProductModeUnavailableError(`Simulation mode ${trackId}/${GCP_SIMULATION_MODE.modeId} is unavailable.`);
-  const matches = profiles.filter((profile) => profile.profileId === GCP_SIMULATION_MODE.profileId);
-  if (matches.length !== 1) throw new ProductModeUnavailableError(`Simulation profile ${GCP_SIMULATION_MODE.profileId} is unavailable.`);
+export function getProductSimulationModeConfig(trackId: string, profiles: readonly CanonicalProductSimulationProfile[] | undefined): Readonly<{ config: ProductSimulationConfig; profile: CanonicalProductSimulationProfile }> {
+  const expected = trackId === GCP_SIMULATION_MODE.trackId ? GCP_SIMULATION_MODE
+    : trackId === CODING_INTERVIEW_SIMULATION_MODE.trackId ? CODING_INTERVIEW_SIMULATION_MODE
+      : null;
+  if (!expected || !profiles) throw new ProductModeUnavailableError(`Simulation mode for ${trackId} is unavailable.`);
+  const matches = profiles.filter((profile) => profile.profileId === expected.profileId);
+  if (matches.length !== 1) throw new ProductModeUnavailableError(`Simulation profile ${expected.profileId} is unavailable.`);
   const profile = matches[0]!;
-  if (profile.familyId !== GCP_SIMULATION_MODE.familyId || profile.modeId !== GCP_SIMULATION_MODE.modeId) throw new ProductModeUnavailableError(`Simulation profile ${profile.profileId} does not match its canonical family and mode.`);
-  return Object.freeze({ config: GCP_SIMULATION_MODE, profile });
+  if (profile.familyId !== expected.familyId || profile.modeId !== expected.modeId) throw new ProductModeUnavailableError(`Simulation profile ${profile.profileId} does not match its canonical family and mode.`);
+  return Object.freeze({ config: expected, profile });
 }
 
 export type ProductModeArtifact = Readonly<{
@@ -71,7 +92,7 @@ export type ProductModeArtifact = Readonly<{
     questionId: string;
     interaction: Readonly<{ type: string }>;
   }>[];
-  simulationProfiles?: readonly CanonicalSimulationProfile[];
+  simulationProfiles?: readonly CanonicalProductSimulationProfile[];
 }>;
 
 export class ProductModeUnavailableError extends Error {
