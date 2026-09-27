@@ -45,7 +45,7 @@ SHA są punktem orientacyjnym porządków, nie kandydatem release. Przed każdym
 
 | Obszar | Status | Potwierdzona luka |
 | --- | --- | --- |
-| Stare audyty UI/session | `partial` | AUD-02, AUD-05, AUD-13, AUD-14 i AUD-15 zawierają wykonane poprawki, lecz ich końcowe scenariusze lokalne nie zostały odebrane na aktualnym kodzie. |
+| Stare audyty UI/session | `partial` | AUD-02, AUD-05, AUD-14 i AUD-15 zawierają wykonane poprawki, lecz ich końcowe scenariusze lokalne nie zostały odebrane na aktualnym kodzie. |
 | Recovery/reissue autoryzacji | `partial` | Backendowe fundamenty są wykonane; pozostają operacje B2–B4 oraz decyzja o e-mailu po niejednoznacznym wyniku SMTP. |
 | Kanał operatorski | `partial` | B1 jest wykonane; brakuje endpointów, CLI i syntetycznego odbioru end-to-end. |
 
@@ -60,8 +60,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `blocking` | runtime recovery fixture i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy i layout są gotowe w nazwanym stashu; pozostają rzeczywisty retry/sign-out failure, długie locale oraz VoiceOver. |
 | 02e | UI-26-11 — hierarchia propozycji planu nauki | `blocking` | runtime state fixtures i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy, ready layout i rzeczywisty edit/back/accept są gotowe w nazwanym stashu; pozostają pozostałe stany/warianty runtime i VoiceOver. |
 | 04 | UI-26-02B — implementacja pierwszego użycia providerów | `blocking` | autoryzowana tożsamość testowa Apple/Google albo pełny fixture emulator-auth dla runtime mapped/new/isolation | Implementacja i testy są gotowe w nazwanych stashach obu repo; brakuje zintegrowanego runtime mapped-existing, unmapped-provisional i Guest A → account B isolation. |
-| 10 | AUD-13 — odpowiedź nr 5, journal i cold restart | `blocking` | bezpieczny fixture sesji | Przyczyna naprawiona albo historyczny defekt rozstrzygnięty dowodowo. |
-| 11 | AUD-05 — nawigacja i lifecycle sesji | `partial` | AUD-13 | Pełna macierz Back/cancel/resume/finish/rapid tap/unavailable. |
+| 11 | AUD-05 — nawigacja i lifecycle sesji | `partial` | brak | Pełna macierz Back/cancel/resume/finish/rapid tap/unavailable. |
 | 12 | AUD-15 — odpowiedzi i review | `partial` | fixture odpowiedzi/review | Odbiór single/multi, stanów poprawności, review i dużego tekstu. |
 | 13 | AUD-14 — Your Data i Dynamic Type | `partial` | bezpieczne wejście konta | Brak clippingu i poprawna semantyka. |
 | 14 | AUD-02 — dziewięć tracków i RC local flow | `partial` | aktualny content lock; fixture sesji | Aktualny build przypięty do source SHA i pełny lokalny flow. |
@@ -163,11 +162,10 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Aktualna blokada:** gotowy diff ma zielone presentation/locale 14/14, szerszy subsystem 57/57, typecheck i diff-check. Maestro na istniejącym iPhonie 17 potwierdził ready w dark/standard i light/accessibility-extra-large oraz rzeczywisty przepływ `Edit schedule → Back → Accept plan → persisted`. Niezależny `qa-gate` pozostawił `BLOCKED`, ponieważ nie wykonano runtime shortened, shortfall, loading, stale, unavailable, wariantów 1/7 dni i target present, błędów i rapid tap dla Edit/Accept ani VoiceOver na fizycznym iOS. Screenshot ready bez targetu nie dowodzi zachowania długiego niemieckiego tytułu z targetem ani shortfall warningu. Diff, raport i screenshoty zachowuje stash `UI-26-11 awaiting runtime matrix and physical VoiceOver 2026-09-27`; wznowić z bezpiecznymi fixture'ami stanów oraz fizycznym iOS i ponowić QA.
 - **Prompt wykonawczy:** „Przeczytaj `docs/active/UI-26-11/AUDIT.md`, następnie sprawdź aktualny `LearningPlanProposalScreen`, `Screen`, `AppShellHeader`, locale i testy. Usuń podwójny top inset przez jednego ownera safe-area; nie używaj ujemnych marginesów. Dla aktywnej propozycji ustaw `Review your learning plan`, usuń subtitle, przenieś lokalizowany goal type do tytułu karty bez duplikatu, zostaw secondary `Edit schedule` i primary `Accept plan`, usuń tylko footerowe `Go back`. Zachowaj header Back, wszystkie dane/stany i logikę planu; wykonaj pełną macierz UI-26-11 na jednym istniejącym iPhonie 17.”
 
-### AUD-13 / AUD-05 / AUD-15 / AUD-14 / AUD-02
+### AUD-05 / AUD-15 / AUD-14 / AUD-02
 
 | ID | Cel i zakres | Akceptacja i weryfikacja | Ryzyko / report |
 | --- | --- | --- | --- |
-| AUD-13 | Odtworzyć zapis piątej odpowiedzi, journal, timer, cold restart, wynik i review na izolowanym fixture. | Potwierdzona przyczyna jest naprawiona i ma regresję; jeśli błąd nie występuje, ograniczona reprodukcja i QA rozstrzygają historyczne zgłoszenie. | Nie uznawać braku logu za PASS. `docs/active/AUD-13/REPORT.md`. |
 | AUD-05 | Back/swipe, cancel/leave/resume z odpowiedzią i timerem, finish/result, rapid tap, unavailable/direct entry na iOS. | Każda ścieżka ma obserwowalny stan przed/po i Maestro; no-op jest błędem. | Nie duplikować lifecycle. `docs/active/AUD-05/REPORT.md`. |
 | AUD-15 | Single/multi, correct/incorrect/partial, review, standard/duży tekst po usunięciu badge. | Hierarchia, wyróżnienie kart, semantyka i screenshoty wszystkich stanów. | Fixture nie może modyfikować chronionego profilu. `docs/active/AUD-15/REPORT.md`. |
 | AUD-14 | Your Data w standardowym i dużym tekście, wszystkie stany i akcje. | Brak clippingu; dostępne etykiety i działające akcje; najpierw reprodukcja, potem najmniejsza poprawka. | Nie traktować problemu wejścia jako problemu layoutu. `docs/active/AUD-14/REPORT.md`. |
@@ -229,4 +227,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**AUD-13** jest pierwszym zadaniem do ponownej oceny dostępności bezpiecznego fixture sesji. `UI-26-02B`, `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiednie nazwane stashe po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.
+**AUD-05** jest pierwszym dostępnym zadaniem: pełna macierz nawigacji i lifecycle sesji po dowodowym zamknięciu zależności AUD-13. `UI-26-02B`, `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiednie nazwane stashe po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.

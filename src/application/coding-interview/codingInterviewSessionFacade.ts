@@ -108,13 +108,27 @@ type StartAlgorithmsSessionInput = Omit<AlgorithmsLifecyclePreparationRequest, "
   source?: string;
 }>;
 
+type CanonicalAlgorithmsStartRequest = Omit<StartAlgorithmsSessionInput, "feedbackMode"> & Readonly<{
+  feedbackTiming?: "after_each_durable_submit" | "after_session_completion";
+}>;
+
+function toCanonicalAlgorithmsStartRequest(input: StartAlgorithmsSessionInput): CanonicalAlgorithmsStartRequest {
+  const { feedbackMode, ...request } = input;
+  const feedbackTiming = feedbackMode === "afterEachAnswer"
+    ? "after_each_durable_submit"
+    : feedbackMode === "atSessionEnd"
+      ? "after_session_completion"
+      : undefined;
+  return { ...request, ...(feedbackTiming ? { feedbackTiming } : {}) };
+}
+
 /** UI-facing canonical entry points. No storage, runtime, selection or timer ownership leaks into presentation. */
 export async function startAlgorithmsSession(input: StartAlgorithmsSessionInput): Promise<PreparedSession> {
   const prepared = await startTrainingSession({
     trackId: "coding-interview-dsa-problem-solving",
     modeId: input.modeId,
     source: input.source,
-    request: input,
+    request: toCanonicalAlgorithmsStartRequest(input),
   });
   await getForegroundSessionTimerFacade().initialize(prepared.session);
   return prepared;
