@@ -2,7 +2,7 @@
 
 **Status:** kanoniczna kolejka pozostałej pracy
 
-**Rewizja:** 27 września 2026
+**Rewizja:** 28 września 2026
 
 **Zakres:** `patternly`, `patternly-backend`, `patternly-content`, `patternly-web`
 **Cel:** doprowadzić jeden przypięty kandydat iOS od lokalnego odbioru do autoryzowanej publikacji. Android jest testowany później ręcznie i nie blokuje lokalnego odbioru iOS.
@@ -47,8 +47,8 @@ SHA są punktem orientacyjnym porządków, nie kandydatem release. Przed każdym
 
 | Obszar | Status | Potwierdzona luka |
 | --- | --- | --- |
-| Stare audyty UI/session | `partial` | AUD-02A jest odebrane na aktualnym kodzie. AUD-02B–D oraz AUD-15 nadal wymagają własnych końcowych scenariuszy lokalnych. |
-| Premium-only learning paths | `partial` | `Exam` ma odebraną jawną regułę Premium i kompletny lokalny RC. `Coding Mock Interview` jest obecnie odłączony również dla Premium. `Design Interview` nadal dopuszcza darmowy node i nie udostępnia pełnej oferty Premium. |
+| Stare audyty UI/session | `partial` | AUD-02A i AUD-02B są odebrane na aktualnym kodzie. AUD-02C–D oraz AUD-15 nadal wymagają własnych końcowych scenariuszy lokalnych. |
+| Premium-only learning paths | `partial` | `Exam` i `Coding Mock Interview` mają odebraną jawną regułę Premium oraz kompletne lokalne RC. `Design Interview` nadal dopuszcza darmowy node i nie udostępnia pełnej oferty Premium. |
 | Recovery/reissue autoryzacji | `partial` | Backendowe fundamenty i polityka e-maila po niejednoznacznym wyniku SMTP są ustalone; pozostają operacje B2–B4. |
 | Kanał operatorski | `partial` | B1 jest wykonane; brakuje endpointów, CLI i syntetycznego odbioru end-to-end. |
 
@@ -65,7 +65,6 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 02f | UI-26-12 — nawigacja i źródła w Exam Review | `planned` | aktualny flow Exam result/review | Usunąć podwójny nagłówek i top inset, rozróżnić powrót do wyników od poprzedniego pytania oraz zapewnić działający link źródłowy także dla `Unanswered`. |
 | 04 | UI-26-02B — implementacja pierwszego użycia providerów | `blocking` | autoryzowana tożsamość testowa Apple/Google albo pełny fixture emulator-auth dla runtime mapped/new/isolation | Implementacja i testy są gotowe w nazwanych stashach obu repo; brakuje zintegrowanego runtime mapped-existing, unmapped-provisional i Guest A → account B isolation. |
 | 12 | AUD-15 — odpowiedzi i review | `partial` | odseparowany fixture multi/partial | Single correct/incorrect i semantyka są potwierdzone na aktualnym iPhonie 17 Simulator; brakuje runtime multi/partial i pełnej macierzy dużego tekstu bez zapisu do chronionego profilu. VoiceOver nie należy do odbioru. |
-| 14b | AUD-02B — Coding Mock Premium | `partial` | kanoniczny profil/pakiet Mock; AUD-02A dla wspólnego kontraktu dostępu | Ponownie podłączyć istniejący Coding Mock Interview: Free zablokowany, Premium start/resume/finish/result/review. |
 | 14c | AUD-02C — Design Interview Premium | `partial` | kanoniczne Design packages; AUD-02A dla wspólnego kontraktu dostępu | Cała rodzina Design Interview bez darmowego node'a: Free zablokowany, Premium udostępnia zadeklarowane tryby i kompletne flow. |
 | 14d | AUD-02D — dziewięć tracków i RC local flow | `planned` | AUD-02A–C; aktualny content lock; fixture sesji | Jeden przypięty build i końcowy lokalny flow dziewięciu tracków z dowodem Free-denied/Premium-allowed dla trzech ścieżek Premium. |
 | 16 | AUD-08-B2 — recovery/reissue operations | `planned` | zatwierdzona polityka e-mailowa AUD-08-DEC | Trwałe operacje, status i reconciliation bez automatycznego powtarzania niepewnego skutku. |
@@ -183,7 +182,6 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 | ID | Cel i zakres | Akceptacja i weryfikacja | Ryzyko / report |
 | --- | --- | --- | --- |
 | AUD-15 | Single/multi, correct/incorrect/partial, review, standard/duży tekst po usunięciu badge. | Hierarchia, wyróżnienie kart, semantyka i screenshoty wszystkich stanów. VoiceOver jest poza odbiorem. | `PARTIAL`: istniejące próby pokrywają tylko single correct/incorrect. Potrzebny odseparowany fixture multi/partial bez modyfikacji chronionego profilu. `docs/active/AUD-15/REPORT.md`. |
-| AUD-02B | Przywrócić `Coding Mock Interview` jako funkcję Premium, wykorzystując istniejące ekrany, draft, timer, navigator, wynik i review; usunąć kontrakt wymagający niedostępności dla wszystkich. | Free: karta zablokowana/paywall i brak startu. Premium: start, trwałe odpowiedzi, restart/resume, timeout/manual finish, wynik i review. Wszystkie wejścia, w tym deep link/resume, korzystają z tej samej bramki. | Wejścia: `coding-interview-simulation`, istniejący simulation UI/facade i content profile. Non-goals: zwykłe Coding Practice i redesign symulacji. Evidence: testy admission/runtime/UI oraz `docs/active/AUD-02/B-REPORT.md`. |
 | AUD-02C | Ustawić całą rodzinę `Design Interview` jako Premium i podłączyć zadeklarowane tryby contentu do aplikacji; nie zachowywać darmowego node'a jako drogi uruchomienia Design Interview. | Free: tracki/tryby są widoczne jako zablokowane i prowadzą do paywalla; żadna sesja nie powstaje. Premium: dostępne zadeklarowane tryby dla Backend/OOD/Frontend, z poprawnym start/resume/finish/result/review. | Wejścia: trzy przyjęte banki Design i ich `modeReadiness`. Non-goals: zmiana treści banków i łączenie Design z Coding Mock. Ryzyko: obecna aplikacja obsługuje tylko podzbiór trybów. Evidence: macierz trzech tracków i `docs/active/AUD-02/C-REPORT.md`. |
 | AUD-02D | Driver-form values i końcowy lokalny RC dla dziewięciu tracków oraz obu feedbacków; aktualny JS/native build przypięty do source SHA. | Preflight, manifest, pełny flow oraz wspólny dowód Free-denied/Premium-allowed dla Exam, Coding Mock i Design Interview; brak zależności od realnego sklepu. | Nie mieszać z publikacją kandydata. Raport zbiorczy: `docs/active/AUD-02/REPORT.md`. |
 
@@ -244,4 +242,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**AUD-02B — Coding Mock Premium** jest pierwszym następnym zadaniem. Wykorzystać wspólny, jawny kontrakt dostępu odebrany w AUD-02A: Free widzi blokadę/paywall i nie tworzy sesji, Premium może uruchomić funkcję. Przywrócić istniejący Coding Mock Interview bez przebudowy zwykłego Coding Practice. Następnie wykonać AUD-02C dla całej rodziny Design Interview i AUD-02D jako zbiorczy RC dziewięciu tracków. `UI-26-02B` pozostaje `blocking` na runtime providerów albo pełny fixture. `AUD-15`, `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` są `partial`; nie odtwarzać ich implementacji, tylko wznowić zachowane diffy, domknąć wskazane bramki niezwiązane z VoiceOver i ponowić niezależne QA. VoiceOver nie jest kryterium ani blockerem żadnego z tych zadań.
+**AUD-02C — Design Interview Premium** jest pierwszym następnym zadaniem. Wykorzystać wspólny kontrakt dostępu odebrany w AUD-02A oraz wzorce trwałego start/resume/finish odebrane w AUD-02B. Cała rodzina Design Interview ma wymagać Premium: Free widzi zablokowaną ofertę/paywall bez sesji, Premium otrzymuje rzeczywisty, ograniczony czasowo otwarty case w sekwencji wymagania → architektura → trade-offy → finalna odpowiedź z jawną rubryką kompetencji. Następnie wykonać AUD-02D jako zbiorczy RC dziewięciu tracków. `UI-26-02B` pozostaje `blocking` na runtime providerów albo pełny fixture. `AUD-15`, `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` są `partial`; nie odtwarzać ich implementacji, tylko wznowić zachowane diffy, domknąć wskazane bramki niezwiązane z VoiceOver i ponowić niezależne QA. VoiceOver nie jest kryterium ani blockerem żadnego z tych zadań.
