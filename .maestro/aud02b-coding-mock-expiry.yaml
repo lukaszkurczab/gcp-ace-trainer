@@ -1,0 +1,28 @@
+appId: com.lkurczab.patternly
+name: Patternly AUD-02B — Coding Mock countdown expiry finalizes and remains reviewable
+tags:
+  - runtime-auditability
+  - aud-02b
+  - coding-mock
+  - expiry
+---
+- tapOn:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "patternly:home:primary-action"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:coding-interview-simulation"
+    direction: DOWN
+- tapOn:
+    id: "patternly:practice:mode-card:coding-interview-simulation"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:simulation:root:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+    timeout: 30000
+- assertVisible: "1 / 40"
+- takeScreenshot: aud02b-coding-mock-expiry-active-session

@@ -1,0 +1,114 @@
+appId: com.lkurczab.patternly
+name: Patternly AUD-02B — Premium Coding Mock durable answer, flag, navigation, finish, and review
+tags:
+  - runtime-auditability
+  - aud-02b
+  - coding-mock
+  - premium
+---
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-premium-testing"
+    direction: DOWN
+- runFlow:
+    when:
+      visible: "Disabled"
+    commands:
+      - tapOn:
+          id: "settings-premium-testing"
+- assertVisible: "Enabled"
+- tapOn:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "patternly:home:primary-action"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:coding-interview-simulation"
+    direction: DOWN
+- tapOn:
+    id: "patternly:practice:mode-card:coding-interview-simulation"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:simulation:root:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+    timeout: 30000
+- assertVisible: "1 / 40"
+- assertVisible:
+    id: "patternly:simulation:timer:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- assertVisible:
+    id: "patternly:simulation:question:alg-backtracking-base-contract-001"
+- tapOn:
+    id: "patternly:simulation:option:alg-backtracking-base-contract-001:path_length_n"
+- tapOn:
+    id: "patternly:simulation:option:alg-backtracking-base-contract-001:path_nonempty"
+- assertVisible:
+    id: "patternly:simulation:option:alg-backtracking-base-contract-001:path_nonempty"
+    checked: true
+- assertVisible:
+    id: "patternly:simulation:option:alg-backtracking-base-contract-001:path_length_n"
+    checked: false
+- tapOn: "Save response"
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 10000
+- tapOn: "Flag question"
+- assertVisible: "Remove flag"
+- tapOn:
+    id: "patternly:simulation:position:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- assertVisible: "Question 1, current, answered and saved, flagged"
+- takeScreenshot: aud02b-coding-mock-question-one-before-relaunch
+- tapOn: "Question 2, unanswered"
+- assertVisible: "2 / 40"
+- takeScreenshot: aud02b-coding-mock-question-two-before-relaunch
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "patternly:simulation:root:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+    timeout: 30000
+- assertVisible: "2 / 40"
+- assertVisible:
+    id: "patternly:simulation:timer:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- tapOn:
+    id: "patternly:simulation:position:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- assertVisible: "Question 1, answered and saved, flagged"
+- tapOn: "Question 1, answered and saved, flagged"
+- assertVisible:
+    id: "patternly:simulation:option:alg-backtracking-base-contract-001:path_length_n"
+- assertVisible: "Saved"
+- tapOn:
+    id: "patternly:simulation:position:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- tapOn: "Question 2, current"
+- assertVisible: "2 / 40"
+- takeScreenshot: aud02b-coding-mock-question-two-after-relaunch
+- scrollUntilVisible:
+    element: "Finish simulation"
+    direction: DOWN
+- tapOn: "Finish simulation"
+- assertVisible: "Action required"
+- tapOn: "Finish simulation"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+    timeout: 30000
+- assertVisible: "Session complete"
+- assertVisible: "Coding Mock Interview"
+- assertVisible: "1 / 40"
+- takeScreenshot: aud02b-coding-mock-manual-finish-result
+- tapOn:
+    id: "patternly:summary:review-answers:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- assertVisible: "Question 1 / 40"
+- takeScreenshot: aud02b-coding-mock-review-question-one
+- repeat:
+    times: 39
+    commands:
+      - tapOn:
+          id: "patternly:practice-review:next"
+- assertVisible: "Question 40 / 40"
+- takeScreenshot: aud02b-coding-mock-review-question-forty

@@ -1,0 +1,27 @@
+appId: com.lkurczab.patternly
+name: Patternly AUD-02B — Coding Mock expired result and review
+tags:
+  - runtime-auditability
+  - aud-02b
+  - coding-mock
+  - expiry
+---
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+    timeout: 30000
+- assertVisible: "Session ended without answers"
+- assertVisible: "0 / 40"
+- takeScreenshot: aud02b-coding-mock-expired-result
+- tapOn:
+    id: "patternly:summary:review-answers:coding-interview-dsa-problem-solving:coding-interview-simulation:1"
+- assertVisible: "Question 1 / 40"
+- assertVisible: "Unanswered"
+- takeScreenshot: aud02b-coding-mock-expired-review-question-one
+- repeat:
+    times: 39
+    commands:
+      - tapOn:
+          id: "patternly:practice-review:next"
+- assertVisible: "Question 40 / 40"
+- takeScreenshot: aud02b-coding-mock-expired-review-question-forty

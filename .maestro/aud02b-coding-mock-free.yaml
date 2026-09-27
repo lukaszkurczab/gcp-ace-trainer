@@ -1,0 +1,105 @@
+appId: com.lkurczab.patternly
+name: Patternly AUD-02B — Free Coding Mock paywall survives cold relaunch
+tags:
+  - runtime-auditability
+  - aud-02b
+  - coding-mock
+  - free
+---
+- runFlow:
+    when:
+      visible:
+        id: "patternly:home:select-track:root"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+          direction: DOWN
+          centerElement: true
+      - tapOn:
+          id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+      - tapOn:
+          id: "patternly:home:select-track:continue"
+- runFlow:
+    when:
+      notVisible:
+        id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "patternly:home:change-track"
+          commands:
+            - tapOn:
+                id: "patternly:home:change-track"
+      - scrollUntilVisible:
+          element:
+            id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+          direction: DOWN
+          centerElement: true
+      - tapOn:
+          id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+      - tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-premium-testing"
+    direction: DOWN
+- runFlow:
+    when:
+      visible: "Enabled"
+    commands:
+      - tapOn:
+          id: "settings-premium-testing"
+- assertVisible: "Disabled"
+- tapOn:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "patternly:home:primary-action"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:coding-interview-simulation"
+    direction: DOWN
+- takeScreenshot: aud02b-coding-mock-free-offer
+- tapOn:
+    id: "patternly:practice:mode-card:coding-interview-simulation"
+- extendedWaitUntil:
+    visible:
+      id: "premium-offer-summary"
+    timeout: 30000
+- takeScreenshot: aud02b-coding-mock-free-paywall
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-home"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:primary-action"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:coding-interview-simulation"
+    direction: DOWN
+- tapOn:
+    id: "patternly:practice:mode-card:coding-interview-simulation"
+- extendedWaitUntil:
+    visible:
+      id: "premium-offer-summary"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:simulation:root:.*"
+- takeScreenshot: aud02b-coding-mock-free-paywall-after-relaunch
