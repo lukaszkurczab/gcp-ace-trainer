@@ -57,7 +57,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | --- | --- | --- | --- | --- |
 | 02a | UI-26-07 — hierarchia ekranu niedostępnych danych | `blocking` | fizyczne urządzenie iOS z VoiceOver | Implementacja i pozostałe QA są gotowe w nazwanym stashu; Apple nie udostępnia VoiceOver w Simulatorze, więc wymagany focus/announcement czeka na urządzenie fizyczne. |
 | 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `blocking` | fizyczne urządzenie iOS z VoiceOver | Implementacja i pozostałe QA są gotowe w nazwanym stashu; wymagany focus/announcement czeka na urządzenie fizyczne. |
-| 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `planned` | brak | Ikona i zrównoważony recovery block bez zmiany działania retry/sign-out. |
+| 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `blocking` | runtime recovery fixture i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy i layout są gotowe w nazwanym stashu; pozostają rzeczywisty retry/sign-out failure, długie locale oraz VoiceOver. |
 | 02d | UI-26-10 — ukrycie technicznego stanu unieważniania sesji | `planned` | brak | Zwykły ekran logowania bez komunikatu, gdy użytkownik nie ma działania do wykonania. |
 | 02e | UI-26-11 — hierarchia propozycji planu nauki | `planned` | brak | Jeden top inset, naturalny tytuł, rodzaj celu jako nagłówek i jedno primary CTA. |
 | 03 | UI-26-02A — kontrakt pierwszego użycia Apple/Google | `planned` | brak | Kontrakt przed implementacją providerów. |
@@ -151,6 +151,7 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Weryfikacja:** test struktury panelu i ikony, retry success/failure oraz sign-out failure, retryable i non-retryable recovery presentations, wszystkie siedem locale, light/dark, standardowy/duży tekst, VoiceOver order i screenshot na istniejącym iPhonie 17.
 - **Poza zakresem:** zmiana synchronizacji, klasyfikacji błędów, copy, liczby retry, zachowania sign-out, routingu, footeru globalnego lub innych ekranów Account Entry.
 - **Warunek zakończenia:** ekran ma zrównoważony pionowy układ i ikonę w stanach, dla których jest semantycznie poprawna, bez regresji recovery, dużego tekstu i alternatywnego sign-out.
+- **Aktualna blokada:** gotowy diff ma zielone targeted 82/82, typecheck i diff-check; Maestro na istniejącym iPhonie 17 potwierdził dark/standard oraz light/duży tekst, a siedem locale ma wymagane copy. Niezależny `qa-gate` pozostawił `BLOCKED`, ponieważ nie wykonano rzeczywistego retry success/failure, sign-out failure, runtime najdłuższego locale ani VoiceOver. Screenshoty korzystały z jawnego fixture wyłącznie do prezentacji i nie są dowodem backendu. Diff, raport i screenshoty zachowuje stash `UI-26-09 awaiting runtime and physical VoiceOver 2026-09-27`; wznowić z bezpiecznym recovery fixture oraz fizycznym iOS, domknąć bramki i ponowić QA.
 - **Prompt wykonawczy:** „Sprawdź bieżący `AccountRecoveryScreen`, wszystkie wyniki `getAccountRecoveryPresentation`, komponent `Screen` i testy account recovery. Dodaj wyłącznie adaptacyjne centrowanie recovery block oraz repozytoryjną ikonę zgodnie z UI-26-09. Zachowaj retry, sticky sign-out, feedback i bezpieczny fallback dla dużego tekstu; nie zmieniaj synchronizacji ani copy.”
 
 #### UI-26-10 — szczegółowy kontrakt odbioru
@@ -249,4 +250,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**UI-26-09** jest pierwszym dostępnym zadaniem. `UI-26-07` i `UI-26-08` pozostają `blocking` wyłącznie do odbioru VoiceOver na fizycznym urządzeniu iOS; nie odtwarzać implementacji, tylko wznowić odpowiedni nazwany stash i domknąć brakujący evidence oraz niezależne QA.
+**UI-26-10** jest pierwszym dostępnym zadaniem. `UI-26-07`, `UI-26-08` i `UI-26-09` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiedni nazwany stash po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.
