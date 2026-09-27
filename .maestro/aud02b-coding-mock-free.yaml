@@ -74,6 +74,7 @@ tags:
     id: "main-tab-bar-home"
 - tapOn:
     id: "main-tab-bar-practice"
+    retryTapIfNoChange: true
 - extendedWaitUntil:
     visible:
       id: "patternly:practice:hub:root"
@@ -99,6 +100,7 @@ tags:
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
+    retryTapIfNoChange: true
 - extendedWaitUntil:
     visible:
       id: "patternly:practice:hub:root"
