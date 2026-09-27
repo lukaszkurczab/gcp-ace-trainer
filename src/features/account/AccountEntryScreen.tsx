@@ -1297,7 +1297,7 @@ function WelcomeScreen({
     >
       <StatusBar style={colorMode === "dark" ? "light" : "dark"} />
       <View style={styles.welcomeHero}>
-        <PatternlyMark size={88} treatment={colorMode === "dark" ? "white" : "navy"} />
+        <PatternlyMark size={96} treatment={colorMode === "dark" ? "mint" : "navy"} />
         <AuthText style={styles.welcomeBrand}>
           Patternly
         </AuthText>
