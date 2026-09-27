@@ -11,6 +11,7 @@ import type { LearningPlanReminderFailure } from "../../application/notification
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { getTrackDisplay, type GoalDay } from "../../domain";
 import { radius, spacing, typography, type AppColors } from "../../theme";
+import { getNotificationSettingsPresentation } from "../../preferences/notificationSettingsPresentation";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.NOTIFICATION_SETTINGS>;
 
@@ -29,13 +30,12 @@ const ERROR_COPY: Readonly<Record<LearningPlanReminderFailure, Readonly<{ title:
   concurrent_change: { title: "concurrentChangeTitle", detail: "concurrentChangeDetail" },
 };
 
-export function NotificationSettingsScreen({ navigation, route }: Props) {
+export function NotificationSettingsScreen({ navigation }: Props) {
   const styles = useThemedStyles(createStyles);
   const { colors } = useAppPreferences();
   const { t } = useTranslation("notifications");
-  const source = route.params?.source === "goal" ? "goal" : "settings";
-  const context = source === "goal" ? t("goal") : t("settings");
-  const backLabel = source === "goal" ? t("backToGoal") : t("backToSettings");
+  const context = t("settings");
+  const backLabel = t("backToSettings");
   const copy = useMemo(() => ({ body: t("notificationBody"), title: t("notificationTitle") }), [t]);
   const notifications = useNotificationSettings(copy);
   const [openSettingsError, setOpenSettingsError] = useState(false);
@@ -46,12 +46,10 @@ export function NotificationSettingsScreen({ navigation, route }: Props) {
   const handleBack = useCallback(() => {
     if (navigation.canGoBack()) {
       navigation.goBack();
-    } else if (route.params?.source === "goal") {
-      navigation.replace(ROUTES.GOAL_CADENCE, { returnTo: route.params.returnToGoal, trackId: route.params.trackId });
     } else {
       navigation.replace(ROUTES.HOME, { initialTab: "settings" });
     }
-  }, [navigation, route.params]);
+  }, [navigation]);
 
   const openDeviceSettings = useCallback(async () => {
     setOpenSettingsError(false);
@@ -61,6 +59,7 @@ export function NotificationSettingsScreen({ navigation, route }: Props) {
   const errorCopy = notifications.error ? ERROR_COPY[notifications.error] : null;
   const activeTrack = notifications.trackId ? getTrackDisplay(notifications.trackId) : null;
   const canAct = !notifications.loading && !notifications.busy;
+  const presentation = getNotificationSettingsPresentation(notifications);
 
   return (
     <Screen edges={["top", "bottom"]}>
@@ -70,14 +69,16 @@ export function NotificationSettingsScreen({ navigation, route }: Props) {
         {errorCopy && notifications.error ? (
           <View style={styles.errorGroup}>
             <InfoBlock accessibilityAlert body={t(errorCopy.detail)} title={t(errorCopy.title)} testID={runtimeSelectors.notifications.error(notifications.error)} tone="warning" />
-            <Button disabled={!canAct} loading={notifications.busyOperation === "retry"} onPress={() => { void notifications.retryReminders(); }} testID={runtimeSelectors.notifications.retry()} variant="secondary">{t("retry")}</Button>
-            {notifications.permission === "denied" ? <Pressable accessibilityRole="button" onPress={() => { void openDeviceSettings(); }}><Text style={styles.link}>{t("openDeviceSettings")}</Text></Pressable> : null}
+            {presentation.showRetry ? <Button disabled={!canAct} loading={notifications.busyOperation === "retry"} onPress={() => { void notifications.retryReminders(); }} testID={runtimeSelectors.notifications.retry()} variant="secondary">{t("retry")}</Button> : null}
+            {presentation.showPermission && notifications.permission === "denied" ? <Pressable accessibilityRole="button" onPress={() => { void openDeviceSettings(); }}><Text style={styles.link}>{t("openDeviceSettings")}</Text></Pressable> : null}
           </View>
         ) : null}
         {openSettingsError ? <InfoBlock accessibilityAlert body={t("openSettingsErrorDetail")} title={t("openSettingsErrorTitle")} testID={runtimeSelectors.notifications.openSettingsError()} tone="warning" /> : null}
-        <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("permissionSection")}</Text>
-        <PermissionCard colors={colors} detail={notifications.permission === "granted" ? t("permissionGrantedDetail") : notifications.permission === "denied" ? t("permissionDeniedDetail") : notifications.permission === null ? t("permissionCheckingDetail") : t("permissionUndeterminedDetail")} onOpenSettings={notifications.permission === "denied" ? openDeviceSettings : undefined} openSettingsLabel={t("openDeviceSettings")} permission={notifications.permission} />
-        <Card testID={runtimeSelectors.notifications.planSchedule()}>
+        {presentation.showPermission ? <>
+          <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("permissionSection")}</Text>
+          <PermissionCard colors={colors} detail={notifications.permission === "granted" ? t("permissionGrantedDetail") : notifications.permission === "denied" ? t("permissionDeniedDetail") : notifications.permission === null ? t("permissionCheckingDetail") : t("permissionUndeterminedDetail")} onOpenSettings={notifications.permission === "denied" ? openDeviceSettings : undefined} openSettingsLabel={t("openDeviceSettings")} permission={notifications.permission} />
+        </> : null}
+        {presentation.showPlanSchedule ? <Card testID={runtimeSelectors.notifications.planSchedule()}>
           <Text maxFontSizeMultiplier={2} style={styles.cardTitle}>{t("planSchedule")}</Text>
           {activeTrack ? <Text maxFontSizeMultiplier={2} style={styles.track}>{t(activeTrack.shortTitle, { ns: "common" })}</Text> : null}
           {notifications.planSlots.length > 0 ? notifications.planSlots.map((slot) => (
@@ -86,13 +87,15 @@ export function NotificationSettingsScreen({ navigation, route }: Props) {
               <Text maxFontSizeMultiplier={2} style={styles.slotTime}>{slot.localTime}</Text>
             </View>
           )) : <Text maxFontSizeMultiplier={2} style={styles.body}>{t("planScheduleEmpty")}</Text>}
-        </Card>
-        {notifications.pending ? <InfoBlock body={t("pendingDetail")} title={t("pendingTitle")} testID={runtimeSelectors.notifications.pending()} tone="warning" /> : null}
-        {notifications.enabled ? (
+        </Card> : null}
+        {presentation.showPending ? <InfoBlock body={t("pendingDetail")} title={t("pendingTitle")} testID={runtimeSelectors.notifications.pending()} tone="warning" /> : null}
+        {presentation.showCancelRequest ? <Button disabled={!canAct} loading={notifications.busyOperation === "disable"} onPress={() => { void notifications.disableReminders(); }} testID={runtimeSelectors.notifications.cancelRequest()} variant="secondary">{t("cancelReminderRequest")}</Button> : null}
+        {presentation.showDisable ? (
           <Button disabled={!canAct} loading={notifications.busyOperation === "disable"} onPress={() => { void notifications.disableReminders(); }} testID={runtimeSelectors.notifications.disable()} variant="secondary">{t("disableReminder")}</Button>
-        ) : (
+        ) : null}
+        {presentation.showEnable ? (
           <Button disabled={!canAct} loading={notifications.busyOperation === "enable"} onPress={() => { void notifications.enableReminders(); }} testID={runtimeSelectors.notifications.enable()}>{t("enableReminder")}</Button>
-        )}
+        ) : null}
       </View>
     </Screen>
   );

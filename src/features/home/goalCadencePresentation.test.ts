@@ -35,9 +35,11 @@ test("goal cadence is a reachable root route backed by the canonical repository"
   assert.match(screen, /weeklySessionTarget: preferredDays\.length/);
   assert.doesNotMatch(screen, /No preferred days/);
   assert.doesNotMatch(screen, /stepper|onSetWeeklyTarget|Weekly cadence|Sessions per week|Decrease sessions per week|Increase sessions per week/);
-  assert.match(screen, /Configure your practice reminders\./);
-  assert.match(screen, /summaryLink[\s\S]*?t\("Reminders"\)/);
-  assert.match(screen, /testID="goal-summary-reminders"/);
+  assert.match(screen, /<ReminderDraft preferredDays=\{selectedDays\} t=\{t\} \/>/);
+  assert.match(screen, /<ReminderDraft preferredDays=\{goal\.preferredDays\} t=\{t\} \/>/);
+  assert.match(screen, /testID="goal-reminder-draft"/);
+  assert.match(screen, /Exact reminder times and activation are available only after you accept a learning plan\./);
+  assert.doesNotMatch(screen, /onOpenNotifications|ROUTES\.NOTIFICATION_SETTINGS|goal-summary-reminders/);
   assert.doesNotMatch(screen, /Managed in notification settings|Notification settings/);
   assert.match(screen, /status === "paused"/);
   assert.match(screen, /header: \{ gap: spacing\.sm \}/);
@@ -73,7 +75,6 @@ test("Settings opens the shared goal screen with its return context", () => {
   assert.match(screen, /returnTo === "home" \? "Home" : "Progress"/);
   assert.match(screen, /navigation\.canGoBack\(\)/);
   assert.match(screen, /navigation\.navigate\(ROUTES\.HOME, \{ initialTab: returnTo \}\)/);
-  assert.match(screen, /source: "goal", trackId: track\.id, returnToGoal: returnTo/);
   assert.match(screen, /<GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
   assert.match(screen, /style=\{styles\.context\}\>\{context\}</);
   assert.match(screen, /await createAndOpenPlan\(track\.id\)/);
@@ -87,19 +88,11 @@ test("active goal summary only exposes Save while editing", () => {
   assert.match(screen, /onTogglePause=\{\(\) => \{ void togglePause\(\); \}\}/);
 });
 
-test("active goal summary switches reminder and action layout at accessibility font scale", () => {
+test("active goal summary keeps the reminder draft noninteractive", () => {
   const summary = screen.slice(screen.indexOf("function ActiveGoalSummary"), screen.indexOf("function isCreatedProposal"));
-  assert.match(summary, /const \{ fontScale \} = useWindowDimensions\(\);/);
-  assert.match(summary, /const largeTextLayout = fontScale >= 1\.8;/);
-  assert.match(summary, /summaryReminderRow, largeTextLayout \? styles\.summaryReminderRowLarge/);
-  assert.match(summary, /summaryReminderLabel, largeTextLayout \? styles\.summaryReminderLabelLarge/);
-  assert.match(summary, /testID="goal-summary-reminders"/);
-  assert.match(summary, /onPress=\{onOpenNotifications\}/);
-  assert.match(summary, /style=\{largeTextLayout \? styles\.summaryReminderActionLarge : null\} testID="goal-summary-reminders"/);
-  assert.doesNotMatch(summary, /centerAction, largeTextLayout/);
-  assert.match(screen, /summaryReminderRowLarge: \{ alignItems: "flex-start", flexDirection: "column" \}/);
-  assert.match(screen, /summaryReminderLabelLarge: \{ flex: 0 \}/);
-  assert.match(screen, /summaryReminderActionLarge: \{ justifyContent: "center", minHeight: 44 \}/);
+  assert.match(summary, /<ReminderDraft preferredDays=\{goal\.preferredDays\} t=\{t\} \/>/);
+  assert.doesNotMatch(summary, /onOpenNotifications|goal-summary-reminders/);
+  assert.doesNotMatch(screen, /summaryReminderRowLarge|summaryReminderLabelLarge|summaryReminderActionLarge|summaryLink/);
 });
 
 test("goal status and selected day labels use onPrimary on filled backgrounds", () => {
@@ -135,6 +128,23 @@ test("preferred-day shortcuts preserve domain ids and translate every EN/PL labe
   assert.match(screen, /preferredDays\.filter\(\(candidate\) => candidate !== day\)/);
   assert.match(screen, /preferredDays, weeklySessionTarget: preferredDays\.length/);
   assert.match(screen, /persistGoal\(nextGoal\)/);
+});
+
+test("goal reminders are a read-only preferred-day draft in both create and active summary", () => {
+  const required = [
+    "Reminder draft",
+    "Exact reminder times and activation are available only after you accept a learning plan.",
+  ];
+  for (const [index, locale] of targetDateLocaleCopy.entries()) {
+    for (const key of required) {
+      assert.equal(typeof locale[key], "string", `locale index ${index} missing ${key}`);
+      assert.ok(locale[key]!.trim().length > 0);
+      if (index > 0) assert.notEqual(locale[key], targetDateLocaleCopy[0]![key], `locale index ${index} must translate ${key}`);
+    }
+  }
+  assert.match(screen, /function ReminderDraft\(\{ preferredDays, t \}: Readonly/);
+  assert.match(screen, /const days = preferredDays\.map\(\(day\) => t\(DAY_SHORT_LABELS\[day\]\)\)\.join\(", "\)/);
+  assert.doesNotMatch(screen, /onOpenNotifications|ROUTES\.NOTIFICATION_SETTINGS/, "goal screen must not navigate to global notification settings");
 });
 
 test("target dates use the shared localized calendar with cancellable drafts and an explicit ISO commit", () => {

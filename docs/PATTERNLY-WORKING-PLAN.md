@@ -60,7 +60,6 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `blocking` | runtime recovery fixture i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy i layout są gotowe w nazwanym stashu; pozostają rzeczywisty retry/sign-out failure, długie locale oraz VoiceOver. |
 | 02e | UI-26-11 — hierarchia propozycji planu nauki | `blocking` | runtime state fixtures i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy, ready layout i rzeczywisty edit/back/accept są gotowe w nazwanym stashu; pozostają pozostałe stany/warianty runtime i VoiceOver. |
 | 04 | UI-26-02B — implementacja pierwszego użycia providerów | `blocking` | autoryzowana tożsamość testowa Apple/Google albo pełny fixture emulator-auth dla runtime mapped/new/isolation | Implementacja i testy są gotowe w nazwanych stashach obu repo; brakuje zintegrowanego runtime mapped-existing, unmapped-provisional i Guest A → account B isolation. |
-| 09 | UI-26-06 — szkic przypomnień | `planned` | rozpoznanie planu i schedulera | Aktywacja dopiero po przyjęciu planu i zgodzie systemowej. |
 | 10 | AUD-13 — odpowiedź nr 5, journal i cold restart | `blocking` | bezpieczny fixture sesji | Przyczyna naprawiona albo historyczny defekt rozstrzygnięty dowodowo. |
 | 11 | AUD-05 — nawigacja i lifecycle sesji | `partial` | AUD-13 | Pełna macierz Back/cancel/resume/finish/rapid tap/unavailable. |
 | 12 | AUD-15 — odpowiedzi i review | `partial` | fixture odpowiedzi/review | Odbiór single/multi, stanów poprawności, review i dużego tekstu. |
@@ -230,4 +229,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**UI-26-06** jest pierwszym dostępnym zadaniem. `UI-26-02B`, `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiednie nazwane stashe po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.
+**AUD-13** jest pierwszym zadaniem do ponownej oceny dostępności bezpiecznego fixture sesji. `UI-26-02B`, `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiednie nazwane stashe po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.

@@ -212,6 +212,7 @@ export const runtimeSelectors = Object.freeze({
     pending: () => selector("notifications", "pending"),
     enable: () => selector("notifications", "enable"),
     disable: () => selector("notifications", "disable"),
+    cancelRequest: () => selector("notifications", "cancel-request"),
     retry: () => selector("notifications", "retry"),
     openSettingsError: () => selector("notifications", "open-settings-error"),
   }),

@@ -6,9 +6,7 @@ import type { AlgorithmsDeclaredScopeMode } from "../application/coding-intervie
 
 export type GoalCadenceReturnTo = "home" | "progress" | "settings";
 
-export type NotificationSettingsRouteParams =
-  | { source: "settings" }
-  | { source: "goal"; trackId: TrackId; returnToGoal: GoalCadenceReturnTo };
+export type NotificationSettingsRouteParams = { source: "settings" };
 
 export type RootStackParamList = {
   [ROUTES.HOME]: { initialTab?: Exclude<ShellTab, "practice"> } | undefined;

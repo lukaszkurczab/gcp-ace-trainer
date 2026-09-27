@@ -360,7 +360,6 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
             locale={locale}
             onChangeDate={setDateInput}
             onSelectGoalType={(goalType) => updateDraft((currentDraft) => ({ ...currentDraft, goalType }))}
-            onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "goal", trackId: track.id, returnToGoal: returnTo })}
             onToggleDay={toggleDay}
             palette={palette}
             selectedDays={current.preferredDays}
@@ -375,7 +374,6 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
             onEdit={() => { setDraft({ ...current, preferredDays: [...current.preferredDays] }); setSaveError(null); }}
             onCreatePlan={() => { void createAndOpenPlan(track.id); }}
             creatingPlan={creatingPlan}
-            onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS, { source: "goal", trackId: track.id, returnToGoal: returnTo })}
             onTogglePause={() => { void togglePause(); }}
             t={t}
           />
@@ -386,11 +384,10 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   );
 }
 
-function CreateGoalForm({ dateInput, locale, onChangeDate, onOpenNotifications, onSelectGoalType, onToggleDay, palette, selectedDays, selectedGoalType, templates, t }: Readonly<{
+function CreateGoalForm({ dateInput, locale, onChangeDate, onSelectGoalType, onToggleDay, palette, selectedDays, selectedGoalType, templates, t }: Readonly<{
   dateInput: string;
   locale: AppLocale;
   onChangeDate: (value: string) => void;
-  onOpenNotifications: () => void;
   onSelectGoalType: (value: GoalTemplateId) => void;
   onToggleDay: (value: GoalDay) => void;
   palette: AppColors;
@@ -497,30 +494,21 @@ function CreateGoalForm({ dateInput, locale, onChangeDate, onOpenNotifications, 
         </View>
       </View>
 
-      <Pressable accessibilityRole="button" onPress={onOpenNotifications} style={styles.reminderRow}>
-        <View style={styles.reminderCopy}>
-          <Text maxFontSizeMultiplier={2} style={styles.reminderTitle}>{t("Reminders")}</Text>
-          <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{t("Configure your practice reminders.")}</Text>
-        </View>
-        <Icon color={palette.textSecondary} name="chevron-right" size={18} />
-      </Pressable>
+      <ReminderDraft preferredDays={selectedDays} t={t} />
     </View>
   );
 }
 
-function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, onOpenNotifications, onTogglePause, t }: Readonly<{
+function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, onTogglePause, t }: Readonly<{
   creatingPlan: boolean;
   goal: GoalRecord;
   locale: AppLocale;
   onCreatePlan: () => void;
   onEdit: () => void;
-  onOpenNotifications: () => void;
   onTogglePause: () => void;
   t: (value: string) => string;
 }>) {
   const styles = useThemedStyles(createStyles);
-  const { fontScale } = useWindowDimensions();
-  const largeTextLayout = fontScale >= 1.8;
   const copy = GOAL_COPY[goal.goalType];
   const target = projectGoalTargetDate(goal);
   const targetLabel = target.meaning === "event" ? t("Event date") : target.meaning === "deadline" ? t("Target date") : target.meaning === "checkpoint" ? t("Checkpoint") : t("Target date");
@@ -547,16 +535,25 @@ function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, o
           ) : <Text maxFontSizeMultiplier={2} style={styles.summaryValue}>{t("Choose at least one practice day.")}</Text>}
         </View>
         <View style={styles.summaryDivider} />
-        <View style={[styles.summaryReminderRow, largeTextLayout ? styles.summaryReminderRowLarge : null]}>
-          <Text maxFontSizeMultiplier={2} style={[styles.summaryLabel, styles.summaryReminderLabel, largeTextLayout ? styles.summaryReminderLabelLarge : null]}>{t("Reminders")}</Text>
-          <Pressable accessibilityRole="button" onPress={onOpenNotifications} style={largeTextLayout ? styles.summaryReminderActionLarge : null} testID="goal-summary-reminders"><Text maxFontSizeMultiplier={2} style={styles.summaryLink}>{t("Reminders")}</Text></Pressable>
-        </View>
+        <ReminderDraft preferredDays={goal.preferredDays} t={t} />
       </View>
       <Button disabled={goal.status === "paused"} loading={creatingPlan} onPress={onCreatePlan} testID={runtimeSelectors.learningPlan.create()}>{t("Create plan")}</Button>
       <Pressable accessibilityRole="button" onPress={onEdit} style={styles.centerAction}><Text maxFontSizeMultiplier={2} style={styles.centerActionLabel}>{t("Edit goal")}</Text></Pressable>
       <Pressable accessibilityRole="button" onPress={onTogglePause} style={styles.centerAction}>
         <Text maxFontSizeMultiplier={2} style={styles.centerActionLabel}>{t(goal.status === "paused" ? "Resume goal" : "Pause goal")}</Text>
       </Pressable>
+    </View>
+  );
+}
+
+function ReminderDraft({ preferredDays, t }: Readonly<{ preferredDays: readonly GoalDay[]; t: (value: string) => string }>) {
+  const styles = useThemedStyles(createStyles);
+  const days = preferredDays.map((day) => t(DAY_SHORT_LABELS[day])).join(", ");
+  return (
+    <View style={styles.reminderDraft} testID="goal-reminder-draft">
+      <Text maxFontSizeMultiplier={2} style={styles.reminderTitle}>{t("Reminder draft")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{days || t("Choose at least one practice day.")}</Text>
+      <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{t("Exact reminder times and activation are available only after you accept a learning plan.")}</Text>
     </View>
   );
 }
@@ -630,8 +627,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dayButtonUnselected: { backgroundColor: palette.surface, borderColor: palette.border },
   dayLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "700", lineHeight: 15 },
   dayLabelSelected: { color: palette.onPrimary },
-  reminderRow: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, flexDirection: "row", gap: spacing.md, justifyContent: "space-between", paddingHorizontal: 14, paddingVertical: spacing.md },
-  reminderCopy: { flex: 1, gap: spacing.xs },
+  reminderDraft: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.xs, padding: spacing.md },
   reminderTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   reminderDetail: { ...typography.small, color: palette.textSecondary },
   summaryCard: { backgroundColor: palette.surface, borderColor: palette.effects.subtleBorder, borderRadius: 14, borderWidth: 1, gap: 14, padding: spacing.lg },
@@ -642,13 +638,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dayBadges: { flexDirection: "row", gap: 6 },
   dayBadge: { backgroundColor: colorWithOpacity(palette.primary, 0.12), borderRadius: 6, paddingHorizontal: spacing.sm },
   dayBadgeLabel: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 15 },
-  summaryReminderRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
-  summaryReminderLabel: { flex: 1 },
-  summaryReminderRowLarge: { alignItems: "flex-start", flexDirection: "column" },
-  summaryReminderLabelLarge: { flex: 0 },
-  summaryLink: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 15 },
   centerAction: { alignItems: "center", minHeight: 40, justifyContent: "center" },
-  summaryReminderActionLarge: { justifyContent: "center", minHeight: 44 },
   centerActionLabel: { ...typography.small, color: palette.textSecondary, fontWeight: "600" },
   error: { color: palette.danger, fontSize: 13, lineHeight: 18 },
   footerButton: { width: "100%" },

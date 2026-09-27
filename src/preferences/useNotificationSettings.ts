@@ -23,6 +23,7 @@ export type NotificationSettingsError = LearningPlanReminderFailure;
 type NotificationSettingsBusyOperation = Exclude<NotificationSettingsOperation, "load">;
 
 type AcceptedPlanSlots = Readonly<{
+  planReady: boolean;
   trackId: TrackId | null;
   slots: readonly DeviceReminderSlot[];
 }>;
@@ -31,10 +32,10 @@ export type NotificationSettingsState = Readonly<{
   busy: boolean;
   busyOperation: NotificationSettingsBusyOperation | null;
   clearError: () => void;
-  enabled: boolean;
   error: NotificationSettingsError | null;
   loading: boolean;
   pending: boolean;
+  planReady: boolean;
   permission: NotificationPermission | null;
   planSlots: readonly DeviceReminderSlot[];
   refresh: () => Promise<void>;
@@ -45,16 +46,18 @@ export type NotificationSettingsState = Readonly<{
   disableReminders: () => Promise<LearningPlanReminderResult | null>;
 }>;
 
-const EMPTY_PLAN: AcceptedPlanSlots = Object.freeze({ trackId: null, slots: Object.freeze([]) });
+const EMPTY_PLAN: AcceptedPlanSlots = Object.freeze({ planReady: false, trackId: null, slots: Object.freeze([]) });
 
 async function readAcceptedPlanSlots(): Promise<AcceptedPlanSlots> {
   const trackId = await getActiveTrackId();
   if (!trackId) return EMPTY_PLAN;
   const snapshot = getLearningPlanSnapshot(trackId);
-  if (!snapshot || snapshot.plan.status !== "accepted") return Object.freeze({ trackId, slots: Object.freeze([]) });
+  if (!snapshot || snapshot.plan.status !== "accepted") return Object.freeze({ planReady: false, trackId, slots: Object.freeze([]) });
+  const slots = Object.freeze(snapshot.plan.slots.map((slot) => Object.freeze({ slotId: slot.slotId, day: slot.day, localTime: slot.localTime })));
   return Object.freeze({
+    planReady: slots.length > 0,
     trackId,
-    slots: Object.freeze(snapshot.plan.slots.map((slot) => Object.freeze({ slotId: slot.slotId, day: slot.day, localTime: slot.localTime }))),
+    slots,
   });
 }
 
@@ -63,24 +66,23 @@ function errorFromResult(result: LearningPlanReminderResult): NotificationSettin
 }
 
 function applyResult(result: LearningPlanReminderResult, plan: AcceptedPlanSlots, permission: NotificationPermission): Readonly<{
-  enabled: boolean;
   error: NotificationSettingsError | null;
   pending: boolean;
   permission: NotificationPermission;
+  planReady: boolean;
   planSlots: readonly DeviceReminderSlot[];
   status: NotificationSettingsStatus;
   trackId: TrackId | null;
 }> {
   const pending = result.status === "pending";
-  const enabled = result.kind === "synced" || pending;
   const fallbackSlots = result.kind === "synced"
     ? Object.freeze(result.schedules.map(({ slotId, day, localTime }) => Object.freeze({ slotId, day, localTime })))
     : Object.freeze([]);
   return Object.freeze({
-    enabled,
     error: errorFromResult(result),
     pending,
     permission,
+    planReady: plan.planReady,
     planSlots: plan.slots.length > 0 ? plan.slots : fallbackSlots,
     status: result.kind,
     trackId: plan.trackId,
@@ -93,8 +95,8 @@ export function useNotificationSettings(copy: PracticeReminderCopy): Notificatio
   const [planSlots, setPlanSlots] = useState<readonly DeviceReminderSlot[]>(EMPTY_PLAN.slots);
   const [trackId, setTrackId] = useState<TrackId | null>(null);
   const [permission, setPermission] = useState<NotificationPermission | null>(null);
-  const [enabled, setEnabled] = useState(false);
   const [pending, setPending] = useState(false);
+  const [planReady, setPlanReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [busyOperation, setBusyOperation] = useState<NotificationSettingsBusyOperation | null>(null);
@@ -116,7 +118,7 @@ export function useNotificationSettings(copy: PracticeReminderCopy): Notificatio
     setPlanSlots(next.planSlots);
     setTrackId(next.trackId);
     setPermission(next.permission);
-    setEnabled(next.enabled);
+    setPlanReady(next.planReady);
     setPending(next.pending);
   }, []);
 
@@ -137,6 +139,7 @@ export function useNotificationSettings(copy: PracticeReminderCopy): Notificatio
         setStatus("scheduler_failure");
         setError("scheduler_failure");
         setPending(true);
+        setPlanReady(false);
       }
     } finally {
       if (mountedRef.current && guard.canCommitRead(token)) setLoading(false);
@@ -178,6 +181,7 @@ export function useNotificationSettings(copy: PracticeReminderCopy): Notificatio
         setStatus("scheduler_failure");
         setError("scheduler_failure");
         setPending(true);
+        setPlanReady(false);
       }
       return null;
     } finally {
@@ -199,10 +203,10 @@ export function useNotificationSettings(copy: PracticeReminderCopy): Notificatio
     clearError,
     disableReminders,
     enableReminders,
-    enabled,
     error,
     loading,
     pending,
+    planReady,
     permission,
     planSlots,
     refresh,

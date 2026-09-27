@@ -200,6 +200,7 @@ test("notification selectors keep plan slots and closed error states typed", () 
     assert.equal(runtimeSelectors.notifications.error(reason), `patternly:notifications:error:${reason.replaceAll("_", "-")}`);
   }
   assert.equal(runtimeSelectors.notifications.retry(), "patternly:notifications:retry");
+  assert.equal(runtimeSelectors.notifications.cancelRequest(), "patternly:notifications:cancel-request");
   assert.equal(runtimeSelectors.notifications.pending(), "patternly:notifications:pending");
   assert.throws(() => runtimeSelectors.notifications.state("unknown" as never), /Unknown notification settings state/);
 });
