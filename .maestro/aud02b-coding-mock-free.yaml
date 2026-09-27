@@ -33,6 +33,10 @@ tags:
           notVisible:
             id: "patternly:home:select-track:root"
           timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving|patternly:home:change-track|patternly:home:select-track:root"
+    timeout: 30000
 - runFlow:
     when:
       notVisible:
