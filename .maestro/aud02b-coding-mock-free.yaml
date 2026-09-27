@@ -21,6 +21,13 @@ tags:
       - tapOn:
           id: "patternly:home:select-track:continue"
           retryTapIfNoChange: true
+      - runFlow:
+          when:
+            visible:
+              id: "patternly:home:select-track:root"
+          commands:
+            - tapOn:
+                id: "patternly:home:select-track:continue"
       - extendedWaitUntil:
           notVisible:
             id: "patternly:home:select-track:root"
@@ -47,6 +54,13 @@ tags:
       - tapOn:
           id: "patternly:home:select-track:continue"
           retryTapIfNoChange: true
+      - runFlow:
+          when:
+            visible:
+              id: "patternly:home:select-track:root"
+          commands:
+            - tapOn:
+                id: "patternly:home:select-track:continue"
       - extendedWaitUntil:
           notVisible:
             id: "patternly:home:select-track:root"
