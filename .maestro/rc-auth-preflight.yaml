@@ -7,6 +7,17 @@ tags:
 - runFlow:
     when:
       visible:
+        id: "account-revoked-session"
+    commands:
+      - tapOn:
+          id: "account-sign-out"
+      - extendedWaitUntil:
+          notVisible:
+            id: "account-revoked-session"
+          timeout: 30000
+- runFlow:
+    when:
+      visible:
         id: "account-sign-in"
     commands:
       - tapOn:

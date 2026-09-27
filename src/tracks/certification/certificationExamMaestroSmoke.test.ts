@@ -79,6 +79,7 @@ test("RC iOS certification smoke requires local credentials and authenticates on
   assert.match(runner, /runMaestro\(AUTH_PREFLIGHT_FLOW, smokeCredentials\)/);
   assert.match(runner, /runMaestro\(PREPARE_FLOW_PATH, smokeCredentials\)/);
   assert.match(runner, /\[redacted\]/);
+  assert.match(authFlow, /id: "account-revoked-session"[\s\S]*?id: "account-sign-out"[\s\S]*?notVisible:[\s\S]*?id: "account-revoked-session"/);
 
   assert.match(authFlow, /when:[\s\S]*?visible:[\s\S]*?id: "settings-account-entry"[\s\S]*?tapOn:[\s\S]*?id: "settings-account-entry"/);
   assert.match(authFlow, /when:[\s\S]*?visible:[\s\S]*?id: "account-sign-in"[\s\S]*?tapOn:[\s\S]*?id: "account-sign-in"/);
