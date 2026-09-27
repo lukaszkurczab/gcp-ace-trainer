@@ -58,7 +58,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 02a | UI-26-07 — hierarchia ekranu niedostępnych danych | `blocking` | fizyczne urządzenie iOS z VoiceOver | Implementacja i pozostałe QA są gotowe w nazwanym stashu; Apple nie udostępnia VoiceOver w Simulatorze, więc wymagany focus/announcement czeka na urządzenie fizyczne. |
 | 02b | UI-26-08 — uproszczenie potwierdzenia usunięcia konta | `blocking` | fizyczne urządzenie iOS z VoiceOver | Implementacja i pozostałe QA są gotowe w nazwanym stashu; wymagany focus/announcement czeka na urządzenie fizyczne. |
 | 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `blocking` | runtime recovery fixture i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy i layout są gotowe w nazwanym stashu; pozostają rzeczywisty retry/sign-out failure, długie locale oraz VoiceOver. |
-| 02e | UI-26-11 — hierarchia propozycji planu nauki | `planned` | brak | Jeden top inset, naturalny tytuł, rodzaj celu jako nagłówek i jedno primary CTA. |
+| 02e | UI-26-11 — hierarchia propozycji planu nauki | `blocking` | runtime state fixtures i fizyczne urządzenie iOS z VoiceOver | Implementacja, testy, ready layout i rzeczywisty edit/back/accept są gotowe w nazwanym stashu; pozostają pozostałe stany/warianty runtime i VoiceOver. |
 | 03 | UI-26-02A — kontrakt pierwszego użycia Apple/Google | `planned` | brak | Kontrakt przed implementacją providerów. |
 | 04 | UI-26-02B — implementacja pierwszego użycia providerów | `planned` | UI-26-02A | Provider login bez automatycznej zgody. |
 | 05 | UI-26-01 — welcome | `planned` | brak | Zatwierdzony znak i copy. |
@@ -167,6 +167,7 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Evidence/report:** audyt pozostaje w `docs/active/UI-26-11/AUDIT.md`; implementacja zapisuje `docs/active/UI-26-11/REPORT.md` z komendami, stanami i screenshotami bez danych użytkownika.
 - **Ryzyka:** lokalizacja długich nazw goal type, zmniejszona wysokość footera przy scroll position, współdzielenie headera przez stany inne niż ready oraz przypadkowe usunięcie jedynej drogi powrotu w fallback navigation.
 - **Warunek zakończenia:** runtime i testy potwierdzają nową hierarchię bez podwójnego insetu, regresji nawigacji, mutacji, danych planu, błędów, Dynamic Type lub accessibility; niezależne QA wydaje PASS.
+- **Aktualna blokada:** gotowy diff ma zielone presentation/locale 14/14, szerszy subsystem 57/57, typecheck i diff-check. Maestro na istniejącym iPhonie 17 potwierdził ready w dark/standard i light/accessibility-extra-large oraz rzeczywisty przepływ `Edit schedule → Back → Accept plan → persisted`. Niezależny `qa-gate` pozostawił `BLOCKED`, ponieważ nie wykonano runtime shortened, shortfall, loading, stale, unavailable, wariantów 1/7 dni i target present ani VoiceOver na fizycznym iOS. Screenshot ready bez targetu nie dowodzi zachowania długiego niemieckiego tytułu z targetem ani shortfall warningu. Diff, raport i screenshoty zachowuje stash `UI-26-11 awaiting runtime matrix and physical VoiceOver 2026-09-27`; wznowić z bezpiecznymi fixture'ami stanów oraz fizycznym iOS i ponowić QA.
 - **Prompt wykonawczy:** „Przeczytaj `docs/active/UI-26-11/AUDIT.md`, następnie sprawdź aktualny `LearningPlanProposalScreen`, `Screen`, `AppShellHeader`, locale i testy. Usuń podwójny top inset przez jednego ownera safe-area; nie używaj ujemnych marginesów. Dla aktywnej propozycji ustaw `Review your learning plan`, usuń subtitle, przenieś lokalizowany goal type do tytułu karty bez duplikatu, zostaw secondary `Edit schedule` i primary `Accept plan`, usuń tylko footerowe `Go back`. Zachowaj header Back, wszystkie dane/stany i logikę planu; wykonaj pełną macierz UI-26-11 na jednym istniejącym iPhonie 17.”
 
 ### AUD-13 / AUD-05 / AUD-15 / AUD-14 / AUD-02
@@ -235,4 +236,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**UI-26-11** jest pierwszym dostępnym zadaniem. `UI-26-07`, `UI-26-08` i `UI-26-09` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiedni nazwany stash po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.
+**UI-26-02A** jest pierwszym dostępnym zadaniem. `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` pozostają `blocking`; nie odtwarzać ich implementacji podczas kolejnych zadań, tylko wznowić odpowiedni nazwany stash po udostępnieniu brakującego środowiska/evidence i ponowić niezależne QA.

@@ -19,7 +19,8 @@ Aktualny kanoniczny plan: [`docs/PATTERNLY-WORKING-PLAN.md`](../docs/PATTERNLY-W
 - `UI-26-08` ma gotową implementację, siedem locale, zielone targeted 53/53, typecheck i runtime password base/error/reauth→hold oraz light/duży tekst. Niezależny `qa-gate` pozostawił `BLOCKED` wyłącznie na rzeczywistym VoiceOver; diff i raport zachowuje stash `UI-26-08 awaiting physical VoiceOver 2026-09-27`.
 - `UI-26-09` ma gotową implementację, zielone targeted 82/82, typecheck oraz runtime layout dark/standard i light/duży tekst. Niezależny `qa-gate` pozostawił `BLOCKED`: brakuje rzeczywistego retry success/failure, sign-out failure, runtime najdłuższego locale i VoiceOver na fizycznym iOS. Diff, raport i screenshoty zachowuje stash `UI-26-09 awaiting runtime and physical VoiceOver 2026-09-27`.
 - `UI-26-10` jest zamknięte dowodowo. Standardowy `Sign in` nie zależy od `pendingRemoteRevokeCount`; usunięto wyłącznie warning i martwe copy, a durable queue pozostała bez zmian. Targeted 54/54, typecheck, realny logout na iPhonie 17 i niezależny `qa-gate` zakończyły się PASS.
-- Następne dostępne zadanie zgodnie z kolejką: `UI-26-11`.
+- `UI-26-11` ma gotową implementację, presentation/locale 14/14, szerszy subsystem 57/57, typecheck oraz runtime ready dark/standard, light/accessibility-extra-large i rzeczywisty edit/back/accept. Niezależny `qa-gate` pozostawił `BLOCKED`: brakuje runtime shortened/shortfall/loading/stale/unavailable, wariantów 1/7 dni i target present oraz VoiceOver na fizycznym iOS. Diff, raport i screenshoty zachowuje stash `UI-26-11 awaiting runtime matrix and physical VoiceOver 2026-09-27`.
+- Następne dostępne zadanie zgodnie z kolejką: `UI-26-02A`.
 - Następna pełna kolejka, kryteria i report targets są wyłącznie w planie.
 
 ## Higiena dokumentacji
