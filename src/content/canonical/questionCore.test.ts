@@ -38,7 +38,7 @@ test("all nine canonical artifacts validate with exact inventory and stable lear
 
 test("canonical scoring matches the producer oracle exhaustively", async () => {
   const oracle = await import(pathToFileURL(path.join(contentRoot, "scripts/content/question-contract.mjs")).href) as Oracle;
-  for (const { entry, artifact } of inputs) { const validated = artifact as { questions: Question[] }; for (const question of validated.questions) for (const response of [answerResponse(question), partialResponse(question), { type: question.interaction.type }, null]) { const expected = oracle.scoreQuestion(question, response); const actual = scoreCanonicalQuestion(question, response); assert.deepEqual({ status: actual.kind, earnedPoints: actual.earnedPoints, maxPoints: actual.maxPoints }, { status: expected.status, earnedPoints: expected.earnedPoints, maxPoints: expected.maxPoints }, `${entry.trackId}/${question.questionId}`); } }
+  for (const { entry, artifact } of inputs) { const validated = artifact as { questions: Question[] }; for (const question of validated.questions) for (const response of [answerResponse(question), partialResponse(question), { type: question.interaction.type }, null]) { const { contentDomainId: _contentDomainId, ...oracleQuestion } = question; const expected = oracle.scoreQuestion(oracleQuestion, response); const actual = scoreCanonicalQuestion(question, response); assert.deepEqual({ status: actual.kind, earnedPoints: actual.earnedPoints, maxPoints: actual.maxPoints }, { status: expected.status, earnedPoints: expected.earnedPoints, maxPoints: expected.maxPoints }, `${entry.trackId}/${question.questionId}`); } }
 });
 
 test("all interactions expose completeness and immutable AttemptResult semantics", () => {
@@ -97,4 +97,54 @@ test("catalog verifies bytes before exposing frozen lookups and exact artifact m
   const mutated = clone(artifact) as { questions: Array<{ prompt: string }> }; mutated.questions[0]!.prompt += "changed";
   await assert.rejects(() => createCanonicalQuestionCatalog(mutated, entry, entry.trackId, sha256Utf8), /SHA-256/);
   await assert.rejects(() => createCanonicalQuestionCatalog(clone(artifact), { ...entry, sha256: "0".repeat(64) }, entry.trackId, sha256Utf8), /SHA-256/);
+});
+
+test("optional GCP simulation profile is strict, complete, immutable and covered by its artifact hash", async () => {
+  const gcp = inputs.find(({ entry }) => entry.trackId === "google-cloud-associate-cloud-engineer");
+  assert.ok(gcp);
+  const artifact = gcp.artifact as { questions: Question[]; simulationProfiles: Array<Record<string, unknown>> };
+  const profile = artifact.simulationProfiles[0]!;
+  assert.equal(profile.schemaVersion, "patternly-simulation-profile-envelope-v1");
+  assert.equal(profile.familyId, "certification");
+  assert.equal(profile.modeId, "certification-exam-simulation");
+  const familyConfig = profile.familyConfig as Record<string, unknown>;
+  assert.equal(familyConfig.schemaVersion, "patternly-certification-simulation-config-v1");
+  const nodeIds = [...new Set(artifact.questions.map((question) => question.nodeId))].sort();
+  assert.deepEqual(Object.keys(familyConfig.nodeDomainMap as object).sort(), nodeIds);
+  const evidence = familyConfig.nodeDomainMapEvidence as Record<string, unknown>;
+  assert.equal(evidence.contentVersion, gcp.entry.contentVersion);
+  assert.equal(evidence.itemCount, gcp.entry.questionCount);
+  assert.equal(evidence.nodeCount, nodeIds.length);
+  assert.equal(evidence.ambiguousNodeCount, 0);
+  const sourceDerivedNode = Object.entries(familyConfig.nodeDomainMap as Record<string, string>).find(([, domain]) => domain === "gcp-ace-standard-domain-3")?.[0];
+  assert.ok(sourceDerivedNode);
+
+  const catalog = await createCanonicalQuestionCatalog(clone(gcp.artifact), gcp.entry, gcp.entry.trackId, sha256Utf8);
+  assert.equal(catalog.simulationProfiles?.[0]?.profileId, profile.profileId);
+  assert.equal(Object.isFrozen(catalog.simulationProfiles), true);
+  assert.equal(Object.isFrozen(catalog.simulationProfiles?.[0]), true);
+
+  const mutations = [
+    (copy: Record<string, unknown>) => { copy.simulationProfiles = []; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; first.familyId = "coding_interview"; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; first.modeId = "certification-focus-practice"; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; first.profileVersion = "2"; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; config.schemaVersion = "patternly-certification-simulation-config-v2"; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; delete (config.nodeDomainMap as Record<string, string>)[nodeIds[0]!]; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMap as Record<string, string>)[nodeIds[0]!] = "unknown-domain"; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMap as Record<string, string>)[sourceDerivedNode!] = "gcp-ace-standard-domain-2"; },
+    (copy: Record<string, unknown>) => { ((copy.questions as Array<Record<string, unknown>>).find((question) => question.nodeId === sourceDerivedNode)!).contentDomainId = "gcp-ace-standard-domain-2"; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMapEvidence as Record<string, unknown>).contentVersion = "foreign-version"; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.questionCount as Record<string, unknown>).maximum = 61; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.interactionPolicy as Record<string, unknown>).feedbackTiming = "after_each_answer"; },
+  ];
+  for (const mutate of mutations) {
+    const copy = clone(gcp.artifact) as Record<string, unknown>;
+    mutate(copy);
+    assert.throws(() => validateCanonicalArtifact(copy, gcp.entry, gcp.entry.trackId));
+  }
+
+  const legacy = clone(inputs.find(({ entry }) => entry.trackId !== gcp.entry.trackId)!.artifact) as Record<string, unknown>;
+  assert.equal(Object.hasOwn(legacy, "simulationProfiles"), false);
+  assert.doesNotThrow(() => validateCanonicalArtifact(legacy, inputs.find(({ entry }) => entry.trackId !== gcp.entry.trackId)!.entry, inputs.find(({ entry }) => entry.trackId !== gcp.entry.trackId)!.entry.trackId));
 });

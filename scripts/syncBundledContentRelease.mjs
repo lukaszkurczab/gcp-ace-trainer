@@ -33,6 +33,60 @@ export class CanonicalContentSyncError extends Error {
 function fail(message) { throw new CanonicalContentSyncError(message); }
 function isRecord(value) { return value !== null && typeof value === "object" && !Array.isArray(value); }
 function exactKeys(value, expected) { return isRecord(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...expected].sort()); }
+function requireExactKeys(value, expected, label) { if (!exactKeys(value, expected)) fail(`${label} has an invalid shape`); }
+function validateCertificationSimulationConfig(config, { trackId, contentVersion, questions, nodeIds }) {
+  const path = `simulationProfiles.certification.familyConfig`;
+  const configKeys = ["schemaVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy", "nodeDomainMap", "nodeDomainMapEvidence"];
+  requireExactKeys(config, configKeys, path);
+  if (config.schemaVersion !== "patternly-certification-simulation-config-v1") fail(`${path}.schemaVersion is unsupported`);
+  requireExactKeys(config.source, ["url", "checkedDate", "guideVersion"], `${path}.source`);
+  if ([config.source.url, config.source.checkedDate, config.source.guideVersion].some((value) => typeof value !== "string" || !value.trim())) fail(`${path}.source is invalid`);
+  if (config.durationMinutes !== 120) fail(`${path}.durationMinutes is invalid`);
+  requireExactKeys(config.questionCount, ["kind", "minimum", "maximum"], `${path}.questionCount`);
+  if (config.questionCount.kind !== "range" || config.questionCount.minimum !== 50 || config.questionCount.maximum !== 60) fail(`${path}.questionCount is unsupported`);
+  requireExactKeys(config.blueprint, ["kind", "sections"], `${path}.blueprint`);
+  if (config.blueprint.kind !== "weighted_sections" || !Array.isArray(config.blueprint.sections) || config.blueprint.sections.length !== 4) fail(`${path}.blueprint is invalid`);
+  const expectedWeights = new Map([["gcp-ace-standard-domain-1", 20], ["gcp-ace-standard-domain-2", 30], ["gcp-ace-standard-domain-3", 30], ["gcp-ace-standard-domain-4", 20]]);
+  const weights = new Map(); const sectionIds = new Set();
+  config.blueprint.sections.forEach((section, index) => {
+    requireExactKeys(section, ["id", "contentDomainId", "weightPercent"], `${path}.blueprint.sections[${index}]`);
+    if (typeof section.id !== "string" || !section.id.trim() || sectionIds.has(section.id)) fail(`${path}.blueprint.sections[${index}].id is invalid`);
+    if (!expectedWeights.has(section.contentDomainId) || weights.has(section.contentDomainId) || section.weightPercent !== expectedWeights.get(section.contentDomainId)) fail(`${path}.blueprint.sections[${index}] has an unknown or invalid domain weight`);
+    sectionIds.add(section.id); weights.set(section.contentDomainId, section.weightPercent);
+  });
+  if (weights.size !== expectedWeights.size) fail(`${path}.blueprint does not cover the certification domains`);
+  const policy = config.interactionPolicy;
+  const policyKeys = ["schemaVersion", "policyId", "policyVersion", "owner", "navigation", "answerChanges", "flagging", "navigator", "sections", "timeout", "feedbackTiming"];
+  requireExactKeys(policy, policyKeys, `${path}.interactionPolicy`);
+  if (policy.schemaVersion !== "patternly-certification-simulation-policy-v1" || typeof policy.policyId !== "string" || !policy.policyId.trim() || policy.policyVersion !== "1" || policy.owner !== "patternly_product" || policy.navigation !== "free" || policy.answerChanges !== "until_final_submission" || policy.flagging !== "available" || policy.navigator !== "available" || policy.sections !== "blueprint_visible" || policy.timeout !== "absolute_deadline" || policy.feedbackTiming !== "after_verified_finalization") fail(`${path}.interactionPolicy is unsupported`);
+  requireExactKeys(config.nodeDomainMap, nodeIds, `${path}.nodeDomainMap`);
+  const domains = new Set(expectedWeights.keys());
+  for (const [nodeId, domainId] of Object.entries(config.nodeDomainMap)) if (!domains.has(domainId)) fail(`${path}.nodeDomainMap.${nodeId} has an unknown domain`);
+  const sourceDomainsByNode = new Map();
+  for (const question of questions) {
+    if (!domains.has(question.contentDomainId)) fail(`${path}: question is missing source-derived contentDomainId`);
+    const nodeDomains = sourceDomainsByNode.get(question.nodeId) ?? new Set();
+    nodeDomains.add(question.contentDomainId);
+    sourceDomainsByNode.set(question.nodeId, nodeDomains);
+  }
+  if (sourceDomainsByNode.size !== nodeIds.length || [...sourceDomainsByNode.values()].some((nodeDomains) => nodeDomains.size !== 1)) fail(`${path}: source-derived per-question domains are incomplete or ambiguous`);
+  const sourceNodeDomainMap = Object.fromEntries([...sourceDomainsByNode].map(([nodeId, nodeDomains]) => [nodeId, [...nodeDomains][0]]));
+  if (JSON.stringify(Object.entries(config.nodeDomainMap).sort()) !== JSON.stringify(Object.entries(sourceNodeDomainMap).sort())) fail(`${path}.nodeDomainMap differs from source-derived per-question domains`);
+  const evidence = config.nodeDomainMapEvidence;
+  requireExactKeys(evidence, ["artifactPath", "contentVersion", "itemCount", "nodeCount", "ambiguousNodeCount"], `${path}.nodeDomainMapEvidence`);
+  if (evidence.artifactPath !== `artifacts/tracks/${trackId}/${contentVersion}/track-artifact.json` || evidence.contentVersion !== contentVersion || evidence.itemCount !== questions.length || evidence.nodeCount !== nodeIds.length || evidence.ambiguousNodeCount !== 0) fail(`${path}.nodeDomainMapEvidence does not match the artifact identity or node coverage`);
+}
+function validateSimulationProfiles(profiles, { trackId, contentVersion, questions }) {
+  if (!Array.isArray(profiles) || profiles.length === 0) fail(`Simulation profile metadata is malformed for ${trackId}`);
+  if (trackId !== "google-cloud-associate-cloud-engineer" || profiles.length !== 1) fail(`Simulation profile family is unsupported for ${trackId}`);
+  const profile = profiles[0];
+  requireExactKeys(profile, ["schemaVersion", "profileId", "profileVersion", "familyId", "modeId", "familyConfig"], "simulationProfiles[0]");
+  if (profile.schemaVersion !== "patternly-simulation-profile-envelope-v1" || profile.profileId !== "google-cloud-associate-cloud-engineer-certification-exam-v1" || profile.profileVersion !== "1") fail("GCP simulation profile envelope or profile version is unsupported");
+  if (profile.familyId !== "certification") fail("GCP simulation profile family is unsupported");
+  if (profile.modeId !== "certification-exam-simulation") fail("GCP simulation profile mode is not bound to Exam Simulation");
+  const nodeIds = [...new Set(questions.map((question) => question.nodeId))].sort();
+  validateCertificationSimulationConfig(profile.familyConfig, { trackId, contentVersion, questions, nodeIds });
+}
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
 function equalStringSets(actual, expected) { return JSON.stringify([...actual].sort()) === JSON.stringify([...expected].sort()); }
 function isWithin(base, candidate) {
@@ -132,17 +186,22 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
     const artifactBytes = await inspectRegularFile(artifactPath, directory, "content artifact");
     if (sha256(artifactBytes) !== entry.sha256) fail(`SHA-256 mismatch for ${entry.trackId}`);
     const artifact = parseJson(artifactBytes, artifactPath);
-    if (!exactKeys(artifact, ["schemaVersion", "trackId", "contentVersion", "questions"])) fail(`Invalid artifact shape for ${entry.trackId}`);
+    if (!isRecord(artifact) || (!exactKeys(artifact, ["schemaVersion", "trackId", "contentVersion", "questions"]) && !exactKeys(artifact, ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles"]))) fail(`Invalid artifact shape for ${entry.trackId}`);
     if (artifact.schemaVersion !== ARTIFACT_SCHEMA_VERSION || artifact.trackId !== entry.trackId || artifact.contentVersion !== entry.contentVersion) fail(`Artifact identity mismatch for ${entry.trackId}`);
     if (!Array.isArray(artifact.questions) || artifact.questions.length !== entry.questionCount) fail(`Question count mismatch for ${entry.trackId}`);
+    const hasSimulationProfiles = Object.hasOwn(artifact, "simulationProfiles");
+    const knownGcpDomains = new Set(["gcp-ace-standard-domain-1", "gcp-ace-standard-domain-2", "gcp-ace-standard-domain-3", "gcp-ace-standard-domain-4"]);
     for (const question of artifact.questions) {
       if (!isRecord(question) || question.trackId !== entry.trackId) fail(`Foreign or malformed question in ${entry.trackId}`);
       for (const key of ["questionId", "nodeId", "mentalUnitId"]) if (typeof question[key] !== "string" || !question[key]) fail(`Question in ${entry.trackId} has invalid ${key}`);
       if (questionIds.has(question.questionId)) fail(`Duplicate questionId: ${question.questionId}`);
+      if (question.contentDomainId !== undefined && (entry.trackId !== "google-cloud-associate-cloud-engineer" || !knownGcpDomains.has(question.contentDomainId))) fail(`Unexpected contentDomainId on question ${question.questionId}`);
+      if (hasSimulationProfiles && entry.trackId === "google-cloud-associate-cloud-engineer" && !knownGcpDomains.has(question.contentDomainId)) fail(`Missing source-derived contentDomainId on question ${question.questionId}`);
       questionIds.add(question.questionId);
       nodeIds.add(`${entry.trackId}\0${question.nodeId}`);
       mentalUnitIds.add(`${entry.trackId}\0${question.nodeId}\0${question.mentalUnitId}`);
     }
+    if (Object.hasOwn(artifact, "simulationProfiles")) validateSimulationProfiles(artifact.simulationProfiles, { trackId: entry.trackId, contentVersion: entry.contentVersion, questions: artifact.questions });
     files.set(`${entry.trackId}.json`, artifactBytes);
   }
   files.set(LOCK_FILE_NAME, lockBytes);

@@ -1,5 +1,5 @@
 import type { ContentArtifactMetadata } from "../contracts";
-import type { CanonicalArtifact, CanonicalContentLockRecord, Question } from "./questionTypes";
+import type { CanonicalArtifact, CanonicalContentLockRecord, CanonicalSimulationProfile, Question } from "./questionTypes";
 import { validateCanonicalArtifact } from "./questionValidation";
 
 export type CanonicalQuestionCatalog = Readonly<{
@@ -7,6 +7,7 @@ export type CanonicalQuestionCatalog = Readonly<{
   contentVersion: string;
   artifactSha256: string;
   questions: readonly Question[];
+  simulationProfiles?: readonly CanonicalSimulationProfile[];
   artifactMetadata: ContentArtifactMetadata;
   getQuestionById(questionId: string): Question | undefined;
   getQuestionsByNodeId(nodeId: string): readonly Question[];
@@ -24,6 +25,6 @@ export async function createCanonicalQuestionCatalog(value: unknown, lock: Canon
   const byNode = group(artifact.questions, (question) => question.nodeId);
   const byMentalUnit = group(artifact.questions, (question) => question.mentalUnitId);
   const artifactMetadata: ContentArtifactMetadata = Object.freeze({ artifactSha256: lock.sha256, contentVersion: artifact.contentVersion, contentReleaseId: "canonical-content-v1" });
-  return Object.freeze({ trackId: artifact.trackId, contentVersion: artifact.contentVersion, artifactSha256: lock.sha256, questions: artifact.questions, artifactMetadata, getQuestionById: (id) => byQuestion.get(id), getQuestionsByNodeId: (id) => byNode.get(id) ?? Object.freeze([]), getQuestionsByMentalUnitId: (id) => byMentalUnit.get(id) ?? Object.freeze([]) });
+  return Object.freeze({ trackId: artifact.trackId, contentVersion: artifact.contentVersion, artifactSha256: lock.sha256, questions: artifact.questions, ...(artifact.simulationProfiles ? { simulationProfiles: artifact.simulationProfiles } : {}), artifactMetadata, getQuestionById: (id) => byQuestion.get(id), getQuestionsByNodeId: (id) => byNode.get(id) ?? Object.freeze([]), getQuestionsByMentalUnitId: (id) => byMentalUnit.get(id) ?? Object.freeze([]) });
 }
 function group(questions: readonly Question[], key: (question: Question) => string): ReadonlyMap<string, readonly Question[]> { const mutable = new Map<string, Question[]>(); for (const question of questions) { const id = key(question); const list = mutable.get(id) ?? []; list.push(question); mutable.set(id, list); } return new Map([...mutable].map(([id, list]) => [id, Object.freeze(list)])); }

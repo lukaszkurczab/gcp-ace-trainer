@@ -52,9 +52,10 @@ function exactSet(actual: readonly string[], expected: readonly string[], path: 
 
 export function validateQuestion(value: unknown): readonly string[] {
   const errors: string[] = [];
-  const common = ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "constraints", "interaction", "answer", "feedback", "difficulty", "sourceRefs"];
+  const common = ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "constraints", "interaction", "answer", "feedback", "difficulty", "sourceRefs", "contentDomainId"];
   if (!exact(value, common, ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "interaction", "answer", "feedback", "difficulty"], "question", errors)) return errors;
   for (const key of ["questionId", "trackId", "nodeId", "mentalUnitId"]) safeIdentity(value[key], `question.${key}`, errors);
+  if (Object.hasOwn(value, "contentDomainId")) safeIdentity(value.contentDomainId, "question.contentDomainId", errors);
   text(value.prompt, "question.prompt", errors);
   if (value.difficulty !== null) id(value.difficulty, "question.difficulty", errors);
   if (Object.hasOwn(value, "constraints")) { if (!Array.isArray(value.constraints)) errors.push("question.constraints: must be an array"); else value.constraints.forEach((entry, i) => text(entry, `question.constraints[${i}]`, errors)); }
@@ -102,12 +103,85 @@ export function assertValidQuestion(value: unknown): asserts value is Question {
 
 export function validateCanonicalArtifact(value: unknown, lock: CanonicalContentLockRecord, expectedTrackId: string): CanonicalArtifact {
   const errors: string[] = [];
-  if (!exact(value, ["schemaVersion", "trackId", "contentVersion", "questions"], ["schemaVersion", "trackId", "contentVersion", "questions"], "artifact", errors)) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
+  if (!exact(value, ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles"], ["schemaVersion", "trackId", "contentVersion", "questions"], "artifact", errors)) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
   if (value.schemaVersion !== "patternly-content-artifact-v1") errors.push("artifact.schemaVersion: invalid version"); safeIdentity(expectedTrackId, "expectedTrackId", errors); if (value.trackId !== expectedTrackId) errors.push("artifact.trackId: foreign path identity"); safeIdentity(value.trackId, "artifact.trackId", errors); id(value.contentVersion, "artifact.contentVersion", errors);
   if (!exact(lock, ["trackId", "contentVersion", "questionCount", "sha256"], ["trackId", "contentVersion", "questionCount", "sha256"], "lock", errors)) throw new CanonicalQuestionValidationError("Artifact lock is invalid.", errors);
   if (lock.trackId !== expectedTrackId || lock.trackId !== value.trackId || lock.contentVersion !== value.contentVersion || !Number.isSafeInteger(lock.questionCount) || lock.questionCount < 1 || !SHA256.test(lock.sha256)) errors.push("lock: identity, version, count, or SHA-256 is inconsistent");
-  if (!Array.isArray(value.questions)) errors.push("artifact.questions: must be an array"); else { if (value.questions.length !== lock.questionCount) errors.push("artifact.questions: count differs from lock"); const ids = new Set<string>(); for (const [i, question] of value.questions.entries()) { const child = validateQuestion(question); errors.push(...child.map((x) => `artifact.questions[${i}].${x.replace(/^question\.?/, "")}`)); if (record(question)) { if (question.trackId !== expectedTrackId) errors.push(`artifact.questions[${i}].trackId: foreign track`); if (typeof question.questionId === "string") { if (ids.has(question.questionId)) errors.push(`artifact.questions[${i}].questionId: duplicate identity`); ids.add(question.questionId); } } } }
+  if (!Array.isArray(value.questions)) errors.push("artifact.questions: must be an array"); else { if (value.questions.length !== lock.questionCount) errors.push("artifact.questions: count differs from lock"); const ids = new Set<string>(); for (const [i, question] of value.questions.entries()) { const child = validateQuestion(question); errors.push(...child.map((x) => `artifact.questions[${i}].${x.replace(/^question\.?/, "")}`)); if (record(question)) { if (question.trackId !== expectedTrackId) errors.push(`artifact.questions[${i}].trackId: foreign track`); if (typeof question.questionId === "string") { if (ids.has(question.questionId)) errors.push(`artifact.questions[${i}].questionId: duplicate identity`); ids.add(question.questionId); } const hasProfile = Object.hasOwn(value, "simulationProfiles"); if (Object.hasOwn(question, "contentDomainId") && (expectedTrackId !== "google-cloud-associate-cloud-engineer" || !hasProfile)) errors.push(`artifact.questions[${i}].contentDomainId: only valid for GCP artifacts with simulation profiles`); if (hasProfile && expectedTrackId === "google-cloud-associate-cloud-engineer" && !Object.hasOwn(question, "contentDomainId")) errors.push(`artifact.questions[${i}].contentDomainId: required for GCP simulation profile`); } } }
+  if (Object.hasOwn(value, "simulationProfiles")) validateSimulationProfiles(value.simulationProfiles, Array.isArray(value.questions) ? value.questions : [], value.trackId, value.contentVersion, errors);
   if (errors.length) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
   return deepFreeze(value as CanonicalArtifact);
+}
+
+function validateSimulationProfiles(value: unknown, questions: readonly unknown[], trackId: unknown, contentVersion: unknown, errors: string[]): void {
+  if (!Array.isArray(value) || value.length === 0) { errors.push("artifact.simulationProfiles: must be a non-empty array when present"); return; }
+  const profileIds = new Set<string>();
+  const nodeIds = [...new Set(questions.flatMap((question) => record(question) && typeof question.nodeId === "string" ? [question.nodeId] : []))].sort();
+  value.forEach((profile, index) => {
+    const path = `artifact.simulationProfiles[${index}]`;
+    const keys = ["schemaVersion", "profileId", "profileVersion", "familyId", "modeId", "familyConfig"];
+    if (!exact(profile, keys, keys, path, errors)) return;
+    if (profile.schemaVersion !== "patternly-simulation-profile-envelope-v1") errors.push(`${path}.schemaVersion: unsupported envelope version`);
+    if (!id(profile.profileId, `${path}.profileId`, errors) || profileIds.has(profile.profileId)) errors.push(`${path}.profileId: must be unique`);
+    else profileIds.add(profile.profileId);
+    if (profile.profileVersion !== "1") errors.push(`${path}.profileVersion: unsupported version`);
+    if (profile.familyId !== "certification") errors.push(`${path}.familyId: unsupported family`);
+    if (profile.modeId !== "certification-exam-simulation") errors.push(`${path}.modeId: unsupported certification mode`);
+    if (profile.profileId !== "google-cloud-associate-cloud-engineer-certification-exam-v1") errors.push(`${path}.profileId: unsupported profile`);
+    if (trackId !== "google-cloud-associate-cloud-engineer") errors.push(`${path}: simulation profile is not supported for this track`);
+    validateCertificationSimulationConfig(profile.familyConfig, questions, nodeIds, trackId, contentVersion, questions.length, path, errors);
+  });
+}
+
+function validateCertificationSimulationConfig(value: unknown, questions: readonly unknown[], nodeIds: readonly string[], trackId: unknown, contentVersion: unknown, questionTotal: number, path: string, errors: string[]): void {
+  const configKeys = ["schemaVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy", "nodeDomainMap", "nodeDomainMapEvidence"];
+  const configPath = `${path}.familyConfig`;
+  if (!exact(value, configKeys, configKeys, configPath, errors)) return;
+  if (value.schemaVersion !== "patternly-certification-simulation-config-v1") { errors.push(`${configPath}.schemaVersion: unsupported certification config version`); return; }
+  if (!exact(value.source, ["url", "checkedDate", "guideVersion"], ["url", "checkedDate", "guideVersion"], `${configPath}.source`, errors)) return;
+  text(value.source.url, `${configPath}.source.url`, errors); id(value.source.checkedDate, `${configPath}.source.checkedDate`, errors); text(value.source.guideVersion, `${configPath}.source.guideVersion`, errors);
+  if (value.durationMinutes !== 120) errors.push(`${configPath}.durationMinutes: must be 120`);
+  if (!exact(value.questionCount, ["kind", "minimum", "maximum"], ["kind", "minimum", "maximum"], `${configPath}.questionCount`, errors)) return;
+  if (value.questionCount.kind !== "range" || value.questionCount.minimum !== 50 || value.questionCount.maximum !== 60) errors.push(`${configPath}.questionCount: must be the approved 50–60 range`);
+  if (!exact(value.blueprint, ["kind", "sections"], ["kind", "sections"], `${configPath}.blueprint`, errors)) return;
+  if (value.blueprint.kind !== "weighted_sections" || !Array.isArray(value.blueprint.sections) || value.blueprint.sections.length !== 4) errors.push(`${configPath}.blueprint: must contain four weighted sections`);
+  else {
+    let sum = 0; const domains = new Set<string>(); const sectionIds = new Set<string>();
+    value.blueprint.sections.forEach((section, sectionIndex) => {
+      const sectionPath = `${configPath}.blueprint.sections[${sectionIndex}]`;
+      if (!exact(section, ["id", "contentDomainId", "weightPercent"], ["id", "contentDomainId", "weightPercent"], sectionPath, errors)) return;
+      if (id(section.id, `${sectionPath}.id`, errors) && typeof section.id === "string") {
+        if (sectionIds.has(section.id)) errors.push(`${sectionPath}.id: duplicate section id`);
+        sectionIds.add(section.id);
+      }
+      id(section.contentDomainId, `${sectionPath}.contentDomainId`, errors);
+      if (typeof section.contentDomainId === "string") {
+        if (domains.has(section.contentDomainId)) errors.push(`${sectionPath}.contentDomainId: duplicate domain`);
+        domains.add(section.contentDomainId);
+      }
+      if (!Number.isInteger(section.weightPercent) || typeof section.weightPercent !== "number" || section.weightPercent <= 0) errors.push(`${sectionPath}.weightPercent: must be a positive integer`);
+      else sum += section.weightPercent;
+    });
+    if (sum !== 100) errors.push(`${configPath}.blueprint.sections: weights must total 100`);
+    const weights = new Map(value.blueprint.sections.filter(record).map((section) => [section.contentDomainId, section.weightPercent]));
+    const expectedWeights = new Map([["gcp-ace-standard-domain-1", 20], ["gcp-ace-standard-domain-2", 30], ["gcp-ace-standard-domain-3", 30], ["gcp-ace-standard-domain-4", 20]]);
+    if (weights.size !== expectedWeights.size || [...expectedWeights].some(([domainId, weight]) => weights.get(domainId) !== weight)) errors.push(`${configPath}.blueprint.sections: unsupported GCP domain weights`);
+  }
+  const policy = value.interactionPolicy;
+  const policyKeys = ["schemaVersion", "policyId", "policyVersion", "owner", "navigation", "answerChanges", "flagging", "navigator", "sections", "timeout", "feedbackTiming"];
+  if (!exact(policy, policyKeys, policyKeys, `${configPath}.interactionPolicy`, errors)) return;
+  if (policy.schemaVersion !== "patternly-certification-simulation-policy-v1" || !id(policy.policyId, `${configPath}.interactionPolicy.policyId`, errors) || policy.policyVersion !== "1" || policy.owner !== "patternly_product" || policy.navigation !== "free" || policy.answerChanges !== "until_final_submission" || policy.flagging !== "available" || policy.navigator !== "available" || policy.sections !== "blueprint_visible" || policy.timeout !== "absolute_deadline" || policy.feedbackTiming !== "after_verified_finalization") errors.push(`${configPath}.interactionPolicy: unsupported policy`);
+  if (!exact(value.nodeDomainMap, nodeIds, nodeIds, `${configPath}.nodeDomainMap`, errors)) return;
+  const knownDomains = new Set(Array.isArray(value.blueprint.sections) ? value.blueprint.sections.flatMap((section) => record(section) && typeof section.contentDomainId === "string" ? [section.contentDomainId] : []) : []);
+  for (const [nodeId, domainId] of Object.entries(value.nodeDomainMap)) if (typeof domainId !== "string" || !knownDomains.has(domainId)) errors.push(`${configPath}.nodeDomainMap.${nodeId}: unknown domain`);
+  const sourceDomainsByNode = new Map<string, Set<string>>();
+  for (const question of questions) if (record(question) && typeof question.nodeId === "string" && typeof question.contentDomainId === "string" && knownDomains.has(question.contentDomainId)) { const nodeDomains = sourceDomainsByNode.get(question.nodeId) ?? new Set<string>(); nodeDomains.add(question.contentDomainId); sourceDomainsByNode.set(question.nodeId, nodeDomains); }
+  if (sourceDomainsByNode.size !== nodeIds.length || [...sourceDomainsByNode.values()].some((nodeDomains) => nodeDomains.size !== 1)) errors.push(`${configPath}: source-derived per-question domains are incomplete or ambiguous`);
+  const sourceNodeDomainMap = Object.fromEntries([...sourceDomainsByNode].map(([nodeId, nodeDomains]) => [nodeId, [...nodeDomains][0]]));
+  if (JSON.stringify(Object.entries(value.nodeDomainMap).sort(([left], [right]) => left.localeCompare(right))) !== JSON.stringify(Object.entries(sourceNodeDomainMap).sort(([left], [right]) => left.localeCompare(right)))) errors.push(`${configPath}.nodeDomainMap: differs from source-derived per-question domains`);
+  const evidence = value.nodeDomainMapEvidence;
+  const evidenceKeys = ["artifactPath", "contentVersion", "itemCount", "nodeCount", "ambiguousNodeCount"];
+  if (!exact(evidence, evidenceKeys, evidenceKeys, `${configPath}.nodeDomainMapEvidence`, errors)) return;
+  if (typeof trackId !== "string" || typeof contentVersion !== "string" || !text(evidence.artifactPath, `${configPath}.nodeDomainMapEvidence.artifactPath`, errors) || evidence.artifactPath !== `artifacts/tracks/${trackId}/${contentVersion}/track-artifact.json` || evidence.contentVersion !== contentVersion || evidence.nodeCount !== nodeIds.length || evidence.ambiguousNodeCount !== 0 || evidence.itemCount !== questionTotal || !Number.isInteger(evidence.itemCount) || evidence.itemCount < 1) errors.push(`${configPath}.nodeDomainMapEvidence: does not match artifact identity or complete mapping`);
 }
 function deepFreeze<T>(value: T): T { if (value && typeof value === "object" && !Object.isFrozen(value)) { for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child); Object.freeze(value); } return value; }

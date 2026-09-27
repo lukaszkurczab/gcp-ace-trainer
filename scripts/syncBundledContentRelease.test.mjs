@@ -17,6 +17,52 @@ const HEAD = "1".repeat(40);
 
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
 
+function validGcpSimulationProfile(contentVersion, nodeId) {
+  return {
+    schemaVersion: "patternly-simulation-profile-envelope-v1",
+    profileId: "google-cloud-associate-cloud-engineer-certification-exam-v1",
+    profileVersion: "1",
+    familyId: "certification",
+    modeId: "certification-exam-simulation",
+    familyConfig: {
+      schemaVersion: "patternly-certification-simulation-config-v1",
+      source: { url: "https://cloud.google.com/learn/certification/cloud-engineer/", checkedDate: "2026-08-10", guideVersion: "not_documented" },
+      durationMinutes: 120,
+      questionCount: { kind: "range", minimum: 50, maximum: 60 },
+      blueprint: {
+        kind: "weighted_sections",
+        sections: [
+          { id: "domain-1", contentDomainId: "gcp-ace-standard-domain-1", weightPercent: 20 },
+          { id: "domain-2", contentDomainId: "gcp-ace-standard-domain-2", weightPercent: 30 },
+          { id: "domain-3", contentDomainId: "gcp-ace-standard-domain-3", weightPercent: 30 },
+          { id: "domain-4", contentDomainId: "gcp-ace-standard-domain-4", weightPercent: 20 },
+        ],
+      },
+      interactionPolicy: {
+        schemaVersion: "patternly-certification-simulation-policy-v1",
+        policyId: "patternly-certification-simulation-v1",
+        policyVersion: "1",
+        owner: "patternly_product",
+        navigation: "free",
+        answerChanges: "until_final_submission",
+        flagging: "available",
+        navigator: "available",
+        sections: "blueprint_visible",
+        timeout: "absolute_deadline",
+        feedbackTiming: "after_verified_finalization",
+      },
+      nodeDomainMap: { [nodeId]: "gcp-ace-standard-domain-3" },
+      nodeDomainMapEvidence: {
+        artifactPath: `artifacts/tracks/google-cloud-associate-cloud-engineer/${contentVersion}/track-artifact.json`,
+        contentVersion,
+        itemCount: 1,
+        nodeCount: 1,
+        ambiguousNodeCount: 0,
+      },
+    },
+  };
+}
+
 async function createBuiltSet(directory, suffix = "current") {
   await mkdir(directory, { recursive: true });
   const tracks = [];
@@ -30,8 +76,10 @@ async function createBuiltSet(directory, suffix = "current") {
         trackId,
         nodeId: `${trackId}-node`,
         mentalUnitId: `${trackId}-mu`,
+        ...(trackId === "google-cloud-associate-cloud-engineer" ? { contentDomainId: "gcp-ace-standard-domain-3" } : {}),
       }],
     };
+    if (trackId === "google-cloud-associate-cloud-engineer") artifact.simulationProfiles = [validGcpSimulationProfile(artifact.contentVersion, `${trackId}-node`)];
     const bytes = Buffer.from(JSON.stringify(artifact));
     await writeFile(path.join(directory, `${trackId}.json`), bytes);
     tracks.push({ trackId, contentVersion: artifact.contentVersion, questionCount: 1, sha256: sha256(bytes) });
@@ -68,6 +116,82 @@ test("sync replaces the whole generated directory with an exact validated set", 
   assert.deepEqual(result.inventory, SMALL_INVENTORY);
   assert.deepEqual((await readdir(state.targetDirectory)).sort(), [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), "content-lock.json"].sort());
   assert.deepEqual(await snapshot(state.targetDirectory), await snapshot(state.producerOutput));
+});
+
+test("sync accepts a complete GCP Exam envelope inside the artifact lock boundary", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const trackId = "google-cloud-associate-cloud-engineer";
+  const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
+  const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
+  assert.equal(artifact.simulationProfiles[0].familyId, "certification");
+  assert.equal(artifact.simulationProfiles[0].modeId, "certification-exam-simulation");
+  const artifactBytes = Buffer.from(JSON.stringify(artifact));
+  await writeFile(artifactPath, artifactBytes);
+  const lockPath = path.join(state.producerOutput, "content-lock.json");
+  const lock = JSON.parse(await readFile(lockPath, "utf8"));
+  lock.tracks.find((entry) => entry.trackId === trackId).sha256 = sha256(artifactBytes);
+  await writeFile(lockPath, JSON.stringify(lock));
+
+  await syncCanonicalContent(state.options);
+  const synced = JSON.parse(await readFile(path.join(state.targetDirectory, `${trackId}.json`), "utf8"));
+  assert.deepEqual(synced.simulationProfiles, artifact.simulationProfiles);
+  assert.equal(lock.tracks.find((entry) => entry.trackId === trackId).sha256, sha256(await readFile(path.join(state.targetDirectory, `${trackId}.json`))));
+});
+
+test("sync continues to accept a legacy GCP artifact without simulation metadata", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const trackId = "google-cloud-associate-cloud-engineer";
+  const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
+  const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
+  delete artifact.simulationProfiles;
+  for (const question of artifact.questions) delete question.contentDomainId;
+  const bytes = Buffer.from(JSON.stringify(artifact));
+  await writeFile(artifactPath, bytes);
+  const lockPath = path.join(state.producerOutput, "content-lock.json");
+  const lock = JSON.parse(await readFile(lockPath, "utf8"));
+  lock.tracks.find((entry) => entry.trackId === trackId).sha256 = sha256(bytes);
+  await writeFile(lockPath, JSON.stringify(lock));
+
+  await syncCanonicalContent(state.options);
+  const synced = JSON.parse(await readFile(path.join(state.targetDirectory, `${trackId}.json`), "utf8"));
+  assert.equal(Object.hasOwn(synced, "simulationProfiles"), false);
+});
+
+test("sync rejects malformed GCP profiles before replacing the target even when lock SHA is recomputed", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await syncCanonicalContent(state.options);
+  const targetBefore = await snapshot(state.targetDirectory);
+  const trackId = "google-cloud-associate-cloud-engineer";
+  const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
+  const lockPath = path.join(state.producerOutput, "content-lock.json");
+  const originalArtifact = JSON.parse(await readFile(artifactPath, "utf8"));
+  const originalLock = JSON.parse(await readFile(lockPath, "utf8"));
+  const mutations = [
+    (profile) => { profile.schemaVersion = "patternly-simulation-profile-v2"; },
+    (profile) => { profile.profileVersion = "2"; },
+    (profile) => { profile.familyId = "coding_interview"; },
+    (profile) => { profile.modeId = "certification-focus-practice"; },
+    (profile) => { profile.familyConfig.schemaVersion = "patternly-certification-simulation-config-v2"; },
+    (profile) => { profile.familyConfig.questionCount.maximum = 61; },
+    (profile) => { delete profile.familyConfig.nodeDomainMap[`${trackId}-node`]; },
+    (profile) => { profile.familyConfig.nodeDomainMap[`${trackId}-node`] = "foreign-domain"; },
+    (profile) => { profile.familyConfig.nodeDomainMap[`${trackId}-node`] = "gcp-ace-standard-domain-2"; },
+    (profile) => { profile.familyConfig.nodeDomainMapEvidence.contentVersion = "foreign-version"; },
+  ];
+  for (const mutate of mutations) {
+    const artifact = structuredClone(originalArtifact);
+    mutate(artifact.simulationProfiles[0]);
+    const bytes = Buffer.from(JSON.stringify(artifact));
+    await writeFile(artifactPath, bytes);
+    const lock = structuredClone(originalLock);
+    lock.tracks.find((entry) => entry.trackId === trackId).sha256 = sha256(bytes);
+    await writeFile(lockPath, JSON.stringify(lock));
+    await assert.rejects(syncCanonicalContent(state.options));
+    assert.deepEqual(await snapshot(state.targetDirectory), targetBefore);
+  }
 });
 
 test("check mode proves byte parity and never writes inside the application root", async (t) => {

@@ -39,6 +39,13 @@ test("canonical runtime catalog exposes all locked tracks, modes, pools, and exa
   assert.throws(() => catalog.getTrack("legacy-track"), /unavailable; restart/);
   assert.throws(() => catalog.getMode(catalog.tracks[0]!, "legacy-mode"), /unavailable; restart/);
   assert.equal("getTrackByPin" in catalog, false);
+  const gcp = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  assert.equal(gcp.simulationProfiles?.[0]?.profileId, "google-cloud-associate-cloud-engineer-certification-exam-v1");
+  assert.equal(gcp.simulationProfiles?.[0]?.familyId, "certification");
+  assert.equal(gcp.simulationProfiles?.[0]?.modeId, "certification-exam-simulation");
+  assert.equal(gcp.simulationProfiles?.[0]?.familyConfig.nodeDomainMapEvidence.contentVersion, gcp.contentVersion);
+  assert.equal(Object.isFrozen(gcp.simulationProfiles?.[0]?.familyConfig.nodeDomainMap), true);
+  assert.equal(catalog.getTrack("aws-certified-solutions-architect-associate").simulationProfiles, undefined);
 });
 
 test("injected loader failures are visible and do not poison the active cache", async () => {

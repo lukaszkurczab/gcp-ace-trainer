@@ -28,6 +28,7 @@ type QuestionBase<T extends QuestionInteractionType> = Readonly<{
   constraints?: readonly string[];
   difficulty: string | null;
   sourceRefs?: readonly string[];
+  contentDomainId?: string;
   feedback: CanonicalFeedback<T>;
 }>;
 
@@ -55,6 +56,38 @@ export type DecisionMatrixQuestion = QuestionBase<"decision_matrix"> & Readonly<
 export type QuestionInteractionType = "choice_single" | "choice_multiple" | "ordering" | "complexity" | "decision_matrix";
 export type Question = ChoiceSingleQuestion | ChoiceMultipleQuestion | OrderingQuestion | ComplexityQuestion | DecisionMatrixQuestion;
 
+export type CanonicalCertificationSimulationConfig = Readonly<{
+  schemaVersion: "patternly-certification-simulation-config-v1";
+  source: Readonly<{ url: string; checkedDate: string; guideVersion: string }>;
+  durationMinutes: number;
+  questionCount: Readonly<{ kind: "range"; minimum: number; maximum: number }>;
+  blueprint: Readonly<{ kind: "weighted_sections"; sections: readonly Readonly<{ id: string; contentDomainId: string; weightPercent: number }>[] }>;
+  interactionPolicy: Readonly<{
+    schemaVersion: "patternly-certification-simulation-policy-v1";
+    policyId: string;
+    policyVersion: "1";
+    owner: "patternly_product";
+    navigation: "free";
+    answerChanges: "until_final_submission";
+    flagging: "available";
+    navigator: "available";
+    sections: "blueprint_visible";
+    timeout: "absolute_deadline";
+    feedbackTiming: "after_verified_finalization";
+  }>;
+  nodeDomainMap: Readonly<Record<string, string>>;
+  nodeDomainMapEvidence: Readonly<{ artifactPath: string; contentVersion: string; itemCount: number; nodeCount: number; ambiguousNodeCount: number }>;
+}>;
+
+export type CanonicalSimulationProfile = Readonly<{
+  schemaVersion: "patternly-simulation-profile-envelope-v1";
+  profileId: string;
+  profileVersion: string;
+  familyId: "certification";
+  modeId: "certification-exam-simulation";
+  familyConfig: CanonicalCertificationSimulationConfig;
+}>;
+
 export type CanonicalQuestionResponse =
   | Readonly<{ type: "choice_single"; optionId: string }>
   | Readonly<{ type: "choice_multiple"; optionIds: readonly string[] }>
@@ -67,6 +100,7 @@ export type CanonicalArtifact = Readonly<{
   trackId: string;
   contentVersion: string;
   questions: readonly Question[];
+  simulationProfiles?: readonly CanonicalSimulationProfile[];
 }>;
 
 export type CanonicalContentLockRecord = Readonly<{ trackId: string; contentVersion: string; questionCount: number; sha256: string }>;
