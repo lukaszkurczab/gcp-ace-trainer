@@ -6,6 +6,7 @@ import { waitForContentPreparationState } from "./waitForContentPreparationState
 const APP_ID = "com.lkurczab.patternly";
 const RESET_URL = "com.lkurczab.patternly://audit/reset-learning-state";
 const RESET_COMPLETE_FLOW = ".maestro/rc-runtime-audit-reset-complete.yaml";
+const AUTH_PREFLIGHT_FLOW = ".maestro/rc-auth-preflight.yaml";
 const PREPARE_FLOW_PATH = ".maestro/rc-certification-exam-smoke.yaml";
 const RESUME_FLOW_PATH = ".maestro/rc-certification-exam-resume-finish.yaml";
 const SMOKE_CREDENTIAL_KEYS = Object.freeze([
@@ -28,11 +29,12 @@ mkdirSync(outputDirectory, { recursive: true });
 
 const simulator = availableBootedSimulator(udid);
 if (!simulator) throw new Error(`iOS simulator ${udid} is not available and booted.`);
-for (const requiredFlow of [RESET_COMPLETE_FLOW, PREPARE_FLOW_PATH, RESUME_FLOW_PATH]) if (!existsSync(requiredFlow)) throw new Error(`RC flow is missing: ${requiredFlow}`);
+for (const requiredFlow of [AUTH_PREFLIGHT_FLOW, RESET_COMPLETE_FLOW, PREPARE_FLOW_PATH, RESUME_FLOW_PATH]) if (!existsSync(requiredFlow)) throw new Error(`RC flow is missing: ${requiredFlow}`);
 const smokeCredentials = loadSmokeCredentials();
 
 runOptional("xcrun", ["simctl", "terminate", udid, APP_ID]);
 run("xcrun", ["simctl", "openurl", udid, devClientUrl]);
+runMaestro(AUTH_PREFLIGHT_FLOW, smokeCredentials);
 await waitForContentPreparationState();
 run("xcrun", ["simctl", "openurl", udid, RESET_URL]);
 run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, RESET_COMPLETE_FLOW], { stdio: "inherit" });

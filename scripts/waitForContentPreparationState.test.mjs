@@ -6,6 +6,7 @@ test("recognizes only an enumerated ContentPreparationGate state", () => {
   assert.equal(observedContentPreparationState('resource-id=patternly:content:unavailable;'), "patternly:content:unavailable");
   assert.equal(observedContentPreparationState('resource-id=patternly:content:preparing:resuming-session;'), "patternly:content:preparing:resuming-session");
   assert.equal(observedContentPreparationState('resource-id=patternly:content:audit-command-listener:ready;'), undefined);
+  assert.equal(observedContentPreparationState('resource-id=patternly:profile-storage:state:unavailable;'), undefined);
   assert.equal(observedContentPreparationState('resource-id=patternly:content:unavailable-other;'), undefined);
 });
 

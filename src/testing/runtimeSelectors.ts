@@ -34,10 +34,14 @@ export type LearningPlanPrimaryState =
 export type LearningPlanActionErrorKind = "accept-validation" | "accept-storage" | "accept-reminders-pending" | "open-proposal-storage" | "open-existing-storage";
 export type LearningPlanEditorErrorKind = "validation" | "storage" | "start-existing-storage";
 export type LearningPlanEditorRetryKind = "save" | "start-existing";
+export type ProfileStoragePreparationState = "loading" | "ready" | "unavailable";
 
 type ItemId = ResolvedContentRef["questionId"];
 
 export const runtimeSelectors = Object.freeze({
+  profileStorage: Object.freeze({
+    state: (state: ProfileStoragePreparationState) => selector("profile-storage", "state", state),
+  }),
   content: Object.freeze({
     preparing: (phase: string) => selector("content", "preparing", phase),
     unavailable: () => selector("content", "unavailable"),

@@ -7,10 +7,13 @@ test("RC Certification Maestro flows change, restore, persist, resume, finish, a
   const resumeFlow = readFileSync(".maestro/rc-certification-exam-resume-finish.yaml", "utf8");
 
   for (const selector of [
+    "patternly:home:select-track:root",
     "patternly:home:select-track:google-cloud-associate-cloud-engineer",
+    "patternly:home:select-track:continue",
     "patternly:home:primary-action",
     "patternly:practice:mode-card:certification-exam-simulation",
   ]) assert.match(flow, new RegExp(selector));
+  assert.match(flow, /visible: "\.\*Open debugger to view warnings\.\*"[\s\S]*?point: "92%,93%"/);
   assert.match(readFileSync(".maestro/rc-runtime-audit-reset-complete.yaml", "utf8"), /patternly:content:ready-after-audit-reset/);
   assert.match(flow, /visible:\n        id: "patternly:home:change-track"/);
   assert.match(flow, /tapOn:\n          id: "patternly:home:change-track"/);
@@ -65,6 +68,7 @@ test("RC iOS runner requires one booted simulator and the same explicit evidence
 
 test("RC iOS certification smoke requires local credentials and authenticates only when Settings offers account entry", () => {
   const flow = readFileSync(".maestro/rc-certification-exam-smoke.yaml", "utf8");
+  const authFlow = readFileSync(".maestro/rc-auth-preflight.yaml", "utf8");
   const runner = readFileSync("scripts/runCertificationExamRcIos.mjs", "utf8");
 
   assert.match(runner, /parseDotenv\(readFileSync\("\.env\.smoke\.local"/);
@@ -72,16 +76,21 @@ test("RC iOS certification smoke requires local credentials and authenticates on
   assert.match(runner, /EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD/);
   assert.match(runner, /env: \{ \.\.\.process\.env, \.\.\.credentials \}/);
   assert.match(runner, /SMOKE_CREDENTIAL_KEYS\.flatMap\(\(key\) => \["-e", `\$\{key\}=\$\{credentials\[key\]\}`\]\)/);
+  assert.match(runner, /runMaestro\(AUTH_PREFLIGHT_FLOW, smokeCredentials\)/);
   assert.match(runner, /runMaestro\(PREPARE_FLOW_PATH, smokeCredentials\)/);
   assert.match(runner, /\[redacted\]/);
 
-  assert.match(flow, /when:[\s\S]*?visible:[\s\S]*?id: "settings-account-entry"[\s\S]*?tapOn:[\s\S]*?id: "settings-account-entry"/);
-  assert.match(flow, /when:[\s\S]*?visible:[\s\S]*?id: "account-sign-in"[\s\S]*?tapOn:[\s\S]*?id: "account-sign-in"/);
-  assert.match(flow, /inputText: "\$\{EXPO_PUBLIC_PATTERNLY_E2E_EMAIL\}"/);
-  assert.match(flow, /inputText: "\$\{EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD\}"/);
-  assert.match(flow, /tapOn:[\s\S]*?id: "account-sign-in-submit"[\s\S]*?notVisible:[\s\S]*?id: "account-email"/);
-  assert.match(flow, /when:[\s\S]*?visible:[\s\S]*?id: "account-entry-continue"[\s\S]*?tapOn:[\s\S]*?id: "account-entry-continue"/);
-  assert.match(flow, /when:[\s\S]*?visible:[\s\S]*?id: "account-open-settings"[\s\S]*?tapOn:[\s\S]*?id: "account-open-settings"/);
+  assert.match(authFlow, /when:[\s\S]*?visible:[\s\S]*?id: "settings-account-entry"[\s\S]*?tapOn:[\s\S]*?id: "settings-account-entry"/);
+  assert.match(authFlow, /when:[\s\S]*?visible:[\s\S]*?id: "account-sign-in"[\s\S]*?tapOn:[\s\S]*?id: "account-sign-in"/);
+  assert.match(authFlow, /inputText: "\$\{EXPO_PUBLIC_PATTERNLY_E2E_EMAIL\}"/);
+  assert.match(authFlow, /inputText: "\$\{EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD\}"/);
+  assert.ok(authFlow.indexOf('id: "account-email"') < authFlow.indexOf('id: "main-tab-bar-settings"'));
+  assert.match(authFlow, /tapOn:[\s\S]*?id: "account-sign-in-submit"[\s\S]*?notVisible:[\s\S]*?id: "account-email"/);
+  assert.match(authFlow, /visible: "Not now"[\s\S]*?tapOn: "Not now"/);
+  assert.match(authFlow, /visible: "Nie teraz"[\s\S]*?tapOn: "Nie teraz"/);
+  assert.match(authFlow, /when:[\s\S]*?visible:[\s\S]*?id: "account-entry-continue"[\s\S]*?tapOn:[\s\S]*?id: "account-entry-continue"/);
+  assert.match(authFlow, /when:[\s\S]*?visible:[\s\S]*?id: "account-open-settings"[\s\S]*?tapOn:[\s\S]*?id: "account-open-settings"/);
+  assert.match(authFlow, /when:[\s\S]*?visible:[\s\S]*?id: "main-tab-bar-home"[\s\S]*?tapOn:[\s\S]*?id: "main-tab-bar-home"/);
   assert.match(flow, /id: "main-tab-bar-home"/);
 });
 
@@ -91,6 +100,7 @@ test("Free Certification Exam flow resets once, reaches the Premium paywall, and
   const examRunner = readFileSync("scripts/runCertificationExamRcIos.mjs", "utf8");
   assertRunnerResetGate(runner);
   assertRunnerResetGate(examRunner);
+  assert.match(runner, /runMaestro\(AUTH_PREFLIGHT_FLOW, credentials\)/);
 
   assert.match(runner, /\.env\.smoke\.local/);
   assert.match(runner, /EXPO_PUBLIC_PATTERNLY_E2E_EMAIL/);
@@ -147,6 +157,7 @@ test("RC iOS timeout runner prepares one local exam, advances the audit clock, a
 function assertRunnerResetGate(runner: string) {
   assert.doesNotMatch(runner, /LISTENER_FLOW|audit-command-listener/);
   assert.match(runner, /await waitForContentPreparationState\(\)/);
+  assert.ok(runner.indexOf("runMaestro(AUTH_PREFLIGHT_FLOW,") < runner.indexOf("await waitForContentPreparationState()"));
   assert.match(runner, /openurl", udid, RESET_URL/);
   assert.match(readFileSync(".maestro/rc-runtime-audit-reset-complete.yaml", "utf8"), /patternly:content:ready-after-audit-reset/);
   assert.ok(runner.indexOf("await waitForContentPreparationState()") < runner.indexOf('"openurl", udid, RESET_URL'));
@@ -154,4 +165,9 @@ function assertRunnerResetGate(runner: string) {
     ? runner.indexOf("RESET_COMPLETE_FLOW], { stdio: \"inherit\" }")
     : runner.indexOf("runMaestro(RESET_COMPLETE_FLOW)");
   assert.ok(runner.indexOf('"openurl", udid, RESET_URL') < resetAssertionIndex);
+  const examFlowIndex = Math.max(
+    runner.indexOf("runMaestro(FLOW_PATH,"),
+    runner.indexOf("runMaestro(PREPARE_FLOW_PATH,"),
+  );
+  assert.ok(resetAssertionIndex < examFlowIndex);
 }

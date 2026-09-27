@@ -149,5 +149,5 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
           />
         : <Screen><EmptyState actionLabel={t("Try again")} description={state.reason} onActionPress={retry} title={t("Profile storage unavailable")} /></Screen>;
 
-  return <View style={{ backgroundColor: colors.background, flex: 1 }} testID={runtimeSelectors.content.unavailable()}>{body}</View>;
+  return <View style={{ backgroundColor: colors.background, flex: 1 }} testID={runtimeSelectors.profileStorage.state(state.kind)}>{body}</View>;
 }

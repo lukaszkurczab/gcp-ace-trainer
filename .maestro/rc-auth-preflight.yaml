@@ -1,0 +1,103 @@
+appId: com.lkurczab.patternly
+name: Patternly RC — prepare authenticated account
+tags:
+  - rc-evidence
+  - account
+---
+- runFlow:
+    when:
+      visible:
+        id: "account-sign-in"
+    commands:
+      - tapOn:
+          id: "account-sign-in"
+- runFlow:
+    when:
+      visible:
+        id: "account-email"
+    commands:
+      - tapOn:
+          id: "account-email"
+      - inputText: "${EXPO_PUBLIC_PATTERNLY_E2E_EMAIL}"
+      - tapOn:
+          id: "account-password"
+      - inputText: "${EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD}"
+      - tapOn:
+          id: "account-sign-in-submit"
+      - extendedWaitUntil:
+          notVisible:
+            id: "account-email"
+          timeout: 30000
+- runFlow:
+    when:
+      visible: "Not now"
+    commands:
+      - tapOn: "Not now"
+- runFlow:
+    when:
+      visible: "Nie teraz"
+    commands:
+      - tapOn: "Nie teraz"
+- runFlow:
+    when:
+      visible:
+        id: "main-tab-bar-settings"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-settings"
+- runFlow:
+    when:
+      visible:
+        id: "settings-account-entry"
+    commands:
+      - tapOn:
+          id: "settings-account-entry"
+- runFlow:
+    when:
+      visible:
+        id: "account-sign-in"
+    commands:
+      - tapOn:
+          id: "account-sign-in"
+- runFlow:
+    when:
+      visible:
+        id: "account-email"
+    commands:
+      - tapOn:
+          id: "account-email"
+      - inputText: "${EXPO_PUBLIC_PATTERNLY_E2E_EMAIL}"
+      - tapOn:
+          id: "account-password"
+      - inputText: "${EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD}"
+      - tapOn:
+          id: "account-sign-in-submit"
+      - extendedWaitUntil:
+          notVisible:
+            id: "account-email"
+          timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: "account-entry-continue"
+    commands:
+      - tapOn:
+          id: "account-entry-continue"
+      - extendedWaitUntil:
+          notVisible:
+            id: "account-entry-continue"
+          timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: "account-open-settings"
+    commands:
+      - tapOn:
+          id: "account-open-settings"
+- runFlow:
+    when:
+      visible:
+        id: "main-tab-bar-home"
+    commands:
+      - tapOn:
+          id: "main-tab-bar-home"

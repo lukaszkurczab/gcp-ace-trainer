@@ -5,67 +5,30 @@ tags:
   - certification
   - free
 ---
-- extendedWaitUntil:
-    visible:
-      id: "main-tab-bar-settings"
-    timeout: 30000
-- tapOn:
-    id: "main-tab-bar-settings"
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
 - runFlow:
     when:
       visible:
-        id: "settings-account-entry"
+        id: "patternly:home:select-track:root"
     commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
+          direction: DOWN
+          centerElement: true
       - tapOn:
-          id: "settings-account-entry"
-- runFlow:
-    when:
-      visible:
-        id: "account-sign-in"
-    commands:
+          id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
       - tapOn:
-          id: "account-sign-in"
-- runFlow:
-    when:
-      visible:
-        id: "account-email"
-    commands:
-      - tapOn:
-          id: "account-email"
-      - inputText: "${EXPO_PUBLIC_PATTERNLY_E2E_EMAIL}"
-      - tapOn:
-          id: "account-password"
-      - inputText: "${EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD}"
-      - tapOn:
-          id: "account-sign-in-submit"
-      - extendedWaitUntil:
-          notVisible:
-            id: "account-email"
-          timeout: 30000
-- runFlow:
-    when:
-      visible:
-        id: "account-entry-continue"
-    commands:
-      - tapOn:
-          id: "account-entry-continue"
-      - extendedWaitUntil:
-          notVisible:
-            id: "account-entry-continue"
-          timeout: 30000
-- runFlow:
-    when:
-      visible:
-        id: "account-open-settings"
-    commands:
-      - tapOn:
-          id: "account-open-settings"
+          id: "patternly:home:select-track:continue"
 - extendedWaitUntil:
     visible:
       id: "main-tab-bar-home"
     timeout: 30000
-- tapOn:
-    id: "main-tab-bar-home"
 - runFlow:
     when:
       visible:

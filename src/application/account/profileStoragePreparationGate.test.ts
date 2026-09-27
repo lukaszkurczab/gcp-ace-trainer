@@ -8,6 +8,8 @@ const preferences = readFileSync("src/preferences/AppPreferencesProvider.tsx", "
 
 test("preparation gate opens registry metadata without activating or reading a profile", () => {
   assert.match(gate, /prepareProfileStorage\(\)/);
+  assert.match(gate, /runtimeSelectors\.profileStorage\.state\(state\.kind\)/);
+  assert.doesNotMatch(gate, /runtimeSelectors\.content\.unavailable\(\)/);
   assert.match(context, /createContext<ProfileStoragePreparationContextValue \| null>/);
   assert.match(gate, /createNativeLocalLogoutControl\(\)/);
   assert.match(gate, /logoutControl\.read\(\)/);

@@ -87,6 +87,9 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.home.learningPlanRecoveryCreate(),
     runtimeSelectors.home.learningPlanRecoveryDismiss(),
     runtimeSelectors.content.preparing("verifying-content"),
+    runtimeSelectors.profileStorage.state("loading"),
+    runtimeSelectors.profileStorage.state("ready"),
+    runtimeSelectors.profileStorage.state("unavailable"),
     runtimeSelectors.content.unavailable(),
     runtimeSelectors.content.ready(),
     runtimeSelectors.content.readyAfterAuditReset(),
@@ -117,7 +120,9 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.simulation.navigator("coding-interview-dsa-problem-solving:coding-interview-simulation:2:occurrence:1"),
   ]);
 
-  assert.equal(selectors.size, 33);
+  assert.equal(selectors.size, 36);
+  assert.equal(runtimeSelectors.profileStorage.state("ready"), "patternly:profile-storage:state:ready");
+  assert.notEqual(runtimeSelectors.profileStorage.state("unavailable"), runtimeSelectors.content.unavailable());
 });
 
 test("unavailable recovery and review selectors remain stable and distinct", () => {
