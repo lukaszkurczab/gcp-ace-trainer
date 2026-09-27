@@ -53,9 +53,9 @@ export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, posi
             <IconButton accessibilityLabel={t("Close question navigator")} icon="close" onPress={onDismiss} />
           </View>
           <View style={styles.summaryRow}>
-            <Text maxFontSizeMultiplier={2} style={styles.answeredSummary}>{`${validPositions.filter((position) => position.state === "answered").length} ${t("answered")}`}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.answeredSummary}>{`${validPositions.filter((position) => position.answered).length} ${t("answered")}`}</Text>
             <View accessible={false} style={styles.summaryDot} />
-            <Text maxFontSizeMultiplier={2} style={styles.unansweredSummary}>{`${validPositions.filter((position) => position.state !== "answered").length} ${t("unanswered")}`}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.unansweredSummary}>{`${validPositions.filter((position) => !position.answered).length} ${t("unanswered")}`}</Text>
           </View>
           {feedback ? <NavigatorFeedbackBanner feedback={feedback} onRetry={() => void select(feedback.occurrenceId)} /> : null}
           {savingOccurrenceId ? <View accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.saving}><Text maxFontSizeMultiplier={2} style={styles.savingText}>{t("Saving response…")}</Text></View> : null}
@@ -99,7 +99,7 @@ export function useReducedMotion(): boolean {
 function NavigatorCell({ columns, disabled, frozen = false, index, onPress, position }: Readonly<{ columns: number; disabled: boolean; frozen?: boolean; index: number; onPress: () => void; position: SimulationNavigatorPosition }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("common");
-  const isAnswered = position.state === "answered";
+  const isAnswered = position.answered;
   const isCurrent = position.state === "current";
   const effectiveDisabled = disabled || frozen;
   return <Pressable accessibilityLabel={t(navigatorCellLabel(position, index, frozen))} accessibilityRole="button" accessibilityState={{ disabled: effectiveDisabled, selected: frozen ? false : isCurrent }} disabled={effectiveDisabled} onPress={onPress} style={({ pressed }) => [styles.cell, { height: columns === 5 ? 56 : 48, width: columns === 5 ? 56 : 48 }, frozen ? styles.frozenCell : null, !frozen && isAnswered ? styles.answeredCell : null, !frozen && isCurrent ? styles.currentCell : null, pressed && !effectiveDisabled ? styles.pressedCell : null]}><Text maxFontSizeMultiplier={2} style={[styles.cellText, frozen ? styles.frozenCellText : null, !frozen && isCurrent ? styles.currentCellText : null]}>{index + 1}</Text><Text maxFontSizeMultiplier={2} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.stateMarker}>{navigatorStateLabel(position, frozen)}</Text></Pressable>;

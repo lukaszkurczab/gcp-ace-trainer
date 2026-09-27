@@ -10,15 +10,13 @@ export function navigatorGridColumns(fontScale: number): number {
 export function navigatorCellLabel(position: SimulationNavigatorPosition, index: number, frozen = false): string {
   if (frozen) return `Question ${index + 1}, navigation unavailable while save recovers`;
   const state = position.state === "current"
-    ? "current"
-    : position.state === "answered"
-      ? "answered and saved"
-      : "unanswered";
+    ? `current${position.answered ? ", answered and saved" : ""}`
+    : position.answered ? "answered and saved" : "unanswered";
   return `Question ${index + 1}, ${state}${position.flagged ? ", flagged" : ""}`;
 }
 
 export function navigatorStateLabel(position: SimulationNavigatorPosition, frozen = false): string {
   if (frozen) return "Frozen";
-  const state = position.state === "answered" ? "Saved" : position.state === "current" ? "Current" : "Unanswered";
+  const state = position.state === "current" ? `Current${position.answered ? ", saved" : ""}` : position.answered ? "Saved" : "Unanswered";
   return position.flagged ? `${state}, flagged` : state;
 }

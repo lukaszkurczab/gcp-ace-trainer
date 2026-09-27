@@ -15,6 +15,7 @@ web-build/
 !.maestro/coding-practice-answer-review-details.yaml
 !.maestro/completed-practice-result-review.yaml
 !.maestro/home-practice-presentation.yaml
+!.maestro/rc-certification-exam-free.yaml
 !.maestro/screenshot-capture/
 .maestro/screenshot-capture/*
 !.maestro/account-register-e2e.yaml

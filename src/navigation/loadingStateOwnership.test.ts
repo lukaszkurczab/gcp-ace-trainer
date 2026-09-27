@@ -175,7 +175,8 @@ function assertSkeletonSource(path: string, functionName: string, label: string,
   const file = source(path);
   const functionStart = file.indexOf(`export function ${functionName}`);
   assert.ok(functionStart >= 0, `${path} exports ${functionName}`);
-  const functionEnd = file.indexOf("\nfunction ", functionStart + 1);
+  const nextFunction = file.slice(functionStart + 1).search(/\n(?:export )?function \w+/u);
+  const functionEnd = nextFunction >= 0 ? functionStart + 1 + nextFunction : -1;
   const functionBody = file.slice(functionStart, functionEnd >= 0 ? functionEnd : undefined);
   assert.match(file, new RegExp(`<${escapeForRegExp(functionName)}\\s*/>`), `${path} owns its pending branch`);
   assert.match(file, new RegExp(`accessibilityLabel=\\{t\\("${escapeForRegExp(label)}"\\)\\}`), `${path} has a localized loading label`);
@@ -197,7 +198,8 @@ function assertLocalSkeletonDefinition(path: string, functionName: string, label
   const file = source(path);
   const functionStart = file.indexOf(`export function ${functionName}`);
   assert.ok(functionStart >= 0, `${path} exports ${functionName}`);
-  const functionEnd = file.indexOf("\nfunction ", functionStart + 1);
+  const nextFunction = file.slice(functionStart + 1).search(/\n(?:export )?function \w+/u);
+  const functionEnd = nextFunction >= 0 ? functionStart + 1 + nextFunction : -1;
   const functionBody = file.slice(functionStart, functionEnd >= 0 ? functionEnd : undefined);
   assert.match(file, labelExpression, `${path} has a localized loading label`);
   assert.match(file, /accessibilityRole="progressbar"/);
@@ -400,7 +402,12 @@ test("the six read owners end rejected reads in explicit unavailable EmptyStates
     } else {
       assert.ok(file.includes('actionLabel={t("Try again")} onActionPress={retry}'), `${path} exposes retry for unavailable reads`);
     }
-    assert.match(file, new RegExp(`<EmptyState[\\s\\S]*?title=\\{t\\("${title}"\\)\\}`), `${path} renders unavailable EmptyState`);
+    if (path === "src/features/practice/PracticeHubScreen.tsx") {
+      assert.match(file, /function renderUnavailable\([\s\S]*?title = t\("Practice is unavailable"\)/);
+      assert.match(file, /<EmptyState actionLabel=\{actionLabel\} onActionPress=\{onActionPress\} title=\{title\} description=\{description\} \/>/);
+    } else {
+      assert.match(file, new RegExp(`<EmptyState[\\s\\S]*?title=\\{t\\("${title}"\\)\\}`), `${path} renders unavailable EmptyState`);
+    }
   }
 });
 

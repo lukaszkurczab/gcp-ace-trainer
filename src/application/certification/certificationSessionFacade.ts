@@ -1,5 +1,5 @@
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import { resolvedContentRefsEqual, type AttemptResultKind, type TrackId, type TrainingSession, type TrainingSessionDraft } from "../../domain";
+import { resolvedContentRefsEqual, type AttemptResultKind, type CompletedTrainingSession, type TrackId, type TrainingSession, type TrainingSessionDraft } from "../../domain";
 import { getTrackRegistration } from "../../domain";
 import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts } from "../learningReadModels";
 import {
@@ -19,6 +19,7 @@ import { isCertificationPracticeModeId, type CertificationDomain, type Certifica
 import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalQuestionResponse, type JsonValue, type Question } from "../../content/canonical";
 import { projectCanonicalChoiceFeedbackControls, type CanonicalChoiceFeedbackState } from "../canonical/canonicalInteractionPresentation";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
+import { projectCertificationExamReview, type CertificationExamReviewProjection } from "./certificationExamReviewProjection";
 
 export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; nodeId?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
@@ -235,6 +236,30 @@ export async function getCertificationPracticeReviewProjection(sessionId: string
     modeId: session.modeId,
     sessionId: session.id,
     total: session.actualLength,
+  });
+}
+
+/** Reads and validates the complete immutable 50-item Certification Exam result and review. */
+export async function getCertificationExamReviewProjection(sessionId: string): Promise<CertificationExamReviewProjection> {
+  const lifecycle = getTrainingLifecycleUseCases();
+  const [result, session, attemptsRecord] = await Promise.all([
+    lifecycle.loadSummary(sessionId),
+    lifecycle.loadSessionRecord(sessionId),
+    loadTrainingAttempts(),
+  ]);
+  if (session.id !== sessionId || session.status !== "completed" || !session.completedAt || session.trackId !== "google-cloud-associate-cloud-engineer" || session.modeId !== "certification-exam-simulation" ||
+    result.sessionId !== session.id || result.trackId !== session.trackId || result.completedAt !== session.completedAt || result.evidence.familyId !== "certification") {
+    throw new TrainingApplicationFailure("summary_unavailable", "Answer review requires one verified completed Certification Exam session.");
+  }
+  const exact = await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 });
+  const profile = exact.track.simulationProfiles?.find((candidate) => candidate.profileId === session.configurationSnapshot.simulationProfileId);
+  if (!profile) throw new TrainingApplicationFailure("summary_unavailable", "The exact Certification Exam profile is unavailable.");
+  return projectCertificationExamReview({
+    attempts: attemptsRecord.value,
+    profile,
+    questionsById: new Map(exact.track.questions.map((question) => [question.questionId, question])),
+    result,
+    session: session as CompletedTrainingSession,
   });
 }
 export async function advanceCertificationPracticeSession(): Promise<TrainingSession> { return getTrainingLifecycleUseCases().advancePracticeSession(); }

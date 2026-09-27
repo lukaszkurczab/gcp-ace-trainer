@@ -72,14 +72,15 @@ test("answer review pending uses the shared review shell anatomy without fabrica
 
 test("route coverage has one native or inline shell owner and preserves active-session specialization", () => {
   const rootNavigator = source("src/navigation/RootNavigator.tsx");
-  const routeIds = [...rootNavigator.matchAll(/<Stack\.Screen\s+\n?\s*name=\{ROUTES\.([A-Z_]+)\}/g)].map((match) => match[1]);
+  const routeIds = [...rootNavigator.matchAll(/<Stack\.Screen\s+\n?\s*name=\{ROUTES\.([A-Z0-9_]+)\}/g)].map((match) => match[1]);
   const headerlessRouteIds = [...rootNavigator.matchAll(/<Stack\.Screen\s+\n?\s*name=\{ROUTES\.([A-Z_]+)\}[\s\S]*?options=\{\{([^}]*)\}\}\s*\/>/g)]
     .filter((match) => /headerShown:\s*false/.test(match[2] ?? ""))
     .map((match) => match[1]);
 
-  assert.equal(routeIds.length, 35);
+  assert.equal(routeIds.length, 36);
   assert.equal(new Set(routeIds).size, 35);
   assert.deepEqual(headerlessRouteIds, [
+    "LANGUAGE_SETTINGS",
     "HOME",
     "ACTIVITY",
     "ACCOUNT_SECURITY",
@@ -110,6 +111,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "TERMS_OF_SERVICE",
     "PRIVACY_POLICY",
   ]);
+  assert.equal(headerlessRouteIds.filter((routeId) => routeId === "LANGUAGE_SETTINGS").length, 2);
 
   for (const path of [
     "src/features/home/HomeScreen.tsx",

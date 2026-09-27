@@ -16,9 +16,12 @@ import { contentPackageRuntimeOwner } from "../../application/contentPackageRunt
 import { getDesignModeTitle, isDesignInterviewModeId } from "../../tracks/design-interview";
 import { isCertificationPracticeModeId } from "../../tracks/certification";
 import { scoreCanonicalQuestion } from "../../content/canonical";
+import { getCertificationExamReviewProjection } from "../../application/certification";
+import type { CertificationExamReviewProjection } from "../../application/certification/certificationExamReviewProjection";
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.RESULT>;
 type Summary = Readonly<{
   certificationMaxPoints: number | null;
+  certificationExam: CertificationExamReviewProjection | null;
   certificationTopicId: string | null;
   designTopicId: string | null;
   result: Awaited<ReturnType<ReturnType<typeof getTrainingLifecycleUseCases>["loadSummary"]>>;
@@ -40,7 +43,10 @@ export function ResultScreen({ navigation, route }: Props) {
     const useCases = getTrainingLifecycleUseCases();
     void Promise.all([useCases.loadSummary(capturedRequestKey), useCases.loadSessionRecord(capturedRequestKey)])
       .then(async ([result, session]) => {
-        const exact = isDesignInterviewModeId(session.modeId) || session.modeId.startsWith("certification-") || result.evidence.familyId === "certification"
+        const certificationExam = session.modeId === "certification-exam-simulation"
+          ? await getCertificationExamReviewProjection(capturedRequestKey)
+          : null;
+        const exact = !certificationExam && (isDesignInterviewModeId(session.modeId) || session.modeId.startsWith("certification-") || result.evidence.familyId === "certification")
           ? await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 })
           : null;
         if (!live) return;
@@ -52,10 +58,10 @@ export function ResultScreen({ navigation, route }: Props) {
         const certificationQuestions = result.evidence.familyId === "certification" && exact
           ? session.itemOrder.map((occurrence) => exact.track.getQuestion(occurrence.item.questionId))
           : [];
-        const certificationMaxPoints = certificationQuestions.length === session.actualLength && certificationQuestions.every((question) => question !== undefined)
+        const certificationMaxPoints = certificationExam?.maxPoints ?? (certificationQuestions.length === session.actualLength && certificationQuestions.every((question) => question !== undefined)
           ? certificationQuestions.reduce((sum, question) => sum + scoreCanonicalQuestion(question, question.answer).maxPoints, 0)
-          : null;
-        setReadState({ kind: "ready", requestKey: capturedRequestKey, summary: { result, session, designTopicId, certificationTopicId, certificationMaxPoints } });
+          : null);
+        setReadState({ kind: "ready", requestKey: capturedRequestKey, summary: { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam } });
       })
       .catch((cause) => { if (live) setReadState({ kind: "unavailable", requestKey: capturedRequestKey, reason: describeOperationalFailure(cause, t("We couldn’t load the session result.")) }); });
     return () => { live = false; };
@@ -65,10 +71,11 @@ export function ResultScreen({ navigation, route }: Props) {
   const summary = readState.summary;
   const { result, session } = summary;
   const design = isDesignInterviewModeId(session.modeId);
+  const certificationExam = session.modeId === "certification-exam-simulation";
   const certificationPractice = isCertificationPracticeModeId(session.modeId);
-  const answeredCount = result.answeredOccurrenceIds.length;
+  const answeredCount = certificationExam ? summary.certificationExam?.answeredCount ?? 0 : result.answeredOccurrenceIds.length;
   const actualCount = session.actualLength;
-  const unansweredCount = result.unansweredOccurrenceIds.length;
+  const unansweredCount = certificationExam ? summary.certificationExam?.unansweredCount ?? actualCount : result.unansweredOccurrenceIds.length;
   const coverageIsConsistent = result.totalOccurrences === actualCount && answeredCount + unansweredCount === actualCount;
   const certificationCoverageIsExact = !certificationPractice || (
     unansweredCount === 0 &&
@@ -77,6 +84,9 @@ export function ResultScreen({ navigation, route }: Props) {
   const normalizedDetails = coverageIsConsistent
     ? normalizeSessionResultDetails(result.evidence.details, answeredCount, summary.certificationMaxPoints ?? undefined)
     : { points: null, score: null };
+  if (certificationExam && !summary.certificationExam) {
+    return <Screen><EmptyState title={t("Session summary unavailable")} description={t("The completed session evidence is incomplete.")} /></Screen>;
+  }
   if (certificationPractice && (!coverageIsConsistent || !certificationCoverageIsExact || summary.certificationMaxPoints === null || normalizedDetails.points === null || normalizedDetails.score === null)) {
     return <Screen><EmptyState title={t("Session summary unavailable")} description={t("The completed session evidence is incomplete.")} /></Screen>;
   }
@@ -104,10 +114,12 @@ export function ResultScreen({ navigation, route }: Props) {
         points={normalizedDetails.points ?? undefined}
         requestedCount={session.requestedLength}
         configurationTestID={certificationPractice ? runtimeSelectors.summary.configuration(route.params.sessionId, session.actualLength, session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "atSessionEnd" : "afterEachAnswer") : undefined}
-        review={certificationPractice ? { onPress: () => navigation.navigate(ROUTES.EXAM_REVIEW, { sessionId: route.params.sessionId }), testID: runtimeSelectors.summary.reviewAnswers(route.params.sessionId) } : undefined}
+        review={certificationPractice || certificationExam ? { onPress: () => navigation.navigate(ROUTES.EXAM_REVIEW, { sessionId: route.params.sessionId }), testID: runtimeSelectors.summary.reviewAnswers(route.params.sessionId) } : undefined}
         rootTestID={runtimeSelectors.summary.root(route.params.sessionId)}
         score={normalizedDetails.score}
-        secondaryNote={certificationPractice ? { text: t(session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer") } : undefined}
+        secondaryNote={certificationExam && summary.certificationExam
+          ? { text: `${t("Points")}: ${summary.certificationExam.pointsEarned} / ${summary.certificationExam.maxPoints}` }
+          : certificationPractice ? { text: t(session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer") } : undefined}
         totalOccurrences={actualCount}
         unansweredCount={unansweredCount}
       />

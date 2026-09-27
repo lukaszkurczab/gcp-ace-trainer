@@ -16,7 +16,9 @@ const m4 = readFileSync(".maestro/m4-custom-after-each-answer.yaml", "utf8");
 const m5 = readFileSync(".maestro/m5-completed-session-relaunch.yaml", "utf8");
 
 test("M3 keeps the same Custom Practice session and withholds feedback across leave, kill, and resume", () => {
-  assertRuntimeSessionBootstrap(m3, manifest.m3, "alg-complexity-amortized-002");
+  const questionTwoCounter = runtimeSelectors.session.counter(manifest.m3.sessionId, 2, manifest.m3.length);
+  assertRuntimeSessionBootstrap(m3, manifest.m3, questionTwoCounter);
+  assert.equal(count(m3, `id: "${questionTwoCounter}"`), 2, "M3 must assert question 2 before and after relaunch");
   assert.match(m3, new RegExp(escape(runtimeSelectors.session.option(manifest.m3.itemId, manifest.m3.selectedOptionId))));
   assert.match(m3, new RegExp(escape(runtimeSelectors.session.submit(manifest.m3.itemId))));
   for (const selector of [
@@ -51,11 +53,12 @@ test("M5 reuses the complete M1 flow and proves a terminal session has no active
   assert.doesNotMatch(m5, /point:|text:/);
 });
 
-function assertRuntimeSessionBootstrap(flow: string, session: Readonly<{ feedbackTiming: "afterEachAnswer" | "atSessionEnd"; itemId: string; length: number; sessionId: string }>, resumedItemId = session.itemId): void {
+function assertRuntimeSessionBootstrap(flow: string, session: Readonly<{ feedbackTiming: "afterEachAnswer" | "atSessionEnd"; itemId: string; length: number; sessionId: string }>, resumedSelector = runtimeSelectors.session.question(session.itemId)): void {
+  assert.match(flow, new RegExp(escape(`- tapOn:\n    id: "main-tab-bar-practice"\n- extendedWaitUntil:\n    visible:\n      id: "${runtimeSelectors.practice.hubRoot()}"\n    timeout: 10000\n- tapOn:\n    id: "${runtimeSelectors.practice.openSetup()}"`)));
   assert.match(flow, /- killApp\n- launchApp/);
   assert.match(flow, new RegExp(escape(runtimeSelectors.session.configuration(session.sessionId, session.length, session.feedbackTiming))));
   assert.match(flow, new RegExp(escape(runtimeSelectors.session.question(session.itemId))));
-  assert.match(flow, new RegExp(escape(`assertVisible:\n    id: "${runtimeSelectors.session.question(resumedItemId)}"`)));
+  assert.match(flow, new RegExp(escape(`assertVisible:\n    id: "${resumedSelector}"`)));
   assert.match(flow, new RegExp(escape(runtimeSelectors.resume.card(session.sessionId))));
   assert.match(flow, new RegExp(escape(runtimeSelectors.resume.continue(session.sessionId))));
   assert.match(flow, new RegExp(escape(runtimeSelectors.session.leave(session.sessionId))));

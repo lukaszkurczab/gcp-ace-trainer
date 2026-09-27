@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test, { before } from "node:test";
+import { getProductSimulationModeConfig } from "../content/canonical/productModeConfig";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
@@ -53,5 +54,41 @@ test("resolves only the question identified by a canonical ResolvedContentRef", 
   await assert.rejects(
     contentPackageRuntimeOwner.resolveItem({ ...ref, questionId: "missing-question" }),
     /exact canonical question/,
+  );
+});
+
+test("prepares Certification Exam Simulation from the exact canonical artifact profile", async () => {
+  const trackId = "google-cloud-associate-cloud-engineer";
+  const canonical = contentPackageRuntimeOwner.getPreparedDiscovery(trackId).track;
+  const validated = getProductSimulationModeConfig(canonical.trackId, canonical.simulationProfiles);
+  assert.equal(canonical.modes.some((mode) => mode.modeId === "certification-exam-simulation"), false);
+  assert.equal(validated.profile.profileId, "google-cloud-associate-cloud-engineer-certification-exam-v1");
+
+  const resolved = await contentPackageRuntimeOwner.resolveForPreparation({
+    trackId,
+    familyId: "certification",
+    modeId: "certification-exam-simulation",
+  });
+  assert.equal(resolved.track.trackId, canonical.trackId);
+  assert.equal(resolved.track.contentVersion, canonical.contentVersion);
+  assert.equal(resolved.track.artifactSha256, canonical.artifactSha256);
+  assert.equal(resolved.track.simulationProfiles?.[0]?.profileId, validated.profile.profileId);
+  const prepared = await resolved.runtime.prepare({
+    trackId,
+    modeId: "certification-exam-simulation",
+    request: { sessionId: "owner-gcp-simulation" },
+    attempts: [],
+    reviews: [],
+    now: "2026-09-27T00:00:00.000Z",
+  });
+  assert.equal(prepared.session.actualLength, 50);
+  await assert.rejects(
+    contentPackageRuntimeOwner.resolveForPreparation({
+      trackId,
+      familyId: "certification",
+      modeId: "certification-exam-simulation",
+      nodeId: "organization_projects_policies_services_quotas_and_assets",
+    }),
+    /does not accept a nodeId/u,
   );
 });

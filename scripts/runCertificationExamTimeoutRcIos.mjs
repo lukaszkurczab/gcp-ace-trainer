@@ -4,10 +4,11 @@ import { parseDotenv } from "./runLocalProfile.mjs";
 
 const APP_ID = "com.lkurczab.patternly";
 const RESET_URL = "com.lkurczab.patternly://audit/reset-learning-state";
+const TIMEOUT_URL = "com.lkurczab.patternly://audit/clock/advance?milliseconds=7200001";
 const LISTENER_FLOW = ".maestro/rc-runtime-audit-listener-ready.yaml";
 const RESET_COMPLETE_FLOW = ".maestro/rc-runtime-audit-reset-complete.yaml";
 const PREPARE_FLOW_PATH = ".maestro/rc-certification-exam-smoke.yaml";
-const RESUME_FLOW_PATH = ".maestro/rc-certification-exam-resume-finish.yaml";
+const TIMEOUT_RESULT_FLOW_PATH = ".maestro/rc-certification-exam-timeout-result.yaml";
 const SMOKE_CREDENTIAL_KEYS = Object.freeze([
   "EXPO_PUBLIC_PATTERNLY_E2E_EMAIL",
   "EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD",
@@ -16,37 +17,34 @@ const UDID_PATTERN = /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{
 
 const [flag, udid] = process.argv.slice(2);
 if (flag !== "--udid" || !UDID_PATTERN.test(udid ?? "")) {
-  throw new Error("Usage: PATTERNLY_DEV_CLIENT_URL=<local dev-client URL> node scripts/runCertificationExamRcIos.mjs --udid <IOS_SIMULATOR_UDID>");
+  throw new Error("Usage: PATTERNLY_DEV_CLIENT_URL=<local dev-client URL> MAESTRO_TEST_OUTPUT_DIR=<evidence directory> node scripts/runCertificationExamTimeoutRcIos.mjs --udid <IOS_SIMULATOR_UDID>");
 }
 
 const devClientUrl = process.env.PATTERNLY_DEV_CLIENT_URL;
-if (!devClientUrl) throw new Error("PATTERNLY_DEV_CLIENT_URL is required; the RC iOS runner does not guess a Metro endpoint.");
+if (!devClientUrl) throw new Error("PATTERNLY_DEV_CLIENT_URL is required; the timeout RC runner does not guess a Metro endpoint.");
 parseLocalMetroUrl(devClientUrl);
 const outputDirectory = process.env.MAESTRO_TEST_OUTPUT_DIR;
-if (!outputDirectory) throw new Error("MAESTRO_TEST_OUTPUT_DIR is required; RC screenshots must have an explicit evidence destination.");
+if (!outputDirectory) throw new Error("MAESTRO_TEST_OUTPUT_DIR is required; timeout screenshots need an explicit evidence destination.");
 mkdirSync(outputDirectory, { recursive: true });
 
-const simulator = availableBootedSimulator(udid);
-if (!simulator) throw new Error(`iOS simulator ${udid} is not available and booted.`);
-for (const requiredFlow of [LISTENER_FLOW, RESET_COMPLETE_FLOW, PREPARE_FLOW_PATH, RESUME_FLOW_PATH]) if (!existsSync(requiredFlow)) throw new Error(`RC flow is missing: ${requiredFlow}`);
+if (!availableBootedSimulator(udid)) throw new Error(`iOS simulator ${udid} is not available and booted.`);
+for (const requiredFlow of [LISTENER_FLOW, RESET_COMPLETE_FLOW, PREPARE_FLOW_PATH, TIMEOUT_RESULT_FLOW_PATH]) {
+  if (!existsSync(requiredFlow)) throw new Error(`RC flow is missing: ${requiredFlow}`);
+}
 const smokeCredentials = loadSmokeCredentials();
 
 runOptional("xcrun", ["simctl", "terminate", udid, APP_ID]);
 run("xcrun", ["simctl", "openurl", udid, devClientUrl]);
-run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, LISTENER_FLOW], { stdio: "inherit" });
+runMaestro(LISTENER_FLOW);
 run("xcrun", ["simctl", "openurl", udid, RESET_URL]);
-run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, RESET_COMPLETE_FLOW], { stdio: "inherit" });
+runMaestro(RESET_COMPLETE_FLOW);
 runMaestro(PREPARE_FLOW_PATH, smokeCredentials);
-
-// Reopen the same installed dev client after the exam is positioned at question 50.
-// Keeping app data intact makes this a real local-draft resume check.
-run("xcrun", ["simctl", "terminate", udid, APP_ID]);
-run("xcrun", ["simctl", "openurl", udid, devClientUrl]);
-run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, RESUME_FLOW_PATH], { stdio: "inherit" });
+run("xcrun", ["simctl", "openurl", udid, TIMEOUT_URL]);
+runMaestro(TIMEOUT_RESULT_FLOW_PATH, smokeCredentials);
 
 function availableBootedSimulator(targetUdid) {
   const payload = JSON.parse(run("xcrun", ["simctl", "list", "devices", "available", "--json"]));
-  return Object.values(payload.devices ?? {}).flat().find((device) => device.udid?.toUpperCase() === targetUdid.toUpperCase() && device.state === "Booted");
+  return Object.values(payload.devices ?? {}).flat().some((device) => device.udid?.toUpperCase() === targetUdid.toUpperCase() && device.state === "Booted");
 }
 
 function parseLocalMetroUrl(value) {
@@ -60,7 +58,7 @@ function parseLocalMetroUrl(value) {
   let metroUrl;
   try { metroUrl = new URL(bundleUrl); } catch { throw new Error("PATTERNLY_DEV_CLIENT_URL contains an invalid Metro bundle URL."); }
   if (metroUrl.protocol !== "http:" || !["127.0.0.1", "[::1]"].includes(metroUrl.hostname) || !/^[0-9]+$/.test(metroUrl.port)) {
-    throw new Error("PATTERNLY_DEV_CLIENT_URL must use an explicit local 127.0.0.1 or [::1] Metro endpoint for simulator capture.");
+    throw new Error("PATTERNLY_DEV_CLIENT_URL must use an explicit local 127.0.0.1 or [::1] Metro endpoint.");
   }
 }
 
@@ -91,15 +89,17 @@ function loadSmokeCredentials() {
 }
 
 function runMaestro(flowPath, credentials) {
-  const credentialArgs = SMOKE_CREDENTIAL_KEYS.flatMap((key) => ["-e", `${key}=${credentials[key]}`]);
+  const credentialArgs = credentials
+    ? SMOKE_CREDENTIAL_KEYS.flatMap((key) => ["-e", `${key}=${credentials[key]}`])
+    : [];
   const args = ["test", "--udid", udid, "--test-output-dir", outputDirectory, ...credentialArgs, flowPath];
   const result = spawnSync("maestro", args, {
     encoding: "utf8",
     env: { ...process.env, ...credentials },
   });
-  if (result.error) throw new Error("Maestro could not start the RC flow.");
+  if (result.error) throw new Error("Maestro could not start an RC flow.");
   const redact = (output) => SMOKE_CREDENTIAL_KEYS.reduce(
-    (sanitized, key) => sanitized.split(credentials[key]).join("[redacted]"),
+    (sanitized, key) => sanitized.split(smokeCredentials[key]).join("[redacted]"),
     output ?? "",
   );
   process.stdout.write(redact(result.stdout));

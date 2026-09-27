@@ -9,7 +9,7 @@ test("practice screens turn unsupported package, topic, and mode reads into exit
   const roadmap = source("src/features/practice/TopicRoadmapScreen.tsx");
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
 
-  assert.match(hub, /try \{[\s\S]*?getTrackDisplay\(activeTrackId\)[\s\S]*?getPreparedDiscovery\(activeTrack\.id\)[\s\S]*?\} catch \(error\) \{[\s\S]*?renderUnavailable\(/);
+  assert.match(hub, /try \{[\s\S]*?getTrackDisplay\(activeTrackId\)[\s\S]*?getCanonicalFreePracticeNodeId\(activeTrack\.id\)[\s\S]*?\} catch \(error\) \{[\s\S]*?renderUnavailable\(/);
   assert.match(roadmap, /try \{[\s\S]*?getTrackDisplay\(activeTrackId\)[\s\S]*?buildTopicRoadmapNodes\([\s\S]*?\} catch \(error\) \{[\s\S]*?renderUnavailable\(/);
   assert.match(roadmap, /if \(route\.params\?\.topicId !== undefined && !topics\.some\(\(topic\) => topic\.id === route\.params\?\.topicId && topic\.status !== "locked"\)\) \{[\s\S]*?return renderUnavailable\(t\("This topic is not included in your free content\."\)\)/);
   assert.match(setup, /if \(route\.params\?\.topicId !== undefined && route\.params\.topicId !== canonicalNodeId\) \{[\s\S]*?return renderUnavailable\(t\("This topic is not included in your free content\."\)/);
@@ -53,6 +53,16 @@ test("Hub uses its displayed primary mode and package length defaults", () => {
   const hub = source("src/features/practice/PracticeHubScreen.tsx");
   assert.match(hub, /const resolvedMode = mode \?\? primaryMode\.mode/);
   assert.doesNotMatch(hub, /mode: resolvedMode, sessionLength: 10/);
+});
+
+test("Home practice navigation preserves track identity and unavailable topics keep their context", () => {
+  const home = source("src/features/home/HomeScreen.tsx");
+  const hub = source("src/features/practice/PracticeHubScreen.tsx");
+
+  assert.match(home, /onStartLearning=\{\(topicId\) => navigation\.navigate\(ROUTES\.PRACTICE_HUB, \{ topicId, trackId: activeTrack\.id \}\)\}/);
+  assert.match(hub, /if \(route\.params\?\.topicId !== undefined && route\.params\.topicId !== canonicalNodeId\) \{[\s\S]*?return renderUnavailable\([\s\S]*?requestedTopicTitle,[\s\S]*?\);/);
+  assert.match(hub, /title = t\("Practice is unavailable"\)/);
+  assert.match(hub, /<EmptyState[^>]*title=\{title\}[^>]*description=\{description\}/);
 });
 
 test("all practice runners prevent native removal and replay the exact action after leave confirmation", () => {

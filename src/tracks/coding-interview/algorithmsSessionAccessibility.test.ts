@@ -217,7 +217,7 @@ test("Practice Question Shell keeps the Figma prompt-to-answer rhythm", () => {
   assert.match(surface, /questionAndResponse:\s*\{\s*gap:\s*spacing\.md\s*\}/);
 });
 
-test("certification exam stacks descriptive actions so large text cannot clip flagging or navigation", () => { assert.match(readFileSync("src/features/exam/ExamScreen.tsx", "utf8"), /unavailable/i); return;
+test("certification exam stacks descriptive actions so large text cannot clip flagging or navigation", () => {
   const exam = source("src/features/exam/ExamScreen.tsx");
 
   assert.match(exam, /<View style=\{styles\.examActions\}>[\s\S]*Question navigator[\s\S]*Flag question/);

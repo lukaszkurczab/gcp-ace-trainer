@@ -104,7 +104,6 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const accountRef = useRef(account);
   accountRef.current = account;
   const settingsAccount = getSettingsAccountPresentation(account.state);
-  const accountResumeRequired = account.state.kind === "authenticated" && account.state.accountData.status === "resumeRequired";
   const learningPlanRecovery = account.state.kind === "authenticated"
     ? account.state.accountData.learningPlanRecovery
     : undefined;
@@ -393,14 +392,6 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       >
         {activeTab === "home" ? (
           <>
-            {accountResumeRequired ? (
-              <InfoBlock
-                body={tAccount("resumeRequiredDescription")}
-                testID="home-account-resume-required"
-                title={tAccount("resumeRequired")}
-                tone="warning"
-              />
-            ) : null}
             {learningPlanRecovery && !learningPlanRecovery.dismissed && learningPlanRecovery.trackId === activeTrackId ? (
               <View style={styles.recoveryNotice} testID={runtimeSelectors.home.learningPlanRecovery()}>
                 <InfoBlock
@@ -439,7 +430,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
               onHomePlanAction={(action) => { void handleHomePlanAction(action, data.homePlan!, "home"); }}
               onRetryHomePlan={() => setShellReload((reload) => reload + 1)}
-              onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
+              onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId, trackId: activeTrack.id })}
               homePlan={data.homePlan}
               reviewQueueItems={data.reviewQueueItems}
               goalInvitationAudience={account.state.kind === "authenticated" ? "account" : "guest"}

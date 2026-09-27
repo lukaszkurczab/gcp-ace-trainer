@@ -2,6 +2,7 @@ import { CanonicalTrainingRuntime } from "./canonical/CanonicalTrainingRuntime";
 import { createCanonicalRuntimeCatalogOwner, type CanonicalTrackRuntime, type Question } from "../content/canonical";
 import { createResolvedContentRef, isArtifactSha256, type ResolvedContentRef, type TrackFamilyId, type TrackId } from "../domain";
 import type { VerifiedNodePackage } from "../content/runtime/nodeContentPackage";
+import { getProductSimulationModeConfig } from "../content/canonical/productModeConfig";
 import { getActiveNodePackageScopeKey, loadActiveProfileNodePackages } from "../content/application/nodePackageStoreComposition";
 import { findPremiumNodeOfferForIdentity } from "../content/application/premiumNodeOffers";
 import { getAvailablePremiumNodeOfferForMode } from "../content/application/premiumNodeOfferAccess";
@@ -25,6 +26,11 @@ export class ContentPackageRuntimeOwner {
   async resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string }>): Promise<ResolvedPackageRuntime> {
     const track = (await this.catalogOwner.load()).getTrack(input.trackId);
     assertFamily(track, input.familyId);
+    if (input.modeId === "certification-exam-simulation") {
+      if (input.nodeId !== undefined) throw new Error("Certification Exam Simulation does not accept a nodeId.");
+      getProductSimulationModeConfig(track.trackId, track.simulationProfiles);
+      return this.materialize(track);
+    }
     if (input.nodeId) {
       const offeredNode = this.availableOfferForMode(input.trackId, input.modeId);
       if (offeredNode?.familyId === input.familyId && offeredNode.nodeId === input.nodeId) {

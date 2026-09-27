@@ -33,6 +33,7 @@ export type SimulationSurfaceState =
   | "completed";
 
 export type SimulationNavigatorPosition = Readonly<{
+  answered: boolean;
   occurrenceId: string;
   flagged?: boolean;
   state: "current" | "answered" | "unanswered" | "frozen";

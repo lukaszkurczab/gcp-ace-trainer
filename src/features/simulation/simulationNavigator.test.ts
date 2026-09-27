@@ -8,13 +8,14 @@ import { navigatorCellLabel, navigatorGridColumns, navigatorStateLabel, SIMULATI
 const source = readFileSync("src/features/simulation/navigator/SimulationQuestionNavigator.tsx", "utf8");
 
 function position(state: SimulationNavigatorPosition["state"]): SimulationNavigatorPosition {
-  return { occurrenceId: `occurrence-${state}`, state };
+  return { occurrenceId: `occurrence-${state}`, answered: state === "answered", state };
 }
 
 test("simulation question navigator has the approved states, accessible labels, and large-text grid adaptation", () => {
   assert.equal(navigatorGridColumns(1), SIMULATION_NAVIGATOR_COLUMNS);
   assert.equal(navigatorGridColumns(1.3), SIMULATION_NAVIGATOR_LARGE_TEXT_COLUMNS);
   assert.equal(navigatorCellLabel(position("current"), 11), "Question 12, current");
+  assert.equal(navigatorCellLabel({ ...position("current"), answered: true, flagged: true }, 11), "Question 12, current, answered and saved, flagged");
   assert.equal(navigatorCellLabel(position("answered"), 6), "Question 7, answered and saved");
   assert.equal(navigatorCellLabel(position("unanswered"), 17), "Question 18, unanswered");
   assert.equal(navigatorCellLabel(position("current"), 11, true), "Question 12, navigation unavailable while save recovers");
@@ -22,7 +23,7 @@ test("simulation question navigator has the approved states, accessible labels, 
   assert.equal(navigatorStateLabel(position("answered"), true), "Frozen");
   assert.match(source, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
   assert.match(source, /<ScrollView contentContainerStyle=\{styles\.grid\} style=\{styles\.gridScroll\}>/);
-  assert.match(source, /position\.state !== "answered"/);
+  assert.match(source, /position\.answered/);
   assert.match(source, /height: columns === 5 \? 56 : 48/);
   assert.match(source, /width: columns === 5 \? 56 : 48/);
   assert.match(source, /cell:\s*\{[\s\S]*backgroundColor:\s*palette\.elevatedSurface/);

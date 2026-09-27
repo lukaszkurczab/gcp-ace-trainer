@@ -6,7 +6,11 @@ import type { SimulationNavigatorPosition, SimulationSurfaceProjection } from ".
  */
 export function hasCanonicalSimulationNavigator(positions: readonly SimulationNavigatorPosition[] | undefined): positions is readonly SimulationNavigatorPosition[] {
   if (!positions) return false;
-  return positions.length > 0 && new Set(positions.map((position) => position.occurrenceId)).size === positions.length;
+  return positions.length > 0
+    && new Set(positions.map((position) => position.occurrenceId)).size === positions.length
+    && positions.every((position) => typeof position.answered === "boolean"
+      && (position.state !== "answered" || position.answered)
+      && (position.state !== "unanswered" || !position.answered));
 }
 
 /** Correctness is deliberately unavailable until the verified result projection. */

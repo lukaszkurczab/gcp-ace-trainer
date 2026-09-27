@@ -25,6 +25,13 @@ test("Home focus retries only eligible pending account data and clears route tab
   assert.match(source, /function handleHomeTabChange\(tab: HomeShellTab\) \{[\s\S]*?navigation\.setParams\(\{ initialTab: tab \}\);/);
 });
 
+test("Home keeps resume-required handling internal instead of showing sync implementation details", () => {
+  assert.doesNotMatch(source, /home-account-resume-required/);
+  assert.doesNotMatch(source, /const accountResumeRequired/);
+  assert.match(source, /accountState\.accountData\.status === "resumeRequired"/);
+  assert.match(source, /if \(!activeSessionForSync\) \{\s*await accountRef\.current\.retryAccountSync\(\);/);
+});
+
 test("the first Home visit replaces repeated empty metrics with one honest next-step state", () => {
   const homeTab = readFileSync("src/features/home/tabs/HomeTab.tsx", "utf8");
 

@@ -1,9 +1,9 @@
 appId: com.lkurczab.patternly
-name: Patternly RC — Certification Exam Simulation — prepare and suspend
+name: Patternly RC — Free Certification Exam paywall and cold restart
 tags:
   - rc-evidence
   - certification
-  - exam-simulation
+  - free
 ---
 - extendedWaitUntil:
     visible:
@@ -96,47 +96,35 @@ tags:
     element:
       id: "patternly:practice:mode-card:certification-exam-simulation"
     direction: DOWN
-- swipe:
-    direction: UP
-    duration: 500
-- takeScreenshot: "rc-certification-practice-hub"
+- takeScreenshot: "rc-certification-exam-free-offer"
 - tapOn:
     id: "patternly:practice:mode-card:certification-exam-simulation"
 - extendedWaitUntil:
-    visible: "Question 1 of 50"
+    visible:
+      id: "premium-offer-summary"
     timeout: 30000
-- takeScreenshot: "rc-certification-exam-question-1"
+- takeScreenshot: "rc-certification-exam-free-paywall"
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-home"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:primary-action"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
 - scrollUntilVisible:
     element:
-      id: "patternly:simulation:option:gcp-ace-gcpace-n01-b02-001:a"
+      id: "patternly:practice:mode-card:certification-exam-simulation"
     direction: DOWN
-    centerElement: true
 - tapOn:
-    id: "patternly:simulation:option:gcp-ace-gcpace-n01-b02-001:a"
-- waitForAnimationToEnd:
-    timeout: 5000
-- scrollUntilVisible:
-    element:
-      id: "patternly:simulation:option:gcp-ace-gcpace-n01-b02-001:b"
-    direction: DOWN
-    centerElement: true
-- tapOn:
-    id: "patternly:simulation:option:gcp-ace-gcpace-n01-b02-001:b"
-- waitForAnimationToEnd:
-    timeout: 5000
-- tapOn: "Next"
-- assertVisible: "Question 2 of 50"
-- tapOn: "Previous"
-- assertVisible: "Question 1 of 50"
-- assertVisible:
-    id: "patternly:simulation:option:gcp-ace-gcpace-n01-b02-001:b"
-- takeScreenshot: "rc-certification-exam-answer-changed-and-restored"
-- tapOn: "Flag question"
-- assertVisible: "Remove flag"
-- tapOn: "Question navigator"
-- assertVisible: "Question navigator"
-- assertVisible: "Question 1, current, answered and saved, flagged"
-- takeScreenshot: "rc-certification-exam-navigator-flagged"
-- tapOn: "Question 50, unanswered"
-- assertVisible: "Question 50 of 50"
-- takeScreenshot: "rc-certification-exam-question-50-before-relaunch"
+    id: "patternly:practice:mode-card:certification-exam-simulation"
+- extendedWaitUntil:
+    visible:
+      id: "premium-offer-summary"
+    timeout: 30000
+- takeScreenshot: "rc-certification-exam-free-paywall-after-restart"

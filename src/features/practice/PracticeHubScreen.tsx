@@ -1,6 +1,7 @@
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import {
   Badge,
@@ -10,6 +11,7 @@ import {
   EmptyState,
   Icon,
   IconTile,
+  InfoBlock,
   ListRow,
   Screen,
   SkeletonShape,
@@ -30,11 +32,14 @@ import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
-import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { getTrackRoadmapCatalog } from "./trackRoadmapCatalog";
+import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
+import { resolveCertificationExamAccess } from "./certificationExamAccess";
 
 import {
   buildPracticeModes,
+  getCanonicalFreePracticeNodeId,
   resolvePracticeTopic,
 } from "./practiceFlowModel";
 import { usePracticeReadModel } from "./usePracticeReadModel";
@@ -121,8 +126,12 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const styles = useThemedStyles(createStyles);
   const { colors: palette } = useAppPreferences();
   const { t } = useTranslation("common");
+  const account = usePatternlyAccount();
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
+  const examAdmissionPendingRef = useRef(false);
+  const [examAdmissionPending, setExamAdmissionPending] = useState(false);
+  const [examAccessUnavailable, setExamAccessUnavailable] = useState(false);
   const { readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load your practice options."),
     includeReviews: true,
@@ -133,12 +142,13 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     description: string,
     actionLabel = t("Back"),
     onActionPress = () => goBackOrHome(navigation),
+    title = t("Practice is unavailable"),
   ) {
     return (
       <View style={styles.shell}>
         <Screen edges={["top"]} style={styles.screenContent}>
           <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} />
-          <EmptyState actionLabel={actionLabel} onActionPress={onActionPress} title={t("Practice is unavailable")} description={description} />
+          <EmptyState actionLabel={actionLabel} onActionPress={onActionPress} title={title} description={description} />
         </Screen>
         <AppBottomNavigation activeId="practice" navigation={navigation} />
       </View>
@@ -158,22 +168,21 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const { activeTrackId, hasReviewEvidence, trainingAttempts } = readState;
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   let activeTrack: ReturnType<typeof getTrackDisplay>;
-  let canonicalTrack: ReturnType<typeof contentPackageRuntimeOwner.getPreparedDiscovery>["track"];
+  let canonicalNodeId: string;
   try {
     activeTrack = getTrackDisplay(activeTrackId);
-    canonicalTrack = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track;
+    canonicalNodeId = getCanonicalFreePracticeNodeId(activeTrack.id);
   } catch (error) {
     return renderUnavailable(describeOperationalFailure(error, t("Practice data is unavailable.")));
   }
-  const canonicalNodeMode = canonicalTrack.modes.find((mode) => mode.selection.kind === "node");
-  const canonicalNodeId = canonicalNodeMode?.selection.kind === "node"
-    ? canonicalNodeMode.selection.nodeId
-    : "";
   if (route.params?.topicId !== undefined && route.params.topicId !== canonicalNodeId) {
+    const requestedTopicTitle = getTrackRoadmapCatalog(activeTrack.id).find((topic) => topic.id === route.params?.topicId)?.title
+      ?? route.params.topicId.replace(/[_-]+/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
     return renderUnavailable(
       t("This topic is not included in your free content."),
       t("Choose another topic"),
       () => navigation.navigate(ROUTES.TOPIC_ROADMAP, { topicId: canonicalNodeId, trackId: activeTrack.id }),
+      requestedTopicTitle,
     );
   }
   const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
@@ -221,7 +230,29 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       return;
     }
     if (activeTrack.familyId === "certification" && resolvedMode === "certification-exam-simulation") {
-      navigation.navigate(ROUTES.EXAM);
+      if (examAdmissionPendingRef.current) return;
+      examAdmissionPendingRef.current = true;
+      setExamAdmissionPending(true);
+      setExamAccessUnavailable(false);
+      void account.authorizePremiumSessionStart()
+        .then((admission) => {
+          switch (resolveCertificationExamAccess(admission)) {
+            case "startExam":
+              navigation.navigate(ROUTES.EXAM);
+              return;
+            case "purchasePremium":
+              navigation.navigate(ROUTES.PREMIUM_PURCHASE);
+              return;
+            case "retryAdmission":
+              setExamAccessUnavailable(true);
+              return;
+          }
+        })
+        .catch(() => setExamAccessUnavailable(true))
+        .finally(() => {
+          examAdmissionPendingRef.current = false;
+          setExamAdmissionPending(false);
+        });
       return;
     }
     if (isCodingInterviewTrack && resolvedMode === ALGORITHM_MODE_IDS.interviewSimulation) {
@@ -331,12 +362,22 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 key={mode.mode}
                 leading={<IconTile iconSize={24} name={mode.icon} size={32} tone={mode.enabled ? (isCodingInterviewTrack ? "settings" : mode.tone) : "muted"} />}
                 onPress={mode.enabled ? () => startSession(mode.mode) : undefined}
+                disabled={mode.mode === "certification-exam-simulation" && examAdmissionPending}
                 style={[styles.modeRow, index === secondaryModes.length - 1 ? styles.modeRowLast : null, mode.enabled ? null : styles.disabledRow]}
                 testID={runtimeSelectors.practice.modeCard(mode.mode)}
                 title={t(mode.title)}
                 titleNumberOfLines={0}
                 trailing={
-                  mode.enabled ? (
+                  mode.mode === "certification-exam-simulation" ? (
+                    <View style={styles.examModeTrailing}>
+                      <Badge label={t("Premium")} tone="info" />
+                      {examAdmissionPending ? (
+                        <ActivityIndicator accessibilityLabel={t("Checking Premium access…")} size="small" color={palette.textMuted} />
+                      ) : (
+                        <Icon color={palette.textMuted} name="chevron-right" size={20} />
+                      )}
+                    </View>
+                  ) : mode.enabled ? (
                     <Icon color={palette.textMuted} name="chevron-right" size={20} />
                   ) : (
                     <Badge label={t("Unavailable")} tone="neutral" />
@@ -346,6 +387,23 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               />
             ))}
           </View>
+          {examAccessUnavailable ? (
+            <View style={styles.examAccessError}>
+              <InfoBlock
+                accessibilityAlert
+                body={t("We couldn't verify Premium access. Check your connection and try again.")}
+                testID="practice-exam-access-error"
+                title={t("Premium access unavailable")}
+                tone="warning"
+              />
+              <Button
+                onPress={() => startSession("certification-exam-simulation")}
+                variant="ghost"
+              >
+                {t("Try again")}
+              </Button>
+            </View>
+          ) : null}
         </View>
 
       </Screen>
@@ -664,6 +722,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   modeRowLast: {
     borderBottomWidth: 0,
+  },
+  examAccessError: {
+    gap: spacing.xs,
+  },
+  examModeTrailing: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
   },
   disabledRow: {
     opacity: 0.62,

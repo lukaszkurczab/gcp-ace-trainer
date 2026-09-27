@@ -10,6 +10,7 @@ import { spacing, typography, type AppColors } from "../../theme";
 
 type CheckResult = Readonly<{ code?: string; id: string; label: string; status: "failed" | "passed" }>;
 type RunState = Readonly<{ results: readonly CheckResult[]; status: "failed" | "idle" | "passed" | "running" }>;
+type CheckOutcome<T> = Readonly<{ kind: "passed"; value: T } | { kind: "failed" }>;
 
 const requiredPaths = [
   "/health",
@@ -40,12 +41,14 @@ export function BackendDiagnosticsScreen() {
     }
 
     const results: CheckResult[] = [];
-    const run = async (id: string, label: string, operation: () => Promise<void>): Promise<void> => {
+    const run = async <T,>(id: string, label: string, operation: () => Promise<T>): Promise<CheckOutcome<T>> => {
       try {
-        await operation();
+        const value = await operation();
         results.push({ id, label, status: "passed" });
+        return { kind: "passed", value };
       } catch (error) {
         results.push({ code: errorCode(error), id, label, status: "failed" });
+        return { kind: "failed" };
       }
     };
     const client = runtime.client;
@@ -67,46 +70,55 @@ export function BackendDiagnosticsScreen() {
       if (!response.user.id) throw new PatternlyApiClientError("invalid_response");
     });
     await run("entitlements", text.entitlements, async () => { await client.getEntitlements(); });
-    await run("progress-read", text.progressRead, async () => { await client.getProgress(); });
+    const progressRead = await run("progress-read", text.progressRead, async () => client.getProgress());
     await run("tracks", text.tracks, async () => { await client.getTracks(); });
     await run("content-versions", text.contentVersions, async () => { await client.getContentVersions(); });
 
-    const targetId = `ios-simulator-backend-${Date.now()}`;
-    const mutationId = `ios-simulator-${Date.now()}-apply`;
-    const mutation: ProgressMutationDto = {
-      mutationId,
-      kind: "item" as const,
-      trackId: "coding-interview-dsa-problem-solving",
-      targetId,
-      recordType: "training_attempt" as const,
-      expectedVersion: null,
-      fingerprint: accountDataRecordFingerprint({ recordId: targetId, recordType: "training_attempt", state: { source: "ios_simulator", check: "backend_paths" }, trackId: "coding-interview-dsa-problem-solving" }),
-      state: { source: "ios_simulator", check: "backend_paths" },
-    };
-    const beforeSync = await client.getProgress();
-    const syncRequest = (expectedAccountRevision: number, requestMutation: ProgressMutationDto = mutation) => ({ canonicalVersion: "canonical-json-v1" as const, expectedAccountRevision, deviceId: "00000000-0000-4000-8000-000000000000", sessionId: "ios-simulator-backend", batchId: `ios-simulator-backend:${requestMutation.mutationId}`, highWatermark: 1, mutations: [requestMutation] });
-    await run("sync-apply", text.syncApply, async () => {
-      const response = await client.syncProgress(syncRequest(beforeSync.accountRevision));
-      if (response.applied.length !== 1 || response.duplicates.length !== 0 || response.conflicts.length !== 0) throw new PatternlyApiClientError("invalid_response");
-    });
-    await run("sync-duplicate", text.syncDuplicate, async () => {
-      const response = await client.syncProgress(syncRequest(beforeSync.accountRevision));
-      if (response.applied.length !== 0 || response.duplicates.length !== 1 || response.duplicates[0] !== mutationId) throw new PatternlyApiClientError("invalid_response");
-    });
-    await run("sync-conflict", text.syncConflict, async () => {
-      const conflictMutation = { ...mutation, expectedVersion: 0, mutationId: `${mutationId}-conflict`, fingerprint: accountDataRecordFingerprint({ recordId: targetId, recordType: "training_attempt", state: { source: "ios_simulator", check: "backend_paths" }, trackId: "coding-interview-dsa-problem-solving" }) };
-      try {
-        await client.syncProgress(syncRequest(beforeSync.accountRevision + 1, conflictMutation));
-      } catch (error) {
-        if (error instanceof PatternlyApiClientError && error.status === 409 && error.serverCode === "version_conflict") return;
-        throw error;
+    if (progressRead.kind === "failed") {
+      results.push({ code: "dependency_failed", id: "sync-preflight", label: text.syncPreflight, status: "failed" });
+    } else {
+      const setup = await run("sync-preflight", text.syncPreflight, async () => {
+        const targetId = `ios-simulator-backend-${Date.now()}`;
+        const mutationId = `ios-simulator-${Date.now()}-apply`;
+        const mutation: ProgressMutationDto = {
+          mutationId,
+          kind: "item" as const,
+          trackId: "coding-interview-dsa-problem-solving",
+          targetId,
+          recordType: "training_attempt" as const,
+          expectedVersion: null,
+          fingerprint: accountDataRecordFingerprint({ recordId: targetId, recordType: "training_attempt", state: { source: "ios_simulator", check: "backend_paths" }, trackId: "coding-interview-dsa-problem-solving" }),
+          state: { source: "ios_simulator", check: "backend_paths" },
+        };
+        return { beforeSync: progressRead.value, mutation, mutationId, targetId };
+      });
+      if (setup.kind === "passed") {
+        const { beforeSync, mutation, mutationId, targetId } = setup.value;
+        const syncRequest = (expectedAccountRevision: number, requestMutation: ProgressMutationDto = mutation, attempt: "apply" | "duplicate" | "conflict" = "apply") => ({ canonicalVersion: "canonical-json-v1" as const, expectedAccountRevision, deviceId: "00000000-0000-4000-8000-000000000000", sessionId: "ios-simulator-backend", batchId: `ios-simulator-backend:${attempt}:${requestMutation.mutationId}`, highWatermark: 1, mutations: [requestMutation] });
+        await run("sync-apply", text.syncApply, async () => {
+          const response = await client.syncProgress(syncRequest(beforeSync.accountRevision, mutation, "apply"));
+          if (response.applied.length !== 1 || response.duplicates.length !== 0 || response.conflicts.length !== 0) throw new PatternlyApiClientError("invalid_response");
+        });
+        await run("sync-duplicate", text.syncDuplicate, async () => {
+          const response = await client.syncProgress(syncRequest(beforeSync.accountRevision, mutation, "duplicate"));
+          if (response.applied.length !== 0 || response.duplicates.length !== 1 || response.duplicates[0] !== mutationId) throw new PatternlyApiClientError("invalid_response");
+        });
+        await run("sync-conflict", text.syncConflict, async () => {
+          const conflictMutation = { ...mutation, expectedVersion: 0, mutationId: `${mutationId}-conflict`, fingerprint: accountDataRecordFingerprint({ recordId: targetId, recordType: "training_attempt", state: { source: "ios_simulator", check: "backend_paths" }, trackId: "coding-interview-dsa-problem-solving" }) };
+          try {
+            await client.syncProgress(syncRequest(beforeSync.accountRevision + 1, conflictMutation, "conflict"));
+          } catch (error) {
+            if (error instanceof PatternlyApiClientError && error.status === 409 && error.serverCode === "version_conflict") return;
+            throw error;
+          }
+          throw new PatternlyApiClientError("invalid_response");
+        });
+        await run("progress-after-sync", text.progressAfterSync, async () => {
+          const response = await client.getProgress();
+          if (!response.records.some((record) => record.targetId === targetId && record.version === 1)) throw new PatternlyApiClientError("invalid_response");
+        });
       }
-      throw new PatternlyApiClientError("invalid_response");
-    });
-    await run("progress-after-sync", text.progressAfterSync, async () => {
-      const response = await client.getProgress();
-      if (!response.records.some((record) => record.targetId === targetId && record.version === 1)) throw new PatternlyApiClientError("invalid_response");
-    });
+    }
 
     setRunState({ results: Object.freeze(results), status: results.every((result) => result.status === "passed") ? "passed" : "failed" });
   }, [runtime, text]);
@@ -147,6 +159,7 @@ const englishCopy = {
   passed: "All backend paths passed",
   progressAfterSync: "Progress after sync",
   progressRead: "Progress read",
+  syncPreflight: "Prepare progress sync",
   ready: "Readiness",
   rerun: "Run backend checks again",
   running: "Running backend checks",
@@ -170,6 +183,7 @@ const polishCopy = {
   passed: "Wszystkie ścieżki backendu przeszły",
   progressAfterSync: "Postęp po synchronizacji",
   progressRead: "Odczyt postępu",
+  syncPreflight: "Przygotowanie synchronizacji postępu",
   ready: "Readiness",
   rerun: "Uruchom testy backendu ponownie",
   running: "Trwa testowanie backendu",

@@ -213,9 +213,9 @@ test("Certification durable Practice state has one exact projection, recovery co
   assert.match(presentation, /function allowsPracticeResponseEditing[\s\S]*?return phase === "unanswered" \|\| phase === "submit_journal_failed";/);
   assert.match(certification, /reconcilePracticeChoiceSelection\(/);
   assert.match(certification, /"error" in projection\.operation && projection\.operation\.error\.allowedAction === "recover"/);
-  assert.match(certification, /if \(!editable\) return;/);
+  assert.match(certification, /if \(actionPending\.current \|\| !editable\) return;/);
   assert.match(certification, /if \(!canRecover(?: \|\| recoveryInFlight\.current)?\) return;/);
-  assert.match(certification, /if \(!canAdvance\) return;/);
+  assert.match(certification, /if \(actionPending\.current \|\| !canAdvance\) return;/);
   const advanceRetry = certification.slice(certification.indexOf('if (projection.operation.kind === "advance_failed")'), certification.indexOf("if (projection.ordinal === projection.total)"));
   assert.match(advanceRetry, /advanceCertificationPracticeSession\(\)/);
   assert.doesNotMatch(advanceRetry, /submitCertificationPracticeResponse|completeCertificationPracticeSession/);
@@ -257,9 +257,10 @@ test("Certification route handoffs use exact resume intent and cannot hide failu
   assert.match(practice, /openCertificationPracticeSession/);
   assert.doesNotMatch(practice, /getCertificationPracticeProjection\(\)\.catch\(\(\) => null\)|if \(!active\) await startCertificationSession/);
   assert.match(practice, /expectedSessionId: conflict\.id/);
-  assert.match(exam, /Exam is unavailable/);
-  assert.match(exam, /canonical content release/);
-  assert.doesNotMatch(exam, /createExamReadOwner|resumeExpected|startCertificationExam|readOwner\.load/);
+  assert.match(exam, /const requestKey = route\.params\?\.expectedSessionId \?\? "new-exam"/);
+  assert.match(exam, /createExamReadOwner\(\{[\s\S]*?getProjection: getCertificationExamProjection,[\s\S]*?resumeExpected: resumeExpectedCertificationExam,[\s\S]*?start: startCertificationExam/);
+  assert.match(exam, /readOwner\.begin\(requestKey\)/);
+  assert.match(exam, /readOwner\.load\(token, route\.params\?\.expectedSessionId\)/);
   assert.doesNotMatch(practice, /startCertificationSession.*catch|catch.*startCertificationSession/);
   assert.match(config, /Partial<Omit<PracticeSessionRouteParams, "expectedSessionId">>/);
   assert.match(config, /buildCertificationPracticeResumeRoute\(session: TrainingSession\)/);

@@ -23,6 +23,7 @@ import type { AnalyticsData } from "../analytics/analyticsService";
 import type { PracticeSessionMode } from "./sessionConfig";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import type { Question } from "../../content/canonical";
+import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
 import { getTrackRoadmapCatalog } from "./trackRoadmapCatalog";
 
 function codingPackageContent() {
@@ -185,8 +186,7 @@ export function getCurrentPracticeTopic(
 
   switch (track.kind) {
     case "coding_interview": {
-      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track.modes[0];
-      const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
+      const freeNodeId = getCanonicalFreePracticeNodeId(activeTrack.id);
       const freeNode = ALGORITHM_ROADMAP.nodes.find((node) => node.id === freeNodeId);
       if (!freeNode) throw new Error("Coding Interview Free package node is absent from the roadmap.");
 
@@ -203,8 +203,7 @@ export function getCurrentPracticeTopic(
       };
     }
     case "certification": {
-      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track.modes[0];
-      const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
+      const freeNodeId = getCanonicalFreePracticeNodeId(activeTrack.id);
       const knownTopic = getTrackRoadmapCatalog(activeTrack.id).find((topic) => topic.id === freeNodeId);
       return {
         detail: {
@@ -217,8 +216,7 @@ export function getCurrentPracticeTopic(
       };
     }
     case "design_interview": {
-      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track.modes[0];
-      const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
+      const freeNodeId = getCanonicalFreePracticeNodeId(activeTrack.id);
       return {
         detail: {
           key: "Practice designing solutions in",
@@ -230,6 +228,16 @@ export function getCurrentPracticeTopic(
       };
     }
   }
+}
+
+export function getCanonicalFreePracticeNodeId(trackId: TrackId): string {
+  const mode = contentPackageRuntimeOwner
+    .getPreparedDiscovery(trackId)
+    .track.modes.find((candidate) => candidate.selection.kind === "node");
+  if (mode?.selection.kind !== "node") {
+    throw new Error(`Track ${trackId} Free package node is unavailable.`);
+  }
+  return mode.selection.nodeId;
 }
 
 export function resolvePracticeTopic(input: {
@@ -299,9 +307,25 @@ export function buildPracticeModes(activeTrack: TrackDisplay, hasReviewEvidence 
     case "certification":
       {
         const diagnosticMode = profile.modes.find((mode) => mode.modeId === "certification-diagnostic-baseline");
+        let examSimulationMode: PracticeModeModel | null = null;
+        if (profile.simulationProfiles) {
+          try {
+            getProductSimulationModeConfig(activeTrack.id, profile.simulationProfiles);
+            examSimulationMode = {
+              enabled: true,
+              icon: "clipboard",
+              mode: "certification-exam-simulation",
+              title: "Certification Exam Simulation",
+              tone: "info",
+            };
+          } catch (error) {
+            if (!(error instanceof ProductModeUnavailableError)) throw error;
+          }
+        }
         return [
           { detail: "Practice questions from this topic.", enabled: availability("certification-focus-practice"), icon: "practice", mode: "certification-focus-practice", title: "Focus Practice", tone: "primary" },
           ...(diagnosticMode ? [{ enabled: availability(diagnosticMode.modeId), icon: "clipboard" as const, mode: diagnosticMode.modeId as CertificationModeId, title: "Knowledge Check", tone: "info" as const }] : []),
+          ...(examSimulationMode ? [examSimulationMode] : []),
           { enabled: availability("certification-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "certification-weak-area-review", title: "Weak Area Review", tone: "danger" },
           { enabled: availability("certification-quick-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "certification-quick-review", title: "Quick Review", tone: "danger" },
         ];

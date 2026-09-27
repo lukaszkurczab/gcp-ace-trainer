@@ -8,7 +8,7 @@ import {
 import type { SimulationNavigatorPosition, SimulationSurfaceProjection } from "./simulationProjection";
 
 function navigator(length: number): readonly SimulationNavigatorPosition[] {
-  return Array.from({ length }, (_, index) => ({ occurrenceId: `occurrence-${index + 1}`, state: index === 0 ? "current" as const : index % 2 ? "answered" as const : "unanswered" as const }));
+  return Array.from({ length }, (_, index) => ({ occurrenceId: `occurrence-${index + 1}`, answered: index === 0 || index % 2 === 1, state: index === 0 ? "current" as const : index % 2 ? "answered" as const : "unanswered" as const }));
 }
 
 function projection(state: SimulationSurfaceProjection["state"], completion?: SimulationSurfaceProjection["completion"]): SimulationSurfaceProjection {
@@ -20,6 +20,11 @@ test("Simulation navigator accepts complete unique projections for each supporte
   assert.equal(hasCanonicalSimulationNavigator(navigator(50)), true);
   assert.equal(hasCanonicalSimulationNavigator([]), false);
   assert.equal(hasCanonicalSimulationNavigator([...navigator(49), navigator(50)[0]!]), false);
+  assert.equal(hasCanonicalSimulationNavigator([{ occurrenceId: "current", answered: true, state: "current" }]), true);
+  assert.equal(hasCanonicalSimulationNavigator([{ occurrenceId: "frozen", answered: true, state: "frozen" }]), true);
+  assert.equal(hasCanonicalSimulationNavigator([{ occurrenceId: "missing", state: "current" } as SimulationNavigatorPosition]), false);
+  assert.equal(hasCanonicalSimulationNavigator([{ occurrenceId: "inconsistent", answered: false, state: "answered" }]), false);
+  assert.equal(hasCanonicalSimulationNavigator([{ occurrenceId: "inconsistent", answered: true, state: "unanswered" }]), false);
 });
 
 test("Simulation completion metrics are withheld before the verified completed projection", () => {
