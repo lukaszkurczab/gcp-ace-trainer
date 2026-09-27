@@ -49,7 +49,7 @@ test("AUD-02B Free evidence selects Coding Mock and repeats the paywall after cl
   assert.equal((freeFlow.match(/patternly:home:select-track:continue/g) ?? []).length, 2);
   assert.doesNotMatch(freeFlow, /tapOn: "Go back"/);
   assert.match(freeFlow, /patternly:practice:mode-card:coding-interview-simulation/);
-  assert.match(freeFlow, /settings-premium-testing[\s\S]*?visible: "Enabled"[\s\S]*?tapOn:[\s\S]*?settings-premium-testing[\s\S]*?assertVisible: "Disabled"[\s\S]*?patternly:home:primary-action/);
+  assert.match(freeFlow, /settings-premium-testing:\.\*[\s\S]*?settings-premium-testing:enabled[\s\S]*?tapOn:[\s\S]*?settings-premium-testing:enabled[\s\S]*?settings-premium-testing:disabled[\s\S]*?patternly:home:primary-action/);
   assert.equal((freeFlow.match(/premium-offer-summary/g) ?? []).length, 2);
   assert.match(freeFlow, /stopApp[\s\S]*?launchApp:\n    clearState: false/);
   assert.match(freeFlow, /patternly:simulation:root:\.\*/);
@@ -61,8 +61,7 @@ test("AUD-02B Free evidence selects Coding Mock and repeats the paywall after cl
 });
 
 test("AUD-02B Premium evidence restores the same 40-question draft before manual finalization and endpoint review", () => {
-  assert.match(premiumFlow, /settings-premium-testing/);
-  assert.match(premiumFlow, /assertVisible: "Enabled"/);
+  assert.match(premiumFlow, /settings-premium-testing:\.\*[\s\S]*?settings-premium-testing:disabled[\s\S]*?tapOn:[\s\S]*?settings-premium-testing:disabled[\s\S]*?settings-premium-testing:enabled/);
   const sessionId = "coding-interview-dsa-problem-solving:coding-interview-simulation:1";
   assert.equal((premiumFlow.match(new RegExp(`patternly:simulation:root:${sessionId}`, "g")) ?? []).length, 2);
   assert.equal((premiumFlow.match(new RegExp(`patternly:simulation:position:${sessionId}`, "g")) ?? []).length, 3);

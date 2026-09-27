@@ -50,7 +50,7 @@ test("Settings exposes account and participant navigation actions plus condition
   assert.equal(settingsPl.notificationsDetail, undefined);
   assert.match(settingsTab, /testID="settings-backend-diagnostics"/);
   assert.match(settingsTab, /backendDiagnosticsConfigured \? \(/);
-  assert.match(settingsTab, /premiumTestingAvailable \? \([\s\S]*?testID="settings-premium-testing"/);
+  assert.match(settingsTab, /premiumTestingAvailable \? \([\s\S]*?testID=\{`settings-premium-testing:\$\{premiumTestingEnabled \? "enabled" : "disabled"\}`\}/);
   assert.match(settingsTab, /testID="settings-sign-out"/);
   assert.match(settingsTab, /testID="settings-language"/);
   assert.doesNotMatch(settingsTab, /settings-practice|onOpenPracticeSettings/);

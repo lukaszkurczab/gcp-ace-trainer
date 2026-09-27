@@ -49,15 +49,17 @@ tags:
     id: "main-tab-bar-settings"
 - scrollUntilVisible:
     element:
-      id: "settings-premium-testing"
+      id: "settings-premium-testing:.*"
     direction: DOWN
 - runFlow:
     when:
-      visible: "Enabled"
+      visible:
+        id: "settings-premium-testing:enabled"
     commands:
       - tapOn:
-          id: "settings-premium-testing"
-- assertVisible: "Disabled"
+          id: "settings-premium-testing:enabled"
+- assertVisible:
+    id: "settings-premium-testing:disabled"
 - tapOn:
     id: "main-tab-bar-home"
 - tapOn:

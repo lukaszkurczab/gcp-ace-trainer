@@ -307,7 +307,7 @@ export function SettingsTab({
                 detail={text.premiumTestingDetail}
                 icon="sparkle"
                 onPress={togglePremiumTestingAccess}
-                testID="settings-premium-testing"
+                testID={`settings-premium-testing:${premiumTestingEnabled ? "enabled" : "disabled"}`}
                 title={text.premiumTesting}
                 value={premiumTestingEnabled ? text.premiumTestingEnabled : text.premiumTestingDisabled}
               />
