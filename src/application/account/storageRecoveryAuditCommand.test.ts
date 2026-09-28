@@ -5,11 +5,12 @@ import { parseStorageRecoveryAuditCommand } from "./storageRecoveryAuditCommand"
 
 const baseUrl = "com.lkurczab.patternly://audit/show-encrypted-storage-recovery";
 
-test("storage recovery audit command exposes only the two presentation fixtures in development smoke", () => {
+test("storage recovery audit command exposes only the documented presentation fixtures in development smoke", () => {
   const environment = { development: true, smoke: true };
   assert.equal(parseStorageRecoveryAuditCommand(baseUrl, environment), "base");
   assert.equal(parseStorageRecoveryAuditCommand(`${baseUrl}?presentation=base`, environment), "base");
   assert.equal(parseStorageRecoveryAuditCommand(`${baseUrl}?presentation=retry-limit`, environment), "retry-limit");
+  assert.equal(parseStorageRecoveryAuditCommand(`${baseUrl}?presentation=error`, environment), "error");
 });
 
 test("storage recovery audit command is unavailable outside development smoke", () => {

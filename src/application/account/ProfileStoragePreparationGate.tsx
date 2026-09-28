@@ -48,8 +48,8 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
     const apply = (url: string | null) => {
       const presentation = parseStorageRecoveryAuditCommand(url, { development: __DEV__, smoke: isPatternlySmokeRuntime() });
       if (!presentation) return;
-      setRecoveryStatus("base");
-      setRemovalError(undefined);
+      setRecoveryStatus(presentation === "error" ? "error" : "base");
+      setRemovalError(presentation === "error" ? "[STORAGE_AUDIT_FAILURE]" : undefined);
       setAuditPresentation(presentation);
       setState({
         kind: "unavailable",

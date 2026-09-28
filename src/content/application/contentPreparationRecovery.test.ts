@@ -13,9 +13,9 @@ test("lost-key recovery uses the typed failure code and the canonical hold-to-re
   assert.match(surface, /<HoldToConfirmButton/);
   assert.match(surface, /hint=\{t\("Hold for at least 3 seconds, then release\. Releasing early cancels\."\)\}/);
   assert.doesNotMatch(surface, /<Text[^>]*>[^<]*\{t\("Hold for at least 3 seconds/u);
-  assert.match(surface, /variant="secondary"/);
+  assert.match(surface, /variant="destructive"/);
   assert.match(surface, /PatternlyMark decorative size=\{36\}/);
-  assert.match(surface, /justifyContent: "flex-start"/);
+  assert.match(surface, /accessibilityLabel=\{t\(failed \? "Hold to retry removal" : "Remove unavailable data"\)\}/);
   assert.doesNotMatch(source, /setConfirmUnavailableDataRemoval/);
   assert.doesNotMatch(source, /clearPatternlyLocalHistory/);
 });
@@ -45,11 +45,29 @@ test("manual lost-key retries are process-local and automatic bootstrap does not
   assert.doesNotMatch(surface, /Hold for at least 3 seconds, then release[^<]*<\/Text>/u);
 });
 
-test("recovery surface preserves one stable, localized, accessible layout for every state", () => {
+test("recovery surface centers recovery states and gives success its own concise layout", () => {
   assert.match(surface, /status === "removing"/);
   assert.match(surface, /Animated\.timing\(removingOpacity/);
   assert.match(surface, /const onPresentationComplete = onRemovingPresentedRef\.current;\s*animation\.start\(\(\{ finished \}\) => \{ onPresentationComplete\(finished\); \}\)/);
   assert.match(surface, /status === "success"/);
+  assert.match(surface, /\{success \? \([\s\S]*?styles\.successContent[\s\S]*?\) : \([\s\S]*?styles\.recoveryContent/);
+  const successStart = surface.indexOf("{success ? (");
+  const successBranch = surface.slice(successStart, surface.indexOf(") : (", successStart));
+  assert.match(successBranch, /encryptedStorageContinue/);
+  assert.doesNotMatch(successBranch, /styles\.hero|encryptedStorageRetry|styles\.divider|Patternly can now open safely\./);
+  assert.match(surface, /Removing unavailable data permanently deletes unsent sessions and Guest progress stored only on this device\./);
+  assert.match(surface, /Removing unavailable data permanently deletes unsent sessions and Guest progress stored only on this device\.[\s\S]*?encryptedStorageRetry/);
+  assert.match(surface, /accessibilityLabel=\{t\(failed \? "Hold to retry removal" : "Remove unavailable data"\)\}/);
+  assert.match(surface, /variant="destructive"/);
+  assert.match(surface, /justifyContent: "center"/);
+  assert.match(surface, /recoveryContent: \{ alignSelf: "stretch", flex: 1, gap: spacing\.xl, justifyContent: "center", minWidth: 0 \}/);
+  assert.match(surface, /title: \{ \.\.\.typography\.heading, alignSelf: "stretch", color: palette\.textPrimary, minWidth: 0, textAlign: "center" \}/);
+  assert.match(surface, /brandText: \{ \.\.\.typography\.heading, color: palette\.textPrimary, flexShrink: 1, minWidth: 0 \}/);
+  assert.match(surface, /You can retry removal or return to the recovery options/);
+  assert.match(surface, /canRetry && !failed \? <Button disabled=\{removing\}/);
+  assert.match(surface, /failed \|\| removing \? <Text accessibilityRole="header"/);
+  assert.match(surface, /failed \? "Unavailable data removal could not be completed" : "Removing unavailable data"/);
+  assert.doesNotMatch(surface, /<Text accessibilityRole="header"[^>]*>\{t\(failed \? "Unavailable data removal could not be completed" : removing \? "Removing unavailable data" : "Remove unavailable data"\)\}/);
   assert.match(surface, /status === "error"/);
   assert.match(surface, /accessibilityLiveRegion=\{failed \? "assertive" : "polite"\}/);
   assert.match(surface, /accessibilityRole=\{failed \? "alert" : undefined\}/);
