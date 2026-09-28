@@ -194,10 +194,15 @@ test("AUD-02D Maestro flows cover track readiness and all setup selectors before
     tapOn: { id: "patternly:home:select-track:${TRACK_ID}" },
   });
   assert.equal(Object.hasOwn(readinessCommands[0].runFlow.commands[1].tapOn, "point"), false);
-  assert.deepEqual(readinessCommands[4], {
+  assert.deepEqual(readinessCommands.slice(3, 6), [
+    { extendedWaitUntil: { visible: { id: "patternly:home:select-track:${TRACK_ID}" }, timeout: 30000 } },
+    { swipe: { direction: "DOWN", duration: 500 } },
+    { waitForAnimationToEnd: { timeout: 5000 } },
+  ]);
+  assert.deepEqual(readinessCommands[6], {
     tapOn: { id: "patternly:home:select-track:${TRACK_ID}", point: "50%,25%" },
   });
-  assert.deepEqual(readinessCommands[5], {
+  assert.deepEqual(readinessCommands[7], {
     runFlow: {
       when: { notVisible: { id: "patternly:home:select-track:continue" } },
       commands: [
@@ -207,7 +212,7 @@ test("AUD-02D Maestro flows cover track readiness and all setup selectors before
       ],
     },
   });
-  assert.equal(readinessCommands[6].runFlow.when.visible, ".*Open debugger to view warnings.*");
+  assert.equal(readinessCommands[8].runFlow.when.visible, ".*Open debugger to view warnings.*");
   assert.match(readiness, /track-card:\$\{TRACK_ID\}/u);
   assert.match(readiness, /practice:hub:root/u);
   assert.match(custom, /patternly:practice:open-setup/u);
@@ -375,7 +380,12 @@ test("all new AUD-02D Maestro YAML documents parse and contain executable assert
       const selectorBackGuard = {
         runFlow: {
           when: { visible: { id: "patternly:home:select-track:root" } },
-          commands: [{ tapOn: "Go back" }],
+          commands: [
+            { swipe: { direction: "DOWN", duration: 500 } },
+            { waitForAnimationToEnd: { timeout: 5000 } },
+            { tapOn: "Go back" },
+            { extendedWaitUntil: { notVisible: { id: "patternly:home:select-track:root" }, timeout: 30000 } },
+          ],
         },
       };
       assert.deepEqual(selectorSequences.map((sequence) => sequence.slice(0, 2)), [

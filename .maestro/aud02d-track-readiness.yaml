@@ -42,7 +42,16 @@ tags:
             visible:
               id: "patternly:home:select-track:root"
           commands:
+            - swipe:
+                direction: DOWN
+                duration: 500
+            - waitForAnimationToEnd:
+                timeout: 5000
             - tapOn: "Go back"
+            - extendedWaitUntil:
+                notVisible:
+                  id: "patternly:home:select-track:root"
+                timeout: 30000
 - runFlow:
     when:
       visible:
@@ -61,6 +70,11 @@ tags:
     visible:
       id: "patternly:home:select-track:${TRACK_ID}"
     timeout: 30000
+- swipe:
+    direction: DOWN
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 5000
 - tapOn:
     id: "patternly:home:select-track:${TRACK_ID}"
     point: "50%,25%"
@@ -102,7 +116,16 @@ tags:
       visible:
         id: "patternly:home:select-track:root"
     commands:
+      - swipe:
+          direction: DOWN
+          duration: 500
+      - waitForAnimationToEnd:
+          timeout: 5000
       - tapOn: "Go back"
+      - extendedWaitUntil:
+          notVisible:
+            id: "patternly:home:select-track:root"
+          timeout: 30000
 - extendedWaitUntil:
     visible:
       id: "patternly:home:track-card:${TRACK_ID}"
