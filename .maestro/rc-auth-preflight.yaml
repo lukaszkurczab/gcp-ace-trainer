@@ -7,6 +7,16 @@ tags:
 - runFlow:
     when:
       visible:
+        id: "patternly:content:unavailable"
+    commands:
+      - tapOn: "Try again"
+      - extendedWaitUntil:
+          visible:
+            id: "patternly:content:ready"
+          timeout: 120000
+- runFlow:
+    when:
+      visible:
         id: "account-revoked-session"
     commands:
       - tapOn:

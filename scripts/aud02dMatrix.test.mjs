@@ -217,7 +217,18 @@ test("auth preflight extended waits are recorded and flows without assertions re
     Object.values(value).forEach(visit);
   }
   visit(commands);
-  assert.equal(waits.length, 6);
+  assert.equal(waits.length, 7);
+
+  assert.deepEqual(commands[0], {
+    runFlow: {
+      when: { visible: { id: "patternly:content:unavailable" } },
+      commands: [
+        { tapOn: "Try again" },
+        { extendedWaitUntil: { visible: { id: "patternly:content:ready" }, timeout: 120000 } },
+      ],
+    },
+  });
+  assert.ok(commands.indexOf(commands[0]) < commands.findIndex((command) => command.runFlow?.when?.visible?.id === "account-revoked-session"), "content retry must precede account recovery");
 
   const resumeBranchIndex = commands.findIndex((command) => command.runFlow?.when?.visible?.id === "account-sync-resume-required");
   const finalHomeTapIndex = commands.findIndex((command, index) => index > resumeBranchIndex && command.runFlow?.when?.visible?.id === "main-tab-bar-home");
