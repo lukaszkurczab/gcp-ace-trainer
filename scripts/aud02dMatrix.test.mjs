@@ -220,11 +220,10 @@ test("auth preflight extended waits are recorded and flows without assertions re
   assert.equal(waits.length, 4);
 });
 
-test("feedback cases compose relaunch/resume with completed result and review, not truncated M3/M4 alone", async () => {
+test("feedback lifecycle flows resume, complete ten answers and open the result review", async () => {
   const [atSessionEndPath, afterEachPath] = AUD02D_FEEDBACK_REFERENCES;
   const atSessionEnd = await readFile(path.join(ROOT, atSessionEndPath), "utf8");
   const afterEach = await readFile(path.join(ROOT, afterEachPath), "utf8");
-  const completion = await readFile(path.join(ROOT, ".maestro/aud02d-feedback-complete-session.yaml"), "utf8");
   const m3 = await readFile(path.join(ROOT, ".maestro/m3-custom-at-session-end.yaml"), "utf8");
   const m4 = await readFile(path.join(ROOT, ".maestro/m4-custom-after-each-answer.yaml"), "utf8");
   for (const [source, inheritedFlow] of [[atSessionEnd, "m3-custom-at-session-end.yaml"], [afterEach, "m4-custom-after-each-answer.yaml"]]) {
@@ -236,25 +235,44 @@ test("feedback cases compose relaunch/resume with completed result and review, n
       { extendedWaitUntil: { visible: { id: "patternly:home:track-card:coding-interview-dsa-problem-solving" }, timeout: 30000 } },
     ]);
     assert.deepEqual(commands[4], { runFlow: inheritedFlow });
+    assert.match(source, /patternly:summary:root:[\s\S]*?timeout: 30000/u);
+    assert.match(source, /patternly:summary:configuration:[\s\S]*?:1:10:(?:at-session-end|after-each-answer)/u);
+    assert.match(source, /patternly:session:counter:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:ordinal:11:length:10/u);
+    assert.match(source, /takeScreenshot: "aud02d-custom-feedback-result-/u);
+    assert.match(source, /runFlow: coding-practice-result-review\.yaml/u);
+    assert.doesNotMatch(source, /aud02d-feedback-complete-session\.yaml/u);
   }
   assert.match(atSessionEnd, /runFlow: m3-custom-at-session-end\.yaml/u);
   assert.match(afterEach, /runFlow: m4-custom-after-each-answer\.yaml/u);
-  for (const flow of [atSessionEnd, afterEach]) assert.match(flow, /runFlow: aud02d-feedback-complete-session\.yaml/u);
-  assert.match(completion, /patternly:summary:root:[\s\S]*?timeout: 30000/u);
-  assert.match(completion, /runFlow: coding-practice-result-review\.yaml/u);
-  assert.match(completion, /patternly:session:question:alg-complexity-amortized-010/u);
-  assert.match(afterEach, /patternly:session:feedback:alg-complexity-amortized-001/u);
+  const options = (source) => [...source.matchAll(/id: "patternly:session:option:([^"]+):([^"]+)"/gu)].map(([, questionId, optionId]) => [questionId, optionId]);
+  assert.deepEqual(options(atSessionEnd), [
+    ["alg-complexity-output-001", "omega_k"], ["alg-complexity-preprocess-001", "p_plus_q"],
+    ["alg-complexity-reject-001", "avoid_wrong_growth"], ["alg-complexity-review-001", "executed_work"],
+    ["alg-complexity-scaling-001", "model_dependent"], ["alg-complexity-space-001", "working_memory"],
+    ["alg-complexity-time-001", "linear"], ["alg-complexity-time-002", "product"],
+    ["alg-complexity-output-002", "different_contract"],
+  ]);
+  assert.deepEqual(options(afterEach), [
+    ["alg-complexity-output-001", "omega_k"], ["alg-complexity-preprocess-001", "p_plus_q"],
+    ["alg-complexity-reject-001", "avoid_wrong_growth"], ["alg-complexity-amortized-001", "sequence_average"],
+    ["alg-complexity-scaling-001", "model_dependent"], ["alg-complexity-space-001", "working_memory"],
+    ["alg-complexity-time-001", "linear"], ["alg-complexity-time-002", "product"],
+    ["alg-complexity-output-002", "different_contract"],
+  ]);
+  assert.match(afterEach, /ordinal:5:length:10/u);
+  assert.equal((afterEach.match(/- runFlow:\n    when:/gu) ?? []).length, 9);
+  assert.match(atSessionEnd, /patternly:session:feedback:alg-complexity-output-001/u);
   for (const truncated of [m3, m4]) {
     assert.doesNotMatch(truncated, /patternly:summary:root|coding-practice-result-review\.yaml/u);
   }
   assert.ok(!AUD02D_FEEDBACK_REFERENCES.includes(".maestro/m3-custom-at-session-end.yaml"));
   assert.ok(!AUD02D_FEEDBACK_REFERENCES.includes(".maestro/m4-custom-after-each-answer.yaml"));
+  await assert.rejects(readFile(path.join(ROOT, ".maestro/aud02d-feedback-complete-session.yaml")));
 });
 
 test("all new AUD-02D Maestro YAML documents parse and contain executable assertion commands", async () => {
   const flows = [
     ...AUD02D_FEEDBACK_REFERENCES,
-    ".maestro/aud02d-feedback-complete-session.yaml",
     ".maestro/aud02d-track-readiness.yaml",
     ".maestro/aud02d-custom-practice-configuration.yaml",
   ];

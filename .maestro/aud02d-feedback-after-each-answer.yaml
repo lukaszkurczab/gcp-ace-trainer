@@ -1,5 +1,5 @@
 appId: com.lkurczab.patternly
-name: Patternly AUD-02D - after-each-answer feedback lifecycle
+name: Patternly AUD-02D - complete after-each-answer feedback lifecycle
 tags:
   - runtime-auditability
   - aud-02d
@@ -22,4 +22,226 @@ tags:
     id: "patternly:session:result:alg-complexity-amortized-001:incorrect"
 - tapOn:
     id: "patternly:session:continue:alg-complexity-amortized-001"
-- runFlow: aud02d-feedback-complete-session.yaml
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-output-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:counter:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:ordinal:2:length:10"
+- assertVisible:
+    id: "patternly:session:configuration:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:length:10:feedback-timing:after-each-answer"
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-output-001"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-output-001:omega_k"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-output-001"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:feedback:alg-complexity-output-001"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:session:feedback:alg-complexity-output-001"
+          direction: DOWN
+      - assertVisible:
+          id: "patternly:session:result:alg-complexity-output-001:correct"
+      - tapOn:
+          id: "patternly:session:continue:alg-complexity-output-001"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-preprocess-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-preprocess-001"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-preprocess-001:p_plus_q"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-preprocess-001"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:feedback:alg-complexity-preprocess-001"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:session:feedback:alg-complexity-preprocess-001"
+          direction: DOWN
+      - assertVisible:
+          id: "patternly:session:result:alg-complexity-preprocess-001:correct"
+      - tapOn:
+          id: "patternly:session:continue:alg-complexity-preprocess-001"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-reject-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-reject-001"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-reject-001:avoid_wrong_growth"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-reject-001"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:feedback:alg-complexity-reject-001"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:session:feedback:alg-complexity-reject-001"
+          direction: DOWN
+      - assertVisible:
+          id: "patternly:session:result:alg-complexity-reject-001:correct"
+      - tapOn:
+          id: "patternly:session:continue:alg-complexity-reject-001"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:counter:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:ordinal:5:length:10"
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-amortized-001"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-001"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:feedback:alg-complexity-amortized-001"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:session:feedback:alg-complexity-amortized-001"
+          direction: DOWN
+      - assertVisible:
+          id: "patternly:session:result:alg-complexity-amortized-001:correct"
+      - tapOn:
+          id: "patternly:session:continue:alg-complexity-amortized-001"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-scaling-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-scaling-001"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-scaling-001:model_dependent"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-scaling-001"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:feedback:alg-complexity-scaling-001"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:session:feedback:alg-complexity-scaling-001"
+          direction: DOWN
+      - assertVisible:
+          id: "patternly:session:result:alg-complexity-scaling-001:correct"
+      - tapOn:
+          id: "patternly:session:continue:alg-complexity-scaling-001"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-space-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-space-001"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-space-001:working_memory"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-space-001"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:feedback:alg-complexity-space-001"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:session:feedback:alg-complexity-space-001"
+          direction: DOWN
+      - assertVisible:
+          id: "patternly:session:result:alg-complexity-space-001:correct"
+      - tapOn:
+          id: "patternly:session:continue:alg-complexity-space-001"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-time-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-time-001"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-time-001:linear"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-time-001"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:feedback:alg-complexity-time-001"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:session:feedback:alg-complexity-time-001"
+          direction: DOWN
+      - assertVisible:
+          id: "patternly:session:result:alg-complexity-time-001:correct"
+      - tapOn:
+          id: "patternly:session:continue:alg-complexity-time-001"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-time-002"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-time-002"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-time-002:product"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-time-002"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:feedback:alg-complexity-time-002"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:session:feedback:alg-complexity-time-002"
+          direction: DOWN
+      - assertVisible:
+          id: "patternly:session:result:alg-complexity-time-002:correct"
+      - tapOn:
+          id: "patternly:session:continue:alg-complexity-time-002"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-output-002"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-output-002"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-output-002:different_contract"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-output-002"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:feedback:alg-complexity-output-002"
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: "patternly:session:feedback:alg-complexity-output-002"
+          direction: DOWN
+      - assertVisible:
+          id: "patternly:session:result:alg-complexity-output-002:correct"
+      - tapOn:
+          id: "patternly:session:continue:alg-complexity-output-002"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:summary:configuration:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:10:after-each-answer"
+- assertNotVisible:
+    id: "patternly:session:counter:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:ordinal:11:length:10"
+- takeScreenshot: "aud02d-custom-feedback-result-after-each-answer"
+- runFlow: coding-practice-result-review.yaml

@@ -30,6 +30,6 @@ tags:
 - assertVisible:
     id: "patternly:session:question:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
 - assertNotVisible:
-    id: "patternly:session:submit:alg-complexity-amortized-004"
+    id: "patternly:session:submit:alg-complexity-reject-001"
 - assertNotVisible:
     id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
