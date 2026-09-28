@@ -117,4 +117,7 @@ tags:
 - assertNotVisible:
     id: "patternly:session:counter:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:ordinal:11:length:10"
 - takeScreenshot: "aud02d-custom-feedback-result-at-session-end"
-- runFlow: coding-practice-result-review.yaml
+- runFlow:
+    file: coding-practice-result-review.yaml
+    env:
+      REVIEW_QUESTION_ID: alg-complexity-reject-001

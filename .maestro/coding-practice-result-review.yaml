@@ -28,8 +28,8 @@ tags:
       id: "patternly:practice-review:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
     timeout: 10000
 - assertVisible:
-    id: "patternly:session:question:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
+    id: "patternly:session:question:${REVIEW_QUESTION_ID}"
 - assertNotVisible:
-    id: "patternly:session:submit:alg-complexity-reject-001"
+    id: "patternly:session:submit:${REVIEW_QUESTION_ID}"
 - assertNotVisible:
     id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"

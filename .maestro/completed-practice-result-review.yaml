@@ -179,4 +179,7 @@ name: Completed practice result and read-only answer review
 - assertNotVisible:
     id: "patternly:session:question:alg-complexity-amortized-011"
 
-- runFlow: coding-practice-result-review.yaml
+- runFlow:
+    file: coding-practice-result-review.yaml
+    env:
+      REVIEW_QUESTION_ID: alg-complexity-amortized-004

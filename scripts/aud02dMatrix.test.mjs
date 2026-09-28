@@ -255,7 +255,11 @@ test("feedback lifecycle flows resume, complete ten answers and open the result 
     assert.match(source, /patternly:summary:configuration:[\s\S]*?:1:10:(?:at-session-end|after-each-answer)/u);
     assert.match(source, /patternly:session:counter:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:ordinal:11:length:10/u);
     assert.match(source, /takeScreenshot: "aud02d-custom-feedback-result-/u);
-    assert.match(source, /runFlow: coding-practice-result-review\.yaml/u);
+    const reviewCall = commands.at(-1).runFlow;
+    assert.deepEqual(reviewCall, {
+      file: "coding-practice-result-review.yaml",
+      env: { REVIEW_QUESTION_ID: "alg-complexity-reject-001" },
+    });
     assert.doesNotMatch(source, /aud02d-feedback-complete-session\.yaml/u);
   }
   assert.match(atSessionEnd, /runFlow: m3-custom-at-session-end\.yaml/u);
@@ -284,6 +288,20 @@ test("feedback lifecycle flows resume, complete ten answers and open the result 
   assert.ok(!AUD02D_FEEDBACK_REFERENCES.includes(".maestro/m3-custom-at-session-end.yaml"));
   assert.ok(!AUD02D_FEEDBACK_REFERENCES.includes(".maestro/m4-custom-after-each-answer.yaml"));
   await assert.rejects(readFile(path.join(ROOT, ".maestro/aud02d-feedback-complete-session.yaml")));
+});
+
+test("result review selects the caller-provided question while retaining its occurrence root", async () => {
+  const shared = await readFile(path.join(ROOT, ".maestro/coding-practice-result-review.yaml"), "utf8");
+  const completed = await readFile(path.join(ROOT, ".maestro/completed-practice-result-review.yaml"), "utf8");
+  const sharedCommands = parseAllDocuments(shared)[1].toJSON();
+  const completedCommands = parseAllDocuments(completed)[1].toJSON();
+  assert.ok(sharedCommands.some((command) => command.extendedWaitUntil?.visible?.id === "patternly:practice-review:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"));
+  assert.ok(sharedCommands.some((command) => command.assertVisible?.id === "patternly:session:question:${REVIEW_QUESTION_ID}"));
+  assert.ok(sharedCommands.some((command) => command.assertNotVisible?.id === "patternly:session:submit:${REVIEW_QUESTION_ID}"));
+  assert.deepEqual(completedCommands.at(-1).runFlow, {
+    file: "coding-practice-result-review.yaml",
+    env: { REVIEW_QUESTION_ID: "alg-complexity-amortized-004" },
+  });
 });
 
 test("all new AUD-02D Maestro YAML documents parse and contain executable assertion commands", async () => {
