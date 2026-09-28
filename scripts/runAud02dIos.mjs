@@ -10,6 +10,7 @@ import { createGenerationPinnedSmokeSession, safeHttpErrorCode } from "./aud02dA
 import { validateAud02dExpoManifest } from "./aud02dExpoManifest.mjs";
 import { parseDotenv, validateLocalProfile } from "./runLocalProfile.mjs";
 import { waitForContentPreparationState } from "./waitForContentPreparationState.mjs";
+import { addCleanupContext, awaitChildWithCleanup, childFailure, verifyProcessOwnership, waitForChildReadiness } from "./aud02dChildProcess.mjs";
 
 const APP_ROOT = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const CONTENT_ROOT = path.resolve(process.env.PATTERNLY_CONTENT_ROOT ?? path.resolve(APP_ROOT, "../patternly-content"));
@@ -521,15 +522,117 @@ async function runNode(script, args, env, record, flows) {
 }
 
 async function runObservedNode(script, args, env, record, flows) {
-  const auth = await smokeAuthContext();
-  const observer = observeBackendTransitions(record, auth);
+  assertBackendPortAvailable();
+  const child = startObservedNode(script, args, env);
+  let observer;
   let failure;
-  try { await runNode(script, args, env, record, flows); }
-  catch (error) { failure = error; }
-  await observer.stop();
+  let childWait;
+  let childFailureReported = false;
+  try {
+    const readinessStartup = await waitForChildReadiness(child, probeBackendReadiness);
+    const auth = await smokeAuthContext();
+    const baseline = await readBackendEvidence(auth);
+    if (!baseline || baseline.entitlement.state !== "expired") throw new Error("AUD-02D child backend did not expose the required observed expired Premium baseline.");
+    baseline.phase = "child-expired-baseline";
+    baseline.readinessStartup = readinessStartup;
+    record.backendObservations.push(baseline);
+    record.entitlementTransitions.push({ observedAt: baseline.observedAt, phase: baseline.phase, state: baseline.entitlement.state, source: baseline.entitlement.source });
+    observer = observeBackendTransitions(record, auth);
+    const outcome = await child.completion;
+    childWait = { outcome, timedOut: false, cleanupErrors: [] };
+    const childError = childFailure(outcome, `AUD-02D child runner ${path.basename(script)} failed.`);
+    if (childError) { childFailureReported = true; throw childError; }
+    record.runnerExecutions.push({ script: path.relative(APP_ROOT, script), exitCode: 0 });
+    for (const flow of flows) {
+      const assertions = await collectFlowAssertions(flow);
+      if (assertions.length === 0) throw new Error(`AUD-02D child flow ${flow} has no executable Maestro assertions.`);
+      record.maestroExecutions.push({ flow, runner: path.basename(script), exitCode: 0, executedAssertions: assertions.map((assertion) => ({ ...assertion, passed: true })) });
+    }
+  } catch (error) {
+    failure = error;
+  } finally {
+    if (observer) {
+      try { await observer.stop(); }
+      catch (error) { failure = addCleanupContext(failure, `stopping entitlement observer failed: ${error instanceof Error ? error.message : String(error)}`); }
+    }
+    if (!childWait) childWait = await awaitObservedChild(child);
+    if (childWait.timedOut) {
+      failure = addCleanupContext(failure, `AUD-02D child runner ${path.basename(script)} did not finish naturally before cleanup.${formatCleanupErrors(childWait.cleanupErrors)}`);
+    } else {
+      const childError = childFailure(childWait.outcome, `AUD-02D child runner ${path.basename(script)} failed.`);
+      if (childError && !childFailureReported) failure = addCleanupContext(failure, childError.message);
+    }
+  }
   if (failure) throw failure;
   const states = record.entitlementTransitions.map(({ state }) => state);
   if (states[0] !== "expired" || !states.includes("active")) throw new Error(`AUD-02D did not observe the child's backend entitlement transition expired -> active (observed ${states.join(" -> ") || "none"}).`);
+}
+
+function awaitObservedChild(child) {
+  return awaitChildWithCleanup(child, {
+    cleanupTimeoutMs: 12_000,
+    prepareOwnedBackendStop: () => discoverOwnedBackendGroup(child.pid),
+    stopChild: () => stopProcessTree(child),
+    stopOwnedBackend: stopOwnedBackendGroup,
+    confirmPortFree: waitForPortAvailable,
+  });
+}
+
+function stopProcessTree(child) {
+  if (process.platform === "win32") child.kill("SIGTERM");
+  else if (child.pid) { try { process.kill(-child.pid, "SIGTERM"); } catch (error) { if (error?.code !== "ESRCH") throw error; } }
+}
+
+async function discoverOwnedBackendGroup(ownerPid) {
+  const result = spawnSync("lsof", ["-nP", "-iTCP:8080", "-sTCP:LISTEN", "-t"], { encoding: "utf8" });
+  if (result.error) throw result.error;
+  if (result.status === 1) return null;
+  if (result.status !== 0) throw new Error("Could not identify the AUD-02D backend listener after child timeout.");
+  const pids = result.stdout.trim().split(/\s+/u).filter(Boolean);
+  if (pids.length === 0) return null;
+  if (pids.length !== 1) throw new Error("Expected one AUD-02D backend listener after child timeout.");
+  const listenerPid = Number(pids[0]);
+  if (!Number.isInteger(listenerPid)) throw new Error("AUD-02D backend listener PID was invalid.");
+  if (listenerInfo(listenerPid).cwd !== BACKEND_ROOT) throw new Error("Refusing to stop port 8080 listener because it is not running from the AUD-02D backend checkout.");
+  const ancestry = await verifyProcessOwnership(listenerPid, ownerPid, inspectProcessLineage);
+  if (!Number.isInteger(ancestry.groupId) || ancestry.groupId <= 0) throw new Error("AUD-02D backend listener process group was invalid.");
+  return ancestry.groupId;
+}
+
+function inspectProcessLineage(pid) {
+  const output = run("ps", ["-p", String(pid), "-o", "ppid=", "-o", "pgid="]).trim();
+  const [parentPid, groupId] = output.split(/\s+/u).map(Number);
+  return { parentPid, groupId };
+}
+
+function stopOwnedBackendGroup(groupId) {
+  if (!Number.isInteger(groupId) || groupId <= 0) throw new Error("Refusing to stop an unverified AUD-02D backend process group.");
+  try { process.kill(-groupId, "SIGTERM"); } catch (error) { if (error?.code !== "ESRCH") throw error; }
+}
+
+function formatCleanupErrors(errors = []) {
+  return errors.length ? ` Cleanup errors: ${errors.join("; ")}.` : "";
+}
+
+function startObservedNode(script, args, env) {
+  const child = spawn(process.execPath, [script, ...args], { detached: process.platform !== "win32", stdio: ["ignore", "pipe", "pipe"], cwd: APP_ROOT, env });
+  const redact = (chunk) => Object.values(credentials).reduce((text, secret) => text.split(secret).join("[redacted]"), chunk.toString());
+  child.stdout.setEncoding("utf8").on("data", (chunk) => process.stdout.write(redact(chunk)));
+  child.stderr.setEncoding("utf8").on("data", (chunk) => process.stderr.write(redact(chunk)));
+  child.completionSettled = false;
+  child.completion = new Promise((resolveCompletion) => {
+    child.once("error", (error) => { child.spawnError = error; child.completionSettled = true; resolveCompletion({ error }); });
+    child.once("close", (code, signal) => { child.completionSettled = true; resolveCompletion({ code, signal }); });
+  });
+  return child;
+}
+
+async function probeBackendReadiness() {
+  const response = await fetch("http://127.0.0.1:8080/ready", { signal: AbortSignal.timeout(1000) });
+  const body = await response.json();
+  return response.ok && body.status === "ready" && ["database", "authentication", "providerReader"].every((key) => body.checks?.[key] === true)
+    ? { status: response.status, body, observedAt: new Date().toISOString() }
+    : null;
 }
 
 async function streamProcess(command, args, options, failureMessage) {
