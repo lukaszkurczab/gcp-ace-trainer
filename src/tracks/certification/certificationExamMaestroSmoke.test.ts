@@ -16,8 +16,8 @@ test("RC Certification Maestro flows change, restore, persist, resume, finish, a
   assert.match(flow, /visible: "\.\*Open debugger to view warnings\.\*"[\s\S]*?point: "92%,93%"/);
   assert.match(readFileSync(".maestro/rc-runtime-audit-reset-complete.yaml", "utf8"), /patternly:content:ready-after-audit-reset/);
   assert.match(flow, /visible:\n        id: "patternly:home:change-track"/);
-  assert.match(flow, /tapOn:\n          id: "patternly:home:change-track"/);
-  assert.match(flow, /scrollUntilVisible:\n    element:\n      id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"/);
+  assert.match(flow, /tapOn:\n          id: "patternly:home:change-track"\n          retryTapIfNoChange: true/);
+  assert.match(flow, /tapOn:\n          id: "patternly:home:change-track"\n          retryTapIfNoChange: true[\s\S]*?extendedWaitUntil:\n    visible:\n      id: "patternly:home:select-track:root"\n    timeout: 30000\n- scrollUntilVisible:\n    element:\n      id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"/);
   assert.match(flow, /visible: "Not now"[\s\S]*?tapOn: "Not now"/);
   assert.match(flow, /Question 1 of 50/);
   assert.match(flow, /patternly:simulation:option:gcp-ace-gcpace-n01-b02-001:a/);

@@ -36,6 +36,11 @@ tags:
     commands:
       - tapOn:
           id: "patternly:home:change-track"
+          retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:select-track:root"
+    timeout: 30000
 - scrollUntilVisible:
     element:
       id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
