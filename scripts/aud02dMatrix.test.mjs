@@ -191,6 +191,9 @@ test("AUD-02D Maestro flows cover track readiness and all setup selectors before
   const custom = await readFile(path.join(ROOT, ".maestro/aud02d-custom-practice-configuration.yaml"), "utf8");
   assert.match(readiness, /track-card:\$\{TRACK_ID\}/u);
   assert.match(readiness, /practice:hub:root/u);
+  assert.match(custom, /patternly:practice:open-setup/u);
+  assert.match(custom, /patternly:practice:custom-entry/u);
+  assert.doesNotMatch(custom, /patternly:practice:mode-card:coding-interview-custom-practice/u);
   assert.match(custom, /session-length:\$\{LENGTH\}/u);
   assert.match(custom, /feedback-timing:\$\{FEEDBACK_TIMING\}/u);
   assert.match(custom, /session:configuration:[\s\S]*?length:\$\{LENGTH\}:feedback-timing:\$\{FEEDBACK_TIMING_ID\}/u);
