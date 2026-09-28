@@ -724,7 +724,6 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
     byKey.set(key, entry);
   }
   const currentKeys = new Set(snapshot.records.map(accountDataRecordKey));
-  const hasCurrentActiveTrack = snapshot.records.some((record) => record.recordType === "active_track");
   for (const acknowledged of Object.values(state.acknowledged)) {
     const key = accountDataRecordKey(acknowledged);
     if (currentKeys.has(key) || byKey.has(key)) continue;
@@ -733,10 +732,6 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
       && recovery.trackId === acknowledged.trackId
       && recovery.recordId === acknowledged.recordId
       && acknowledged.recordType === "learning_plan") continue;
-    // `active_track` is a local selector, not a durable deletion when the
-    // learner switches to another track. Only emit its tombstone when the
-    // selector is actually cleared (no current active-track record).
-    if (acknowledged.recordType === "active_track" && hasCurrentActiveTrack) continue;
     const acknowledgedTombstoneFingerprint = accountDataRecordFingerprint({
       recordId: acknowledged.recordId,
       recordType: acknowledged.recordType,

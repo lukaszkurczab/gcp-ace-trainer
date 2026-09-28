@@ -187,6 +187,28 @@ test("bound account outbox creates an explicit tombstone for a deleted acknowled
   assert.deepEqual(afterDeletion.outbox[0]?.state, { deleted: true });
 });
 
+test("reselecting an acknowledged active track tombstones the previously acknowledged track", async () => {
+  await bindSyncedAccount();
+  const otherTrackId = GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID;
+  const records = [TRACK_ID, otherTrackId].map((trackId, index) => {
+    const { updatedAt, ...record } = remoteActiveTrack(trackId, `2026-01-0${index + 1}T00:00:00.000Z`);
+    return record;
+  });
+  const acknowledged = await finishAccountMaterialization(records, ACCOUNT_ID, 2, "2026-01-02T00:00:00.000Z");
+  assert.equal(acknowledged.outbox.length, 0);
+
+  await saveActiveTrackId(TRACK_ID);
+  const pending = await ensureAccountOutboxFromLocalDataset();
+
+  assert.equal(pending.outbox.length, 1);
+  assert.equal(pending.outbox[0]?.recordType, "active_track");
+  assert.equal(pending.outbox[0]?.trackId, otherTrackId);
+  assert.equal(isDeletedAccountDataRecord(pending.outbox[0]!), true);
+  assert.deepEqual(pending.outbox[0]?.state, { deleted: true });
+  assert.deepEqual(pending.syncPlan?.items.map((item) => item.payload.trackId), [otherTrackId]);
+  assert.deepEqual(pending.syncPlan?.items.map((item) => item.payload.state), [{ deleted: true }]);
+});
+
 test("pending mutation IDs stay stable across an uncertain retry", async () => {
   await bindSyncedAccount();
   await saveActiveTrackId(TRACK_ID);
