@@ -197,6 +197,17 @@ test("AUD-02D Maestro flows cover track readiness and all setup selectors before
   assert.deepEqual(readinessCommands[4], {
     tapOn: { id: "patternly:home:select-track:${TRACK_ID}", point: "50%,25%" },
   });
+  assert.deepEqual(readinessCommands[5], {
+    runFlow: {
+      when: { notVisible: { id: "patternly:home:select-track:continue" } },
+      commands: [
+        { swipe: { direction: "UP", duration: 500 } },
+        { waitForAnimationToEnd: { timeout: 5000 } },
+        { tapOn: { id: "patternly:home:select-track:${TRACK_ID}", point: "50%,25%" } },
+      ],
+    },
+  });
+  assert.equal(readinessCommands[6].runFlow.when.visible, ".*Open debugger to view warnings.*");
   assert.match(readiness, /track-card:\$\{TRACK_ID\}/u);
   assert.match(readiness, /practice:hub:root/u);
   assert.match(custom, /patternly:practice:open-setup/u);

@@ -66,6 +66,19 @@ tags:
     point: "50%,25%"
 - runFlow:
     when:
+      notVisible:
+        id: "patternly:home:select-track:continue"
+    commands:
+      - swipe:
+          direction: UP
+          duration: 500
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - tapOn:
+          id: "patternly:home:select-track:${TRACK_ID}"
+          point: "50%,25%"
+- runFlow:
+    when:
       visible: ".*Open debugger to view warnings.*"
     commands:
       - tapOn:
