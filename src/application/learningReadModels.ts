@@ -17,6 +17,7 @@ import {
   getTrainingSessions,
   getTrainingSessionResult,
   saveActiveTrackId,
+  markAccountDataPending,
   saveGoal,
   saveGoalSnapshot,
   dismissGoalOnboarding,
@@ -33,7 +34,10 @@ import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 export type { StorageIssue };
 
 export async function loadActiveTrackId() { return getActiveTrackId(); }
-export async function selectActiveTrack(trackId: TrackId) { await saveActiveTrackId(trackId); }
+export async function selectActiveTrack(trackId: TrackId) {
+  await saveActiveTrackId(trackId);
+  await markAccountDataPending();
+}
 export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId); }
 export async function persistGoal(goal: GoalRecord): Promise<void> { await saveGoal(goal); }
 export async function loadGoalSnapshot(trackId: TrackId): Promise<GoalSnapshot | null> { return getGoalSnapshot(trackId); }
