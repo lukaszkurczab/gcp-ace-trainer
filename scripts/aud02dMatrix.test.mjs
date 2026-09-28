@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { parseAllDocuments } from "yaml";
 import { AUD02D_CUSTOM_PRACTICE, AUD02D_ENTITLEMENT_SUITES, AUD02D_FEEDBACK_REFERENCES, AUD02D_TRACK_IDS, AUD02D_UDID, canonicalHash, readAud02dBindings } from "./aud02dMatrix.mjs";
+import { createGenerationPinnedSmokeSession, readAuthorizationGeneration } from "./aud02dAuthEvidence.mjs";
 import { validateAud02dExpoManifest } from "./aud02dExpoManifest.mjs";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -92,6 +93,80 @@ test("AUD-02D resolves and validates the exact local Expo iOS AppEntry launch as
   assert.match(runner, /fetchBundle\(currentManifest\.launchAsset\.url\)/u);
   assert.match(runner, /responseIdentity:[\s\S]*?sha256: hash\(bytes\)/u);
   assert.doesNotMatch(runner, /index\.bundle/u);
+});
+
+test("smoke entitlement probe exchanges ordinary auth for a generation-pinned token without persisting secrets", async () => {
+  const ordinaryIdToken = "ordinary-sensitive-id-token";
+  const customToken = "custom-sensitive-token";
+  const pinnedIdToken = `header.${Buffer.from(JSON.stringify({ authorizationGeneration: 12, sub: "private-user" })).toString("base64url")}.signature`;
+  const calls = [];
+  const replies = [
+    { status: 200, body: { idToken: ordinaryIdToken } },
+    { status: 200, body: { customToken } },
+    { status: 200, body: { idToken: pinnedIdToken } },
+  ];
+  const auth = await createGenerationPinnedSmokeSession({
+    email: "private@example.test", password: "private-password", appCheck: "private-app-check",
+    apiOrigin: "http://127.0.0.1:8080", authOrigin: "http://127.0.0.1:19099",
+    fetchImplementation: async (url, options) => {
+      calls.push({ url: new URL(url), options });
+      const reply = replies.shift();
+      return { ok: reply.status === 200, status: reply.status, json: async () => reply.body };
+    },
+  });
+  assert.match(calls[0].url.pathname, /accounts:signInWithPassword/u);
+  assert.equal(calls[0].url.searchParams.get("key"), "fake-api-key");
+  assert.match(calls[1].url.pathname, /\/v1\/account\/session\/exchange$/u);
+  assert.deepEqual(JSON.parse(calls[1].options.body), {});
+  assert.equal(calls[1].options.headers.authorization, `Bearer ${ordinaryIdToken}`);
+  assert.equal(calls[1].options.headers["x-firebase-appcheck"], "private-app-check");
+  assert.match(calls[2].url.pathname, /accounts:signInWithCustomToken/u);
+  assert.equal(JSON.parse(calls[2].options.body).token, customToken);
+  assert.equal(auth.idToken, pinnedIdToken);
+  assert.deepEqual(auth.evidence, {
+    passwordSignInHttpStatus: 200,
+    sessionExchangeHttpStatus: 200,
+    customTokenSignInHttpStatus: 200,
+    customTokenPresent: true,
+    authorizationGeneration: 12,
+  });
+  const serializedEvidence = JSON.stringify(auth.evidence);
+  for (const secret of [ordinaryIdToken, customToken, pinnedIdToken, "private@example.test", "private-user", "private-password", "private-app-check"]) assert.ok(!serializedEvidence.includes(secret));
+  assert.equal(readAuthorizationGeneration(pinnedIdToken), 12);
+  assert.throws(() => readAuthorizationGeneration(`header.${Buffer.from(JSON.stringify({ authorizationGeneration: "12" })).toString("base64url")}.signature`), /numeric authorizationGeneration/u);
+});
+
+test("smoke auth errors persist only HTTP status and safe error.code", async () => {
+  const leaked = "do-not-leak-custom-token";
+  let callCount = 0;
+  await assert.rejects(createGenerationPinnedSmokeSession({
+    email: "person@example.test", password: "private-password", appCheck: "private-app-check",
+    apiOrigin: "http://127.0.0.1:8080", authOrigin: "http://127.0.0.1:19099",
+    fetchImplementation: async () => {
+      callCount += 1;
+      if (callCount === 1) return { ok: true, status: 200, json: async () => ({ idToken: "ordinary-id-token" }) };
+      return { ok: false, status: 401, json: async () => ({ error: { code: "recent_reauthentication_required" }, customToken: leaked }) };
+    },
+  }), (error) => {
+    assert.match(error.message, /HTTP 401/u);
+    assert.match(error.message, /error\.code=recent_reauthentication_required/u);
+    assert.ok(!error.message.includes(leaked));
+    assert.ok(!error.message.includes("ordinary-id-token"));
+    return true;
+  });
+  assert.equal(callCount, 2);
+  await assert.rejects(createGenerationPinnedSmokeSession({
+    email: "person@example.test", password: "private-password", appCheck: "private-app-check",
+    apiOrigin: "http://127.0.0.1:8080", authOrigin: "http://127.0.0.1:19099",
+    fetchImplementation: async () => ({ status: 201, ok: true, json: async () => ({ idToken: "should-not-be-accepted" }) }),
+  }), /HTTP 201/u);
+  const helper = await readFile(path.join(ROOT, "scripts/aud02dAuthEvidence.mjs"), "utf8");
+  const runner = await readFile(path.join(ROOT, "scripts/runAud02dIos.mjs"), "utf8");
+  assert.match(helper, /\/v1\/account\/session\/exchange/u);
+  assert.match(helper, /accounts:signInWithCustomToken/u);
+  assert.match(helper, /authorization: `Bearer \$\{ordinaryIdToken\}`/u);
+  assert.match(runner, /authorization: "Bearer " \+ auth\.idToken/u);
+  assert.match(runner, /auth: auth\.evidence/u);
 });
 
 test("AUD-02D Maestro flows cover track readiness and all setup selectors before session start", async () => {

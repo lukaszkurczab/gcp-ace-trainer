@@ -6,6 +6,7 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { AUD02D_CUSTOM_PRACTICE, AUD02D_ENTITLEMENT_SUITES, AUD02D_FEEDBACK_REFERENCES, AUD02D_TRACK_IDS, AUD02D_UDID, canonicalHash, hash, readAud02dBindings } from "./aud02dMatrix.mjs";
+import { createGenerationPinnedSmokeSession, safeHttpErrorCode } from "./aud02dAuthEvidence.mjs";
 import { validateAud02dExpoManifest } from "./aud02dExpoManifest.mjs";
 import { parseDotenv, validateLocalProfile } from "./runLocalProfile.mjs";
 import { waitForContentPreparationState } from "./waitForContentPreparationState.mjs";
@@ -387,15 +388,13 @@ async function smokeAuthContext() {
   const smokeSecrets = JSON.parse(await readFile(path.join(BACKEND_ROOT, ".local/smoke/secrets.json"), "utf8"));
   const appCheck = smokeSecrets.appCheckToken;
   if (typeof appCheck !== "string" || !/^[a-f0-9]{64}$/u.test(appCheck)) throw new Error("The local backend App Check fixture is missing or malformed.");
-  const response = await fetch("http://127.0.0.1:19099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=fake-api-key", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ email: credentials.EXPO_PUBLIC_PATTERNLY_E2E_EMAIL, password: credentials.EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD, returnSecureToken: true }),
-    signal: AbortSignal.timeout(5000),
+  return createGenerationPinnedSmokeSession({
+    email: credentials.EXPO_PUBLIC_PATTERNLY_E2E_EMAIL,
+    password: credentials.EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD,
+    appCheck,
+    apiOrigin: smokeEnvironment.EXPO_PUBLIC_PATTERNLY_API_ORIGIN,
+    authOrigin: smokeEnvironment.EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN,
   });
-  const body = await response.json();
-  if (!response.ok || typeof body.idToken !== "string" || !body.idToken) throw new Error("Could not authenticate the local entitlement evidence probe with the smoke account.");
-  return { idToken: body.idToken, appCheck };
 }
 
 async function readBackendEvidence(auth) {
@@ -410,11 +409,13 @@ async function readBackendEvidence(auth) {
   const entitlementBody = await entitlementResponse.json();
   const entitlement = entitlementBody.entitlements?.[0];
   if (!entitlementResponse.ok || entitlementBody.entitlements?.length !== 1 || entitlement?.entitlement !== "premium" || entitlement?.productId !== "com.lkurczab.patternly.premium.monthly" || !["expired", "active"].includes(entitlement?.state) || entitlement?.source !== "revenuecat") {
-    throw new Error("The local /v1/entitlements evidence response was invalid (HTTP " + entitlementResponse.status + ").");
+    const code = safeHttpErrorCode(entitlementBody);
+    throw new Error(`The local /v1/entitlements evidence response was invalid (HTTP ${entitlementResponse.status}${code ? `, error.code=${code}` : ""}).`);
   }
   return {
     observedAt: new Date().toISOString(),
     ready: { httpStatus: response.status, body: readyBody },
+    auth: auth.evidence,
     entitlement: {
       httpStatus: entitlementResponse.status,
       state: entitlement.state,
