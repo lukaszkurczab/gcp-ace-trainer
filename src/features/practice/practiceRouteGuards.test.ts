@@ -15,10 +15,32 @@ test("practice screens turn unsupported package, topic, and mode reads into exit
   assert.match(setup, /if \(route\.params\?\.topicId !== undefined && route\.params\.topicId !== canonicalNodeId\) \{[\s\S]*?return renderUnavailable\(t\("This topic is not included in your free content\."\)/);
   assert.match(setup, /if \(activeTrack\.familyId === "coding_interview" && !isAlgorithmModeId\(requestedMode\)\) return renderUnavailable\(t\("This practice mode is unavailable\."\)\)/);
   assert.match(setup, /if \(activeTrack\.familyId === "certification" && !isCertificationPracticeModeId\(requestedMode\)\) return renderUnavailable\(t\("This practice mode is unavailable\."\)\)/);
-  assert.match(setup, /if \(activeTrack\.familyId === "design_interview" && !isDesignInterviewModeId\(requestedMode\)\) return renderUnavailable\(t\("This practice mode is unavailable\."\)\)/);
+  assert.match(setup, /if \(activeTrack\.familyId === "design_interview" && \(!isDesignInterviewModeId\(requestedMode\) \|\| requestedMode === "design-interview-simulation"\)\) return renderUnavailable\(t\("This practice mode is unavailable\."\)\)/);
   assert.equal((setup.match(/canonicalTrack\.getMode\(selectedMode\)/g) ?? []).length, 1, "setup resolves the package mode once");
   assert.doesNotMatch(setup, /requestedMode === "certification-quick-review"/);
   assert.doesNotMatch(setup, /scenarioCompetencies|scenarioCompetencyId|setScenarioCompetencyId/);
+});
+
+test("Design simulation uses its dedicated result and cannot enter objective setup", () => {
+  const setup = source("src/features/practice/PracticeSetupScreen.tsx");
+  const result = source("src/features/exam/ResultScreen.tsx");
+  assert.match(setup, /requestedMode === "design-interview-simulation"/);
+  assert.match(result, /session\.modeId === "design-interview-simulation"\)[\s\S]*?navigation\.replace\(ROUTES\.DESIGN_INTERVIEW_SIMULATION_RESULT/);
+});
+
+test("all selected Design modes require Premium admission before their canonical route", () => {
+  const hub = source("src/features/practice/PracticeHubScreen.tsx");
+  const modes = source("src/tracks/design-interview/designModes.ts");
+  for (const mode of [
+    "design-interview-learn-framework",
+    "design-interview-tradeoff-practice",
+    "design-interview-weak-area-review",
+    "design-interview-simulation",
+  ]) assert.match(modes, new RegExp(mode));
+  assert.match(hub, /if \(isDesignInterviewModeId\(resolvedMode\)\)[\s\S]*?authorizePremiumSessionStart\(\)[\s\S]*?case "purchasePremium":[\s\S]*?ROUTES\.PREMIUM_PURCHASE/);
+  assert.match(hub, /if \(resolvedMode !== "design-interview-simulation"\)[\s\S]*?ROUTES\.PRACTICE_SETUP[\s\S]*?ROUTES\.DESIGN_INTERVIEW_SIMULATION/);
+  assert.match(hub, /setDesignAdmissionMode\(resolvedMode\)[\s\S]*?startSession\(designAdmissionMode\)/);
+  assert.match(hub, /startSession\(primaryMode\.mode as PracticeSessionMode, "practiceHub"\)/);
 });
 
 test("practice route changes cannot submit stale setup controls and preserve track identity", () => {

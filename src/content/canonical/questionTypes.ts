@@ -128,7 +128,29 @@ export type CanonicalCodingInterviewSimulationProfile = Readonly<{
   familyConfig: CanonicalCodingInterviewSimulationConfig;
 }>;
 
-export type CanonicalProductSimulationProfile = CanonicalSimulationProfile | CanonicalCodingInterviewSimulationProfile;
+export type CanonicalDesignInterviewSimulationConfig = Readonly<{
+  schemaVersion: "patternly-design-interview-simulation-config-v1";
+  caseId: string;
+  caseVersion: "1";
+  title: string;
+  brief: string;
+  timer: Readonly<{ kind: "absolute_deadline"; durationSeconds: number }>;
+  stages: readonly Readonly<{ stageId: "requirements" | "architecture" | "tradeoffs" | "final_answer"; title: string; response: Readonly<{ type: "text"; required: true; minimumCharacters: 1 }> }>[];
+  reviewCriteria: readonly Readonly<{ criterionId: string; stageId: "requirements" | "architecture" | "tradeoffs" | "final_answer"; description: string }>[];
+  rubric: Readonly<{ kind: "self_assessment_reference_only"; dimensions: readonly Readonly<{ dimensionId: string; title: string; levels: readonly Readonly<{ level: number; label: string; description: string }>[] }>[] }>;
+  outcomeEvaluation: Readonly<{ machineEvaluable: readonly ["response_completeness"]; semanticScoring: "not_evaluated" }>;
+}>;
+
+export type CanonicalDesignInterviewSimulationProfile = Readonly<{
+  schemaVersion: "patternly-simulation-profile-envelope-v1";
+  profileId: string;
+  profileVersion: "1";
+  familyId: "design_interview";
+  modeId: "design-interview-simulation";
+  familyConfig: CanonicalDesignInterviewSimulationConfig;
+}>;
+
+export type CanonicalProductSimulationProfile = CanonicalSimulationProfile | CanonicalCodingInterviewSimulationProfile | CanonicalDesignInterviewSimulationProfile;
 
 export type CanonicalQuestionResponse =
   | Readonly<{ type: "choice_single"; optionId: string }>

@@ -272,7 +272,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   if (typeof requestedMode !== "string") return renderUnavailable(t("This practice mode is unavailable."));
   if (activeTrack.familyId === "coding_interview" && !isAlgorithmModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
   if (activeTrack.familyId === "certification" && !isCertificationPracticeModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
-  if (activeTrack.familyId === "design_interview" && !isDesignInterviewModeId(requestedMode)) return renderUnavailable(t("This practice mode is unavailable."));
+  if (activeTrack.familyId === "design_interview" && (!isDesignInterviewModeId(requestedMode) || requestedMode === "design-interview-simulation")) return renderUnavailable(t("This practice mode is unavailable."));
   const premiumOffers = listAvailablePremiumNodeOffers(activeTrack.id);
   const selectedMode = requestedMode as PracticeSessionMode;
   let selectedPackageMode: ProductModeConfig;

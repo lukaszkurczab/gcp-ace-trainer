@@ -50,7 +50,15 @@ export type ProductCodingInterviewSimulationModeConfig = Readonly<{
   modeId: "coding-interview-simulation";
 }>;
 
-export type ProductSimulationConfig = ProductSimulationModeConfig | ProductCodingInterviewSimulationModeConfig;
+export type ProductDesignInterviewSimulationModeConfig = Readonly<{
+  kind: "design_interview_simulation";
+  trackId: "backend-system-design-interview" | "frontend-system-design-interview" | "object-oriented-design-interview";
+  profileId: string;
+  familyId: "design_interview";
+  modeId: "design-interview-simulation";
+}>;
+
+export type ProductSimulationConfig = ProductSimulationModeConfig | ProductCodingInterviewSimulationModeConfig | ProductDesignInterviewSimulationModeConfig;
 
 const GCP_SIMULATION_MODE: ProductSimulationModeConfig = Object.freeze({
   kind: "certification_exam_simulation",
@@ -68,11 +76,18 @@ const CODING_INTERVIEW_SIMULATION_MODE: ProductCodingInterviewSimulationModeConf
   modeId: "coding-interview-simulation",
 });
 
+const DESIGN_TRACK_IDS = Object.freeze([
+  "backend-system-design-interview",
+  "frontend-system-design-interview",
+  "object-oriented-design-interview",
+] as const);
+
 /** Resolve only the explicitly bound profile. Simulation policy values remain content-owned. */
 export function getProductSimulationModeConfig(trackId: string, profiles: readonly CanonicalProductSimulationProfile[] | undefined): Readonly<{ config: ProductSimulationConfig; profile: CanonicalProductSimulationProfile }> {
   const expected = trackId === GCP_SIMULATION_MODE.trackId ? GCP_SIMULATION_MODE
     : trackId === CODING_INTERVIEW_SIMULATION_MODE.trackId ? CODING_INTERVIEW_SIMULATION_MODE
-      : null;
+      : DESIGN_TRACK_IDS.includes(trackId as (typeof DESIGN_TRACK_IDS)[number]) ? Object.freeze({ kind: "design_interview_simulation" as const, trackId: trackId as ProductDesignInterviewSimulationModeConfig["trackId"], profileId: `${trackId}-simulation-v1`, familyId: "design_interview" as const, modeId: "design-interview-simulation" as const })
+        : null;
   if (!expected || !profiles) throw new ProductModeUnavailableError(`Simulation mode for ${trackId} is unavailable.`);
   const matches = profiles.filter((profile) => profile.profileId === expected.profileId);
   if (matches.length !== 1) throw new ProductModeUnavailableError(`Simulation profile ${expected.profileId} is unavailable.`);

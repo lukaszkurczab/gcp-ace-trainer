@@ -14,6 +14,8 @@ import {
   isGoalOnboardingDismissed,
   getReviewQueueItems,
   getTrainingAttempts,
+  getTrainingSessions,
+  getTrainingSessionResult,
   saveActiveTrackId,
   saveGoal,
   saveGoalSnapshot,
@@ -44,6 +46,8 @@ export async function loadTrainingAttempts() { return getTrainingAttempts(); }
 export async function loadReviewQueueItems() { return getReviewQueueItems(); }
 export async function loadActiveTrainingSession() { return getActiveTrainingSession(); }
 export async function loadActiveTrainingSessionDraft() { return getActiveTrainingSessionDraft(); }
+export async function loadTrainingSession(sessionId: string) { return (await getTrainingSessions()).value.find((session) => session.id === sessionId) ?? null; }
+export async function loadTrainingSessionResult(sessionId: string) { return getTrainingSessionResult(sessionId); }
 
 /** Typed Home read. Presentation receives the family dashboard, never its runtime or repositories. */
 export async function loadCodingInterviewDashboard(): Promise<CodingInterviewDashboard> {

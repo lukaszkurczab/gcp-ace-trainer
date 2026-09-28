@@ -289,6 +289,13 @@ export function buildDesignInterviewPracticeResumeRoute(session: TrainingSession
   });
 }
 
+export function buildDesignInterviewSimulationResumeRoute(session: TrainingSession): Readonly<{ name: typeof ROUTES.DESIGN_INTERVIEW_SIMULATION; params: Readonly<{ trackId: TrackId; profileId: string; expectedSessionId: string }> }> {
+  if (session.status !== "active" || session.modeId !== "design-interview-simulation" || session.configurationSnapshot.kind !== "designInterviewSimulation" || getTrackRegistration(session.trackId).familyId !== "design_interview") throw new Error("Design Interview Simulation resume requires its exact active profile-bound session.");
+  const profileId = session.configurationSnapshot.simulationProfileId;
+  if (typeof profileId !== "string" || !profileId.trim() || session.configurationSnapshot.simulationProfileVersion !== "1") throw new Error("Design Interview Simulation resume requires its durable profile identity.");
+  return { name: ROUTES.DESIGN_INTERVIEW_SIMULATION, params: { trackId: session.trackId, profileId, expectedSessionId: session.id } };
+}
+
 function assertOrdinaryCertificationConfiguration(
   session: TrainingSession,
   packageMode: ProductModeConfig,

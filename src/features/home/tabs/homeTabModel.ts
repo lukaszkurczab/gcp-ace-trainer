@@ -4,7 +4,7 @@ import type { CodingInterviewDashboard, HomeRecommendationAction as CanonicalHom
 import { ALGORITHM_MODE_IDS, isAlgorithmModeId } from "../../../tracks/coding-interview/domain";
 import { getCertificationMode, isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../../tracks/certification";
 import { isDesignInterviewModeId, type DesignInterviewModeId } from "../../../tracks/design-interview";
-import { buildCertificationPracticeResumeRoute, buildDesignInterviewPracticeResumeRoute } from "../../practice/sessionConfig";
+import { buildCertificationPracticeResumeRoute, buildDesignInterviewPracticeResumeRoute, buildDesignInterviewSimulationResumeRoute } from "../../practice/sessionConfig";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import {
   getCurrentPracticeTopic,
@@ -105,8 +105,15 @@ function buildCertificationResumeRecommendation(input: BuildHomeTabModelInput): 
   }
   if (input.activeTrack.familyId !== "design_interview" || !isDesignInterviewModeId(session.modeId)) return null;
   const modeTitle = titleForDesignMode(session.modeId);
+  if (session.modeId === "design-interview-simulation") {
+    try {
+      buildDesignInterviewSimulationResumeRoute(session);
+    } catch {
+      return unavailableResumeRecommendation(modeTitle);
+    }
+  }
   try {
-    buildDesignInterviewPracticeResumeRoute(session);
+    if (session.modeId !== "design-interview-simulation") buildDesignInterviewPracticeResumeRoute(session);
   } catch {
     return unavailableResumeRecommendation(modeTitle);
   }

@@ -10,6 +10,10 @@ web-build/
 .maestro
 !.maestro/
 .maestro/*
+!.maestro/aud02c-design-simulation-free.yaml
+!.maestro/aud02c-design-simulation-premium.yaml
+!.maestro/aud02c-design-simulation-timeout.yaml
+!.maestro/aud02c-design-simulation-timeout-result.yaml
 !.maestro/backend-ios-simulator-e2e.yaml
 !.maestro/coding-practice-result-review.yaml
 !.maestro/coding-practice-answer-review-details.yaml

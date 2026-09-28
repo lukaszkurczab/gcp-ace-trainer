@@ -46,5 +46,8 @@ export type RootStackParamList = {
   [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION]: { profileId: string };
   [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY]: { sessionId: string };
   [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW]: { sessionId: string };
+  [ROUTES.DESIGN_INTERVIEW_SIMULATION]: { trackId: TrackId; profileId: string; expectedSessionId?: string };
+  [ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT]: { sessionId: string };
+  [ROUTES.DESIGN_INTERVIEW_SIMULATION_REVIEW]: { sessionId: string };
   [ROUTES.MISTAKES_REVIEW]: undefined;
 };

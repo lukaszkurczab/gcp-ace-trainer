@@ -139,8 +139,69 @@ function validateSimulationProfiles(value: unknown, questions: readonly unknown[
       validateCodingInterviewSimulationConfig(profile.familyConfig, questions, path, errors);
       return;
     }
+    if (profile.modeId === "design-interview-simulation") {
+      const designTracks = ["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"];
+      if (profile.familyId !== "design_interview") errors.push(`${path}.familyId: unsupported family`);
+      if (trackId !== "backend-system-design-interview" && trackId !== "frontend-system-design-interview" && trackId !== "object-oriented-design-interview") errors.push(`${path}: simulation profile is not supported for this track`);
+      if (profile.profileId !== `${String(trackId)}-simulation-v1`) errors.push(`${path}.profileId: unsupported profile for track`);
+      if (!designTracks.includes(String(trackId))) return;
+      validateDesignInterviewSimulationConfig(profile.familyConfig, trackId, path, errors);
+      return;
+    }
     errors.push(`${path}.modeId: unsupported simulation mode`);
   });
+}
+
+const DESIGN_SIMULATION_STAGE_IDS = ["requirements", "architecture", "tradeoffs", "final_answer"] as const;
+const DESIGN_SIMULATION_RUBRIC_IDS = ["requirements_clarity", "architecture_coherence", "tradeoff_reasoning", "communication_completeness"] as const;
+
+function validateDesignInterviewSimulationConfig(value: unknown, trackId: unknown, path: string, errors: string[]): void {
+  const configPath = `${path}.familyConfig`;
+  const configKeys = ["schemaVersion", "caseId", "caseVersion", "title", "brief", "timer", "stages", "reviewCriteria", "rubric", "outcomeEvaluation"];
+  if (!exact(value, configKeys, configKeys, configPath, errors)) return;
+  if (value.schemaVersion !== "patternly-design-interview-simulation-config-v1" || !safeIdentity(value.caseId, `${configPath}.caseId`, errors) || value.caseVersion !== "1") errors.push(`${configPath}: unsupported Design Interview case identity`);
+  text(value.title, `${configPath}.title`, errors); text(value.brief, `${configPath}.brief`, errors);
+  if (exact(value.timer, ["kind", "durationSeconds"], ["kind", "durationSeconds"], `${configPath}.timer`, errors) && (value.timer.kind !== "absolute_deadline" || value.timer.durationSeconds !== 2700)) errors.push(`${configPath}.timer: must use the canonical 45-minute absolute deadline`);
+  if (!Array.isArray(value.stages) || JSON.stringify(value.stages.map((stage) => record(stage) ? stage.stageId : null)) !== JSON.stringify(DESIGN_SIMULATION_STAGE_IDS)) errors.push(`${configPath}.stages: must contain the canonical ordered stages`);
+  else value.stages.forEach((stage, index) => {
+    const stagePath = `${configPath}.stages[${index}]`;
+    if (exact(stage, ["stageId", "title", "response"], ["stageId", "title", "response"], stagePath, errors)) {
+      text(stage.title, `${stagePath}.title`, errors);
+      if (exact(stage.response, ["type", "required", "minimumCharacters"], ["type", "required", "minimumCharacters"], `${stagePath}.response`, errors) && (stage.response.type !== "text" || stage.response.required !== true || stage.response.minimumCharacters !== 1)) errors.push(`${stagePath}.response: must require non-empty text`);
+    }
+  });
+  if (!Array.isArray(value.reviewCriteria) || value.reviewCriteria.length !== DESIGN_SIMULATION_STAGE_IDS.length) errors.push(`${configPath}.reviewCriteria: must define one criterion per stage`);
+  else {
+    const ids = new Set<string>();
+    value.reviewCriteria.forEach((criterion, index) => {
+      const criterionPath = `${configPath}.reviewCriteria[${index}]`;
+      if (exact(criterion, ["criterionId", "stageId", "description"], ["criterionId", "stageId", "description"], criterionPath, errors)) {
+        safeIdentity(criterion.criterionId, `${criterionPath}.criterionId`, errors);
+        if (typeof criterion.criterionId === "string") { if (ids.has(criterion.criterionId)) errors.push(`${criterionPath}.criterionId: duplicate identity`); ids.add(criterion.criterionId); }
+        if (criterion.stageId !== DESIGN_SIMULATION_STAGE_IDS[index]) errors.push(`${criterionPath}.stageId: criteria must follow stage order`);
+        text(criterion.description, `${criterionPath}.description`, errors);
+      }
+    });
+  }
+  const rubric = value.rubric;
+  if (exact(rubric, ["kind", "dimensions"], ["kind", "dimensions"], `${configPath}.rubric`, errors)) {
+    if (rubric.kind !== "self_assessment_reference_only" || !Array.isArray(rubric.dimensions) || JSON.stringify(rubric.dimensions.map((dimension) => record(dimension) ? dimension.dimensionId : null)) !== JSON.stringify(DESIGN_SIMULATION_RUBRIC_IDS)) errors.push(`${configPath}.rubric: must be the canonical reference-only rubric`);
+    if (Array.isArray(rubric.dimensions)) rubric.dimensions.forEach((dimension, index) => {
+      const dimensionPath = `${configPath}.rubric.dimensions[${index}]`;
+      if (!exact(dimension, ["dimensionId", "title", "levels"], ["dimensionId", "title", "levels"], dimensionPath, errors)) return;
+      text(dimension.title, `${dimensionPath}.title`, errors);
+      if (!Array.isArray(dimension.levels) || dimension.levels.length !== 4) errors.push(`${dimensionPath}.levels: must contain four levels`);
+      else dimension.levels.forEach((level, levelIndex) => {
+        const levelPath = `${dimensionPath}.levels[${levelIndex}]`;
+        if (exact(level, ["level", "label", "description"], ["level", "label", "description"], levelPath, errors)) {
+          if (level.level !== levelIndex + 1) errors.push(`${levelPath}.level: levels must be ordered 1 through 4`);
+          text(level.label, `${levelPath}.label`, errors); text(level.description, `${levelPath}.description`, errors);
+        }
+      });
+    });
+  }
+  if (exact(value.outcomeEvaluation, ["machineEvaluable", "semanticScoring"], ["machineEvaluable", "semanticScoring"], `${configPath}.outcomeEvaluation`, errors) && (JSON.stringify(value.outcomeEvaluation.machineEvaluable) !== JSON.stringify(["response_completeness"]) || value.outcomeEvaluation.semanticScoring !== "not_evaluated")) errors.push(`${configPath}.outcomeEvaluation: semantic scoring is not supported`);
+  if (typeof trackId !== "string") errors.push(`${path}: Design Interview profile track identity is invalid`);
 }
 
 const CODING_SIMULATION_POLICY_KEYS = [

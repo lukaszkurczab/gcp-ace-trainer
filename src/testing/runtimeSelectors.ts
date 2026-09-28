@@ -252,6 +252,15 @@ export const runtimeSelectors = Object.freeze({
     timer: (sessionId: string) => selector("simulation", "timer", sessionId),
     flag: (sessionId: string) => selector("simulation", "flag", sessionId),
   }),
+  designSimulation: Object.freeze({
+    root: (sessionId: string) => selector("design-simulation", "root", sessionId),
+    stageResponse: (sessionId: string, stageId: string) => selector("design-simulation", "response", sessionId, stageId),
+    saveStatus: (sessionId: string, state: "saving" | "pending" | "saved") => selector("design-simulation", "save-status", sessionId, state),
+    retrySave: (sessionId: string) => selector("design-simulation", "retry-save", sessionId),
+    finish: (sessionId: string) => selector("design-simulation", "finish", sessionId),
+    result: (sessionId: string) => selector("design-simulation", "result", sessionId),
+    review: (sessionId: string) => selector("design-simulation", "review", sessionId),
+  }),
   examReview: Object.freeze({
     root: (sessionId: string) => selector("exam-review", "root", sessionId),
     backToPractice: (sessionId: string) => selector("exam-review", "back-to-practice", sessionId),

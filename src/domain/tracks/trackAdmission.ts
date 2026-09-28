@@ -43,7 +43,7 @@ export type TrackBriefDescriptor = Readonly<{
   launchCommercialGate: "realFreeVerticalAndCompleteCoreLoop";
 }>;
 
-const designModes = ["design-interview-learn-framework", "design-interview-guided-case", "design-interview-requirements-practice", "design-interview-tradeoff-practice", "design-interview-weak-area-review", "design-interview-independent-case", "design-interview-simulation"] as const;
+const designModes = ["design-interview-learn-framework", "design-interview-tradeoff-practice", "design-interview-weak-area-review", "design-interview-simulation"] as const;
 const interviewGoals = ["prepare_for_an_interview", "build_foundations", "refresh_and_maintain_skills", "learn_at_own_pace"] as const;
 const certificationModes = ["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "certification-weak-area-review", "certification-mixed-practice", "certification-quick-review", "certification-exam-simulation"] as const;
 const certificationGoals = ["prepare_for_a_certification", "build_foundations", "refresh_and_maintain_skills", "learn_at_own_pace"] as const;

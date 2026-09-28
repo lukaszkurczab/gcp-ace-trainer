@@ -56,3 +56,11 @@ test("Coding Mock is offered only for the validated Coding simulation profile wi
   assert.ok(modes.some((mode) => mode.mode === "coding-interview-guided-practice"));
   assert.ok(modes.some((mode) => mode.mode === "coding-interview-custom-practice"));
 });
+
+test("Design Weak Area Review stays unavailable without review evidence", async () => {
+  const trackId = "object-oriented-design-interview";
+  await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "design_interview");
+  const mode = buildPracticeModes(getTrackDisplay(trackId), false).find((candidate) => candidate.mode === "design-interview-weak-area-review");
+  assert.equal(mode?.enabled, false);
+  assert.equal(mode?.unavailableReason, "There are no questions to review right now.");
+});

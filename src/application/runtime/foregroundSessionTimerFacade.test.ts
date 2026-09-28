@@ -45,11 +45,11 @@ function certificationPracticeSession() {
   });
 }
 
-function certificationExamSession() {
+function certificationExamSession(deadlineAt = "2026-07-19T12:00:00.000Z") {
   const contentVersion = "google-cloud-associate-cloud-engineer-core-0002";
   return createTrainingSession({
     id: "certification-exam-1", trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-exam-simulation",
-    configurationSnapshot: { kind: "certificationSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free", submission: "manualOrForegroundTimeout", timer: "absoluteDeadline", timerDurationMs: 7_200_000, timerDeadlineAt: "2026-07-19T12:00:00.000Z" },
+    configurationSnapshot: { kind: "certificationSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free", submission: "manualOrForegroundTimeout", timer: "absoluteDeadline", timerDurationMs: 7_200_000, timerDeadlineAt: deadlineAt },
     requestedLength: 1, actualLength: 1, currentItemIndex: 0,
     itemOrder: [{ occurrenceId: "certification-exam-occurrence-1", item: { trackId: "google-cloud-associate-cloud-engineer", contentVersion, questionId: "certification-exam-item-1", artifactSha256: TEST_ARTIFACT_SHA256 } }],
     optionOrderByOccurrence: {}, conditionalReinsertSlots: [], activeForegroundMs: 0,
@@ -80,6 +80,12 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown",
     },
     resumeActiveSession: async () => { resumeCount += 1; return active; },
     finalizeSimulation: async () => { finalizations += 1; durableAtFinalization = state; },
+    finalizeExpiredSimulationIfDue: async () => {
+      if (active.configurationSnapshot.timer !== "absoluteDeadline" || Date.parse(new Date(Date.parse(startedAt) + now).toISOString()) < Date.parse(String(active.configurationSnapshot.timerDeadlineAt))) return null;
+      await lifecycle.finalizeSimulation();
+      return active.id;
+    },
+    currentTime: () => new Date(Date.parse(startedAt) + now).toISOString(),
     authorizeActiveSimulationCommand: async (sessionId: string) => ({ sessionId }),
   } as unknown as TrainingLifecycleUseCases;
   const dependencies: ForegroundSessionTimerDependencies = {
@@ -190,6 +196,36 @@ test("absolute-deadline Certification Exam remains outside the foreground timer 
   const f = fixture(undefined, "elapsed", certificationExamSession());
   await assert.rejects(() => f.timer.initialize(f.session), /not foreground-timed/);
   assert.equal(f.getState(), null);
+});
+
+test("absolute-deadline draft save commits before expiry without creating a foreground timer", async () => {
+  const f = fixture(undefined, "elapsed", certificationExamSession("2026-07-19T10:00:00.100Z"));
+  f.setNow(99);
+  let draftSaves = 0;
+
+  const expired = await f.timer.saveDraftAtResponseBoundary(f.session, { sessionId: f.session.id }, async () => { draftSaves += 1; });
+
+  assert.equal(expired, false);
+  assert.equal(draftSaves, 1);
+  assert.equal(f.getState(), null);
+  assert.equal(f.getSaveCount(), 0);
+  assert.equal(f.getFinalizations(), 0);
+});
+
+test("absolute-deadline draft save finalizes and blocks the commit at and after expiry", async () => {
+  for (const now of [100, 101]) {
+    const f = fixture(undefined, "elapsed", certificationExamSession("2026-07-19T10:00:00.100Z"));
+    f.setNow(now);
+    let draftSaves = 0;
+
+    const expired = await f.timer.saveDraftAtResponseBoundary(f.session, { sessionId: f.session.id }, async () => { draftSaves += 1; });
+
+    assert.equal(expired, true);
+    assert.equal(draftSaves, 0);
+    assert.equal(f.getState(), null);
+    assert.equal(f.getSaveCount(), 0);
+    assert.equal(f.getFinalizations(), 1);
+  }
 });
 
 test("a durable foreground timer from another family is rejected instead of reused", async () => {

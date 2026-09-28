@@ -14,6 +14,7 @@ import {
 
 const SMALL_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 9, mentalUnitCount: 9, questionCount: 48 });
 const HEAD = "1".repeat(40);
+const DESIGN_TRACK_IDS = ["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"];
 
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
 
@@ -99,6 +100,22 @@ function validCodingSimulationProfile(questionIds) {
   };
 }
 
+function validDesignSimulationProfile(trackId) {
+  const stages = ["requirements", "architecture", "tradeoffs", "final_answer"].map((stageId) => ({ stageId, title: stageId, response: { type: "text", required: true, minimumCharacters: 1 } }));
+  const rubricIds = ["requirements_clarity", "architecture_coherence", "tradeoff_reasoning", "communication_completeness"];
+  return {
+    schemaVersion: "patternly-simulation-profile-envelope-v1", profileId: `${trackId}-simulation-v1`, profileVersion: "1",
+    familyId: "design_interview", modeId: "design-interview-simulation",
+    familyConfig: {
+      schemaVersion: "patternly-design-interview-simulation-config-v1", caseId: `${trackId}-case-v1`, caseVersion: "1", title: "Design case", brief: "Design a system and explain the relevant constraints.",
+      timer: { kind: "absolute_deadline", durationSeconds: 2700 }, stages,
+      reviewCriteria: stages.map((stage) => ({ criterionId: `${stage.stageId}-criterion`, stageId: stage.stageId, description: `Review ${stage.title}.` })),
+      rubric: { kind: "self_assessment_reference_only", dimensions: rubricIds.map((dimensionId) => ({ dimensionId, title: dimensionId, levels: [1, 2, 3, 4].map((level) => ({ level, label: `Level ${level}`, description: `Reference level ${level}.` })) })) },
+      outcomeEvaluation: { machineEvaluable: ["response_completeness"], semanticScoring: "not_evaluated" },
+    },
+  };
+}
+
 async function createBuiltSet(directory, suffix = "current") {
   await mkdir(directory, { recursive: true });
   const tracks = [];
@@ -118,6 +135,7 @@ async function createBuiltSet(directory, suffix = "current") {
     };
     if (trackId === "google-cloud-associate-cloud-engineer") artifact.simulationProfiles = [validGcpSimulationProfile(artifact.contentVersion, `${trackId}-node`)];
     if (codingQuestionIds) artifact.simulationProfiles = [validCodingSimulationProfile(codingQuestionIds)];
+    if (DESIGN_TRACK_IDS.includes(trackId)) artifact.simulationProfiles = [validDesignSimulationProfile(trackId)];
     const bytes = Buffer.from(JSON.stringify(artifact));
     await writeFile(path.join(directory, `${trackId}.json`), bytes);
     tracks.push({ trackId, contentVersion: artifact.contentVersion, questionCount: artifact.questions.length, sha256: sha256(bytes) });
@@ -188,6 +206,50 @@ test("sync accepts the exact Coding Mock profile with its ordered 40-question po
   await syncCanonicalContent(state.options);
   const synced = JSON.parse(await readFile(path.join(state.targetDirectory, `${trackId}.json`), "utf8"));
   assert.deepEqual(synced.simulationProfiles, artifact.simulationProfiles);
+});
+
+test("sync accepts and preserves each exact per-track Design Interview simulation profile", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await syncCanonicalContent(state.options);
+  for (const trackId of DESIGN_TRACK_IDS) {
+    const artifact = JSON.parse(await readFile(path.join(state.producerOutput, `${trackId}.json`), "utf8"));
+    assert.equal(artifact.simulationProfiles[0].profileId, `${trackId}-simulation-v1`);
+    const synced = JSON.parse(await readFile(path.join(state.targetDirectory, `${trackId}.json`), "utf8"));
+    assert.deepEqual(synced.simulationProfiles, artifact.simulationProfiles);
+  }
+});
+
+test("sync rejects Design profile identity, deadline, stage, response, criterion, rubric, and scoring drift", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await syncCanonicalContent(state.options);
+  const targetBefore = await snapshot(state.targetDirectory);
+  const trackId = DESIGN_TRACK_IDS[0];
+  const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
+  const lockPath = path.join(state.producerOutput, "content-lock.json");
+  const originalArtifact = JSON.parse(await readFile(artifactPath, "utf8"));
+  const originalLock = JSON.parse(await readFile(lockPath, "utf8"));
+  const mutations = [
+    (profile) => { profile.profileId = `${DESIGN_TRACK_IDS[1]}-simulation-v1`; },
+    (profile) => { profile.familyConfig.timer.durationSeconds = 2701; },
+    (profile) => { profile.familyConfig.stages[1].stageId = "tradeoffs"; },
+    (profile) => { profile.familyConfig.stages[0].response.required = false; },
+    (profile) => { profile.familyConfig.reviewCriteria[0].stageId = "architecture"; },
+    (profile) => { profile.familyConfig.rubric.kind = "scored"; },
+    (profile) => { profile.familyConfig.outcomeEvaluation.semanticScoring = "evaluated"; },
+  ];
+  for (const mutate of mutations) {
+    const artifact = structuredClone(originalArtifact);
+    mutate(artifact.simulationProfiles[0]);
+    const bytes = Buffer.from(JSON.stringify(artifact));
+    await writeFile(artifactPath, bytes);
+    const lock = structuredClone(originalLock);
+    lock.tracks.find((entry) => entry.trackId === trackId).sha256 = sha256(bytes);
+    await writeFile(lockPath, JSON.stringify(lock));
+    await assert.rejects(syncCanonicalContent(state.options));
+    assert.deepEqual(await snapshot(state.targetDirectory), targetBefore);
+  }
 });
 
 test("sync rejects Coding Mock profiles that drift from the declared strict contract", async (t) => {

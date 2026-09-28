@@ -57,7 +57,9 @@ import {
   buildCertificationPracticeResumeRoute,
   buildCodingInterviewSimulationResumeRoute,
   buildDesignInterviewPracticeResumeRoute,
+  buildDesignInterviewSimulationResumeRoute,
 } from "../practice/sessionConfig";
+import { resolveCertificationExamAccess } from "../practice/certificationExamAccess";
 import { HomeLoadingSkeleton, HomeTab } from "./tabs/HomeTab";
 import type { HomeRecommendationAction } from "./tabs/homeTabModel";
 import { ProgressLoadingSkeleton, ProgressTab } from "./tabs/ProgressTab";
@@ -296,6 +298,17 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         return;
       }
       if (action.kind === "resume_design_interview") {
+        if (action.modeId === "design-interview-simulation") {
+          const admission = await account.authorizePremiumSessionStart();
+          const access = resolveCertificationExamAccess(admission);
+          if (access === "purchasePremium") { navigation.navigate(ROUTES.PREMIUM_PURCHASE); return; }
+          if (access === "retryAdmission") throw new Error("Premium access could not be verified.");
+          const session = await loadActiveTrainingSession();
+          if (!session || session.id !== action.sessionId || session.trackId !== activeTrackId || session.modeId !== action.modeId) throw new Error("The active Design Interview Simulation changed before it could be resumed.");
+          const route = buildDesignInterviewSimulationResumeRoute(session);
+          navigation.navigate(route.name, route.params);
+          return;
+        }
         const session = await resumeActiveTrainingSession();
         if (session.id !== action.sessionId || session.trackId !== activeTrackId || session.modeId !== action.modeId) {
           throw new Error("The active Design Interview session changed before it could be resumed.");

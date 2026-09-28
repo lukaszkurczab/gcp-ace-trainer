@@ -348,11 +348,19 @@ export function buildPracticeModes(activeTrack: TrackDisplay, hasReviewEvidence 
         ];
       }
     case "design_interview":
+      {
+      let simulationMode: PracticeModeModel | null = null;
+      try {
+        const simulation = getProductSimulationModeConfig(activeTrack.id, profile.simulationProfiles);
+        simulationMode = { enabled: true, icon: "clipboard", mode: simulation.config.modeId, title: "Design Interview Simulation", tone: "info" };
+      } catch (error) { if (!(error instanceof ProductModeUnavailableError)) throw error; }
       return [
         { detail: "Learn a step-by-step approach to designing a solution.", enabled: availability("design-interview-learn-framework"), icon: "practice", mode: "design-interview-learn-framework", title: getDesignModeTitle("design-interview-learn-framework"), tone: "primary" },
         { enabled: availability("design-interview-tradeoff-practice"), icon: "clipboard", mode: "design-interview-tradeoff-practice", title: getDesignModeTitle("design-interview-tradeoff-practice"), tone: "success" },
-        { enabled: availability("design-interview-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "design-interview-weak-area-review", title: getDesignModeTitle("design-interview-weak-area-review"), tone: "danger" },
+        ...(simulationMode ? [simulationMode] : []),
+        { enabled: hasReviewEvidence && availability("design-interview-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "There are no questions to review right now.", icon: "rotate-ccw", mode: "design-interview-weak-area-review", title: getDesignModeTitle("design-interview-weak-area-review"), tone: "danger" },
       ];
+      }
   }
 }
 

@@ -2,6 +2,7 @@ export const DESIGN_INTERVIEW_MODE_IDS = Object.freeze([
   "design-interview-learn-framework",
   "design-interview-tradeoff-practice",
   "design-interview-weak-area-review",
+  "design-interview-simulation",
 ] as const);
 
 export type DesignInterviewModeId = (typeof DESIGN_INTERVIEW_MODE_IDS)[number];
@@ -19,6 +20,7 @@ const DESIGN_MODE_TITLES: Readonly<Record<DesignInterviewModeId, string>> = Obje
   "design-interview-learn-framework": "Learn the framework",
   "design-interview-tradeoff-practice": "Tradeoff practice",
   "design-interview-weak-area-review": "Weak Area Review",
+  "design-interview-simulation": "Design Interview Simulation",
 });
 
 export function getDesignModeTitle(modeId: string): string {

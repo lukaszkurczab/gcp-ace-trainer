@@ -33,5 +33,8 @@ export const ROUTES = {
   ALGORITHMS_INTERVIEW_SIMULATION: "AlgorithmsInterviewSimulation",
   ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY: "AlgorithmsInterviewSimulationSummary",
   ALGORITHMS_INTERVIEW_SIMULATION_REVIEW: "AlgorithmsInterviewSimulationReview",
+  DESIGN_INTERVIEW_SIMULATION: "DesignInterviewSimulation",
+  DESIGN_INTERVIEW_SIMULATION_RESULT: "DesignInterviewSimulationResult",
+  DESIGN_INTERVIEW_SIMULATION_REVIEW: "DesignInterviewSimulationReview",
   MISTAKES_REVIEW: "MistakesReview",
 } as const;

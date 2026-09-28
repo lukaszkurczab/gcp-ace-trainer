@@ -43,6 +43,10 @@ export function ResultScreen({ navigation, route }: Props) {
     const useCases = getTrainingLifecycleUseCases();
     void Promise.all([useCases.loadSummary(capturedRequestKey), useCases.loadSessionRecord(capturedRequestKey)])
       .then(async ([result, session]) => {
+        if (session.modeId === "design-interview-simulation") {
+          navigation.replace(ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT, { sessionId: session.id });
+          return;
+        }
         const certificationExam = session.modeId === "certification-exam-simulation"
           ? await getCertificationExamReviewProjection(capturedRequestKey)
           : null;
@@ -70,7 +74,7 @@ export function ResultScreen({ navigation, route }: Props) {
   if (readState.kind === "unavailable") return <Screen><EmptyState title={t("Session summary unavailable")} description={t(readState.reason)} /></Screen>;
   const summary = readState.summary;
   const { result, session } = summary;
-  const design = isDesignInterviewModeId(session.modeId);
+  const design = isDesignInterviewModeId(session.modeId) && session.modeId !== "design-interview-simulation";
   const certificationExam = session.modeId === "certification-exam-simulation";
   const certificationPractice = isCertificationPracticeModeId(session.modeId);
   const answeredCount = certificationExam ? summary.certificationExam?.answeredCount ?? 0 : result.answeredOccurrenceIds.length;

@@ -166,6 +166,9 @@ export class ForegroundSessionTimerFacade {
 
   async saveDraftAtResponseBoundary(session: TrainingSession, authorization: SimulationCommandAuthorization, commit: () => Promise<void>): Promise<boolean> {
     return this.serialize(session.id, async () => {
+      if (session.configurationSnapshot.timer === "absoluteDeadline") {
+        return this.saveDraftAtAbsoluteDeadlineBoundary(session, commit);
+      }
       if (await this.responseSaveBoundary(session, authorization)) return true;
       await commit();
       return false;
@@ -328,6 +331,9 @@ export class ForegroundSessionTimerFacade {
   }
 
   private async responseSaveBoundary(session: TrainingSession, authorization?: SimulationCommandAuthorization): Promise<boolean> {
+    if (session.configurationSnapshot.timer === "absoluteDeadline") {
+      return this.finalizeAbsoluteDeadlineIfDue(session);
+    }
     const access = authorization ?? (session.configurationSnapshot.submission === "manualOrForegroundTimeout"
       ? await this.dependencies.lifecycle.authorizeActiveSimulationCommand(session.id)
       : undefined);
@@ -336,6 +342,30 @@ export class ForegroundSessionTimerFacade {
       await this.sync(await timer.checkpointForDraftSave());
       return await this.expireIfNeeded(session, timer, access);
     } catch (error) { throw this.fail(session.id, error, "Session timer checkpoint failed before response save."); }
+  }
+
+  private async saveDraftAtAbsoluteDeadlineBoundary(session: TrainingSession, commit: () => Promise<void>): Promise<boolean> {
+    const deadline = this.absoluteDeadline(session);
+    if (Date.parse(this.dependencies.lifecycle.currentTime()) >= deadline) {
+      await this.dependencies.lifecycle.finalizeExpiredSimulationIfDue();
+      return true;
+    }
+    await commit();
+    return false;
+  }
+
+  private async finalizeAbsoluteDeadlineIfDue(session: TrainingSession): Promise<boolean> {
+    const deadline = this.absoluteDeadline(session);
+    if (Date.parse(this.dependencies.lifecycle.currentTime()) < deadline) return false;
+    await this.dependencies.lifecycle.finalizeExpiredSimulationIfDue();
+    return true;
+  }
+
+  private absoluteDeadline(session: TrainingSession): number {
+    const deadlineAt = session.configurationSnapshot.timerDeadlineAt;
+    const deadline = typeof deadlineAt === "string" ? Date.parse(deadlineAt) : Number.NaN;
+    if (!Number.isFinite(deadline)) throw new ForegroundSessionTimerRecoveryError("An absolute-deadline simulation has no valid immutable deadline.");
+    return deadline;
   }
 
   private async sync(state: ForegroundTimerState): Promise<void> {

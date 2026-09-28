@@ -26,6 +26,9 @@ const HASH = /^[a-f0-9]{64}$/u;
 const TRACK_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const CODING_TRACK_ID = "coding-interview-dsa-problem-solving";
 const CODING_PROFILE_ID = "algorithms-interview-simulation-v1";
+const DESIGN_TRACK_IDS = Object.freeze(["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"]);
+const DESIGN_STAGE_IDS = Object.freeze(["requirements", "architecture", "tradeoffs", "final_answer"]);
+const DESIGN_RUBRIC_IDS = Object.freeze(["requirements_clarity", "architecture_coherence", "tradeoff_reasoning", "communication_completeness"]);
 const CODING_SELECTION_POLICY_KEYS = Object.freeze([
   "requireUniqueItemIds", "requireDeclaredSimulationEligibility", "requireMultipleMentalUnits",
   "requireMultiplePatternFamilies", "requireEveryActiveInteractionTypeRepresented",
@@ -99,11 +102,51 @@ function validateCodingSimulationConfig(config, { questions }) {
   const questionIds = new Set(questions.map((question) => question.questionId));
   if (config.eligibleQuestionIds.some((id) => !questionIds.has(id))) fail(`${label}.eligibleQuestionIds contains an identity outside the canonical artifact`);
 }
+function validateDesignSimulationConfig(config, { trackId }) {
+  const label = "simulationProfiles.design_interview.familyConfig";
+  requireExactKeys(config, ["schemaVersion", "caseId", "caseVersion", "title", "brief", "timer", "stages", "reviewCriteria", "rubric", "outcomeEvaluation"], label);
+  if (config.schemaVersion !== "patternly-design-interview-simulation-config-v1" || typeof config.caseId !== "string" || !config.caseId.trim() || config.caseVersion !== "1" || typeof config.title !== "string" || !config.title.trim() || typeof config.brief !== "string" || !config.brief.trim()) fail(`${label} case identity or prompt is invalid`);
+  requireExactKeys(config.timer, ["kind", "durationSeconds"], `${label}.timer`);
+  if (config.timer.kind !== "absolute_deadline" || config.timer.durationSeconds !== 2700) fail(`${label}.timer must use the canonical 45-minute absolute deadline`);
+  if (!Array.isArray(config.stages) || JSON.stringify(config.stages.map((stage) => stage?.stageId)) !== JSON.stringify(DESIGN_STAGE_IDS)) fail(`${label}.stages must contain the canonical ordered stages`);
+  config.stages.forEach((stage, index) => {
+    requireExactKeys(stage, ["stageId", "title", "response"], `${label}.stages[${index}]`);
+    if (typeof stage.title !== "string" || !stage.title.trim()) fail(`${label}.stages[${index}].title is invalid`);
+    requireExactKeys(stage.response, ["type", "required", "minimumCharacters"], `${label}.stages[${index}].response`);
+    if (stage.response.type !== "text" || stage.response.required !== true || stage.response.minimumCharacters !== 1) fail(`${label}.stages[${index}].response must require non-empty text`);
+  });
+  if (!Array.isArray(config.reviewCriteria) || config.reviewCriteria.length !== DESIGN_STAGE_IDS.length || JSON.stringify(config.reviewCriteria.map((criterion) => criterion?.stageId)) !== JSON.stringify(DESIGN_STAGE_IDS)) fail(`${label}.reviewCriteria must follow the stage order`);
+  const criterionIds = new Set();
+  config.reviewCriteria.forEach((criterion, index) => {
+    requireExactKeys(criterion, ["criterionId", "stageId", "description"], `${label}.reviewCriteria[${index}]`);
+    if (typeof criterion.criterionId !== "string" || !criterion.criterionId.trim() || criterionIds.has(criterion.criterionId) || typeof criterion.description !== "string" || !criterion.description.trim()) fail(`${label}.reviewCriteria[${index}] is invalid`);
+    criterionIds.add(criterion.criterionId);
+  });
+  requireExactKeys(config.rubric, ["kind", "dimensions"], `${label}.rubric`);
+  if (config.rubric.kind !== "self_assessment_reference_only" || !Array.isArray(config.rubric.dimensions) || JSON.stringify(config.rubric.dimensions.map((dimension) => dimension?.dimensionId)) !== JSON.stringify(DESIGN_RUBRIC_IDS)) fail(`${label}.rubric must be reference-only with the canonical dimensions`);
+  config.rubric.dimensions.forEach((dimension, index) => {
+    requireExactKeys(dimension, ["dimensionId", "title", "levels"], `${label}.rubric.dimensions[${index}]`);
+    if (typeof dimension.title !== "string" || !dimension.title.trim() || !Array.isArray(dimension.levels) || dimension.levels.length !== 4) fail(`${label}.rubric.dimensions[${index}] must define four levels`);
+    dimension.levels.forEach((level, levelIndex) => {
+      requireExactKeys(level, ["level", "label", "description"], `${label}.rubric.dimensions[${index}].levels[${levelIndex}]`);
+      if (level.level !== levelIndex + 1 || typeof level.label !== "string" || !level.label.trim() || typeof level.description !== "string" || !level.description.trim()) fail(`${label}.rubric.dimensions[${index}].levels[${levelIndex}] is invalid`);
+    });
+  });
+  requireExactKeys(config.outcomeEvaluation, ["machineEvaluable", "semanticScoring"], `${label}.outcomeEvaluation`);
+  if (JSON.stringify(config.outcomeEvaluation.machineEvaluable) !== JSON.stringify(["response_completeness"]) || config.outcomeEvaluation.semanticScoring !== "not_evaluated") fail(`${label}.outcomeEvaluation may evaluate completeness only`);
+  if (!DESIGN_TRACK_IDS.includes(trackId)) fail(`${label} is not supported for ${trackId}`);
+}
 function validateSimulationProfiles(profiles, { trackId, contentVersion, questions }) {
   if (!Array.isArray(profiles) || profiles.length === 0) fail(`Simulation profile metadata is malformed for ${trackId}`);
-  if (!["google-cloud-associate-cloud-engineer", CODING_TRACK_ID].includes(trackId) || profiles.length !== 1) fail(`Simulation profile family is unsupported for ${trackId}`);
+  if (!["google-cloud-associate-cloud-engineer", CODING_TRACK_ID, ...DESIGN_TRACK_IDS].includes(trackId) || profiles.length !== 1) fail(`Simulation profile family is unsupported for ${trackId}`);
   const profile = profiles[0];
   requireExactKeys(profile, ["schemaVersion", "profileId", "profileVersion", "familyId", "modeId", "familyConfig"], "simulationProfiles[0]");
+  if (DESIGN_TRACK_IDS.includes(trackId)) {
+    if (profile.schemaVersion !== "patternly-simulation-profile-envelope-v1" || profile.profileId !== `${trackId}-simulation-v1` || profile.profileVersion !== "1") fail("Design Interview simulation profile envelope or profile version is unsupported");
+    if (profile.familyId !== "design_interview" || profile.modeId !== "design-interview-simulation") fail("Design Interview simulation profile is not bound to Design Simulation");
+    validateDesignSimulationConfig(profile.familyConfig, { trackId });
+    return;
+  }
   if (trackId === CODING_TRACK_ID) {
     if (profile.schemaVersion !== "patternly-simulation-profile-envelope-v1" || profile.profileId !== CODING_PROFILE_ID || profile.profileVersion !== "1") fail("Coding Interview simulation profile envelope or profile version is unsupported");
     if (profile.familyId !== "coding_interview" || profile.modeId !== "coding-interview-simulation") fail("Coding Interview simulation profile is not bound to Coding Mock");

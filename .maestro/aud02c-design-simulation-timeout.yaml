@@ -1,0 +1,143 @@
+appId: com.lkurczab.patternly
+name: Patternly AUD-02C - Premium Design Simulation resumes before timeout
+tags:
+  - runtime-auditability
+  - aud-02c
+  - design-simulation
+  - timeout
+---
+- runFlow:
+    when:
+      notVisible:
+        id: "patternly:home:track-card:${TRACK_ID}"
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "patternly:home:change-track"
+          commands:
+            - tapOn:
+                id: "patternly:home:change-track"
+      - scrollUntilVisible:
+          element:
+            id: "patternly:home:select-track:${TRACK_ID}"
+          direction: DOWN
+          centerElement: true
+      - tapOn:
+          id: "patternly:home:select-track:${TRACK_ID}"
+      - tapOn:
+          id: "patternly:home:select-track:continue"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible:
+            id: "patternly:home:select-track:root"
+          timeout: 30000
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-premium-testing:.*"
+    direction: DOWN
+- runFlow:
+    when:
+      visible:
+        id: "settings-premium-testing:disabled"
+    commands:
+      - tapOn:
+          id: "settings-premium-testing:disabled"
+- assertVisible:
+    id: "settings-premium-testing:enabled"
+- tapOn:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "main-tab-bar-practice"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:design-interview-simulation"
+    direction: DOWN
+- tapOn:
+    id: "patternly:practice:mode-card:design-interview-simulation"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:design-simulation:root:.*"
+    timeout: 30000
+- tapOn:
+    id: "patternly:design-simulation:response:.*:requirements"
+- inputText: "Clarify scale, consistency, latency, and key user journeys."
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "patternly:design-simulation:save-status:.*:saved"
+    direction: DOWN
+- extendedWaitUntil:
+    visible:
+      id: "patternly:design-simulation:save-status:.*:saved"
+    timeout: 30000
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "patternly:resume:continue:${TRACK_ID}:design-interview-simulation:.*"
+    timeout: 30000
+- tapOn:
+    id: "patternly:resume:continue:${TRACK_ID}:design-interview-simulation:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:design-simulation:root:.*"
+    timeout: 30000
+- assertVisible: "Clarify scale, consistency, latency, and key user journeys."
+- scrollUntilVisible:
+    element:
+      id: "patternly:design-simulation:response:.*:architecture"
+    direction: DOWN
+- tapOn:
+    id: "patternly:design-simulation:response:.*:architecture"
+- inputText: "Use stateless API nodes, a durable event log, and partitioned storage."
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "patternly:design-simulation:save-status:.*:saved"
+    direction: DOWN
+- extendedWaitUntil:
+    visible:
+      id: "patternly:design-simulation:save-status:.*:saved"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:design-simulation:response:.*:tradeoffs"
+    direction: UP
+- tapOn:
+    id: "patternly:design-simulation:response:.*:tradeoffs"
+- inputText: "Partitioning improves throughput but adds ordering and hot-key complexity."
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "patternly:design-simulation:save-status:.*:saved"
+    direction: DOWN
+- extendedWaitUntil:
+    visible:
+      id: "patternly:design-simulation:save-status:.*:saved"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:design-simulation:response:.*:final_answer"
+    direction: UP
+- tapOn:
+    id: "patternly:design-simulation:response:.*:final_answer"
+- inputText: "Start with clear boundaries, measure load, then scale the constrained tier."
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "patternly:design-simulation:save-status:.*:saved"
+    direction: DOWN
+- extendedWaitUntil:
+    visible:
+      id: "patternly:design-simulation:save-status:.*:saved"
+    timeout: 30000
+- takeScreenshot: aud02c-design-timeout-active-${TRACK_ID}

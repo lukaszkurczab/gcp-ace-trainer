@@ -304,3 +304,50 @@ test("Coding Mock consumes its exact ordered 40-question profile with foreground
     draft: prepared.draft,
   }), /snapshot or deadline/);
 });
+
+test("Design Interview Simulation uses each exact track profile, resumes durable stage text, and finalizes completeness only", async () => {
+  const catalog = await catalogPromise;
+  const tracks = ["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"] as const;
+  for (const trackId of tracks) {
+    const track = catalog.getTrack(trackId);
+    const profile = track.simulationProfiles?.[0];
+    assert.ok(profile && profile.familyId === "design_interview" && profile.modeId === "design-interview-simulation");
+    const runtime = new CanonicalTrainingRuntime(track);
+    await assert.rejects(runtime.prepare({ trackId, modeId: profile.modeId, request: { sessionId: `${trackId}:wrong`, scope: { simulationProfileId: "foreign-profile" } }, attempts: [], reviews: [], now: NOW }));
+    const prepared = await runtime.prepare({ trackId, modeId: profile.modeId, request: { sessionId: `${trackId}:design-sim`, scope: { simulationProfileId: profile.profileId } }, attempts: [], reviews: [], now: NOW });
+    assert.equal(prepared.session.actualLength, 1);
+    assert.equal(prepared.session.itemOrder.length, 1);
+    assert.equal(prepared.session.configurationSnapshot.timer, "absoluteDeadline");
+    assert.equal(prepared.session.configurationSnapshot.timerDeadlineAt, "2026-01-01T00:45:00.000Z");
+    assert.equal(prepared.session.configurationSnapshot.simulationProfileId, profile.profileId);
+    const occurrenceId = prepared.session.itemOrder[0]!.occurrenceId;
+    const response = { requirements: "Users need reliable delivery.", architecture: "Durable queue and bounded workers.", tradeoffs: "Duplicates are possible; use idempotency.", final_answer: "Start with a measured delivery SLO." };
+    const draft = createTrainingSessionDraft({ sessionId: prepared.session.id, trackId, familyId: "design_interview", revision: 2, responsesByOccurrenceId: { [occurrenceId]: response }, flaggedOccurrenceIds: [], updatedAt: "2026-01-01T00:10:00.000Z" });
+    await runtime.validateResume({ session: prepared.session, draft });
+    const finalized = await runtime.finalizeSimulation({ session: prepared.session, draft, attempts: [], reviews: [], now: "2026-01-01T00:11:00.000Z" });
+    assert.equal(finalized.attempts?.length, 0);
+    const details = finalized.result.evidence.details as Record<string, unknown>;
+    assert.equal(details.profileId, profile.profileId);
+    assert.deepEqual(details.responsesByStage, response);
+    assert.deepEqual(details.stageCompleteness, { requirements: true, architecture: true, tradeoffs: true, final_answer: true });
+    assert.equal("score" in details, false);
+    assert.deepEqual(finalized.reviewMutations, []);
+  }
+});
+
+test("Design Interview Simulation timeout can finalize a partial draft without assigning semantic correctness", async () => {
+  const designTrack = (await catalogPromise).getTrack("backend-system-design-interview");
+  const profile = designTrack.simulationProfiles?.[0];
+  assert.ok(profile && profile.familyId === "design_interview");
+  const runtime = new CanonicalTrainingRuntime(designTrack);
+  const prepared = await runtime.prepare({ trackId: designTrack.trackId, modeId: "design-interview-simulation", request: { sessionId: "design-partial", scope: { simulationProfileId: profile.profileId } }, attempts: [], reviews: [], now: NOW });
+  const occurrenceId = prepared.session.itemOrder[0]!.occurrenceId;
+  const partial = { requirements: "Clarify latency.", architecture: "", tradeoffs: "", final_answer: "" };
+  const draft = createTrainingSessionDraft({ sessionId: prepared.session.id, trackId: designTrack.trackId, familyId: "design_interview", responsesByOccurrenceId: { [occurrenceId]: partial }, flaggedOccurrenceIds: [], updatedAt: NOW });
+  const finalized = await runtime.finalizeSimulation({ session: prepared.session, draft, attempts: [], reviews: [], now: "2026-01-01T00:46:00.000Z" });
+  const details = finalized.result.evidence.details as Record<string, unknown>;
+  assert.deepEqual(details.stageCompleteness, { requirements: true, architecture: false, tradeoffs: false, final_answer: false });
+  assert.equal(finalized.result.answeredOccurrenceIds.length, 0);
+  assert.equal(finalized.result.unansweredOccurrenceIds.length, 1);
+  assert.equal(finalized.attempts?.length, 0);
+});

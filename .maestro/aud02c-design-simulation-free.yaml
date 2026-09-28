@@ -1,0 +1,97 @@
+appId: com.lkurczab.patternly
+name: Patternly AUD-02C - Free Design Simulation stays gated
+tags:
+  - runtime-auditability
+  - aud-02c
+  - design-simulation
+  - free
+---
+- runFlow:
+    when:
+      notVisible:
+        id: "patternly:home:track-card:${TRACK_ID}"
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "patternly:home:change-track"
+          commands:
+            - tapOn:
+                id: "patternly:home:change-track"
+      - scrollUntilVisible:
+          element:
+            id: "patternly:home:select-track:${TRACK_ID}"
+          direction: DOWN
+          centerElement: true
+      - tapOn:
+          id: "patternly:home:select-track:${TRACK_ID}"
+      - tapOn:
+          id: "patternly:home:select-track:continue"
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          notVisible:
+            id: "patternly:home:select-track:root"
+          timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:${TRACK_ID}"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:design-interview-simulation"
+    direction: DOWN
+- tapOn:
+    id: "patternly:practice:mode-card:design-interview-simulation"
+- extendedWaitUntil:
+    visible:
+      id: "premium-offer-summary"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:design-simulation:root:.*"
+- takeScreenshot: aud02c-design-free-paywall-${TRACK_ID}
+- stopApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-practice"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "Not now"
+    commands:
+      - tapOn: "Not now"
+- runFlow:
+    when:
+      visible: "Nie teraz"
+    commands:
+      - tapOn: "Nie teraz"
+- tapOn:
+    id: "main-tab-bar-practice"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:design-interview-simulation"
+    direction: DOWN
+- tapOn:
+    id: "patternly:practice:mode-card:design-interview-simulation"
+- extendedWaitUntil:
+    visible:
+      id: "premium-offer-summary"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:design-simulation:root:.*"
+- assertNotVisible:
+    id: "patternly:resume:continue:${TRACK_ID}:design-interview-simulation:.*"
+- takeScreenshot: aud02c-design-free-no-session-${TRACK_ID}

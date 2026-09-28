@@ -1,0 +1,30 @@
+appId: com.lkurczab.patternly
+name: Patternly AUD-02C - Design Simulation timeout result and review
+tags:
+  - runtime-auditability
+  - aud-02c
+  - design-simulation
+  - timeout
+---
+- extendedWaitUntil:
+    visible:
+      id: "patternly:design-simulation:result:.*"
+    timeout: 30000
+- assertVisible: "Complete"
+- assertNotVisible: "Incomplete"
+- takeScreenshot: aud02c-design-timeout-result-${TRACK_ID}
+- tapOn: "Review responses"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:design-simulation:review:.*"
+    timeout: 30000
+- assertVisible: "Clarify scale, consistency, latency, and key user journeys."
+- assertVisible: "Reference criterion"
+- scrollUntilVisible:
+    element:
+      text: "Self-assessment reference"
+    direction: DOWN
+- assertVisible: "Self-assessment reference"
+- assertVisible: "Use these descriptions for your own review. They are not a score or automated assessment."
+- assertNotVisible: "Score"
+- takeScreenshot: aud02c-design-timeout-review-${TRACK_ID}

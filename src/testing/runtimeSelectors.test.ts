@@ -21,6 +21,14 @@ test("Premium offer setup selectors are deterministic and valid", () => {
   assert.equal(isRuntimeSelectorId(runtimeSelectors.practice.premiumOfferError()), true);
 });
 
+test("Design Interview save selectors distinguish persistence status and retry", () => {
+  const sessionId = "design-session-1";
+  assert.equal(runtimeSelectors.designSimulation.saveStatus(sessionId, "saved"), "patternly:design-simulation:save-status:design-session-1:saved");
+  assert.equal(runtimeSelectors.designSimulation.saveStatus(sessionId, "pending"), "patternly:design-simulation:save-status:design-session-1:pending");
+  assert.equal(runtimeSelectors.designSimulation.retrySave(sessionId), "patternly:design-simulation:retry-save:design-session-1");
+  assert.ok(isRuntimeSelectorId(runtimeSelectors.designSimulation.saveStatus(sessionId, "saving")));
+});
+
 test("runtime selectors preserve canonical identities without learner-visible copy", () => {
   const itemId = "alg-complexity-amortized-001";
   const prompt = "Which statement about amortized complexity is correct?";

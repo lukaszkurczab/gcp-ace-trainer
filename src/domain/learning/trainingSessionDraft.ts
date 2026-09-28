@@ -67,7 +67,7 @@ export function canPersistTrainingSessionDraft(session: TrainingSession): boolea
 
 export function getTrainingSessionFinalizationCleanupKind(session: TrainingSession): "active_exam" | "session_draft" | null {
   if (canPersistTrainingSessionDraft(session)) return "session_draft";
-  if (session.configurationSnapshot.kind === "certificationSimulation" && session.configurationSnapshot.timer === "absoluteDeadline") return "active_exam";
+  if ((session.configurationSnapshot.kind === "certificationSimulation" || session.configurationSnapshot.kind === "designInterviewSimulation") && session.configurationSnapshot.timer === "absoluteDeadline") return "active_exam";
   return null;
 }
 

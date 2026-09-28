@@ -36,6 +36,9 @@ import { describeOperationalFailure } from "../../application/operationalDiagnos
 import { getTrackRoadmapCatalog } from "./trackRoadmapCatalog";
 import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
 import { resolveCertificationExamAccess } from "./certificationExamAccess";
+import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+import { getProductSimulationModeConfig } from "../../content/canonical/productModeConfig";
+import { isDesignInterviewModeId } from "../../tracks/design-interview";
 
 import {
   buildPracticeModes,
@@ -135,6 +138,10 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const codingAdmissionPendingRef = useRef(false);
   const [codingAdmissionPending, setCodingAdmissionPending] = useState(false);
   const [codingAccessUnavailable, setCodingAccessUnavailable] = useState(false);
+  const designAdmissionPendingRef = useRef(false);
+  const [designAdmissionPending, setDesignAdmissionPending] = useState(false);
+  const [designAccessUnavailable, setDesignAccessUnavailable] = useState(false);
+  const [designAdmissionMode, setDesignAdmissionMode] = useState<PracticeSessionMode | null>(null);
   const { readState, requestKey, retry } = usePracticeReadModel({
     errorFallback: t("We couldn’t load your practice options."),
     includeReviews: true,
@@ -217,6 +224,37 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       return;
     }
     if (isDesignInterviewTrack) {
+      if (isDesignInterviewModeId(resolvedMode)) {
+        if (designAdmissionPendingRef.current) return;
+        designAdmissionPendingRef.current = true;
+        setDesignAdmissionPending(true);
+        setDesignAccessUnavailable(false);
+        setDesignAdmissionMode(resolvedMode);
+        void account.authorizePremiumSessionStart()
+          .then((admission) => {
+            switch (resolveCertificationExamAccess(admission)) {
+              case "startExam": {
+                if (resolvedMode !== "design-interview-simulation") {
+                  navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source, topicId: topic.id, trackId: activeTrack.id });
+                  return;
+                }
+                const track = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).track;
+                const { profile } = getProductSimulationModeConfig(activeTrack.id, track.simulationProfiles);
+                navigation.navigate(ROUTES.DESIGN_INTERVIEW_SIMULATION, { trackId: activeTrack.id, profileId: profile.profileId });
+                return;
+              }
+              case "purchasePremium":
+                navigation.navigate(ROUTES.PREMIUM_PURCHASE);
+                return;
+              case "retryAdmission":
+                setDesignAccessUnavailable(true);
+                return;
+            }
+          })
+          .catch(() => setDesignAccessUnavailable(true))
+          .finally(() => { designAdmissionPendingRef.current = false; setDesignAdmissionPending(false); });
+        return;
+      }
       navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode as PracticeSessionMode, source, topicId: topic.id, trackId: activeTrack.id });
       return;
     }
@@ -353,6 +391,10 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                   startSession(ALGORITHM_MODE_IDS.customPractice, "practiceHub");
                   return;
                 }
+                if (isDesignInterviewTrack) {
+                  startSession(primaryMode.mode as PracticeSessionMode, "practiceHub");
+                  return;
+                }
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
@@ -388,16 +430,16 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 key={mode.mode}
                 leading={<IconTile iconSize={24} name={mode.icon} size={32} tone={mode.enabled ? (isCodingInterviewTrack ? "settings" : mode.tone) : "muted"} />}
                 onPress={mode.enabled ? () => startSession(mode.mode) : undefined}
-                disabled={(mode.mode === "certification-exam-simulation" && examAdmissionPending) || (mode.mode === ALGORITHM_MODE_IDS.interviewSimulation && codingAdmissionPending)}
+                disabled={(mode.mode === "certification-exam-simulation" && examAdmissionPending) || (mode.mode === ALGORITHM_MODE_IDS.interviewSimulation && codingAdmissionPending) || (isDesignInterviewModeId(mode.mode) && designAdmissionPending)}
                 style={[styles.modeRow, index === secondaryModes.length - 1 ? styles.modeRowLast : null, mode.enabled ? null : styles.disabledRow]}
                 testID={runtimeSelectors.practice.modeCard(mode.mode)}
                 title={t(mode.title)}
                 titleNumberOfLines={0}
                 trailing={
-                  mode.mode === "certification-exam-simulation" || mode.mode === ALGORITHM_MODE_IDS.interviewSimulation ? (
+                  mode.mode === "certification-exam-simulation" || mode.mode === ALGORITHM_MODE_IDS.interviewSimulation || isDesignInterviewModeId(mode.mode) ? (
                     <View style={styles.examModeTrailing}>
                       <Badge label={t("Premium")} tone="info" />
-                      {(mode.mode === "certification-exam-simulation" ? examAdmissionPending : codingAdmissionPending) ? (
+                      {(mode.mode === "certification-exam-simulation" ? examAdmissionPending : mode.mode === ALGORITHM_MODE_IDS.interviewSimulation ? codingAdmissionPending : designAdmissionPending) ? (
                         <ActivityIndicator accessibilityLabel={t("Checking Premium access…")} size="small" color={palette.textMuted} />
                       ) : (
                         <Icon color={palette.textMuted} name="chevron-right" size={20} />
@@ -442,6 +484,12 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               <Button onPress={() => startSession(ALGORITHM_MODE_IDS.interviewSimulation)} variant="ghost">
                 {t("Try again")}
               </Button>
+            </View>
+          ) : null}
+          {designAccessUnavailable ? (
+            <View style={styles.examAccessError}>
+              <InfoBlock accessibilityAlert body={t("We couldn't verify Premium access. Check your connection and try again.")} testID="practice-design-simulation-access-error" title={t("Premium access unavailable")} tone="warning" />
+              <Button onPress={() => designAdmissionMode && startSession(designAdmissionMode)} variant="ghost">{t("Try again")}</Button>
             </View>
           ) : null}
         </View>

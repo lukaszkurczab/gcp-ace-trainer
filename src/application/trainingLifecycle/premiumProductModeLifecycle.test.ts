@@ -10,25 +10,35 @@ const TRACK_ID = "coding-interview-dsa-problem-solving" as TrackId;
 const PROFILE_ID = "algorithms-interview-simulation-v1";
 const NOW = "2026-09-27T00:00:00.000Z";
 
-async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing" = "allowed") {
-  const track = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK_ID);
-  const questions = track.questions.slice(0, 40);
+async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing" = "allowed", requestedTrackId: TrackId = TRACK_ID) {
+  const track = (await loadCanonicalRuntimeCatalog()).getTrack(requestedTrackId);
+  const isDesign = track.trackId !== TRACK_ID;
+  const modeId = isDesign ? "design-interview-simulation" : "coding-interview-simulation";
+  const profileId = isDesign
+    ? track.simulationProfiles?.find((candidate) => candidate.modeId === modeId)?.profileId ?? (() => { throw new Error(`Design simulation profile is missing for ${track.trackId}.`); })()
+    : PROFILE_ID;
+  const questions = track.questions.slice(0, isDesign ? 1 : 40);
   const session = createTrainingSession({
     id: "mock-session",
-    trackId: TRACK_ID,
-    modeId: "coding-interview-simulation",
-    configurationSnapshot: {
+    trackId: requestedTrackId,
+    modeId,
+    configurationSnapshot: isDesign ? {
+      kind: "designInterviewSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission",
+      navigation: "free", submission: "manualOrForegroundTimeout", timer: "absoluteDeadline", timerDurationMs: 2_700_000,
+      timerDeadlineAt: "2026-09-27T00:45:00.000Z", simulationProfileId: profileId, simulationProfileVersion: "1",
+      simulationCaseId: "case", simulationCaseVersion: "1",
+    } : {
       kind: "algorithmsInterviewSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission",
       navigation: "free", submission: "manualOrForegroundTimeout", timer: "countdownForeground", timerDurationMs: 2_700_000,
-      simulationProfileId: PROFILE_ID, simulationProfileVersion: "1", simulationBlueprintId: "coding-interview-interview-simulation-v1",
-      simulationBlueprintVersion: "1", simulationPoolId: PROFILE_ID, simulationPoolVersion: "1",
+      simulationProfileId: profileId, simulationProfileVersion: "1", simulationBlueprintId: "coding-interview-interview-simulation-v1",
+      simulationBlueprintVersion: "1", simulationPoolId: profileId, simulationPoolVersion: "1",
     },
-    requestedLength: 40,
-    actualLength: 40,
+    requestedLength: questions.length,
+    actualLength: questions.length,
     currentItemIndex: 0,
     itemOrder: questions.map((question, index) => ({
       occurrenceId: `mock-session:occurrence:${index}`,
-      item: { trackId: TRACK_ID, questionId: question.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 },
+      item: { trackId: requestedTrackId, questionId: question.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 },
     })),
     optionOrderByOccurrence: {},
     conditionalReinsertSlots: [],
@@ -41,7 +51,7 @@ async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing
     startedAt: NOW,
   });
   const runtime = {
-    familyId: "coding_interview",
+    familyId: isDesign ? "design_interview" : "coding_interview",
     prepare: async () => { events.push("prepare"); return { session, firstOccurrence: session.itemOrder[0]!.item, draft: null }; },
     validateResume: async () => { events.push("validate-resume"); },
     validateDraftCommand: async () => { events.push("validate-draft"); },
@@ -51,7 +61,7 @@ async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing
     },
   } as unknown as TrainingFamilyRuntime;
   const events: string[] = [];
-  const draft = { schemaVersion: 1, draftVersion: 1, sessionId: session.id, trackId: TRACK_ID, familyId: "coding_interview", revision: 1, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: NOW };
+  const draft = { schemaVersion: 1, draftVersion: 1, sessionId: session.id, trackId: requestedTrackId, familyId: isDesign ? "design_interview" : "coding_interview", revision: 1, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: NOW };
   let active: TrainingSession | null = null;
   let resolutionCount = 0;
   let startCount = 0;
@@ -154,4 +164,66 @@ test("active Coding Mock reauthorizes before exact resolution and resume validat
   assert.equal(exactResolutions, 0);
   assert.equal(validations, 0);
   assert.deepEqual(events, ["authorize"]);
+});
+
+test("all three Design simulations require Premium before create and resume, then prepare exact profile identity", async () => {
+  const tracks = [
+    "object-oriented-design-interview",
+    "backend-system-design-interview",
+    "frontend-system-design-interview",
+  ] as TrackId[];
+  for (const trackId of tracks) {
+    const denied = await fixture("denied", trackId);
+    const deniedProfileId = denied.session.configurationSnapshot.simulationProfileId;
+    await assert.rejects(denied.lifecycle.startSession({ trackId, modeId: "design-interview-simulation", request: { scope: { simulationProfileId: deniedProfileId } } }),
+      (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "premium_entitlement_denied");
+    assert.equal(denied.startCount, 0);
+    assert.deepEqual(denied.events, ["authorize"]);
+
+    const allowed = await fixture("allowed", trackId);
+    const profileId = allowed.session.configurationSnapshot.simulationProfileId;
+    const prepared = await allowed.lifecycle.startSession({ trackId, modeId: "design-interview-simulation", request: { scope: { simulationProfileId: profileId } } });
+    assert.equal(prepared.session.trackId, trackId);
+    assert.equal(prepared.session.modeId, "design-interview-simulation");
+    assert.equal(prepared.session.configurationSnapshot.kind, "designInterviewSimulation");
+    assert.equal(prepared.session.configurationSnapshot.simulationProfileId, profileId);
+    assert.equal(prepared.session.actualLength, 1);
+    allowed.events.length = 0;
+    await allowed.lifecycle.resumeActiveSession();
+    assert.deepEqual(allowed.events, ["authorize", "resolve-exact", "validate-resume"]);
+
+    const deniedResume = await fixture("denied", trackId);
+    const active = deniedResume.session;
+    const runtime = { familyId: "design_interview", validateResume: async () => { throw new Error("Premium denial must precede validation"); } } as unknown as TrainingFamilyRuntime;
+    const track = (await loadCanonicalRuntimeCatalog()).getTrack(trackId);
+    let exactResolutionCount = 0;
+    const events: string[] = [];
+    const ports = {
+      clock: { now: () => NOW }, tracks: { getTrackRegistration },
+      packages: { resolveExactArtifact: async () => { exactResolutionCount += 1; return { track: track as CanonicalTrackRuntime, runtime }; } },
+      repositories: { getActiveSession: async () => active },
+      premiumSessionAdmission: { authorize: async () => { events.push("authorize"); return "denied"; } },
+    } as unknown as TrainingLifecyclePorts;
+    await assert.rejects(new TrainingLifecycleUseCases(ports).resumeActiveSession(),
+      (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "premium_entitlement_denied");
+    assert.equal(exactResolutionCount, 0);
+    assert.deepEqual(events, ["authorize"]);
+  }
+});
+
+test("every Design mode denies before package resolution, preparation, and session mutation", async () => {
+  const trackId = "object-oriented-design-interview" as TrackId;
+  for (const modeId of [
+    "design-interview-learn-framework",
+    "design-interview-tradeoff-practice",
+    "design-interview-weak-area-review",
+    "design-interview-simulation",
+  ]) {
+    const setup = await fixture("denied", trackId);
+    await assert.rejects(setup.lifecycle.startSession({ trackId, modeId, request: {} }),
+      (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "premium_entitlement_denied");
+    assert.equal(setup.resolutionCount, 0, `${modeId} must be denied before package resolution`);
+    assert.equal(setup.startCount, 0, `${modeId} must not mutate an active session`);
+    assert.deepEqual(setup.events, ["authorize"], `${modeId} must authorize before preparation`);
+  }
 });

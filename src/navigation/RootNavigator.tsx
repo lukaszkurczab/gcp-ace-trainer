@@ -42,6 +42,7 @@ import {
   AlgorithmsInterviewSimulationSummaryScreen,
 } from "../features/simulation/AlgorithmsInterviewSimulationResultScreen";
 import { AlgorithmsInterviewSimulationScreen } from "../features/simulation/AlgorithmsInterviewSimulationScreen";
+import { DesignInterviewSimulationReviewScreen, DesignInterviewSimulationResultScreen, DesignInterviewSimulationScreen } from "../features/simulation/DesignInterviewSimulationScreens";
 import { TopicRoadmapScreen } from "../features/practice/TopicRoadmapScreen";
 import { useAppPreferences } from "../preferences";
 import type { RootStackParamList } from "./types";
@@ -252,6 +253,9 @@ export function RootNavigator() {
             component={AlgorithmsInterviewSimulationReviewScreen}
             options={{ headerShown: false, title: t("Simulation review") }}
           />
+          <Stack.Screen name={ROUTES.DESIGN_INTERVIEW_SIMULATION} component={DesignInterviewSimulationScreen} options={{ headerShown: false, title: t("Design Interview Simulation") }} />
+          <Stack.Screen name={ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT} component={DesignInterviewSimulationResultScreen} options={{ headerShown: false, title: t("Simulation result") }} />
+          <Stack.Screen name={ROUTES.DESIGN_INTERVIEW_SIMULATION_REVIEW} component={DesignInterviewSimulationReviewScreen} options={{ headerShown: false, title: t("Simulation review") }} />
           <Stack.Screen
             name={ROUTES.MISTAKES_REVIEW}
             component={MistakesReviewScreen}
