@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { parseAllDocuments } from "yaml";
 import { AUD02D_CUSTOM_PRACTICE, AUD02D_ENTITLEMENT_SUITES, AUD02D_FEEDBACK_REFERENCES, AUD02D_TRACK_IDS, AUD02D_UDID, canonicalHash, readAud02dBindings } from "./aud02dMatrix.mjs";
+import { validateAud02dExpoManifest } from "./aud02dExpoManifest.mjs";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -35,13 +36,13 @@ test("coordinating runner binds every case to clean sources, one install, native
   const runner = await readFile(path.join(ROOT, "scripts/runAud02dIos.mjs"), "utf8");
   for (const contract of [
     "--no-dev", "--minify", "--port", "8081", "status", "origin/${branch}", "simctl", "get_app_container",
-    "CFBundleIdentifier", "CFBundleShortVersionString", "CFBundleVersion", "bundleSha256", "runCase(",
+    "CFBundleIdentifier", "CFBundleShortVersionString", "CFBundleVersion", "launchAssetSha256", "runCase(",
     "PATTERNLY_LOCAL_SMOKE_ENTITLEMENT_STATE", "startBackend(\"expired\")", "startBackend(\"active\")",
     "artifactPaths", "artifactDirectory", "backendObservations", "entitlementTransitions", "readBackendEvidence(auth)",
     "/ready", "/v1/entitlements", "maestroExecutions", "executedAssertions", "FEEDBACK_TIMING: feedbackTiming",
     "validateLocalProfile(\"smoke\"", "env: smokeEnvironment",
   ]) assert.ok(runner.includes(contract), `runner must preserve ${contract}`);
-  assert.match(runner, /before\.bundleSha256 === after\.bundleSha256/u);
+  assert.match(runner, /before\.launchAssetSha256 === after\.launchAssetSha256/u);
   assert.match(runner, /states\[0\] !== "expired" \|\| !states\.includes\("active"\)/u);
   assert.match(runner, /artifactPaths: \[\]/u);
   assert.match(runner, /Refusing to stop it|refusing to stop it/u);
@@ -63,6 +64,34 @@ test("AUD-02D validates smoke profile for Metro and owns active backend through 
   assert.match(runner, /finally \{ if \(metro\) await stopMetro\(metro\); \}/u);
   assert.match(runner, /manifest\.failure = error/u);
   assert.match(runner, /await writeFile\(path\.join\(OUTPUT_ROOT, "aud02d-manifest\.json"\)/u);
+});
+
+test("AUD-02D resolves and validates the exact local Expo iOS AppEntry launch asset", async () => {
+  const manifestUrl = "http://[::1]:8081/";
+  const launchAssetUrl = "http://[::1]:8081/node_modules/expo/AppEntry.bundle?platform=ios&dev=false&hot=false&minify=true";
+  const manifest = {
+    runtimeVersion: "exposdk:57.0.17",
+    launchAsset: { url: launchAssetUrl, contentType: "application/javascript" },
+  };
+  assert.deepEqual(validateAud02dExpoManifest(manifest, manifestUrl), {
+    runtimeVersion: "exposdk:57.0.17",
+    launchAsset: { url: launchAssetUrl, contentType: "application/javascript" },
+  });
+  for (const badUrl of [
+    launchAssetUrl.replace("AppEntry.bundle", "index.bundle"),
+    launchAssetUrl.replace("[::1]:8081", "127.0.0.1:8082"),
+    launchAssetUrl.replace("platform=ios", "platform=android"),
+    launchAssetUrl.replace("hot=false", "hot=true"),
+    launchAssetUrl.replace("minify=true", "minify=false"),
+  ]) assert.throws(() => validateAud02dExpoManifest({ ...manifest, launchAsset: { ...manifest.launchAsset, url: badUrl } }, manifestUrl));
+  assert.throws(() => validateAud02dExpoManifest({ ...manifest, runtimeVersion: "" }, manifestUrl));
+  const runner = await readFile(path.join(ROOT, "scripts/runAud02dIos.mjs"), "utf8");
+  assert.match(runner, /const METRO_ORIGIN = `http:\/\/\[::1\]:\$\{METRO_PORT\}`/u);
+  assert.match(runner, /"expo-platform": "ios"/u);
+  assert.match(runner, /accept: "application\/expo\+json, application\/json"/u);
+  assert.match(runner, /fetchBundle\(currentManifest\.launchAsset\.url\)/u);
+  assert.match(runner, /responseIdentity:[\s\S]*?sha256: hash\(bytes\)/u);
+  assert.doesNotMatch(runner, /index\.bundle/u);
 });
 
 test("AUD-02D Maestro flows cover track readiness and all setup selectors before session start", async () => {

@@ -6,6 +6,7 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { AUD02D_CUSTOM_PRACTICE, AUD02D_ENTITLEMENT_SUITES, AUD02D_FEEDBACK_REFERENCES, AUD02D_TRACK_IDS, AUD02D_UDID, canonicalHash, hash, readAud02dBindings } from "./aud02dMatrix.mjs";
+import { validateAud02dExpoManifest } from "./aud02dExpoManifest.mjs";
 import { parseDotenv, validateLocalProfile } from "./runLocalProfile.mjs";
 import { waitForContentPreparationState } from "./waitForContentPreparationState.mjs";
 
@@ -14,8 +15,8 @@ const CONTENT_ROOT = path.resolve(process.env.PATTERNLY_CONTENT_ROOT ?? path.res
 const BACKEND_ROOT = path.resolve(APP_ROOT, "../patternly-backend");
 const APP_ID = "com.lkurczab.patternly";
 const METRO_PORT = 8081;
-const BUNDLE_URL = `http://127.0.0.1:${METRO_PORT}/index.bundle?platform=ios&dev=false&minify=true`;
-const DEV_CLIENT_URL = `exp+patternly://expo-development-client/?url=${encodeURIComponent(`http://127.0.0.1:${METRO_PORT}`)}`;
+const METRO_ORIGIN = `http://[::1]:${METRO_PORT}`;
+const DEV_CLIENT_URL = `exp+patternly://expo-development-client/?url=${encodeURIComponent(METRO_ORIGIN)}`;
 const OUTPUT_ROOT = required("MAESTRO_TEST_OUTPUT_DIR");
 const [flag, suppliedUdid] = process.argv.slice(2);
 if (flag !== "--udid" || suppliedUdid?.toUpperCase() !== AUD02D_UDID) throw new Error(`Usage: MAESTRO_TEST_OUTPUT_DIR=<directory> node scripts/runAud02dIos.mjs --udid ${AUD02D_UDID}`);
@@ -29,6 +30,7 @@ let nativeApp;
 let credentials;
 let smokeEnvironment;
 let metro;
+let expoManifest;
 let sharedBackend;
 let failed = false;
 
@@ -43,6 +45,8 @@ try {
   Object.assign(manifest, { candidateId: bindings.candidateId, appLockSha256: bindings.appLockSha256, bundledContentLockSha256: bindings.bundledContentLockSha256, contentBindings: bindings.contentBindings, nativeApp, repositories: baselineRepos });
   await writeManifest();
   metro = await startOwnedMetro();
+  expoManifest = await fetchExpoManifest();
+  manifest.metro = { manifestUrl: METRO_ORIGIN, responseIdentity: expoManifest.responseIdentity, runtimeVersion: expoManifest.runtimeVersion, launchAsset: expoManifest.launchAsset };
   sharedBackend = startBackend("active");
   const sharedBackendReady = await waitForBackendReady(sharedBackend);
   const sharedAuth = await smokeAuthContext();
@@ -150,8 +154,8 @@ async function runCase(id, inputs, execute) {
     record.artifactsAfter = await inventoryArtifacts(caseDirectory);
     record.artifactPaths = record.artifactsAfter.filter(({ path: artifactPath }) => !artifactsBefore.some((prior) => prior.path === artifactPath)).map(({ path: artifactPath }) => artifactPath);
     if (record.artifactPaths.length === 0) throw new Error(`AUD-02D case ${id} created no evidence artifacts under ${caseDirectory}.`);
-    record.result = before.bundleSha256 === after.bundleSha256 ? "PASS" : "FAIL";
-    if (record.result !== "PASS") throw new Error(`AUD-02D case ${id} changed fetched iOS bundle bytes (${before.bundleSha256} -> ${after.bundleSha256}).`);
+    record.result = before.launchAssetSha256 === after.launchAssetSha256 ? "PASS" : "FAIL";
+    if (record.result !== "PASS") throw new Error(`AUD-02D case ${id} changed Expo launchAsset bytes (${before.launchAssetSha256} -> ${after.launchAssetSha256}).`);
   } catch (error) {
     record.finishedAt = new Date().toISOString();
     record.result = "FAIL";
@@ -177,10 +181,12 @@ async function caseSnapshot() {
   assertSimulatorAndInstall();
   const app = nativeAppIdentity();
   if (canonicalHash(app) !== canonicalHash(nativeApp)) throw new Error("AUD-02D native app identity changed during the RC.");
-  const bundle = await fetchBundle(BUNDLE_URL);
+  const currentManifest = await fetchExpoManifest();
+  if (canonicalHash(currentManifest) !== canonicalHash(expoManifest)) throw new Error("AUD-02D Expo manifest identity or launchAsset changed during RC.");
+  const bundle = await fetchBundle(currentManifest.launchAsset.url);
   const currentBindings = await readAud02dBindings(APP_ROOT, CONTENT_ROOT);
   if (canonicalHash(currentBindings) !== canonicalHash(bindings)) throw new Error("AUD-02D candidate, content lock, or admission evidence bytes changed during RC.");
-  return { capturedAt: new Date().toISOString(), repositories: repos, app, candidateId: bindings.candidateId, appLockSha256: bindings.appLockSha256, bundledContentLockSha256: bindings.bundledContentLockSha256, contentBindings: bindings.contentBindings, bundleSha256: hash(bundle), bundleBytes: bundle.byteLength };
+  return { capturedAt: new Date().toISOString(), repositories: repos, app, candidateId: bindings.candidateId, appLockSha256: bindings.appLockSha256, bundledContentLockSha256: bindings.bundledContentLockSha256, contentBindings: bindings.contentBindings, expoManifestIdentity: currentManifest.responseIdentity, launchAssetUrl: currentManifest.launchAsset.url, launchAssetSha256: hash(bundle), launchAssetBytes: bundle.byteLength };
 }
 
 async function repositoryState() {
@@ -256,7 +262,7 @@ async function waitForMetro(child) {
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline) {
     if (child.exitCode !== null || child.signalCode !== null) throw new Error("Owned Patternly Metro exited before bundle readiness.");
-    try { await fetchBundle(BUNDLE_URL); return; } catch { await delay(500); }
+    try { expoManifest = await fetchExpoManifest(); await fetchBundle(expoManifest.launchAsset.url); return; } catch { await delay(500); }
   }
   throw new Error("Owned Patternly Metro did not serve the iOS bundle within 90000ms.");
 }
@@ -280,6 +286,25 @@ async function waitPortClosed(timeoutMs = 10000) {
     await delay(100);
   }
   throw new Error(`Known Patternly Metro listener did not stop on port ${METRO_PORT}.`);
+}
+
+async function fetchExpoManifest() {
+  const response = await fetch(`${METRO_ORIGIN}/`, { headers: { "expo-platform": "ios", accept: "application/expo+json, application/json" }, signal: AbortSignal.timeout(5000) });
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (!response.ok) throw new Error(`Expo iOS manifest fetch failed with HTTP ${response.status}.`);
+  let body;
+  try { body = JSON.parse(bytes.toString("utf8")); }
+  catch { throw new Error("Expo iOS manifest response was not valid JSON."); }
+  const validated = validateAud02dExpoManifest(body, `${METRO_ORIGIN}/`, METRO_PORT);
+  return {
+    ...validated,
+    responseIdentity: {
+      status: response.status,
+      contentType: response.headers.get("content-type") ?? "",
+      etag: response.headers.get("etag"),
+      sha256: hash(bytes),
+    },
+  };
 }
 
 async function fetchBundle(url) {
