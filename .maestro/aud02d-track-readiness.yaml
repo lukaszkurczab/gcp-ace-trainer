@@ -61,11 +61,6 @@ tags:
     visible:
       id: "patternly:home:select-track:${TRACK_ID}"
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      id: "patternly:home:select-track:${TRACK_ID}"
-    direction: DOWN
-    centerElement: true
 - tapOn:
     id: "patternly:home:select-track:${TRACK_ID}"
 - runFlow:
