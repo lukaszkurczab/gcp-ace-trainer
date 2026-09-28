@@ -32,6 +32,8 @@ let credentials;
 let smokeEnvironment;
 let metro;
 let expoManifest;
+let expoRuntimeIdentity;
+let initialLaunchAssetSha256;
 let sharedBackend;
 let failed = false;
 
@@ -47,7 +49,9 @@ try {
   await writeManifest();
   metro = await startOwnedMetro();
   expoManifest = await fetchExpoManifest();
-  manifest.metro = { manifestUrl: METRO_ORIGIN, responseIdentity: expoManifest.responseIdentity, runtimeVersion: expoManifest.runtimeVersion, launchAsset: expoManifest.launchAsset };
+  expoRuntimeIdentity = { runtimeVersion: expoManifest.runtimeVersion, launchAsset: expoManifest.launchAsset };
+  initialLaunchAssetSha256 = hash(await fetchBundle(expoManifest.launchAsset.url));
+  manifest.metro = { manifestUrl: METRO_ORIGIN, responseIdentity: expoManifest.responseIdentity, runtimeVersion: expoManifest.runtimeVersion, launchAsset: expoManifest.launchAsset, launchAssetSha256: initialLaunchAssetSha256 };
   sharedBackend = startBackend("active");
   const sharedBackendReady = await waitForBackendReady(sharedBackend);
   const sharedAuth = await smokeAuthContext();
@@ -183,11 +187,14 @@ async function caseSnapshot() {
   const app = nativeAppIdentity();
   if (canonicalHash(app) !== canonicalHash(nativeApp)) throw new Error("AUD-02D native app identity changed during the RC.");
   const currentManifest = await fetchExpoManifest();
-  if (canonicalHash(currentManifest) !== canonicalHash(expoManifest)) throw new Error("AUD-02D Expo manifest identity or launchAsset changed during RC.");
+  const currentRuntimeIdentity = { runtimeVersion: currentManifest.runtimeVersion, launchAsset: currentManifest.launchAsset };
+  if (canonicalHash(currentRuntimeIdentity) !== canonicalHash(expoRuntimeIdentity)) throw new Error("AUD-02D Expo runtimeVersion or launchAsset changed during RC.");
   const bundle = await fetchBundle(currentManifest.launchAsset.url);
+  const launchAssetSha256 = hash(bundle);
+  if (launchAssetSha256 !== initialLaunchAssetSha256) throw new Error(`AUD-02D Expo launchAsset bytes changed during the RC (${initialLaunchAssetSha256} -> ${launchAssetSha256}).`);
   const currentBindings = await readAud02dBindings(APP_ROOT, CONTENT_ROOT);
   if (canonicalHash(currentBindings) !== canonicalHash(bindings)) throw new Error("AUD-02D candidate, content lock, or admission evidence bytes changed during RC.");
-  return { capturedAt: new Date().toISOString(), repositories: repos, app, candidateId: bindings.candidateId, appLockSha256: bindings.appLockSha256, bundledContentLockSha256: bindings.bundledContentLockSha256, contentBindings: bindings.contentBindings, expoManifestIdentity: currentManifest.responseIdentity, launchAssetUrl: currentManifest.launchAsset.url, launchAssetSha256: hash(bundle), launchAssetBytes: bundle.byteLength };
+  return { capturedAt: new Date().toISOString(), repositories: repos, app, candidateId: bindings.candidateId, appLockSha256: bindings.appLockSha256, bundledContentLockSha256: bindings.bundledContentLockSha256, contentBindings: bindings.contentBindings, expoManifestResponseIdentity: currentManifest.responseIdentity, launchAssetUrl: currentManifest.launchAsset.url, launchAssetSha256, launchAssetBytes: bundle.byteLength };
 }
 
 async function repositoryState() {

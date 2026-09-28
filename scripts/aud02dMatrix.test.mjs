@@ -44,6 +44,12 @@ test("coordinating runner binds every case to clean sources, one install, native
     "validateLocalProfile(\"smoke\"", "env: smokeEnvironment",
   ]) assert.ok(runner.includes(contract), `runner must preserve ${contract}`);
   assert.match(runner, /before\.launchAssetSha256 === after\.launchAssetSha256/u);
+  assert.match(runner, /initialLaunchAssetSha256 = hash\(await fetchBundle\(expoManifest\.launchAsset\.url\)\)/u);
+  assert.match(runner, /launchAssetSha256 !== initialLaunchAssetSha256/u);
+  assert.match(runner, /currentRuntimeIdentity = \{ runtimeVersion: currentManifest\.runtimeVersion, launchAsset: currentManifest\.launchAsset \}/u);
+  assert.match(runner, /canonicalHash\(currentRuntimeIdentity\) !== canonicalHash\(expoRuntimeIdentity\)/u);
+  assert.doesNotMatch(runner, /canonicalHash\(currentManifest\)/u);
+  assert.match(runner, /expoManifestResponseIdentity: currentManifest\.responseIdentity/u);
   assert.match(runner, /states\[0\] !== "expired" \|\| !states\.includes\("active"\)/u);
   assert.match(runner, /artifactPaths: \[\]/u);
   assert.match(runner, /Refusing to stop it|refusing to stop it/u);
@@ -86,12 +92,23 @@ test("AUD-02D resolves and validates the exact local Expo iOS AppEntry launch as
     launchAssetUrl.replace("minify=true", "minify=false"),
   ]) assert.throws(() => validateAud02dExpoManifest({ ...manifest, launchAsset: { ...manifest.launchAsset, url: badUrl } }, manifestUrl));
   assert.throws(() => validateAud02dExpoManifest({ ...manifest, runtimeVersion: "" }, manifestUrl));
+  assert.throws(() => validateAud02dExpoManifest({ ...manifest, launchAsset: { ...manifest.launchAsset, contentType: "application/json" } }, manifestUrl));
+  assert.notDeepEqual(
+    { runtimeVersion: manifest.runtimeVersion, launchAsset: manifest.launchAsset },
+    { runtimeVersion: "exposdk:57.0.18", launchAsset: manifest.launchAsset },
+  );
+  assert.notDeepEqual(
+    { runtimeVersion: manifest.runtimeVersion, launchAsset: manifest.launchAsset },
+    { runtimeVersion: manifest.runtimeVersion, launchAsset: { ...manifest.launchAsset, contentType: "application/json" } },
+  );
   const runner = await readFile(path.join(ROOT, "scripts/runAud02dIos.mjs"), "utf8");
   assert.match(runner, /const METRO_ORIGIN = `http:\/\/\[::1\]:\$\{METRO_PORT\}`/u);
   assert.match(runner, /"expo-platform": "ios"/u);
   assert.match(runner, /accept: "application\/expo\+json, application\/json"/u);
   assert.match(runner, /fetchBundle\(currentManifest\.launchAsset\.url\)/u);
   assert.match(runner, /responseIdentity:[\s\S]*?sha256: hash\(bytes\)/u);
+  assert.match(runner, /responseIdentity: expoManifest\.responseIdentity/u);
+  assert.match(runner, /launchAssetSha256 !== initialLaunchAssetSha256/u);
   assert.doesNotMatch(runner, /index\.bundle/u);
 });
 
