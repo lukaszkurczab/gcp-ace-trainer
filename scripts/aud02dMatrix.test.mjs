@@ -320,31 +320,56 @@ test("all new AUD-02D Maestro YAML documents parse and contain executable assert
     assert.ok(Array.isArray(commands), `${relativePath} must be an executable command list`);
     assert.ok(commands.some((command) => ["assertVisible", "assertNotVisible", "extendedWaitUntil"].some((key) => key in command)), `${relativePath} must contain executable assertions/waits`);
     if (relativePath === ".maestro/aud02d-track-readiness.yaml") {
-      const continueTaps = [];
+      const selectorSequences = [];
       function inspectSequence(sequence) {
-        sequence.forEach((command, index) => {
-          if (command.tapOn?.id === "patternly:home:select-track:continue") {
-            continueTaps.push({ command, preceding: sequence[index - 1] });
+        const warningIndex = sequence.findIndex((command) => command.runFlow?.when?.visible === ".*Open debugger to view warnings.*");
+        if (warningIndex >= 0) selectorSequences.push(sequence.slice(warningIndex + 1));
+        sequence.forEach((command) => {
+          const commands = command.runFlow?.commands;
+          if (Array.isArray(commands)) {
+            inspectSequence(commands);
           }
-          if (Array.isArray(command.runFlow?.commands)) inspectSequence(command.runFlow.commands);
         });
       }
       inspectSequence(commands);
-      assert.equal(continueTaps.length, 2, "track readiness must guard both Continue taps");
-      const warningDismissal = {
+      assert.equal(selectorSequences.length, 2, "both selector branches must stabilize selection idempotently");
+      const continueGuard = {
         runFlow: {
-          when: { visible: ".*Open debugger to view warnings.*" },
+          when: { visible: { id: "patternly:home:select-track:continue" } },
           commands: [
-            { tapOn: { point: "92%,93%" } },
-            { extendedWaitUntil: { notVisible: ".*Open debugger to view warnings.*", timeout: 5000 } },
+            { tapOn: { id: "patternly:home:select-track:continue" } },
+            { extendedWaitUntil: { notVisible: { id: "patternly:home:select-track:root" }, timeout: 30000 } },
           ],
         },
       };
-      assert.deepEqual(continueTaps.map(({ preceding }) => preceding), [warningDismissal, warningDismissal]);
-      assert.deepEqual(continueTaps.map(({ command }) => command), [
-        { tapOn: { id: "patternly:home:select-track:continue" } },
-        { tapOn: { id: "patternly:home:select-track:continue" } },
+      const selectorBackGuard = {
+        runFlow: {
+          when: { visible: { id: "patternly:home:select-track:root" } },
+          commands: [{ tapOn: "Go back" }],
+        },
+      };
+      assert.deepEqual(selectorSequences.map((sequence) => sequence.slice(0, 2)), [
+        [continueGuard, selectorBackGuard],
+        [continueGuard, selectorBackGuard],
       ]);
+      assert.equal(selectorSequences.filter((sequence) => sequence.length === 2).length, 1, "nested selector branch must end after the two guarded actions");
+      const resumedFlow = selectorSequences.find((sequence) => sequence.length > 2);
+      assert.deepEqual(resumedFlow[2], {
+        extendedWaitUntil: { visible: { id: "patternly:home:track-card:${TRACK_ID}" }, timeout: 30000 },
+      });
+      assert.ok(commands.some((command) => command.extendedWaitUntil?.visible?.id === "patternly:home:track-card:${TRACK_ID}"));
+      assert.ok(commands.some((command) => command.extendedWaitUntil?.visible?.id === "patternly:practice:hub:root"));
+      assert.ok(commands.some((command) => command.assertVisible?.id === "patternly:practice:open-setup"));
+      function assertGoBackGuarded(sequence, selectorRootGuarded = false) {
+        for (const command of sequence) {
+          assert.notEqual(command.tapOn === "Go back" && !selectorRootGuarded, true, "Go back must only run under a visible selector-root guard");
+          if (Array.isArray(command.runFlow?.commands)) {
+            const guarded = command.runFlow.when?.visible?.id === "patternly:home:select-track:root";
+            assertGoBackGuarded(command.runFlow.commands, guarded);
+          }
+        }
+      }
+      assertGoBackGuarded(commands);
     }
     if (relativePath === ".maestro/rc-certification-exam-free.yaml") {
       const selectionIndex = commands.findIndex((command, index) =>

@@ -26,8 +26,23 @@ tags:
             - extendedWaitUntil:
                 notVisible: ".*Open debugger to view warnings.*"
                 timeout: 5000
-      - tapOn:
-          id: "patternly:home:select-track:continue"
+      - runFlow:
+          when:
+            visible:
+              id: "patternly:home:select-track:continue"
+          commands:
+            - tapOn:
+                id: "patternly:home:select-track:continue"
+            - extendedWaitUntil:
+                notVisible:
+                  id: "patternly:home:select-track:root"
+                timeout: 30000
+      - runFlow:
+          when:
+            visible:
+              id: "patternly:home:select-track:root"
+          commands:
+            - tapOn: "Go back"
 - runFlow:
     when:
       visible:
@@ -62,8 +77,23 @@ tags:
       - extendedWaitUntil:
           notVisible: ".*Open debugger to view warnings.*"
           timeout: 5000
-- tapOn:
-    id: "patternly:home:select-track:continue"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:home:select-track:continue"
+    commands:
+      - tapOn:
+          id: "patternly:home:select-track:continue"
+      - extendedWaitUntil:
+          notVisible:
+            id: "patternly:home:select-track:root"
+          timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: "patternly:home:select-track:root"
+    commands:
+      - tapOn: "Go back"
 - extendedWaitUntil:
     visible:
       id: "patternly:home:track-card:${TRACK_ID}"
