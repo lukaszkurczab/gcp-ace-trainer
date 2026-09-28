@@ -6,7 +6,7 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { AUD02D_CUSTOM_PRACTICE, AUD02D_ENTITLEMENT_SUITES, AUD02D_FEEDBACK_REFERENCES, AUD02D_TRACK_IDS, AUD02D_UDID, canonicalHash, hash, readAud02dBindings } from "./aud02dMatrix.mjs";
-import { parseDotenv } from "./runLocalProfile.mjs";
+import { parseDotenv, validateLocalProfile } from "./runLocalProfile.mjs";
 import { waitForContentPreparationState } from "./waitForContentPreparationState.mjs";
 
 const APP_ROOT = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
@@ -22,17 +22,34 @@ if (flag !== "--udid" || suppliedUdid?.toUpperCase() !== AUD02D_UDID) throw new 
 await mkdir(OUTPUT_ROOT, { recursive: true });
 let activeCaseDirectory = OUTPUT_ROOT;
 let activeCaseRecord;
-
-const bindings = await readAud02dBindings(APP_ROOT, CONTENT_ROOT);
-const baselineRepos = await repositoryState();
-assertSimulatorAndInstall();
-const nativeApp = nativeAppIdentity();
-const credentials = loadCredentials();
-const metro = await startOwnedMetro();
-const manifest = { schemaVersion: "patternly-aud02d-local-rc-v1", candidateId: bindings.candidateId, appLockSha256: bindings.appLockSha256, bundledContentLockSha256: bindings.bundledContentLockSha256, contentBindings: bindings.contentBindings, udid: AUD02D_UDID, nativeApp, repositories: baselineRepos, cases: [] };
+const manifest = { schemaVersion: "patternly-aud02d-local-rc-v1", udid: AUD02D_UDID, cases: [] };
+let bindings;
+let baselineRepos;
+let nativeApp;
+let credentials;
+let smokeEnvironment;
+let metro;
+let sharedBackend;
 let failed = false;
 
 try {
+  bindings = await readAud02dBindings(APP_ROOT, CONTENT_ROOT);
+  baselineRepos = await repositoryState();
+  assertSimulatorAndInstall();
+  nativeApp = nativeAppIdentity();
+  smokeEnvironment = loadSmokeEnvironment();
+  credentials = Object.fromEntries(["EXPO_PUBLIC_PATTERNLY_E2E_EMAIL", "EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD"].map((key) => [key, smokeEnvironment[key]]));
+  if (Object.values(credentials).some((value) => typeof value !== "string" || !value.trim())) throw new Error(".env.smoke.local must define the local E2E account credentials.");
+  Object.assign(manifest, { candidateId: bindings.candidateId, appLockSha256: bindings.appLockSha256, bundledContentLockSha256: bindings.bundledContentLockSha256, contentBindings: bindings.contentBindings, nativeApp, repositories: baselineRepos });
+  await writeManifest();
+  metro = await startOwnedMetro();
+  sharedBackend = startBackend("active");
+  const sharedBackendReady = await waitForBackendReady(sharedBackend);
+  const sharedAuth = await smokeAuthContext();
+  const sharedObservation = await readBackendEvidence(sharedAuth);
+  if (!sharedObservation || sharedObservation.entitlement.state !== "active") throw new Error("The AUD-02D shared backend did not expose observed active Premium entitlement before runtime cases.");
+  manifest.sharedBackend = { startupReadiness: sharedBackendReady, startupEntitlement: sharedObservation };
+  await writeManifest();
   await launchBundledApp();
   for (const trackId of AUD02D_TRACK_IDS) {
     await runCase(`track-readiness-${trackId}`, {
@@ -64,6 +81,10 @@ try {
     });
   }
 
+  await stopBackend(sharedBackend);
+  sharedBackend = undefined;
+  await waitForPortAvailable();
+
   for (const suite of AUD02D_ENTITLEMENT_SUITES) {
     await runCase(`premium-suite-${suite.id}`, {
       tracks: suite.tracks,
@@ -81,7 +102,8 @@ try {
   manifest.finishedAt = new Date().toISOString();
   manifest.finalCanonicalSha256 = canonicalHash({ ...manifest, finalCanonicalSha256: undefined });
   await writeFile(path.join(OUTPUT_ROOT, "aud02d-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
-  await stopMetro(metro);
+  try { if (sharedBackend) await stopBackend(sharedBackend); }
+  finally { if (metro) await stopMetro(metro); }
   if (failed) process.exitCode = 1;
 }
 
@@ -114,6 +136,13 @@ async function runCase(id, inputs, execute) {
   activeCaseDirectory = caseDirectory;
   activeCaseRecord = record;
   try {
+    if (sharedBackend) {
+      const observation = await readBackendEvidence(await smokeAuthContext());
+      if (!observation || observation.entitlement.state !== "active") throw new Error(`AUD-02D shared active backend is unavailable before case ${id}.`);
+      observation.phase = "shared-active-case-start";
+      record.backendObservations.push(observation);
+      record.entitlementTransitions.push({ observedAt: observation.observedAt, phase: observation.phase, state: observation.entitlement.state, source: observation.entitlement.source });
+    }
     await execute(record);
     const after = await caseSnapshot();
     record.finishedAt = new Date().toISOString();
@@ -200,7 +229,7 @@ async function startOwnedMetro() {
     process.kill(listener, "SIGTERM");
     await waitPortClosed();
   }
-  const child = spawn("npx", ["expo", "start", "--localhost", "--no-dev", "--minify", "--port", String(METRO_PORT)], { cwd: APP_ROOT, detached: process.platform !== "win32", stdio: ["ignore", "pipe", "pipe"], env: process.env });
+  const child = spawn("npx", ["expo", "start", "--localhost", "--no-dev", "--minify", "--port", String(METRO_PORT)], { cwd: APP_ROOT, detached: process.platform !== "win32", stdio: ["ignore", "pipe", "pipe"], env: smokeEnvironment });
   child.stdout.setEncoding("utf8").on("data", (chunk) => process.stdout.write(chunk));
   child.stderr.setEncoding("utf8").on("data", (chunk) => process.stderr.write(chunk));
   try { await waitForMetro(child); return child; }
@@ -434,7 +463,7 @@ function probePort(port) {
 }
 
 function caseEnvironment() {
-  return { ...process.env, PATTERNLY_DEV_CLIENT_URL: DEV_CLIENT_URL, MAESTRO_TEST_OUTPUT_DIR: activeCaseDirectory };
+  return { ...smokeEnvironment, PATTERNLY_DEV_CLIENT_URL: DEV_CLIENT_URL, MAESTRO_TEST_OUTPUT_DIR: activeCaseDirectory };
 }
 
 async function maestro(flow, variables = {}) {
@@ -444,7 +473,7 @@ async function maestro(flow, variables = {}) {
   args.push(flow);
   const assertions = await collectFlowAssertions(flow);
   if (assertions.length === 0) throw new Error(`AUD-02D flow ${flow} has no executable Maestro assertions.`);
-  await streamProcess("maestro", args, { cwd: APP_ROOT, env: { ...process.env, ...credentials } }, `Maestro flow ${flow} failed.`);
+  await streamProcess("maestro", args, { cwd: APP_ROOT, env: { ...smokeEnvironment, ...credentials } }, `Maestro flow ${flow} failed.`);
   activeCaseRecord?.maestroExecutions.push({ flow, exitCode: 0, executedAssertions: assertions.map((assertion) => ({ ...assertion, passed: true })) });
 }
 
@@ -529,13 +558,11 @@ async function inventoryArtifacts(directory) {
   return output.sort((left, right) => left.path.localeCompare(right.path));
 }
 
-function loadCredentials() {
+function loadSmokeEnvironment() {
   let profile;
   try { profile = parseDotenv(readFileSync(path.join(APP_ROOT, ".env.smoke.local"), "utf8")); }
   catch { throw new Error("AUD-02D requires local smoke credentials in .env.smoke.local."); }
-  const result = Object.fromEntries(["EXPO_PUBLIC_PATTERNLY_E2E_EMAIL", "EXPO_PUBLIC_PATTERNLY_E2E_PASSWORD"].map((key) => [key, profile[key]]));
-  if (Object.values(result).some((value) => typeof value !== "string" || !value.trim())) throw new Error(".env.smoke.local must define the local E2E account credentials.");
-  return result;
+  return validateLocalProfile("smoke", { ...process.env, ...profile });
 }
 
 async function writeManifest() {

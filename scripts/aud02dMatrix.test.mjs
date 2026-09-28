@@ -39,12 +39,30 @@ test("coordinating runner binds every case to clean sources, one install, native
     "PATTERNLY_LOCAL_SMOKE_ENTITLEMENT_STATE", "startBackend(\"expired\")", "startBackend(\"active\")",
     "artifactPaths", "artifactDirectory", "backendObservations", "entitlementTransitions", "readBackendEvidence(auth)",
     "/ready", "/v1/entitlements", "maestroExecutions", "executedAssertions", "FEEDBACK_TIMING: feedbackTiming",
+    "validateLocalProfile(\"smoke\"", "env: smokeEnvironment",
   ]) assert.ok(runner.includes(contract), `runner must preserve ${contract}`);
   assert.match(runner, /before\.bundleSha256 === after\.bundleSha256/u);
   assert.match(runner, /states\[0\] !== "expired" \|\| !states\.includes\("active"\)/u);
   assert.match(runner, /artifactPaths: \[\]/u);
   assert.match(runner, /Refusing to stop it|refusing to stop it/u);
   assert.equal(canonicalHash({ b: 2, a: 1 }), canonicalHash({ a: 1, b: 2 }));
+});
+
+test("AUD-02D validates smoke profile for Metro and owns active backend through pre-premium runtime cases", async () => {
+  const runner = await readFile(path.join(ROOT, "scripts/runAud02dIos.mjs"), "utf8");
+  const profile = await readFile(path.join(ROOT, "scripts/runLocalProfile.mjs"), "utf8");
+  assert.match(runner, /smokeEnvironment = loadSmokeEnvironment\(\)/u);
+  assert.match(runner, /return validateLocalProfile\("smoke", \{ \.\.\.process\.env, \.\.\.profile \}\)/u);
+  assert.match(runner, /env: smokeEnvironment/u);
+  assert.match(profile, /EXPO_NO_DOTENV: "1"/u);
+  assert.match(runner, /sharedBackend = startBackend\("active"\)/u);
+  assert.match(runner, /sharedBackendReady = await waitForBackendReady\(sharedBackend\)/u);
+  assert.match(runner, /startupEntitlement: sharedObservation/u);
+  assert.ok(runner.indexOf('sharedBackend = startBackend("active")') < runner.indexOf("await launchBundledApp()"));
+  assert.ok(runner.indexOf("await waitForPortAvailable();") < runner.indexOf("for (const suite of AUD02D_ENTITLEMENT_SUITES)"));
+  assert.match(runner, /finally \{ if \(metro\) await stopMetro\(metro\); \}/u);
+  assert.match(runner, /manifest\.failure = error/u);
+  assert.match(runner, /await writeFile\(path\.join\(OUTPUT_ROOT, "aud02d-manifest\.json"\)/u);
 });
 
 test("AUD-02D Maestro flows cover track readiness and all setup selectors before session start", async () => {
