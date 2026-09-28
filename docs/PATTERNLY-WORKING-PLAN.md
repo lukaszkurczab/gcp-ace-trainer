@@ -47,8 +47,7 @@ SHA są punktem orientacyjnym porządków, nie kandydatem release. Przed każdym
 
 | Obszar | Status | Potwierdzona luka |
 | --- | --- | --- |
-| Stare audyty UI/session | `partial` | AUD-02A–C są odebrane na aktualnym kodzie. AUD-02D oraz AUD-15 nadal wymagają własnych końcowych scenariuszy lokalnych. |
-| Premium-only learning paths | `implemented / final RC pending` | `Exam`, `Coding Mock Interview` i cała rodzina `Design Interview` mają odebraną jawną regułę Premium oraz kompletne lokalne RC; AUD-02D pozostaje wspólną końcową bramką. |
+| Stare audyty UI/session | `partial` | AUD-15 nadal wymaga własnych końcowych scenariuszy lokalnych. Seria AUD-02 została zamknięta decyzją właściciela i nie wraca do aktywnej kolejki. |
 | Recovery/reissue autoryzacji | `partial` | Backendowe fundamenty i polityka e-maila po niejednoznacznym wyniku SMTP są ustalone; pozostają operacje B2–B4. |
 | Kanał operatorski | `partial` | B1 jest wykonane; brakuje endpointów, CLI i syntetycznego odbioru end-to-end. |
 
@@ -65,7 +64,6 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 02f | UI-26-12 — nawigacja i źródła w Exam Review | `planned` | aktualny flow Exam result/review | Usunąć podwójny nagłówek i top inset, rozróżnić powrót do wyników od poprzedniego pytania oraz zapewnić działający link źródłowy także dla `Unanswered`. |
 | 04 | UI-26-02B — implementacja pierwszego użycia providerów | `blocking` | autoryzowana tożsamość testowa Apple/Google albo pełny fixture emulator-auth dla runtime mapped/new/isolation | Implementacja i testy są gotowe w nazwanych stashach obu repo; brakuje zintegrowanego runtime mapped-existing, unmapped-provisional i Guest A → account B isolation. |
 | 12 | AUD-15 — odpowiedzi i review | `partial` | odseparowany fixture multi/partial | Single correct/incorrect i semantyka są potwierdzone na aktualnym iPhonie 17 Simulator; brakuje runtime multi/partial i pełnej macierzy dużego tekstu bez zapisu do chronionego profilu. VoiceOver nie należy do odbioru. |
-| 14d | AUD-02D — dziewięć tracków i RC local flow | `planned` | AUD-02A–C; aktualny content lock; fixture sesji | Jeden przypięty build i końcowy lokalny flow dziewięciu tracków z dowodem Free-denied/Premium-allowed dla trzech ścieżek Premium. |
 | 16 | AUD-08-B2 — recovery/reissue operations | `planned` | zatwierdzona polityka e-mailowa AUD-08-DEC | Trwałe operacje, status i reconciliation bez automatycznego powtarzania niepewnego skutku. |
 | 17 | AUD-08-B3 — mobile ACK i resume | `planned` | AUD-08-B2 | Restart i utracona odpowiedź nie zużywają operacji bez możliwości wznowienia. |
 | 18 | AUD-08-B4 — macierz awarii | `planned` | AUD-08-B3 | Failure injection i Maestro na jednym iPhonie 17. |
@@ -176,12 +174,11 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 - **Warunek zakończenia:** rzeczywisty ekran na jednym istniejącym iPhonie 17 potwierdza jeden nagłówek, prawidłowe odstępy, trzy różne znaczenia akcji (`Back to results`, `Previous`, `Next`) oraz działające źródło w `Unanswered`; niezależne QA wydaje PASS.
 - **Prompt wykonawczy:** „Sprawdź aktualny diff `ExamReviewScreen` i nie cofaj obsługi Exam/Unanswered. Usuń podwójnego właściciela nagłówka/top safe-area lokalnie dla `EXAM_REVIEW`, pozostaw jeden działający `Back to results`, zmień nawigację pytań na `Previous`/`Next` i użyj kanonicznej obsługi źródeł także dla `Unanswered`. Zachowaj Reason, kompletne Details, scoring, kolejność, wynik i wszystkie inne rodzaje review. Zweryfikuj dokładny URL i jawną awarię otwarcia na istniejącym iPhonie 17.”
 
-### AUD-15 / AUD-02
+### AUD-15
 
 | ID | Cel i zakres | Akceptacja i weryfikacja | Ryzyko / report |
 | --- | --- | --- | --- |
 | AUD-15 | Single/multi, correct/incorrect/partial, review, standard/duży tekst po usunięciu badge. | Hierarchia, wyróżnienie kart, semantyka i screenshoty wszystkich stanów. VoiceOver jest poza odbiorem. | `PARTIAL`: istniejące próby pokrywają tylko single correct/incorrect. Potrzebny odseparowany fixture multi/partial bez modyfikacji chronionego profilu. `docs/active/AUD-15/REPORT.md`. |
-| AUD-02D | Driver-form values i końcowy lokalny RC dla dziewięciu tracków oraz obu feedbacków; aktualny JS/native build przypięty do source SHA. | Preflight, manifest, pełny flow oraz wspólny dowód Free-denied/Premium-allowed dla Exam, Coding Mock i Design Interview; brak zależności od realnego sklepu. | Nie mieszać z publikacją kandydata. Raport zbiorczy: `docs/active/AUD-02/REPORT.md`. |
 
 Każdy wykonawca ma ponownie sprawdzić aktualne wejścia i usunąć z własnego scope elementy już działające. Weryfikacja jest wąska dla poprawki, ale runtime matrix musi pokrywać całe kryterium danego audytu.
 
@@ -240,4 +237,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**AUD-02D — dziewięć tracków i RC local flow** jest pierwszym następnym zadaniem. Użyć odebranych kontraktów AUD-02A–C, aktualnego content locku i jednego przypiętego buildu, aby wykonać zbiorczy lokalny flow dziewięciu tracków, obu feedbacków oraz wspólny dowód Free-denied/Premium-allowed dla Exam, Coding Mock i Design Interview. `UI-26-02B` pozostaje `blocking` na runtime providerów albo pełny fixture. `AUD-15`, `UI-26-07`, `UI-26-08`, `UI-26-09` i `UI-26-11` są `partial`; nie odtwarzać ich implementacji, tylko wznowić zachowane diffy, domknąć wskazane bramki niezwiązane z VoiceOver i ponowić niezależne QA. VoiceOver nie jest kryterium ani blockerem żadnego z tych zadań.
+**UI-26-07 — hierarchia ekranu niedostępnych danych** jest pierwszym następnym zadaniem. Wznowić zachowany diff, sprawdzić go względem aktualnego kodu i ponowić niezależne QA bez VoiceOver. `UI-26-02B` pozostaje `blocking` na runtime providerów albo pełny fixture. `AUD-15`, `UI-26-08`, `UI-26-09` i `UI-26-11` są `partial`; nie odtwarzać ich implementacji, tylko wznowić zachowane diffy i domknąć wskazane bramki niezwiązane z VoiceOver. Seria AUD-02 została definitywnie zamknięta decyzją właściciela; nie przywracać jej do kolejki ani nie przedstawiać przerwanego końcowego RC jako pełnego PASS.
