@@ -17,6 +17,15 @@ tags:
           centerElement: true
       - tapOn:
           id: "patternly:home:select-track:${TRACK_ID}"
+      - runFlow:
+          when:
+            visible: ".*Open debugger to view warnings.*"
+          commands:
+            - tapOn:
+                point: "92%,93%"
+            - extendedWaitUntil:
+                notVisible: ".*Open debugger to view warnings.*"
+                timeout: 5000
       - tapOn:
           id: "patternly:home:select-track:continue"
 - runFlow:
@@ -44,9 +53,17 @@ tags:
     centerElement: true
 - tapOn:
     id: "patternly:home:select-track:${TRACK_ID}"
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+      - extendedWaitUntil:
+          notVisible: ".*Open debugger to view warnings.*"
+          timeout: 5000
 - tapOn:
     id: "patternly:home:select-track:continue"
-    retryTapIfNoChange: true
 - extendedWaitUntil:
     visible:
       id: "patternly:home:track-card:${TRACK_ID}"

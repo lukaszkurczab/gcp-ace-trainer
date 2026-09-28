@@ -318,5 +318,32 @@ test("all new AUD-02D Maestro YAML documents parse and contain executable assert
     const commands = documents[1].toJSON();
     assert.ok(Array.isArray(commands), `${relativePath} must be an executable command list`);
     assert.ok(commands.some((command) => ["assertVisible", "assertNotVisible", "extendedWaitUntil"].some((key) => key in command)), `${relativePath} must contain executable assertions/waits`);
+    if (relativePath === ".maestro/aud02d-track-readiness.yaml") {
+      const continueTaps = [];
+      function inspectSequence(sequence) {
+        sequence.forEach((command, index) => {
+          if (command.tapOn?.id === "patternly:home:select-track:continue") {
+            continueTaps.push({ command, preceding: sequence[index - 1] });
+          }
+          if (Array.isArray(command.runFlow?.commands)) inspectSequence(command.runFlow.commands);
+        });
+      }
+      inspectSequence(commands);
+      assert.equal(continueTaps.length, 2, "track readiness must guard both Continue taps");
+      const warningDismissal = {
+        runFlow: {
+          when: { visible: ".*Open debugger to view warnings.*" },
+          commands: [
+            { tapOn: { point: "92%,93%" } },
+            { extendedWaitUntil: { notVisible: ".*Open debugger to view warnings.*", timeout: 5000 } },
+          ],
+        },
+      };
+      assert.deepEqual(continueTaps.map(({ preceding }) => preceding), [warningDismissal, warningDismissal]);
+      assert.deepEqual(continueTaps.map(({ command }) => command), [
+        { tapOn: { id: "patternly:home:select-track:continue" } },
+        { tapOn: { id: "patternly:home:select-track:continue" } },
+      ]);
+    }
   }
 });
