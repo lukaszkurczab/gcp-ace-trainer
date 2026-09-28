@@ -30,3 +30,25 @@ test("AUD-02C flows prove Free denial, durable resume, manual result, timeout re
   assert.match(timeoutResult, /result:\.\*[\s\S]*Complete[\s\S]*Review responses[\s\S]*Self-assessment reference/);
   assert.doesNotMatch(`${premium}\n${timeoutResult}`, /assertVisible: "Score"/);
 });
+
+test("AUD-02C premium and timeout flows preserve each response before saved status without keyboard commands", () => {
+  for (const [flowName, flow] of [["premium", premium], ["timeout", timeout]] as const) {
+    assert.doesNotMatch(flow, /^\s*-\s*hideKeyboard\s*$/m, `${flowName} flow must not hide the keyboard`);
+
+    for (const stage of ["requirements", "architecture", "tradeoffs", "final_answer"] as const) {
+      const stageStart = flow.indexOf(`- tapOn:\n    id: "patternly:design-simulation:response:.*:${stage}"`);
+      assert.notEqual(stageStart, -1, `${flowName} flow is missing ${stage}`);
+      const nextStageStart = flow.indexOf("\n- tapOn:", stageStart + 1);
+      const stageEnd = nextStageStart === -1 ? flow.length : nextStageStart;
+      const stageSequence = flow.slice(stageStart, stageEnd);
+      const inputIndex = stageSequence.indexOf("- inputText:");
+      const savedScrollIndex = stageSequence.indexOf('id: "patternly:design-simulation:save-status:.*:saved"');
+      const savedWaitIndex = stageSequence.indexOf("- extendedWaitUntil:", savedScrollIndex);
+
+      assert.ok(inputIndex > 0, `${flowName} ${stage} needs inputText after its response field`);
+      assert.ok(savedScrollIndex > inputIndex, `${flowName} ${stage} needs a saved-status scroll after inputText`);
+      assert.ok(savedWaitIndex > savedScrollIndex, `${flowName} ${stage} needs a saved-status wait after the scroll`);
+      assert.match(stageSequence.slice(savedWaitIndex), /visible:[\s\S]*?id: "patternly:design-simulation:save-status:\.\*:saved"/);
+    }
+  }
+});

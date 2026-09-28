@@ -69,7 +69,6 @@ tags:
 - tapOn:
     id: "patternly:design-simulation:response:.*:requirements"
 - inputText: "Clarify scale, consistency, latency, and key user journeys."
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: "patternly:design-simulation:save-status:.*:saved"
@@ -99,7 +98,6 @@ tags:
 - tapOn:
     id: "patternly:design-simulation:response:.*:architecture"
 - inputText: "Use stateless API nodes, a durable event log, and partitioned storage."
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: "patternly:design-simulation:save-status:.*:saved"
@@ -115,7 +113,6 @@ tags:
 - tapOn:
     id: "patternly:design-simulation:response:.*:tradeoffs"
 - inputText: "Partitioning improves throughput but adds ordering and hot-key complexity."
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: "patternly:design-simulation:save-status:.*:saved"
@@ -131,7 +128,6 @@ tags:
 - tapOn:
     id: "patternly:design-simulation:response:.*:final_answer"
 - inputText: "Start with clear boundaries, measure load, then scale the constrained tier."
-- hideKeyboard
 - scrollUntilVisible:
     element:
       id: "patternly:design-simulation:save-status:.*:saved"
