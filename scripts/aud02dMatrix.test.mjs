@@ -309,6 +309,7 @@ test("all new AUD-02D Maestro YAML documents parse and contain executable assert
     ...AUD02D_FEEDBACK_REFERENCES,
     ".maestro/aud02d-track-readiness.yaml",
     ".maestro/aud02d-custom-practice-configuration.yaml",
+    ".maestro/rc-certification-exam-free.yaml",
   ];
   for (const relativePath of flows) {
     const source = await readFile(path.join(ROOT, relativePath), "utf8");
@@ -344,6 +345,27 @@ test("all new AUD-02D Maestro YAML documents parse and contain executable assert
         { tapOn: { id: "patternly:home:select-track:continue" } },
         { tapOn: { id: "patternly:home:select-track:continue" } },
       ]);
+    }
+    if (relativePath === ".maestro/rc-certification-exam-free.yaml") {
+      const selectionIndex = commands.findIndex((command, index) =>
+        index > 0 && commands[index - 1].tapOn?.id === "patternly:home:select-track:google-cloud-associate-cloud-engineer",
+      );
+      assert.ok(selectionIndex >= 0, "RC flow must select the GCP track before its guarded Continue");
+      const warningDismissal = {
+        runFlow: {
+          when: { visible: ".*Open debugger to view warnings.*" },
+          commands: [
+            { tapOn: { point: "92%,93%" } },
+            { extendedWaitUntil: { notVisible: ".*Open debugger to view warnings.*", timeout: 5000 } },
+          ],
+        },
+      };
+      assert.deepEqual(commands.slice(selectionIndex, selectionIndex + 3), [
+        warningDismissal,
+        { tapOn: { id: "patternly:home:select-track:continue" } },
+        { runFlow: { when: { visible: "Not now" }, commands: [{ tapOn: "Not now" }] } },
+      ]);
+      assert.doesNotMatch(source, /tapOn:\s*"Go back"/u);
     }
   }
 });

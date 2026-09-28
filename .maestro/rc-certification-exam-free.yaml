@@ -43,7 +43,17 @@ tags:
     centerElement: true
 - tapOn:
     id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
-- tapOn: "Go back"
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+      - extendedWaitUntil:
+          notVisible: ".*Open debugger to view warnings.*"
+          timeout: 5000
+- tapOn:
+    id: "patternly:home:select-track:continue"
 - runFlow:
     when:
       visible: "Not now"
