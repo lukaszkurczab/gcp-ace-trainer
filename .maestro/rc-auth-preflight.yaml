@@ -108,7 +108,23 @@ tags:
 - runFlow:
     when:
       visible:
+        id: "account-sync-resume-required"
+    commands:
+      - tapOn: "Go back"
+      - extendedWaitUntil:
+          visible:
+            id: "main-tab-bar-home"
+          timeout: 30000
+- runFlow:
+    when:
+      visible:
         id: "main-tab-bar-home"
     commands:
       - tapOn:
           id: "main-tab-bar-home"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-home"
+    timeout: 30000
+- assertVisible:
+    id: "main-tab-bar-home"

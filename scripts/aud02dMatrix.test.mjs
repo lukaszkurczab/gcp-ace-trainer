@@ -217,7 +217,23 @@ test("auth preflight extended waits are recorded and flows without assertions re
     Object.values(value).forEach(visit);
   }
   visit(commands);
-  assert.equal(waits.length, 4);
+  assert.equal(waits.length, 6);
+
+  const resumeBranchIndex = commands.findIndex((command) => command.runFlow?.when?.visible?.id === "account-sync-resume-required");
+  const finalHomeTapIndex = commands.findIndex((command, index) => index > resumeBranchIndex && command.runFlow?.when?.visible?.id === "main-tab-bar-home");
+  assert.ok(resumeBranchIndex >= 0, "resume-required recovery branch must be present");
+  assert.ok(finalHomeTapIndex > resumeBranchIndex, "resume recovery must precede final Home stabilization");
+  const resumeBranch = commands[resumeBranchIndex].runFlow.commands;
+  assert.deepEqual(resumeBranch.slice(0, 2), [
+    { tapOn: "Go back" },
+    { extendedWaitUntil: { visible: { id: "main-tab-bar-home" }, timeout: 30000 } },
+  ]);
+  assert.doesNotMatch(JSON.stringify(resumeBranch), /account-sign-out|sync.*retry|retry.*sync|clear.*data/iu);
+  assert.deepEqual(commands.slice(-2), [
+    { extendedWaitUntil: { visible: { id: "main-tab-bar-home" }, timeout: 30000 } },
+    { assertVisible: { id: "main-tab-bar-home" } },
+  ]);
+  assert.equal(finalHomeTapIndex, commands.length - 3, "conditional Home tap must immediately precede final stabilization");
 });
 
 test("feedback lifecycle flows resume, complete ten answers and open the result review", async () => {
