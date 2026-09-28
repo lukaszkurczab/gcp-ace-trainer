@@ -166,12 +166,13 @@ function SecurityForm({ route, navigation }: Props) {
       <View style={styles.header}><ScreenHeader backAction={{ onPress: () => { Keyboard.dismiss(); revoke(); navigation.goBack(); } }} context={t("appSettings")} title={title} /></View>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.flex}>
         <ScrollView automaticallyAdjustKeyboardInsets keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-          {failure && errorField === null ? <InfoBlock accessibilityAlert body={mode === "export" || mode === "privacy" ? t("exportAuthenticationFailed") : ta(failure === "invalidEmail" ? "emailFormatError" : failure)} title={title} tone="warning" testID={`security-error-${failure}`} /> : null}
+          {failure && errorField === null && mode !== "delete" ? <InfoBlock accessibilityAlert body={mode === "export" || mode === "privacy" ? t("exportAuthenticationFailed") : ta(failure === "invalidEmail" ? "emailFormatError" : failure)} title={title} tone="warning" testID={`security-error-${failure}`} /> : null}
           {mode === "email" && account.refreshAccountIdentityFailure ? <InfoBlock accessibilityAlert body={ta(account.refreshAccountIdentityFailure)} title={t("changeEmail")} tone="warning" testID="security-refresh-error" /> : null}
           {success ? <InfoBlock accessibilityAlert body={t(success)} title={title} testID="security-success" /> : null}
-          {mode === "delete" ? !prepared ? <>
-            <InfoBlock body={t("deleteConsequences")} title={t("deletePermanent")} tone="warning" />
-          </> : null : <Text maxFontSizeMultiplier={2} style={styles.body}>{t(mode === "recovery" ? "recoveryWarning" : mode === "email" ? "emailChangeIntro" : mode === "export" ? "exportAuthenticationIntro" : mode === "privacy" ? "privacyAuthenticationIntro" : "passwordChangeIntro")}</Text>}
+          {mode === "delete" ? !prepared ? <View style={styles.deleteWarning} testID="security-delete-warning">
+            <Text accessibilityRole="header" maxFontSizeMultiplier={2} style={styles.deleteWarningTitle}>{t("deletePermanent")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.body}>{t("deleteConsequences")}</Text>
+          </View> : null : <Text maxFontSizeMultiplier={2} style={styles.body}>{t(mode === "recovery" ? "recoveryWarning" : mode === "email" ? "emailChangeIntro" : mode === "export" ? "exportAuthenticationIntro" : mode === "privacy" ? "privacyAuthenticationIntro" : "passwordChangeIntro")}</Text>}
           {!authenticated ? <InfoBlock body={account.state.kind === "deleting" ? ta("deletionPendingDescription") : ta("providerUnavailable")} title={title} testID="security-unavailable" /> : pendingDeletion ? <>
             <InfoBlock body={ta("deletionPendingDescription")} title={ta("deleting")} />
             <Button disabled={busy} loading={busy} onPress={() => { void run(() => account.retryPendingDeletion(), () => {}); }} testID="security-delete-retry">{t("retryDeletion")}</Button>
@@ -184,7 +185,8 @@ function SecurityForm({ route, navigation }: Props) {
               <Button disabled={busy} onPress={() => { void recoveryCodeClipboard.copy(codes).then(() => { if (focused.current) setSuccess("codesCopied"); }).catch(() => { if (focused.current) setFailure("remoteFailure"); }); }} variant="secondary">{ta("copyRecoveryCodes")}</Button>
             </View> : <>
               {usesPassword && !prepared ? field(t(mode === "delete" ? "password" : "currentPassword"), password, setPassword, "security-password", true) : null}
-              {!prepared ? usesGoogle && configuration.kind === "configured" && getFirebaseGoogleClientId(configuration.value, Platform.OS) ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" || mode === "export" || mode === "privacy" ? "verifyIdentity" : mode === "recovery" ? "generateCodes" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} /> : null}
+              {!prepared ? usesGoogle && configuration.kind === "configured" && getFirebaseGoogleClientId(configuration.value, Platform.OS) ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" ? "deleteConfirm" : mode === "export" || mode === "privacy" ? "verifyIdentity" : mode === "recovery" ? "generateCodes" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} /> : null}
+              {mode === "delete" && failure && errorField === null ? <Text accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.inlineError} testID={`security-error-${failure}`}>{failure === "pendingSyncRequiresNetwork" ? t("deletePendingSync") : ta(failure)}</Text> : null}
               {mode === "delete" && prepared ? <HoldToConfirmButton accessibilityLabel={t("holdDelete")} disabled={blocked} hint={t("holdDeleteHint")} loading={busy} onConfirm={() => { setPrepared(false); void run(() => account.deleteAccount(), () => {}); }} testID="security-delete-hold">{t("holdDelete")}</HoldToConfirmButton> : null}
             </>}
           </>}
@@ -246,6 +248,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   field: { gap: spacing.sm },
   label: { ...typography.caption, color: palette.textPrimary },
   body: { ...typography.body, color: palette.textMuted },
+  deleteWarning: { gap: spacing.xs },
+  deleteWarningTitle: { ...typography.body, color: palette.textPrimary, fontWeight: "700" },
+  inlineError: { ...typography.caption, color: palette.danger, borderColor: palette.danger, borderWidth: 1, borderRadius: radius.md, padding: spacing.md },
   input: { ...typography.body, color: palette.textPrimary, backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1, borderRadius: radius.md, minHeight: 52, padding: spacing.md },
   inputError: { borderColor: palette.danger },
   fieldError: { ...typography.caption, color: palette.danger },
