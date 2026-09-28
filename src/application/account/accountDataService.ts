@@ -21,6 +21,7 @@ import {
   completeLearningPlanRecovery,
   finishAccountMaterialization,
   getAccountSyncState,
+  markAccountDataPending,
   markAccountResetPending,
   markAccountResetRemoteRestorePending,
   markAccountMaterializationPending,
@@ -56,6 +57,8 @@ import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
 import { commitLearningStateReset } from "../learningMutations";
+import type { TrackId } from "../../domain";
+import { saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 
 export { accountDataRecordFingerprint } from "../../storage/repositories/accountDataRepository";
 export { clearAccountDeletionOwnedLocalData } from "../../storage/repositories/accountDataRepository";
@@ -134,6 +137,14 @@ function withAccountDataOperation<T>(operation: () => Promise<T>): Promise<T> {
   const current = previous.then(operation, operation);
   accountDataOperationLane = current.then(() => undefined, () => undefined);
   return current;
+}
+
+/** Persists an active track choice after any earlier account materialization finishes. */
+export function commitActiveTrackSelection(trackId: TrackId): Promise<void> {
+  return withAccountDataOperation(async () => {
+    await saveActiveTrackId(trackId);
+    await markAccountDataPending();
+  });
 }
 
 export function loadAccountDataSession(

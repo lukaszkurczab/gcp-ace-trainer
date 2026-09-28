@@ -6,6 +6,8 @@ import { installKeyValueStorageForTests, MemoryKeyValueStorage } from "../infras
 import { getActiveTrackId } from "../storage/repositories/activeTrackRepository";
 import { getAccountSyncState, saveAccountSyncState } from "../storage/repositories/accountDataRepository";
 import { bindGuestInstallationToAccount, provisionGuestInstallation } from "../storage/repositories/guestInstallationRepository";
+import { loadAccountDataSession } from "./account/accountDataService";
+import type { PatternlyApiClient } from "../infrastructure/clients/PatternlyApiClientAdapter";
 import { selectActiveTrack } from "./learningReadModels";
 
 const ACCOUNT_ID = "55555555-5555-4555-8555-555555555555";
@@ -33,4 +35,30 @@ test("selecting a track on a guest installation persists locally without account
   assert.equal(await getActiveTrackId(), "coding-interview-dsa-problem-solving");
   assert.equal((await getAccountSyncState()).accountId, null);
   assert.equal((await getAccountSyncState()).status, "initialSyncRequired");
+});
+
+test("track selection waits for earlier account materialization and remains the final local choice", async () => {
+  await bindGuestInstallationToAccount(ACCOUNT_ID);
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId: ACCOUNT_ID, status: "synced" });
+
+  let releaseProgress!: () => void;
+  let signalProgressStarted!: () => void;
+  const progressStarted = new Promise<void>((resolve) => { signalProgressStarted = resolve; });
+  const progressGate = new Promise<void>((resolve) => { releaseProgress = resolve; });
+  const api = {
+    async getProgress() {
+      signalProgressStarted();
+      await progressGate;
+      return { records: [], accountRevision: 1, generation: 1 };
+    },
+  } as unknown as PatternlyApiClient;
+
+  const materialization = loadAccountDataSession(api, ACCOUNT_ID);
+  await progressStarted;
+  const selection = selectActiveTrack("coding-interview-dsa-problem-solving");
+  releaseProgress();
+  await materialization;
+  await selection;
+
+  assert.equal(await getActiveTrackId(), "coding-interview-dsa-problem-solving");
 });
