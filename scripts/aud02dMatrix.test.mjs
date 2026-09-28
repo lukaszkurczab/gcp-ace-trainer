@@ -7,9 +7,36 @@ import { parseAllDocuments } from "yaml";
 import { AUD02D_CUSTOM_PRACTICE, AUD02D_ENTITLEMENT_SUITES, AUD02D_FEEDBACK_REFERENCES, AUD02D_TRACK_IDS, AUD02D_UDID, canonicalHash, readAud02dBindings } from "./aud02dMatrix.mjs";
 import { createGenerationPinnedSmokeSession, readAuthorizationGeneration } from "./aud02dAuthEvidence.mjs";
 import { validateAud02dExpoManifest } from "./aud02dExpoManifest.mjs";
-import { sanitizeAndScanOutputRoot } from "./aud02dEvidenceRedaction.mjs";
+import { sanitizeAndScanOutputRoot, snapshotForEvidence } from "./aud02dEvidenceRedaction.mjs";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
+
+test("AUD-02D evidence manifest snapshots redact credentials without mutating live case records", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "aud02d-manifest-snapshot-"));
+  const credential = "secret-value";
+  const record = { credential, state: "before" };
+  const manifest = { cases: [record], failure: credential };
+  try {
+    const firstSnapshot = snapshotForEvidence(manifest, [credential]);
+    assert.notStrictEqual(firstSnapshot.cases, manifest.cases);
+    assert.notStrictEqual(firstSnapshot.cases[0], record);
+    assert.equal(firstSnapshot.cases[0].credential, "[redacted]");
+    assert.equal(firstSnapshot.failure, "[redacted]");
+    assert.equal(record.credential, credential);
+
+    record.state = "after";
+    assert.equal(snapshotForEvidence(manifest, [credential]).cases[0].state, "after");
+    assert.equal(firstSnapshot.cases[0].state, "before");
+
+    firstSnapshot.finalCanonicalSha256 = canonicalHash({ ...firstSnapshot, finalCanonicalSha256: undefined });
+    const manifestPath = path.join(root, "aud02d-manifest.json");
+    await writeFile(manifestPath, `${JSON.stringify(firstSnapshot, null, 2)}\n`);
+    const written = JSON.parse(await readFile(manifestPath, "utf8"));
+    assert.equal(written.finalCanonicalSha256, canonicalHash({ ...written, finalCanonicalSha256: undefined }));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 test("AUD-02D evidence redaction scrubs text artifacts atomically and scans every regular file", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "aud02d-redaction-"));

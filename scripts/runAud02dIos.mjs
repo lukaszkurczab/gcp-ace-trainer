@@ -11,7 +11,7 @@ import { validateAud02dExpoManifest } from "./aud02dExpoManifest.mjs";
 import { parseDotenv, validateLocalProfile } from "./runLocalProfile.mjs";
 import { waitForContentPreparationState } from "./waitForContentPreparationState.mjs";
 import { addCleanupContext, awaitChildWithCleanup, childFailure, verifyProcessOwnership, waitForChildReadiness } from "./aud02dChildProcess.mjs";
-import { assertOutputRootIsRealDirectory, redactExactBytes, sanitizeAndScanOutputRoot } from "./aud02dEvidenceRedaction.mjs";
+import { assertOutputRootIsRealDirectory, sanitizeAndScanOutputRoot, snapshotForEvidence } from "./aud02dEvidenceRedaction.mjs";
 
 const APP_ROOT = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const CONTENT_ROOT = path.resolve(process.env.PATTERNLY_CONTENT_ROOT ?? path.resolve(APP_ROOT, "../patternly-content"));
@@ -117,16 +117,12 @@ try {
     failed = true;
     manifest.failure = "AUD-02D output sanitization or credential scan failed.";
   }
-  scrubManifestSecrets();
-  manifest.finalCanonicalSha256 = canonicalHash({ ...manifest, finalCanonicalSha256: undefined });
-  await writeFile(path.join(OUTPUT_ROOT, "aud02d-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+  await writeCanonicalManifest();
   try { await sanitizeAndScanOutputRoot(OUTPUT_ROOT, Object.values(credentials ?? {})); }
   catch {
     failed = true;
     manifest.failure = "AUD-02D output sanitization or credential scan failed.";
-    scrubManifestSecrets();
-    manifest.finalCanonicalSha256 = canonicalHash({ ...manifest, finalCanonicalSha256: undefined });
-    await writeFile(path.join(OUTPUT_ROOT, "aud02d-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+    await writeCanonicalManifest();
   }
   try { if (sharedBackend) await stopBackend(sharedBackend); }
   finally { if (metro) await stopMetro(metro); }
@@ -204,12 +200,6 @@ async function runCase(id, inputs, execute) {
     activeCaseRecord = undefined;
   }
   await writeManifest();
-}
-
-function scrubManifestSecrets() {
-  const serialized = Buffer.from(JSON.stringify(manifest));
-  const scrubbed = redactExactBytes(serialized, Object.values(credentials ?? {}));
-  Object.assign(manifest, JSON.parse(scrubbed.toString("utf8")));
 }
 
 async function caseSnapshot() {
@@ -740,9 +730,13 @@ function loadSmokeEnvironment() {
 
 async function writeManifest() {
   if (credentials) await sanitizeAndScanOutputRoot(OUTPUT_ROOT, Object.values(credentials));
-  scrubManifestSecrets();
-  manifest.finalCanonicalSha256 = canonicalHash({ ...manifest, finalCanonicalSha256: undefined });
-  await writeFile(path.join(OUTPUT_ROOT, "aud02d-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+  await writeCanonicalManifest();
+}
+
+async function writeCanonicalManifest() {
+  const snapshot = snapshotForEvidence(manifest, Object.values(credentials ?? {}));
+  snapshot.finalCanonicalSha256 = canonicalHash({ ...snapshot, finalCanonicalSha256: undefined });
+  await writeFile(path.join(OUTPUT_ROOT, "aud02d-manifest.json"), `${JSON.stringify(snapshot, null, 2)}\n`);
 }
 
 function git(root, args) { return run("git", args, { cwd: root }); }

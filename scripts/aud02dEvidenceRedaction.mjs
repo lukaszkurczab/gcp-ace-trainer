@@ -9,6 +9,11 @@ export function redactExactBytes(bytes, secrets) {
   return redactBytes(bytes, secretBuffers(secrets));
 }
 
+export function snapshotForEvidence(manifest, secrets) {
+  const serialized = Buffer.from(JSON.stringify(manifest));
+  return JSON.parse(redactExactBytes(serialized, secrets).toString("utf8"));
+}
+
 function redactBytes(bytes, secrets) {
   let output = Buffer.from(bytes);
   for (const secret of secrets) {
