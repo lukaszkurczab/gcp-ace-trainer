@@ -5,6 +5,16 @@ tags:
   - aud-02d
   - custom-practice
 ---
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- assertVisible:
+    id: "main-tab-bar-home"
+- tapOn:
+    id: "main-tab-bar-home"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
 - runFlow: m3-custom-at-session-end.yaml
 - assertVisible:
     id: "patternly:session:counter:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:ordinal:2:length:10"

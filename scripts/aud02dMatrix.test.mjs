@@ -227,6 +227,16 @@ test("feedback cases compose relaunch/resume with completed result and review, n
   const completion = await readFile(path.join(ROOT, ".maestro/aud02d-feedback-complete-session.yaml"), "utf8");
   const m3 = await readFile(path.join(ROOT, ".maestro/m3-custom-at-session-end.yaml"), "utf8");
   const m4 = await readFile(path.join(ROOT, ".maestro/m4-custom-after-each-answer.yaml"), "utf8");
+  for (const [source, inheritedFlow] of [[atSessionEnd, "m3-custom-at-session-end.yaml"], [afterEach, "m4-custom-after-each-answer.yaml"]]) {
+    const commands = parseAllDocuments(source)[1].toJSON();
+    assert.deepEqual(commands.slice(0, 4), [
+      { assertVisible: { id: "patternly:practice:hub:root" } },
+      { assertVisible: { id: "main-tab-bar-home" } },
+      { tapOn: { id: "main-tab-bar-home" } },
+      { extendedWaitUntil: { visible: { id: "patternly:home:track-card:coding-interview-dsa-problem-solving" }, timeout: 30000 } },
+    ]);
+    assert.deepEqual(commands[4], { runFlow: inheritedFlow });
+  }
   assert.match(atSessionEnd, /runFlow: m3-custom-at-session-end\.yaml/u);
   assert.match(afterEach, /runFlow: m4-custom-after-each-answer\.yaml/u);
   for (const flow of [atSessionEnd, afterEach]) assert.match(flow, /runFlow: aud02d-feedback-complete-session\.yaml/u);
