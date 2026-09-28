@@ -73,6 +73,11 @@ test("AUD-02D validates smoke profile for Metro and owns active backend through 
   assert.match(runner, /await writeFile\(path\.join\(OUTPUT_ROOT, "aud02d-manifest\.json"\)/u);
 });
 
+test("AUD-02D non-exam premium runners receive their declared premium flows", async () => {
+  const runner = await readFile(path.join(ROOT, "scripts/runAud02dIos.mjs"), "utf8");
+  assert.match(runner, /else await runObservedNode\(path\.resolve\(APP_ROOT, suite\.premiumRunner\), \["--udid", AUD02D_UDID\], caseEnvironment\(\), activeCaseRecord, suite\.premiumFlows\)/u);
+});
+
 test("AUD-02D resolves and validates the exact local Expo iOS AppEntry launch asset", async () => {
   const manifestUrl = "http://[::1]:8081/";
   const launchAssetUrl = "http://[::1]:8081/node_modules/expo/AppEntry.bundle?platform=ios&dev=false&hot=false&minify=true";

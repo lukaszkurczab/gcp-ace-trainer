@@ -101,7 +101,7 @@ try {
       flows: [suite.free, ...suite.premiumFlows],
     }, async () => {
       if (suite.id === "exam") await runExamFreeAndPremium(activeCaseRecord, suite);
-      else await runObservedNode(path.resolve(APP_ROOT, suite.premiumRunner), ["--udid", AUD02D_UDID], caseEnvironment(), activeCaseRecord, suite.flows);
+      else await runObservedNode(path.resolve(APP_ROOT, suite.premiumRunner), ["--udid", AUD02D_UDID], caseEnvironment(), activeCaseRecord, suite.premiumFlows);
     });
   }
 } catch (error) {
