@@ -545,7 +545,7 @@ async function collectFlowAssertions(flow) {
     visited.add(absolute);
     const lines = (await readFile(absolute, "utf8")).split(/\r?\n/u);
     for (let index = 0; index < lines.length; index += 1) {
-      const assertion = lines[index].match(/^\s*-\s*(assertVisible|assertNotVisible|assertTrue|assertCondition):\s*(.*)$/u);
+      const assertion = lines[index].match(/^\s*-\s*(assertVisible|assertNotVisible|assertTrue|assertCondition|extendedWaitUntil):\s*(.*)$/u);
       if (assertion) {
         let target = assertion[2].replace(/^['"]|['"]$/gu, "");
         if (!target) {

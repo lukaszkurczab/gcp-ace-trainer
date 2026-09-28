@@ -181,6 +181,25 @@ test("AUD-02D Maestro flows cover track readiness and all setup selectors before
   assert.equal(AUD02D_ENTITLEMENT_SUITES.length, 3);
 });
 
+test("auth preflight extended waits are recorded and flows without assertions remain rejected", async () => {
+  const runner = await readFile(path.join(ROOT, "scripts/runAud02dIos.mjs"), "utf8");
+  const preflight = await readFile(path.join(ROOT, ".maestro/rc-auth-preflight.yaml"), "utf8");
+  assert.match(runner, /assertVisible\|assertNotVisible\|assertTrue\|assertCondition\|extendedWaitUntil/u);
+  assert.match(runner, /if \(assertions\.length === 0\) throw new Error\(`AUD-02D flow \$\{flow\} has no executable Maestro assertions/u);
+  assert.match(runner, /if \(assertions\.length === 0\) throw new Error\(`AUD-02D child flow \$\{flow\} has no executable Maestro assertions/u);
+
+  const commands = parseAllDocuments(preflight)[1].toJSON();
+  const waits = [];
+  function visit(value) {
+    if (Array.isArray(value)) return value.forEach(visit);
+    if (!value || typeof value !== "object") return;
+    if (Object.hasOwn(value, "extendedWaitUntil")) waits.push(value.extendedWaitUntil);
+    Object.values(value).forEach(visit);
+  }
+  visit(commands);
+  assert.equal(waits.length, 4);
+});
+
 test("feedback cases compose relaunch/resume with completed result and review, not truncated M3/M4 alone", async () => {
   const [atSessionEndPath, afterEachPath] = AUD02D_FEEDBACK_REFERENCES;
   const atSessionEnd = await readFile(path.join(ROOT, atSessionEndPath), "utf8");
