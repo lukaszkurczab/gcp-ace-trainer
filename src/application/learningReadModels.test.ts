@@ -8,7 +8,7 @@ import { getAccountSyncState, saveAccountSyncState } from "../storage/repositori
 import { bindGuestInstallationToAccount, provisionGuestInstallation } from "../storage/repositories/guestInstallationRepository";
 import { loadAccountDataSession } from "./account/accountDataService";
 import type { PatternlyApiClient } from "../infrastructure/clients/PatternlyApiClientAdapter";
-import { selectActiveTrack } from "./learningReadModels";
+import { loadActiveTrackId, selectActiveTrack } from "./learningReadModels";
 
 const ACCOUNT_ID = "55555555-5555-4555-8555-555555555555";
 const INSTALLATION_ID = "66666666-6666-4666-8666-666666666666";
@@ -61,4 +61,42 @@ test("track selection waits for earlier account materialization and remains the 
   await selection;
 
   assert.equal(await getActiveTrackId(), "coding-interview-dsa-problem-solving");
+});
+
+test("active track read waits for materialization and returns its settled state without side effects", async () => {
+  await bindGuestInstallationToAccount(ACCOUNT_ID);
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId: ACCOUNT_ID, status: "synced" });
+
+  let releaseProgress!: () => void;
+  let signalProgressStarted!: () => void;
+  const progressStarted = new Promise<void>((resolve) => { signalProgressStarted = resolve; });
+  const progressGate = new Promise<void>((resolve) => { releaseProgress = resolve; });
+  let progressCalls = 0;
+  const api = {
+    async getProgress() {
+      progressCalls += 1;
+      signalProgressStarted();
+      await progressGate;
+      return { records: [], accountRevision: 1, generation: 1 };
+    },
+  } as unknown as PatternlyApiClient;
+
+  const materialization = loadAccountDataSession(api, ACCOUNT_ID);
+  await progressStarted;
+  let readSettled = false;
+  const read = loadActiveTrackId().then((trackId) => {
+    readSettled = true;
+    return trackId;
+  });
+  await Promise.resolve();
+  assert.equal(readSettled, false);
+
+  releaseProgress();
+  await materialization;
+  const stateAfterMaterialization = await getAccountSyncState();
+  assert.equal(await read, null);
+
+  assert.equal(progressCalls, 1);
+  assert.equal(await getActiveTrackId(), null);
+  assert.deepEqual(await getAccountSyncState(), stateAfterMaterialization);
 });

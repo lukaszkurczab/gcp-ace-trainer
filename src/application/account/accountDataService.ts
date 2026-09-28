@@ -58,7 +58,7 @@ import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
 import { commitLearningStateReset } from "../learningMutations";
 import type { TrackId } from "../../domain";
-import { saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
+import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 
 export { accountDataRecordFingerprint } from "../../storage/repositories/accountDataRepository";
 export { clearAccountDeletionOwnedLocalData } from "../../storage/repositories/accountDataRepository";
@@ -145,6 +145,11 @@ export function commitActiveTrackSelection(trackId: TrackId): Promise<void> {
     await saveActiveTrackId(trackId);
     await markAccountDataPending();
   });
+}
+
+/** Reads the active track only after any earlier account materialization finishes. */
+export function loadSettledActiveTrackSelection(): Promise<TrackId | null> {
+  return withAccountDataOperation(() => getActiveTrackId());
 }
 
 export function loadAccountDataSession(

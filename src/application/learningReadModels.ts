@@ -6,7 +6,6 @@ import {
   type AlgorithmsDeclaredScopeMode,
 } from "./coding-interview/codingInterviewDeclaredScope";
 import {
-  getActiveTrackId,
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
   getGoal,
@@ -20,7 +19,7 @@ import {
   saveGoalSnapshot,
   dismissGoalOnboarding,
 } from "../storage/repositories";
-import { commitActiveTrackSelection } from "./account/accountDataService";
+import { commitActiveTrackSelection, loadSettledActiveTrackSelection } from "./account/accountDataService";
 import { getAttempts, getPracticeHistory } from "../storage/queries";
 import type { StorageIssue } from "../storage/repositories/result";
 import {
@@ -32,7 +31,7 @@ import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 /** Application-owned read ports consumed by presentation. */
 export type { StorageIssue };
 
-export async function loadActiveTrackId() { return getActiveTrackId(); }
+export async function loadActiveTrackId() { return loadSettledActiveTrackSelection(); }
 export async function selectActiveTrack(trackId: TrackId) { await commitActiveTrackSelection(trackId); }
 export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId); }
 export async function persistGoal(goal: GoalRecord): Promise<void> { await saveGoal(goal); }
