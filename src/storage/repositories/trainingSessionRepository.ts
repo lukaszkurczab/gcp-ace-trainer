@@ -46,32 +46,35 @@ export async function saveTrainingSession(session: TrainingSession): Promise<voi
 function assertConditionalReinsertResolution(existing: TrainingSession, next: TrainingSession): void {
   const previousSlots = existing.conditionalReinsertSlots ?? [];
   const nextSlots = next.conditionalReinsertSlots ?? [];
-  const nextSlotIds = new Set(nextSlots.map((slot) => slot.slotId));
-  const resolvedSlots = previousSlots.filter((slot) => !nextSlotIds.has(slot.slotId));
-  if (!resolvedSlots.length || nextSlots.some((slot) => !previousSlots.some((previous) => previous.slotId === slot.slotId && JSON.stringify(previous) === JSON.stringify(slot))) ||
-    JSON.stringify(nextSlots) !== JSON.stringify(previousSlots.filter((slot) => nextSlotIds.has(slot.slotId)))) {
-    throw new Error(`Session ${existing.id} has a conflicting conditional reinsert plan.`);
-  }
-
   const expectedOrder = [...existing.itemOrder];
   const expectedOptions = { ...existing.optionOrderByOccurrence };
-  const changedIndices = new Set<number>();
-  for (const slot of resolvedSlots) {
-    const targetIndex = existing.itemOrder.findIndex((occurrence) => occurrence.occurrenceId === slot.ordinaryBranch.occurrence.occurrenceId);
+  if (next.itemOrder.length !== existing.itemOrder.length) throw new Error(`Session ${existing.id} has a conflicting conditional reinsert plan.`);
+  const changedIndices: number[] = [];
+  for (let index = 0; index < existing.itemOrder.length; index += 1) {
+    if (JSON.stringify(existing.itemOrder[index]) !== JSON.stringify(next.itemOrder[index])) changedIndices.push(index);
+  }
+
+  const resolvedSlots = new Set<(typeof previousSlots)[number]>();
+  for (const index of changedIndices) {
+    const matchingSlots = previousSlots.filter((slot) => existing.itemOrder[index]?.occurrenceId === slot.ordinaryBranch.occurrence.occurrenceId);
+    if (matchingSlots.length !== 1) throw new Error(`Session ${existing.id} has a conflicting conditional reinsert plan.`);
+    const slot = matchingSlots[0]!;
     const alternative = slot.reviewedVariantBranch ?? slot.exactSourceBranch;
-    if (targetIndex < 0 || !alternative || changedIndices.has(targetIndex)) throw new Error(`Session ${existing.id} has an invalid conditional reinsert resolution.`);
-    expectedOrder[targetIndex] = alternative.occurrence;
-    changedIndices.add(targetIndex);
+    if (!alternative || JSON.stringify(next.itemOrder[index]) !== JSON.stringify(alternative.occurrence) || resolvedSlots.has(slot)) {
+      throw new Error(`Session ${existing.id} has an invalid conditional reinsert resolution.`);
+    }
+    expectedOrder[index] = alternative.occurrence;
+    resolvedSlots.add(slot);
     delete expectedOptions[slot.ordinaryBranch.occurrence.occurrenceId];
     expectedOptions[alternative.occurrence.occurrenceId] = alternative.optionOrder;
   }
-  const actualChangedIndices = new Set<number>();
-  if (next.itemOrder.length !== existing.itemOrder.length) throw new Error(`Session ${existing.id} has a conflicting conditional reinsert plan.`);
-  for (let index = 0; index < existing.itemOrder.length; index += 1) {
-    if (JSON.stringify(existing.itemOrder[index]) !== JSON.stringify(next.itemOrder[index])) actualChangedIndices.add(index);
-  }
-  if (JSON.stringify([...actualChangedIndices].sort()) !== JSON.stringify([...changedIndices].sort()) ||
-    JSON.stringify(expectedOrder) !== JSON.stringify(next.itemOrder) || JSON.stringify(expectedOptions) !== JSON.stringify(next.optionOrderByOccurrence)) {
+
+  const occurrenceIds = new Set(expectedOrder.map((occurrence) => occurrence.occurrenceId));
+  const expectedSlots = previousSlots.filter((slot) =>
+    !resolvedSlots.has(slot) && occurrenceIds.has(slot.sourceOccurrenceId) && occurrenceIds.has(slot.ordinaryBranch.occurrence.occurrenceId),
+  );
+  if (JSON.stringify(expectedOrder) !== JSON.stringify(next.itemOrder) || JSON.stringify(expectedOptions) !== JSON.stringify(next.optionOrderByOccurrence) ||
+    JSON.stringify(expectedSlots) !== JSON.stringify(nextSlots)) {
     throw new Error(`Session ${existing.id} has a conflicting conditional reinsert plan.`);
   }
 }

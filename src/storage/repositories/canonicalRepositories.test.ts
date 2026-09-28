@@ -137,22 +137,31 @@ test("training sessions permit free navigation while rejecting regressing foregr
 });
 
 test("active sessions persist only preallocated conditional reinsert resolutions", async () => {
-  const itemOrder = Array.from({ length: 5 }, (_, index) => ({ occurrenceId: `occurrence-${index + 1}`, item: ref(`i-${index + 1}`) }));
-  const alternative = { occurrence: { occurrenceId: "occurrence-1:conditional:4:exact", item: itemOrder[0]!.item }, optionOrder: ["a"] };
-  const slot = {
-    slotId: "occurrence-1:conditional:4",
-    sourceOccurrenceId: itemOrder[0]!.occurrenceId,
-    ordinaryBranch: { occurrence: itemOrder[4]!, optionOrder: ["a"] },
-    exactSourceBranch: alternative,
-    resolutionRule: "incorrect_or_partial_after_three_materialized_submissions" as const,
+  const itemOrder = Array.from({ length: 10 }, (_, index) => ({ occurrenceId: `occurrence-${index + 1}`, item: ref(`i-${index + 1}`) }));
+  const makeSlot = (sourceIndex: number) => {
+    const targetIndex = sourceIndex + 4;
+    const alternative = { occurrence: { occurrenceId: `${itemOrder[sourceIndex]!.occurrenceId}:conditional:${targetIndex}:exact`, item: itemOrder[sourceIndex]!.item }, optionOrder: ["a", "b"] };
+    return {
+      slot: {
+        slotId: `${itemOrder[sourceIndex]!.occurrenceId}:conditional:${targetIndex}`,
+        sourceOccurrenceId: itemOrder[sourceIndex]!.occurrenceId,
+        ordinaryBranch: { occurrence: itemOrder[targetIndex]!, optionOrder: ["a", "b"] },
+        exactSourceBranch: alternative,
+        resolutionRule: "incorrect_or_partial_after_three_materialized_submissions" as const,
+      },
+      alternative,
+      targetIndex,
+    };
   };
+  const first = makeSlot(0);
+  const cascaded = makeSlot(4);
   const initial = session({
     id: "conditional",
-    requestedLength: 5,
-    actualLength: 5,
+    requestedLength: 10,
+    actualLength: 10,
     itemOrder,
-    optionOrderByOccurrence: Object.fromEntries(itemOrder.map(({ occurrenceId }) => [occurrenceId, ["a"]])),
-    conditionalReinsertSlots: [slot],
+    optionOrderByOccurrence: Object.fromEntries(itemOrder.map(({ occurrenceId }) => [occurrenceId, ["a", "b"]])),
+    conditionalReinsertSlots: [first.slot, cascaded.slot],
     taxonomyVersion: "test-taxonomy-v1",
     planFingerprint: "a".repeat(64),
   });
@@ -160,21 +169,33 @@ test("active sessions persist only preallocated conditional reinsert resolutions
   const prepared = createTrainingSession({ ...initial, planFingerprint: initialFingerprint });
 
   const resolvedOrder = [...prepared.itemOrder];
-  resolvedOrder[4] = alternative.occurrence;
+  resolvedOrder[first.targetIndex] = first.alternative.occurrence;
   const resolvedOptions = { ...prepared.optionOrderByOccurrence };
-  delete (resolvedOptions as Record<string, readonly string[]>)[itemOrder[4]!.occurrenceId];
-  (resolvedOptions as Record<string, readonly string[]>)[alternative.occurrence.occurrenceId] = alternative.optionOrder;
-  const resolvedWithoutFingerprint = createTrainingSession({ ...prepared, itemOrder: resolvedOrder, optionOrderByOccurrence: resolvedOptions, conditionalReinsertSlots: [], planFingerprint: "b".repeat(64) });
+  delete (resolvedOptions as Record<string, readonly string[]>)[itemOrder[first.targetIndex]!.occurrenceId];
+  (resolvedOptions as Record<string, readonly string[]>)[first.alternative.occurrence.occurrenceId] = first.alternative.optionOrder;
+  const remainingSlots = [first.slot, cascaded.slot].filter((slot) =>
+    new Set(resolvedOrder.map((occurrence) => occurrence.occurrenceId)).has(slot.sourceOccurrenceId) &&
+    new Set(resolvedOrder.map((occurrence) => occurrence.occurrenceId)).has(slot.ordinaryBranch.occurrence.occurrenceId),
+  );
+  const resolvedWithoutFingerprint = createTrainingSession({ ...prepared, itemOrder: resolvedOrder, optionOrderByOccurrence: resolvedOptions, conditionalReinsertSlots: remainingSlots, planFingerprint: "b".repeat(64) });
   const resolvedFingerprint = await createContentSessionPlanFingerprint(resolvedWithoutFingerprint as TrainingSession & { taxonomyVersion: string });
   const resolved = createTrainingSession({ ...resolvedWithoutFingerprint, planFingerprint: resolvedFingerprint });
 
   await saveTrainingSession(prepared);
   await assert.doesNotReject(() => saveTrainingSession(resolved));
   assert.deepEqual((await getTrainingSessions()).value, [resolved]);
+  assert.equal(resolved.itemOrder[cascaded.targetIndex]?.occurrenceId, prepared.itemOrder[cascaded.targetIndex]?.occurrenceId);
+  assert.deepEqual(resolved.conditionalReinsertSlots, remainingSlots);
+  await assert.doesNotReject(() => saveTrainingSession(resolved));
 
   const arbitraryOrder = [...prepared.itemOrder];
   arbitraryOrder[2] = { ...arbitraryOrder[2]!, item: ref("unreserved-change") };
   await assert.rejects(() => saveTrainingSession({ ...prepared, itemOrder: arbitraryOrder }), /conditional reinsert plan/);
+  await assert.rejects(() => saveTrainingSession({ ...prepared, conditionalReinsertSlots: [first.slot] }), /conditional reinsert plan/);
+  await assert.rejects(() => saveTrainingSession({
+    ...prepared,
+    optionOrderByOccurrence: { ...prepared.optionOrderByOccurrence, [itemOrder[2]!.occurrenceId]: ["b", "a"] },
+  }), /conditional reinsert plan/);
 });
 
 test("terminal sessions are immutable except for identical recovery replay", async () => {
