@@ -24,18 +24,16 @@ export async function saveTrainingSession(session: TrainingSession): Promise<voi
     if (existing.status !== "active") {
       if (JSON.stringify(existing) !== JSON.stringify(session)) throw new Error(`Terminal session ${session.id} is immutable.`);
     } else {
-      const immutableExisting = {
-        id: existing.id, trackId: existing.trackId, modeId: existing.modeId, configurationSnapshot: existing.configurationSnapshot, requestedLength: existing.requestedLength,
-        actualLength: existing.actualLength, itemOrder: existing.itemOrder, optionOrderByOccurrence: existing.optionOrderByOccurrence, conditionalReinsertSlots: existing.conditionalReinsertSlots,
-        contentVersion: existing.contentVersion, artifactSha256: existing.artifactSha256, taxonomyVersion: existing.taxonomyVersion, planFingerprint: existing.planFingerprint, startedAt: existing.startedAt,
-      };
-      const immutableNext = {
-        id: session.id, trackId: session.trackId, modeId: session.modeId, configurationSnapshot: session.configurationSnapshot, requestedLength: session.requestedLength,
-        actualLength: session.actualLength, itemOrder: session.itemOrder, optionOrderByOccurrence: session.optionOrderByOccurrence, conditionalReinsertSlots: session.conditionalReinsertSlots,
-        contentVersion: session.contentVersion, artifactSha256: session.artifactSha256, taxonomyVersion: session.taxonomyVersion, planFingerprint: session.planFingerprint, startedAt: session.startedAt,
-      };
+      const { currentItemIndex: _existingIndex, activeForegroundMs: _existingTime, status: _existingStatus, completedAt: _existingCompletion, itemOrder: existingOrder, optionOrderByOccurrence: existingOptions, conditionalReinsertSlots: existingSlots, planFingerprint: existingFingerprint, ...immutableExisting } = existing;
+      const { currentItemIndex: _nextIndex, activeForegroundMs: _nextTime, status: _nextStatus, completedAt: _nextCompletion, itemOrder: nextOrder, optionOrderByOccurrence: nextOptions, conditionalReinsertSlots: nextSlots, planFingerprint: nextFingerprint, ...immutableNext } = session;
       if (JSON.stringify(immutableExisting) !== JSON.stringify(immutableNext)) throw new Error(`Session ${session.id} has conflicting immutable fields.`);
       if (session.activeForegroundMs < existing.activeForegroundMs) throw new Error(`Session ${session.id} foreground time cannot decrease.`);
+      if (JSON.stringify(existingOrder) !== JSON.stringify(nextOrder) || JSON.stringify(existingOptions) !== JSON.stringify(nextOptions) || JSON.stringify(existingSlots ?? []) !== JSON.stringify(nextSlots ?? [])) {
+        assertConditionalReinsertResolution(existing, session);
+        if (!nextFingerprint || nextFingerprint === existingFingerprint) throw new Error(`Session ${session.id} must update its plan fingerprint when resolving a conditional reinsert.`);
+      } else if (existingFingerprint !== nextFingerprint) {
+        throw new Error(`Session ${session.id} cannot change its plan fingerprint without resolving a conditional reinsert.`);
+      }
     }
   }
   writeCanonicalJson(STORAGE_KEYS.trainingSession(session.id), session);
@@ -43,5 +41,38 @@ export async function saveTrainingSession(session: TrainingSession): Promise<voi
   if (!ids.includes(session.id)) writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [session.id, ...ids]);
   if (session.status === "active") writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, session.id);
   else if (active?.id === session.id) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
+}
+
+function assertConditionalReinsertResolution(existing: TrainingSession, next: TrainingSession): void {
+  const previousSlots = existing.conditionalReinsertSlots ?? [];
+  const nextSlots = next.conditionalReinsertSlots ?? [];
+  const nextSlotIds = new Set(nextSlots.map((slot) => slot.slotId));
+  const resolvedSlots = previousSlots.filter((slot) => !nextSlotIds.has(slot.slotId));
+  if (!resolvedSlots.length || nextSlots.some((slot) => !previousSlots.some((previous) => previous.slotId === slot.slotId && JSON.stringify(previous) === JSON.stringify(slot))) ||
+    JSON.stringify(nextSlots) !== JSON.stringify(previousSlots.filter((slot) => nextSlotIds.has(slot.slotId)))) {
+    throw new Error(`Session ${existing.id} has a conflicting conditional reinsert plan.`);
+  }
+
+  const expectedOrder = [...existing.itemOrder];
+  const expectedOptions = { ...existing.optionOrderByOccurrence };
+  const changedIndices = new Set<number>();
+  for (const slot of resolvedSlots) {
+    const targetIndex = existing.itemOrder.findIndex((occurrence) => occurrence.occurrenceId === slot.ordinaryBranch.occurrence.occurrenceId);
+    const alternative = slot.reviewedVariantBranch ?? slot.exactSourceBranch;
+    if (targetIndex < 0 || !alternative || changedIndices.has(targetIndex)) throw new Error(`Session ${existing.id} has an invalid conditional reinsert resolution.`);
+    expectedOrder[targetIndex] = alternative.occurrence;
+    changedIndices.add(targetIndex);
+    delete expectedOptions[slot.ordinaryBranch.occurrence.occurrenceId];
+    expectedOptions[alternative.occurrence.occurrenceId] = alternative.optionOrder;
+  }
+  const actualChangedIndices = new Set<number>();
+  if (next.itemOrder.length !== existing.itemOrder.length) throw new Error(`Session ${existing.id} has a conflicting conditional reinsert plan.`);
+  for (let index = 0; index < existing.itemOrder.length; index += 1) {
+    if (JSON.stringify(existing.itemOrder[index]) !== JSON.stringify(next.itemOrder[index])) actualChangedIndices.add(index);
+  }
+  if (JSON.stringify([...actualChangedIndices].sort()) !== JSON.stringify([...changedIndices].sort()) ||
+    JSON.stringify(expectedOrder) !== JSON.stringify(next.itemOrder) || JSON.stringify(expectedOptions) !== JSON.stringify(next.optionOrderByOccurrence)) {
+    throw new Error(`Session ${existing.id} has a conflicting conditional reinsert plan.`);
+  }
 }
 export async function clearTrainingSessions(): Promise<void> { const ids = readCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, isIds) ?? []; await clearTrainingSessionResults(ids); ids.forEach((id) => removeCanonicalValue(STORAGE_KEYS.trainingSession(id))); removeCanonicalValue(STORAGE_KEYS.TRAINING_SESSION_INDEX); removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION); await clearContentIdentityUnavailableRecords(); }

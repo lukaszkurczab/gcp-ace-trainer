@@ -24,6 +24,7 @@ import { STORAGE_KEYS } from "../keys";
 import { writeCanonicalJson } from "./canonicalRecordCodec";
 import { UnsupportedStoredRecordError } from "../errors";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession } from "./trainingModelGuards";
+import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as const;
 const ARTIFACT_SHA256 = "a".repeat(64);
@@ -133,6 +134,47 @@ test("training sessions permit free navigation while rejecting regressing foregr
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, active.id);
   await assert.rejects(() => getActiveTrainingSession(), /references missing session/);
+});
+
+test("active sessions persist only preallocated conditional reinsert resolutions", async () => {
+  const itemOrder = Array.from({ length: 5 }, (_, index) => ({ occurrenceId: `occurrence-${index + 1}`, item: ref(`i-${index + 1}`) }));
+  const alternative = { occurrence: { occurrenceId: "occurrence-1:conditional:4:exact", item: itemOrder[0]!.item }, optionOrder: ["a"] };
+  const slot = {
+    slotId: "occurrence-1:conditional:4",
+    sourceOccurrenceId: itemOrder[0]!.occurrenceId,
+    ordinaryBranch: { occurrence: itemOrder[4]!, optionOrder: ["a"] },
+    exactSourceBranch: alternative,
+    resolutionRule: "incorrect_or_partial_after_three_materialized_submissions" as const,
+  };
+  const initial = session({
+    id: "conditional",
+    requestedLength: 5,
+    actualLength: 5,
+    itemOrder,
+    optionOrderByOccurrence: Object.fromEntries(itemOrder.map(({ occurrenceId }) => [occurrenceId, ["a"]])),
+    conditionalReinsertSlots: [slot],
+    taxonomyVersion: "test-taxonomy-v1",
+    planFingerprint: "a".repeat(64),
+  });
+  const initialFingerprint = await createContentSessionPlanFingerprint(initial as TrainingSession & { taxonomyVersion: string });
+  const prepared = createTrainingSession({ ...initial, planFingerprint: initialFingerprint });
+
+  const resolvedOrder = [...prepared.itemOrder];
+  resolvedOrder[4] = alternative.occurrence;
+  const resolvedOptions = { ...prepared.optionOrderByOccurrence };
+  delete (resolvedOptions as Record<string, readonly string[]>)[itemOrder[4]!.occurrenceId];
+  (resolvedOptions as Record<string, readonly string[]>)[alternative.occurrence.occurrenceId] = alternative.optionOrder;
+  const resolvedWithoutFingerprint = createTrainingSession({ ...prepared, itemOrder: resolvedOrder, optionOrderByOccurrence: resolvedOptions, conditionalReinsertSlots: [], planFingerprint: "b".repeat(64) });
+  const resolvedFingerprint = await createContentSessionPlanFingerprint(resolvedWithoutFingerprint as TrainingSession & { taxonomyVersion: string });
+  const resolved = createTrainingSession({ ...resolvedWithoutFingerprint, planFingerprint: resolvedFingerprint });
+
+  await saveTrainingSession(prepared);
+  await assert.doesNotReject(() => saveTrainingSession(resolved));
+  assert.deepEqual((await getTrainingSessions()).value, [resolved]);
+
+  const arbitraryOrder = [...prepared.itemOrder];
+  arbitraryOrder[2] = { ...arbitraryOrder[2]!, item: ref("unreserved-change") };
+  await assert.rejects(() => saveTrainingSession({ ...prepared, itemOrder: arbitraryOrder }), /conditional reinsert plan/);
 });
 
 test("terminal sessions are immutable except for identical recovery replay", async () => {
