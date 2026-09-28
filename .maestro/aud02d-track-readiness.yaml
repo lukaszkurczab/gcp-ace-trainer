@@ -67,9 +67,10 @@ tags:
     direction: DOWN
     centerElement: false
     visibilityPercentage: 50
+- waitForAnimationToEnd:
+    timeout: 5000
 - tapOn:
     id: "patternly:home:select-track:${TRACK_ID}"
-    retryTapIfNoChange: true
 - runFlow:
     when:
       visible: ".*Open debugger to view warnings.*"
