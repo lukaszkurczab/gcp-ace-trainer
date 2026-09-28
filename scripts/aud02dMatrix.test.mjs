@@ -188,7 +188,14 @@ test("smoke auth errors persist only HTTP status and safe error.code", async () 
 
 test("AUD-02D Maestro flows cover track readiness and all setup selectors before session start", async () => {
   const readiness = await readFile(path.join(ROOT, ".maestro/aud02d-track-readiness.yaml"), "utf8");
+  const readinessCommands = parseAllDocuments(readiness)[1].toJSON();
   const custom = await readFile(path.join(ROOT, ".maestro/aud02d-custom-practice-configuration.yaml"), "utf8");
+  assert.deepEqual(readinessCommands[0].runFlow.commands[1], {
+    tapOn: { id: "patternly:home:select-track:${TRACK_ID}" },
+  });
+  assert.deepEqual(readinessCommands[5], {
+    tapOn: { id: "patternly:home:select-track:${TRACK_ID}", retryTapIfNoChange: true },
+  });
   assert.match(readiness, /track-card:\$\{TRACK_ID\}/u);
   assert.match(readiness, /practice:hub:root/u);
   assert.match(custom, /patternly:practice:open-setup/u);

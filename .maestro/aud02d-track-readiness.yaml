@@ -69,6 +69,7 @@ tags:
     visibilityPercentage: 50
 - tapOn:
     id: "patternly:home:select-track:${TRACK_ID}"
+    retryTapIfNoChange: true
 - runFlow:
     when:
       visible: ".*Open debugger to view warnings.*"
