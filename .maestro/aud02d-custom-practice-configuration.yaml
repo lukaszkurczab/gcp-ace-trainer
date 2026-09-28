@@ -1,0 +1,40 @@
+appId: com.lkurczab.patternly
+name: Patternly AUD-02D - Custom Practice configuration
+tags:
+  - runtime-auditability
+  - aud-02d
+  - custom-practice
+---
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:coding-interview-custom-practice"
+    direction: DOWN
+- tapOn:
+    id: "patternly:practice:mode-card:coding-interview-custom-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:setup:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:practice:session-length:${LENGTH}"
+- tapOn:
+    id: "patternly:practice:feedback-timing:${FEEDBACK_TIMING}"
+- assertVisible:
+    id: "patternly:practice:session-length:${LENGTH}"
+- assertVisible:
+    id: "patternly:practice:feedback-timing:${FEEDBACK_TIMING}"
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:configuration:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:length:${LENGTH}:feedback-timing:${FEEDBACK_TIMING_ID}"
+- takeScreenshot: "aud02d-custom-${LENGTH}-${FEEDBACK_TIMING}"

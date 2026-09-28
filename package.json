@@ -37,6 +37,7 @@
     "e2e:rc:certification-exam:android": "node scripts/runCertificationExamRcAndroid.mjs",
     "e2e:rc:certification-exam:ios": "node scripts/runCertificationExamRcIos.mjs",
     "e2e:aud-02b:coding-mock:ios": "node scripts/runCodingMockAud02bIos.mjs",
+    "e2e:aud-02d:ios": "node scripts/runAud02dIos.mjs",
     "e2e:rc:algorithms:android": "node scripts/runRcAlgorithmsAndroid.mjs",
     "e2e:rc:algorithms:ios": "node scripts/runRcAlgorithmsIos.mjs",
     "validate:content-boundary": "node scripts/validateContentBoundary.mjs",

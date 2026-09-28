@@ -1,0 +1,13 @@
+appId: com.lkurczab.patternly
+name: Patternly AUD-02D - at-session-end feedback lifecycle
+tags:
+  - runtime-auditability
+  - aud-02d
+  - custom-practice
+---
+- runFlow: m3-custom-at-session-end.yaml
+- assertVisible:
+    id: "patternly:session:counter:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:ordinal:2:length:10"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-001"
+- runFlow: aud02d-feedback-complete-session.yaml

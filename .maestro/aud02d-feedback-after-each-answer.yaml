@@ -1,0 +1,15 @@
+appId: com.lkurczab.patternly
+name: Patternly AUD-02D - after-each-answer feedback lifecycle
+tags:
+  - runtime-auditability
+  - aud-02d
+  - custom-practice
+---
+- runFlow: m4-custom-after-each-answer.yaml
+- assertVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-001"
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-001:incorrect"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-001"
+- runFlow: aud02d-feedback-complete-session.yaml

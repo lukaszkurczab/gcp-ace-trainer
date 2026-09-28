@@ -14,6 +14,11 @@ web-build/
 !.maestro/aud02c-design-simulation-premium.yaml
 !.maestro/aud02c-design-simulation-timeout.yaml
 !.maestro/aud02c-design-simulation-timeout-result.yaml
+!.maestro/aud02d-track-readiness.yaml
+!.maestro/aud02d-custom-practice-configuration.yaml
+!.maestro/aud02d-feedback-after-each-answer.yaml
+!.maestro/aud02d-feedback-at-session-end.yaml
+!.maestro/aud02d-feedback-complete-session.yaml
 !.maestro/backend-ios-simulator-e2e.yaml
 !.maestro/coding-practice-result-review.yaml
 !.maestro/coding-practice-answer-review-details.yaml
