@@ -23,6 +23,7 @@ test("new training sessions have one application entry and no prepare-only bypas
     "src/application/certification/certificationSessionFacade.ts",
     "src/application/coding-interview/codingInterviewSessionFacade.ts",
     "src/application/design-interview/designInterviewSessionFacade.ts",
+    "src/application/design-interview/designInterviewSimulationFacade.ts",
     "src/application/trainingLifecycle/applicationLifecycle.ts",
   ]);
   assert.deepEqual(filesMatching(/getTrainingLifecycleUseCases\(\)\.startSession\s*\(/u), [
