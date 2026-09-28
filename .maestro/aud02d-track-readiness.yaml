@@ -65,7 +65,7 @@ tags:
     element:
       id: "patternly:home:select-track:${TRACK_ID}"
     direction: DOWN
-    centerElement: true
+    centerElement: false
     visibilityPercentage: 50
 - tapOn:
     id: "patternly:home:select-track:${TRACK_ID}"
