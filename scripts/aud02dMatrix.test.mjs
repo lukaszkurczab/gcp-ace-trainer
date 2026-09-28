@@ -1,13 +1,76 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { parseAllDocuments } from "yaml";
 import { AUD02D_CUSTOM_PRACTICE, AUD02D_ENTITLEMENT_SUITES, AUD02D_FEEDBACK_REFERENCES, AUD02D_TRACK_IDS, AUD02D_UDID, canonicalHash, readAud02dBindings } from "./aud02dMatrix.mjs";
 import { createGenerationPinnedSmokeSession, readAuthorizationGeneration } from "./aud02dAuthEvidence.mjs";
 import { validateAud02dExpoManifest } from "./aud02dExpoManifest.mjs";
+import { sanitizeAndScanOutputRoot } from "./aud02dEvidenceRedaction.mjs";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
+
+test("AUD-02D evidence redaction scrubs text artifacts atomically and scans every regular file", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "aud02d-redaction-"));
+  const secrets = ["e2e@example.test", "P@ssword-123"];
+  try {
+    const cases = path.join(root, "cases", "one");
+    await mkdir(cases, { recursive: true });
+    const jsonPath = path.join(cases, "maestro.json");
+    const logPath = path.join(cases, "maestro.log");
+    const untouchedPath = path.join(cases, "clean.log");
+    await writeFile(jsonPath, JSON.stringify({ email: secrets[0], nested: [secrets[1], secrets[0]] }));
+    await writeFile(logPath, `${secrets[0]} ${secrets[1]} ${secrets[0]}\n`);
+    await writeFile(untouchedPath, "no credentials here\n");
+
+    await sanitizeAndScanOutputRoot(root, secrets);
+
+    assert.equal(await readFile(jsonPath, "utf8"), '{"email":"[redacted]","nested":["[redacted]","[redacted]"]}');
+    assert.equal(await readFile(logPath, "utf8"), "[redacted] [redacted] [redacted]\n");
+    assert.equal(await readFile(untouchedPath, "utf8"), "no credentials here\n");
+    const unsupportedPath = path.join(cases, "unsupported.txt");
+    await writeFile(unsupportedPath, `raw ${secrets[0]}`);
+    await assert.rejects(sanitizeAndScanOutputRoot(root, secrets), /unredacted credential/u);
+    await assert.rejects(readFile(unsupportedPath), { code: "ENOENT" });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("AUD-02D evidence redaction rejects symbolic links under the output root", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "aud02d-redaction-link-"));
+  const outsidePath = path.join(root, "outside.log");
+  const outputRoot = path.join(root, "output");
+  try {
+    await mkdir(outputRoot);
+    await writeFile(outsidePath, "outside\n");
+    await symlink(outsidePath, path.join(outputRoot, "linked.log"));
+    await assert.rejects(sanitizeAndScanOutputRoot(outputRoot, ["secret"]), /symbolic link/u);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("AUD-02D evidence scan removes later unsafe credential files after an earlier directory symlink", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "aud02d-redaction-dir-link-"));
+  const outputRoot = path.join(root, "output");
+  const outsideDirectory = path.join(root, "outside");
+  const unsupportedPath = path.join(outputRoot, "z-secret.txt");
+  try {
+    await mkdir(outputRoot);
+    await mkdir(outsideDirectory);
+    await writeFile(path.join(outsideDirectory, "outside.log"), "outside\n");
+    await symlink(outsideDirectory, path.join(outputRoot, "a-linked-directory"), "dir");
+    await writeFile(unsupportedPath, "secret-value");
+
+    await assert.rejects(sanitizeAndScanOutputRoot(outputRoot, ["secret-value"]), /symbolic links/u);
+    await assert.rejects(readFile(unsupportedPath), { code: "ENOENT" });
+    assert.equal(await readFile(path.join(outsideDirectory, "outside.log"), "utf8"), "outside\n");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 test("AUD-02D matrix is exactly bound to the nine-track candidate lock", async () => {
   const lock = JSON.parse(await readFile(path.join(ROOT, "integration/contracts/content-release/release.lock.json"), "utf8"));

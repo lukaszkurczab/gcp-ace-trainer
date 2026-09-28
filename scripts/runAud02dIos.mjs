@@ -1,7 +1,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:net";
 import { existsSync, readFileSync } from "node:fs";
-import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
@@ -11,6 +11,7 @@ import { validateAud02dExpoManifest } from "./aud02dExpoManifest.mjs";
 import { parseDotenv, validateLocalProfile } from "./runLocalProfile.mjs";
 import { waitForContentPreparationState } from "./waitForContentPreparationState.mjs";
 import { addCleanupContext, awaitChildWithCleanup, childFailure, verifyProcessOwnership, waitForChildReadiness } from "./aud02dChildProcess.mjs";
+import { assertOutputRootIsRealDirectory, redactExactBytes, sanitizeAndScanOutputRoot } from "./aud02dEvidenceRedaction.mjs";
 
 const APP_ROOT = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const CONTENT_ROOT = path.resolve(process.env.PATTERNLY_CONTENT_ROOT ?? path.resolve(APP_ROOT, "../patternly-content"));
@@ -23,6 +24,7 @@ const OUTPUT_ROOT = required("MAESTRO_TEST_OUTPUT_DIR");
 const [flag, suppliedUdid] = process.argv.slice(2);
 if (flag !== "--udid" || suppliedUdid?.toUpperCase() !== AUD02D_UDID) throw new Error(`Usage: MAESTRO_TEST_OUTPUT_DIR=<directory> node scripts/runAud02dIos.mjs --udid ${AUD02D_UDID}`);
 await mkdir(OUTPUT_ROOT, { recursive: true });
+await assertOutputRootIsRealDirectory(OUTPUT_ROOT);
 let activeCaseDirectory = OUTPUT_ROOT;
 let activeCaseRecord;
 const manifest = { schemaVersion: "patternly-aud02d-local-rc-v1", udid: AUD02D_UDID, cases: [] };
@@ -110,8 +112,22 @@ try {
   throw error;
 } finally {
   manifest.finishedAt = new Date().toISOString();
+  try { await sanitizeAndScanOutputRoot(OUTPUT_ROOT, Object.values(credentials ?? {})); }
+  catch {
+    failed = true;
+    manifest.failure = "AUD-02D output sanitization or credential scan failed.";
+  }
+  scrubManifestSecrets();
   manifest.finalCanonicalSha256 = canonicalHash({ ...manifest, finalCanonicalSha256: undefined });
   await writeFile(path.join(OUTPUT_ROOT, "aud02d-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+  try { await sanitizeAndScanOutputRoot(OUTPUT_ROOT, Object.values(credentials ?? {})); }
+  catch {
+    failed = true;
+    manifest.failure = "AUD-02D output sanitization or credential scan failed.";
+    scrubManifestSecrets();
+    manifest.finalCanonicalSha256 = canonicalHash({ ...manifest, finalCanonicalSha256: undefined });
+    await writeFile(path.join(OUTPUT_ROOT, "aud02d-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+  }
   try { if (sharedBackend) await stopBackend(sharedBackend); }
   finally { if (metro) await stopMetro(metro); }
   if (failed) process.exitCode = 1;
@@ -120,20 +136,24 @@ try {
 async function runCase(id, inputs, execute) {
   const caseDirectory = path.join(OUTPUT_ROOT, "cases", id.replace(/[^a-zA-Z0-9._-]/gu, "-"));
   await mkdir(caseDirectory, { recursive: true });
+  await sanitizeAndScanOutputRoot(OUTPUT_ROOT, Object.values(credentials));
   const artifactsBefore = await inventoryArtifacts(caseDirectory);
   let before;
   try { before = await caseSnapshot(); }
   catch (error) {
+    let outputSafe = true;
+    try { await sanitizeAndScanOutputRoot(OUTPUT_ROOT, Object.values(credentials)); }
+    catch { outputSafe = false; manifest.failure = "AUD-02D output sanitization or credential scan failed."; }
     const record = {
       id,
       inputs,
       startedAt: new Date().toISOString(),
       finishedAt: new Date().toISOString(),
       result: "BLOCKED",
-      preflightError: error instanceof Error ? error.message : String(error),
+      preflightError: manifest.failure ?? (error instanceof Error ? error.message : String(error)),
       artifactDirectory: caseDirectory,
       artifactsBefore,
-      artifactsAfter: await inventoryArtifacts(caseDirectory),
+      artifactsAfter: outputSafe ? await inventoryArtifacts(caseDirectory) : [],
       artifactPaths: [],
     };
     manifest.cases.push(record);
@@ -154,6 +174,7 @@ async function runCase(id, inputs, execute) {
       record.entitlementTransitions.push({ observedAt: observation.observedAt, phase: observation.phase, state: observation.entitlement.state, source: observation.entitlement.source });
     }
     await execute(record);
+    await sanitizeAndScanOutputRoot(OUTPUT_ROOT, Object.values(credentials));
     const after = await caseSnapshot();
     record.finishedAt = new Date().toISOString();
     record.after = after;
@@ -166,8 +187,15 @@ async function runCase(id, inputs, execute) {
     record.finishedAt = new Date().toISOString();
     record.result = "FAIL";
     record.error = error instanceof Error ? error.message : String(error);
-    try { record.after = await caseSnapshot(); } catch (snapshotError) { record.afterError = snapshotError instanceof Error ? snapshotError.message : String(snapshotError); }
-    record.artifactsAfter = await inventoryArtifacts(caseDirectory);
+    let outputSafe = true;
+    try { await sanitizeAndScanOutputRoot(OUTPUT_ROOT, Object.values(credentials)); }
+    catch { outputSafe = false; record.error = "AUD-02D output sanitization or credential scan failed."; }
+    if (outputSafe) {
+      try { record.after = await caseSnapshot(); } catch (snapshotError) { record.afterError = snapshotError instanceof Error ? snapshotError.message : String(snapshotError); }
+      record.artifactsAfter = await inventoryArtifacts(caseDirectory);
+    } else {
+      record.artifactsAfter = [];
+    }
     record.artifactPaths = record.artifactsAfter.map(({ path: artifactPath }) => artifactPath);
     await writeManifest();
     throw error;
@@ -176,6 +204,12 @@ async function runCase(id, inputs, execute) {
     activeCaseRecord = undefined;
   }
   await writeManifest();
+}
+
+function scrubManifestSecrets() {
+  const serialized = Buffer.from(JSON.stringify(manifest));
+  const scrubbed = redactExactBytes(serialized, Object.values(credentials ?? {}));
+  Object.assign(manifest, JSON.parse(scrubbed.toString("utf8")));
 }
 
 async function caseSnapshot() {
@@ -686,8 +720,11 @@ async function inventoryArtifacts(directory) {
   async function walk(current) {
     for (const entry of await readdir(current, { withFileTypes: true })) {
       const absolute = path.join(current, entry.name);
-      if (entry.isDirectory()) await walk(absolute);
-      else if (entry.isFile()) output.push({ path: absolute, bytes: (await stat(absolute)).size });
+      const info = await lstat(absolute);
+      if (info.isSymbolicLink()) throw new Error("AUD-02D output contains a symbolic link.");
+      if (info.isDirectory()) await walk(absolute);
+      else if (info.isFile()) output.push({ path: absolute, bytes: info.size });
+      else throw new Error("AUD-02D output contains a non-regular file.");
     }
   }
   await walk(directory);
@@ -702,6 +739,8 @@ function loadSmokeEnvironment() {
 }
 
 async function writeManifest() {
+  if (credentials) await sanitizeAndScanOutputRoot(OUTPUT_ROOT, Object.values(credentials));
+  scrubManifestSecrets();
   manifest.finalCanonicalSha256 = canonicalHash({ ...manifest, finalCanonicalSha256: undefined });
   await writeFile(path.join(OUTPUT_ROOT, "aud02d-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 }
