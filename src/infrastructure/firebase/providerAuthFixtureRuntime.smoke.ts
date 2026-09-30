@@ -1,4 +1,5 @@
 import type { AppleCredentialDependencies } from "./firebaseAuthClient";
+import type { AppleAuthenticationCredential } from "expo-apple-authentication";
 import type { ProviderAuthFixtureCommand } from "./providerAuthFixtureCommand";
 import type { ProviderAuthFixtureRuntime } from "./providerAuthFixtureRuntime.disabled";
 
@@ -26,12 +27,22 @@ export function createProviderAuthFixtureRuntime(
     createAppleCredentialDependencies(command): AppleCredentialDependencies {
       assertProvider(command, "apple");
       const apple = Object.freeze({
-        AppleAuthenticationScope: Object.freeze({ EMAIL: 1, FULL_NAME: 0 }),
+        AppleAuthenticationScope: Object.freeze({ EMAIL: 1, FULL_NAME: 0, 0: "FULL_NAME", 1: "EMAIL" }) satisfies AppleCredentialDependencies["apple"]["AppleAuthenticationScope"],
         async isAvailableAsync() { return true; },
-        async signInAsync({ nonce }: Readonly<{ nonce: string }>) {
-          return { identityToken: JSON.stringify({ sub: subjectFor(command), email_verified: true, nonce }) };
+        async signInAsync(options) {
+          const nonce = options?.nonce ?? "";
+          const result = {
+            user: subjectFor(command),
+            state: options?.state ?? null,
+            fullName: null,
+            email: null,
+            realUserStatus: 2 as AppleAuthenticationCredential["realUserStatus"],
+            identityToken: JSON.stringify({ sub: subjectFor(command), email_verified: true, nonce }),
+            authorizationCode: null,
+          } satisfies AppleAuthenticationCredential;
+          return result;
         },
-      }) as unknown as AppleCredentialDependencies["apple"];
+      }) satisfies AppleCredentialDependencies["apple"];
       return Object.freeze({ apple, createRawNonce: options.createRawNonce ?? createExpoRawNonce });
     },
   });
