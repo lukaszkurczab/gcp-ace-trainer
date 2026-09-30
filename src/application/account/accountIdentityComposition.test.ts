@@ -321,9 +321,12 @@ test("explicit login and registration Auth mutations serialize with local sign-o
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
   assert.match(provider, /const runAuthMutationWithAuth = useCallback[\s\S]*?sensitiveCommandLane\.runWhenIdle\(\(\) => runWithAuth\(operation\)\)/);
   const accountCommands = provider.slice(provider.indexOf("const value = useMemo<AccountSessionContextValue>"), provider.indexOf("}), [accountEntryMode"));
-  for (const command of ["register", "signIn", "signInWithApple", "signInWithGoogle", "registerWithApple", "registerWithGoogle", "signOut"]) {
+  for (const command of ["register", "signIn", "signOut"]) {
     assert.match(accountCommands, new RegExp(`${command}: [^\\n]*=> runAuthMutationWithAuth\\(`), command);
   }
+  assert.match(accountCommands, /signInWithApple: \(locale, appleCredentialDependencies\) => authClient && apiClient \? runProviderFirstUse/u);
+  assert.match(accountCommands, /signInWithGoogle: \(idToken, locale\) => authClient && apiClient \? runProviderFirstUse/u);
+  assert.doesNotMatch(accountCommands, /registerWithApple|registerWithGoogle/u);
 });
 
 test("restored matching logout block closes scope and remains pending until manual retry", () => {
@@ -508,6 +511,8 @@ test("registration keeps consent presentation separate from the boolean domain c
   const recoveryCheckboxStart = screen.indexOf('testID="account-recovery-codes-saved-checkbox"');
   const recoveryCheckboxEnd = screen.indexOf("</Pressable>", recoveryCheckboxStart);
   const passwordStart = screen.indexOf("function AuthPasswordInput");
+  const providerReviewStart = screen.indexOf("function ProviderRegistrationScreen");
+  const providerReviewEnd = screen.indexOf("function DocumentConfirmation", providerReviewStart);
 
   assert.match(screen, /type TermsPresentationState = "pristine" \| "checked" \| "uncheckedAfterInteraction"/u);
   assert.match(screen, /useState<TermsPresentationState>\("pristine"\)/u);
@@ -521,6 +526,7 @@ test("registration keeps consent presentation separate from the boolean domain c
   const termsAcceptance = screen.slice(termsStart, termsEnd);
   const recoveryCheckbox = screen.slice(recoveryCheckboxStart, recoveryCheckboxEnd);
   const passwordInput = screen.slice(passwordStart);
+  const providerReview = screen.slice(providerReviewStart, providerReviewEnd);
   assert.equal((registration.match(/enableFocusHighlight/g) ?? []).length, 2);
   assert.match(registration, /const \[emailFocused, setEmailFocused\] = useState\(false\)/u);
   assert.match(registration, /onFocus=\{\(\) => setEmailFocused\(true\)\}/u);
@@ -561,15 +567,27 @@ test("registration keeps consent presentation separate from the boolean domain c
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
   assert.match(provider, /registrationIntentRef[\s\S]*?inFlight\?\.uid === user\.uid[\s\S]*?return inFlight\.promise/u);
   assert.match(provider, /registrationIntentRef\.current = Object\.freeze\(\{ uid: user\.uid, promise \}\)/u);
-  assert.match(provider, /const registration = await api\.registerAccount\(registrationEvidence\(locale\)\)/u);
+  assert.match(provider, /const registration = await api\.registerAccount\(evidence\)/u);
   assert.match(provider, /if \(registration\.registration\.created\) await markGuestInstallationAdoptionPending\(\)/u);
-  assert.match(provider, /registration\.registration\.created[\s\S]*?finalizeCurrent\(auth, api, user, false, generation, true, true\)[\s\S]*?: finalizeExplicitAuthentication\(auth, api, user\)/u);
+  assert.match(provider, /registration\.registration\.created[\s\S]*?finalizeCurrent\(auth, api, user, false, generation, true, true\)[\s\S]*?: finalizeExisting \? finalizeExisting\(\) : finalizeExplicitAuthentication\(auth, api, user\)/u);
   assert.match(provider, /loadAccountDataSession\(api, response\.user\.id, \{ guestAdoption: allowGuestAdoption \? "allow" : "discard" \}\)/u);
   assert.match(provider, /!activeProfile && \(preparedSelection\.kind === "guest" \|\| preparedSelection\.kind === "legacy_guest"\)[\s\S]*?activatePreparedProfile\(preparedSelection\.id, preparedSelection\.kind, \{ deferReadyNotification: true \}\)/u);
   assert.match(provider, /guestInstallation\?\.bindingState === "adoption_pending"[\s\S]*?attempt\.guestAdoption = true[\s\S]*?notifyProfileStorageReady\(\)/u);
   assert.match(provider, /register: \(email,[\s\S]*?legalAcceptancePendingRef\.current = true[\s\S]*?auth\.register\([\s\S]*?legalAcceptancePendingRef\.current = false/u);
-  assert.match(provider, /registerWithApple:[\s\S]*?legalAcceptancePendingRef\.current = true[\s\S]*?auth\.signInWithApple\(\)[\s\S]*?legalAcceptancePendingRef\.current = false/u);
-  assert.match(provider, /registerWithGoogle:[\s\S]*?legalAcceptancePendingRef\.current = true[\s\S]*?auth\.signInWithGoogle\(idToken\)[\s\S]*?legalAcceptancePendingRef\.current = false/u);
+  assert.match(provider, /signInWithApple: \(locale, appleCredentialDependencies\) => authClient && apiClient \? runProviderFirstUse\(authClient, apiClient, locale, \(\) => authClient\.signInWithApple\(appleCredentialDependencies\)\)/u);
+  assert.match(provider, /signInWithGoogle: \(idToken, locale\) => authClient && apiClient \? runProviderFirstUse\(authClient, apiClient, locale, \(\) => authClient\.signInWithGoogle\(idToken\)\)/u);
+  assert.match(provider, /isAccountNotFound: \(error\) => error instanceof PatternlyApiClientError[\s\S]*?error\.status === 404[\s\S]*?error\.serverCode === "account_not_found"/u);
+  assert.match(provider, /!user && isProviderAuthenticationCancelled\(error\)[\s\S]*?kind: "success", next: "signedOut"/u);
+  assert.match(provider, /ERR_REQUEST_CANCELED[\s\S]*?auth\/popup-closed-by-user/u);
+  assert.match(screen, /result\.kind === "success" && result\.next === "signedOut" \? null : result/u);
+  assert.match(provider, /registerProviderIdentity = useCallback[\s\S]*?termsAccepted: boolean, privacyPolicyAcknowledged: boolean[\s\S]*?termsAccepted \|\| !privacyPolicyAcknowledged/u);
+  assert.match(provider, /termsVersion: current\.documents\.documents\.terms\.version[\s\S]*?privacyPolicyVersion: current\.documents\.documents\.privacy\.version[\s\S]*?privacyPolicyAcknowledged: true/u);
+  assert.match(provider, /result\.kind === "failure"[\s\S]*?auth\.getSnapshot\(\) === null[\s\S]*?observerBlockedUidRef\.current === current\.user\.uid[\s\S]*?observerBlockedUidRef\.current = null/u);
+  assert.match(providerReview, /const \[termsAccepted, setTermsAccepted\] = useState\(false\)/u);
+  assert.match(providerReview, /const \[privacyAcknowledged, setPrivacyAcknowledged\] = useState\(false\)/u);
+  assert.match(providerReview, /const \[termsViewed, setTermsViewed\] = useState\(false\)/u);
+  assert.match(providerReview, /const \[privacyViewed, setPrivacyViewed\] = useState\(false\)/u);
+  assert.doesNotMatch(provider, /registerWithApple|registerWithGoogle/u);
   assert.match(provider, /signOutRejectedIdentity[\s\S]*?auth\.getSnapshot\(\)[\s\S]*?failure: "signOutPending"/u);
   assert.match(provider, /firebaseAuthErrorCode\(error\) === "auth\/email-already-in-use"[\s\S]*?auth\.signIn\(email\.trim\(\)\.toLowerCase\(\), password\)[\s\S]*?registerAuthenticatedIdentity/u);
 });
@@ -603,6 +621,7 @@ test("unconfigured account entry never composes Google OAuth without typed provi
   assert.match(provider, /Google\.useIdTokenAuthRequest\([\s\S]*?androidClientId: configuration\.googleAndroidClientId[\s\S]*?iosClientId: configuration\.googleIosClientId[\s\S]*?webClientId: configuration\.googleWebClientId/);
   assert.match(provider, /googleResponse\.type !== "success"[\s\S]*?googleResponse\.type === "error"/);
   assert.match(provider, /accountRef\.current[\s\S]*?signInWithGoogle/);
+  assert.doesNotMatch(accountEntry.slice(accountEntry.indexOf('if (mode === "register")'), accountEntry.indexOf('if (mode === "recovery")')), /continueWithApple|continueWithGoogle|registerWith/u);
   assert.match(provider, /feedbackRef\.current/);
   assert.match(provider, /<ProviderButton[\s\S]*?icon="google"[\s\S]*?text=\{text\}/);
   assert.doesNotMatch(provider, /(?:androidClientId|iosClientId|webClientId):\s*["']/);

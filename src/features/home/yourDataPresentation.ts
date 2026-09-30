@@ -9,6 +9,7 @@ export type YourDataStateCopy =
   | "signedOut"
   | "guestAccessBlocked"
   | "verificationPending"
+  | "providerRegistrationRequired"
   | "loading"
   | "authRestoreTimeout"
   | "firebaseUnconfigured"
@@ -19,7 +20,8 @@ export type YourDataStateCopy =
   | "deleting"
   | "backendUnavailable"
   | "reauthenticationRequired"
-  | "revokedSession";
+  | "revokedSession"
+  | "signOutPending";
 
 export type YourDataAction = Readonly<{
   kind: YourDataActionKind;
@@ -53,6 +55,8 @@ export function getYourDataPresentation(state: AccountState): YourDataPresentati
       return presentation("guestAccessBlocked", "openAccount", "user", "data-open-account", "none", false);
     case "verificationPending":
       return presentation("verificationPending", "openAccount", "user", "data-open-account", "none", false);
+    case "providerRegistrationRequired":
+      return presentation("providerRegistrationRequired", "none", "info-circle", undefined, "none", false);
     case "loading":
     case "profilePreparing":
       return presentation("loading", "none", "info-circle", undefined, "none", false);
@@ -71,7 +75,9 @@ export function getYourDataPresentation(state: AccountState): YourDataPresentati
     case "revokedSession":
       return presentation("revokedSession", "signOut", "user", "data-sign-out", "none", false);
     case "signOutPending":
-      return presentation("revokedSession", "signOut", "user", "data-sign-out", "none", false);
+      return state.provisional
+        ? presentation("signOutPending", "none", "info-circle", undefined, "none", false)
+        : presentation("signOutPending", "signOut", "user", "data-sign-out", "none", false);
   }
   return assertNever(state);
 }

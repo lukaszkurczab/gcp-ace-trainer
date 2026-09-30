@@ -74,6 +74,49 @@ test("account session exchange rejects a missing custom token", async () => {
   await assert.rejects(client.exchangeAccountSession(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 });
 
+test("account registration validates and preserves distinct Terms and Privacy evidence", async () => {
+  const acceptance = {
+    termsVersion: "terms-v1",
+    termsLocale: "en",
+    privacyPolicyVersion: "privacy-v2",
+    privacyPolicyLocale: "pl",
+    privacyPolicyAcknowledged: true,
+    acceptedAt: "2026-09-27T10:00:00.000Z",
+  };
+  const user = {
+    id: "account-id",
+    createdAt: "2026-09-27T10:00:00.000Z",
+    acceptedTermsVersion: "terms-v1",
+    identity: { provider: "apple", subject: "synthetic-subject", email: null, emailVerified: true },
+  };
+  const createdClient = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ registration: { created: true, user, acceptance } }), { status: 201 }) });
+  assert.deepEqual((await createdClient.registerAccount({
+    termsVersion: "terms-v1",
+    termsLocale: "en",
+    privacyPolicyVersion: "privacy-v2",
+    privacyPolicyLocale: "pl",
+    privacyPolicyAcknowledged: true,
+  })).registration.acceptance, acceptance);
+
+  const existingClient = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ registration: { created: false, user, acceptance: null } }), { status: 200 }) });
+  assert.deepEqual(await existingClient.registerAccount({
+    termsVersion: "terms-v1",
+    termsLocale: "en",
+    privacyPolicyVersion: "privacy-v2",
+    privacyPolicyLocale: "pl",
+    privacyPolicyAcknowledged: true,
+  }), { registration: { created: false, user, acceptance: null } });
+
+  const malformedClient = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ registration: { created: true, user, acceptance: { ...acceptance, privacyPolicyAcknowledged: false } } }), { status: 201 }) });
+  await assert.rejects(malformedClient.registerAccount({
+    termsVersion: "terms-v1",
+    termsLocale: "en",
+    privacyPolicyVersion: "privacy-v2",
+    privacyPolicyLocale: "pl",
+    privacyPolicyAcknowledged: true,
+  }), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+});
+
 test("session revocation accepts only the exact operation and a nonempty replacement token", async () => {
   const operationId = "00000000-0000-4000-8000-000000000001";
   const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ status: "revoked", operationId, customToken: "replacement-token" }), { status: 200 }) });

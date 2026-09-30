@@ -48,7 +48,9 @@
     "signingOut": { "title": "Déconnexion", "body": "La déconnexion est en cours. Les actions sur les données du compte sont temporairement indisponibles." },
     "deleting": { "title": "Suppression du compte", "body": "La suppression du compte est en cours. Les actions sur les données du compte sont temporairement indisponibles." },
     "backendUnavailable": { "title": "Service de compte indisponible", "body": "Nous n’avons pas pu actualiser la session de votre compte. Réessayez." },
-    "revokedSession": { "title": "Session expirée", "body": "Votre session de compte n’est plus valide. Déconnectez-vous, puis reconnectez-vous." }
+    "revokedSession": { "title": "Session expirée", "body": "Votre session de compte n’est plus valide. Déconnectez-vous, puis reconnectez-vous." },
+    "signOutPending": { "title": "Déconnexion en attente", "body": "La déconnexion sur cet appareil n’a pas abouti. Réessayez avant d’utiliser les données du compte." },
+    "providerRegistrationRequired": { "title": "Vérifier les documents du compte", "body": "Terminez ou annulez la création du compte avant d’ouvrir ses données." }
   },
   "privacyRequests": {
     "title": "Demandes relatives à la confidentialité",

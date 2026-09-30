@@ -376,7 +376,58 @@ export type AccountRegistrationInputDto = Readonly<{
   privacyPolicyLocale: "en" | "pl";
   privacyPolicyAcknowledged: true;
 }>;
-export type AccountRegistrationResponseDto = Readonly<{ registration: Readonly<{ created: boolean; user: MeResponseDto["user"]; acceptance: Readonly<{ termsVersion: string; acceptedAt: string }> | null }> }>;
+export type AccountRegistrationAcceptanceDto = AccountRegistrationInputDto & Readonly<{ acceptedAt: string }>;
+export type AccountRegistrationResponseDto = Readonly<{ registration: Readonly<{ created: boolean; user: MeResponseDto["user"]; acceptance: AccountRegistrationAcceptanceDto | null }> }>;
+
+function parseAccountRegistrationResponse(value: unknown): AccountRegistrationResponseDto {
+  if (!isPlainRecord(value) || !hasExactKeys(value, ["registration"]) || !isPlainRecord(value.registration)
+    || !hasExactKeys(value.registration, ["created", "user", "acceptance"])) return invalidResponse();
+  const registration = value.registration;
+  if (typeof registration.created !== "boolean" || !isPlainRecord(registration.user)
+    || !hasExactKeys(registration.user, ["id", "createdAt", "acceptedTermsVersion", "identity"])) return invalidResponse();
+  const user = registration.user;
+  if (!isNonEmptyString(user.id) || !isNonEmptyString(user.createdAt)
+    || !(user.acceptedTermsVersion === null || isNonEmptyString(user.acceptedTermsVersion))
+    || !isPlainRecord(user.identity) || !hasExactKeys(user.identity, ["provider", "subject", "email", "emailVerified"])
+    || !isNonEmptyString(user.identity.provider) || !isNonEmptyString(user.identity.subject)
+    || !(user.identity.email === null || typeof user.identity.email === "string")
+    || typeof user.identity.emailVerified !== "boolean") return invalidResponse();
+
+  let acceptance: AccountRegistrationAcceptanceDto | null = null;
+  if (registration.acceptance !== null) {
+    const candidate = registration.acceptance;
+    if (!isPlainRecord(candidate) || !hasExactKeys(candidate, ["termsVersion", "termsLocale", "privacyPolicyVersion", "privacyPolicyLocale", "privacyPolicyAcknowledged", "acceptedAt"])
+      || !isNonEmptyString(candidate.termsVersion) || (candidate.termsLocale !== "en" && candidate.termsLocale !== "pl")
+      || !isNonEmptyString(candidate.privacyPolicyVersion) || (candidate.privacyPolicyLocale !== "en" && candidate.privacyPolicyLocale !== "pl")
+      || candidate.privacyPolicyAcknowledged !== true || !isNonEmptyString(candidate.acceptedAt)) return invalidResponse();
+    acceptance = Object.freeze({
+      termsVersion: candidate.termsVersion,
+      termsLocale: candidate.termsLocale,
+      privacyPolicyVersion: candidate.privacyPolicyVersion,
+      privacyPolicyLocale: candidate.privacyPolicyLocale,
+      privacyPolicyAcknowledged: true,
+      acceptedAt: candidate.acceptedAt,
+    });
+  }
+  if (registration.created !== (acceptance !== null)) return invalidResponse();
+  return Object.freeze({
+    registration: Object.freeze({
+      created: registration.created,
+      user: Object.freeze({
+        id: user.id,
+        createdAt: user.createdAt,
+        acceptedTermsVersion: user.acceptedTermsVersion,
+        identity: Object.freeze({
+          provider: user.identity.provider,
+          subject: user.identity.subject,
+          email: user.identity.email,
+          emailVerified: user.identity.emailVerified,
+        }),
+      }),
+      acceptance,
+    }),
+  });
+}
 
 export class PatternlyApiClientError extends Error {
   public constructor(readonly code: PatternlyApiClientErrorCode, readonly status?: number, readonly serverCode?: string, readonly retryAfterSeconds?: number) {
@@ -579,7 +630,7 @@ export function createPatternlyApiClient(input: Readonly<{
       }
       return Object.freeze({ customToken: response.customToken });
     },
-    registerAccount: (body) => requestJson<AccountRegistrationResponseDto>("/v1/account/registration", "POST", body),
+    registerAccount: async (body) => parseAccountRegistrationResponse(await requestJson<unknown>("/v1/account/registration", "POST", body)),
     recordLegalAcceptance: (termsVersion) => requestJson("/v1/legal-acceptances", "POST", { termsVersion, minimumAgeConfirmed: 18 }),
     recordPurchaseConfirmation: (body) => requestJson("/v1/purchase-confirmations", "POST", body),
     getEntitlements: () => requestJson<EntitlementsResponseDto>("/v1/entitlements", "GET"),

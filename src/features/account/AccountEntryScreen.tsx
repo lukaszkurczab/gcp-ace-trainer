@@ -36,6 +36,10 @@ import {
 import { PatternlyMark } from "../../components/PatternlyMark";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
+import { parseProviderAuthFixtureUrl, type ProviderAuthFixtureCommand } from "../../infrastructure/firebase/providerAuthFixtureCommand";
+import { createProviderAuthFixtureRuntime } from "../../infrastructure/firebase/providerAuthFixtureRuntime";
+import type { ProviderAuthFixtureRuntime } from "../../infrastructure/firebase/providerAuthFixtureRuntime";
+import type { AppleCredentialDependencies } from "../../infrastructure/firebase/firebaseAuthClient";
 import {
   usePatternlyAccount,
   type AccountCommandResult,
@@ -220,6 +224,14 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   privacyAcknowledgementPrefix: t("privacyAcknowledgementPrefix"),
   termsOfService: t("termsOfService"),
   privacyPolicy: t("privacyPolicy"),
+  providerRegistrationTitle: t("providerRegistrationTitle"),
+  providerRegistrationDescription: t("providerRegistrationDescription"),
+  acceptTermsStatement: t("acceptTermsStatement"),
+  acknowledgePrivacyStatement: t("acknowledgePrivacyStatement"),
+  providerDocumentsUnavailable: t("providerDocumentsUnavailable"),
+  providerDocumentsUnavailableDescription: t("providerDocumentsUnavailableDescription"),
+  providerCancel: t("providerCancel"),
+  providerCreateAccount: t("providerCreateAccount"),
   and: t("and"),
   showPassword: t("showPassword"),
   hidePassword: t("hidePassword"),
@@ -251,6 +263,10 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [providerPending, setProviderPending] = useState(false);
+  const [providerAuthFixture, setProviderAuthFixture] = useState<ProviderAuthFixtureCommand | null>(null);
+  const [providerAuthFixtureError, setProviderAuthFixtureError] = useState(false);
+  const providerAuthFixtureRuntime = useMemo(() => createProviderAuthFixtureRuntime(), []);
   const [termsPresentationState, setTermsPresentationState] = useState<TermsPresentationState>("pristine");
   const [resetCode, setResetCode] = useState("");
   const [recoveryCode, setRecoveryCode] = useState("");
@@ -295,6 +311,21 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   useEffect(() => {
     const consumeUrl = (url: string | null) => {
       if (!url) return;
+      const fixture = parseProviderAuthFixtureUrl(url);
+      if (fixture.kind === "armed") {
+        setProviderAuthFixture(fixture.command);
+        setProviderAuthFixtureError(false);
+        setFeedback(null);
+        setMode("signIn");
+        return;
+      }
+      if (fixture.kind === "invalid") {
+        setProviderAuthFixture(null);
+        setProviderAuthFixtureError(true);
+        setMode("signIn");
+        setFeedback({ kind: "failure", failure: "providerUnavailable" });
+        return;
+      }
       try {
         const parsed = new URL(url);
         const code = parsed.searchParams.get("oobCode");
@@ -322,6 +353,15 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   }, []);
 
   const screenEdges: Edge[] = ["top", "bottom"];
+  if (account.state.kind === "providerRegistrationRequired") return (
+    <ProviderRegistrationScreen
+      account={account}
+      documents={account.state.documents}
+      locale={locale}
+      navigation={navigation}
+      text={text}
+    />
+  );
   if (account.state.kind === "unavailable") {
     const authRestoreTimedOut = account.state.reason === "auth_restore_timeout";
     return (
@@ -433,7 +473,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   if (account.state.kind === "signOutPending")
     return (
       <AuthStatusScreen
-        action={{ label: text.signOut, onPress: () => void account.signOut(), testID: "account-sign-out-retry" }}
+        action={{ label: text.signOut, onPress: () => void (account.state.kind === "signOutPending" && account.state.provisional ? account.cancelProviderRegistration() : account.signOut()), testID: "account-sign-out-retry" }}
         backAction={backAction}
         body={text.signOutPendingDescription}
         testID="account-sign-out-pending"
@@ -553,6 +593,15 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           <AuthText style={styles.authTitle}>
             {text.signIn}
           </AuthText>
+          {providerAuthFixture ? (
+            <AuthText style={styles.authDescription} testID="provider-auth-fixture-active">
+              LOCAL AUTH FIXTURE · {providerAuthFixture.provider} · {providerAuthFixture.scenario} · {providerAuthFixture.runId}
+            </AuthText>
+          ) : providerAuthFixtureError ? (
+            <AuthText style={styles.authDescription} testID="provider-auth-fixture-error">
+              Local provider fixture unavailable or invalid. Open a valid emulator fixture link while this sign-in screen is active.
+            </AuthText>
+          ) : null}
           {retainedDataNotice}
           <SignInForm
             email={email}
@@ -594,20 +643,40 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           {Platform.OS === "ios" ? (
             <ProviderButton
               icon="apple"
-              onPress={() =>
-                void account.signInWithApple().then(setResult(setFeedback))
-              }
+              onPress={() => {
+                setProviderPending(true);
+                let appleDependencies: AppleCredentialDependencies | undefined;
+                try {
+                  appleDependencies = providerAuthFixture?.provider === "apple"
+                    ? providerAuthFixtureRuntime.createAppleCredentialDependencies(providerAuthFixture)
+                    : undefined;
+                } catch {
+                  setProviderPending(false);
+                  setFeedback({ kind: "failure", failure: "providerUnavailable" });
+                  return;
+                }
+                void account.signInWithApple(locale, appleDependencies).then((result) => {
+                  setProviderPending(false);
+                  setFeedback(result.kind === "success" && result.next === "signedOut" ? null : result);
+                }).catch(() => {
+                  setProviderPending(false);
+                  setFeedback({ kind: "failure", failure: "providerUnavailable" });
+                });
+              }}
+              disabled={providerPending || Boolean(providerAuthFixture && providerAuthFixture.provider !== "apple")}
               text={text.continueWithApple}
             />
           ) : null}
           {firebaseConfig.kind === "configured" && getFirebaseGoogleClientId(firebaseConfig.value, Platform.OS) ? (
             <GoogleProviderButton
               accountRef={accountRef}
-              mode="signIn"
-              acceptanceConfirmed={true}
               configuration={firebaseConfig.value}
-              locale={legalLocale}
+              locale={locale}
               onFeedback={setFeedback}
+              onPendingChange={setProviderPending}
+              disabled={providerPending || Boolean(providerAuthFixture && providerAuthFixture.provider !== "google")}
+              fixtureCommand={providerAuthFixture?.provider === "google" ? providerAuthFixture : undefined}
+              fixtureRuntime={providerAuthFixtureRuntime}
               text={text.continueWithGoogle}
             />
           ) : null}
@@ -714,26 +783,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
           text={text}
           testID="account-register-submit"
         />
-        <Divider label={text.or} />
-        {Platform.OS === "ios" ? (
-          <ProviderButton
-            disabled={!acceptedTerms}
-            icon="apple"
-            onPress={() => void account.registerWithApple(acceptedTerms, legalLocale).then(setResult(setFeedback))}
-            text={text.continueWithApple}
-          />
-        ) : null}
-        {firebaseConfig.kind === "configured" && getFirebaseGoogleClientId(firebaseConfig.value, Platform.OS) ? (
-          <GoogleProviderButton
-            acceptanceConfirmed={acceptedTerms}
-            accountRef={accountRef}
-            configuration={firebaseConfig.value}
-            locale={legalLocale}
-            mode="register"
-            onFeedback={setFeedback}
-            text={text.continueWithGoogle}
-          />
-        ) : null}
         <Button
           labelStyle={styles.textActionLabel}
           onPress={() => {
@@ -1570,21 +1619,153 @@ function ProviderButton({
   );
 }
 
+function ProviderRegistrationScreen({
+  account,
+  documents,
+  locale,
+  navigation,
+  text,
+}: Readonly<{
+  account: AccountContext;
+  documents: Extract<AccountContext["state"], { kind: "providerRegistrationRequired" }> ["documents"];
+  locale: import("../../preferences/localeResolver").TargetLocale;
+  navigation: AccountEntryProps["navigation"];
+  text: AccountCopy;
+}>) {
+  const styles = useThemedStyles(createStyles);
+  const [pending, setPending] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAcknowledged, setPrivacyAcknowledged] = useState(false);
+  const [termsViewed, setTermsViewed] = useState(false);
+  const [privacyViewed, setPrivacyViewed] = useState(false);
+  const documentsReady = documents.kind === "ready" && documents.documents.locale === locale;
+
+  useEffect(() => {
+    if (documents.kind !== "ready" || documents.documents.locale !== locale) {
+      setTermsAccepted(false);
+      setPrivacyAcknowledged(false);
+      setTermsViewed(false);
+      setPrivacyViewed(false);
+    }
+  }, [documents, locale]);
+
+  const cancel = () => {
+    setPending(true);
+    setFeedback(null);
+    void account.cancelProviderRegistration().then((result) => {
+      setPending(false);
+      setFeedback(result.kind === "failure" ? result : null);
+    });
+  };
+  const submit = () => {
+    if (!documentsReady || !termsViewed || !privacyViewed || !termsAccepted || !privacyAcknowledged || pending) return;
+    setPending(true);
+    setFeedback(null);
+    void account.registerProviderIdentity(termsAccepted, privacyAcknowledged, locale).then((result) => {
+      setPending(false);
+      setFeedback(result.kind === "failure" ? result : null);
+    });
+  };
+
+  return (
+    <Screen edges={["top", "bottom"]} footer={(
+      <View style={styles.providerRegistrationActions}>
+        {documentsReady ? <Button disabled={pending || !termsViewed || !privacyViewed || !termsAccepted || !privacyAcknowledged} loading={pending} onPress={submit} testID="provider-registration-create" variant="primary">{text.providerCreateAccount}</Button> : null}
+        <Button disabled={pending} onPress={cancel} testID="provider-registration-cancel" variant="ghost">{text.providerCancel}</Button>
+      </View>
+    )} footerVariant="sticky">
+      <ScreenHeader backAction={{ onPress: cancel }} title={text.providerRegistrationTitle} />
+      <View style={styles.authPanel} testID="provider-registration-review">
+        <AuthText style={styles.authDescription}>{text.providerRegistrationDescription}</AuthText>
+        {documentsReady ? (
+          <>
+            <DocumentConfirmation
+              checked={termsAccepted}
+              disabled={!termsViewed || pending}
+              linkDisabled={pending}
+              label={text.acceptTermsStatement}
+              linkLabel={text.termsOfService}
+              onChange={setTermsAccepted}
+              onOpen={() => {
+                setTermsViewed(true);
+                navigation.navigate(ROUTES.TERMS_OF_SERVICE);
+              }}
+              testID="provider-registration-terms"
+            />
+            <DocumentConfirmation
+              checked={privacyAcknowledged}
+              disabled={!privacyViewed || pending}
+              linkDisabled={pending}
+              label={text.acknowledgePrivacyStatement}
+              linkLabel={text.privacyPolicy}
+              onChange={setPrivacyAcknowledged}
+              onOpen={() => {
+                setPrivacyViewed(true);
+                navigation.navigate(ROUTES.PRIVACY_POLICY);
+              }}
+              testID="provider-registration-privacy"
+            />
+          </>
+        ) : (
+          <InfoBlock body={text.providerDocumentsUnavailableDescription} title={text.providerDocumentsUnavailable} testID="provider-registration-documents-unavailable" tone="warning" />
+        )}
+        {renderFeedback(feedback, text)}
+      </View>
+    </Screen>
+  );
+}
+
+function DocumentConfirmation({
+  checked,
+  disabled,
+  linkDisabled,
+  label,
+  linkLabel,
+  onChange,
+  onOpen,
+  testID,
+}: Readonly<{
+  checked: boolean;
+  disabled: boolean;
+  linkDisabled: boolean;
+  label: string;
+  linkLabel: string;
+  onChange: (value: boolean) => void;
+  onOpen: () => void;
+  testID: string;
+}>) {
+  const styles = useThemedStyles(createStyles);
+  return (
+    <View style={styles.providerDocumentConfirmation}>
+      <Pressable accessibilityLabel={label} accessibilityRole="checkbox" accessibilityState={{ checked, disabled }} disabled={disabled} onPress={() => onChange(!checked)} style={styles.providerDocumentCheckRow} testID={`${testID}-checkbox`}>
+        <View style={[styles.termsCheckbox, checked ? styles.termsAcceptanceCheckboxChecked : null]}>{checked ? <Icon color={styles.termsAcceptanceCheckboxIcon.color as string} name="check" size={16} /> : null}</View>
+        <AuthText style={styles.termsCopy}>{label}</AuthText>
+      </Pressable>
+      <Button disabled={linkDisabled} onPress={onOpen} testID={`${testID}-link`} variant="ghost">{linkLabel}</Button>
+    </View>
+  );
+}
+
 function GoogleProviderButton({
-  acceptanceConfirmed,
   accountRef,
   configuration,
   locale,
-  mode,
   onFeedback,
+  onPendingChange,
+  fixtureCommand,
+  fixtureRuntime,
+  disabled = false,
   text,
 }: Readonly<{
   accountRef: AccountContextRef;
-  acceptanceConfirmed: boolean;
   configuration: FirebaseClientConfiguration;
-  locale: "en" | "pl";
-  mode: "register" | "signIn";
+  locale: import("../../preferences/localeResolver").TargetLocale;
   onFeedback: (feedback: Feedback) => void;
+  onPendingChange: (pending: boolean) => void;
+  fixtureCommand?: ProviderAuthFixtureCommand;
+  fixtureRuntime: ProviderAuthFixtureRuntime;
+  disabled?: boolean;
   text: string;
 }>) {
   const [googleRequest, googleResponse, promptGoogle] =
@@ -1603,22 +1784,46 @@ function GoogleProviderButton({
   useEffect(() => {
     if (!googleResponse) return;
     if (googleResponse.type !== "success") {
+      onPendingChange(false);
       if (googleResponse.type === "error")
         feedbackRef.current({ kind: "failure", failure: "providerUnavailable" });
       return;
     }
     const idToken = googleResponse.params.id_token;
-    const command = mode === "register"
-      ? accountRef.current.registerWithGoogle(idToken ?? "", acceptanceConfirmed, locale)
-      : accountRef.current.signInWithGoogle(idToken ?? "");
-    void command.then((result) => feedbackRef.current(result));
-  }, [acceptanceConfirmed, googleResponse, locale, mode]);
+    void accountRef.current.signInWithGoogle(idToken ?? "", locale).then((result) => {
+      onPendingChange(false);
+      feedbackRef.current(result);
+    }).catch(() => {
+      onPendingChange(false);
+      feedbackRef.current({ kind: "failure", failure: "providerUnavailable" });
+    });
+  }, [googleResponse, locale, onPendingChange]);
+
+  const signInWithToken = (idToken: string) => {
+    void accountRef.current.signInWithGoogle(idToken, locale).then((result) => {
+      onPendingChange(false);
+      feedbackRef.current(result);
+    }).catch(() => {
+      onPendingChange(false);
+      feedbackRef.current({ kind: "failure", failure: "providerUnavailable" });
+    });
+  };
 
   return (
     <ProviderButton
-      disabled={mode === "register" && !acceptanceConfirmed}
+      disabled={disabled || (!fixtureCommand && !googleRequest)}
       icon="google"
       onPress={() => {
+        if (fixtureCommand) {
+          onPendingChange(true);
+          try {
+            signInWithToken(fixtureRuntime.createGoogleIdToken(fixtureCommand));
+          } catch {
+            onPendingChange(false);
+            feedbackRef.current({ kind: "failure", failure: "providerUnavailable" });
+          }
+          return;
+        }
         if (!googleRequest) {
           feedbackRef.current({
             kind: "failure",
@@ -1626,7 +1831,11 @@ function GoogleProviderButton({
           });
           return;
         }
-        void promptGoogle();
+        onPendingChange(true);
+        void promptGoogle().catch(() => {
+          onPendingChange(false);
+          feedbackRef.current({ kind: "failure", failure: "providerUnavailable" });
+        });
       }}
       text={text}
     />
@@ -2081,6 +2290,9 @@ function isAuthFieldFailure(
     authPanel: { alignSelf: "stretch", gap: spacing.md, minWidth: 0 },
     authPanelLargeText: { gap: spacing.lg },
     authForm: { gap: spacing.md, minWidth: 0 },
+    providerRegistrationActions: { gap: spacing.xs },
+    providerDocumentConfirmation: { borderColor: palette.border, borderRadius: 12, borderWidth: 1, gap: spacing.xs, padding: spacing.md },
+    providerDocumentCheckRow: { alignItems: "flex-start", flexDirection: "row", gap: spacing.sm, minHeight: 44 },
     termsAcceptance: { gap: spacing.xs, minWidth: 0 },
     termsCheckboxRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minWidth: 0 },
     termsCheckboxControl: { alignItems: "center", justifyContent: "center", minHeight: 44, minWidth: 44 },

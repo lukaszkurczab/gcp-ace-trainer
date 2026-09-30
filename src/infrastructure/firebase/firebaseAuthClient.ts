@@ -56,7 +56,7 @@ export type FirebaseAuthClient = Readonly<{
   requestPasswordRecovery: (email: string) => Promise<void>;
   reauthenticateWithCredential: (credentials: FirebaseAuthCredentials) => Promise<FirebaseAuthUserSnapshot>;
   signIn: (email: string, password: string) => Promise<FirebaseAuthUserSnapshot>;
-  signInWithApple: () => Promise<FirebaseAuthUserSnapshot>;
+  signInWithApple: (appleCredentialDependencies?: AppleCredentialDependencies) => Promise<FirebaseAuthUserSnapshot>;
   signInWithGoogle: (idToken: string) => Promise<FirebaseAuthUserSnapshot>;
   signInWithRecoveryToken: (customToken: string) => Promise<FirebaseAuthUserSnapshot>;
   signInWithSessionToken: (customToken: string) => Promise<FirebaseAuthUserSnapshot>;
@@ -93,7 +93,7 @@ type AppleAuthenticationModule = Pick<typeof import("expo-apple-authentication")
 
 export type AppleCredentialDependencies = Readonly<{
   apple: AppleAuthenticationModule;
-  createCredential: (identityToken: string, rawNonce: string) => AuthCredential;
+  createCredential?: (identityToken: string, rawNonce: string) => AuthCredential;
   createRawNonce: () => string;
 }>;
 
@@ -224,7 +224,9 @@ export async function createAppleCredential(
   const rawNonce = dependencies.createRawNonce();
   const credential = await apple.signInAsync({ nonce: sha256Utf8(rawNonce), requestedScopes: [apple.AppleAuthenticationScope.EMAIL, apple.AppleAuthenticationScope.FULL_NAME] });
   if (!credential.identityToken) throw new FirebaseAuthClientError("auth/provider-unavailable");
-  return dependencies.createCredential(credential.identityToken, rawNonce);
+  const createCredential = dependencies.createCredential
+    ?? ((identityToken: string, nonce: string) => new OAuthProvider("apple.com").credential({ idToken: identityToken, rawNonce: nonce }));
+  return createCredential(credential.identityToken, rawNonce);
 }
 
 export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClientConfiguration; authActionOrigin: string; authEmulatorOrigin?: string }>): FirebaseAuthClient {
@@ -323,8 +325,8 @@ export function createFirebaseAuthClient(input: Readonly<{ config: FirebaseClien
     requestPasswordRecovery: async (email: string) => { await sendPasswordResetEmail(auth, email, actionSettings(input.authActionOrigin)); },
     reauthenticateWithCredential: reauthenticateCurrentUser,
     signIn: async (email: string, password: string) => afterCredential((await signInWithEmailAndPassword(auth, email, password)).user),
-    signInWithApple: async () => {
-      return afterCredential((await signInWithCredential(auth, await createAppleCredential())).user);
+    signInWithApple: async (appleCredentialDependencies?: AppleCredentialDependencies) => {
+      return afterCredential((await signInWithCredential(auth, await createAppleCredential(appleCredentialDependencies))).user);
     },
     signInWithGoogle: async (idToken: string) => {
       if (!idToken.trim()) throw new FirebaseAuthClientError("auth/provider-unavailable");

@@ -119,6 +119,14 @@
     "revokedSession": {
       "title": "Sesión caducada",
       "body": "La sesión de tu cuenta ya no es válida. Cierra sesión y vuelve a iniciarla."
+    },
+    "signOutPending": {
+      "title": "Cierre de sesión pendiente",
+      "body": "No se pudo cerrar la sesión en este dispositivo. Vuelve a intentarlo antes de usar los datos de la cuenta."
+    },
+    "providerRegistrationRequired": {
+      "title": "Revisa los documentos de la cuenta",
+      "body": "Termina o cancela la creación de la cuenta antes de abrir sus datos."
     }
   },
   "privacyRequests": {

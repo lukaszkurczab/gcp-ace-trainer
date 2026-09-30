@@ -119,6 +119,14 @@
     "revokedSession": {
       "title": "Seanss on aegunud",
       "body": "Sinu kontoseanss ei kehti enam. Logi välja ja seejärel uuesti sisse."
+    },
+    "signOutPending": {
+      "title": "Väljalogimine on pooleli",
+      "body": "Sellest seadmest väljalogimist ei õnnestunud lõpetada. Enne kontoandmete kasutamist proovi uuesti välja logida."
+    },
+    "providerRegistrationRequired": {
+      "title": "Vaata konto dokumendid üle",
+      "body": "Enne kontoandmete avamist lõpeta konto loomine või tühista see."
     }
   },
   "privacyRequests": {

@@ -119,6 +119,14 @@
     "revokedSession": {
       "title": "Sesja wygasła",
       "body": "Sesja konta nie jest już ważna. Wyloguj się, a następnie zaloguj ponownie."
+    },
+    "signOutPending": {
+      "title": "Wylogowanie w toku",
+      "body": "Nie udało się dokończyć wylogowania na tym urządzeniu. Ponów wylogowanie przed otwarciem danych konta."
+    },
+    "providerRegistrationRequired": {
+      "title": "Sprawdź dokumenty konta",
+      "body": "Dokończ lub anuluj tworzenie konta przed otwarciem danych konta."
     }
   },
   "privacyRequests": {

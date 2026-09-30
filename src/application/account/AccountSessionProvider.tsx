@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExportDto, type LegalRequestDto, type LegalRequestKindDto, type MeResponseDto, type PrivacyRequestListItemDto, type PrivacyRequestResponseDto, type PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
+import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExportDto, type AccountRegistrationInputDto, type LegalRequestDto, type LegalRequestKindDto, type MeResponseDto, type PrivacyRequestListItemDto, type PrivacyRequestResponseDto, type PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domain/entitlements";
 import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
@@ -11,7 +11,7 @@ import { resumePendingSessionRevocation } from "./pendingSessionRevocation";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
-import { createFirebaseAuthClient, firebaseAuthErrorCode, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
+import { createFirebaseAuthClient, firebaseAuthErrorCode, type AppleCredentialDependencies, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, discardGuestDataAndLoadAccount, loadAccountDataSession, resetAccountLocalLearningHistory, retryAccountDataSync, retryLearningPlanRecovery, retryPendingAccountDataSync, retryPendingAccountDeletion, saveGuestAdoptionChoice, type AccountDataSession } from "./accountDataService";
 import { commitLearningStateReset } from "../learningMutations";
@@ -22,6 +22,9 @@ import { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findP
 import { beginAccountSignOut, clearAccountSignOutState, getAccountSignOutState } from "../../storage/repositories/accountLifecycleRepository";
 import { getGuestInstallation, markGuestInstallationAdoptionPending } from "../../storage/repositories/guestInstallationRepository";
 import type { LocalLogoutControl, LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
+import { createProviderFirstUseCoordinator } from "./providerFirstUseCoordinator";
+import { resolveProviderRegistrationDocuments, type ProviderRegistrationDocumentsResult } from "../../legal/providerRegistrationDocuments";
+import type { TargetLocale } from "../../preferences/localeResolver";
 
 export { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findPendingSessionRevocation, finishLocalSignOutSetupFailure, guardAuthenticatedScopeAgainstIncompleteSignOut, isPreparedGuestChoiceRequired, lockAndCloseProfileAfterAuthLoss, performLocalAccountSignOut, prepareAuthenticatedProfileScope, prepareGuestProfileScope, recoverAfterGuestPreparationFailure, shouldRejectPersistedAuthRestore, shouldShowGuestSelectionLoading } from "./profileStartupCoordination";
 
@@ -52,7 +55,7 @@ import { installPremiumNodeOffer } from "../../content/application/nodePackageIn
 import { legalVariables } from "../../legal/legalVariables";
 
 export type AccountFailure = "accountNotFound" | "backendUnavailable" | "conflict" | "duplicate" | "emailUnavailable" | "expiredAction" | "guestChoiceRequired" | "invalid" | "invalidCredential" | "invalidEmail" | "invalidRecoveryCode" | "journalRecoveryFailure" | "localCleanupFailure" | "localDeletionFailure" | "offline" | "passwordMismatch" | "pendingSyncRequiresNetwork" | "providerUnavailable" | "rateLimited" | "reauthenticationRequired" | "recoveryCodeUsed" | "remoteDeletionPending" | "remoteFailure" | "revokedSession" | "sessionRevocationPending" | "signOutPending" | "unverifiedIdentity" | "weakPassword";
-export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "guest" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
+export type AccountCommandResult = Readonly<{ kind: "failure"; failure: AccountFailure } | { kind: "success"; next: "authenticated" | "deletionAuthorized" | "guest" | "providerRegistrationRequired" | "recoveryAccepted" | "recoveryCodesIssued" | "verificationPending" | "verificationSent" | "signedOut"; recoveryCodes?: readonly string[] }>;
 export type AccountDataExportFailure = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed";
 export type AccountDataExportCommandResult = Readonly<
   | { kind: "success" }
@@ -72,11 +75,12 @@ export type AccountState =
   | Readonly<{ kind: "signedOut" }>
   | Readonly<{ kind: "guest" }>
   | Readonly<{ kind: "guestAccessBlocked" }>
+  | Readonly<{ kind: "providerRegistrationRequired"; user: FirebaseAuthUserSnapshot; generation: AccountSessionGenerationToken; documents: ProviderRegistrationDocumentsResult }>
   | Readonly<{ kind: "verificationPending"; user: FirebaseAuthUserSnapshot }>
   | Readonly<{ kind: "authenticated"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "deletionPending"; user: FirebaseAuthUserSnapshot; accountId: string; status: "remoteDeletionPending" | "localCleanupPending"; failure: AccountFailure }>
   | Readonly<{ kind: "signingOut"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
-  | Readonly<{ kind: "signOutPending"; user: FirebaseAuthUserSnapshot; operationId?: string }>
+  | Readonly<{ kind: "signOutPending"; user: FirebaseAuthUserSnapshot; operationId?: string; provisional?: true }>
   | Readonly<{ kind: "deleting"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
   | Readonly<{ kind: "backendUnavailable" | "reauthenticationRequired" | "revokedSession"; user: FirebaseAuthUserSnapshot }>;
 
@@ -116,10 +120,10 @@ export type AccountSessionContextValue = Readonly<{
   register: (email: string, password: string, acceptanceConfirmed: boolean, locale: "en" | "pl") => Promise<AccountCommandResult>;
   resendVerification: () => Promise<AccountCommandResult>;
   signIn: (email: string, password: string) => Promise<AccountCommandResult>;
-  signInWithApple: () => Promise<AccountCommandResult>;
-  signInWithGoogle: (idToken: string) => Promise<AccountCommandResult>;
-  registerWithApple: (acceptanceConfirmed: boolean, locale: "en" | "pl") => Promise<AccountCommandResult>;
-  registerWithGoogle: (idToken: string, acceptanceConfirmed: boolean, locale: "en" | "pl") => Promise<AccountCommandResult>;
+  signInWithApple: (locale: TargetLocale, appleCredentialDependencies?: AppleCredentialDependencies) => Promise<AccountCommandResult>;
+  signInWithGoogle: (idToken: string, locale: TargetLocale) => Promise<AccountCommandResult>;
+  registerProviderIdentity: (termsAccepted: boolean, privacyPolicyAcknowledged: boolean, locale: TargetLocale) => Promise<AccountCommandResult>;
+  cancelProviderRegistration: () => Promise<AccountCommandResult>;
   confirmAdoption: (resolutions: readonly Readonly<{ conflictId: string; resolution: "keep_guest" | "keep_account" }>[], groupChoices: readonly Readonly<{ groupId: string; resolution: "keep_guest" | "keep_account" }>[]) => Promise<AccountCommandResult>;
   setGuestAdoptionChoice: (choice: "transfer" | "discard") => Promise<AccountCommandResult>;
   continueAsGuest: () => Promise<AccountCommandResult>;
@@ -351,6 +355,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const sessionExchangeUidRef = useRef<string | null>(null);
   const legalAcceptancePendingRef = useRef(false);
   const registrationIntentRef = useRef<Readonly<{ uid: string; promise: Promise<AccountCommandResult> }> | null>(null);
+  const providerAuthenticationInFlightRef = useRef(false);
+  const providerRegistrationInFlightRef = useRef(false);
   const deletionAuthorizationRef = useRef<DeletionAuthorizationVault | null>(null);
   const deletionAuthorizationTokenRef = useRef<AccountSessionGenerationToken | null>(null);
   const sensitiveCommandLaneRef = useRef<SensitiveCommandLane | null>(null);
@@ -993,22 +999,30 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     user: FirebaseAuthUserSnapshot,
     locale: "en" | "pl",
     finalize = true,
+    evidence: AccountRegistrationInputDto = registrationEvidence(locale),
+    preserveObserverBlockOnFailure = false,
+    expectedGeneration?: AccountSessionGenerationToken,
+    finalizeExisting?: () => Promise<AccountCommandResult>,
   ): Promise<AccountCommandResult> => {
     const inFlight = registrationIntentRef.current;
     if (inFlight?.uid === user.uid) return inFlight.promise;
     let promise!: Promise<AccountCommandResult>;
     promise = (async (): Promise<AccountCommandResult> => {
-    const generation = sessionCoordinator.restart(user.uid);
+    const generation = expectedGeneration ?? sessionCoordinator.restart(user.uid);
     observerBlockedUidRef.current = user.uid;
+    let registrationFlowResolved = false;
     try {
-      const registration = await api.registerAccount(registrationEvidence(locale));
+      const registration = await api.registerAccount(evidence);
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
       if (registration.registration.created) await markGuestInstallationAdoptionPending();
-      return finalize
+      const result: Promise<AccountCommandResult> = finalize
         ? (registration.registration.created
           ? finalizeCurrent(auth, api, user, false, generation, true, true)
-          : finalizeExplicitAuthentication(auth, api, user))
-        : { kind: "success", next: "authenticated" };
+          : finalizeExisting ? finalizeExisting() : finalizeExplicitAuthentication(auth, api, user))
+        : Promise.resolve({ kind: "success", next: "authenticated" });
+      const resolved = await result;
+      registrationFlowResolved = resolved.kind === "success";
+      return resolved;
     } catch (error) {
       // A timeout/transport failure leaves the server outcome unknown. Do not
       // let the observer continue with a credential whose account may not have
@@ -1021,7 +1035,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       }
       return { kind: "failure", failure };
     } finally {
-      if (finalize && observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
+      if (finalize && (!preserveObserverBlockOnFailure || registrationFlowResolved) && observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
       if (registrationIntentRef.current?.promise === promise) registrationIntentRef.current = null;
     }
     })();
@@ -1035,6 +1049,178 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     setState({ kind: "signedOut" });
     return { kind: "failure", failure: "accountNotFound" };
   }, []);
+
+  const runProviderFirstUse = useCallback((
+    auth: FirebaseAuthClient,
+    api: ReturnType<typeof createPatternlyApiClient>,
+    locale: TargetLocale,
+    authenticate: () => Promise<FirebaseAuthUserSnapshot>,
+  ): Promise<AccountCommandResult> => {
+    if (providerAuthenticationInFlightRef.current) return Promise.resolve({ kind: "failure", failure: "conflict" });
+    providerAuthenticationInFlightRef.current = true;
+    legalAcceptancePendingRef.current = true;
+    return runAuthMutationWithAuth(async () => {
+      revokeDeletionAuthorization();
+      sessionCoordinator.invalidate();
+      legalAcceptancePendingRef.current = true;
+      let user: FirebaseAuthUserSnapshot | null = null;
+      try {
+        user = await authenticate();
+        if (auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
+
+        const generation = sessionCoordinator.restart(user.uid);
+        // The Auth observer must stay blocked from this point through exchange,
+        // custom-token sign-in and explicit finalization or registration.
+        observerBlockedUidRef.current = user.uid;
+        const coordinator = createProviderFirstUseCoordinator<AccountCommandResult>({
+          exchange: () => api.exchangeAccountSession(),
+          signInWithSessionToken: (customToken) => auth.signInWithSessionToken(customToken),
+          finalize: () => finalizeExplicitAuthentication(auth, api, user!),
+          getAuthUid: () => auth.getSnapshot()?.uid ?? null,
+          isCurrentGeneration: (token) => sessionCoordinator.isCurrent(token),
+          isAccountNotFound: (error) => error instanceof PatternlyApiClientError
+            && error.status === 404
+            && error.serverCode === "account_not_found",
+          signOut: () => auth.signOut(),
+        });
+
+        try {
+          const resolution = await coordinator.run(generation);
+          if (resolution.kind === "provisional") {
+            setState({ kind: "providerRegistrationRequired", user, generation, documents: resolveProviderRegistrationDocuments(locale, runtimeMode) });
+            return { kind: "success", next: "providerRegistrationRequired" };
+          }
+          if (resolution.kind === "cancelled") return { kind: "failure", failure: "providerUnavailable" };
+          if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
+          return resolution.value;
+        } catch (error) {
+          if (auth.getSnapshot()?.uid !== user.uid || !sessionCoordinator.isCurrent(generation)) {
+            if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
+            return { kind: "failure", failure: "revokedSession" };
+          }
+          const failure = classifyAccountFailure(error);
+          await auth.signOut().catch(() => undefined);
+          if (auth.getSnapshot()?.uid === user.uid) {
+            setState({ kind: "signOutPending", user, provisional: true });
+            return { kind: "failure", failure: "signOutPending" };
+          }
+          if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
+          setState({ kind: "signedOut" });
+          return { kind: "failure", failure };
+        }
+      } catch (error) {
+        const current = auth.getSnapshot();
+        if (!user && isProviderAuthenticationCancelled(error)) {
+          return { kind: "success", next: "signedOut" };
+        }
+        if (user && current?.uid === user.uid) {
+          observerBlockedUidRef.current = user.uid;
+          await auth.signOut().catch(() => undefined);
+          if (auth.getSnapshot()?.uid === user.uid) {
+            setState({ kind: "signOutPending", user, provisional: true });
+            return { kind: "failure", failure: "signOutPending" };
+          }
+          if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
+        }
+        return { kind: "failure", failure: classifyAccountFailure(error) };
+      } finally {
+        legalAcceptancePendingRef.current = false;
+      }
+    }).finally(() => {
+      legalAcceptancePendingRef.current = false;
+      providerAuthenticationInFlightRef.current = false;
+    });
+  }, [finalizeExplicitAuthentication, revokeDeletionAuthorization, runAuthMutationWithAuth, runtimeMode, sessionCoordinator]);
+
+  const registerProviderIdentity = useCallback((termsAccepted: boolean, privacyPolicyAcknowledged: boolean, locale: TargetLocale): Promise<AccountCommandResult> => {
+    if (!termsAccepted || !privacyPolicyAcknowledged) return Promise.resolve({ kind: "failure", failure: "invalid" });
+    if (providerRegistrationInFlightRef.current) return Promise.resolve({ kind: "failure", failure: "conflict" });
+    providerRegistrationInFlightRef.current = true;
+    return runAuthMutationWithAuth(async (auth, api) => {
+      const current = stateRef.current;
+      if (current.kind !== "providerRegistrationRequired"
+        || current.documents.kind !== "ready"
+        || current.documents.documents.locale !== locale
+        || auth.getSnapshot()?.uid !== current.user.uid
+        || !sessionCoordinator.isCurrent(current.generation)) return { kind: "failure", failure: "revokedSession" };
+
+      const refreshedDocuments = resolveProviderRegistrationDocuments(locale, runtimeMode);
+      if (refreshedDocuments.kind !== "ready"
+        || refreshedDocuments.documents.terms.version !== current.documents.documents.terms.version
+        || refreshedDocuments.documents.privacy.version !== current.documents.documents.privacy.version
+        || refreshedDocuments.documents.terms.content !== current.documents.documents.terms.content
+        || refreshedDocuments.documents.privacy.content !== current.documents.documents.privacy.content) return { kind: "failure", failure: "invalid" };
+
+      legalAcceptancePendingRef.current = true;
+      observerBlockedUidRef.current = current.user.uid;
+      const evidence: AccountRegistrationInputDto = Object.freeze({
+        termsVersion: current.documents.documents.terms.version,
+        termsLocale: current.documents.documents.locale,
+        privacyPolicyVersion: current.documents.documents.privacy.version,
+        privacyPolicyLocale: current.documents.documents.locale,
+        privacyPolicyAcknowledged: true,
+      });
+      const finalizeExisting = async (): Promise<AccountCommandResult> => {
+        const generation = current.generation;
+        const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === current.user.uid;
+        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        const exchanged = await api.exchangeAccountSession();
+        if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+        const exchangedUser = await auth.signInWithSessionToken(exchanged.customToken);
+        if (!canContinue() || exchangedUser.uid !== current.user.uid) return { kind: "failure", failure: "revokedSession" };
+        return finalizeExplicitAuthentication(auth, api, current.user);
+      };
+
+      try {
+        const result = await registerAuthenticatedIdentity(auth, api, current.user, current.documents.documents.locale, true, evidence, true, current.generation, finalizeExisting);
+        if (result.kind === "failure") {
+          if (result.failure === "signOutPending" && auth.getSnapshot()?.uid === current.user.uid) {
+            setState({ kind: "signOutPending", user: current.user, provisional: true });
+          } else if (auth.getSnapshot() === null) {
+            if (observerBlockedUidRef.current === current.user.uid) observerBlockedUidRef.current = null;
+          } else if (auth.getSnapshot()?.uid === current.user.uid) {
+            const generation = sessionCoordinator.current(current.user.uid);
+            if (generation) setState({ ...current, generation });
+            if (generation) observerBlockedUidRef.current = current.user.uid;
+            else if (observerBlockedUidRef.current === current.user.uid) observerBlockedUidRef.current = null;
+          }
+        }
+        return result;
+      } finally {
+        legalAcceptancePendingRef.current = false;
+      }
+    }).finally(() => {
+      providerRegistrationInFlightRef.current = false;
+    });
+  }, [finalizeExplicitAuthentication, registerAuthenticatedIdentity, runAuthMutationWithAuth, runtimeMode, sessionCoordinator]);
+
+  const cancelProviderRegistration = useCallback((): Promise<AccountCommandResult> => runAuthMutationWithAuth(async (auth) => {
+    const currentState = stateRef.current;
+    const user = currentState.kind === "providerRegistrationRequired"
+      ? currentState.user
+      : currentState.kind === "signOutPending" && currentState.provisional ? currentState.user : null;
+    if (!user || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
+
+    legalAcceptancePendingRef.current = true;
+    observerBlockedUidRef.current = user.uid;
+    sessionCoordinator.invalidate();
+    try {
+      await auth.signOut();
+    } catch {
+      // Check the actual Auth snapshot below; a rejected promise can still have
+      // completed the local sign-out.
+    } finally {
+      legalAcceptancePendingRef.current = false;
+    }
+    if (auth.getSnapshot()?.uid === user.uid) {
+      setState({ kind: "signOutPending", user, provisional: true });
+      return { kind: "failure", failure: "signOutPending" };
+    }
+    if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
+    setAccountEntryMode("login");
+    setState({ kind: "signedOut" });
+    return { kind: "success", next: "signedOut" };
+  }), [runAuthMutationWithAuth, sessionCoordinator]);
 
   const refreshPremiumEntitlement = useCallback((accountId: string) => premiumRefreshQueueRef.current.request(async () => {
     const current = stateRef.current;
@@ -1549,42 +1735,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       }
       return result;
     }),
-    signInWithApple: () => runAuthMutationWithAuth(async (auth, api) => {
-      revokeDeletionAuthorization();
-      sessionCoordinator.invalidate();
-      const user = await auth.signInWithApple();
-      const result = await finalizeExplicitAuthentication(auth, api, user);
-      if (result.kind === "failure" && result.failure === "accountNotFound") {
-        return signOutRejectedIdentity(auth);
-      }
-      return result;
-    }),
-    signInWithGoogle: (idToken) => runAuthMutationWithAuth(async (auth, api) => {
-      revokeDeletionAuthorization();
-      sessionCoordinator.invalidate();
-      const user = await auth.signInWithGoogle(idToken);
-      const result = await finalizeExplicitAuthentication(auth, api, user);
-      if (result.kind === "failure" && result.failure === "accountNotFound") {
-        return signOutRejectedIdentity(auth);
-      }
-      return result;
-    }),
-    registerWithApple: (acceptanceConfirmed, locale) => runAuthMutationWithAuth(async (auth, api) => {
-      if (!acceptanceConfirmed) return { kind: "failure", failure: "invalid" };
-      revokeDeletionAuthorization();
-      sessionCoordinator.invalidate();
-      legalAcceptancePendingRef.current = true;
-      try { return await registerAuthenticatedIdentity(auth, api, await auth.signInWithApple(), locale); }
-      finally { legalAcceptancePendingRef.current = false; }
-    }),
-    registerWithGoogle: (idToken, acceptanceConfirmed, locale) => runAuthMutationWithAuth(async (auth, api) => {
-      if (!acceptanceConfirmed) return { kind: "failure", failure: "invalid" };
-      revokeDeletionAuthorization();
-      sessionCoordinator.invalidate();
-      legalAcceptancePendingRef.current = true;
-      try { return await registerAuthenticatedIdentity(auth, api, await auth.signInWithGoogle(idToken), locale); }
-      finally { legalAcceptancePendingRef.current = false; }
-    }),
+    signInWithApple: (locale, appleCredentialDependencies) => authClient && apiClient ? runProviderFirstUse(authClient, apiClient, locale, () => authClient.signInWithApple(appleCredentialDependencies)) : Promise.resolve({ kind: "failure", failure: "providerUnavailable" }),
+    signInWithGoogle: (idToken, locale) => authClient && apiClient ? runProviderFirstUse(authClient, apiClient, locale, () => authClient.signInWithGoogle(idToken)) : Promise.resolve({ kind: "failure", failure: "providerUnavailable" }),
+    registerProviderIdentity,
+    cancelProviderRegistration,
     confirmAdoption: (resolutions, groupChoices) => runWithAuth(async (auth, api) => {
       const current = auth.getSnapshot();
       if (!current || state.kind !== "authenticated" || !state.accountData.preview) return { kind: "failure", failure: "conflict" };
@@ -1986,7 +2140,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     pendingRemoteRevokeCount: logoutControlSnapshot.pending.length + (state.kind === "signOutPending" && state.operationId && !logoutControlSnapshot.pending.some((pair) => pair.uid === state.user.uid && pair.operationId === state.operationId) ? 1 : 0),
     completeProfilePreparation,
     state,
-  }), [accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, installPremiumNodePackage, retryLearningPlanRecoveryForAccount, completeProfilePreparation, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
+  }), [accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, installPremiumNodePackage, retryLearningPlanRecoveryForAccount, completeProfilePreparation, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, registerProviderIdentity, cancelProviderRegistration, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runProviderFirstUse, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }
@@ -2118,6 +2272,11 @@ export function classifyAccountFailure(error: unknown): AccountFailure {
   if (["auth/operation-not-allowed", "auth/app-not-authorized", "auth/invalid-api-key", "auth/invalid-app-id", "auth/provider-unavailable", "auth/apple-unavailable"].includes(code)) return "providerUnavailable";
   if (["auth/wrong-password", "auth/invalid-credential", "auth/email-already-in-use", "auth/user-not-found"].includes(code)) return "invalidCredential";
   return "providerUnavailable";
+}
+
+export function isProviderAuthenticationCancelled(error: unknown): boolean {
+  const code = firebaseAuthErrorCode(error);
+  return ["ERR_REQUEST_CANCELED", "auth/cancelled-popup-request", "auth/popup-closed-by-user", "auth/user-cancelled"].includes(code);
 }
 
 /**

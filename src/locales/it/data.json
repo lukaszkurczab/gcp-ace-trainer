@@ -119,6 +119,14 @@
     "revokedSession": {
       "title": "Sessione scaduta",
       "body": "La sessione dell’account non è più valida. Disconnettiti e accedi di nuovo."
+    },
+    "signOutPending": {
+      "title": "Disconnessione in sospeso",
+      "body": "Non è stato possibile completare la disconnessione su questo dispositivo. Riprova prima di usare i dati dell’account."
+    },
+    "providerRegistrationRequired": {
+      "title": "Controlla i documenti dell’account",
+      "body": "Completa o annulla la creazione dell’account prima di aprirne i dati."
     }
   },
   "privacyRequests": {

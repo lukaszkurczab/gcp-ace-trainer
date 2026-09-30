@@ -119,6 +119,14 @@
     "revokedSession": {
       "title": "Sitzung abgelaufen",
       "body": "Deine Kontositzung ist nicht mehr gültig. Melde dich ab und anschließend erneut an."
+    },
+    "signOutPending": {
+      "title": "Abmeldung ausstehend",
+      "body": "Die Abmeldung auf diesem Gerät konnte nicht abgeschlossen werden. Melde dich ab, bevor du Kontodaten verwendest."
+    },
+    "providerRegistrationRequired": {
+      "title": "Kontodokumente prüfen",
+      "body": "Schließe die Kontoerstellung ab oder brich sie ab, bevor du Kontodaten öffnest."
     }
   },
   "privacyRequests": {

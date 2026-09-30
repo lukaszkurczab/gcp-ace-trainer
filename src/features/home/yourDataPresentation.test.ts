@@ -23,6 +23,8 @@ function state(kind: AccountState["kind"]): AccountState {
     case "verificationPending":
     case "signOutPending":
       return { kind, user };
+    case "providerRegistrationRequired":
+      return { kind, user, generation: { generation: 1, uid: user.uid }, documents: { kind: "unavailable", reason: "locale" } };
     case "deletionPending":
       return { accountId: "account-id", failure: "remoteDeletionPending", kind, status: "remoteDeletionPending", user } as unknown as AccountState;
     case "backendUnavailable":
@@ -41,6 +43,7 @@ test("Your data presents an explicit action/details/privacy matrix for every acc
     signedOut: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "signedOut", testID: "data-open-account" },
     guestAccessBlocked: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "guestAccessBlocked", testID: "data-open-account" },
     verificationPending: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "verificationPending", testID: "data-open-account" },
+    providerRegistrationRequired: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "providerRegistrationRequired" },
     loading: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "loading" },
     profilePreparing: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "loading" },
     deletionPending: { action: "retryDeletion", details: "none", icon: "trash", privacyRequests: false, reset: false, stateCopy: "deletionPending", testID: "data-retry-deletion" },
@@ -49,6 +52,7 @@ test("Your data presents an explicit action/details/privacy matrix for every acc
     backendUnavailable: { action: "retryIdentity", details: "none", icon: "rotate-ccw", privacyRequests: false, reset: false, stateCopy: "backendUnavailable", testID: "data-retry-identity" },
     reauthenticationRequired: { action: "signOut", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "reauthenticationRequired", testID: "data-sign-out" },
     revokedSession: { action: "signOut", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "revokedSession", testID: "data-sign-out" },
+    signOutPending: { action: "signOut", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "signOutPending", testID: "data-sign-out" },
   };
 
   for (const [kind, expectation] of Object.entries(expected)) {
@@ -97,7 +101,7 @@ test("Your data keeps details and privacy access exclusive to authenticated and 
     stateCopy: "guest",
   });
 
-  for (const kind of ["signedOut", "guestAccessBlocked", "verificationPending", "loading", "deletionPending", "signingOut", "deleting", "backendUnavailable", "revokedSession"] as const) {
+  for (const kind of ["signedOut", "guestAccessBlocked", "verificationPending", "providerRegistrationRequired", "loading", "deletionPending", "signingOut", "deleting", "backendUnavailable", "revokedSession", "signOutPending"] as const) {
     const presentation = getYourDataPresentation(state(kind));
     assert.equal(presentation.details, "none", kind);
     assert.equal(presentation.privacyRequests, false, kind);

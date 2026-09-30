@@ -44,6 +44,8 @@ export function getSettingsAccountPresentation(state: AccountState): SettingsAcc
         providerLabel: state.user.providers.map((provider) => provider === "apple" ? "Apple" : provider === "google" ? "Google" : "Patternly").join(", "),
         status: "busy",
       };
+    case "providerRegistrationRequired":
+      return { accountDataStatus: null, canOpenAccount: false, canSignOut: false, email: state.user.email, status: "busy" };
     case "deletionPending":
       return { accountDataStatus: state.status, canOpenAccount: true, canSignOut: false, email: state.user.email, status: "unavailable" };
     case "verificationPending":

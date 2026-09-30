@@ -119,6 +119,14 @@
     "revokedSession": {
       "title": "Session expired",
       "body": "Your account session is no longer valid. Sign out, then sign in again."
+    },
+    "signOutPending": {
+      "title": "Sign-out pending",
+      "body": "This device could not finish signing out. Retry sign-out before using account data."
+    },
+    "providerRegistrationRequired": {
+      "title": "Review account documents",
+      "body": "Finish or cancel account creation before opening account data."
     }
   },
   "privacyRequests": {
