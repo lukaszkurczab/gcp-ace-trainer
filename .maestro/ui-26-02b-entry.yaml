@@ -1,0 +1,20 @@
+appId: com.lkurczab.patternly
+name: UI-26-02B normal Sign in entry
+---
+- tapOn:
+    id: main-tab-bar-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: settings-account-entry
+    direction: UP
+- tapOn:
+    id: settings-account-entry
+- extendedWaitUntil:
+    visible:
+      id: account-sign-in-submit
+    timeout: 15000
+- takeScreenshot: normal-sign-in-entry

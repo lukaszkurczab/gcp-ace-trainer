@@ -72,8 +72,21 @@ test("answer review pending uses the shared review shell anatomy without fabrica
 
 test("route coverage has one native or inline shell owner and preserves active-session specialization", () => {
   const rootNavigator = source("src/navigation/RootNavigator.tsx");
-  const routeIds = [...rootNavigator.matchAll(/<Stack\.Screen\s+\n?\s*name=\{ROUTES\.([A-Z0-9_]+)\}/g)].map((match) => match[1]);
-  const headerlessRouteIds = [...rootNavigator.matchAll(/<Stack\.Screen\s+\n?\s*name=\{ROUTES\.([A-Z_]+)\}[\s\S]*?options=\{\{([^}]*)\}\}\s*\/>/g)]
+  const fixtureStart = "  if (auditLearningPlanFixture && applicationSessionReady && proposalFixtureRuntime) {";
+  const fixtureEnd = "  return (\n    <Stack.Navigator";
+  const fixtureStartIndex = rootNavigator.indexOf(fixtureStart);
+  assert.ok(fixtureStartIndex >= 0, "learning plan audit fixture branch exists");
+  const fixtureEndIndex = rootNavigator.indexOf(fixtureEnd, fixtureStartIndex + fixtureStart.length);
+  assert.ok(fixtureEndIndex > fixtureStartIndex, "learning plan audit fixture branch has an explicit end");
+  const fixtureBranch = rootNavigator.slice(fixtureStartIndex, fixtureEndIndex);
+  assert.ok(fixtureBranch.length > 0);
+  const fixtureRouteIds = [...fixtureBranch.matchAll(/<Stack\.Screen\s+\n?\s*name=\{ROUTES\.([A-Z0-9_]+)\}/g)].map((match) => match[1]);
+  assert.deepEqual(fixtureRouteIds, ["LEARNING_PLAN_PROPOSAL"]);
+  assert.match(fixtureBranch, /<NavigationIndependentTree>[\s\S]*?<NavigationContainer[\s\S]*?<Stack\.Navigator[\s\S]*?name=\{ROUTES\.LEARNING_PLAN_PROPOSAL\}[\s\S]*?headerShown:\s*false[\s\S]*?<LearningPlanProposalScreen \{\.\.\.screenProps\} runtime=\{proposalFixtureRuntime\} \/>/);
+
+  const remainingRouteInventory = rootNavigator.slice(0, fixtureStartIndex) + rootNavigator.slice(fixtureEndIndex);
+  const routeIds = [...remainingRouteInventory.matchAll(/<Stack\.Screen\s+\n?\s*name=\{ROUTES\.([A-Z0-9_]+)\}/g)].map((match) => match[1]);
+  const headerlessRouteIds = [...remainingRouteInventory.matchAll(/<Stack\.Screen\s+\n?\s*name=\{ROUTES\.([A-Z_]+)\}[\s\S]*?options=\{\{([^}]*)\}\}\s*\/>/g)]
     .filter((match) => /headerShown:\s*false/.test(match[2] ?? ""))
     .map((match) => match[1]);
 
@@ -100,6 +113,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "PRACTICE_HUB",
     "ALGORITHMS_SCOPE_SELECTION",
     "TOPIC_ROADMAP",
+    "EXAM_REVIEW",
     "ANSWER_REVIEW",
     "PRACTICE_SETUP",
     "PRACTICE_SESSION",

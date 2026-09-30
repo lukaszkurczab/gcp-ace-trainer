@@ -1,0 +1,9 @@
+{
+  "scope": "owned local fixture identities only",
+  "rawUidsRetained": false,
+  "rawBackendUserIdsRetained": false,
+  "rawOperationIdsRetained": false,
+  "method": "deterministic labels shared across snapshots and command artifacts",
+  "privateRawSnapshots": "temporary local files excluded from Git",
+  "equalityEvidence": "before/after assertion executed on raw in-memory objects; labels preserve cross-snapshot comparison"
+}

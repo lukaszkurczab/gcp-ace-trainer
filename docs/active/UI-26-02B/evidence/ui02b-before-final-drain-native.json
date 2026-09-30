@@ -1,0 +1,403 @@
+[
+  {
+    "provider": "google",
+    "scenario": "mapped",
+    "uid": "fixture-uid-google-mapped",
+    "mapping": {
+      "provider": "firebase",
+      "subject": "fixture-uid-google-mapped",
+      "userId": "fixture-userid-8ec8ecc14569",
+      "emailVerified": false,
+      "createdAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 462000000
+      },
+      "updatedAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 462000000
+      }
+    },
+    "user": {
+      "createdAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 462000000
+      },
+      "updatedAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 462000000
+      },
+      "acceptedTermsVersion": "2026-09-05",
+      "authorizationGeneration": 1,
+      "authorizationState": "active",
+      "authorizationRotatedAtSeconds": 0,
+      "contactEmailVerified": false
+    },
+    "legal": [
+      {
+        "id": "terms-2026-09-05",
+        "data": {
+          "kind": "terms_acceptance_and_privacy_acknowledgement",
+          "termsVersion": "2026-09-05",
+          "termsLocale": "en",
+          "privacyPolicyVersion": "2026-09-05",
+          "privacyPolicyLocale": "en",
+          "privacyPolicyAcknowledged": true,
+          "acceptedAt": {
+            "_seconds": 1790794947,
+            "_nanoseconds": 462000000
+          }
+        }
+      }
+    ],
+    "progress": [],
+    "syncMetadata": null,
+    "generations": [],
+    "revocations": []
+  },
+  {
+    "provider": "google",
+    "scenario": "unmapped",
+    "uid": "fixture-uid-google-unmapped",
+    "mapping": {
+      "provider": "firebase",
+      "subject": "fixture-uid-google-unmapped",
+      "userId": "fixture-userid-e655451386cf",
+      "emailVerified": false,
+      "createdAt": {
+        "_seconds": 1790799655,
+        "_nanoseconds": 426000000
+      },
+      "updatedAt": {
+        "_seconds": 1790799655,
+        "_nanoseconds": 426000000
+      }
+    },
+    "user": {
+      "createdAt": {
+        "_seconds": 1790799655,
+        "_nanoseconds": 426000000
+      },
+      "updatedAt": {
+        "_seconds": 1790799655,
+        "_nanoseconds": 426000000
+      },
+      "acceptedTermsVersion": "2026-09-05",
+      "authorizationGeneration": 1,
+      "authorizationState": "active",
+      "authorizationRotatedAtSeconds": 0,
+      "contactEmailVerified": false
+    },
+    "legal": [
+      {
+        "id": "terms-2026-09-05",
+        "data": {
+          "kind": "terms_acceptance_and_privacy_acknowledgement",
+          "termsVersion": "2026-09-05",
+          "termsLocale": "en",
+          "privacyPolicyVersion": "2026-09-05",
+          "privacyPolicyLocale": "en",
+          "privacyPolicyAcknowledged": true,
+          "acceptedAt": {
+            "_seconds": 1790799655,
+            "_nanoseconds": 426000000
+          }
+        }
+      }
+    ],
+    "progress": [
+      {
+        "id": "29b48674b01631a4955ebc43fe19c516f3b3f74b700f1f7ba7af2fce44483e32",
+        "data": {
+          "kind": "node",
+          "recordType": "active_track",
+          "trackId": "coding-interview-dsa-problem-solving",
+          "targetId": "current",
+          "version": 1,
+          "fingerprint": "9c30400ff283f21025cf82b46a29196af7f0d01de845f9c4ef08e82b2e24ac0e",
+          "state": {
+            "trackId": "coding-interview-dsa-problem-solving"
+          },
+          "lastMutationId": "adoption_42860e01343a4df9839bdce256b95e19_5580bb8d91d979df799b1d70",
+          "updatedAt": {
+            "_seconds": 1790799711,
+            "_nanoseconds": 747000000
+          }
+        }
+      },
+      {
+        "id": "718f2446eb9b23adfd1c37b4ce9b06ddb9cbb6a6bc21229ec16cdec8ece880d3",
+        "data": {
+          "kind": "node",
+          "recordType": "learning_plan",
+          "trackId": "coding-interview-dsa-problem-solving",
+          "targetId": "coding-interview-dsa-problem-solving",
+          "version": 1,
+          "fingerprint": "4d7b56066042f245e5bb501b69fb89302b9454e9b077969df9c01dc79093e65d",
+          "state": {
+            "schemaVersion": 1,
+            "revision": 1,
+            "plan": {
+              "schemaVersion": 1,
+              "planId": "plan:proposal:1790784217993:1",
+              "trackId": "coding-interview-dsa-problem-solving",
+              "goalRevision": 1,
+              "status": "accepted",
+              "timezone": "Europe/Warsaw",
+              "contentVersion": "coding-interview-dsa-problem-solving-0004",
+              "artifactSha256": "30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face",
+              "acceptedTarget": {
+                "meaning": "event",
+                "targetDate": null
+              },
+              "createdAt": "2026-09-30T16:03:44.146Z",
+              "updatedAt": "2026-09-30T16:03:44.146Z",
+              "planRevision": 1,
+              "commandId": "learning-plan:proposal:1790784217993:1:accept",
+              "slots": [
+                {
+                  "slotId": "proposal-slot:v1:mon:18-00",
+                  "day": "mon",
+                  "localTime": "18:00",
+                  "sessionLength": 10
+                },
+                {
+                  "slotId": "proposal-slot:v1:wed:18-00",
+                  "day": "wed",
+                  "localTime": "18:00",
+                  "sessionLength": 10
+                },
+                {
+                  "slotId": "proposal-slot:v1:sat:18-00",
+                  "day": "sat",
+                  "localTime": "18:00",
+                  "sessionLength": 10
+                }
+              ]
+            }
+          },
+          "lastMutationId": "adoption_42860e01343a4df9839bdce256b95e19_21d16026ee4692cb2ff8802a",
+          "updatedAt": {
+            "_seconds": 1790799711,
+            "_nanoseconds": 747000000
+          }
+        }
+      },
+      {
+        "id": "dc1212d3729fabea10edf341ab0dbfe3924ff645eff6c730d7f178283be80366",
+        "data": {
+          "kind": "node",
+          "recordType": "goal",
+          "trackId": "coding-interview-dsa-problem-solving",
+          "targetId": "coding-interview-dsa-problem-solving",
+          "version": 1,
+          "fingerprint": "3af658266baebbfd0fce7f858b88929923b7c29fee71b7e9012c82820c26cb80",
+          "state": {
+            "schemaVersion": 1,
+            "revision": 1,
+            "record": {
+              "goalType": "prepare_for_an_interview",
+              "preferredDays": [
+                "mon",
+                "wed",
+                "sat"
+              ],
+              "status": "active",
+              "trackId": "coding-interview-dsa-problem-solving",
+              "weeklySessionTarget": 3
+            }
+          },
+          "lastMutationId": "adoption_42860e01343a4df9839bdce256b95e19_0c1b80046776470bc23a14c5",
+          "updatedAt": {
+            "_seconds": 1790799711,
+            "_nanoseconds": 747000000
+          }
+        }
+      }
+    ],
+    "syncMetadata": {
+      "accountRevision": 3,
+      "updatedAt": {
+        "_seconds": 1790799711,
+        "_nanoseconds": 748000000
+      }
+    },
+    "generations": [],
+    "revocations": []
+  },
+  {
+    "provider": "apple",
+    "scenario": "mapped",
+    "uid": "fixture-uid-apple-mapped",
+    "mapping": {
+      "provider": "firebase",
+      "subject": "fixture-uid-apple-mapped",
+      "userId": "fixture-userid-8887bd72834f",
+      "emailVerified": false,
+      "createdAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 541000000
+      },
+      "updatedAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 541000000
+      }
+    },
+    "user": {
+      "createdAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 541000000
+      },
+      "updatedAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 541000000
+      },
+      "acceptedTermsVersion": "2026-09-05",
+      "authorizationGeneration": 1,
+      "authorizationState": "active",
+      "authorizationRotatedAtSeconds": 0,
+      "contactEmailVerified": false
+    },
+    "legal": [
+      {
+        "id": "terms-2026-09-05",
+        "data": {
+          "kind": "terms_acceptance_and_privacy_acknowledgement",
+          "termsVersion": "2026-09-05",
+          "termsLocale": "en",
+          "privacyPolicyVersion": "2026-09-05",
+          "privacyPolicyLocale": "en",
+          "privacyPolicyAcknowledged": true,
+          "acceptedAt": {
+            "_seconds": 1790794947,
+            "_nanoseconds": 541000000
+          }
+        }
+      }
+    ],
+    "progress": [],
+    "syncMetadata": null,
+    "generations": [],
+    "revocations": []
+  },
+  {
+    "provider": "apple",
+    "scenario": "unmapped",
+    "uid": "fixture-uid-apple-unmapped",
+    "mapping": {
+      "provider": "firebase",
+      "subject": "fixture-uid-apple-unmapped",
+      "userId": "fixture-userid-ee6e118f7217",
+      "emailVerified": false,
+      "createdAt": {
+        "_seconds": 1790800138,
+        "_nanoseconds": 623000000
+      },
+      "updatedAt": {
+        "_seconds": 1790800138,
+        "_nanoseconds": 623000000
+      }
+    },
+    "user": {
+      "createdAt": {
+        "_seconds": 1790800138,
+        "_nanoseconds": 623000000
+      },
+      "updatedAt": {
+        "_seconds": 1790800138,
+        "_nanoseconds": 623000000
+      },
+      "acceptedTermsVersion": "2026-09-05",
+      "authorizationGeneration": 1,
+      "authorizationState": "active",
+      "authorizationRotatedAtSeconds": 0,
+      "contactEmailVerified": false
+    },
+    "legal": [
+      {
+        "id": "terms-2026-09-05",
+        "data": {
+          "kind": "terms_acceptance_and_privacy_acknowledgement",
+          "termsVersion": "2026-09-05",
+          "termsLocale": "pl",
+          "privacyPolicyVersion": "2026-09-05",
+          "privacyPolicyLocale": "pl",
+          "privacyPolicyAcknowledged": true,
+          "acceptedAt": {
+            "_seconds": 1790800138,
+            "_nanoseconds": 623000000
+          }
+        }
+      }
+    ],
+    "progress": [
+      {
+        "id": "29b48674b01631a4955ebc43fe19c516f3b3f74b700f1f7ba7af2fce44483e32",
+        "data": {
+          "kind": "node",
+          "recordType": "active_track",
+          "trackId": "coding-interview-dsa-problem-solving",
+          "targetId": "current",
+          "version": 1,
+          "fingerprint": "9c30400ff283f21025cf82b46a29196af7f0d01de845f9c4ef08e82b2e24ac0e",
+          "state": {
+            "trackId": "coding-interview-dsa-problem-solving"
+          },
+          "lastMutationId": "adoption_47424296177f4dd48758635b3436d5c5_5580bb8d91d979df799b1d70",
+          "updatedAt": {
+            "_seconds": 1790800232,
+            "_nanoseconds": 444000000
+          }
+        }
+      },
+      {
+        "id": "dc1212d3729fabea10edf341ab0dbfe3924ff645eff6c730d7f178283be80366",
+        "data": {
+          "kind": "node",
+          "recordType": "goal",
+          "trackId": "coding-interview-dsa-problem-solving",
+          "targetId": "coding-interview-dsa-problem-solving",
+          "version": 1,
+          "fingerprint": "2862527b988f17c751a0e44e31a35d33096729554a9bf51a8860626ca57f4e01",
+          "state": {
+            "schemaVersion": 1,
+            "revision": 1,
+            "record": {
+              "goalType": "refresh_and_maintain_skills",
+              "preferredDays": [
+                "mon",
+                "wed",
+                "fri",
+                "sat"
+              ],
+              "status": "active",
+              "trackId": "coding-interview-dsa-problem-solving",
+              "weeklySessionTarget": 4
+            }
+          },
+          "lastMutationId": "adoption_47424296177f4dd48758635b3436d5c5_5f0f34cbffbbbd707b5bdf66",
+          "updatedAt": {
+            "_seconds": 1790800232,
+            "_nanoseconds": 444000000
+          }
+        }
+      }
+    ],
+    "syncMetadata": {
+      "accountRevision": 2,
+      "updatedAt": {
+        "_seconds": 1790800232,
+        "_nanoseconds": 444000000
+      }
+    },
+    "generations": [],
+    "revocations": [
+      {
+        "id": "fixture-operationid-0c966c0a8906",
+        "operationId": "fixture-operationid-0c966c0a8906",
+        "status": "revoked",
+        "expectedAuthorizationGeneration": 1,
+        "failureCode": null
+      }
+    ]
+  }
+]

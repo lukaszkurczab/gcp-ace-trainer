@@ -1,0 +1,82 @@
+[
+  {
+    "case": "google-mapped",
+    "commands": "evidence/google-mapped/commands.json"
+  },
+  {
+    "case": "apple-mapped",
+    "commands": "evidence/apple-mapped/commands.json"
+  },
+  {
+    "case": "google-consent-restart",
+    "commands": "evidence/google-consent-restart/commands.json"
+  },
+  {
+    "case": "apple-consent-restart",
+    "commands": "evidence/apple-consent-restart/commands.json"
+  },
+  {
+    "case": "google-cancel",
+    "commands": "evidence/google-cancel/commands.json"
+  },
+  {
+    "case": "apple-cancel",
+    "commands": "evidence/apple-cancel/commands.json"
+  },
+  {
+    "case": "google-registration",
+    "commands": "evidence/google-registration/commands.json"
+  },
+  {
+    "case": "google-adoption",
+    "commands": "evidence/google-adoption/commands.json"
+  },
+  {
+    "case": "fresh-guest",
+    "commands": "evidence/fresh-guest/commands.json"
+  },
+  {
+    "case": "fresh-guest-goal-return",
+    "commands": "evidence/fresh-guest-goal-return/commands.json"
+  },
+  {
+    "case": "apple-pl-large-registration",
+    "commands": "evidence/apple-pl-large-registration/commands.json"
+  },
+  {
+    "case": "apple-pl-large-adoption",
+    "commands": "evidence/apple-pl-large-adoption/commands.json"
+  },
+  {
+    "case": "actual-centered-logout",
+    "commands": "evidence/actual-centered-logout/commands.json"
+  },
+  {
+    "case": "apple-cold-persistence-fixed",
+    "commands": "evidence/apple-cold-persistence-fixed/commands.json"
+  },
+  {
+    "case": "apple-fresh-logout",
+    "commands": "evidence/apple-fresh-logout/commands.json"
+  },
+  {
+    "case": "apple-reentry-fixed",
+    "commands": "evidence/apple-reentry-fixed/commands.json"
+  },
+  {
+    "case": "final-clean-guest",
+    "commands": "evidence/final-clean-guest/commands.json"
+  },
+  {
+    "case": "google-cold-persistence-fixed",
+    "commands": "evidence/google-cold-persistence-fixed/commands.json"
+  },
+  {
+    "case": "google-fresh-reentry-fixed",
+    "commands": "evidence/google-fresh-reentry-fixed/commands.json"
+  },
+  {
+    "case": "logout-tap-diagnosis",
+    "commands": "evidence/logout-tap-diagnosis/commands.json"
+  }
+]

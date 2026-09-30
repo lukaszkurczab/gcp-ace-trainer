@@ -1,0 +1,82 @@
+appId: com.lkurczab.patternly
+name: UI-26-02B explicit new registration before adoption ${PROVIDER}
+---
+- assertVisible:
+    id: provider-registration-review
+- tapOn:
+    id: provider-registration-terms-link
+- extendedWaitUntil:
+    visible: Terms of Service
+    timeout: 10000
+- assertVisible: Patternly
+- assertNotVisible:
+    id: provider-registration-review
+- takeScreenshot: canonical-terms
+- tapOn:
+    text: Go back
+    index: 0
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, unchecked"
+    enabled: true
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- tapOn:
+    id: provider-registration-terms-checkbox
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, checked"
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- takeScreenshot: terms-only-create-disabled
+- tapOn:
+    id: provider-registration-terms-checkbox
+- tapOn:
+    id: provider-registration-privacy-link
+- extendedWaitUntil:
+    visible: Privacy Policy
+    timeout: 10000
+- assertVisible: Patternly
+- assertNotVisible:
+    id: provider-registration-review
+- takeScreenshot: canonical-privacy
+- tapOn:
+    text: Go back
+    index: 0
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, unchecked"
+- assertVisible:
+    id: provider-registration-privacy-checkbox
+    text: "checkbox, unchecked"
+    enabled: true
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- takeScreenshot: documents-opened-both-unchecked
+- tapOn:
+    id: provider-registration-privacy-checkbox
+- assertVisible:
+    id: provider-registration-privacy-checkbox
+    text: "checkbox, checked"
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- takeScreenshot: privacy-only-create-disabled
+- tapOn:
+    id: provider-registration-terms-checkbox
+- assertVisible:
+    id: provider-registration-create
+    enabled: true
+- takeScreenshot: both-checked-before-restart
+- tapOn:
+    id: provider-registration-create
+- extendedWaitUntil:
+    visible:
+      id: account-entry-continue
+    timeout: 45000
+- assertNotVisible:
+    id: provider-registration-review
+- takeScreenshot: created-before-explicit-adoption

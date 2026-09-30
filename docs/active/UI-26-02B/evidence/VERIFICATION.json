@@ -1,0 +1,30 @@
+{
+  "task": "UI-26-02B",
+  "staticGate": {
+    "command": "npm run qa:static",
+    "node": "22.22.3",
+    "tests": 1492,
+    "passed": 1492,
+    "failed": 0,
+    "recovery": "PASS",
+    "typecheck": "PASS",
+    "contentBoundary": "PASS",
+    "runtimePrivacyBoundary": "PASS",
+    "historicalContentRoot": "existing detached worktree",
+    "historicalContentSha": "cc3efca88be7e01137f10ac69a0643f06b61a350",
+    "currentContentSha": "0174e42fbe7634a54c1f5d87369063c7e01e8c7e"
+  },
+  "independentQA": {
+    "model": "gpt-6-luna",
+    "reasoning": "high",
+    "drainSource": "PASS 76 tests/typecheck",
+    "nativeFinal": "PASS",
+    "testOnlyInventory": "PASS 15 tests"
+  },
+  "sanitizationCheck": {
+    "jsonParsing": "PASS",
+    "ownedRawUidAbsence": "PASS",
+    "beforeAfterInvariantEquality": "PASS"
+  },
+  "providerLimit": "synthetic acquisition fixture; actual Firebase SDK, emulator Auth and HTTP backend; no real OS provider chooser or production attestation"
+}

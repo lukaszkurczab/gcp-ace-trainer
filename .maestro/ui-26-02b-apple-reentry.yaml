@@ -1,0 +1,25 @@
+appId: com.lkurczab.patternly
+name: UI-26-02B created Apple mapped reentry
+---
+- assertVisible:
+    id: account-sign-in-submit
+- openLink: 'com.lkurczab.patternly://audit/provider-auth?runId=ui02b-apple-unmapped-20260930&provider=apple&scenario=mapped'
+- extendedWaitUntil:
+    visible:
+      id: provider-auth-fixture-active
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: account-provider-apple
+    direction: DOWN
+- tapOn:
+    id: account-provider-apple
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 45000
+- assertNotVisible:
+    id: provider-registration-review
+- assertNotVisible:
+    id: account-entry-choice
+- takeScreenshot: created-apple-mapped-reentry

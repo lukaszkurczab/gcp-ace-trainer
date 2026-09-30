@@ -1,0 +1,128 @@
+appId: com.lkurczab.patternly
+name: UI-26-02B Apple PL light large consent registration
+---
+- assertVisible:
+    id: provider-registration-review
+- scrollUntilVisible:
+    element:
+      id: provider-registration-terms-checkbox
+    direction: DOWN
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, unchecked"
+    enabled: false
+- takeScreenshot: pl-large-pristine-terms
+- scrollUntilVisible:
+    element:
+      id: provider-registration-privacy-checkbox
+    direction: DOWN
+- assertVisible:
+    id: provider-registration-privacy-checkbox
+    text: "checkbox, unchecked"
+    enabled: false
+- takeScreenshot: pl-large-pristine-privacy
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- scrollUntilVisible:
+    element:
+      id: provider-registration-terms-link
+    direction: UP
+- tapOn:
+    id: provider-registration-terms-link
+- extendedWaitUntil:
+    visible: Warunki korzystania
+    timeout: 10000
+- assertVisible: Patternly
+- assertNotVisible:
+    id: provider-registration-review
+- takeScreenshot: pl-large-canonical-terms
+- tapOn:
+    text: Wróć
+    index: 0
+- scrollUntilVisible:
+    element:
+      id: provider-registration-terms-checkbox
+    direction: DOWN
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, unchecked"
+    enabled: true
+- tapOn:
+    id: provider-registration-terms-checkbox
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, checked"
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- takeScreenshot: pl-large-terms-only-disabled
+- tapOn:
+    id: provider-registration-terms-checkbox
+- scrollUntilVisible:
+    element:
+      id: provider-registration-privacy-link
+    direction: DOWN
+- tapOn:
+    id: provider-registration-privacy-link
+- extendedWaitUntil:
+    visible: Polityka prywatności
+    timeout: 10000
+- assertVisible: Patternly
+- assertNotVisible:
+    id: provider-registration-review
+- takeScreenshot: pl-large-canonical-privacy
+- tapOn:
+    text: Wróć
+    index: 0
+- scrollUntilVisible:
+    element:
+      id: provider-registration-terms-checkbox
+    direction: UP
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, unchecked"
+    enabled: true
+- scrollUntilVisible:
+    element:
+      id: provider-registration-privacy-checkbox
+    direction: DOWN
+- assertVisible:
+    id: provider-registration-privacy-checkbox
+    text: "checkbox, unchecked"
+    enabled: true
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- takeScreenshot: pl-large-documents-read-unchecked
+- tapOn:
+    id: provider-registration-privacy-checkbox
+- assertVisible:
+    id: provider-registration-privacy-checkbox
+    text: "checkbox, checked"
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- takeScreenshot: pl-large-privacy-only-disabled
+- scrollUntilVisible:
+    element:
+      id: provider-registration-terms-checkbox
+    direction: UP
+- tapOn:
+    id: provider-registration-terms-checkbox
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, checked"
+- assertVisible:
+    id: provider-registration-create
+    enabled: true
+- takeScreenshot: pl-large-both-enabled
+- tapOn:
+    id: provider-registration-create
+- extendedWaitUntil:
+    visible:
+      id: account-entry-continue
+    timeout: 45000
+- assertNotVisible:
+    id: provider-registration-review
+- takeScreenshot: pl-large-created-before-adoption

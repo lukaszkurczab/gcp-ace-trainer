@@ -1,0 +1,122 @@
+[
+  {
+    "provider": "google",
+    "scenario": "mapped",
+    "uid": "fixture-uid-google-mapped",
+    "mapping": {
+      "provider": "firebase",
+      "subject": "fixture-uid-google-mapped",
+      "userId": "fixture-userid-8ec8ecc14569",
+      "emailVerified": false,
+      "createdAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 462000000
+      },
+      "updatedAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 462000000
+      }
+    },
+    "user": {
+      "createdAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 462000000
+      },
+      "updatedAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 462000000
+      },
+      "acceptedTermsVersion": "2026-09-05",
+      "authorizationGeneration": 1,
+      "authorizationState": "active",
+      "authorizationRotatedAtSeconds": 0,
+      "contactEmailVerified": false
+    },
+    "legal": [
+      {
+        "id": "terms-2026-09-05",
+        "data": {
+          "kind": "terms_acceptance_and_privacy_acknowledgement",
+          "termsVersion": "2026-09-05",
+          "termsLocale": "en",
+          "privacyPolicyVersion": "2026-09-05",
+          "privacyPolicyLocale": "en",
+          "privacyPolicyAcknowledged": true,
+          "acceptedAt": {
+            "_seconds": 1790794947,
+            "_nanoseconds": 462000000
+          }
+        }
+      }
+    ],
+    "progress": [],
+    "syncMetadata": null,
+    "generations": []
+  },
+  {
+    "provider": "google",
+    "scenario": "unmapped",
+    "uid": "fixture-uid-google-unmapped",
+    "mapping": null
+  },
+  {
+    "provider": "apple",
+    "scenario": "mapped",
+    "uid": "fixture-uid-apple-mapped",
+    "mapping": {
+      "provider": "firebase",
+      "subject": "fixture-uid-apple-mapped",
+      "userId": "fixture-userid-8887bd72834f",
+      "emailVerified": false,
+      "createdAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 541000000
+      },
+      "updatedAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 541000000
+      }
+    },
+    "user": {
+      "createdAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 541000000
+      },
+      "updatedAt": {
+        "_seconds": 1790794947,
+        "_nanoseconds": 541000000
+      },
+      "acceptedTermsVersion": "2026-09-05",
+      "authorizationGeneration": 1,
+      "authorizationState": "active",
+      "authorizationRotatedAtSeconds": 0,
+      "contactEmailVerified": false
+    },
+    "legal": [
+      {
+        "id": "terms-2026-09-05",
+        "data": {
+          "kind": "terms_acceptance_and_privacy_acknowledgement",
+          "termsVersion": "2026-09-05",
+          "termsLocale": "en",
+          "privacyPolicyVersion": "2026-09-05",
+          "privacyPolicyLocale": "en",
+          "privacyPolicyAcknowledged": true,
+          "acceptedAt": {
+            "_seconds": 1790794947,
+            "_nanoseconds": 541000000
+          }
+        }
+      }
+    ],
+    "progress": [],
+    "syncMetadata": null,
+    "generations": []
+  },
+  {
+    "provider": "apple",
+    "scenario": "unmapped",
+    "uid": "fixture-uid-apple-unmapped",
+    "mapping": null
+  }
+]

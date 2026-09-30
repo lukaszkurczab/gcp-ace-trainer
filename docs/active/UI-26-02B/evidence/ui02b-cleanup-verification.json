@@ -1,0 +1,10 @@
+{
+  "project": "patternly-app-sandbox",
+  "authPort": 19099,
+  "firestorePort": 18081,
+  "ownedAuthUsersDeleted": 4,
+  "ownedBackendUsersDeleted": 4,
+  "ownedMappingsDeleted": 4,
+  "ownedRevocationOperationsDeleted": 4,
+  "globalReset": false
+}

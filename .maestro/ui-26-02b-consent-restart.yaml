@@ -1,0 +1,109 @@
+appId: com.lkurczab.patternly
+name: UI-26-02B independent consent and cold restart ${PROVIDER}
+---
+- assertVisible:
+    id: provider-registration-review
+- tapOn:
+    id: provider-registration-terms-link
+- extendedWaitUntil:
+    visible: Terms of Service
+    timeout: 10000
+- assertVisible: Patternly
+- assertNotVisible:
+    id: provider-registration-review
+- takeScreenshot: canonical-terms
+- tapOn:
+    text: Go back
+    index: 0
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, unchecked"
+    enabled: true
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- tapOn:
+    id: provider-registration-terms-checkbox
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, checked"
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- takeScreenshot: terms-only-create-disabled
+- tapOn:
+    id: provider-registration-terms-checkbox
+- tapOn:
+    id: provider-registration-privacy-link
+- extendedWaitUntil:
+    visible: Privacy Policy
+    timeout: 10000
+- assertVisible: Patternly
+- assertNotVisible:
+    id: provider-registration-review
+- takeScreenshot: canonical-privacy
+- tapOn:
+    text: Go back
+    index: 0
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, unchecked"
+- assertVisible:
+    id: provider-registration-privacy-checkbox
+    text: "checkbox, unchecked"
+    enabled: true
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- takeScreenshot: documents-opened-both-unchecked
+- tapOn:
+    id: provider-registration-privacy-checkbox
+- assertVisible:
+    id: provider-registration-privacy-checkbox
+    text: "checkbox, checked"
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- takeScreenshot: privacy-only-create-disabled
+- tapOn:
+    id: provider-registration-terms-checkbox
+- assertVisible:
+    id: provider-registration-create
+    enabled: true
+- takeScreenshot: both-checked-before-restart
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: account-sign-in-submit
+    timeout: 45000
+- assertNotVisible:
+    id: provider-registration-review
+- takeScreenshot: cold-restart-safe-signed-out
+- openLink: 'com.lkurczab.patternly://audit/provider-auth?runId=${RUN_ID}&provider=${PROVIDER}&scenario=unmapped'
+- extendedWaitUntil:
+    visible:
+      id: provider-auth-fixture-active
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: 'account-provider-${PROVIDER}'
+    direction: DOWN
+- tapOn:
+    id: 'account-provider-${PROVIDER}'
+- extendedWaitUntil:
+    visible:
+      id: provider-registration-review
+    timeout: 30000
+- assertVisible:
+    id: provider-registration-terms-checkbox
+    text: "checkbox, unchecked"
+    enabled: false
+- assertVisible:
+    id: provider-registration-privacy-checkbox
+    text: "checkbox, unchecked"
+    enabled: false
+- assertVisible:
+    id: provider-registration-create
+    enabled: false
+- takeScreenshot: explicit-retry-after-restart-no-consent
