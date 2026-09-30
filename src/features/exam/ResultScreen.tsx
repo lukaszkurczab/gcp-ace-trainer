@@ -1,6 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
 import { getTrainingLifecycleUseCases } from "../../application/trainingLifecycle";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
@@ -19,7 +20,7 @@ import { scoreCanonicalQuestion } from "../../content/canonical";
 import { getCertificationExamReviewProjection } from "../../application/certification";
 import type { CertificationExamReviewProjection } from "../../application/certification/certificationExamReviewProjection";
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.RESULT>;
-type Summary = Readonly<{
+export type Summary = Readonly<{
   certificationMaxPoints: number | null;
   certificationExam: CertificationExamReviewProjection | null;
   certificationTopicId: string | null;
@@ -32,7 +33,7 @@ type ResultReadState =
   | Readonly<{ kind: "ready"; requestKey: string; summary: Summary }>
   | Readonly<{ kind: "unavailable"; requestKey: string; reason: string }>;
 
-export function ResultScreen({ navigation, route }: Props) {
+export function ResultScreen({ navigation, route, readSummary, fixtureNotice, onFixtureExit }: Props & Readonly<{ readSummary?: (sessionId: string) => Promise<Summary>; fixtureNotice?: ReactNode; onFixtureExit?: () => void }>) {
   const { t } = useTranslation("common");
   const requestKey = route.params.sessionId;
   const [readState, setReadState] = useState<ResultReadState>({ kind: "pending", requestKey });
@@ -40,38 +41,40 @@ export function ResultScreen({ navigation, route }: Props) {
     const capturedRequestKey = requestKey;
     let live = true;
     setReadState({ kind: "pending", requestKey: capturedRequestKey });
-    const useCases = getTrainingLifecycleUseCases();
-    void Promise.all([useCases.loadSummary(capturedRequestKey), useCases.loadSessionRecord(capturedRequestKey)])
-      .then(async ([result, session]) => {
-        if (session.modeId === "design-interview-simulation") {
-          navigation.replace(ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT, { sessionId: session.id });
-          return;
-        }
-        const certificationExam = session.modeId === "certification-exam-simulation"
-          ? await getCertificationExamReviewProjection(capturedRequestKey)
-          : null;
-        const exact = !certificationExam && (isDesignInterviewModeId(session.modeId) || session.modeId.startsWith("certification-") || result.evidence.familyId === "certification")
-          ? await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 })
-          : null;
-        if (!live) return;
-        const designTopicId = isDesignInterviewModeId(session.modeId) && exact ? exact.track.questions[0]?.nodeId ?? null : null;
-        const certificationMode = exact && isCertificationPracticeModeId(session.modeId) ? exact.track.getMode(session.modeId) : null;
-        const certificationTopicId = certificationMode?.selection.kind === "node"
-          ? certificationMode.selection.nodeId
-          : session.modeId === "certification-diagnostic-baseline" && exact ? exact.track.questions[0]?.nodeId ?? null : null;
-        const certificationQuestions = result.evidence.familyId === "certification" && exact
-          ? session.itemOrder.map((occurrence) => exact.track.getQuestion(occurrence.item.questionId))
-          : [];
-        const certificationMaxPoints = certificationExam?.maxPoints ?? (certificationQuestions.length === session.actualLength && certificationQuestions.every((question) => question !== undefined)
-          ? certificationQuestions.reduce((sum, question) => sum + scoreCanonicalQuestion(question, question.answer).maxPoints, 0)
-          : null);
-        setReadState({ kind: "ready", requestKey: capturedRequestKey, summary: { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam } });
-      })
+    void (async () => {
+      if (readSummary) return readSummary(capturedRequestKey);
+      const useCases = getTrainingLifecycleUseCases();
+      const [result, session] = await Promise.all([useCases.loadSummary(capturedRequestKey), useCases.loadSessionRecord(capturedRequestKey)]);
+      if (session.modeId === "design-interview-simulation") {
+        navigation.replace(ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT, { sessionId: session.id });
+        return null;
+      }
+      const certificationExam = session.modeId === "certification-exam-simulation"
+        ? await getCertificationExamReviewProjection(capturedRequestKey)
+        : null;
+      const exact = !certificationExam && (isDesignInterviewModeId(session.modeId) || session.modeId.startsWith("certification-") || result.evidence.familyId === "certification")
+        ? await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 })
+        : null;
+      if (!live) return null;
+      const designTopicId = isDesignInterviewModeId(session.modeId) && exact ? exact.track.questions[0]?.nodeId ?? null : null;
+      const certificationMode = exact && isCertificationPracticeModeId(session.modeId) ? exact.track.getMode(session.modeId) : null;
+      const certificationTopicId = certificationMode?.selection.kind === "node"
+        ? certificationMode.selection.nodeId
+        : session.modeId === "certification-diagnostic-baseline" && exact ? exact.track.questions[0]?.nodeId ?? null : null;
+      const certificationQuestions = result.evidence.familyId === "certification" && exact
+        ? session.itemOrder.map((occurrence) => exact.track.getQuestion(occurrence.item.questionId))
+        : [];
+      const certificationMaxPoints = certificationExam?.maxPoints ?? (certificationQuestions.length === session.actualLength && certificationQuestions.every((question) => question !== undefined)
+        ? certificationQuestions.reduce((sum, question) => sum + scoreCanonicalQuestion(question, question.answer).maxPoints, 0)
+        : null);
+      return { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam };
+    })()
+      .then((summary) => { if (live && summary) setReadState({ kind: "ready", requestKey: capturedRequestKey, summary }); })
       .catch((cause) => { if (live) setReadState({ kind: "unavailable", requestKey: capturedRequestKey, reason: describeOperationalFailure(cause, t("We couldn’t load the session result.")) }); });
     return () => { live = false; };
-  }, [requestKey, t]);
-  if (readState.requestKey !== requestKey || readState.kind === "pending") return <Screen><ExamResultLoadingSkeleton /></Screen>;
-  if (readState.kind === "unavailable") return <Screen><EmptyState title={t("Session summary unavailable")} description={t(readState.reason)} /></Screen>;
+  }, [navigation, readSummary, requestKey, t]);
+  if (readState.requestKey !== requestKey || readState.kind === "pending") return <Screen>{fixtureNotice}<ExamResultLoadingSkeleton /></Screen>;
+  if (readState.kind === "unavailable") return <Screen>{fixtureNotice}<EmptyState title={t("Session summary unavailable")} description={t(readState.reason)} /></Screen>;
   const summary = readState.summary;
   const { result, session } = summary;
   const design = isDesignInterviewModeId(session.modeId) && session.modeId !== "design-interview-simulation";
@@ -108,13 +111,14 @@ export function ResultScreen({ navigation, route }: Props) {
     : t(formatMode(session.modeId));
   return (
     <Screen>
+      {fixtureNotice}
       <SessionResultOverview
         activeTime={formatElapsed(session.activeForegroundMs)}
         answeredCount={answeredCount}
         backTestID={runtimeSelectors.summary.backToPractice(route.params.sessionId)}
         completion="completed"
         context={{ modeLabel, topicLabel: domainPresentation, trackLabel: t(getTrackDisplay(session.trackId).title) }}
-        onBack={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
+        onBack={() => onFixtureExit ? onFixtureExit() : navigation.navigate(ROUTES.PRACTICE_HUB)}
         points={normalizedDetails.points ?? undefined}
         requestedCount={session.requestedLength}
         configurationTestID={certificationPractice ? runtimeSelectors.summary.configuration(route.params.sessionId, session.actualLength, session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "atSessionEnd" : "afterEachAnswer") : undefined}

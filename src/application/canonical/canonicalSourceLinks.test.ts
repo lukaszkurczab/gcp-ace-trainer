@@ -31,6 +31,15 @@ test("opens the exact projected URL and reports success or failure explicitly", 
   assert.equal(await openCanonicalSourceLink(source, async () => { throw new Error("unavailable"); }), "failed");
 });
 
+test("rejects unsafe or malformed source URLs without calling the opener", async () => {
+  let calls = 0;
+  const openUrl = async () => { calls += 1; };
+  for (const url of ["http://docs.example/path", "file:///tmp/source", "javascript:alert(1)", "not a URL"]) {
+    assert.equal(await openCanonicalSourceLink({ host: "docs.example", url }, openUrl), "failed");
+  }
+  assert.equal(calls, 0);
+});
+
 test("projects the exact URL from an accepted certification artifact without changing the artifact", () => {
   const artifact = JSON.parse(readFileSync("src/content/generated/canonical-content/claude-certified-architect-professional-certification.json", "utf8")) as { questions: Question[] };
   const accepted = artifact.questions.find((candidate) => candidate.questionId === "CCARP-D01-O01-boundary");

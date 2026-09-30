@@ -1,0 +1,208 @@
+appId: com.lkurczab.patternly
+name: UI-26-12 review appearance variant
+---
+- openLink: 'com.lkurczab.patternly://audit/exam-review?case=source-failure'
+- extendedWaitUntil:
+    visible:
+      id: patternly:ui12:fixture:exit
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:ui12:fixture:exit
+    direction: UP
+- tapOn:
+    id: patternly:ui12:fixture:exit
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 15000
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "main-tab-bar-settings"
+      - extendedWaitUntil:
+          visible:
+            id: "settings-screen"
+          timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: "settings-appearance"
+    direction: UP
+- tapOn:
+    id: "settings-appearance"
+- tapOn:
+    id: "preference-option-${THEME}"
+- assertVisible:
+    id: "preference-option-${THEME}"
+    selected: true
+- tapOn:
+    text: "Go back|Wróć|Zurück|Retour|Indietro|Volver|Tagasi"
+    index: 0
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: DOWN
+- tapOn:
+    id: "settings-language"
+- scrollUntilVisible:
+    element:
+      id: "language-option-${LOCALE}"
+    direction: DOWN
+- tapOn:
+    id: "language-option-${LOCALE}"
+- assertVisible:
+    id: "language-option-${LOCALE}"
+    selected: true
+- tapOn:
+    text: "Go back|Wróć|Zurück|Retour|Indietro|Volver|Tagasi"
+    index: 0
+- openLink: 'com.lkurczab.patternly://audit/exam-review?case=source-failure'
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:ui12-exam-review-fixture
+    timeout: 30000
+- assertVisible: 'Local read-only fixture.*'
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:review-answers:ui12-exam-review-fixture
+    direction: DOWN
+- assertVisible: ${POINTS}
+- takeScreenshot: result-before-review
+- tapOn:
+    id: patternly:summary:review-answers:ui12-exam-review-fixture
+- extendedWaitUntil:
+    visible: '${FIRST_POSITION}'
+    timeout: 15000
+- assertVisible:
+    id: patternly:practice-review:previous
+    enabled: false
+- assertVisible:
+    id: patternly:practice-review:next
+    enabled: true
+- takeScreenshot: review-first-header
+- scrollUntilVisible:
+    element:
+      text: ${CORRECT}
+    direction: DOWN
+- assertVisible: ${CORRECT}
+- takeScreenshot: review-first-correct
+- tapOn:
+    id: patternly:practice-review:next
+- assertVisible: '${SECOND_POSITION}'
+- scrollUntilVisible:
+    element:
+      text: ${INCORRECT}
+    direction: DOWN
+- assertVisible: ${INCORRECT}
+- tapOn:
+    id: patternly:practice-review:next
+- assertVisible: '${THIRD_POSITION}'
+- scrollUntilVisible:
+    element:
+      text: ${UNANSWERED}
+    direction: DOWN
+- assertVisible: ${UNANSWERED}
+- repeat:
+    times: 47
+    commands:
+      - tapOn:
+          id: patternly:practice-review:next
+- assertVisible: '${LAST_POSITION}'
+- assertVisible:
+    id: patternly:practice-review:next
+    enabled: false
+- assertVisible:
+    id: patternly:practice-review:previous
+    enabled: true
+- takeScreenshot: review-last-unanswered
+- scrollUntilVisible:
+    element:
+      id: patternly:session:reason:gcp-ace-gcpace-n18-b01-010
+    direction: DOWN
+- assertVisible:
+    id: patternly:session:reason:gcp-ace-gcpace-n18-b01-010
+- scrollUntilVisible:
+    element:
+      text: 'The boundary is service-managed predefined role versus broad or bespoke access.'
+    direction: DOWN
+- assertVisible: 'The boundary is service-managed predefined role versus broad or bespoke access.'
+- scrollUntilVisible:
+    element:
+      text: 'Do not choose a broad basic role or an oversized custom role when a suitable predefined role exists.'
+    direction: DOWN
+- assertVisible: 'Do not choose a broad basic role or an oversized custom role when a suitable predefined role exists.'
+- scrollUntilVisible:
+    element:
+      text: 'The service maintains the permission collection and can update it as the product evolves.'
+    direction: DOWN
+- assertVisible: 'The service maintains the permission collection and can update it as the product evolves.'
+- scrollUntilVisible:
+    element:
+      text: 'Select the narrowest predefined role that supports the documented operation.'
+    direction: DOWN
+- assertVisible: 'Select the narrowest predefined role that supports the documented operation.'
+- scrollUntilVisible:
+    element:
+      text: 'If the scope, evidence, lifecycle, or failure boundary changes, reassess the iam policy structure decision before transferring the answer.'
+    direction: DOWN
+- assertVisible: 'If the scope, evidence, lifecycle, or failure boundary changes, reassess the iam policy structure decision before transferring the answer.'
+- scrollUntilVisible:
+    element:
+      id: question-source-link-gcp-ace-gcpace-n18-b01-010-0
+    direction: DOWN
+- assertNotVisible:
+    id: content-report-open-gcp-ace-gcpace-n18-b01-010
+- takeScreenshot: review-last-details-source
+- tapOn:
+    id: question-source-link-gcp-ace-gcpace-n18-b01-010-0
+- scrollUntilVisible:
+    element:
+      text: ${SOURCE_ERROR}
+    direction: DOWN
+- assertVisible: ${SOURCE_ERROR}
+- scrollUntilVisible:
+    element:
+      text: ${SOURCE_ERROR}
+    direction: DOWN
+- swipe:
+    start: 50%, 75%
+    end: 50%, 40%
+- takeScreenshot: review-source-open-error
+- repeat:
+    times: 12
+    commands:
+      - swipe:
+          start: 50%, 45%
+          end: 50%, 70%
+- assertVisible:
+    id: patternly:ui12:source-count:1
+- assertVisible: 'https://docs.cloud.google.com/iam/docs/overview'
+- tapOn:
+    id: patternly:practice-review:previous
+- assertVisible: '${PRELAST_POSITION}'
+- tapOn:
+    id: patternly:practice-review:next
+- assertVisible: '${LAST_POSITION}'
+- tapOn:
+    id: patternly:practice-review:result
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:ui12-exam-review-fixture
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:review-answers:ui12-exam-review-fixture
+    direction: DOWN
+- assertVisible: ${POINTS}
+- takeScreenshot: result-after-review
+- scrollUntilVisible:
+    element:
+      id: patternly:ui12:fixture:exit
+    direction: UP
+- tapOn:
+    id: patternly:ui12:fixture:exit
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 15000

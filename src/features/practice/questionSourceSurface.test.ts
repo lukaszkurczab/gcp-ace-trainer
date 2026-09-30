@@ -10,7 +10,8 @@ const designSession = readFileSync("src/features/practice/DesignInterviewPractic
 test("source links expose exact targets and unavailable has no press handler", () => {
   assert.match(source, /feedback\.sources\?\.length \? feedback\.sources\.map/);
   assert.match(source, /accessibilityRole="link"/);
-  assert.match(source, /openCanonicalSourceLink\(source, Linking\.openURL\)/);
+  assert.match(source, /openCanonicalSourceLink\(source, openSource\)/);
+  assert.match(source, /openSource = \(url\) => Linking\.openURL\(url\)/);
   assert.match(source, /source\.host/);
   assert.match(source, /: <Text maxFontSizeMultiplier=\{2\} style=\{styles\.sourceUnavailable\}>\{t\("Source unavailable"\)\}<\/Text>/);
   assert.doesNotMatch(source, /canOpenURL|google\.com\/search|fallback/i);

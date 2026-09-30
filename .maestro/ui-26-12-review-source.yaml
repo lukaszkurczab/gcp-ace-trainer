@@ -1,0 +1,77 @@
+appId: com.lkurczab.patternly
+name: UI-26-12 read-only Exam Review real canonical source
+---
+- openLink: 'com.lkurczab.patternly://audit/exam-review?case=exam-ready'
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:ui12-exam-review-fixture
+    timeout: 30000
+- assertVisible: 'Local read-only fixture.*'
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:review-answers:ui12-exam-review-fixture
+    direction: DOWN
+- assertVisible: 'Points: 1 / 50'
+- takeScreenshot: result-before-review
+- tapOn:
+    id: patternly:summary:review-answers:ui12-exam-review-fixture
+- extendedWaitUntil:
+    visible: 'Question 1 / 50'
+    timeout: 15000
+- assertVisible:
+    id: patternly:practice-review:previous
+    enabled: false
+- assertVisible:
+    id: patternly:practice-review:next
+    enabled: true
+- assertVisible: Correct
+- takeScreenshot: review-first-correct
+- tapOn:
+    id: patternly:practice-review:next
+- tapOn:
+    id: patternly:practice-review:next
+- assertVisible: 'Question 3 / 50'
+- scrollUntilVisible:
+    element:
+      id: question-source-link-gcp-ace-gcpace-n01-b02-003-0
+    direction: DOWN
+- takeScreenshot: ready-canonical-source
+- tapOn:
+    id: question-source-link-gcp-ace-gcpace-n01-b02-003-0
+- extendedWaitUntil:
+    visible: 'About resource hierarchy'
+    timeout: 15000
+- takeScreenshot: ready-external-browser
+- launchApp:
+    clearState: false
+    stopApp: false
+- scrollUntilVisible:
+    element:
+      id: patternly:ui12:source-count:1
+    direction: UP
+- assertVisible:
+    id: patternly:ui12:source-count:1
+- assertVisible: 'https://docs.cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy'
+- takeScreenshot: ready-exact-url-trace
+- tapOn:
+    id: patternly:practice-review:result
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:ui12-exam-review-fixture
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:review-answers:ui12-exam-review-fixture
+    direction: DOWN
+- assertVisible: 'Points: 1 / 50'
+- takeScreenshot: result-after-review
+- scrollUntilVisible:
+    element:
+      id: patternly:ui12:fixture:exit
+    direction: UP
+- tapOn:
+    id: patternly:ui12:fixture:exit
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 15000

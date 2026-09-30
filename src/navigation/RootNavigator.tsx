@@ -9,6 +9,9 @@ import { usePatternlyAccount } from "../application/account/AccountSessionProvid
 import { ROUTES } from "../constants/routes";
 import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
+import { CertificationExamReviewFixtureNavigator } from "../features/exam/certificationExamReviewFixtureNavigator";
+import { createCertificationExamReviewFixtureRuntime } from "../features/exam/certificationExamReviewFixtureRuntime";
+import { nextCertificationExamReviewFixtureLaunch, parseCertificationExamReviewFixtureUrl, type CertificationExamReviewFixtureLaunch } from "../features/exam/certificationExamReviewFixtureCommand";
 import { ExamScreen } from "../features/exam/ExamScreen";
 import { HomeScreen } from "../features/home/HomeScreen";
 import { ActivityScreen } from "../features/home/ActivityScreen";
@@ -61,7 +64,12 @@ export function RootNavigator() {
   const { t } = useTranslation("common");
   const { state, accountEntryMode } = usePatternlyAccount();
   const [auditLanguageSettings, setAuditLanguageSettings] = useState(false);
+  const [auditExamReviewFixture, setAuditExamReviewFixture] = useState<CertificationExamReviewFixtureLaunch | null>(null);
   const [auditLearningPlanFixture, setAuditLearningPlanFixture] = useState<LearningPlanProposalFixtureLaunch | null>(null);
+  const examReviewFixtureRuntime = useMemo(
+    () => auditExamReviewFixture ? createCertificationExamReviewFixtureRuntime(auditExamReviewFixture.scenario, { openUrl: (url) => Linking.openURL(url) }) : null,
+    [auditExamReviewFixture?.scenario, auditExamReviewFixture?.launchId],
+  );
   const proposalFixtureRuntime = useMemo(
     () => auditLearningPlanFixture ? createLearningPlanProposalFixtureRuntime(auditLearningPlanFixture.scenario, () => setAuditLearningPlanFixture(null)) : null,
     [auditLearningPlanFixture?.scenario, auditLearningPlanFixture?.launchId],
@@ -74,6 +82,17 @@ export function RootNavigator() {
         setAuditLanguageSettings(true);
       }
     });
+    return () => { subscription.remove(); };
+  }, []);
+
+  useEffect(() => {
+    if (!__DEV__ || !isPatternlySmokeRuntime()) return;
+    const acceptFixtureUrl = (url: string | null) => {
+      const scenario = parseCertificationExamReviewFixtureUrl(url, __DEV__ && isPatternlySmokeRuntime());
+      if (scenario) setAuditExamReviewFixture((previous) => nextCertificationExamReviewFixtureLaunch(previous, scenario));
+    };
+    void Linking.getInitialURL().then(acceptFixtureUrl).catch(() => undefined);
+    const subscription = Linking.addEventListener("url", ({ url }) => acceptFixtureUrl(url));
     return () => { subscription.remove(); };
   }, []);
 
@@ -117,6 +136,10 @@ export function RootNavigator() {
         <LoadingState description={t("Checking saved sign-in.")} showLogo testID="account-session-restore-loading" title={t("Restoring session")} />
       </Screen>
     );
+  }
+
+  if (auditExamReviewFixture && applicationSessionReady && examReviewFixtureRuntime) {
+    return <CertificationExamReviewFixtureNavigator key={auditExamReviewFixture.launchId} launch={auditExamReviewFixture} navigationTheme={navigationTheme} onExit={() => setAuditExamReviewFixture(null)} runtime={examReviewFixtureRuntime} />;
   }
 
   if (auditLearningPlanFixture && applicationSessionReady && proposalFixtureRuntime) {
@@ -238,7 +261,7 @@ export function RootNavigator() {
           <Stack.Screen
             name={ROUTES.EXAM_REVIEW}
             component={ExamReviewScreen}
-            options={{ title: t("Exam Review") }}
+            options={{ headerShown: false, title: t("Exam Review") }}
           />
           <Stack.Screen
             name={ROUTES.RESULT}

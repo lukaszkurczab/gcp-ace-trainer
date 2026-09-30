@@ -14,11 +14,11 @@ import { ContentReportSheet, type ContentReportSurfaceContext } from "../reports
 import { detailLines } from "./feedbackDetails";
 
 
-export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }: Readonly<{ feedback: PracticeFeedback; item: ResolvedContentRef; itemId: string; reportSurface: ContentReportSurfaceContext }>) {
+export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface, initiallyExpanded = false, showReport = true, openSource = (url) => Linking.openURL(url) }: Readonly<{ feedback: PracticeFeedback; item: ResolvedContentRef; itemId: string; reportSurface: ContentReportSurfaceContext; initiallyExpanded?: boolean; showReport?: boolean; openSource?: (url: string) => Promise<unknown> }>) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
   const { t } = useTranslation("common");
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(initiallyExpanded);
   const [sourceError, setSourceError] = useState(false);
   const detailsDisclosure = <DetailsDisclosure expanded={detailsOpen} onPress={() => setDetailsOpen((current) => !current)} testID={runtimeSelectors.session.detailsToggle(itemId)} />;
   return (
@@ -30,7 +30,7 @@ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface }:
       <View style={styles.detailsSection}>
         <View style={styles.detailsDivider} />
         {detailsDisclosure}
-        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <Text key={`${message.kind}:${message.targetId}`} style={styles.detailText}>{message.text}</Text>)}{detailLines(feedback.details).filter((line) => !feedback.sources?.some((source) => source.url === line)).map((line, index) => <Text key={`detail:${index}`} maxFontSizeMultiplier={2} style={styles.detailText}>{line}</Text>)}<View style={styles.sources}><Text maxFontSizeMultiplier={2} style={styles.sourceLabel}>{t("Source")}</Text>{feedback.sources?.length ? feedback.sources.map((source, index) => <Pressable accessibilityLabel={`${t("Open source")} ${source.host}`} accessibilityRole="link" key={source.url} onPress={() => { setSourceError(false); void openCanonicalSourceLink(source, Linking.openURL).then((result) => setSourceError(result === "failed")); }} testID={`question-source-link-${itemId}-${index}`}><Text maxFontSizeMultiplier={2} style={styles.sourceLink}>{source.host}</Text></Pressable>) : <Text maxFontSizeMultiplier={2} style={styles.sourceUnavailable}>{t("Source unavailable")}</Text>}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View><ContentReportSheet item={item} surface={reportSurface} /></View> : null}
+        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <Text key={`${message.kind}:${message.targetId}`} style={styles.detailText}>{message.text}</Text>)}{detailLines(feedback.details).filter((line) => !feedback.sources?.some((source) => source.url === line)).map((line, index) => <Text key={`detail:${index}`} maxFontSizeMultiplier={2} style={styles.detailText}>{line}</Text>)}<View style={styles.sources}><Text maxFontSizeMultiplier={2} style={styles.sourceLabel}>{t("Source")}</Text>{feedback.sources?.length ? feedback.sources.map((source, index) => <Pressable accessibilityLabel={`${t("Open source")} ${source.host}`} accessibilityRole="link" key={source.url} onPress={() => { setSourceError(false); void openCanonicalSourceLink(source, openSource).then((result) => setSourceError(result === "failed")); }} testID={`question-source-link-${itemId}-${index}`}><Text maxFontSizeMultiplier={2} style={styles.sourceLink}>{source.host}</Text></Pressable>) : <Text maxFontSizeMultiplier={2} style={styles.sourceUnavailable}>{t("Source unavailable")}</Text>}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View>{showReport ? <ContentReportSheet item={item} surface={reportSurface} /> : null}</View> : null}
       </View>
     </View>
   );

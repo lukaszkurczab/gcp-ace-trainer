@@ -7,6 +7,7 @@ export async function openCanonicalSourceLink(
   openUrl: (url: string) => Promise<unknown>,
 ): Promise<"opened" | "failed"> {
   try {
+    if (new URL(source.url).protocol !== "https:") return "failed";
     await openUrl(source.url);
     return "opened";
   } catch {
