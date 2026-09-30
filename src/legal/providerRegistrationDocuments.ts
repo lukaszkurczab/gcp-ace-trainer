@@ -20,8 +20,11 @@ export function resolveProviderRegistrationDocuments(
   runtimeMode: PatternlyRuntimeMode | undefined,
 ): ProviderRegistrationDocumentsResult {
   if (locale !== "en" && locale !== "pl") return { kind: "unavailable", reason: "locale" };
+  if (runtimeMode !== "smoke" && runtimeMode !== "sandbox" && runtimeMode !== "release") {
+    return { kind: "unavailable", reason: "documents" };
+  }
 
-  const releaseRuntime = runtimeMode === undefined ? undefined : runtimeMode === "release";
+  const releaseRuntime = runtimeMode === "release";
   const terms = getLegalDocument(locale, "termsOfService", releaseRuntime);
   const privacy = getLegalDocument(locale, "privacyPolicy", releaseRuntime);
   const termsVersion = legalVariables.documentVersion[locale]?.trim();
