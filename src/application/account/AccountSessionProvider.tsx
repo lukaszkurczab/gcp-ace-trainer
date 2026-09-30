@@ -7,7 +7,7 @@ import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAcc
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
 import { ensureAccountSessionGeneration, getMeWithExchangedSession } from "./accountSessionExchange";
-import { resumePendingSessionRevocation } from "./pendingSessionRevocation";
+import { createPendingSessionRevocationDrain, drainPendingSessionRevocations } from "./pendingSessionRevocation";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
@@ -353,6 +353,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const profilePreparationRef = useRef<ProfilePreparationAttempt | null>(null);
   const observerBlockedUidRef = useRef<string | null>(null);
   const sessionExchangeUidRef = useRef<string | null>(null);
+  const pendingSessionRevocationDrainRef = useRef<ReturnType<typeof createPendingSessionRevocationDrain> | null>(null);
   const legalAcceptancePendingRef = useRef(false);
   const registrationIntentRef = useRef<Readonly<{ uid: string; promise: Promise<AccountCommandResult> }> | null>(null);
   const providerAuthenticationInFlightRef = useRef(false);
@@ -368,6 +369,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (outcome.state) setState(outcome.state);
     });
   }
+  if (!pendingSessionRevocationDrainRef.current) pendingSessionRevocationDrainRef.current = createPendingSessionRevocationDrain();
   if (!deletionAuthorizationRef.current) deletionAuthorizationRef.current = createDeletionAuthorizationVault();
   if (!sensitiveCommandLaneRef.current) sensitiveCommandLaneRef.current = createSensitiveCommandLane();
   const sessionCoordinator = sessionCoordinatorRef.current;
@@ -872,30 +874,34 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           setState({ kind: "loading" });
           void (async () => {
             try {
-              for (const pending of pendingRevocations) {
-                if (!canContinue()) throw new AccountSessionGenerationStaleError();
-                const snapshot = await resumePendingSessionRevocation({
-                  api: client,
-                  auth: configuredAuth,
-                  canContinue,
-                  control: logoutControl,
-                  onSessionTokenSignIn: () => { sessionExchangeUidRef.current = user.uid; },
-                  pending,
-                  user,
-                });
-                if (!canContinue()) throw new AccountSessionGenerationStaleError();
-                logoutControlSnapshotRef.current = snapshot;
-                setLogoutControlSnapshot(snapshot);
-              }
+              const snapshot = await drainPendingSessionRevocations({
+                api: client,
+                auth: configuredAuth,
+                canContinue,
+                control: logoutControl,
+                executor: pendingSessionRevocationDrainRef.current!,
+                generation: generation.generation,
+                onSnapshot: (next) => {
+                  if (!canContinue()) return;
+                  logoutControlSnapshotRef.current = next;
+                  setLogoutControlSnapshot(next);
+                },
+                onSessionTokenSignIn: () => { sessionExchangeUidRef.current = user.uid; },
+                user,
+              });
+              if (!canContinue()) throw new AccountSessionGenerationStaleError();
+              logoutControlSnapshotRef.current = snapshot;
+              setLogoutControlSnapshot(snapshot);
               if (!canContinue()) return;
               sessionExchangeUidRef.current = null;
               const currentUser = configuredAuth.getSnapshot();
               if (!currentUser || currentUser.uid !== user.uid) return;
               void startAuthenticatedProfilePreparation(configuredAuth, client, currentUser, generation);
             } catch {
-              if (canContinue()) setState({ kind: "signOutPending", user, operationId: pendingRevocations[0]!.operationId });
+              const pending = findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid) ?? pendingRevocations[0]!;
+              if (canContinue()) setState({ kind: "signOutPending", user, operationId: pending.operationId });
             } finally {
-              if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
+              if (sessionCoordinator.isCurrent(generation) && sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
             }
           })();
           return;
@@ -995,13 +1001,44 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return { kind: "success", next: "authenticated" };
     }
     const generation = sessionCoordinator.current(user.uid) ?? sessionCoordinator.begin(user.uid);
+    const canContinue = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid;
+    try {
+      const snapshot = await drainPendingSessionRevocations({
+        api,
+        auth,
+        canContinue,
+        control: logoutControl,
+        executor: pendingSessionRevocationDrainRef.current!,
+        generation: generation.generation,
+        onSnapshot: (next) => {
+          if (!canContinue()) return;
+          logoutControlSnapshotRef.current = next;
+          setLogoutControlSnapshot(next);
+        },
+        onSessionTokenSignIn: () => { sessionExchangeUidRef.current = user.uid; },
+        user,
+      });
+      if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+      logoutControlSnapshotRef.current = snapshot;
+      setLogoutControlSnapshot(snapshot);
+    } catch {
+      if (!canContinue()) return { kind: "failure", failure: "revokedSession" };
+      const pending = findPendingSessionRevocation(logoutControlSnapshotRef.current, user.uid);
+      if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+      observerBlockedUidRef.current = user.uid;
+      setAccountEntryMode("login");
+      setState({ kind: "signOutPending", user, ...(pending ? { operationId: pending.operationId } : {}) });
+      return { kind: "failure", failure: "signOutPending" };
+    } finally {
+      if (sessionCoordinator.isCurrent(generation) && sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
+    }
     const attempt = await startAuthenticatedProfilePreparation(auth, api, user, generation);
     if (!attempt) {
       const latest = stateRef.current;
       return { kind: "failure", failure: latest.kind === "revokedSession" ? "revokedSession" : latest.kind === "backendUnavailable" ? "backendUnavailable" : "providerUnavailable" };
     }
     return attempt.completion;
-  }, [sessionCoordinator, startAuthenticatedProfilePreparation]);
+  }, [logoutControl, sessionCoordinator, startAuthenticatedProfilePreparation]);
 
   // Firebase publishes a new credential before our explicit Patternly
   // registration request returns.  Block only that UID, then release it after

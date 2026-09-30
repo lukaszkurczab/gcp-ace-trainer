@@ -334,6 +334,8 @@ test("restored matching logout block closes scope and remains pending until manu
   const pendingPreparation = provider.slice(provider.indexOf("const startAuthenticatedProfilePreparation"), provider.indexOf("const completeProfilePreparation"));
   assert.match(pendingPreparation, /findPendingSessionRevocation\(logoutControlSnapshotRef\.current, user\.uid\)[\s\S]*?finishPendingSignOut\(pendingRevoke\.operationId, "signOutPending", false\)[\s\S]*?findMatchingLocalLogoutBlock/u);
   const authObserver = provider.slice(provider.indexOf('configuredAuth.onUserChanged'), provider.indexOf('useEffect(() => {\n    if (state.kind === "guest"'));
+  assert.match(authObserver, /drainPendingSessionRevocations\([\s\S]*?executor: pendingSessionRevocationDrainRef\.current![\s\S]*?generation: generation\.generation[\s\S]*?onSnapshot:[\s\S]*?canContinue\(\)/);
+  assert.match(authObserver, /sessionCoordinator\.isCurrent\(generation\) && sessionExchangeUidRef\.current === user\.uid/u);
   assert.match(authObserver, /findMatchingLocalLogoutBlock\(logoutControlSnapshotRef\.current, user\.uid\)/);
   assert.match(authObserver, /if \(matchingLogoutBlock\) \{[\s\S]*?closeActiveProfileStorage\(\);[\s\S]*?setState\(\{ kind: "signOutPending", user \}\);[\s\S]*?return;/);
   assert.match(authObserver, /clearBlockForAuth\(previousObservedUid, logoutBlock\.operationId, canClearLogoutBlock\)/);
@@ -342,6 +344,9 @@ test("restored matching logout block closes scope and remains pending until manu
   const nullAuthBranch = authObserver.slice(authObserver.indexOf("if (!user) {"), authObserver.indexOf("if (rejectedRestoreUid !== null && rejectedRestoreUid !== user.uid)"));
   assert.ok(nullAuthBranch.indexOf("closeProfileStorage: closeActiveProfileStorage") < nullAuthBranch.indexOf("clearBlockForAuth"));
   assert.match(nullAuthBranch, /logoutControlSnapshotRef\.current\.blocked[\s\S]*?clearBlockForAuth\(previousObservedUid, logoutBlock\.operationId, canClearLogoutBlock\)/);
+  const explicitFinalize = provider.slice(provider.indexOf("const finalizeExplicitAuthentication"), provider.indexOf("// Firebase publishes a new credential"));
+  assert.ok(explicitFinalize.indexOf("drainPendingSessionRevocations(") < explicitFinalize.indexOf("startAuthenticatedProfilePreparation("));
+  assert.match(explicitFinalize, /sessionCoordinator\.isCurrent\(generation\) && sessionExchangeUidRef\.current === user\.uid/u);
   const preparation = provider.slice(provider.indexOf("const startAuthenticatedProfilePreparation"), provider.indexOf("const completeProfilePreparation"));
   assert.match(preparation, /activatePreparedProfile\(profile\.id, profile\.kind, \{ deferReadyNotification: true \}\)/);
   assert.match(preparation, /guardAuthenticatedScopeAgainstIncompleteSignOut\([\s\S]*?readScopedSignOut: getAccountSignOutState/);
