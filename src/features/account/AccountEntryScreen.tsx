@@ -28,6 +28,7 @@ import { getTrackDisplay } from "../../domain";
 import {
   Button,
   Icon,
+  IconTile,
   InfoBlock,
   Screen,
   ScreenHeader,
@@ -1122,6 +1123,8 @@ function AccountRecoveryScreen({
   text: AccountCopy;
 }>) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale >= 1.3;
   const { busyAction, runCommand } = useAccountCommand();
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [feedbackAction, setFeedbackAction] = useState<"retry" | "signOut" | null>(null);
@@ -1155,6 +1158,7 @@ function AccountRecoveryScreen({
     ? { body: text[feedback.failure], testID: `account-feedback-${feedback.failure}`, title: text.accountRecoveryTitle }
     : null;
   const presentation = actionFailure ?? status;
+  const showCloudRecovery = status.cloudRecovery && feedbackAction !== "signOut";
   return (
     <Screen
       edges={["top", "bottom"]}
@@ -1172,10 +1176,11 @@ function AccountRecoveryScreen({
       footerVariant="sticky"
     >
       <ScreenHeader backAction={backAction} title={text.account} />
-      <View style={styles.accountRecoveryStatus} testID={status.testID}>
-        <View style={styles.accountRecoveryStatus} testID={actionFailure?.testID}>
-          <AuthText accessibilityRole="header" style={styles.accountHeading}>{presentation.title}</AuthText>
-          <AuthText style={styles.accountBody}>{presentation.body}</AuthText>
+      <View style={[styles.accountRecoveryContainer, showCloudRecovery && !largeText ? styles.accountRecoveryCentered : null]} testID={status.testID}>
+        <View style={[styles.accountRecoveryStatus, showCloudRecovery && !largeText ? styles.accountRecoveryCenteredContent : null]} testID={actionFailure?.testID}>
+          {showCloudRecovery ? <IconTile name="cloud" tone="primary" /> : null}
+          <AuthText accessibilityRole="header" style={[styles.accountHeading, showCloudRecovery && !largeText ? styles.accountRecoveryCenteredText : null]}>{presentation.title}</AuthText>
+          <AuthText style={[styles.accountBody, showCloudRecovery && !largeText ? styles.accountRecoveryCenteredText : null]}>{presentation.body}</AuthText>
         </View>
         {status.retry ? (
           <Button
@@ -1196,33 +1201,34 @@ function AccountRecoveryScreen({
 
 type AccountRecoveryPresentation = Readonly<{
   body: string;
+  cloudRecovery: boolean;
   retry: boolean;
   testID: string;
   title: string;
 }>;
 
 function getAccountRecoveryPresentation(accountData: AccountDataSession, text: AccountCopy): AccountRecoveryPresentation {
-  if (accountData.status === "resumeRequired") return { body: text.resumeRequiredDescription, retry: true, testID: "account-sync-resume-required", title: text.resumeRequired };
-  if (accountData.status === "offlinePending") return { body: text.pendingDescription, retry: true, testID: "account-sync-pending", title: text.pending };
-  if (accountData.status === "signOutPending") return { body: text.signOutPendingDescription, retry: false, testID: "account-sign-out-pending", title: text.signOutPending };
-  if (accountData.status === "remoteDeletionPending") return { body: text.deletionPendingDescription, retry: false, testID: "account-deletion-pending", title: text.deletionPending };
-  if (accountData.status === "localCleanupPending") return { body: text.localCleanupPendingDescription, retry: false, testID: "account-deletion-local-cleanup-pending", title: text.localCleanupPending };
+  if (accountData.status === "resumeRequired") return { body: text.resumeRequiredDescription, cloudRecovery: true, retry: true, testID: "account-sync-resume-required", title: text.resumeRequired };
+  if (accountData.status === "offlinePending") return { body: text.pendingDescription, cloudRecovery: true, retry: true, testID: "account-sync-pending", title: text.pending };
+  if (accountData.status === "signOutPending") return { body: text.signOutPendingDescription, cloudRecovery: false, retry: false, testID: "account-sign-out-pending", title: text.signOutPending };
+  if (accountData.status === "remoteDeletionPending") return { body: text.deletionPendingDescription, cloudRecovery: false, retry: false, testID: "account-deletion-pending", title: text.deletionPending };
+  if (accountData.status === "localCleanupPending") return { body: text.localCleanupPendingDescription, cloudRecovery: false, retry: false, testID: "account-deletion-local-cleanup-pending", title: text.localCleanupPending };
   if (accountData.activeSessionBlocked || accountData.lastFailureCode === "active_session_adoption_blocked") {
-    return { body: text.activeSessionBlocked, retry: true, testID: "account-adoption-active-session", title: text.accountRecoveryTitle };
+    return { body: text.activeSessionBlocked, cloudRecovery: false, retry: true, testID: "account-adoption-active-session", title: text.accountRecoveryTitle };
   }
   if (accountData.lastFailureCode === "journal_recovery_required") {
-    return { body: text.journalBlocked, retry: true, testID: "account-adoption-journal", title: text.accountRecoveryTitle };
+    return { body: text.journalBlocked, cloudRecovery: false, retry: true, testID: "account-adoption-journal", title: text.accountRecoveryTitle };
   }
   if (accountData.lastFailureCode === "account_binding_mismatch") {
-    return { body: text.accountBindingMismatchDescription, retry: false, testID: "account-sync-binding-mismatch", title: text.accountBindingMismatch };
+    return { body: text.accountBindingMismatchDescription, cloudRecovery: false, retry: false, testID: "account-sync-binding-mismatch", title: text.accountBindingMismatch };
   }
-  if (accountData.pendingMutationCount > 0) return { body: text.pendingDescription, retry: true, testID: "account-sync-pending", title: text.pending };
-  if (accountData.blockingConflictCode !== null) return { body: text.conflictDescription, retry: true, testID: "account-sync-conflict", title: text.conflict };
-  if (accountData.lastFailureCode !== null) return { body: text.dataFailureDescription, retry: true, testID: "account-sync-failed", title: text.dataFailure };
-  if (accountData.status === "conflict") return { body: text.conflictDescription, retry: true, testID: "account-sync-conflict", title: text.conflict };
-  if (accountData.status === "failed") return { body: text.dataFailureDescription, retry: true, testID: "account-sync-failed", title: text.dataFailure };
-  if (accountData.status === "initialSyncRequired") return { body: text.accountRecoveryDescription, retry: true, testID: "account-sync-initial-required", title: text.accountRecoveryTitle };
-  return { body: text.syncing, retry: false, testID: "account-syncing", title: text.accountRecoveryTitle };
+  if (accountData.pendingMutationCount > 0) return { body: text.pendingDescription, cloudRecovery: true, retry: true, testID: "account-sync-pending", title: text.pending };
+  if (accountData.blockingConflictCode !== null) return { body: text.conflictDescription, cloudRecovery: true, retry: true, testID: "account-sync-conflict", title: text.conflict };
+  if (accountData.lastFailureCode !== null) return { body: text.dataFailureDescription, cloudRecovery: true, retry: true, testID: "account-sync-failed", title: text.dataFailure };
+  if (accountData.status === "conflict") return { body: text.conflictDescription, cloudRecovery: true, retry: true, testID: "account-sync-conflict", title: text.conflict };
+  if (accountData.status === "failed") return { body: text.dataFailureDescription, cloudRecovery: true, retry: true, testID: "account-sync-failed", title: text.dataFailure };
+  if (accountData.status === "initialSyncRequired") return { body: text.accountRecoveryDescription, cloudRecovery: true, retry: true, testID: "account-sync-initial-required", title: text.accountRecoveryTitle };
+  return { body: text.syncing, cloudRecovery: false, retry: false, testID: "account-syncing", title: text.accountRecoveryTitle };
 }
 
 function isHealthyAccountData(accountData: AccountDataSession): boolean {
@@ -2007,7 +2013,11 @@ function isAuthFieldFailure(
     copyCodesLabel: { ...typography.small, color: palette.primary, flexShrink: 1 },
     recoveryCodeSheet: { backgroundColor: palette.surfaceInput, borderRadius: 16, padding: spacing.md },
     accountActionGroup: { gap: spacing.sm },
+    accountRecoveryContainer: { flex: 1, gap: spacing.md },
+    accountRecoveryCentered: { justifyContent: "center" },
     accountRecoveryStatus: { gap: spacing.md },
+    accountRecoveryCenteredContent: { alignItems: "center" },
+    accountRecoveryCenteredText: { textAlign: "center" },
     accountRecoveryAction: { alignSelf: "stretch" },
     accountHeading: {
       ...typography.bodyStrong,

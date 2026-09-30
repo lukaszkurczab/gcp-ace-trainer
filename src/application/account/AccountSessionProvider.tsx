@@ -849,7 +849,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           const canContinue = () => live && !observerDetached && sessionCoordinator.isCurrent(generation) && configuredAuth.getSnapshot()?.uid === user.uid;
           closeActiveProfileStorage();
           setAccountEntryMode("login");
-          setState({ kind: "signOutPending", user, operationId: pendingRevocations[0]!.operationId });
+          setState({ kind: "loading" });
           void (async () => {
             try {
               for (const pending of pendingRevocations) {

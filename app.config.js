@@ -91,7 +91,9 @@ function readConfiguredPublicEnvironment(environment, mode) {
   if (parsed?.environment !== expectedEnvironment) {
     throw new Error(`${PUBLIC_ENVIRONMENT_KEY}.environment must equal ${expectedEnvironment}.`);
   }
-  return parsed;
+  require("tsx/cjs");
+  const { parseConfiguredPublicEnvironment } = require("./src/infrastructure/clients/publicEnvironment.ts");
+  return parseConfiguredPublicEnvironment(parsed);
 }
 
 function nativeFirebaseFile(environment, key, mode) {

@@ -2,7 +2,7 @@
 
 **Status:** kanoniczna kolejka pozostałej pracy
 
-**Rewizja:** 28 września 2026
+**Rewizja:** 30 września 2026
 
 **Zakres:** `patternly`, `patternly-backend`, `patternly-content`, `patternly-web`
 **Cel:** doprowadzić jeden przypięty kandydat iOS od lokalnego odbioru do autoryzowanej publikacji. Android jest testowany później ręcznie i nie blokuje lokalnego odbioru iOS.
@@ -47,9 +47,20 @@ SHA są punktem orientacyjnym porządków, nie kandydatem release. Przed każdym
 
 | Obszar | Status | Potwierdzona luka |
 | --- | --- | --- |
-| Stare audyty UI/session | `partial` | AUD-15 nadal wymaga własnych końcowych scenariuszy lokalnych. Seria AUD-02 została zamknięta decyzją właściciela i nie wraca do aktywnej kolejki. |
+| Logowanie sandbox Android | `partial` | Email/hasło działa na Redmi Note 11 po korekcie konfiguracji środowiska i promocji backendu sandbox. Bieżąca poprawka prezentacji automatycznego unieważniania sesji pokazuje istniejący stan ładowania, a `signOutPending` dopiero przy błędzie; nie ma jej jeszcze w buildzie/update EAS. Ten wynik nie potwierdza macierzy Apple/Google ani wydania. |
+| Stare audyty UI/session | `partial` | AUD-15 nadal wymaga odseparowanych scenariuszy multi/partial i dużego tekstu. UI-26-11 nadal wymaga pozostałych stanów runtime. Seria AUD-02 została zamknięta decyzją właściciela i nie wraca do aktywnej kolejki. |
 | Recovery/reissue autoryzacji | `partial` | Backendowe fundamenty i polityka e-maila po niejednoznacznym wyniku SMTP są ustalone; pozostają operacje B2–B4. |
 | Kanał operatorski | `partial` | B1 jest wykonane; brakuje endpointów, CLI i syntetycznego odbioru end-to-end. |
+
+### 2.3 Decyzje właściciela zachowane jako kontrakty
+
+- Nawigacja używa 16 pt; etykieta wybranego tracka ma subtelny akcent pionowy.
+- Reminders dotyczą bieżącego tracka. Edytor harmonogramu włącza osobne godziny jawnym checkboxem i pokazuje wybrane dni.
+- Target date zależy od celu: wydarzenie dla rozmowy/egzaminu, termin dla foundations, checkpoint dla refresh; own pace nie ma daty. Reguła ukończenia należy do wersjonowanego pakietu: definiuje minimalną liczbę prób i próg z ruchomego okna wyników; pytania mogą się powtarzać, ukończenie nie wymaga trafienia każdego unikalnego pytania, a brak reguły oznacza stan nieznany. Shortfall jest jawny; plan wolno skrócić tylko według sensownej ścieżki dopuszczonej przez pakiet.
+- Cel i zaakceptowany plan synchronizują się per track jako jedna atomowa para. Konflikt nie przerywa sesji: przy najbliższym bezpiecznym wejściu użytkownik wybiera zachowaną lokalną albo chmurową parę, po czym wybór synchronizuje się z urządzeniami. Ustawienia powiadomień pozostają lokalne dla urządzenia.
+- `Your data` pokazuje jawny stan sesji; guest copy i kanał są tylko dla rzeczywistego gościa. Lokalny reset ma potwierdzenie i opisany zakres. Eksport nazywa się `Share or download` i odpowiada rzeczywistemu arkuszowi systemowemu.
+- W `Your data` wnioski RODO i odzyskiwanie danych nieosobowych są osobnymi, bezpośrednimi wierszami. `Legal information` jest krótkim hubem z lokalnymi dokumentami kanonicznymi; zewnętrzny link prowadzi tylko do Support. Pokazywać prawnie określone terminy bez wymyślania SLA.
+- Nie powtarzać zamkniętych ODK-E2E-036–037 bez dowodu regresji; ODK-E2E-082–088 i 099 pozostają osobnymi zadaniami. VoiceOver jest wyłączony z testów decyzją właściciela.
 
 ## 3. Kolejność wykonania lokalnego
 
@@ -57,11 +68,10 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 
 | Kolejność | Zadanie | Status | Zależność | Wynik |
 | --- | --- | --- | --- | --- |
-| 02c | UI-26-09 — wycentrowany stan niedostępnych danych konta | `partial` | runtime recovery fixture | Implementacja, testy i layout są gotowe w nazwanym stashu; pozostają rzeczywisty retry/sign-out failure i długie locale. |
 | 02e | UI-26-11 — hierarchia propozycji planu nauki | `partial` | runtime state fixtures | Implementacja, testy, ready layout i rzeczywisty edit/back/accept są gotowe w nazwanym stashu; pozostają pozostałe stany i warianty runtime. |
 | 02f | UI-26-12 — nawigacja i źródła w Exam Review | `planned` | aktualny flow Exam result/review | Usunąć podwójny nagłówek i top inset, rozróżnić powrót do wyników od poprzedniego pytania oraz zapewnić działający link źródłowy także dla `Unanswered`. |
-| 04 | UI-26-02B — implementacja pierwszego użycia providerów | `blocking` | autoryzowana tożsamość testowa Apple/Google albo pełny fixture emulator-auth dla runtime mapped/new/isolation | Implementacja i testy są gotowe w nazwanych stashach obu repo; brakuje zintegrowanego runtime mapped-existing, unmapped-provisional i Guest A → account B isolation. |
-| 12 | AUD-15 — odpowiedzi i review | `partial` | odseparowany fixture multi/partial | Single correct/incorrect i semantyka są potwierdzone na aktualnym iPhonie 17 Simulator; brakuje runtime multi/partial i pełnej macierzy dużego tekstu bez zapisu do chronionego profilu. VoiceOver nie należy do odbioru. |
+| 04 | UI-26-02B — implementacja pierwszego użycia providerów | `blocking` | autoryzowana tożsamość testowa Apple/Google albo pełny fixture emulator-auth dla runtime mapped/new/isolation | Implementacja i testy są gotowe w nazwanych stashach obu repo; email/hasło jest potwierdzone na Androidzie sandbox. Nadal brakuje zintegrowanego runtime Apple/Google mapped-existing, unmapped-provisional i Guest A → account B isolation. |
+| 12 | AUD-15 — odpowiedzi i review | `partial` | odseparowany fixture multi/partial | Single correct/incorrect i semantyka są potwierdzone na aktualnym iPhonie 17 Simulator; brakuje runtime multi/partial i pełnej macierzy dużego tekstu bez zapisu do chronionego profilu. VoiceOver nie należy do odbioru. Raport częściowy pozostaje w `docs/active/AUD-15/REPORT.md`. |
 | 16 | AUD-08-B2 — recovery/reissue operations | `planned` | zatwierdzona polityka e-mailowa AUD-08-DEC | Trwałe operacje, status i reconciliation bez automatycznego powtarzania niepewnego skutku. |
 | 17 | AUD-08-B3 — mobile ACK i resume | `planned` | AUD-08-B2 | Restart i utracona odpowiedź nie zużywają operacji bez możliwości wznowienia. |
 | 18 | AUD-08-B4 — macierz awarii | `planned` | AUD-08-B3 | Failure injection i Maestro na jednym iPhonie 17. |
@@ -84,28 +94,11 @@ Każdy slice ma osobny raport i QA; nie łączyć ich w jeden refactor.
 | UI-26-04 | Wyrównać ikonę głównej karty Home do lewego górnego rogu treści. | Krótkie/długie tytuły i duży tekst bez regresji działania. | `docs/active/UI-26-04/REPORT.md` |
 | UI-26-05 | Zastąpić ręczne `YYYY-MM-DD` lokalizowanym kalendarzem. | Wybór, zmiana, wyczyszczenie i pusta wartość; bez zmiany formatu storage bez wykazanej potrzeby. | `docs/active/UI-26-05/REPORT.md` |
 | UI-26-06 | Reminders jako szkic dni podczas celu; harmonogram dopiero po przyjęciu planu z godzinami i zgodzie systemowej. | Restart/retry, odmowa planu/uprawnienia i błąd schedulera nie pokazują pozornej aktywacji; działające powiadomienie ma runtime evidence. | `docs/active/UI-26-06/REPORT.md` |
-| UI-26-09 | Poprawić prezentację `Account data is unavailable`: zachować nagłówek `Account` i sticky `Sign out`, a blok stanu z tytułem, opisem i `Retry sync` wycentrować pionowo w wolnej przestrzeni pomiędzy nimi. Nad tytułem dodać ikonę z istniejącego zestawu, bez nowej ilustracji. | Standardowy tekst pokazuje optycznie wycentrowaną grupę: status icon tile z `cloud`, tytuł, opis i primary retry. `Sign out` pozostaje oddzielną akcją wyjścia w footerze. Duży tekst i dłuższe locale przechodzą do bezpiecznego układu od góry/przewijania bez clippingu. Ikona jest dekoracyjna; tytuł i live status zachowują semantykę błędu. | `docs/active/UI-26-09/REPORT.md` |
 | UI-26-10 | Usunąć ze `Sign in` prezentację `Server session revocation pending`. Oczekujące unieważnienie sesji jest wewnętrznym stanem technicznym: użytkownik jest już lokalnie wylogowany, proces przebiega poprawnie i nie oferuje mu żadnej akcji. | Przy `state.kind === "signedOut"` ekran logowania wygląda standardowo niezależnie od `pendingRemoteRevokeCount`: bez karty, bannera, zastępczego tekstu, ikony lub dodatkowego odstępu. Trwała kolejka i wznowienie unieważnienia pozostają funkcjonalne. Niepotrzebne copy i test widoczności zostają usunięte lub zastąpione regresją potwierdzającą brak UI oraz zachowanie mechanizmu. | `docs/active/UI-26-10/REPORT.md` |
 | UI-26-11 | Uporządkować aktywną propozycję planu: usunąć podwójny top safe-area, zmienić hero na `Review your learning plan` bez redundantnego subtitle, użyć lokalizowanego rodzaju celu jako tytułu karty, pozostawić `Accept plan` jako jedyne primary CTA, zmienić `Edit schedule` na secondary i usunąć footerowe `Go back`. | Ekran wykorzystuje jeden bezpieczny inset; rodzaj celu nie jest powtórzony; sticky footer zawiera dwie akcje o jednoznacznej hierarchii, a Back pozostaje dostępny w nagłówku i nawigacji platformy. Track, target, dni, schedule, warningi, FactCards oraz zachowanie edit/accept pozostają bez zmian. | `docs/active/UI-26-11/AUDIT.md`, potem `REPORT.md` |
 | UI-26-12 | Uporządkować `Exam Review`: jeden właściciel nagłówka i top safe-area, jeden powrót do wyników, `Previous`/`Next` dla przechodzenia między pytaniami oraz kanoniczna obsługa źródeł również dla `Unanswered`. | Brak podwójnego nagłówka i pustej przestrzeni; powrót otwiera właściwy wynik; dolne akcje zmieniają pytanie; źródło `https` przy `Unanswered` jest prawdziwym linkiem, otwiera dokładny URL albo pokazuje jawny błąd. Reason, kompletne Details, odpowiedzi, scoring, kolejność i wynik pozostają bez zmian. | `docs/active/UI-26-12/REPORT.md` |
 
 Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana progresji lub przypadkowe modyfikacje sąsiednich ekranów.
-
-#### UI-26-09 — szczegółowy kontrakt odbioru
-
-- **Źródło decyzji:** instrukcja właściciela i screenshot iPhone 17 z 26.09.2026, stan `account-sync-failed` z dostępnym retry i sign-out.
-- **Potwierdzone komponenty:** `AccountRecoveryScreen` i `getAccountRecoveryPresentation` w `AccountEntryScreen`, współdzielone `Screen`, `ScreenHeader`, `Button` oraz istniejący `Icon` z nazwą `cloud`. Obecny `accountRecoveryStatus` ma wyłącznie `gap`, więc treść naturalnie zaczyna się pod nagłówkiem.
-- **Hierarchia:** nagłówek `Account` pozostaje na górze, a ghost `Sign out` pozostaje sticky footerem. Pomiędzy nimi recovery block zajmuje dostępną przestrzeń i centruje się pionowo oraz optycznie; nie centrować całego ekranu razem z nagłówkiem/footerem.
-- **Ikona:** użyć repozytoryjnej ikony `cloud` w spokojnym status tile nad tytułem. Tile korzysta z neutralnego/primary-soft treatment, nie z success ani danger; niedostępność nadal wynika z tytułu i copy, więc kolor nie jest jedynym nośnikiem stanu. Ikona jest dekoracyjna dla accessibility.
-- **Treść i działania:** zachować `Account data is unavailable`, opis o niezaładowanym postępie i jego lokalnym zachowaniu oraz primary `Retry sync`. Nie dodawać nowego copy. `Sign out` pozostaje wizualnie podrzędne i nie może wyglądać jak część retry.
-- **Warianty stanu:** wspólna hierarchia obejmuje `resumeRequired`, `offlinePending`, conflict, initial sync i failure, ale ikona/treatment nie mogą sugerować identycznej przyczyny. Jeżeli jeden wspólny `cloud` byłby mylący dla binding mismatch, deletion pending lub sign-out pending, ograniczyć nowy wariant do retryable sync states i zachować bez zmian pozostałe prezentacje.
-- **Responsywność:** przy standardowym tekście panel jest wycentrowany. Przy `fontScale >= 1.3`, długim locale lub braku miejsca należy preferować układ od góry i przewijanie; nie zmniejszać tekstu, odstępów ani touch targetów.
-- **Dostępność:** logiczny focus order header → status → retry → sign out; status pozostaje rozpoznawalny bez ikony; retry zachowuje busy/disabled; zmiana statusu i błąd akcji mają istniejące ogłoszenia/feedback bez duplikacji.
-- **Weryfikacja:** test struktury panelu i ikony, retry success/failure oraz sign-out failure, retryable i non-retryable recovery presentations, wszystkie siedem locale, light/dark, standardowy/duży tekst i screenshot na istniejącym iPhonie 17. Nie wykonywać testu VoiceOver.
-- **Poza zakresem:** zmiana synchronizacji, klasyfikacji błędów, copy, liczby retry, zachowania sign-out, routingu, footeru globalnego lub innych ekranów Account Entry.
-- **Warunek zakończenia:** ekran ma zrównoważony pionowy układ i ikonę w stanach, dla których jest semantycznie poprawna, bez regresji recovery, dużego tekstu i alternatywnego sign-out.
-- **Aktualna luka:** gotowy diff ma zielone targeted 82/82, typecheck i diff-check; Maestro na istniejącym iPhonie 17 potwierdził dark/standard oraz light/duży tekst, a siedem locale ma wymagane copy. Pozostają rzeczywiste retry success/failure, sign-out failure i runtime najdłuższego locale. Historyczny `qa-gate` wymieniał również VoiceOver, ale nie jest to już kryterium odbioru. Screenshoty korzystały z jawnego fixture wyłącznie do prezentacji i nie są dowodem backendu. Diff, raport i screenshoty zachowuje historycznie nazwany stash `UI-26-09 awaiting runtime and physical VoiceOver 2026-09-27`; nazwa stashu nie oznacza aktualnego wymogu VoiceOver. Wznowić z bezpiecznym recovery fixture, domknąć bramki runtime i ponowić QA.
-- **Prompt wykonawczy:** „Sprawdź bieżący `AccountRecoveryScreen`, wszystkie wyniki `getAccountRecoveryPresentation`, komponent `Screen` i testy account recovery. Dodaj wyłącznie adaptacyjne centrowanie recovery block oraz repozytoryjną ikonę zgodnie z UI-26-09. Zachowaj retry, sticky sign-out, feedback i bezpieczny fallback dla dużego tekstu; nie zmieniaj synchronizacji ani copy.”
 
 #### UI-26-11 — szczegółowy kontrakt odbioru
 
@@ -201,4 +194,4 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**UI-26-09 — wycentrowany stan niedostępnych danych konta** jest pierwszym następnym zadaniem. Wznowić zachowany diff, sprawdzić go względem aktualnego kodu i domknąć retry success/failure, sign-out failure oraz najdłuższe locale w runtime. `UI-26-02B` pozostaje `blocking` na runtime providerów albo pełny fixture. `AUD-15` i `UI-26-11` są `partial`; nie odtwarzać ich implementacji, tylko wznowić zachowane diffy i domknąć wskazane bramki niezwiązane z VoiceOver. Seria AUD-02 została definitywnie zamknięta decyzją właściciela; nie przywracać jej do kolejki ani nie przedstawiać przerwanego końcowego RC jako pełnego PASS.
+**UI-26-11 — hierarchia propozycji planu nauki** jest pierwszym następnym zadaniem. Wznowić zachowany diff, sprawdzić go względem aktualnego kodu i domknąć pozostałe stany/warianty runtime oraz błędy i rapid tap dla Edit/Accept. `UI-26-02B` pozostaje `blocking` na runtime providerów albo pełny fixture. `AUD-15` i `UI-26-11` są `partial`; nie odtwarzać ich implementacji, tylko wznowić zachowane diffy i domknąć wskazane bramki niezwiązane z VoiceOver. Seria AUD-02 została definitywnie zamknięta decyzją właściciela; nie przywracać jej do kolejki ani nie przedstawiać przerwanego końcowego RC jako pełnego PASS.

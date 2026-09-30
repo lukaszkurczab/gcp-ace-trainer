@@ -1,0 +1,71 @@
+appId: com.lkurczab.patternly
+name: Patternly RC — Certification Exam Simulation — resume and review
+tags:
+  - rc-evidence
+  - certification
+  - exam-simulation
+---
+- runFlow:
+    when:
+      visible: "Resume session"
+    commands:
+      - tapOn: "Resume session"
+      - extendedWaitUntil:
+          visible:
+            id: "patternly:practice:hub:root"
+          timeout: 30000
+      - scrollUntilVisible:
+          element:
+            id: "patternly:practice:mode-card:certification-exam-simulation"
+          direction: DOWN
+      - tapOn:
+          id: "patternly:practice:mode-card:certification-exam-simulation"
+- extendedWaitUntil:
+    visible: "Question 50 of 50"
+    timeout: 30000
+- tapOn: "Question navigator"
+- assertVisible: "Question navigator"
+- assertVisible: "Question 1, answered and saved, flagged"
+- assertVisible: "Question 50, current"
+- tapOn: "Close question navigator"
+- assertVisible: "Question 50 of 50"
+- takeScreenshot: "rc-certification-exam-resumed-question-50"
+- runFlow:
+    when:
+      visible: "!, Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+      - extendedWaitUntil:
+          notVisible: "!, Open debugger to view warnings."
+          timeout: 5000
+- scrollUntilVisible:
+    element: "Finish exam"
+    direction: DOWN
+    centerElement: false
+- tapOn: "Finish exam"
+- extendedWaitUntil:
+    visible: "Finish with unanswered questions?"
+    timeout: 30000
+- takeScreenshot: "rc-certification-exam-finalization-confirmation"
+- tapOn: "Finish exam"
+- extendedWaitUntil:
+    visible: "Session complete"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: "rc-certification-exam-result"
+- tapOn: "Review answers"
+- extendedWaitUntil:
+    visible: "Question 1 / 50"
+    timeout: 30000
+- assertVisible: "Incorrect"
+- repeat:
+    times: 49
+    commands:
+      - tapOn: "Next"
+- assertVisible: "Question 50 / 50"
+- assertVisible: "Unanswered"
+- takeScreenshot: "rc-certification-exam-review-question-50-unanswered"
+- waitForAnimationToEnd:
+    timeout: 10000

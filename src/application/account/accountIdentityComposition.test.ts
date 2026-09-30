@@ -200,8 +200,8 @@ test("account recovery owns one status message, a truthful retry, and a sign-out
   assert.ok(recoveryStart >= 0 && recoveryEnd > recoveryStart);
   assert.match(recovery, /getAccountRecoveryPresentation\(accountData, text\)/);
   assert.match(recovery, /const actionFailure = feedback\?\.kind === "failure"/);
-  assert.match(recovery, /<AuthText accessibilityRole="header" style=\{styles\.accountHeading\}>\{presentation\.title\}/);
-  assert.match(recovery, /<AuthText style=\{styles\.accountBody\}>\{presentation\.body\}/);
+  assert.match(recovery, /<AuthText accessibilityRole="header" style=\{\[styles\.accountHeading/);
+  assert.match(recovery, /<AuthText style=\{\[styles\.accountBody/);
   assert.doesNotMatch(recovery, /<InfoBlock/);
   assert.match(recovery, /status\.retry \? \(/);
   assert.match(recovery, /loading=\{busyAction === "retry"\}/);
@@ -209,6 +209,44 @@ test("account recovery owns one status message, a truthful retry, and a sign-out
   assert.match(recovery, /loading=\{busyAction === "signOut"\}/);
   assert.match(recovery, /testID="account-sign-out"/);
   assert.doesNotMatch(recovery, /AccountDataPanel|retryDisabled|loading=\{retryDisabled\}/);
+  const presentationStart = screen.indexOf("function getAccountRecoveryPresentation");
+  const presentationEnd = screen.indexOf("function isHealthyAccountData", presentationStart);
+  const presentation = screen.slice(presentationStart, presentationEnd);
+  assert.ok(presentationStart >= 0 && presentationEnd > presentationStart);
+  assert.match(presentation, /status === "resumeRequired"\) return \{[^}]*cloudRecovery: true/u);
+  assert.match(presentation, /status === "offlinePending"\) return \{[^}]*cloudRecovery: true/u);
+  assert.match(presentation, /pendingMutationCount > 0\) return \{[^}]*cloudRecovery: true/u);
+  assert.match(presentation, /blockingConflictCode !== null\) return \{[^}]*cloudRecovery: true/u);
+  assert.match(presentation, /lastFailureCode !== null\) return \{[^}]*cloudRecovery: true/u);
+  assert.match(presentation, /status === "conflict"\) return \{[^}]*cloudRecovery: true/u);
+  assert.match(presentation, /status === "failed"\) return \{[^}]*cloudRecovery: true/u);
+  assert.match(presentation, /status === "initialSyncRequired"\) return \{[^}]*cloudRecovery: true/u);
+  assert.match(presentation, /status === "signOutPending"\) return \{[^}]*cloudRecovery: false/u);
+  assert.match(presentation, /status === "remoteDeletionPending"\) return \{[^}]*cloudRecovery: false/u);
+  assert.match(presentation, /status === "localCleanupPending"\) return \{[^}]*cloudRecovery: false/u);
+  assert.match(presentation, /activeSessionBlocked[\s\S]*?cloudRecovery: false/u);
+  assert.match(presentation, /journal_recovery_required[\s\S]*?cloudRecovery: false/u);
+  assert.match(presentation, /account_binding_mismatch[\s\S]*?cloudRecovery: false/u);
+  assert.match(presentation, /return \{ body: text\.syncing, cloudRecovery: false/u);
+  assert.match(recovery, /const showCloudRecovery = status\.cloudRecovery && feedbackAction !== "signOut"/u);
+  assert.match(recovery, /showCloudRecovery && !largeText \? styles\.accountRecoveryCentered/u);
+  assert.match(recovery, /fontScale >= 1\.3/u);
+  assert.match(recovery, /<IconTile name="cloud" tone="primary" \/>/u);
+  assert.match(screen, /accountRecoveryContainer: \{ flex: 1, gap: spacing\.md \}/u);
+  assert.match(screen, /accountRecoveryCentered: \{ justifyContent: "center" \}/u);
+  assert.match(screen, /accountRecoveryCenteredContent: \{ alignItems: "center" \}/u);
+  assert.match(screen, /accountRecoveryCenteredText: \{ textAlign: "center" \}/u);
+  const iconTile = readFileSync("src/components/IconTile.tsx", "utf8");
+  const icon = readFileSync("src/components/Icon.tsx", "utf8");
+  assert.match(iconTile, /<Icon color=\{toneStyle\.color\} name=\{name\}/u);
+  assert.match(icon, /accessibilityElementsHidden/u);
+  assert.match(icon, /importantForAccessibility="no-hide-descendants"/u);
+  for (const locale of ["de", "en", "es", "et", "fr", "it", "pl"]) {
+    const account = JSON.parse(readFileSync(`src/locales/${locale}/account.json`, "utf8")) as Record<string, string>;
+    for (const key of ["account", "dataFailure", "dataFailureDescription", "retrySync", "signOut"]) {
+      assert.ok(account[key]?.trim(), `${locale}/account.json must define ${key}`);
+    }
+  }
   assert.match(screen, /function isRetryFailureCoveredByStatus\(accountData: AccountDataSession, failure: string\)/);
   assert.match(screen, /conflictDescription/);
   assert.match(screen, /account\.state\.kind === "guestAccessBlocked" && mode === "entry"/);

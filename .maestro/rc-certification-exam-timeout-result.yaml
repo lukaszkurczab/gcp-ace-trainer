@@ -1,0 +1,26 @@
+appId: com.lkurczab.patternly
+name: Patternly RC — Certification Exam Simulation — timeout result and review
+tags:
+  - rc-evidence
+  - certification
+  - exam-simulation
+  - timeout
+---
+- extendedWaitUntil:
+    visible: "Session complete"
+    timeout: 120000
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: "rc-certification-exam-timeout-result"
+- tapOn: "Review answers"
+- extendedWaitUntil:
+    visible: "Question 1 / 50"
+    timeout: 30000
+- assertVisible: "Incorrect"
+- repeat:
+    times: 49
+    commands:
+      - tapOn: "Next"
+- assertVisible: "Question 50 / 50"
+- assertVisible: "Unanswered"
+- takeScreenshot: "rc-certification-exam-timeout-review-question-50-unanswered"

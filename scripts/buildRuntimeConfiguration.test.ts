@@ -22,6 +22,26 @@ const smoke = {
   EXPO_PUBLIC_PATTERNLY_FIREBASE_AUTH_EMULATOR_ORIGIN: "http://127.0.0.1:9099",
 };
 
+test("sandbox builds validate the same closed public environment schema as the installed app", () => {
+  const environment = {
+    ...base,
+    PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox",
+    EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"),
+    EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity",
+    EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck",
+  };
+  assert.doesNotThrow(() => createExpoConfig(environment));
+  const configured = JSON.parse(environment.EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT);
+  assert.throws(() => createExpoConfig({
+    ...environment,
+    EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: JSON.stringify({ ...configured, publicDeletionUrl: "https://sandbox.patternly.test/account-deletion" }),
+  }), /invalid_public_environment:shape/);
+  assert.throws(() => createExpoConfig({
+    ...environment,
+    EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: JSON.stringify({ ...configured, apiOrigin: "http://sandbox.patternly.test" }),
+  }), /invalid_public_environment:apiOrigin/);
+});
+
 test("runtime mode is explicit and persists in public Expo config", () => {
   const config = createExpoConfig({ ...base, PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE: "sandbox", EXPO_PUBLIC_PATTERNLY_PUBLIC_ENVIRONMENT: publicEnvironment("sandbox"), EXPO_PUBLIC_PATTERNLY_APPCHECK_ANDROID_PROVIDER: "playIntegrity", EXPO_PUBLIC_PATTERNLY_APPCHECK_APPLE_PROVIDER: "deviceCheck" });
   assert.equal(config.expo.extra.patternlyRuntime, "sandbox");
