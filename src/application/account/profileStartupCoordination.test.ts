@@ -12,6 +12,7 @@ import {
   performLocalAccountSignOut,
   prepareAuthenticatedProfileScope,
   prepareGuestProfileScope,
+  providerCancellationAuthObserverDecision,
   recoverAfterGuestPreparationFailure,
   shouldLockForIncompleteScopedSignOut,
   shouldRejectPersistedAuthRestore,
@@ -79,6 +80,44 @@ test("only a current restored account_not_found signs out persisted Auth", () =>
   assert.equal(shouldRejectPersistedAuthRestore({ failure: "accountNotFound", isRestoredAuthEvent: false, isCurrentGeneration: true }), false);
   assert.equal(shouldRejectPersistedAuthRestore({ failure: "accountNotFound", isRestoredAuthEvent: true, isCurrentGeneration: false }), false);
   assert.equal(shouldRejectPersistedAuthRestore({ failure: "backendUnavailable", isRestoredAuthEvent: true, isCurrentGeneration: true }), false);
+});
+
+test("provisional provider cancellation returns to sign-in only when its blocked UID owns the null Auth event", () => {
+  assert.deepEqual(providerCancellationAuthObserverDecision({ eventUid: null, authUid: null, cancellationUid: "provider-uid", ownerUid: "provider-uid" }), { action: "return_to_sign_in", cancellationUid: null });
+  assert.deepEqual(providerCancellationAuthObserverDecision({ eventUid: null, authUid: null, cancellationUid: null, ownerUid: null }), { action: "restore_guest", cancellationUid: null });
+  assert.deepEqual(providerCancellationAuthObserverDecision({ eventUid: null, authUid: null, cancellationUid: "other-uid", ownerUid: "provider-uid" }), { action: "restore_guest", cancellationUid: null });
+  assert.deepEqual(providerCancellationAuthObserverDecision({ eventUid: null, authUid: null, cancellationUid: "provider-uid", ownerUid: null }), { action: "restore_guest", cancellationUid: null });
+});
+
+test("delayed null after sign-out promise resolution consumes the still-owned provider cancellation", () => {
+  let cancellationUid: string | null = "provider-uid";
+  const rejectedSignOut = providerCancellationAuthObserverDecision({ eventUid: null, authUid: cancellationUid, cancellationUid, ownerUid: cancellationUid });
+  assert.equal(rejectedSignOut.action, "ignore_stale");
+  assert.equal(rejectedSignOut.cancellationUid, cancellationUid);
+
+  let authUid: string | null = "provider-uid";
+  let blockedUid: string | null = "provider-uid";
+  const signOutPromise = Promise.resolve().then(() => { authUid = null; });
+  return signOutPromise.then(() => {
+    // The callback is delivered after the SDK promise resolves, while the
+    // blocked UID still owns the pending cancellation intent.
+    const completedSignOut = providerCancellationAuthObserverDecision({ eventUid: null, authUid, cancellationUid, ownerUid: blockedUid });
+    assert.deepEqual(completedSignOut, { action: "return_to_sign_in", cancellationUid: null });
+    cancellationUid = completedSignOut.cancellationUid;
+    blockedUid = null;
+    assert.equal(cancellationUid, null);
+    assert.equal(blockedUid, null);
+  });
+});
+
+test("replacement sign-in invalidates cancellation intent before a delayed stale null callback", () => {
+  const cancellationUid = "provider-uid";
+  const replacementSignIn = providerCancellationAuthObserverDecision({ eventUid: "replacement-uid", authUid: "replacement-uid", cancellationUid, ownerUid: "provider-uid" });
+  assert.equal(replacementSignIn.action, "handle_user");
+  assert.equal(replacementSignIn.cancellationUid, null);
+
+  const delayedNull = providerCancellationAuthObserverDecision({ eventUid: null, authUid: "replacement-uid", cancellationUid: replacementSignIn.cancellationUid, ownerUid: "replacement-uid" });
+  assert.deepEqual(delayedNull, { action: "ignore_stale", cancellationUid: null });
 });
 
 test("Auth loss locks the rendered account state before closing its profile scope", () => {

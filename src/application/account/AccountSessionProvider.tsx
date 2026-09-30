@@ -18,7 +18,7 @@ import { commitLearningStateReset } from "../learningMutations";
 import { activatePreparedProfile, closeActiveProfileStorage, continueAsGuestInNewProfile, getActiveStorageProfile, getActiveStorageProfileOrNull, inspectPreparedProfileState, notifyProfileStorageReady, prepareProfileStorage, selectAccountProfileAndRestart, selectPreparedAccountProfile, selectPreparedGuestProfile, validatePreparedGuestAccess } from "../../storage/repositories/profileStorageRepository";
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
 import { useProfileStoragePreparation } from "./profileStoragePreparationContext";
-import { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findPendingSessionRevocation, finishLocalSignOutSetupFailure, guardAuthenticatedScopeAgainstIncompleteSignOut, isPreparedGuestChoiceRequired, lockAndCloseProfileAfterAuthLoss, performLocalAccountSignOut, prepareAuthenticatedProfileScope, prepareGuestProfileScope, recoverAfterGuestPreparationFailure, shouldRejectPersistedAuthRestore, shouldShowGuestSelectionLoading } from "./profileStartupCoordination";
+import { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findPendingSessionRevocation, finishLocalSignOutSetupFailure, guardAuthenticatedScopeAgainstIncompleteSignOut, isPreparedGuestChoiceRequired, lockAndCloseProfileAfterAuthLoss, performLocalAccountSignOut, prepareAuthenticatedProfileScope, prepareGuestProfileScope, providerCancellationAuthObserverDecision, recoverAfterGuestPreparationFailure, shouldRejectPersistedAuthRestore, shouldShowGuestSelectionLoading } from "./profileStartupCoordination";
 import { beginAccountSignOut, clearAccountSignOutState, getAccountSignOutState } from "../../storage/repositories/accountLifecycleRepository";
 import { getGuestInstallation, markGuestInstallationAdoptionPending } from "../../storage/repositories/guestInstallationRepository";
 import type { LocalLogoutControl, LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
@@ -357,6 +357,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const registrationIntentRef = useRef<Readonly<{ uid: string; promise: Promise<AccountCommandResult> }> | null>(null);
   const providerAuthenticationInFlightRef = useRef(false);
   const providerRegistrationInFlightRef = useRef(false);
+  const providerCancellationUidRef = useRef<string | null>(null);
   const deletionAuthorizationRef = useRef<DeletionAuthorizationVault | null>(null);
   const deletionAuthorizationTokenRef = useRef<AccountSessionGenerationToken | null>(null);
   const sensitiveCommandLaneRef = useRef<SensitiveCommandLane | null>(null);
@@ -688,6 +689,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     const detachObserver = () => {
       if (observerDetached) return;
       observerDetached = true;
+      providerCancellationUidRef.current = null;
       if (initializationTimeout !== undefined) clearTimeout(initializationTimeout);
       unsubscribe?.();
       unsubscribe = undefined;
@@ -803,6 +805,14 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       }, AUTH_INITIALIZATION_TIMEOUT_MS);
       unsubscribe = configuredAuth.onUserChanged((user) => {
         if (!live || observerDetached) return;
+        const authObserverDecision = providerCancellationAuthObserverDecision({
+          eventUid: user?.uid ?? null,
+          authUid: configuredAuth.getSnapshot()?.uid ?? null,
+          cancellationUid: providerCancellationUidRef.current,
+          ownerUid: observerBlockedUidRef.current,
+        });
+        if (authObserverDecision.action === "ignore_stale") return;
+        providerCancellationUidRef.current = authObserverDecision.cancellationUid;
         const eventRevision = ++authObserverRevision;
         const isRestoredAuthEvent = !observerResolved;
         if (!observerResolved) {
@@ -840,6 +850,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           }
           if (rejectedRestoreUid !== null && previousObservedUid === rejectedRestoreUid) {
             rejectedRestoreUid = null;
+            publish({ kind: "signedOut" });
+            return;
+          }
+          if (authObserverDecision.action === "return_to_sign_in") {
             publish({ kind: "signedOut" });
             return;
           }
@@ -1058,6 +1072,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   ): Promise<AccountCommandResult> => {
     if (providerAuthenticationInFlightRef.current) return Promise.resolve({ kind: "failure", failure: "conflict" });
     providerAuthenticationInFlightRef.current = true;
+    providerCancellationUidRef.current = null;
     legalAcceptancePendingRef.current = true;
     return runAuthMutationWithAuth(async () => {
       revokeDeletionAuthorization();
@@ -1202,6 +1217,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     if (!user || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
 
     legalAcceptancePendingRef.current = true;
+    providerCancellationUidRef.current = user.uid;
     observerBlockedUidRef.current = user.uid;
     sessionCoordinator.invalidate();
     try {
@@ -1216,7 +1232,6 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       setState({ kind: "signOutPending", user, provisional: true });
       return { kind: "failure", failure: "signOutPending" };
     }
-    if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
     setAccountEntryMode("login");
     setState({ kind: "signedOut" });
     return { kind: "success", next: "signedOut" };
@@ -1316,6 +1331,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     },
     continueAsGuest: async () => {
       setGuestTransitionFailure(null);
+      providerCancellationUidRef.current = null;
       const result = await runWithGuestTransitionLock<AccountCommandResult>(guestCommandLockRef.current, { kind: "failure", failure: "providerUnavailable" }, async () => {
       sessionCoordinator.invalidate();
       revokeDeletionAuthorization();

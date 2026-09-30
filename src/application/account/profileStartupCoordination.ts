@@ -18,6 +18,28 @@ export function shouldRejectPersistedAuthRestore(input: Readonly<{
   return input.failure === "accountNotFound" && input.isRestoredAuthEvent && input.isCurrentGeneration;
 }
 
+export type ProviderCancellationAuthObserverDecision = Readonly<{
+  action: "ignore_stale" | "handle_user" | "return_to_sign_in" | "restore_guest";
+  cancellationUid: string | null;
+}>;
+
+/** Classifies an Auth observer callback without letting stale nulls revoke a live UID. */
+export function providerCancellationAuthObserverDecision(input: Readonly<{
+  eventUid: string | null;
+  authUid: string | null;
+  cancellationUid: string | null;
+  ownerUid: string | null;
+}>): ProviderCancellationAuthObserverDecision {
+  if (input.eventUid !== input.authUid) return Object.freeze({ action: "ignore_stale", cancellationUid: input.cancellationUid });
+  if (input.eventUid !== null) {
+    return Object.freeze({ action: "handle_user", cancellationUid: input.cancellationUid === input.eventUid ? input.cancellationUid : null });
+  }
+  return Object.freeze({
+    action: input.cancellationUid !== null && input.cancellationUid === input.ownerUid ? "return_to_sign_in" : "restore_guest",
+    cancellationUid: null,
+  });
+}
+
 /** A null Auth event must revoke rendered access before touching scoped storage. */
 export function lockAndCloseProfileAfterAuthLoss(input: Readonly<{
   publishLockedState: () => void;
