@@ -1096,7 +1096,6 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           isAccountNotFound: (error) => error instanceof PatternlyApiClientError
             && error.status === 404
             && error.serverCode === "account_not_found",
-          signOut: () => auth.signOut(),
         });
 
         try {
@@ -1105,7 +1104,6 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
             setState({ kind: "providerRegistrationRequired", user, generation, documents: resolveProviderRegistrationDocuments(locale, runtimeMode) });
             return { kind: "success", next: "providerRegistrationRequired" };
           }
-          if (resolution.kind === "cancelled") return { kind: "failure", failure: "providerUnavailable" };
           if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
           return resolution.value;
         } catch (error) {

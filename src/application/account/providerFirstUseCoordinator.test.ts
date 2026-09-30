@@ -21,7 +21,6 @@ function dependencies(overrides: Partial<Parameters<typeof createProviderFirstUs
       getAuthUid: () => currentUid,
       isCurrentGeneration: (token) => token.uid === currentUid && token.generation === currentGeneration,
       isAccountNotFound: (error) => error === accountNotFound,
-      signOut: async () => { calls.push("signOut"); currentUid = null; },
       ...overrides,
     }),
   };
@@ -37,7 +36,6 @@ test("unmapped provider identity remains provisional on the same UID without reg
   const fixture = dependencies({ exchange: async () => { fixture.calls.push("exchange"); throw accountNotFound; } });
   assert.deepEqual(await fixture.coordinator.run(generation), { kind: "provisional" });
   assert.equal(fixture.calls.join(","), "exchange");
-  assert.equal(fixture.calls.includes("signOut"), false);
   assert.equal(fixture.calls.includes("finalize"), false);
 });
 
@@ -59,12 +57,6 @@ test("stale UID or generation rejects before exchange and after an async boundar
     await assert.rejects(pending, AccountSessionGenerationStaleError);
     assert.deepEqual(fixture.calls, ["exchange"]);
   });
-});
-
-test("cancel signs out the provisional Firebase identity", async () => {
-  const fixture = dependencies();
-  assert.deepEqual(await fixture.coordinator.cancel(generation), { kind: "cancelled" });
-  assert.deepEqual(fixture.calls, ["signOut"]);
 });
 
 test("duplicate concurrent classification shares one in-flight result", async () => {

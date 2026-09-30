@@ -5,12 +5,10 @@ export type ProviderFirstUseGeneration = Readonly<{ generation: number; uid: str
 export type ProviderFirstUseResult<T> = Readonly<
   | { kind: "existing"; value: T }
   | { kind: "provisional" }
-  | { kind: "cancelled" }
 >;
 
 export type ProviderFirstUseCoordinator<T> = Readonly<{
   run: (generation: ProviderFirstUseGeneration) => Promise<ProviderFirstUseResult<T>>;
-  cancel: (generation: ProviderFirstUseGeneration) => Promise<ProviderFirstUseResult<T>>;
 }>;
 
 /**
@@ -25,7 +23,6 @@ export function createProviderFirstUseCoordinator<T>(dependencies: Readonly<{
   getAuthUid: () => string | null;
   isCurrentGeneration: (generation: ProviderFirstUseGeneration) => boolean;
   isAccountNotFound: (error: unknown) => boolean;
-  signOut: () => Promise<void>;
 }>): ProviderFirstUseCoordinator<T> {
   let attempt = 0;
   let inFlight: Readonly<{
@@ -77,15 +74,5 @@ export function createProviderFirstUseCoordinator<T>(dependencies: Readonly<{
     return promise;
   };
 
-  const cancel = async (generation: ProviderFirstUseGeneration): Promise<ProviderFirstUseResult<T>> => {
-    if (dependencies.getAuthUid() !== generation.uid || !dependencies.isCurrentGeneration(generation)) {
-      throw new AccountSessionGenerationStaleError();
-    }
-    attempt += 1;
-    inFlight = null;
-    await dependencies.signOut();
-    return { kind: "cancelled" };
-  };
-
-  return Object.freeze({ run, cancel });
+  return Object.freeze({ run });
 }
