@@ -48,7 +48,7 @@ SHA są punktem orientacyjnym porządków, nie kandydatem release. Przed każdym
 | Obszar | Status | Potwierdzona luka |
 | --- | --- | --- |
 | Logowanie sandbox Android | `partial` | Email/hasło działa na Redmi Note 11 po korekcie konfiguracji środowiska i promocji backendu sandbox. Bieżąca poprawka prezentacji automatycznego unieważniania sesji pokazuje istniejący stan ładowania, a `signOutPending` dopiero przy błędzie; nie ma jej jeszcze w buildzie/update EAS. Ten wynik nie potwierdza macierzy Apple/Google ani wydania. |
-| Stare audyty UI/session | `partial` | AUD-15 nadal wymaga odseparowanych scenariuszy multi/partial i dużego tekstu. Seria AUD-02 została zamknięta decyzją właściciela i nie wraca do aktywnej kolejki. |
+| Stare audyty UI/session | `accepted` | AUD-15 zamknięte lokalnie: pięć stanów Practice/Review, standard i 2×, independent QA. AUD-02 nie wraca do kolejki decyzją PO. |
 | Recovery/reissue autoryzacji | `partial` | Backendowe fundamenty i polityka e-maila po niejednoznacznym wyniku SMTP są ustalone; pozostają operacje B2–B4. |
 | Kanał operatorski | `partial` | B1 jest wykonane; brakuje endpointów, CLI i syntetycznego odbioru end-to-end. |
 
@@ -68,7 +68,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 
 | Kolejność | Zadanie | Status | Zależność | Wynik |
 | --- | --- | --- | --- | --- |
-| 12 | AUD-15 — odpowiedzi i review | `partial` | odseparowany fixture multi/partial | Single correct/incorrect i semantyka są potwierdzone na aktualnym iPhonie 17 Simulator; brakuje runtime multi/partial i pełnej macierzy dużego tekstu bez zapisu do chronionego profilu. VoiceOver nie należy do odbioru. Raport częściowy pozostaje w `docs/active/AUD-15/REPORT.md`. |
+| 12 | AUD-15 — odpowiedzi i review | `accepted` | brak | Canonical in-memory fixture, source1498/1498 PASS, standard/light222/222 i dark2×222/222 PASS; magazyn niezmieniony, independent QA PASS WITH ISSUES (nieblokujący licznik fixture). Dowody `docs/active/AUD-15/REPORT.md`. VoiceOver poza odbiorem. |
 | 16 | AUD-08-B2 — recovery/reissue operations | `planned` | zatwierdzona polityka e-mailowa AUD-08-DEC | Trwałe operacje, status i reconciliation bez automatycznego powtarzania niepewnego skutku. |
 | 17 | AUD-08-B3 — mobile ACK i resume | `planned` | AUD-08-B2 | Restart i utracona odpowiedź nie zużywają operacji bez możliwości wznowienia. |
 | 18 | AUD-08-B4 — macierz awarii | `planned` | AUD-08-B3 | Failure injection i Maestro na jednym iPhonie 17. |
@@ -99,7 +99,7 @@ Wspólne non-goals: przebudowa design systemu, drugi ekran przypomnień, zmiana 
 
 | ID | Cel i zakres | Akceptacja i weryfikacja | Ryzyko / report |
 | --- | --- | --- | --- |
-| AUD-15 | Single/multi, correct/incorrect/partial, review, standard/duży tekst po usunięciu badge. | Hierarchia, wyróżnienie kart, semantyka i screenshoty wszystkich stanów. VoiceOver jest poza odbiorem. | `PARTIAL`: istniejące próby pokrywają tylko single correct/incorrect. Potrzebny odseparowany fixture multi/partial bez modyfikacji chronionego profilu. `docs/active/AUD-15/REPORT.md`. |
+| AUD-15 | Single/multi, correct/incorrect/partial, Review, standard/duży tekst. | Hierarchia, karty, semantyka i screenshoty wszystkich stanów. VoiceOver poza odbiorem. | `ACCEPTED`: source1498/1498, dwie pełne macierze222/222, storage identical, independent source/native QA; nieblokujący licznik fixture. `docs/active/AUD-15/REPORT.md`. |
 
 Każdy wykonawca ma ponownie sprawdzić aktualne wejścia i usunąć z własnego scope elementy już działające. Weryfikacja jest wąska dla poprawki, ale runtime matrix musi pokrywać całe kryterium danego audytu.
 
@@ -160,8 +160,8 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**AUD-15 — odpowiedzi i review** jest następnym dostępnym zadaniem. Potrzebny jest odseparowany, kanoniczny fixture multi/partial oraz pełna macierz standard/duży tekst bez zapisu do chronionego profilu. Sprawdzić istniejący UI12 fixture, rzeczywisty Claude focus-practice choice_multiple i wspólną projekcję review, zanim powstanie implementacja. VoiceOver jest poza odbiorem; AUD-02 definitywnie zamknięte decyzją PO.
+**AUD-08-B2 — recovery/reissue operations** jest następnym dostępnym zadaniem. AUD-15 odebrane: source1498/1498, standard/light i dark2× po222/222, storage bez zmian, independent QA PASS WITH ISSUES (licznik wyłącznie fixture). Dowody `docs/active/AUD-15/REPORT.md`. B2 wymaga preflight środowisk, aktualnej inwentaryzacji guardów oraz zatwierdzonego A2; B3/B4 zależą od B2.
 
-UI-26-02B odebrane lokalnie 30.09.2026: mapped/provisional obu providerów, osobne dokumenty/zgody, cancel/retry/cold, new201/explicitadoption, legalimmutable/replay200 i naprawiony logout/reentry PASS. Final native appc66419b6969cbc6ab54c45af6db42b68852beaf5/backend29165944d087486075c9ccd23657c5c2fb45a84c; canonical content0174e42/web9585919 niezmienione. Pełna qa:static1492/1492+recovery/typecheck/content/privacy PASS z poprawnymi historicalcc3efca/current0174e42 pins. Independent LunaHigh source76, native i inventory15 PASS. Dowody/chronologia/ograniczenia w docs/active/UI-26-02B/REPORT.md oraz evidence/VERIFICATION.json. Fixture zastępuje acquisition, dalej działa rzeczywisty SDK/Auth Emulator/HTTP; realny provider matrix pozostaje bramką wydania. Cztery własne konta testowe usunięto indywidualnie; brak globalnego resetu/deploy/EAS. Zapis i push odebranego slice wykonywane po aktualizacji tego planu.
+UI-26-02B odebrane lokalnie 30.09.2026: mapped/provisional obu providerów, osobne dokumenty/zgody, cancel/retry/cold, new201/explicitadoption, legalimmutable/replay200 i naprawiony logout/reentry PASS. Final native appc66419b6969cbc6ab54c45af6db42b68852beaf5/backend29165944d087486075c9ccd23657c5c2fb45a84c; canonical content0174e42/web9585919 niezmienione. Pełna qa:static1492/1492+recovery/typecheck/content/privacy PASS z poprawnymi historicalcc3efca/current0174e42 pins. Independent LunaHigh source76, native i inventory15 PASS. Dowody/chronologia/ograniczenia w archiwum Git app654baa33 (docs/active/UI-26-02B/REPORT.md oraz evidence/VERIFICATION.json); aktywne pliki usunięto przy rozpoczęciu AUD-15. Fixture zastępuje acquisition, dalej działa rzeczywisty SDK/Auth Emulator/HTTP; realny provider matrix pozostaje bramką wydania. Cztery własne konta testowe usunięto indywidualnie; brak globalnego resetu/deploy/EAS. Commit/push PASS: app main654baa33a020e0f093f0fb243c2b2dbb19c40148 i backend main29165944d087486075c9ccd23657c5c2fb45a84c; komplet dowodów w historii app654baa33.
 
 UI-26-12 odebrane 30.09.2026: niezależne Luna High QA PASS, 78 focused + 8 feedback/result regression, typecheck/content/privacy/diff PASS; pełne Result→Review→Result, rzeczywiste Safari/exact URL, kontrolowana awaria, EN light standard i DE dark2× PASS. Dowody zarchiwizowane w app commit058ae2a1103efdf3cbbc549d65069698c57b8a3f (REPORT, VERIFICATION i screenshoty); fixture jawnie in-memory/no saved result, bez dowodu realnych providerów/Premium/VoiceOver. UI-26-11 odebrano i wypchnięto w app ff78a605; jego evidence jest w historii tego commita.

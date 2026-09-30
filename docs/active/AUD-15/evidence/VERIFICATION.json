@@ -1,0 +1,47 @@
+{
+  "status": "ACCEPTED",
+  "source": {
+    "qaStatic": {
+      "tests": 1498,
+      "passed": 1498,
+      "exitCode": 0
+    },
+    "independentQA": "PASS",
+    "sourcePins": "SOURCE-PINS.json"
+  },
+  "native": {
+    "standard": {
+      "commands": 222,
+      "completed": 222,
+      "exitCode": 0,
+      "independentQA": "PASS"
+    },
+    "dark2x": {
+      "commands": 222,
+      "completed": 222,
+      "exitCode": 0,
+      "independentQA": "PASS_WITH_ISSUES"
+    }
+  },
+  "storage": {
+    "standardUnchanged": true,
+    "dark2xUnchanged": true,
+    "plaintextRead": false
+  },
+  "limitations": [
+    "Non-blocking duplicate question counter in read-only fixture",
+    "VoiceOver excluded by PO",
+    "No backend/provider attestation",
+    "No EAS/deploy"
+  ],
+  "restore": {
+    "appearance": "system",
+    "locale": "en",
+    "contentSize": "large",
+    "homeVerified": true
+  },
+  "agents": {
+    "implementation": "gpt-6-luna medium",
+    "briefingAndIndependentQA": "gpt-6-luna high"
+  }
+}

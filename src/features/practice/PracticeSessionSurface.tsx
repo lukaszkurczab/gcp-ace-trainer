@@ -1,5 +1,6 @@
 import { PracticeQuestionCard } from "./PracticeQuestionCard";
 import { getPracticeSessionExitCopy } from "./practiceSessionExitCopy";
+import type { ReactNode } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useRef } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -52,10 +53,12 @@ export type PracticeExitPresentation =
   | Readonly<{ kind: "none" }>;
 
 export type PracticeSessionSurfaceProps = Readonly<{
+  actionBar?: ReactNode;
   allowLeave?: boolean;
   exit: PracticeExitPresentation;
   feedback?: PracticeFeedback;
   feedbackItem?: ResolvedContentRef;
+  headerAction?: ReactNode;
   isFinalPosition: boolean;
   modeLabel?: string;
   notice?: PracticeNotice;
@@ -123,8 +126,9 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
 
   return (
     <SessionShell
-      actionBar={props.phase === "preparing" ? undefined : <ActionBar {...props} onPrimaryAction={handlePrimaryAction} />}
+      actionBar={props.phase === "preparing" ? undefined : props.actionBar ?? <ActionBar {...props} onPrimaryAction={handlePrimaryAction} />}
       key={displayedQuestionId}
+      headerAction={props.headerAction}
       modeTestID={props.runtimeIdentity ? runtimeSelectors.session.mode(props.runtimeIdentity.modeId) : undefined}
       modeLabel={props.modeLabel}
       position={props.position}

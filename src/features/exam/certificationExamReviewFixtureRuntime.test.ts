@@ -3,13 +3,14 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { createCertificationExamReviewFixture } from "../../testing/certificationExamReviewFixture";
-import { CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID } from "./certificationExamReviewFixtureCommand";
+import { CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID, CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID } from "./certificationExamReviewFixtureCommand";
 import { createCertificationExamReviewFixtureRuntime as createSmokeRuntime } from "./certificationExamReviewFixtureRuntime.smoke";
 import { createCertificationExamReviewFixtureRuntime as createDisabledRuntime } from "./certificationExamReviewFixtureRuntime.disabled";
 
 const resultScreenSource = readFileSync("src/features/exam/ResultScreen.tsx", "utf8");
 const reviewScreenSource = readFileSync("src/features/exam/ExamReviewScreen.tsx", "utf8");
 const navigatorSource = readFileSync("src/features/exam/certificationExamReviewFixtureNavigator.tsx", "utf8");
+const practicePreviewSource = readFileSync("src/features/exam/CertificationPracticeFeedbackPreview.tsx", "utf8");
 const rootNavigatorSource = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
 
 test("fixture readers are optional screen seams and production readers remain the default", () => {
@@ -35,6 +36,12 @@ test("fixture readers are optional screen seams and production readers remain th
   assert.match(rootNavigatorSource, /openUrl: \(url\) => Linking\.openURL\(url\)/);
   assert.match(rootNavigatorSource, /Linking\.getInitialURL\(\)/);
   assert.match(rootNavigatorSource, /key=\{auditExamReviewFixture\.launchId\}/);
+  assert.match(navigatorSource, /launch\.scenario === "practice-answer-matrix"/);
+  assert.match(practicePreviewSource, /allowLeave=\{false\}/);
+  assert.match(practicePreviewSource, /phase="feedback"/);
+  assert.doesNotMatch(practicePreviewSource, /primaryAction=/);
+  assert.match(practicePreviewSource, /buildPracticeResponseControl/);
+  assert.match(practicePreviewSource, /read-only preview/);
 });
 
 test("fixture creates validator-approved fixed-50 canonical evidence without partial or persistence shortcuts", async () => {
@@ -73,7 +80,7 @@ test("ready fixture calls the supplied opener with each exact projected source U
   const calls: string[] = [];
   const runtime = createSmokeRuntime("exam-ready", { openUrl: async (url) => { calls.push(url); } });
   const review = await runtime.readReview(CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID);
-  const source = review.items[49]!.sources.find((entry) => entry.url === "https://docs.cloud.google.com/iam/docs/overview");
+  const source = (review.items[49]?.sources ?? []).find((entry) => entry.url === "https://docs.cloud.google.com/iam/docs/overview");
   assert.ok(source);
   await runtime.openSource(source.url);
   assert.deepEqual(calls, [source.url]);
@@ -85,12 +92,26 @@ test("source-failure fixture records exact opener attempt but never calls extern
   const runtime = createSmokeRuntime("source-failure", { openUrl: async () => { externalOpenerCalls += 1; } });
   const review = await runtime.readReview(CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID);
   const summary = await runtime.readSummary(CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID);
-  const url = review.items[49]!.sources.find((source) => source.url === "https://docs.cloud.google.com/iam/docs/overview")!.url;
+  const url = (review.items[49]?.sources ?? []).find((source) => source.url === "https://docs.cloud.google.com/iam/docs/overview")!.url;
   const before = JSON.stringify({ result: summary.result, session: summary.session, review });
   await assert.rejects(runtime.openSource(url), /rejected/);
   assert.equal(externalOpenerCalls, 0);
   assert.deepEqual(runtime.getSourceTrace(), { count: 1, url });
   assert.equal(JSON.stringify({ result: summary.result, session: summary.session, review }), before);
+});
+
+test("practice answer matrix exposes actual completed summary, five feedback previews, and full review", async () => {
+  const runtime = createSmokeRuntime("practice-answer-matrix", { openUrl: async () => undefined });
+  await assert.rejects(runtime.readSummary(CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID), /does not match/);
+  const summary = await runtime.readSummary(CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID);
+  const review = await runtime.readReview(CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID);
+  const previews = await runtime.readPracticePreviews(CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID);
+  assert.equal(summary.session.id, CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID);
+  assert.equal(summary.session.status, "completed");
+  assert.equal(summary.certificationExam, null);
+  assert.deepEqual(previews.map((preview) => preview.feedback.result), ["correct", "incorrect", "correct", "partial", "incorrect"]);
+  assert.deepEqual(review.items.slice(0, 5).map((item) => item.result), ["correct", "incorrect", "correct", "partial", "incorrect"]);
+  await assert.rejects(runtime.readPracticePreviews(CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID), /does not match/);
 });
 
 test("Metro disabled runtime is explicitly unavailable outside smoke", () => {

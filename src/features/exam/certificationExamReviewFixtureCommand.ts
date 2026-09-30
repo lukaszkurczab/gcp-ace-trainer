@@ -1,7 +1,8 @@
 export const CERTIFICATION_EXAM_REVIEW_FIXTURE_URL = "com.lkurczab.patternly://audit/exam-review";
 export const CERTIFICATION_EXAM_REVIEW_FIXTURE_SESSION_ID = "ui12-exam-review-fixture";
+export const CERTIFICATION_PRACTICE_ANSWER_FIXTURE_SESSION_ID = "aud15-practice-answer-matrix";
 
-export const CERTIFICATION_EXAM_REVIEW_FIXTURE_CASES = Object.freeze(["exam-ready", "source-failure"] as const);
+export const CERTIFICATION_EXAM_REVIEW_FIXTURE_CASES = Object.freeze(["exam-ready", "source-failure", "practice-answer-matrix"] as const);
 export type CertificationExamReviewFixtureCase = (typeof CERTIFICATION_EXAM_REVIEW_FIXTURE_CASES)[number];
 export type CertificationExamReviewFixtureLaunch = Readonly<{ scenario: CertificationExamReviewFixtureCase; launchId: number }>;
 

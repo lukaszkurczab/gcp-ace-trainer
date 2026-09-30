@@ -1,0 +1,664 @@
+appId: com.lkurczab.patternly
+name: AUD-15 complete answer matrix and native semantic labels
+---
+- openLink: 'com.lkurczab.patternly://audit/exam-review?case=practice-answer-matrix'
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:aud15-practice-answer-matrix
+    timeout: 30000
+- tapOn:
+    id: patternly:aud15:practice-preview:open
+- extendedWaitUntil:
+    visible:
+      id: patternly:aud15:practice-preview:notice
+    timeout: 15000
+- assertVisible:
+    id: patternly:aud15:practice-preview:previous
+    enabled: false
+- assertVisible:
+    id: patternly:aud15:practice-preview:notice
+- assertVisible: "Question 1 / 10"
+- takeScreenshot: practice-1-header
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-boundary:a
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-boundary:a
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-1-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-boundary:b
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-boundary:b
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-1-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-boundary:c
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-boundary:c
+    enabled: false
+    text: ".*Selected, correct.*"
+- takeScreenshot: practice-1-option-c
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-boundary:d
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-boundary:d
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-1-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O01-boundary
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: practice-1-feedback
+- scrollUntilVisible:
+    element:
+      id: patternly:aud15:practice-preview:next
+    direction: UP
+    centerElement: false
+- assertVisible:
+    id: patternly:aud15:practice-preview:next
+- tapOn:
+    id: patternly:aud15:practice-preview:next
+- assertVisible:
+    id: patternly:aud15:practice-preview:notice
+- assertVisible: "Question 2 / 10"
+- takeScreenshot: practice-2-header
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-diagnosis:a
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-diagnosis:a
+    enabled: false
+    text: ".*Correct answer, not selected.*"
+- takeScreenshot: practice-2-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-diagnosis:b
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-diagnosis:b
+    enabled: false
+    text: ".*Selected, incorrect.*"
+- takeScreenshot: practice-2-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-diagnosis:c
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-diagnosis:c
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-2-option-c
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-diagnosis:d
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-diagnosis:d
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-2-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O01-diagnosis
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: practice-2-feedback
+- scrollUntilVisible:
+    element:
+      id: patternly:aud15:practice-preview:next
+    direction: UP
+    centerElement: false
+- assertVisible:
+    id: patternly:aud15:practice-preview:next
+- tapOn:
+    id: patternly:aud15:practice-preview:next
+- assertVisible:
+    id: patternly:aud15:practice-preview:notice
+- assertVisible: "Question 3 / 10"
+- takeScreenshot: practice-3-header
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:a
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:a
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-3-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:b
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:b
+    enabled: false
+    text: ".*Selected, correct.*"
+- takeScreenshot: practice-3-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:c
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:c
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-3-option-c
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:d
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:d
+    enabled: false
+    text: ".*Selected, correct.*"
+- takeScreenshot: practice-3-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:e
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:e
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-3-option-e
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O01-transfer
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: practice-3-feedback
+- scrollUntilVisible:
+    element:
+      id: patternly:aud15:practice-preview:next
+    direction: UP
+    centerElement: false
+- assertVisible:
+    id: patternly:aud15:practice-preview:next
+- tapOn:
+    id: patternly:aud15:practice-preview:next
+- assertVisible:
+    id: patternly:aud15:practice-preview:notice
+- assertVisible: "Question 4 / 10"
+- takeScreenshot: practice-4-header
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O02-transfer:a
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O02-transfer:a
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-4-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O02-transfer:b
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O02-transfer:b
+    enabled: false
+    text: ".*Selected, correct.*"
+- takeScreenshot: practice-4-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O02-transfer:c
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O02-transfer:c
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-4-option-c
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O02-transfer:d
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O02-transfer:d
+    enabled: false
+    text: ".*Correct answer, not selected.*"
+- takeScreenshot: practice-4-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O02-transfer:e
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O02-transfer:e
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: practice-4-option-e
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O02-transfer
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: practice-4-feedback
+- scrollUntilVisible:
+    element:
+      id: patternly:aud15:practice-preview:next
+    direction: UP
+    centerElement: false
+- assertVisible:
+    id: patternly:aud15:practice-preview:next
+- tapOn:
+    id: patternly:aud15:practice-preview:next
+- assertVisible:
+    id: patternly:aud15:practice-preview:notice
+- assertVisible: "Question 5 / 10"
+- takeScreenshot: practice-5-header
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O03-transfer:a
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O03-transfer:a
+    enabled: false
+    text: ".*Selected, incorrect.*"
+- takeScreenshot: practice-5-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O03-transfer:b
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O03-transfer:b
+    enabled: false
+    text: ".*Correct answer, not selected.*"
+- takeScreenshot: practice-5-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O03-transfer:c
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O03-transfer:c
+    enabled: false
+    text: ".*Selected, incorrect.*"
+- takeScreenshot: practice-5-option-c
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O03-transfer:d
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O03-transfer:d
+    enabled: false
+    text: ".*Selected, incorrect.*"
+- takeScreenshot: practice-5-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O03-transfer:e
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O03-transfer:e
+    enabled: false
+    text: ".*Correct answer, not selected.*"
+- takeScreenshot: practice-5-option-e
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O03-transfer
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: practice-5-feedback
+- scrollUntilVisible:
+    element:
+      id: patternly:aud15:practice-preview:next
+    direction: UP
+    centerElement: false
+- assertVisible:
+    id: patternly:aud15:practice-preview:next
+    enabled: false
+- tapOn:
+    id: patternly:aud15:practice-preview:previous
+- assertVisible: "Question 4 / 10"
+- tapOn:
+    id: patternly:aud15:practice-preview:next
+- assertVisible: "Question 5 / 10"
+- scrollUntilVisible:
+    element:
+      id: patternly:aud15:practice-preview:results
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:aud15:practice-preview:results
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:aud15-practice-answer-matrix
+    timeout: 15000
+- takeScreenshot: same-results-after-preview
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:review-answers:aud15-practice-answer-matrix
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:summary:review-answers:aud15-practice-answer-matrix
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice-review:next
+    timeout: 20000
+- takeScreenshot: review-1-header
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-boundary:a
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-boundary:a
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-1-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-boundary:b
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-boundary:b
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-1-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-boundary:c
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-boundary:c
+    enabled: false
+    text: ".*Selected, correct.*"
+- takeScreenshot: review-1-option-c
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-boundary:d
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-boundary:d
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-1-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O01-boundary
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: review-1-feedback
+- tapOn:
+    id: patternly:practice-review:next
+- takeScreenshot: review-2-header
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-diagnosis:a
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-diagnosis:a
+    enabled: false
+    text: ".*Correct answer, not selected.*"
+- takeScreenshot: review-2-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-diagnosis:b
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-diagnosis:b
+    enabled: false
+    text: ".*Selected, incorrect.*"
+- takeScreenshot: review-2-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-diagnosis:c
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-diagnosis:c
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-2-option-c
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-diagnosis:d
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-diagnosis:d
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-2-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O01-diagnosis
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: review-2-feedback
+- tapOn:
+    id: patternly:practice-review:next
+- takeScreenshot: review-3-header
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:a
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:a
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-3-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:b
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:b
+    enabled: false
+    text: ".*Selected, correct.*"
+- takeScreenshot: review-3-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:c
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:c
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-3-option-c
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:d
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:d
+    enabled: false
+    text: ".*Selected, correct.*"
+- takeScreenshot: review-3-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:e
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:e
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-3-option-e
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O01-transfer
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: review-3-feedback
+- tapOn:
+    id: patternly:practice-review:next
+- takeScreenshot: review-4-header
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O02-transfer:a
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O02-transfer:a
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-4-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O02-transfer:b
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O02-transfer:b
+    enabled: false
+    text: ".*Selected, correct.*"
+- takeScreenshot: review-4-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O02-transfer:c
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O02-transfer:c
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-4-option-c
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O02-transfer:d
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O02-transfer:d
+    enabled: false
+    text: ".*Correct answer, not selected.*"
+- takeScreenshot: review-4-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O02-transfer:e
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O02-transfer:e
+    enabled: false
+    text: ".*Not selected.*"
+- takeScreenshot: review-4-option-e
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O02-transfer
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: review-4-feedback
+- tapOn:
+    id: patternly:practice-review:next
+- takeScreenshot: review-5-header
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O03-transfer:a
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O03-transfer:a
+    enabled: false
+    text: ".*Selected, incorrect.*"
+- takeScreenshot: review-5-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O03-transfer:b
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O03-transfer:b
+    enabled: false
+    text: ".*Correct answer, not selected.*"
+- takeScreenshot: review-5-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O03-transfer:c
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O03-transfer:c
+    enabled: false
+    text: ".*Selected, incorrect.*"
+- takeScreenshot: review-5-option-c
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O03-transfer:d
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O03-transfer:d
+    enabled: false
+    text: ".*Selected, incorrect.*"
+- takeScreenshot: review-5-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O03-transfer:e
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O03-transfer:e
+    enabled: false
+    text: ".*Correct answer, not selected.*"
+- takeScreenshot: review-5-option-e
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O03-transfer
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: review-5-feedback
+- tapOn:
+    id: patternly:practice-review:previous
+- assertVisible:
+    text: "Question 4 / 10"
+- tapOn:
+    id: patternly:practice-review:result
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:aud15-practice-answer-matrix
+    timeout: 15000
+- takeScreenshot: same-results-after-review
+- scrollUntilVisible:
+    element:
+      id: patternly:ui12:fixture:exit
+    direction: UP
+- tapOn:
+    id: patternly:ui12:fixture:exit
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 15000

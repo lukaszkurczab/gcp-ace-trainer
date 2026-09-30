@@ -33,3 +33,17 @@ test("primary session CTA routes activations through the phase-identity carry-ov
   assert.match(surface, /onPress=\{props\.onPrimaryAction \?\? noop\}/);
   assert.doesNotMatch(surface, /setTimeout|requestAnimationFrame/);
 });
+
+test("fixture chrome reuses the Practice shell slots without adding a nested scroll owner", () => {
+  assert.match(surface, /actionBar=\{props\.phase === "preparing" \? undefined : props\.actionBar \?\? <ActionBar \{\.\.\.props\} onPrimaryAction=\{handlePrimaryAction\} \/>\}/);
+  assert.match(surface, /headerAction=\{props\.headerAction\}/);
+
+  const preview = readFileSync("src/features/exam/CertificationPracticeFeedbackPreview.tsx", "utf8");
+  assert.match(preview, /<PracticeSessionSurface[\s\S]*?actionBar=\{actionBar\}[\s\S]*?headerAction=\{headerAction\}/);
+  assert.doesNotMatch(preview, /return <Screen key=\{preview\.question\.questionId\}/);
+  assert.match(preview, /accessibilityLabel="Back to results"/);
+  assert.match(preview, /accessibilityLabel="Exit fixture"/);
+  assert.match(preview, /practice-preview:previous/);
+  assert.match(preview, /practice-preview:next/);
+  assert.doesNotMatch(preview, /primaryAction=|onPrimaryAction=/);
+});

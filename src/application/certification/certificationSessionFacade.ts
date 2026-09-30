@@ -1,5 +1,5 @@
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import { resolvedContentRefsEqual, type AttemptResultKind, type CompletedTrainingSession, type TrackId, type TrainingSession, type TrainingSessionDraft } from "../../domain";
+import { type AttemptResultKind, type CompletedTrainingSession, type TrackId, type TrainingSession, type TrainingSessionDraft } from "../../domain";
 import { getTrackRegistration } from "../../domain";
 import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts } from "../learningReadModels";
 import {
@@ -16,10 +16,13 @@ import {
   type PreparedSession,
 } from "../trainingLifecycle";
 import { isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
-import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalQuestionResponse, type JsonValue, type Question } from "../../content/canonical";
+import { type CanonicalQuestionResponse, type Question } from "../../content/canonical";
 import { projectCanonicalChoiceFeedbackControls, type CanonicalChoiceFeedbackState } from "../canonical/canonicalInteractionPresentation";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { projectCertificationExamReview, type CertificationExamReviewProjection } from "./certificationExamReviewProjection";
+import { projectCertificationPracticeReview, type CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
+export { certificationReviewEvidenceMatches } from "./certificationPracticeReviewProjection";
+export type { CertificationPracticeReviewItem, CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
 
 export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; nodeId?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
@@ -54,29 +57,6 @@ export type CertificationPracticeQuestion = Readonly<{
   nodeId: string;
   prompt: string;
   questionId: string;
-}>;
-export type CertificationPracticeReviewItem = Readonly<{
-  constraints: readonly string[];
-  correctOptionIds: readonly string[];
-  details: JsonValue;
-  sources?: readonly CanonicalSourceLink[];
-  item: TrainingSession["itemOrder"][number]["item"];
-  occurrenceId: string;
-  options: readonly Readonly<{ optionId: string; text: string }>[];
-  ordinal: number;
-  prompt: string;
-  questionId: string;
-  reason: string;
-  result: AttemptResultKind;
-  selectedOptionIds: readonly string[];
-  selectionMode: "single" | "multiple";
-}>;
-export type CertificationPracticeReviewProjection = Readonly<{
-  feedbackMode: "afterEachAnswer" | "atSessionEnd";
-  items: readonly CertificationPracticeReviewItem[];
-  modeId: CertificationPracticeModeId;
-  sessionId: string;
-  total: number;
 }>;
 export type CertificationExamProjection = Readonly<{
   session: TrainingSession;
@@ -176,67 +156,10 @@ export async function getCertificationPracticeReviewProjection(sessionId: string
     lifecycle.loadSessionRecord(sessionId),
     loadTrainingAttempts(),
   ]);
-  if (session.id !== sessionId || session.status !== "completed" || !session.completedAt || getTrackRegistration(session.trackId).familyId !== "certification" || !isCertificationPracticeModeId(session.modeId) || result.sessionId !== session.id || result.trackId !== session.trackId || result.completedAt !== session.completedAt || result.evidence.familyId !== "certification") {
+  if (session.id !== sessionId) {
     throw new TrainingApplicationFailure("summary_unavailable", "Answer review requires one verified completed Certification Practice session.");
   }
-  const occurrenceIds = session.itemOrder.map((occurrence) => occurrence.occurrenceId);
-  if (result.totalOccurrences !== session.actualLength || JSON.stringify(result.answeredOccurrenceIds) !== JSON.stringify(occurrenceIds) || result.unansweredOccurrenceIds.length !== 0) {
-    throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice completion evidence is incomplete.");
-  }
-
-  const attempts = attemptsRecord.value.filter((attempt) => attempt.sessionId === session.id);
-  const attemptByOccurrenceId = new Map(attempts.map((attempt) => [attempt.occurrenceId, attempt]));
-  if (attempts.length !== session.actualLength || attemptByOccurrenceId.size !== session.actualLength) {
-    throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice answer evidence is missing or duplicated.");
-  }
-
-  const items = await Promise.all(session.itemOrder.map(async (occurrence, index): Promise<CertificationPracticeReviewItem> => {
-    const attempt = attemptByOccurrenceId.get(occurrence.occurrenceId);
-    const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
-    if (!attempt || attempt.trackId !== session.trackId || attempt.modeId !== session.modeId || !resolvedContentRefsEqual(attempt.item, occurrence.item) || !isCanonicalResponseComplete(question, attempt.response)) {
-      throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice answer evidence does not match its immutable session plan.");
-    }
-    const response = attempt.response as CanonicalQuestionResponse;
-    const scored = scoreCanonicalQuestion(question, response);
-    if (JSON.stringify(scored) !== JSON.stringify(attempt.result)) {
-      throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice answer evidence has an invalid result.");
-    }
-    if (question.interaction.type !== "choice_single" && question.interaction.type !== "choice_multiple") {
-      throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice review supports only declared choice interactions.");
-    }
-    const selectedOptionIds = response.type === "choice_single" ? [response.optionId] : response.type === "choice_multiple" ? response.optionIds : [];
-    const correctOptionIds = question.answer.type === "choice_single" ? [question.answer.optionId] : question.answer.type === "choice_multiple" ? question.answer.optionIds : [];
-    if (selectedOptionIds.length === 0 || correctOptionIds.length === 0) {
-      throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice review evidence is incomplete.");
-    }
-    return Object.freeze({
-      constraints: Object.freeze([...(question.constraints ?? [])]),
-      correctOptionIds: Object.freeze([...correctOptionIds]),
-      details: question.feedback.details,
-      sources: projectCanonicalSourceLinks(question),
-      item: occurrence.item,
-      occurrenceId: occurrence.occurrenceId,
-      options: Object.freeze(question.interaction.options.map((option) => Object.freeze({ optionId: option.optionId, text: option.text }))),
-      ordinal: index + 1,
-      prompt: question.prompt,
-      questionId: question.questionId,
-      reason: question.feedback.reason,
-      result: attempt.result.kind,
-      selectedOptionIds: Object.freeze([...selectedOptionIds]),
-      selectionMode: question.interaction.type === "choice_multiple" ? "multiple" : "single",
-    });
-  }));
-  if (!certificationReviewEvidenceMatches(result.evidence.details, attempts)) {
-    throw new TrainingApplicationFailure("summary_unavailable", "Certification Practice result evidence does not match its committed answers.");
-  }
-
-  return Object.freeze({
-    feedbackMode: certificationFeedbackModeFromSession(session),
-    items: Object.freeze(items),
-    modeId: session.modeId,
-    sessionId: session.id,
-    total: session.actualLength,
-  });
+  return projectCertificationPracticeReview({ attempts: attemptsRecord.value, resolveQuestion: (item) => contentPackageRuntimeOwner.resolveItem(item), result, session: session as CompletedTrainingSession });
 }
 
 /** Reads and validates the complete immutable 50-item Certification Exam result and review. */
@@ -490,22 +413,6 @@ export function projectCertificationPracticeFeedback(
   return attempt && feedbackMode === "afterEachAnswer"
     ? Object.freeze({ controls: projectCanonicalChoiceFeedbackControls(question, attempt.response as CanonicalQuestionResponse), result: attempt.result.kind, reason: question.feedback.reason, details: question.feedback.details, sources: projectCanonicalSourceLinks(question) })
     : null;
-}
-
-export function certificationReviewEvidenceMatches(
-  details: unknown,
-  attempts: readonly Readonly<{ result: Readonly<{ earnedPoints: number; kind: AttemptResultKind; maxPoints: number }> }>[],
-): boolean {
-  if (!details || typeof details !== "object" || Array.isArray(details)) return false;
-  const evidence = details as Record<string, unknown>;
-  const expected = {
-    correctCount: attempts.filter((attempt) => attempt.result.kind === "correct").length,
-    incorrectCount: attempts.filter((attempt) => attempt.result.kind === "incorrect").length,
-    maxPoints: attempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0),
-    partialCount: attempts.filter((attempt) => attempt.result.kind === "partial").length,
-    pointsEarned: attempts.reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0),
-  };
-  return Object.entries(expected).every(([key, value]) => evidence[key] === value);
 }
 
 async function requireActive(): Promise<TrainingSession> {
