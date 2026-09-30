@@ -9,6 +9,7 @@ const buildOnlyModules = new Map([
   ["../content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
   ["./premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
   ["../../src/content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
+  ["../features/home/learningPlanProposalFixtureRuntime", smokeRuntime ? "src/features/home/learningPlanProposalFixtureRuntime.smoke.ts" : "src/features/home/learningPlanProposalFixtureRuntime.disabled.ts"],
 ]);
 
 config.transformer = {

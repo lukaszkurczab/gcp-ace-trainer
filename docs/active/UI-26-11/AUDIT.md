@@ -1,5 +1,7 @@
 # Patternly UI audit — propozycja planu nauki
 
+> Audyt historyczny z 26.09.2026. Aktualne evidence/QA: [REPORT.md](REPORT.md). Zgodnie z aktualnym planem VoiceOver nie jest testowany i nie jest blockerem; historyczne wymogi poniżej nie zmieniają tej decyzji.
+
 ## Outcome
 
 - Audit status: COMPLETE dla statycznego przeglądu jednego stanu; runtime i accessibility pozostają do odbioru.

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer, NavigationIndependentTree, useTheme } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { Linking, StyleSheet } from "react-native";
 
@@ -28,6 +29,8 @@ import { AccountEntryScreen } from "../features/account/AccountEntryScreen";
 import { SelectTrackScreen } from "../features/home/SelectTrackScreen";
 import { GoalCadenceScreen } from "../features/home/GoalCadenceScreen";
 import { LearningPlanProposalScreen } from "../features/home/LearningPlanProposalScreen";
+import { createLearningPlanProposalFixtureRuntime } from "../features/home/learningPlanProposalFixtureRuntime";
+import { nextLearningPlanProposalFixtureLaunch, parseLearningPlanProposalFixtureUrl, type LearningPlanProposalFixtureLaunch } from "../features/home/learningPlanProposalFixtureCommand";
 import { LearningPlanEditorScreen } from "../features/home/LearningPlanEditorScreen";
 import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
 import { PracticeHubScreen } from "../features/practice/PracticeHubScreen";
@@ -53,10 +56,16 @@ import { handleCodingMockCountdownAuditUrl, isCodingMockCountdownAuditCommand } 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
+  const navigationTheme = useTheme();
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
   const { state, accountEntryMode } = usePatternlyAccount();
   const [auditLanguageSettings, setAuditLanguageSettings] = useState(false);
+  const [auditLearningPlanFixture, setAuditLearningPlanFixture] = useState<LearningPlanProposalFixtureLaunch | null>(null);
+  const proposalFixtureRuntime = useMemo(
+    () => auditLearningPlanFixture ? createLearningPlanProposalFixtureRuntime(auditLearningPlanFixture.scenario, () => setAuditLearningPlanFixture(null)) : null,
+    [auditLearningPlanFixture?.scenario, auditLearningPlanFixture?.launchId],
+  );
 
   useEffect(() => {
     if (!__DEV__ || !isPatternlySmokeRuntime()) return;
@@ -64,6 +73,15 @@ export function RootNavigator() {
       if (isLanguageSettingsAuditCommand(url, { development: __DEV__, smoke: isPatternlySmokeRuntime() })) {
         setAuditLanguageSettings(true);
       }
+    });
+    return () => { subscription.remove(); };
+  }, []);
+
+  useEffect(() => {
+    if (!__DEV__ || !isPatternlySmokeRuntime()) return;
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      const scenario = parseLearningPlanProposalFixtureUrl(url, __DEV__ && isPatternlySmokeRuntime());
+      if (scenario) setAuditLearningPlanFixture((previous) => nextLearningPlanProposalFixtureLaunch(previous, scenario));
     });
     return () => { subscription.remove(); };
   }, []);
@@ -98,6 +116,20 @@ export function RootNavigator() {
       <Screen edges={["top", "bottom"]} style={styles.sessionLoading}>
         <LoadingState description={t("Checking saved sign-in.")} showLogo testID="account-session-restore-loading" title={t("Restoring session")} />
       </Screen>
+    );
+  }
+
+  if (auditLearningPlanFixture && applicationSessionReady && proposalFixtureRuntime) {
+    return (
+      <NavigationIndependentTree>
+        <NavigationContainer key={auditLearningPlanFixture.launchId} theme={navigationTheme}>
+          <Stack.Navigator initialRouteName={ROUTES.LEARNING_PLAN_PROPOSAL} screenOptions={{ contentStyle: { backgroundColor: colors.background } }}>
+            <Stack.Screen name={ROUTES.LEARNING_PLAN_PROPOSAL} initialParams={{ proposalId: "ui11-fixture-proposal", trackId: "coding-interview-dsa-problem-solving" }} options={{ headerShown: false, title: t("Learning plan") }}>
+              {(screenProps) => <LearningPlanProposalScreen {...screenProps} runtime={proposalFixtureRuntime} />}
+            </Stack.Screen>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </NavigationIndependentTree>
     );
   }
 

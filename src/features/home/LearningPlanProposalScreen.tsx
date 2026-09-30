@@ -5,12 +5,10 @@ import { StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import {
-  learningPlanEditorCoordinator,
-  learningPlanProposalCoordinator,
   type LearningPlanSnapshot,
   type LearningPlanProposalResult,
 } from "../../application/learningPlan";
-import { acceptPlanWithReminders, retryPlanReminders } from "../../application/learningPlan/learningPlanMutationRuntime";
+import { productionLearningPlanProposalRuntime, type LearningPlanProposalScreenRuntime } from "./learningPlanProposalRuntime";
 import { AppShellHeader, Button, Card, EmptyState, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { GoalDay, LearningPlan, ProposalOutcome, TargetAssessment } from "../../domain";
@@ -29,7 +27,7 @@ const DAY_KEYS: Readonly<Record<GoalDay, string>> = {
   fri: "Friday", sat: "Saturday", sun: "Sunday",
 };
 
-export function LearningPlanProposalScreen({ navigation, route }: Props) {
+export function LearningPlanProposalScreen({ navigation, route, runtime = productionLearningPlanProposalRuntime }: Props & Readonly<{ runtime?: LearningPlanProposalScreenRuntime }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("learningPlan");
   const { t: tCommon } = useTranslation("common");
@@ -44,20 +42,24 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
   useEffect(() => {
     let active = true;
     setState({ kind: "loading" });
-    void learningPlanProposalCoordinator.resolve(proposalId, trackId).then((result) => {
+    void runtime.resolve(proposalId, trackId).then((result) => {
       if (active) setState(result);
     });
     return () => { active = false; };
-  }, [proposalId, trackId]);
+  }, [proposalId, trackId, runtime]);
 
   const goBack = useCallback(() => {
+    if (runtime.exitFixture) {
+      runtime.exitFixture();
+      return;
+    }
     if (navigation.canGoBack()) navigation.goBack();
     else navigation.navigate(ROUTES.HOME);
-  }, [navigation]);
+  }, [navigation, runtime]);
 
   async function updatePlan(): Promise<void> {
     setUpdating(true);
-    const result = await learningPlanProposalCoordinator.create(trackId);
+    const result = await runtime.create(trackId);
     setUpdating(false);
     if (isProposal(result)) {
       navigation.replace(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId });
@@ -69,7 +71,7 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
   async function editProposal(): Promise<void> {
     setUpdating(true);
     setActionError(null);
-    const result = await learningPlanEditorCoordinator.startProposalEdit(proposalId, trackId);
+    const result = await runtime.startProposalEdit(proposalId, trackId);
     setUpdating(false);
     if (result.kind === "ready") {
       navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId });
@@ -84,7 +86,7 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
   async function acceptProposal(): Promise<void> {
     setUpdating(true);
     setActionError(null);
-    const result = await acceptPlanWithReminders(proposalId, trackId, notification);
+    const result = await runtime.accept(proposalId, trackId, notification);
     setUpdating(false);
     if (result.kind === "plan_saved_reminders_synced" || result.kind === "plan_saved_reminders_pending" || result.kind === "plan_saved_reminders_cleared") {
       setAcceptedPlan(result.snapshot);
@@ -102,7 +104,7 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
 
   async function retryReminders(): Promise<void> {
     setUpdating(true);
-    const result = await retryPlanReminders(notification);
+    const result = await runtime.retryReminders(notification);
     setUpdating(false);
     setActionError(result.kind === "synced" || result.kind === "disabled" ? null : "accept-reminders-pending");
   }
@@ -110,7 +112,7 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
   async function editAcceptedPlan(): Promise<void> {
     setUpdating(true);
     setActionError(null);
-    const result = await learningPlanEditorCoordinator.startExistingEdit(trackId);
+    const result = await runtime.startExistingEdit(trackId);
     setUpdating(false);
     if (result.kind === "ready") {
       navigation.navigate(ROUTES.LEARNING_PLAN_EDITOR, { editorId: result.session.editorId, trackId });
@@ -135,8 +137,8 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
 
   if (state.kind === "stale") {
     return (
-      <Screen edges={["top", "bottom"]} footer={<Button loading={updating} onPress={() => { void updatePlan(); }} testID={runtimeSelectors.learningPlan.update()}>{t("Update plan")}</Button>} footerVariant="sticky" header={header}>
-        <View testID={runtimeSelectors.learningPlan.state("stale")}><EmptyState description={t("Your goal, content package, or timezone changed. Create a new proposal to continue.")} title={t("This proposal is out of date")} /></View>
+      <Screen edges={["bottom"]} footer={<Button loading={updating} onPress={() => { void updatePlan(); }} testID={runtimeSelectors.learningPlan.update()}>{t("Update plan")}</Button>} footerVariant="sticky" header={header}>
+        <View testID={runtimeSelectors.learningPlan.state("stale")}><EmptyState description={t("Your goal, content package, or timezone changed. Create a new proposal to continue.")} title={t("This proposal is out of date")} /><FixtureCallDiagnostics runtime={runtime} /></View>
       </Screen>
     );
   }
@@ -148,8 +150,8 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
     const canUpdate = state.kind === "package_error" || (state.kind === "generator_error" && state.classification === "retryable");
     const shouldAdjust = state.kind === "goal_paused" || (state.kind === "generator_error" && state.classification !== "retryable");
     return (
-      <Screen edges={["top", "bottom"]} footer={canUpdate ? <Button loading={updating} onPress={() => { void updatePlan(); }} testID={runtimeSelectors.learningPlan.update()}>{t("Update plan")}</Button> : shouldAdjust ? <Button onPress={() => navigation.navigate(ROUTES.GOAL_CADENCE, { trackId, returnTo: "progress" })} testID={runtimeSelectors.learningPlan.adjustGoal()}>{t("Adjust goal")}</Button> : undefined} footerVariant="sticky" header={header}>
-        <View testID={runtimeSelectors.learningPlan.state(state.kind)}><EmptyState description={t(description)} title={t("Plan unavailable")} /></View>
+      <Screen edges={["bottom"]} footer={canUpdate ? <Button loading={updating} onPress={() => { void updatePlan(); }} testID={runtimeSelectors.learningPlan.update()}>{t("Update plan")}</Button> : shouldAdjust ? <Button onPress={() => navigation.navigate(ROUTES.GOAL_CADENCE, { trackId, returnTo: "progress" })} testID={runtimeSelectors.learningPlan.adjustGoal()}>{t("Adjust goal")}</Button> : undefined} footerVariant="sticky" header={header}>
+        <View testID={runtimeSelectors.learningPlan.state(state.kind)}><EmptyState description={t(description)} title={t("Plan unavailable")} /><FixtureCallDiagnostics runtime={runtime} /></View>
       </Screen>
     );
   }
@@ -160,7 +162,7 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
     if (capacity.kind !== "shortfall") return null;
     return (
       <Screen
-        edges={["top", "bottom"]}
+        edges={["bottom"]}
         footer={<View style={styles.footerActions}><Button onPress={() => navigation.navigate(ROUTES.GOAL_CADENCE, { trackId, returnTo: "progress" })} testID={runtimeSelectors.learningPlan.adjustGoal()}>{t("Adjust goal")}</Button><Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { trackId })} testID={runtimeSelectors.learningPlan.backToPractice()} variant="secondary">{t("Back to Practice")}</Button></View>}
         footerVariant="sticky"
         header={header}
@@ -170,15 +172,16 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
           <GoalContext outcome={outcome} t={t} tCommon={tCommon} />
           <Card variant="warning"><Text maxFontSizeMultiplier={2} style={styles.body}>{t("The package needs {{requested}} eligible questions per session, but only {{available}} are available. {{missing}} more are required.", { available: capacity.eligibleItemCount, missing: capacity.missingItemCount, requested: capacity.requestedLength })}</Text></Card>
           <FactCard label={t("Target outlook")} value={targetCopy(outcome.targetAssessment, t)} />
+          <FixtureCallDiagnostics runtime={runtime} />
         </View>
       </Screen>
     );
   }
 
   return (
-    <Screen edges={["top", "bottom"]} footer={<View style={styles.footerActions}><Button loading={updating} onPress={() => { void editProposal(); }} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button><Button loading={updating} onPress={() => { void acceptProposal(); }} testID={runtimeSelectors.learningPlan.accept()}>{t("Accept plan")}</Button><Button onPress={goBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={header}>
+    <Screen edges={["bottom"]} footer={<View style={styles.footerActions}><Button loading={updating} onPress={() => { void editProposal(); }} testID={runtimeSelectors.learningPlan.editSchedule()} variant="secondary">{t("Edit schedule")}</Button><Button loading={updating} onPress={() => { void acceptProposal(); }} testID={runtimeSelectors.learningPlan.accept()}>{t("Accept plan")}</Button></View>} footerVariant="sticky" header={header}>
       <View style={styles.root} testID={runtimeSelectors.learningPlan.root()}>
-        <PlanHeader subtitle={t("A proposal based on your current goal")} title={t("Your proposed rhythm")} track={tCommon(track.shortTitle)} />
+        <PlanHeader title={t("Review your learning plan")} track={tCommon(track.shortTitle)} />
         <GoalContext outcome={outcome} t={t} tCommon={tCommon} />
         {state.kind === "shortened" && outcome.sessionCapacity.kind === "shortened" ? (
           <Card variant="warning"><Text maxFontSizeMultiplier={2} style={styles.cardTitle}>{t("A shorter path is available")}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t("The package explicitly supports shorter sessions. Your proposal uses {{count}} questions instead of {{requested}}.", { count: outcome.sessionCapacity.actualLength, requested: outcome.sessionCapacity.requestedLength })}</Text></Card>
@@ -191,16 +194,24 @@ export function LearningPlanProposalScreen({ navigation, route }: Props) {
         <FactCard label={t("Completion rule")} value={completionCopy(outcome, t)} />
         <FactCard label={t("Target outlook")} value={targetCopy(outcome.targetAssessment, t)} />
         {actionError ? <PlanActionError kind={actionError} t={t} /> : null}
+        <FixtureCallDiagnostics runtime={runtime} />
       </View>
     </Screen>
   );
+}
+
+function FixtureCallDiagnostics({ runtime }: Readonly<{ runtime: LearningPlanProposalScreenRuntime }>) {
+  const styles = useThemedStyles(createStyles);
+  const counts = runtime.getFixtureInvocationCounts?.();
+  if (!counts) return null;
+  return <View accessibilityLabel="Local proposal fixture action counts" style={styles.fixtureDiagnostics}>{Object.entries(counts).map(([action, count]) => <Text key={action} maxFontSizeMultiplier={2} style={styles.body} testID={runtimeSelectors.learningPlan.fixtureCall(action, count)}>{`Fixture ${action}: ${count}`}</Text>)}</View>;
 }
 
 export function LearningPlanProposalLoadingSkeleton({ header }: Readonly<{ header: ReactNode }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useTranslation("learningPlan");
   const motion = useSkeletonGlassMotion();
-  return <Screen edges={["top", "bottom"]} header={header}><View accessibilityLabel={`${t("Preparing your plan")}. ${t("We are checking your goal and current learning package.")}`} accessibilityLiveRegion="polite" accessibilityRole="progressbar" accessibilityState={{ busy: true }} style={styles.root} testID={runtimeSelectors.learningPlan.state("loading")}><SkeletonShape motion={motion} style={styles.loadingTitle} /><SkeletonShape motion={motion} style={styles.loadingTrack} /><SkeletonShape motion={motion} style={styles.loadingCard} /><SkeletonShape motion={motion} style={styles.loadingCard} /></View></Screen>;
+  return <Screen edges={["bottom"]} header={header}><View accessibilityLabel={`${t("Preparing your plan")}. ${t("We are checking your goal and current learning package.")}`} accessibilityLiveRegion="polite" accessibilityRole="progressbar" accessibilityState={{ busy: true }} style={styles.root} testID={runtimeSelectors.learningPlan.state("loading")}><SkeletonShape motion={motion} style={styles.loadingTitle} /><SkeletonShape motion={motion} style={styles.loadingTrack} /><SkeletonShape motion={motion} style={styles.loadingCard} /><SkeletonShape motion={motion} style={styles.loadingCard} /></View></Screen>;
 }
 
 const GOAL_LABELS: Readonly<Record<ProposalOutcome["goal"]["goalType"], string>> = {
@@ -215,7 +226,7 @@ function GoalContext({ outcome, t, tCommon }: Readonly<{ outcome: ProposalOutcom
   const styles = useThemedStyles(createStyles);
   const target = outcome.goal.targetDate ?? tCommon("No target date");
   const days = outcome.goal.preferredDays.map((day) => t(DAY_KEYS[day])).join(", ");
-  return <Card><Text maxFontSizeMultiplier={2} style={styles.cardTitle}>{t("Goal context")}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{tCommon(GOAL_LABELS[outcome.goal.goalType])}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t("Target: {{target}}", { target })}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t("Days: {{days}}", { days })}</Text></Card>;
+  return <Card><Text maxFontSizeMultiplier={2} style={styles.cardTitle}>{tCommon(GOAL_LABELS[outcome.goal.goalType])}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t("Target: {{target}}", { target })}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t("Days: {{days}}", { days })}</Text></Card>;
 }
 
 function isProposal(state: LearningPlanProposalResult): state is Extract<LearningPlanProposalResult, { proposal: unknown }> { return "proposal" in state; }
@@ -228,9 +239,9 @@ function failureDescription(kind: Exclude<LearningPlanProposalResult["kind"], "r
   return "The plan could not be prepared. Try again.";
 }
 
-function PlanHeader({ subtitle, title, track }: Readonly<{ subtitle: string; title: string; track: string }>) {
+function PlanHeader({ subtitle, title, track }: Readonly<{ subtitle?: string; title: string; track: string }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.heading}><Text maxFontSizeMultiplier={2} style={styles.title}>{title}</Text><Text maxFontSizeMultiplier={2} style={styles.subtitle}>{subtitle}</Text><View style={styles.track}><View style={styles.trackAccent} /><Text maxFontSizeMultiplier={2} style={styles.trackText}>{track}</Text></View></View>;
+  return <View style={styles.heading}><Text maxFontSizeMultiplier={2} style={styles.title}>{title}</Text>{subtitle ? <Text maxFontSizeMultiplier={2} style={styles.subtitle}>{subtitle}</Text> : null}<View style={styles.track}><View style={styles.trackAccent} /><Text maxFontSizeMultiplier={2} style={styles.trackText}>{track}</Text></View></View>;
 }
 
 function FactCard({ label, value }: Readonly<{ label: string; value: string }>) {
@@ -268,7 +279,7 @@ function PersistedPlanView({ plan, track, t, updating, actionError, onEdit, onRe
 }>) {
   const styles = useThemedStyles(createStyles);
   return (
-    <Screen edges={["top", "bottom"]} footer={<View style={styles.footerActions}><Button loading={updating} onPress={onEdit} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button>{actionError === "accept-reminders-pending" ? <Button loading={updating} onPress={onRetryReminders} testID={runtimeSelectors.learningPlan.retryReminders()} variant="secondary">{t("Retry reminders")}</Button> : null}<Button onPress={onBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={<AppShellHeader backAction={{ onPress: onBack }} context={t("Learning plan")} placement="stack" />}>
+    <Screen edges={["bottom"]} footer={<View style={styles.footerActions}><Button loading={updating} onPress={onEdit} testID={runtimeSelectors.learningPlan.editSchedule()}>{t("Edit schedule")}</Button>{actionError === "accept-reminders-pending" ? <Button loading={updating} onPress={onRetryReminders} testID={runtimeSelectors.learningPlan.retryReminders()} variant="secondary">{t("Retry reminders")}</Button> : null}<Button onPress={onBack} variant="secondary">{t("Go back")}</Button></View>} footerVariant="sticky" header={<AppShellHeader backAction={{ onPress: onBack }} context={t("Learning plan")} placement="stack" />}>
       <View style={styles.root} testID={runtimeSelectors.learningPlan.persisted()}>
         <PlanHeader subtitle={t("Saved learning plan")} title={t("Your learning rhythm")} track={track} />
         <Card testID={runtimeSelectors.learningPlan.state("accepted") }>
@@ -310,6 +321,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   slotDay: { ...typography.bodyStrong, color: palette.textPrimary, flexShrink: 1 },
   slotDetail: { ...typography.small, color: palette.textSecondary },
   footerActions: { gap: spacing.sm },
+  fixtureDiagnostics: { borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, gap: spacing.xs, padding: spacing.md },
   loadingTitle: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.md, height: 34, width: "72%" },
   loadingTrack: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.lg, height: 64, width: "100%" },
   loadingCard: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.lg, height: 116, width: "100%" },

@@ -1,0 +1,70 @@
+appId: com.lkurczab.patternly
+name: UI-26-11 real guest plan persistence
+---
+- tapOn:
+    id: "main-tab-bar-progress"
+- scrollUntilVisible:
+    element:
+      id: "patternly:target-date-guidance:state:progress:no-plan"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:target-date-guidance:state:progress:no-plan"
+- tapOn:
+    id: "main-tab-bar-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-goal"
+    direction: DOWN
+- tapOn:
+    id: "settings-goal"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:create"
+    direction: DOWN
+- tapOn:
+    id: "patternly:learning-plan:create"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:accept"
+    timeout: 15000
+- assertVisible: "Review your learning plan"
+- takeScreenshot: real-ready
+- tapOn:
+    id: "patternly:learning-plan:edit-schedule"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:editor:state:ready"
+    timeout: 15000
+- takeScreenshot: real-editor
+- tapOn:
+    text: "Go back"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:accept"
+    timeout: 15000
+- tapOn:
+    id: "patternly:learning-plan:accept"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:persisted"
+    timeout: 15000
+- takeScreenshot: real-accepted
+- stopApp
+- launchApp
+- openLink: "com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-progress"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-progress"
+- scrollUntilVisible:
+    element:
+      id: "patternly:target-date-guidance:state:progress:open-ended"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:target-date-guidance:state:progress:open-ended"
+- assertNotVisible:
+    id: "patternly:target-date-guidance:state:progress:no-plan"
+- takeScreenshot: real-after-restart

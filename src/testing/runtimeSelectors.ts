@@ -204,6 +204,7 @@ export const runtimeSelectors = Object.freeze({
     editorStale: () => selector("learning-plan", "editor", "stale"),
     editorError: (kind: LearningPlanEditorErrorKind) => selector("learning-plan", "editor", "error", kind),
     actionError: (kind: LearningPlanActionErrorKind) => selector("learning-plan", "action-error", kind),
+    fixtureCall: (action: string, count: number) => selector("learning-plan", "fixture-call", action, nonNegativeInteger(count, "fixture call count")),
   }),
   notifications: Object.freeze({
     root: () => selector("notifications", "root"),

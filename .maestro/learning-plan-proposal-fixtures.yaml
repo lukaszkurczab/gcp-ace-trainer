@@ -1,0 +1,199 @@
+appId: com.lkurczab.patternly
+name: Patternly UI-26-11 learning plan proposal fixtures
+tags:
+  - ui11-learning-plan
+---
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=ready3-no-target"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:state:ready"
+    timeout: 10000
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:mon:18-00"
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:wed:18-00"
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:sat:18-00"
+- assertVisible: "No target date. The plan stays open-ended."
+- tapOn:
+    id: "patternly:learning-plan:accept"
+    repeat: 2
+    delay: 50
+    waitToSettleTimeoutMs: 0
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:action-error:accept-storage"
+    direction: DOWN
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:action-error:accept-storage"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:fixture-call:accept:1"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:fixture-call:accept:1"
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=ready1-target"
+- assertVisible:
+    id: "patternly:learning-plan:state:ready"
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:mon:18-00"
+- assertVisible: "Target: 2026-10-31"
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=ready7-target"
+- assertVisible:
+    id: "patternly:learning-plan:state:ready"
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:mon:18-00"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:slot:proposal-slot:v1:tue:18-00"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:tue:18-00"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:slot:proposal-slot:v1:wed:18-00"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:wed:18-00"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:slot:proposal-slot:v1:thu:18-00"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:thu:18-00"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:slot:proposal-slot:v1:fri:18-00"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:fri:18-00"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:slot:proposal-slot:v1:sat:18-00"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:sat:18-00"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:slot:proposal-slot:v1:sun:18-00"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:sun:18-00"
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=shortened"
+- assertVisible:
+    id: "patternly:learning-plan:state:shortened"
+- assertVisible: "A shorter path is available"
+- takeScreenshot: shortened
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=shortfall"
+- assertVisible:
+    id: "patternly:learning-plan:state:shortfall"
+- assertVisible: "Not enough material for this plan"
+- takeScreenshot: shortfall
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=delayed-loading"
+- assertVisible:
+    id: "patternly:learning-plan:state:loading"
+- takeScreenshot: loading
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:state:ready"
+    timeout: 10000
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=stale"
+- assertVisible:
+    id: "patternly:learning-plan:state:stale"
+- takeScreenshot: stale
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=unavailable"
+- assertVisible:
+    id: "patternly:learning-plan:state:package_unavailable"
+- takeScreenshot: package_unavailable
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=accept-validation"
+- assertVisible:
+    id: "patternly:learning-plan:state:ready"
+- tapOn:
+    id: "patternly:learning-plan:accept"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:action-error:accept-validation"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:action-error:accept-validation"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:fixture-call:accept:1"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:fixture-call:accept:1"
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=accept-stale"
+- tapOn:
+    id: "patternly:learning-plan:accept"
+- assertVisible:
+    id: "patternly:learning-plan:state:stale"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:fixture-call:accept:1"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:fixture-call:accept:1"
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=edit-storage"
+- tapOn:
+    id: "patternly:learning-plan:edit-schedule"
+    repeat: 2
+    delay: 50
+    waitToSettleTimeoutMs: 0
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:action-error:open-proposal-storage"
+    direction: DOWN
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:action-error:open-proposal-storage"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:fixture-call:edit-proposal:1"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:fixture-call:edit-proposal:1"
+
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=edit-stale"
+- tapOn:
+    id: "patternly:learning-plan:edit-schedule"
+- assertVisible:
+    id: "patternly:learning-plan:state:stale"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:fixture-call:edit-proposal:1"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:fixture-call:edit-proposal:1"
+
+- tapOn: "Go back"
+- assertVisible:
+    id: "main-tab-bar-home"
+- assertNotVisible:
+    id: "patternly:learning-plan:update"
+- assertNotVisible:
+    id: "patternly:learning-plan:fixture-call:accept:1"
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=ready1-target"
+- assertVisible:
+    id: "patternly:learning-plan:state:ready"
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:fixture-call:accept:0"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:fixture-call:accept:0"
+- tapOn: "Go back"
+- assertVisible:
+    id: "main-tab-bar-home"

@@ -1,6 +1,7 @@
 {
   "Learning plan": "Õppeplaan",
   "A proposal based on your current goal": "Praegusel eesmärgil põhinev ettepanek",
+  "Review your learning plan": "Vaata oma õppeplaan üle",
   "Preparing your plan": "Sinu plaani valmistatakse ette",
   "We are checking your goal and current learning package.": "Kontrollime sinu eesmärki ja praegust õppesisu paketti.",
   "Plan unavailable": "Plaan pole saadaval",
@@ -40,8 +41,6 @@
   "Save schedule": "Salvesta ajakava",
   "This plan is out of date": "See plaan on aegunud",
   "Time for {{day}}": "{{day}} kellaaeg",
-  "Your proposed rhythm": "Sinu pakutud õppimisrütm",
-  "Goal context": "Eesmärgi kontekst",
   "Target: {{target}}": "Sihtkuupäev: {{target}}",
   "Days: {{days}}": "Päevi: {{days}}",
   "A shorter path is available": "Saadaval on lühem õpitee",

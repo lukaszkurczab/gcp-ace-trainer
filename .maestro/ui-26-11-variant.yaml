@@ -1,0 +1,86 @@
+appId: com.lkurczab.patternly
+name: UI-26-11 localized proposal variant
+---
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "main-tab-bar-settings"
+      - extendedWaitUntil:
+          visible:
+            id: "settings-screen"
+          timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: "settings-appearance"
+    direction: UP
+- tapOn:
+    id: "settings-appearance"
+- tapOn:
+    id: "preference-option-${THEME}"
+- tapOn:
+    text: "Go back|Wróć|Zurück|Retour|Indietro|Volver|Tagasi"
+    index: 0
+- scrollUntilVisible:
+    element:
+      id: "settings-language"
+    direction: DOWN
+- tapOn:
+    id: "settings-language"
+- scrollUntilVisible:
+    element:
+      id: "language-option-${LOCALE}"
+    direction: DOWN
+- tapOn:
+    id: "language-option-${LOCALE}"
+- tapOn:
+    text: "Go back|Wróć|Zurück|Retour|Indietro|Volver|Tagasi"
+    index: 0
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=${CASE}"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:learning-plan:root"
+    timeout: 10000
+- assertVisible: ${HERO}
+- assertVisible:
+    id: "patternly:learning-plan:edit-schedule"
+- assertVisible:
+    id: "patternly:learning-plan:accept"
+- takeScreenshot: variant-top
+- scrollUntilVisible:
+    element:
+      text: ${GOAL_TITLE}
+    direction: DOWN
+- assertVisible: ${GOAL_TITLE}
+- scrollUntilVisible:
+    element:
+      text: ${TARGET}
+    direction: DOWN
+- assertVisible: ${TARGET}
+- takeScreenshot: variant-goal
+- scrollUntilVisible:
+    element:
+      id: "patternly:learning-plan:slot:proposal-slot:v1:${LAST_DAY}:18-00"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:learning-plan:slot:proposal-slot:v1:${LAST_DAY}:18-00"
+- takeScreenshot: variant-schedule
+- scrollUntilVisible:
+    element:
+      text: ${OUTLOOK}
+    direction: DOWN
+- assertVisible: ${OUTLOOK}
+- assertVisible:
+    id: "patternly:learning-plan:edit-schedule"
+- assertVisible:
+    id: "patternly:learning-plan:accept"
+- takeScreenshot: variant-outlook
+- tapOn:
+    text: "Go back|Wróć|Zurück|Retour|Indietro|Volver|Tagasi"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-home"
+    timeout: 10000
+- assertNotVisible:
+    id: "patternly:learning-plan:accept"

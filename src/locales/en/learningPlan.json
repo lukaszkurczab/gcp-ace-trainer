@@ -1,6 +1,7 @@
 {
   "Learning plan": "Learning plan",
   "A proposal based on your current goal": "A proposal based on your current goal",
+  "Review your learning plan": "Review your learning plan",
   "Preparing your plan": "Preparing your plan",
   "We are checking your goal and current learning package.": "We are checking your goal and current learning package.",
   "Plan unavailable": "Plan unavailable",
@@ -40,8 +41,6 @@
   "Save schedule": "Save schedule",
   "This plan is out of date": "This plan is out of date",
   "Time for {{day}}": "Time for {{day}}",
-  "Your proposed rhythm": "Your proposed rhythm",
-  "Goal context": "Goal context",
   "Target: {{target}}": "Target: {{target}}",
   "Days: {{days}}": "Days: {{days}}",
   "A shorter path is available": "A shorter path is available",

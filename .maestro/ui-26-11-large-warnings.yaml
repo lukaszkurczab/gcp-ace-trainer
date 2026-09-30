@@ -1,0 +1,34 @@
+appId: com.lkurczab.patternly
+name: UI-26-11 large-text warnings
+---
+- openLink: 'com.lkurczab.patternly://audit/learning-plan-proposal?case=shortfall'
+- assertVisible: 'Not enough material for this plan'
+- takeScreenshot: shortfall-large-top
+- scrollUntilVisible:
+    element:
+      text: 'The package needs 10 eligible questions per session, but only 2 are available. 8 more are required.'
+    direction: DOWN
+- assertVisible: 'The package needs 10 eligible questions per session, but only 2 are available. 8 more are required.'
+- assertVisible:
+    id: patternly:learning-plan:adjust-goal
+- assertVisible:
+    id: patternly:learning-plan:back-to-practice
+- takeScreenshot: shortfall-large-warning
+- tapOn:
+    text: Go back
+    index: 0
+- openLink: 'com.lkurczab.patternly://audit/learning-plan-proposal?case=shortened'
+- assertVisible: 'Review your learning plan'
+- scrollUntilVisible:
+    element:
+      text: 'A shorter path is available'
+    direction: DOWN
+- assertVisible: 'The package explicitly supports shorter sessions. Your proposal uses 4 questions instead of 10.'
+- assertVisible:
+    id: patternly:learning-plan:edit-schedule
+- assertVisible:
+    id: patternly:learning-plan:accept
+- takeScreenshot: shortened-large-warning
+- tapOn:
+    text: Go back
+    index: 0

@@ -1,6 +1,7 @@
 {
   "Learning plan": "Piano di apprendimento",
   "A proposal based on your current goal": "Una proposta basata sul tuo obiettivo attuale",
+  "Review your learning plan": "Rivedi il tuo piano di apprendimento",
   "Preparing your plan": "Preparazione del piano",
   "We are checking your goal and current learning package.": "Stiamo controllando il tuo obiettivo e il pacchetto di apprendimento attuale.",
   "Plan unavailable": "Piano non disponibile",
@@ -40,8 +41,6 @@
   "Save schedule": "Salva programma",
   "This plan is out of date": "Questo piano non è aggiornato",
   "Time for {{day}}": "Orario per {{day}}",
-  "Your proposed rhythm": "Il ritmo che hai proposto",
-  "Goal context": "Contesto dell’obiettivo",
   "Target: {{target}}": "Data obiettivo: {{target}}",
   "Days: {{days}}": "Giorni: {{days}}",
   "A shorter path is available": "È disponibile un percorso più breve",
