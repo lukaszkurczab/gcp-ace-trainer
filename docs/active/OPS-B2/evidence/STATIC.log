@@ -1,0 +1,22 @@
+
+> patternly-backend@0.1.0 lint
+> node scripts/lint.mjs
+
+lint passed
+
+> patternly-backend@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+
+> patternly-backend@0.1.0 firestore:ttl:check
+> node scripts/check-firestore-ttl.mjs
+
+Firestore TTL config OK (31 policies)
+
+> patternly-backend@0.1.0 openapi:check
+> node --import tsx scripts/check-openapi.ts
+
+OpenAPI document and runtime routes match /private/tmp/patternly-backend-ops-b2/openapi/patternly-v1.json (72 operations)
+
+> patternly-backend@0.1.0 build
+> tsc -p tsconfig.build.json

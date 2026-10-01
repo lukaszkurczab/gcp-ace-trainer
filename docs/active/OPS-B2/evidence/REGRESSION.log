@@ -1,0 +1,1642 @@
+i  emulators: Starting emulators: auth, firestore
+⚠  emulators: It seems that you are running multiple instances of the emulator suite for project patternly-app-sandbox. This may result in unexpected behavior.
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator was started in standard edition.
+✔  firestore: Firestore Emulator UI websocket is running on 9151.
+i  Running script: FIREBASE_PROJECT_ID=patternly-app-sandbox FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:19119 FIRESTORE_EMULATOR_HOST=127.0.0.1:18119 npm test
+
+> patternly-backend@0.1.0 test
+> node --import tsx --test --test-concurrency=1 tests/*.test.ts scripts/devAdminBoundary.test.mjs
+
+TAP version 13
+# Subtest: local admin launcher pins one local deletion pseudonym key and ignores ambient override
+ok 1 - local admin launcher pins one local deletion pseudonym key and ignores ambient override
+  ---
+  duration_ms: 0.731959
+  type: 'test'
+  ...
+# Subtest: a valid nonempty one-track release subset exposes complete question records
+ok 2 - a valid nonempty one-track release subset exposes complete question records
+  ---
+  duration_ms: 7.296292
+  type: 'test'
+  ...
+# Subtest: malformed release manifests make the configured release unavailable
+ok 3 - malformed release manifests make the configured release unavailable
+  ---
+  duration_ms: 3.806833
+  type: 'test'
+  ...
+# Subtest: release artifacts must be nonempty, unique and bound to the manifest source commit
+ok 4 - release artifacts must be nonempty, unique and bound to the manifest source commit
+  ---
+  duration_ms: 3.452125
+  type: 'test'
+  ...
+# Subtest: corrupt checksums and malformed items make the complete configured release unavailable
+ok 5 - corrupt checksums and malformed items make the complete configured release unavailable
+  ---
+  duration_ms: 2.55575
+  type: 'test'
+  ...
+# Subtest: missing catalog configuration is explicit
+ok 6 - missing catalog configuration is explicit
+  ---
+  duration_ms: 0.147208
+  type: 'test'
+  ...
+# Subtest: configured release paths cannot escape the canonical releases root
+ok 7 - configured release paths cannot escape the canonical releases root
+  ---
+  duration_ms: 1.933708
+  type: 'test'
+  ...
+# Subtest: certification item shape is normalized for inspection while preserving its published fields
+ok 8 - certification item shape is normalized for inspection while preserving its published fields
+  ---
+  duration_ms: 1.39625
+  type: 'test'
+  ...
+# Subtest: simultaneous catalog reads share one cold load and populate the cache
+ok 9 - simultaneous catalog reads share one cold load and populate the cache
+  ---
+  duration_ms: 1.533375
+  type: 'test'
+  ...
+# Subtest: a rejected cold load clears in-flight state before retrying
+ok 10 - a rejected cold load clears in-flight state before retrying
+  ---
+  duration_ms: 1.70875
+  type: 'test'
+  ...
+# Subtest: checksum-valid malformed answer options are rejected before rendering
+ok 11 - checksum-valid malformed answer options are rejected before rendering
+  ---
+  duration_ms: 2.500708
+  type: 'test'
+  ...
+# Subtest: canonical transfer persists chunks, applies one generation, and retries safely
+ok 12 - canonical transfer persists chunks, applies one generation, and retries safely
+  ---
+  duration_ms: 1760.063125
+  type: 'test'
+  ...
+# Subtest: apply fences reservation, every chunk, and empty-transfer promotion against authorization rotation
+ok 13 - apply fences reservation, every chunk, and empty-transfer promotion against authorization rotation
+  ---
+  duration_ms: 1205.623458
+  type: 'test'
+  ...
+# Subtest: apply resumes an expired same-session lease only while the pinned progress revision still matches
+ok 14 - apply resumes an expired same-session lease only while the pinned progress revision still matches
+  ---
+  duration_ms: 233.114917
+  type: 'test'
+  ...
+# Subtest: sync loses during an active transfer lease and wins after expiry without allowing stale promotion
+ok 15 - sync loses during an active transfer lease and wins after expiry without allowing stale promotion
+  ---
+  duration_ms: 241.846417
+  type: 'test'
+  ...
+# Subtest: transfer status rejects a stale bearer after authorization rotation
+ok 16 - transfer status rejects a stale bearer after authorization rotation
+  ---
+  duration_ms: 166.549167
+  type: 'test'
+  ...
+# Subtest: apply splits target transactions by both document count and serialized write bytes
+ok 17 - apply splits target transactions by both document count and serialized write bytes
+  ---
+  duration_ms: 1235.927167
+  type: 'test'
+  ...
+# Subtest: concurrent apply requests leave one complete generation and can be safely replayed
+ok 18 - concurrent apply requests leave one complete generation and can be safely replayed
+  ---
+  duration_ms: 3887.269166
+  type: 'test'
+  ...
+# Subtest: transfer decision lock and child rows recheck account authorization generation
+ok 19 - transfer decision lock and child rows recheck account authorization generation
+  ---
+  duration_ms: 202.223583
+  type: 'test'
+  ...
+# Subtest: transfer decision chunks stop on rotation and a fresh generation resumes the same decision
+ok 20 - transfer decision chunks stop on rotation and a fresh generation resumes the same decision
+  ---
+  duration_ms: 630.662292
+  type: 'test'
+  ...
+# Subtest: the retired transfer route and retired query selector are unavailable
+ok 21 - the retired transfer route and retired query selector are unavailable
+  ---
+  duration_ms: 48.148625
+  type: 'test'
+  ...
+# Subtest: transfer start, upload, and seal fence account rotation after request authentication
+ok 22 - transfer start, upload, and seal fence account rotation after request authentication
+  ---
+  duration_ms: 173.794584
+  type: 'test'
+  ...
+# Subtest: transfer seal rechecks authorization generation in its final transaction
+ok 23 - transfer seal rechecks authorization generation in its final transaction
+  ---
+  duration_ms: 82.896958
+  type: 'test'
+  ...
+# Subtest: transfer preview fences reservation, finalization, and ready replay
+ok 24 - transfer preview fences reservation, finalization, and ready replay
+  ---
+  duration_ms: 267.778667
+  type: 'test'
+  ...
+# Subtest: empty transfer preview fences finalization and replays without result chunks
+ok 25 - empty transfer preview fences finalization and replays without result chunks
+  ---
+  duration_ms: 152.803125
+  type: 'test'
+  ...
+# Subtest: canonical transfer requests reject retired marker fields
+ok 26 - canonical transfer requests reject retired marker fields
+  ---
+  duration_ms: 4.168792
+  type: 'test'
+  ...
+# Subtest: transfer identity fields accept long IDs while chunk and envelope budgets remain bounded
+ok 27 - transfer identity fields accept long IDs while chunk and envelope budgets remain bounded
+  ---
+  duration_ms: 0.535708
+  type: 'test'
+  ...
+# Subtest: transfer is resumable, sealed by canonical digest, and decisions remain immutable
+ok 28 - transfer is resumable, sealed by canonical digest, and decisions remain immutable
+  ---
+  duration_ms: 9.701125
+  type: 'test'
+  ...
+# Subtest: result chunks keep goal and plan records together and keys include the full identity
+ok 29 - result chunks keep goal and plan records together and keys include the full identity
+  ---
+  duration_ms: 0.366834
+  type: 'test'
+  ...
+# Subtest: stale seals and generation flips are rejected
+ok 30 - stale seals and generation flips are rejected
+  ---
+  duration_ms: 0.196083
+  type: 'test'
+  ...
+# Subtest: App Check rejections log only a bounded code and server correlation ID
+ok 31 - App Check rejections log only a bounded code and server correlation ID
+  ---
+  duration_ms: 73.284417
+  type: 'test'
+  ...
+# Subtest: handled sync and adoption rejections emit a redacted structured event and preserve responses
+ok 32 - handled sync and adoption rejections emit a redacted structured event and preserve responses
+  ---
+  duration_ms: 13.158417
+  type: 'test'
+  ...
+# Subtest: production Fastify logs only allowlisted request diagnostics and never canary data
+ok 33 - production Fastify logs only allowlisted request diagnostics and never canary data
+  ---
+  duration_ms: 10.4615
+  type: 'test'
+  ...
+# Subtest: canonical logger emits only allowlisted diagnostics and static messages
+ok 34 - canonical logger emits only allowlisted diagnostics and static messages
+  ---
+  duration_ms: 0.28725
+  type: 'test'
+  ...
+# Subtest: canonical logger child bindings retain only server request IDs and cannot override safety hooks
+ok 35 - canonical logger child bindings retain only server request IDs and cannot override safety hooks
+  ---
+  duration_ms: 0.275333
+  type: 'test'
+  ...
+# Subtest: conflict event codes are allowlisted, unknown values are literal unknown, and success is silent
+ok 36 - conflict event codes are allowlisted, unknown values are literal unknown, and success is silent
+  ---
+  duration_ms: 9.515667
+  type: 'test'
+  ...
+# Subtest: emulator package route enforces App Check and fresh entitlement and streams only verified bytes
+ok 37 - emulator package route enforces App Check and fresh entitlement and streams only verified bytes
+  ---
+  duration_ms: 359.022875
+  type: 'test'
+  ...
+# Subtest: strict package manifest binds path, compressed bytes and opaque artifact bytes
+ok 38 - strict package manifest binds path, compressed bytes and opaque artifact bytes
+  ---
+  duration_ms: 1.659375
+  type: 'test'
+  ...
+# Subtest: filesystem storage contains paths and publisher activates only after immutable verified writes
+ok 39 - filesystem storage contains paths and publisher activates only after immutable verified writes
+  ---
+  duration_ms: 33.465916
+  type: 'test'
+  ...
+# Subtest: publication leaves pointer unchanged when package bytes cannot be verified
+ok 40 - publication leaves pointer unchanged when package bytes cannot be verified
+  ---
+  duration_ms: 0.743375
+  type: 'test'
+  ...
+# Subtest: content report descriptions accept empty input only as a neutral safe fallback
+ok 41 - content report descriptions accept empty input only as a neutral safe fallback
+  ---
+  duration_ms: 3.300833
+  type: 'test'
+  ...
+# Subtest: content report descriptions reject contact details and obvious credentials
+ok 42 - content report descriptions reject contact details and obvious credentials
+  ---
+  duration_ms: 0.480209
+  type: 'test'
+  ...
+# Subtest: content report descriptions keep ordinary technical wording
+ok 43 - content report descriptions keep ordinary technical wording
+  ---
+  duration_ms: 0.11125
+  type: 'test'
+  ...
+# Subtest: account export contract is complete, isolated, timestamp-portable and redact-free
+ok 44 - account export contract is complete, isolated, timestamp-portable and redact-free
+  ---
+  duration_ms: 230.854666
+  type: 'test'
+  ...
+# Subtest: recent authentication, concurrent account rate limiting and whole-export size limit are enforced
+ok 45 - recent authentication, concurrent account rate limiting and whole-export size limit are enforced
+  ---
+  duration_ms: 2839.001667
+  type: 'test'
+  ...
+# Subtest: export history is ordered by createdAt, excludes the current export and caps at 100
+ok 46 - export history is ordered by createdAt, excludes the current export and caps at 100
+  ---
+  duration_ms: 172.791792
+  type: 'test'
+  ...
+# Subtest: stable exports complete only after their consumer and never rebuild after completion
+ok 47 - stable exports complete only after their consumer and never rebuild after completion
+  ---
+  duration_ms: 56.861458
+  type: 'test'
+  ...
+# Subtest: account export rejects a generation rotated after the request guard and before its transactional claim
+ok 48 - account export rejects a generation rotated after the request guard and before its transactional claim
+  ---
+  duration_ms: 19.837125
+  type: 'test'
+  ...
+# Subtest: account export returns no document when generation rotates during its read before finalization
+ok 49 - account export returns no document when generation rotates during its read before finalization
+  ---
+  duration_ms: 33.382375
+  type: 'test'
+  ...
+# Subtest: OpenAPI describes the versioned attachment contract and protected route
+ok 50 - OpenAPI describes the versioned attachment contract and protected route
+  ---
+  duration_ms: 0.193792
+  type: 'test'
+  ...
+# Subtest: Cloud Run container contract is immutable-image and non-root
+ok 51 - Cloud Run container contract is immutable-image and non-root
+  ---
+  duration_ms: 3.529333
+  type: 'test'
+  ...
+# Subtest: Firestore export retention and history indexes are repository-deployable
+ok 52 - Firestore export retention and history indexes are repository-deployable
+  ---
+  duration_ms: 1.815
+  type: 'test'
+  ...
+# Subtest: production rejects either Firebase emulator host before runtime configuration is returned
+ok 53 - production rejects either Firebase emulator host before runtime configuration is returned
+  ---
+  duration_ms: 3.421209
+  type: 'test'
+  ...
+# Subtest: explicit local emulator configuration remains accepted outside production
+ok 54 - explicit local emulator configuration remains accepted outside production
+  ---
+  duration_ms: 0.175708
+  type: 'test'
+  ...
+# Subtest: operator OIDC configuration is optional, all-or-none, pinned to safe HTTPS, and strict
+ok 55 - operator OIDC configuration is optional, all-or-none, pinned to safe HTTPS, and strict
+  ---
+  duration_ms: 1.806583
+  type: 'test'
+  ...
+# Subtest: Firebase verifier preserves an optional positive authorization generation and rejects malformed claims
+ok 56 - Firebase verifier preserves an optional positive authorization generation and rejects malformed claims
+  ---
+  duration_ms: 41.442958
+  type: 'test'
+  ...
+# Subtest: account guards require a current signed authorization generation while optional bearer stays guest without a token
+ok 57 - account guards require a current signed authorization generation while optional bearer stays guest without a token
+  ---
+  duration_ms: 173.02475
+  type: 'test'
+  ...
+# Subtest: session revocation rejects missing or stale generations before calling Firebase
+ok 58 - session revocation rejects missing or stale generations before calling Firebase
+  ---
+  duration_ms: 35.92375
+  type: 'test'
+  ...
+# Subtest: session revocation route returns typed 401 and 409 responses
+ok 59 - session revocation route returns typed 401 and 409 responses
+  ---
+  duration_ms: 45.509917
+  type: 'test'
+  ...
+# Subtest: session revocation binds a single live operation, reports same-operation progress, and replays completion
+ok 60 - session revocation binds a single live operation, reports same-operation progress, and replays completion
+  ---
+  duration_ms: 64.890917
+  type: 'test'
+  ...
+# Subtest: same-operation replay and finalization reject an altered slot authorization generation
+ok 61 - same-operation replay and finalization reject an altered slot authorization generation
+  ---
+  duration_ms: 51.973833
+  type: 'test'
+  ...
+# Subtest: session revocation failure can retry and expired owners cannot finalize over a newer fence
+ok 62 - session revocation failure can retry and expired owners cannot finalize over a newer fence
+  ---
+  duration_ms: 114.389458
+  type: 'test'
+  ...
+# Subtest: completed session revocation retries replacement-token issuance without revoking twice
+ok 63 - completed session revocation retries replacement-token issuance without revoking twice
+  ---
+  duration_ms: 44.428458
+  type: 'test'
+  ...
+# Subtest: session revocation finalization preserves its slot when account generation or state changes during Firebase work
+ok 64 - session revocation finalization preserves its slot when account generation or state changes during Firebase work
+  ---
+  duration_ms: 79.938417
+  type: 'test'
+  ...
+# Subtest: legal case creation fences authenticated and optional-bearer accounts before creating a case or sending email
+ok 65 - legal case creation fences authenticated and optional-bearer accounts before creating a case or sending email
+  ---
+  duration_ms: 86.779916
+  type: 'test'
+  ...
+# Subtest: legal acceptance and purchase confirmation transactions reject a generation rotated after the request guard
+ok 66 - legal acceptance and purchase confirmation transactions reject a generation rotated after the request guard
+  ---
+  duration_ms: 109.0515
+  type: 'test'
+  ...
+# Subtest: privacy request create and response audit reject authorization rotated after the route guard
+ok 67 - privacy request create and response audit reject authorization rotated after the route guard
+  ---
+  duration_ms: 221.025917
+  type: 'test'
+  ...
+# Subtest: a new Firebase identity cannot create a Patternly account through bearer or optional-bearer routes
+ok 68 - a new Firebase identity cannot create a Patternly account through bearer or optional-bearer routes
+  ---
+  duration_ms: 24.201958
+  type: 'test'
+  ...
+# Subtest: explicit registration is atomic under concurrency and replay never changes existing legal evidence
+ok 69 - explicit registration is atomic under concurrency and replay never changes existing legal evidence
+  ---
+  duration_ms: 49.403166
+  type: 'test'
+  ...
+# Subtest: session exchange pins the active generation, supports legacy generation one, and rejects barriers or non-active accounts
+ok 70 - session exchange pins the active generation, supports legacy generation one, and rejects barriers or non-active accounts
+  ---
+  duration_ms: 74.013458
+  type: 'test'
+  ...
+# Subtest: session exchange classifies an unmapped identity without creating account or legal evidence
+ok 71 - session exchange classifies an unmapped identity without creating account or legal evidence
+  ---
+  duration_ms: 16.154834
+  type: 'test'
+  ...
+# Subtest: a generation rotated after exchange reads it produces a stale token rejected by account guards
+ok 72 - a generation rotated after exchange reads it produces a stale token rejected by account guards
+  ---
+  duration_ms: 35.162792
+  type: 'test'
+  ...
+# Subtest: registration rejects an active deletion tombstone and replaces only an expired tombstone
+ok 73 - registration rejects an active deletion tombstone and replaces only an expired tombstone
+  ---
+  duration_ms: 38.339083
+  type: 'test'
+  ...
+# Subtest: legal acceptance is versioned, immutable, and exposed by the account profile
+ok 74 - legal acceptance is versioned, immutable, and exposed by the account profile
+  ---
+  duration_ms: 57.604666
+  type: 'test'
+  ...
+# Subtest: purchase confirmation requires current Terms acceptance and preserves the immediate-start evidence
+ok 75 - purchase confirmation requires current Terms acceptance and preserves the immediate-start evidence
+  ---
+  duration_ms: 82.477625
+  type: 'test'
+  ...
+# Subtest: invalid Firebase bearer tokens fail closed without exposing identity details
+ok 76 - invalid Firebase bearer tokens fail closed without exposing identity details
+  ---
+  duration_ms: 4.835834
+  type: 'test'
+  ...
+# Subtest: production excludes hosted admin origin while local admin requires loopback
+ok 77 - production excludes hosted admin origin while local admin requires loopback
+  ---
+  duration_ms: 3.696583
+  type: 'test'
+  ...
+# Subtest: administrator routes are unavailable in production before Firebase verification
+ok 78 - administrator routes are unavailable in production before Firebase verification
+  ---
+  duration_ms: 6.673625
+  type: 'test'
+  ...
+# Subtest: revoked Firebase verifier results fail closed at the backend boundary
+ok 79 - revoked Firebase verifier results fail closed at the backend boundary
+  ---
+  duration_ms: 6.308334
+  type: 'test'
+  ...
+# Subtest: Firestore transaction preserves sync CAS and idempotency under concurrent retries
+ok 80 - Firestore transaction preserves sync CAS and idempotency under concurrent retries
+  ---
+  duration_ms: 3138.790334
+  type: 'test'
+  ...
+# Subtest: progress sync rejects fresh writes and batch replays when authorization rotates after the request guard
+ok 81 - progress sync rejects fresh writes and batch replays when authorization rotates after the request guard
+  ---
+  duration_ms: 108.57375
+  type: 'test'
+  ...
+# Subtest: one-shot adoption rejects fresh confirmation and operation replay when authorization rotates after the request guard
+ok 82 - one-shot adoption rejects fresh confirmation and operation replay when authorization rotates after the request guard
+  ---
+  duration_ms: 129.768
+  type: 'test'
+  ...
+# Subtest: sync rejects duplicate mutations before writing and applies distinct targets
+ok 83 - sync rejects duplicate mutations before writing and applies distinct targets
+  ---
+  duration_ms: 73.724375
+  type: 'test'
+  ...
+# Subtest: account adoption is previewed, explicitly confirmed, materialized idempotently, and guarded by account CAS
+ok 84 - account adoption is previewed, explicitly confirmed, materialized idempotently, and guarded by account CAS
+  ---
+  duration_ms: 161.855083
+  type: 'test'
+  ...
+# Subtest: anonymous reports require Firebase App Check before persistence
+ok 85 - anonymous reports require Firebase App Check before persistence
+  ---
+  duration_ms: 6.277958
+  type: 'test'
+  ...
+# Subtest: report persistence keeps default submissions unlinked and excludes response-shaped fields
+ok 86 - report persistence keeps default submissions unlinked and excludes response-shaped fields
+  ---
+  duration_ms: 10.707959
+  type: 'test'
+  ...
+# Subtest: content report expiry is classified at creation and unlinking does not extend it
+ok 87 - content report expiry is classified at creation and unlinking does not extend it
+  ---
+  duration_ms: 192.858833
+  type: 'test'
+  ...
+# Subtest: content reports canonicalize an empty description without persisting learner-provided text
+ok 88 - content reports canonicalize an empty description without persisting learner-provided text
+  ---
+  duration_ms: 10.508667
+  type: 'test'
+  ...
+# Subtest: content report descriptions reject contact data and obvious secrets before persistence
+ok 89 - content report descriptions reject contact data and obvious secrets before persistence
+  ---
+  duration_ms: 15.160458
+  type: 'test'
+  ...
+# Subtest: content report retries are idempotent and do not consume the rate-limit bucket twice
+ok 90 - content report retries are idempotent and do not consume the rate-limit bucket twice
+  ---
+  duration_ms: 21.401917
+  type: 'test'
+  ...
+# Subtest: optional-bearer content report writes fence linked, unlinked and duplicate requests before rate limits
+ok 91 - optional-bearer content report writes fence linked, unlinked and duplicate requests before rate limits
+  ---
+  duration_ms: 101.947958
+  type: 'test'
+  ...
+# Subtest: administrator report triage uses an idempotent monotonic state machine and records an audit event
+ok 92 - administrator report triage uses an idempotent monotonic state machine and records an audit event
+  ---
+  duration_ms: 32.029083
+  type: 'test'
+  ...
+# Subtest: administrator report routes require a current verified administrator token and allow only the full state machine
+ok 93 - administrator report routes require a current verified administrator token and allow only the full state machine
+  ---
+  duration_ms: 121.090459
+  type: 'test'
+  ...
+# Subtest: anonymous report rate limiting is transactionally enforced without storing the client key
+ok 94 - anonymous report rate limiting is transactionally enforced without storing the client key
+  ---
+  duration_ms: 19.460416
+  type: 'test'
+  ...
+# Subtest: recovery codes are ten one-time server-hashed credentials, reissue invalidates the previous set, and replay is rejected
+ok 95 - recovery codes are ten one-time server-hashed credentials, reissue invalidates the previous set, and replay is rejected
+  ---
+  duration_ms: 104.098625
+  type: 'test'
+  ...
+# Subtest: destructive deletion rejects an old authenticated session before touching Firestore
+ok 96 - destructive deletion rejects an old authenticated session before touching Firestore
+  ---
+  duration_ms: 26.417875
+  type: 'test'
+  ...
+# Subtest: deletion route reports a typed conflict when authorization rotates after the request guard
+ok 97 - deletion route reports a typed conflict when authorization rotates after the request guard
+  ---
+  duration_ms: 34.511959
+  type: 'test'
+  ...
+# Subtest: deletion requires the current generation and advances it before any provider call
+ok 98 - deletion requires the current generation and advances it before any provider call
+  ---
+  duration_ms: 51.57075
+  type: 'test'
+  ...
+# Subtest: deletion supersedes an in-flight session revoke and the stale revoker cannot clear its slot
+ok 99 - deletion supersedes an in-flight session revoke and the stale revoker cannot clear its slot
+  ---
+  duration_ms: 53.603084
+  type: 'test'
+  ...
+# Subtest: recovery-code issue rejects a generation rotated after the request guard without changing the issued set
+ok 100 - recovery-code issue rejects a generation rotated after the request guard without changing the issued set
+  ---
+  duration_ms: 83.295084
+  type: 'test'
+  ...
+# Subtest: account deletion removes owned Firestore documents, preserves a tombstone, and redacts report account contact fields
+ok 101 - account deletion removes owned Firestore documents, preserves a tombstone, and redacts report account contact fields
+  ---
+  duration_ms: 401.525917
+  type: 'test'
+  ...
+# Subtest: account deletion persists subjects and phases, resumes through the bound status route, and accepts Auth user-not-found
+ok 102 - account deletion persists subjects and phases, resumes through the bound status route, and accepts Auth user-not-found
+  ---
+  duration_ms: 260.129042
+  type: 'test'
+  ...
+# Subtest: expired deletion phase lease rotates its fence and the stale provider worker cannot advance
+ok 103 - expired deletion phase lease rotates its fence and the stale provider worker cannot advance
+  ---
+  duration_ms: 198.113292
+  type: 'test'
+  ...
+# Subtest: a stale deletion worker cannot mutate a user subtree after cleanup fence takeover
+ok 104 - a stale deletion worker cannot mutate a user subtree after cleanup fence takeover
+  ---
+  duration_ms: 33.951208
+  type: 'test'
+  ...
+# Subtest: deletion resumes to proof when a crash follows recursive user deletion
+ok 105 - deletion resumes to proof when a crash follows recursive user deletion
+  ---
+  duration_ms: 128.980167
+  type: 'test'
+  ...
+# Subtest: simultaneous deletion operation IDs conflict so only one can own account deletion
+ok 106 - simultaneous deletion operation IDs conflict so only one can own account deletion
+  ---
+  duration_ms: 3037.319
+  type: 'test'
+  ...
+# Subtest: a redacted tombstone is never repopulated by a later operation
+ok 107 - a redacted tombstone is never repopulated by a later operation
+  ---
+  duration_ms: 144.487541
+  type: 'test'
+  ...
+# Subtest: legacy terminal records without phase and auth deletion marker never report proof
+ok 108 - legacy terminal records without phase and auth deletion marker never report proof
+  ---
+  duration_ms: 48.849458
+  type: 'test'
+  ...
+# Subtest: expired deletion proofs fail closed and are purged
+ok 109 - expired deletion proofs fail closed and are purged
+  ---
+  duration_ms: 13.444083
+  type: 'test'
+  ...
+# Subtest: a verify-only predecessor key completes an Auth-deleted operation after rotation
+ok 110 - a verify-only predecessor key completes an Auth-deleted operation after rotation
+  ---
+  duration_ms: 178.710792
+  type: 'test'
+  ...
+# Subtest: account-owned writers reject a tombstoned or missing user after authentication
+ok 111 - account-owned writers reject a tombstoned or missing user after authentication
+  ---
+  duration_ms: 75.031833
+  type: 'test'
+  ...
+# Subtest: isolated gate accepts the canonical configuration and rejects shared projects or dangerous config drift
+ok 112 - isolated gate accepts the canonical configuration and rejects shared projects or dangerous config drift
+  ---
+  duration_ms: 3.478334
+  type: 'test'
+  ...
+# Subtest: fixture cleanup attempts remaining steps after a cleanup failure
+ok 113 - fixture cleanup attempts remaining steps after a cleanup failure
+  ---
+  duration_ms: 1.436542
+  type: 'test'
+  ...
+# Subtest: fixture guard rejects a non-loopback Auth emulator host
+ok 114 - fixture guard rejects a non-loopback Auth emulator host
+  ---
+  duration_ms: 0.065041
+  type: 'test'
+  ...
+# Subtest: ordinary progress sync is rejected during a live adoption promotion lease
+ok 115 - ordinary progress sync is rejected during a live adoption promotion lease
+  ---
+  duration_ms: 356.860208
+  type: 'test'
+  ...
+# Subtest: isolated emulator fixture preserves canonical progress across service reinitialization
+ok 116 - isolated emulator fixture preserves canonical progress across service reinitialization
+  ---
+  duration_ms: 67.478458
+  type: 'test'
+  ...
+# Subtest: consumer request intake is bounded and distinguishes every approved route
+ok 117 - consumer request intake is bounded and distinguishes every approved route
+  ---
+  duration_ms: 2.007125
+  type: 'test'
+  ...
+# Subtest: only a complaint receives the statutory fourteen-day response deadline
+ok 118 - only a complaint receives the statutory fourteen-day response deadline
+  ---
+  duration_ms: 0.736916
+  type: 'test'
+  ...
+# Subtest: closed consumer cases retain evidence for six calendar years
+ok 119 - closed consumer cases retain evidence for six calendar years
+  ---
+  duration_ms: 0.067209
+  type: 'test'
+  ...
+# Subtest: operator transitions require an expected revision and bounded response or hold reason
+ok 120 - operator transitions require an expected revision and bounded response or hold reason
+  ---
+  duration_ms: 0.285583
+  type: 'test'
+  ...
+# Subtest: consumer case answer becomes final only after durable delivery and closure aligns six-year retention
+ok 121 - consumer case answer becomes final only after durable delivery and closure aligns six-year retention
+  ---
+  duration_ms: 145.467958
+  type: 'test'
+  ...
+# Subtest: failed answer delivery leaves the case unanswered and guest intake is transactionally rate limited
+ok 122 - failed answer delivery leaves the case unanswered and guest intake is transactionally rate limited
+  ---
+  duration_ms: 63.179875
+  type: 'test'
+  ...
+# Subtest: smoke launcher requires existing local emulator configuration and excludes remote integrations
+ok 123 - smoke launcher requires existing local emulator configuration and excludes remote integrations
+  ---
+  duration_ms: 2.072208
+  type: 'test'
+  ...
+# Subtest: local App Check fixture rejects missing/wrong tokens and never substitutes user identity
+ok 124 - local App Check fixture rejects missing/wrong tokens and never substitutes user identity
+  ---
+  duration_ms: 0.298584
+  type: 'test'
+  ...
+# Subtest: local smoke entitlement fixture defaults to the mobile identity with an expired state
+ok 125 - local smoke entitlement fixture defaults to the mobile identity with an expired state
+  ---
+  duration_ms: 1.45825
+  type: 'test'
+  ...
+# {"level":30,"time":1790817684575,"reqId":"6ec32d80-6f08-4828-9369-0106d2e13210","req":{"method":"GET"},"msg":"incoming request"}
+# Subtest: local smoke active entitlement passes the ordinary GET /v1/entitlements route
+ok 126 - local smoke active entitlement passes the ordinary GET /v1/entitlements route
+  ---
+  duration_ms: 58.040416
+  type: 'test'
+  ...
+# {"level":30,"time":1790817684578,"reqId":"6ec32d80-6f08-4828-9369-0106d2e13210","res":{"statusCode":200},"responseTime":1.779457999999977,"msg":"request completed"}
+# Subtest: local smoke rejects unknown entitlement state and remains isolated from production
+ok 127 - local smoke rejects unknown entitlement state and remains isolated from production
+  ---
+  duration_ms: 2.931
+  type: 'test'
+  ...
+# Subtest: preview identifies upload, restore, deduplication and divergent records
+ok 128 - preview identifies upload, restore, deduplication and divergent records
+  ---
+  duration_ms: 5.993917
+  type: 'test'
+  ...
+# Subtest: active sessions and recovery journals block adoption
+ok 129 - active sessions and recovery journals block adoption
+  ---
+  duration_ms: 0.152625
+  type: 'test'
+  ...
+# Subtest: confirmation requires every conflict and every goal plan group
+ok 130 - confirmation requires every conflict and every goal plan group
+  ---
+  duration_ms: 3.842083
+  type: 'test'
+  ...
+# Subtest: full identity keys remain collision safe across tracks
+ok 131 - full identity keys remain collision safe across tracks
+  ---
+  duration_ms: 0.521
+  type: 'test'
+  ...
+# Subtest: merge identity fields accept long IDs through preview and confirmation
+ok 132 - merge identity fields accept long IDs through preview and confirmation
+  ---
+  duration_ms: 0.584625
+  type: 'test'
+  ...
+# Subtest: legacy content identity fields are rejected recursively
+ok 133 - legacy content identity fields are rejected recursively
+  ---
+  duration_ms: 0.383
+  type: 'test'
+  ...
+# Subtest: GATE-02 source OpenAPI document is complete
+ok 134 - GATE-02 source OpenAPI document is complete
+  ---
+  duration_ms: 2.604833
+  type: 'test'
+  ...
+# Subtest: unready runtime response matches the documented 503 schema
+ok 135 - unready runtime response matches the documented 503 schema
+  ---
+  duration_ms: 66.779042
+  type: 'test'
+  ...
+# Subtest: runtime parity uses the real app, normalizes parameters, and ignores automatic HEAD
+ok 136 - runtime parity uses the real app, normalizes parameters, and ignores automatic HEAD
+  ---
+  duration_ms: 8.239
+  type: 'test'
+  ...
+# Subtest: runtime parity rejects a missing operation
+ok 137 - runtime parity rejects a missing operation
+  ---
+  duration_ms: 6.764583
+  type: 'test'
+  ...
+# Subtest: runtime parity rejects an extra operation
+ok 138 - runtime parity rejects an extra operation
+  ---
+  duration_ms: 8.31875
+  type: 'test'
+  ...
+# Subtest: runtime parity rejects a wrong method
+ok 139 - runtime parity rejects a wrong method
+  ---
+  duration_ms: 6.038417
+  type: 'test'
+  ...
+# Subtest: behavioral security probes exercise every protected profile
+ok 140 - behavioral security probes exercise every protected profile
+  ---
+  duration_ms: 34.180167
+  type: 'test'
+  ...
+# Subtest: every account-resolving operation documents account_not_found
+ok 141 - every account-resolving operation documents account_not_found
+  ---
+  duration_ms: 1.575208
+  type: 'test'
+  ...
+# Subtest: behavioral security probes reject a no-op guard fixture
+ok 142 - behavioral security probes reject a no-op guard fixture
+  ---
+  duration_ms: 3.164125
+  type: 'test'
+  ...
+# Subtest: an unregistered no-op pre-handler is unknown and cannot impersonate a public route
+ok 143 - an unregistered no-op pre-handler is unknown and cannot impersonate a public route
+  ---
+  duration_ms: 5.877375
+  type: 'test'
+  ...
+# Subtest: completeness rejects a missing request schema
+ok 144 - completeness rejects a missing request schema
+  ---
+  duration_ms: 2.188166
+  type: 'test'
+  ...
+# Subtest: completeness rejects an empty request schema
+ok 145 - completeness rejects an empty request schema
+  ---
+  duration_ms: 1.873291
+  type: 'test'
+  ...
+# Subtest: completeness rejects a missing success response schema
+ok 146 - completeness rejects a missing success response schema
+  ---
+  duration_ms: 1.788417
+  type: 'test'
+  ...
+# Subtest: completeness rejects an empty success response schema
+ok 147 - completeness rejects an empty success response schema
+  ---
+  duration_ms: 1.8695
+  type: 'test'
+  ...
+# Subtest: completeness rejects duplicate operation identities
+ok 148 - completeness rejects duplicate operation identities
+  ---
+  duration_ms: 3.349667
+  type: 'test'
+  ...
+# Subtest: completeness rejects an incorrect protection profile
+ok 149 - completeness rejects an incorrect protection profile
+  ---
+  duration_ms: 1.878375
+  type: 'test'
+  ...
+# Subtest: completeness rejects an unclassified consumer operation
+ok 150 - completeness rejects an unclassified consumer operation
+  ---
+  duration_ms: 1.708125
+  type: 'test'
+  ...
+# Subtest: ordinary error responses use the closed common envelope
+ok 151 - ordinary error responses use the closed common envelope
+  ---
+  duration_ms: 1.757916
+  type: 'test'
+  ...
+# Subtest: frontend checker rejects an unknown consumer operation
+ok 152 - frontend checker rejects an unknown consumer operation
+  ---
+  duration_ms: 71.203709
+  type: 'test'
+  ...
+# Subtest: frontend checker does not let a methodless static path satisfy a consumer operation
+ok 153 - frontend checker does not let a methodless static path satisfy a consumer operation
+  ---
+  duration_ms: 65.806542
+  type: 'test'
+  ...
+# Subtest: frontend checker binds useAdminRead callsites to the wrapper method
+ok 154 - frontend checker binds useAdminRead callsites to the wrapper method
+  ---
+  duration_ms: 65.241042
+  type: 'test'
+  ...
+# Subtest: frontend checker rejects a useAdminRead callsite with no expected operation
+ok 155 - frontend checker rejects a useAdminRead callsite with no expected operation
+  ---
+  duration_ms: 65.507292
+  type: 'test'
+  ...
+# Subtest: operator verifier authenticates, authorizes exact action, caches keys, and returns only pseudonymous identity
+ok 156 - operator verifier authenticates, authorizes exact action, caches keys, and returns only pseudonymous identity
+  ---
+  duration_ms: 22.8675
+  type: 'test'
+  ...
+# Subtest: operator verifier rejects malformed, mismatched, expired, future, and incorrectly signed tokens without leaking details
+ok 157 - operator verifier rejects malformed, mismatched, expired, future, and incorrectly signed tokens without leaking details
+  ---
+  duration_ms: 6.159333
+  type: 'test'
+  ...
+# Subtest: unknown kid performs one shared refresh and global cooldown blocks sequential or rotating misses
+ok 158 - unknown kid performs one shared refresh and global cooldown blocks sequential or rotating misses
+  ---
+  duration_ms: 2.459584
+  type: 'test'
+  ...
+# Subtest: failed unknown-kid refresh also starts the global cooldown
+ok 159 - failed unknown-kid refresh also starts the global cooldown
+  ---
+  duration_ms: 2.277667
+  type: 'test'
+  ...
+# Subtest: JWKS redirect, oversized body, duplicate kid, and network failure are rejected
+ok 160 - JWKS redirect, oversized body, duplicate kid, and network failure are rejected
+  ---
+  duration_ms: 3.087209
+  type: 'test'
+  ...
+# Subtest: JWKS streaming limit rejects a chunked oversized body before consuming its tail
+ok 161 - JWKS streaming limit rejects a chunked oversized body before consuming its tail
+  ---
+  duration_ms: 1.314
+  type: 'test'
+  ...
+# Subtest: JWKS fetch deadline aborts a stalled request
+ok 162 - JWKS fetch deadline aborts a stalled request
+  ---
+  duration_ms: 23.322875
+  type: 'test'
+  ...
+# Subtest: production HTTPS lookup returns the Node all-address callback shape and rejects any non-public answer
+ok 163 - production HTTPS lookup returns the Node all-address callback shape and rejects any non-public answer
+  ---
+  duration_ms: 4.201375
+  type: 'test'
+  ...
+# Subtest: absent operator configuration produces no verifier
+ok 164 - absent operator configuration produces no verifier
+  ---
+  duration_ms: 0.31925
+  type: 'test'
+  ...
+# Subtest: operator routes use the production verifier for exact-scope authorization before stores
+ok 165 - operator routes use the production verifier for exact-scope authorization before stores
+  ---
+  duration_ms: 79.389625
+  type: 'test'
+  ...
+# Subtest: unconfigured operator access is explicit and no-store
+ok 166 - unconfigured operator access is explicit and no-store
+  ---
+  duration_ms: 8.1465
+  type: 'test'
+  ...
+# Subtest: operator queue and mutation projections stay minimal while audited details expose only allowlisted context
+ok 167 - operator queue and mutation projections stay minimal while audited details expose only allowlisted context
+  ---
+  duration_ms: 12.10425
+  type: 'test'
+  ...
+# Subtest: operator transitions reject extra fields and disabled delivery actions before store writes
+ok 168 - operator transitions reject extra fields and disabled delivery actions before store writes
+  ---
+  duration_ms: 12.029542
+  type: 'test'
+  ...
+# Subtest: operator queues return at most 100 allowlisted rows, audit each returned row, and content CAS rejects a stale writer
+ok 169 - operator queues return at most 100 allowlisted rows, audit each returned row, and content CAS rejects a stale writer # SKIP requires explicit isolated OPS_B2_EMULATOR_TESTS=1 gate
+  ---
+  duration_ms: 0.640666
+  type: 'test'
+  ...
+# Subtest: operator privacy email fence has no public writes while safe public review remains available
+ok 170 - operator privacy email fence has no public writes while safe public review remains available # SKIP requires explicit isolated OPS_B2_EMULATOR_TESTS=1 gate
+  ---
+  duration_ms: 0.046875
+  type: 'test'
+  ...
+# Subtest: stable incident caller UUID replays exact payload and rejects changed payload
+ok 171 - stable incident caller UUID replays exact payload and rejects changed payload # SKIP requires explicit isolated OPS_B2_EMULATOR_TESTS=1 gate
+  ---
+  duration_ms: 0.039
+  type: 'test'
+  ...
+# Subtest: legal non-email actions need no sender and unavailable answer leaves no effects
+ok 172 - legal non-email actions need no sender and unavailable answer leaves no effects # SKIP requires explicit isolated OPS_B2_EMULATOR_TESTS=1 gate
+  ---
+  duration_ms: 0.038708
+  type: 'test'
+  ...
+# Subtest: calendar deadlines clamp to the last UTC day of shorter months
+ok 173 - calendar deadlines clamp to the last UTC day of shorter months
+  ---
+  duration_ms: 1.370875
+  type: 'test'
+  ...
+# Subtest: extension is an event and can happen only once before the first deadline
+ok 174 - extension is an event and can happen only once before the first deadline
+  ---
+  duration_ms: 0.78625
+  type: 'test'
+  ...
+# Subtest: response preparation, delivery and closure remain distinct
+ok 175 - response preparation, delivery and closure remain distinct
+  ---
+  duration_ms: 0.39975
+  type: 'test'
+  ...
+# Subtest: invalid transitions and unproved responses fail closed
+ok 176 - invalid transitions and unproved responses fail closed
+  ---
+  duration_ms: 0.4685
+  type: 'test'
+  ...
+# Subtest: public intake accepts bounded identifiers and rejects arbitrary shape
+ok 177 - public intake accepts bounded identifiers and rejects arbitrary shape
+  ---
+  duration_ms: 0.449666
+  type: 'test'
+  ...
+# Subtest: each right has an explicit executor and verification policy
+ok 178 - each right has an explicit executor and verification policy
+  ---
+  duration_ms: 0.6805
+  type: 'test'
+  ...
+# Subtest: verification delivery failure stays pending and existing resend can deliver the same request
+ok 179 - verification delivery failure stays pending and existing resend can deliver the same request
+  ---
+  duration_ms: 230.100334
+  type: 'test'
+  ...
+# Subtest: account request has an isolated lifecycle and serves a prepared response only to its owner
+ok 180 - account request has an isolated lifecycle and serves a prepared response only to its owner
+  ---
+  duration_ms: 362.191709
+  type: 'test'
+  ...
+# Subtest: guest lifecycle keeps verification and operator response inside the app
+ok 181 - guest lifecycle keeps verification and operator response inside the app
+  ---
+  duration_ms: 200.939625
+  type: 'test'
+  ...
+# Subtest: guest mobile request is App Check protected, idempotent and verifiable only in app
+ok 182 - guest mobile request is App Check protected, idempotent and verifiable only in app
+  ---
+  duration_ms: 141.861125
+  type: 'test'
+  ...
+# Subtest: retired browser privacy endpoints cannot create, verify or read a request
+ok 183 - retired browser privacy endpoints cannot create, verify or read a request
+  ---
+  duration_ms: 5.359042
+  type: 'test'
+  ...
+# Subtest: a pending legacy-compatible guest record can receive a fresh in-app code
+ok 184 - a pending legacy-compatible guest record can receive a fresh in-app code
+  ---
+  duration_ms: 72.438083
+  type: 'test'
+  ...
+# Subtest: admin transitions are revision guarded and require complaint information plus execution evidence
+ok 185 - admin transitions are revision guarded and require complaint information plus execution evidence
+  ---
+  duration_ms: 48.682792
+  type: 'test'
+  ...
+# Subtest: failed guest extension notice remains explicit and can be retried without extending twice
+ok 186 - failed guest extension notice remains explicit and can be retried without extending twice
+  ---
+  duration_ms: 86.12575
+  type: 'test'
+  ...
+# Subtest: emulator target guard requires exact project and loopback endpoints
+ok 187 - emulator target guard requires exact project and loopback endpoints
+  ---
+  duration_ms: 0.859375
+  type: 'test'
+  ...
+# Subtest: manifest guard requires exact fixture identity, email digest and operation ID
+ok 188 - manifest guard requires exact fixture identity, email digest and operation ID
+  ---
+  duration_ms: 0.702292
+  type: 'test'
+  ...
+# Subtest: Auth UID maps to exactly one Firebase identity and an internal UUID account
+ok 189 - Auth UID maps to exactly one Firebase identity and an internal UUID account
+  ---
+  duration_ms: 0.668833
+  type: 'test'
+  ...
+# Subtest: manifest guard validates every captured path and nested report audit entry
+ok 190 - manifest guard validates every captured path and nested report audit entry
+  ---
+  duration_ms: 0.285292
+  type: 'test'
+  ...
+# Subtest: manifest integrity rejects cleanup-path tampering before destructive work
+ok 191 - manifest integrity rejects cleanup-path tampering before destructive work
+  ---
+  duration_ms: 0.345375
+  type: 'test'
+  ...
+# Subtest: pre-deletion snapshot guard rejects post-delete or incomplete account state
+ok 192 - pre-deletion snapshot guard rejects post-delete or incomplete account state
+  ---
+  duration_ms: 0.100583
+  type: 'test'
+  ...
+# Subtest: post-delete evidence requires exactly one operation and proof beyond signed baselines
+ok 193 - post-delete evidence requires exactly one operation and proof beyond signed baselines
+  ---
+  duration_ms: 0.248541
+  type: 'test'
+  ...
+# Subtest: deletion operation and proof retain the complete linked contract
+ok 194 - deletion operation and proof retain the complete linked contract
+  ---
+  duration_ms: 0.165458
+  type: 'test'
+  ...
+# Subtest: cleanup paths must belong to the manifest's exact UID and captured retained roots
+ok 195 - cleanup paths must belong to the manifest's exact UID and captured retained roots
+  ---
+  duration_ms: 0.364709
+  type: 'test'
+  ...
+# Subtest: cleanup validates surviving owned-root documents and exact rate-limit document identity
+ok 196 - cleanup validates surviving owned-root documents and exact rate-limit document identity
+  ---
+  duration_ms: 0.368791
+  type: 'test'
+  ...
+# Subtest: the canonical sync envelope is required and has one mutation shape
+ok 197 - the canonical sync envelope is required and has one mutation shape
+  ---
+  duration_ms: 4.559083
+  type: 'test'
+  ...
+# Subtest: sync batches require unique mutation ids and record targets
+ok 198 - sync batches require unique mutation ids and record targets
+  ---
+  duration_ms: 1.021916
+  type: 'test'
+  ...
+# Subtest: canonical tombstones are accepted directly and retired identity markers are rejected recursively
+ok 199 - canonical tombstones are accepted directly and retired identity markers are rejected recursively
+  ---
+  duration_ms: 1.284375
+  type: 'test'
+  ...
+# Subtest: resolved material identity is exact and remains part of the mutation fingerprint
+ok 200 - resolved material identity is exact and remains part of the mutation fingerprint
+  ---
+  duration_ms: 1.099625
+  type: 'test'
+  ...
+# Subtest: resolved material identity uses the canonical safe identity rules
+ok 201 - resolved material identity uses the canonical safe identity rules
+  ---
+  duration_ms: 0.383541
+  type: 'test'
+  ...
+# Subtest: sync identities are bounded by the canonical envelope rather than arbitrary field caps
+ok 202 - sync identities are bounded by the canonical envelope rather than arbitrary field caps
+  ---
+  duration_ms: 0.366875
+  type: 'test'
+  ...
+# Subtest: sync and state limits are enforced without a compatibility branch
+ok 203 - sync and state limits are enforced without a compatibility branch
+  ---
+  duration_ms: 20.012292
+  type: 'test'
+  ...
+# Subtest: pagination tokens contain only generation, revision and cursor identity
+ok 204 - pagination tokens contain only generation, revision and cursor identity
+  ---
+  duration_ms: 1.185625
+  type: 'test'
+  ...
+# Subtest: canonical JSON uses NFC normalization and UTF-8 byte accounting
+ok 205 - canonical JSON uses NFC normalization and UTF-8 byte accounting
+  ---
+  duration_ms: 0.313292
+  type: 'test'
+  ...
+# Subtest: canonical sync persists exact identity records and replays by batch metadata
+ok 206 - canonical sync persists exact identity records and replays by batch metadata
+  ---
+  duration_ms: 113.223833
+  type: 'test'
+  ...
+# Subtest: long sync identities persist through hashed Firestore document keys
+ok 207 - long sync identities persist through hashed Firestore document keys
+  ---
+  duration_ms: 18.201917
+  type: 'test'
+  ...
+# Subtest: read fails closed for malformed persisted progress identity records
+ok 208 - read fails closed for malformed persisted progress identity records
+  ---
+  duration_ms: 25.058
+  type: 'test'
+  ...
+# Subtest: one-shot adoption uses the same exact identity and explicit group choice shape
+ok 209 - one-shot adoption uses the same exact identity and explicit group choice shape
+  ---
+  duration_ms: 38.354916
+  type: 'test'
+  ...
+# Subtest: legacy identity leaves are rejected before a write
+ok 210 - legacy identity leaves are rejected before a write
+  ---
+  duration_ms: 6.741792
+  type: 'test'
+  ...
+# Subtest: pseudonym key ring domain-separates identities and keeps old keys verify-only
+ok 211 - pseudonym key ring domain-separates identities and keeps old keys verify-only
+  ---
+  duration_ms: 1.193791
+  type: 'test'
+  ...
+# Subtest: pseudonym key ring fails closed for missing, duplicate, weak or multiple active keys
+ok 212 - pseudonym key ring fails closed for missing, duplicate, weak or multiple active keys
+  ---
+  duration_ms: 0.714625
+  type: 'test'
+  ...
+# Subtest: expired content report is recursively deleted with its direct audit and no raw actor remains
+ok 213 - expired content report is recursively deleted with its direct audit and no raw actor remains
+  ---
+  duration_ms: 136.117167
+  type: 'test'
+  ...
+# Subtest: only an expired exact orphan content-report audit is directly deleted
+ok 214 - only an expired exact orphan content-report audit is directly deleted
+  ---
+  duration_ms: 53.030458
+  type: 'test'
+  ...
+# Subtest: orphan audit deletion rechecks parent absence in its transaction
+ok 215 - orphan audit deletion rechecks parent absence in its transaction
+  ---
+  duration_ms: 36.136292
+  type: 'test'
+  ...
+# Subtest: delete budget interrupts work and idempotent retries with the same budget reach the zero-due postcondition
+ok 216 - delete budget interrupts work and idempotent retries with the same budget reach the zero-due postcondition
+  ---
+  duration_ms: 97.562292
+  type: 'test'
+  ...
+# Subtest: fresh parent prefix cannot starve expired suffix across paged budgeted retries
+ok 217 - fresh parent prefix cannot starve expired suffix across paged budgeted retries
+  ---
+  duration_ms: 59.450625
+  type: 'test'
+  ...
+# Subtest: paged collection-group scan reaches exact orphan audits behind a fresh protected prefix
+ok 218 - paged collection-group scan reaches exact orphan audits behind a fresh protected prefix
+  ---
+  duration_ms: 77.731416
+  type: 'test'
+  ...
+# Subtest: final cutoff observation detects a due report inserted after the primary scan
+ok 219 - final cutoff observation detects a due report inserted after the primary scan
+  ---
+  duration_ms: 17.92225
+  type: 'test'
+  ...
+# Subtest: recursive deletion failure returns no success result and a normal retry remains idempotent
+ok 220 - recursive deletion failure returns no success result and a normal retry remains idempotent
+  ---
+  duration_ms: 32.440333
+  type: 'test'
+  ...
+# Subtest: unexpired and missing or invalid expiry records are preserved and unresolved
+ok 221 - unexpired and missing or invalid expiry records are preserved and unresolved
+  ---
+  duration_ms: 27.702916
+  type: 'test'
+  ...
+# Subtest: retention purge CLI requires an explicit target and emits only structured non-sensitive JSON on failure
+ok 222 - retention purge CLI requires an explicit target and emits only structured non-sensitive JSON on failure
+  ---
+  duration_ms: 322.803875
+  type: 'test'
+  ...
+# Subtest: retention purge CLI contract keeps dry-run default, explicit execute, target, page and delete-budget arguments
+ok 223 - retention purge CLI contract keeps dry-run default, explicit execute, target, page and delete-budget arguments
+  ---
+  duration_ms: 3.438625
+  type: 'test'
+  ...
+# Subtest: RevenueCat reader returns active and sends the encoded subscriber request
+ok 224 - RevenueCat reader returns active and sends the encoded subscriber request
+  ---
+  duration_ms: 2.620917
+  type: 'test'
+  ...
+# Subtest: RevenueCat cancellation keeps access active through the provider expiry
+ok 225 - RevenueCat cancellation keeps access active through the provider expiry
+  ---
+  duration_ms: 0.14525
+  type: 'test'
+  ...
+# Subtest: RevenueCat billing issue with a future provider grace date returns grace
+ok 226 - RevenueCat billing issue with a future provider grace date returns grace
+  ---
+  duration_ms: 0.173625
+  type: 'test'
+  ...
+# Subtest: provider grace date confirms grace even when billing issue timestamp is absent
+ok 227 - provider grace date confirms grace even when billing issue timestamp is absent
+  ---
+  duration_ms: 0.105708
+  type: 'test'
+  ...
+# Subtest: RevenueCat billing issue without a future grace date returns hold
+ok 228 - RevenueCat billing issue without a future grace date returns hold
+  ---
+  duration_ms: 0.217458
+  type: 'test'
+  ...
+# Subtest: RevenueCat expiry is evaluated against request_date_ms and never extended locally
+ok 229 - RevenueCat expiry is evaluated against request_date_ms and never extended locally
+  ---
+  duration_ms: 0.094875
+  type: 'test'
+  ...
+# Subtest: RevenueCat refund takes precedence over the expiry state
+ok 230 - RevenueCat refund takes precedence over the expiry state
+  ---
+  duration_ms: 0.126375
+  type: 'test'
+  ...
+# Subtest: RevenueCat absent entitlement or subscription is expired
+ok 231 - RevenueCat absent entitlement or subscription is expired
+  ---
+  duration_ms: 0.330125
+  type: 'test'
+  ...
+# Subtest: RevenueCat product or environment mismatch is unavailable
+ok 232 - RevenueCat product or environment mismatch is unavailable
+  ---
+  duration_ms: 0.31925
+  type: 'test'
+  ...
+# Subtest: RevenueCat alias or transferred customer cannot confirm another Patternly account
+ok 233 - RevenueCat alias or transferred customer cannot confirm another Patternly account
+  ---
+  duration_ms: 0.321667
+  type: 'test'
+  ...
+# Subtest: missing entitlement or subscription map is unavailable rather than an authoritative expiry
+ok 234 - missing entitlement or subscription map is unavailable rather than an authoritative expiry
+  ---
+  duration_ms: 0.164833
+  type: 'test'
+  ...
+# Subtest: RevenueCat missing required expiry is unavailable
+ok 235 - RevenueCat missing required expiry is unavailable
+  ---
+  duration_ms: 0.069
+  type: 'test'
+  ...
+# Subtest: RevenueCat network, HTTP, non-JSON and timeout failures are typed and secret-free
+ok 236 - RevenueCat network, HTTP, non-JSON and timeout failures are typed and secret-free
+  ---
+  duration_ms: 24.145959
+  type: 'test'
+  ...
+# Subtest: entitlement refresh requires App Check and returns only a fresh provider result for the bound account
+ok 237 - entitlement refresh requires App Check and returns only a fresh provider result for the bound account
+  ---
+  duration_ms: 125.731459
+  type: 'test'
+  ...
+# Subtest: provider failure and ambiguous state return explicit 503 without exposing a stored webhook projection
+ok 238 - provider failure and ambiguous state return explicit 503 without exposing a stored webhook projection
+  ---
+  duration_ms: 34.258958
+  type: 'test'
+  ...
+# Subtest: provider-confirmed billing hold remains an explicit negative result
+ok 239 - provider-confirmed billing hold remains an explicit negative result
+  ---
+  duration_ms: 36.0125
+  type: 'test'
+  ...
+# Subtest: missing provider composition fails closed with 503
+ok 240 - missing provider composition fails closed with 503
+  ---
+  duration_ms: 31.953667
+  type: 'test'
+  ...
+# Subtest: RevenueCat store is idempotent and monotonic across lifecycle events
+ok 241 - RevenueCat store is idempotent and monotonic across lifecycle events
+  ---
+  duration_ms: 189.112625
+  type: 'test'
+  ...
+# Subtest: a trusted paid purchase grants Premium even when durable-receipt evidence is unavailable
+ok 242 - a trusted paid purchase grants Premium even when durable-receipt evidence is unavailable
+  ---
+  duration_ms: 20.22775
+  type: 'test'
+  ...
+# Subtest: inactive, deleted, and missing purchase targets are ignored without receipts or entitlement writes
+ok 243 - inactive, deleted, and missing purchase targets are ignored without receipts or entitlement writes
+  ---
+  duration_ms: 75.788291
+  type: 'test'
+  ...
+# Subtest: a duplicate purchase does not claim or reveal a receipt after its account becomes inactive
+ok 244 - a duplicate purchase does not claim or reveal a receipt after its account becomes inactive
+  ---
+  duration_ms: 36.714959
+  type: 'test'
+  ...
+# Subtest: RevenueCat transfer ignores inactive sources and targets without changing either entitlement
+ok 245 - RevenueCat transfer ignores inactive sources and targets without changing either entitlement
+  ---
+  duration_ms: 48.979084
+  type: 'test'
+  ...
+# Subtest: receipt delivery cannot update a receipt after account deletion
+ok 246 - receipt delivery cannot update a receipt after account deletion
+  ---
+  duration_ms: 32.121625
+  type: 'test'
+  ...
+# Subtest: RevenueCat endpoint authenticates and materializes the Premium projection
+ok 247 - RevenueCat endpoint authenticates and materializes the Premium projection
+  ---
+  duration_ms: 33.987375
+  type: 'test'
+  ...
+# Subtest: RevenueCat transfer atomically moves an active projection and replays safely
+ok 248 - RevenueCat transfer atomically moves an active projection and replays safely
+  ---
+  duration_ms: 37.411833
+  type: 'test'
+  ...
+# Subtest: RevenueCat transfer cannot overwrite an event with the same timestamp and later id
+ok 249 - RevenueCat transfer cannot overwrite an event with the same timestamp and later id
+  ---
+  duration_ms: 40.678875
+  type: 'test'
+  ...
+# Subtest: RevenueCat authorization is exact and rejects missing or different-length values
+ok 250 - RevenueCat authorization is exact and rejects missing or different-length values
+  ---
+  duration_ms: 0.77925
+  type: 'test'
+  ...
+# Subtest: RevenueCat lifecycle grants, preserves and removes access at the correct events
+ok 251 - RevenueCat lifecycle grants, preserves and removes access at the correct events
+  ---
+  duration_ms: 2.213833
+  type: 'test'
+  ...
+# Subtest: RevenueCat parser rejects incomplete payloads and reducer rejects future timestamps
+ok 252 - RevenueCat parser rejects incomplete payloads and reducer rejects future timestamps
+  ---
+  duration_ms: 0.440333
+  type: 'test'
+  ...
+# Subtest: security incident contract requires an explicit revision for every mutation
+ok 253 - security incident contract requires an explicit revision for every mutation
+  ---
+  duration_ms: 1.395292
+  type: 'test'
+  ...
+# Subtest: security incident calendar retention preserves leap-year legal dates
+ok 254 - security incident calendar retention preserves leap-year legal dates
+  ---
+  duration_ms: 0.752541
+  type: 'test'
+  ...
+# Subtest: security incident awareness deadline is immutable UTC +72 hours
+ok 255 - security incident awareness deadline is immutable UTC +72 hours
+  ---
+  duration_ms: 0.060458
+  type: 'test'
+  ...
+# Subtest: OpenAPI exposes every runtime security-incident action and exact export route
+ok 256 - OpenAPI exposes every runtime security-incident action and exact export route
+  ---
+  duration_ms: 1.63125
+  type: 'test'
+  ...
+# Subtest: incident register is admin-only, list/audit contain no sensitive details, and awareness cannot change
+ok 257 - incident register is admin-only, list/audit contain no sensitive details, and awareness cannot change
+  ---
+  duration_ms: 187.565209
+  type: 'test'
+  ...
+# Subtest: incident closure requires explicit decisions and a manual authority submission
+ok 258 - incident closure requires explicit decisions and a manual authority submission
+  ---
+  duration_ms: 208.483125
+  type: 'test'
+  ...
+# Subtest: subject notification fails closed without the separate incident sender
+ok 259 - subject notification fails closed without the separate incident sender
+  ---
+  duration_ms: 88.168916
+  type: 'test'
+  ...
+# Subtest: reconcile turns stale pending notification into unknown without retrying it
+ok 260 - reconcile turns stale pending notification into unknown without retrying it
+  ---
+  duration_ms: 100.413834
+  type: 'test'
+  ...
+# Subtest: hold and release recalculate expiry for audit records created before and after closure
+ok 261 - hold and release recalculate expiry for audit records created before and after closure
+  ---
+  duration_ms: 221.255375
+  type: 'test'
+  ...
+# Subtest: old asynchronous delivery cannot overwrite a newer notification snapshot
+ok 262 - old asynchronous delivery cannot overwrite a newer notification snapshot
+  ---
+  duration_ms: 138.954375
+  type: 'test'
+  ...
+# Subtest: closure requires a sent delivery for every prepared recipient
+ok 263 - closure requires a sent delivery for every prepared recipient
+  ---
+  duration_ms: 166.960125
+  type: 'test'
+  ...
+# Subtest: SMTP privacy sender emits bounded plain-text messages for every DSAR purpose
+ok 264 - SMTP privacy sender emits bounded plain-text messages for every DSAR purpose
+  ---
+  duration_ms: 1.579875
+  type: 'test'
+  ...
+# Subtest: SMTP privacy sender fails when the provider does not accept the recipient
+ok 265 - SMTP privacy sender fails when the provider does not accept the recipient
+  ---
+  duration_ms: 0.2235
+  type: 'test'
+  ...
+# Subtest: SMTP purchase receipt is plain text and contains the durable transaction evidence
+ok 266 - SMTP purchase receipt is plain text and contains the durable transaction evidence
+  ---
+  duration_ms: 0.211416
+  type: 'test'
+  ...
+# Subtest: SMTP runtime configuration is all-or-nothing and production requires it
+ok 267 - SMTP runtime configuration is all-or-nothing and production requires it
+  ---
+  duration_ms: 1.962042
+  type: 'test'
+  ...
+# Subtest: user lookups and registration continue to honor legacy SHA-256 deletion tombstones
+ok 268 - user lookups and registration continue to honor legacy SHA-256 deletion tombstones
+  ---
+  duration_ms: 2.680292
+  type: 'test'
+  ...
+# Subtest: expired legacy SHA-256 tombstones retain the existing registration replacement behavior
+ok 269 - expired legacy SHA-256 tombstones retain the existing registration replacement behavior
+  ---
+  duration_ms: 0.936042
+  type: 'test'
+  ...
+1..269
+# tests 269
+# suites 0
+# pass 265
+# fail 0
+# cancelled 0
+# skipped 4
+# todo 0
+# duration_ms 42035.575166
+✔  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+i  auth: Stopping Authentication Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator

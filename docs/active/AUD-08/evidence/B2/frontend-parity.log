@@ -1,0 +1,8 @@
+
+> patternly-backend@0.1.0 frontend:client:check
+> node scripts/check-frontend-client.mjs
+
+frontend_missing_consumer_operation:POST /v1/public/recovery-codes/consume/status:mobile
+frontend_missing_consumer_operation:POST /v1/account/recovery-codes/consume/ack:mobile
+frontend_missing_consumer_operation:GET /v1/account/recovery-codes/issue/status:mobile
+frontend_missing_consumer_operation:POST /v1/account/recovery-codes/issue/saved-ack:mobile
