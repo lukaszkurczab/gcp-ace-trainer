@@ -29,7 +29,7 @@ Ten dokument zawiera wyłącznie pracę pozostałą. Zakończone zadania, raport
 - Premium: discovery/preparation, exact package identity oraz jedna bramka nowych sesji i pobrań działają lokalnie i fail-closed dla contentu poza darmowym node'em. Bramka wymaga rozszerzenia o jawne reguły produktowe: `Exam`, `Coding Mock Interview` i cała rodzina `Design Interview` zawsze wymagają Premium, niezależnie od pytań wybranych do sesji.
 - CI/release: istnieją kontrakty exact-SHA, manifest kandydata, `embedded-only`, rozdzielenie LOCAL/FREEZE/GO i bramka GO.
 - Legal/config: techniczny kontrakt zmiennych i szablonów istnieje; brakuje prawdziwych wartości wydaniowych.
-- Operacje: istnieją odebrane lokalnie OIDC/JWKS, allowlista akcji i endpointy czterech rodzin; CLI i syntetyczny odbiór B4 pozostają do wykonania.
+- Operacje: istnieją odebrane lokalnie OIDC/JWKS, allowlista akcji i endpointy czterech rodzin; CLI odebrane lokalnie; syntetyczny odbiór B4 pozostaje do wykonania.
 - Web: przygotowanie lokalnego artefaktu i granicy hostingu jest zakończone; publikacja czeka na finalne dane i autoryzację.
 
 Baseline SHA podczas porządków:
@@ -50,7 +50,7 @@ SHA są punktem orientacyjnym porządków, nie kandydatem release. Przed każdym
 | Logowanie sandbox Android | `partial` | Email/hasło działa na Redmi Note 11 po korekcie konfiguracji środowiska i promocji backendu sandbox. Bieżąca poprawka prezentacji automatycznego unieważniania sesji pokazuje istniejący stan ładowania, a `signOutPending` dopiero przy błędzie; nie ma jej jeszcze w buildzie/update EAS. Ten wynik nie potwierdza macierzy Apple/Google ani wydania. |
 | Stare audyty UI/session | `accepted` | AUD-15 zamknięte lokalnie: pięć stanów Practice/Review, standard i 2×, independent QA. AUD-02 nie wraca do kolejki decyzją PO. |
 | Recovery/reissue autoryzacji | `partial` | Backendowe fundamenty i polityka e-maila po niejednoznacznym wyniku SMTP są ustalone; pozostają operacje B2–B4. |
-| Kanał operatorski | `partial` | B1/B2 odebrane lokalnie; brakuje CLI i syntetycznego odbioru end-to-end. Realny issuer/GO pozostają bramką wydania. |
+| Kanał operatorski | `partial` | B1/B2/B3 odebrane lokalnie; brakuje syntetycznego odbioru end-to-end. Realny issuer/GO pozostają bramką wydania. |
 
 ### 2.3 Decyzje właściciela zachowane jako kontrakty
 
@@ -71,8 +71,7 @@ Statusy w planie: `partial`, `blocking`, `deferred`, `planned`, `unknown / needs
 | 16 | AUD-08-B2 — recovery/reissue operations | `partial` | PO: zakres SMTP i terminal retention | Producent A2 wdrożony lokalnie; isolated Admin→SDK/failure15/15 PASS, integrated regresja277PASS/0FAIL oraz boundedproducer QA PASS WITH ISSUES. Brak odbioru całegoB2/push. |
 | 17 | AUD-08-B3 — mobile ACK i resume | `planned` | AUD-08-B2 | Restart i utracona odpowiedź nie zużywają operacji bez możliwości wznowienia. |
 | 18 | AUD-08-B4 — macierz awarii | `planned` | AUD-08-B3 | Failure injection i Maestro na jednym iPhonie 17. |
-| 20 | OPS-B3 — lokalne CLI | `planned` | OPS-B2 | Bezpieczny klient bez sekretów i automatycznego retry. |
-| 21 | OPS-B4 — syntetyczny odbiór | `planned` | OPS-B3 | Intake → akcja → wynik → audyt dla czterech rodzin. |
+| 21 | OPS-B4 — syntetyczny odbiór | `planned` | OPS-B3 odebrane/push e3a771b | Brief High APPROVE min.84; intake → list/detail/action → wynik → audyt, odmowa scope, CAS i utracona odpowiedź czterech rodzin. |
 | 22 | AUD-06 — przekrojowy odbiór lokalny | `planned` | 01–21 poza jawnymi blockerami właściciela | Wynik `SIM-READY` albo dokładna lista braków. |
 
 ## 4. Kontrakty zadań
@@ -122,6 +121,7 @@ Każdy wykonawca ma ponownie sprawdzić aktualne wejścia i usunąć z własnego
 - **B2 zakres:** allowlistowane list/detail/action dla content reports, privacy, legal i security; role per action; `expectedStatus`/`expectedRevision`; ograniczone projekcje; pseudonimizowany audyt. Akcje bez jednoznacznego postcondition pozostają wyłączone.
 - **B2 odbiór (2026-10-01):** ACCEPTED lokalnie; backend main `d56ffe07fc5d2b6d0b74daef01651bc796ed64f0`, required emulator4/4 zeroSKIP, regresja265PASS/0FAIL/4dedicatedSKIP, independent LunaHigh QA PASS z własnymi40/40. Lint/typecheck/TTL31/OpenAPI72/build/consumer50/diff PASS. Detale mają kontekst triage bez danych kontaktowych/snapshotów; safe legal actions bezSMTP. Brak realissuer/deploy/clientUI claim. Dowody `docs/active/OPS-B2/REPORT.md`.
 - **B3 zakres:** lokalne CLI z jawnym HTTPS allowlist, krótkim tokenem bez utrwalania, potwierdzeniem skutków oraz read-after-uncertain. Wynik nierozstrzygalny to `AMBIGUOUS / RECONCILIATION REQUIRED`.
+- **B3 odbiór (2026-10-01):** ACCEPTED/push backend main `e3a771b9c2a255be5aa1fdaa9cafca6b015e1704`; independent LunaHigh QA54/54 zeroSKIP PASS, native5/5, full288PASS/0FAIL/4dedicatedSKIP +requiredOPS4/4 zeroSKIP. Static/consumer50 PASS; integrated localB2 CLI23/23/typecheck/diff PASS. Pipedstdin/prompt i ownedTTY cleanup poprawione. CI Node22.22.3; remoteCI do sprawdzenia. Dowody `docs/active/OPS-B3/REPORT.md`. Realissuer/deploy/GO poza odbiorem.
 - **B4 zakres:** syntetyczny intake → list/detail/action → wynik → audyt; odmowa roli, konflikt i utracona odpowiedź dla każdej rodziny.
 - **Poza zakresem:** publiczny panel, nowe workflow prawne, automatyczne decyzje, dane produkcyjne przed GO.
 - **Akceptacja:** OpenAPI i testy per action; brak tokenów/payloadów w logach; CLI nie wykonuje automatycznego retry mutacji; aplikacja pokazuje wyłącznie istniejący kontrakt statusu/odpowiedzi.
@@ -161,7 +161,7 @@ Nie prosić o ogólny „dostęp do providerów”. Każda prośba do właścici
 
 ## 7. Pierwsze następne zadanie
 
-**OPS-B3 — lokalne CLI** jest następnym niezależnym dostępnym zadaniem po lokalnym odbiorze i pushu OPS-B2 (backend main `d56ffe07fc5d2b6d0b74daef01651bc796ed64f0`). Przed implementacją wymagany preflight narzędzi/HTTPS oraz niezależny briefing. AUD-08-B2 pozostaje partial: A2 producer15PASS/integrated277PASS/boundedQA PASS WITH ISSUES, otwarte decyzje SMTP/retention oraz brak mobile B3. OPS został wdrożony w odizolowanym checkoutcie, a B2 zachowany nowym jawnym backupem; integracja testowana oddzielnie, bez pushu B2. AUD-15 odebrane i zachowane w archiwum Git `a4dc53e7f1715eb6d389da97fe1ffa762ceb4fc9:docs/active/AUD-15/REPORT.md`.
+**OPS-B4 — syntetyczny odbiór** jest następnym niezależnym dostępnym zadaniem po odbiorze i pushu OPS-B3 (backend main `e3a771b9c2a255be5aa1fdaa9cafca6b015e1704`). Brief High APPROVE minimum .84; przed implementacją zweryfikować isolated ports/config/store connections oraz realHTTP→HTTPSproxy→CLI. AUD-08-B2 pozostaje partial: A2 producer15PASS/integrated277PASS/boundedQA PASS WITH ISSUES, otwarte decyzje SMTP/retention oraz brak mobile B3. OPS został wdrożony w odizolowanym checkoutcie, a B2 zachowany nowym jawnym backupem; integracja testowana oddzielnie, bez pushu B2. AUD-15 odebrane i zachowane w archiwum Git `a4dc53e7f1715eb6d389da97fe1ffa762ceb4fc9:docs/active/AUD-15/REPORT.md`.
 
 UI-26-02B odebrane lokalnie 30.09.2026: mapped/provisional obu providerów, osobne dokumenty/zgody, cancel/retry/cold, new201/explicitadoption, legalimmutable/replay200 i naprawiony logout/reentry PASS. Final native appc66419b6969cbc6ab54c45af6db42b68852beaf5/backend29165944d087486075c9ccd23657c5c2fb45a84c; canonical content0174e42/web9585919 niezmienione. Pełna qa:static1492/1492+recovery/typecheck/content/privacy PASS z poprawnymi historicalcc3efca/current0174e42 pins. Independent LunaHigh source76, native i inventory15 PASS. Dowody/chronologia/ograniczenia w archiwum Git app654baa33 (docs/active/UI-26-02B/REPORT.md oraz evidence/VERIFICATION.json); aktywne pliki usunięto przy rozpoczęciu AUD-15. Fixture zastępuje acquisition, dalej działa rzeczywisty SDK/Auth Emulator/HTTP; realny provider matrix pozostaje bramką wydania. Cztery własne konta testowe usunięto indywidualnie; brak globalnego resetu/deploy/EAS. Commit/push PASS: app main654baa33a020e0f093f0fb243c2b2dbb19c40148 i backend main29165944d087486075c9ccd23657c5c2fb45a84c; komplet dowodów w historii app654baa33.
 

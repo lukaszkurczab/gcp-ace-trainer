@@ -1,0 +1,19 @@
+{
+  "task": "OPS-B3",
+  "baseline": "d56ffe07fc5d2b6d0b74daef01651bc796ed64f0",
+  "files": {
+    ".github/workflows/ci.yml": "d33d9727efe8142c07472c59c50090ad2b7a248143fd1d9a13d27f4391365931",
+    "package.json": "3411749f51cc4b5a6fddac30ec2437e325f0938dbac18769948f5cfa2421607a",
+    "config/operator-cli.example.json": "28b08b9187dc026d1005832e17581e916bfd99cbb0779e05f43cb52bad5afcdf",
+    "docs/operator-cli.md": "d3bd494be8c5f6eb0985f0bc788b3fc05bf2e7bbb861f0907d77013fafef9be2",
+    "scripts/operator-cli.ts": "217f20f1c6391d5bd07d52de7b4c093d850768f3015cc3ffe714317a65aea0e8",
+    "tests/operatorCli.test.ts": "f3ab27be237b4d53d04bd71f1bec73eb385969fbdc1de7c5e857c6ce17370152",
+    "tests/operatorCli.tty.test.ts": "c5dbe9e6a1adf231f2e3a7a380af34965c56893e140111b831c9a7a213587a99",
+    "tests/operatorCliTestSupport.ts": "49f0fcd0f5db81d8b2ad6f5a6af04bbaf18d5e144fa0c8087028da6fcdcd90f6",
+    "tests/fixtures/operator-cli-pty.py": "716d742e3d7f163278001a9c03a7cec740aef3ab140787f153eb5d1526e300ea"
+  },
+  "backendAccepted": "e3a771b9c2a255be5aa1fdaa9cafca6b015e1704",
+  "appBaseline": "9f0a510ddd9334ed3af8b5fd226e2d2947dc5e64",
+  "content": "0174e42fbe7634a54c1f5d87369063c7e01e8c7e",
+  "web": "9585919b7d0c1a8396e6d255e49850e64e129d0e"
+}
