@@ -1,0 +1,189 @@
+
+> patternly-backend@0.1.0 typecheck
+> tsc --noEmit -p tsconfig.json
+
+TAP version 13
+# Subtest: list and show use real HTTPS, hidden token input, and canonical response schemas
+ok 1 - list and show use real HTTPS, hidden token input, and canonical response schemas
+  ---
+  duration_ms: 204.744792
+  type: 'test'
+  ...
+# Subtest: action validates payload and current CAS state before typed confirmation and one PATCH
+ok 2 - action validates payload and current CAS state before typed confirmation and one PATCH
+  ---
+  duration_ms: 125.006875
+  type: 'test'
+  ...
+# Subtest: inherited insecure TLS configuration is rejected before an HTTPS request
+ok 3 - inherited insecure TLS configuration is rejected before an HTTPS request
+  ---
+  duration_ms: 97.8445
+  type: 'test'
+  ...
+# Subtest: an untrusted TLS certificate is rejected without reaching the handler
+ok 4 - an untrusted TLS certificate is rejected without reaching the handler
+  ---
+  duration_ms: 98.57925
+  type: 'test'
+  ...
+# Subtest: a redirect is rejected without forwarding credentials to its target
+ok 5 - a redirect is rejected without forwarding credentials to its target
+  ---
+  duration_ms: 209.334333
+  type: 'test'
+  ...
+# Subtest: expired, overlong, and future-issued tokens fail locally before HTTP
+ok 6 - expired, overlong, and future-issued tokens fail locally before HTTP
+  ---
+  duration_ms: 178.004208
+  type: 'test'
+  ...
+# Subtest: a denied origin fails before token prompt or network
+ok 7 - a denied origin fails before token prompt or network
+  ---
+  duration_ms: 85.129917
+  type: 'test'
+  ...
+# Subtest: unknown options and schema-invalid payloads fail before token prompt or network
+ok 8 - unknown options and schema-invalid payloads fail before token prompt or network
+  ---
+  duration_ms: 145.295459
+  type: 'test'
+  ...
+# Subtest: piped JSON stdin is accepted when prompts use a separate controlling terminal
+ok 9 - piped JSON stdin is accepted when prompts use a separate controlling terminal
+  ---
+  duration_ms: 125.968167
+  type: 'test'
+  ...
+# Subtest: interactive stdin still requires an explicit payload descriptor
+ok 10 - interactive stdin still requires an explicit payload descriptor
+  ---
+  duration_ms: 111.922958
+  type: 'test'
+  ...
+# Subtest: token prompt still rejects when no controlling terminal is available
+ok 11 - token prompt still rejects when no controlling terminal is available
+  ---
+  duration_ms: 85.348917
+  type: 'test'
+  ...
+# Subtest: revision mismatch is rejected before confirmation or mutation
+ok 12 - revision mismatch is rejected before confirmation or mutation
+  ---
+  duration_ms: 174.824583
+  type: 'test'
+  ...
+# Subtest: a lost mutation response is ambiguous and triggers one state read without retry
+ok 13 - a lost mutation response is ambiguous and triggers one state read without retry
+  ---
+  duration_ms: 126.004875
+  type: 'test'
+  ...
+# Subtest: HTTP 500 and malformed 200 mutation responses reconcile once without leaking bodies
+    # Subtest: server_error is ambiguous after one mutation
+    ok 1 - server_error is ambiguous after one mutation
+      ---
+      duration_ms: 144.949375
+      type: 'test'
+      ...
+    # Subtest: malformed_success is ambiguous after one mutation
+    ok 2 - malformed_success is ambiguous after one mutation
+      ---
+      duration_ms: 125.505417
+      type: 'test'
+      ...
+    1..2
+ok 14 - HTTP 500 and malformed 200 mutation responses reconcile once without leaking bodies
+  ---
+  duration_ms: 270.71625
+  type: 'test'
+  ...
+# Subtest: incident create prints and uses one stable ID before confirmation
+ok 15 - incident create prints and uses one stable ID before confirmation
+  ---
+  duration_ms: 108.684375
+  type: 'test'
+  ...
+# Subtest: authority export uses its exact read-only route and canonical schema
+ok 16 - authority export uses its exact read-only route and canonical schema
+  ---
+  duration_ms: 140.999333
+  type: 'test'
+  ...
+# Subtest: content status transition uses its explicit family confirmation (cancel)
+ok 17 - content status transition uses its explicit family confirmation (cancel)
+  ---
+  duration_ms: 135.650959
+  type: 'test'
+  ...
+# Subtest: content status transition uses its explicit family confirmation (apply)
+ok 18 - content status transition uses its explicit family confirmation (apply)
+  ---
+  duration_ms: 126.345708
+  type: 'test'
+  ...
+# Subtest: operator verifier authenticates, authorizes exact action, caches keys, and returns only pseudonymous identity
+ok 19 - operator verifier authenticates, authorizes exact action, caches keys, and returns only pseudonymous identity
+  ---
+  duration_ms: 22.531291
+  type: 'test'
+  ...
+# Subtest: operator verifier rejects malformed, mismatched, expired, future, and incorrectly signed tokens without leaking details
+ok 20 - operator verifier rejects malformed, mismatched, expired, future, and incorrectly signed tokens without leaking details
+  ---
+  duration_ms: 6.12075
+  type: 'test'
+  ...
+# Subtest: unknown kid performs one shared refresh and global cooldown blocks sequential or rotating misses
+ok 21 - unknown kid performs one shared refresh and global cooldown blocks sequential or rotating misses
+  ---
+  duration_ms: 2.445125
+  type: 'test'
+  ...
+# Subtest: failed unknown-kid refresh also starts the global cooldown
+ok 22 - failed unknown-kid refresh also starts the global cooldown
+  ---
+  duration_ms: 2.27125
+  type: 'test'
+  ...
+# Subtest: JWKS redirect, oversized body, duplicate kid, and network failure are rejected
+ok 23 - JWKS redirect, oversized body, duplicate kid, and network failure are rejected
+  ---
+  duration_ms: 3.070791
+  type: 'test'
+  ...
+# Subtest: JWKS streaming limit rejects a chunked oversized body before consuming its tail
+ok 24 - JWKS streaming limit rejects a chunked oversized body before consuming its tail
+  ---
+  duration_ms: 1.296208
+  type: 'test'
+  ...
+# Subtest: JWKS fetch deadline aborts a stalled request
+ok 25 - JWKS fetch deadline aborts a stalled request
+  ---
+  duration_ms: 22.354625
+  type: 'test'
+  ...
+# Subtest: production HTTPS lookup returns the Node all-address callback shape and rejects any non-public answer
+ok 26 - production HTTPS lookup returns the Node all-address callback shape and rejects any non-public answer
+  ---
+  duration_ms: 4.154375
+  type: 'test'
+  ...
+# Subtest: absent operator configuration produces no verifier
+ok 27 - absent operator configuration produces no verifier
+  ---
+  duration_ms: 0.310542
+  type: 'test'
+  ...
+1..27
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3181.717042

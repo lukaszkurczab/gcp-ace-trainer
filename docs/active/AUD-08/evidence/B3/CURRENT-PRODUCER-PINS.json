@@ -1,0 +1,15 @@
+{
+  "task": "AUD-08-B3",
+  "producerHead": "e3a771b9c2a255be5aa1fdaa9cafca6b015e1704",
+  "producerAccepted": false,
+  "files": {
+    "src/api/app.ts": "1b86d3492741fe7b96fb6275da460ff523087b116552701dadde29e05aaae00a",
+    "src/api/openapi.ts": "155fd61aca0d2735b91aa23ba62ed4d7f91d5f55b4bfd06e318c6162c56484be",
+    "src/modules/account-lifecycle/contracts.ts": "32a74fd41547241500132bfa3d6be30e3ff1715e6381aca96c0ab50376fcb2e5",
+    "src/modules/account-lifecycle/store.ts": "b54ace86dbe1389abb43c3dbe2884b4670a76bea63d188f6979ccda7b04a7310",
+    "src/modules/account-lifecycle/recoveryOperationCipher.ts": "b6c542eea3891d26770a11494787a3587afd0b5f829a6e3292cef7cd8f659a5c",
+    "scripts/run-recovery-emulator-tests.mjs": "c6259b802c0cf19d02bf52b66dd6919861c2da6e16f830bc54785ae0b05f78fa",
+    "src/config/environment.ts": "2080f7f21e11d0912139ec0bce9ae3952d311ce7ee84de96a867bd445dba56ea",
+    "tests/aud08Recovery.emulator.test.ts": "03547cc73e7927b830e71b82b81b80172d24db71477f769af2490c9e718e3ac3"
+  }
+}
