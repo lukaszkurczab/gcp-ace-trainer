@@ -1,0 +1,178 @@
+TAP version 13
+# Subtest: active canonical ingress has no legacy publisher and historical references are verifier-only
+ok 1 - active canonical ingress has no legacy publisher and historical references are verifier-only
+  ---
+  duration_ms: 9.767792
+  type: 'test'
+  ...
+# Subtest: review console surfaces the current BESD constraint disclosure without recording an outcome
+ok 2 - review console surfaces the current BESD constraint disclosure without recording an outcome
+  ---
+  duration_ms: 662.230125
+  type: 'test'
+  ...
+# Subtest: constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback
+ok 3 - constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback
+  ---
+  duration_ms: 615.225875
+  type: 'test'
+  ...
+# Subtest: review console exposes exactly nine launch tracks, navigable coverage, and advisory signals
+ok 4 - review console exposes exactly nine launch tracks, navigable coverage, and advisory signals
+  ---
+  duration_ms: 605.6955
+  type: 'test'
+  ...
+# Subtest: review console records one current explicit outcome and invalidates it when source identity changes
+ok 5 - review console records one current explicit outcome and invalidates it when source identity changes
+  ---
+  duration_ms: 592.622042
+  type: 'test'
+  ...
+# Subtest: review console serves a local UI and bounded JSON API without fabricating approval
+ok 6 - review console serves a local UI and bounded JSON API without fabricating approval
+  ---
+  duration_ms: 721.1585
+  type: 'test'
+  ...
+# Subtest: catalog is the exact nine-track SIMP-01 catalog
+ok 7 - catalog is the exact nine-track SIMP-01 catalog
+  ---
+  duration_ms: 1.766833
+  type: 'test'
+  ...
+# Subtest: fixture validates as one family-neutral contract
+ok 8 - fixture validates as one family-neutral contract
+  ---
+  duration_ms: 1.130709
+  type: 'test'
+  ...
+# Subtest: schema documents five disjoint interaction branches
+ok 9 - schema documents five disjoint interaction branches
+  ---
+  duration_ms: 0.500875
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema rejects feedback type mismatches in every variant
+ok 10 - Draft 2020-12 schema rejects feedback type mismatches in every variant
+  ---
+  duration_ms: 265.902292
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text
+ok 11 - Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text
+  ---
+  duration_ms: 118.282541
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema and runtime agree on explicit learner whitespace code points
+ok 12 - Draft 2020-12 schema and runtime agree on explicit learner whitespace code points
+  ---
+  duration_ms: 139.934292
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace
+ok 13 - Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace
+  ---
+  duration_ms: 353.319208
+  type: 'test'
+  ...
+# Subtest: all five correct answers are scoreable
+ok 14 - all five correct answers are scoreable
+  ---
+  duration_ms: 0.699
+  type: 'test'
+  ...
+# Subtest: choice_single scores correct, wrong and empty responses
+ok 15 - choice_single scores correct, wrong and empty responses
+  ---
+  duration_ms: 0.434458
+  type: 'test'
+  ...
+# Subtest: choice_multiple scores per correctly selected accepted option
+ok 16 - choice_multiple scores per correctly selected accepted option
+  ---
+  duration_ms: 0.537792
+  type: 'test'
+  ...
+# Subtest: ordering scores exact adjacent relations and incomplete answers
+ok 17 - ordering scores exact adjacent relations and incomplete answers
+  ---
+  duration_ms: 0.72725
+  type: 'test'
+  ...
+# Subtest: complexity scores every dimension and distinguishes missing values
+ok 18 - complexity scores every dimension and distinguishes missing values
+  ---
+  duration_ms: 0.445333
+  type: 'test'
+  ...
+# Subtest: decision_matrix scores every dimension independently
+ok 19 - decision_matrix scores every dimension independently
+  ---
+  duration_ms: 0.258541
+  type: 'test'
+  ...
+# Subtest: validator rejects missing identity and all family aliases
+ok 20 - validator rejects missing identity and all family aliases
+  ---
+  duration_ms: 0.221
+  type: 'test'
+  ...
+# Subtest: learner text preserves surrounding whitespace while identity stays trim-clean
+ok 21 - learner text preserves surrounding whitespace while identity stays trim-clean
+  ---
+  duration_ms: 0.1455
+  type: 'test'
+  ...
+# Subtest: learner text rejects whitespace-only values in every canonical learner surface
+ok 22 - learner text rejects whitespace-only values in every canonical learner surface
+  ---
+  duration_ms: 0.345167
+  type: 'test'
+  ...
+# Subtest: validator permits internal newlines that the schema pattern explicitly permits
+ok 23 - validator permits internal newlines that the schema pattern explicitly permits
+  ---
+  duration_ms: 0.053583
+  type: 'test'
+  ...
+# Subtest: scoring rejects additional response keys and mismatched response types for every variant
+ok 24 - scoring rejects additional response keys and mismatched response types for every variant
+  ---
+  duration_ms: 0.338041
+  type: 'test'
+  ...
+# Subtest: validator rejects extra fields and duplicate option/element/dimension IDs
+ok 25 - validator rejects extra fields and duplicate option/element/dimension IDs
+  ---
+  duration_ms: 0.15325
+  type: 'test'
+  ...
+# Subtest: validator rejects mismatched variants and foreign references
+ok 26 - validator rejects mismatched variants and foreign references
+  ---
+  duration_ms: 0.176208
+  type: 'test'
+  ...
+# Subtest: feedback messages are optional when no source map exists
+ok 27 - feedback messages are optional when no source map exists
+  ---
+  duration_ms: 0.08
+  type: 'test'
+  ...
+# Subtest: fixture validator rejects a track outside the exact catalog
+ok 28 - fixture validator rejects a track outside the exact catalog
+  ---
+  duration_ms: 0.363041
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3317.783375

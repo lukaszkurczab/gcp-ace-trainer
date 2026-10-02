@@ -14,6 +14,8 @@ Existing iPhone17/app is stopped in guest state. Ordinary Metro8081/backend8080 
 - AUD-08-B4: assess remaining full failure-matrix criteria, reuse applicable source/runtime evidence; SMTP-dependent cases await that decision.
 - BIZQ and release work follow the canonical plan. No deployment/publication authorized.
 
-## Local changes outside this cleanup
+## BIZQ checkpoint
 
-App/content AGENTS.md and parallel BIZQ/spec/content-review changes are preserved and excluded from this task's commits. Cleanup and push cover the app recovery completion and closed-task removal only; other repositories remain at their prior checkpoints.
+Repository AGENTS.md guidance and the BIZQ plan/specifications are committed for continued work. The console's narrow advisory constraint warning is verified: fresh28/0/0 and syntax PASS; unchanged code/test bytes retain independent QA and full82 evidence. Content source: `78ba999098ea12704b74fe9de2eecdf89578e885`. Full BIZQ-01 remains partial; source corrections, semantic review, admission and mobile acceptance follow the canonical plan. Active evidence: `docs/active/BIZQ-01/REPORT.md`. Shared normative documents referenced by that report remain in the parent workspace outside these Git repositories.
+
+This checkpoint includes all remaining authorized repository edits. No deployment or publication was performed.

@@ -1,0 +1,17 @@
+{
+  "patternly-content/scripts/review/content-review-console.mjs": "a683d57e8a98432187ca17e919eeba49c199f440c60c7413fea7dc21a4bc9218",
+  "patternly-content/tests/contentReviewConsole.test.mjs": "f99fa91b637c499d3f1dd1612e3c848ddf5fc638cb301aa878aa4fc15b8246f4",
+  "patternly-content/README.md": "237c3ff8d44faa4c4a6675be7afca05f9da7e0ed90a18019996f4502ac57f673",
+  "docs/01-product-definition.md": "6f780d44868b4ef920e8d15d20c0f638a9e4b7c2d9c93cd2fc3c1d5b02db225e",
+  "docs/04-data-model.md": "13aeea165f4c3ea93ac2655e05988b058d5eef1248d0d078132035c0c1720633",
+  "docs/07-content-guidelines.md": "5e3a895bc5e480725255d466e1147b5801500d5545f9eb05f8817a0c73cc6a24",
+  "docs/17-training-runtime-and-interaction-spec.md": "4e754ad6f56049d2f349af3c995c35b633b73420a207ffbd8a016973641c317a",
+  "patternly/docs/specs/business-quality/02-BIZQ-02-POSTEP-I-INTEGRACJA-PLANU.md": "784d1b9b6e582963fd361df501185ebdef7359a66cbe0f455aad2e599816757b",
+  "patternly/docs/specs/business-quality/00-PATTERNLY-BIZQ-PLAN-ROBOCZY.md": "78689f35147f2efc1a4b1e786fd72e30fc4454d8758ef8d917272610b6970a18",
+  "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md": "67aba008969eb570c86e1fbefc5b88a5e65f422d160fc7dcfd38084b59ff67d5",
+  "patternly/docs/specs/business-quality/05-BIZQ-05-DIAGNOZA-I-TRANSFER.md": "3093656b9dcca405512d8db73008953b79e1a04613190ba03b0ea465c47471ee",
+  "patternly/docs/specs/business-quality/03-BIZQ-03-ADAPTACYJNY-PLAN-NAUKI.md": "e122ea21eb719f6674a3be0757726053b85318e3ee90cec6558b299f4b6966ad",
+  "patternly/docs/specs/business-quality/04-BIZQ-04-REMEDIACJA-I-UTRWALANIE.md": "ba6f5381b9848b265b8bf01077566f78c9fffa29d1e748e2d9ab6285758b2f14",
+  "patternly/docs/specs/business-quality/06-BIZQ-06-DEMO-I-KONWERSJA-WEB.md": "d422d779e69a2d860a2301cc2a1f4671e4ba9ba85bcfa9ea7b1c6a266be73dbb",
+  "patternly/docs/active/BIZQ-01/verify-console-ui.mjs": "4a42ce243d770fb25b7e460d87e5f240dfec0440a34e5a3181b3e242bff2f346"
+}

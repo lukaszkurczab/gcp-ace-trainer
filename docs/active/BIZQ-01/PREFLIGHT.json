@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-02",
+  "repositories": {
+    "patternly": {
+      "head": "532869d1af6dcd0558c5376b569ed43e408e1316",
+      "branch": "main",
+      "upstream": "532869d1af6dcd0558c5376b569ed43e408e1316",
+      "status": "M .agent/WORKING_STATE.md\n M AGENTS.md\n M docs/PATTERNLY-WORKING-PLAN.md\n M docs/active/AUD-08/B3-REPORT.md\n?? docs/active/AUD-08/B3-QA-CONTINUATION-v16.md\n?? docs/active/AUD-08/evidence/B3/CONTINUATION-v16-MANIFEST.json\n?? docs/active/AUD-08/evidence/B3/NATIVE-FRAME-CAPABILITY-v16.json\n?? docs/active/AUD-08/evidence/B3/NATIVE-RESUME-v16-INTERRUPTION.json\n?? docs/active/AUD-08/evidence/B3/NATIVE-RESUME-v16-PREFLIGHT.json\n?? scripts/aud08/",
+      "stashes": [
+        "stash@{0}: On main: UI-26-02B awaiting provider runtime matrix 2026-09-27",
+        "stash@{1}: On main: UI-26-11 awaiting runtime matrix and physical VoiceOver 2026-09-27",
+        "stash@{2}: On main: UI-26-09 awaiting runtime and physical VoiceOver 2026-09-27",
+        "stash@{3}: On main: UI-26-08 awaiting physical VoiceOver 2026-09-27",
+        "stash@{4}: On main: UI-26-07 awaiting physical VoiceOver 2026-09-27",
+        "stash@{5}: On main: I18N-01 partial seven-locale runtime 2026-09-26"
+      ],
+      "staged": ""
+    },
+    "patternly-backend": {
+      "head": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "branch": "main",
+      "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "status": "",
+      "stashes": [
+        "stash@{0}: On main: AUD-08-B2 pending producer before accepted OPS-B4 integration",
+        "stash@{1}: On main: AUD-08-B2 pending producer before accepted OPS-B3 integration",
+        "stash@{2}: On main: AUD-08-B2 pending producer before accepted OPS-B2 integration",
+        "stash@{3}: On main: UI-26-02B exchange evidence awaiting provider runtime matrix 2026-09-27"
+      ],
+      "staged": ""
+    },
+    "patternly-content": {
+      "head": "0174e42fbe7634a54c1f5d87369063c7e01e8c7e",
+      "branch": "master",
+      "upstream": "0174e42fbe7634a54c1f5d87369063c7e01e8c7e",
+      "status": "M AGENTS.md",
+      "stashes": [
+        "stash@{0}: On agent/ai901-question-bank: preserve unrelated work before frontend master push",
+        "stash@{1}: On agent/ai901-question-bank: codex-preserve-local-work-before-master-switch"
+      ],
+      "staged": ""
+    },
+    "patternly-web": {
+      "head": "9585919b7d0c1a8396e6d255e49850e64e129d0e",
+      "branch": "main",
+      "upstream": "9585919b7d0c1a8396e6d255e49850e64e129d0e",
+      "status": "",
+      "stashes": [],
+      "staged": ""
+    }
+  },
+  "remoteHeadsCheckedBy": "git ls-remote origin refs/heads/main or master; all matched HEAD",
+  "preservedFileCount": 1382,
+  "sourceManifestSha256": "927b7bc5bab2d9b7e747cf469e83473f88524c05a0c63ef5ad37e9b29de32adf",
+  "concurrentChat": "Dokończ AUD-08-B3",
+  "nativeScope": "unavailable for independent BIZQ work while active AUD-08-B3 uses shared runtime"
+}
