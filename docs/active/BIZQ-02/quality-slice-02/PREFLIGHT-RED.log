@@ -1,0 +1,110 @@
+TAP version 13
+# Subtest: P05 persisted 25 attempts / 5 correct in latest 10 cannot predict completion today
+not ok 1 - P05 persisted 25 attempts / 5 correct in latest 10 cannot predict completion today
+  ---
+  duration_ms: 343.927458
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanQualityGuard.test.ts:2:3962'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+    +   actualQuestionsPerWeek: 6,
+    +   kind: 'available',
+    +   projectedCompletionDate: '2026-03-01',
+    +   remainingPlannedCapacity: 200,
+    +   remainingRequiredAttempts: 0,
+    +   requiredQuestionsPerSession: 0,
+    +   requiredQuestionsPerWeek: 0,
+    +   source: {
+    +     artifactSha256: 'eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9',
+    +     goalRevision: 1,
+    +     planId: 'quality-plan',
+    +     planRevision: 1,
+    +     target: {
+    +       meaning: 'event',
+    +       targetDate: '2026-04-01'
+    +     }
+    +   },
+    +   status: 'on_track',
+    +   targetDate: '2026-04-01',
+    +   trend: 'stable'
+    -   kind: 'unavailable',
+    -   reason: 'quality_requirement_unmet'
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    kind: 'unavailable'
+    reason: 'quality_requirement_unmet'
+  actual:
+    kind: 'available'
+    source:
+      planId: 'quality-plan'
+      planRevision: 1
+      goalRevision: 1
+      target:
+        meaning: 'event'
+        targetDate: '2026-04-01'
+      artifactSha256: 'eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9'
+    requiredQuestionsPerSession: 0
+    requiredQuestionsPerWeek: 0
+    actualQuestionsPerWeek: 6
+    projectedCompletionDate: '2026-03-01'
+    targetDate: '2026-04-01'
+    remainingRequiredAttempts: 0
+    remainingPlannedCapacity: 200
+    status: 'on_track'
+    trend: 'stable'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanQualityGuard.test.ts:59:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: P05 evaluator result cannot become an achievable target merely because volume is met
+not ok 2 - P05 evaluator result cannot become an achievable target merely because volume is met
+  ---
+  duration_ms: 2.405333
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanQualityGuard.test.ts:2:4552'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+    +   actualLength: 40,
+    +   kind: 'achievable',
+    +   occurrences: 13,
+    +   remainingAttempts: 0
+    -   kind: 'quality_requirement_unmet'
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    kind: 'quality_requirement_unmet'
+  actual:
+    kind: 'achievable'
+    occurrences: 13
+    actualLength: 40
+    remainingAttempts: 0
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanQualityGuard.test.ts:71:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 880.275708

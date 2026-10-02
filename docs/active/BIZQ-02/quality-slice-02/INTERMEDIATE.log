@@ -1,0 +1,322 @@
+TAP version 13
+# Subtest: P05 persisted 25 attempts / 5 correct in latest 10 cannot predict completion today
+ok 1 - P05 persisted 25 attempts / 5 correct in latest 10 cannot predict completion today
+  ---
+  duration_ms: 363.73825
+  type: 'test'
+  ...
+# Subtest: P05 evaluator result cannot become an achievable target merely because volume is met
+ok 2 - P05 evaluator result cannot become an achievable target merely because volume is met
+  ---
+  duration_ms: 2.384334
+  type: 'test'
+  ...
+# Subtest: applies no-goal, paused-goal, no-plan and freshness precedence
+ok 3 - applies no-goal, paused-goal, no-plan and freshness precedence
+  ---
+  duration_ms: 23.876542
+  type: 'test'
+  ...
+# Subtest: maps plan paused, completed, overdue boundaries and open-ended targets
+ok 4 - maps plan paused, completed, overdue boundaries and open-ended targets
+  ---
+  duration_ms: 2.723333
+  type: 'test'
+  ...
+# Subtest: maps capacity, typed forecast status and all unavailable reasons without recomputing
+ok 5 - maps capacity, typed forecast status and all unavailable reasons without recomputing
+  ---
+  duration_ms: 1.735042
+  type: 'test'
+  ...
+# Subtest: requires full forecast identity and maps malformed foreign forecasts to calculation_error
+ok 6 - requires full forecast identity and maps malformed foreign forecasts to calculation_error
+  ---
+  duration_ms: 0.510833
+  type: 'test'
+  ...
+# Subtest: returns frozen, typed presentation values and ignores immutable fact arrays
+ok 7 - returns frozen, typed presentation values and ignores immutable fact arrays
+  ---
+  duration_ms: 0.461416
+  type: 'test'
+  ...
+# Subtest: maps every guidance state, reason, message key, action and fact variant
+ok 8 - maps every guidance state, reason, message key, action and fact variant
+  ---
+  duration_ms: 25.153167
+  type: 'test'
+  ...
+# Subtest: accepts canonical overdue guidance with an unavailable forecast
+ok 9 - accepts canonical overdue guidance with an unavailable forecast
+  ---
+  duration_ms: 0.590917
+  type: 'test'
+  ...
+# Subtest: covers no-target text facts for paused and completed states
+ok 10 - covers no-target text facts for paused and completed states
+  ---
+  duration_ms: 0.389209
+  type: 'test'
+  ...
+# Subtest: uses native English and Polish plural categories for pace facts
+ok 11 - uses native English and Polish plural categories for pace facts
+  ---
+  duration_ms: 1.843541
+  type: 'test'
+  ...
+# Subtest: formats civil dates in the supplied timezone without UTC day drift
+ok 12 - formats civil dates in the supplied timezone without UTC day drift
+  ---
+  duration_ms: 4.630667
+  type: 'test'
+  ...
+# Subtest: rejects invalid locale, timezone, date and unknown runtime variants explicitly
+ok 13 - rejects invalid locale, timezone, date and unknown runtime variants explicitly
+  ---
+  duration_ms: 0.946833
+  type: 'test'
+  ...
+# Subtest: rejects a secondary action outside its two allowed states and inconsistent missing secondary
+ok 14 - rejects a secondary action outside its two allowed states and inconsistent missing secondary
+  ---
+  duration_ms: 0.242208
+  type: 'test'
+  ...
+# Subtest: fails closed for missing translations and unresolved placeholders
+ok 15 - fails closed for missing translations and unresolved placeholders
+  ---
+  duration_ms: 0.644708
+  type: 'test'
+  ...
+# Subtest: fails closed when the selected English or Polish plural suffix is missing
+ok 16 - fails closed when the selected English or Polish plural suffix is missing
+  ---
+  duration_ms: 0.423292
+  type: 'test'
+  ...
+# Subtest: does not mutate guidance input and keeps the presentation deeply immutable
+ok 17 - does not mutate guidance input and keeps the presentation deeply immutable
+  ---
+  duration_ms: 0.949
+  type: 'test'
+  ...
+# Subtest: keeps locale resource keys flat and exactly in parity
+ok 18 - keeps locale resource keys flat and exactly in parity
+  ---
+  duration_ms: 0.580334
+  type: 'test'
+  ...
+# Subtest: generates one stable 18:00 slot per normalized preferred day for every goal type
+ok 19 - generates one stable 18:00 slot per normalized preferred day for every goal type
+  ---
+  duration_ms: 16.931375
+  type: 'test'
+  ...
+# Subtest: uses due review priority, otherwise package scope, without item identifiers
+ok 20 - uses due review priority, otherwise package scope, without item identifiers
+  ---
+  duration_ms: 0.323042
+  type: 'test'
+  ...
+# Subtest: event boundaries are strict-before while deadline and checkpoint are inclusive
+ok 21 - event boundaries are strict-before while deadline and checkpoint are inclusive
+  ---
+  duration_ms: 0.731125
+  type: 'test'
+  ...
+# Subtest: missing target date is open-ended before an unknown completion rule
+ok 22 - missing target date is open-ended before an unknown completion rule
+  ---
+  duration_ms: 0.333792
+  type: 'test'
+  ...
+# Subtest: C3 unknown is explicit with a target; in-progress uses remaining attempts and completed has no remaining work
+ok 23 - C3 unknown is explicit with a target; in-progress uses remaining attempts and completed has no remaining work
+  ---
+  duration_ms: 0.491833
+  type: 'test'
+  ...
+# Subtest: S12 is the only capacity source and shortfall preserves all counts without slots or attainability
+ok 24 - S12 is the only capacity source and shortfall preserves all counts without slots or attainability
+  ---
+  duration_ms: 0.234458
+  type: 'test'
+  ...
+# Subtest: leap-day and DST-neutral occurrence counting use calendar dates, not elapsed local milliseconds
+ok 25 - leap-day and DST-neutral occurrence counting use calendar dates, not elapsed local milliseconds
+  ---
+  duration_ms: 0.280292
+  type: 'test'
+  ...
+# Subtest: does not mutate preferred day order or mutable input values and returns frozen output
+ok 26 - does not mutate preferred day order or mutable input values and returns frozen output
+  ---
+  duration_ms: 0.379
+  type: 'test'
+  ...
+# Subtest: rejects malformed or inconsistent input with the one explicit error class
+ok 27 - rejects malformed or inconsistent input with the one explicit error class
+  ---
+  duration_ms: 0.856792
+  type: 'test'
+  ...
+# Subtest: uses the explicit formulas, includes today, and excludes an event target day
+ok 28 - uses the explicit formulas, includes today, and excludes an event target day
+  ---
+  duration_ms: 21.370125
+  type: 'test'
+  ...
+# Subtest: minimum observation age is inclusive: six days gives seven days, five gives six
+ok 29 - minimum observation age is inclusive: six days gives seven days, five gives six
+  ---
+  duration_ms: 2.929791
+  type: 'test'
+  ...
+# Subtest: trend starts at thirteen days and applies strict ten-percent boundaries
+ok 30 - trend starts at thirteen days and applies strict ten-percent boundaries
+  ---
+  duration_ms: 15.576458
+  type: 'test'
+  ...
+# Subtest: trend handles zero-to-zero, zero-to-positive, and positive-to-zero windows after age fourteen
+ok 31 - trend handles zero-to-zero, zero-to-positive, and positive-to-zero windows after age fourteen
+  ---
+  duration_ms: 1.407791
+  type: 'test'
+  ...
+# Subtest: completed work is zero work even without future occurrences or observations
+ok 32 - completed work is zero work even without future occurrences or observations
+  ---
+  duration_ms: 0.40775
+  type: 'test'
+  ...
+# Subtest: returns each honest unavailable business reason
+ok 33 - returns each honest unavailable business reason
+  ---
+  duration_ms: 1.467292
+  type: 'test'
+  ...
+# Subtest: requires a concrete non-negative completion requirement
+ok 34 - requires a concrete non-negative completion requirement
+  ---
+  duration_ms: 1.166709
+  type: 'test'
+  ...
+# Subtest: returns calculation_error when the projected calendar date is not representable
+ok 35 - returns calculation_error when the projected calendar date is not representable
+  ---
+  duration_ms: 0.464375
+  type: 'test'
+  ...
+# Subtest: uses full immutable facts and does not double-count session questions
+ok 36 - uses full immutable facts and does not double-count session questions
+  ---
+  duration_ms: 0.843917
+  type: 'test'
+  ...
+# Subtest: handles DST, leap-day calendar arithmetic, and today occurrences without elapsed milliseconds
+ok 37 - handles DST, leap-day calendar arithmetic, and today occurrences without elapsed milliseconds
+  ---
+  duration_ms: 2.345375
+  type: 'test'
+  ...
+# Subtest: rejects malformed numbers, dates, timezones, future facts, and inconsistent sessions
+ok 38 - rejects malformed numbers, dates, timezones, future facts, and inconsistent sessions
+  ---
+  duration_ms: 1.2175
+  type: 'test'
+  ...
+# Subtest: proposal route carries only identity and resolves the in-memory proposal
+ok 39 - proposal route carries only identity and resolves the in-memory proposal
+  ---
+  duration_ms: 3.2025
+  type: 'test'
+  ...
+# Subtest: proposal accepts through the plan/reminder runtime and preserves pending saves
+ok 40 - proposal accepts through the plan/reminder runtime and preserves pending saves
+  ---
+  duration_ms: 0.1945
+  type: 'test'
+  ...
+# Subtest: proposal keeps explicit states, edit actions and localized copy
+ok 41 - proposal keeps explicit states, edit actions and localized copy
+  ---
+  duration_ms: 0.261166
+  type: 'test'
+  ...
+# Subtest: every proposal screen branch leaves the top safe area to its stack header
+ok 42 - every proposal screen branch leaves the top safe area to its stack header
+  ---
+  duration_ms: 0.151625
+  type: 'test'
+  ...
+# Subtest: ready and shortened proposals use the review title and a two-action footer
+ok 43 - ready and shortened proposals use the review title and a two-action footer
+  ---
+  duration_ms: 0.194959
+  type: 'test'
+  ...
+# Subtest: goal type is the card heading while target and selected days remain visible
+ok 44 - goal type is the card heading while target and selected days remain visible
+  ---
+  duration_ms: 0.115
+  type: 'test'
+  ...
+# Subtest: review title is localized in all seven locales and removed goal-context copy is dead
+ok 45 - review title is localized in all seven locales and removed goal-context copy is dead
+  ---
+  duration_ms: 0.152333
+  type: 'test'
+  ...
+# Subtest: shortfall and saved-plan actions retain their existing semantics
+ok 46 - shortfall and saved-plan actions retain their existing semantics
+  ---
+  duration_ms: 0.145583
+  type: 'test'
+  ...
+# Subtest: goal save still opens a proposal only after its existing reminder reconciliation
+ok 47 - goal save still opens a proposal only after its existing reminder reconciliation
+  ---
+  duration_ms: 0.2635
+  type: 'test'
+  ...
+# Subtest: target guidance retry performs a real canonical snapshot reload
+ok 48 - target guidance retry performs a real canonical snapshot reload
+  ---
+  duration_ms: 0.52875
+  type: 'test'
+  ...
+# Subtest: all seven locales preserve namespace, key, leaf, array and token contracts
+ok 49 - all seven locales preserve namespace, key, leaf, array and token contracts
+  ---
+  duration_ms: 50.460792
+  type: 'test'
+  ...
+# Subtest: plural suffix groups match the English source
+ok 50 - plural suffix groups match the English source
+  ---
+  duration_ms: 14.935792
+  type: 'test'
+  ...
+# Subtest: identical English values stay within the reviewed exception list
+ok 51 - identical English values stay within the reviewed exception list
+  ---
+  duration_ms: 32.853792
+  type: 'test'
+  ...
+# Subtest: i18next has no language or namespace fallback
+ok 52 - i18next has no language or namespace fallback
+  ---
+  duration_ms: 2.3695
+  type: 'test'
+  ...
+1..52
+# tests 52
+# suites 0
+# pass 52
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1154.489417

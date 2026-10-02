@@ -86,6 +86,7 @@ const GUIDANCE_MESSAGE_KEYS = [
   "targetDateGuidance.onTrack",
   "targetDateGuidance.openEnded",
   "targetDateGuidance.unavailable.unknownCompletionRule",
+  "targetDateGuidance.unavailable.qualityRequirementUnmet",
   "targetDateGuidance.unavailable.insufficientElapsedEvidence",
   "targetDateGuidance.unavailable.calculationError",
   "targetDateGuidance.unavailable.noTarget",
@@ -122,6 +123,7 @@ const GUIDANCE_REASONS = [
   "on_track",
   "no_target",
   "unknown_completion_rule",
+  "quality_requirement_unmet",
   "insufficient_elapsed_evidence",
   "calculation_error",
 ] as const satisfies readonly TargetDateGuidanceReason[];
@@ -134,6 +136,7 @@ const FACT_UNAVAILABLE_REASONS = [
   "plan_paused",
   "completed",
   "unknown_completion_rule",
+  "quality_requirement_unmet",
   "no_target",
   "no_future_slots",
   "insufficient_elapsed_evidence",
@@ -142,6 +145,7 @@ const FACT_UNAVAILABLE_REASONS = [
 
 const FORECAST_UNAVAILABLE_REASONS = [
   "unknown_completion_rule",
+  "quality_requirement_unmet",
   "no_target",
   "no_future_slots",
   "insufficient_elapsed_evidence",
@@ -181,6 +185,7 @@ const REASON_LABEL_KEYS: Record<TargetDateGuidanceReason, string> = {
   on_track: "targetDateGuidance.reason.onTrack",
   no_target: "targetDateGuidance.reason.noTarget",
   unknown_completion_rule: "targetDateGuidance.reason.unknownCompletionRule",
+  quality_requirement_unmet: "targetDateGuidance.reason.qualityRequirementUnmet",
   insufficient_elapsed_evidence: "targetDateGuidance.reason.insufficientElapsedEvidence",
   calculation_error: "targetDateGuidance.reason.calculationError",
 };
@@ -233,6 +238,7 @@ const UNAVAILABLE_FACT_LABEL_KEYS: Record<GuidanceFactUnavailableReason, string>
   plan_paused: "targetDateGuidance.fact.unavailable.planPaused",
   completed: "targetDateGuidance.fact.unavailable.completed",
   unknown_completion_rule: "targetDateGuidance.fact.unavailable.unknownCompletionRule",
+  quality_requirement_unmet: "targetDateGuidance.fact.unavailable.qualityRequirementUnmet",
   no_target: "targetDateGuidance.fact.unavailable.noTarget",
   no_future_slots: "targetDateGuidance.fact.unavailable.noFutureSlots",
   insufficient_elapsed_evidence: "targetDateGuidance.fact.unavailable.insufficientElapsedEvidence",
@@ -292,6 +298,7 @@ const EXPECTED_MESSAGE_KEYS: Record<TargetDateGuidanceState, Partial<Record<Targ
   open_ended: { no_target: "targetDateGuidance.openEnded" },
   unavailable: {
     unknown_completion_rule: "targetDateGuidance.unavailable.unknownCompletionRule",
+    quality_requirement_unmet: "targetDateGuidance.unavailable.qualityRequirementUnmet",
     insufficient_elapsed_evidence: "targetDateGuidance.unavailable.insufficientElapsedEvidence",
     calculation_error: "targetDateGuidance.unavailable.calculationError",
     no_target: "targetDateGuidance.unavailable.noTarget",
@@ -318,7 +325,9 @@ export function presentTargetDateGuidance(
   const stateLabel = translate(STATE_LABEL_KEYS[input.guidance.state], input.locale);
   translate(REASON_LABEL_KEYS[input.guidance.reason], input.locale);
   const message = translate(input.guidance.messageKey, input.locale);
-  const primaryLabel = translate(ACTION_LABEL_KEYS[input.guidance.progress.primary.kind], input.locale);
+  const primaryLabel = translate(input.guidance.reason === "quality_requirement_unmet"
+    ? "targetDateGuidance.action.workOnResults"
+    : ACTION_LABEL_KEYS[input.guidance.progress.primary.kind], input.locale);
   const secondaryLabel = input.guidance.progress.secondary === null
     ? null
     : translate(ACTION_LABEL_KEYS[input.guidance.progress.secondary.kind], input.locale);
@@ -408,7 +417,7 @@ function assertGuidance(guidance: unknown): asserts guidance is TargetDateGuidan
 
 function expectedPrimaryKind(guidance: TargetDateGuidance): GuidanceAction["kind"] {
   if (guidance.state !== "unavailable") return EXPECTED_PRIMARY[guidance.state];
-  return guidance.reason === "calculation_error" ? "try_again" : guidance.reason === "insufficient_elapsed_evidence" ? "continue_plan" : "adjust_goal";
+  return guidance.reason === "calculation_error" ? "try_again" : guidance.reason === "insufficient_elapsed_evidence" || guidance.reason === "quality_requirement_unmet" ? "continue_plan" : "adjust_goal";
 }
 
 function expectedSecondaryKind(state: TargetDateGuidanceState): GuidanceAction["kind"] | null {

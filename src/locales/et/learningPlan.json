@@ -189,5 +189,10 @@
   "Reminders are pending": "Meeldetuletused on ootel",
   "The plan was saved, but reminders are pending. Try again.": "Plaan salvestati, kuid meeldetuletused on ootel. Proovi uuesti.",
   "notificationBody": "Vali üks keskendunud Patternly treeningusessioon.",
-  "notificationTitle": "Aeg harjutada"
+  "notificationTitle": "Aeg harjutada",
+  "The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet.": "Minimaalne katsete arv on saavutatud. Harjuta edasi, et oma tulemusi parandada; lõpetamise aega ei saa veel ennustada.",
+  "targetDateGuidance.unavailable.qualityRequirementUnmet": "Minimaalne katsete arv on saavutatud. Harjuta edasi, et oma tulemusi parandada; lõpetamise aega ei saa veel ennustada.",
+  "targetDateGuidance.reason.qualityRequirementUnmet": "Minimaalne katsete arv on saavutatud; tulemused vajavad veel tööd",
+  "targetDateGuidance.fact.unavailable.qualityRequirementUnmet": "Tulemused vajavad veel tööd",
+  "targetDateGuidance.action.workOnResults": "Paranda tulemusi"
 }

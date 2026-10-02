@@ -102,6 +102,7 @@ export type GuidanceMessageKey =
   | "targetDateGuidance.onTrack"
   | "targetDateGuidance.openEnded"
   | "targetDateGuidance.unavailable.unknownCompletionRule"
+  | "targetDateGuidance.unavailable.qualityRequirementUnmet"
   | "targetDateGuidance.unavailable.insufficientElapsedEvidence"
   | "targetDateGuidance.unavailable.calculationError"
   | "targetDateGuidance.unavailable.noTarget";
@@ -283,7 +284,7 @@ function buildOpenEnded(): TargetDateGuidance {
 
 function buildUnavailable(reason: PaceForecastUnavailableReason, targetDate: string): TargetDateGuidance {
   if (reason === "calculation_error") return buildCalculationError(targetDate);
-  if (reason === "insufficient_elapsed_evidence") {
+  if (reason === "insufficient_elapsed_evidence" || reason === "quality_requirement_unmet") {
     return buildGuidance("unavailable", reason, "neutral", unavailableMessageKey(reason), action("continue_plan", "Practice"), null, Object.freeze({ requiredPace: unavailableFact(reason), actualPace: unavailableFact(reason), forecast: unavailableFact(reason), target: dateFact(targetDate) }));
   }
   return buildGuidance("unavailable", reason, "neutral", unavailableMessageKey(reason), action("adjust_goal", "GoalCadence"), null, Object.freeze({ requiredPace: unavailableFact(reason), actualPace: unavailableFact(reason), forecast: unavailableFact(reason), target: dateFact(targetDate) }));
@@ -329,13 +330,14 @@ function action(kind: GuidanceAction["kind"], destination: GuidanceAction["desti
 
 function unavailableMessageKey(reason: PaceForecastUnavailableReason): GuidanceMessageKey {
   if (reason === "unknown_completion_rule") return "targetDateGuidance.unavailable.unknownCompletionRule";
+  if (reason === "quality_requirement_unmet") return "targetDateGuidance.unavailable.qualityRequirementUnmet";
   if (reason === "insufficient_elapsed_evidence") return "targetDateGuidance.unavailable.insufficientElapsedEvidence";
   if (reason === "no_target") return "targetDateGuidance.unavailable.noTarget";
   return "targetDateGuidance.unavailable.calculationError";
 }
 
 function isForecastReason(value: unknown): value is PaceForecastUnavailableReason {
-  return value === "unknown_completion_rule" || value === "no_target" || value === "no_future_slots" || value === "insufficient_elapsed_evidence" || value === "calculation_error";
+  return value === "unknown_completion_rule" || value === "quality_requirement_unmet" || value === "no_target" || value === "no_future_slots" || value === "insufficient_elapsed_evidence" || value === "calculation_error";
 }
 
 function isTargetEqual(left: unknown, right: AcceptedTargetSnapshot): boolean {

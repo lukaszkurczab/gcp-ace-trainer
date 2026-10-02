@@ -1,9 +1,9 @@
-import type { TrackId } from "../../domain";
+import type { TrackId, ProposalOutcome, TargetAssessment } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import type { HomePlanReady } from "../../application/homePlanSnapshotReader";
 import { ROUTES } from "../../constants/routes";
 
-type Translate = (key: string) => string;
+export type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 export function localizeHomePlanArea(plan: HomePlanReady, translate: Translate): string {
   return translate(plan.session.areaLabel);
@@ -22,4 +22,22 @@ export function buildHomePlanPracticeSetupParams(
     topicId: plan.session.topicId,
     trackId,
   });
+}
+
+export function completionCopy(outcome: ProposalOutcome, t: Translate): string {
+  const completion = outcome.completionState;
+  if (completion.kind === "unknown") return t("The package does not define a completion rule.");
+  if (completion.kind === "completed") return t("The package completion rule is currently met.");
+  if (completion.qualifyingAttemptCount >= completion.requiredAttemptCount) return t("The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet.");
+  const remaining = Math.max(0, completion.requiredAttemptCount - completion.qualifyingAttemptCount);
+  return t("attemptsRemaining", { count: remaining, remaining, window: completion.rollingWindowSize });
+}
+
+export function targetCopy(target: TargetAssessment, t: Translate): string {
+  if (target.kind === "open_ended") return t("No target date. The plan stays open-ended.");
+  if (target.kind === "quality_requirement_unmet") return t("The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet.");
+  if (target.kind === "unknown_completion_rule") return t("The target outlook is unknown because the package has no completion rule.");
+  if (target.kind === "unavailable_due_to_shortfall") return t("Target outlook is unavailable until the material shortfall is resolved.");
+  if (target.kind === "achievable") return t("The target is achievable with {{occurrences}} planned sessions.", { occurrences: target.occurrences });
+  return t("The target is not achievable with the current rhythm. {{remaining}} attempts remain and {{occurrences}} sessions fit before the target.", { occurrences: target.occurrences, remaining: target.remainingAttempts });
 }

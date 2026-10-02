@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: home snapshot resolves canonical track metadata
+ok 1 - home snapshot resolves canonical track metadata
+  ---
+  duration_ms: 329.221542
+  type: 'test'
+  ...
+# Subtest: Progress model presents canonical guidance and clamps C3 completion ratio
+ok 2 - Progress model presents canonical guidance and clamps C3 completion ratio
+  ---
+  duration_ms: 10.124042
+  type: 'test'
+  ...
+# Subtest: Progress model never creates a self-link for completed guidance
+ok 3 - Progress model never creates a self-link for completed guidance
+  ---
+  duration_ms: 0.779167
+  type: 'test'
+  ...
+# Subtest: Progress model does not offer a new plan session while one is active
+ok 4 - Progress model does not offer a new plan session while one is active
+  ---
+  duration_ms: 2.438208
+  type: 'test'
+  ...
+# Subtest: Progress model keeps none guidance explicit for no goal, paused goal and no plan
+ok 5 - Progress model keeps none guidance explicit for no goal, paused goal and no plan
+  ---
+  duration_ms: 0.681125
+  type: 'test'
+  ...
+# Subtest: Progress model fails closed for a foreign active track or unavailable snapshot
+ok 6 - Progress model fails closed for a foreign active track or unavailable snapshot
+  ---
+  duration_ms: 1.45775
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 746.330167

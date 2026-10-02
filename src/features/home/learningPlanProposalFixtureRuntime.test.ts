@@ -18,13 +18,13 @@ test("named proposal fixture cases produce domain-generated screen states with t
     if (!("proposal" in result)) continue;
     assert.equal(result.kind, scenario === "shortfall" ? "shortfall" : scenario === "shortened" ? "shortened" : "ready");
     assert.equal(result.proposal.outcome.slots.length, scenario === "ready1-target" ? 1 : scenario === "ready7-target" ? 7 : scenario === "shortfall" ? 0 : 3);
-    assert.equal(result.proposal.outcome.targetAssessment.kind, scenario === "ready1-target" || scenario === "ready7-target" ? "achievable" : scenario === "shortfall" ? "unavailable_due_to_shortfall" : "open_ended");
+    assert.equal(result.proposal.outcome.targetAssessment.kind, scenario === "ready1-target" || scenario === "ready7-target" ? "achievable" : scenario === "shortfall" ? "unavailable_due_to_shortfall" : scenario === "quality-unmet-target" ? "quality_requirement_unmet" : "open_ended");
     if (scenario === "shortened") assert.deepEqual(result.proposal.outcome.sessionCapacity, { kind: "shortened", actualLength: 4, requestedLength: 10 });
   }
 });
 
 test("fixture actions report one in-memory call and never report storage success", async () => {
-  for (const [scenario, expected] of [["ready3-no-target", "storage_error"], ["accept-validation", "validation_error"], ["accept-stale", "stale"]] as const) {
+  for (const [scenario, expected] of [["ready3-no-target", "storage_error"], ["quality-unmet-target", "storage_error"], ["quality-unmet-open-ended", "storage_error"], ["accept-validation", "validation_error"], ["accept-stale", "stale"]] as const) {
     const runtime = createSmokeRuntime(scenario);
     const result = await runtime.accept(proposalId, trackId, { body: "local", title: "local" });
     assert.equal(result.kind, expected);

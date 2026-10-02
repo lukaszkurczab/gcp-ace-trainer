@@ -1,0 +1,33 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 explicit quality presentation fixture only no writes
+---
+- launchApp:
+    clearState: false
+- openLink: "com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 30000
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=quality-unmet-target"
+- extendedWaitUntil:
+    visible: "Review your learning plan"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "The minimum number of attempts is met.*"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet."
+- takeScreenshot: bizq02-quality-target
+- openLink: "com.lkurczab.patternly://audit/learning-plan-proposal?case=quality-unmet-open-ended"
+- extendedWaitUntil:
+    visible: "Review your learning plan"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "The minimum number of attempts is met.*"
+    direction: DOWN
+    centerElement: true
+- assertVisible: "The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet."
+- takeScreenshot: bizq02-quality-open-ended
+- stopApp

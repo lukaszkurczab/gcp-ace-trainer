@@ -6,6 +6,7 @@ export type C3Result = "unknown" | "in_progress" | "completed";
 
 export type PaceForecastUnavailableReason =
   | "unknown_completion_rule"
+  | "quality_requirement_unmet"
   | "no_target"
   | "no_future_slots"
   | "insufficient_elapsed_evidence"
@@ -113,6 +114,10 @@ export function calculatePaceForecast(input: PaceForecastInput): PaceForecast {
   const remaining = value.c3Result === "completed"
     ? 0
     : Math.max(0, value.requiredAttemptCount - qualifyingAll.length);
+
+  // Zero missing volume cannot predict when the rolling quality rule will be met.
+  // Only a current completed C3 result permits the zero-work path below.
+  if (value.c3Result === "in_progress" && remaining === 0) return unavailable("quality_requirement_unmet");
 
   const lastAllowedDate = target.meaning === "event" ? tryAddDays(target.targetDate, -1) : target.targetDate;
   if (lastAllowedDate === null) return unavailable("calculation_error");

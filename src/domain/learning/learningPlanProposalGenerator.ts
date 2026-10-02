@@ -37,6 +37,7 @@ export type TargetAssessment =
   | Readonly<{ kind: "unavailable_due_to_shortfall" }>
   | Readonly<{ kind: "open_ended" }>
   | Readonly<{ kind: "unknown_completion_rule" }>
+  | Readonly<{ kind: "quality_requirement_unmet" }>
   | Readonly<{
       kind: "achievable" | "unreachable";
       occurrences: number;
@@ -237,6 +238,10 @@ function buildTargetAssessment(record: GoalRecord, completion: PackageCompletion
   // No target takes precedence over C3 unknown and over a legacy own-pace date.
   if (target.targetDate === undefined || target.meaning === "none") return Object.freeze({ kind: "open_ended" });
   if (completion.kind === "unknown") return Object.freeze({ kind: "unknown_completion_rule" });
+
+  if (completion.kind === "in_progress" && completion.qualifyingAttemptCount >= completion.requiredAttemptCount) {
+    return Object.freeze({ kind: "quality_requirement_unmet" });
+  }
 
   const remainingAttempts = completion.kind === "completed"
     ? 0

@@ -2,6 +2,7 @@ export const LEARNING_PLAN_PROPOSAL_FIXTURE_URL = "com.lkurczab.patternly://audi
 
 export const LEARNING_PLAN_PROPOSAL_FIXTURE_CASES = Object.freeze([
   "ready3-no-target", "ready1-target", "ready7-target", "shortened", "shortfall",
+  "quality-unmet-target", "quality-unmet-open-ended",
   "delayed-loading", "stale", "unavailable", "accept-validation", "accept-stale",
   "edit-storage", "edit-stale",
 ] as const);

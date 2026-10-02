@@ -189,5 +189,10 @@
   "Reminders are pending": "Przypomnienia oczekują",
   "The plan was saved, but reminders are pending. Try again.": "Plan jest zapisany, ale przypomnienia oczekują. Spróbuj ponownie.",
   "notificationBody": "Wybierz jedną skupioną sesję ćwiczeń w Patternly.",
-  "notificationTitle": "Czas na ćwiczenia"
+  "notificationTitle": "Czas na ćwiczenia",
+  "The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet.": "Osiągnięto minimalną liczbę prób. Ćwicz dalej, aby poprawić wyniki; nie można jeszcze przewidzieć terminu ukończenia.",
+  "targetDateGuidance.unavailable.qualityRequirementUnmet": "Osiągnięto minimalną liczbę prób. Ćwicz dalej, aby poprawić wyniki; nie można jeszcze przewidzieć terminu ukończenia.",
+  "targetDateGuidance.reason.qualityRequirementUnmet": "Minimum prób osiągnięte; wyniki wymagają dalszej pracy",
+  "targetDateGuidance.fact.unavailable.qualityRequirementUnmet": "Potrzebna dalsza praca nad wynikami",
+  "targetDateGuidance.action.workOnResults": "Pracuj nad wynikami"
 }

@@ -66,7 +66,8 @@ function createOutcome(scenario: LearningPlanProposalFixtureCase) {
   const preferredDays = scenario === "ready1-target" ? ["mon"] as const
     : scenario === "ready7-target" ? ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const
       : ["mon", "wed", "sat"] as const;
-  const hasTarget = scenario === "ready1-target" || scenario === "ready7-target";
+  const qualityUnmet = scenario === "quality-unmet-target" || scenario === "quality-unmet-open-ended";
+  const hasTarget = scenario === "ready1-target" || scenario === "ready7-target" || scenario === "quality-unmet-target";
   const goalSnapshot: GoalSnapshot = Object.freeze({
     record: Object.freeze({
       goalType: scenario === "ready7-target" ? "prepare_for_an_interview" : "build_foundations",
@@ -90,7 +91,10 @@ function createOutcome(scenario: LearningPlanProposalFixtureCase) {
     primaryModeId: "coding-interview-guided-practice",
     requestedLength: 10,
     sessionCapacity: capacity,
-    completionState: hasTarget
+    // Explicit presentation fixture only: actual production rules remain package-owned/absent.
+    completionState: qualityUnmet
+      ? { kind: "in_progress" as const, qualifyingAttemptCount: 25, requiredAttemptCount: 20, rollingWindowSize: 10 }
+      : hasTarget
       ? { kind: "in_progress" as const, qualifyingAttemptCount: 0, requiredAttemptCount: 1, rollingWindowSize: 1 }
       : { kind: "unknown" as const },
     dueReviewCount: 0,

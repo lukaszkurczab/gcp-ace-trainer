@@ -11,10 +11,11 @@ import {
 import { productionLearningPlanProposalRuntime, type LearningPlanProposalScreenRuntime } from "./learningPlanProposalRuntime";
 import { AppShellHeader, Button, Card, EmptyState, Screen, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import type { GoalDay, LearningPlan, ProposalOutcome, TargetAssessment } from "../../domain";
+import type { GoalDay, LearningPlan, ProposalOutcome } from "../../domain";
 import { getTrackDisplay } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { useThemedStyles } from "../../preferences";
+import { completionCopy, targetCopy, type Translate } from "./homePlanUiContract";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { radius, spacing, typography, type AppColors } from "../../theme";
 
@@ -247,24 +248,6 @@ function PlanHeader({ subtitle, title, track }: Readonly<{ subtitle?: string; ti
 function FactCard({ label, value }: Readonly<{ label: string; value: string }>) {
   const styles = useThemedStyles(createStyles);
   return <Card><Text maxFontSizeMultiplier={2} style={styles.factLabel}>{label}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{value}</Text></Card>;
-}
-
-type Translate = (key: string, options?: Record<string, unknown>) => string;
-
-function completionCopy(outcome: ProposalOutcome, t: Translate): string {
-  const completion = outcome.completionState;
-  if (completion.kind === "unknown") return t("The package does not define a completion rule.");
-  if (completion.kind === "completed") return t("The package completion rule is currently met.");
-  const remaining = Math.max(0, completion.requiredAttemptCount - completion.qualifyingAttemptCount);
-  return t("attemptsRemaining", { count: remaining, remaining, window: completion.rollingWindowSize });
-}
-
-function targetCopy(target: TargetAssessment, t: Translate): string {
-  if (target.kind === "open_ended") return t("No target date. The plan stays open-ended.");
-  if (target.kind === "unknown_completion_rule") return t("The target outlook is unknown because the package has no completion rule.");
-  if (target.kind === "unavailable_due_to_shortfall") return t("Target outlook is unavailable until the material shortfall is resolved.");
-  if (target.kind === "achievable") return t("The target is achievable with {{occurrences}} planned sessions.", { occurrences: target.occurrences });
-  return t("The target is not achievable with the current rhythm. {{remaining}} attempts remain and {{occurrences}} sessions fit before the target.", { occurrences: target.occurrences, remaining: target.remainingAttempts });
 }
 
 function PersistedPlanView({ plan, track, t, updating, actionError, onEdit, onRetryReminders, onBack }: Readonly<{

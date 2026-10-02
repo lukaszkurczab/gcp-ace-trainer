@@ -89,7 +89,7 @@ test("C3 unknown is explicit with a target; in-progress uses remaining attempts 
   const unknown = generateLearningPlanProposal(input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2026-03-01"), completionState: { kind: "unknown" } }));
   assert.deepEqual(unknown.targetAssessment, { kind: "unknown_completion_rule" });
   const inProgress = generateLearningPlanProposal(input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2026-03-01"), completionState: { kind: "in_progress", qualifyingAttemptCount: 9, requiredAttemptCount: 5, rollingWindowSize: 1 } }));
-  assert.deepEqual(inProgress.targetAssessment, { kind: "achievable", occurrences: 1, actualLength: 10, remainingAttempts: 0 });
+  assert.deepEqual(inProgress.targetAssessment, { kind: "quality_requirement_unmet" });
   const completed = generateLearningPlanProposal(input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2026-03-01"), completionState: { kind: "completed", qualifyingAttemptCount: 5, rollingWindowSize: 1, quality: 1 } }));
   assert.deepEqual(completed.targetAssessment, { kind: "achievable", occurrences: 1, actualLength: 10, remainingAttempts: 0 });
 });

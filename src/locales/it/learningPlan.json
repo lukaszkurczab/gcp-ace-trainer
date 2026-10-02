@@ -189,5 +189,10 @@
   "Reminders are pending": "Promemoria in sospeso",
   "The plan was saved, but reminders are pending. Try again.": "Il piano è stato salvato, ma i promemoria sono in sospeso. Riprova.",
   "notificationBody": "Scegli una sessione di pratica mirata di Patternly.",
-  "notificationTitle": "È ora di esercitarsi"
+  "notificationTitle": "È ora di esercitarsi",
+  "The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet.": "Hai raggiunto il numero minimo di tentativi. Continua a esercitarti per migliorare i risultati; non è ancora possibile prevedere la data di completamento.",
+  "targetDateGuidance.unavailable.qualityRequirementUnmet": "Hai raggiunto il numero minimo di tentativi. Continua a esercitarti per migliorare i risultati; non è ancora possibile prevedere la data di completamento.",
+  "targetDateGuidance.reason.qualityRequirementUnmet": "Minimo di tentativi raggiunto; i risultati richiedono ancora lavoro",
+  "targetDateGuidance.fact.unavailable.qualityRequirementUnmet": "È necessario continuare a migliorare i risultati",
+  "targetDateGuidance.action.workOnResults": "Migliora i risultati"
 }

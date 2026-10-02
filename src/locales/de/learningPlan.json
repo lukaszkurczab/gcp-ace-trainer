@@ -189,5 +189,10 @@
   "Reminders are pending": "Erinnerungen ausstehend",
   "The plan was saved, but reminders are pending. Try again.": "Der Plan wurde gespeichert, aber die Erinnerungen stehen noch aus. Versuche es erneut.",
   "notificationBody": "Wähle eine konzentrierte Patternly-Übungseinheit.",
-  "notificationTitle": "Zeit zum Üben"
+  "notificationTitle": "Zeit zum Üben",
+  "The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet.": "Die Mindestanzahl an Versuchen ist erreicht. Übe weiter, um deine Ergebnisse zu verbessern; der Abschlusszeitpunkt lässt sich noch nicht vorhersagen.",
+  "targetDateGuidance.unavailable.qualityRequirementUnmet": "Die Mindestanzahl an Versuchen ist erreicht. Übe weiter, um deine Ergebnisse zu verbessern; der Abschlusszeitpunkt lässt sich noch nicht vorhersagen.",
+  "targetDateGuidance.reason.qualityRequirementUnmet": "Mindestanzahl erreicht; Ergebnisse müssen weiter verbessert werden",
+  "targetDateGuidance.fact.unavailable.qualityRequirementUnmet": "Weitere Arbeit an den Ergebnissen nötig",
+  "targetDateGuidance.action.workOnResults": "Ergebnisse verbessern"
 }
