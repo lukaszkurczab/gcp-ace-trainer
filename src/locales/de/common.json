@@ -736,5 +736,10 @@
   "progress.week.completedSessions_many": "{{count}} Einheiten abgeschlossen",
   "progress.week.completedSessions_other": "{{count}} Einheiten abgeschlossen",
   "progress.week.selectedTrack": "Für den ausgewählten Lernpfad.",
-  "progress.week.unavailable": "Die Wochenaktivität ist nicht verfügbar."
+  "progress.week.unavailable": "Die Wochenaktivität ist nicht verfügbar.",
+  "home.week.answersRecorded_one": "{{count}} gespeicherte Antwort",
+  "home.week.answersRecorded_few": "{{count}} gespeicherte Antworten",
+  "home.week.answersRecorded_many": "{{count}} gespeicherte Antworten",
+  "home.week.answersRecorded_other": "{{count}} gespeicherte Antworten",
+  "home.week.unavailable": "Die Aktivität dieser Woche ist nicht verfügbar."
 }

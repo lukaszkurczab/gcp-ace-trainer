@@ -43,6 +43,7 @@ import {
   type GuidanceAction,
 } from "../../application/learningPlan";
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
+import { captureProfileReadFence } from "../../application/profileReadFence";
 import { type CloudCertificationProgressViewModel } from "../../tracks/certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/certification";
 import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
@@ -157,6 +158,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
 
       async function loadShellData() {
         try {
+          const assertCurrentProfile = captureProfileReadFence();
           const accountState = accountRef.current.state;
           const shouldRetryAccountSync = accountState.kind === "authenticated" && accountState.accountData.status === "resumeRequired";
           if (shouldRetryAccountSync) {
@@ -200,6 +202,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           }
 
           if (isActive) {
+            assertCurrentProfile();
             setActiveTrackId(savedTrackId ?? null);
             setData({
               activityRecords,

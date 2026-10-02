@@ -10,8 +10,9 @@ import { presentTargetDateGuidance } from "../../../application/learningPlan";
 import type { HomePlanSnapshot } from "../../../application/homePlanSnapshotReader";
 import { colorWithOpacity, radius, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import { modeLabel, relativeDay } from "./activityPresentation";
+import { modeLabel } from "./activityPresentation";
 import { buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
+import { buildHomeOverviewMetrics } from "./homeOverviewPresentation";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
 import { runtimeSelectors } from "../../../testing/runtimeSelectors";
@@ -211,7 +212,7 @@ export function HomeTab({
     .filter((attempt) => attempt.trackId === activeTrack.id && attempt.sessionId !== activeSession?.id)
     .sort((left, right) => right.answeredAt.localeCompare(left.answeredAt));
   const recentAttempt = recentAttempts[0];
-  const overview = buildOverviewMetrics(activeTrack.id, reviewQueueItems, trainingAttempts, activeSession?.id);
+  const overview = buildHomeOverviewMetrics({ trackId: activeTrack.id, reviewQueueItems, trainingAttempts, activeSessionId: activeSession?.id });
   const isFirstUse = !hasActiveSession && trainingAttempts.length === 0 && reviewQueueItems.length === 0;
 
   function recordActionWidth(key: HomeActionKey, width: number): void {
@@ -388,9 +389,9 @@ export function HomeTab({
       {!isFirstUse ? <View style={styles.overviewSection} testID="home-overview">
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Overview")}</Text>
         {overview.map((metric, index) => (
-          <View key={metric.label} style={[styles.overviewRow, largeText ? styles.overviewRowLargeText : null, index < overview.length - 1 ? styles.overviewRowDivider : null]} accessibilityLabel={`${t(metric.label)}: ${t(metric.value)}`}>
+          <View key={metric.label} style={[styles.overviewRow, largeText ? styles.overviewRowLargeText : null, index < overview.length - 1 ? styles.overviewRowDivider : null]} accessibilityLabel={`${t(metric.label)}: ${t(metric.value, { count: metric.count })}`}>
             <Text maxFontSizeMultiplier={2} style={[styles.overviewLabel, largeText ? styles.overviewLabelLargeText : null]}>{t(metric.label)}</Text>
-            <Text maxFontSizeMultiplier={2} style={[styles.overviewValue, largeText ? styles.overviewValueLargeText : null]}>{t(metric.value)}</Text>
+            <Text maxFontSizeMultiplier={2} style={[styles.overviewValue, largeText ? styles.overviewValueLargeText : null]}>{t(metric.value, { count: metric.count })}</Text>
           </View>
         ))}
       </View> : null}
@@ -437,34 +438,6 @@ export function HomeTab({
       </View> : null}
     </Fragment>
   );
-}
-
-type HomeOverviewMetric = Readonly<{ label: string; value: string }>;
-
-function buildOverviewMetrics(
-  trackId: TrackDisplay["id"],
-  reviewQueueItems: readonly ReviewQueueEntry[],
-  trainingAttempts: readonly TrainingAttempt[],
-  activeSessionId?: string,
-): readonly HomeOverviewMetric[] {
-  const trackAttempts = trainingAttempts.filter((attempt) => attempt.trackId === trackId && attempt.sessionId !== activeSessionId);
-  const weekStart = startOfUtcWeek(new Date());
-  const weekAttempts = trackAttempts.filter((attempt) => new Date(attempt.answeredAt).getTime() >= weekStart.getTime());
-  const dueReviews = reviewQueueItems.filter((entry) => entry.trackId === trackId && Date.parse(entry.dueAt) <= Date.now()).length;
-  const latestAttempt = [...trackAttempts].sort((left, right) => right.answeredAt.localeCompare(left.answeredAt))[0];
-
-  return [
-    { label: "This week", value: weekAttempts.length ? `${weekAttempts.length} answered` : "No activity yet" },
-    { label: "Review", value: dueReviews ? `${dueReviews} due` : "Nothing due" },
-    { label: "Last session", value: latestAttempt ? `${modeLabel(latestAttempt.modeId)} · ${relativeDay(latestAttempt.answeredAt)}` : "No activity yet" },
-  ];
-}
-
-function startOfUtcWeek(now: Date): Date {
-  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const daysSinceMonday = (start.getUTCDay() + 6) % 7;
-  start.setUTCDate(start.getUTCDate() - daysSinceMonday);
-  return start;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

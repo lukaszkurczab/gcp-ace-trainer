@@ -736,5 +736,10 @@
   "progress.week.completedSessions_many": "{{count}} sesiones completadas",
   "progress.week.completedSessions_other": "{{count}} sesiones completadas",
   "progress.week.selectedTrack": "Para la ruta seleccionada.",
-  "progress.week.unavailable": "La actividad semanal no está disponible."
+  "progress.week.unavailable": "La actividad semanal no está disponible.",
+  "home.week.answersRecorded_one": "{{count}} respuesta registrada",
+  "home.week.answersRecorded_few": "{{count}} respuestas registradas",
+  "home.week.answersRecorded_many": "{{count}} respuestas registradas",
+  "home.week.answersRecorded_other": "{{count}} respuestas registradas",
+  "home.week.unavailable": "La actividad de esta semana no está disponible."
 }

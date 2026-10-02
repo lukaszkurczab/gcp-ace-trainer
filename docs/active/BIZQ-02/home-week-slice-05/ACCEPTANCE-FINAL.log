@@ -1,0 +1,359 @@
+TAP version 13
+# Subtest: Activity read model keeps terminal history semantics and includes completed sessions without answers
+ok 1 - Activity read model keeps terminal history semantics and includes completed sessions without answers
+  ---
+  duration_ms: 15.00775
+  type: 'test'
+  ...
+# Subtest: Activity read model surfaces a corrupt canonical result instead of presenting an empty history
+ok 2 - Activity read model surfaces a corrupt canonical result instead of presenting an empty history
+  ---
+  duration_ms: 0.596209
+  type: 'test'
+  ...
+# Subtest: Activity read model treats repository issues as an explicit storage failure
+ok 3 - Activity read model treats repository issues as an explicit storage failure
+  ---
+  duration_ms: 0.171792
+  type: 'test'
+  ...
+# Subtest: Activity read model reuses the caller's attempts read when supplied
+ok 4 - Activity read model reuses the caller's attempts read when supplied
+  ---
+  duration_ms: 1.141583
+  type: 'test'
+  ...
+# Subtest: Activity full history keeps unavailable sessions as immutable summaries
+ok 5 - Activity full history keeps unavailable sessions as immutable summaries
+  ---
+  duration_ms: 3.36475
+  type: 'test'
+  ...
+# Subtest: Activity read owner invalidates late focus reads and lets the newest retry win
+ok 6 - Activity read owner invalidates late focus reads and lets the newest retry win
+  ---
+  duration_ms: 0.278916
+  type: 'test'
+  ...
+# Subtest: Activity read owner keeps current read failures explicit
+ok 7 - Activity read owner keeps current read failures explicit
+  ---
+  duration_ms: 0.154333
+  type: 'test'
+  ...
+# Subtest: actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+    # Subtest: same profile publishes actual persisted answers
+    ok 1 - same profile publishes actual persisted answers
+      ---
+      duration_ms: 47.9585
+      type: 'test'
+      ...
+    # Subtest: A→B after Activity read rejects publication
+    ok 2 - A→B after Activity read rejects publication
+      ---
+      duration_ms: 12.832209
+      type: 'test'
+      ...
+    # Subtest: A→B→A after Activity read rejects publication
+    ok 3 - A→B→A after Activity read rejects publication
+      ---
+      duration_ms: 11.669708
+      type: 'test'
+      ...
+    # Subtest: active transition at entry prevents reads and publication
+    ok 4 - active transition at entry prevents reads and publication
+      ---
+      duration_ms: 9.404375
+      type: 'test'
+      ...
+    # Subtest: transition starts during the last read and prevents publication
+    ok 5 - transition starts during the last read and prevents publication
+      ---
+      duration_ms: 7.797041
+      type: 'test'
+      ...
+    1..5
+ok 8 - actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+  ---
+  duration_ms: 615.860167
+  type: 'test'
+  ...
+# Subtest: actual artifact→repository→Home presenter includes local Monday before UTC Monday and excludes future answers
+ok 9 - actual artifact→repository→Home presenter includes local Monday before UTC Monday and excludes future answers
+  ---
+  duration_ms: 713.407958
+  type: 'test'
+  ...
+# Subtest: all nine canonical tracks use the same activity count without turning it into completion
+ok 10 - all nine canonical tracks use the same activity count without turning it into completion
+  ---
+  duration_ms: 380.859167
+  type: 'test'
+  ...
+# Subtest: active exclusion, ended-early history and old package facts remain distinct from completed sessions
+ok 11 - active exclusion, ended-early history and old package facts remain distinct from completed sessions
+  ---
+  duration_ms: 1.802791
+  type: 'test'
+  ...
+# Subtest: civil Monday boundaries agree in Warsaw/Los Angeles and across both DST transitions
+ok 12 - civil Monday boundaries agree in Warsaw/Los Angeles and across both DST transitions
+  ---
+  duration_ms: 1.3025
+  type: 'test'
+  ...
+# Subtest: same question new attempts count separately, identical IDs once, conflicting IDs unavailable
+ok 13 - same question new attempts count separately, identical IDs once, conflicting IDs unavailable
+  ---
+  duration_ms: 0.685167
+  type: 'test'
+  ...
+# Subtest: invalid relevant record/context never becomes empty activity; repository corruption still throws
+ok 14 - invalid relevant record/context never becomes empty activity; repository corruption still throws
+  ---
+  duration_ms: 5.547625
+  type: 'test'
+  ...
+# Subtest: weekly text and accessibility label share real translated plural values in seven locales
+ok 15 - weekly text and accessibility label share real translated plural values in seven locales
+  ---
+  duration_ms: 8.978292
+  type: 'test'
+  ...
+# Subtest: actual memory profile router separates A/B history and reconstructs A after storage reopening offline
+ok 16 - actual memory profile router separates A/B history and reconstructs A after storage reopening offline
+  ---
+  duration_ms: 11.229542
+  type: 'test'
+  ...
+# Subtest: passive runtime selectors are attached to visible content rather than containers with interactive descendants
+ok 17 - passive runtime selectors are attached to visible content rather than containers with interactive descendants
+  ---
+  duration_ms: 1.183291
+  type: 'test'
+  ...
+# Subtest: active-session resume uses the single recommendation card and a separate continue control
+ok 18 - active-session resume uses the single recommendation card and a separate continue control
+  ---
+  duration_ms: 0.342292
+  type: 'test'
+  ...
+# Subtest: Home uses the approved compact presentation without changing recommendation ownership
+ok 19 - Home uses the approved compact presentation without changing recommendation ownership
+  ---
+  duration_ms: 0.436625
+  type: 'test'
+  ...
+# Subtest: progress, simulation, and simulation summary selectors use canonical identities
+ok 20 - progress, simulation, and simulation summary selectors use canonical identities
+  ---
+  duration_ms: 2.876459
+  type: 'test'
+  ...
+# Subtest: Progress week counts durable completed sessions, not distinct answers or earlier sessions
+ok 21 - Progress week counts durable completed sessions, not distinct answers or earlier sessions
+  ---
+  duration_ms: 674.657791
+  type: 'test'
+  ...
+# Subtest: A durable completed session without answers remains one completed session
+ok 22 - A durable completed session without answers remains one completed session
+  ---
+  duration_ms: 4.182333
+  type: 'test'
+  ...
+# Subtest: all nine tracks and all three Progress branches use the same durable weekly session facts
+ok 23 - all nine tracks and all three Progress branches use the same durable weekly session facts
+  ---
+  duration_ms: 335.529541
+  type: 'test'
+  ...
+# Subtest: active answers, abandoned activity, prior-week and future sessions never become completed this week
+ok 24 - active answers, abandoned activity, prior-week and future sessions never become completed this week
+  ---
+  duration_ms: 1.283291
+  type: 'test'
+  ...
+# Subtest: Monday is a civil boundary in the supplied zone, independent of elapsed DST hours
+ok 25 - Monday is a civil boundary in the supplied zone, independent of elapsed DST hours
+  ---
+  duration_ms: 1.116375
+  type: 'test'
+  ...
+# Subtest: history remains activity across valid content versions, and duplicate session IDs count once or fail conflict
+ok 26 - history remains activity across valid content versions, and duplicate session IDs count once or fail conflict
+  ---
+  duration_ms: 1.195166
+  type: 'test'
+  ...
+# Subtest: invalid calendar facts stay explicitly unavailable, and corrupt repository data is never zero activity
+ok 27 - invalid calendar facts stay explicitly unavailable, and corrupt repository data is never zero activity
+  ---
+  duration_ms: 5.525042
+  type: 'test'
+  ...
+# Subtest: weekly title plural forms are rendered by the actual translator in all seven locales
+ok 28 - weekly title plural forms are rendered by the actual translator in all seven locales
+  ---
+  duration_ms: 7.78625
+  type: 'test'
+  ...
+# Subtest: Activity read cannot publish account A sessions after an actual profile router switch to B
+ok 29 - Activity read cannot publish account A sessions after an actual profile router switch to B
+  ---
+  duration_ms: 9.993292
+  type: 'test'
+  ...
+# Subtest: choosing the first track reloads Home data for that selected track
+ok 30 - choosing the first track reloads Home data for that selected track
+  ---
+  duration_ms: 0.575583
+  type: 'test'
+  ...
+# Subtest: a failed Home shell read keeps the learner in a retryable state on the canonical load path
+ok 31 - a failed Home shell read keeps the learner in a retryable state on the canonical load path
+  ---
+  duration_ms: 0.1375
+  type: 'test'
+  ...
+# Subtest: Home focus retries only eligible pending account data and clears route tab suppression on local navigation
+ok 32 - Home focus retries only eligible pending account data and clears route tab suppression on local navigation
+  ---
+  duration_ms: 0.186667
+  type: 'test'
+  ...
+# Subtest: Home keeps resume-required handling internal instead of showing sync implementation details
+ok 33 - Home keeps resume-required handling internal instead of showing sync implementation details
+  ---
+  duration_ms: 0.103959
+  type: 'test'
+  ...
+# Subtest: the first Home visit replaces repeated empty metrics with one honest next-step state
+ok 34 - the first Home visit replaces repeated empty metrics with one honest next-step state
+  ---
+  duration_ms: 0.180917
+  type: 'test'
+  ...
+# Subtest: goal invitation stays optional for guest and healthy account, reloads after Goal, and persists dismissal per track
+ok 35 - goal invitation stays optional for guest and healthy account, reloads after Goal, and persists dismissal per track
+  ---
+  duration_ms: 0.42425
+  type: 'test'
+  ...
+# Subtest: Home stacks quiet-layered context and decision metadata at large text sizes
+ok 36 - Home stacks quiet-layered context and decision metadata at large text sizes
+  ---
+  duration_ms: 0.836209
+  type: 'test'
+  ...
+# Subtest: Activity groups durable terminal sessions and keeps the row projection truthful
+ok 37 - Activity groups durable terminal sessions and keeps the row projection truthful
+  ---
+  duration_ms: 22.187125
+  type: 'test'
+  ...
+# Subtest: Activity identifies an absolute-deadline completion without relabeling manual abandonment
+ok 38 - Activity identifies an absolute-deadline completion without relabeling manual abandonment
+  ---
+  duration_ms: 0.299708
+  type: 'test'
+  ...
+# Subtest: Activity interaction matrix opens only summaries supported by durable family evidence
+ok 39 - Activity interaction matrix opens only summaries supported by durable family evidence
+  ---
+  duration_ms: 0.560667
+  type: 'test'
+  ...
+# Subtest: Activity track filter returns only records for the selected canonical track
+ok 40 - Activity track filter returns only records for the selected canonical track
+  ---
+  duration_ms: 0.101375
+  type: 'test'
+  ...
+# Subtest: Activity uses local calendar days and Monday-based calendar weeks
+ok 41 - Activity uses local calendar days and Monday-based calendar weeks
+  ---
+  duration_ms: 0.331208
+  type: 'test'
+  ...
+# Subtest: Activity keeps local midnight and relative labels correct across a DST boundary
+ok 42 - Activity keeps local midnight and relative labels correct across a DST boundary
+  ---
+  duration_ms: 0.112041
+  type: 'test'
+  ...
+# Subtest: Activity date labels format relative words and month names from the selected locale
+ok 43 - Activity date labels format relative words and month names from the selected locale
+  ---
+  duration_ms: 9.14325
+  type: 'test'
+  ...
+# Subtest: Activity keeps unavailable archival summaries separate from runtime navigation facts
+ok 44 - Activity keeps unavailable archival summaries separate from runtime navigation facts
+  ---
+  duration_ms: 1.292125
+  type: 'test'
+  ...
+# Subtest: Activity never exposes an unknown archived track identity
+ok 45 - Activity never exposes an unknown archived track identity
+  ---
+  duration_ms: 0.469416
+  type: 'test'
+  ...
+# Subtest: Claude Progress metadata exactly covers the seven blueprint-linked node IDs
+ok 46 - Claude Progress metadata exactly covers the seven blueprint-linked node IDs
+  ---
+  duration_ms: 1.454542
+  type: 'test'
+  ...
+# Subtest: Google Cloud Progress metadata exactly covers the four scoring domains
+ok 47 - Google Cloud Progress metadata exactly covers the four scoring domains
+  ---
+  duration_ms: 0.20175
+  type: 'test'
+  ...
+# Subtest: unknown, aliased, and cross-track IDs remain explicitly unavailable
+ok 48 - unknown, aliased, and cross-track IDs remain explicitly unavailable
+  ---
+  duration_ms: 0.097125
+  type: 'test'
+  ...
+# Subtest: every authored title and description has exact EN and PL locale entries
+ok 49 - every authored title and description has exact EN and PL locale entries
+  ---
+  duration_ms: 1.156542
+  type: 'test'
+  ...
+# Subtest: Progress renders authored meaning in Current focus and Performance evidence
+ok 50 - Progress renders authored meaning in Current focus and Performance evidence
+  ---
+  duration_ms: 0.378416
+  type: 'test'
+  ...
+# Subtest: Claude Progress with zero attempts stays empty without inventing a score
+ok 51 - Claude Progress with zero attempts stays empty without inventing a score
+  ---
+  duration_ms: 560.495541
+  type: 'test'
+  ...
+# Subtest: Coding Interview Home uses the canonical dashboard projection for guided practice
+ok 52 - Coding Interview Home uses the canonical dashboard projection for guided practice
+  ---
+  duration_ms: 401.423542
+  type: 'test'
+  ...
+# Subtest: Coding Interview Home recommends due review from canonical counts
+ok 53 - Coding Interview Home recommends due review from canonical counts
+  ---
+  duration_ms: 0.186375
+  type: 'test'
+  ...
+1..53
+# tests 58
+# suites 0
+# pass 58
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2044.617125

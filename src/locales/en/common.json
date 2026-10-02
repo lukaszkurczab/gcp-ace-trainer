@@ -737,5 +737,10 @@
   "progress.week.completedSessions_many": "{{count}} sessions completed",
   "progress.week.completedSessions_other": "{{count}} sessions completed",
   "progress.week.selectedTrack": "For the selected track.",
-  "progress.week.unavailable": "Weekly activity is unavailable."
+  "progress.week.unavailable": "Weekly activity is unavailable.",
+  "home.week.answersRecorded_one": "{{count}} answer recorded",
+  "home.week.answersRecorded_few": "{{count}} answers recorded",
+  "home.week.answersRecorded_many": "{{count}} answers recorded",
+  "home.week.answersRecorded_other": "{{count}} answers recorded",
+  "home.week.unavailable": "Weekly activity is unavailable."
 }

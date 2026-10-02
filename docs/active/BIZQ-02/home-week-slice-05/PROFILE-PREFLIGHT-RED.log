@@ -1,0 +1,479 @@
+TAP version 13
+# Subtest: actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+    # Subtest: same profile publishes actual persisted answers
+    ok 1 - same profile publishes actual persisted answers
+      ---
+      duration_ms: 40.392667
+      type: 'test'
+      ...
+    # Subtest: A→B after Activity read rejects publication
+    not ok 2 - A→B after Activity read rejects publication
+      ---
+      duration_ms: 14.696875
+      type: 'test'
+      location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:2:6130'
+      failureType: 'testCodeFailure'
+      error: |-
+        Home must not publish account A answers after switching to B
+        + actual - expected
+
+        + {
+        +   activeSession: null,
+        +   activityRecords: [],
+        +   algorithmsDashboard: null,
+        +   algorithmsDashboardError: 'Coding Interview recommendation is unavailable. [LOCAL_OPERATION_FAILED]',
+        +   attempts: [],
+        +   cloudProgress: {
+        +     correctCount: 0,
+        +     degraded: false,
+        +     dueReviewCount: 0,
+        +     examAttemptCount: 0,
+        +     firstAttemptAccuracy: {
+        +       correct: 0,
+        +       percent: 0,
+        +       total: 0
+        +     },
+        +     highPriorityReviewCount: 0,
+        +     incorrectCount: 0,
+        +     issues: [],
+        +     ok: true,
+        +     partialCount: 0,
+        +     practiceAttemptCount: 0,
+        +     recentAccuracy: {
+        +       correct: 0,
+        +       percent: 0,
+        +       total: 0,
+        +       windowAttemptCount: 10
+        +     },
+        +     repeatedMistakeTypes: [],
+        +     scheduledReviewCount: 0,
+        +     taxonomyPerformance: [],
+        +     totalAttempts: 0,
+        +     weakTaxonomyNodes: []
+        +   },
+        +   goal: null,
+        +   goalOnboardingDismissed: false,
+        +   homePlan: {
+        +     goal: null,
+        +     guidance: {
+        +       facts: {
+        +         actualPace: {
+        +           kind: 'unavailable',
+        +           reason: 'no_goal'
+        +         },
+        +         forecast: {
+        +           kind: 'unavailable',
+        +           reason: 'no_goal'
+        +         },
+        +         requiredPace: {
+        +           kind: 'unavailable',
+        +           reason: 'no_goal'
+        +         },
+        +         target: {
+        +           kind: 'unavailable',
+        +           reason: 'no_goal'
+        +         }
+        +       },
+        +       home: {
+        +         primary: {
+        +           destination: 'GoalCadence',
+        +           kind: 'set_goal'
+        +         }
+        +       },
+        +       messageKey: 'targetDateGuidance.noGoal',
+        +       progress: {
+        +         primary: {
+        +           destination: 'GoalCadence',
+        +           kind: 'set_goal'
+        +         },
+        +         secondary: null
+        +       },
+        +       reason: 'no_goal',
+        +       state: 'no_goal',
+        +       tone: 'neutral'
+        +     },
+        +     kind: 'none',
+        +     trackId: 'coding-interview-dsa-problem-solving'
+        +   },
+        +   practiceHistory: [],
+        +   reviewQueueItems: [],
+        +   storageIssues: [],
+        +   trainingAttempts: [
+        +     {
+        +       answeredAt: '2026-10-01T10:00:00.000Z',
+        +       committedAt: '2026-10-01T10:00:00.000Z',
+        +       id: 'a-answer',
+        +       item: {
+        +         artifactSha256: '30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face',
+        +         contentVersion: 'coding-interview-dsa-problem-solving-0004',
+        +         questionId: 'alg-arrays-duplicate-handling-001',
+        +         trackId: 'coding-interview-dsa-problem-solving'
+        +       },
+        +       modeId: 'coding-interview-learn-approach',
+        +       occurrenceId: 'a-answer',
+        +       response: {
+        +         answer: 'fixture'
+        +       },
+        +       result: {
+        +         earnedPoints: 1,
+        +         kind: 'correct',
+        +         maxPoints: 1
+        +       },
+        +       reviewEvidence: {
+        +         sourceItem: {
+        +           artifactSha256: '30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face',
+        +           contentVersion: 'coding-interview-dsa-problem-solving-0004',
+        +           questionId: 'alg-arrays-duplicate-handling-001',
+        +           trackId: 'coding-interview-dsa-problem-solving'
+        +         },
+        +         taxonomyOrSkillRefs: []
+        +       },
+        +       sessionId: 'a-answer',
+        +       trackId: 'coding-interview-dsa-problem-solving'
+        +     }
+        +   ]
+        + }
+        - null
+
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: ~
+      actual:
+        activityRecords:
+        algorithmsDashboard: ~
+        algorithmsDashboardError: 'Coding Interview recommendation is unavailable. [LOCAL_OPERATION_FAILED]'
+        activeSession: ~
+        attempts:
+        cloudProgress:
+          correctCount: 0
+          degraded: false
+          dueReviewCount: 0
+          examAttemptCount: 0
+          firstAttemptAccuracy:
+            correct: 0
+            percent: 0
+            total: 0
+          highPriorityReviewCount: 0
+          incorrectCount: 0
+          issues:
+          ok: true
+          partialCount: 0
+          practiceAttemptCount: 0
+          recentAccuracy:
+            correct: 0
+            percent: 0
+            total: 0
+            windowAttemptCount: 10
+          repeatedMistakeTypes:
+          scheduledReviewCount: 0
+          taxonomyPerformance:
+          totalAttempts: 0
+          weakTaxonomyNodes:
+        goal: ~
+        goalOnboardingDismissed: false
+        practiceHistory:
+        reviewQueueItems:
+        storageIssues:
+        trainingAttempts:
+          0:
+            id: 'a-answer'
+            sessionId: 'a-answer'
+            trackId: 'coding-interview-dsa-problem-solving'
+            modeId: 'coding-interview-learn-approach'
+            occurrenceId: 'a-answer'
+            item:
+              trackId: 'coding-interview-dsa-problem-solving'
+              questionId: 'alg-arrays-duplicate-handling-001'
+              contentVersion: 'coding-interview-dsa-problem-solving-0004'
+              artifactSha256: '30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face'
+            response:
+              answer: 'fixture'
+            result:
+              kind: 'correct'
+              earnedPoints: 1
+              maxPoints: 1
+            reviewEvidence:
+              sourceItem:
+                trackId: 'coding-interview-dsa-problem-solving'
+                questionId: 'alg-arrays-duplicate-handling-001'
+                contentVersion: 'coding-interview-dsa-problem-solving-0004'
+                artifactSha256: '30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face'
+              taxonomyOrSkillRefs:
+            answeredAt: '2026-10-01T10:00:00.000Z'
+            committedAt: '2026-10-01T10:00:00.000Z'
+        homePlan:
+          kind: 'none'
+          trackId: 'coding-interview-dsa-problem-solving'
+          goal: ~
+          guidance:
+            state: 'no_goal'
+            reason: 'no_goal'
+            tone: 'neutral'
+            messageKey: 'targetDateGuidance.noGoal'
+            home:
+              primary:
+                kind: 'set_goal'
+                destination: 'GoalCadence'
+            progress:
+              primary: <Circular>
+              secondary: ~
+            facts:
+              requiredPace:
+                kind: 'unavailable'
+                reason: 'no_goal'
+              actualPace: <Circular>
+              forecast: <Circular>
+              target: <Circular>
+      operator: 'strictEqual'
+      stack: |-
+        TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:74:14)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:72:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: A→B→A after Activity read rejects publication
+    not ok 3 - A→B→A after Activity read rejects publication
+      ---
+      duration_ms: 10.597875
+      type: 'test'
+      location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:2:6431'
+      failureType: 'testCodeFailure'
+      error: |-
+        the returned account A still has a different published storage lease
+        + actual - expected
+
+        + {
+        +   activeSession: null,
+        +   activityRecords: [],
+        +   algorithmsDashboard: null,
+        +   algorithmsDashboardError: 'Coding Interview recommendation is unavailable. [LOCAL_OPERATION_FAILED]',
+        +   attempts: [],
+        +   cloudProgress: {
+        +     correctCount: 0,
+        +     degraded: false,
+        +     dueReviewCount: 0,
+        +     examAttemptCount: 0,
+        +     firstAttemptAccuracy: {
+        +       correct: 0,
+        +       percent: 0,
+        +       total: 0
+        +     },
+        +     highPriorityReviewCount: 0,
+        +     incorrectCount: 0,
+        +     issues: [],
+        +     ok: true,
+        +     partialCount: 0,
+        +     practiceAttemptCount: 0,
+        +     recentAccuracy: {
+        +       correct: 0,
+        +       percent: 0,
+        +       total: 0,
+        +       windowAttemptCount: 10
+        +     },
+        +     repeatedMistakeTypes: [],
+        +     scheduledReviewCount: 0,
+        +     taxonomyPerformance: [],
+        +     totalAttempts: 0,
+        +     weakTaxonomyNodes: []
+        +   },
+        +   goal: null,
+        +   goalOnboardingDismissed: false,
+        +   homePlan: {
+        +     goal: null,
+        +     guidance: {
+        +       facts: {
+        +         actualPace: {
+        +           kind: 'unavailable',
+        +           reason: 'no_goal'
+        +         },
+        +         forecast: {
+        +           kind: 'unavailable',
+        +           reason: 'no_goal'
+        +         },
+        +         requiredPace: {
+        +           kind: 'unavailable',
+        +           reason: 'no_goal'
+        +         },
+        +         target: {
+        +           kind: 'unavailable',
+        +           reason: 'no_goal'
+        +         }
+        +       },
+        +       home: {
+        +         primary: {
+        +           destination: 'GoalCadence',
+        +           kind: 'set_goal'
+        +         }
+        +       },
+        +       messageKey: 'targetDateGuidance.noGoal',
+        +       progress: {
+        +         primary: {
+        +           destination: 'GoalCadence',
+        +           kind: 'set_goal'
+        +         },
+        +         secondary: null
+        +       },
+        +       reason: 'no_goal',
+        +       state: 'no_goal',
+        +       tone: 'neutral'
+        +     },
+        +     kind: 'none',
+        +     trackId: 'coding-interview-dsa-problem-solving'
+        +   },
+        +   practiceHistory: [],
+        +   reviewQueueItems: [],
+        +   storageIssues: [],
+        +   trainingAttempts: [
+        +     {
+        +       answeredAt: '2026-10-01T10:00:00.000Z',
+        +       committedAt: '2026-10-01T10:00:00.000Z',
+        +       id: 'a-answer',
+        +       item: {
+        +         artifactSha256: '30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face',
+        +         contentVersion: 'coding-interview-dsa-problem-solving-0004',
+        +         questionId: 'alg-arrays-duplicate-handling-001',
+        +         trackId: 'coding-interview-dsa-problem-solving'
+        +       },
+        +       modeId: 'coding-interview-learn-approach',
+        +       occurrenceId: 'a-answer',
+        +       response: {
+        +         answer: 'fixture'
+        +       },
+        +       result: {
+        +         earnedPoints: 1,
+        +         kind: 'correct',
+        +         maxPoints: 1
+        +       },
+        +       reviewEvidence: {
+        +         sourceItem: {
+        +           artifactSha256: '30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face',
+        +           contentVersion: 'coding-interview-dsa-problem-solving-0004',
+        +           questionId: 'alg-arrays-duplicate-handling-001',
+        +           trackId: 'coding-interview-dsa-problem-solving'
+        +         },
+        +         taxonomyOrSkillRefs: []
+        +       },
+        +       sessionId: 'a-answer',
+        +       trackId: 'coding-interview-dsa-problem-solving'
+        +     }
+        +   ]
+        + }
+        - null
+
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: ~
+      actual:
+        activityRecords:
+        algorithmsDashboard: ~
+        algorithmsDashboardError: 'Coding Interview recommendation is unavailable. [LOCAL_OPERATION_FAILED]'
+        activeSession: ~
+        attempts:
+        cloudProgress:
+          correctCount: 0
+          degraded: false
+          dueReviewCount: 0
+          examAttemptCount: 0
+          firstAttemptAccuracy:
+            correct: 0
+            percent: 0
+            total: 0
+          highPriorityReviewCount: 0
+          incorrectCount: 0
+          issues:
+          ok: true
+          partialCount: 0
+          practiceAttemptCount: 0
+          recentAccuracy:
+            correct: 0
+            percent: 0
+            total: 0
+            windowAttemptCount: 10
+          repeatedMistakeTypes:
+          scheduledReviewCount: 0
+          taxonomyPerformance:
+          totalAttempts: 0
+          weakTaxonomyNodes:
+        goal: ~
+        goalOnboardingDismissed: false
+        practiceHistory:
+        reviewQueueItems:
+        storageIssues:
+        trainingAttempts:
+          0:
+            id: 'a-answer'
+            sessionId: 'a-answer'
+            trackId: 'coding-interview-dsa-problem-solving'
+            modeId: 'coding-interview-learn-approach'
+            occurrenceId: 'a-answer'
+            item:
+              trackId: 'coding-interview-dsa-problem-solving'
+              questionId: 'alg-arrays-duplicate-handling-001'
+              contentVersion: 'coding-interview-dsa-problem-solving-0004'
+              artifactSha256: '30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face'
+            response:
+              answer: 'fixture'
+            result:
+              kind: 'correct'
+              earnedPoints: 1
+              maxPoints: 1
+            reviewEvidence:
+              sourceItem:
+                trackId: 'coding-interview-dsa-problem-solving'
+                questionId: 'alg-arrays-duplicate-handling-001'
+                contentVersion: 'coding-interview-dsa-problem-solving-0004'
+                artifactSha256: '30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face'
+              taxonomyOrSkillRefs:
+            answeredAt: '2026-10-01T10:00:00.000Z'
+            committedAt: '2026-10-01T10:00:00.000Z'
+        homePlan:
+          kind: 'none'
+          trackId: 'coding-interview-dsa-problem-solving'
+          goal: ~
+          guidance:
+            state: 'no_goal'
+            reason: 'no_goal'
+            tone: 'neutral'
+            messageKey: 'targetDateGuidance.noGoal'
+            home:
+              primary:
+                kind: 'set_goal'
+                destination: 'GoalCadence'
+            progress:
+              primary: <Circular>
+              secondary: ~
+            facts:
+              requiredPace:
+                kind: 'unavailable'
+                reason: 'no_goal'
+              actualPace: <Circular>
+              forecast: <Circular>
+              target: <Circular>
+      operator: 'strictEqual'
+      stack: |-
+        TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:80:14)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:77:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    1..3
+not ok 1 - actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+  ---
+  duration_ms: 392.45775
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:2:3879'
+  failureType: 'subtestsFailed'
+  error: '2 subtests failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..1
+# tests 4
+# suites 0
+# pass 1
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1118.744125

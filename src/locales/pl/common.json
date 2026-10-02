@@ -737,5 +737,10 @@
   "progress.week.completedSessions_many": "Ukończono {{count}} sesji",
   "progress.week.completedSessions_other": "Ukończono {{count}} sesji",
   "progress.week.selectedTrack": "Dla wybranej ścieżki.",
-  "progress.week.unavailable": "Aktywność tygodniowa jest niedostępna."
+  "progress.week.unavailable": "Aktywność tygodniowa jest niedostępna.",
+  "home.week.answersRecorded_one": "{{count}} zapisana odpowiedź",
+  "home.week.answersRecorded_few": "{{count}} zapisane odpowiedzi",
+  "home.week.answersRecorded_many": "{{count}} zapisanych odpowiedzi",
+  "home.week.answersRecorded_other": "{{count}} zapisanych odpowiedzi",
+  "home.week.unavailable": "Aktywność w tym tygodniu jest niedostępna."
 }

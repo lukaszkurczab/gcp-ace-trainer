@@ -2,7 +2,7 @@ import { isContentIdentityTombstone, type EvidenceRef, type TrainingAttempt, typ
 import { getArchivalHistoryRecords, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions, type ContentIdentityArchivalHistoryRecord } from "../storage/repositories";
 import { createLocalCalendar } from "../utils/date";
 import { canonicalSerialize } from "../infrastructure/identity/canonicalSerialization";
-import { getKeyValueStorage, isProfileTransitionActive } from "../infrastructure/storage/mmkvClient";
+import { captureProfileReadFence } from "./profileReadFence";
 import { StorageReadError } from "../storage/errors";
 import type { StorageRepositoryResult } from "../storage/repositories/result";
 
@@ -18,17 +18,52 @@ export type WeeklySessionActivity =
   | Readonly<{ kind: "ready"; completedSessionCount: number; timezone: string; weekStart: string }>
   | Readonly<{ kind: "unavailable"; reason: "invalid_context" | "invalid_record" | "conflicting_session" }>;
 
-/** Generic terminal activity, independent of question volume, scores and package completion. */
-export function projectWeeklySessionActivity(records: readonly ActivitySessionRecord[], context: Readonly<{ trackId: string; now: string; timezone: string }>): WeeklySessionActivity {
-  let calendar: ReturnType<typeof createLocalCalendar>;
-  let now: Date;
-  let weekKey: number;
+export type WeeklyAnsweredActivity =
+  | Readonly<{ kind: "ready"; answeredCount: number; timezone: string; weekStart: string }>
+  | Readonly<{ kind: "unavailable"; reason: "invalid_context" | "invalid_record" | "conflicting_attempt" }>;
+
+type ActivityCalendarContext = Readonly<{ trackId: string; now: string; timezone: string }>;
+
+function weeklyActivityCalendar(context: ActivityCalendarContext) {
+  if (!context.trackId.trim() || !context.timezone.trim()) throw new Error("Invalid activity context.");
+  const now = new Date(context.now);
+  const calendar = createLocalCalendar(context.timezone);
+  return { now, calendar, weekKey: calendar.weekKey(now) };
+}
+
+/** Answer volume is a durable activity fact, separate from sessions and completion. */
+export function projectWeeklyAnsweredActivity(attempts: readonly TrainingAttempt[], context: ActivityCalendarContext & Readonly<{ activeSessionId?: string }>): WeeklyAnsweredActivity {
+  let calendarContext: ReturnType<typeof weeklyActivityCalendar>;
+  try { calendarContext = weeklyActivityCalendar(context); }
+  catch { return Object.freeze({ kind: "unavailable", reason: "invalid_context" }); }
+  const { now, calendar, weekKey } = calendarContext;
+  const identities = new Map<string, string>();
+  let answeredCount = 0;
   try {
-    if (!context.trackId.trim() || !context.timezone.trim()) throw new Error("Invalid context.");
-    now = new Date(context.now);
-    calendar = createLocalCalendar(context.timezone);
-    weekKey = calendar.weekKey(now);
-  } catch { return Object.freeze({ kind: "unavailable", reason: "invalid_context" }); }
+    for (const attempt of attempts) {
+      if (!attempt.id.trim()) throw new Error("Invalid attempt identity.");
+      const serialized = canonicalSerialize(attempt);
+      const previous = identities.get(attempt.id);
+      if (previous !== undefined) {
+        if (previous !== serialized) return Object.freeze({ kind: "unavailable", reason: "conflicting_attempt" });
+        continue;
+      }
+      identities.set(attempt.id, serialized);
+      if (attempt.trackId !== context.trackId || attempt.sessionId === context.activeSessionId) continue;
+      const answeredAt = new Date(attempt.answeredAt);
+      const answeredWeek = calendar.weekKey(answeredAt);
+      if (answeredAt.getTime() <= now.getTime() && answeredWeek === weekKey) answeredCount += 1;
+    }
+    return Object.freeze({ kind: "ready", answeredCount, timezone: context.timezone, weekStart: new Date(weekKey).toISOString().slice(0, 10) });
+  } catch { return Object.freeze({ kind: "unavailable", reason: "invalid_record" }); }
+}
+
+/** Generic terminal activity, independent of question volume, scores and package completion. */
+export function projectWeeklySessionActivity(records: readonly ActivitySessionRecord[], context: ActivityCalendarContext): WeeklySessionActivity {
+  let calendarContext: ReturnType<typeof weeklyActivityCalendar>;
+  try { calendarContext = weeklyActivityCalendar(context); }
+  catch { return Object.freeze({ kind: "unavailable", reason: "invalid_context" }); }
+  const { now, calendar, weekKey } = calendarContext;
   const sessions = new Map<string, string>();
   let completedSessionCount = 0;
   try {
@@ -103,7 +138,7 @@ export type ActivityReadToken = Readonly<{ generation: number }>;
 export async function loadActivitySessionRecords(
   dependencies: ActivityReadDependencies = {},
 ): Promise<readonly ActivitySessionRecord[]> {
-  const storageScope = readActivityStorageScope();
+  const assertCurrentProfile = captureProfileReadFence();
   const getAttempts = dependencies.getAttempts ?? getTrainingAttempts;
   const getResult = dependencies.getResult ?? getTrainingSessionResult;
   const getSessions = dependencies.getSessions ?? getTrainingSessions;
@@ -130,7 +165,7 @@ export async function loadActivitySessionRecords(
     } satisfies ActivitySessionRecord;
   }));
 
-  assertActivityStorageScope(storageScope);
+  assertCurrentProfile();
   return Object.freeze([...records].sort((left, right) => activityTimestamp(right).localeCompare(activityTimestamp(left))));
 }
 
@@ -141,7 +176,7 @@ export async function loadActivitySessionRecords(
 export async function loadActivityRecords(
   dependencies: ActivityReadDependencies = {},
 ): Promise<readonly ActivityRecord[]> {
-  const storageScope = readActivityStorageScope();
+  const assertCurrentProfile = captureProfileReadFence();
   const getArchivalHistory = dependencies.getArchivalHistory ?? getArchivalHistoryRecords;
   const [canonicalRecords, archivalResult] = await Promise.all([
     loadActivitySessionRecords(dependencies),
@@ -152,21 +187,11 @@ export async function loadActivityRecords(
   }
   const archivalRecords = archivalResult.value.map(toActivityUnavailableRecord);
   const archivalIds = new Set(archivalRecords.map((record) => record.sessionId));
-  assertActivityStorageScope(storageScope);
+  assertCurrentProfile();
   return Object.freeze([
     ...canonicalRecords.filter((record) => !archivalIds.has(record.session.id)),
     ...archivalRecords,
   ].sort((left, right) => activityTimestamp(right).localeCompare(activityTimestamp(left))));
-}
-
-/** Opaque published storage lease; comparing identity never reads raw storage data. */
-function readActivityStorageScope(): object {
-  if (isProfileTransitionActive()) throw new Error("Activity profile is transitioning.");
-  return getKeyValueStorage();
-}
-
-function assertActivityStorageScope(expected: object): void {
-  if (readActivityStorageScope() !== expected) throw new Error("Activity profile changed during read.");
 }
 
 function assertNoActivityReadIssues(

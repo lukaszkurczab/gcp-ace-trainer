@@ -1,0 +1,56 @@
+TAP version 13
+# Subtest: actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+not ok 1 - actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+  ---
+  duration_ms: 334.325584
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:2:3879'
+  failureType: 'testCodeFailure'
+  error: 'trackId must be a non-empty canonical-safe identity.'
+  code: 'invalid_identity'
+  name: 'ResolvedContentRefError'
+  stack: |-
+    assertIdentity (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/domain/learning/resolvedContentRef.ts:39:11)
+    assertResolvedContentRef (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/domain/learning/resolvedContentRef.ts:47:3)
+    createResolvedContentRef (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/domain/learning/resolvedContentRef.ts:57:3)
+    createTrainingAttempt (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/domain/learning/trainingAttempt.ts:26:16)
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:65:30)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1238.615833
+
+SECOND FIXTURE DIAGNOSTIC
+TAP version 13
+# Subtest: actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+not ok 1 - actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+  ---
+  duration_ms: 336.558375
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:2:3879'
+  failureType: 'testCodeFailure'
+  error: 'Training attempt is invalid.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    addTrainingAttempt (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/storage/repositories/trainingAttemptRepository.ts:9:178)
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:65:11)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1132.551208

@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+    # Subtest: same profile publishes actual persisted answers
+    ok 1 - same profile publishes actual persisted answers
+      ---
+      duration_ms: 47.464
+      type: 'test'
+      ...
+    # Subtest: A→B after Activity read rejects publication
+    ok 2 - A→B after Activity read rejects publication
+      ---
+      duration_ms: 16.294375
+      type: 'test'
+      ...
+    # Subtest: A→B→A after Activity read rejects publication
+    ok 3 - A→B→A after Activity read rejects publication
+      ---
+      duration_ms: 11.1955
+      type: 'test'
+      ...
+    # Subtest: active transition at entry prevents reads and publication
+    ok 4 - active transition at entry prevents reads and publication
+      ---
+      duration_ms: 6.728459
+      type: 'test'
+      ...
+    # Subtest: transition starts during the last read and prevents publication
+    not ok 5 - transition starts during the last read and prevents publication
+      ---
+      duration_ms: 0.26075
+      type: 'test'
+      location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:2:7664'
+      failureType: 'testCodeFailure'
+      error: 'profile_transition_active'
+      code: 'ERR_TEST_FAILURE'
+      name: 'ProfileTransitionActiveError'
+      stack: |-
+        Object.activatePreparedProfile (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/infrastructure/storage/mmkvClient.ts:212:38)
+        select (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:63:16)
+        async TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:98:7)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:97:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    1..5
+not ok 1 - actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+  ---
+  duration_ms: 424.055875
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/homeShellProfileReadIntegration.test.ts:2:4329'
+  failureType: 'subtestsFailed'
+  error: '1 subtest failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: actual artifact→repository→Home presenter includes local Monday before UTC Monday and excludes future answers
+ok 2 - actual artifact→repository→Home presenter includes local Monday before UTC Monday and excludes future answers
+  ---
+  duration_ms: 343.6245
+  type: 'test'
+  ...
+# Subtest: all nine canonical tracks use the same activity count without turning it into completion
+ok 3 - all nine canonical tracks use the same activity count without turning it into completion
+  ---
+  duration_ms: 291.259292
+  type: 'test'
+  ...
+# Subtest: active exclusion, ended-early history and old package facts remain distinct from completed sessions
+ok 4 - active exclusion, ended-early history and old package facts remain distinct from completed sessions
+  ---
+  duration_ms: 1.571458
+  type: 'test'
+  ...
+# Subtest: civil Monday boundaries agree in Warsaw/Los Angeles and across both DST transitions
+ok 5 - civil Monday boundaries agree in Warsaw/Los Angeles and across both DST transitions
+  ---
+  duration_ms: 1.124708
+  type: 'test'
+  ...
+# Subtest: same question new attempts count separately, identical IDs once, conflicting IDs unavailable
+ok 6 - same question new attempts count separately, identical IDs once, conflicting IDs unavailable
+  ---
+  duration_ms: 0.583084
+  type: 'test'
+  ...
+# Subtest: invalid relevant record/context never becomes empty activity; repository corruption still throws
+ok 7 - invalid relevant record/context never becomes empty activity; repository corruption still throws
+  ---
+  duration_ms: 4.366792
+  type: 'test'
+  ...
+# Subtest: weekly text and accessibility label share real translated plural values in seven locales
+ok 8 - weekly text and accessibility label share real translated plural values in seven locales
+  ---
+  duration_ms: 28.702625
+  type: 'test'
+  ...
+# Subtest: actual memory profile router separates A/B history and reconstructs A after storage reopening offline
+ok 9 - actual memory profile router separates A/B history and reconstructs A after storage reopening offline
+  ---
+  duration_ms: 6.868708
+  type: 'test'
+  ...
+1..9
+# tests 14
+# suites 0
+# pass 12
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1648.522583

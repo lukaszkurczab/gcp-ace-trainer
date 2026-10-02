@@ -736,5 +736,10 @@
   "progress.week.completedSessions_many": "{{count}} sessions terminées",
   "progress.week.completedSessions_other": "{{count}} sessions terminées",
   "progress.week.selectedTrack": "Pour le parcours sélectionné.",
-  "progress.week.unavailable": "L’activité hebdomadaire est indisponible."
+  "progress.week.unavailable": "L’activité hebdomadaire est indisponible.",
+  "home.week.answersRecorded_one": "{{count}} réponse enregistrée",
+  "home.week.answersRecorded_few": "{{count}} réponses enregistrées",
+  "home.week.answersRecorded_many": "{{count}} réponses enregistrées",
+  "home.week.answersRecorded_other": "{{count}} réponses enregistrées",
+  "home.week.unavailable": "L’activité de cette semaine est indisponible."
 }

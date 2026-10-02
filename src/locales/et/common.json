@@ -736,5 +736,10 @@
   "progress.week.completedSessions_many": "{{count}} sessiooni lõpetatud",
   "progress.week.completedSessions_other": "{{count}} sessiooni lõpetatud",
   "progress.week.selectedTrack": "Valitud õpperaja kohta.",
-  "progress.week.unavailable": "Nädala tegevus pole saadaval."
+  "progress.week.unavailable": "Nädala tegevus pole saadaval.",
+  "home.week.answersRecorded_one": "{{count}} salvestatud vastus",
+  "home.week.answersRecorded_few": "{{count}} salvestatud vastust",
+  "home.week.answersRecorded_many": "{{count}} salvestatud vastust",
+  "home.week.answersRecorded_other": "{{count}} salvestatud vastust",
+  "home.week.unavailable": "Selle nädala tegevus pole saadaval."
 }

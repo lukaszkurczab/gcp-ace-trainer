@@ -1,0 +1,8 @@
+Readonly 2026-10-02 current single8081 /status packager-status:running; actual Expo AppEntry HTTP500
+UnableToResolveError
+Unable to resolve module ./learningEvidenceProjection from /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/LearningPlanProposalCoordinator.ts:
+
+None of these files exist:
+  * src/application/learningPlan/learningEvidenceProjection(.ios.ts|.native.ts|.ts|.ios.tsx|.native.tsx|.tsx|.ios.mjs|.native.mjs|.mjs|.ios.js|.native.js|.js|.ios.jsx|.native.jsx|.jsx|.ios.json|.native.json|.json|.ios.cjs|.native.cjs|.cjs|.ios.scss|.native.scss|.scss|.ios.sass|.native.sass|.sass|.ios.css|.native.css|.css|.ios.svg|.native.svg|.svg)
+  * src/application/learningPlan/learningEvidenceProjection
+Initial incorrect index.bundle URI returned404; not used as bundle evidence. Process metadata ps blocked by sandbox; no process-change attempted.
