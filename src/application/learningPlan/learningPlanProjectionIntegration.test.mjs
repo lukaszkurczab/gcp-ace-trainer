@@ -93,7 +93,7 @@ async function learningFixture(resolved, install = true) {
   });
   repositories.saveLearningPlanAtomically({ plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
   let sequence = 0;
-  const now = '2026-10-02T12:00:00.000Z';
+  let now = '2026-10-02T12:00:00.000Z';
   const base = {
     readInputs: readLearningPlanInputSnapshot,
     getActiveTrainingSession: repositories.getActiveTrainingSession, getTrainingSessions: repositories.getTrainingSessions,
@@ -104,7 +104,7 @@ async function learningFixture(resolved, install = true) {
     readInputs: readLearningPlanInputSnapshot, peekPackage: () => resolved, now: () => now,
     resolvePackage: async () => resolved, resolveTrackFamily: () => 'certification',
   });
-  return { trackId, storage, goal, plan, base, proposal, now, home: new HomePlanSnapshotReader(base) };
+  return { trackId, storage, goal, plan, base, proposal, get now() { return now; }, setNow(value) { now = value; }, home: new HomePlanSnapshotReader(base) };
 }
 
 function durableAttempt(resolved, index, resultKind = 'incorrect', overrides = {}) {
@@ -282,6 +282,116 @@ test('actual persisted reviews share exact qualification and due cutoff; phantom
   await repositories.addReviewQueueItems([phantom]);
   assert.deepEqual(await f.home.read({ trackId: TRACK, now: f.now }), { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
   assert.equal((await f.proposal.create(TRACK)).kind, 'generator_error');
+});
+
+test('future exact-package evidence cannot complete proposal while Home rejects the same facts', async t => {
+  const resolved = await verifiedProducerRuntime(t);
+  const f = await learningFixture(resolved);
+  const future = '2026-10-03T12:00:00.000Z';
+  for (let index = 0; index < RULE.minimumAttemptCount; index++) {
+    await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: future, committedAt: future }));
+  }
+  const before = readLearningPlanInputSnapshot(TRACK);
+  const home = await f.home.read({ trackId: TRACK, now: f.now });
+  const proposal = await f.proposal.create(TRACK);
+  t.diagnostic(JSON.stringify({ home: home.kind, reason: home.reason, proposal: proposal.kind, completion: proposal.proposal?.outcome.completionState.kind }));
+  assert.deepEqual(home, { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
+  assert.deepEqual(proposal, { kind: 'generator_error', classification: 'unclassified' });
+  assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before, 'failure must not alter evidence or the accepted goal/plan');
+});
+
+test('captured instant rejects same-day future answers by one millisecond without silently dropping them', async t => {
+  const resolved = await verifiedProducerRuntime(t);
+  const f = await learningFixture(resolved);
+  for (let index = 0; index < 19; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct'));
+  const future = '2026-10-02T12:00:00.001Z';
+  await repositories.addTrainingAttempt(durableAttempt(resolved, 19, 'correct', { answeredAt: future, committedAt: future }));
+  const before = readLearningPlanInputSnapshot(TRACK);
+  assert.throws(() => projectLearningEvidence({ profile: resolved.track, attempts: before.attempts, reviews: [], now: f.now }), /answer time.*captured clock/);
+  assert.deepEqual(await f.home.read({ trackId: TRACK, now: f.now }), { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
+  assert.deepEqual(await f.proposal.create(TRACK), { kind: 'generator_error', classification: 'unclassified' });
+  assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
+  assert.equal(before.attempts.length, 20);
+  // Rebind the same persisted dataset: this is memory repository continuity, not SDK recovery.
+  installKeyValueStorageForTests(f.storage);
+  f.setNow(future);
+  const valid = await assertShared(f, 'completed');
+  assert.equal(valid.home.completion.qualifyingAttemptCount, 20);
+  assert.deepEqual(readLearningPlanInputSnapshot(TRACK).attempts, before.attempts);
+  assert.deepEqual(readLearningPlanInputSnapshot(TRACK).goal, before.goal);
+  assert.deepEqual(readLearningPlanInputSnapshot(TRACK).plan, before.plan);
+});
+
+test('past and exactly captured answers remain eligible despite later materialization, duplicates and historical future evidence', async t => {
+  const resolved = await verifiedProducerRuntime(t);
+  const f = await learningFixture(resolved);
+  for (let index = 0; index < 20; index++) {
+    const record = durableAttempt(resolved, index, 'correct', { answeredAt: index === 19 ? f.now : '2026-10-02T11:59:59.999Z', committedAt: '2026-10-03T12:00:00.000Z' });
+    await repositories.addTrainingAttempt(record);
+    if (index === 19) await repositories.addTrainingAttempt(record);
+  }
+  const historical = durableAttempt(resolved, 20, 'correct', { answeredAt: '2026-10-03T12:00:00.000Z', committedAt: '2026-10-03T12:00:00.000Z' });
+  const item = { ...historical.item, contentVersion: 'other-exact-package-version' };
+  await repositories.addTrainingAttempt({ ...historical, item, reviewEvidence: { ...historical.reviewEvidence, sourceItem: item } });
+  const before = readLearningPlanInputSnapshot(TRACK);
+  const valid = await assertShared(f, 'completed');
+  assert.equal(valid.home.completion.qualifyingAttemptCount, 20);
+  const projected = projectLearningEvidence({ profile: resolved.track, attempts: [...before.attempts, before.attempts[0]], reviews: [], now: f.now });
+  assert.equal(projected.attempts.length, 20);
+  assert.equal(projected.completedFacts.attempts.length, 20);
+  assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
+  assert.throws(() => projectLearningEvidence({ profile: resolved.track, attempts: [ { ...before.attempts[0], answeredAt: 'not-an-instant' } ], reviews: [], now: f.now }), /invalid/);
+  assert.throws(() => projectLearningEvidence({ profile: resolved.track, attempts: before.attempts, reviews: [], now: 'not-a-clock' }), /clock is invalid/);
+});
+
+test('absent production rule does not hide future exact-package facts as unknown', async () => {
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, 'certification');
+  assert.equal(Object.hasOwn(resolved.track, 'completionRule'), false);
+  const f = await learningFixture(resolved);
+  const future = '2026-10-02T12:00:00.001Z';
+  await repositories.addTrainingAttempt(durableAttempt(resolved, 0, 'correct', { answeredAt: future, committedAt: future }));
+  const before = readLearningPlanInputSnapshot(TRACK);
+  assert.deepEqual(await f.home.read({ trackId: TRACK, now: f.now }), { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
+  assert.deepEqual(await f.proposal.create(TRACK), { kind: 'generator_error', classification: 'unclassified' });
+  assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
+  f.setNow(future);
+  await assertShared(f, 'unknown');
+});
+
+test('clock rollback blocks real proposal resolve and acceptance before goal-plan CAS or reminders', async t => {
+  const resolved = await verifiedProducerRuntime(t);
+  const f = await learningFixture(resolved);
+  for (let index = 0; index < 20; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: f.now, committedAt: f.now }));
+  const created = await f.proposal.create(TRACK);
+  assert.equal(created.kind, 'ready');
+  const id = created.proposal.proposalId;
+  const { LearningPlanEditorCoordinator } = require('./LearningPlanEditorCoordinator.ts');
+  const { LearningPlanMutationRuntimeCore } = require('./learningPlanMutationRuntimeCore.ts');
+  const { readGoalSnapshot } = require('../../storage/repositories/goalRepository.ts');
+  const { readLearningPlanStorageScope } = require('../../storage/repositories/learningPlanInputSnapshot.ts');
+  const context = () => ({ contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256, timezone: 'Europe/Warsaw' });
+  let saves = 0; let reconciles = 0;
+  const editor = new LearningPlanEditorCoordinator({
+    proposalCoordinator: f.proposal, readStorageScope: readLearningPlanStorageScope, readGoalSnapshot,
+    loadGoalSnapshot: repositories.getGoalSnapshot, loadLearningPlanSnapshot: repositories.getLearningPlanSnapshot,
+    loadContentContext: async () => context(), peekContentContext: context, createEditorId: () => 'clock-editor', now: () => f.now,
+    saveLearningPlan: input => { saves++; return repositories.saveLearningPlanAtomically(input); },
+  });
+  const mutation = new LearningPlanMutationRuntimeCore({
+    acceptProposal: (...args) => editor.acceptProposal(...args), commit: (...args) => editor.commit(...args),
+    reconcile: async () => { reconciles++; return { kind: 'disabled', status: 'disabled' }; },
+    retry: async () => { throw new Error('retry is not part of this operation'); },
+  });
+  const before = readLearningPlanInputSnapshot(TRACK);
+  f.setNow('2026-10-02T11:59:59.999Z');
+  assert.deepEqual(await f.home.read({ trackId: TRACK, now: f.now }), { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
+  assert.deepEqual(await f.proposal.resolve(id, TRACK), { kind: 'generator_error', classification: 'unclassified' });
+  assert.deepEqual(f.proposal.resolveForCommit(id, TRACK), { kind: 'generator_error', classification: 'retryable' });
+  assert.deepEqual(await mutation.acceptProposal(id, TRACK, { title: 'fixture', body: 'fixture' }), { kind: 'storage_error' });
+  assert.equal(saves, 0); assert.equal(reconciles, 0);
+  assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
+  f.setNow('2026-10-02T12:00:00.000Z');
+  assert.equal((await f.proposal.resolve(id, TRACK)).kind, 'ready');
 });
 
 test('current producer rebuild preserves all nine rule-free artifact bytes and exact app lock', async t => {

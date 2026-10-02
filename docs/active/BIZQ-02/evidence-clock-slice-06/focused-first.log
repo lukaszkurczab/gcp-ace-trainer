@@ -1,0 +1,141 @@
+TAP version 13
+# Subtest: future exact-package evidence cannot complete proposal while Home rejects the same facts
+not ok 1 - future exact-package evidence cannot complete proposal while Home rejects the same facts
+  ---
+  duration_ms: 730.974625
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:287:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+    +   classification: 'unclassified',
+    -   classification: 'retryable',
+        kind: 'generator_error'
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    kind: 'generator_error'
+    classification: 'retryable'
+  actual:
+    kind: 'generator_error'
+    classification: 'unclassified'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:299:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# {"home":"unavailable","reason":"calculation_error","proposal":"generator_error"}
+# Subtest: captured instant rejects same-day future answers by one millisecond without silently dropping them
+not ok 2 - captured instant rejects same-day future answers by one millisecond without silently dropping them
+  ---
+  duration_ms: 646.861667
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:303:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+    +   classification: 'unclassified',
+    -   classification: 'retryable',
+        kind: 'generator_error'
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    kind: 'generator_error'
+    classification: 'retryable'
+  actual:
+    kind: 'generator_error'
+    classification: 'unclassified'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:312:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: past and exactly captured answers remain eligible despite later materialization, duplicates and historical future evidence
+ok 3 - past and exactly captured answers remain eligible despite later materialization, duplicates and historical future evidence
+  ---
+  duration_ms: 684.231459
+  type: 'test'
+  ...
+# Subtest: absent production rule does not hide future exact-package facts as unknown
+not ok 4 - absent production rule does not hide future exact-package facts as unknown
+  ---
+  duration_ms: 274.153334
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:347:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+    +   classification: 'unclassified',
+    -   classification: 'retryable',
+        kind: 'generator_error'
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    kind: 'generator_error'
+    classification: 'retryable'
+  actual:
+    kind: 'generator_error'
+    classification: 'unclassified'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:355:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: clock rollback blocks real proposal resolve and acceptance before goal-plan CAS or reminders
+not ok 5 - clock rollback blocks real proposal resolve and acceptance before goal-plan CAS or reminders
+  ---
+  duration_ms: 701.882209
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:361:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+    +   classification: 'unclassified',
+    -   classification: 'retryable',
+        kind: 'generator_error'
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    kind: 'generator_error'
+    classification: 'retryable'
+  actual:
+    kind: 'generator_error'
+    classification: 'unclassified'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:388:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 1
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3576.699042

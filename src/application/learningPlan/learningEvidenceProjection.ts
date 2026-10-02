@@ -35,6 +35,10 @@ export function projectLearningEvidence(input: Readonly<{
   // the canonical evaluator owns deterministic rolling-window time/ID ordering.
   const attempts = Object.freeze(uniqueAttempts.filter(attempt => qualifyingIds.has(attempt.id)));
   if (attempts.some(attempt => !profile.getQuestion(attempt.item.questionId))) throw new Error("Learning evidence item is absent from its verified package.");
+  for (const attempt of attempts) {
+    const answeredAtMs = Date.parse(attempt.answeredAt);
+    if (!Number.isFinite(answeredAtMs) || answeredAtMs > nowMs) throw new Error("Learning evidence answer time is invalid for its captured clock.");
+  }
   const reviews = Object.freeze(uniqueRecords(input.reviews).filter(entry => entry.trackId === profile.trackId &&
     entry.sourceItem.trackId === profile.trackId && entry.sourceItem.contentVersion === profile.contentVersion && entry.sourceItem.artifactSha256 === profile.artifactSha256));
   if (reviews.some(entry => !profile.getQuestion(entry.sourceItem.questionId))) throw new Error("Learning review item is absent from its verified package.");
