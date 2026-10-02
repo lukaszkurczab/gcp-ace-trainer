@@ -83,13 +83,15 @@ function ready(completion: HomePlanReady["completion"] = { kind: "in_progress", 
   };
 }
 
-test("Progress model presents canonical guidance and clamps C3 completion ratio", () => {
+test("Progress model preserves canonical guidance and completion without a volume ratio", () => {
   const model = buildProgressPlanPresentationModel({ snapshot: ready(), activeTrackId: TRACK_ID, locale: "en" });
   assert.equal(model.kind, "ready");
   if (model.kind !== "ready") return;
+  assert.ok(model.completion.kind === "in_progress");
   assert.equal(model.completion.qualifyingAttemptCount, 8);
   assert.equal(model.completion.requiredAttemptCount, 10);
-  assert.equal(model.completion.ratio, 0.8);
+  assert.deepEqual(model.completion, ready().completion);
+  assert.equal("ratio" in model.completion, false);
   assert.equal(model.guidance.facts.length, 4);
   assert.equal(model.session.sessionLength, 10);
   assert.equal(model.primaryAction?.kind, "continue_plan");
@@ -101,7 +103,9 @@ test("Progress model never creates a self-link for completed guidance", () => {
   const model = buildProgressPlanPresentationModel({ snapshot, activeTrackId: TRACK_ID, locale: "pl" });
   assert.equal(model.kind, "ready");
   if (model.kind !== "ready") return;
-  assert.equal(model.completion.ratio, 1);
+  assert.ok(model.completion.kind === "completed");
+  assert.deepEqual(model.completion, snapshot.completion);
+  assert.equal("ratio" in model.completion, false);
   assert.equal(model.completion.qualifyingAttemptCount, 12);
   assert.equal(model.primaryAction, null);
 });
@@ -215,4 +219,19 @@ test("Progress model fails closed for a foreign active track or unavailable snap
   assert.deepEqual(buildProgressPlanPresentationModel({ snapshot: mismatched, activeTrackId: TRACK_ID, locale: "en" }), { kind: "unavailable", trackId: TRACK_ID, reason: "identity_mismatch" });
   const unavailable = buildProgressPlanPresentationModel({ snapshot: { kind: "unavailable", trackId: TRACK_ID, reason: "concurrent_change" }, activeTrackId: TRACK_ID, locale: "en" });
   assert.deepEqual(unavailable, { kind: "unavailable", trackId: TRACK_ID, reason: "concurrent_change" });
+});
+
+test("Progress rejects invalid count, minimum, window and quality rather than presenting false completion", () => {
+  const invalid = [
+    { kind: "in_progress", qualifyingAttemptCount: -1, requiredAttemptCount: 10, rollingWindowSize: 10 },
+    { kind: "in_progress", qualifyingAttemptCount: 0, requiredAttemptCount: 0, rollingWindowSize: 10 },
+    { kind: "in_progress", qualifyingAttemptCount: 0, requiredAttemptCount: 10, rollingWindowSize: 11 },
+    { kind: "in_progress", qualifyingAttemptCount: 0, requiredAttemptCount: 10, rollingWindowSize: 0 },
+    { kind: "completed", qualifyingAttemptCount: Number.NaN, rollingWindowSize: 10, quality: 1 },
+    { kind: "completed", qualifyingAttemptCount: 0, rollingWindowSize: 10, quality: 1 },
+    { kind: "completed", qualifyingAttemptCount: 20, rollingWindowSize: 0, quality: 1 },
+    { kind: "completed", qualifyingAttemptCount: 20, rollingWindowSize: 10, quality: Number.NaN },
+    { kind: "completed", qualifyingAttemptCount: 20, rollingWindowSize: 10, quality: 1.1 },
+  ] as const;
+  for (const completion of invalid) assert.deepEqual(buildProgressPlanPresentationModel({ snapshot: ready(completion), activeTrackId: TRACK_ID, locale: "en" }), { kind: "unavailable", trackId: TRACK_ID, reason: "calculation_error" });
 });

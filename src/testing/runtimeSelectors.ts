@@ -338,7 +338,7 @@ const TARGET_DATE_GUIDANCE_STATES: ReadonlySet<TargetDateGuidanceState> = new Se
 ]);
 
 const TARGET_DATE_GUIDANCE_REASONS: ReadonlySet<TargetDateGuidanceReason> = new Set([
-  "no_goal", "goal_paused", "no_plan", "target_changed", "package_changed", "cadence_changed", "plan_paused", "completed", "overdue", "insufficient_sessions", "no_future_slots", "at_risk", "on_track", "no_target", "unknown_completion_rule", "insufficient_elapsed_evidence", "calculation_error",
+  "no_goal", "goal_paused", "no_plan", "target_changed", "package_changed", "cadence_changed", "plan_paused", "completed", "overdue", "insufficient_sessions", "no_future_slots", "at_risk", "on_track", "no_target", "unknown_completion_rule", "quality_requirement_unmet", "insufficient_elapsed_evidence", "calculation_error",
 ]);
 
 const HOME_PLAN_UNAVAILABLE_REASONS: ReadonlySet<HomePlanUnavailableReason> = new Set([

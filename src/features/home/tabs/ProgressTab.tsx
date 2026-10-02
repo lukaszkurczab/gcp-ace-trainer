@@ -7,6 +7,7 @@ import { Button, Card, Icon, IconTile, InfoBlock, ProgressBar, SkeletonShape, us
 import type { ActivitySessionRecord } from "../../../application/activityReadModels";
 import type { GuidanceAction } from "../../../application/learningPlan";
 import type { HomePlanSnapshot } from "../../../application/homePlanSnapshotReader";
+import { completionCopy } from "../homePlanUiContract";
 import type { GoalRecord, ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
@@ -340,6 +341,7 @@ function ProgressPlanSection({ model, onAction, onRetry }: Readonly<{
   } as const;
   const action = model.primaryAction;
   const secondary = model.secondaryAction;
+  const completionMessage = model.kind === "ready" ? completionCopy({ completionState: model.completion }, t) : null;
 
   return (
     <View style={styles.planSection} testID={runtimeSelectors.progressPlan.root()}>
@@ -354,18 +356,9 @@ function ProgressPlanSection({ model, onAction, onRetry }: Readonly<{
         {model.kind === "ready" ? (
           <>
             <View style={styles.planCompletion} testID={runtimeSelectors.progressPlan.completion(model.completion.kind)}>
-              <View style={styles.planCompletionHeader}>
-                <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Completed scope")}</Text>
-                {model.completion.ratio !== null ? <Text maxFontSizeMultiplier={2} style={styles.planCompletionPercent}>{`${Math.round(model.completion.ratio * 100)}%`}</Text> : null}
-              </View>
-              {model.completion.kind === "unknown" ? (
-                <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("Completion scope unavailable")}</Text>
-              ) : model.completion.kind === "completed" ? (
-                <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("{{count}} qualifying attempt", { count: model.completion.qualifyingAttemptCount })}</Text>
-              ) : (
-                <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("{{completed}} of {{required}} qualifying attempts", { completed: model.completion.qualifyingAttemptCount, required: model.completion.requiredAttemptCount })}</Text>
-              )}
-              {model.completion.ratio !== null ? <ProgressBar progress={model.completion.ratio} tone="primary" /> : null}
+              <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Completion rule")}</Text>
+              {completionMessage !== model.guidance.message ? <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{completionMessage}</Text> : null}
+              {model.completion.kind !== "unknown" ? <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("{{count}} qualifying attempt", { count: model.completion.qualifyingAttemptCount })}</Text> : null}
             </View>
             <View style={styles.planDay} testID={runtimeSelectors.progressPlan.day(model.day.status)}>
               <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Today's plan")}</Text>
@@ -386,7 +379,7 @@ function ProgressPlanSection({ model, onAction, onRetry }: Readonly<{
           </>
         ) : (
           <View style={styles.planCompletion} testID={runtimeSelectors.progressPlan.completion("unknown")}>
-            <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Completed scope")}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Completion rule")}</Text>
             <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("Completion scope unavailable")}</Text>
           </View>
         )}
@@ -766,8 +759,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   planState: { ...typography.bodyStrong, color: palette.textPrimary },
   planMessage: { color: palette.textSecondary, fontSize: 13, lineHeight: 19 },
   planCompletion: { backgroundColor: palette.elevatedSurface, borderRadius: radius.md, gap: spacing.xs, padding: spacing.md },
-  planCompletionHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", gap: spacing.sm },
-  planCompletionPercent: { ...typography.bodyStrong, color: palette.primary, fontVariant: ["tabular-nums"] },
   planDay: { gap: spacing.xs },
   planSession: { gap: spacing.xs },
   planFacts: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },

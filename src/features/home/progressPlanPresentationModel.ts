@@ -11,12 +11,7 @@ import type {
 } from "../../application/homePlanSnapshotReader";
 import type { PackageCompletionState, TrackId } from "../../domain";
 
-export type ProgressPlanCompletionPresentation = Readonly<{
-  kind: PackageCompletionState["kind"];
-  qualifyingAttemptCount: number | null;
-  requiredAttemptCount: number | null;
-  ratio: number | null;
-}>;
+export type ProgressPlanCompletionPresentation = PackageCompletionState;
 
 export type ProgressPlanReadyPresentation = Readonly<{
   kind: "ready";
@@ -146,30 +141,15 @@ function progressActions(primary: GuidanceAction, secondary: GuidanceAction | nu
 function presentCompletion(value: PackageCompletionState): ProgressPlanCompletionPresentation | null {
   if (value.kind === "unknown") return unknownCompletion();
   if (value.kind === "completed") {
-    if (!isSafeNonNegativeInteger(value.qualifyingAttemptCount)) return null;
-    return Object.freeze({
-      kind: "completed",
-      qualifyingAttemptCount: value.qualifyingAttemptCount,
-      requiredAttemptCount: null,
-      ratio: 1,
-    });
+    if (!isSafeNonNegativeInteger(value.qualifyingAttemptCount) || !isSafePositiveInteger(value.rollingWindowSize) || value.qualifyingAttemptCount < value.rollingWindowSize || !Number.isFinite(value.quality) || value.quality < 0 || value.quality > 1) return null;
+    return Object.freeze({ ...value });
   }
-  if (!isSafeNonNegativeInteger(value.qualifyingAttemptCount) || !isSafePositiveInteger(value.requiredAttemptCount)) return null;
-  return Object.freeze({
-    kind: "in_progress",
-    qualifyingAttemptCount: value.qualifyingAttemptCount,
-    requiredAttemptCount: value.requiredAttemptCount,
-    ratio: clampRatio(value.qualifyingAttemptCount / value.requiredAttemptCount),
-  });
+  if (!isSafeNonNegativeInteger(value.qualifyingAttemptCount) || !isSafePositiveInteger(value.requiredAttemptCount) || !isSafePositiveInteger(value.rollingWindowSize) || value.requiredAttemptCount < value.rollingWindowSize) return null;
+  return Object.freeze({ ...value });
 }
 
 function unknownCompletion(): ProgressPlanCompletionPresentation {
-  return Object.freeze({ kind: "unknown", qualifyingAttemptCount: null, requiredAttemptCount: null, ratio: null });
-}
-
-function clampRatio(value: number): number {
-  if (!Number.isFinite(value)) return 0;
-  return Math.max(0, Math.min(1, value));
+  return Object.freeze({ kind: "unknown" });
 }
 
 function isSafeNonNegativeInteger(value: unknown): value is number {

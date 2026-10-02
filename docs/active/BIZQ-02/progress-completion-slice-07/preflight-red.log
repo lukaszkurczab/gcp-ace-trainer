@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: Progress consumes actual shared evidence without claiming completion from minimum attempt volume
+not ok 1 - Progress consumes actual shared evidence without claiming completion from minimum attempt volume
+  ---
+  duration_ms: 815.361917
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:155:1'
+  failureType: 'testCodeFailure'
+  error: 'Unknown target date guidance reason.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    guidanceReasonSegment (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/testing/runtimeSelectors.ts:365:55)
+    Object.reason (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/testing/runtimeSelectors.ts:171:163)
+    Object.ProgressPlanSection [as exports] (actual-ProgressPlanSection.cjs:22:910)
+    renderProgressPlanSection (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/features/home/tabs/progressPlanSectionTestHarness.mjs:37:34)
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:162:20)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1912.107042

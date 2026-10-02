@@ -1,0 +1,9 @@
+{
+  "old_hunks": [
+    154
+  ],
+  "bytes": 1152083,
+  "sha256_body": "1e8576b9b57d6f4bed8067af21972fc4aac1ebd791a43a046dede0a5014aa4f8",
+  "unchanged_against_before_full_hunk": true,
+  "scope": "Only external queue diff body; security/content audit directories are other active owners, never touched."
+}

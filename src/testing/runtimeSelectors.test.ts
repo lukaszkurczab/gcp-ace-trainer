@@ -227,7 +227,7 @@ test("target date guidance selectors expose every closed state and reason", () =
     "no_goal", "goal_paused", "no_plan", "update_required", "plan_paused", "completed", "overdue", "unreachable", "at_risk", "on_track", "open_ended", "unavailable",
   ];
   const reasons: readonly TargetDateGuidanceReason[] = [
-    "no_goal", "goal_paused", "no_plan", "target_changed", "package_changed", "cadence_changed", "plan_paused", "completed", "overdue", "insufficient_sessions", "no_future_slots", "at_risk", "on_track", "no_target", "unknown_completion_rule", "insufficient_elapsed_evidence", "calculation_error",
+    "no_goal", "goal_paused", "no_plan", "target_changed", "package_changed", "cadence_changed", "plan_paused", "completed", "overdue", "insufficient_sessions", "no_future_slots", "at_risk", "on_track", "no_target", "unknown_completion_rule", "quality_requirement_unmet", "insufficient_elapsed_evidence", "calculation_error",
   ];
   for (const surface of ["home", "progress"] as const) {
     assert.equal(runtimeSelectors.targetDateGuidance.root(surface), `patternly:target-date-guidance:root:${surface}`);

@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { renderProgressPlanSection } from '../../features/home/tabs/progressPlanSectionTestHarness.mjs';
 const require = createRequire(import.meta.url);
 import { buildTrack, buildAll } from '../../../../patternly-content/scripts/build.mjs';
 const { contentPackageRuntimeOwner } = require('../contentPackageRuntimeOwner.ts');
@@ -14,6 +15,9 @@ const { createLearningPlanSlotId } = require('../../domain/learning/slotIdentity
 const { MemoryKeyValueStorage, installKeyValueStorageForTests } = require('../../infrastructure/storage/mmkvClient.ts');
 const repositories = require('../../storage/repositories/index.ts');
 const { readLearningPlanInputSnapshot } = require('../../storage/repositories/learningPlanInputSnapshot.ts');
+const { buildProgressPlanPresentationModel } = require('../../features/home/progressPlanPresentationModel.ts');
+const { runtimeSelectors } = require('../../testing/runtimeSelectors.ts');
+const LOCALES = ['en', 'pl', 'de', 'fr', 'es', 'it', 'et'];
 
 const TRACK = 'aws-certified-solutions-architect-associate';
 const CONTENT = fileURLToPath(new URL('../../../../patternly-content/', import.meta.url));
@@ -80,11 +84,11 @@ async function verifiedProducerRuntime(t) {
   return { track, runtime: new CanonicalTrainingRuntime(track) };
 }
 
-async function learningFixture(resolved, install = true) {
+async function learningFixture(resolved, install = true, goalOverrides = {}) {
   const trackId = resolved.track.trackId;
   const storage = new MemoryKeyValueStorage();
   if (install) installKeyValueStorageForTests(storage);
-  const goal = await repositories.saveGoalSnapshot({ ...createDefaultGoal(trackId), targetDate: '2026-11-30' }, null);
+  const goal = await repositories.saveGoalSnapshot({ ...createDefaultGoal(trackId), targetDate: '2026-11-30', ...goalOverrides }, null);
   const plan = normalizeLearningPlan({
     schemaVersion: 1, planId: 'shared-projection-plan', trackId, goalRevision: goal.revision, status: 'accepted',
     timezone: 'Europe/Warsaw', contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256,
@@ -149,6 +153,71 @@ test('real producer → verified canonical runtime → persisted evidence → Ho
   await assertShared(f, 'in_progress');
 });
 
+test('Progress consumes actual shared evidence without claiming completion from minimum attempt volume', async t => {
+  const resolved = await verifiedProducerRuntime(t);
+  for (const goalOverrides of [{}, { goalType: 'learn_at_own_pace', targetDate: null }]) await t.test(goalOverrides.goalType ?? 'targeted', async () => {
+    const f = await learningFixture(resolved, true, goalOverrides);
+    await assertProgressCompletion(await assertShared(f, 'in_progress'), 0);
+    for (let index = 0; index < 19; index++) {
+      await repositories.addTrainingAttempt(durableAttempt(resolved, index, index < 15 ? 'correct' : 'incorrect'));
+      if ([8, 15, 18, 19].includes(index + 1)) await assertProgressCompletion(await assertShared(f, 'in_progress'), index + 1);
+    }
+    await repositories.addTrainingAttempt(durableAttempt(resolved, 19));
+    await assertProgressCompletion(await assertShared(f, 'in_progress'), 20);
+    for (let index = 20; index < 25; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index));
+    const quality = await assertShared(f, 'in_progress');
+    await assertProgressCompletion(quality, 25);
+    for (const surface of ['home', 'progress']) assert.equal(runtimeSelectors.targetDateGuidance.reason(surface, 'quality_requirement_unmet'), `patternly:target-date-guidance:reason:${surface}:quality-requirement-unmet`);
+    assert.throws(() => runtimeSelectors.targetDateGuidance.reason('progress', 'quality_unmet'), /Unknown target date guidance reason/);
+    const before = readLearningPlanInputSnapshot(f.trackId);
+    await assertProgressCompletion(quality, 25);
+    assert.deepEqual(readLearningPlanInputSnapshot(f.trackId), before, 'Presentation cannot change attempts, reviews, goal or accepted plan');
+    for (let index = 25; index < 33; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct'));
+    const completed = await assertShared(f, 'completed');
+    await assertProgressCompletion(completed, 33);
+    assert.equal(completed.home.completion.quality, 0.8);
+    for (let index = 33; index < 38; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index));
+    await assertProgressCompletion(await assertShared(f, 'in_progress'), 38);
+  });
+});
+
+async function assertProgressCompletion(state, count) {
+  for (const locale of LOCALES) {
+    const model = buildProgressPlanPresentationModel({ snapshot: state.home, activeTrackId: state.home.trackId, locale });
+    assert.equal(model.kind, 'ready');
+    assert.deepEqual(model.completion, state.home.completion);
+    assert.equal('ratio' in model.completion, false);
+    const rendered = renderProgressPlanSection(model, { locale, fontScale: 2 });
+    const block = rendered.byTestId(runtimeSelectors.progressPlan.completion(model.completion.kind));
+    assert.ok(block);
+    const text = rendered.textOf(block);
+    const translate = rendered.i18n.getFixedT(locale, 'learningPlan');
+    assert.ok(text.startsWith(translate('Completion rule')));
+    assert.doesNotMatch(text, /%|Completed scope|\{\{|\}\}/);
+    assert.equal(rendered.nodes.some(node => node.type === 'ProgressBar'), false);
+    if (model.completion.kind === 'unknown') {
+      assert.ok(text.includes(translate('The package does not define a completion rule.')));
+    } else {
+      assert.equal(model.completion.qualifyingAttemptCount, count);
+      assert.ok(text.endsWith(translate('{{count}} qualifying attempt', { count })));
+      if (model.completion.kind === 'completed') {
+        assert.ok(text.includes(translate('The package completion rule is currently met.')));
+        assert.equal(model.primaryAction, null);
+      } else if (count >= model.completion.requiredAttemptCount) {
+        const message = translate('The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet.');
+        assert.ok(rendered.text.includes(message));
+        assert.equal(rendered.nodes.filter(node => node.type === 'Text' && rendered.textOf(node) === message).length, 1, 'Keep quality status visible once, without repeating identical guidance');
+        assert.ok(!text.includes(translate('The package completion rule is currently met.')));
+      } else {
+        const remaining = model.completion.requiredAttemptCount - count;
+        assert.ok(text.includes(translate('attemptsRemaining', { count: remaining, remaining })));
+        if (locale === 'en') assert.match(text, /to reach the minimum number of attempts/);
+      }
+    }
+    for (const node of rendered.nodes.filter(node => node.type === 'Text')) assert.equal(node.props.maxFontSizeMultiplier, 2);
+  }
+}
+
 test('shared evidence is package-wide across plan revisions, exact by artifact, deduplicated, and partial is not correct', async t => {
   const resolved = await verifiedProducerRuntime(t);
   const f = await learningFixture(resolved);
@@ -179,6 +248,50 @@ test('absent actual policies stay unknown in both actual Home and proposal for a
     await repositories.addTrainingAttempt(durableAttempt(resolved, 0, 'correct'));
     const state = await assertShared(f, 'unknown');
     assert.deepEqual(state.home.paceForecast, { kind: 'unavailable', reason: 'unknown_completion_rule' });
+    await assertProgressCompletion(state);
+  }
+});
+
+test('actual Home none and Progress unavailable preserve honest status, actions and retry semantics', async () => {
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, 'certification');
+  const f = await learningFixture(resolved);
+  installKeyValueStorageForTests(new MemoryKeyValueStorage());
+  for (const goalState of ['no_goal', 'no_plan', 'goal_paused']) {
+    if (goalState === 'no_plan') await repositories.saveGoalSnapshot(createDefaultGoal(TRACK), null);
+    if (goalState === 'goal_paused') {
+      const current = await repositories.getGoalSnapshot(TRACK);
+      await repositories.saveGoalSnapshot({ ...current.record, status: 'paused' }, current.revision);
+    }
+    const snapshot = await f.home.read({ trackId: TRACK, now: f.now });
+    assert.equal(snapshot.kind, 'none');
+    const model = buildProgressPlanPresentationModel({ snapshot, activeTrackId: TRACK, locale: 'en' });
+    assert.equal(model.kind, 'none');
+    assert.equal(model.guidance.state, goalState);
+    for (const locale of LOCALES) {
+      const actions = [];
+      const localizedModel = buildProgressPlanPresentationModel({ snapshot, activeTrackId: TRACK, locale });
+      const rendered = renderProgressPlanSection(localizedModel, { locale, onAction: action => actions.push(action) });
+      const block = rendered.byTestId(runtimeSelectors.progressPlan.completion('unknown'));
+      const translate = rendered.i18n.getFixedT(locale, 'learningPlan');
+      assert.equal(rendered.textOf(block), translate('Completion rule') + translate('Completion scope unavailable'));
+      assert.ok(!rendered.textOf(block).includes(translate('The package does not define a completion rule.')));
+      assert.equal(rendered.nodes.some(node => node.type === 'ProgressBar'), false);
+      const action = rendered.byTestId(runtimeSelectors.targetDateGuidance.primary('progress'));
+      assert.ok(action);
+      action.props.onPress();
+      assert.deepEqual(actions, [localizedModel.primaryAction]);
+    }
+  }
+  const model = buildProgressPlanPresentationModel({ snapshot: null, activeTrackId: TRACK, locale: 'en' });
+  assert.equal(model.kind, 'unavailable');
+  for (const locale of LOCALES) {
+    let retries = 0;
+    const rendered = renderProgressPlanSection(model, { locale, onRetry: () => retries++ });
+    assert.equal(rendered.nodes.find(node => node.type === 'InfoBlock').props.accessibilityAlert, true);
+    assert.equal(rendered.byTestId(runtimeSelectors.progressPlan.completion('unknown')), undefined);
+    rendered.byTestId(runtimeSelectors.targetDateGuidance.primary('progress')).props.onPress();
+    assert.equal(retries, 1);
+    assert.doesNotMatch(rendered.text, /\{\{|\}\}/);
   }
 });
 

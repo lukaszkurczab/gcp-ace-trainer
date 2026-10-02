@@ -24,13 +24,13 @@ export function buildHomePlanPracticeSetupParams(
   });
 }
 
-export function completionCopy(outcome: ProposalOutcome, t: Translate): string {
+export function completionCopy(outcome: Pick<ProposalOutcome, "completionState">, t: Translate): string {
   const completion = outcome.completionState;
   if (completion.kind === "unknown") return t("The package does not define a completion rule.");
   if (completion.kind === "completed") return t("The package completion rule is currently met.");
   if (completion.qualifyingAttemptCount >= completion.requiredAttemptCount) return t("The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet.");
   const remaining = Math.max(0, completion.requiredAttemptCount - completion.qualifyingAttemptCount);
-  return t("attemptsRemaining", { count: remaining, remaining, window: completion.rollingWindowSize });
+  return t("attemptsRemaining", { count: remaining, remaining });
 }
 
 export function targetCopy(target: TargetAssessment, t: Translate): string {
