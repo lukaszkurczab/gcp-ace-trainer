@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { createInstance } from "i18next";
 
 import { getRecoveryOperationPresentation } from "./recoveryOperationPresentation";
 import type { RecoveryOperationSnapshot } from "../../application/account/recoveryOperationCoordinator";
@@ -152,4 +153,32 @@ test("all account locales provide the recovery operation states and explicit mis
     }
     assert.equal(Object.keys(locale.recoveryOperationConsumeStatus as object).length, 7);
   }
+});
+
+test("recovery panel resolves nested messages with the app's flat-key configuration", async () => {
+  const panel = readFileSync("src/features/account/RecoveryOperationPanel.tsx", "utf8");
+  const groups = ["recoveryOperationStatus", "recoveryOperationConsumeStatus", "recoveryOperationFailure", "recoveryOperationUnavailable"];
+  for (const group of groups) {
+    assert.match(panel, new RegExp('t\\(`' + group + '\\.[^`]+`, \\{ keySeparator: "\\." \\}\\)', "u"));
+  }
+  for (const language of ["en", "pl", "de", "fr", "es", "it", "et"]) {
+    const account = JSON.parse(readFileSync(`src/locales/${language}/account.json`, "utf8")) as Record<string, Record<string, string>>;
+    const instance = createInstance();
+    await instance.init({ lng: language, resources: { [language]: { account } }, defaultNS: "account", keySeparator: false });
+    for (const group of groups) {
+      const messages = account[group];
+      assert.ok(messages);
+      for (const [status, expected] of Object.entries(messages)) {
+        assert.equal(instance.t(`${group}.${status}`, { keySeparator: "." }), expected, `${language}:${group}.${status}`);
+      }
+    }
+  }
+});
+
+test("terminal continuation does not render a wrong-account warning", () => {
+  const terminal = getRecoveryOperationPresentation({ kind: "terminal", operationId: "operation-1", status: "expired_or_invalid", blocksProfilePreparation: false });
+  assert.equal(terminal.showResume, true);
+  assert.equal(terminal.resumeKind, "terminal");
+  const panel = readFileSync("src/features/account/RecoveryOperationPanel.tsx", "utf8");
+  assert.match(panel, /presentation\.resumeKind && presentation\.resumeKind !== "terminal" \? <InfoBlock[^>]+testID="recovery-operation-mismatch"/u);
 });

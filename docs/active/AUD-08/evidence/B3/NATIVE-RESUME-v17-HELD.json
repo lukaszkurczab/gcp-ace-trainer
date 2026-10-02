@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "scope": "actual native post-server-effect/pre-response/status/SDK/ACK process death",
+  "interruption": {
+    "acknowledgementCountBeforeColdStart": 0,
+    "appProcessAbsentAfter": true,
+    "appTerminationRequested": true,
+    "clientClosedBeforeDelivery": true,
+    "committedResponseHeld": true,
+    "ownedConsumeCount": 1,
+    "pidChanged": true,
+    "proxyOwnedConsumeCount": 1,
+    "proxyStage": "CLIENT_CLOSED_BEFORE_DELIVERY",
+    "stage": "COMMITTED_RESPONSE_HELD",
+    "status": "PASS",
+    "statusProofCountBeforeColdStart": 0
+  },
+  "proxyBeforeColdStart": {
+    "schema": "aud08-native-recovery-proxy-v1",
+    "status": "READY",
+    "safeProbePassed": true,
+    "armed": true,
+    "committedResponseHeld": true,
+    "clientClosedBeforeDelivery": true,
+    "holdTimeout": false,
+    "safeProbeCount": 1,
+    "ownedConsumeCount": 1,
+    "ownedCommitUnknown": false,
+    "statusProofCount": 0,
+    "acknowledgementCount": 0,
+    "sameOperationIdObserved": true,
+    "uidGenerationVerified": false,
+    "secondOwnedConsumeBlocked": false,
+    "stage": "CLIENT_CLOSED_BEFORE_DELIVERY"
+  },
+  "adminReadback": "held PASS exactly one new owned consume result_available, code used, generation+1, result cipher present/unexpired, prior8 unchanged",
+  "sources": "consumer v17 55 files and producer v12c 28 verified by held guard",
+  "customTokenDeliveredBeforeDeath": false,
+  "secondOwnedPOSTPerformed": false
+}

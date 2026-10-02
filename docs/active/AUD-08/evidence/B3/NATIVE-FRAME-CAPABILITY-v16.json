@@ -1,0 +1,23 @@
+{
+  "status": "UNAVAILABLE",
+  "stage": "MAIN",
+  "task": "AUD-08-B3",
+  "timedOut": true,
+  "targetExpressions": 0,
+  "targetMemoryReads": 0,
+  "continuedPastEvaluation": false,
+  "sourcePinsBeforeAfterMatch": true,
+  "heads": {
+    "patternly": "532869d1af6dcd0558c5376b569ed43e408e1316",
+    "patternly-backend": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f"
+  },
+  "probeSourceSha256": "d5f1601cbf969e9a2f2794654e109bbb07f7dafd5ea5313e227a24bbba7a0a51",
+  "existingIPhone17Only": true,
+  "postAppProcessAbsent": true,
+  "interpretation": {
+    "evaluationExecution": "UNVERIFIED",
+    "continuedPastEvaluationFieldUnsupported": true,
+    "captureCapability": "UNVERIFIED",
+    "furtherDebuggerAttempts": false
+  }
+}

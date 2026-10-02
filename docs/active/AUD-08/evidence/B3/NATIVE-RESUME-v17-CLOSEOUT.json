@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "scope": "actual local sign-out, guest UI continuity and post-ACK cold vault gate",
+  "verifyCompletedScreen": "PASS account-sync-failed + canonical sign-out visible, recovery panel absent",
+  "safeExit": "PASS sign-out \u2192 account-sign-in-submit \u2192 explicit guest \u2192 main-tab-bar",
+  "guestContinuity": "PASS Progress root and Settings Guest; no settings-sign-out/recovery panel",
+  "coldAfterACKAndExit": {
+    "observe": "PASS main-tab-bar visible; recovery panel absent",
+    "proxyCountersBeforeAndAfterEqual": true,
+    "ownedConsumeCount": 1,
+    "statusProofCount": 2,
+    "acknowledgementCount": 1,
+    "secondConsumeAttemptObserved": false
+  },
+  "vaultCleanupProof": "coordinator terminal awaits SecureStore deletion+null readback; actual completed UI and cold guest startup do not retain recovery gate. Keychain item not queried externally.",
+  "learningDataEvidence": {
+    "reused": "GUEST-LEARNING-PRESERVATION-CONTRACT-AUDIT-v1 + CORE-SOURCE-RECHECK-v1 + historical actual guest comparison",
+    "boundary": "complete recognized selected local canonical MMKV keyspace; six unchanged domain rows, not six exclusively learning rows; removed own expired Premium cache separate",
+    "applicable": "guest/persistence/sign-out source unchanged by v17 panel-only production correction; same installed app, no reset/reinstall/transfer/discard/adoption",
+    "newByteComparisonPerformed": false,
+    "writerAttributionUnknown": true,
+    "strictHistoricalFlagsUnchanged": true,
+    "wholeProfileCloudContentPackageClaim": false
+  },
+  "remoteSessionRevocation": "retained local pending revoke, proxy denies revoke; no remote completion claim",
+  "localFixtureBinding": "finish readback PASS; generation+1 exact binding updated privately; no Auth/Firestore finish writes",
+  "resetReinstallTransferDiscardAdoptionPerformed": false
+}

@@ -53,14 +53,14 @@ export function RecoveryOperationPanel({
   if (snapshot.kind === "idle") return null;
 
   const statusCopy = snapshot.kind === "consume"
-    ? t(`recoveryOperationConsumeStatus.${snapshot.status}`)
+    ? t(`recoveryOperationConsumeStatus.${snapshot.status}`, { keySeparator: "." })
     : snapshot.kind === "issue" || snapshot.kind === "terminal"
-    ? t(`recoveryOperationStatus.${snapshot.status}`)
+    ? t(`recoveryOperationStatus.${snapshot.status}`, { keySeparator: "." })
     : snapshot.kind === "loading"
       ? t("recoveryOperationLoading")
-      : t(`recoveryOperationUnavailable.${snapshot.reason}`);
+      : t(`recoveryOperationUnavailable.${snapshot.reason}`, { keySeparator: "." });
   const failure = snapshot.kind === "issue" || snapshot.kind === "consume" ? snapshot.failure : null;
-  const failureCopy = failure ? t(`recoveryOperationFailure.${failure}`) : null;
+  const failureCopy = failure ? t(`recoveryOperationFailure.${failure}`, { keySeparator: "." }) : null;
   const mismatchCopy = snapshot.kind === "issue" && snapshot.accountResolution !== "different_uid" && snapshot.accountResolution !== "different_generation"
     ? t("recoveryOperationGenerationMissingDescription")
     : t(presentation.resumeKind === "issue" ? "recoveryOperationIssueMismatchDescription" : "recoveryOperationMismatchDescription");
@@ -68,7 +68,7 @@ export function RecoveryOperationPanel({
   return (
     <View style={styles.panel} testID="recovery-operation-panel">
       {snapshot.kind === "issue" && snapshot.status === "delivery_unconfirmed" ? <InfoBlock accessibilityAlert body={t("recoveryOperationDeliveryUnconfirmed")} title={t("recoveryCodes")} tone="warning" testID="recovery-operation-delivery-unconfirmed" /> : null}
-      {presentation.resumeKind ? <InfoBlock accessibilityAlert body={mismatchCopy} title={t("recoveryOperationMismatchTitle")} tone="warning" testID="recovery-operation-mismatch" /> : null}
+      {presentation.resumeKind && presentation.resumeKind !== "terminal" ? <InfoBlock accessibilityAlert body={mismatchCopy} title={t("recoveryOperationMismatchTitle")} tone="warning" testID="recovery-operation-mismatch" /> : null}
       {presentation.deferred ? <InfoBlock accessibilityAlert body={t("recoveryOperationDeferredDescription")} title={t("recoveryOperationDeferredTitle")} tone="warning" testID="recovery-operation-deferred" /> : null}
       {snapshot.kind === "loading" || snapshot.kind === "unavailable" ? <InfoBlock accessibilityAlert body={statusCopy} title={t("recoveryOperationUnavailableTitle")} tone="warning" testID="recovery-operation-unavailable" /> : null}
       {snapshot.kind === "issue" && !presentation.showCodes && !presentation.savedAcknowledgementPending && snapshot.status !== "delivery_unconfirmed" && snapshot.status !== "acknowledged" && snapshot.status !== "superseded" && snapshot.status !== "expired_or_invalid" && !snapshot.needsAccountResolution ? <InfoBlock body={statusCopy} title={t("recoveryCodes")} testID="recovery-operation-status" /> : null}
