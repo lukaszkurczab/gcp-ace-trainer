@@ -1,0 +1,52 @@
+{
+  "stage": "After immutable runtime admission and full102 tests; before owned metadata checkpoints",
+  "repos": [
+    {
+      "repo": "patternly",
+      "head": "d07a8a47eeab843fe2957df0e89e12993567713a",
+      "upstream": "200f8504c48df020d19937cad788d3961eb4caf7",
+      "aheadBehind": "11\t0",
+      "status": "M docs/PATTERNLY-WORKING-PLAN.md\n M docs/active/BIZQ-01/source-copy-slice-04/REPORT.md\n M docs/active/BIZQ-01/source-copy-slice-04/runtime-admission-red.log\n?? docs/active/SECURITY-PRIVACY-AUDIT/",
+      "stashes": [
+        "acc4dd4b104d202e81064fabd2c268e28ffbf5cd",
+        "680df78d7014d76ccaaea221cb2022d4f1f50746",
+        "803672fc67aa8cab977030e63a29c3d5f599ca44",
+        "0f1a08fa36b628ffad19dea8e8e94fe4d6a76031",
+        "fa998da9bfc9dd04fa980c3048906d8642c5dfdb",
+        "f21e31454bdf33f0b09a33158f9d3ad1777e2ca7"
+      ]
+    },
+    {
+      "repo": "patternly-content",
+      "head": "b3debc783454fd0d2b6083fb741d98c4c638f7ee",
+      "upstream": "78ba999098ea12704b74fe9de2eecdf89578e885",
+      "aheadBehind": "6\t0",
+      "status": "M evidence/admissions/candidate-admission-v3.json\n M evidence/business-quality/bizq-01-source-copy-slice-04/REPORT.md\n M evidence/candidate-decisions/aws-02-codex-decision-v2.json\n M evidence/readiness/candidate-readiness-v2.json\n M reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json\n M reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/coding-interview-dsa-problem-solving.json\n M reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json\n?? evidence/admissions/runtime/195fbb30ed1223fddfddc491007f6b6f5de0c01383da87a07ded611338da1a73-d07a8a47eeab843fe2957df0e89e12993567713a.json\n?? evidence/business-quality/bizq-01-source-copy-slice-04/admission-final.log\n?? evidence/business-quality/bizq-01-source-copy-slice-04/admission.log\n?? evidence/business-quality/bizq-01-source-copy-slice-04/assemble-decision.mjs\n?? evidence/business-quality/bizq-01-source-copy-slice-04/candidate-draft.log\n?? evidence/business-quality/bizq-01-source-copy-slice-04/canonical-final.log\n?? evidence/business-quality/bizq-01-source-copy-slice-04/decision.log\n?? evidence/business-quality/bizq-01-source-copy-slice-04/readiness.log\n?? evidence/business-quality/bizq-01-source-copy-slice-04/release-gate.log\n?? evidence/business-quality/full-content-audit-2026-10-02/",
+      "stashes": [
+        "8f1944f349449f1a7987f49b068eff2393a8e1c5",
+        "2b38e13f76ff561de18c5ee2c209ed31291ecba2"
+      ]
+    },
+    {
+      "repo": "patternly-backend",
+      "head": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "aheadBehind": "0\t0",
+      "status": "",
+      "stashes": [
+        "f706b6c18923f8a8ef0a862a903d08c548e7badc",
+        "a83361eba8048b5384cecdb412f466b6c6ed87de",
+        "d32f85fb95a97e030f0c93c053305767f605f575",
+        "0ab654cbb2e7ece519d8d34e739b50db8bb00e7d"
+      ]
+    },
+    {
+      "repo": "patternly-web",
+      "head": "9585919b7d0c1a8396e6d255e49850e64e129d0e",
+      "upstream": "9585919b7d0c1a8396e6d255e49850e64e129d0e",
+      "aheadBehind": "0\t0",
+      "status": "",
+      "stashes": []
+    }
+  ]
+}

@@ -9,10 +9,10 @@ not ok 1 - runtime admission resolves the exact candidate lock for every canonic
   error: |-
     Expected values to be strictly equal:
     + actual - expected
-    
+
     + '195fbb30ed1223fddfddc491007f6b6f5de0c01383da87a07ded611338da1a73'
     - '2c8bfd5b33180484e49c4f05a1fcc9e0b47e1c9440b8a06bb351a104c3b89c04'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: '2c8bfd5b33180484e49c4f05a1fcc9e0b47e1c9440b8a06bb351a104c3b89c04'
