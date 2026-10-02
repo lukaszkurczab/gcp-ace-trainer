@@ -1,0 +1,11 @@
+# Independent acceptance — Luna High
+
+Reviewer: `/root/bizq_qa`, `gpt-6-luna`, high reasoning (`qa_luna`); separate read-only review. Controller records the returned verdict; this is implementation acceptance, distinct from the no-tools briefing. Scope: proposal/editor freshness, profile leases, canonical persistence and reminder composition, preserving Premium and current package/runtime boundaries.
+
+**PASS WITH GAPS.** The reviewer inspected actual source, tests and evidence and independently reran focused suites: **43 passed, 0 failed**; `npm run typecheck` and `git diff --check` passed. It checked the actual profile router A/B/A lease test, final synchronous guards, original accepted-plan revision, explicit journal/read failures and same-scope durable acknowledgement.
+
+The reviewer identified pending durable-acknowledgement reuse after a changed goal as a concrete reminder risk. The correction checks current goal revision on both accept and editor acknowledgement. Controller additionally reproduced a goal change during the editor's async read; final correction uses immediate synchronous `readGoalSnapshot()` before returning saved. The reviewer independently inspected this narrow change and its regression (stale(goal), one save, unchanged plan), reran the focused checks above and found no new blocker. These routine corrections stay inside the accepted design; no architecture escalation or new release gate.
+
+Reviewer final response: “PASS WITH GAPS remains my verdict. The synchronous goal check closes the editor retry race; its regression passes. Focused tests passed (43/43), as did typecheck and git diff --check. The corrected native submit→proposal→restart flow passes. Exact 09:15 entry remains RED, and full BIZQ-02 remains open.”
+
+Limits: full shared Home/proposal/forecast projection and P01..P20 remain open. Actual package completion rules are absent; no fixture threshold becomes production policy. Native normal guest flow establishes post-ACK persistence, not native SDK account switching, injected-clock faults or interruption recovery. Exact time-entry source-field RED is retained separately. Controller's final **88/88** suite, **5/5** Premium contracts, own diff review and native screenshot inspection are linked from [REPORT](REPORT.md), not substituted by the reviewer report.

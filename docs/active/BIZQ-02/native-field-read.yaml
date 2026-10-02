@@ -1,0 +1,10 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 expose actual editor time before commit
+---
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: patternly:learning-plan:editor:time:mon
+    direction: DOWN
+- takeScreenshot: bizq02-editor-field-observed
+- assertVisible: '09:15'

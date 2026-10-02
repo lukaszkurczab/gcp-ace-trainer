@@ -1,0 +1,24 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 real editor exact input probe
+---
+- tapOn:
+    id: patternly:learning-plan:edit-schedule
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:editor:commit
+    timeout: 30000
+- tapOn:
+    id: patternly:learning-plan:editor:time:mon
+- eraseText
+- inputText: '09:15'
+- assertVisible: '09:15'
+- takeScreenshot: bizq02-editor-before-save
+- hideKeyboard
+- tapOn:
+    id: patternly:learning-plan:editor:commit
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:persisted
+    timeout: 30000
+- assertVisible: '09:15'
+- takeScreenshot: bizq02-editor-after-save

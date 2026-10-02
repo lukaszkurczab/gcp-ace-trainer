@@ -93,3 +93,16 @@ test("a terminal cleared reminder outcome is not relabeled as pending", async ()
   if (result.kind !== "plan_saved_reminders_cleared") throw new Error("Expected cleared reminder result.");
   assert.equal(result.reminder, cleared);
 });
+
+
+test("stale acceptance and failed evidence do not reconcile local reminders", async () => {
+  let reconciles = 0;
+  const runtime = new LearningPlanMutationRuntimeCore(dependencies({
+    acceptProposal: async () => ({ kind: "stale", reason: "proposal" }),
+    commit: async () => ({ kind: "storage_error" }),
+    reconcile: async () => { reconciles++; throw new Error("must not reconcile"); },
+  }));
+  assert.deepEqual(await runtime.acceptProposal("old", trackId, copy), { kind: "stale", reason: "proposal" });
+  assert.deepEqual(await runtime.commit("old", trackId, copy), { kind: "storage_error" });
+  assert.equal(reconciles, 0);
+});

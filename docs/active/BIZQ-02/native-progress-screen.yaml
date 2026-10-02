@@ -1,0 +1,10 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 inspect rendered Progress goal action
+---
+- tapOn:
+    id: main-tab-bar-progress
+- extendedWaitUntil:
+    visible:
+      id: patternly:progress:root
+    timeout: 30000
+- takeScreenshot: bizq02-progress-before-goal-tap

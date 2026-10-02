@@ -1,0 +1,94 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 real guest proposal acceptance and editor persistence
+---
+- tapOn:
+    id: patternly:home:change-track
+- scrollUntilVisible:
+    element:
+      id: patternly:home:select-track:google-cloud-associate-cloud-engineer
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: patternly:home:select-track:google-cloud-associate-cloud-engineer
+- tapOn:
+    id: patternly:home:select-track:continue
+- extendedWaitUntil:
+    visible:
+      id: patternly:home:track-card:google-cloud-associate-cloud-engineer
+    timeout: 30000
+- tapOn:
+    id: main-tab-bar-progress
+- scrollUntilVisible:
+    element:
+      id: patternly:progress:goal
+    direction: DOWN
+- tapOn:
+    id: patternly:progress:goal
+- extendedWaitUntil:
+    visible:
+      id: patternly:goal:root
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: patternly:goal:save
+    commands:
+      - tapOn:
+          id: patternly:goal:save
+- runFlow:
+    when:
+      visible:
+        id: patternly:learning-plan:create
+    commands:
+      - tapOn:
+          id: patternly:learning-plan:create
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:accept
+    timeout: 30000
+- takeScreenshot: bizq02-real-proposal
+- tapOn:
+    id: patternly:learning-plan:accept
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:persisted
+    timeout: 30000
+- takeScreenshot: bizq02-real-accepted
+- tapOn:
+    id: patternly:learning-plan:edit-schedule
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:editor:commit
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: patternly:learning-plan:editor:time:mon
+    direction: DOWN
+- tapOn:
+    id: patternly:learning-plan:editor:time:mon
+- eraseText
+- inputText: '09:15'
+- hideKeyboard
+- tapOn:
+    id: patternly:learning-plan:editor:commit
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:persisted
+    timeout: 30000
+- assertVisible: '09:15'
+- takeScreenshot: bizq02-real-edited
+- stopApp
+- launchApp:
+    clearState: false
+- openLink: "com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 30000
+- tapOn:
+    id: main-tab-bar-progress
+- extendedWaitUntil:
+    visible:
+      id: patternly:progress:root
+    timeout: 30000
+- takeScreenshot: bizq02-restarted-progress

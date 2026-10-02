@@ -294,7 +294,8 @@ export function isMutationJournalRecord(value: unknown): value is MutationJourna
 
 export function assertMutationJournalIntegrity(value: unknown): asserts value is MutationJournalRecord { if (!hasValidMutationJournalIntegrity(value)) throw new Error("Mutation journal record is unsupported."); }
 export function assertValidMutationJournal(value: unknown): asserts value is MutationJournalRecord { if (!isMutationJournalRecord(value)) throw new Error("Mutation journal record is unsupported."); }
-export async function getActiveMutationJournal(): Promise<MutationJournalRecord | null> { return readCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, isMutationJournalRecord); }
+export function readActiveMutationJournal(): MutationJournalRecord | null { return readCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, isMutationJournalRecord); }
+export async function getActiveMutationJournal(): Promise<MutationJournalRecord | null> { return readActiveMutationJournal(); }
 let journalCriticalSection: Promise<void> = Promise.resolve();
 async function inJournalCriticalSection<T>(operation: () => Promise<T>): Promise<T> {
   const previous = journalCriticalSection;

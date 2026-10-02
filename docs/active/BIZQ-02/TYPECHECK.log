@@ -1,0 +1,10 @@
+
+> patternly@0.1.0 typecheck
+> tsc --noEmit
+
+docs/active/BIZQ-02/preflight-stale-proposal.ts(14,2): error TS2353: Object literal may only specify known properties, and 'loadGoalSnapshot' does not exist in type 'Readonly<{ createProposalId(): string; getTimezone(): string; readInputs(trackId: string): Readonly<{ storageScope: object; goal: Readonly<{ record: Readonly<{ goalType: "prepare_for_an_interview" | "build_foundations" | "refresh_and_maintain_skills" | "learn_at_own_pace" | "prepare_for_a_certification"; ... 4 more ...'.
+npm notice
+npm notice New major version of npm available! 10.9.8 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

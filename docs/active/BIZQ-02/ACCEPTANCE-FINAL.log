@@ -1,0 +1,540 @@
+TAP version 13
+# Subtest: actual canonical proposal plus repositories: attempts arriving after async resolve cannot persist
+ok 1 - actual canonical proposal plus repositories: attempts arriving after async resolve cannot persist
+  ---
+  duration_ms: 501.863083
+  type: 'test'
+  ...
+# Subtest: calendar changing during plan construction is checked immediately before CAS
+ok 2 - calendar changing during plan construction is checked immediately before CAS
+  ---
+  duration_ms: 10.791625
+  type: 'test'
+  ...
+# Subtest: accepted-plan replacement after proposal creation cannot be overwritten
+ok 3 - accepted-plan replacement after proposal creation cannot be overwritten
+  ---
+  duration_ms: 13.107959
+  type: 'test'
+  ...
+# Subtest: evidence and calendar changes invalidate a proposal editor without writing
+ok 4 - evidence and calendar changes invalidate a proposal editor without writing
+  ---
+  duration_ms: 5.373167
+  type: 'test'
+  ...
+# Subtest: same-scope uncertain accept acknowledges exact durable command even with active journal, without another write
+ok 5 - same-scope uncertain accept acknowledges exact durable command even with active journal, without another write
+  ---
+  duration_ms: 4.4195
+  type: 'test'
+  ...
+# Subtest: same-scope uncertain editor acknowledgement does not re-run the write or proposal freshness
+ok 6 - same-scope uncertain editor acknowledgement does not re-run the write or proposal freshness
+  ---
+  duration_ms: 3.9015
+  type: 'test'
+  ...
+# Subtest: uncertain accepted result and editors do not leak into a replacement storage scope
+ok 7 - uncertain accepted result and editors do not leak into a replacement storage scope
+  ---
+  duration_ms: 4.082708
+  type: 'test'
+  ...
+# Subtest: actual profile router A/B/A republishes a new lease; old editor, in-flight and terminal result remain stale
+ok 8 - actual profile router A/B/A republishes a new lease; old editor, in-flight and terminal result remain stale
+  ---
+  duration_ms: 8.51125
+  type: 'test'
+  ...
+# Subtest: replay of a terminal acceptance after a later edit cannot reconcile old reminders
+ok 9 - replay of a terminal acceptance after a later edit cannot reconcile old reminders
+  ---
+  duration_ms: 5.482
+  type: 'test'
+  ...
+# Subtest: goal changes after uncertain durable writes cannot acknowledge a stale pair or reconcile reminders
+    # Subtest: accept
+    ok 1 - accept
+      ---
+      duration_ms: 3.335916
+      type: 'test'
+      ...
+    # Subtest: editor
+    ok 2 - editor
+      ---
+      duration_ms: 5.361625
+      type: 'test'
+      ...
+    1..2
+ok 10 - goal changes after uncertain durable writes cannot acknowledge a stale pair or reconcile reminders
+  ---
+  duration_ms: 9.192541
+  type: 'test'
+  ...
+# Subtest: uncertain editor retry rechecks goal synchronously after its async read
+ok 11 - uncertain editor retry rechecks goal synchronously after its async read
+  ---
+  duration_ms: 5.604333
+  type: 'test'
+  ...
+# Subtest: proposal editor preserves retained slot IDs, drops removed IDs, sorts days, and saves revision one
+ok 12 - proposal editor preserves retained slot IDs, drops removed IDs, sorts days, and saves revision one
+  ---
+  duration_ms: 36.209958
+  type: 'test'
+  ...
+# Subtest: accepted plan edit explicitly reads a snapshot, increments plan revision, and stale sessions do not commit
+ok 13 - accepted plan edit explicitly reads a snapshot, increments plan revision, and stale sessions do not commit
+  ---
+  duration_ms: 1.714875
+  type: 'test'
+  ...
+# Subtest: direct accept and proposal editor share plan CAS and retry after idempotent success
+ok 14 - direct accept and proposal editor share plan CAS and retry after idempotent success
+  ---
+  duration_ms: 0.70075
+  type: 'test'
+  ...
+# Subtest: parallel proposal acceptance shares one promise and one durable save
+ok 15 - parallel proposal acceptance shares one promise and one durable save
+  ---
+  duration_ms: 0.539417
+  type: 'test'
+  ...
+# Subtest: parallel acceptance for one proposal across tracks never shares the in-flight success
+ok 16 - parallel acceptance for one proposal across tracks never shares the in-flight success
+  ---
+  duration_ms: 0.513958
+  type: 'test'
+  ...
+# Subtest: accepted result cache is scoped by proposal and track identity
+ok 17 - accepted result cache is scoped by proposal and track identity
+  ---
+  duration_ms: 0.444
+  type: 'test'
+  ...
+# Subtest: pending acceptance retry is scoped by proposal and track identity
+ok 18 - pending acceptance retry is scoped by proposal and track identity
+  ---
+  duration_ms: 0.499
+  type: 'test'
+  ...
+# Subtest: storage uncertainty keeps the editor session and retries through durable command reconciliation
+ok 19 - storage uncertainty keeps the editor session and retries through durable command reconciliation
+  ---
+  duration_ms: 0.621208
+  type: 'test'
+  ...
+# Subtest: accepted-plan retry reconciles its durable command before checking refreshed content context
+ok 20 - accepted-plan retry reconciles its durable command before checking refreshed content context
+  ---
+  duration_ms: 3.47875
+  type: 'test'
+  ...
+# Subtest: a replacement proposal keeps plan identity and increments plan revision
+ok 21 - a replacement proposal keeps plan identity and increments plan revision
+  ---
+  duration_ms: 1.259166
+  type: 'test'
+  ...
+# Subtest: a target-date replacement remains explicit and atomically updates the accepted plan identity
+ok 22 - a target-date replacement remains explicit and atomically updates the accepted plan identity
+  ---
+  duration_ms: 4.741084
+  type: 'test'
+  ...
+# Subtest: accepted plan freshness checks content version, artifact SHA, and timezone
+ok 23 - accepted plan freshness checks content version, artifact SHA, and timezone
+  ---
+  duration_ms: 0.941916
+  type: 'test'
+  ...
+# Subtest: proposal creation rejects a local-day change during package resolution
+ok 24 - proposal creation rejects a local-day change during package resolution
+  ---
+  duration_ms: 549.1395
+  type: 'test'
+  ...
+# Subtest: proposal resolution rejects a timezone change during package resolution
+ok 25 - proposal resolution rejects a timezone change during package resolution
+  ---
+  duration_ms: 7.946667
+  type: 'test'
+  ...
+# Subtest: unchanged persisted GCP inputs stay ready through the synchronous commit guard
+ok 26 - unchanged persisted GCP inputs stay ready through the synchronous commit guard
+  ---
+  duration_ms: 4.426375
+  type: 'test'
+  ...
+# Subtest: a newly persisted exact-package attempt stales the proposal; immutable replay adds no evidence
+ok 27 - a newly persisted exact-package attempt stales the proposal; immutable replay adds no evidence
+  ---
+  duration_ms: 4.26825
+  type: 'test'
+  ...
+# Subtest: a persisted review becoming due within the same local day stales its proposal
+ok 28 - a persisted review becoming due within the same local day stales its proposal
+  ---
+  duration_ms: 3.425542
+  type: 'test'
+  ...
+# Subtest: a persisted goal revision change stales its proposal
+ok 29 - a persisted goal revision change stales its proposal
+  ---
+  duration_ms: 2.052042
+  type: 'test'
+  ...
+# Subtest: corrupt, dangling, and journaled evidence reads are errors, never empty histories
+    # Subtest: corrupt-index
+    ok 1 - corrupt-index
+      ---
+      duration_ms: 0.809042
+      type: 'test'
+      ...
+    # Subtest: dangling-attempt
+    ok 2 - dangling-attempt
+      ---
+      duration_ms: 0.371666
+      type: 'test'
+      ...
+    # Subtest: active-journal
+    ok 3 - active-journal
+      ---
+      duration_ms: 1.820291
+      type: 'test'
+      ...
+    1..3
+ok 30 - corrupt, dangling, and journaled evidence reads are errors, never empty histories
+  ---
+  duration_ms: 4.042333
+  type: 'test'
+  ...
+# Subtest: storage profile replacement during package resolution stales creation
+ok 31 - storage profile replacement during package resolution stales creation
+  ---
+  duration_ms: 0.520542
+  type: 'test'
+  ...
+# Subtest: an injected canonical-package artifact change stales the synchronous guard
+ok 32 - an injected canonical-package artifact change stales the synchronous guard
+  ---
+  duration_ms: 1.687417
+  type: 'test'
+  ...
+# Subtest: exact duplicate evidence preserves order and conflicting duplicate IDs fail closed
+ok 33 - exact duplicate evidence preserves order and conflicting duplicate IDs fail closed
+  ---
+  duration_ms: 2.945166
+  type: 'test'
+  ...
+# Subtest: a repository read failure after package await remains retryable
+ok 34 - a repository read failure after package await remains retryable
+  ---
+  duration_ms: 0.262209
+  type: 'test'
+  ...
+# Subtest: plan accept saves first and returns the synced reminder outcome
+ok 35 - plan accept saves first and returns the synced reminder outcome
+  ---
+  duration_ms: 1.829
+  type: 'test'
+  ...
+# Subtest: a saved plan remains successful with a durable pending reminder result
+ok 36 - a saved plan remains successful with a durable pending reminder result
+  ---
+  duration_ms: 0.241292
+  type: 'test'
+  ...
+# Subtest: a terminal cleared reminder outcome is not relabeled as pending
+ok 37 - a terminal cleared reminder outcome is not relabeled as pending
+  ---
+  duration_ms: 0.175458
+  type: 'test'
+  ...
+# Subtest: stale acceptance and failed evidence do not reconcile local reminders
+ok 38 - stale acceptance and failed evidence do not reconcile local reminders
+  ---
+  duration_ms: 0.150292
+  type: 'test'
+  ...
+# Subtest: explicit enable materializes only the exact accepted plan slots and full identity
+ok 39 - explicit enable materializes only the exact accepted plan slots and full identity
+  ---
+  duration_ms: 24.075417
+  type: 'test'
+  ...
+# Subtest: reconcile never requests permission and returns permission_denied as pending
+ok 40 - reconcile never requests permission and returns permission_denied as pending
+  ---
+  duration_ms: 0.826417
+  type: 'test'
+  ...
+# Subtest: explicit enable is the only path that requests permission and persists a denied retry
+ok 41 - explicit enable is the only path that requests permission and persists a denied retry
+  ---
+  duration_ms: 0.798875
+  type: 'test'
+  ...
+# Subtest: disable cancels every native reminder before persisting disabled state and fails closed on cancellation errors
+ok 42 - disable cancels every native reminder before persisting disabled state and fails closed on cancellation errors
+  ---
+  duration_ms: 2.652875
+  type: 'test'
+  ...
+# Subtest: permission pending retains existing native IDs for a later retry
+ok 43 - permission pending retains existing native IDs for a later retry
+  ---
+  duration_ms: 4.09425
+  type: 'test'
+  ...
+# Subtest: timezone mismatch clears durable and native schedules without publishing
+ok 44 - timezone mismatch clears durable and native schedules without publishing
+  ---
+  duration_ms: 0.438125
+  type: 'test'
+  ...
+# Subtest: source absence and terminal plan states are separate closed outcomes
+ok 45 - source absence and terminal plan states are separate closed outcomes
+  ---
+  duration_ms: 0.873166
+  type: 'test'
+  ...
+# Subtest: a paused goal is a separate closed outcome and clears native schedules
+ok 46 - a paused goal is a separate closed outcome and clears native schedules
+  ---
+  duration_ms: 0.19325
+  type: 'test'
+  ...
+# Subtest: an expected identity from another active track stays pending and is persisted for retry
+ok 47 - an expected identity from another active track stays pending and is persisted for retry
+  ---
+  duration_ms: 1.629166
+  type: 'test'
+  ...
+# Subtest: full source identity mismatch is fail-closed before scheduling
+ok 48 - full source identity mismatch is fail-closed before scheduling
+  ---
+  duration_ms: 0.530916
+  type: 'test'
+  ...
+# Subtest: legacy cancellation-only journal is cancelled before the current plan is scheduled
+ok 49 - legacy cancellation-only journal is cancelled before the current plan is scheduled
+  ---
+  duration_ms: 1.3495
+  type: 'test'
+  ...
+# Subtest: journal-created slots are trusted only when the discovered native identity and day match
+ok 50 - journal-created slots are trusted only when the discovered native identity and day match
+  ---
+  duration_ms: 0.998041
+  type: 'test'
+  ...
+# Subtest: post-read plan change is concurrent_change and leaves a retryable journal
+ok 51 - post-read plan change is concurrent_change and leaves a retryable journal
+  ---
+  duration_ms: 2.8875
+  type: 'test'
+  ...
+# Subtest: post-read device timezone change is concurrent_change and does not publish
+ok 52 - post-read device timezone change is concurrent_change and does not publish
+  ---
+  duration_ms: 2.585084
+  type: 'test'
+  ...
+# Subtest: scheduler failure is pending and never reports synced
+ok 53 - scheduler failure is pending and never reports synced
+  ---
+  duration_ms: 1.429084
+  type: 'test'
+  ...
+# Subtest: serialized duplicate enables schedule each accepted slot only once
+ok 54 - serialized duplicate enables schedule each accepted slot only once
+  ---
+  duration_ms: 0.883958
+  type: 'test'
+  ...
+# Subtest: retry resumes a durable journal after scheduler failure
+ok 55 - retry resumes a durable journal after scheduler failure
+  ---
+  duration_ms: 1.783958
+  type: 'test'
+  ...
+# Subtest: retry reuses a native schedule when journal persistence failed after scheduling
+ok 56 - retry reuses a native schedule when journal persistence failed after scheduling
+  ---
+  duration_ms: 1.621541
+  type: 'test'
+  ...
+# Subtest: a newer accepted plan replaces schedules and cancels the previous native IDs
+ok 57 - a newer accepted plan replaces schedules and cancels the previous native IDs
+  ---
+  duration_ms: 4.722375
+  type: 'test'
+  ...
+# Subtest: corrupt durable journal becomes scheduler_failure instead of publishing
+ok 58 - corrupt durable journal becomes scheduler_failure instead of publishing
+  ---
+  duration_ms: 0.568917
+  type: 'test'
+  ...
+# Subtest: prepare opens the router without publishing or reading a scoped key
+ok 59 - prepare opens the router without publishing or reading a scoped key
+  ---
+  duration_ms: 5.0535
+  type: 'test'
+  ...
+# Subtest: prepared inspection exposes registry metadata and freshness without opening profile storage
+ok 60 - prepared inspection exposes registry metadata and freshness without opening profile storage
+  ---
+  duration_ms: 2.95425
+  type: 'test'
+  ...
+# Subtest: prepared guest validation reads only access markers without publishing storage
+ok 61 - prepared guest validation reads only access markers without publishing storage
+  ---
+  duration_ms: 2.752541
+  type: 'test'
+  ...
+# Subtest: prepared authenticated recovery promotes only a matching bound guest
+ok 62 - prepared authenticated recovery promotes only a matching bound guest
+  ---
+  duration_ms: 2.44625
+  type: 'test'
+  ...
+# Subtest: closing an active profile revokes returned clients and preserves prepared metadata
+ok 63 - closing an active profile revokes returned clients and preserves prepared metadata
+  ---
+  duration_ms: 0.77025
+  type: 'test'
+  ...
+# Subtest: deferred activation does not wake preferences until the caller approves the profile scope
+ok 64 - deferred activation does not wake preferences until the caller approves the profile scope
+  ---
+  duration_ms: 0.97775
+  type: 'test'
+  ...
+# Subtest: prepared account selection commits and reloads while keeping scoped storage closed
+ok 65 - prepared account selection commits and reloads while keeping scoped storage closed
+  ---
+  duration_ms: 3.530084
+  type: 'test'
+  ...
+# Subtest: changed prepared account selection can activate the refreshed profile without app reload
+ok 66 - changed prepared account selection can activate the refreshed profile without app reload
+  ---
+  duration_ms: 2.563167
+  type: 'test'
+  ...
+# Subtest: prepared account selection refuses Auth that becomes stale before the registry commit
+ok 67 - prepared account selection refuses Auth that becomes stale before the registry commit
+  ---
+  duration_ms: 1.30475
+  type: 'test'
+  ...
+# Subtest: prepared guest selection refreshes metadata and activates after commit without app reload
+ok 68 - prepared guest selection refreshes metadata and activates after commit without app reload
+  ---
+  duration_ms: 5.844583
+  type: 'test'
+  ...
+# Subtest: implicit prepared guest selection fails closed when multiple preserved guests exist
+ok 69 - implicit prepared guest selection fails closed when multiple preserved guests exist
+  ---
+  duration_ms: 2.677458
+  type: 'test'
+  ...
+# Subtest: prepare for an existing legacy owner reads only migration metadata
+ok 70 - prepare for an existing legacy owner reads only migration metadata
+  ---
+  duration_ms: 2.192834
+  type: 'test'
+  ...
+# Subtest: prepare for an existing legacy guest reads only migration metadata
+ok 71 - prepare for an existing legacy guest reads only migration metadata
+  ---
+  duration_ms: 0.342917
+  type: 'test'
+  ...
+# Subtest: activation is required and publishes only matching prepared profile metadata
+ok 72 - activation is required and publishes only matching prepared profile metadata
+  ---
+  duration_ms: 2.026375
+  type: 'test'
+  ...
+# Subtest: mismatched activation fails closed
+ok 73 - mismatched activation fails closed
+  ---
+  duration_ms: 0.7215
+  type: 'test'
+  ...
+# Subtest: prepare failure clears any previously published scoped client
+ok 74 - prepare failure clears any previously published scoped client
+  ---
+  duration_ms: 1.933875
+  type: 'test'
+  ...
+# Subtest: prepare revokes previously returned scoped storage references
+ok 75 - prepare revokes previously returned scoped storage references
+  ---
+  duration_ms: 1.662958
+  type: 'test'
+  ...
+# Subtest: persistent plan read returns its canonical envelope revision
+ok 76 - persistent plan read returns its canonical envelope revision
+  ---
+  duration_ms: 64.725459
+  type: 'test'
+  ...
+# Subtest: dual-key CAS rejects stale goal and plan revisions and accepts one idempotent command retry
+ok 77 - dual-key CAS rejects stale goal and plan revisions and accepts one idempotent command retry
+  ---
+  duration_ms: 6.483625
+  type: 'test'
+  ...
+# Subtest: compound lock sorts and deduplicates keys and rejects reentrant acquisition
+ok 78 - compound lock sorts and deduplicates keys and rejects reentrant acquisition
+  ---
+  duration_ms: 0.661709
+  type: 'test'
+  ...
+# Subtest: write uncertainty can be retried by command id, while a failure before persistence is not a false success
+ok 79 - write uncertainty can be retried by command id, while a failure before persistence is not a false success
+  ---
+  duration_ms: 12.382667
+  type: 'test'
+  ...
+# Subtest: accepts a journal whose scope and writes use one exact resolved artifact
+ok 80 - accepts a journal whose scope and writes use one exact resolved artifact
+  ---
+  duration_ms: 12.014416
+  type: 'test'
+  ...
+# Subtest: uses the complete resolved reference when validating attempt and session relationships
+ok 81 - uses the complete resolved reference when validating attempt and session relationships
+  ---
+  duration_ms: 4.191959
+  type: 'test'
+  ...
+# Subtest: requires an exact lowercase artifact SHA and rejects legacy top-level identity fields
+ok 82 - requires an exact lowercase artifact SHA and rejects legacy top-level identity fields
+  ---
+  duration_ms: 1.042083
+  type: 'test'
+  ...
+# Subtest: permits a reset journal only with a null artifact scope
+ok 83 - permits a reset journal only with a null artifact scope
+  ---
+  duration_ms: 0.844792
+  type: 'test'
+  ...
+1..83
+# tests 88
+# suites 0
+# pass 88
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2116.301042

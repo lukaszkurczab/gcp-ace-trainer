@@ -1,0 +1,95 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 actual GCP submit Home proposal restart
+---
+- launchApp:
+    clearState: false
+- openLink: "com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-practice
+    timeout: 30000
+- tapOn:
+    id: main-tab-bar-practice
+- scrollUntilVisible:
+    element:
+      id: patternly:practice:mode-card:certification-diagnostic-baseline
+    direction: DOWN
+- tapOn:
+    id: patternly:practice:mode-card:certification-diagnostic-baseline
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice:start-session
+    timeout: 30000
+- tapOn:
+    id: patternly:practice:start-session
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:gcp-ace-gcpace-n01-b02-001
+    timeout: 30000
+- tapOn:
+    id: patternly:session:option:gcp-ace-gcpace-n01-b02-001:b
+- tapOn:
+    id: patternly:session:submit:gcp-ace-gcpace-n01-b02-001
+- scrollUntilVisible:
+    element:
+      id: patternly:session:feedback:gcp-ace-gcpace-n01-b02-001
+    direction: DOWN
+- takeScreenshot: bizq02-durable-submit-feedback
+- scrollUntilVisible:
+    element:
+      id: patternly:session:leave:.*
+    direction: DOWN
+- tapOn:
+    id: patternly:session:leave:.*
+- tapOn:
+    id: patternly:session:abandon:.*
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice:hub:root
+    timeout: 30000
+- tapOn:
+    id: main-tab-bar-home
+- extendedWaitUntil:
+    visible:
+      id: patternly:home:track-card:google-cloud-associate-cloud-engineer
+    timeout: 30000
+- takeScreenshot: bizq02-home-after-submit
+- tapOn:
+    id: main-tab-bar-progress
+- scrollUntilVisible:
+    element:
+      id: patternly:progress:goal
+    direction: UP
+- tapOn:
+    id: patternly:progress:goal
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:create
+    timeout: 30000
+- tapOn:
+    id: patternly:learning-plan:create
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:accept
+    timeout: 30000
+- takeScreenshot: bizq02-real-proposal-after-submit
+- stopApp
+- launchApp:
+    clearState: false
+- openLink: "com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 30000
+- tapOn:
+    id: main-tab-bar-progress
+- scrollUntilVisible:
+    element:
+      id: patternly:target-date-guidance:state:progress:open-ended
+    direction: DOWN
+- assertVisible:
+    id: patternly:progress-plan:completion:unknown
+- takeScreenshot: bizq02-after-submit-restart
+- tapOn:
+    id: main-tab-bar-home
+- stopApp

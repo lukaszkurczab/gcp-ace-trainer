@@ -12,10 +12,12 @@ export class StaleGoalRevisionError extends Error {
   }
 }
 
-export async function getGoalSnapshot(trackId: TrackId): Promise<GoalSnapshot | null> {
+export function readGoalSnapshot(trackId: TrackId): GoalSnapshot | null {
   const saved = readCanonicalEnvelope(STORAGE_KEYS.goal(trackId), (value): value is GoalRecord => isGoalRecordShapeForTrack(value, trackId));
   return saved ? Object.freeze({ record: normalizeGoalRecord(saved.payload), revision: saved.revision }) : null;
 }
+
+export async function getGoalSnapshot(trackId: TrackId): Promise<GoalSnapshot | null> { return readGoalSnapshot(trackId); }
 
 export async function getGoal(trackId: TrackId): Promise<GoalRecord | null> {
   return (await getGoalSnapshot(trackId))?.record ?? null;

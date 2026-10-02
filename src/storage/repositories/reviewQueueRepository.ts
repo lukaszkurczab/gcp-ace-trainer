@@ -8,7 +8,8 @@ const isIds = (value: unknown): value is string[] => Array.isArray(value) && val
 function reviewQueueItemIdentity(entry: Pick<ReviewQueueEntry, "trackId" | "sourceItem">): string {
   return `${entry.trackId}:${resolvedContentRefKey(entry.sourceItem)}`;
 }
-export async function getReviewQueueItems(): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { const ids = readCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, isIds) ?? []; return { ok: true, value: ids.map((id) => { const entry = readCanonicalJson(STORAGE_KEYS.reviewEntry(id), isReviewQueueEntry); if (!entry) throw new Error(`Review index references missing entry ${id}.`); return entry; }) }; }
+export function readReviewQueueItems(): StorageRepositoryResult<ReviewQueueEntry[]> { const ids = readCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, isIds) ?? []; return { ok: true, value: ids.map((id) => { const entry = readCanonicalJson(STORAGE_KEYS.reviewEntry(id), isReviewQueueEntry); if (!entry) throw new Error(`Review index references missing entry ${id}.`); return entry; }) }; }
+export async function getReviewQueueItems(): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { return readReviewQueueItems(); }
 export async function addReviewQueueItems(items: ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
   if (!items.every((item) => isReviewQueueEntry(item) && item.trackId === item.sourceItem.trackId)) {
     throw new Error("Review queue entry is invalid.");

@@ -1,0 +1,122 @@
+TAP version 13
+# Subtest: replay of a terminal acceptance after a later edit cannot reconcile old reminders
+not ok 1 - replay of a terminal acceptance after a later edit cannot reconcile old reminders
+  ---
+  duration_ms: 518.8235
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/LearningPlanEditorCoordinator.freshness.test.ts:2:13059'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+    +   kind: 'plan_saved_reminders_synced',
+    +   reminder: {
+    +     kind: 'disabled',
+    +     status: 'disabled'
+    +   },
+    +   snapshot: {
+    +     plan: {
+    +       acceptedTarget: {
+    +         meaning: 'event',
+    +         targetDate: null
+    +       },
+    +       artifactSha256: 'eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9',
+    +       commandId: 'learning-plan:freshness:1:accept',
+    +       contentVersion: 'google-cloud-associate-cloud-engineer-authoring-v2026.08.11',
+    +       createdAt: '2026-10-02T12:00:00.000Z',
+    +       goalRevision: 1,
+    +       planId: 'plan:freshness:1',
+    +       planRevision: 1,
+    +       schemaVersion: 1,
+    +       slots: [
+    +         {
+    +           day: 'mon',
+    +           localTime: '18:00',
+    +           sessionLength: 40,
+    +           slotId: 'proposal-slot:v1:mon:18-00'
+    +         },
+    +         {
+    +           day: 'wed',
+    +           localTime: '18:00',
+    +           sessionLength: 40,
+    +           slotId: 'proposal-slot:v1:wed:18-00'
+    +         },
+    +         {
+    +           day: 'sat',
+    +           localTime: '18:00',
+    +           sessionLength: 40,
+    +           slotId: 'proposal-slot:v1:sat:18-00'
+    +         }
+    +       ],
+    +       status: 'accepted',
+    +       timezone: 'Europe/Warsaw',
+    +       trackId: 'google-cloud-associate-cloud-engineer',
+    +       updatedAt: '2026-10-02T12:00:00.000Z'
+    +     },
+    +     revision: 1
+    +   }
+    -   kind: 'stale',
+    -   reason: 'plan'
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    kind: 'stale'
+    reason: 'plan'
+  actual:
+    kind: 'plan_saved_reminders_synced'
+    snapshot:
+      plan:
+        schemaVersion: 1
+        planId: 'plan:freshness:1'
+        trackId: 'google-cloud-associate-cloud-engineer'
+        goalRevision: 1
+        status: 'accepted'
+        timezone: 'Europe/Warsaw'
+        contentVersion: 'google-cloud-associate-cloud-engineer-authoring-v2026.08.11'
+        artifactSha256: 'eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9'
+        acceptedTarget:
+          meaning: 'event'
+          targetDate: ~
+        createdAt: '2026-10-02T12:00:00.000Z'
+        updatedAt: '2026-10-02T12:00:00.000Z'
+        planRevision: 1
+        commandId: 'learning-plan:freshness:1:accept'
+        slots:
+          0:
+            slotId: 'proposal-slot:v1:mon:18-00'
+            day: 'mon'
+            localTime: '18:00'
+            sessionLength: 40
+          1:
+            slotId: 'proposal-slot:v1:wed:18-00'
+            day: 'wed'
+            localTime: '18:00'
+            sessionLength: 40
+          2:
+            slotId: 'proposal-slot:v1:sat:18-00'
+            day: 'sat'
+            localTime: '18:00'
+            sessionLength: 40
+      revision: 1
+    reminder:
+      kind: 'disabled'
+      status: 'disabled'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/LearningPlanEditorCoordinator.freshness.test.ts:153:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1148.262208

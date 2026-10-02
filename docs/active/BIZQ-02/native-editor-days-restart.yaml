@@ -1,0 +1,40 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 real schedule edit and restart
+---
+- tapOn:
+    id: patternly:learning-plan:editor:day:tue
+- tapOn:
+    id: patternly:learning-plan:editor:commit
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:persisted
+    timeout: 30000
+- assertVisible: Tuesday
+- assertVisible: '09:00'
+- takeScreenshot: bizq02-day-edit-saved
+- stopApp
+- launchApp:
+    clearState: false
+- openLink: "com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 30000
+- tapOn:
+    id: main-tab-bar-progress
+- extendedWaitUntil:
+    visible:
+      id: patternly:progress:root
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: patternly:target-date-guidance:state:progress:open-ended
+    direction: DOWN
+- assertVisible:
+    id: patternly:progress-plan:completion:unknown
+- assertNotVisible:
+    id: patternly:target-date-guidance:state:progress:no-plan
+- takeScreenshot: bizq02-post-restart-plan-present
+- tapOn:
+    id: main-tab-bar-home
+- stopApp

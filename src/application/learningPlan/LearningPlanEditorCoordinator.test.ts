@@ -4,7 +4,7 @@ import test from "node:test";
 import { LearningPlanEditorCoordinator, type LearningPlanEditorDependencies } from "./LearningPlanEditorCoordinator";
 import type { LearningPlanProposalCoordinator } from "./LearningPlanProposalCoordinator";
 import { createDefaultGoal, createProposalSlotId, type GoalSnapshot, type LearningPlan, type ProposalOutcome } from "../../domain";
-import { installKeyValueStorageForTests, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import { getKeyValueStorage, installKeyValueStorageForTests, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { getGoalSnapshot, getLearningPlanSnapshot, saveGoalSnapshot, saveLearningPlanAtomically, type LearningPlanSnapshot } from "../../storage/repositories";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
@@ -51,10 +51,15 @@ async function fixture() {
         ? { kind: "stale" as const }
         : { kind: "ready" as const, proposal: { proposalId, trackId: TRACK_ID, outcome } };
     },
+    resolveForCommit: (requestedProposalId: string, requestedTrackId: string) => removed || requestedTrackId !== TRACK_ID || requestedProposalId !== proposalId
+      ? { kind: "stale" as const } : { kind: "ready" as const, proposal: { proposalId, trackId: TRACK_ID, outcome } },
     remove: () => { removed = true; },
   } as unknown as LearningPlanProposalCoordinator;
   const dependencies: LearningPlanEditorDependencies = {
     proposalCoordinator,
+    readStorageScope: getKeyValueStorage,
+    readGoalSnapshot: () => currentGoal,
+    peekContentContext: () => contentContext,
     loadGoalSnapshot: async () => currentGoal,
     loadLearningPlanSnapshot: () => currentPlan,
     loadContentContext: async () => contentContext,
@@ -211,7 +216,7 @@ test("storage uncertainty keeps the editor session and retries through durable c
   const retry = await f.coordinator.commit(started.session.editorId, TRACK_ID);
   assert.equal(retry.kind, "saved");
   assert.equal(f.coordinator.getSession(started.session.editorId, TRACK_ID), null);
-  assert.equal(f.saveCount(), 2);
+  assert.equal(f.saveCount(), 1);
   assert.equal(f.getPlan()?.revision, 1);
 });
 
@@ -232,7 +237,7 @@ test("accepted-plan retry reconciles its durable command before checking refresh
   f.setContentContext({ contentVersion: "content-v2", artifactSha256: ARTIFACT_SHA256, timezone: "Europe/Warsaw" });
   const retry = await f.coordinator.commit(started.session.editorId, TRACK_ID);
   assert.equal(retry.kind, "saved");
-  assert.equal(f.saveCount(), 3);
+  assert.equal(f.saveCount(), 2);
   assert.equal(f.getPlan()?.revision, durableAfterUncertainty?.revision);
   assert.equal(f.coordinator.getSession(started.session.editorId, TRACK_ID), null);
 });

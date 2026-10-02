@@ -1,6 +1,7 @@
 import {
   acceptedTargetFromGoal,
   InvalidLearningPlanError,
+  learningPlansEqual,
   type GoalDay,
   type GoalSnapshot,
   type LearningPlan,
@@ -26,7 +27,8 @@ import {
   StaleLearningPlanStorageRevisionError,
   LearningPlanCommandConflictError,
 } from "../../storage/repositories";
-import { StaleGoalRevisionError } from "../../storage/repositories/goalRepository";
+import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
+import { readGoalSnapshot, StaleGoalRevisionError } from "../../storage/repositories/goalRepository";
 import { createLearningPlanSlotId } from "../../domain/learning/slotIdentity";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { getTrackRegistration } from "../../domain/tracks/trackRegistry";
@@ -103,6 +105,9 @@ export type LearningPlanContentContext = Readonly<{
 
 export type LearningPlanEditorDependencies = Readonly<{
   proposalCoordinator: LearningPlanProposalCoordinator;
+  readStorageScope(): object;
+  readGoalSnapshot(trackId: TrackId): GoalSnapshot | null;
+  peekContentContext(trackId: TrackId): LearningPlanContentContext;
   loadGoalSnapshot(trackId: TrackId): Promise<GoalSnapshot | null>;
   loadLearningPlanSnapshot(trackId: TrackId): LearningPlanSnapshot | null;
   loadContentContext(trackId: TrackId): Promise<LearningPlanContentContext>;
@@ -112,6 +117,7 @@ export type LearningPlanEditorDependencies = Readonly<{
 }>;
 
 type InternalSession = {
+  storageScope: object;
   editorId: string;
   trackId: TrackId;
   source: LearningPlanEditorSource;
@@ -129,13 +135,15 @@ type InternalSession = {
 export class LearningPlanEditorCoordinator {
   private readonly sessions = new Map<string, InternalSession>();
   private readonly pendingPlans = new Map<string, LearningPlan>();
-  private readonly pendingProposalAccepts = new Map<string, { plan: LearningPlan; expectedPlanStorageRevision: number | null }>();
-  private readonly proposalAcceptInFlight = new Map<string, Promise<LearningPlanAcceptResult>>();
-  private readonly acceptedProposalResults = new Map<string, LearningPlanAcceptResult>();
+  private readonly pendingProposalAccepts = new Map<string, { storageScope: object; plan: LearningPlan; expectedPlanStorageRevision: number | null }>();
+  private readonly proposalAcceptInFlight = new Map<string, { storageScope: object; promise: Promise<LearningPlanAcceptResult> }>();
+  private readonly acceptedProposalResults = new Map<string, { storageScope: object; result: Extract<LearningPlanAcceptResult, { kind: "accepted" }> }>();
 
   constructor(private readonly dependencies: LearningPlanEditorDependencies) {}
 
   async startProposalEdit(proposalId: string, trackId: TrackId): Promise<LearningPlanEditorStartResult> {
+    let storageScope: object;
+    try { storageScope = this.dependencies.readStorageScope(); } catch { return frozen({ kind: "storage_error" }); }
     let proposal: Extract<LearningPlanProposalResult, { proposal: { outcome: ProposalOutcome } }>;
     try {
       const result = await this.dependencies.proposalCoordinator.resolve(proposalId, trackId);
@@ -155,6 +163,11 @@ export class LearningPlanEditorCoordinator {
     } catch {
       return frozen({ kind: "storage_error" });
     }
+    if (!this.isCurrentScope(storageScope)) return stale("identity");
+    try {
+      const finalProposal = this.dependencies.proposalCoordinator.resolveForCommit(proposalId, trackId);
+      if (!isEditableProposal(finalProposal)) return finalProposal.kind === "generator_error" ? frozen({ kind: "storage_error" }) : stale("proposal");
+    } catch { return frozen({ kind: "storage_error" }); }
     if (!goal || goal.revision !== proposal.proposal.outcome.identity.goalRevision) return stale("goal");
     if (proposal.proposal.outcome.identity.trackId !== trackId) return stale("identity");
 
@@ -164,6 +177,7 @@ export class LearningPlanEditorCoordinator {
     const slots = cloneSlots(proposal.proposal.outcome.slots);
     const allowedSessionLengths = proposalLengthOptions(proposal.proposal.outcome);
     const session: InternalSession = {
+      storageScope,
       editorId,
       trackId,
       source: Object.freeze({
@@ -188,6 +202,8 @@ export class LearningPlanEditorCoordinator {
   }
 
   async startExistingEdit(trackId: TrackId): Promise<LearningPlanEditorStartResult> {
+    let storageScope: object;
+    try { storageScope = this.dependencies.readStorageScope(); } catch { return frozen({ kind: "storage_error" }); }
     let goal: GoalSnapshot | null;
     let plan: LearningPlanSnapshot | null;
     try {
@@ -206,6 +222,11 @@ export class LearningPlanEditorCoordinator {
     } catch {
       return frozen({ kind: "storage_error" });
     }
+    if (!this.isCurrentScope(storageScope)) return stale("identity");
+    try {
+      if (this.dependencies.readGoalSnapshot(trackId)?.revision !== goal.revision || this.dependencies.loadLearningPlanSnapshot(trackId)?.revision !== plan.revision) return stale("plan");
+      contentContext = this.dependencies.peekContentContext(trackId);
+    } catch { return frozen({ kind: "storage_error" }); }
     if (plan.plan.trackId !== trackId) return stale("identity");
     if (plan.plan.goalRevision !== goal.revision) return stale("goal");
     if (plan.plan.contentVersion !== contentContext.contentVersion || plan.plan.artifactSha256 !== contentContext.artifactSha256 || plan.plan.timezone !== contentContext.timezone) return stale("identity");
@@ -215,6 +236,7 @@ export class LearningPlanEditorCoordinator {
     const editorId = this.dependencies.createEditorId();
     if (!isNonEmpty(editorId)) return frozen({ kind: "storage_error" });
     const session: InternalSession = {
+      storageScope,
       editorId,
       trackId,
       source: Object.freeze({
@@ -253,8 +275,8 @@ export class LearningPlanEditorCoordinator {
   }
 
   getSession(editorId: string, trackId: TrackId): LearningPlanEditorSession | null {
-    const session = this.sessions.get(editorId);
-    return session && session.trackId === trackId ? snapshotSession(session) : null;
+    const session = this.findSession(editorId, trackId);
+    return session ? snapshotSession(session) : null;
   }
 
   updateDays(editorId: string, trackId: TrackId, days: readonly GoalDay[]): LearningPlanEditorMutationResult {
@@ -324,12 +346,20 @@ export class LearningPlanEditorCoordinator {
     } catch {
       return frozen({ kind: "storage_error" });
     }
+    if (!this.isCurrentScope(session.storageScope)) return stale("identity");
     const pending = this.pendingPlans.get(editorId);
-    // A retry after an uncertain write may skip source freshness checks only
-    // after the durable command is observed in the canonical plan record.
+    // A durable command can be acknowledged without re-running its write or
+    // source freshness checks, only while its original profile lease is active.
     if (pending && currentPlan?.plan.commandId === pending.commandId) {
-      if (!goal) return stale("goal");
-      return this.persistEditorPlan(session, pending, goal.revision, currentPlan?.revision ?? null);
+      try {
+        const currentGoal = this.dependencies.readGoalSnapshot(trackId);
+        if (!currentGoal || currentGoal.revision !== pending.goalRevision) return stale("goal");
+      } catch { return frozen({ kind: "storage_error" }); }
+      if (!learningPlansEqual(currentPlan.plan, pending)) return stale("plan");
+      this.sessions.delete(editorId);
+      this.pendingPlans.delete(editorId);
+      if (session.source.kind === "proposal" && session.source.proposalId) this.dependencies.proposalCoordinator.remove(session.source.proposalId);
+      return frozen({ kind: "saved", snapshot: currentPlan });
     }
     if (!goal || goal.revision !== session.source.goalRevision) return stale("goal");
 
@@ -337,6 +367,7 @@ export class LearningPlanEditorCoordinator {
       const proposalId = session.source.proposalId;
       if (!proposalId) return stale("proposal");
       const result = await this.dependencies.proposalCoordinator.resolve(proposalId, trackId);
+      if (result.kind === "generator_error") return frozen({ kind: "storage_error" });
       if (!isEditableProposal(result) || !proposalIdentitiesEqual(result.proposal.outcome.identity, session.source.identity as ProposalIdentity)) return stale("proposal");
       if ((currentPlan?.revision ?? null) !== session.source.expectedPlanStorageRevision) return stale("plan");
     } else {
@@ -348,13 +379,27 @@ export class LearningPlanEditorCoordinator {
         return frozen({ kind: "storage_error" });
       }
       if (!currentPlan || currentPlan.revision !== session.source.expectedPlanStorageRevision || currentPlan.plan.planId !== identity.planId || currentPlan.plan.planRevision !== identity.planRevision || currentPlan.plan.trackId !== trackId || currentPlan.plan.contentVersion !== identity.contentVersion || currentPlan.plan.contentVersion !== contentContext.contentVersion || currentPlan.plan.timezone !== identity.timezone || currentPlan.plan.timezone !== contentContext.timezone || currentPlan.plan.artifactSha256 !== identity.artifactSha256 || currentPlan.plan.artifactSha256 !== contentContext.artifactSha256 || currentPlan.plan.acceptedTarget.meaning !== identity.acceptedTarget.meaning || currentPlan.plan.acceptedTarget.targetDate !== identity.acceptedTarget.targetDate) {
-        if (pending && currentPlan?.plan.commandId === pending.commandId) return this.persistEditorPlan(session, pending, goal.revision, currentPlan.revision);
         return stale("plan");
       }
     }
 
     const plan = pending ?? this.buildPlan(session, goal, currentPlan);
     if (!plan) return stale("plan");
+    if (!this.isCurrentScope(session.storageScope)) return stale("identity");
+    // The final read/guard and existing CAS run in one synchronous turn.
+    try {
+      if (this.dependencies.readGoalSnapshot(trackId)?.revision !== goal.revision) return stale("goal");
+      if ((this.dependencies.loadLearningPlanSnapshot(trackId)?.revision ?? null) !== session.source.expectedPlanStorageRevision) return stale("plan");
+      if (session.source.kind === "proposal") {
+        const result = this.dependencies.proposalCoordinator.resolveForCommit(session.source.proposalId!, trackId);
+        if (result.kind === "generator_error") return frozen({ kind: "storage_error" });
+        if (!isEditableProposal(result) || !proposalIdentitiesEqual(result.proposal.outcome.identity, session.source.identity as ProposalIdentity)) return stale("proposal");
+      } else {
+        const context = this.dependencies.peekContentContext(trackId);
+        if (plan.contentVersion !== context.contentVersion || plan.artifactSha256 !== context.artifactSha256 || plan.timezone !== context.timezone) return stale("identity");
+      }
+    } catch { return frozen({ kind: "storage_error" }); }
+    if (!this.isCurrentScope(session.storageScope)) return stale("identity");
     this.pendingPlans.set(editorId, plan);
     return this.persistEditorPlan(session, plan, goal.revision, session.source.expectedPlanStorageRevision);
   }
@@ -364,43 +409,57 @@ export class LearningPlanEditorCoordinator {
   }
 
   acceptProposal(proposalId: string, trackId: TrackId): Promise<LearningPlanAcceptResult> {
+    let storageScope: object;
+    try { storageScope = this.dependencies.readStorageScope(); } catch { return Promise.resolve(frozen({ kind: "storage_error" })); }
     const key = proposalOperationKey(proposalId, trackId);
     const terminal = this.acceptedProposalResults.get(key);
-    if (terminal) return Promise.resolve(terminal);
+    if (terminal?.storageScope === storageScope) {
+      // A completed command is replayable only while its exact durable result
+      // is still current. Returning an older snapshot would reconcile reminders
+      // for a plan that has since been replaced.
+      try {
+        const goal = this.dependencies.readGoalSnapshot(trackId);
+        const plan = this.dependencies.loadLearningPlanSnapshot(trackId);
+        if (!this.isCurrentScope(storageScope)) return Promise.resolve(stale("identity"));
+        if (!plan || plan.revision !== terminal.result.snapshot.revision || !learningPlansEqual(plan.plan, terminal.result.snapshot.plan)) return Promise.resolve(stale("plan"));
+        if (!goal || goal.revision !== plan.plan.goalRevision) return Promise.resolve(stale("goal"));
+        return Promise.resolve(terminal.result);
+      } catch { return Promise.resolve(frozen({ kind: "storage_error" })); }
+    }
     const inFlight = this.proposalAcceptInFlight.get(key);
-    if (inFlight) return inFlight;
-    const promise = this.acceptProposalOnce(proposalId, trackId, key);
-    this.proposalAcceptInFlight.set(key, promise);
+    if (inFlight?.storageScope === storageScope) return inFlight.promise;
+    const promise = this.acceptProposalOnce(proposalId, trackId, key, storageScope).then((result) =>
+      this.isCurrentScope(storageScope) ? result : stale("identity"));
+    const operation = { storageScope, promise };
+    this.proposalAcceptInFlight.set(key, operation);
     void promise.then((result) => {
-      if (this.proposalAcceptInFlight.get(key) === promise) this.proposalAcceptInFlight.delete(key);
-      if (result.kind === "accepted") this.acceptedProposalResults.set(key, result);
+      if (this.proposalAcceptInFlight.get(key) === operation) this.proposalAcceptInFlight.delete(key);
+      if (result.kind === "accepted" && this.isCurrentScope(storageScope)) this.acceptedProposalResults.set(key, { storageScope, result });
     }, () => {
-      if (this.proposalAcceptInFlight.get(key) === promise) this.proposalAcceptInFlight.delete(key);
+      if (this.proposalAcceptInFlight.get(key) === operation) this.proposalAcceptInFlight.delete(key);
     });
     return promise;
   }
 
-  private async acceptProposalOnce(proposalId: string, trackId: TrackId, key: string): Promise<LearningPlanAcceptResult> {
-    const pending = this.pendingProposalAccepts.get(key);
+  private async acceptProposalOnce(proposalId: string, trackId: TrackId, key: string, storageScope: object): Promise<LearningPlanAcceptResult> {
+    const previous = this.pendingProposalAccepts.get(key);
+    const pending = previous?.storageScope === storageScope ? previous : undefined;
     if (pending) {
-      let currentPlan: LearningPlanSnapshot | null;
-      let goal: GoalSnapshot | null;
       try {
-        [goal, currentPlan] = await Promise.all([
-          this.dependencies.loadGoalSnapshot(trackId),
-          Promise.resolve(this.dependencies.loadLearningPlanSnapshot(trackId)),
-        ]);
-      } catch {
-        return frozen({ kind: "storage_error" });
-      }
-      if (goal && currentPlan?.plan.commandId === pending.plan.commandId) {
-        const saved = this.persistProposal(pending.plan, pending.plan.goalRevision, currentPlan.revision);
-        if (saved.kind === "accepted") this.completeProposalAcceptance(proposalId, key);
-        return saved;
-      }
+        const currentPlan = this.dependencies.loadLearningPlanSnapshot(trackId);
+        if (!this.isCurrentScope(storageScope)) return stale("identity");
+        if (currentPlan?.plan.commandId === pending.plan.commandId) {
+          const goal = this.dependencies.readGoalSnapshot(trackId);
+          if (!goal || goal.revision !== pending.plan.goalRevision) return stale("goal");
+          if (!learningPlansEqual(currentPlan.plan, pending.plan)) return stale("plan");
+          this.completeProposalAcceptance(proposalId, key);
+          return frozen({ kind: "accepted", snapshot: currentPlan });
+        }
+      } catch { return frozen({ kind: "storage_error" }); }
     }
     let result: LearningPlanProposalResult;
     try { result = await this.dependencies.proposalCoordinator.resolve(proposalId, trackId); } catch { return frozen({ kind: "storage_error" }); }
+    if (result.kind === "generator_error") return frozen({ kind: "storage_error" });
     if (!isEditableProposal(result)) return stale("proposal");
 
     let goal: GoalSnapshot | null;
@@ -410,22 +469,30 @@ export class LearningPlanEditorCoordinator {
         this.dependencies.loadGoalSnapshot(trackId),
         Promise.resolve(this.dependencies.loadLearningPlanSnapshot(trackId)),
       ]);
-    } catch {
-      return frozen({ kind: "storage_error" });
-    }
+    } catch { return frozen({ kind: "storage_error" }); }
+    if (!this.isCurrentScope(storageScope)) return stale("identity");
     const identity = result.proposal.outcome.identity;
     if (!goal || goal.revision !== identity.goalRevision) return stale("goal");
-    if (!pending && identity.trackId !== trackId) return stale("identity");
+    if (identity.trackId !== trackId) return stale("identity");
 
     const command = pending ?? {
+      storageScope,
       plan: this.buildProposalPlan(result.proposal.outcome, proposalPlanId(proposalId), proposalCommandId(proposalId), goal, currentPlan),
       expectedPlanStorageRevision: currentPlan?.revision ?? null,
     };
+    // No await after this guard: proposal evidence/calendar/package and the
+    // profile lease are checked immediately before the canonical goal+plan CAS.
+    try {
+      const final = this.dependencies.proposalCoordinator.resolveForCommit(proposalId, trackId);
+      if (final.kind === "generator_error") return frozen({ kind: "storage_error" });
+      if (!isEditableProposal(final) || !proposalIdentitiesEqual(final.proposal.outcome.identity, identity)) return stale("proposal");
+      if (this.dependencies.readGoalSnapshot(trackId)?.revision !== goal.revision) return stale("goal");
+      if ((this.dependencies.loadLearningPlanSnapshot(trackId)?.revision ?? null) !== command.expectedPlanStorageRevision) return stale("plan");
+    } catch { return frozen({ kind: "storage_error" }); }
+    if (!this.isCurrentScope(storageScope)) return stale("identity");
     this.pendingProposalAccepts.set(key, command);
     const saved = this.persistProposal(command.plan, goal.revision, command.expectedPlanStorageRevision);
-    if (saved.kind === "accepted") {
-      this.completeProposalAcceptance(proposalId, key);
-    }
+    if (saved.kind === "accepted") this.completeProposalAcceptance(proposalId, key);
     return saved;
   }
 
@@ -508,7 +575,10 @@ export class LearningPlanEditorCoordinator {
 
   private findSession(editorId: string, trackId: TrackId): InternalSession | null {
     const session = this.sessions.get(editorId);
-    return session && session.trackId === trackId ? session : null;
+    return session && session.trackId === trackId && this.isCurrentScope(session.storageScope) ? session : null;
+  }
+  private isCurrentScope(scope: object): boolean {
+    try { return this.dependencies.readStorageScope() === scope; } catch { return false; }
   }
 }
 
@@ -573,13 +643,20 @@ function proposalOperationKey(proposalId: string, trackId: TrackId): string { re
 function isNonEmpty(value: unknown): value is string { return typeof value === "string" && value.trim().length > 0; }
 function stale(reason: LearningPlanEditorStaleReason): Readonly<{ kind: "stale"; reason: LearningPlanEditorStaleReason }> { return Object.freeze({ kind: "stale" as const, reason }); }
 function snapshotSession(session: InternalSession): LearningPlanEditorSession {
-  return Object.freeze({ ...session, slots: Object.freeze(cloneSlots(session.slots)), allowedSessionLengths: Object.freeze([...session.allowedSessionLengths]) });
+  const { storageScope: _storageScope, nextSlotCounter: _nextSlotCounter, ...publicSession } = session;
+  return Object.freeze({ ...publicSession, slots: Object.freeze(cloneSlots(session.slots)), allowedSessionLengths: Object.freeze([...session.allowedSessionLengths]) });
 }
 function frozen<T extends object>(value: T): Readonly<T> { return Object.freeze(value); }
 
 let editorSequence = 0;
 export const learningPlanEditorCoordinator = new LearningPlanEditorCoordinator({
   proposalCoordinator: learningPlanProposalCoordinator,
+  readStorageScope: readLearningPlanStorageScope,
+  readGoalSnapshot,
+  peekContentContext: (trackId) => {
+    const resolved = contentPackageRuntimeOwner.getPreparedDiscovery(trackId);
+    return Object.freeze({ contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+  },
   loadGoalSnapshot: getGoalSnapshot,
   loadLearningPlanSnapshot: getLearningPlanSnapshot,
   loadContentContext: async (trackId) => {
