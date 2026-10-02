@@ -731,5 +731,11 @@
   "We couldn't verify this package. Download it again to retry.": "We couldn't verify this package. Download it again to retry.",
   "This package doesn't match the offered topic. Choose a free topic or try again later.": "This package doesn't match the offered topic. Choose a free topic or try again later.",
   "This package couldn't be verified. Choose a free topic or try again later.": "This package couldn't be verified. Choose a free topic or try again later.",
-  "Prepare this Premium topic before starting a session.": "Prepare this Premium topic before starting a session."
+  "Prepare this Premium topic before starting a session.": "Prepare this Premium topic before starting a session.",
+  "progress.week.completedSessions_one": "{{count}} session completed",
+  "progress.week.completedSessions_few": "{{count}} sessions completed",
+  "progress.week.completedSessions_many": "{{count}} sessions completed",
+  "progress.week.completedSessions_other": "{{count}} sessions completed",
+  "progress.week.selectedTrack": "For the selected track.",
+  "progress.week.unavailable": "Weekly activity is unavailable."
 }

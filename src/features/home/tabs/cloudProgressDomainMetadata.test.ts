@@ -126,5 +126,6 @@ test("Claude Progress with zero attempts stays empty without inventing a score",
 
   assert.equal(model.hasData, false);
   assert.deepEqual(model.performanceScores, []);
-  assert.equal(model.activitySummary.detail, "Start the Solution Design & Architecture Free node to record local practice.");
+  assert.equal(model.weeklyActivity.kind, "ready");
+  if (model.weeklyActivity.kind === "ready") assert.equal(model.weeklyActivity.completedSessionCount, 0);
 });

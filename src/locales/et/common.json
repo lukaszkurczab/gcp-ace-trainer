@@ -730,5 +730,11 @@
   "We couldn't verify this package. Download it again to retry.": "Paketti ei saanud kontrollida. Uuesti proovimiseks laadi see uuesti alla.",
   "This package doesn't match the offered topic. Choose a free topic or try again later.": "See pakett ei vasta pakutud teemale. Vali tasuta teema või proovi hiljem uuesti.",
   "This package couldn't be verified. Choose a free topic or try again later.": "Seda paketti ei saanud kontrollida. Vali tasuta teema või proovi hiljem uuesti.",
-  "Prepare this Premium topic before starting a session.": "Valmista see Premium-teema enne sessiooni alustamist ette."
+  "Prepare this Premium topic before starting a session.": "Valmista see Premium-teema enne sessiooni alustamist ette.",
+  "progress.week.completedSessions_one": "{{count}} sessioon lõpetatud",
+  "progress.week.completedSessions_few": "{{count}} sessiooni lõpetatud",
+  "progress.week.completedSessions_many": "{{count}} sessiooni lõpetatud",
+  "progress.week.completedSessions_other": "{{count}} sessiooni lõpetatud",
+  "progress.week.selectedTrack": "Valitud õpperaja kohta.",
+  "progress.week.unavailable": "Nädala tegevus pole saadaval."
 }

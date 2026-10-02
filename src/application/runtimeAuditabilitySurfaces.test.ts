@@ -71,14 +71,13 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.doesNotMatch(progress, /emptyProgressScreenTitle/);
   assert.match(progress, /emptyWeekSection:\s*\{\s*gap:\s*8\s*\}/);
   assert.match(progress, /emptyWeekCard:\s*\{[\s\S]*?gap:\s*4[\s\S]*?paddingHorizontal:\s*14[\s\S]*?paddingVertical:\s*12/);
-  assert.match(progress, /model\.hasData \? <View style=\{styles\.miniBar\}/);
+  assert.doesNotMatch(progress, /styles\.miniBar|progressRatio/);
   assert.match(progress, /emptyProgressState:\s*\{[\s\S]*?paddingBottom:\s*40[\s\S]*?paddingTop:\s*40/);
   assert.match(progress, /emptyProgressIcon:\s*\{[\s\S]*?borderRadius:\s*20/);
   assert.match(progress, /emptyProgressAction:\s*\{[\s\S]*?backgroundColor:\s*palette\.success[\s\S]*?borderRadius:\s*radius\.xxl[\s\S]*?paddingHorizontal:\s*24[\s\S]*?paddingVertical:\s*12/);
   assert.match(progress, /emptyProgressActionLabel:\s*\{[\s\S]*?color:\s*palette\.textPrimary[\s\S]*?fontSize:\s*14/);
   assert.match(progress, /trackSelector:\s*\{[\s\S]*?backgroundColor:\s*palette\.surfaceInput/);
   assert.match(progress, /weekTitle:\s*\{[\s\S]*?fontSize:\s*14[\s\S]*?fontWeight:\s*"500"/);
-  assert.match(progress, /miniBar:\s*\{[\s\S]*?backgroundColor:\s*palette\.surface[\s\S]*?height:\s*4/);
   assert.match(progress, /focusTitle:\s*\{[\s\S]*?fontSize:\s*16[\s\S]*?fontWeight:\s*"600"/);
   assert.match(progress, /focusStatus:\s*\{[\s\S]*?fontSize:\s*12[\s\S]*?fontWeight:\s*"500"[\s\S]*?lineHeight:\s*18/);
   assert.match(progress, /sectionLabel:\s*\{\s*color:\s*palette\.primary[\s\S]*?fontSize:\s*12/);

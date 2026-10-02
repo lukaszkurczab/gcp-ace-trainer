@@ -1,0 +1,226 @@
+TAP version 13
+# Subtest: Activity read model keeps terminal history semantics and includes completed sessions without answers
+ok 1 - Activity read model keeps terminal history semantics and includes completed sessions without answers
+  ---
+  duration_ms: 13.009292
+  type: 'test'
+  ...
+# Subtest: Activity read model surfaces a corrupt canonical result instead of presenting an empty history
+ok 2 - Activity read model surfaces a corrupt canonical result instead of presenting an empty history
+  ---
+  duration_ms: 0.581208
+  type: 'test'
+  ...
+# Subtest: Activity read model treats repository issues as an explicit storage failure
+ok 3 - Activity read model treats repository issues as an explicit storage failure
+  ---
+  duration_ms: 0.181708
+  type: 'test'
+  ...
+# Subtest: Activity read model reuses the caller's attempts read when supplied
+ok 4 - Activity read model reuses the caller's attempts read when supplied
+  ---
+  duration_ms: 0.26375
+  type: 'test'
+  ...
+# Subtest: Activity full history keeps unavailable sessions as immutable summaries
+ok 5 - Activity full history keeps unavailable sessions as immutable summaries
+  ---
+  duration_ms: 1.171792
+  type: 'test'
+  ...
+# Subtest: Activity read owner invalidates late focus reads and lets the newest retry win
+ok 6 - Activity read owner invalidates late focus reads and lets the newest retry win
+  ---
+  duration_ms: 0.235125
+  type: 'test'
+  ...
+# Subtest: Activity read owner keeps current read failures explicit
+ok 7 - Activity read owner keeps current read failures explicit
+  ---
+  duration_ms: 0.151084
+  type: 'test'
+  ...
+# Subtest: passive runtime selectors are attached to visible content rather than containers with interactive descendants
+ok 8 - passive runtime selectors are attached to visible content rather than containers with interactive descendants
+  ---
+  duration_ms: 0.854125
+  type: 'test'
+  ...
+# Subtest: active-session resume uses the single recommendation card and a separate continue control
+ok 9 - active-session resume uses the single recommendation card and a separate continue control
+  ---
+  duration_ms: 0.311125
+  type: 'test'
+  ...
+# Subtest: Home uses the approved compact presentation without changing recommendation ownership
+ok 10 - Home uses the approved compact presentation without changing recommendation ownership
+  ---
+  duration_ms: 0.449292
+  type: 'test'
+  ...
+# Subtest: progress, simulation, and simulation summary selectors use canonical identities
+ok 11 - progress, simulation, and simulation summary selectors use canonical identities
+  ---
+  duration_ms: 3.067375
+  type: 'test'
+  ...
+# node:internal/modules/run_main:123
+#     triggerUncaughtException(
+#     ^
+# Error: Transform failed with 1 error:
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/features/home/tabs/progressTabModel.ts:916:0: ERROR: Unexpected end of file
+#     at failureErrorWithLog (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/esbuild/lib/main.js:1748:15)
+#     at /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/esbuild/lib/main.js:1017:50
+#     at responseCallbacks.<computed> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/esbuild/lib/main.js:884:9)
+#     at handleIncomingPacket (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/esbuild/lib/main.js:939:12)
+#     at Socket.readFromStdout (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/esbuild/lib/main.js:862:7)
+#     at Socket.emit (node:events:519:28)
+#     at addChunk (node:internal/streams/readable:561:12)
+#     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+#     at Readable.push (node:internal/streams/readable:392:5)
+#     at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+#   name: 'TransformError'
+# }
+# Node.js v22.22.3
+# Subtest: src/application/weeklyActivityIntegration.test.ts
+not ok 3 - src/application/weeklyActivityIntegration.test.ts
+  ---
+  duration_ms: 705.770167
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/weeklyActivityIntegration.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: Activity groups durable terminal sessions and keeps the row projection truthful
+ok 13 - Activity groups durable terminal sessions and keeps the row projection truthful
+  ---
+  duration_ms: 11.290375
+  type: 'test'
+  ...
+# Subtest: Activity identifies an absolute-deadline completion without relabeling manual abandonment
+ok 14 - Activity identifies an absolute-deadline completion without relabeling manual abandonment
+  ---
+  duration_ms: 0.217459
+  type: 'test'
+  ...
+# Subtest: Activity interaction matrix opens only summaries supported by durable family evidence
+ok 15 - Activity interaction matrix opens only summaries supported by durable family evidence
+  ---
+  duration_ms: 0.539916
+  type: 'test'
+  ...
+# Subtest: Activity track filter returns only records for the selected canonical track
+ok 16 - Activity track filter returns only records for the selected canonical track
+  ---
+  duration_ms: 0.088417
+  type: 'test'
+  ...
+# Subtest: Activity uses local calendar days and Monday-based calendar weeks
+ok 17 - Activity uses local calendar days and Monday-based calendar weeks
+  ---
+  duration_ms: 0.271375
+  type: 'test'
+  ...
+# Subtest: Activity keeps local midnight and relative labels correct across a DST boundary
+ok 18 - Activity keeps local midnight and relative labels correct across a DST boundary
+  ---
+  duration_ms: 0.091583
+  type: 'test'
+  ...
+# Subtest: Activity date labels format relative words and month names from the selected locale
+ok 19 - Activity date labels format relative words and month names from the selected locale
+  ---
+  duration_ms: 7.696625
+  type: 'test'
+  ...
+# Subtest: Activity keeps unavailable archival summaries separate from runtime navigation facts
+ok 20 - Activity keeps unavailable archival summaries separate from runtime navigation facts
+  ---
+  duration_ms: 0.675959
+  type: 'test'
+  ...
+# Subtest: Activity never exposes an unknown archived track identity
+ok 21 - Activity never exposes an unknown archived track identity
+  ---
+  duration_ms: 0.351333
+  type: 'test'
+  ...
+# node:internal/modules/run_main:123
+#     triggerUncaughtException(
+#     ^
+# Error: Transform failed with 1 error:
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/features/home/tabs/progressTabModel.ts:916:0: ERROR: Unexpected end of file
+#     at failureErrorWithLog (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/esbuild/lib/main.js:1748:15)
+#     at /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/esbuild/lib/main.js:1017:50
+#     at responseCallbacks.<computed> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/esbuild/lib/main.js:884:9)
+#     at handleIncomingPacket (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/esbuild/lib/main.js:939:12)
+#     at Socket.readFromStdout (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/esbuild/lib/main.js:862:7)
+#     at Socket.emit (node:events:519:28)
+#     at addChunk (node:internal/streams/readable:561:12)
+#     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+#     at Readable.push (node:internal/streams/readable:392:5)
+#     at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+#   name: 'TransformError'
+# }
+# Node.js v22.22.3
+# Subtest: src/features/home/tabs/cloudProgressDomainMetadata.test.ts
+not ok 5 - src/features/home/tabs/cloudProgressDomainMetadata.test.ts
+  ---
+  duration_ms: 694.69175
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/features/home/tabs/cloudProgressDomainMetadata.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: track evidence rows stay informational while local show-more behavior remains
+ok 23 - track evidence rows stay informational while local show-more behavior remains
+  ---
+  duration_ms: 3.068792
+  type: 'test'
+  ...
+# Subtest: empty progress keeps practice as the primary action and exposes global activity
+ok 24 - empty progress keeps practice as the primary action and exposes global activity
+  ---
+  duration_ms: 0.602209
+  type: 'test'
+  ...
+# Subtest: the shared Home shell opens the track-aware Practice Hub from empty Progress
+ok 25 - the shared Home shell opens the track-aware Practice Hub from empty Progress
+  ---
+  duration_ms: 0.442167
+  type: 'test'
+  ...
+# Subtest: Home passes canonical sessions and exact row navigation into Progress
+ok 26 - Home passes canonical sessions and exact row navigation into Progress
+  ---
+  duration_ms: 0.132625
+  type: 'test'
+  ...
+# Subtest: Progress receives the single canonical Home plan snapshot and guidance action owner
+ok 27 - Progress receives the single canonical Home plan snapshot and guidance action owner
+  ---
+  duration_ms: 0.271542
+  type: 'test'
+  ...
+# Subtest: Completed guidance does not render a Progress self-link
+ok 28 - Completed guidance does not render a Progress self-link
+  ---
+  duration_ms: 0.098291
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 26
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 733.697625

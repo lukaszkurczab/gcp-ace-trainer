@@ -27,7 +27,7 @@ import { buildProgressPlanPresentationModel, type ProgressPlanPresentationModel,
 type ProgressTabProps = {
   activeTrack: TrackDisplay;
   analytics: AnalyticsData;
-  activityRecords?: readonly ActivitySessionRecord[];
+  activityRecords: readonly ActivitySessionRecord[];
   attempts: CertificationExamSummaryViewModel[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
   goal?: GoalRecord | null;
@@ -121,7 +121,7 @@ export function ProgressLoadingSkeleton() {
 export function ProgressTab({
   activeTrack,
   analytics,
-  activityRecords = [],
+  activityRecords,
   attempts,
   cloudProgress,
   goal = null,
@@ -154,8 +154,7 @@ export function ProgressTab({
   const algorithmEvidenceState = model.algorithmsProgress?.evidenceSummary.state;
   const compactProgressLayout = !model.hasData || (algorithmEvidenceState !== undefined && algorithmEvidenceState !== "established");
   const showNeedsAttention = !model.algorithmsProgress || algorithmEvidenceState !== "building" || model.reviewQueueCount > 0;
-  const weekValue = model.activitySummary.value;
-  const progressRatio = focusProgress > 0 ? Math.min(1, focusProgress / 100) : weekValue > 0 ? 1 : 0;
+  const weeklyActivity = model.weeklyActivity;
 
   return (
     <View style={styles.root} testID={runtimeSelectors.progress.root()}>
@@ -180,10 +179,9 @@ export function ProgressTab({
         <Card style={[styles.weekCard, compactProgressLayout ? styles.emptyWeekCard : null]}>
           <View style={styles.weekHeader}>
             <View style={styles.weekCopy}>
-              <Text maxFontSizeMultiplier={2} style={styles.weekTitle}>{t(formatWeekTitle(weekValue))}</Text>
-              <Text maxFontSizeMultiplier={2} style={styles.weekDetail}>{t(model.activitySummary.detail)}</Text>
+              <Text accessibilityLiveRegion="polite" maxFontSizeMultiplier={2} style={styles.weekTitle}>{weeklyActivity.kind === "ready" ? t("progress.week.completedSessions", { count: weeklyActivity.completedSessionCount }) : t("progress.week.unavailable")}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.weekDetail}>{t("progress.week.selectedTrack")}</Text>
             </View>
-            {model.hasData ? <View style={styles.miniBar}><View style={[styles.miniBarFill, { width: `${Math.round(progressRatio * 100)}%` }]} /></View> : null}
           </View>
           {model.reviewQueueCount > 0 ? <Text maxFontSizeMultiplier={2} style={styles.weekAction}>{t(`${model.reviewQueueCount} review items due`)}</Text> : null}
           {onOpenGoal ? <Pressable accessibilityRole="button" accessibilityLabel={t(goal ? "Manage learning goal" : "Set a learning goal")} onPress={onOpenGoal} style={({ pressed }) => [styles.weekGoalAction, pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.goal()}><Text maxFontSizeMultiplier={2} style={styles.weekAction}>{t(goal ? "Manage goal" : "Set a goal")}</Text></Pressable> : null}
@@ -600,11 +598,6 @@ function formatDiagnosticFacts(facts: readonly { label: string; value: number | 
   return facts.map((fact) => `${fact.label}: ${fact.value}`).join(" · ");
 }
 
-function formatWeekTitle(value: number): string {
-  if (value === 0) return "No sessions completed yet";
-  return value === 1 ? "1 session completed" : `${value} sessions completed`;
-}
-
 const createStyles = (palette: AppColors) => StyleSheet.create({
   progressLoading: {
     gap: spacing.lg,
@@ -811,8 +804,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   weekCopy: { flex: 1, gap: spacing.xs },
   weekTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "500", lineHeight: 18 },
   weekDetail: { color: palette.textSecondary, fontSize: 13, fontWeight: "400", lineHeight: 18 },
-  miniBar: { backgroundColor: palette.surface, borderRadius: 2, height: 4, marginTop: spacing.xs, overflow: "hidden", width: 44 },
-  miniBarFill: { backgroundColor: palette.success, borderRadius: 2, height: 4 },
   weekAction: { color: palette.primary, fontSize: 12, fontWeight: "500", lineHeight: 18 },
   weekGoalAction: { alignSelf: "flex-start", minHeight: 32, justifyContent: "center" },
   section: { gap: 10 },

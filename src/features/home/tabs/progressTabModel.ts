@@ -20,7 +20,7 @@ import {
   type PracticeSessionMode,
   type PracticeSessionRouteParams,
 } from "../../practice/sessionConfig";
-import type { ActivitySessionRecord } from "../../../application/activityReadModels";
+import { projectWeeklySessionActivity, type WeeklySessionActivity, type ActivitySessionRecord } from "../../../application/activityReadModels";
 import { buildActivityModel, type ActivityItem } from "./activityModel";
 import { resolveCloudProgressDomainMetadata } from "./cloudProgressDomainMetadata";
 
@@ -30,12 +30,6 @@ type LearningTone = "danger" | "warning" | "info" | "success" | "muted";
 export type ProgressTabMetric = {
   label: string;
   tone: MetricTone;
-  value: number;
-};
-
-export type ProgressTabActivitySummary = {
-  detail: string;
-  label: string;
   value: number;
 };
 
@@ -157,7 +151,7 @@ export type AlgorithmsProgressScreenModel = {
 
 export type ProgressTabModel = {
   activity: readonly ProgressTabActivityItem[];
-  activitySummary: ProgressTabActivitySummary;
+  weeklyActivity: WeeklySessionActivity;
   algorithmsProgress?: AlgorithmsProgressScreenModel;
   hasData: boolean;
   metrics: ProgressTabMetric[];
@@ -186,33 +180,24 @@ export type BuildProgressTabModelInput = {
   attempts: readonly CertificationExamSummaryViewModel[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
   now?: string;
-  activityRecords?: readonly ActivitySessionRecord[];
+  activityRecords: readonly ActivitySessionRecord[];
+  timezone?: string;
   practiceHistory: readonly CertificationPracticeAnswerViewModel[];
   reviewQueueItems?: readonly ReviewQueueEntry[];
   trainingAttempts?: readonly TrainingAttempt[];
 };
 
+type ProgressEvidenceModel = Omit<ProgressTabModel, "weeklyActivity">;
+
 export function buildProgressTabModel(input: BuildProgressTabModelInput): ProgressTabModel {
-  if (input.activeTrackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && input.cloudProgress) {
-    return buildCloudProgressTabModel(input.cloudProgress, input.activityRecords ?? [], input.now ?? new Date().toISOString());
-  }
-
-  if (input.activeTrackId === CODING_INTERVIEW_TRACK_ID) {
-    return buildAlgorithmsProgressTabModel(
-      input.trainingAttempts ?? [],
-      input.reviewQueueItems ?? [],
-      input.activityRecords ?? [],
-      input.now ?? new Date().toISOString(),
-    );
-  }
-
-  return buildInstalledPackageProgressTabModel(
-    input.activeTrackId,
-    input.trainingAttempts ?? [],
-    input.reviewQueueItems ?? [],
-    input.activityRecords ?? [],
-    input.now ?? new Date().toISOString(),
-  );
+  const now = input.now ?? new Date().toISOString();
+  const timezone = input.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const model = input.activeTrackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && input.cloudProgress
+    ? buildCloudProgressTabModel(input.cloudProgress, input.activityRecords, now)
+    : input.activeTrackId === CODING_INTERVIEW_TRACK_ID
+      ? buildAlgorithmsProgressTabModel(input.trainingAttempts ?? [], input.reviewQueueItems ?? [], input.activityRecords, now)
+      : buildInstalledPackageProgressTabModel(input.activeTrackId, input.trainingAttempts ?? [], input.reviewQueueItems ?? [], input.activityRecords, now);
+  return Object.freeze({ ...model, weeklyActivity: projectWeeklySessionActivity(input.activityRecords, { trackId: input.activeTrackId, now, timezone }) });
 }
 
 type PackageProgressItem = Readonly<{
@@ -227,7 +212,7 @@ function buildInstalledPackageProgressTabModel(
   reviewQueueItems: readonly ReviewQueueEntry[],
   activityRecords: readonly ActivitySessionRecord[],
   now: string,
-): ProgressTabModel {
+): ProgressEvidenceModel {
   const packageResolution = contentPackageRuntimeOwner.getPreparedDiscovery(trackId);
   const packageItems = packageResolution.track.questions.map((question) => ({ id: question.questionId, taxonomy: { roadmapNodeId: question.nodeId } })) as readonly PackageProgressItem[];
   const packageItemIds = new Set(packageItems.map((item) => item.id));
@@ -265,20 +250,8 @@ function buildInstalledPackageProgressTabModel(
     });
   }
 
-  const firstNodeId = packageItems[0]?.taxonomy?.roadmapNodeId;
-  const freeNodeMetadata = typeof firstNodeId === "string"
-    ? resolveInstalledPackageDomainMetadata(trackId, firstNodeId)
-    : null;
-  const freeNodeLabel = freeNodeMetadata?.title ?? "Domain metadata unavailable";
   return {
     activity: buildActivityItems(activityRecords, trackId, now),
-    activitySummary: {
-      detail: currentAttempts.length > 0
-        ? `Current Free node: ${freeNodeLabel}.`
-        : `Start the ${freeNodeLabel} Free node to record local practice.`,
-      label: "Answered",
-      value: currentAttempts.length,
-    },
     hasData: currentAttempts.length > 0,
     metrics: [
       { label: "Answered", tone: "info", value: currentAttempts.length },
@@ -310,17 +283,9 @@ function buildCloudProgressTabModel(
   progress: CloudCertificationProgressViewModel,
   activityRecords: readonly ActivitySessionRecord[],
   now: string,
-): ProgressTabModel {
+): ProgressEvidenceModel {
   return {
     activity: buildActivityItems(activityRecords, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, now),
-    activitySummary: {
-      detail:
-        progress.totalAttempts > 0
-          ? `${progress.practiceAttemptCount} practice answers and ${progress.examAttemptCount} exam answers recorded.`
-          : "Practice activity appears after local sessions are completed.",
-      label: "Local attempts",
-      value: progress.totalAttempts,
-    },
     hasData: progress.totalAttempts > 0,
     metrics: [
       {
@@ -371,7 +336,7 @@ function buildAlgorithmsProgressTabModel(
   reviewQueueItems: readonly ReviewQueueEntry[],
   activityRecords: readonly ActivitySessionRecord[],
   now: string,
-): ProgressTabModel {
+): ProgressEvidenceModel {
   const packageResolution = contentPackageRuntimeOwner.getPreparedDiscovery(CODING_INTERVIEW_TRACK_ID);
   const packageItems = packageResolution.track.questions;
   const facts = buildCanonicalProgressFacts(packageItems, trainingAttempts, reviewQueueItems, now, packageResolution.track.contentVersion, packageResolution.track.artifactSha256);
@@ -399,11 +364,6 @@ function buildAlgorithmsProgressTabModel(
 
   return {
     activity: buildActivityItems(activityRecords, CODING_INTERVIEW_TRACK_ID, now),
-    activitySummary: {
-      detail: `Current roadmap node: ${facts.activeRoadmapNode.label}.`,
-      label: "Items practiced",
-      value: facts.itemsCompleted,
-    },
     algorithmsProgress,
     hasData: facts.itemsCompleted > 0,
     metrics: [],

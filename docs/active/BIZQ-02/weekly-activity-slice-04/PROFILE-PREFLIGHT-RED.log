@@ -1,0 +1,74 @@
+TAP version 13
+# Subtest: Progress week counts durable completed sessions, not distinct answers or earlier sessions
+ok 1 - Progress week counts durable completed sessions, not distinct answers or earlier sessions
+  ---
+  duration_ms: 330.301
+  type: 'test'
+  ...
+# Subtest: A durable completed session without answers remains one completed session
+ok 2 - A durable completed session without answers remains one completed session
+  ---
+  duration_ms: 1.634167
+  type: 'test'
+  ...
+# Subtest: all nine tracks and all three Progress branches use the same durable weekly session facts
+ok 3 - all nine tracks and all three Progress branches use the same durable weekly session facts
+  ---
+  duration_ms: 278.778917
+  type: 'test'
+  ...
+# Subtest: active answers, abandoned activity, prior-week and future sessions never become completed this week
+ok 4 - active answers, abandoned activity, prior-week and future sessions never become completed this week
+  ---
+  duration_ms: 1.231667
+  type: 'test'
+  ...
+# Subtest: Monday is a civil boundary in the supplied zone, independent of elapsed DST hours
+ok 5 - Monday is a civil boundary in the supplied zone, independent of elapsed DST hours
+  ---
+  duration_ms: 1.063417
+  type: 'test'
+  ...
+# Subtest: history remains activity across valid content versions, and duplicate session IDs count once or fail conflict
+ok 6 - history remains activity across valid content versions, and duplicate session IDs count once or fail conflict
+  ---
+  duration_ms: 1.10225
+  type: 'test'
+  ...
+# Subtest: invalid calendar facts stay explicitly unavailable, and corrupt repository data is never zero activity
+ok 7 - invalid calendar facts stay explicitly unavailable, and corrupt repository data is never zero activity
+  ---
+  duration_ms: 4.595334
+  type: 'test'
+  ...
+# Subtest: weekly title plural forms are rendered by the actual translator in all seven locales
+ok 8 - weekly title plural forms are rendered by the actual translator in all seven locales
+  ---
+  duration_ms: 7.40475
+  type: 'test'
+  ...
+# Subtest: Activity read cannot publish account A sessions after an actual profile router switch to B
+not ok 9 - Activity read cannot publish account A sessions after an actual profile router switch to B
+  ---
+  duration_ms: 6.692292
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/weeklyActivityIntegration.test.ts:2:11466'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected rejection.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'rejects'
+  stack: |-
+    async TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/weeklyActivityIntegration.test.ts:164:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 8
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1251.897542

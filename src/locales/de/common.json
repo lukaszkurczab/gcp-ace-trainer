@@ -730,5 +730,11 @@
   "We couldn't verify this package. Download it again to retry.": "Dieses Paket konnte nicht überprüft werden. Lade es erneut herunter und versuche es noch einmal.",
   "This package doesn't match the offered topic. Choose a free topic or try again later.": "Dieses Paket gehört nicht zum angebotenen Thema. Wähle ein kostenloses Thema oder versuche es später erneut.",
   "This package couldn't be verified. Choose a free topic or try again later.": "Dieses Paket konnte nicht überprüft werden. Wähle ein kostenloses Thema oder versuche es später erneut.",
-  "Prepare this Premium topic before starting a session.": "Bereite dieses Premium-Thema vor, bevor du eine Einheit startest."
+  "Prepare this Premium topic before starting a session.": "Bereite dieses Premium-Thema vor, bevor du eine Einheit startest.",
+  "progress.week.completedSessions_one": "{{count}} Einheit abgeschlossen",
+  "progress.week.completedSessions_few": "{{count}} Einheiten abgeschlossen",
+  "progress.week.completedSessions_many": "{{count}} Einheiten abgeschlossen",
+  "progress.week.completedSessions_other": "{{count}} Einheiten abgeschlossen",
+  "progress.week.selectedTrack": "Für den ausgewählten Lernpfad.",
+  "progress.week.unavailable": "Die Wochenaktivität ist nicht verfügbar."
 }

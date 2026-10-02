@@ -730,5 +730,11 @@
   "We couldn't verify this package. Download it again to retry.": "No se pudo verificar este paquete. Descárgalo de nuevo para volver a intentarlo.",
   "This package doesn't match the offered topic. Choose a free topic or try again later.": "Este paquete no corresponde al tema ofrecido. Elige un tema gratuito o inténtalo de nuevo más tarde.",
   "This package couldn't be verified. Choose a free topic or try again later.": "No se pudo verificar este paquete. Elige un tema gratuito o inténtalo de nuevo más tarde.",
-  "Prepare this Premium topic before starting a session.": "Prepara este tema Premium antes de iniciar una sesión."
+  "Prepare this Premium topic before starting a session.": "Prepara este tema Premium antes de iniciar una sesión.",
+  "progress.week.completedSessions_one": "{{count}} sesión completada",
+  "progress.week.completedSessions_few": "{{count}} sesiones completadas",
+  "progress.week.completedSessions_many": "{{count}} sesiones completadas",
+  "progress.week.completedSessions_other": "{{count}} sesiones completadas",
+  "progress.week.selectedTrack": "Para la ruta seleccionada.",
+  "progress.week.unavailable": "La actividad semanal no está disponible."
 }

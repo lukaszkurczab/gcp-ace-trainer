@@ -730,5 +730,11 @@
   "We couldn't verify this package. Download it again to retry.": "Non è stato possibile verificare questo pacchetto. Scaricalo di nuovo per riprovare.",
   "This package doesn't match the offered topic. Choose a free topic or try again later.": "Questo pacchetto non corrisponde all’argomento proposto. Scegli un argomento gratuito o riprova più tardi.",
   "This package couldn't be verified. Choose a free topic or try again later.": "Non è stato possibile verificare questo pacchetto. Scegli un argomento gratuito o riprova più tardi.",
-  "Prepare this Premium topic before starting a session.": "Prepara questo argomento Premium prima di avviare una sessione."
+  "Prepare this Premium topic before starting a session.": "Prepara questo argomento Premium prima di avviare una sessione.",
+  "progress.week.completedSessions_one": "{{count}} sessione completata",
+  "progress.week.completedSessions_few": "{{count}} sessioni completate",
+  "progress.week.completedSessions_many": "{{count}} sessioni completate",
+  "progress.week.completedSessions_other": "{{count}} sessioni completate",
+  "progress.week.selectedTrack": "Per il percorso selezionato.",
+  "progress.week.unavailable": "L’attività settimanale non è disponibile."
 }

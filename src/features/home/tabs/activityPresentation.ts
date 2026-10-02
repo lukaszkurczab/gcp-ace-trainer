@@ -1,3 +1,4 @@
+import { createLocalCalendar } from "../../../utils/date";
 import type { AppLocale } from "../../../preferences";
 
 export type ActivityDateLabel =
@@ -28,12 +29,12 @@ export function relativeDay(timestamp: string, now = new Date()): string {
 
 /** Difference between local calendar dates, independent of DST elapsed hours. */
 export function calendarDayDifference(timestamp: string, now = new Date()): number {
-  return Math.round((localCalendarDayKey(now) - localCalendarDayKey(new Date(timestamp))) / MILLISECONDS_PER_DAY);
+  return Math.round((createLocalCalendar().dayKey(now) - createLocalCalendar().dayKey(new Date(timestamp))) / MILLISECONDS_PER_DAY);
 }
 
 /** Activity's “This week” group starts on Monday in the user's local calendar. */
 export function isSameCalendarWeek(timestamp: string, now = new Date()): boolean {
-  return localCalendarWeekKey(new Date(timestamp)) === localCalendarWeekKey(now);
+  return createLocalCalendar().weekKey(new Date(timestamp)) === createLocalCalendar().weekKey(now);
 }
 
 export function formatActivityDateLabel(
@@ -50,13 +51,4 @@ export function formatActivityDateLabel(
 export function activityTime(timestamp: string): string {
   const date = new Date(timestamp);
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-}
-
-function localCalendarDayKey(date: Date): number {
-  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function localCalendarWeekKey(date: Date): number {
-  const daysSinceMonday = (date.getDay() + 6) % 7;
-  return localCalendarDayKey(date) - daysSinceMonday * MILLISECONDS_PER_DAY;
 }
