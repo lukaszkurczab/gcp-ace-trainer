@@ -1,0 +1,54 @@
+TAP version 13
+# MC_REACHABLE coding-interview-dsa-problem-solving completedRound=7
+# MC_REACHABLE claude-certified-architect-professional-certification completedRound=5
+# Subtest: actual GCP practice choice orders vary between session identities and survive durable resume unchanged
+ok 1 - actual GCP practice choice orders vary between session identities and survive durable resume unchanged
+  ---
+  duration_ms: 204.296708
+  type: 'test'
+  ...
+# Subtest: resume accepts a fingerprint-bound legal choice permutation without requiring regeneration
+ok 2 - resume accepts a fingerprint-bound legal choice permutation without requiring regeneration
+  ---
+  duration_ms: 0.985791
+  type: 'test'
+  ...
+# Subtest: all 16077 actual items preserve control membership, ID answers and non-choice order without exposing an answer to the ranker
+ok 3 - all 16077 actual items preserve control membership, ID answers and non-choice order without exposing an answer to the ranker
+  ---
+  duration_ms: 1619.232125
+  type: 'test'
+  ...
+# Subtest: all real 29 practice modes and canonical simulation profiles prepare valid frozen orders with unchanged question selection
+ok 4 - all real 29 practice modes and canonical simulation profiles prepare valid frozen orders with unchanged question selection
+  ---
+  duration_ms: 32.762167
+  type: 'test'
+  ...
+# Subtest: legacy source orders remain valid; malformed orders, stale pins and unstored permutation changes fail resume
+ok 5 - legacy source orders remain valid; malformed orders, stale pins and unstored permutation changes fail resume
+  ---
+  duration_ms: 1.582417
+  type: 'test'
+  ...
+# Subtest: actual Coding conditional repeat retains the source prepared order after three durable intervening answers and rebind
+ok 6 - actual Coding conditional repeat retains the source prepared order after three durable intervening answers and rebind
+  ---
+  duration_ms: 44.284583
+  type: 'test'
+  ...
+# Subtest: MC becomes reachable through completed canonical sessions and real persisted history without changing selection policy
+ok 7 - MC becomes reachable through completed canonical sessions and real persisted history without changing selection policy
+  ---
+  duration_ms: 760.14825
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3438.550666

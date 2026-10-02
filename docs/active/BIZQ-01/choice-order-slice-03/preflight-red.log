@@ -1,0 +1,143 @@
+TAP version 13
+# Subtest: actual GCP practice choice orders vary between session identities and survive durable resume unchanged
+not ok 1 - actual GCP practice choice orders vary between session identities and survive durable resume unchanged
+  ---
+  duration_ms: 184.695792
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/canonical/canonicalChoiceOrderIntegration.test.ts:2:1718'
+  failureType: 'testCodeFailure'
+  error: 'different session seeds must not always expose source option order'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    1:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    2:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    3:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    4:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    5:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    6:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    7:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    8:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    9:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+  actual:
+    0:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    1:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    2:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    3:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    4:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    5:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    6:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    7:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    8:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+    9:
+      0: 'A'
+      1: 'B'
+      2: 'C'
+      3: 'D'
+  operator: 'notDeepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/canonical/canonicalChoiceOrderIntegration.test.ts:25:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: resume accepts a fingerprint-bound legal choice permutation without requiring regeneration
+not ok 2 - resume accepts a fingerprint-bound legal choice permutation without requiring regeneration
+  ---
+  duration_ms: 0.955167
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/canonical/canonicalChoiceOrderIntegration.test.ts:2:3768'
+  failureType: 'testCodeFailure'
+  error: 'Canonical session option order is invalid.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    CanonicalTrainingRuntime.validateResume (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/canonical/CanonicalTrainingRuntime.ts:55:333)
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/canonical/canonicalChoiceOrderIntegration.test.ts:48:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 871.623542

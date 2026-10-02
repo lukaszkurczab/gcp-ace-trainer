@@ -9,6 +9,7 @@ import { retainReviewQueueEntryIdentity } from "../../domain/learning/reviewQueu
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "../../domain/learning/resolvedContentRef";
 import { selectPracticeQuestions } from "./practiceQuestionSelector";
+import { isCanonicalOptionOrder, prepareCanonicalOptionOrder } from "./canonicalOptionOrder";
 
 const RELEASE = "canonical-content-v1";
 const families: Record<string, string> = {
@@ -34,7 +35,7 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
       : source.slice(0, count);
     const feedback = feedbackValue(mode.feedbackTiming, req.feedbackTiming);
     const items = questions.map((q, i) => ({ occurrenceId: `${input.request instanceof Object && "sessionId" in input.request ? String(input.request.sessionId) : "session"}:occurrence:${i}`, item: ref(this.catalog, q) }));
-    const optionOrderByOccurrence = Object.fromEntries(items.map((o, i) => [o.occurrenceId, optionIds(questions[i]!)]));
+    const optionOrderByOccurrence = Object.fromEntries(items.map((o, i) => [o.occurrenceId, prepareCanonicalOptionOrder(questions[i]!, o.occurrenceId, o.item)]));
     const base = { id: requestSessionId(input.request), trackId: this.catalog.trackId, modeId: mode.modeId, configurationSnapshot: { kind: "practice", timer: "elapsedForeground", feedbackMode: feedback, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect" }, requestedLength: req.requestedLength, actualLength: count, currentItemIndex: 0, itemOrder: items, optionOrderByOccurrence, conditionalReinsertSlots: reinsertionSlots(mode, items, optionOrderByOccurrence), activeForegroundMs: 0, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256, taxonomyVersion: RELEASE, status: "active" as const, startedAt: input.now };
     const session = createTrainingSession({ ...base, planFingerprint: await createContentSessionPlanFingerprint(base as TrainingSession & { taxonomyVersion: string }) });
     return Object.freeze({ session, firstOccurrence: items[0]!.item, draft: null });
@@ -52,7 +53,7 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     if (JSON.stringify(input.session.configurationSnapshot) !== JSON.stringify(expectedSnapshot)) throw new Error("Canonical session configuration snapshot is invalid.");
     if (input.session.actualLength !== input.session.itemOrder.length || input.session.actualLength > input.session.requestedLength || input.session.itemOrder.some((o) => o.item.trackId !== this.catalog.trackId || o.item.questionId !== this.catalog.getQuestion(o.item.questionId)?.questionId || o.item.contentVersion !== this.catalog.contentVersion || o.item.artifactSha256 !== this.catalog.artifactSha256 || !this.catalog.getQuestion(o.item.questionId))) throw new Error("Canonical session item reference is unavailable.");
     if (mode.selection.kind === "exact_ordered_questions" && JSON.stringify(input.session.itemOrder.map((entry) => entry.item.questionId)) !== JSON.stringify(mode.selection.questionIds.slice(0, input.session.actualLength))) throw new Error("Canonical exact-order session plan is invalid.");
-    if (Object.keys(input.session.optionOrderByOccurrence).some((id) => !input.session.itemOrder.some((o) => o.occurrenceId === id)) || input.session.itemOrder.some((o) => JSON.stringify(input.session.optionOrderByOccurrence[o.occurrenceId] ?? []) !== JSON.stringify(optionIds(this.catalog.getQuestion(o.item.questionId)!)))) throw new Error("Canonical session option order is invalid.");
+    if (!hasValidPreparedOrders(input.session, this.catalog)) throw new Error("Canonical session option order is invalid.");
     if (await createContentSessionPlanFingerprint(input.session as TrainingSession & { taxonomyVersion: string }) !== input.session.planFingerprint) throw new Error("Canonical session plan fingerprint is invalid.");
   }
 
@@ -173,7 +174,7 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     const deadlineAt = new Date(Date.parse(input.now) + durationMs).toISOString();
     const snapshot = simulationSnapshot(profile, deadlineAt);
     const items = questions.map((question, index) => ({ occurrenceId: `${sessionId}:occurrence:${index}`, item: ref(this.catalog, question) }));
-    const optionOrderByOccurrence = Object.fromEntries(items.map((occurrence, index) => [occurrence.occurrenceId, optionIds(questions[index]!)]));
+    const optionOrderByOccurrence = Object.fromEntries(items.map((occurrence, index) => [occurrence.occurrenceId, prepareCanonicalOptionOrder(questions[index]!, occurrence.occurrenceId, occurrence.item)]));
     const base = {
       id: sessionId, trackId: this.catalog.trackId, modeId: config.modeId, configurationSnapshot: snapshot,
       requestedLength: questions.length, actualLength: questions.length, currentItemIndex: 0, itemOrder: items,
@@ -195,7 +196,7 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     if (!Number.isFinite(Date.parse(session.startedAt)) || JSON.stringify(session.configurationSnapshot) !== JSON.stringify(simulationSnapshot(profile, deadline))) throw new Error("Canonical simulation configuration snapshot or deadline is invalid.");
     const questions = selectSimulationQuestions(this.catalog, profile);
     if (session.actualLength !== questions.length || session.requestedLength !== questions.length || session.itemOrder.length !== questions.length || new Set(session.itemOrder.map((entry) => entry.item.questionId)).size !== questions.length || session.itemOrder.some((entry, index) => entry.occurrenceId !== `${session.id}:occurrence:${index}` || entry.item.questionId !== questions[index]?.questionId || entry.item.trackId !== this.catalog.trackId || entry.item.contentVersion !== this.catalog.contentVersion || entry.item.artifactSha256 !== this.catalog.artifactSha256)) throw new Error("Canonical simulation item plan is unavailable or changed.");
-    if (JSON.stringify(Object.keys(session.optionOrderByOccurrence).sort()) !== JSON.stringify(session.itemOrder.map((entry) => entry.occurrenceId).sort()) || session.itemOrder.some((entry) => JSON.stringify(session.optionOrderByOccurrence[entry.occurrenceId]) !== JSON.stringify(optionIds(this.catalog.getQuestion(entry.item.questionId)!))) || (session.conditionalReinsertSlots?.length ?? 0) !== 0) throw new Error("Canonical simulation option order or plan is invalid.");
+    if (!hasValidPreparedOrders(session, this.catalog) || (session.conditionalReinsertSlots?.length ?? 0) !== 0) throw new Error("Canonical simulation option order or plan is invalid.");
     if (await createContentSessionPlanFingerprint(session as TrainingSession & { taxonomyVersion: string }) !== session.planFingerprint) throw new Error("Canonical simulation plan fingerprint is invalid.");
     const draft = input.draft;
     if (!draft || draft.schemaVersion !== 1 || draft.draftVersion !== 1 || draft.sessionId !== session.id || draft.trackId !== session.trackId || draft.familyId !== this.familyId || !Number.isSafeInteger(draft.revision) || draft.revision < 1 || Date.parse(draft.updatedAt) < Date.parse(session.startedAt) || (session.configurationSnapshot.timer === "absoluteDeadline" && Date.parse(draft.updatedAt) > Date.parse(deadline)) || Number.isNaN(Date.parse(draft.updatedAt))) throw new Error("Canonical simulation draft identity, revision, or deadline is unavailable.");
@@ -310,7 +311,21 @@ function requestSimulationProfileId(value: unknown): string | undefined {
 function requestOf(value: unknown, fallback: number): { requestedLength: number; feedbackTiming?: string } { const r = value && typeof value === "object" ? value as Record<string, unknown> : {}; if (r.requestedLength !== undefined && (!Number.isSafeInteger(r.requestedLength) || Number(r.requestedLength) <= 0)) throw new Error("Canonical requestedLength is invalid."); if (r.feedbackTiming !== undefined && r.feedbackTiming !== "after_each_durable_submit" && r.feedbackTiming !== "after_session_completion") throw new Error("Canonical feedbackTiming is invalid."); return { requestedLength: typeof r.requestedLength === "number" ? r.requestedLength : fallback, feedbackTiming: typeof r.feedbackTiming === "string" ? r.feedbackTiming : undefined }; }
 function requestSessionId(value: unknown): string { const r = value && typeof value === "object" ? value as Record<string, unknown> : {}; if (typeof r.sessionId !== "string" || !r.sessionId.trim()) throw new Error("Canonical preparation requires sessionId."); return r.sessionId; }
 function ref(catalog: CanonicalTrackRuntime, question: Question): ResolvedContentRef { return createResolvedContentRef({ trackId: catalog.trackId, questionId: question.questionId, contentVersion: catalog.contentVersion, artifactSha256: catalog.artifactSha256 }); }
-function optionIds(question: Question): readonly string[] { if ("options" in question.interaction) return question.interaction.options.map((x) => x.optionId); if (question.interaction.type === "ordering") return question.interaction.elements.map((x) => x.elementId); return question.interaction.dimensions.map((x) => x.dimensionId); }
+function hasValidPreparedOrders(session: TrainingSession, catalog: CanonicalTrackRuntime): boolean {
+  const orders = session.optionOrderByOccurrence;
+  if (Object.keys(orders).length !== session.itemOrder.length || Object.keys(orders).some((id) => !session.itemOrder.some((occurrence) => occurrence.occurrenceId === id))) return false;
+  const validOrder = (item: ResolvedContentRef, order: unknown) => {
+    const question = catalog.getQuestion(item.questionId);
+    return item.trackId === catalog.trackId && item.contentVersion === catalog.contentVersion && item.artifactSha256 === catalog.artifactSha256 && Boolean(question && isCanonicalOptionOrder(question, order));
+  };
+  if (session.itemOrder.some((occurrence) => !validOrder(occurrence.item, orders[occurrence.occurrenceId]))) return false;
+  for (const slot of session.conditionalReinsertSlots ?? []) {
+    if (!validOrder(slot.ordinaryBranch.occurrence.item, slot.ordinaryBranch.optionOrder) || JSON.stringify(slot.ordinaryBranch.optionOrder) !== JSON.stringify(orders[slot.ordinaryBranch.occurrence.occurrenceId])) return false;
+    if (slot.exactSourceBranch && (!validOrder(slot.exactSourceBranch.occurrence.item, slot.exactSourceBranch.optionOrder) || JSON.stringify(slot.exactSourceBranch.optionOrder) !== JSON.stringify(orders[slot.sourceOccurrenceId]))) return false;
+    if (slot.reviewedVariantBranch && !validOrder(slot.reviewedVariantBranch.occurrence.item, slot.reviewedVariantBranch.optionOrder)) return false;
+  }
+  return true;
+}
 function feedbackValue(policy: ProductFeedbackTiming, requested?: string): string { if (policy.kind === "fixed") { if (requested && requested !== "after_each_durable_submit") throw new Error("This mode has fixed feedback timing."); return "afterEachAnswer"; } return requested === "after_session_completion" ? "atSessionEnd" : "afterEachAnswer"; }
 function eligibleEvidence(catalog: CanonicalTrackRuntime, mode: ProductModeConfig, reviews: readonly ReviewQueueEntry[], attempts: readonly TrainingAttempt<unknown>[], now: string): readonly Question[] { const selection = mode.selection; if (selection.kind !== "evidence_conditioned") return catalog.getPool(mode.modeId); const ids = new Set<string>(); if (selection.evidenceSources.includes("due_queue")) scopedReviews(reviews, catalog).filter((r) => r.dueAt <= now).forEach((r) => ids.add(r.sourceItem.questionId)); if (selection.evidenceSources.includes("committed_session_misses")) scopedAttempts(attempts, catalog).filter((a) => a.result.kind !== "correct").forEach((a) => ids.add(a.item.questionId)); return catalog.getPool(mode.modeId).filter((q) => ids.has(q.questionId)); }
 function reinsertionSlots(mode: ProductModeConfig, items: readonly { occurrenceId: string; item: ResolvedContentRef }[], orders: Readonly<Record<string, readonly string[]>>) { if (mode.reinsertPolicy !== "conditional_after_incorrect") return []; return items.slice(0, Math.max(0, items.length - 4)).map((source, i) => { const ordinary = items[i + 4]!; return { slotId: `${source.occurrenceId}:conditional:${i + 4}`, sourceOccurrenceId: source.occurrenceId, ordinaryBranch: { occurrence: ordinary, optionOrder: orders[ordinary.occurrenceId] ?? [] }, exactSourceBranch: { occurrence: { occurrenceId: `${source.occurrenceId}:conditional:${i + 4}:exact`, item: source.item }, optionOrder: orders[source.occurrenceId] ?? [] }, resolutionRule: "incorrect_or_partial_after_three_materialized_submissions" as const }; }); }

@@ -1,0 +1,27 @@
+{
+  "questionId": "alg-contrast-binary-scan-correctness-006",
+  "contentVersion": "coding-interview-dsa-problem-solving-0004",
+  "artifactSha256": "30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face",
+  "prompt": "A one-time lookup is performed on an unsorted array of n values. Option A scans in O(n). Option B sorts a copy in O(n log n) and then binary-searches in O(log n). Ignoring constants, which strategy has the better complete asymptotic cost for this single query?",
+  "options": [
+    {
+      "optionId": "scan",
+      "text": "The scan, because O(n) is less than O(n log n + log n)."
+    },
+    {
+      "optionId": "sort_binary",
+      "text": "Sort plus binary search, because the final query is O(log n)."
+    },
+    {
+      "optionId": "equal",
+      "text": "They are asymptotically equal."
+    },
+    {
+      "optionId": "binary_without_sort",
+      "text": "Binary-search the unsorted array directly."
+    }
+  ],
+  "practiceModes": [],
+  "simulationProfiles": [],
+  "limitation": "Named Option A/B approaches can confuse display letters; source-copy review remains pending. No runtime filter or source/admission change applied."
+}

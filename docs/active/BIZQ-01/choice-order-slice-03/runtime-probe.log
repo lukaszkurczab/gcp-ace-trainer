@@ -1,0 +1,4 @@
+2026-10-02 read-only existing Metro8081
+/status HTTP200 packager-status:running
+iOS AppEntry.bundle HTTP500: Unable to resolve module ../../storage/repositories/learningPlanInputSnapshot from src/application/learningPlan/LearningPlanEditorCoordinator.ts
+No restart/reset/device/install/config action. No native acceptance.
