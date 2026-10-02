@@ -1,0 +1,47 @@
+TAP version 13
+# {"questionId":"alg-contrast-binary-scan-correctness-006","savedOrder":["sort_binary","binary_without_sort","scan","equal"],"scanDisplayLetter":"C","prompt":"A one-time lookup is performed on an unsorted array of n values. Option A scans in O(n). Option B sorts a copy in O(n log n) and then binary-searches in O(log n). Ignoring constants, which strategy has the better complete asymptotic cost for this single query?","practicePoolMembership":[]}
+# Subtest: named strategy prompt remains clear when the saved choice order moves scan away from display A
+not ok 1 - named strategy prompt remains clear when the saved choice order moves scan away from display A
+  ---
+  duration_ms: 184.536875
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/source-copy-slice-04/preflight.ts:2:1419'
+  failureType: 'testCodeFailure'
+  error: 'Name strategies by their meaning rather than display letters.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: 'A one-time lookup is performed on an unsorted array of n values. Option A scans in O(n). Option B sorts a copy in O(n log n) and then binary-searches in O(log n). Ignoring constants, which strategy has the better complete asymptotic cost for this single query?'
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/source-copy-slice-04/preflight.ts:26:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: authored Details use the same explicit strategy names independent of option positions
+not ok 2 - authored Details use the same explicit strategy names independent of option positions
+  ---
+  duration_ms: 0.211042
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/source-copy-slice-04/preflight.ts:2:2703'
+  failureType: 'testCodeFailure'
+  error: 'Keep strategy references independent of display letters.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '{"blocks":[{"level":2,"text":"Why this choice is correct","type":"heading"},{"text":"Strategy A performs one pass: O(n). Strategy B performs O(n) copying, O(n log n) comparison sorting, and O(log n) lookup, so `O(n + n log n + log n) = O(n log n)`.","type":"paragraph"},{"level":3,"text":"Contrast the strategies","type":"heading"},{"text":"Both complete strategies are correct because B actually creates ordered data, but for one query O(n) grows more slowly than O(n log n). Looking only at B’s final O(log n) query hides the work required to make that query legal; binary-searching without sorting is not a correct third option.","type":"paragraph"},{"kind":"key_takeaway","text":"Compare end-to-end workload cost, not the cheapest stage of a pipeline.","title":"Key takeaway","type":"callout"}]}'
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/source-copy-slice-04/preflight.ts:33:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 865.595083

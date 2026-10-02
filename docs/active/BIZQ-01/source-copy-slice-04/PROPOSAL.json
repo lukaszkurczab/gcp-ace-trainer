@@ -1,0 +1,110 @@
+{
+  "taskId": "BIZQ-01",
+  "slice": "source-copy04",
+  "trackId": "coding-interview-dsa-problem-solving",
+  "sourceFile": "content/coding-interview-dsa-problem-solving/contrast_binary_search_vs_linear_scan/correctness_before_asymptotic_speed.json",
+  "questionId": "alg-contrast-binary-scan-correctness-006",
+  "mentalUnitId": "correctness_before_asymptotic_speed",
+  "learningObjective": "Compare complete one-query scan cost with sort-plus-binary-search cost including preprocessing.",
+  "defect": "Named Option A/B and Strategy A/B can be confused with display letters under legal persisted choice permutations.",
+  "intendedDecision": "Keep scan as accepted strategy for one query; explain complete cost by method names.",
+  "answerChange": false,
+  "identityAction": "preserve question and option IDs; same instructional intent, taxonomy, response and accepted answer",
+  "beforeProducerCommit": "ddd45c83f47a77d425dd016f949f58e9dad0d3a9",
+  "beforeContentVersion": "coding-interview-dsa-problem-solving-0004",
+  "contentVersion": "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04",
+  "beforeSourceSha256": "55f0d7cb8974bdf9a30389646b9af8c90184c91d2fe6f31376a7295686ec8d52",
+  "beforeQuestion": {
+    "answer": {
+      "optionId": "scan",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "blocks": [
+          {
+            "level": 2,
+            "text": "Why this choice is correct",
+            "type": "heading"
+          },
+          {
+            "text": "Strategy A performs one pass: O(n). Strategy B performs O(n) copying, O(n log n) comparison sorting, and O(log n) lookup, so `O(n + n log n + log n) = O(n log n)`.",
+            "type": "paragraph"
+          },
+          {
+            "level": 3,
+            "text": "Contrast the strategies",
+            "type": "heading"
+          },
+          {
+            "text": "Both complete strategies are correct because B actually creates ordered data, but for one query O(n) grows more slowly than O(n log n). Looking only at B\u2019s final O(log n) query hides the work required to make that query legal; binary-searching without sorting is not a correct third option.",
+            "type": "paragraph"
+          },
+          {
+            "kind": "key_takeaway",
+            "text": "Compare end-to-end workload cost, not the cheapest stage of a pipeline.",
+            "title": "Key takeaway",
+            "type": "callout"
+          }
+        ]
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "binary_without_sort",
+          "text": "Without ordering, the midpoint comparison cannot prove which half excludes the target."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "equal",
+          "text": "O(n log n) contains an additional unbounded logarithmic factor and therefore grows faster than O(n)."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "sort_binary",
+          "text": "This ignores the preprocessing cost required to make binary search legal."
+        }
+      ],
+      "reason": "The comparison must include every operation needed to produce a correct answer.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "scan",
+          "text": "The scan, because O(n) is less than O(n log n + log n)."
+        },
+        {
+          "optionId": "sort_binary",
+          "text": "Sort plus binary search, because the final query is O(log n)."
+        },
+        {
+          "optionId": "equal",
+          "text": "They are asymptotically equal."
+        },
+        {
+          "optionId": "binary_without_sort",
+          "text": "Binary-search the unsorted array directly."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "correctness_before_asymptotic_speed",
+    "nodeId": "contrast_binary_search_vs_linear_scan",
+    "prompt": "A one-time lookup is performed on an unsorted array of n values. Option A scans in O(n). Option B sorts a copy in O(n log n) and then binary-searches in O(log n). Ignoring constants, which strategy has the better complete asymptotic cost for this single query?",
+    "questionId": "alg-contrast-binary-scan-correctness-006",
+    "trackId": "coding-interview-dsa-problem-solving"
+  },
+  "wording": {
+    "prompt": "A one-time lookup is performed on an unsorted array of n values. A linear scan takes O(n). The alternative sorts a copy in O(n log n) and then binary-searches in O(log n). Ignoring constants, which strategy has the better complete asymptotic cost for this single query?",
+    "detailsParagraph1": "The linear scan performs one pass: O(n). Sorting a copy before binary search requires O(n) copying, O(n log n) comparison sorting, and O(log n) lookup, so `O(n + n log n + log n) = O(n log n)`.",
+    "detailsParagraph3": "Both complete strategies are correct because sorting the copy creates ordered data, but for one query O(n) grows more slowly than O(n log n). Looking only at the final O(log n) binary-search step hides the preprocessing required to make that query legal; binary-searching without sorting is not a correct third option."
+  },
+  "sources": [
+    "https://algs4.cs.princeton.edu/code/javadoc/edu/princeton/cs/algs4/BinarySearch.html",
+    "https://algs4.cs.princeton.edu/code/javadoc/edu/princeton/cs/algs4/Merge.html"
+  ],
+  "reviewAuthority": "Existing delegated BIZQ-01/CANDIDATE decision, independent Luna High source review; no impersonated human outcome."
+}

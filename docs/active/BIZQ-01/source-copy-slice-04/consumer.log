@@ -1,0 +1,41 @@
+TAP version 13
+# {"questionId":"alg-contrast-binary-scan-correctness-006","savedOrder":["binary_without_sort","sort_binary","equal","scan"],"scanDisplayLetter":"D","prompt":"A one-time lookup is performed on an unsorted array of n values. A linear scan takes O(n). The alternative sorts a copy in O(n log n) and then binary-searches in O(log n). Ignoring constants, which strategy has the better complete asymptotic cost for this single query?","practicePoolMembership":[]}
+# Subtest: named strategy prompt remains clear when the saved choice order moves scan away from display A
+ok 1 - named strategy prompt remains clear when the saved choice order moves scan away from display A
+  ---
+  duration_ms: 192.350833
+  type: 'test'
+  ...
+# Subtest: authored Details use the same explicit strategy names independent of option positions
+ok 2 - authored Details use the same explicit strategy names independent of option positions
+  ---
+  duration_ms: 0.146417
+  type: 'test'
+  ...
+# Subtest: current canonical bundle carries the exact reviewed source while pre-submit hides authored feedback
+ok 3 - current canonical bundle carries the exact reviewed source while pre-submit hides authored feedback
+  ---
+  duration_ms: 183.455584
+  type: 'test'
+  ...
+# Subtest: all24 saved legal permutations preserve every selected stable ID, score and authored feedback
+ok 4 - all24 saved legal permutations preserve every selected stable ID, score and authored feedback
+  ---
+  duration_ms: 1.518417
+  type: 'test'
+  ...
+# Subtest: real current Coding practice rejects an old-package active session instead of substituting new content
+ok 5 - real current Coding practice rejects an old-package active session instead of substituting new content
+  ---
+  duration_ms: 6.040667
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 937.090375
