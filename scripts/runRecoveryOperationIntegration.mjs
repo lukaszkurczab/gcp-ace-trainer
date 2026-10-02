@@ -7,7 +7,9 @@ import { runIsolatedEmulatorTests } from "../../patternly-backend/scripts/isolat
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const backendRoot = resolve(appRoot, "../patternly-backend");
-const pinsPath = resolve(appRoot, process.env.PATTERNLY_BACKEND_SOURCE_PINS ?? "docs/active/AUD-08/evidence/B3/CURRENT-PRODUCER-PINS.json");
+const producerPinsPath = process.env.PATTERNLY_BACKEND_SOURCE_PINS;
+if (!producerPinsPath?.trim()) throw new Error("recovery_integration_backend_source_pins_required");
+const pinsPath = resolve(appRoot, producerPinsPath);
 const pins = JSON.parse(await readFile(pinsPath, "utf8"));
 if (typeof pins.files !== "object" || pins.files === null || Array.isArray(pins.files) || Object.keys(pins.files).length === 0) {
   throw new Error("recovery_integration_producer_files_invalid");
@@ -57,7 +59,7 @@ const testPath = join(appRoot, "scripts/recoveryOperationIntegration.emulator.te
 const quote = (value) => `'${value.replaceAll("'", "'\\''")}'`;
 const command = `${quote(process.execPath)} --import ${quote(tsxLoader)} --test --test-concurrency=1 ${quote(testPath)}`;
 
-console.log(`AUD-08 B3 mobile integration: app=${expectedAppHead} backend=${expectedBackendHead} producerPins=${Object.keys(pins.files).length}`);
+console.log(`Recovery mobile integration: app=${expectedAppHead} backend=${expectedBackendHead} producerPins=${Object.keys(pins.files).length}`);
 process.exitCode = await runIsolatedEmulatorTests({
   backendRoot,
   projectId: "demo-patternly-aud08-mobile",

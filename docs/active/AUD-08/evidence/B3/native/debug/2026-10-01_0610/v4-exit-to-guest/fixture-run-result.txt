@@ -1,5 +1,0 @@
-exit_code=0
-elapsed_seconds=29
-flow=.maestro/screenshot-capture/aud08-b3/45-v4-exit-to-guest.yaml
-credentials_and_recovery_codes_redacted=true
-screenshots_removed=true

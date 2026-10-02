@@ -1,3 +1,5 @@
+Historical shared acceptance files referenced below are archived in Git at `74d8439c9801448c6b536d2f72eb4bd18811482d`; links resolve to that snapshot. Mobile ACK/resume was accepted locally; this does not accept the remaining SMTP scope or the full failure matrix. Earlier pending statements below describe their recording date.
+
 # AUD-08-B4 post-commit vault-write-failure QA — v6b
 
 **Scoped verdict: PASS WITH ISSUES.** The frozen integration test covers local vault write rejections after real backend ISSUE and consume commits, then reconciles each operation without issuing a second POST. This does not accept the full B4 matrix.
@@ -6,8 +8,8 @@ Reviewer: GPT-6 Luna, high. Read-only review. No source, service, emulator, or d
 
 ## Evidence
 
-- Final source pin: `evidence/B3/CONSUMER-SOURCE-PINS-v6b.json`; all 46 app files matched. `evidence/B3/CURRENT-PRODUCER-PINS.json`; all 27 backend files matched. The recovery integration test is included in the consumer pins.
-- Required gate: `evidence/B3/HTTP-SDK-SOURCE-v6b.log`, SHA-256 `6b2815d9c39e8f6021bc9c43027bd1998587b6491e8a241da0eb41b057e0dffd`. The recorded result is 1 pass, 0 failures, 0 skips, with isolated Auth/Firestore emulators shut down cleanly. The reviewer verified the log hash and all source hashes but did not rerun the gate.
+- Final source pin: [evidence/B3/CONSUMER-SOURCE-PINS-v6b.json](https://github.com/lukaszkurczab/gcp-ace-trainer/blob/74d8439c9801448c6b536d2f72eb4bd18811482d/docs/active/AUD-08/evidence/B3/CONSUMER-SOURCE-PINS-v6b.json); all 46 app files matched. [evidence/B3/CURRENT-PRODUCER-PINS.json](https://github.com/lukaszkurczab/gcp-ace-trainer/blob/74d8439c9801448c6b536d2f72eb4bd18811482d/docs/active/AUD-08/evidence/B3/CURRENT-PRODUCER-PINS.json); all 27 backend files matched. The recovery integration test is included in the consumer pins.
+- Required gate: [evidence/B3/HTTP-SDK-SOURCE-v6b.log](https://github.com/lukaszkurczab/gcp-ace-trainer/blob/74d8439c9801448c6b536d2f72eb4bd18811482d/docs/active/AUD-08/evidence/B3/HTTP-SDK-SOURCE-v6b.log), SHA-256 `6b2815d9c39e8f6021bc9c43027bd1998587b6491e8a241da0eb41b057e0dffd`. The recorded result is 1 pass, 0 failures, 0 skips, with isolated Auth/Firestore emulators shut down cleanly. The reviewer verified the log hash and all source hashes but did not rerun the gate.
 - The first v6 log predates a final assertion added to the test source and is stale for the final bytes. This review relies on the refreshed v6b pins and run only.
 
 ### ISSUE result write rejection

@@ -41,7 +41,7 @@
   "environmentSocketSha256": "67508cc14cb0df81ae8260df37c1dc58bfe1041a8c5fc85db7e21cfce40349bf",
   "scopedQa": "PASS WITH ISSUES; local evidence consistency only",
   "repositoryInventorySha256": "bb475e2115e5efe1cf6ae6bde21166bb07b576d46677c8e1ea873996ce1360b6",
-  "appCurrentGateReference": "../AUD-08/evidence/B3/B4-FINAL-LOCAL-v11b-MANIFEST.json",
+  "appCurrentGateReference": "https://github.com/lukaszkurczab/gcp-ace-trainer/blob/74d8439c9801448c6b536d2f72eb4bd18811482d/docs/active/AUD-08/evidence/B3/B4-FINAL-LOCAL-v11b-MANIFEST.json",
   "appCurrentGateManifestSha256": "8270148544c1f073c51e709c81d9ef2ba7f8a8ae9d0260b4caf007c715225912",
   "backendDecomposition": "six static PASS; legacyv4 302/0/5 exit0; recovery15/operator4/acceptance1 each0FAIL0SKIP exit0; priorv3FAIL causeunknown",
   "postGateSourceCheckSha256": "43b01b56e2732a34669ff8dedd2e8f887c805e449a4886018ec0ad6199c210ad",

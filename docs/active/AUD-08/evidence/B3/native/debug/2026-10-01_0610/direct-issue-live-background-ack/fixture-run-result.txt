@@ -1,4 +1,0 @@
-exit_code=0
-elapsed_seconds=41
-credentials_and_recovery_codes_redacted=true
-screenshots_removed=true
