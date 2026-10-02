@@ -51,13 +51,14 @@ import {
   type FirebaseClientConfiguration,
 } from "../../infrastructure/firebase/publicConfig";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { recoveryCodeClipboard } from "../../infrastructure/security/recoveryCodeClipboard";
 import {
   spacing,
   typography,
   type AppColors,
 } from "../../theme";
 import { useAccountCommand } from "./useAccountCommand";
+import { RecoveryOperationPanel } from "./RecoveryOperationPanel";
+import { getRecoveryOperationPresentation } from "./recoveryOperationPresentation";
 
 type AccountEntryProps = NativeStackScreenProps<
   RootStackParamList,
@@ -76,6 +77,7 @@ type AccountCopy = Record<Exclude<keyof typeof accountCopy,
   | "learningPlanRecoveryDismiss"
   | "learningPlanRecoveryDescription"
   | "learningPlanRecoveryTitle"
+  | `recoveryOperation${string}`
 > | "invalidEmail", string>;
 type AccountContext = ReturnType<typeof usePatternlyAccount>;
 type AccountContextRef = Readonly<{ current: AccountContext }>;
@@ -176,11 +178,11 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   keepGuestData: t("keepGuestData"),
   keepAccountData: t("keepAccountData"),
   accountEntryContinue: t("accountEntryContinue"),
-  recoveryCodesSaved: t("recoveryCodesSaved"),
-  recoveryCodesSaveRequired: t("recoveryCodesSaveRequired"),
   recoveryCodeReauthDescription: t("recoveryCodeReauthDescription"),
   recoveryCodeSignInAgain: t("recoveryCodeSignInAgain"),
   recoveryCodeSignInAgainButton: t("recoveryCodeSignInAgainButton"),
+  recoveryCodesSaved: t("recoveryCodesSaved"),
+  recoveryCodesSaveRequired: t("recoveryCodesSaveRequired"),
   accountRecoveryTitle: t("accountRecoveryTitle"),
   accountBindingMismatch: t("accountBindingMismatch"),
   accountBindingMismatchDescription: t("accountBindingMismatchDescription"),
@@ -272,6 +274,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   const [recoveryCode, setRecoveryCode] = useState("");
   const [recoveryMethod, setRecoveryMethod] = useState<"email" | "code">("email");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [recoveryAccountTransitionRequired, setRecoveryAccountTransitionRequired] = useState(false);
   const backAction = mode === "register"
     ? { onPress: () => { setFeedback(null); setMode("signIn"); } }
     : navigationIndex > 0
@@ -362,6 +365,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
       text={text}
     />
   );
+  if (account.state.kind === "recoveryPending") return <RecoveryPendingScreen account={account} backAction={backAction} onTransitionStarted={() => { setRecoveryAccountTransitionRequired(true); setMode("signIn"); }} text={text} />;
   if (account.state.kind === "unavailable") {
     const authRestoreTimedOut = account.state.reason === "auth_restore_timeout";
     return (
@@ -575,7 +579,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
         ambientVariant="auth"
         edges={screenEdges}
         footer={
-          account.state.kind === "guestAccessBlocked" ? undefined : (
+          account.state.kind === "guestAccessBlocked" || recoveryAccountTransitionRequired ? undefined : (
             <Button
               labelStyle={styles.guestActionLabel}
               onPress={continueWithoutAccount}
@@ -622,7 +626,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             placeholderTextColor={styles.authPlaceholder.color as string}
             text={text}
           />
-          <View style={[styles.authLinks, largeText ? styles.authLinksLargeText : null]}>
+          {!recoveryAccountTransitionRequired ? <View style={[styles.authLinks, largeText ? styles.authLinksLargeText : null]}>
             <Button
               labelStyle={styles.textActionLabel}
               onPress={() => setMode("recovery")}
@@ -638,7 +642,7 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
             >
               {text.register}
             </Button>
-          </View>
+          </View> : null}
           <Divider label={text.or} />
           {Platform.OS === "ios" ? (
             <ProviderButton
@@ -848,44 +852,6 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
 }
 
 type BackAction = Readonly<{ onPress: () => void }> | undefined;
-function RecoveryCodesDisplay({ codes, text }: Readonly<{ codes: readonly string[]; text: AccountCopy }>) {
-  const styles = useThemedStyles(createStyles);
-  const { colors } = useAppPreferences();
-  const [copyState, setCopyState] = useState<"idle" | "copying" | "copied" | "failed">("idle");
-  const copyCodes = async () => {
-    setCopyState("copying");
-    try {
-      await recoveryCodeClipboard.copy(codes);
-      setCopyState("copied");
-    } catch {
-      setCopyState("failed");
-    }
-  };
-  return (
-    <View style={styles.accountActionGroup}>
-      <AuthText style={styles.accountBody}>{text.recoveryCodesClipboardWarning}</AuthText>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={copyState === "copied" ? `${text.recoveryCodesCopied}. ${text.copyRecoveryCodes}` : text.copyRecoveryCodes}
-        accessibilityState={{ busy: copyState === "copying", disabled: copyState === "copying" }}
-        disabled={copyState === "copying"}
-        onPress={() => void copyCodes()}
-        style={styles.copyCodesButton}
-        testID="account-copy-recovery-codes"
-      >
-        <Icon color={colors.primary} name={copyState === "copied" ? "check" : "copy"} size={20} />
-        <AuthText accessibilityLiveRegion="polite" style={styles.copyCodesLabel}>
-          {copyState === "copied" ? text.recoveryCodesCopied : text.copyRecoveryCodes}
-        </AuthText>
-      </Pressable>
-      <View style={styles.recoveryCodeSheet}>
-        <AuthText selectable style={styles.accountCode}>{codes.join("\n")}</AuthText>
-      </View>
-      {copyState === "failed" ? <AuthText accessibilityRole="alert" style={styles.fieldError}>{text.recoveryCodesCopyFailed}</AuthText> : null}
-    </View>
-  );
-}
-
 function DeletionContinuationScreen({ account, backAction, text, retryLabel }: Readonly<{ account: AccountContext; backAction: BackAction; text: AccountCopy; retryLabel: string }>) {
   const { busyAction, runCommand } = useAccountCommand();
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -916,22 +882,10 @@ function AccountAdoptionScreen({
   const [conflictChoice, setConflictChoice] = useState<"guest" | "account" | null>(null);
   const [goalPlanChoices, setGoalPlanChoices] = useState<Readonly<Record<string, "guest" | "account">>>({});
   const [recoveryPassword, setRecoveryPassword] = useState("");
-  const [recoveryCodes, setRecoveryCodes] = useState<readonly string[] | null>(null);
-  const [recoveryCodesSaved, setRecoveryCodesSaved] = useState(false);
   const [recoveryFeedback, setRecoveryFeedback] = useState<Feedback | null>(null);
   const [recoveryNeedsReauthentication, setRecoveryNeedsReauthentication] = useState(false);
   const [commandFeedback, setCommandFeedback] = useState<Feedback | null>(null);
   const { busyAction, runCommand } = useAccountCommand();
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", (state) => {
-      if (state !== "active") {
-        setRecoveryCodes(null);
-        setRecoveryCodesSaved(false);
-      }
-    });
-    return () => subscription.remove();
-  }, []);
 
   if (!plan) return null;
   const authenticated = account.state.kind === "authenticated" ? account.state : null;
@@ -958,8 +912,6 @@ function AccountAdoptionScreen({
           result.recoveryCodes &&
           result.recoveryCodes.length > 0
         ) {
-          setRecoveryCodes(result.recoveryCodes);
-          setRecoveryCodesSaved(false);
           setRecoveryPassword("");
           setRecoveryNeedsReauthentication(false);
           setRecoveryFeedback(null);
@@ -1002,10 +954,13 @@ function AccountAdoptionScreen({
   const signOut = () => {
     runCommand("signOut", () => account.signOut(), setCommandFeedback);
   };
+  const recoveryOperation = account.recoveryOperation;
+  const recoveryPresentation = getRecoveryOperationPresentation(recoveryOperation);
+  const showRecoveryFailure = (result: Feedback) => setRecoveryFeedback(result.kind === "failure" ? result : null);
   const canContinue =
     (effectiveChoice === "discard" || plan.conflictRecordIds.length === 0 || conflictChoice !== null) &&
     (effectiveChoice === "discard" || accountData.preview.preview.goalPlanConflictGroups.every((group) => goalPlanChoices[group.groupId] !== undefined)) &&
-    (recoveryCodes === null || recoveryCodesSaved);
+    !recoveryOperation.blocksProfilePreparation;
 
   return (
     <Screen
@@ -1082,25 +1037,16 @@ function AccountAdoptionScreen({
       </View> : null}
       <View style={styles.recoverySection} testID="account-recovery-codes-panel">
         <AuthText style={styles.accountHeading}>{text.recoveryCodes}</AuthText>
-        <AuthText style={styles.accountBody}>{recoveryCodes ? text.recoveryCodesDescription : text.recoveryCodesIntro}</AuthText>
-        {recoveryCodes ? (
-          <View style={styles.accountActionGroup} testID="account-recovery-codes">
-            <RecoveryCodesDisplay codes={recoveryCodes} text={text} />
-            <Pressable
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: recoveryCodesSaved, disabled: busyAction !== null }}
-              disabled={busyAction !== null}
-              onPress={() => setRecoveryCodesSaved((current) => !current)}
-              style={styles.recoveryCodesSavedRow}
-              testID="account-recovery-codes-saved-checkbox"
-            >
-              <View style={[styles.termsCheckbox, recoveryCodesSaved ? styles.termsCheckboxChecked : null]}>
-                {recoveryCodesSaved ? <Icon color={styles.termsCheckboxIcon.color as string} name="check" size={16} /> : null}
-              </View>
-              <AuthText style={styles.termsCopy}>{text.recoveryCodesSaved}</AuthText>
-            </Pressable>
-          </View>
-        ) : (
+        {recoveryOperation.kind === "idle" ? <AuthText style={styles.accountBody}>{text.recoveryCodesIntro}</AuthText> : null}
+        {recoveryPresentation.showPanel ? <RecoveryOperationPanel
+          busy={busyAction !== null}
+          onConfirmSaved={() => runCommand("recovery", () => account.confirmRecoveryCodesSaved(), showRecoveryFailure)}
+          onResume={() => runCommand("recovery", () => account.resumePendingRecovery(), showRecoveryFailure)}
+          onReplace={() => runCommand("recovery", () => account.requestRecoveryCodeReplacement(), showRecoveryFailure)}
+          onRetry={() => runCommand("recovery", () => account.retryRecoveryOperation(), showRecoveryFailure)}
+          snapshot={recoveryOperation}
+        /> : null}
+        {!recoveryPresentation.issueBlocksReplacement ? <>
           <View style={styles.accountActionGroup}>
             {recoveryFeedback && !isReauthenticationFailure(recoveryFeedback) ? renderFeedback(recoveryFeedback, text, text.recoveryCodes) : null}
             {recoveryNeedsReauthentication && recoveryUsesPassword ? (
@@ -1152,10 +1098,42 @@ function AccountAdoptionScreen({
               </Button>
             )}
           </View>
-        )}
-        {recoveryCodes && !recoveryCodesSaved ? <AuthText style={styles.accountBody}>{text.recoveryCodesSaveRequired}</AuthText> : null}
+        </> : null}
       </View>
       {commandFeedback ? renderFeedback(commandFeedback, text, text.account) : null}
+      <Button
+        disabled={busyAction !== null || recoveryOperation.blocksProfilePreparation}
+        loading={busyAction === "signOut"}
+        onPress={signOut}
+        testID="account-adoption-sign-out"
+        variant="ghost"
+      >
+        {text.signOut}
+      </Button>
+    </Screen>
+  );
+}
+
+function RecoveryPendingScreen({ account, backAction, onTransitionStarted, text }: Readonly<{ account: AccountContext; backAction: BackAction; onTransitionStarted: () => void; text: AccountCopy }>) {
+  const { t } = useTranslation("account");
+  const { busyAction, runCommand } = useAccountCommand();
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const showFailure = (result: Feedback) => setFeedback(result.kind === "failure" ? result : null);
+  return (
+    <Screen edges={["top", "bottom"]}>
+      <ScreenHeader backAction={backAction} title={t("recoveryOperationTitle")} />
+      <View style={{ gap: spacing.md }} testID="account-recovery-pending">
+        <RecoveryOperationPanel
+          busy={busyAction !== null}
+          onConfirmSaved={() => runCommand("recovery", () => account.confirmRecoveryCodesSaved(), showFailure)}
+          onDefer={() => { onTransitionStarted(); runCommand("recovery", () => account.continueWithCurrentAccount(), showFailure); }}
+          onResume={() => runCommand("recovery", () => account.resumePendingRecovery(), showFailure)}
+          onReplace={() => runCommand("recovery", () => account.requestRecoveryCodeReplacement(), showFailure)}
+          onRetry={() => runCommand("retry", () => account.retryRecoveryOperation(), showFailure)}
+          snapshot={account.recoveryOperation}
+        />
+        {feedback?.kind === "failure" ? renderFeedback(feedback, text, text.accountRecoveryTitle) : null}
+      </View>
     </Screen>
   );
 }
@@ -2218,9 +2196,6 @@ function isAuthFieldFailure(
     recoverySection: { borderTopColor: palette.border, borderTopWidth: 1, paddingTop: spacing.xl, gap: spacing.md },
     progressToggleRow: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
     progressToggleLabel: { flex: 1, minWidth: 0 },
-    copyCodesButton: { maxWidth: "100%", alignItems: "center", alignSelf: "flex-start", flexDirection: "row", gap: spacing.sm, minHeight: 44, paddingVertical: spacing.sm, paddingHorizontal: spacing.md, borderRadius: 12, backgroundColor: palette.surface },
-    copyCodesLabel: { ...typography.small, color: palette.primary, flexShrink: 1 },
-    recoveryCodeSheet: { backgroundColor: palette.surfaceInput, borderRadius: 16, padding: spacing.md },
     accountActionGroup: { gap: spacing.sm },
     accountRecoveryContainer: { flex: 1, gap: spacing.md },
     accountRecoveryCentered: { justifyContent: "center" },
@@ -2240,18 +2215,6 @@ function isAuthFieldFailure(
       ...typography.small,
       color: palette.textPrimary,
       fontWeight: "600",
-    },
-    accountCode: {
-      fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-      color: palette.textPrimary,
-      fontSize: 14,
-      lineHeight: 26,
-    },
-    recoveryCodesSavedRow: {
-      alignItems: "center",
-      flexDirection: "row",
-      gap: spacing.sm,
-      minHeight: 44,
     },
     radioOption: {
       alignItems: "flex-start",

@@ -1,0 +1,12 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS_WITH_RUNTIME_LIMITS",
+  "pinsSha256": "36dc826889efd6496ab94dab628e31e898ae3865c4fe147fae02a7fc04909a20",
+  "independentNodeTestCasesPass": 16,
+  "policyAssertions": 37,
+  "realFilesystemSyntheticCases": 3,
+  "sourceHashChecksPass": 129,
+  "syntax": "PASS Node22",
+  "runtimeInputsRead": false,
+  "runtimeExecutionProven": false
+}

@@ -1,0 +1,22 @@
+{
+  "task": "AUD-08-B3",
+  "scope": "source-only guest mismatch investigation",
+  "runtimeArtifactsRead": false,
+  "editsPerformed": false,
+  "actualCauseEstablished": false,
+  "findings": [
+    {
+      "finding": "failure category conflates domain and marker inequality",
+      "source": "private post-transition policy compareGuestDigests"
+    },
+    {
+      "finding": "new-account registration can change adoption/access marker bytes",
+      "condition": "guest-originated newly created account; not established for this existing-account recovery"
+    },
+    {
+      "finding": "modern guest Premium cache is profile-scoped and remains fully included",
+      "limitation": "source evidence does not prove actual unchanged bytes"
+    }
+  ],
+  "nextCheck": "separate diagnostic domainMatches and markerMatches with strict acceptance preserved"
+}

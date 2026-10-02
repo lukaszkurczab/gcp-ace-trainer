@@ -50,7 +50,8 @@
     "backendUnavailable": { "title": "Service de compte indisponible", "body": "Nous n’avons pas pu actualiser la session de votre compte. Réessayez." },
     "revokedSession": { "title": "Session expirée", "body": "Votre session de compte n’est plus valide. Déconnectez-vous, puis reconnectez-vous." },
     "signOutPending": { "title": "Déconnexion en attente", "body": "La déconnexion sur cet appareil n’a pas abouti. Réessayez avant d’utiliser les données du compte." },
-    "providerRegistrationRequired": { "title": "Vérifier les documents du compte", "body": "Terminez ou annulez la création du compte avant d’ouvrir ses données." }
+    "providerRegistrationRequired": { "title": "Vérifier les documents du compte", "body": "Terminez ou annulez la création du compte avant d’ouvrir ses données." },
+    "recoveryPending": { "title": "Terminer la récupération du compte", "body": "Une étape de récupération enregistrée nécessite votre attention avant que nous puissions ouvrir vos données." }
   },
   "privacyRequests": {
     "title": "Demandes relatives à la confidentialité",

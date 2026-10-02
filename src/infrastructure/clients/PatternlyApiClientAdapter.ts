@@ -12,6 +12,8 @@ const MAX_SYNC_ENVELOPE_UTF8_BYTES = 512 * 1024;
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
 const MUTATION_ID_PATTERN = /^[A-Za-z0-9_-]{16,128}$/u;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const RECOVERY_CODE_PATTERN = /^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/u;
+const RECOVERY_OPERATION_PROGRESS_STATUSES = new Set(["in_progress", "acknowledged", "delivery_unconfirmed", "superseded", "expired_or_invalid", "provider_retryable"]);
 const PROGRESS_RECORD_TYPES = new Set(["active_track", "training_session_summary", "training_session_result", "training_attempt", "review_queue_entry", "goal", "learning_plan"]);
 const ADOPTION_CASES = new Set(["emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote", "populatedLocalPopulatedRemote", "divergentRecord", "blocked"]);
 const BLOCKING_REASONS = new Set(["active_session", "journal_recovery"]);
@@ -44,6 +46,10 @@ function hasOneOfExactKeys(value: unknown, alternatives: readonly (readonly stri
 
 function isFiniteNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+}
+
+function isFinitePositiveInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
 function isBoundedString(value: unknown, min: number, max: number): value is string {
@@ -260,6 +266,84 @@ function parseAdoptionExecutionResponse(value: unknown): AdoptionExecutionRespon
   value.records.forEach((record) => validateGuestMergeRecord(record));
   return value as AdoptionExecutionResponseDto;
 }
+
+export type RecoveryOperationStatusDto = "in_progress" | "result_available" | "acknowledged" | "delivery_unconfirmed" | "superseded" | "expired_or_invalid" | "provider_retryable";
+export type RecoveryOperationProgressDto = Readonly<{
+  operationId: string;
+  status: Exclude<RecoveryOperationStatusDto, "result_available">;
+  authorizationGeneration?: number;
+}>;
+export type RecoveryCodeIssueResultDto = RecoveryOperationProgressDto | Readonly<{
+  operationId: string;
+  status: "result_available";
+  generationId: string;
+  authorizationGeneration: number;
+  codes: readonly string[];
+}>;
+export type RecoveryConsumeResultDto = RecoveryOperationProgressDto | Readonly<{
+  operationId: string;
+  status: "result_available";
+  firebaseUid: string;
+  authorizationGeneration: number;
+  customToken: string;
+}>;
+export type RecoveryOperationAcknowledgementDto = Readonly<{
+  operationId: string;
+  status: "acknowledged";
+  authorizationGeneration: number;
+}>;
+
+function parseRecoveryOperationProgress(value: unknown, expectedOperationId: string): RecoveryOperationProgressDto {
+  if (!isPlainRecord(value)
+    || !hasOneOfExactKeys(value, [["operationId", "status"], ["operationId", "status", "authorizationGeneration"]])
+    || value.operationId !== expectedOperationId || !isUuid(value.operationId)
+    || typeof value.status !== "string" || !RECOVERY_OPERATION_PROGRESS_STATUSES.has(value.status)
+    || (value.authorizationGeneration !== undefined && !isFinitePositiveInteger(value.authorizationGeneration))) return invalidResponse();
+  return Object.freeze({
+    operationId: value.operationId,
+    status: value.status as RecoveryOperationProgressDto["status"],
+    ...(value.authorizationGeneration === undefined ? {} : { authorizationGeneration: value.authorizationGeneration }),
+  });
+}
+
+function parseRecoveryCodeIssueResult(value: unknown, expectedOperationId: string): RecoveryCodeIssueResultDto {
+  if (!isPlainRecord(value)) return invalidResponse();
+  if (value.status !== "result_available") return parseRecoveryOperationProgress(value, expectedOperationId);
+  if (!hasExactKeys(value, ["operationId", "status", "generationId", "authorizationGeneration", "codes"])
+    || value.operationId !== expectedOperationId || !isUuid(value.operationId)
+    || !isNonEmptyString(value.generationId) || !isFinitePositiveInteger(value.authorizationGeneration)
+    || !Array.isArray(value.codes) || value.codes.length !== 10 || !value.codes.every((code) => typeof code === "string" && RECOVERY_CODE_PATTERN.test(code))) return invalidResponse();
+  return Object.freeze({
+    operationId: value.operationId,
+    status: "result_available",
+    generationId: value.generationId,
+    authorizationGeneration: value.authorizationGeneration,
+    codes: Object.freeze([...value.codes]),
+  });
+}
+
+function parseRecoveryConsumeResult(value: unknown, expectedOperationId: string): RecoveryConsumeResultDto {
+  if (!isPlainRecord(value)) return invalidResponse();
+  if (value.status !== "result_available") return parseRecoveryOperationProgress(value, expectedOperationId);
+  if (!hasExactKeys(value, ["operationId", "status", "firebaseUid", "authorizationGeneration", "customToken"])
+    || value.operationId !== expectedOperationId || !isUuid(value.operationId)
+    || !isNonEmptyString(value.firebaseUid) || !isFinitePositiveInteger(value.authorizationGeneration)
+    || !isNonEmptyString(value.customToken)) return invalidResponse();
+  return Object.freeze({
+    operationId: value.operationId,
+    status: "result_available",
+    firebaseUid: value.firebaseUid,
+    authorizationGeneration: value.authorizationGeneration,
+    customToken: value.customToken,
+  });
+}
+
+function parseRecoveryOperationAcknowledgement(value: unknown, expectedOperationId: string): RecoveryOperationAcknowledgementDto {
+  if (!isPlainRecord(value) || !hasExactKeys(value, ["operationId", "status", "authorizationGeneration"])
+    || value.operationId !== expectedOperationId || !isUuid(value.operationId)
+    || value.status !== "acknowledged" || !isFinitePositiveInteger(value.authorizationGeneration)) return invalidResponse();
+  return Object.freeze({ operationId: value.operationId, status: "acknowledged", authorizationGeneration: value.authorizationGeneration });
+}
 export type ProgressMutationDto = Readonly<{
   mutationId: string;
   kind: "node" | "item";
@@ -294,7 +378,6 @@ export type ProgressRecordDto = Readonly<{
 }>;
 
 export type MeResponseDto = Readonly<{ user: Readonly<{ id: string; createdAt: string; acceptedTermsVersion: string | null; identity: Readonly<{ provider: string; subject: string; email: string | null; emailVerified: boolean }> }> }>;
-export type RecoveryCodesResponseDto = Readonly<{ generationId: string; codes: readonly string[] }>;
 export type AccountDeletionResponseDto = Readonly<{ status: "deleted"; operationId: string; proofId: string }>;
 export type PublicDeletionProofResponseDto = Readonly<{ status: "deleted"; operationId: string; proofId: string }>;
 export type DeletionOperationStatusDto = Readonly<{ status: "pending" | "remote_deleted" | "complete"; operationId: string; proofId: string | null }>;
@@ -464,8 +547,12 @@ export type PatternlyApiClient = Readonly<{
   syncProgress: (input: SyncRequestDto) => Promise<SyncResponseDto>;
   previewAccountAdoption: (input: GuestMergeSnapshotRequestDto) => Promise<AdoptionPreviewResponseDto>;
   confirmAccountAdoption: (input: Readonly<{ deviceId: string; snapshot: GuestMergeSnapshotRequestDto; confirmation: AdoptionConfirmationDto }>) => Promise<AdoptionExecutionResponseDto>;
-  issueRecoveryCodes: () => Promise<RecoveryCodesResponseDto>;
-  consumeRecoveryCode: (code: string) => Promise<Readonly<{ customToken: string }>>;
+  issueRecoveryCodes: (operationId: string) => Promise<RecoveryCodeIssueResultDto>;
+  getRecoveryCodeIssueStatus: (operationId: string) => Promise<RecoveryCodeIssueResultDto>;
+  acknowledgeRecoveryCodesSaved: (operationId: string) => Promise<RecoveryOperationAcknowledgementDto>;
+  consumeRecoveryCode: (operationId: string, code: string) => Promise<RecoveryConsumeResultDto>;
+  getRecoveryCodeConsumeStatus: (operationId: string, code: string) => Promise<RecoveryConsumeResultDto>;
+  acknowledgeRecoveryCodeConsumption: (operationId: string) => Promise<RecoveryOperationAcknowledgementDto>;
   revokeSessions: (operationId: string) => Promise<Readonly<{ status: "revoked"; operationId: string; customToken: string }>>;
   deleteAccount: (operationId: string, operationSecret: string) => Promise<AccountDeletionResponseDto>;
   getDeletionProof: (proofId: string) => Promise<PublicDeletionProofResponseDto>;
@@ -685,8 +772,30 @@ export function createPatternlyApiClient(input: Readonly<{
       const response = await requestJson<unknown>("/v1/account-data/adoption/confirm", "POST", body);
       return parseAdoptionExecutionResponse(response);
     },
-    issueRecoveryCodes: () => requestJson<RecoveryCodesResponseDto>("/v1/account/recovery-codes", "POST", {}),
-    consumeRecoveryCode: (code) => requestJson<Readonly<{ customToken: string }>>("/v1/public/recovery-codes/consume", "POST", { code }, "none"),
+    issueRecoveryCodes: async (operationId) => {
+      if (!isUuid(operationId)) return invalidResponse();
+      return parseRecoveryCodeIssueResult(await requestJson<unknown>("/v1/account/recovery-codes", "POST", { operationId }), operationId);
+    },
+    getRecoveryCodeIssueStatus: async (operationId) => {
+      if (!isUuid(operationId)) return invalidResponse();
+      return parseRecoveryCodeIssueResult(await requestJson<unknown>(`/v1/account/recovery-codes/issue/status?operationId=${encodeURIComponent(operationId)}`, "GET"), operationId);
+    },
+    acknowledgeRecoveryCodesSaved: async (operationId) => {
+      if (!isUuid(operationId)) return invalidResponse();
+      return parseRecoveryOperationAcknowledgement(await requestJson<unknown>("/v1/account/recovery-codes/issue/saved-ack", "POST", { operationId }), operationId);
+    },
+    consumeRecoveryCode: async (operationId, code) => {
+      if (!isUuid(operationId) || !RECOVERY_CODE_PATTERN.test(code)) return invalidResponse();
+      return parseRecoveryConsumeResult(await requestJson<unknown>("/v1/public/recovery-codes/consume", "POST", { operationId, code }, "none"), operationId);
+    },
+    getRecoveryCodeConsumeStatus: async (operationId, code) => {
+      if (!isUuid(operationId) || !RECOVERY_CODE_PATTERN.test(code)) return invalidResponse();
+      return parseRecoveryConsumeResult(await requestJson<unknown>("/v1/public/recovery-codes/consume/status", "POST", { operationId, code }, "none"), operationId);
+    },
+    acknowledgeRecoveryCodeConsumption: async (operationId) => {
+      if (!isUuid(operationId)) return invalidResponse();
+      return parseRecoveryOperationAcknowledgement(await requestJson<unknown>("/v1/account/recovery-codes/consume/ack", "POST", { operationId }), operationId);
+    },
     revokeSessions: async (operationId) => {
       const response = await requestJson<unknown>("/v1/account/session/revoke", "POST", { operationId });
       if (!isRecord(response) || response.status !== "revoked" || response.operationId !== operationId || typeof response.customToken !== "string" || !response.customToken.trim()) {

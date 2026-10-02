@@ -1,0 +1,26 @@
+{
+  "task": "AUD-08-B3",
+  "reviewerModel": "gpt-6-luna",
+  "reviewerReasoning": "high",
+  "result": "FAIL_NATIVE_READINESS",
+  "sourceOnly": true,
+  "syntheticTestsPassed": 9,
+  "compilePassed": true,
+  "implementationHashesMatched": 4,
+  "localSourceHashesMatched": 10,
+  "runtimeExecuted": false,
+  "sourceSnapshotHashes": {
+    "helper.py": "c34ee52e05f20afd61bccdc7d01149ab8bbddbccab10e308e02ce5d56f2a2ece",
+    "policy.py": "7466fad01e707b57509358e03ad20000672e7b86a9cf98712bd013f5a74618da",
+    "synthetic_test.py": "e9474afc1b923640a8ac84b440a32cd748d2bee905ef3d445f160947c6f03f5b",
+    "README.md": "96bd9b10698573384f8f13ca24514a0bf0ed83509aa0a2f597f1f94b459753d9",
+    "PINS.json": "1aa6ec2ff101e2df642912a79da7c493cc5771eb1cb62031939b64b7be586f0e"
+  },
+  "findings": [
+    "Dynamic type check applies to shared_ptr wrapper instead of typed pointee; fake tests hide this",
+    "Stopped process and expected module UUID are not enforced",
+    "Full55/28 and HEAD checks depend on outer gate",
+    "localhost fetch must pin loopback address or verify peer"
+  ],
+  "runtimeGate": "PENDING"
+}

@@ -1,0 +1,16 @@
+{
+  "task": "AUD-08-B3",
+  "scope": "read-only installed matching dSYM metadata",
+  "dwarfReadPassed": true,
+  "reactInstanceRelatedBufferBlocks": 13,
+  "bufferMemberEntryPresent": true,
+  "bufferVariableEntryPresent": true,
+  "bufferParameterEntryPresent": false,
+  "causalConclusion": "UNPROVEN",
+  "runtimeFrameLocalsRead": false,
+  "applicationRestarted": false,
+  "limits": [
+    "Metadata presence does not prove captured variables are accessible through SBFrame.FindVariable",
+    "Actual refusal stage was not recorded"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS",
+  "scope": "single_native_safe_exit_UI_only",
+  "attemptCount": 1,
+  "runnerExitCode": 0,
+  "flowOutcome": "passed",
+  "device": "existing_iPhone17",
+  "guestHomeProgressSettingsAssertionsPassed": true,
+  "expectedPrivateScreenshots": 3,
+  "outputPrivateModesVerified": true,
+  "postSourceCheck": {
+    "consumer": {
+      "count": 55,
+      "matched": true,
+      "headMatched": true
+    },
+    "producer": {
+      "count": 28,
+      "matched": true,
+      "headMatched": true
+    }
+  },
+  "runtimeGateClosed": true,
+  "dataResetOrReinstallPerformed": false,
+  "adoptionTransferDiscardPerformed": false,
+  "actualStoragePreservationAccepted": false,
+  "wholeB3Accepted": false,
+  "executedHermesBytesBindingVerified": false
+}

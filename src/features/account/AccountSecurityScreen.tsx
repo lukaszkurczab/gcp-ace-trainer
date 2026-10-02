@@ -14,8 +14,9 @@ import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation/types";
 import { useThemedStyles } from "../../preferences";
 import { radius, spacing, typography, type AppColors } from "../../theme";
-import { recoveryCodeClipboard } from "../../infrastructure/security/recoveryCodeClipboard";
 import { getAccountSecurityErrorAfterEdit, getAccountSecurityErrorField } from "./accountSecurityFieldErrors";
+import { RecoveryOperationPanel } from "./RecoveryOperationPanel";
+import { getRecoveryOperationPresentation } from "./recoveryOperationPresentation";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ACCOUNT_SECURITY>;
 
@@ -38,7 +39,6 @@ function SecurityForm({ route, navigation }: Props) {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [codes, setCodes] = useState<readonly string[] | null>(null);
   const busyRef = useRef(false);
   const epoch = useRef(0);
   const focused = useRef(true);
@@ -46,6 +46,8 @@ function SecurityForm({ route, navigation }: Props) {
   const configuration = useRef(readFirebaseClientConfiguration()).current;
   const user = "user" in account.state ? account.state.user : null;
   const authenticated = account.state.kind === "authenticated";
+  const recoveryOperation = account.recoveryOperation;
+  const recoveryPresentation = getRecoveryOperationPresentation(recoveryOperation);
   const usesPassword = user?.providers.includes("password") ?? false;
   const usesApple = !usesPassword && Platform.OS === "ios" && (user?.providers.includes("apple") ?? false);
   const usesGoogle = !usesPassword && !usesApple && (user?.providers.includes("google") ?? false);
@@ -65,7 +67,6 @@ function SecurityForm({ route, navigation }: Props) {
       setPassword("");
       setNextValue("");
       setConfirmation("");
-      setCodes(null);
     };
   }, [revoke]));
 
@@ -74,7 +75,6 @@ function SecurityForm({ route, navigation }: Props) {
       // The provider owns its external authentication sheet. Existing consent is
       // always revoked; an in-flight provider prompt has not issued consent yet.
       if (state !== "active") {
-        setCodes(null);
         if (!providerPrompt.current) revoke();
         else { accountRef.current.revokeDeletionAuthorization(); setPrepared(false); }
       }
@@ -133,7 +133,7 @@ function SecurityForm({ route, navigation }: Props) {
       : account.changePassword(credentials, nextValue), (result) => {
       setPassword("");
       if (mode === "delete" && result.next === "deletionAuthorized") setPrepared(true);
-      else if (mode === "recovery" && result.next === "recoveryCodesIssued" && result.recoveryCodes?.length === 10) { setCodes(result.recoveryCodes); setSuccess("codesGenerated"); }
+      else if (mode === "recovery" && result.next === "recoveryCodesIssued" && result.recoveryCodes?.length === 10) { setSuccess(null); }
       else if ((mode === "export" || mode === "privacy") && result.next === "authenticated") navigation.goBack();
       else if (mode === "email" && result.next === "verificationSent" && requestedUid !== null) navigation.replace(ROUTES.ACCOUNT_EMAIL_CHANGE_PENDING, { requestedEmail, uid: requestedUid });
       else if (mode === "password" && result.next === "authenticated") { setNextValue(""); setConfirmation(""); setSuccess("passwordChanged"); }
@@ -179,11 +179,15 @@ function SecurityForm({ route, navigation }: Props) {
           </> : mode === "password" && !usesPassword ? <InfoBlock body={t("providerPassword")} title={title} testID="security-provider-password" /> : <>
             {mode === "email" ? field(t("newEmail"), nextValue, setNextValue, "security-new-email", false) : null}
             {mode === "password" ? <>{field(t("newPassword"), nextValue, setNextValue, "security-new-password", true)}{field(t("confirmNewPassword"), confirmation, setConfirmation, "security-confirm-password", true)}</> : null}
-            {codes ? <View style={styles.field} testID="security-recovery-codes">
-              <Text selectable maxFontSizeMultiplier={2} style={styles.codes}>{codes.join("\n")}</Text>
-              <Text maxFontSizeMultiplier={2} style={styles.body}>{ta("recoveryCodesClipboardWarning")}</Text>
-              <Button disabled={busy} onPress={() => { void recoveryCodeClipboard.copy(codes).then(() => { if (focused.current) setSuccess("codesCopied"); }).catch(() => { if (focused.current) setFailure("remoteFailure"); }); }} variant="secondary">{ta("copyRecoveryCodes")}</Button>
-            </View> : <>
+            {mode === "recovery" && recoveryPresentation.showPanel ? <RecoveryOperationPanel
+              busy={busy}
+              onConfirmSaved={() => { void run(() => account.confirmRecoveryCodesSaved(), () => {}); }}
+              onResume={() => { void run(() => account.resumePendingRecovery(), () => {}); }}
+              onReplace={() => { void run(() => account.requestRecoveryCodeReplacement(), () => {}); }}
+              onRetry={() => { void run(() => account.retryRecoveryOperation(), () => {}); }}
+              snapshot={recoveryOperation}
+            /> : null}
+            {mode === "recovery" && recoveryPresentation.issueBlocksReplacement ? null : <>
               {usesPassword && !prepared ? field(t(mode === "delete" ? "password" : "currentPassword"), password, setPassword, "security-password", true) : null}
               {!prepared ? usesGoogle && configuration.kind === "configured" && getFirebaseGoogleClientId(configuration.value, Platform.OS) ? <GoogleVerification configuration={configuration.value} disabled={blocked} holdAccountIdentityRefresh={account.holdAccountIdentityRefresh} onCredential={submit} onFailure={() => { if (focused.current) setFailure("providerUnavailable"); }} /> : usesPassword || usesApple ? <Button disabled={blocked || (usesPassword && password.length === 0)} loading={busy} onPress={() => submit(usesPassword ? { kind: "password", password } : { kind: "apple" })} testID="security-submit" variant="secondary">{usesApple ? t("verifyApple") : t(mode === "delete" ? "deleteConfirm" : mode === "export" || mode === "privacy" ? "verifyIdentity" : mode === "recovery" ? "generateCodes" : "saveChange")}</Button> : <InfoBlock body={ta("providerUnavailable")} title={title} /> : null}
               {mode === "delete" && failure && errorField === null ? <Text accessibilityLiveRegion="polite" accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.inlineError} testID={`security-error-${failure}`}>{failure === "pendingSyncRequiresNetwork" ? t("deletePendingSync") : ta(failure)}</Text> : null}
@@ -254,5 +258,4 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   input: { ...typography.body, color: palette.textPrimary, backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1, borderRadius: radius.md, minHeight: 52, padding: spacing.md },
   inputError: { borderColor: palette.danger },
   fieldError: { ...typography.caption, color: palette.danger },
-  codes: { ...typography.body, color: palette.textPrimary, fontVariant: ["tabular-nums"], lineHeight: 32 },
 });

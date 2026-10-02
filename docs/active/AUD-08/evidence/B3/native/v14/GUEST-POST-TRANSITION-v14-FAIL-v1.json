@@ -1,0 +1,24 @@
+{
+  "status": "FAIL",
+  "scope": "first post-transition guest comparison attempt",
+  "failureCategory": "pair_file_contract",
+  "digestAccepted": false,
+  "keyAndControlRemoved": true,
+  "temporaryMetadataRemoved": true,
+  "prePostCurrentHeadsMatched": true,
+  "uniqueUnboundGuestSelected": true,
+  "stoppedAtMainOffsetZero": true,
+  "killedBeforeApplicationCode": true,
+  "liveMetadata": {
+    "directoryMode": "0755",
+    "fileModes": [
+      "0700",
+      "0700"
+    ],
+    "regularOwnedSingleLinkNonempty": true,
+    "cipherContentsReadForDiagnosis": false
+  },
+  "cause": "controller applied immutable clone file mode to live files",
+  "guestPreservationProven": false,
+  "wholeAcceptance": false
+}

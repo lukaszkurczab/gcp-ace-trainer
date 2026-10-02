@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "scope": "sanitized public artifact and named source pins",
+  "consumePreparationPinsMatched": 16,
+  "consumerFiles": 50,
+  "producerFiles": 28,
+  "backendGuardSourcePinsMatched": 8,
+  "guardContractAlignsWithReportedResult": true,
+  "privateRuntimeContentRead": false,
+  "backendQueried": false,
+  "deviceReplayed": false,
+  "runtimeAssertionsControllerReported": true,
+  "wholeAcceptance": false
+}

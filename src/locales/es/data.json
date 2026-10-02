@@ -127,6 +127,10 @@
     "providerRegistrationRequired": {
       "title": "Revisa los documentos de la cuenta",
       "body": "Termina o cancela la creación de la cuenta antes de abrir sus datos."
+    },
+    "recoveryPending": {
+      "title": "Termina la recuperación de la cuenta",
+      "body": "Un paso guardado de recuperación necesita tu atención antes de que podamos abrir tus datos."
     }
   },
   "privacyRequests": {

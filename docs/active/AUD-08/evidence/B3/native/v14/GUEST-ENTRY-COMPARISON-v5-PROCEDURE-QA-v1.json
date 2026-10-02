@@ -1,0 +1,10 @@
+{
+  "task": "AUD-08-B3",
+  "verdict": "PASS WITH ISSUE",
+  "scope": "Source-only review of four exact root procedure scripts and sanitized actual evidence; no replay/runtime reads",
+  "issue": "Result-v1 labels only Premium from changed entries but does not independently reconcile all status arrays with counts or reject added/removed entries. Actual public counts report zero additions/removals.",
+  "correction": "New reader-v2 pure schema/status/count consistency validator and synthetic negatives, then independent QA before root-only readonly final-record reread.",
+  "noToolsBriefMinimumScore": 0.92,
+  "actualKeyCaptureOrDecryptionRepeated": false,
+  "preservationAccepted": false
+}

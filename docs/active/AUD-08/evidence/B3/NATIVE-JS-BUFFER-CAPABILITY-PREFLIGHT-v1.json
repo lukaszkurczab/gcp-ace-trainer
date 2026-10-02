@@ -1,0 +1,45 @@
+{
+  "task": "AUD-08-B3",
+  "scope": "readonly installed binary/debug symbol capability preflight",
+  "result": "CAPABILITY_AVAILABLE_WITH_LIMITS",
+  "installedAppBinaryUuidReadable": true,
+  "installedDebugDylibUuidReadable": true,
+  "dsymUuidMatchesBothInstalledBinaries": true,
+  "loadScriptSymbolPresent": true,
+  "evaluateJavaScriptSymbolPresent": true,
+  "typedBufferDebugEntryPresent": true,
+  "lineTable": [
+    {
+      "reactInstanceSourceFileFound": true,
+      "line268Mapped": true,
+      "mappedRowsAt268": 5
+    }
+  ],
+  "applicationStarted": false,
+  "debuggerAttached": false,
+  "userStorageRead": false,
+  "keysRead": false,
+  "sourceExecutionBindingProven": false,
+  "limits": [
+    "DWARF buffer entry does not prove runtime local availability",
+    "Installed compilation source equivalence requires further verification",
+    "No native runtime transition was executed",
+    "DWARF v4 line table lacks source checksum; compilation-source equivalence not established"
+  ],
+  "assessment": {
+    "fit": 0.92,
+    "simplicity": 0.87,
+    "risk": 0.91,
+    "maintainability": 0.85,
+    "minimum": 0.85
+  },
+  "dwarfPreparation": {
+    "lineTableVersion": 4,
+    "sourceChecksumAvailable": false,
+    "bufferNameDebugEntry": true,
+    "sourceURLNameDebugEntry": true,
+    "locationEntriesPresent": true,
+    "runtimeLocalsReadable": null,
+    "typedPointerLengthReadableWithoutProcessCalls": null
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "scope": "independent_artifact_and_source_review_only",
+  "consumerSourceHashesMatched": 46,
+  "producerSourceHashesMatched": 28,
+  "flowHashesMatched": 4,
+  "adminGuardHashesMatched": 3,
+  "runtimeFileMetadataCheckedCount": 5,
+  "runtimeContentsOpened": false,
+  "runtimeModesOwnerLinkCountValid": true,
+  "publicEvidenceConsistentWithSourceAssertions": true,
+  "stalePrivatePreflightMetadataCorrected": true,
+  "metadataDiffOnlyLatestPrivatePreflight": true,
+  "privateCodeEqualityIndependentlyRecomputed": false,
+  "adminReadbackIndependentlyRepeated": false,
+  "nativeActionsPerformedByReviewer": false,
+  "wholeTaskAccepted": false,
+  "executedNativeSourceBinding": "INCONCLUSIVE"
+}

@@ -1,0 +1,33 @@
+{
+  "task": "AUD-08-B3/B4",
+  "existingDeviceOnly": true,
+  "installedBundleMatches": true,
+  "appVersion": "0.1.0",
+  "build": "1",
+  "fileCount": 20,
+  "bytes": 5768558,
+  "allCopiesHashMatch": true,
+  "keychainIncluded": false,
+  "appLaunchedByPreflight": false,
+  "appReset": false,
+  "backupPrivate": true,
+  "node": "22.22.3",
+  "noToolsBrief": {
+    "model": "gpt-6-luna",
+    "effort": "high",
+    "scores": [
+      0.92,
+      0.85,
+      0.83,
+      0.86
+    ],
+    "minimum": 0.83,
+    "verdict": "APPROVE"
+  },
+  "scope": "container backup only; no native behavior claim",
+  "limitations": [
+    "backup does not include Keychain/SecureStore",
+    "shared containers not backed up",
+    "guest domain equality not established"
+  ]
+}

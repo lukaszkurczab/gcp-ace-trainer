@@ -1,0 +1,20 @@
+{
+  "task": "AUD-08-B3",
+  "attempt": 2,
+  "status": "FAIL",
+  "scope": "guest post-transition comparison",
+  "controllerPairContractQA": "PASS",
+  "syntheticTests": 35,
+  "freshCapture": true,
+  "canonicalSlotSelected": true,
+  "prePostHeadsMatched": true,
+  "mainEntryBeforeJSVerified": true,
+  "appKilledBeforeJS": true,
+  "failureCategory": "domain_mismatch",
+  "keyAndControlRemoved": true,
+  "temporaryMetadataRemoved": true,
+  "digestAccepted": false,
+  "previousAttemptPreserved": true,
+  "wholeTaskAccepted": false,
+  "failureCategoryLimitation": "domain_mismatch conflates domain and marker digest comparisons; the changed category is not established"
+}

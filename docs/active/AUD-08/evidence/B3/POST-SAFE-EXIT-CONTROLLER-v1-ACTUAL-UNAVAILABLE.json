@@ -1,0 +1,27 @@
+{
+  "task": "AUD-08-B3",
+  "status": "UNAVAILABLE_NOT_ACCEPTED",
+  "sourceQaPinsSha256": "fda2ebc17dd95260ad5ee4ef736823d09d002dae86ee27796dfd041b2324d86d",
+  "singleAttempt": true,
+  "nativeMainOffset": 0,
+  "nativeProcessKilledBeforeJs": true,
+  "sameCanonicalUnboundGuest": true,
+  "activeSlot": "a",
+  "livePairMatchesStagedCandidate": true,
+  "keyCapturedOnlySelectedSlot": true,
+  "bothKeysAbsentAfterAttempt": true,
+  "metadataOutputEmpty": true,
+  "privateControlsAbsent": true,
+  "ownedCipherClonePairsRemain": 4,
+  "diagnosticPublished": false,
+  "analysisOutcome": "unknown",
+  "preservationAccepted": false,
+  "passwordChanged": false,
+  "sourceCleanupDefectsUnderReview": [
+    "Immutable0500 clone parent lacks permission for file unlink",
+    "Final absence loop checks owned parents after those parents may have been removed"
+  ],
+  "runtimeRetryPerformed": false,
+  "actualAnchorsSnapshotRootPrivate": true,
+  "preparationMetadataResetPendingBlankAnchors": true
+}

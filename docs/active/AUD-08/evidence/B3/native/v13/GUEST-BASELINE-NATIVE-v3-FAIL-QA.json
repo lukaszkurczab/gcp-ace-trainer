@@ -1,0 +1,26 @@
+{
+  "task": "AUD-08-B3",
+  "verdict": "PASS WITH ISSUES",
+  "scope": "Recorded failure-state and cleanup, no guest preservation acceptance",
+  "reviewer": {
+    "model": "gpt-6-luna",
+    "reasoningEffort": "high"
+  },
+  "checks": [
+    "Prior/pre-key/post-key raw heads match in memory",
+    "Decision snapshot/generated validator hashes match",
+    "Exact two encrypted clone files owned single-link 0400/root0500",
+    "Current authoritative live pair encrypted hashes match clone",
+    "Key/control absent and metadata output empty",
+    "Helper and source pins match",
+    "Only allowlisted failure category surfaced"
+  ],
+  "issues": [
+    "Controller partial control-write exception could leave a new partial file.",
+    "Single cleanup exception could skip later cleanup steps."
+  ],
+  "issuesObservedInRecordedRun": false,
+  "digestAccepted": false,
+  "nativeAcceptance": false,
+  "controlFlowEvidence": "LLDB main+0 and kill are controller-reported."
+}

@@ -1,0 +1,137 @@
+
+> patternly-backend@0.1.0 test:recovery:emulator
+> node scripts/run-recovery-emulator-tests.mjs
+
+Recovery gate: backend=15e49d04dcf510cb7081b356a7182343d9d170ab mobile=8d12b0ccabf7b2c28659c78c10a7915abafb2672
+Isolated emulator gate: demo-patternly-aud08-recovery Auth19119/Firestore18119
+i  emulators: Starting emulators: auth, firestore
+i  emulators: Detected demo project ID "demo-patternly-aud08-recovery", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator was started in standard edition.
+✔  firestore: Firestore Emulator UI websocket is running on 9151.
+i  Running script: node --import tsx --test --test-concurrency=1 tests/aud08Recovery.emulator.test.ts
+TAP version 13
+# Subtest: AUD-08 B2 recovery store isolated emulator tests
+    # Subtest: durable request rate bucket fails closed on a corrupt counter
+    ok 1 - durable request rate bucket fails closed on a corrupt counter
+      ---
+      duration_ms: 1530.873375
+      type: 'test'
+      ...
+    # Subtest: missing recovery runtime fails before reservation writes
+    ok 2 - missing recovery runtime fails before reservation writes
+      ---
+      duration_ms: 207.149542
+      type: 'test'
+      ...
+    # Subtest: recovery result is persisted, replayed identically, and accepted by the pinned Firebase SDK
+    ok 3 - recovery result is persisted, replayed identically, and accepted by the pinned Firebase SDK
+      ---
+      duration_ms: 449.915458
+      type: 'test'
+      ...
+    # Subtest: provider failure resumes the same reserved generation and wrong proof cannot take over an operation
+    ok 4 - provider failure resumes the same reserved generation and wrong proof cannot take over an operation
+      ---
+      duration_ms: 237.312959
+      type: 'test'
+      ...
+    # Subtest: same-operation concurrent minters return only the persisted fenced winner
+    ok 5 - same-operation concurrent minters return only the persisted fenced winner
+      ---
+      duration_ms: 203.709958
+      type: 'test'
+      ...
+    # Subtest: expired result resumes the same generation and a different valid last code supersedes only after expiry
+    ok 6 - expired result resumes the same generation and a different valid last code supersedes only after expiry
+      ---
+      duration_ms: 625.849875
+      type: 'test'
+      ...
+    # Subtest: expired rotating provider failure permits only a fenced new-code takeover
+    ok 7 - expired rotating provider failure permits only a fenced new-code takeover
+      ---
+      duration_ms: 214.40175
+      type: 'test'
+      ...
+    # Subtest: ACK binds exact user and generation, is idempotent after a lost response, and corrupt AEAD never changes stored state
+    ok 8 - ACK binds exact user and generation, is idempotent after a lost response, and corrupt AEAD never changes stored state
+      ---
+      duration_ms: 324.239792
+      type: 'test'
+      ...
+    # Subtest: reissue retry returns the same encrypted code set and ACK never returns plaintext
+    ok 9 - reissue retry returns the same encrypted code set and ACK never returns plaintext
+      ---
+      duration_ms: 225.204292
+      type: 'test'
+      ...
+    # Subtest: live recovery ownership blocks reissue until the current generation is ACKed
+    ok 10 - live recovery ownership blocks reissue until the current generation is ACKed
+      ---
+      duration_ms: 252.328667
+      type: 'test'
+      ...
+    # Subtest: issue status expires at the original reauthentication deadline without replacing valid recovery codes
+    ok 11 - issue status expires at the original reauthentication deadline without replacing valid recovery codes
+      ---
+      duration_ms: 151.587875
+      type: 'test'
+      ...
+    # Subtest: replacing an orphaned unconfirmed reissue supersedes only the matched generation and starts 30-day history
+    ok 12 - replacing an orphaned unconfirmed reissue supersedes only the matched generation and starts 30-day history
+      ---
+      duration_ms: 148.350792
+      type: 'test'
+      ...
+    # Subtest: ambiguous recovery-code generations block replacement without guessing a terminal timestamp
+    ok 13 - ambiguous recovery-code generations block replacement without guessing a terminal timestamp
+      ---
+      duration_ms: 93.108792
+      type: 'test'
+      ...
+    # Subtest: deletion scrubs an encrypted recovery result without a configured recovery key
+    ok 14 - deletion scrubs an encrypted recovery result without a configured recovery key
+      ---
+      duration_ms: 315.031
+      type: 'test'
+      ...
+    # Subtest: session revoke supersedes expired recovery result without cipher configuration
+    ok 15 - session revoke supersedes expired recovery result without cipher configuration
+      ---
+      duration_ms: 83.475542
+      type: 'test'
+      ...
+    # Subtest: current-session deletion fences a late remint before it can publish a recovery result
+    ok 16 - current-session deletion fences a late remint before it can publish a recovery result
+      ---
+      duration_ms: 533.881667
+      type: 'test'
+      ...
+    # Subtest: current-session ACK fences an in-flight remint and leaves no late ciphertext
+    ok 17 - current-session ACK fences an in-flight remint and leaves no late ciphertext
+      ---
+      duration_ms: 188.21675
+      type: 'test'
+      ...
+    1..17
+ok 1 - AUD-08 B2 recovery store isolated emulator tests
+  ---
+  duration_ms: 5786.668458
+  type: 'suite'
+  ...
+1..1
+# tests 17
+# suites 1
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9059.295917
+✔  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+i  auth: Stopping Authentication Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator

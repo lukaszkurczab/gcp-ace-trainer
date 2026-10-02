@@ -1,0 +1,51 @@
+{
+  "task": "AUD-08-B3",
+  "checkpoint": "v13",
+  "result": "INCONCLUSIVE",
+  "localMetroTargetCount": 1,
+  "targetDevice": "existing iPhone 17",
+  "localDebuggerEndpointValidated": true,
+  "webSocketConnected": true,
+  "debuggerEnableTimeoutSeconds": 6,
+  "inboundProtocolFrames": 0,
+  "scriptParsedCandidates": 0,
+  "getScriptSourcePerformed": false,
+  "runtimeMethodsPerformed": false,
+  "executedSourceBindingEstablished": false,
+  "privateProbeSha256": "98d77789f379b604e3d593a96343ae8b70085c2d0916d6f0e7fee9a86ae8a545",
+  "nativeActionsPerformed": false,
+  "observerModel": "gpt-6-luna",
+  "observerReasoning": "high",
+  "diagnosis": "Proxy accepted the matching device/page; no device/runtime response observed. Exact PID last-two-minute OSLog contained zero allowlisted inspector categories; raw log removed.",
+  "postRestartAttempt": {
+    "result": "INCONCLUSIVE",
+    "inboundProtocolFrames": 0,
+    "scriptParsedCandidates": 0,
+    "getScriptSourcePerformed": false,
+    "privateProbeSha256": "fd5e191b4194c8092f0568956483902db0e65b9acd76202147a8a01db9e57c1b",
+    "oneOrdinaryRestartPrecededAttempt": true
+  },
+  "nativeTargetMetadata": {
+    "legacySentinel": false,
+    "nativePageReloads": true,
+    "nativeSourceCodeFetching": false,
+    "supportsMultipleDebuggers": true,
+    "vmMetadataIdentifiesHermes": false
+  },
+  "sourceFetchingLimitation": "Installed Device.js intercepts Debugger.getScriptSource when nativeSourceCodeFetching is false; proxy-fetched source cannot establish exact executed bytes.",
+  "debugBundleRootFromCurrentAppDelegate": ".expo/.virtual-metro-entry",
+  "firstAttemptScope": "Initial passive opening before v13 source stabilization; not a v13 executed-source observation.",
+  "closeDiagnosticV3": {
+    "nodeVersion": "22.22.3",
+    "socketOpened": true,
+    "openElapsedMs": 60,
+    "inboundProtocolFrames": 0,
+    "closeCode": 1006,
+    "reasonCategory": "empty",
+    "debuggerEnableTimeoutSeconds": 6,
+    "debuggerDisableAfterPeerClose": false,
+    "getScriptSourcePerformed": false,
+    "runtimeMethodsPerformed": false,
+    "nativeActionsPerformed": false
+  }
+}

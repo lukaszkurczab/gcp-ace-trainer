@@ -1,0 +1,13 @@
+{
+  "status": "FAIL",
+  "scope": "private_controller_synthetic_parent_symlink",
+  "reviewedSourceSha256": "a5c164fd3ba36646f6deeadd2ebcb162798c9d4ba622cc42de8f4f1756b25e0f",
+  "reviewedLocalPinsSha256": "44cbdf4e0fb873ddace0e0b74d49f6a430098ef5b536494c1476fa0891adc213",
+  "sourcePinsMatch": true,
+  "syntheticCasesPassed": 16,
+  "additionalSyntheticParentSymlinkDeletedTarget": true,
+  "actualInputsRead": false,
+  "controllerExecuted": false,
+  "guestBaselineAccepted": false,
+  "repairAssessmentMinimum": 0.82
+}

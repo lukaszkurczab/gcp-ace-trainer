@@ -1,0 +1,64 @@
+{
+  "task": "AUD-08-B3",
+  "scope": "Source-only investigation; no runtime payload reads or implementation",
+  "findings": [
+    {
+      "path": "src/application/account/AccountSessionProvider.tsx",
+      "lines": [
+        650,
+        773,
+        1586
+      ],
+      "finding": "Recovery finalization can resume adoption_pending with guest profile kept open."
+    },
+    {
+      "path": "src/application/account/accountDataService.ts",
+      "lines": [
+        225
+      ],
+      "finding": "Allow-adoption preview invokes pending marker write again."
+    },
+    {
+      "path": "src/storage/repositories/guestInstallationRepository.ts",
+      "lines": [
+        69
+      ],
+      "finding": "Already pending does not short-circuit write."
+    },
+    {
+      "path": "src/storage/repositories/canonicalRecordCodec.ts",
+      "lines": [
+        79
+      ],
+      "finding": "Canonical write increments envelope revision; unchanged payload can change byte hash."
+    },
+    {
+      "path": "src/application/account/AccountForegroundRefreshSidecar.tsx",
+      "lines": [
+        24
+      ],
+      "finding": "Authenticated state triggers entitlement refresh."
+    },
+    {
+      "path": "src/application/account/AccountSessionProvider.tsx",
+      "lines": [
+        1509
+      ],
+      "finding": "Entitlement refresh replaces account-bound Premium cache while guest scope may remain active."
+    }
+  ],
+  "separateHypothesis": {
+    "finding": "Signout closes profile before later Premium cleanup; cache clear needs active client and may throw into swallowed catch.",
+    "refs": [
+      "src/application/account/profileStartupCoordination.ts:161",
+      "src/application/account/AccountSessionProvider.tsx:2193",
+      "src/application/account/AccountSessionProvider.tsx:2222",
+      "src/storage/repositories/premiumEntitlementCacheRepository.ts:40",
+      "src/infrastructure/storage/mmkvClient.ts:312"
+    ]
+  },
+  "actualCauseProven": false,
+  "next": "Diagnostic source-level integration tests first; production correction only after concrete reproduction and independent review.",
+  "noToolsBriefMinimumScore": 0.88,
+  "preservationAccepted": false
+}

@@ -59,6 +59,13 @@ export function findPendingSessionRevocation(snapshot: LocalLogoutControlSnapsho
   return snapshot.pending.find((entry) => entry.uid === uid) ?? null;
 }
 
+/** A sign-out cleanup may run only for the exact durable pending pair or completion receipt. */
+export function hasVerifiedLocalLogoutReceipt(snapshot: LocalLogoutControlSnapshot, uid: string, operationId: string): boolean {
+  const matches = (pair: PendingRevoke) => pair.uid === uid && pair.operationId === operationId;
+  return (snapshot.blocked !== null && matches(snapshot.blocked) && snapshot.pending.some(matches))
+    || snapshot.completed.some(matches);
+}
+
 /** A scoped sign-out marker without a pending pair or completion receipt is interrupted. */
 export function shouldLockForIncompleteScopedSignOut(input: Readonly<{
   marker: AccountSignOutState | null;
@@ -131,13 +138,15 @@ export async function guardAuthenticatedScopeAgainstIncompleteSignOut(input: Rea
  */
 export async function performLocalAccountSignOut(input: Readonly<{
   uid: string;
+  operationId: string;
   retainAuthOnControlFailure?: boolean;
   persistBlock: () => Promise<LocalLogoutControlSnapshot>;
   publishLockedState: () => void;
+  clearOwnedPremiumCache: () => boolean | "stale";
   closeProfileStorage: () => void;
   signOutFirebase: () => Promise<void>;
   isCurrent: () => boolean;
-}>): Promise<"signedOut" | "signOutPending" | "localLogoutControlFailure" | "stale"> {
+}>): Promise<"signedOut" | "signOutPending" | "localLogoutControlFailure" | "localCleanupFailure" | "stale"> {
   let snapshot: LocalLogoutControlSnapshot;
   try {
     snapshot = await input.persistBlock();
@@ -149,7 +158,8 @@ export async function performLocalAccountSignOut(input: Readonly<{
     input.publishLockedState();
     input.closeProfileStorage();
     if (!input.retainAuthOnControlFailure) {
-      try { await input.signOutFirebase(); } catch { /* The explicit local failure remains the result. */ }
+      try { await input.signOutFirebase(); }
+      catch { return "signOutPending"; }
     }
     return "localLogoutControlFailure";
   }
@@ -158,41 +168,76 @@ export async function performLocalAccountSignOut(input: Readonly<{
     return "stale";
   }
   input.publishLockedState();
-  input.closeProfileStorage();
-  if (!findMatchingLocalLogoutBlock(snapshot, input.uid)) {
+  if (!hasVerifiedLocalLogoutReceipt(snapshot, input.uid, input.operationId)) {
+    input.closeProfileStorage();
     if (!input.retainAuthOnControlFailure) {
-      try { await input.signOutFirebase(); } catch { /* Keep the control-write failure explicit. */ }
+      try { await input.signOutFirebase(); }
+      catch { return "signOutPending"; }
     }
     return "localLogoutControlFailure";
   }
+  if (!input.isCurrent()) {
+    input.closeProfileStorage();
+    return "stale";
+  }
+  let cacheCleanupSucceeded = false;
+  try {
+    const cleanup = input.clearOwnedPremiumCache();
+    if (cleanup === "stale") {
+      input.closeProfileStorage();
+      return "stale";
+    }
+    cacheCleanupSucceeded = cleanup;
+  } catch { /* Sign-out continues after explicit local cleanup failure. */ }
+  input.closeProfileStorage();
   try {
     await input.signOutFirebase();
   } catch {
     return "signOutPending";
   }
-  return "signedOut";
+  return cacheCleanupSucceeded ? "signedOut" : "localCleanupFailure";
 }
 
 export async function finishLocalSignOutSetupFailure(input: Readonly<{
+  uid: string;
+  getOperationId: () => string | undefined;
   isCurrent: () => boolean;
-  persistFallbackControlPair: () => Promise<boolean>;
+  persistFallbackControlPair: () => Promise<LocalLogoutControlSnapshot>;
   retainAuthOnFailedControlWrite?: boolean;
   publishLockedState: () => void;
+  clearOwnedPremiumCache: () => boolean | "stale";
   closeProfileStorage: () => void;
   signOutFirebase: () => Promise<void>;
-}>): Promise<"localLogoutControlFailure" | "stale"> {
+}>): Promise<"localLogoutControlFailure" | "localCleanupFailure" | "signOutPending" | "stale"> {
   let controlWriteVerified = false;
-  try { controlWriteVerified = await input.persistFallbackControlPair(); } catch { /* The provider reports this as a local failure. */ }
+  try {
+    const snapshot = await input.persistFallbackControlPair();
+    const operationId = input.getOperationId();
+    controlWriteVerified = operationId !== undefined && hasVerifiedLocalLogoutReceipt(snapshot, input.uid, operationId);
+  } catch { /* The provider reports this as a local failure. */ }
   if (!input.isCurrent()) {
     input.closeProfileStorage();
     return "stale";
   }
   input.publishLockedState();
+  let cacheCleanupSucceeded = false;
+  if (controlWriteVerified) {
+    try {
+      const cleanup = input.clearOwnedPremiumCache();
+      if (cleanup === "stale") {
+        input.closeProfileStorage();
+        return "stale";
+      }
+      cacheCleanupSucceeded = cleanup;
+    } catch { /* Sign-out continues after explicit local cleanup failure. */ }
+  }
   input.closeProfileStorage();
   if (!(input.retainAuthOnFailedControlWrite && !controlWriteVerified)) {
-    try { await input.signOutFirebase(); } catch { /* Keep the local failure explicit. */ }
+    try { await input.signOutFirebase(); }
+    catch { return "signOutPending"; }
   }
-  return "localLogoutControlFailure";
+  if (!controlWriteVerified) return "localLogoutControlFailure";
+  return cacheCleanupSucceeded ? "localLogoutControlFailure" : "localCleanupFailure";
 }
 
 export function isPreparedGuestChoiceRequired(error: unknown): boolean {

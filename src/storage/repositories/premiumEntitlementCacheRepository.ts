@@ -1,5 +1,6 @@
 import { evaluateOfflinePremiumAccess, isPremiumCacheRecord, premiumCacheFromFreshResponse, type PremiumCacheRecord, type PremiumIdentity } from "../../domain/entitlements";
-import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import { getActiveStorageProfileOrNull, getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
 
 const KEY = "patternly:premium-cache:v1";
 
@@ -38,6 +39,30 @@ export function hasOfflinePremiumAccess(identity: PremiumIdentity, nowMs: number
 }
 
 export function clearPremiumCache(): void { getKeyValueStorage().remove(KEY); }
+
+export type OwnedPremiumCacheClearResult = "cleared" | "absent" | "foreign" | "unavailable";
+
+/** Clears only a valid snapshot for the authenticated account in the captured active profile. */
+export function clearPremiumCacheForAccountInProfile(accountId: string, expectedProfile: StorageProfile): OwnedPremiumCacheClearResult {
+  if (!accountId.trim()) return "unavailable";
+  const sameProfile = (left: StorageProfile | null): boolean => left !== null
+    && left.id === expectedProfile.id
+    && left.kind === expectedProfile.kind
+    && left.accountId === expectedProfile.accountId;
+  if (!sameProfile(getActiveStorageProfileOrNull())) return "unavailable";
+  if (expectedProfile.accountId !== null && expectedProfile.accountId !== accountId) return "unavailable";
+  try {
+    const storage = getKeyValueStorage();
+    const raw = storage.getString(KEY);
+    if (raw === undefined) return "absent";
+    let parsed: unknown;
+    try { parsed = JSON.parse(raw); } catch { return "unavailable"; }
+    if (!isPremiumCacheRecord(parsed)) return "unavailable";
+    if (parsed.snapshot.accountId !== accountId) return "foreign";
+    storage.remove(KEY);
+    return storage.getString(KEY) === undefined && sameProfile(getActiveStorageProfileOrNull()) ? "cleared" : "unavailable";
+  } catch { return "unavailable"; }
+}
 
 /** A confirmed account may never inherit another account's stored snapshot. */
 export function clearPremiumCacheUnlessBoundTo(accountId: string): boolean {

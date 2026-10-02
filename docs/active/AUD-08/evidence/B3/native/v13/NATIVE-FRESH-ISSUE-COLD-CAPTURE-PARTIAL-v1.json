@@ -1,0 +1,18 @@
+{
+  "status": "PARTIAL_PASS",
+  "scope": "fresh_issue_and_cold_code_preservation_without_ack",
+  "privateCaptureCount": 10,
+  "sameCodesAfterColdRestart": true,
+  "firstCaptureAndRestartCapturePrivatelyArchived": true,
+  "ackPerformed": false,
+  "deadlineGuardPreviouslyBlockedAck": true,
+  "ownedCurrentGenerationOperationCounts": {
+    "delivery_unconfirmed": 3,
+    "acknowledged": 2,
+    "superseded": 1
+  },
+  "ownedResultCount": 0,
+  "resetOrReinstallPerformed": false,
+  "wholeTaskAccepted": false,
+  "executedNativeSourceBinding": "INCONCLUSIVE"
+}

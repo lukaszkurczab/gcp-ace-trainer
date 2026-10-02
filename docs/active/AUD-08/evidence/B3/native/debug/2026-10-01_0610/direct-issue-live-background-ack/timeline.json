@@ -1,0 +1,94 @@
+{
+  "capture": {
+    "date": "2026-10-01",
+    "simulator": "iPhone 17 / iOS 26.4",
+    "udid": "7F315654-3175-4F3C-BB24-B0263F59360C",
+    "appId": "com.lkurczab.patternly",
+    "fixtureAlias": "AUD-08-B3-native-20261001-77d536f5a8",
+    "maestroFlow": ".maestro/screenshot-capture/aud08-b3/44-reissue-live-background-show-ack.yaml",
+    "flowEvidence": "fixture-run-result.txt and sanitized maestro.log",
+    "screenshotsRetained": false,
+    "credentialsAndRecoveryCodesRedacted": true
+  },
+  "nativeFlow": {
+    "startedLocal": "2026-10-01T08:00:46.919+02:00",
+    "startedUtc": "2026-10-01T06:00:46.919Z",
+    "elapsedSeconds": 41,
+    "entryScreen": "account-entry-choice with account-recovery-codes-submit; Save to account and Continue were not pressed",
+    "credentialReauthentication": "completed",
+    "issueSubmitCompletedUtc": "2026-10-01T06:01:12.413Z",
+    "codesVisibleUtc": "2026-10-01T06:01:12.555Z",
+    "backgroundHomeCompletedUtc": "2026-10-01T06:01:14.329Z",
+    "sameAppResumeCompletedUtc": "2026-10-01T06:01:15.074Z",
+    "afterResume": "recovery-operation-show-codes visible; recovery-operation-codes not visible",
+    "explicitRevealCompletedUtc": "2026-10-01T06:01:17.866Z",
+    "savedAcknowledgementTapCompletedUtc": "2026-10-01T06:01:19.215Z",
+    "terminalUiVisibleUtc": "2026-10-01T06:01:19.354Z",
+    "codeSetDigest": "not captured; no plaintext or screenshot retained"
+  },
+  "backendReadAfterAck": {
+    "readUtc": "2026-10-01T06:01:19Z",
+    "authPasswordSignInHttpStatus": 200,
+    "sessionExchangeHttpStatus": 200,
+    "customTokenSignInHttpStatus": 200,
+    "meHttpStatus": 200,
+    "firestoreOperationQueryHttpStatus": 200,
+    "firestoreResultQueryHttpStatus": 200,
+    "operationId": "0c7d63c3-6e85-4dae-a119-5840861e6ee2",
+    "kind": "reissue",
+    "status": "acknowledged",
+    "expectedAuthorizationGeneration": 1,
+    "resultExpiresAtUtc": "2026-10-01T06:06:11Z",
+    "retryDeadlineUtc": "2026-10-01T06:06:11Z",
+    "hasPlaintextCodesField": false,
+    "resultDocumentCount": 0,
+    "cipherEnvelopePresent": false
+  },
+  "runtimeBundleBinding": {
+    "preFlowV3Fetch": {
+      "capturedUtc": "2026-10-01T05:07:48.156Z",
+      "bundleHttpStatus": 200,
+      "bundleBytes": 68158360,
+      "bundleSha256": "8cd648fd2edee560baee171a1acb32ed0cad77e8d2f9661fa80ad4309154adce",
+      "v3SourceFilesPinned": 46,
+      "pinMismatches": 0,
+      "evidence": "../metro-after-v3.json and ../runtime-binding-v3.json"
+    },
+    "postFlowReadOnlyCheck": {
+      "capturedUtc": "2026-10-01T06:07:18.959Z",
+      "manifestLaunchAssetPlatform": "ios",
+      "manifestQueryKeys": ["platform", "dev", "hot", "lazy", "transform.engine", "transform.bytecode", "transform.routerRoot", "unstable_transformProfile"],
+      "launchAssetHttpStatus": 200,
+      "launchAssetBytes": 68158360,
+      "launchAssetSha256": "8cd648fd2edee560baee171a1acb32ed0cad77e8d2f9661fa80ad4309154adce",
+      "matchesPinnedV3Bundle": true,
+      "runtimeTarget": "com.lkurczab.patternly (iPhone 17), React Native Bridgeless [C++ connection]",
+      "inspectorAttempt": {
+        "websocketHandshake": "opened when Origin http://localhost:8081 was supplied",
+        "debuggerEnableReply": "no CDP reply or scriptParsed event received within 6 seconds",
+        "getScriptSource": "not reached",
+        "runtimeHeapOrTokenDump": false
+      },
+      "limitation": "the current Metro target and full-query launch asset match v3; executing Hermes source hash/markers remain unverified"
+    },
+    "invalidQuerylessProbe": {
+      "httpStatus": 500,
+      "cause": "probe dropped required platform=ios manifest query",
+      "interpretation": "harness error, not a Metro or dependency failure; its error body is not evidence of a production or source regression"
+    }
+  },
+  "guestDataAndCleanup": {
+    "accountEntryChoiceRemainedPending": true,
+    "adoptionToggleChanged": false,
+    "continuePressed": false,
+    "dataStorePresent": true,
+    "preFixtureSecureMmkvSha256": "130d5e5d7895dfb24c11bcee32389ed6ceb6668b2208a44216293e3fd676b1c4",
+    "postFlowSecureMmkvSha256": "24f711c9fc062ae6251fc8855e05e156b5dba7f34f301a3eab0b842b29f2bf41",
+    "preFixtureSecureMmkvCrcSha256": "c3e38145561b9fbe5e8625dd0e973884eaac764858ec6c4c028ab0b8696a7e57",
+    "postFlowSecureMmkvCrcSha256": "e440d4ba44a7f62ac803df9612ecbec62a2e302a37b09e8d769d18707199c024",
+    "interpretation": "encrypted MMKV bytes changed; because the store includes account/recovery state, this is not evidence of guest-record loss. No adoption/discard action was invoked and the guest choice UI remained pending.",
+    "recoveryVault": "ACK reached terminal UI; terminal() awaits vault.clear() before publishing terminal state. clear() calls SecureStore deleteItemAsync() then verifies getItemAsync() returns null. Code: src/application/account/recoveryOperationCoordinator.ts and src/infrastructure/security/recoveryOperationVault.ts. The specific Keychain item was not independently queried outside that implementation.",
+    "firebaseAuth": "fixture account remained signed in; AccountAdoptionScreen has no rendered sign-out action, and a read-only Maestro attempt to tap Go back failed because that element was absent. Evidence: ../post-ack-back-route-recheck/fixture-run-result.txt. No app-data/keychain wipe or account deletion was attempted.",
+    "baselineBackup": "/private/tmp/aud08-b3-iphone17-pre-fixture-2026-10-01/app-data-container (19 files; simulator Keychain excluded)"
+  }
+}

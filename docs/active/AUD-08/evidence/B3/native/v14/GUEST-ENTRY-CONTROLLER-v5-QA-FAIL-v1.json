@@ -1,0 +1,21 @@
+{
+  "task": "AUD-08-B3",
+  "status": "FAIL_FINAL_SOURCE_FLOW_REVIEW",
+  "scope": "private dual-entry controller final flow audit",
+  "priorIndependentSourceQA": "PASS_17_SOURCE_ONLY",
+  "runtimeExecuted": false,
+  "runtimeAnchorsFilled": false,
+  "findings": [
+    {
+      "kind": "late_failure_can_publish_stale_diagnostic",
+      "cause": "diagnostic assigned before final clone checks; empty catch retains it"
+    },
+    {
+      "kind": "preflight_failure_can_leave_previously_captured_key",
+      "cause": "pin and anchor validation return before identity capture/finally cleanup"
+    }
+  ],
+  "correctiveBriefMinimum": 0.86,
+  "correctionAssigned": true,
+  "actualRuntimeBlockedUntilFreshQA": true
+}

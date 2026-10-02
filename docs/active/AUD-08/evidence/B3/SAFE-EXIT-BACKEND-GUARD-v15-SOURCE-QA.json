@@ -1,0 +1,10 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS",
+  "scope": "independent_source_synthetic_only",
+  "sourcePinsSha256": "c1f435aae70126cac7ad969b915d49dcaece07db78499f999ead88c0d552874f",
+  "backendSourceHashesMatched": 6,
+  "identityPrepSourceMatched": true,
+  "syntheticTestsPassed": 10,
+  "actualExecutionPerformed": false
+}

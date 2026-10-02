@@ -1,0 +1,11 @@
+{
+  "scope": "one root owned-fixture identity preparation attempt",
+  "exitCode": 1,
+  "result": "identity_prep_unavailable",
+  "causeVerified": "Canonical binding 0600 is in root-owned sticky /private/tmp 01777; overly strict private-parent 0700 reader rejects it before backend initialization",
+  "backendQueryReached": false,
+  "identityOutputExists": false,
+  "keyOrRecordReadPerformed": false,
+  "runtimeExecutionGatePending": true,
+  "rawValuesEmitted": false
+}

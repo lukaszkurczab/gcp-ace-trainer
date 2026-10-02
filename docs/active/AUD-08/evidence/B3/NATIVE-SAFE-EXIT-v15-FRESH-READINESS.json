@@ -1,0 +1,25 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS",
+  "scope": "fresh_before_single_native_safe_exit",
+  "performedAtUtc": "2026-10-02T04:22:59.474209+00:00",
+  "source55And28MatchedBeforeAndAfter": true,
+  "backendReady": true,
+  "safeSummary": {
+    "ok": true,
+    "checks": {
+      "canonicalIdentityMapping": true,
+      "activeUserAndGeneration": true,
+      "securityOperationClear": true,
+      "boundedOwnedHistory": true,
+      "currentOperationsTerminal": true,
+      "olderOperationsPreserved": true,
+      "currentResultsAbsent": true
+    },
+    "ownedOperationCount": 8,
+    "olderOperationCount": 7,
+    "currentTerminalOperationCount": 1
+  },
+  "backendWrites": false,
+  "nativeActionYet": false
+}

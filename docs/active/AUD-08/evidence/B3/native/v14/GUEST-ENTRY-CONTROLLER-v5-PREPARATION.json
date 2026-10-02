@@ -1,0 +1,20 @@
+{
+  "task": "AUD-08-B3",
+  "status": "AUTHOR_CHECKS_PASS_INDEPENDENT_QA_PENDING",
+  "scope": "private dual-entry controller source-only preparation",
+  "syntheticCases": 17,
+  "syntaxChecks": 3,
+  "sourceSha256": "08f4552bd1662fa307552105c4d58e05e0808c0212dc1fa57e2d42032cdaa78c",
+  "inspectorPinsSha256": "377ae88cef8ddf57b5227ccae421b7c21505760d7137993cde2c5042d2f84180",
+  "runtimeAnchorsPending": 8,
+  "qaGatePending": true,
+  "runtimeControllerExecuted": false,
+  "runtimeInputsRead": false,
+  "assessment": {
+    "fit": 0.9,
+    "simplicity": 0.83,
+    "risk": 0.84,
+    "maintainability": 0.82
+  },
+  "sourceOrderTestIsNotRuntimeProof": true
+}

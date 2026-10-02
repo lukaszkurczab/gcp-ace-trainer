@@ -1,0 +1,17 @@
+{
+  "task": "AUD-08-B3",
+  "inspection": "attempt4-transient-sdk-cache",
+  "confirmedFirstMainInstruction": true,
+  "resolvedEntryLocations": 1,
+  "mainEntryHitCount": 1,
+  "appDelegateJsStartupEntered": false,
+  "sdkAndPrivateCacheConfigured": true,
+  "standaloneCompileOnlyPassed": true,
+  "lldbPureObjectiveCUnsupported": true,
+  "foundationModuleImportFailed": true,
+  "keychainQueryExecuted": false,
+  "processKilledAtMain": true,
+  "recordStateKnown": false,
+  "nativeAcceptance": false,
+  "privateHelperSourceSha256": "ab236b1a69d905c37a99be3e54a93b9ba68433d4987928540f585116128e503c"
+}

@@ -1,0 +1,25 @@
+{
+  "node": "22.22.3",
+  "cases": [
+    {
+      "case": "missing",
+      "passed": true,
+      "emulatorStartAbsent": true
+    },
+    {
+      "case": "malformed",
+      "passed": true,
+      "emulatorStartAbsent": true
+    },
+    {
+      "case": "wrong-head",
+      "passed": true,
+      "emulatorStartAbsent": true
+    },
+    {
+      "case": "wrong-hash",
+      "passed": true,
+      "emulatorStartAbsent": true
+    }
+  ]
+}

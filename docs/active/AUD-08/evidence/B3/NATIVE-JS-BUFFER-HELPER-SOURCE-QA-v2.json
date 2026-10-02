@@ -1,0 +1,53 @@
+{
+  "task": "AUD-08-B3",
+  "schema": "aud08-native-js-buffer-helper-source-qa-v2",
+  "verdict": "FAIL",
+  "scope": "Source and synthetic QA only; no debugger, app, device, native runtime, or live network execution.",
+  "helper_directory": "/private/tmp/aud08-native-js-buffer-provenance-v1",
+  "helper_pins_sha256": "940122d5fd88c658175a516e3222874b8ef13c1d9503e75e5510c537ae8dfc12",
+  "artifact_sha256": {
+    "helper.py": "bfcf5ff5731599dcd59447284b5a2f425901d184dc270648de247f4538addfdf",
+    "policy.py": "2ffaadaeac58ac5a06b2e9c74fe677a18d8e624628136e39e7a88b7e3c06f77c",
+    "synthetic_test.py": "ca5c1403a5bec8862e0768366df1bc6ab6f4c41d3ac1277098ef36b477be47c8",
+    "README.md": "be0769927e618bc98ad64361c2a04222b1cebc6a07e77e6272209c84c2e1a783"
+  },
+  "verification": {
+    "synthetic_tests": "14/14 passed",
+    "py_compile": "passed for helper.py, policy.py, synthetic_test.py",
+    "implementation_pins": "4/4 matched",
+    "local_source_pins": "11/11 matched",
+    "canonical_manifest_verification": "passed: consumer 55/55 files and expected app HEAD; producer 28/28 files and expected producer HEAD",
+    "runtime_gate": "PENDING",
+    "expected_module_uuid": "PENDING"
+  },
+  "findings": [
+    {
+      "severity": "blocking",
+      "summary": "The virtual-entry URL allowlist does not include the base URL constructed by the pinned native AppDelegate/RCTBundleURLProvider path.",
+      "evidence": "AppDelegate requests .expo/.virtual-metro-entry through RCTBundleURLProvider. Its query builder emits the standard development parameters with additionalOptions nil; Expo rewriteRequestUrl adds transform.routerRoot/engine/bytecode/unstable_transformProfile while rewriting the server request. The helper accepts the rewritten form, but policy.validate_url rejects the base native form as URL_DISALLOWED. This was reproduced by validating both fixed synthetic URLs; no live URL was read.",
+      "impact": "Unless another client-side sourceURL override is proven, the helper will refuse before fetching Metro and cannot compare the loaded bundle.",
+      "minimum_correction": "Add a separate exact, fixed-IP profile for the sourceURL form emitted by the native URL builder. Keep the current rewritten form only if evidence shows sourceURL can carry it; do not loosen query matching."
+    },
+    {
+      "severity": "limitation",
+      "summary": "The corrected pointer path is structurally plausible but remains unverified against live LLDB SBValue behavior.",
+      "evidence": "The helper now evaluates buffer.get(), checks the typed base pointer, then uses GetDynamicValue(eDynamicDontRunTarget). The libc++ header pin confirms get() returns T*. Synthetic doubles exercise this sequence but do not prove LLDB resolves NSDataBigString* from the real stopped frame."
+    },
+    {
+      "severity": "limitation",
+      "summary": "The module UUID and runtime gate intentionally remain unconfigured.",
+      "evidence": "The helper checks stopped process state and module UUID before getters. PINS.json expected_module_uuid and policy/PINS runtime gates remain PENDING, so no runtime operation can proceed until a separately reviewed controller configures them."
+    }
+  ],
+  "safety_review": {
+    "frame_guards": "Stopped state, line/function, and exact configured module UUID are checked before getter expressions; the UUID is still PENDING.",
+    "source_guards": "The helper verifies its 11 local dependencies, both canonical manifest hashes, all 55/28 listed source files, and both expected Git HEADs before and after comparison.",
+    "expressions": "Fixed allowlist, 5-second timeout, all-thread evaluation disabled, breakpoints ignored; buffer reads capped at 96 MiB and URL at 4096 bytes.",
+    "network": "Literal IPv4/IPv6 loopback only, exact query profiles, direct http.client request, no automatic redirect following, non-200 and oversized responses refused. No live request was made.",
+    "output": "Fixed status, SHA-256 digests, and byte counts only; errors are mapped to fixed categories."
+  },
+  "limitations": [
+    "This result does not establish actual LLDB locals, the actual device sourceURL, current Hermes buffer bytes, or source/runtime equivalence.",
+    "No source changes were made during QA."
+  ]
+}

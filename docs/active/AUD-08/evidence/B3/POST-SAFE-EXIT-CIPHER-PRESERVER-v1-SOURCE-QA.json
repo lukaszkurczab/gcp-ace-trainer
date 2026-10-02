@@ -1,0 +1,13 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS_WITH_ISSUES",
+  "scope": "independent_source_synthetic_only",
+  "sourcePinsSha256": "8bec7ccf188a2df46c1eab32fdf48b75874d027d4a904e5b6dcf183c652fa36e",
+  "syntheticTestsPassed": 9,
+  "fourArtifactPinsAndModesMatched": true,
+  "materialCopyDefectsFound": 0,
+  "controllerDependencyStale": true,
+  "rebindAndFreshSourceQaRequired": true,
+  "actualCopyPerformed": false,
+  "runtimeApproval": false
+}

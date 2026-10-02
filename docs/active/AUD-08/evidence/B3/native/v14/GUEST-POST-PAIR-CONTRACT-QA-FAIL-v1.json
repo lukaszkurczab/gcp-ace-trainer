@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "syntheticChecksPassed": 33,
+  "syntaxPassed": true,
+  "pinsMatched": true,
+  "baselineAnchorsUnchanged": 4,
+  "sourceCondition": "mode===0o500",
+  "requiredCondition": "exact",
+  "negativeCloneTestUsesExact": false,
+  "runtimeExecuted": false,
+  "wholeAcceptance": false
+}

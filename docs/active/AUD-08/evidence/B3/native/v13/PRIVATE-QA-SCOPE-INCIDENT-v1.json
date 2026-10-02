@@ -1,0 +1,12 @@
+{
+  "status": "RECORDED",
+  "scope": "independent_private_admin_guard_review",
+  "cause": "overbroad_source_search_included_private_runtime_evidence",
+  "fixtureUserIdentifierIncludedInToolOutput": true,
+  "emailIncluded": false,
+  "passwordIncluded": false,
+  "recoveryCodesIncluded": false,
+  "rawIdentifiersRepeatedInReport": false,
+  "correctiveAction": "restrict_review_to_exact_named_source_test_pin_paths",
+  "runtimeMutationPerformed": false
+}

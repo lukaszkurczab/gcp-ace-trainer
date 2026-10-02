@@ -1,0 +1,15 @@
+{
+  "task": "AUD-08-B3",
+  "existingAppWasRunning": false,
+  "confirmedInitialStop": "dyld_start-before-main",
+  "mainBreakpointLocations": 0,
+  "continueCommandIssued": false,
+  "keychainQueryExecuted": false,
+  "debuggerInputEndedUnexpectedly": true,
+  "ownedProcessKilledImmediately": true,
+  "javascriptExecutionAfterDebuggerEOF": "unverified",
+  "sharedBackendIncomingLoggedPOSTCountSinceStartup": 0,
+  "recordStateKnown": false,
+  "nativeAcceptance": false,
+  "nextStep": "verify installed debug-dylib symbols and debugger input ownership before any fresh attempt"
+}

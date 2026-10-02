@@ -1,0 +1,190 @@
+{
+  "task": "AUD-08-B3/B4 acceptance-gap audit",
+  "status": "PASS_WITH_LIMITS",
+  "wholeB2Accepted": false,
+  "wholeB3Accepted": false,
+  "wholeB4Accepted": false,
+  "assessment": {
+    "fit": 0.95,
+    "simplicity": 0.90,
+    "risk": 0.95,
+    "maintainability": 0.93,
+    "minimum": 0.90
+  },
+  "sourceVerification": {
+    "consumerManifest": "CONSUMER-SOURCE-PINS-v15.json",
+    "consumerFiles": 55,
+    "consumerVerified": 55,
+    "consumerHead": "8d12b0ccabf7b2c28659c78c10a7915abafb2672",
+    "producerManifest": "PRODUCER-SOURCE-PINS-v12c.json",
+    "producerFiles": 28,
+    "producerVerified": 28,
+    "producerHead": "15e49d04dcf510cb7081b356a7182343d9d170ab",
+    "allManifestHashesMatch": true,
+    "manifestHeadsMatchCurrentHeads": true,
+    "guestLearningSourceReconciliation": {
+      "audit": "GUEST-LEARNING-PRESERVATION-CONTRACT-AUDIT-v1.json",
+      "localCanonicalLearningKeyspaceMapped": true,
+      "publicAggregateIdentifiesEachEqualRow": false,
+      "scopedLocalLearningPreservationSupported": true,
+      "fullGuestProfilePreservation": false,
+      "coreSourceRecheck": "GUEST-LEARNING-CORE-SOURCE-RECHECK-v1.json",
+      "coreFileHashesMatched": 120,
+      "coreFileHashMismatches": 0,
+      "aggregatePathHashEncodingVerified": false
+    },
+    "consumerV14ToV15": {
+      "removedPaths": 0,
+      "addedPaths": 5,
+      "changedCommonPaths": 4,
+      "unchangedCommonPaths": 46,
+      "changedProductionPaths": [
+        "src/application/account/AccountSessionProvider.tsx",
+        "src/application/account/profileStartupCoordination.ts"
+      ],
+      "recoveryHandlersUnchanged": [
+        "consumeRecoveryCode",
+        "resumePendingRecovery"
+      ]
+    },
+    "currentV15HttpSdkMatrix": {
+      "manifest": "SOURCE-GATES-v15-MANIFEST.json",
+      "runner": "scripts/recoveryOperationIntegration.emulator.test.ts",
+      "topLevelTests": 4,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "subcaseFamilies": [
+        "ISSUE and saved-ACK post-commit response loss",
+        "consume and ACK post-commit response loss with status reconciliation",
+        "memory-vault write rejection after committed effects",
+        "replacement/reissue and prior-operation backup",
+        "UID/generation mismatch guards",
+        "revoke while recovery result is live",
+        "same-operation consume concurrency",
+        "deletion supersedes recovery",
+        "canonical backend log redaction"
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "B3-v14-consume-ack",
+      "state": "PARTIAL",
+      "evidence": "native/v14/NATIVE-CONSUME-PASS-v14.json",
+      "claim": "One native consume and canonical ACK were observed against v14 source scope."
+    },
+    {
+      "id": "B3-v14-cold-restart",
+      "state": "PARTIAL",
+      "evidence": "native/v14/NATIVE-CONSUME-COLD-v14.json",
+      "claim": "The cold restart occurred after consume and ACK; it does not prove interrupted-consume resume."
+    },
+    {
+      "id": "B3-v15-safe-exit",
+      "state": "SCOPED_PASS",
+      "evidence": "NATIVE-SAFE-EXIT-v15-ACTUAL.json; NATIVE-SAFE-EXIT-v15-ACTUAL-QA.json",
+      "claim": "One current-source UI safe-exit run exercised guest Home/Progress/Settings and the changed sign-out path. Executed Hermes byte binding and storage acceptance are false/unproven."
+    },
+    {
+      "id": "B3-post-exit-data",
+      "state": "DIAGNOSTIC_ONLY",
+      "evidence": "POST-SAFE-EXIT-CONTROLLER-v1-CORRECTED-ACTUAL.json; POST-SAFE-EXIT-CONTROLLER-v1-CORRECTED-ACTUAL-QA.json",
+      "claim": "Six recognized domain rows equal; own expired Premium removed; installation payload same with access granted and revision advanced. The separate source audit maps the complete canonical local learning keyspace and supports scoped preservation of persisted local guest learning records. Strict mismatch remains, preservation false, writer unknown, and full B3 is not accepted."
+    },
+    {
+      "id": "B3-owned-fixture-rotation",
+      "state": "SCOPED_PASS",
+      "evidence": "OWNED-PASSWORD-ROTATION-v1-CORRECTED-ACTUAL.json; OWNED-PASSWORD-ROTATION-v1-CORRECTED-ACTUAL-QA.json",
+      "claim": "One own-fixture credential rotation completed; it is not guest-preservation evidence."
+    },
+    {
+      "id": "B2-smtp",
+      "state": "BLOCKED_ON_PO_DECISION",
+      "evidence": "docs/PATTERNLY-WORKING-PLAN.md; docs/active/AUD-08/B2-REPORT.md",
+      "claim": "SMTP family remains undecided; no recommendation was promoted to a decision."
+    },
+    {
+      "id": "B4-current-local-http-sdk-matrix",
+      "state": "SCOPED_PASS",
+      "evidence": "SOURCE-GATES-v15-MANIFEST.json; scripts/recoveryOperationIntegration.emulator.test.ts",
+      "claim": "Current pinned v15 runner reports four top-level tests passing with zero failures/skips; its first test contains multiple ISSUE/consume/ACK loss, storage, replacement, identity-guard, and redaction subcases, with revoke, concurrency, and deletion in the other three."
+    },
+    {
+      "id": "B4-native-provider-persistence-restart",
+      "state": "PARTIAL",
+      "evidence": "B4-FINAL-LOCAL-v11b-MANIFEST.json; current v15 runner source; native/v14/NATIVE-CONSUME-COLD-v14.json",
+      "claim": "Current HTTP/SDK tests use memory-vault/same-process boundaries and do not mount the React provider or prove native process restart. v14 cold evidence is post-ACK."
+    }
+  ],
+  "b4CriterionMap": [
+    {
+      "criterion": "ISSUE and saved-ACK response loss after commit",
+      "evidence": "Current v15 integration runner first top-level test; historical B4 report v4",
+      "state": "SCOPED_PASS",
+      "limit": "Transport-loss fixture, memory vault and same-process coordinator reconstruction."
+    },
+    {
+      "criterion": "Consume and ACK response loss after commit",
+      "evidence": "Current v15 integration runner first top-level test; historical B4 report v5",
+      "state": "SCOPED_PASS",
+      "limit": "Transport-loss fixture and same-process memory-vault reconstruction; no native process death."
+    },
+    {
+      "criterion": "Local persistence rejection after committed effect",
+      "evidence": "Current v15 integration runner first top-level test; historical B4 report v6b",
+      "state": "SCOPED_PASS",
+      "limit": "Controlled memory-vault rejection, not native SecureStore/platform partial-write behavior."
+    },
+    {
+      "criterion": "Replacement/reissue post-commit replay",
+      "evidence": "Current v15 integration runner first top-level test; historical B4 report v7c",
+      "state": "SCOPED_PASS",
+      "limit": "Memory vault, same-process reconstruction and transport fixture."
+    },
+    {
+      "criterion": "Revoke while recovery result is live",
+      "evidence": "Current v15 integration runner second top-level test; historical B4 report v8",
+      "state": "SCOPED_PASS",
+      "limit": "Historical local HTTP/Admin/SDK source, not current v15 native provider/UI."
+    },
+    {
+      "criterion": "Deletion supersedes recovery",
+      "evidence": "Current v15 integration runner fourth top-level test; historical B4 report v9",
+      "state": "SCOPED_PASS_WITH_ISSUES",
+      "limit": "Rate-window branch was source-reviewed; deletion cleanup lifecycle limits remain recorded."
+    },
+    {
+      "criterion": "Same-ID concurrency and cleanup",
+      "evidence": "Current v15 integration runner third top-level test; historical B4 report v10",
+      "state": "SCOPED_PASS_WITH_ISSUES",
+      "limit": "Forced-hang/timeout teardown branch was not runtime exercised."
+    },
+    {
+      "criterion": "Canonical log redaction",
+      "evidence": "Current v15 integration runner all four top-level tests; historical B4 report v11b; B4-FINAL-LOCAL-v11b-MANIFEST.json",
+      "state": "SCOPED_PASS",
+      "limit": "Four in-memory streams, not external provider logs or native argv cleanup."
+    },
+    {
+      "criterion": "All required cases against one current source plus native durability",
+      "evidence": "B4-FINAL-LOCAL-v11b-MANIFEST.json",
+      "state": "PARTIAL",
+      "limit": "The current v15 4/4 local HTTP/SDK runner covers the local case families under current pins; it does not prove native provider/persistence restart. Do not infer a need to rerun the local matrix solely from v11b's older pin counts."
+    }
+  ],
+  "openGates": [
+    "Trustworthy current-source-to-native-execution provenance; exact Hermes byte hashing is not a literal sole mandated method.",
+    "Map and prove the required current-source restart/resume transition; current v14 cold artifact is post-ACK, not interrupted consume.",
+    "The canonical local learning keyspace is source-mapped and scoped local persisted-learning preservation is supported; broader filesystem/cloud/executed-source/writer claims remain open, while strict mismatch and preservationAccepted=false remain unchanged.",
+    "Close B4 native provider/persistence restart evidence after mapping the B3 current-source transition; the current local HTTP/SDK matrix is already 4/4 under v15 pins.",
+    "Obtain the pending PO decision for SMTP family selection and corresponding B2/B4 coverage."
+  ],
+  "actionsPerformed": {
+    "productionChanges": false,
+    "nativeOrSimulatorAction": false,
+    "backendOrAuthAction": false,
+    "privateRuntimeInputRead": false
+  },
+  "report": "NATIVE-v14-v15-ACCEPTANCE-GAP-AUDIT-v1.md"
+}

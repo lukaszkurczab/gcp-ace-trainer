@@ -1,0 +1,6 @@
+fixture_alias=AUD-08-B3-native-20261001-77d536f5a8
+exit_code=0
+unique_recovery_codes_seen=10
+recovery_code_set_sha256=c4858a0d359c946c29ce23838d5cd0e7f39db6cd61c8f964ba0102d2e08c68bd
+credentials_and_codes_redacted=true
+all_screenshots_removed=true

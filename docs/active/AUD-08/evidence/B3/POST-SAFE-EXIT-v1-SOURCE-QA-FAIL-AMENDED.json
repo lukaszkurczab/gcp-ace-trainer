@@ -1,0 +1,18 @@
+{
+  "task": "AUD-08-B3",
+  "status": "FAIL",
+  "scope": "independent_source_and_policy_synthetic_review",
+  "sourcePinsSha256": "e78b0c96c025f8204e4928bc5b7ebe6a942a2faca88139104ab1ce68aafcc0a3",
+  "policyAssertionsPassed": 30,
+  "consumerSourceFilesMatched": 55,
+  "producerSourceFilesMatched": 28,
+  "supplementalSourceDirectHashMatched": true,
+  "withdrawnFinding": "Producer manifest path error was a reviewer assumption; actual controller uses app docs correctly and hashes backend sources. No correction needed for that path.",
+  "confirmedDefects": [
+    "Supplemental guestAccess source wrongly requires entry in consumer55 although absent there.",
+    "Runtime gate returns before key ownership metadata capture and closed-gate cleanup."
+  ],
+  "verificationGap": "Synthetic tests import policy only; controller wiring, late failure, cleanup failure and no publication need fake-dependency tests.",
+  "actualRuntimeInputsOpened": false,
+  "preCorrectionFiveFileSnapshotPreserved": true
+}

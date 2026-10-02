@@ -1,0 +1,16 @@
+{
+  "task": "AUD-08-B3",
+  "verdict": "FAIL",
+  "scope": "Independent source-only pure projection QA",
+  "node": "22.22.3",
+  "syntheticPass": 17,
+  "astDeclarationsMatched": 14,
+  "pinnedArtifactsMatched": 8,
+  "failures": [
+    "Present malformed cache text JSON null is incorrectly classified as absent.",
+    "expectedIdentity ignores extra input fields instead of exact schema."
+  ],
+  "noActualRuntimeInputs": true,
+  "preservationAccepted": false,
+  "next": "Narrow source correction with explicit missing-vs-malformed cache and exact identity schema regression tests; fresh independent QA before runtime use."
+}

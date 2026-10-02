@@ -7,6 +7,7 @@ import {
   findPendingSessionRevocation,
   finishLocalSignOutSetupFailure,
   guardAuthenticatedScopeAgainstIncompleteSignOut,
+  hasVerifiedLocalLogoutReceipt,
   isPreparedGuestChoiceRequired,
   lockAndCloseProfileAfterAuthLoss,
   performLocalAccountSignOut,
@@ -134,26 +135,77 @@ test("local account sign-out verifies the durable block before locking, closing,
   const operations: string[] = [];
   const outcome = await performLocalAccountSignOut({
     uid: "uid-A",
+    operationId: "00000000-0000-4000-8000-000000000001",
     persistBlock: async () => {
       operations.push("persist:verified");
       return { blocked: { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }, completed: [], pending: [{ uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }], version: 2 };
     },
     publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
     closeProfileStorage: () => { operations.push("close:scope"); },
     signOutFirebase: async () => { operations.push("firebase:signOut"); },
     isCurrent: () => true,
   });
 
   assert.equal(outcome, "signedOut");
-  assert.deepEqual(operations, ["persist:verified", "publish:locked", "close:scope", "firebase:signOut"]);
+  assert.deepEqual(operations, ["persist:verified", "publish:locked", "clear:cache", "close:scope", "firebase:signOut"]);
+});
+
+test("logout receipt validation requires the exact pending pair or completed receipt", () => {
+  const pair = { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" };
+  assert.equal(hasVerifiedLocalLogoutReceipt({ blocked: pair, completed: [], pending: [pair], version: 2 }, pair.uid, pair.operationId), true);
+  assert.equal(hasVerifiedLocalLogoutReceipt({ blocked: null, completed: [pair], pending: [], version: 2 }, pair.uid, pair.operationId), true);
+  assert.equal(hasVerifiedLocalLogoutReceipt({ blocked: pair, completed: [], pending: [], version: 2 }, pair.uid, pair.operationId), false);
+  assert.equal(hasVerifiedLocalLogoutReceipt({ blocked: pair, completed: [], pending: [pair], version: 2 }, "uid-B", pair.operationId), false);
+  assert.equal(hasVerifiedLocalLogoutReceipt({ blocked: pair, completed: [], pending: [pair], version: 2 }, pair.uid, "00000000-0000-4000-8000-000000000002"), false);
+});
+
+test("owned-cache cleanup failure is explicit after Firebase sign-out and never reports success", async () => {
+  const operations: string[] = [];
+  const outcome = await performLocalAccountSignOut({
+    uid: "uid-A",
+    operationId: "00000000-0000-4000-8000-000000000001",
+    persistBlock: async () => {
+      operations.push("persist:verified");
+      return { blocked: { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }, completed: [], pending: [{ uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }], version: 2 };
+    },
+    publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return false; },
+    closeProfileStorage: () => { operations.push("close:scope"); },
+    signOutFirebase: async () => { operations.push("firebase:signOut"); },
+    isCurrent: () => true,
+  });
+
+  assert.equal(outcome, "localCleanupFailure");
+  assert.deepEqual(operations, ["persist:verified", "publish:locked", "clear:cache", "close:scope", "firebase:signOut"]);
+});
+
+test("Firebase failure remains signOutPending even when owned-cache cleanup fails", async () => {
+  const operations: string[] = [];
+  const blocked = { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" };
+  const outcome = await performLocalAccountSignOut({
+    uid: blocked.uid,
+    operationId: blocked.operationId,
+    persistBlock: async () => ({ blocked, completed: [], pending: [blocked], version: 2 }),
+    publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return false; },
+    closeProfileStorage: () => { operations.push("close:scope"); },
+    signOutFirebase: async () => { operations.push("firebase:signOut"); throw new Error("offline"); },
+    isCurrent: () => true,
+  });
+
+  assert.equal(outcome, "signOutPending");
+  assert.deepEqual(operations, ["publish:locked", "clear:cache", "close:scope", "firebase:signOut"]);
 });
 
 test("failed local control write closes access and attempts Firebase sign-out but stays a failure", async () => {
   const operations: string[] = [];
   const outcome = await performLocalAccountSignOut({
     uid: "uid-A",
+    operationId: "00000000-0000-4000-8000-000000000001",
     persistBlock: async () => { operations.push("persist:uncertain"); throw new Error("write_failed"); },
     publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
     closeProfileStorage: () => { operations.push("close:scope"); },
     signOutFirebase: async () => { operations.push("firebase:signOut"); },
     isCurrent: () => true,
@@ -163,12 +215,80 @@ test("failed local control write closes access and attempts Firebase sign-out bu
   assert.deepEqual(operations, ["persist:uncertain", "publish:locked", "close:scope", "firebase:signOut"]);
 });
 
+test("SDK failure after an unverified control write remains signOutPending without cache cleanup", async () => {
+  const operations: string[] = [];
+  const outcome = await performLocalAccountSignOut({
+    uid: "uid-A",
+    operationId: "00000000-0000-4000-8000-000000000001",
+    persistBlock: async () => { operations.push("persist:uncertain"); throw new Error("write_failed"); },
+    publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
+    closeProfileStorage: () => { operations.push("close:scope"); },
+    signOutFirebase: async () => { operations.push("firebase:signOut"); throw new Error("offline"); },
+    isCurrent: () => true,
+  });
+
+  assert.equal(outcome, "signOutPending");
+  assert.deepEqual(operations, ["persist:uncertain", "publish:locked", "close:scope", "firebase:signOut"]);
+});
+
+test("retrying sign-out for the exact completed UID-operation receipt still clears local Auth", async () => {
+  const pair = { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" };
+  const operations: string[] = [];
+  const outcome = await performLocalAccountSignOut({
+    uid: pair.uid,
+    operationId: pair.operationId,
+    retainAuthOnControlFailure: true,
+    // blockAndQueueRevoke returns its unchanged snapshot for an exact pair
+    // already present in completed, with neither blocked nor pending set.
+    persistBlock: async () => ({ blocked: null, completed: [pair], pending: [], version: 2 }),
+    publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
+    closeProfileStorage: () => { operations.push("close:scope"); },
+    signOutFirebase: async () => { operations.push("firebase:signOut"); },
+    isCurrent: () => true,
+  });
+
+  assert.equal(outcome, "signedOut");
+  assert.deepEqual(operations, ["publish:locked", "clear:cache", "close:scope", "firebase:signOut"]);
+});
+
+test("a retained Auth retry rejects blocked receipts for a different UID or operation", async () => {
+  const requested = { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" };
+  const mismatchedSnapshots = [
+    { blocked: { uid: "uid-B", operationId: requested.operationId }, completed: [], pending: [{ uid: "uid-B", operationId: requested.operationId }], version: 2 as const },
+    { blocked: { uid: requested.uid, operationId: "00000000-0000-4000-8000-000000000002" }, completed: [], pending: [{ uid: requested.uid, operationId: "00000000-0000-4000-8000-000000000002" }], version: 2 as const },
+    { blocked: requested, completed: [], pending: [], version: 2 as const },
+    { blocked: null, completed: [{ uid: "uid-B", operationId: requested.operationId }], pending: [], version: 2 as const },
+    { blocked: null, completed: [{ uid: requested.uid, operationId: "00000000-0000-4000-8000-000000000002" }], pending: [], version: 2 as const },
+  ];
+
+  for (const snapshot of mismatchedSnapshots) {
+    const operations: string[] = [];
+    const outcome = await performLocalAccountSignOut({
+      ...requested,
+      retainAuthOnControlFailure: true,
+      persistBlock: async () => snapshot,
+      publishLockedState: () => { operations.push("publish:locked"); },
+      clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
+      closeProfileStorage: () => { operations.push("close:scope"); },
+      signOutFirebase: async () => { operations.push("firebase:signOut"); },
+      isCurrent: () => true,
+    });
+
+    assert.equal(outcome, "localLogoutControlFailure");
+    assert.deepEqual(operations, ["publish:locked", "close:scope"]);
+  }
+});
+
 test("unverified local control read-back attempts Firebase sign-out only when no scoped marker is recoverable", async () => {
   const operations: string[] = [];
   const outcome = await performLocalAccountSignOut({
     uid: "uid-A",
+    operationId: "00000000-0000-4000-8000-000000000001",
     persistBlock: async () => ({ blocked: { uid: "uid-B", operationId: "00000000-0000-4000-8000-000000000002" }, completed: [], pending: [], version: 2 }),
     publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
     closeProfileStorage: () => { operations.push("close:scope"); },
     signOutFirebase: async () => { operations.push("firebase:signOut"); },
     isCurrent: () => true,
@@ -181,9 +301,11 @@ test("when a scoped operation is durable, control-write failure retains Auth for
   const operations: string[] = [];
   const outcome = await performLocalAccountSignOut({
     uid: "uid-A",
+    operationId: "00000000-0000-4000-8000-000000000001",
     retainAuthOnControlFailure: true,
     persistBlock: async () => { operations.push("persist:uncertain"); throw new Error("write_failed"); },
     publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
     closeProfileStorage: () => { operations.push("close:scope"); },
     signOutFirebase: async () => { operations.push("firebase:signOut"); },
     isCurrent: () => true,
@@ -299,12 +421,15 @@ test("a UID switch while fallback control persistence is pending closes only the
   let current = true;
   const operations: string[] = [];
   const result = await finishLocalSignOutSetupFailure({
+    uid: "uid-A",
+    getOperationId: () => "00000000-0000-4000-8000-000000000001",
     isCurrent: () => current,
     persistFallbackControlPair: async () => {
       current = false;
       throw new Error("write_failed_after_uid_switch");
     },
     publishLockedState: () => { operations.push("publish:A"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
     closeProfileStorage: () => { operations.push("close:A"); },
     signOutFirebase: async () => { operations.push("signOut:current-auth"); },
   });
@@ -312,12 +437,33 @@ test("a UID switch while fallback control persistence is pending closes only the
   assert.deepEqual(operations, ["close:A"]);
 });
 
+test("fallback setup failure never cleans cache from a blocked-only receipt", async () => {
+  const operations: string[] = [];
+  const pair = { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" };
+  const result = await finishLocalSignOutSetupFailure({
+    uid: pair.uid,
+    getOperationId: () => pair.operationId,
+    isCurrent: () => true,
+    persistFallbackControlPair: async () => ({ blocked: pair, completed: [], pending: [], version: 2 }),
+    retainAuthOnFailedControlWrite: true,
+    publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
+    closeProfileStorage: () => { operations.push("close:scope"); },
+    signOutFirebase: async () => { operations.push("firebase:signOut"); },
+  });
+
+  assert.equal(result, "localLogoutControlFailure");
+  assert.deepEqual(operations, ["publish:locked", "close:scope"]);
+});
+
 test("stale sign-out completion closes its scope without publishing over the newer identity", async () => {
   const operations: string[] = [];
   const outcome = await performLocalAccountSignOut({
     uid: "uid-A",
+    operationId: "00000000-0000-4000-8000-000000000001",
     persistBlock: async () => ({ blocked: { uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }, completed: [], pending: [{ uid: "uid-A", operationId: "00000000-0000-4000-8000-000000000001" }], version: 2 }),
     publishLockedState: () => { operations.push("publish:stale"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
     closeProfileStorage: () => { operations.push("close:scope"); },
     signOutFirebase: async () => { operations.push("firebase:signOut"); },
     isCurrent: () => false,
@@ -332,8 +478,10 @@ test("Firebase sign-out failure retains the matching block for manual retry", as
   const operations: string[] = [];
   const outcome = await performLocalAccountSignOut({
     uid: "uid-A",
+    operationId: "00000000-0000-4000-8000-000000000001",
     persistBlock: async () => ({ blocked, completed: [], pending: [blocked], version: 2 }),
     publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
     closeProfileStorage: () => { operations.push("close:scope"); },
     signOutFirebase: async () => { operations.push("firebase:signOut"); throw new Error("offline"); },
     isCurrent: () => true,
@@ -342,7 +490,7 @@ test("Firebase sign-out failure retains the matching block for manual retry", as
   assert.equal(outcome, "signOutPending");
   assert.equal(findMatchingLocalLogoutBlock({ blocked, completed: [], pending: [blocked], version: 2 }, "uid-A")?.operationId, blocked.operationId);
   assert.equal(findMatchingLocalLogoutBlock({ blocked, completed: [], pending: [blocked], version: 2 }, "uid-B"), null);
-  assert.deepEqual(operations, ["publish:locked", "close:scope", "firebase:signOut"]);
+  assert.deepEqual(operations, ["publish:locked", "clear:cache", "close:scope", "firebase:signOut"]);
 });
 
 test("Auth rejection remains pending until durable local sign-out reports success", async () => {
@@ -350,8 +498,10 @@ test("Auth rejection remains pending until durable local sign-out reports succes
   const operations: string[] = [];
   const outcome = await performLocalAccountSignOut({
     uid: "uid-A",
+    operationId: "00000000-0000-4000-8000-000000000001",
     persistBlock: async () => ({ blocked, completed: [], pending: [blocked], version: 2 }),
     publishLockedState: () => { operations.push("publish:locked"); },
+    clearOwnedPremiumCache: () => { operations.push("clear:cache"); return true; },
     closeProfileStorage: () => { operations.push("close:scope"); },
     signOutFirebase: async () => {
       operations.push("firebase:signOut");
@@ -361,7 +511,7 @@ test("Auth rejection remains pending until durable local sign-out reports succes
   });
 
   assert.equal(outcome, "signOutPending");
-  assert.deepEqual(operations, ["publish:locked", "close:scope", "firebase:signOut"]);
+  assert.deepEqual(operations, ["publish:locked", "clear:cache", "close:scope", "firebase:signOut"]);
 });
 
 test("ambiguous saved Guest profiles are reported as a choice requirement", () => {

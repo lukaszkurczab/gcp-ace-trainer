@@ -1,0 +1,20 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS_WITH_LIMITATIONS",
+  "scope": "inspector v5 synthetic and source QA",
+  "independentReview": true,
+  "syntheticChecks": 43,
+  "nodeVersion": "v22.22.3",
+  "syntaxPassed": true,
+  "artifactHashesMatched": true,
+  "canonicalExtractionParity": true,
+  "coreSourceHashesMatched": 60,
+  "aggregateAlgorithmPreserved": true,
+  "premiumIncluded": true,
+  "wrongKeyAndIncompleteResultsFailClosed": true,
+  "directV4BinaryComparisonPerformed": false,
+  "sameGuestAndSlotValidationOwner": "dual controller",
+  "intermediateValueHashesMayBePersisted": false,
+  "runtimeInputsRead": false,
+  "metadataNamingCorrection": "separate scoped QA pending; source and binaries unchanged"
+}

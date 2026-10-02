@@ -1,0 +1,15 @@
+{
+  "scope": "one bounded retry after exact-path correction and independent4testQA",
+  "exitCode": 0,
+  "ownCanonicalMappingVerified": true,
+  "activeGenerationVerified": true,
+  "bothRuntimeModesSameProduct": true,
+  "backendReadOnly": true,
+  "identityFilePrivate": true,
+  "allRuntimeAnchorsPrepared": true,
+  "runtimeExecutionGatePending": true,
+  "keyOrRecordReadPerformed": false,
+  "rawValuesEmitted": false,
+  "initialFailurePreserved": true,
+  "preservationAccepted": false
+}

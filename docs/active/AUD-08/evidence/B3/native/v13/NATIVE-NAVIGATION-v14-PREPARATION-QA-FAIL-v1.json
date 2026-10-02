@@ -1,0 +1,11 @@
+{
+  "checkpoint": "v14-navigation-preparation",
+  "status": "FAIL",
+  "reason": "preaction guard checks recovery pending instead of sign-out pending",
+  "requiredTestId": "account-sign-out-pending",
+  "actualTestId": "recovery-operation-pending",
+  "localAndSourcePinsMatched": 11,
+  "syntheticTestsPassed": 4,
+  "nativeActionsPerformed": false,
+  "wholeAcceptance": false
+}

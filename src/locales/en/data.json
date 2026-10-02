@@ -127,6 +127,10 @@
     "providerRegistrationRequired": {
       "title": "Review account documents",
       "body": "Finish or cancel account creation before opening account data."
+    },
+    "recoveryPending": {
+      "title": "Finish account recovery",
+      "body": "A saved recovery step needs your attention before we open your data."
     }
   },
   "privacyRequests": {

@@ -1,0 +1,27 @@
+{
+  "task": "AUD-08-B3",
+  "helperSourceQa": "PASS_WITH_LIMITS",
+  "helperPinsSha256": "5af0ae801e1aa3a094ef1ff14e308d044366c63baac3d08ad41cf7d14ae1843e",
+  "nativeMethodNoToolsBriefMinimum": 0.84,
+  "sameInstalledAppConfirmed": true,
+  "processStoppedConfirmed": true,
+  "sourceSnapshotPreserved": true,
+  "freshBinaryDsymChecks": [
+    {
+      "binary": "Patternly",
+      "uuidMatchesDsym": true
+    },
+    {
+      "binary": "Patternly.debug.dylib",
+      "uuidMatchesDsym": true
+    }
+  ],
+  "freshOwnedBackendGuardPassed": true,
+  "rootRuntimeConfigurationPrepared": true,
+  "runtimeGate": "PENDING",
+  "nativeAttemptStarted": false,
+  "limits": [
+    "Readiness must be refreshed immediately before execution",
+    "Real LLDB locals and dynamic type resolution remain unverified"
+  ]
+}

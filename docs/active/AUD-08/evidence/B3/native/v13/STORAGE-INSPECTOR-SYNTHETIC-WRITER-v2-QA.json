@@ -1,0 +1,36 @@
+{
+  "task": "AUD-08-B3",
+  "scope": "Synthetic host tests of copied private inspector source; no real Keychain queries",
+  "reviewer": {
+    "model": "gpt-6-luna",
+    "reasoningEffort": "high"
+  },
+  "result": "PASS",
+  "checks": {
+    "nodeV22": true,
+    "testDirectoryMode0700": true,
+    "qaArtifactsMode0600": true,
+    "sourceBinaryHashesMatchBefore": true,
+    "sourceBinaryHashesUnchangedAfter": true,
+    "sdkResolved": true,
+    "compiled": true,
+    "compileFailureCategory": null,
+    "syntheticFilesystemTestsRun": true,
+    "writeModeOwnerRegularLinkAndBytes": true,
+    "exclusiveCreateRejectedAndPreserved": true,
+    "leafSymlinkRejectedTargetPreserved": true,
+    "invalidLeafRejected": true,
+    "non0700ParentRejected": true,
+    "partialWriteEioCleanup": true,
+    "symlinkDirectoryRejected": true,
+    "invalidSlotsNullZAbRejectedBeforeQuery": true,
+    "forbiddenKeychainCallCount": 0,
+    "cleanupPassed": true
+  },
+  "privateResultSha256": "6199c090e357c6c3313f4ac8f59463896562722ac06506a762fdace2fc35fd15",
+  "limitations": [
+    "Valid Keychain queries and manifest-head reads were not executed.",
+    "Guest domain preservation is not established by these filesystem tests."
+  ],
+  "productionSourceChanged": false
+}

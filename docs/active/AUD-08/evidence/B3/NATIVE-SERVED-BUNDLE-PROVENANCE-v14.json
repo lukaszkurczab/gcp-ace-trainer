@@ -1,0 +1,16 @@
+{
+  "task": "AUD-08-B3",
+  "checkpoint": "v14-exact-completed-logout-receipt",
+  "httpStatus": 200,
+  "bytes": 68177684,
+  "sha256": "f4c2a3628e95aa1da0eec1cd1df19b1606f2f7c4a21e07c2f1b0b597ed5e6181",
+  "sourcePinCount": 50,
+  "sourcePinsBeforeAndAfterMatched": true,
+  "markers": {
+    "verifiedCompletedPair": true,
+    "verifiedBlockedPair": true,
+    "localLogoutControlFailure": true
+  },
+  "sourceSaved": false,
+  "exactHermesExecutedSourceBindingEstablished": false
+}

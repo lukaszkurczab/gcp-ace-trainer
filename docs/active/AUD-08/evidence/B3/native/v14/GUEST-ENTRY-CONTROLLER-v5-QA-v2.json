@@ -1,0 +1,23 @@
+{
+  "task": "AUD-08-B3",
+  "scope": "private controller source-only corrective re-QA",
+  "verdict": "PASS WITH ISSUE",
+  "node": "22.22.3",
+  "synthetic": {
+    "pass": 18,
+    "fail": 0
+  },
+  "frozenArtifactHashesMatched": 5,
+  "priorBugsCorrected": [
+    "post-key validation failures enter identity-based cleanup",
+    "late pair mutation prevents candidate publication"
+  ],
+  "remainingIssue": "Accepted baseline aggregate is checked after post-clone analysis; move before post analysis and prove zero post calls on mismatch.",
+  "limitations": [
+    "Metadata collision preservation reviewed in source; no dedicated collision regression.",
+    "No runtime execution or runtime inputs read."
+  ],
+  "runtimeQaGate": "pending-fresh-independent-qa",
+  "runtimeAnchorsPending": true,
+  "preservationAccepted": false
+}

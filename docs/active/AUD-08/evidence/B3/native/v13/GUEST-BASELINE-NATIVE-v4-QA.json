@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "scope": "pre_transition_baseline_artifact",
+  "recordCount": 7,
+  "markerCount": 1,
+  "totalMatchesKeyNameAudit": true,
+  "privateResultContractValid": true,
+  "clonePrivateReadonlyContractValid": true,
+  "cloneMatchesPreservedV3Pair": true,
+  "keyFilesAbsent": true,
+  "controlAbsent": true,
+  "metadataEmpty": true,
+  "controllerAndParserPinsMatch": true,
+  "consumerSourceFilesMatched": 46,
+  "producerSourceFilesMatched": 28,
+  "reviewerRepeatedNativeAction": false,
+  "reviewerReadPlaintextValues": false,
+  "postTransitionPreservationProven": false
+}

@@ -1,0 +1,22 @@
+{
+  "task": "AUD-08-B3",
+  "status": "FAIL",
+  "scope": "single fresh diagnostic guest comparison",
+  "independentPreparationQA": "PASS",
+  "syntheticChecks": 40,
+  "freshCapture": true,
+  "canonicalSlotSelected": true,
+  "prePostHeadsMatched": true,
+  "appKilledBeforeJS": true,
+  "domainMatches": false,
+  "markerMatches": false,
+  "currentRecordCount": 7,
+  "baselineRecordCount": 7,
+  "currentMarkerCount": 1,
+  "baselineMarkerCount": 1,
+  "keyAndControlRemoved": true,
+  "temporaryMetadataRemoved": true,
+  "digestAccepted": false,
+  "actualChangedRecordsIdentified": false,
+  "previousAttemptsAndClonesPreserved": true
+}

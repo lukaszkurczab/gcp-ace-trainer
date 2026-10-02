@@ -1,15 +1,35 @@
 {
   "task": "AUD-08-B3",
-  "producerHead": "e3a771b9c2a255be5aa1fdaa9cafca6b015e1704",
+  "producerHead": "15e49d04dcf510cb7081b356a7182343d9d170ab",
   "producerAccepted": false,
   "files": {
+    ".github/workflows/ci.yml": "24ba1d46b4a621b5c709194d18a497fe326e842066afc1760d24326b529ee109",
+    "config/firestore-ttl.json": "c037079809da107d356edc2148b3d8a2d753ac6a653394a3b8f5440495082354",
+    "docs/cloud-run-manual-deploy.md": "b9ba6d8cab44daa0b7ce842812b51e60d9d4f760992a8d2e6a3d9c8020fbbaba",
+    "docs/retention-runbook.md": "60c48b1ade4a49e5b13bc21de48310dade32d6b9e7da5188b52796420c5d2f2c",
+    "openapi/patternly-v1.json": "736e1c5340a79406ab19076816229793dc686ce4d351828f96b49376c3638a85",
+    "package.json": "523fa9caa9dc083d3fcf23c7f9a2a573194b892c86467e465e00171b28092575",
+    "scripts/check-firestore-ttl.mjs": "859e26e8b10954c792ba1f3c575088487523e72d782f55637e86555bb32fcd92",
+    "scripts/dev-smoke.ts": "24bad00d5f2a5a065fdf8d7c8aa5e33bd8ce8044512ed3540936a139ef79476d",
+    "scripts/localSmoke.ts": "a305090764778cd6bb81319c68133f3ef6e197b73f1bcace653c1ba3b7e9acb0",
+    "scripts/run-recovery-emulator-tests.mjs": "c6259b802c0cf19d02bf52b66dd6919861c2da6e16f830bc54785ae0b05f78fa",
     "src/api/app.ts": "1b86d3492741fe7b96fb6275da460ff523087b116552701dadde29e05aaae00a",
     "src/api/openapi.ts": "155fd61aca0d2735b91aa23ba62ed4d7f91d5f55b4bfd06e318c6162c56484be",
-    "src/modules/account-lifecycle/contracts.ts": "32a74fd41547241500132bfa3d6be30e3ff1715e6381aca96c0ab50376fcb2e5",
-    "src/modules/account-lifecycle/store.ts": "b54ace86dbe1389abb43c3dbe2884b4670a76bea63d188f6979ccda7b04a7310",
-    "src/modules/account-lifecycle/recoveryOperationCipher.ts": "b6c542eea3891d26770a11494787a3587afd0b5f829a6e3292cef7cd8f659a5c",
-    "scripts/run-recovery-emulator-tests.mjs": "c6259b802c0cf19d02bf52b66dd6919861c2da6e16f830bc54785ae0b05f78fa",
     "src/config/environment.ts": "2080f7f21e11d0912139ec0bce9ae3952d311ce7ee84de96a867bd445dba56ea",
-    "tests/aud08Recovery.emulator.test.ts": "03547cc73e7927b830e71b82b81b80172d24db71477f769af2490c9e718e3ac3"
-  }
+    "src/infrastructure/firestore/paths.ts": "d31c6067ab8392e4e86520858efc207612897426db418e95c68577bbbdf2d114",
+    "src/infrastructure/firestore/stores.ts": "c8b3b4fda6b8ff71eb48776fb1c7268f786dcaefdd79a2003e38e4079b0e324b",
+    "src/modules/account-lifecycle/contracts.ts": "32a74fd41547241500132bfa3d6be30e3ff1715e6381aca96c0ab50376fcb2e5",
+    "src/modules/account-lifecycle/recoveryOperationCipher.ts": "b6c542eea3891d26770a11494787a3587afd0b5f829a6e3292cef7cd8f659a5c",
+    "src/modules/account-lifecycle/store.ts": "b54ace86dbe1389abb43c3dbe2884b4670a76bea63d188f6979ccda7b04a7310",
+    "tests/appObservability.test.ts": "4fa8a957e2975174bb007c07ca84a47f2ad49ef974e682b916d14a0e6587e22f",
+    "tests/aud08Recovery.emulator.test.ts": "03547cc73e7927b830e71b82b81b80172d24db71477f769af2490c9e718e3ac3",
+    "tests/deployment.test.ts": "e587814761112d7eb1feaeaa9051d1c7177d3222abdaad852dc020899ca6cf7e",
+    "tests/environment.test.ts": "45ef127ea95e506d90ff9072c0570f4603be460c1aaebcf15a919b3f226f09a2",
+    "tests/firestore.emulator.test.ts": "64fe567399e6b120bc711cb1a1b45f0d868fd7c302da386241c4e352aa4f07b6",
+    "tests/localSmoke.test.ts": "ca6319063dbbffe639ee9bdf3e4d6ac30db025622f583d225eb3da287511123e",
+    "tests/openapiContracts.test.ts": "65579591010993c3355091783dac045971d4ef0d9558d1968fa99ea7405c9cd0",
+    "tests/recoveryOperationCipher.test.ts": "a4fe22473f9a325492f9d93e99b62fcef7ba1dfc2874c61865997bf6b5317fc9",
+    "tests/support.ts": "9f45ecc85df3e4bf068f9053e11d0ab91ad6f3531c8acb7113dc0097cb7f124c"
+  },
+  "appHeadAtImplementationStart": "8d12b0ccabf7b2c28659c78c10a7915abafb2672"
 }

@@ -127,6 +127,10 @@
     "providerRegistrationRequired": {
       "title": "Controlla i documenti dell’account",
       "body": "Completa o annulla la creazione dell’account prima di aprirne i dati."
+    },
+    "recoveryPending": {
+      "title": "Completa il recupero dell’account",
+      "body": "Un passaggio di recupero salvato richiede la tua attenzione prima che possiamo aprire i tuoi dati."
     }
   },
   "privacyRequests": {

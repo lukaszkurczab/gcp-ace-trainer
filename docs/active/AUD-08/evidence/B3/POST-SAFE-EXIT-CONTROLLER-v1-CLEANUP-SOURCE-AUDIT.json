@@ -1,0 +1,22 @@
+{
+  "task": "AUD-08-B3",
+  "status": "FAIL",
+  "reviewedControllerSourceSha256": "bc100cb0515574bdbd4c2704e4f3cb93e273bb42fb7e564f7b9e176879ed6ac2",
+  "reviewedPreAnchorPinsSha256": "fda2ebc17dd95260ad5ee4ef736823d09d002dae86ee27796dfd041b2324d86d",
+  "confirmedDefects": [
+    "File unlink from immutable0500 clone directory without restoring owner write permission",
+    "copyPair registers owned directory after mkdir/chmod/inode capture leaving failure gap",
+    "Final nested-directory absence checks require intentionally removed parent directory token"
+  ],
+  "previousTestsScopeLimit": "13 fake lifecycle/helper tests did not cover integrated nested cleanup or real unlink permission semantics",
+  "runtimeAccessPerformedByReviewer": false,
+  "correctionScores": {
+    "objectiveFit": 0.96,
+    "simplicity": 0.87,
+    "risk": 0.86,
+    "maintainability": 0.84,
+    "minimum": 0.84
+  },
+  "repairOwner": "password_brief",
+  "runtimeRetryPerformed": false
+}

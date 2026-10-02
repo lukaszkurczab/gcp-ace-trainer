@@ -1,0 +1,162 @@
+
+> patternly-backend@0.1.0 test:recovery:emulator
+> node scripts/run-recovery-emulator-tests.mjs
+
+Recovery gate: backend=15e49d04dcf510cb7081b356a7182343d9d170ab mobile=8d12b0ccabf7b2c28659c78c10a7915abafb2672
+Isolated emulator gate: demo-patternly-aud08-recovery Auth19119/Firestore18119
+i  emulators: Starting emulators: auth, firestore
+i  emulators: Detected demo project ID "demo-patternly-aud08-recovery", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator was started in standard edition.
+✔  firestore: Firestore Emulator UI websocket is running on 9151.
+i  Running script: node --import tsx --test --test-concurrency=1 tests/aud08Recovery.emulator.test.ts
+TAP version 13
+# Subtest: AUD-08 B2 recovery store isolated emulator tests
+    # Subtest: durable request rate bucket fails closed on a corrupt counter
+    ok 1 - durable request rate bucket fails closed on a corrupt counter
+      ---
+      duration_ms: 766.548125
+      type: 'test'
+      ...
+    # Subtest: missing recovery runtime fails before reservation writes
+    ok 2 - missing recovery runtime fails before reservation writes
+      ---
+      duration_ms: 59.664833
+      type: 'test'
+      ...
+    # Subtest: recovery result is persisted, replayed identically, and accepted by the pinned Firebase SDK
+    ok 3 - recovery result is persisted, replayed identically, and accepted by the pinned Firebase SDK
+      ---
+      duration_ms: 293.222833
+      type: 'test'
+      ...
+    # Subtest: provider failure resumes the same reserved generation and wrong proof cannot take over an operation
+    ok 4 - provider failure resumes the same reserved generation and wrong proof cannot take over an operation
+      ---
+      duration_ms: 112.956709
+      type: 'test'
+      ...
+    # Subtest: same-operation concurrent minters return only the persisted fenced winner
+    ok 5 - same-operation concurrent minters return only the persisted fenced winner
+      ---
+      duration_ms: 100.875833
+      type: 'test'
+      ...
+    # Subtest: expired result resumes the same generation and a different valid last code supersedes only after expiry
+    ok 6 - expired result resumes the same generation and a different valid last code supersedes only after expiry
+      ---
+      duration_ms: 178.700417
+      type: 'test'
+      ...
+    # Subtest: expired rotating provider failure permits only a fenced new-code takeover
+    ok 7 - expired rotating provider failure permits only a fenced new-code takeover
+      ---
+      duration_ms: 128.888333
+      type: 'test'
+      ...
+    # Subtest: ACK binds exact user and generation, is idempotent after a lost response, and corrupt AEAD never changes stored state
+    ok 8 - ACK binds exact user and generation, is idempotent after a lost response, and corrupt AEAD never changes stored state
+      ---
+      duration_ms: 211.380084
+      type: 'test'
+      ...
+    # Subtest: reissue retry returns the same encrypted code set and ACK never returns plaintext
+    ok 9 - reissue retry returns the same encrypted code set and ACK never returns plaintext
+      ---
+      duration_ms: 111.265791
+      type: 'test'
+      ...
+    # Subtest: live recovery ownership blocks reissue until the current generation is ACKed
+    ok 10 - live recovery ownership blocks reissue until the current generation is ACKed
+      ---
+      duration_ms: 115.839708
+      type: 'test'
+      ...
+    # Subtest: issue status expires at the original reauthentication deadline without replacing valid recovery codes
+    ok 11 - issue status expires at the original reauthentication deadline without replacing valid recovery codes
+      ---
+      duration_ms: 69.833916
+      type: 'test'
+      ...
+    # Subtest: replacing an orphaned unconfirmed reissue supersedes only the matched generation and starts 30-day history
+    ok 12 - replacing an orphaned unconfirmed reissue supersedes only the matched generation and starts 30-day history
+      ---
+      duration_ms: 89.701584
+      type: 'test'
+      ...
+    # Subtest: ambiguous recovery-code generations block replacement without guessing a terminal timestamp
+    ok 13 - ambiguous recovery-code generations block replacement without guessing a terminal timestamp
+      ---
+      duration_ms: 66.303875
+      type: 'test'
+      ...
+    # Subtest: deletion scrubs an encrypted recovery result without a configured recovery key
+    ok 14 - deletion scrubs an encrypted recovery result without a configured recovery key
+      ---
+      duration_ms: 212.481166
+      type: 'test'
+      ...
+    # Subtest: session revoke supersedes expired recovery result without cipher configuration
+    ok 15 - session revoke supersedes expired recovery result without cipher configuration
+      ---
+      duration_ms: 56.197125
+      type: 'test'
+      ...
+    # Subtest: current-session deletion fences a late remint before it can publish a recovery result
+    not ok 16 - current-session deletion fences a late remint before it can publish a recovery result
+      ---
+      duration_ms: 255.358417
+      type: 'test'
+      location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/aud08Recovery.emulator.test.ts:1:35224'
+      failureType: 'testCodeFailure'
+      error: |-
+        Expected values to be strictly equal:
+        + actual - expected
+        
+        + undefined
+        - 'superseded'
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: 'superseded'
+      operator: 'strictEqual'
+      stack: |-
+        assertTerminalRetention (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/aud08Recovery.emulator.test.ts:54:10)
+        TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/aud08Recovery.emulator.test.ts:671:7)
+        process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)
+      ...
+    # Subtest: current-session ACK fences an in-flight remint and leaves no late ciphertext
+    ok 17 - current-session ACK fences an in-flight remint and leaves no late ciphertext
+      ---
+      duration_ms: 109.77725
+      type: 'test'
+      ...
+    1..17
+not ok 1 - AUD-08 B2 recovery store isolated emulator tests
+  ---
+  duration_ms: 2940.307667
+  type: 'suite'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/aud08Recovery.emulator.test.ts:1:7701'
+  failureType: 'subtestsFailed'
+  error: '1 subtest failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..1
+# tests 17
+# suites 1
+# pass 16
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4422.299792
+⚠  Script exited unsuccessfully (code 1)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+i  auth: Stopping Authentication Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+Error: Script "node --import tsx --test --test-concurrency=1 tests/aud08Recovery.emulator.test.ts" exited with code 1

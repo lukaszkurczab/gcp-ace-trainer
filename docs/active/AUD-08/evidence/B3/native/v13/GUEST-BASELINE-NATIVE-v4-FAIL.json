@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "sourceSha256": "23e4e894f98bb700e99efe794305523ca1e573d6506bd9977df3bab1cfcdf705",
+  "freshHeadValuesMatchedPrior": true,
+  "processKilledBeforeJavaScript": true,
+  "keyAndControlRemoved": true,
+  "temporaryMetadataRemoved": true,
+  "digestAccepted": false,
+  "cause": "controller_clone_root_outside_pinned_wrapper_allowed_fixture_root",
+  "encryptedFailedClonePreserved": true,
+  "productionSourceChanged": false
+}

@@ -1,0 +1,13 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS_WITH_ISSUES",
+  "scope": "independent_corrected_source_and_fake_lifecycle_qa",
+  "sourcePinsSha256": "19c98b5745efb933e765b27492263de2209ae49dae5261a10dd8b22ca3f595b4",
+  "policyAssertionsPassed": 37,
+  "fakeLifecycleTestsPassed": 8,
+  "sourceDependenciesMatched": true,
+  "issue": "Created fixture directory can be untracked if chmod/token capture fails before ownership registration; no publication on that path, but absence claim incomplete.",
+  "verificationLimit": "Filesystem directory-registration and real foreign replacement cleanup not covered by eight injected lifecycle tests.",
+  "actualRuntimeExecuted": false,
+  "runtimeApproval": false
+}

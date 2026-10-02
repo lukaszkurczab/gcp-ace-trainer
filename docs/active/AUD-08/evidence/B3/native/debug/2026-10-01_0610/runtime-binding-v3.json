@@ -1,0 +1,25 @@
+{
+  "capturedAt": "2026-10-01T05:54:11+00:00",
+  "metroRuntimeStatus": "packager-status:running",
+  "attachedRuntime": {
+    "deviceTargetTitle": "com.lkurczab.patternly (iPhone 17)",
+    "appId": "com.lkurczab.patternly",
+    "description": "React Native Bridgeless [C++ connection]",
+    "runtimeVersion": "0.1.0",
+    "launchAssetUrlWithoutQuery": "http://[::1]:8081/node_modules/expo/AppEntry.bundle"
+  },
+  "executedLaunchAssetFetch": {
+    "httpStatus": 200,
+    "bytes": 68158360,
+    "sha256": "8cd648fd2edee560baee171a1acb32ed0cad77e8d2f9661fa80ad4309154adce",
+    "matchesPreviouslyPinnedV3MetroBundle": true
+  },
+  "consumerSourcePins": {
+    "version": "v3",
+    "appHead": "8d12b0ccabf7b2c28659c78c10a7915abafb2672",
+    "filesChecked": 46,
+    "mismatchCount": 0,
+    "mismatchedFiles": []
+  },
+  "v3BundleExpectedSha256": "8cd648fd2edee560baee171a1acb32ed0cad77e8d2f9661fa80ad4309154adce"
+}

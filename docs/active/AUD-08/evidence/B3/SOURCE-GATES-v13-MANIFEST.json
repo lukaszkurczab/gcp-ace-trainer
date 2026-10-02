@@ -1,0 +1,28 @@
+{
+  "task": "AUD-08-B3",
+  "checkpoint": "v13-status-specific-saved-ack-presentation",
+  "consumerPins": "CONSUMER-SOURCE-PINS-v13.json",
+  "producerPins": "PRODUCER-SOURCE-PINS-v12c.json",
+  "consumerFilesVerified": 46,
+  "producerFilesVerified": 28,
+  "logs": {
+    "STATIC-SOURCE-v13.log": {
+      "sha256": "1643f8ecf964da5cfa8552cc8c843b116d2f7544627c9184f810b678ae9f1fd7",
+      "tests": 1577,
+      "pass": 1573,
+      "fail": 0,
+      "skipped": 4
+    },
+    "CONSUMER-INTEGRATION-v13.log": {
+      "sha256": "85d5c63e27aeef61620f76ca7965ab9dc6dc7c2e839443fbfdc9f8a41ac64f5c",
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "contentBoundary": "PASS",
+  "runtimePrivacyBoundary": "PASS",
+  "nativeAcceptance": false,
+  "executedNativeSourceBinding": "INCONCLUSIVE"
+}

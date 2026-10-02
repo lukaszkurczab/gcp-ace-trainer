@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "knownCount": 7,
+  "unknownCount": 1,
+  "rawNameBytes": 288,
+  "cloneStable": true,
+  "sourcePairCount": 2,
+  "outputNamesPrivate": true,
+  "keyAndControlRemoved": true,
+  "metadataEmpty": true,
+  "unknownNamesArchivedPrivately": true,
+  "status": "PASS",
+  "scope": "selected_guest_key_names_only",
+  "digestAccepted": false,
+  "guestBaselineAccepted": false,
+  "nativeProcessKilledBeforeJavaScript": true,
+  "unknownKeyResolvedToRepositoryOwnedPremiumCache": true,
+  "unknownNameAndValuesPublished": false
+}

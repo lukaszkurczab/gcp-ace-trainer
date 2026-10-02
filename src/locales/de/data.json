@@ -127,6 +127,10 @@
     "providerRegistrationRequired": {
       "title": "Kontodokumente prüfen",
       "body": "Schließe die Kontoerstellung ab oder brich sie ab, bevor du Kontodaten öffnest."
+    },
+    "recoveryPending": {
+      "title": "Kontowiederherstellung abschließen",
+      "body": "Ein gespeicherter Schritt zur Kontowiederherstellung erfordert deine Aufmerksamkeit, bevor wir deine Daten öffnen."
     }
   },
   "privacyRequests": {

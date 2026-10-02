@@ -1,0 +1,11 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS_WITH_LIMITS",
+  "sourceAndDependencyPinsMatchPreRuntime": true,
+  "onlyGateFieldsChanged": true,
+  "publicActualMetadataCompatible": true,
+  "controllerSourcePinsUnchanged": true,
+  "actualCloneContentsIndependentlyRead": false,
+  "privateMetadataVerificationIndependentlyReplayed": false,
+  "preservationAccepted": false
+}

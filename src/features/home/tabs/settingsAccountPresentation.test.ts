@@ -112,6 +112,15 @@ test("Settings blocks invalid actions while account lifecycle work is busy and k
   assert.equal(guestAccessBlocked.canOpenAccount, true);
   assert.equal(guestAccessBlocked.canSignOut, false);
 
+  const recoveryPending = getSettingsAccountPresentation({ kind: "recoveryPending" });
+  assert.deepEqual(recoveryPending, {
+    accountDataStatus: null,
+    canOpenAccount: true,
+    canSignOut: false,
+    email: null,
+    status: "unavailable",
+  });
+
   const unavailable = getSettingsAccountPresentation({ kind: "unavailable", reason: "public_environment_invalid" });
   assert.equal(unavailable.status, "unavailable");
   assert.equal(unavailable.canOpenAccount, false);

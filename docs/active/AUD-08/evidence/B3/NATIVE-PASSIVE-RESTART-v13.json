@@ -1,0 +1,28 @@
+{
+  "task": "AUD-08-B3",
+  "checkpoint": "v13",
+  "oneOrdinaryRestartPerformed": true,
+  "privateHierarchySha256": "b591d640a9ae427dbfdfec03321be6d88cf7ab84f9ead8849ad993ea5e3d6a98",
+  "knownCopyVisible": {
+    "recoveryOperationDeliveryUnconfirmed": true,
+    "recoveryOperationSavedAckPending": false,
+    "recoveryOperationRetryAck": false,
+    "recoveryOperationRetry": true,
+    "recoveryOperationReplaceTitle": true
+  },
+  "uiActionsPerformed": false,
+  "executedSourceBindingEstablished": false,
+  "nativeAcceptance": false,
+  "canonicalRequestCountsAfterRestart": {
+    "GET": 7
+  },
+  "postCountAfterRestart": 0,
+  "screenshot": {
+    "path": "native/v13/recovery-terminal-saved-intent.png",
+    "sha256": "e356348e2399dbcb8b2c84189a50adcf3d6547cb63dd91f93f23434343d9b370",
+    "rootVisualReview": "PASS",
+    "scope": "standard English dark theme only",
+    "codesOrAccountIdentifiersVisible": false,
+    "voiceOverTestPerformed": false
+  }
+}

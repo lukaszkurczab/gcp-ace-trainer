@@ -1,0 +1,11 @@
+{
+  "task": "AUD-08-B3",
+  "status": "source_prepared_independent_qa_pending",
+  "sourcePinsSha256": "ee7081ea94d708548d35b1e8095f33087de30d48132db5df2ac83b0623d9187a",
+  "authorSyntheticTestsPassed": 43,
+  "supplementalSyntheticTestsPassed": 3,
+  "minimumDesignScore": 0.86,
+  "actualExecutionPerformed": false,
+  "nativeAcceptance": false,
+  "wholeTaskAccepted": false
+}

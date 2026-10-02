@@ -1,0 +1,21 @@
+{
+  "task": "AUD-08-B3",
+  "verdict": "PASS WITH ISSUES",
+  "scope": "Independent source review and one exact Node22 canonical memory test run",
+  "pass": 1,
+  "expectedRed": 2,
+  "failureProven": "Post-close clearPremiumCache cannot access active storage and leaves scoped cache persisted.",
+  "realModules": [
+    "Profile router",
+    "Premium repository",
+    "Guest installation repository",
+    "Logout control journal",
+    "Local signout coordinator"
+  ],
+  "limitations": [
+    "Provider close callback mirrored from source; no mounted provider or auth-mutation/observer scheduling."
+  ],
+  "nextCorrectionHypothesis": "After durable logout and lock, clear only signing-out account-bound Premium entry under captured profile identity, before closure; preserve guest learning/installation and foreign profile/cache; explicit cleanup failure.",
+  "productionChanged": false,
+  "nativeOrRuntimeDataUsed": false
+}

@@ -1,0 +1,13 @@
+appId: com.lkurczab.patternly
+---
+- assertVisible: Home
+- tapOn: Settings
+- assertVisible:
+    id: settings-screen
+- tapOn:
+    id: settings-account-entry
+- assertVisible:
+    id: account-email
+- takeScreenshot:
+    path: 020-account-entry
+    label: Account Entry after tapping Guest Settings account button

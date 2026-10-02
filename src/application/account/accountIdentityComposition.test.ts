@@ -171,9 +171,12 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.match(screen, /const entryChoice = accountData\.guestAdoptionChoice/u);
   assert.match(screen, /runCommand\("choice", \(\) => account\.setGuestAdoptionChoice\(choice\), setCommandFeedback\)/u);
   assert.doesNotMatch(screen, /useState<"transfer" \| "discard">\("transfer"\)/u);
-  assert.match(screen, /testID="account-copy-recovery-codes"/);
   assert.match(screen, /testID="account-entry-continue"/);
-  assert.match(screen, /testID="account-recovery-codes-saved-checkbox"/);
+  const adoption = screen.slice(screen.indexOf("function AccountAdoptionScreen"), screen.indexOf("function RecoveryPendingScreen"));
+  assert.match(adoption, /runCommand\("signOut", \(\) => account\.signOut\(\), setCommandFeedback\)/u);
+  assert.match(adoption, /<Button\s+disabled=\{busyAction !== null \|\| recoveryOperation\.blocksProfilePreparation\}\s+loading=\{busyAction === "signOut"\}\s+onPress=\{signOut\}\s+testID="account-adoption-sign-out"/u);
+  assert.match(screen, /<RecoveryOperationPanel[\s\S]*?snapshot=\{recoveryOperation\}/u);
+  assert.match(screen, /onConfirmSaved=\{\(\) => runCommand\("recovery", \(\) => account\.confirmRecoveryCodesSaved\(\)/u);
   assert.match(screen, /account\.discardGuestData\(\)/);
   assert.match(screen, /Alert\.alert\(text\.accountDiscardTitle, text\.accountDiscardDescription/);
   assert.match(screen, /style: "destructive", onPress: executeEntry/);
@@ -185,10 +188,13 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.doesNotMatch(screen, /testID="account-authenticated"/);
   assert.doesNotMatch(screen, /testID="account-adoption-confirm"/);
   assert.doesNotMatch(screen, /text\.(?:preserve|upload|restore|deduplicated|decisions|keepGuest\b|keepAccount\b|confirmAdoption\b)/);
-  assert.match(provider, /issueRecoveryCodes: \(credentials: FirebaseAuthCredentials\)/);
+  assert.match(provider, /const \[recoveryOperation, setRecoveryOperation\] = useState<RecoveryOperationSnapshot>/u);
+  assert.match(provider, /recoveryCoordinator\.subscribe\(\(snapshot\) => \{[\s\S]*?setRecoveryOperation\(recoveryIssuePublicationGateRef\.current\.publish\(snapshot\)\)/u);
+  assert.match(provider, /recoveryOperation,\s*refreshPremiumEntitlement/u);
+  assert.match(provider, /confirmRecoveryCodesSaved: \(\) => runSensitiveWithAuth[\s\S]*coordinator\.confirmRecoveryCodesSaved\(\)/u);
   assert.match(provider, /discardGuestData: \(\) => runWithAuth/);
   assert.match(provider, /setGuestAdoptionChoice: \(choice\) => runWithAuth[\s\S]*?await saveGuestAdoptionChoice\(choice\)[\s\S]*?setState\(\{ \.\.\.state, accountData: \{ \.\.\.state\.accountData, guestAdoptionChoice: choice \} \}\)/u);
-  assert.match(provider, /mutation: \(\) => api\.issueRecoveryCodes\(\)/);
+  assert.match(provider, /coordinator\.startIssue\(\{ firebaseUid: user\.uid, authorizationGeneration \}\)/u);
 });
 
 test("account recovery owns one status message, a truthful retry, and a sign-out exit", () => {
@@ -253,6 +259,34 @@ test("account recovery owns one status message, a truthful retry, and a sign-out
   assert.match(screen, /testID="account-binding-sign-in-notice"/);
 });
 
+test("current-account ISSUE defer requires an explicit sign-in, canonical session check, and persistent identity fence", () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const entry = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
+  const completionStart = provider.indexOf("const completeExplicitRecoveryAccountTransition");
+  const completionEnd = provider.indexOf("// Firebase publishes a new credential", completionStart);
+  const completion = provider.slice(completionStart, completionEnd);
+  const transitionStart = provider.indexOf("continueWithCurrentAccount: () => runSensitiveWithAuth");
+  const transitionEnd = provider.indexOf("discardGuestData: () => runWithAuth", transitionStart);
+  const transition = provider.slice(transitionStart, transitionEnd);
+
+  assert.ok(completionStart >= 0 && completionEnd > completionStart);
+  assert.ok(transitionStart >= 0 && transitionEnd > transitionStart);
+  assert.match(completion, /getMeWithExchangedSession/u);
+  assert.match(completion, /getAuthorizationGeneration/u);
+  assert.match(completion, /coordinator\.deferIssueToIdentity/u);
+  assert.match(completion, /deferred\.blocksProfilePreparation/u);
+  assert.ok(completion.indexOf("getMeWithExchangedSession") < completion.indexOf("coordinator.deferIssueToIdentity"));
+  assert.match(transition, /explicitRecoveryAccountTransitionRef\.current = Object\.freeze/u);
+  assert.match(transition, /await auth\.signOut\(\)/u);
+  assert.match(transition, /setState\(\{ kind: "signedOut" \}\)/u);
+  assert.doesNotMatch(transition, /continueAsGuest|discardGuestData|confirmAdoption/u);
+  assert.match(provider, /signIn: \(email, password\)[\s\S]*?completeExplicitRecoveryAccountTransition\(auth, api, user\)[\s\S]*?finalizeExplicitAuthentication\(auth, api, user\)/u);
+  assert.match(provider, /pending\.kind === "issue" && pending\.deferredFor && !pending\.blocksProfilePreparation[\s\S]*?coordinator\.reconcilePending\(user \? \{ firebaseUid: user\.uid, authorizationGeneration \} : null\)/u);
+  assert.match(entry, /onTransitionStarted=\{\(\) => \{ setRecoveryAccountTransitionRequired\(true\); setMode\("signIn"\); \}\}/u);
+  assert.match(entry, /account\.state\.kind === "guestAccessBlocked" \|\| recoveryAccountTransitionRequired \? undefined/u);
+  assert.match(entry, /!recoveryAccountTransitionRequired \? <View style=\{\[styles\.authLinks/u);
+});
+
 test("account recovery back action follows live navigator history", () => {
   const screen = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
 
@@ -294,15 +328,19 @@ test("local sign-out persists its block before closing scope and never invokes r
   assert.match(signOut, /getAccountSignOutState\(\)/);
   assert.match(signOut, /scopedSignOut\?\.accountId === current\.backendUser\.id[\s\S]*?scopedSignOut\.operationId[\s\S]*?beginAccountSignOut\(current\.backendUser\.id\)/);
   assert.match(signOut, /logoutControl\.blockAndQueueRevoke\(user\.uid, operationId!\)/);
-  assert.match(signOut, /performLocalAccountSignOut\([\s\S]*?publishLockedState:[\s\S]*?closeProfileStorage: closeSignOutProfileStorage[\s\S]*?signOutFirebase:[\s\S]*?auth\.signOut\(\)/);
+  assert.match(signOut, /performLocalAccountSignOut\([\s\S]*?publishLockedState:[\s\S]*?clearOwnedPremiumCache:[\s\S]*?closeProfileStorage: closeSignOutProfileStorage[\s\S]*?signOutFirebase:[\s\S]*?auth\.signOut\(\)/);
   assert.match(signOut, /retainAuthOnControlFailure: durableOperation/);
   const setupFailure = signOut.slice(signOut.indexOf("finishLocalSignOutSetupFailure({"), signOut.indexOf("const outcome = await performLocalAccountSignOut"));
   assert.ok(setupFailure.includes("isCurrent: canContinue"));
   assert.ok(setupFailure.includes("persistFallbackControlPair: async () =>"));
   assert.ok(setupFailure.includes("logoutControl.blockAndQueueRevoke(user.uid, operationId)"));
+  assert.ok(setupFailure.includes("hasVerifiedLocalLogoutReceipt(snapshot, user.uid, operationId)"));
+  assert.ok(setupFailure.includes("clearOwnedPremiumCache: () => clearSigningOutAccountCache(operationId)"));
   assert.ok(setupFailure.includes("closeProfileStorage: closeSignOutProfileStorage"));
   assert.ok(setupFailure.includes("signOutFirebase: () => auth.signOut()"));
-  assert.ok(signOut.includes('recoveryOutcome === "stale" ? "revokedSession" : "localCleanupFailure"'));
+  assert.ok(signOut.includes('recoveryOutcome === "stale"'));
+  assert.ok(signOut.includes('recoveryOutcome === "signOutPending"'));
+  assert.doesNotMatch(signOut, /clearPremiumCache\(\)/);
   assert.match(signOut, /return \{ kind: "failure", failure: "localCleanupFailure" \}/);
   assert.doesNotMatch(signOut, /prepareAccountSignOut|revokeSessions|synchronizeBoundAccount|clearAccountOwnedLocalData/);
   assert.doesNotMatch(signOut, /revokeGuestAccess/);
@@ -513,8 +551,6 @@ test("registration keeps consent presentation separate from the boolean domain c
   const registrationStart = screen.indexOf("function CredentialsForm");
   const termsStart = screen.indexOf("function TermsAcceptance");
   const termsEnd = screen.indexOf("function FormField", termsStart);
-  const recoveryCheckboxStart = screen.indexOf('testID="account-recovery-codes-saved-checkbox"');
-  const recoveryCheckboxEnd = screen.indexOf("</Pressable>", recoveryCheckboxStart);
   const passwordStart = screen.indexOf("function AuthPasswordInput");
   const providerReviewStart = screen.indexOf("function ProviderRegistrationScreen");
   const providerReviewEnd = screen.indexOf("function DocumentConfirmation", providerReviewStart);
@@ -529,7 +565,6 @@ test("registration keeps consent presentation separate from the boolean domain c
 
   const registration = screen.slice(registrationStart, termsStart);
   const termsAcceptance = screen.slice(termsStart, termsEnd);
-  const recoveryCheckbox = screen.slice(recoveryCheckboxStart, recoveryCheckboxEnd);
   const passwordInput = screen.slice(passwordStart);
   const providerReview = screen.slice(providerReviewStart, providerReviewEnd);
   assert.equal((registration.match(/enableFocusHighlight/g) ?? []).length, 2);
@@ -559,8 +594,6 @@ test("registration keeps consent presentation separate from the boolean domain c
   assert.doesNotMatch(termsAcceptance, /numberOfLines|maxHeight/u);
   assert.match(screen, /termsLinks:\s*\{\s*flex:\s*1,\s*flexDirection:\s*"row",\s*flexWrap:\s*"wrap",\s*minWidth:\s*0\s*\}/u);
   assert.match(screen, /termsCheckboxRow:\s*\{[^}]*flexDirection:\s*"row"[^}]*minWidth:\s*0/u);
-  assert.match(recoveryCheckbox, /termsCheckboxChecked/u);
-  assert.match(recoveryCheckbox, /termsCheckboxIcon/u);
   assert.equal(en.termsRequired, "Accept the Terms of Service and acknowledge the Privacy Policy to create an account.");
   assert.equal(pl.termsRequired, "Aby utworzyć konto, zaakceptuj Warunki korzystania i potwierdź zapoznanie się z Polityką prywatności.");
   assert.equal(`${en.acceptTermsPrefix}${en.termsOfService}${en.privacyAcknowledgementPrefix}${en.privacyPolicy}.`, "I agree to the Terms of Service and acknowledge the Privacy Policy.");
@@ -600,13 +633,32 @@ test("registration keeps consent presentation separate from the boolean domain c
 test("both recovery-code surfaces warn before copying through the guarded clipboard", () => {
   const entry = readFileSync("src/features/account/AccountEntryScreen.tsx", "utf8");
   const security = readFileSync("src/features/account/AccountSecurityScreen.tsx", "utf8");
+  const panel = readFileSync("src/features/account/RecoveryOperationPanel.tsx", "utf8");
+  const warning = panel.indexOf('t("recoveryCodesClipboardWarning")');
+  const guardedCopy = panel.indexOf("recoveryCodeClipboard.copy(codes)");
+
+  assert.ok(warning >= 0 && guardedCopy > warning);
+  assert.match(panel, /const \[codesVisible, setCodesVisible\] = useState\(\(\) => AppState\.currentState === "active"\)/u);
+  assert.match(panel, /AppState\.addEventListener\("change", \(nextState\) => \{[\s\S]*?appStateRef\.current = nextState;[\s\S]*?setAppState\(nextState\);[\s\S]*?if \(nextState !== "active"\) setCodesVisible\(false\)/u);
+  assert.match(panel, /operationId !== null && lastIssueOperationIdRef\.current !== operationId[\s\S]*?lastIssueOperationIdRef\.current = operationId;[\s\S]*?setCodesVisible\(appStateRef\.current === "active"\)/u);
+  assert.match(panel, /snapshot\.codes && appState === "active" && !codesVisible \? <View[^>]*testID="recovery-operation-codes-hidden"/u);
+  assert.match(panel, /onPress=\{\(\) => setCodesVisible\(true\)\}[^>]*testID="recovery-operation-show-codes"/u);
+  assert.match(panel, /snapshot\.codes && appState === "active" && codesVisible \? <View testID="recovery-operation-codes"/u);
+  assert.match(panel, /testID="recovery-operation-copy-codes"/u);
+  assert.match(panel, /accessibilityRole="checkbox"[\s\S]*?accessibilityState=\{\{ checked: snapshot\.savedIntent, disabled: busy \|\| snapshot\.savedIntent \}\}[\s\S]*?testID="recovery-operation-saved-ack"/u);
+  assert.doesNotMatch(panel, /Clipboard\.setStringAsync\(codes\.join/u);
   for (const screen of [entry, security]) {
-    const warning = screen.indexOf("recoveryCodesClipboardWarning");
-    const guardedCopy = screen.indexOf("recoveryCodeClipboard.copy(codes)");
-    assert.ok(warning >= 0 && guardedCopy > warning);
-    assert.doesNotMatch(screen, /Clipboard\.setStringAsync\(codes\.join/);
+    assert.match(screen, /import \{ RecoveryOperationPanel \} from "\.\/RecoveryOperationPanel"/u);
+    assert.match(screen, /<RecoveryOperationPanel[\s\S]*?snapshot=\{recoveryOperation\}/u);
+    assert.match(screen, /onConfirmSaved=\{[\s\S]*?account\.confirmRecoveryCodesSaved\(\)/u);
+    assert.match(screen, /onRetry=\{[\s\S]*?account\.retryRecoveryOperation\(\)/u);
+    assert.match(screen, /onResume=\{[\s\S]*?account\.resumePendingRecovery\(\)/u);
+    assert.doesNotMatch(screen, /recoveryCodeClipboard|Clipboard\.setStringAsync/u);
   }
-  assert.match(entry, /AppState\.addEventListener\("change"[\s\S]*?state !== "active"[\s\S]*?setRecoveryCodes\(null\)/);
+  const appStateListenerStart = panel.indexOf('AppState.addEventListener("change"');
+  const appStateListenerEnd = panel.indexOf("return () => subscription.remove()", appStateListenerStart);
+  assert.ok(appStateListenerStart >= 0 && appStateListenerEnd > appStateListenerStart);
+  assert.doesNotMatch(panel.slice(appStateListenerStart, appStateListenerEnd), /setCodesVisible\(true\)/u);
 });
 
 test("unconfigured account entry never composes Google OAuth without typed provider configuration", () => {

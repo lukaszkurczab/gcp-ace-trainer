@@ -1,0 +1,14 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS_WITH_LIMITS",
+  "sourcePinsSha256": "36dc826889efd6496ab94dab628e31e898ae3865c4fe147fae02a7fc04909a20",
+  "sourceArtifactChecksPass": 4,
+  "dependencyAndManifestChecksPass": 126,
+  "publicActualMetadataCompatible": true,
+  "sixUnchangedEntriesScope": "Complete recognized canonical guest-domain set, with Premium specifically removed; includes canonical metadata/settings/account-state keys and is not classified exclusively as learning records",
+  "runtimePrivateAttestationsIndependentlyReplayed": false,
+  "strictMismatchRemains": true,
+  "preservationAccepted": false,
+  "writerProvenance": "unknown",
+  "fullB3Accepted": false
+}

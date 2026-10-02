@@ -1,0 +1,35 @@
+{
+  "task": "AUD-08-B3",
+  "verdict": "FAIL",
+  "scope": "First real immutable guest-domain baseline attempt",
+  "brief": {
+    "model": "gpt-6-luna",
+    "reasoningEffort": "high",
+    "minimum": 0.84,
+    "requiredCanonicalHeadQaPassed": true
+  },
+  "sameInstalledApp": true,
+  "mainPlusZeroVerified": true,
+  "initialAttachAttempt": "Wrong nonexistent PID; attach failed without target action; corrected to launch-returned PID.",
+  "calls": [
+    "Exact manifest and registry before key",
+    "Chosen active-slot key only",
+    "Exact manifest and registry after key"
+  ],
+  "headsUnchangedPreAndPostKey": true,
+  "keyPrivateFileWritten": true,
+  "keyValueInArgvOrStdout": false,
+  "postCallMainFrameUnchanged": true,
+  "processKilledBeforeMainBody": true,
+  "activeEncryptedPairOnlyCopied": true,
+  "cloneDirectory0500Files0400": true,
+  "cloneLivePairHashesMatchAfterFailure": true,
+  "error": "domain_key_unrecognized",
+  "digestAccepted": false,
+  "keyAndControlRemoved": true,
+  "temporaryMetadataEmpty": true,
+  "resetTransferDiscard": false,
+  "controllerScriptSha256": "e93aad20fb92e51db98524478e0b74e2dc60c43bc0c1114ad5536262e1906cc8",
+  "remaining": "Diagnose unknown key in private clone without deleting or ignoring it; guest preservation unproven.",
+  "nativeAcceptance": false
+}

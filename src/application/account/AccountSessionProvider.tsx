@@ -3,22 +3,25 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExportDto, type AccountRegistrationInputDto, type LegalRequestDto, type LegalRequestKindDto, type MeResponseDto, type PrivacyRequestListItemDto, type PrivacyRequestResponseDto, type PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domain/entitlements";
-import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
+import { clearPremiumCache, clearPremiumCacheForAccountInProfile, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
-import { ensureAccountSessionGeneration, getMeWithExchangedSession } from "./accountSessionExchange";
+import { ensureAccountSessionGeneration, ensureRecoveryIssueSignInSession, getMeWithExchangedSession } from "./accountSessionExchange";
+import { createRecoveryOperationCoordinator, type RecoveryOperationSnapshot } from "./recoveryOperationCoordinator";
+import { createRecoveryIssuePublicationGate, readRecoveryIssueCommandIdentity } from "./recoveryIssueCommandGuard";
+import { createSecureRecoveryOperationVault, type RecoveryOperationVault } from "../../infrastructure/security/recoveryOperationVault";
 import { createPendingSessionRevocationDrain, drainPendingSessionRevocations } from "./pendingSessionRevocation";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localSmokeAppCheck";
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
-import { createFirebaseAuthClient, firebaseAuthErrorCode, type AppleCredentialDependencies, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
+import { createFirebaseAuthClient, firebaseAuthErrorCode, FirebaseAuthClientError, type AppleCredentialDependencies, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
 import { confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, discardGuestDataAndLoadAccount, loadAccountDataSession, resetAccountLocalLearningHistory, retryAccountDataSync, retryLearningPlanRecovery, retryPendingAccountDataSync, retryPendingAccountDeletion, saveGuestAdoptionChoice, type AccountDataSession } from "./accountDataService";
 import { commitLearningStateReset } from "../learningMutations";
 import { activatePreparedProfile, closeActiveProfileStorage, continueAsGuestInNewProfile, getActiveStorageProfile, getActiveStorageProfileOrNull, inspectPreparedProfileState, notifyProfileStorageReady, prepareProfileStorage, selectAccountProfileAndRestart, selectPreparedAccountProfile, selectPreparedGuestProfile, validatePreparedGuestAccess } from "../../storage/repositories/profileStorageRepository";
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
 import { useProfileStoragePreparation } from "./profileStoragePreparationContext";
-import { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findPendingSessionRevocation, finishLocalSignOutSetupFailure, guardAuthenticatedScopeAgainstIncompleteSignOut, isPreparedGuestChoiceRequired, lockAndCloseProfileAfterAuthLoss, performLocalAccountSignOut, prepareAuthenticatedProfileScope, prepareGuestProfileScope, providerCancellationAuthObserverDecision, recoverAfterGuestPreparationFailure, shouldRejectPersistedAuthRestore, shouldShowGuestSelectionLoading } from "./profileStartupCoordination";
+import { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findPendingSessionRevocation, finishLocalSignOutSetupFailure, guardAuthenticatedScopeAgainstIncompleteSignOut, hasVerifiedLocalLogoutReceipt, isPreparedGuestChoiceRequired, lockAndCloseProfileAfterAuthLoss, performLocalAccountSignOut, prepareAuthenticatedProfileScope, prepareGuestProfileScope, providerCancellationAuthObserverDecision, recoverAfterGuestPreparationFailure, shouldRejectPersistedAuthRestore, shouldShowGuestSelectionLoading } from "./profileStartupCoordination";
 import { beginAccountSignOut, clearAccountSignOutState, getAccountSignOutState } from "../../storage/repositories/accountLifecycleRepository";
 import { getGuestInstallation, markGuestInstallationAdoptionPending } from "../../storage/repositories/guestInstallationRepository";
 import type { LocalLogoutControl, LocalLogoutControlSnapshot } from "../../infrastructure/storage/localLogoutControl";
@@ -26,7 +29,7 @@ import { createProviderFirstUseCoordinator } from "./providerFirstUseCoordinator
 import { resolveProviderRegistrationDocuments, type ProviderRegistrationDocumentsResult } from "../../legal/providerRegistrationDocuments";
 import type { TargetLocale } from "../../preferences/localeResolver";
 
-export { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findPendingSessionRevocation, finishLocalSignOutSetupFailure, guardAuthenticatedScopeAgainstIncompleteSignOut, isPreparedGuestChoiceRequired, lockAndCloseProfileAfterAuthLoss, performLocalAccountSignOut, prepareAuthenticatedProfileScope, prepareGuestProfileScope, recoverAfterGuestPreparationFailure, shouldRejectPersistedAuthRestore, shouldShowGuestSelectionLoading } from "./profileStartupCoordination";
+export { AccountSessionGenerationStaleError, findMatchingLocalLogoutBlock, findPendingSessionRevocation, finishLocalSignOutSetupFailure, guardAuthenticatedScopeAgainstIncompleteSignOut, hasVerifiedLocalLogoutReceipt, isPreparedGuestChoiceRequired, lockAndCloseProfileAfterAuthLoss, performLocalAccountSignOut, prepareAuthenticatedProfileScope, prepareGuestProfileScope, recoverAfterGuestPreparationFailure, shouldRejectPersistedAuthRestore, shouldShowGuestSelectionLoading } from "./profileStartupCoordination";
 
 async function reconcileMaterializedAccountReminders(): Promise<void> {
   const { reconcileDeviceReminder } = await import("../../preferences/reconcileDeviceReminder");
@@ -75,6 +78,7 @@ export type AccountState =
   | Readonly<{ kind: "signedOut" }>
   | Readonly<{ kind: "guest" }>
   | Readonly<{ kind: "guestAccessBlocked" }>
+  | Readonly<{ kind: "recoveryPending" }>
   | Readonly<{ kind: "providerRegistrationRequired"; user: FirebaseAuthUserSnapshot; generation: AccountSessionGenerationToken; documents: ProviderRegistrationDocumentsResult }>
   | Readonly<{ kind: "verificationPending"; user: FirebaseAuthUserSnapshot }>
   | Readonly<{ kind: "authenticated"; backendUser: MeResponseDto["user"]; user: FirebaseAuthUserSnapshot; accountData: AccountDataSession }>
@@ -136,6 +140,12 @@ export type AccountSessionContextValue = Readonly<{
   issueRecoveryCodes: (credentials: FirebaseAuthCredentials) => Promise<AccountCommandResult>;
   revokeDeletionAuthorization: () => void;
   consumeRecoveryCode: (code: string) => Promise<AccountCommandResult>;
+  confirmRecoveryCodesSaved: () => Promise<AccountCommandResult>;
+  retryRecoveryOperation: () => Promise<AccountCommandResult>;
+  resumePendingRecovery: () => Promise<AccountCommandResult>;
+  continueWithCurrentAccount: () => Promise<AccountCommandResult>;
+  requestRecoveryCodeReplacement: () => Promise<AccountCommandResult>;
+  recoveryOperation: RecoveryOperationSnapshot;
   discardGuestData: () => Promise<AccountCommandResult>;
   signOut: () => Promise<AccountCommandResult>;
   pendingRemoteRevokeCount: number;
@@ -345,6 +355,15 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
   const authInitializationResolvedRef = useRef(false);
   const guestCommandLockRef = useRef(createGuestTransitionLock());
   const [apiClient, setApiClient] = useState<ReturnType<typeof createPatternlyApiClient> | null>(null);
+  const [recoveryOperation, setRecoveryOperation] = useState<RecoveryOperationSnapshot>({ kind: "loading", blocksProfilePreparation: true });
+  const recoveryCoordinatorRef = useRef<ReturnType<typeof createRecoveryOperationCoordinator> | null>(null);
+  const recoveryApiClientRef = useRef<ReturnType<typeof createPatternlyApiClient> | null>(null);
+  const recoveryVaultRef = useRef<RecoveryOperationVault | null>(null);
+  const recoveryCommandInFlightRef = useRef(false);
+  const recoveryIssuePublicationGateRef = useRef(createRecoveryIssuePublicationGate());
+  const recoverySessionIdentityRef = useRef<Readonly<{ firebaseUid: string; authorizationGeneration: number }> | null>(null);
+  const explicitRecoveryIssueSignInRef = useRef<Readonly<{ operationId: string; firebaseUid: string; authorizationGeneration: number; action: "resume" | "replace" }> | null>(null);
+  const explicitRecoveryAccountTransitionRef = useRef<Readonly<{ operationId: string; firebaseUid: string; authorizationGeneration: number }> | null>(null);
   const [appCheckReady, setAppCheckReady] = useState(false);
   const [refreshAccountIdentityFailure, setRefreshAccountIdentityFailure] = useState<AccountFailure | null>(null);
   const [runtimeMode] = useState<PatternlyRuntimeMode | undefined>(readPatternlyRuntimeMode);
@@ -397,7 +416,115 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     sessionExchangeUidRef.current = null;
   }, [deletionAuthorization]);
 
+  const getRecoveryVault = useCallback((): RecoveryOperationVault => {
+    if (!recoveryVaultRef.current) recoveryVaultRef.current = createSecureRecoveryOperationVault();
+    return recoveryVaultRef.current;
+  }, []);
+
+  const guardRecoveryBeforePreparation = useCallback(async (auth: FirebaseAuthClient | null): Promise<boolean> => {
+    try {
+      const coordinator = recoveryCoordinatorRef.current;
+      if (!coordinator) {
+        const pending = await getRecoveryVault().load();
+        if (!pending) {
+          setRecoveryOperation({ kind: "idle", blocksProfilePreparation: false });
+          return true;
+        }
+        setRecoveryOperation({ kind: "unavailable", reason: "operation_unavailable", blocksProfilePreparation: true });
+      } else {
+        await coordinator.load();
+        let pending = coordinator.getSnapshot();
+        if (pending.kind === "issue" && pending.deferredFor && !pending.blocksProfilePreparation) {
+          const user = auth?.getSnapshot() ?? null;
+          let authorizationGeneration: number | null = null;
+          if (auth && user) {
+            try { authorizationGeneration = await auth.getAuthorizationGeneration(); } catch { /* A failed claim read keeps the defer gated. */ }
+          }
+          await coordinator.reconcilePending(user ? { firebaseUid: user.uid, authorizationGeneration } : null);
+          pending = coordinator.getSnapshot();
+        }
+        if (!pending.blocksProfilePreparation) {
+          explicitRecoveryIssueSignInRef.current = null;
+          const user = auth?.getSnapshot() ?? null;
+          const recovered = recoverySessionIdentityRef.current;
+          if (auth && user && recovered?.firebaseUid === user.uid) {
+            try {
+              if (await auth.getAuthorizationGeneration() !== recovered.authorizationGeneration) {
+                if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+                setState({ kind: "revokedSession", user });
+                return false;
+              }
+            } catch (error) {
+              if (auth.getSnapshot()?.uid !== user.uid) return false;
+              if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+              const code = firebaseAuthErrorCode(error);
+              setState({ kind: code === "auth/authorization-generation-invalid" ? "revokedSession" : "backendUnavailable", user });
+              return false;
+            }
+          }
+          return true;
+        }
+        if (recoveryCommandInFlightRef.current || (pending.kind === "consume" && pending.signInInFlight)) return false;
+        const user = auth?.getSnapshot() ?? null;
+        const accountTransition = explicitRecoveryAccountTransitionRef.current;
+        if (accountTransition && (pending.kind !== "issue" || pending.operationId !== accountTransition.operationId || pending.firebaseUid !== accountTransition.firebaseUid || pending.authorizationGeneration !== accountTransition.authorizationGeneration)) {
+          explicitRecoveryAccountTransitionRef.current = null;
+        } else if (accountTransition && !user) {
+          // An explicit transition is in its sign-out/login leg. Allow the
+          // signed-out screen to render; profile preparation still has no user.
+          return true;
+        }
+        let intent = explicitRecoveryIssueSignInRef.current;
+        if (intent && (pending.kind !== "issue" || intent.operationId !== pending.operationId || intent.firebaseUid !== pending.firebaseUid || intent.authorizationGeneration !== pending.authorizationGeneration || (user !== null && user.uid !== intent.firebaseUid))) {
+          explicitRecoveryIssueSignInRef.current = null;
+          intent = null;
+        }
+        if (auth && user && pending.kind === "issue" && intent?.operationId === pending.operationId && intent.firebaseUid === user.uid && pending.firebaseUid === user.uid && intent.authorizationGeneration === pending.authorizationGeneration) {
+          const recoveryApi = recoveryApiClientRef.current;
+          if (!recoveryApi) throw new Error("recovery_api_unavailable");
+          recoveryCommandInFlightRef.current = true;
+          try {
+            await ensureRecoveryIssueSignInSession({
+              api: recoveryApi,
+              auth,
+              canContinue: () => auth.getSnapshot()?.uid === user.uid,
+              isExplicitSignInCurrent: () => {
+                const current = coordinator.getSnapshot();
+                return explicitRecoveryIssueSignInRef.current === intent && current.kind === "issue" && current.operationId === intent.operationId && current.firebaseUid === intent.firebaseUid && current.authorizationGeneration === intent.authorizationGeneration;
+              },
+              onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
+              user,
+              requiredAuthorizationGeneration: pending.authorizationGeneration,
+            });
+            if (intent.action === "replace") {
+              await coordinator.startIssue({ firebaseUid: pending.firebaseUid, authorizationGeneration: pending.authorizationGeneration }, { replaceUnavailable: true });
+            } else if (pending.deferredFor) {
+              await coordinator.resumePendingRecovery();
+            }
+            explicitRecoveryIssueSignInRef.current = null;
+          } catch (error) {
+            explicitRecoveryIssueSignInRef.current = null;
+            throw error;
+          } finally {
+            recoveryCommandInFlightRef.current = false;
+            if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
+          }
+        }
+        const identity = auth && user ? { firebaseUid: user.uid, authorizationGeneration: await auth.getAuthorizationGeneration() } : null;
+        await coordinator.reconcilePending(identity);
+        if (!coordinator.getSnapshot().blocksProfilePreparation) return true;
+      }
+    } catch {
+      setRecoveryOperation({ kind: "unavailable", reason: "operation_unavailable", blocksProfilePreparation: true });
+    }
+    if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+    setAccountEntryMode("login");
+    setState({ kind: "recoveryPending" });
+    return false;
+  }, [getRecoveryVault]);
+
   const finalizeCurrent = useCallback(async (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>, user: FirebaseAuthUserSnapshot | null = auth.getSnapshot(), restart = false, expectedToken?: AccountSessionGenerationToken, preserveGuestScope = false, allowGuestAdoption = false): Promise<AccountCommandResult> => {
+    if (!await guardRecoveryBeforePreparation(auth)) return { kind: "failure", failure: "conflict" };
     if (!user || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
     const token = expectedToken ?? (restart ? sessionCoordinator.restart(user.uid) : sessionCoordinator.begin(user.uid));
     if (!sessionCoordinator.isCurrent(token) || auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
@@ -408,6 +535,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           const response = await getMeWithExchangedSession({
             api,
             auth,
+            ...(recoverySessionIdentityRef.current?.firebaseUid === user.uid ? { requiredAuthorizationGeneration: recoverySessionIdentityRef.current.authorizationGeneration } : {}),
             canContinue: () => sessionCoordinator.isCurrent(token) && auth.getSnapshot()?.uid === token.uid,
             onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
             user,
@@ -467,7 +595,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     } finally {
       if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
     }
-  }, [sessionCoordinator]);
+  }, [guardRecoveryBeforePreparation, sessionCoordinator]);
 
   const startAuthenticatedProfilePreparation = useCallback(async (
     auth: FirebaseAuthClient,
@@ -475,6 +603,12 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     user: FirebaseAuthUserSnapshot,
     generation: AccountSessionGenerationToken,
   ): Promise<ProfilePreparationAttempt | null> => {
+    if (!await guardRecoveryBeforePreparation(auth)) {
+      const blocked = profilePreparationRef.current;
+      profilePreparationRef.current = null;
+      blocked?.resolveCompletion({ kind: "failure", failure: "conflict" });
+      return null;
+    }
     const existing = profilePreparationRef.current;
     if (existing?.kind === "authenticated" && existing.user?.uid === user.uid && existing.generation?.generation === generation.generation) return existing;
     if (existing) {
@@ -537,6 +671,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           return getMeWithExchangedSession({
             api,
             auth,
+            ...(recoverySessionIdentityRef.current?.firebaseUid === user.uid ? { requiredAuthorizationGeneration: recoverySessionIdentityRef.current.authorizationGeneration } : {}),
             canContinue,
             onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
             user,
@@ -596,7 +731,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       resolveCompletion(attempt.bootstrapFailure);
       return attempt;
     }
-  }, [preparedProfileState.selectedProfile, sessionCoordinator]);
+  }, [guardRecoveryBeforePreparation, preparedProfileState.selectedProfile, sessionCoordinator]);
 
   const completeProfilePreparation = useCallback(async (): Promise<void> => {
     const attempt = profilePreparationRef.current;
@@ -706,6 +841,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       publish(nextState);
     };
     const prepareSelectedGuest = async (): Promise<void> => {
+      if (!await guardRecoveryBeforePreparation(auth)) return;
       try {
         await prepareProfileStorage();
         const prepared = await inspectPreparedProfileState();
@@ -798,6 +934,21 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       });
       auth = configuredAuth;
       const client = createPatternlyApiClient({ allowLocalHttpForSimulator: smokeRuntime, apiOrigin, getIdToken: configuredAuth.getIdToken });
+      recoveryApiClientRef.current = client;
+      const recoveryCoordinator = createRecoveryOperationCoordinator({
+        vault: getRecoveryVault(),
+        api: client,
+        auth: configuredAuth,
+        newOperationId: createSignOutOperationId,
+      });
+      recoveryCoordinatorRef.current = recoveryCoordinator;
+      const unsubscribeRecovery = recoveryCoordinator.subscribe((snapshot) => {
+        if (!live || observerDetached) return;
+        setRecoveryOperation(recoveryIssuePublicationGateRef.current.publish(snapshot));
+        if (snapshot.kind === "consume" && snapshot.expectedFirebaseUid !== null && snapshot.expectedAuthorizationGeneration !== null) {
+          recoverySessionIdentityRef.current = { firebaseUid: snapshot.expectedFirebaseUid, authorizationGeneration: snapshot.expectedAuthorizationGeneration };
+        }
+      });
       setAuthClient(configuredAuth);
       setApiClient(client);
       initializationTimeout = setTimeout(() => {
@@ -805,15 +956,25 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         detachObserver();
         setState({ kind: "unavailable", reason: "auth_restore_timeout" });
       }, AUTH_INITIALIZATION_TIMEOUT_MS);
-      unsubscribe = configuredAuth.onUserChanged((user) => {
-        if (!live || observerDetached) return;
+      unsubscribe = configuredAuth.onUserChanged((restoredUser) => {
+        const recoverySnapshot = recoveryCoordinator.getSnapshot();
+        if (!live || observerDetached || recoveryCommandInFlightRef.current || (recoverySnapshot.kind === "consume" && recoverySnapshot.signInInFlight)) return;
+        void (async () => {
         const authObserverDecision = providerCancellationAuthObserverDecision({
-          eventUid: user?.uid ?? null,
+          eventUid: restoredUser?.uid ?? null,
           authUid: configuredAuth.getSnapshot()?.uid ?? null,
           cancellationUid: providerCancellationUidRef.current,
           ownerUid: observerBlockedUidRef.current,
         });
         if (authObserverDecision.action === "ignore_stale") return;
+        if (recoverySnapshot.kind === "issue" || recoverySnapshot.kind === "consume") {
+          recoveryCoordinator.suspendPendingIdentity();
+          sessionCoordinator.invalidate();
+          revokeDeletionAuthorization();
+          if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+          setAccountEntryMode("login");
+          setState({ kind: "recoveryPending" });
+        }
         providerCancellationUidRef.current = authObserverDecision.cancellationUid;
         const eventRevision = ++authObserverRevision;
         const isRestoredAuthEvent = !observerResolved;
@@ -822,6 +983,9 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           authInitializationResolvedRef.current = true;
           if (initializationTimeout !== undefined) clearTimeout(initializationTimeout);
         }
+        if (!await guardRecoveryBeforePreparation(configuredAuth)) return;
+        if (!live || observerDetached || eventRevision !== authObserverRevision) return;
+        const user = configuredAuth.getSnapshot();
         if (!user) {
           const previousObservedUid = observedUid;
           // Keep all scoped reads behind an explicit guest decision. A selected
@@ -951,9 +1115,20 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
             setState({ kind: "signedOut" });
           }
         });
+        })().catch(() => {
+          if (!live || observerDetached) return;
+          setRecoveryOperation({ kind: "unavailable", reason: "operation_unavailable", blocksProfilePreparation: true });
+          if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+          setState({ kind: "recoveryPending" });
+        });
       });
       return () => {
         live = false;
+        unsubscribeRecovery();
+        if (recoveryCoordinatorRef.current === recoveryCoordinator) {
+          recoveryCoordinatorRef.current = null;
+          recoveryApiClientRef.current = null;
+        }
         observerBlockedUidRef.current = null;
         revokeDeletionAuthorization();
         detachObserver();
@@ -963,7 +1138,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       publish({ kind: "unavailable", reason: "firebase_unconfigured" });
       return () => { live = false; observerBlockedUidRef.current = null; revokeDeletionAuthorization(); sessionCoordinator.dispose(); };
     }
-  }, [authInitializationRevision, finalizeCurrent, logoutControl, preparedProfileState, revokeDeletionAuthorization, runtimeMode, sessionCoordinator, startAuthenticatedProfilePreparation]);
+  }, [authInitializationRevision, finalizeCurrent, getRecoveryVault, guardRecoveryBeforePreparation, logoutControl, preparedProfileState, revokeDeletionAuthorization, runtimeMode, sessionCoordinator, startAuthenticatedProfilePreparation]);
 
   const runWithAuth = useCallback(async (operation: (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>) => Promise<AccountCommandResult>): Promise<AccountCommandResult> => {
     if (!authClient || !apiClient) return { kind: "failure", failure: "providerUnavailable" };
@@ -996,6 +1171,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     api: ReturnType<typeof createPatternlyApiClient>,
     user: FirebaseAuthUserSnapshot,
   ): Promise<AccountCommandResult> => {
+    if (!await guardRecoveryBeforePreparation(auth)) return { kind: "failure", failure: "conflict" };
     const current = stateRef.current;
     if (current.kind === "authenticated" && current.user.uid === user.uid && auth.getSnapshot()?.uid === user.uid) {
       return { kind: "success", next: "authenticated" };
@@ -1038,7 +1214,61 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       return { kind: "failure", failure: latest.kind === "revokedSession" ? "revokedSession" : latest.kind === "backendUnavailable" ? "backendUnavailable" : "providerUnavailable" };
     }
     return attempt.completion;
-  }, [logoutControl, sessionCoordinator, startAuthenticatedProfilePreparation]);
+  }, [guardRecoveryBeforePreparation, logoutControl, sessionCoordinator, startAuthenticatedProfilePreparation]);
+
+  const completeExplicitRecoveryAccountTransition = useCallback(async (
+    auth: FirebaseAuthClient,
+    api: ReturnType<typeof createPatternlyApiClient>,
+    user: FirebaseAuthUserSnapshot,
+  ): Promise<AccountCommandResult | null> => {
+    const intent = explicitRecoveryAccountTransitionRef.current;
+    if (!intent) return null;
+    const coordinator = recoveryCoordinatorRef.current;
+    const pending = coordinator?.getSnapshot();
+    if (!coordinator || pending?.kind !== "issue" || pending.operationId !== intent.operationId || pending.firebaseUid !== intent.firebaseUid || pending.authorizationGeneration !== intent.authorizationGeneration) {
+      explicitRecoveryAccountTransitionRef.current = null;
+      return { kind: "failure", failure: "conflict" };
+    }
+    const generation = sessionCoordinator.current(user.uid) ?? sessionCoordinator.begin(user.uid);
+    const canContinue = () => {
+      const current = coordinator.getSnapshot();
+      return explicitRecoveryAccountTransitionRef.current === intent
+        && current.kind === "issue"
+        && current.operationId === intent.operationId
+        && sessionCoordinator.isCurrent(generation)
+        && auth.getSnapshot()?.uid === user.uid;
+    };
+    try {
+      await getMeWithExchangedSession({
+        api,
+        auth,
+        canContinue,
+        onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
+        user,
+      });
+      if (!canContinue() || auth.getSnapshot()?.uid !== user.uid) throw new AccountSessionGenerationStaleError();
+      const authorizationGeneration = await auth.getAuthorizationGeneration();
+      if (!canContinue() || !Number.isSafeInteger(authorizationGeneration) || authorizationGeneration === null || authorizationGeneration < 1) throw new FirebaseAuthClientError("auth/authorization-generation-invalid");
+      if (user.uid === intent.firebaseUid && authorizationGeneration === intent.authorizationGeneration) {
+        explicitRecoveryAccountTransitionRef.current = null;
+        return { kind: "failure", failure: "conflict" };
+      }
+      const deferred = await coordinator.deferIssueToIdentity(intent.operationId, { firebaseUid: user.uid, authorizationGeneration });
+      const afterGeneration = await auth.getAuthorizationGeneration();
+      const after = coordinator.getSnapshot();
+      if (!canContinue() || afterGeneration !== authorizationGeneration || after.kind !== "issue" || after.operationId !== intent.operationId || after.deferredFor?.firebaseUid !== user.uid || after.deferredFor.authorizationGeneration !== authorizationGeneration || deferred.blocksProfilePreparation) {
+        explicitRecoveryAccountTransitionRef.current = null;
+        return { kind: "failure", failure: "conflict" };
+      }
+      explicitRecoveryAccountTransitionRef.current = null;
+      return { kind: "success", next: "authenticated" };
+    } catch (error) {
+      explicitRecoveryAccountTransitionRef.current = null;
+      return { kind: "failure", failure: classifyAccountFailure(error) };
+    } finally {
+      if (sessionExchangeUidRef.current === user.uid) sessionExchangeUidRef.current = null;
+    }
+  }, [sessionCoordinator]);
 
   // Firebase publishes a new credential before our explicit Patternly
   // registration request returns.  Block only that UID, then release it after
@@ -1117,8 +1347,12 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       legalAcceptancePendingRef.current = true;
       let user: FirebaseAuthUserSnapshot | null = null;
       try {
+        if (recoveryCoordinatorRef.current?.getSnapshot().blocksProfilePreparation === false) recoverySessionIdentityRef.current = null;
         user = await authenticate();
         if (auth.getSnapshot()?.uid !== user.uid) return { kind: "failure", failure: "revokedSession" };
+        const recoveryTransition = await completeExplicitRecoveryAccountTransition(auth, api, user);
+        if (recoveryTransition?.kind === "failure") return recoveryTransition;
+        if (!await guardRecoveryBeforePreparation(auth)) return { kind: "failure", failure: "conflict" };
 
         const generation = sessionCoordinator.restart(user.uid);
         // The Auth observer must stay blocked from this point through exchange,
@@ -1180,7 +1414,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       legalAcceptancePendingRef.current = false;
       providerAuthenticationInFlightRef.current = false;
     });
-  }, [finalizeExplicitAuthentication, revokeDeletionAuthorization, runAuthMutationWithAuth, runtimeMode, sessionCoordinator]);
+  }, [completeExplicitRecoveryAccountTransition, finalizeExplicitAuthentication, guardRecoveryBeforePreparation, revokeDeletionAuthorization, runAuthMutationWithAuth, runtimeMode, sessionCoordinator]);
 
   const registerProviderIdentity = useCallback((termsAccepted: boolean, privacyPolicyAcknowledged: boolean, locale: TargetLocale): Promise<AccountCommandResult> => {
     if (!termsAccepted || !privacyPolicyAcknowledged) return Promise.resolve({ kind: "failure", failure: "invalid" });
@@ -1340,7 +1574,50 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     setState({ ...latest, accountData: next });
   }, [apiClient, authClient, sessionCoordinator]);
 
+  const finishRecoveryCommand = useCallback(async (snapshot: RecoveryOperationSnapshot, auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>): Promise<AccountCommandResult> => {
+    if (snapshot.kind === "idle") {
+      const user = auth.getSnapshot();
+      if (user) return finalizeExplicitAuthentication(auth, api, user);
+      if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+      setAccountEntryMode("login");
+      setState({ kind: "signedOut" });
+      return { kind: "success", next: "signedOut" };
+    }
+    if (snapshot.kind === "terminal" && snapshot.status === "acknowledged") {
+      const user = auth.getSnapshot();
+      if (!user) return { kind: "failure", failure: "revokedSession" };
+      return finalizeExplicitAuthentication(auth, api, user);
+    }
+    if (snapshot.kind === "issue" && snapshot.codes && !snapshot.needsAccountResolution && !snapshot.savedIntent) {
+      return { kind: "success", next: "recoveryCodesIssued", recoveryCodes: snapshot.codes };
+    }
+    if (snapshot.kind !== "issue" || stateRef.current.kind === "recoveryPending") {
+      if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+      setAccountEntryMode("login");
+      setState({ kind: "recoveryPending" });
+    }
+    if (snapshot.kind === "terminal") return { kind: "failure", failure: snapshot.status === "expired_or_invalid" ? "expiredAction" : "conflict" };
+    if (snapshot.kind === "issue" || snapshot.kind === "consume") {
+      const failures: Readonly<Record<NonNullable<typeof snapshot.failure>, AccountFailure>> = {
+        offline: "offline", unauthorized: "reauthenticationRequired", conflict: "conflict", rate_limited: "rateLimited", unavailable: "backendUnavailable", invalid_response: "remoteFailure",
+      };
+      return { kind: "failure", failure: snapshot.failure ? failures[snapshot.failure] : "conflict" };
+    }
+    return { kind: "failure", failure: "providerUnavailable" };
+  }, [finalizeExplicitAuthentication]);
+
+  const executeRecoveryCommand = useCallback(async (auth: FirebaseAuthClient, api: ReturnType<typeof createPatternlyApiClient>, operation: (coordinator: ReturnType<typeof createRecoveryOperationCoordinator>) => Promise<RecoveryOperationSnapshot>): Promise<AccountCommandResult> => {
+    const coordinator = recoveryCoordinatorRef.current;
+    if (!coordinator || recoveryCommandInFlightRef.current) return { kind: "failure", failure: "conflict" };
+    recoveryCommandInFlightRef.current = true;
+    let result: RecoveryOperationSnapshot;
+    try { result = await operation(coordinator); }
+    finally { recoveryCommandInFlightRef.current = false; }
+    return finishRecoveryCommand(result, auth, api);
+  }, [finishRecoveryCommand]);
+
   const value = useMemo<AccountSessionContextValue>(() => ({
+    recoveryOperation,
     refreshPremiumEntitlement,
     retryLearningPlanRecovery: retryLearningPlanRecoveryForAccount,
     authorizePremiumSessionStart,
@@ -1365,6 +1642,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       catch (error) { return { kind: "failure", failure: classifyAccountFailure(error) }; }
     },
     continueAsGuest: async () => {
+      if (!await guardRecoveryBeforePreparation(authClient)) return { kind: "failure", failure: "conflict" };
       setGuestTransitionFailure(null);
       providerCancellationUidRef.current = null;
       const result = await runWithGuestTransitionLock<AccountCommandResult>(guestCommandLockRef.current, { kind: "failure", failure: "providerUnavailable" }, async () => {
@@ -1680,6 +1958,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
             api,
             auth,
             canContinue: () => canContinue(auth, user),
+            ...(recoverySessionIdentityRef.current?.firebaseUid === user.uid ? { requiredAuthorizationGeneration: recoverySessionIdentityRef.current.authorizationGeneration } : {}),
             onExchangeStarting: () => { sessionExchangeUidRef.current = user.uid; },
             user,
           });
@@ -1706,6 +1985,10 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       });
     },
     register: (email, password, acceptanceConfirmed, locale) => runAuthMutationWithAuth(async (auth, api) => {
+      if (recoveryCoordinatorRef.current?.getSnapshot().blocksProfilePreparation !== false) {
+        setState({ kind: "recoveryPending" });
+        return { kind: "failure", failure: "conflict" };
+      }
       if (!acceptanceConfirmed) return { kind: "failure", failure: "invalid" };
       if (!isValidEmail(email)) return { kind: "failure", failure: "invalidEmail" };
       if (!isValidPassword(password)) return { kind: "failure", failure: "weakPassword" };
@@ -1762,6 +2045,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     signIn: (email, password) => runAuthMutationWithAuth(async (auth, api) => {
       if (!isValidEmail(email)) return { kind: "failure", failure: "invalidEmail" };
       if (password.length === 0) return { kind: "failure", failure: "invalid" };
+      if (recoveryCoordinatorRef.current?.getSnapshot().blocksProfilePreparation === false) recoverySessionIdentityRef.current = null;
       revokeDeletionAuthorization();
       sessionCoordinator.invalidate();
       const user = await auth.signIn(email.trim().toLowerCase(), password);
@@ -1780,6 +2064,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           if (observerBlockedUidRef.current === user.uid) observerBlockedUidRef.current = null;
         }
       }
+      const recoveryTransition = await completeExplicitRecoveryAccountTransition(auth, api, user);
+      if (recoveryTransition?.kind === "failure") return recoveryTransition;
       const result = await finalizeExplicitAuthentication(auth, api, user);
       if (result.kind === "failure" && result.failure === "accountNotFound") {
         return signOutRejectedIdentity(auth);
@@ -1839,9 +2125,32 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       const user = auth.getSnapshot();
       if (!user) return { kind: "failure", failure: "providerUnavailable" };
       const signOutProfile = getActiveStorageProfileOrNull();
+      const stateAtSignOut = stateRef.current;
+      const authenticatedAccountId = (stateAtSignOut.kind === "authenticated" || stateAtSignOut.kind === "signingOut")
+        && stateAtSignOut.user.uid === user.uid
+        ? stateAtSignOut.backendUser.id
+        : null;
+      const sameSignOutProfile = (activeProfile: StorageProfile | null): boolean => !!signOutProfile
+        && activeProfile?.id === signOutProfile.id
+        && activeProfile.kind === signOutProfile.kind
+        && activeProfile.accountId === signOutProfile.accountId;
+      const clearSigningOutAccountCache = (operationId: string | undefined): boolean | "stale" => {
+        if (!operationId || !signOutProfile) return false;
+        if (!sameSignOutProfile(getActiveStorageProfileOrNull()) || !canContinue()) return "stale";
+        let accountId = authenticatedAccountId;
+        if (!accountId) {
+          try {
+            const scopedSignOut = getAccountSignOutState();
+            if (!scopedSignOut || scopedSignOut.operationId !== operationId) return false;
+            accountId = scopedSignOut.accountId;
+          } catch { return false; }
+        }
+        if (signOutProfile.accountId !== null && signOutProfile.accountId !== accountId) return "stale";
+        return clearPremiumCacheForAccountInProfile(accountId, signOutProfile) !== "unavailable";
+      };
       const closeSignOutProfileStorage = () => {
         const activeProfile = getActiveStorageProfileOrNull();
-        if (signOutProfile && activeProfile?.id === signOutProfile.id) closeActiveProfileStorage();
+        if (sameSignOutProfile(activeProfile)) closeActiveProfileStorage();
         else if (!signOutProfile && activeProfile === null) closeActiveProfileStorage();
       };
       revokeDeletionAuthorization();
@@ -1885,6 +2194,8 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
           }
           let controlWriteVerified = false;
           const recoveryOutcome = await finishLocalSignOutSetupFailure({
+            uid: user.uid,
+            getOperationId: () => operationId,
             isCurrent: canContinue,
             retainAuthOnFailedControlWrite: scopedOperationRecovered,
             persistFallbackControlPair: async () => {
@@ -1892,20 +2203,24 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
               const snapshot = await logoutControl.blockAndQueueRevoke(user.uid, operationId);
               logoutControlSnapshotRef.current = snapshot;
               setLogoutControlSnapshot(snapshot);
-              controlWriteVerified = findMatchingLocalLogoutBlock(snapshot, user.uid)?.operationId === operationId;
-              return controlWriteVerified;
+              controlWriteVerified = hasVerifiedLocalLogoutReceipt(snapshot, user.uid, operationId);
+              return snapshot;
             },
             publishLockedState: () => {
               observerBlockedUidRef.current = user.uid;
               setState({ kind: "signOutPending", user, ...(operationId && (scopedOperationRecovered || controlWriteVerified) ? { operationId } : {}) });
             },
+            clearOwnedPremiumCache: () => clearSigningOutAccountCache(operationId),
             closeProfileStorage: closeSignOutProfileStorage,
             signOutFirebase: () => auth.signOut(),
           });
-          return { kind: "failure", failure: recoveryOutcome === "stale" ? "revokedSession" : "localCleanupFailure" };
+          if (recoveryOutcome === "stale") return { kind: "failure", failure: "revokedSession" };
+          if (recoveryOutcome === "signOutPending") return { kind: "failure", failure: "signOutPending" };
+          return { kind: "failure", failure: "localCleanupFailure" };
         }
         const outcome = await performLocalAccountSignOut({
           uid: user.uid,
+          operationId,
           retainAuthOnControlFailure: durableOperation,
           persistBlock: async () => {
             const snapshot = await logoutControl.blockAndQueueRevoke(user.uid, operationId!);
@@ -1917,6 +2232,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
             observerBlockedUidRef.current = user.uid;
             setState({ kind: "signOutPending", user, ...(durableOperation ? { operationId } : {}) });
           },
+          clearOwnedPremiumCache: () => clearSigningOutAccountCache(operationId),
           closeProfileStorage: closeSignOutProfileStorage,
           signOutFirebase: async () => {
             await auth.signOut();
@@ -1927,12 +2243,12 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
         if (outcome === "localLogoutControlFailure") {
           return { kind: "failure", failure: "localCleanupFailure" };
         }
+        if (outcome === "localCleanupFailure") return { kind: "failure", failure: "localCleanupFailure" };
         if (outcome === "signOutPending") return { kind: "failure", failure: "signOutPending" };
         if (outcome === "stale") return { kind: "failure", failure: "revokedSession" };
         if (auth.getSnapshot() !== null) return { kind: "failure", failure: "revokedSession" };
         setAccountEntryMode("login");
         setState({ kind: "signedOut" });
-        try { clearPremiumCache(); } catch { /* Retried on signed-out hydration. */ }
         return { kind: "success", next: "signedOut" };
       } finally {
         revokeDeletionAuthorization();
@@ -2146,26 +2462,186 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (!credentialsMatchSnapshot(user, credentials)) return { kind: "failure", failure: "reauthenticationRequired" };
       if (credentials.kind === "password" && !credentials.password) return { kind: "failure", failure: "reauthenticationRequired" };
       const generation = sessionCoordinator.restart(user.uid);
-      const result = await runReauthenticatedMutation({
-        credentials,
-        isCurrent: () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid,
-        mutation: () => api.issueRecoveryCodes(),
-        reauthenticate: auth.reauthenticateWithCredential,
-      });
+      const isCurrent = () => sessionCoordinator.isCurrent(generation) && auth.getSnapshot()?.uid === user.uid;
+      const authorizationGeneration = await auth.getAuthorizationGeneration();
+      if (!Number.isSafeInteger(authorizationGeneration) || authorizationGeneration === null || authorizationGeneration < 1 || !isCurrent()) return { kind: "failure", failure: "reauthenticationRequired" };
+      recoveryCommandInFlightRef.current = true;
+      setRecoveryOperation(recoveryIssuePublicationGateRef.current.hold());
+      let result: Awaited<ReturnType<typeof runReauthenticatedMutation<FirebaseAuthCredentials, RecoveryOperationSnapshot>>>;
+      let finalIdentityCurrent = false;
+      try {
+        result = await runReauthenticatedMutation({
+          credentials,
+          isCurrent,
+          mutation: async () => {
+            await ensureRecoveryIssueSignInSession({
+              api,
+              auth,
+              user,
+              canContinue: isCurrent,
+              isExplicitSignInCurrent: isCurrent,
+              onExchangeStarting: () => undefined,
+              requiredAuthorizationGeneration: authorizationGeneration,
+            });
+            if (!isCurrent()) throw new FirebaseAuthClientError("auth/authorization-generation-invalid");
+            const coordinator = recoveryCoordinatorRef.current;
+            if (!coordinator) throw new Error("recovery_coordinator_unavailable");
+            return coordinator.startIssue({ firebaseUid: user.uid, authorizationGeneration });
+          },
+          reauthenticate: auth.reauthenticateWithCredential,
+        });
+      } finally {
+        try {
+          const identity = await readRecoveryIssueCommandIdentity({
+            auth,
+            firebaseUid: user.uid,
+            authorizationGeneration,
+            isRevisionCurrent: () => sessionCoordinator.isCurrent(generation),
+          });
+          const liveUser = auth.getSnapshot();
+          finalIdentityCurrent = identity.current && liveUser?.uid === user.uid && sessionCoordinator.isCurrent(generation);
+          if (!finalIdentityCurrent) {
+            recoveryCoordinatorRef.current?.suspendPendingIdentity();
+            sessionCoordinator.invalidate();
+            if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+            setAccountEntryMode("login");
+            setState(recoveryCoordinatorRef.current?.getSnapshot().blocksProfilePreparation
+              ? { kind: "recoveryPending" }
+              : liveUser ? { kind: "reauthenticationRequired", user: liveUser } : { kind: "signedOut" });
+          }
+        } finally {
+          recoveryIssuePublicationGateRef.current.release();
+          recoveryCommandInFlightRef.current = false;
+          setRecoveryOperation(recoveryCoordinatorRef.current?.getSnapshot() ?? { kind: "unavailable", reason: "operation_unavailable", blocksProfilePreparation: true });
+        }
+      }
+      if (!finalIdentityCurrent) return { kind: "failure", failure: "reauthenticationRequired" };
       if (!result.ok) {
         const failure = classifyAccountFailure(result.error);
         return { kind: "failure", failure };
       }
-      return { kind: "success", next: "recoveryCodesIssued", recoveryCodes: result.value.codes };
+      return finishRecoveryCommand(result.value, auth, api);
     }),
     revokeDeletionAuthorization,
     consumeRecoveryCode: (code) => runSensitiveWithAuth(async (auth, api) => {
       revokeDeletionAuthorization();
       if (!/^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/u.test(code.trim().toUpperCase())) return { kind: "failure", failure: "invalidRecoveryCode" };
-      const token = await api.consumeRecoveryCode(code.trim().toUpperCase());
       sessionCoordinator.invalidate();
-      const user = await auth.signInWithRecoveryToken(token.customToken);
-      return finalizeCurrent(auth, api, user);
+      if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+      setState({ kind: "recoveryPending" });
+      return executeRecoveryCommand(auth, api, (coordinator) => coordinator.startConsume(code));
+    }),
+    confirmRecoveryCodesSaved: () => runSensitiveWithAuth((auth, api) => executeRecoveryCommand(auth, api, (coordinator) => coordinator.confirmRecoveryCodesSaved())),
+    retryRecoveryOperation: () => runSensitiveWithAuth((auth, api) => executeRecoveryCommand(auth, api, (coordinator) => coordinator.retryRecoveryOperation())),
+    requestRecoveryCodeReplacement: () => runSensitiveWithAuth(async (auth) => {
+      const coordinator = recoveryCoordinatorRef.current;
+      if (!coordinator || recoveryCommandInFlightRef.current) return { kind: "failure", failure: "conflict" };
+      await coordinator.load();
+      const pending = coordinator.getSnapshot();
+      if (pending.kind !== "issue" || pending.needsAccountResolution || (pending.status !== "delivery_unconfirmed" && !pending.replacementPending)) return { kind: "failure", failure: "conflict" };
+      const current = auth.getSnapshot();
+      if (current && (current.uid !== pending.firebaseUid || await auth.getAuthorizationGeneration() !== pending.authorizationGeneration)) return { kind: "failure", failure: "reauthenticationRequired" };
+      if ((auth.getSnapshot()?.uid ?? null) !== (current?.uid ?? null)) return { kind: "failure", failure: "conflict" };
+      explicitRecoveryIssueSignInRef.current = { operationId: pending.operationId, firebaseUid: pending.firebaseUid, authorizationGeneration: pending.authorizationGeneration, action: "replace" };
+      recoveryCommandInFlightRef.current = true;
+      try {
+        if (current) await auth.signOut();
+        if (auth.getSnapshot()) {
+          explicitRecoveryIssueSignInRef.current = null;
+          return { kind: "failure", failure: "signOutPending" };
+        }
+      } catch (error) {
+        explicitRecoveryIssueSignInRef.current = null;
+        return { kind: "failure", failure: classifyAccountFailure(error) };
+      } finally { recoveryCommandInFlightRef.current = false; }
+      sessionCoordinator.invalidate();
+      revokeDeletionAuthorization();
+      if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+      setAccountEntryMode("login");
+      setState({ kind: "signedOut" });
+      return { kind: "success", next: "signedOut" };
+    }),
+    resumePendingRecovery: () => runSensitiveWithAuth(async (auth, api) => {
+      const coordinator = recoveryCoordinatorRef.current;
+      if (!coordinator) return { kind: "failure", failure: "providerUnavailable" };
+      await coordinator.load();
+      const pending = coordinator.getSnapshot();
+      if (pending.kind === "terminal" || pending.kind === "idle") {
+        explicitRecoveryIssueSignInRef.current = null;
+        if (pending.kind === "terminal" && pending.status !== "acknowledged") recoverySessionIdentityRef.current = null;
+        const user = auth.getSnapshot();
+        if (user) return finalizeExplicitAuthentication(auth, api, user);
+        setAccountEntryMode("login");
+        setState({ kind: "signedOut" });
+        return { kind: "success", next: "signedOut" };
+      }
+      if (pending.kind === "issue") {
+        explicitRecoveryIssueSignInRef.current = { operationId: pending.operationId, firebaseUid: pending.firebaseUid, authorizationGeneration: pending.authorizationGeneration, action: "resume" };
+        const current = auth.getSnapshot();
+        if (current && current.uid === pending.firebaseUid) {
+          if (!await guardRecoveryBeforePreparation(auth)) return { kind: "failure", failure: "conflict" };
+          const restoredUser = auth.getSnapshot();
+          if (!restoredUser) return { kind: "failure", failure: "revokedSession" };
+          return finalizeExplicitAuthentication(auth, api, restoredUser);
+        }
+        recoveryCommandInFlightRef.current = true;
+        try {
+          if (current) await auth.signOut();
+          if (auth.getSnapshot()) return { kind: "failure", failure: "signOutPending" };
+        } finally { recoveryCommandInFlightRef.current = false; }
+        if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+        setAccountEntryMode("login");
+        setState({ kind: "signedOut" });
+        return { kind: "success", next: "signedOut" };
+      }
+      if (pending.kind === "consume") {
+        const current = auth.getSnapshot();
+        const generation = current ? await auth.getAuthorizationGeneration() : null;
+        if (current && (current.uid !== pending.expectedFirebaseUid || generation !== pending.expectedAuthorizationGeneration)) {
+          recoveryCommandInFlightRef.current = true;
+          try {
+            await auth.signOut();
+            if (auth.getSnapshot()) return { kind: "failure", failure: "signOutPending" };
+          } finally { recoveryCommandInFlightRef.current = false; }
+        }
+        sessionCoordinator.invalidate();
+        if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+        setState({ kind: "recoveryPending" });
+        return executeRecoveryCommand(auth, api, (operation) => operation.resumePendingRecovery());
+      }
+      return { kind: "failure", failure: "providerUnavailable" };
+    }),
+    continueWithCurrentAccount: () => runSensitiveWithAuth(async (auth) => {
+      const coordinator = recoveryCoordinatorRef.current;
+      if (!coordinator || recoveryCommandInFlightRef.current) return { kind: "failure", failure: "conflict" };
+      await coordinator.load();
+      const pending = coordinator.getSnapshot();
+      const current = auth.getSnapshot();
+      if (!current || pending.kind !== "issue") return { kind: "failure", failure: "conflict" };
+      let authorizationGeneration: number | null = null;
+      try { authorizationGeneration = await auth.getAuthorizationGeneration(); } catch { /* A different UID remains a proven mismatch; sign-in will establish the selected session. */ }
+      if (auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "conflict" };
+      const checked = await coordinator.reconcilePending({ firebaseUid: current.uid, authorizationGeneration });
+      if (checked.kind !== "issue" || !["different_uid", "different_generation"].includes(checked.accountResolution ?? "")) return { kind: "failure", failure: "conflict" };
+      explicitRecoveryAccountTransitionRef.current = Object.freeze({ operationId: checked.operationId, firebaseUid: checked.firebaseUid, authorizationGeneration: checked.authorizationGeneration });
+      recoveryCommandInFlightRef.current = true;
+      sessionCoordinator.invalidate();
+      revokeDeletionAuthorization();
+      if (getActiveStorageProfileOrNull()) closeActiveProfileStorage();
+      try {
+        await auth.signOut();
+        if (auth.getSnapshot()) {
+          explicitRecoveryAccountTransitionRef.current = null;
+          return { kind: "failure", failure: "signOutPending" };
+        }
+      } catch (error) {
+        explicitRecoveryAccountTransitionRef.current = null;
+        return { kind: "failure", failure: classifyAccountFailure(error) };
+      } finally { recoveryCommandInFlightRef.current = false; }
+      coordinator.suspendPendingIdentity();
+      setAccountEntryMode("login");
+      setState({ kind: "signedOut" });
+      return { kind: "success", next: "signedOut" };
     }),
     discardGuestData: () => runWithAuth(async (auth, api) => {
       const current = auth.getSnapshot();
@@ -2191,7 +2667,7 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
     pendingRemoteRevokeCount: logoutControlSnapshot.pending.length + (state.kind === "signOutPending" && state.operationId && !logoutControlSnapshot.pending.some((pair) => pair.uid === state.user.uid && pair.operationId === state.operationId) ? 1 : 0),
     completeProfilePreparation,
     state,
-  }), [accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, installPremiumNodePackage, retryLearningPlanRecoveryForAccount, completeProfilePreparation, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, registerProviderIdentity, cancelProviderRegistration, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runProviderFirstUse, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
+  }), [completeExplicitRecoveryAccountTransition, executeRecoveryCommand, finishRecoveryCommand, guardRecoveryBeforePreparation, recoveryOperation, accountEntryMode, apiClient, authClient, authorizePremiumSessionStart, installPremiumNodePackage, retryLearningPlanRecoveryForAccount, completeProfilePreparation, finalizeCurrent, finalizeExplicitAuthentication, guestTransitionFailure, holdAccountIdentityRefresh, logoutControlSnapshot, refreshAccountIdentityFailure, refreshPremiumEntitlement, registerAuthenticatedIdentity, registerProviderIdentity, cancelProviderRegistration, retrySessionRestore, revokeDeletionAuthorization, runAuthMutationWithAuth, runProviderFirstUse, runRefreshWithAuth, runSensitiveWithAuth, runWithAuth, runtimeMode, sensitiveCommandLane, sessionCoordinator, signOutRejectedIdentity, state]);
 
   return <AccountSessionContext.Provider value={value}>{children}</AccountSessionContext.Provider>;
 }

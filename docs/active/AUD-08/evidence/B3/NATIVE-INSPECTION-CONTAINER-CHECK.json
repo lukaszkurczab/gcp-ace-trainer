@@ -1,0 +1,17 @@
+{
+  "task": "AUD-08-B3",
+  "inspection": "post-suspended-inspection-container-check",
+  "comparedInitialFiles": 20,
+  "unchanged": 15,
+  "changed": 5,
+  "missing": 0,
+  "keychainCompared": false,
+  "guestDomainEqualityProven": false,
+  "changedCategories": {
+    "Library/Application Support": 1,
+    "Library/Caches": 2,
+    "Library/HTTPStorages": 2
+  },
+  "comparedMmkvAndPreferencesUnchanged": true,
+  "loggedPostRequestsSinceRuntimeStart": 0
+}

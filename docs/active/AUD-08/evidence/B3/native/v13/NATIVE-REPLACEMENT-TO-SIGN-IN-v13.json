@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "scope": "explicit_replacement_sign_out_to_login_only",
+  "flowSyntaxPassed": true,
+  "nativeFlowPassed": true,
+  "priorDeliveryUnconfirmedVisible": true,
+  "priorCodesNotVisible": true,
+  "loginFieldsVisible": true,
+  "credentialSubmitPerformed": false,
+  "freshIssueStarted": false,
+  "backendRequestMethodCounts": {
+    "GET": 13,
+    "POST": 0
+  },
+  "resetOrReinstallPerformed": false,
+  "transferOrDiscardPerformed": false,
+  "privateArtifactsProtected": true
+}

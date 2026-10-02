@@ -1,0 +1,35 @@
+{
+  "task": "AUD-08-B3",
+  "result": "UNAVAILABLE_COMPARISON_REFUSED",
+  "attemptCount": 1,
+  "sourcePinsSha256": "5af0ae801e1aa3a094ef1ff14e308d044366c63baac3d08ad41cf7d14ae1843e",
+  "actual": {
+    "stage": "comparison_completed",
+    "main0Verified": true,
+    "sourceFrameVerified": true,
+    "sameInvocationReturned": false,
+    "processKilled": true,
+    "sourceBreakpointLocations": 1,
+    "returnBreakpointLocations": 1,
+    "comparison": {
+      "status": "REFUSED",
+      "source_sha256": "",
+      "metro_sha256": "",
+      "source_bytes": 0,
+      "metro_bytes": 0
+    }
+  },
+  "postFullSourcePinsMatch": true,
+  "runtimeGate": "COMPLETED_SINGLE_ATTEMPT",
+  "rawDebugOutputPrivate": true,
+  "sourceExecutionBindingProven": false,
+  "authMutationRequested": false,
+  "keysCaptured": false,
+  "limitations": [
+    "Refusal category does not identify which guard/getter failed",
+    "No source/Metro hashes produced",
+    "No return from evaluateJavaScript demonstrated"
+  ],
+  "postPatternlyProcessCount": 0,
+  "postOwnBackendGuardPassed": true
+}

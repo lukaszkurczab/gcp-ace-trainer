@@ -1,0 +1,1405 @@
+
+> patternly-backend@0.1.0 test
+> node --import tsx --test --test-concurrency=1 tests/*.test.ts scripts/devAdminBoundary.test.mjs
+
+TAP version 13
+# Subtest: local admin launcher pins one local deletion pseudonym key and ignores ambient override
+ok 1 - local admin launcher pins one local deletion pseudonym key and ignores ambient override
+  ---
+  duration_ms: 7.293583
+  type: 'test'
+  ...
+# Subtest: a valid nonempty one-track release subset exposes complete question records
+ok 2 - a valid nonempty one-track release subset exposes complete question records
+  ---
+  duration_ms: 80.291292
+  type: 'test'
+  ...
+# Subtest: malformed release manifests make the configured release unavailable
+ok 3 - malformed release manifests make the configured release unavailable
+  ---
+  duration_ms: 62.574625
+  type: 'test'
+  ...
+# Subtest: release artifacts must be nonempty, unique and bound to the manifest source commit
+ok 4 - release artifacts must be nonempty, unique and bound to the manifest source commit
+  ---
+  duration_ms: 25.860458
+  type: 'test'
+  ...
+# Subtest: corrupt checksums and malformed items make the complete configured release unavailable
+ok 5 - corrupt checksums and malformed items make the complete configured release unavailable
+  ---
+  duration_ms: 9.925
+  type: 'test'
+  ...
+# Subtest: missing catalog configuration is explicit
+ok 6 - missing catalog configuration is explicit
+  ---
+  duration_ms: 0.665333
+  type: 'test'
+  ...
+# Subtest: configured release paths cannot escape the canonical releases root
+ok 7 - configured release paths cannot escape the canonical releases root
+  ---
+  duration_ms: 7.092167
+  type: 'test'
+  ...
+# Subtest: certification item shape is normalized for inspection while preserving its published fields
+ok 8 - certification item shape is normalized for inspection while preserving its published fields
+  ---
+  duration_ms: 5.387042
+  type: 'test'
+  ...
+# Subtest: simultaneous catalog reads share one cold load and populate the cache
+ok 9 - simultaneous catalog reads share one cold load and populate the cache
+  ---
+  duration_ms: 7.69625
+  type: 'test'
+  ...
+# Subtest: a rejected cold load clears in-flight state before retrying
+ok 10 - a rejected cold load clears in-flight state before retrying
+  ---
+  duration_ms: 13.242666
+  type: 'test'
+  ...
+# Subtest: checksum-valid malformed answer options are rejected before rendering
+ok 11 - checksum-valid malformed answer options are rejected before rendering
+  ---
+  duration_ms: 15.570083
+  type: 'test'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/adoptionTransfer.emulator.test.ts
+not ok 3 - tests/adoptionTransfer.emulator.test.ts
+  ---
+  duration_ms: 3252.923
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/adoptionTransfer.emulator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: canonical transfer requests reject retired marker fields
+ok 13 - canonical transfer requests reject retired marker fields
+  ---
+  duration_ms: 30.480083
+  type: 'test'
+  ...
+# Subtest: transfer identity fields accept long IDs while chunk and envelope budgets remain bounded
+ok 14 - transfer identity fields accept long IDs while chunk and envelope budgets remain bounded
+  ---
+  duration_ms: 1.847292
+  type: 'test'
+  ...
+# Subtest: transfer is resumable, sealed by canonical digest, and decisions remain immutable
+ok 15 - transfer is resumable, sealed by canonical digest, and decisions remain immutable
+  ---
+  duration_ms: 171.804667
+  type: 'test'
+  ...
+# Subtest: result chunks keep goal and plan records together and keys include the full identity
+ok 16 - result chunks keep goal and plan records together and keys include the full identity
+  ---
+  duration_ms: 1.090041
+  type: 'test'
+  ...
+# Subtest: stale seals and generation flips are rejected
+ok 17 - stale seals and generation flips are rejected
+  ---
+  duration_ms: 0.607166
+  type: 'test'
+  ...
+# Subtest: App Check rejections log only a bounded code and server correlation ID
+ok 18 - App Check rejections log only a bounded code and server correlation ID
+  ---
+  duration_ms: 521.162625
+  type: 'test'
+  ...
+# Subtest: recovery routes set no-store before guards and fail unavailable before any rate-limit write
+ok 19 - recovery routes set no-store before guards and fail unavailable before any rate-limit write
+  ---
+  duration_ms: 107.860916
+  type: 'test'
+  ...
+# Subtest: recovery rate limiting hashes the requester before storage and never logs proof codes
+ok 20 - recovery rate limiting hashes the requester before storage and never logs proof codes
+  ---
+  duration_ms: 58.167375
+  type: 'test'
+  ...
+# Subtest: recovery contention and damaged persisted security state return explicit contract errors without exposing proof
+ok 21 - recovery contention and damaged persisted security state return explicit contract errors without exposing proof
+  ---
+  duration_ms: 467.949125
+  type: 'test'
+  ...
+# Subtest: handled sync and adoption rejections emit a redacted structured event and preserve responses
+ok 22 - handled sync and adoption rejections emit a redacted structured event and preserve responses
+  ---
+  duration_ms: 41.379167
+  type: 'test'
+  ...
+# Subtest: production Fastify logs only allowlisted request diagnostics and never canary data
+ok 23 - production Fastify logs only allowlisted request diagnostics and never canary data
+  ---
+  duration_ms: 34.27275
+  type: 'test'
+  ...
+# Subtest: canonical logger emits only allowlisted diagnostics and static messages
+ok 24 - canonical logger emits only allowlisted diagnostics and static messages
+  ---
+  duration_ms: 0.738667
+  type: 'test'
+  ...
+# Subtest: canonical logger child bindings retain only server request IDs and cannot override safety hooks
+ok 25 - canonical logger child bindings retain only server request IDs and cannot override safety hooks
+  ---
+  duration_ms: 0.65225
+  type: 'test'
+  ...
+# Subtest: conflict event codes are allowlisted, unknown values are literal unknown, and success is silent
+ok 26 - conflict event codes are allowlisted, unknown values are literal unknown, and success is silent
+  ---
+  duration_ms: 91.631917
+  type: 'test'
+  ...
+# Subtest: AUD-08 B2 recovery emulator matrix (skipped: set AUD08_RECOVERY_EMULATOR_TESTS=1 and provide the dedicated demo emulator pins)
+ok 27 - AUD-08 B2 recovery emulator matrix (skipped: set AUD08_RECOVERY_EMULATOR_TESTS=1 and provide the dedicated demo emulator pins) # SKIP
+  ---
+  duration_ms: 0.486
+  type: 'suite'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/contentPackages.emulator.test.ts
+not ok 7 - tests/contentPackages.emulator.test.ts
+  ---
+  duration_ms: 2945.496416
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/contentPackages.emulator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: strict package manifest binds path, compressed bytes and opaque artifact bytes
+ok 29 - strict package manifest binds path, compressed bytes and opaque artifact bytes
+  ---
+  duration_ms: 6.462459
+  type: 'test'
+  ...
+# Subtest: filesystem storage contains paths and publisher activates only after immutable verified writes
+ok 30 - filesystem storage contains paths and publisher activates only after immutable verified writes
+  ---
+  duration_ms: 70.06175
+  type: 'test'
+  ...
+# Subtest: publication leaves pointer unchanged when package bytes cannot be verified
+ok 31 - publication leaves pointer unchanged when package bytes cannot be verified
+  ---
+  duration_ms: 2.344625
+  type: 'test'
+  ...
+# Subtest: content report descriptions accept empty input only as a neutral safe fallback
+ok 32 - content report descriptions accept empty input only as a neutral safe fallback
+  ---
+  duration_ms: 13.605834
+  type: 'test'
+  ...
+# Subtest: content report descriptions reject contact details and obvious credentials
+ok 33 - content report descriptions reject contact details and obvious credentials
+  ---
+  duration_ms: 4.004334
+  type: 'test'
+  ...
+# Subtest: content report descriptions keep ordinary technical wording
+ok 34 - content report descriptions keep ordinary technical wording
+  ---
+  duration_ms: 0.416916
+  type: 'test'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/dataExport.test.ts
+not ok 10 - tests/dataExport.test.ts
+  ---
+  duration_ms: 3023.707917
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/dataExport.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: Cloud Run container contract is immutable-image and non-root
+ok 36 - Cloud Run container contract is immutable-image and non-root
+  ---
+  duration_ms: 23.595875
+  type: 'test'
+  ...
+# Subtest: Firestore export retention and history indexes are repository-deployable
+ok 37 - Firestore export retention and history indexes are repository-deployable
+  ---
+  duration_ms: 9.513209
+  type: 'test'
+  ...
+# Subtest: production rejects either Firebase emulator host before runtime configuration is returned
+ok 38 - production rejects either Firebase emulator host before runtime configuration is returned
+  ---
+  duration_ms: 12.87
+  type: 'test'
+  ...
+# Subtest: explicit local emulator configuration remains accepted outside production
+ok 39 - explicit local emulator configuration remains accepted outside production
+  ---
+  duration_ms: 0.648791
+  type: 'test'
+  ...
+# Subtest: operator OIDC configuration is optional, all-or-none, pinned to safe HTTPS, and strict
+ok 40 - operator OIDC configuration is optional, all-or-none, pinned to safe HTTPS, and strict
+  ---
+  duration_ms: 30.648625
+  type: 'test'
+  ...
+# Subtest: recovery cipher configuration remains independent from fixed terminal retention
+ok 41 - recovery cipher configuration remains independent from fixed terminal retention
+  ---
+  duration_ms: 2.12075
+  type: 'test'
+  ...
+# Subtest: store wiring rejects recovery key reuse against the privacy encryption key, including retained keys
+ok 42 - store wiring rejects recovery key reuse against the privacy encryption key, including retained keys
+  ---
+  duration_ms: 2.195084
+  type: 'test'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/firestore.emulator.test.ts
+not ok 13 - tests/firestore.emulator.test.ts
+  ---
+  duration_ms: 2818.505292
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/firestore.emulator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: isolated gate accepts the canonical configuration and rejects shared projects or dangerous config drift
+ok 44 - isolated gate accepts the canonical configuration and rejects shared projects or dangerous config drift
+  ---
+  duration_ms: 15.081166
+  type: 'test'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/isolatedProgressFixture.emulator.test.ts
+not ok 15 - tests/isolatedProgressFixture.emulator.test.ts
+  ---
+  duration_ms: 4573.6395
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/isolatedProgressFixture.emulator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: consumer request intake is bounded and distinguishes every approved route
+ok 46 - consumer request intake is bounded and distinguishes every approved route
+  ---
+  duration_ms: 23.590292
+  type: 'test'
+  ...
+# Subtest: only a complaint receives the statutory fourteen-day response deadline
+ok 47 - only a complaint receives the statutory fourteen-day response deadline
+  ---
+  duration_ms: 5.143917
+  type: 'test'
+  ...
+# Subtest: closed consumer cases retain evidence for six calendar years
+ok 48 - closed consumer cases retain evidence for six calendar years
+  ---
+  duration_ms: 0.278791
+  type: 'test'
+  ...
+# Subtest: operator transitions require an expected revision and bounded response or hold reason
+ok 49 - operator transitions require an expected revision and bounded response or hold reason
+  ---
+  duration_ms: 1.653708
+  type: 'test'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/legalRequests.emulator.test.ts
+not ok 17 - tests/legalRequests.emulator.test.ts
+  ---
+  duration_ms: 3430.195208
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/legalRequests.emulator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: smoke launcher requires existing local emulator configuration and excludes remote integrations
+ok 51 - smoke launcher requires existing local emulator configuration and excludes remote integrations
+  ---
+  duration_ms: 8.937625
+  type: 'test'
+  ...
+# Subtest: local App Check fixture rejects missing/wrong tokens and never substitutes user identity
+ok 52 - local App Check fixture rejects missing/wrong tokens and never substitutes user identity
+  ---
+  duration_ms: 1.176166
+  type: 'test'
+  ...
+# Subtest: local smoke entitlement fixture defaults to the mobile identity with an expired state
+ok 53 - local smoke entitlement fixture defaults to the mobile identity with an expired state
+  ---
+  duration_ms: 3.634542
+  type: 'test'
+  ...
+# {"level":30,"time":1790871251741,"reqId":"911dda71-9037-47d0-8a02-3bc6513765f9","req":{"method":"GET"},"msg":"incoming request"}
+# Subtest: local smoke active entitlement passes the ordinary GET /v1/entitlements route
+ok 54 - local smoke active entitlement passes the ordinary GET /v1/entitlements route
+  ---
+  duration_ms: 455.388334
+  type: 'test'
+  ...
+# {"level":30,"time":1790871251753,"reqId":"911dda71-9037-47d0-8a02-3bc6513765f9","res":{"statusCode":200},"responseTime":5.868499999999813,"msg":"request completed"}
+# Subtest: local smoke rejects unknown entitlement state and remains isolated from production
+ok 55 - local smoke rejects unknown entitlement state and remains isolated from production
+  ---
+  duration_ms: 32.111709
+  type: 'test'
+  ...
+# Subtest: preview identifies upload, restore, deduplication and divergent records
+ok 56 - preview identifies upload, restore, deduplication and divergent records
+  ---
+  duration_ms: 22.982708
+  type: 'test'
+  ...
+# Subtest: active sessions and recovery journals block adoption
+ok 57 - active sessions and recovery journals block adoption
+  ---
+  duration_ms: 12.133834
+  type: 'test'
+  ...
+# Subtest: confirmation requires every conflict and every goal plan group
+ok 58 - confirmation requires every conflict and every goal plan group
+  ---
+  duration_ms: 18.438916
+  type: 'test'
+  ...
+# Subtest: full identity keys remain collision safe across tracks
+ok 59 - full identity keys remain collision safe across tracks
+  ---
+  duration_ms: 2.3025
+  type: 'test'
+  ...
+# Subtest: merge identity fields accept long IDs through preview and confirmation
+ok 60 - merge identity fields accept long IDs through preview and confirmation
+  ---
+  duration_ms: 10.586459
+  type: 'test'
+  ...
+# Subtest: legacy content identity fields are rejected recursively
+ok 61 - legacy content identity fields are rejected recursively
+  ---
+  duration_ms: 1.894542
+  type: 'test'
+  ...
+# Subtest: GATE-02 source OpenAPI document is complete
+ok 62 - GATE-02 source OpenAPI document is complete
+  ---
+  duration_ms: 10.766666
+  type: 'test'
+  ...
+# Subtest: unready runtime response matches the documented 503 schema
+ok 63 - unready runtime response matches the documented 503 schema
+  ---
+  duration_ms: 485.2415
+  type: 'test'
+  ...
+# Subtest: runtime parity uses the real app, normalizes parameters, and ignores automatic HEAD
+ok 64 - runtime parity uses the real app, normalizes parameters, and ignores automatic HEAD
+  ---
+  duration_ms: 58.358333
+  type: 'test'
+  ...
+# Subtest: runtime parity rejects a missing operation
+ok 65 - runtime parity rejects a missing operation
+  ---
+  duration_ms: 73.30675
+  type: 'test'
+  ...
+# Subtest: runtime parity rejects an extra operation
+ok 66 - runtime parity rejects an extra operation
+  ---
+  duration_ms: 38.604542
+  type: 'test'
+  ...
+# Subtest: runtime parity rejects a wrong method
+ok 67 - runtime parity rejects a wrong method
+  ---
+  duration_ms: 53.959417
+  type: 'test'
+  ...
+# unknown format "uuid" ignored in schema at path "\#/properties/operationId"
+# unknown format "uuid" ignored in schema at path "\#/properties/operationId"
+# unknown format "uuid" ignored in schema at path "\#/properties/operationId"
+# unknown format "uuid" ignored in schema at path "\#/properties/operationId"
+# Subtest: behavioral security probes exercise every protected profile
+ok 68 - behavioral security probes exercise every protected profile
+  ---
+  duration_ms: 261.078417
+  type: 'test'
+  ...
+# Subtest: every account-resolving operation documents account_not_found
+ok 69 - every account-resolving operation documents account_not_found
+  ---
+  duration_ms: 16.429875
+  type: 'test'
+  ...
+# Subtest: recovery operation routes document strict operation-bound payloads, guards, and no-store responses
+ok 70 - recovery operation routes document strict operation-bound payloads, guards, and no-store responses
+  ---
+  duration_ms: 76.832167
+  type: 'test'
+  ...
+# Subtest: behavioral security probes reject a no-op guard fixture
+ok 71 - behavioral security probes reject a no-op guard fixture
+  ---
+  duration_ms: 11.491041
+  type: 'test'
+  ...
+# Subtest: an unregistered no-op pre-handler is unknown and cannot impersonate a public route
+ok 72 - an unregistered no-op pre-handler is unknown and cannot impersonate a public route
+  ---
+  duration_ms: 66.894917
+  type: 'test'
+  ...
+# Subtest: completeness rejects a missing request schema
+ok 73 - completeness rejects a missing request schema
+  ---
+  duration_ms: 14.657667
+  type: 'test'
+  ...
+# Subtest: completeness rejects an empty request schema
+ok 74 - completeness rejects an empty request schema
+  ---
+  duration_ms: 40.379875
+  type: 'test'
+  ...
+# Subtest: completeness rejects a missing success response schema
+ok 75 - completeness rejects a missing success response schema
+  ---
+  duration_ms: 7.615084
+  type: 'test'
+  ...
+# Subtest: completeness rejects an empty success response schema
+ok 76 - completeness rejects an empty success response schema
+  ---
+  duration_ms: 7.575917
+  type: 'test'
+  ...
+# Subtest: completeness rejects duplicate operation identities
+ok 77 - completeness rejects duplicate operation identities
+  ---
+  duration_ms: 5.746208
+  type: 'test'
+  ...
+# Subtest: completeness rejects an incorrect protection profile
+ok 78 - completeness rejects an incorrect protection profile
+  ---
+  duration_ms: 35.457916
+  type: 'test'
+  ...
+# Subtest: completeness rejects an unclassified consumer operation
+ok 79 - completeness rejects an unclassified consumer operation
+  ---
+  duration_ms: 23.404875
+  type: 'test'
+  ...
+# Subtest: ordinary error responses use the closed common envelope
+ok 80 - ordinary error responses use the closed common envelope
+  ---
+  duration_ms: 7.97975
+  type: 'test'
+  ...
+# Subtest: frontend checker rejects an unknown consumer operation
+ok 81 - frontend checker rejects an unknown consumer operation
+  ---
+  duration_ms: 309.956167
+  type: 'test'
+  ...
+# Subtest: frontend checker does not let a methodless static path satisfy a consumer operation
+ok 82 - frontend checker does not let a methodless static path satisfy a consumer operation
+  ---
+  duration_ms: 299.114417
+  type: 'test'
+  ...
+# Subtest: frontend checker binds useAdminRead callsites to the wrapper method
+ok 83 - frontend checker binds useAdminRead callsites to the wrapper method
+  ---
+  duration_ms: 304.908791
+  type: 'test'
+  ...
+# Subtest: frontend checker rejects a useAdminRead callsite with no expected operation
+ok 84 - frontend checker rejects a useAdminRead callsite with no expected operation
+  ---
+  duration_ms: 511.822167
+  type: 'test'
+  ...
+# Subtest: list and show use real HTTPS, hidden token input, and canonical response schemas
+ok 85 - list and show use real HTTPS, hidden token input, and canonical response schemas
+  ---
+  duration_ms: 776.251125
+  type: 'test'
+  ...
+# Subtest: action validates payload and current CAS state before typed confirmation and one PATCH
+ok 86 - action validates payload and current CAS state before typed confirmation and one PATCH
+  ---
+  duration_ms: 624.583208
+  type: 'test'
+  ...
+# Subtest: inherited insecure TLS configuration is rejected before an HTTPS request
+ok 87 - inherited insecure TLS configuration is rejected before an HTTPS request
+  ---
+  duration_ms: 330.434791
+  type: 'test'
+  ...
+# Subtest: an untrusted TLS certificate is rejected without reaching the handler
+ok 88 - an untrusted TLS certificate is rejected without reaching the handler
+  ---
+  duration_ms: 418.745917
+  type: 'test'
+  ...
+# Subtest: a redirect is rejected without forwarding credentials to its target
+ok 89 - a redirect is rejected without forwarding credentials to its target
+  ---
+  duration_ms: 1260.881125
+  type: 'test'
+  ...
+# Subtest: expired, overlong, and future-issued tokens fail locally before HTTP
+ok 90 - expired, overlong, and future-issued tokens fail locally before HTTP
+  ---
+  duration_ms: 1066.686375
+  type: 'test'
+  ...
+# Subtest: a denied origin fails before token prompt or network
+ok 91 - a denied origin fails before token prompt or network
+  ---
+  duration_ms: 616.40475
+  type: 'test'
+  ...
+# Subtest: unknown options and schema-invalid payloads fail before token prompt or network
+ok 92 - unknown options and schema-invalid payloads fail before token prompt or network
+  ---
+  duration_ms: 380.740959
+  type: 'test'
+  ...
+# Subtest: piped JSON stdin is accepted when prompts use a separate controlling terminal
+ok 93 - piped JSON stdin is accepted when prompts use a separate controlling terminal
+  ---
+  duration_ms: 647.326834
+  type: 'test'
+  ...
+# Subtest: interactive stdin still requires an explicit payload descriptor
+ok 94 - interactive stdin still requires an explicit payload descriptor
+  ---
+  duration_ms: 612.686459
+  type: 'test'
+  ...
+# Subtest: token prompt still rejects when no controlling terminal is available
+ok 95 - token prompt still rejects when no controlling terminal is available
+  ---
+  duration_ms: 635.725541
+  type: 'test'
+  ...
+# Subtest: revision mismatch is rejected before confirmation or mutation
+ok 96 - revision mismatch is rejected before confirmation or mutation
+  ---
+  duration_ms: 554.100625
+  type: 'test'
+  ...
+# Subtest: a lost mutation response is ambiguous and triggers one state read without retry
+ok 97 - a lost mutation response is ambiguous and triggers one state read without retry
+  ---
+  duration_ms: 458.059875
+  type: 'test'
+  ...
+# Subtest: HTTP 500 and malformed 200 mutation responses reconcile once without leaking bodies
+    # Subtest: server_error is ambiguous after one mutation
+    ok 1 - server_error is ambiguous after one mutation
+      ---
+      duration_ms: 724.574125
+      type: 'test'
+      ...
+    # Subtest: malformed_success is ambiguous after one mutation
+    ok 2 - malformed_success is ambiguous after one mutation
+      ---
+      duration_ms: 612.382917
+      type: 'test'
+      ...
+    1..2
+ok 98 - HTTP 500 and malformed 200 mutation responses reconcile once without leaking bodies
+  ---
+  duration_ms: 1337.755459
+  type: 'test'
+  ...
+# Subtest: incident create prints and uses one stable ID before confirmation
+ok 99 - incident create prints and uses one stable ID before confirmation
+  ---
+  duration_ms: 488.326541
+  type: 'test'
+  ...
+# Subtest: authority export uses its exact read-only route and canonical schema
+ok 100 - authority export uses its exact read-only route and canonical schema
+  ---
+  duration_ms: 667.59625
+  type: 'test'
+  ...
+# Subtest: content status transition uses its explicit family confirmation (cancel)
+ok 101 - content status transition uses its explicit family confirmation (cancel)
+  ---
+  duration_ms: 802.29625
+  type: 'test'
+  ...
+# Subtest: content status transition uses its explicit family confirmation (apply)
+ok 102 - content status transition uses its explicit family confirmation (apply)
+  ---
+  duration_ms: 453.160459
+  type: 'test'
+  ...
+# Subtest: standalone CLI reads through verified TLS and a hidden real terminal token
+ok 103 - standalone CLI reads through verified TLS and a hidden real terminal token
+  ---
+  duration_ms: 3285.167292
+  type: 'test'
+  ...
+# Subtest: standalone CLI cancellation sends no mutation after reading payload from FD3
+ok 104 - standalone CLI cancellation sends no mutation after reading payload from FD3
+  ---
+  duration_ms: 2334.007709
+  type: 'test'
+  ...
+# Subtest: standalone CLI cancellation sends no mutation after reading payload from piped stdin
+not ok 105 - standalone CLI cancellation sends no mutation after reading payload from piped stdin
+  ---
+  duration_ms: 2943.02675
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/operatorCli.tty.test.ts:2:182'
+  failureType: 'testCodeFailure'
+  error: |-
+    CLI omitted a required input prompt: Error: token_prompt_requires_tty
+    
+    
+    0 !== 2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    runNative (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/operatorCli.tty.test.ts:65:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/operatorCli.tty.test.ts:115:20)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: standalone CLI lost mutation response makes one write and one reconciliation read
+ok 106 - standalone CLI lost mutation response makes one write and one reconciliation read
+  ---
+  duration_ms: 2096.498041
+  type: 'test'
+  ...
+# Subtest: standalone CLI Ctrl+C restores terminal and stops before any HTTP request
+ok 107 - standalone CLI Ctrl+C restores terminal and stops before any HTTP request
+  ---
+  duration_ms: 1822.9685
+  type: 'test'
+  ...
+# Subtest: operator verifier authenticates, authorizes exact action, caches keys, and returns only pseudonymous identity
+ok 108 - operator verifier authenticates, authorizes exact action, caches keys, and returns only pseudonymous identity
+  ---
+  duration_ms: 77.044458
+  type: 'test'
+  ...
+# Subtest: operator verifier rejects malformed, mismatched, expired, future, and incorrectly signed tokens without leaking details
+ok 109 - operator verifier rejects malformed, mismatched, expired, future, and incorrectly signed tokens without leaking details
+  ---
+  duration_ms: 16.213625
+  type: 'test'
+  ...
+# Subtest: unknown kid performs one shared refresh and global cooldown blocks sequential or rotating misses
+ok 110 - unknown kid performs one shared refresh and global cooldown blocks sequential or rotating misses
+  ---
+  duration_ms: 2.9015
+  type: 'test'
+  ...
+# Subtest: failed unknown-kid refresh also starts the global cooldown
+ok 111 - failed unknown-kid refresh also starts the global cooldown
+  ---
+  duration_ms: 2.626333
+  type: 'test'
+  ...
+# Subtest: JWKS redirect, oversized body, duplicate kid, and network failure are rejected
+ok 112 - JWKS redirect, oversized body, duplicate kid, and network failure are rejected
+  ---
+  duration_ms: 9.599375
+  type: 'test'
+  ...
+# Subtest: JWKS streaming limit rejects a chunked oversized body before consuming its tail
+ok 113 - JWKS streaming limit rejects a chunked oversized body before consuming its tail
+  ---
+  duration_ms: 21.862209
+  type: 'test'
+  ...
+# Subtest: JWKS fetch deadline aborts a stalled request
+ok 114 - JWKS fetch deadline aborts a stalled request
+  ---
+  duration_ms: 30.733125
+  type: 'test'
+  ...
+# Subtest: production HTTPS lookup returns the Node all-address callback shape and rejects any non-public answer
+ok 115 - production HTTPS lookup returns the Node all-address callback shape and rejects any non-public answer
+  ---
+  duration_ms: 3.840458
+  type: 'test'
+  ...
+# Subtest: absent operator configuration produces no verifier
+ok 116 - absent operator configuration produces no verifier
+  ---
+  duration_ms: 0.337084
+  type: 'test'
+  ...
+# Subtest: operator routes use the production verifier for exact-scope authorization before stores
+ok 117 - operator routes use the production verifier for exact-scope authorization before stores
+  ---
+  duration_ms: 167.126083
+  type: 'test'
+  ...
+# Subtest: unconfigured operator access is explicit and no-store
+ok 118 - unconfigured operator access is explicit and no-store
+  ---
+  duration_ms: 18.310125
+  type: 'test'
+  ...
+# Subtest: operator queue and mutation projections stay minimal while audited details expose only allowlisted context
+ok 119 - operator queue and mutation projections stay minimal while audited details expose only allowlisted context
+  ---
+  duration_ms: 22.175166
+  type: 'test'
+  ...
+# Subtest: operator transitions reject extra fields and disabled delivery actions before store writes
+ok 120 - operator transitions reject extra fields and disabled delivery actions before store writes
+  ---
+  duration_ms: 30.670792
+  type: 'test'
+  ...
+# Subtest: OPS-B4 synthetic acceptance drives public intake, audited operator actions, and replay safety over HTTPS
+ok 121 - OPS-B4 synthetic acceptance drives public intake, audited operator actions, and replay safety over HTTPS # SKIP run only through npm run test:operator:acceptance
+  ---
+  duration_ms: 0.672875
+  type: 'test'
+  ...
+# Subtest: operator queues return at most 100 allowlisted rows, audit each returned row, and content CAS rejects a stale writer
+ok 122 - operator queues return at most 100 allowlisted rows, audit each returned row, and content CAS rejects a stale writer # SKIP requires explicit isolated OPS_B2_EMULATOR_TESTS=1 gate
+  ---
+  duration_ms: 0.686167
+  type: 'test'
+  ...
+# Subtest: operator privacy email fence has no public writes while safe public review remains available
+ok 123 - operator privacy email fence has no public writes while safe public review remains available # SKIP requires explicit isolated OPS_B2_EMULATOR_TESTS=1 gate
+  ---
+  duration_ms: 0.055833
+  type: 'test'
+  ...
+# Subtest: stable incident caller UUID replays exact payload and rejects changed payload
+ok 124 - stable incident caller UUID replays exact payload and rejects changed payload # SKIP requires explicit isolated OPS_B2_EMULATOR_TESTS=1 gate
+  ---
+  duration_ms: 0.042209
+  type: 'test'
+  ...
+# Subtest: legal non-email actions need no sender and unavailable answer leaves no effects
+ok 125 - legal non-email actions need no sender and unavailable answer leaves no effects # SKIP requires explicit isolated OPS_B2_EMULATOR_TESTS=1 gate
+  ---
+  duration_ms: 0.042167
+  type: 'test'
+  ...
+# Subtest: calendar deadlines clamp to the last UTC day of shorter months
+ok 126 - calendar deadlines clamp to the last UTC day of shorter months
+  ---
+  duration_ms: 1.525334
+  type: 'test'
+  ...
+# Subtest: extension is an event and can happen only once before the first deadline
+ok 127 - extension is an event and can happen only once before the first deadline
+  ---
+  duration_ms: 0.855333
+  type: 'test'
+  ...
+# Subtest: response preparation, delivery and closure remain distinct
+ok 128 - response preparation, delivery and closure remain distinct
+  ---
+  duration_ms: 0.429709
+  type: 'test'
+  ...
+# Subtest: invalid transitions and unproved responses fail closed
+ok 129 - invalid transitions and unproved responses fail closed
+  ---
+  duration_ms: 0.500166
+  type: 'test'
+  ...
+# Subtest: public intake accepts bounded identifiers and rejects arbitrary shape
+ok 130 - public intake accepts bounded identifiers and rejects arbitrary shape
+  ---
+  duration_ms: 0.475084
+  type: 'test'
+  ...
+# Subtest: each right has an explicit executor and verification policy
+ok 131 - each right has an explicit executor and verification policy
+  ---
+  duration_ms: 0.735875
+  type: 'test'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/privacyRequestDelivery.emulator.test.ts
+not ok 28 - tests/privacyRequestDelivery.emulator.test.ts
+  ---
+  duration_ms: 612.9075
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/privacyRequestDelivery.emulator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/privacyRequests.test.ts
+not ok 29 - tests/privacyRequests.test.ts
+  ---
+  duration_ms: 777.5215
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/privacyRequests.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: emulator target guard requires exact project and loopback endpoints
+ok 134 - emulator target guard requires exact project and loopback endpoints
+  ---
+  duration_ms: 1.365209
+  type: 'test'
+  ...
+# Subtest: manifest guard requires exact fixture identity, email digest and operation ID
+ok 135 - manifest guard requires exact fixture identity, email digest and operation ID
+  ---
+  duration_ms: 0.812917
+  type: 'test'
+  ...
+# Subtest: Auth UID maps to exactly one Firebase identity and an internal UUID account
+ok 136 - Auth UID maps to exactly one Firebase identity and an internal UUID account
+  ---
+  duration_ms: 0.812125
+  type: 'test'
+  ...
+# Subtest: manifest guard validates every captured path and nested report audit entry
+ok 137 - manifest guard validates every captured path and nested report audit entry
+  ---
+  duration_ms: 0.306417
+  type: 'test'
+  ...
+# Subtest: manifest integrity rejects cleanup-path tampering before destructive work
+ok 138 - manifest integrity rejects cleanup-path tampering before destructive work
+  ---
+  duration_ms: 0.389292
+  type: 'test'
+  ...
+# Subtest: pre-deletion snapshot guard rejects post-delete or incomplete account state
+ok 139 - pre-deletion snapshot guard rejects post-delete or incomplete account state
+  ---
+  duration_ms: 0.10825
+  type: 'test'
+  ...
+# Subtest: post-delete evidence requires exactly one operation and proof beyond signed baselines
+ok 140 - post-delete evidence requires exactly one operation and proof beyond signed baselines
+  ---
+  duration_ms: 0.273708
+  type: 'test'
+  ...
+# Subtest: deletion operation and proof retain the complete linked contract
+ok 141 - deletion operation and proof retain the complete linked contract
+  ---
+  duration_ms: 0.185292
+  type: 'test'
+  ...
+# Subtest: cleanup paths must belong to the manifest's exact UID and captured retained roots
+ok 142 - cleanup paths must belong to the manifest's exact UID and captured retained roots
+  ---
+  duration_ms: 0.389917
+  type: 'test'
+  ...
+# Subtest: cleanup validates surviving owned-root documents and exact rate-limit document identity
+ok 143 - cleanup validates surviving owned-root documents and exact rate-limit document identity
+  ---
+  duration_ms: 0.3925
+  type: 'test'
+  ...
+# Subtest: the canonical sync envelope is required and has one mutation shape
+ok 144 - the canonical sync envelope is required and has one mutation shape
+  ---
+  duration_ms: 4.621625
+  type: 'test'
+  ...
+# Subtest: sync batches require unique mutation ids and record targets
+ok 145 - sync batches require unique mutation ids and record targets
+  ---
+  duration_ms: 1.119083
+  type: 'test'
+  ...
+# Subtest: canonical tombstones are accepted directly and retired identity markers are rejected recursively
+ok 146 - canonical tombstones are accepted directly and retired identity markers are rejected recursively
+  ---
+  duration_ms: 2.798
+  type: 'test'
+  ...
+# Subtest: resolved material identity is exact and remains part of the mutation fingerprint
+ok 147 - resolved material identity is exact and remains part of the mutation fingerprint
+  ---
+  duration_ms: 0.930375
+  type: 'test'
+  ...
+# Subtest: resolved material identity uses the canonical safe identity rules
+ok 148 - resolved material identity uses the canonical safe identity rules
+  ---
+  duration_ms: 0.46575
+  type: 'test'
+  ...
+# Subtest: sync identities are bounded by the canonical envelope rather than arbitrary field caps
+ok 149 - sync identities are bounded by the canonical envelope rather than arbitrary field caps
+  ---
+  duration_ms: 0.40775
+  type: 'test'
+  ...
+# Subtest: sync and state limits are enforced without a compatibility branch
+ok 150 - sync and state limits are enforced without a compatibility branch
+  ---
+  duration_ms: 29.827833
+  type: 'test'
+  ...
+# Subtest: pagination tokens contain only generation, revision and cursor identity
+ok 151 - pagination tokens contain only generation, revision and cursor identity
+  ---
+  duration_ms: 1.312917
+  type: 'test'
+  ...
+# Subtest: canonical JSON uses NFC normalization and UTF-8 byte accounting
+ok 152 - canonical JSON uses NFC normalization and UTF-8 byte accounting
+  ---
+  duration_ms: 0.340416
+  type: 'test'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/progressStorage.emulator.test.ts:9
+# if (!process.env.FIRESTORE_EMULATOR_HOST) throw new Error("firebase_emulator_suite_required");
+#                                                 ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/progressStorage.emulator.test.ts:9:49)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/progressStorage.emulator.test.ts
+not ok 32 - tests/progressStorage.emulator.test.ts
+  ---
+  duration_ms: 489.7515
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/progressStorage.emulator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: pseudonym key ring domain-separates identities and keeps old keys verify-only
+ok 154 - pseudonym key ring domain-separates identities and keeps old keys verify-only
+  ---
+  duration_ms: 1.368292
+  type: 'test'
+  ...
+# Subtest: pseudonym key ring fails closed for missing, duplicate, weak or multiple active keys
+ok 155 - pseudonym key ring fails closed for missing, duplicate, weak or multiple active keys
+  ---
+  duration_ms: 0.85775
+  type: 'test'
+  ...
+# Subtest: recovery operation cipher round-trips plaintext and generates a fresh 96-bit IV
+ok 156 - recovery operation cipher round-trips plaintext and generates a fresh 96-bit IV
+  ---
+  duration_ms: 1.8055
+  type: 'test'
+  ...
+# Subtest: recovery operation cipher authenticates every operation identity field and key version
+ok 157 - recovery operation cipher authenticates every operation identity field and key version
+  ---
+  duration_ms: 1.173334
+  type: 'test'
+  ...
+# Subtest: recovery operation cipher rejects ciphertext, tag, and authenticated-envelope tampering
+ok 158 - recovery operation cipher rejects ciphertext, tag, and authenticated-envelope tampering
+  ---
+  duration_ms: 0.380041
+  type: 'test'
+  ...
+# Subtest: versioned keyring rejects malformed, weak, duplicate, and reused key material
+ok 159 - versioned keyring rejects malformed, weak, duplicate, and reused key material
+  ---
+  duration_ms: 0.394667
+  type: 'test'
+  ...
+# Subtest: recovery operation cipher retains old decrypt keys during explicit key rotation
+ok 160 - recovery operation cipher retains old decrypt keys during explicit key rotation
+  ---
+  duration_ms: 0.295125
+  type: 'test'
+  ...
+# Subtest: operation context and unknown key versions fail with neutral codes
+ok 161 - operation context and unknown key versions fail with neutral codes
+  ---
+  duration_ms: 0.151084
+  type: 'test'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/retentionPurge.emulator.test.ts
+not ok 35 - tests/retentionPurge.emulator.test.ts
+  ---
+  duration_ms: 602.828583
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/retentionPurge.emulator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: retention purge CLI requires an explicit target and emits only structured non-sensitive JSON on failure
+ok 163 - retention purge CLI requires an explicit target and emits only structured non-sensitive JSON on failure
+  ---
+  duration_ms: 383.843166
+  type: 'test'
+  ...
+# Subtest: retention purge CLI contract keeps dry-run default, explicit execute, target, page and delete-budget arguments
+ok 164 - retention purge CLI contract keeps dry-run default, explicit execute, target, page and delete-budget arguments
+  ---
+  duration_ms: 4.364834
+  type: 'test'
+  ...
+# Subtest: RevenueCat reader returns active and sends the encoded subscriber request
+ok 165 - RevenueCat reader returns active and sends the encoded subscriber request
+  ---
+  duration_ms: 2.901333
+  type: 'test'
+  ...
+# Subtest: RevenueCat cancellation keeps access active through the provider expiry
+ok 166 - RevenueCat cancellation keeps access active through the provider expiry
+  ---
+  duration_ms: 0.200292
+  type: 'test'
+  ...
+# Subtest: RevenueCat billing issue with a future provider grace date returns grace
+ok 167 - RevenueCat billing issue with a future provider grace date returns grace
+  ---
+  duration_ms: 0.1915
+  type: 'test'
+  ...
+# Subtest: provider grace date confirms grace even when billing issue timestamp is absent
+ok 168 - provider grace date confirms grace even when billing issue timestamp is absent
+  ---
+  duration_ms: 0.109041
+  type: 'test'
+  ...
+# Subtest: RevenueCat billing issue without a future grace date returns hold
+ok 169 - RevenueCat billing issue without a future grace date returns hold
+  ---
+  duration_ms: 0.282833
+  type: 'test'
+  ...
+# Subtest: RevenueCat expiry is evaluated against request_date_ms and never extended locally
+ok 170 - RevenueCat expiry is evaluated against request_date_ms and never extended locally
+  ---
+  duration_ms: 0.098458
+  type: 'test'
+  ...
+# Subtest: RevenueCat refund takes precedence over the expiry state
+ok 171 - RevenueCat refund takes precedence over the expiry state
+  ---
+  duration_ms: 0.134042
+  type: 'test'
+  ...
+# Subtest: RevenueCat absent entitlement or subscription is expired
+ok 172 - RevenueCat absent entitlement or subscription is expired
+  ---
+  duration_ms: 0.348917
+  type: 'test'
+  ...
+# Subtest: RevenueCat product or environment mismatch is unavailable
+ok 173 - RevenueCat product or environment mismatch is unavailable
+  ---
+  duration_ms: 0.342666
+  type: 'test'
+  ...
+# Subtest: RevenueCat alias or transferred customer cannot confirm another Patternly account
+ok 174 - RevenueCat alias or transferred customer cannot confirm another Patternly account
+  ---
+  duration_ms: 0.3435
+  type: 'test'
+  ...
+# Subtest: missing entitlement or subscription map is unavailable rather than an authoritative expiry
+ok 175 - missing entitlement or subscription map is unavailable rather than an authoritative expiry
+  ---
+  duration_ms: 0.18025
+  type: 'test'
+  ...
+# Subtest: RevenueCat missing required expiry is unavailable
+ok 176 - RevenueCat missing required expiry is unavailable
+  ---
+  duration_ms: 0.073875
+  type: 'test'
+  ...
+# Subtest: RevenueCat network, HTTP, non-JSON and timeout failures are typed and secret-free
+ok 177 - RevenueCat network, HTTP, non-JSON and timeout failures are typed and secret-free
+  ---
+  duration_ms: 23.194334
+  type: 'test'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/revenuecatEntitlements.emulator.test.ts
+not ok 38 - tests/revenuecatEntitlements.emulator.test.ts
+  ---
+  duration_ms: 626.102458
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/revenuecatEntitlements.emulator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/revenuecatWebhook.emulator.test.ts
+not ok 39 - tests/revenuecatWebhook.emulator.test.ts
+  ---
+  duration_ms: 603.596458
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/revenuecatWebhook.emulator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: RevenueCat authorization is exact and rejects missing or different-length values
+ok 180 - RevenueCat authorization is exact and rejects missing or different-length values
+  ---
+  duration_ms: 1.247667
+  type: 'test'
+  ...
+# Subtest: RevenueCat lifecycle grants, preserves and removes access at the correct events
+ok 181 - RevenueCat lifecycle grants, preserves and removes access at the correct events
+  ---
+  duration_ms: 4.142208
+  type: 'test'
+  ...
+# Subtest: RevenueCat parser rejects incomplete payloads and reducer rejects future timestamps
+ok 182 - RevenueCat parser rejects incomplete payloads and reducer rejects future timestamps
+  ---
+  duration_ms: 0.962834
+  type: 'test'
+  ...
+# Subtest: security incident contract requires an explicit revision for every mutation
+ok 183 - security incident contract requires an explicit revision for every mutation
+  ---
+  duration_ms: 1.553416
+  type: 'test'
+  ...
+# Subtest: security incident calendar retention preserves leap-year legal dates
+ok 184 - security incident calendar retention preserves leap-year legal dates
+  ---
+  duration_ms: 0.849166
+  type: 'test'
+  ...
+# Subtest: security incident awareness deadline is immutable UTC +72 hours
+ok 185 - security incident awareness deadline is immutable UTC +72 hours
+  ---
+  duration_ms: 0.071666
+  type: 'test'
+  ...
+# Subtest: OpenAPI exposes every runtime security-incident action and exact export route
+ok 186 - OpenAPI exposes every runtime security-incident action and exact export route
+  ---
+  duration_ms: 1.838292
+  type: 'test'
+  ...
+# /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14
+# if (!firestoreHost || !authHost) throw new Error("firebase_emulator_suite_required");
+#                                        ^
+# Error: firebase_emulator_suite_required
+#     at <anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/support.ts:14:40)
+#     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+#     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+#     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+# Node.js v22.22.3
+# Subtest: tests/securityIncidents.test.ts
+not ok 42 - tests/securityIncidents.test.ts
+  ---
+  duration_ms: 731.143834
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-backend/tests/securityIncidents.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: SMTP privacy sender emits bounded plain-text messages for every DSAR purpose
+ok 188 - SMTP privacy sender emits bounded plain-text messages for every DSAR purpose
+  ---
+  duration_ms: 1.77775
+  type: 'test'
+  ...
+# Subtest: SMTP privacy sender fails when the provider does not accept the recipient
+ok 189 - SMTP privacy sender fails when the provider does not accept the recipient
+  ---
+  duration_ms: 0.669916
+  type: 'test'
+  ...
+# Subtest: SMTP purchase receipt is plain text and contains the durable transaction evidence
+ok 190 - SMTP purchase receipt is plain text and contains the durable transaction evidence
+  ---
+  duration_ms: 0.330042
+  type: 'test'
+  ...
+# Subtest: SMTP runtime configuration is all-or-nothing and production requires it
+ok 191 - SMTP runtime configuration is all-or-nothing and production requires it
+  ---
+  duration_ms: 2.544375
+  type: 'test'
+  ...
+# Subtest: user lookups and registration continue to honor legacy SHA-256 deletion tombstones
+ok 192 - user lookups and registration continue to honor legacy SHA-256 deletion tombstones
+  ---
+  duration_ms: 3.261375
+  type: 'test'
+  ...
+# Subtest: expired legacy SHA-256 tombstones retain the existing registration replacement behavior
+ok 193 - expired legacy SHA-256 tombstones retain the existing registration replacement behavior
+  ---
+  duration_ms: 2.617667
+  type: 'test'
+  ...
+1..193
+# tests 194
+# suites 1
+# pass 175
+# fail 14
+# cancelled 0
+# skipped 5
+# todo 0
+# duration_ms 82008.890167

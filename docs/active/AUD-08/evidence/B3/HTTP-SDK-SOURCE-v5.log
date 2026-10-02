@@ -1,0 +1,39 @@
+
+> patternly@0.1.0 test:recovery-operations:emulator
+> node scripts/runRecoveryOperationIntegration.mjs
+
+AUD-08 B3 mobile integration: app=8d12b0ccabf7b2c28659c78c10a7915abafb2672 backend=15e49d04dcf510cb7081b356a7182343d9d170ab producerPins=27
+Isolated emulator gate: demo-patternly-aud08-mobile Auth19119/Firestore18119
+i  emulators: Starting emulators: auth, firestore
+i  emulators: Detected demo project ID "demo-patternly-aud08-mobile", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator was started in standard edition.
+✔  firestore: Firestore Emulator UI websocket is running on 9151.
+i  Running script: '/opt/homebrew/Cellar/node@22/22.22.3/bin/node' --import '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/tsx/dist/loader.mjs' --test --test-concurrency=1 '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/recoveryOperationIntegration.emulator.test.ts'
+TAP version 13
+# Subtest: mobile recovery coordinator, secure-store fixture and adapter complete real HTTP recovery operations
+ok 1 - mobile recovery coordinator, secure-store fixture and adapter complete real HTTP recovery operations
+  ---
+  duration_ms: 1668.446166
+  type: 'test'
+  ...
+# Firebase SDK password reauth: sameUid=true generationBefore=1 generationAfter=absent
+# ensureRecoveryIssueSignInSession restored the exact generation via real adapter exchange and Firebase custom-token sign-in after SDK credential reauth
+# wrong-generation rejection is helper-only with a controlled claim fixture; zero exchange and zero issue POST
+# stale recovery issue uses a process-global +301s Date.now fixture only during its single awaited HTTP request (test concurrency=1); SDK sign-in and backend verifier remain real, while token auth_time itself is recent
+# consume POST committed once and its response plus the initial automatic status response were lost; operation ID/code remain in the memory vault for cold-coordinator recovery
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2240.210625
+✔  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+i  auth: Stopping Authentication Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator

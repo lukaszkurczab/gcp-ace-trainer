@@ -1,0 +1,16 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS_WITH_ISSUE",
+  "scope": "diagnostic controller source and synthetic QA only",
+  "independentReview": true,
+  "syntheticChecks": 40,
+  "syntaxPassed": true,
+  "strictAcceptanceUnchanged": true,
+  "successAndCleanupUnchanged": true,
+  "diagnosticFields": "match booleans and counts only after validation/stability and successful cleanup",
+  "sourcePinsMatched": true,
+  "baselineAnchorMetadataUnchanged": true,
+  "issue": "README refers to old fixture directory; update and repin before fresh capture",
+  "runtimeExecuted": false,
+  "runtimeInputsRead": false
+}

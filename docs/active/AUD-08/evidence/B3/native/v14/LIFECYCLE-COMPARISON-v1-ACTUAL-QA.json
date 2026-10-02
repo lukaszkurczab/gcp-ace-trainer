@@ -1,0 +1,15 @@
+{
+  "scope": "independent source/meta and sanitized evidence review; no private runtime replay",
+  "verdict": "PASS WITH LIMITS",
+  "controllerSourcePins": "PASS",
+  "sourceRelatedPinsVsPreRunSnapshot": "PASS",
+  "publicComparisonAndProjectionConsistent": true,
+  "strictMismatchRemains": true,
+  "preservationAccepted": false,
+  "writerProvenance": "unknown",
+  "cleanupSourceChecks": "key and controls require absence before publication",
+  "temporaryMetadataAbsence": "root-reported exact fixture inventory; not emitted by controller or independently read",
+  "readmeStatus": "historical source-preparation checkpoint",
+  "executedNativeJsBindingVerified": false,
+  "wholeB3Acceptance": false
+}

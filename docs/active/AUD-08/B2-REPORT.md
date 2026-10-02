@@ -1,4 +1,19 @@
+## Continuation v12c — complete local regression for fixed retention
+
+Fixed30-day terminal retention remains unchanged from v12b production source. Shared test fixture now binds its Firebase project/issuer to the isolated runner's explicit project; malformed/empty overrides fail, absent override retains the historical direct-suite sandbox default. No-tools approval minimum0.90 and independent fixture review minimum0.91, focused6/6 and types PASS.
+
+Fresh pinned gates: full backend303PASS/0FAIL/5dedicated leaf SKIP; recovery17/0/0; actual HTTP/Admin/Firebase SDK4/0/0; operator4/0/0; operator acceptance1/0/0. Lint/types/TTL34/OpenAPI76/frontend transport/build PASS. Independent evidence review confirms28producer and46consumer file hashes and all six log hashes. Logs and manifest are in evidence/B3/PRODUCER-REGRESSION-v12c-MANIFEST.json. Earlier missing-environment and mismatched-project failures remain preserved as failed harness runs.
+
+This closes the local regression slice. SMTP family selection/verification, native acceptance, cloud index/TTL application and whole B2 acceptance remain pending; no whole-task commit/push/deploy.
+
 # AUD-08-B2 — trwałe recovery/reissue
+
+## Current continuation — approved retention30d slice
+
+Fixed canonical 30-day history policy implemented independently of cipher key availability. Persisted ACK and actual supersession use terminalAt from the committing transaction attempt; expiry derives from that exact timestamp. Repeated ACK does not extend the clock. Active unfinished operations and result-expiry-only delivery_unconfirmed reissues have no operation TTL; ciphertext deadline remains separate. Orphan issue replacement resolves one unambiguous user/kind/code-generation match before writes; ambiguous generations fail conflict. Added composite Firestore index supports that lookup. Removed adjustable retention env/runtime field and corresponding fixtures/docs references; no compatibility path or guessed-time backfill. No shared Firestore writes, cloud index/TTL apply, deploy or whole B2 push.
+
+Independent no-tools gpt-6-luna high APPROVE .88/.82/.81/.84 minimum .81; implementation gpt-6-luna high. Node22.22.3 typecheck/lint/focused21/TTL34/whitespace PASS. First required gate v12 failed16/1/0: new test incorrectly expected a recovery history row after completed account deletion purge. Test-only correction pauses actual deleteUser before purge, asserts supersession retention/result absence, then verifies full purge/late-remint fence. v12 FAIL retained. Fresh v12b required gate17/0/0 exit0 and isolated shutdown; post28/28 source matches. Independent gpt-6-luna high qa-gate PASS WITH ISSUES, own focused45/types/TTL34 PASS, pin/log/test review. New composite index must be deployed before cloud orphan lookup; cloud TTL not applied. Evidence: evidence/B3/RETENTION-v12b-MANIFEST.json. This supersedes historical retention-policy blockers only; SMTP scope and whole B2 remain partial.
+
 
 Status: **IN PROGRESS**, nie odebrane i bez push runtime. A2 przyjęte w historii app `e55cf0a6`; istniejące B1 nie są przywracane.
 
@@ -66,3 +81,7 @@ Backend main `d56ffe07fc5d2b6d0b74daef01651bc796ed64f0`, pending A2 nadal dirty/
 Po integracji required recovery15/15zeroSKIPexit0, operator4/4zeroSKIPexit0; static lint/typecheck/TTL34/OpenAPI76/build/diffPASS. Frontendparity nadal jawnie **FAIL4 brakująceconsumeroperations B3**: consumestatus/ACK oraz issuestatus/savedACK. Nie osłabiono checker ani nie dopisano atrap. Pełna integratedregression/independentmergeQA jeszcze w toku. POretention/SMTP nadal pending; brakodbioru całegoB2/pushu/deploy.
 
 Integration final: full isolated **277 PASS / 0 FAIL / 4 reported OPS-test SKIP**, recovery dedicated suite jawniepominięta; osobne required gates recovery15/15 i OPS4/4 zeroSKIP PASS, CLIexit0. IndependentLunaHigh merge/runner **PASS**, własne60/60 oraz bad-SHA negativepreflight fail przedstartememulatora. Actualintegrationmanifest `docs/active/AUD-08/evidence/B2/INTEGRATION-PINS.json`; mergedsource staticTTL34/OpenAPI76 PASS. Frontend4missingconsumeroperations nadalFAIL, wholeAUD08B2pendingPO/B3/bezpushu. HistoricalB2sourcepins zachowane oddzielnie, nowemanifest jednoznacznieopisujemergedtree.
+
+## Aktualizacja decyzji PO — rozmowa głosowa 2026-10-01
+
+PO zatwierdził rekomendowane 30 dni minimalnej historii zakończonych operacji od ACK/supersession. Aktywne niezakończone operacje bez TTL, krótsza retencja ciphertext osobno. Wcześniejsze opisy braku decyzji retention są historyczne. Decyzja zapisana, finalne wiring/config/QA jeszcze niewykonane; bez deployu i wholeB2 acceptance. PO potwierdził także istniejący kontrakt UI: neutralne sprawdzenie skrzynki + jawny resend, bez komunikatu niepewności i bez automaticretry; nie przypisujemy tego jako zgody na rozszerzenie wszystkich rodzin SMTP. Zapis faktów: fit.98/simplicity.98/risk.99/maintainability.98 minimum.98.

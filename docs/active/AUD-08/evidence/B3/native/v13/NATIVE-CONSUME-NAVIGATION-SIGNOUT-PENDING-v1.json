@@ -1,0 +1,22 @@
+{
+  "status": "UNAVAILABLE",
+  "scope": "consume_navigation_only",
+  "consumeHarnessPreparationIndependentPass": true,
+  "adminConsumeGuardPreparationIndependentPass": true,
+  "adminConsumeBeforeRead": {
+    "ownerOperationCount": 7,
+    "codeCount": 10,
+    "exactCodeUnused": true,
+    "readOnlyAdmin": true
+  },
+  "nativeNavigatePassed": false,
+  "visibleState": "sign_out_pending",
+  "canonicalSignOutRetryCount": 1,
+  "retryReachedLogin": false,
+  "recoveryCodeFilled": false,
+  "consumeSubmitted": false,
+  "guestTransferOrDiscardPerformed": false,
+  "resetOrReinstallPerformed": false,
+  "fixturePasswordRotated": false,
+  "nextStep": "single_exact_local_logout_control_read_after_helper_qa"
+}

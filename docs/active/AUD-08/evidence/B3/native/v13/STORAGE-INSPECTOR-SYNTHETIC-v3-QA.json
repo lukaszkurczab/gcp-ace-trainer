@@ -1,0 +1,35 @@
+{
+  "task": "AUD-08-B3",
+  "verdict": "PASS",
+  "scope": "Private inspector BUILD and synthetic host harness only",
+  "reviewer": {
+    "model": "gpt-6-luna",
+    "reasoningEffort": "high"
+  },
+  "tests": {
+    "passed": 10,
+    "failed": 0,
+    "stderrEmpty": true
+  },
+  "pins": {
+    "v3Matching": 6,
+    "v3Count": 6,
+    "preservedV2Matching": 3,
+    "preservedV2Count": 3
+  },
+  "checks": [
+    "Exactly three intended exports",
+    "No module initializer or Objective-C class list",
+    "Exact two registry keys and service/account/generic/noninteractive query shape",
+    "Missing heads serialize as null; failures create no snapshot",
+    "Private exclusive writer guards"
+  ],
+  "realKeychainAccess": false,
+  "runtimeLoaded": false,
+  "simulatorActions": false,
+  "limitations": [
+    "Real query behavior remains unverified.",
+    "Canonical validation, active-slot and guest-scope binding remain caller responsibilities.",
+    "No guest-preservation evidence established."
+  ]
+}

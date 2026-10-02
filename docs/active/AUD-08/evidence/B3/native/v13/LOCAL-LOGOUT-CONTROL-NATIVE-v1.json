@@ -1,0 +1,19 @@
+{
+  "scope": "readonly local logout control",
+  "valid": true,
+  "controlPresent": true,
+  "blockedPresent": false,
+  "blockedMatchesOwnedUid": false,
+  "pendingCount": 5,
+  "pendingOwnedCount": 0,
+  "completedCount": 1,
+  "completedOwnedCount": 1,
+  "readOnly": true,
+  "temporaryPrivateInputRemoved": true,
+  "stoppedAtMainOffsetZero": true,
+  "killedBeforeApplicationCode": true,
+  "sdkSignedOutProven": false,
+  "consumeSubmitted": false,
+  "wholeAcceptance": false,
+  "assessmentMinimum": 0.86
+}

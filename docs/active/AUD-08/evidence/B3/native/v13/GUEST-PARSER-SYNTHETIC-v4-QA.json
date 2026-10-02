@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "scope": "private_parser_synthetic_and_static",
+  "authorCasesPassed": 28,
+  "independentCasesPassed": 28,
+  "independentChecksumCasesPassed": 8,
+  "artifactPinsMatched": 13,
+  "canonicalSourcePinsMatched": 4,
+  "canonicalDeclarations": 26,
+  "mmkvCoreFilesMatched": 60,
+  "premiumAuxiliaryKeyASTDerivedAndPinned": true,
+  "premiumRawBytesIncludedInDigest": true,
+  "otherNoncanonicalKeysRejected": true,
+  "modernGuestScopeMaintained": true,
+  "legacyCanonicalOnly": true,
+  "fixtureCleanupPassed": true,
+  "runtimeInputsRead": false,
+  "actualDigestAccepted": false,
+  "parserPinsSha256": "32a2e55ee2124ff054728bd208d282ff54b5c786482f2e662717b93a0589463d"
+}

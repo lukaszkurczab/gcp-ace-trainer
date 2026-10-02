@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "scope": "private_controller_snapshot_paths",
+  "changedJoins": 3,
+  "sourcePinMatches": true,
+  "syntheticAssertionsPassed": 8,
+  "syntaxCheckPassed": true,
+  "controllerExecuted": false,
+  "runtimeInputsReadByReviewer": false,
+  "productionSourceChanged": false,
+  "minimumAssessment": 0.92
+}

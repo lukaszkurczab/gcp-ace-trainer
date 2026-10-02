@@ -1,0 +1,8 @@
+fixture_alias=AUD-08-B3-native-20261001-77d536f5a8
+exit_code=1
+elapsed_seconds=38
+code_snapshots_with_10_codes=0
+unique_code_set_hashes=0
+code_set_sha256=unavailable_or_mismatch
+credentials_and_codes_redacted=true
+all_screenshots_removed=true

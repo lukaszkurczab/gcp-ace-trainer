@@ -1,0 +1,21 @@
+{
+  "scope": "independent source/synthetic QA only",
+  "verdict": "PASS",
+  "pinsSha256": "a48250ffdd7df540ead7af65cd8ab37744df30c190b2599e5b411d6abad21c32",
+  "artifactsVerified": 5,
+  "tests": {
+    "passed": 21,
+    "failed": 0
+  },
+  "syntaxFilesPassed": 3,
+  "consumerHashesVerified": 55,
+  "producerHashesVerified": 28,
+  "directSupplementalSourceBindings": "PASS",
+  "cleanupSourceAndSynthetic": "PASS",
+  "sourceQaPerformed": true,
+  "runtimeExecutionAuthorized": false,
+  "actualInputsOpened": false,
+  "actualStorageCompatibilityVerified": false,
+  "preservationAccepted": false,
+  "limitation": "Cross-helper duplicate conflict detector is ineffective after object merge; current pinned helper source sets do not overlap. Consumer overlap checks are enforced."
+}

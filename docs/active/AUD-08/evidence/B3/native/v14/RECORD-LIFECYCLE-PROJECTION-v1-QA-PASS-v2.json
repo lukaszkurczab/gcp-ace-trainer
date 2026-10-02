@@ -1,0 +1,24 @@
+{
+  "task": "AUD-08-B3",
+  "verdict": "PASS",
+  "scope": "Independent source/synthetic only re-QA after null/identity fix",
+  "node": "22.22.3",
+  "synthetic": {
+    "pass": 19,
+    "fail": 0
+  },
+  "artifactFilesVerified": 8,
+  "canonicalSourcesVerified": 3,
+  "astDeclarationsVerified": 14,
+  "pinsSha256": "f3b5ad6f9b28ede834fd765963b3a1baf58a472029101d10b0d8e329da8b8bf4",
+  "generatedValidatorSha256": "8554838f49145e5739277feff4886d2863b6bc2a2a8eaba8d58c09b803ce8037",
+  "regressions": [
+    "Missing raw null differs from present JSON null on either side.",
+    "Expected identity requires exact two own data fields."
+  ],
+  "outputPrivacy": "Booleans and safe enums only; no values, identities or revision numbers.",
+  "actualRecordsRead": false,
+  "strictMismatchRemains": true,
+  "preservationAccepted": false,
+  "writerProvenance": "unknown"
+}

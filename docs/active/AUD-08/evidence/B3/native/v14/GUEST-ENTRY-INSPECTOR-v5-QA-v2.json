@@ -1,0 +1,18 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS_WITH_DOCUMENTED_LIMITATIONS",
+  "scope": "inspector v5 source and metadata readiness",
+  "independentSyntheticQA": 43,
+  "metadataCorrectionQA": "PASS",
+  "inspectorPinsSha256": "377ae88cef8ddf57b5227ccae421b7c21505760d7137993cde2c5042d2f84180",
+  "coreSourceFilesVerified": 60,
+  "coreManifestAlgorithm": "SHA256 compact JSON sorted relative-path/file-SHA tuples",
+  "sourceAndBinaryChangesDuringMetadataCorrection": false,
+  "testsRerunAfterMetadataCorrection": false,
+  "priorSourceAndSyntheticQARemainsApplicable": true,
+  "directV4BinaryComparisonPerformed": false,
+  "dualSameGuestAndSlotCheckStillRequired": true,
+  "controllerQAStillRequired": true,
+  "runtimeExecutionPerformed": false,
+  "guestPreservationAccepted": false
+}

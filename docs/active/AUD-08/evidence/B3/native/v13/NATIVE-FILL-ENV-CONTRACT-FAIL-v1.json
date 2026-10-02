@@ -1,0 +1,13 @@
+{
+  "status": "FAIL",
+  "scope": "fill_only_no_submit",
+  "maestroFlowReportedPass": true,
+  "privateFieldVerificationPassed": false,
+  "cause": "flow_variable_names_omitted_required_MAESTRO_prefix",
+  "emailUndefinedLiteral": true,
+  "credentialSubmitPerformed": false,
+  "freshIssueStarted": false,
+  "ackPerformed": false,
+  "rawCredentialsEmitted": false,
+  "correctiveAction": "retain_full_environment_variable_names_and_verify_fields_before_submit"
+}

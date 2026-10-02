@@ -1,0 +1,18 @@
+{
+  "task": "AUD-08-B3",
+  "scope": "Core2.4 source inventory file-hash verification only",
+  "rootsChecked": [
+    {
+      "coreSourceFileCount": 60,
+      "mismatchCount": 0
+    },
+    {
+      "coreSourceFileCount": 60,
+      "mismatchCount": 0
+    }
+  ],
+  "allFileHashesMatch": true,
+  "inventoryPathHashEncodingVerified": false,
+  "privateFixtureContentsRead": false,
+  "runtimeExecuted": false
+}

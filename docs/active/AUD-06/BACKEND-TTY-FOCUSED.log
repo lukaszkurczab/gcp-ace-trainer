@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: standalone CLI reads through verified TLS and a hidden real terminal token
+ok 1 - standalone CLI reads through verified TLS and a hidden real terminal token
+  ---
+  duration_ms: 373.75225
+  type: 'test'
+  ...
+# Subtest: standalone CLI cancellation sends no mutation after reading payload from FD3
+ok 2 - standalone CLI cancellation sends no mutation after reading payload from FD3
+  ---
+  duration_ms: 354.044
+  type: 'test'
+  ...
+# Subtest: standalone CLI cancellation sends no mutation after reading payload from piped stdin
+ok 3 - standalone CLI cancellation sends no mutation after reading payload from piped stdin
+  ---
+  duration_ms: 368.141125
+  type: 'test'
+  ...
+# Subtest: standalone CLI lost mutation response makes one write and one reconciliation read
+ok 4 - standalone CLI lost mutation response makes one write and one reconciliation read
+  ---
+  duration_ms: 421.233417
+  type: 'test'
+  ...
+# Subtest: standalone CLI Ctrl+C restores terminal and stops before any HTTP request
+ok 5 - standalone CLI Ctrl+C restores terminal and stops before any HTTP request
+  ---
+  duration_ms: 448.268334
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2135.334125

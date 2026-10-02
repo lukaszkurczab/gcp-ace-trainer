@@ -48,6 +48,8 @@ export function getSettingsAccountPresentation(state: AccountState): SettingsAcc
       return { accountDataStatus: null, canOpenAccount: false, canSignOut: false, email: state.user.email, status: "busy" };
     case "deletionPending":
       return { accountDataStatus: state.status, canOpenAccount: true, canSignOut: false, email: state.user.email, status: "unavailable" };
+    case "recoveryPending":
+      return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: null, status: "unavailable" };
     case "verificationPending":
       return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: state.user.email, status: "verificationPending" };
     case "guestAccessBlocked":

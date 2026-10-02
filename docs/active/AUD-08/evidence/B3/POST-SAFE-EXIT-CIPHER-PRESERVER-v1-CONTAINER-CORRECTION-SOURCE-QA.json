@@ -1,0 +1,16 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS_WITH_LIMITS",
+  "pinsSha256": "196854d1415a68a8be1fe7fd61846a1813758af60c10bdf98286b44bdb1680ee",
+  "independentSyntheticPass": 10,
+  "pythonAst": "PASS",
+  "artifactHashesAndModes": "MATCH",
+  "dataDefaultAndExactSimctlRequest": "PASS",
+  "canonicalSchemaAndDirectPins": "MATCH",
+  "runtimeGates": "PENDING",
+  "runtimeAccessPerformed": false,
+  "copyProven": false,
+  "limits": [
+    "Source-only review does not prove actual copy or active slot or guest preservation"
+  ]
+}

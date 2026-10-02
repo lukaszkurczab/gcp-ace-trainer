@@ -1,0 +1,15 @@
+{
+  "scope": "root readonly metadata and ciphertext-hash preparation only",
+  "allHeadSetsEqual": true,
+  "sameCanonicalGuestAndSlot": true,
+  "ciphertextPairsMatchAcceptedV5Copies": true,
+  "preparedShaAnchors": 13,
+  "controllerPinsSha256": "c51b2527fd9937a5fc890b34b2089e59ecbf87f7774d52125b9115285dc33c67",
+  "identityPending": true,
+  "runtimeExecutionGatePending": true,
+  "keyOrRecordReadPerformed": false,
+  "productConfigurationsConverge": true,
+  "backendIdentityVerification": "source procedure prepared; QA pending; not executed",
+  "rawValuesEmitted": false,
+  "preservationAccepted": false
+}

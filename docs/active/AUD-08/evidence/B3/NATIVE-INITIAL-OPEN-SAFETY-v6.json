@@ -1,0 +1,23 @@
+{
+  "task": "AUD-08-B3",
+  "exactNativeOwnerHashMatches": true,
+  "exactNativeOperationHashMatched": true,
+  "matchingOperationCount": 1,
+  "status": "delivery_unconfirmed",
+  "authorizationGenerationMatches": true,
+  "resultDocumentAbsent": true,
+  "operationExpiresAtAbsent": true,
+  "initialOpenPermitted": true,
+  "readOnlyAdmin": true,
+  "correlationFileMode0600": true,
+  "rawIdentifiersEmitted": false,
+  "inspection": "v6-exact-native-private-correlation",
+  "independentQA": "PASS",
+  "nativeReadAtFirstMainInstruction": true,
+  "helperCallAllThreadRetryDisabled": true,
+  "processKilledBeforeAppDelegateJs": true,
+  "privateCorrelationFileRemovedAfterIndependentVerification": true,
+  "helperSourceSha256": "7031e817d2672df35ba847bf87f0c71129446ea1a50c69f34716ef9c1f820124",
+  "helperBinarySha256": "776ea85dfd1a812010473cde5658921bdad6c534c0db2017decae5f7ed4af4e7",
+  "nativeApplicationFlowAccepted": false
+}

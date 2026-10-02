@@ -1,0 +1,52 @@
+{
+  "task": "AUD-08-B2",
+  "checkpoint": "v12c",
+  "testOnlyHarnessCorrection": true,
+  "producerPins": "PRODUCER-SOURCE-PINS-v12c.json",
+  "fullSuite": {
+    "pass": 303,
+    "fail": 0,
+    "dedicatedSkipped": 5
+  },
+  "recoveryGate": {
+    "pass": 17,
+    "fail": 0,
+    "skip": 0
+  },
+  "independentHarnessQA": "PASS",
+  "focusedEnvironmentTests": 6,
+  "typecheck": "PASS",
+  "lint": "PASS",
+  "ttlPolicies": 34,
+  "openapiOperations": 76,
+  "frontendTransportCheck": "PASS",
+  "build": "PASS",
+  "cloudIndexOrTTLApplied": false,
+  "nativeAcceptance": false,
+  "wholeTaskAccepted": false,
+  "logs": {
+    "PRODUCER-REGRESSION-ISOLATED-v12c.log": "e79586356d430ca39b74e510e9419fa4f519b4659a0a5caeeb6b328736c6959d",
+    "PRODUCER-RETENTION-v12c.log": "3b3a05e47167914b9cdff42f00a018492e7bf7f9dd652ddf0d20becc2d79c82f",
+    "PRODUCER-STATIC-v12c.log": "92c0fe84a319f9cfed8d0c4ae0b8fc91412fef013b1fd48b74ad21cdcd10ce35",
+    "CONSUMER-INTEGRATION-v12c.log": "4501a557dd3cdb16acc03462470f50d5fdb90266278771cebd5733353739da17",
+    "PRODUCER-OPERATOR-v12c.log": "5e673b8bbf6815be1b27bc06aad4039c32dc6183903b34c00af0f0f5215f83b4",
+    "PRODUCER-OPERATOR-ACCEPTANCE-v12c.log": "18772e48697a767f6d69b472a298ee7757f66cb490a0317d1c039a69df607281"
+  },
+  "httpSdkGate": {
+    "pass": 4,
+    "fail": 0,
+    "skip": 0
+  },
+  "operatorGate": {
+    "pass": 4,
+    "fail": 0,
+    "skip": 0
+  },
+  "producerPostGateHashMatches": 28,
+  "consumerPostGateHashMatches": 46,
+  "operatorAcceptanceGate": {
+    "pass": 1,
+    "fail": 0,
+    "skip": 0
+  }
+}

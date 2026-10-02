@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "scope": "private_logical_name_validation",
+  "namespacePredicateRemoved": true,
+  "unusedParameterRemoved": true,
+  "selectedProfilePhysicalScopeUnchanged": true,
+  "unknownNameSyntheticPassed": 8,
+  "headPathSyntheticPassed": 8,
+  "sourceAndReadmePinsMatch": true,
+  "syntaxPassed": true,
+  "productionSourceChanged": false,
+  "minimumAssessment": 0.88
+}

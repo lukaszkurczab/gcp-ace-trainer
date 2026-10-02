@@ -1,0 +1,19 @@
+{
+  "capturedAt": "2026-10-01T04:57:01.384Z",
+  "manifestHttpStatus": 200,
+  "manifestSha256": "e44e17e05e861948838b1e10116bb6a60ee19b509d0f77c3b5ab8e04ba9e5a6a",
+  "runtimeVersion": "0.1.0",
+  "launchAssetUrlWithoutQuery": "http://[::1]:8081/node_modules/expo/AppEntry.bundle",
+  "bundleHttpStatus": 200,
+  "bundleBytes": 68155229,
+  "bundleSha256": "cbf6300d0e747bcb0b13b330a4166b57d63b96e74aca32d744aac0fb7fae77bb",
+  "containsRecoveryIssueReauthHelper": true,
+  "containsRecoveryShowCodesTestID": true,
+  "containsSavedAckTestID": true,
+  "containsLocalSmokeAppCheckToken": true,
+  "sourcePins": {
+    "version": "v2",
+    "filesChecked": 44,
+    "mismatches": []
+  }
+}

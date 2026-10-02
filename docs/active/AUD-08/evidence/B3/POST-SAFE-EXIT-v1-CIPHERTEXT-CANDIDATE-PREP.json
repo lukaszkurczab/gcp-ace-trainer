@@ -1,0 +1,11 @@
+{
+  "task": "AUD-08-B3",
+  "scope": "ciphertext_candidate_preservation_only",
+  "actualRecordOrKeyRead": false,
+  "nativeAppStarted": false,
+  "selectedSlotVerified": false,
+  "status": "FAIL",
+  "error": "candidate_preservation_unavailable",
+  "automaticRetry": false,
+  "partialCopiesPreserved": true
+}

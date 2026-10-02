@@ -1,0 +1,4 @@
+exit_code=0
+flow=.maestro/screenshot-capture/aud08-b3/46-confirm-preserved-guest-ui.yaml
+credentials_and_recovery_codes_redacted=true
+screenshots_removed=true

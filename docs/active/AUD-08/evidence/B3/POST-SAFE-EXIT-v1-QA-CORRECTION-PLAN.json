@@ -1,0 +1,28 @@
+{
+  "task": "AUD-08-B3",
+  "status": "independent_no_tools_correction_approved",
+  "minimumScore": 0.84,
+  "scores": {
+    "fit": 0.95,
+    "simplicity": 0.86,
+    "risk": 0.84,
+    "maintainability": 0.87
+  },
+  "sourceOwner": "password_brief",
+  "sourceScope": [
+    "controller.mjs",
+    "policy.mjs",
+    "synthetic.test.mjs",
+    "README.md",
+    "PINS.json"
+  ],
+  "preservedPriorPinsSha256": "e78b0c96c025f8204e4928bc5b7ebe6a942a2faca88139104ab1ce68aafcc0a3",
+  "corrections": [
+    "Supplemental direct source pin always required; consumer overlap checked only if present.",
+    "Capture key inode and parent metadata before gate; cleanup closed-gate failures without key-content reads.",
+    "Assign candidate after final stability and publish only after all cleanup/absence.",
+    "Add fake-dependency controller failure-wiring tests, retain canonical access and pair filename contracts."
+  ],
+  "withdrawnProducerPathFinding": true,
+  "actualRuntimeExecutionAuthorized": false
+}

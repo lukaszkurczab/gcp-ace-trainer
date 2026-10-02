@@ -1,0 +1,29 @@
+{
+  "task": "AUD-08-B3",
+  "scope": "Test-only canonical memory composition, not native/provider React execution",
+  "testFile": "src/application/account/guestEntryLifecycleDiagnostics.test.ts",
+  "testSha256": "80bdf746b453ae6623fb3337c7cd4dcec32c4298124bc1e3afe49aff738db1d7",
+  "authorFocusedResult": {
+    "pass": 1,
+    "expectedRed": 2,
+    "failedInvariant": "Premium cache absent after sign-out in account and retained guest scope"
+  },
+  "verifiedByAuthorBeforeFailure": [
+    "Durable blocked/pending logout control",
+    "Ordered control/lock/profile-close/Firebase-signout",
+    "Learning entry unchanged",
+    "Post-close cache clear throws"
+  ],
+  "existingRecoverySubset": {
+    "pass": 3,
+    "fail": 0
+  },
+  "independentQa": "pending",
+  "productionChanged": false,
+  "nativeOrPrivateRuntimeAccess": false,
+  "limitations": [
+    "Composes canonical modules and copied provider closure; does not execute mounted provider or observer scheduling.",
+    "Red reproductions must become behavior regressions after accepted correction."
+  ],
+  "preservationAccepted": false
+}

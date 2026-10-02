@@ -1,0 +1,14 @@
+{
+  "task": "AUD-08-B3",
+  "checkpoint": "v12-retained-issue-defer",
+  "producerPins": "PRODUCER-SOURCE-PINS-v12b.json",
+  "consumerPins": "CONSUMER-SOURCE-PINS-v12.json",
+  "passed": 4,
+  "failed": 0,
+  "skipped": 0,
+  "logSha256": "28e72a1f20389c407605f942c9fe96c1a2c2357866992a7d25dc5b2e5d783172",
+  "postGateProducerMatches": 28,
+  "postGateConsumerMatches": 46,
+  "nativeAcceptance": false,
+  "wholeTaskAccepted": false
+}

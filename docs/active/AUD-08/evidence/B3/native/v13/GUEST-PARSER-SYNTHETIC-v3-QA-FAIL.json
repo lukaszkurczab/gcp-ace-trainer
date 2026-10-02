@@ -1,0 +1,32 @@
+{
+  "task": "AUD-08-B3",
+  "verdict": "FAIL",
+  "scope": "Private v3 wrapper synthetic acceptance before correction",
+  "reviewer": {
+    "model": "gpt-6-luna",
+    "reasoningEffort": "high"
+  },
+  "authoredSuite": {
+    "passed": 21,
+    "failed": 0
+  },
+  "independentCases": {
+    "count": 11,
+    "passed": 10,
+    "failed": 1
+  },
+  "materialFailure": "Equal-generation valid manifest heads with differing complete/building stages returned a guest digest instead of rejecting ambiguity.",
+  "negativeCasesPassing": [
+    "Symlink root and file",
+    "Hard-linked clone file",
+    "Mutable file and directory",
+    "Simulated foreign-owner rejection",
+    "Corruption",
+    "Truncation",
+    "CRC mismatch"
+  ],
+  "cloneHashPreserved": true,
+  "robustnessLimitation": "Truncated raw native read aborts; wrapper-level sanitized failure must be verified.",
+  "realKeychainOrMMKVRead": false,
+  "keyReadAuthorizedByThisResult": false
+}

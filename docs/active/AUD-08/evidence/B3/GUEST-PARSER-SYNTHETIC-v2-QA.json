@@ -1,0 +1,22 @@
+{
+  "task": "AUD-08-B3",
+  "scope": "synthetic-only private guest-domain parser v2",
+  "result": "PASS_SCOPED_NOT_LIVE_READY",
+  "model": "gpt-6-luna",
+  "reasoning": "high",
+  "coreFilesByteMatching": 60,
+  "syntheticCasesPassed": 20,
+  "syntheticCasesFailed": 0,
+  "binarySha256": "abd25b9385a87f5c73675930d53abff9e94f6ee21ef6b3c30126a67e40acdfa8",
+  "sourceSha256": "335d74fa5ba8c59ba3535084fe8f13470a90fe18af02636770ac55b411841e29",
+  "priorVersionQa": "FAIL_boolean_fractional_revision_mismatch_preserved_and_corrected",
+  "liveDataRead": false,
+  "keychainRead": false,
+  "appSourceChanged": false,
+  "limitations": [
+    "Caller profile identity still trusted, not bound to manifest/registry.",
+    "Manifest/registry checks are test-only mirrors; stricter extra-field policy differs from app.",
+    "Required guest-access marker is synthetic-only restriction; canonical inactive guest may lack it."
+  ],
+  "nextStep": "Private v3 wrapper binds canonical AST validators/heads/registry/scope; synthetic-only until separate QA and execution brief."
+}

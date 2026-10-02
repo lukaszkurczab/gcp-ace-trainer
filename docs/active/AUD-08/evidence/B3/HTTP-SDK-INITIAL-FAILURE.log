@@ -1,0 +1,51 @@
+
+> patternly@0.1.0 test:recovery-operations:emulator
+> node scripts/runRecoveryOperationIntegration.mjs
+
+AUD-08 B3 mobile integration: app=8d12b0ccabf7b2c28659c78c10a7915abafb2672 backend=15e49d04dcf510cb7081b356a7182343d9d170ab producerPins=27
+Isolated emulator gate: demo-patternly-aud08-mobile Auth19119/Firestore18119
+i  emulators: Starting emulators: auth, firestore
+i  emulators: Detected demo project ID "demo-patternly-aud08-mobile", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator was started in standard edition.
+✔  firestore: Firestore Emulator UI websocket is running on 9151.
+i  Running script: '/opt/homebrew/Cellar/node@22/22.22.3/bin/node' --import '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/tsx/dist/loader.mjs' --test --test-concurrency=1 '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/recoveryOperationIntegration.emulator.test.ts'
+TAP version 13
+# Subtest: mobile recovery coordinator, secure-store fixture and adapter complete real HTTP recovery operations
+not ok 1 - mobile recovery coordinator, secure-store fixture and adapter complete real HTTP recovery operations
+  ---
+  duration_ms: 1571.190833
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/recoveryOperationIntegration.emulator.test.ts:2:4435'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    PatternlyApiClientError: server_error
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/recoveryOperationIntegration.emulator.test.ts:286:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2435.560375
+⚠  Script exited unsuccessfully (code 1)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+i  auth: Stopping Authentication Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
+
+Error: Script "'/opt/homebrew/Cellar/node@22/22.22.3/bin/node' --import '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/node_modules/tsx/dist/loader.mjs' --test --test-concurrency=1 '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/recoveryOperationIntegration.emulator.test.ts'" exited with code 1

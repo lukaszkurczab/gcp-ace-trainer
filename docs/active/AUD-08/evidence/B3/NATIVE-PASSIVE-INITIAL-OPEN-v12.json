@@ -1,0 +1,17 @@
+{
+  "task": "AUD-08-B3",
+  "inspection": "passive-initial-open-v12",
+  "hierarchyReadOnly": true,
+  "uiRecoveryPending": true,
+  "codesVisible": false,
+  "knownLabels": {
+    "recoveryOperationDeliveryUnconfirmed": true,
+    "recoveryOperationSavedAckPending": true,
+    "recoveryOperationRetryAck": true,
+    "recoveryOperationReplaceTitle": true,
+    "recoveryOperationRetry": false
+  },
+  "uiActionsPerformed": false,
+  "privateHierarchySha256": "7065ed17741dcfc43e2ae13a7356b1c99d2ae885803c8918575b6208606b7a0f",
+  "nativeFullAcceptance": false
+}

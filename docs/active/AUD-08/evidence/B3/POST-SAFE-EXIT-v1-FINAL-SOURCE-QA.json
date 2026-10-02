@@ -1,0 +1,14 @@
+{
+  "task": "AUD-08-B3",
+  "status": "PASS",
+  "scope": "independent_final_source_and_synthetic_qa",
+  "sourcePinsSha256": "fda2ebc17dd95260ad5ee4ef736823d09d002dae86ee27796dfd041b2324d86d",
+  "policyAssertionsPassed": 37,
+  "lifecycleTestsPassed": 8,
+  "fakeFilesystemTestsPassed": 5,
+  "consumerSourceFilesMatched": 55,
+  "producerSourceFilesMatched": 28,
+  "materialSourceIssuesFound": 0,
+  "actualRuntimeInputsOpened": false,
+  "runtimeApproved": false
+}

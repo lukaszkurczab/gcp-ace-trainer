@@ -1,0 +1,17 @@
+{
+  "task": "AUD-08-B3",
+  "checkpoint": "v15-owned-premium-cache-cleanup-before-profile-close",
+  "httpStatus": 200,
+  "bytes": 69440725,
+  "sha256": "2a6ddc3792c076b97624097390b91fbd17ff60b7321edc625de9a8fcd483c4a8",
+  "sourcePinCount": 55,
+  "producerPinCount": 28,
+  "sourcePinsBeforeAndAfterMatched": true,
+  "markers": {
+    "clearOwnedPremiumCache": true,
+    "clearPremiumCacheForAccountInProfile": true,
+    "verifiedLogoutReceipt": true
+  },
+  "sourceSaved": false,
+  "exactHermesExecutedSourceBindingEstablished": false
+}
