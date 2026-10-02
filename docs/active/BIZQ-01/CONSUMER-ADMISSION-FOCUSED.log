@@ -1,0 +1,268 @@
+TAP version 13
+# Subtest: candidate lock binds the exact nine bundled artifacts
+ok 1 - candidate lock binds the exact nine bundled artifacts
+  ---
+  duration_ms: 5.924208
+  type: 'test'
+  ...
+# Subtest: candidate lock rejects bundled bytes outside the candidate
+ok 2 - candidate lock rejects bundled bytes outside the candidate
+  ---
+  duration_ms: 9.626042
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 bundled loader and pre-submit projection preserve the corrected source contract
+ok 3 - BIZQ-01 bundled loader and pre-submit projection preserve the corrected source contract
+  ---
+  duration_ms: 556.395375
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 replaced identities from an old package do not enter current due retrieval
+ok 4 - BIZQ-01 replaced identities from an old package do not enter current due retrieval
+  ---
+  duration_ms: 0.217041
+  type: 'test'
+  ...
+# Subtest: Design simulation profiles preserve exact per-track identity and reference-only evaluation
+ok 5 - Design simulation profiles preserve exact per-track identity and reference-only evaluation
+  ---
+  duration_ms: 302.420583
+  type: 'test'
+  ...
+# Subtest: Design simulation schema rejects identity, stage, response, criteria, rubric, and semantic-scoring drift
+ok 6 - Design simulation schema rejects identity, stage, response, criteria, rubric, and semantic-scoring drift
+  ---
+  duration_ms: 534.189
+  type: 'test'
+  ...
+# Subtest: ProductModeConfig preserves the complete available 9-track mode matrix
+ok 7 - ProductModeConfig preserves the complete available 9-track mode matrix
+  ---
+  duration_ms: 1.855959
+  type: 'test'
+  ...
+# Subtest: ODK-097 app Design modes stay in parity with the current producer profiles
+ok 8 - ODK-097 app Design modes stay in parity with the current producer profiles
+  ---
+  duration_ms: 1.006417
+  type: 'test'
+  ...
+# Subtest: mode policies preserve feedback, elapsed timer, reinsert and evidence behavior
+ok 9 - mode policies preserve feedback, elapsed timer, reinsert and evidence behavior
+  ---
+  duration_ms: 0.172541
+  type: 'test'
+  ...
+# Subtest: selection pools are non-empty, local, and large enough for every requested length
+ok 10 - selection pools are non-empty, local, and large enough for every requested length
+  ---
+  duration_ms: 70.325625
+  type: 'test'
+  ...
+# Subtest: simulation mode is bound to the exact GCP profile, family, and mode
+ok 11 - simulation mode is bound to the exact GCP profile, family, and mode
+  ---
+  duration_ms: 0.8575
+  type: 'test'
+  ...
+# Subtest: Coding Mock product mode binds only its declared Coding Interview profile
+ok 12 - Coding Mock product mode binds only its declared Coding Interview profile
+  ---
+  duration_ms: 0.269875
+  type: 'test'
+  ...
+# Subtest: GCP Diagnostic preserves the verified exact ordered 40-question plan
+ok 13 - GCP Diagnostic preserves the verified exact ordered 40-question plan
+  ---
+  duration_ms: 0.402917
+  type: 'test'
+  ...
+# Subtest: declared but uninstalled modes fail closed with a stable unavailable error
+ok 14 - declared but uninstalled modes fail closed with a stable unavailable error
+  ---
+  duration_ms: 0.39875
+  type: 'test'
+  ...
+# Subtest: validated production configuration is recursively immutable
+ok 15 - validated production configuration is recursively immutable
+  ---
+  duration_ms: 0.81325
+  type: 'test'
+  ...
+# Subtest: validator rejects duplicate, missing, additional, and non-canonical config shapes
+ok 16 - validator rejects duplicate, missing, additional, and non-canonical config shapes
+  ---
+  duration_ms: 3.323959
+  type: 'test'
+  ...
+# Subtest: validator rejects foreign identities, empty pools, bad lengths, and policy mismatches
+ok 17 - validator rejects foreign identities, empty pools, bad lengths, and policy mismatches
+  ---
+  duration_ms: 7.424167
+  type: 'test'
+  ...
+# Subtest: validator rejects foreign questions, Diagnostic reordering, bad evidence and unsupported interactions
+ok 18 - validator rejects foreign questions, Diagnostic reordering, bad evidence and unsupported interactions
+  ---
+  duration_ms: 593.160333
+  type: 'test'
+  ...
+# Subtest: validator rejects missing, duplicate, empty and foreign canonical artifacts
+ok 19 - validator rejects missing, duplicate, empty and foreign canonical artifacts
+  ---
+  duration_ms: 5629.899958
+  type: 'test'
+  ...
+# Subtest: all nine canonical artifacts validate with exact inventory and stable learner whitespace
+ok 20 - all nine canonical artifacts validate with exact inventory and stable learner whitespace
+  ---
+  duration_ms: 268.137958
+  type: 'test'
+  ...
+# Subtest: canonical scoring matches the producer oracle exhaustively
+ok 21 - canonical scoring matches the producer oracle exhaustively
+  ---
+  duration_ms: 449.082083
+  type: 'test'
+  ...
+# Subtest: all interactions expose completeness and immutable AttemptResult semantics
+ok 22 - all interactions expose completeness and immutable AttemptResult semantics
+  ---
+  duration_ms: 4.220709
+  type: 'test'
+  ...
+# Subtest: dimension scoring ignores inherited selections exactly like the producer oracle
+ok 23 - dimension scoring ignores inherited selections exactly like the producer oracle
+  ---
+  duration_ms: 5.134791
+  type: 'test'
+  ...
+# Subtest: dimension responses reject sparse arrays and alias-normalization collisions
+ok 24 - dimension responses reject sparse arrays and alias-normalization collisions
+  ---
+  duration_ms: 1.464666
+  type: 'test'
+  ...
+# Subtest: validator fails closed on exact keys, identities, membership and scoring consistency
+ok 25 - validator fails closed on exact keys, identities, membership and scoring consistency
+  ---
+  duration_ms: 95.878833
+  type: 'test'
+  ...
+# Subtest: catalog verifies bytes before exposing frozen lookups and exact artifact metadata
+ok 26 - catalog verifies bytes before exposing frozen lookups and exact artifact metadata
+  ---
+  duration_ms: 193.324833
+  type: 'test'
+  ...
+# Subtest: optional GCP simulation profile is strict, complete, immutable and covered by its artifact hash
+ok 27 - optional GCP simulation profile is strict, complete, immutable and covered by its artifact hash
+  ---
+  duration_ms: 738.983709
+  type: 'test'
+  ...
+# Subtest: Coding Mock profile validation requires its strict declared ordered 40-question pool
+ok 28 - Coding Mock profile validation requires its strict declared ordered 40-question pool
+  ---
+  duration_ms: 414.287333
+  type: 'test'
+  ...
+# Subtest: canonical runtime catalog exposes all locked tracks, modes, pools, and exact artifact identities
+ok 29 - canonical runtime catalog exposes all locked tracks, modes, pools, and exact artifact identities
+  ---
+  duration_ms: 533.768834
+  type: 'test'
+  ...
+# Subtest: injected loader failures are visible and do not poison the active cache
+ok 30 - injected loader failures are visible and do not poison the active cache
+  ---
+  duration_ms: 63.182125
+  type: 'test'
+  ...
+# Subtest: canonical runtime catalog hashes artifacts sequentially and preserves artifact order
+ok 31 - canonical runtime catalog hashes artifacts sequentially and preserves artifact order
+  ---
+  duration_ms: 429.720542
+  type: 'test'
+  ...
+# Subtest: public owner retries after a failed cached load and then preserves cache identity
+ok 32 - public owner retries after a failed cached load and then preserves cache identity
+  ---
+  duration_ms: 3217.917583
+  type: 'test'
+  ...
+# Subtest: canonical runtime catalog caches only a validated active catalog
+ok 33 - canonical runtime catalog caches only a validated active catalog
+  ---
+  duration_ms: 0.180625
+  type: 'test'
+  ...
+# Subtest: runtime admission resolves the exact candidate lock for every canonical launch track
+ok 34 - runtime admission resolves the exact candidate lock for every canonical launch track
+  ---
+  duration_ms: 539.001541
+  type: 'test'
+  ...
+# Subtest: practice screens turn unsupported package, topic, and mode reads into exits
+ok 35 - practice screens turn unsupported package, topic, and mode reads into exits
+  ---
+  duration_ms: 3.375625
+  type: 'test'
+  ...
+# Subtest: Design simulation uses its dedicated result and cannot enter objective setup
+ok 36 - Design simulation uses its dedicated result and cannot enter objective setup
+  ---
+  duration_ms: 0.806959
+  type: 'test'
+  ...
+# Subtest: all selected Design modes require Premium admission before their canonical route
+ok 37 - all selected Design modes require Premium admission before their canonical route
+  ---
+  duration_ms: 0.4905
+  type: 'test'
+  ...
+# Subtest: practice route changes cannot submit stale setup controls and preserve track identity
+ok 38 - practice route changes cannot submit stale setup controls and preserve track identity
+  ---
+  duration_ms: 0.393708
+  type: 'test'
+  ...
+# Subtest: changing track returns through the Home root and drops practice route overrides
+ok 39 - changing track returns through the Home root and drops practice route overrides
+  ---
+  duration_ms: 0.433125
+  type: 'test'
+  ...
+# Subtest: Hub uses its displayed primary mode and package length defaults
+ok 40 - Hub uses its displayed primary mode and package length defaults
+  ---
+  duration_ms: 0.124667
+  type: 'test'
+  ...
+# Subtest: Home practice navigation preserves track identity and unavailable topics keep their context
+ok 41 - Home practice navigation preserves track identity and unavailable topics keep their context
+  ---
+  duration_ms: 0.812417
+  type: 'test'
+  ...
+# Subtest: all practice runners prevent native removal and replay the exact action after leave confirmation
+ok 42 - all practice runners prevent native removal and replay the exact action after leave confirmation
+  ---
+  duration_ms: 1.83175
+  type: 'test'
+  ...
+# Subtest: Certification and Design unlock actions only after the refreshed projection commits
+ok 43 - Certification and Design unlock actions only after the refreshed projection commits
+  ---
+  duration_ms: 0.874083
+  type: 'test'
+  ...
+1..43
+# tests 43
+# suites 0
+# pass 43
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7133.175417

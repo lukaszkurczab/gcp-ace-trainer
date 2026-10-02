@@ -1,0 +1,23 @@
+appId: com.lkurczab.patternly
+name: BIZQ-01 restore guest test setting
+---
+- assertVisible:
+    id: premium-offer-summary
+- assertNotVisible:
+    id: patternly:session:root:.*
+- takeScreenshot: bizq01-guest-testing-toggle-still-blocked
+- tapOn: 'Go back|Wróć'
+- tapOn:
+    id: main-tab-bar-settings
+- scrollUntilVisible:
+    element:
+      id: settings-premium-testing:enabled
+    direction: DOWN
+- tapOn:
+    id: settings-premium-testing:enabled
+- assertVisible:
+    id: settings-premium-testing:disabled
+- tapOn:
+    id: main-tab-bar-home
+- takeScreenshot: bizq01-guest-restored
+- stopApp

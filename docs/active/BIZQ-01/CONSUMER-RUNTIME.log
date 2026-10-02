@@ -1,0 +1,100 @@
+TAP version 13
+# Subtest: real loader prepares all 29 modes across nine tracks
+ok 1 - real loader prepares all 29 modes across nine tracks
+  ---
+  duration_ms: 193.404416
+  type: 'test'
+  ...
+# Subtest: real canonical questions submit and score all five interaction types
+ok 2 - real canonical questions submit and score all five interaction types
+  ---
+  duration_ms: 20.01075
+  type: 'test'
+  ...
+# Subtest: evidence permits one item and coding includes committed misses
+ok 3 - evidence permits one item and coding includes committed misses
+  ---
+  duration_ms: 0.309833
+  type: 'test'
+  ...
+# Subtest: coding review preserves identity and resolves after two due successes
+ok 4 - coding review preserves identity and resolves after two due successes
+  ---
+  duration_ms: 1.075958
+  type: 'test'
+  ...
+# Subtest: resume and query boundaries reject tampering, foreign attempts and old pins
+ok 5 - resume and query boundaries reject tampering, foreign attempts and old pins
+  ---
+  duration_ms: 0.894125
+  type: 'test'
+  ...
+# Subtest: Claude Focus persists selectable feedback, scores single and multi-select, and finalizes complete evidence
+ok 6 - Claude Focus persists selectable feedback, scores single and multi-select, and finalizes complete evidence
+  ---
+  duration_ms: 22.17475
+  type: 'test'
+  ...
+# Subtest: reinsert resolves exact branch after three durable intervening submissions and preserves ordinary branch on correct
+ok 7 - reinsert resolves exact branch after three durable intervening submissions and preserves ordinary branch on correct
+  ---
+  duration_ms: 5.260958
+  type: 'test'
+  ...
+# Subtest: GCP simulation prepares the profile-weighted immutable 50-item plan and exact snapshot
+ok 8 - GCP simulation prepares the profile-weighted immutable 50-item plan and exact snapshot
+  ---
+  duration_ms: 4.447292
+  type: 'test'
+  ...
+# Subtest: GCP simulation validates draft occurrence keys, completeness, flags, revision, and deadline
+ok 9 - GCP simulation validates draft occurrence keys, completeness, flags, revision, and deadline
+  ---
+  duration_ms: 6.733083
+  type: 'test'
+  ...
+# Subtest: GCP simulation finalization scores only complete responses and partitions all 50 occurrences
+ok 10 - GCP simulation finalization scores only complete responses and partitions all 50 occurrences
+  ---
+  duration_ms: 4.982917
+  type: 'test'
+  ...
+# Subtest: Coding Mock consumes its exact ordered 40-question profile with foreground timer and shared draft runtime
+ok 11 - Coding Mock consumes its exact ordered 40-question profile with foreground timer and shared draft runtime
+  ---
+  duration_ms: 0.825
+  type: 'test'
+  ...
+# Subtest: Design Interview Simulation uses each exact track profile, resumes durable stage text, and finalizes completeness only
+ok 12 - Design Interview Simulation uses each exact track profile, resumes durable stage text, and finalizes completeness only
+  ---
+  duration_ms: 0.858375
+  type: 'test'
+  ...
+# Subtest: Design Interview Simulation timeout can finalize a partial draft without assigning semantic correctness
+ok 13 - Design Interview Simulation timeout can finalize a partial draft without assigning semantic correctness
+  ---
+  duration_ms: 0.18075
+  type: 'test'
+  ...
+# Subtest: Activity renders unavailable history as an explicit detail surface without runtime navigation
+ok 14 - Activity renders unavailable history as an explicit detail surface without runtime navigation
+  ---
+  duration_ms: 0.515625
+  type: 'test'
+  ...
+# Subtest: Activity detail disclosures are mutually exclusive and expose expanded state
+ok 15 - Activity detail disclosures are mutually exclusive and expose expanded state
+  ---
+  duration_ms: 0.22125
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 815.238625

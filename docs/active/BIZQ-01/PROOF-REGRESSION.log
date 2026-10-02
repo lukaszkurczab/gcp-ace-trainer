@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: accepts the real BIZQ-01 replacement proof while preserving current and historical counts
+ok 1 - accepts the real BIZQ-01 replacement proof while preserving current and historical counts
+  ---
+  duration_ms: 3151.213375
+  type: 'test'
+  ...
+# Subtest: keeps the original migration verifier behavior when no BIZQ proof is present
+ok 2 - keeps the original migration verifier behavior when no BIZQ proof is present
+  ---
+  duration_ms: 689.98825
+  type: 'test'
+  ...
+# Subtest: rejects changes to a current replacement and its frozen old object
+ok 3 - rejects changes to a current replacement and its frozen old object
+  ---
+  duration_ms: 1188.676792
+  type: 'test'
+  ...
+# Subtest: rejects stale batch identity, duplicate mappings, and a missing replacement
+ok 4 - rejects stale batch identity, duplicate mappings, and a missing replacement
+  ---
+  duration_ms: 2129.409209
+  type: 'test'
+  ...
+# Subtest: rejects changes to an unrelated item in the proven current track
+ok 5 - rejects changes to an unrelated item in the proven current track
+  ---
+  duration_ms: 532.880208
+  type: 'test'
+  ...
+# Subtest: verifies the complete canonical tree and durable evidence without external inputs
+ok 6 - verifies the complete canonical tree and durable evidence without external inputs
+  ---
+  duration_ms: 1492.813125
+  type: 'test'
+  ...
+# Subtest: rejects canonical question tampering without changing evidence
+ok 7 - rejects canonical question tampering without changing evidence
+  ---
+  duration_ms: 831.404833
+  type: 'test'
+  ...
+# Subtest: rejects evidence hash tampering and missing membership
+ok 8 - rejects evidence hash tampering and missing membership
+  ---
+  duration_ms: 1059.293792
+  type: 'test'
+  ...
+# Subtest: rejects symlinked canonical paths before following them
+ok 9 - rejects symlinked canonical paths before following them
+  ---
+  duration_ms: 497.755125
+  type: 'test'
+  ...
+# Subtest: rejects a content root reached through a symlinked ancestor
+ok 10 - rejects a content root reached through a symlinked ancestor
+  ---
+  duration_ms: 577.039166
+  type: 'test'
+  ...
+# Subtest: has no dependency on ephemeral output or the migration writer
+ok 11 - has no dependency on ephemeral output or the migration writer
+  ---
+  duration_ms: 0.587625
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7887.843709

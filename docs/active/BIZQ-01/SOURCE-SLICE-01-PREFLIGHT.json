@@ -1,0 +1,245 @@
+{
+  "scope": "two confirmed BESD items only",
+  "producerHead": "78ba999098ea12704b74fe9de2eecdf89578e885",
+  "consumerHead": "200f8504c48df020d19937cad788d3961eb4caf7",
+  "items": [
+    {
+      "sourceFile": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "sourceSha256": "690a75db38ddc7c80166a29a6c7122e80598c7c283e78d392812bc80940972dd",
+      "before": {
+        "answer": {
+          "optionId": "primary_decision",
+          "type": "choice_single"
+        },
+        "constraints": [
+          "duplicate delivery must not cause an unsafe repeated action",
+          "Name the state, owner, and enforcement point that make the guarantee observable.",
+          "The primary decision is choose the contract shape from ownership, timing, replay, and compatibility requirements..",
+          "Keep the scenario provider-neutral and do not rely on a canonical product solution."
+        ],
+        "difficulty": "foundational",
+        "feedback": {
+          "details": {
+            "boundaryOrTradeoff": "Do not reduce \u201cResource, command, event, and query contract modeling\u201d to terminology recall. Distinguish protocol mechanics from domain boundaries; a fashionable API style is not automatically the correct contract. The trade-off is that explicit ownership and evidence may require a narrower contract or an operational signal, but that cost is preferable to silently violating the stated guarantee.",
+            "errorCorrection": "The distractors either make the boundary unowned, add unmeasured complexity, ignore recovery, or replace mechanism reasoning with provider trivia. Name the state, owner, and enforcement point that make the guarantee observable.",
+            "mechanismOrProperty": "Resources model addressable state, commands request work, events announce facts, and queries read without transferring ownership. The mechanism case makes the enforcement point explicit instead of relying on a product default.",
+            "ownership": "The service or boundary that owns the relevant state and can enforce resource, command, event, and query contract modeling must own the decision; callers coordinate through the contract.",
+            "provenance": "Technical claim anchored to RFC 9110 \u2014 HTTP Semantics (https://www.rfc-editor.org/rfc/rfc9110.html); scenario, options, and feedback are independently authored.",
+            "scenarioApplication": "For IoT command delivery, the decision keeps duplicate delivery must not cause an unsafe repeated action attached to the owner that can observe the state. The design treats a reconnecting device replaying a command as a named failure path.",
+            "transfer": "Carry the ownership and failure rule into a new domain, then re-check the changed workload, guarantee, and recovery requirement."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "ignore_failure",
+              "text": "A design answer must state what the user sees and who owns recovery when a reconnecting device replaying a command occurs."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "provider_trivia",
+              "text": "The architecture decision should survive a provider change; the mechanism and contract matter more than a product label."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "unbounded_scale",
+              "text": "The extra mechanism may change consistency, duplicate work, or recovery behavior without addressing the decisive requirement."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "unowned_shortcut",
+              "text": "It leaves resource, command, event, and query contract modeling dependent on caller discipline instead of placing the decision with the boundary that can enforce it."
+            }
+          ],
+          "reason": "Choose the contract shape from ownership, timing, replay, and compatibility requirements. It addresses duplicate delivery must not cause an unsafe repeated action through an explicit mechanism and keeps a reconnecting device replaying a command inside a visible ownership and recovery boundary.",
+          "type": "choice_single"
+        },
+        "interaction": {
+          "options": [
+            {
+              "optionId": "primary_decision",
+              "text": "Choose the contract shape from ownership, timing, replay, and compatibility requirements. In this mechanism check for IoT command delivery, resources model addressable state, commands request work, events announce facts, and queries read without transferring ownership. The owner must also make a reconnecting device replaying a command observable rather than silently passing it to another layer."
+            },
+            {
+              "optionId": "unowned_shortcut",
+              "text": "Choose the nearest familiar component and let each caller decide resource, command, event, and query contract modeling independently, without a shared owner or failure contract."
+            },
+            {
+              "optionId": "unbounded_scale",
+              "text": "Add replication, caching, retries, or asynchronous buffering immediately, even though the scenario has not shown that mechanism is the limiting constraint."
+            },
+            {
+              "optionId": "ignore_failure",
+              "text": "Keep the happy path and treat a reconnecting device replaying a command as an operational exception that the caller can resolve manually."
+            },
+            {
+              "optionId": "provider_trivia",
+              "text": "Select a named cloud or vendor product first and infer the workload, ownership, and guarantee from that product's defaults."
+            }
+          ],
+          "scoringMethod": "exact_selected_set",
+          "type": "choice_single"
+        },
+        "mentalUnitId": "BESD-N02-B01",
+        "nodeId": "api_contracts_service_boundaries_and_request_flows",
+        "prompt": "In a IoT command delivery system, a device control plane must send a command to a device. duplicate delivery must not cause an unsafe repeated action The design review focuses on resource, command, event, and query contract modeling. The interviewer asks what mechanism makes the guarantee true rather than which product name is familiar. What is the best primary architecture decision?",
+        "questionId": "besd-n02-b01-i002",
+        "sourceRefs": [
+          "https://www.rfc-editor.org/rfc/rfc9110.html",
+          "https://spec.openapis.org/oas/latest.html",
+          "https://grpc.io/docs/what-is-grpc/introduction/",
+          "https://amazon.jobs/content/en/how-we-hire/sde-ii-interview-prep",
+          "https://docs.cloud.google.com/architecture/framework"
+        ],
+        "trackId": "backend-system-design-interview"
+      }
+    },
+    {
+      "sourceFile": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "sourceSha256": "58ebf8c3db902f382ec42a419b966fe1ab96cb13a2b8a9b64b0ebfb1aeb1d888",
+      "before": {
+        "answer": {
+          "optionId": "primary_decision",
+          "type": "choice_single"
+        },
+        "constraints": [
+          "the record must be attributable and retained for the stated obligation",
+          "Name the state, owner, and enforcement point that make the guarantee observable.",
+          "The primary decision is place a cache where its owner can state freshness, invalidation, and failure behavior..",
+          "Keep the scenario provider-neutral and do not rely on a canonical product solution."
+        ],
+        "difficulty": "foundational",
+        "feedback": {
+          "details": {
+            "boundaryOrTradeoff": "Do not reduce \u201cCache placement and ownership across client, edge, service, and database layers\u201d to terminology recall. Caching is a consistency decision, not a universal speed switch; distinguish authoritative data, derived views, and disposable acceleration layers. The trade-off is that explicit ownership and evidence may require a narrower contract or an operational signal, but that cost is preferable to silently violating the stated guarantee.",
+            "errorCorrection": "The distractors either make the boundary unowned, add unmeasured complexity, ignore recovery, or replace mechanism reasoning with provider trivia. Name the state, owner, and enforcement point that make the guarantee observable.",
+            "mechanismOrProperty": "Cache placement changes the consistency boundary and who can observe or repair stale data. The mechanism case makes the enforcement point explicit instead of relying on a product default.",
+            "ownership": "The service or boundary that owns the relevant state and can enforce cache placement and ownership across client, edge, service, and database layers must own the decision; callers coordinate through the contract.",
+            "provenance": "Technical claim anchored to RFC 9111 \u2014 HTTP Caching (https://www.rfc-editor.org/rfc/rfc9111.html); scenario, options, and feedback are independently authored.",
+            "scenarioApplication": "For audit ledger, the decision keeps the record must be attributable and retained for the stated obligation attached to the owner that can observe the state. The design treats a missing or mutable audit entry as a named failure path.",
+            "transfer": "Carry the ownership and failure rule into a new domain, then re-check the changed workload, guarantee, and recovery requirement."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "ignore_failure",
+              "text": "A design answer must state what the user sees and who owns recovery when a missing or mutable audit entry occurs."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "provider_trivia",
+              "text": "The architecture decision should survive a provider change; the mechanism and contract matter more than a product label."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "unbounded_scale",
+              "text": "The extra mechanism may change consistency, duplicate work, or recovery behavior without addressing the decisive requirement."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "unowned_shortcut",
+              "text": "It leaves cache placement and ownership across client, edge, service, and database layers dependent on caller discipline instead of placing the decision with the boundary that can enforce it."
+            }
+          ],
+          "reason": "Place a cache where its owner can state freshness, invalidation, and failure behavior. It addresses the record must be attributable and retained for the stated obligation through an explicit mechanism and keeps a missing or mutable audit entry inside a visible ownership and recovery boundary.",
+          "type": "choice_single"
+        },
+        "interaction": {
+          "options": [
+            {
+              "optionId": "primary_decision",
+              "text": "Place a cache where its owner can state freshness, invalidation, and failure behavior. In this mechanism check for audit ledger, cache placement changes the consistency boundary and who can observe or repair stale data. The owner must also make a missing or mutable audit entry observable rather than silently passing it to another layer."
+            },
+            {
+              "optionId": "unowned_shortcut",
+              "text": "Choose the nearest familiar component and let each caller decide cache placement and ownership across client, edge, service, and database layers independently, without a shared owner or failure contract."
+            },
+            {
+              "optionId": "unbounded_scale",
+              "text": "Add replication, caching, retries, or asynchronous buffering immediately, even though the scenario has not shown that mechanism is the limiting constraint."
+            },
+            {
+              "optionId": "ignore_failure",
+              "text": "Keep the happy path and treat a missing or mutable audit entry as an operational exception that the caller can resolve manually."
+            },
+            {
+              "optionId": "provider_trivia",
+              "text": "Select a named cloud or vendor product first and infer the workload, ownership, and guarantee from that product's defaults."
+            }
+          ],
+          "scoringMethod": "exact_selected_set",
+          "type": "choice_single"
+        },
+        "mentalUnitId": "BESD-N04-B01",
+        "nodeId": "caching_read_scaling_search_and_content_delivery",
+        "prompt": "In a audit ledger system, a compliance service must append an audit record. the record must be attributable and retained for the stated obligation The design review focuses on cache placement and ownership across client, edge, service, and database layers. The interviewer asks what mechanism makes the guarantee true rather than which product name is familiar. What is the best primary architecture decision?",
+        "questionId": "besd-n04-b01-i002",
+        "sourceRefs": [
+          "https://www.rfc-editor.org/rfc/rfc9111.html",
+          "https://redis.io/docs/latest/develop/use/patterns/",
+          "https://docs.cloud.google.com/architecture/framework",
+          "https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html"
+        ],
+        "trackId": "backend-system-design-interview"
+      }
+    }
+  ],
+  "beforeLock": {
+    "schemaVersion": "patternly-content-lock-v1",
+    "tracks": [
+      {
+        "contentVersion": "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096",
+        "questionCount": 2604,
+        "sha256": "c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9",
+        "trackId": "aws-certified-solutions-architect-associate"
+      },
+      {
+        "contentVersion": "backend-system-design-interview-candidate-v2026.08.15",
+        "questionCount": 1569,
+        "sha256": "2710d077d5a23f0c1045d9893e8b0e5d2fce78d8a5df79d5a1c8ee113b1068d5",
+        "trackId": "backend-system-design-interview"
+      },
+      {
+        "contentVersion": "ccarp-2026.09.03",
+        "questionCount": 300,
+        "sha256": "7d6d12a49d67642e3144d062a6d237bec4604917ab34124e4ee121263c6beb2d",
+        "trackId": "claude-certified-architect-professional-certification"
+      },
+      {
+        "contentVersion": "coding-interview-dsa-problem-solving-0004",
+        "questionCount": 3404,
+        "sha256": "30b4b587c747b9768bbe92dc1b58b8da060417f32ff8a870960015ed3ef4face",
+        "trackId": "coding-interview-dsa-problem-solving"
+      },
+      {
+        "contentVersion": "frontend-system-design-interview-candidate-v2026.08.15",
+        "questionCount": 1766,
+        "sha256": "7de3a0bd8860eef726c6bb11cbf8e0bbc88ff0282d1a4575cbf94cc5fb9dd9bf",
+        "trackId": "frontend-system-design-interview"
+      },
+      {
+        "contentVersion": "google-cloud-associate-cloud-engineer-authoring-v2026.08.11",
+        "questionCount": 2981,
+        "sha256": "eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9",
+        "trackId": "google-cloud-associate-cloud-engineer"
+      },
+      {
+        "contentVersion": "microsoft-azure-administrator-associate-az-104-authoring-v2026.08.15",
+        "questionCount": 1288,
+        "sha256": "80e5b920beade4a9b540dfa505aa67368c07c99497998314935be53da9013975",
+        "trackId": "microsoft-azure-administrator-associate-az-104"
+      },
+      {
+        "contentVersion": "microsoft-azure-ai-fundamentals-ai-901-authoring-v2026.08.15",
+        "questionCount": 752,
+        "sha256": "ef25741799306c6cfbc7cc90cb7d76492f3df639c056b61b1c2b0492f5fbb9d4",
+        "trackId": "microsoft-azure-ai-fundamentals-ai-901"
+      },
+      {
+        "contentVersion": "object-oriented-design-interview-candidate-v2026.08.15",
+        "questionCount": 1413,
+        "sha256": "613e5113e9d88caad18757d6167c781d2a19532b7654c7d0a28c493933ab8f9b",
+        "trackId": "object-oriented-design-interview"
+      }
+    ]
+  }
+}

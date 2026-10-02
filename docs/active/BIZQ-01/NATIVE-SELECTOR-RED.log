@@ -1,0 +1,42 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ-01 existing Design Practice Premium gate regression
+Launch app "com.lkurczab.patternly"... COMPLETED
+Open com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081... COMPLETED
+Run flow when id: account-guest is visible...
+Run flow when id: account-guest is visible... SKIPPED
+Assert that id: main-tab-bar-home is visible... COMPLETED
+Tap on id: main-tab-bar-home... COMPLETED
+Run flow when id: patternly:home:track-card:backend-system-design-interview is not visible...
+  Run flow when id: patternly:home:change-track is visible...
+    Tap on id: patternly:home:change-track... COMPLETED
+  Run flow when id: patternly:home:change-track is visible... COMPLETED
+  Scrolling DOWN until id: patternly:home:select-track:backend-system-design-interview is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+  Tap on id: patternly:home:select-track:backend-system-design-interview... COMPLETED
+  Tap on id: patternly:home:select-track:continue... COMPLETED
+Run flow when id: patternly:home:track-card:backend-system-design-interview is not visible... COMPLETED
+Run flow when id: patternly:home:guest-goal-onboarding:not-now is visible...
+  Tap on id: patternly:home:guest-goal-onboarding:not-now... COMPLETED
+Run flow when id: patternly:home:guest-goal-onboarding:not-now is visible... COMPLETED
+Tap on id: main-tab-bar-settings... COMPLETED
+Scrolling DOWN until id: settings-premium-testing:.* is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Run flow when id: settings-premium-testing:enabled is visible...
+Run flow when id: settings-premium-testing:enabled is visible... SKIPPED
+Assert that id: settings-premium-testing:disabled is visible... COMPLETED
+Tap on id: main-tab-bar-practice... COMPLETED
+Assert that id: patternly:practice:hub:root is visible... COMPLETED
+Scrolling DOWN until id: patternly:practice:mode-card:design-interview-learn-framework is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... FAILED
+
+No visible element found: id: patternly:practice:mode-card:design-interview-learn-framework
+
+Could not find a visible element matching selector: id: patternly:practice:mode-card:design-interview-learn-framework
+Tip: Try adjusting the following settings to improve detection:
+- `timeout`: current = 20000ms → Increase if you need more time to find the element
+- `speed`: current = 40 (0-100 scale) → Increase for faster scrolling if element is far away
+- `waitToSettleTimeoutMs`: current = Not defined → Set this value (e.g., 500ms) if your UI updates frequently between scrolls
+- `visibilityPercentage`: current = 100% → Lower this value if you want to detect partially visible elements
+- `centerElement`: current = false → Enable if you want the element to be centered after finding it
+
+
+==== Debug output (logs & screenshots) ====
+
+/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/native/2026-10-02_154248

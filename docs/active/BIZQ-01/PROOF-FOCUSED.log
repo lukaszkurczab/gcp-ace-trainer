@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: accepts the real BIZQ-01 replacement proof while preserving current and historical counts
+ok 1 - accepts the real BIZQ-01 replacement proof while preserving current and historical counts
+  ---
+  duration_ms: 2776.900167
+  type: 'test'
+  ...
+# Subtest: keeps the original migration verifier behavior when no BIZQ proof is present
+ok 2 - keeps the original migration verifier behavior when no BIZQ proof is present
+  ---
+  duration_ms: 629.863291
+  type: 'test'
+  ...
+# Subtest: rejects changes to a current replacement and its frozen old object
+ok 3 - rejects changes to a current replacement and its frozen old object
+  ---
+  duration_ms: 1157.689417
+  type: 'test'
+  ...
+# Subtest: rejects stale batch identity, duplicate mappings, and a missing replacement
+ok 4 - rejects stale batch identity, duplicate mappings, and a missing replacement
+  ---
+  duration_ms: 2263.581833
+  type: 'test'
+  ...
+# Subtest: rejects changes to an unrelated item in the proven current track
+ok 5 - rejects changes to an unrelated item in the proven current track
+  ---
+  duration_ms: 505.626958
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 changed items keep concrete learner constraints and one scoreable authored answer
+ok 6 - BIZQ-01 changed items keep concrete learner constraints and one scoreable authored answer
+  ---
+  duration_ms: 3.179666
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 canonical builder carries the exact batch and new content identity
+ok 7 - BIZQ-01 canonical builder carries the exact batch and new content identity
+  ---
+  duration_ms: 236.857625
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 advisory console distinguishes corrected batch from remaining warnings
+ok 8 - BIZQ-01 advisory console distinguishes corrected batch from remaining warnings
+  ---
+  duration_ms: 629.227083
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7508.331625

@@ -1,0 +1,13 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ-01 restore guest test setting
+Assert that id: premium-offer-summary is visible... COMPLETED
+Assert that id: patternly:session:root:.* is not visible... COMPLETED
+Take screenshot bizq01-guest-testing-toggle-still-blocked... COMPLETED
+Tap on "Go back|Wróć"... COMPLETED
+Tap on id: main-tab-bar-settings... COMPLETED
+Scrolling DOWN until id: settings-premium-testing:enabled is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: settings-premium-testing:enabled... COMPLETED
+Assert that id: settings-premium-testing:disabled is visible... COMPLETED
+Tap on id: main-tab-bar-home... COMPLETED
+Take screenshot bizq01-guest-restored... COMPLETED
+Stop com.lkurczab.patternly... COMPLETED

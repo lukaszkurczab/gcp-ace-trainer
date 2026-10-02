@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: review console surfaces a remaining BESD constraint disclosure without recording an outcome
+ok 1 - review console surfaces a remaining BESD constraint disclosure without recording an outcome
+  ---
+  duration_ms: 602.742625
+  type: 'test'
+  ...
+# Subtest: constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback
+ok 2 - constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback
+  ---
+  duration_ms: 603.8235
+  type: 'test'
+  ...
+# Subtest: review console exposes exactly nine launch tracks, navigable coverage, and advisory signals
+ok 3 - review console exposes exactly nine launch tracks, navigable coverage, and advisory signals
+  ---
+  duration_ms: 584.128708
+  type: 'test'
+  ...
+# Subtest: review console records one current explicit outcome and invalidates it when source identity changes
+ok 4 - review console records one current explicit outcome and invalidates it when source identity changes
+  ---
+  duration_ms: 566.195917
+  type: 'test'
+  ...
+# Subtest: review console serves a local UI and bounded JSON API without fabricating approval
+ok 5 - review console serves a local UI and bounded JSON API without fabricating approval
+  ---
+  duration_ms: 705.778083
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3180.111709
