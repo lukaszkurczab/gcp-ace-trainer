@@ -1,0 +1,322 @@
+TAP version 13
+# Subtest: each catalogued track validates, tests and builds independently
+ok 1 - each catalogued track validates, tests and builds independently
+  ---
+  duration_ms: 105.517583
+  type: 'test'
+  ...
+# Subtest: build-all emits exactly nine deterministic artifacts and lock entries
+ok 2 - build-all emits exactly nine deterministic artifacts and lock entries
+  ---
+  duration_ms: 44.917083
+  type: 'test'
+  ...
+# Subtest: GCP simulation profile binds a complete unambiguous node map to the same-version published artifact
+ok 3 - GCP simulation profile binds a complete unambiguous node map to the same-version published artifact
+  ---
+  duration_ms: 469.715833
+  type: 'test'
+  ...
+# Subtest: Coding Interview simulation profile emits the blueprint and exact checksum-verified pool identities
+ok 4 - Coding Interview simulation profile emits the blueprint and exact checksum-verified pool identities
+  ---
+  duration_ms: 462.645125
+  type: 'test'
+  ...
+# Subtest: malformed Coding Interview simulation blueprint fails closed
+ok 5 - malformed Coding Interview simulation blueprint fails closed
+  ---
+  duration_ms: 121.178584
+  type: 'test'
+  ...
+# Subtest: Coding Interview simulation selection policies reject stale pools and invalid identities
+ok 6 - Coding Interview simulation selection policies reject stale pools and invalid identities
+  ---
+  duration_ms: 941.593584
+  type: 'test'
+  ...
+# Subtest: Design Interview simulation profiles emit one strict text-response case per track
+ok 7 - Design Interview simulation profiles emit one strict text-response case per track
+  ---
+  duration_ms: 1262.500208
+  type: 'test'
+  ...
+# Subtest: Design simulation availability requires the canonical text profile and does not imply question-bank capacity
+ok 8 - Design simulation availability requires the canonical text profile and does not imply question-bank capacity
+  ---
+  duration_ms: 11.665125
+  type: 'test'
+  ...
+# Subtest: malformed Design Interview simulation sources fail closed
+ok 9 - malformed Design Interview simulation sources fail closed
+  ---
+  duration_ms: 10.006
+  type: 'test'
+  ...
+# Subtest: malformed present GCP simulation profile fails closed on incomplete node coverage
+ok 10 - malformed present GCP simulation profile fails closed on incomplete node coverage
+  ---
+  duration_ms: 117.112333
+  type: 'test'
+  ...
+# Subtest: existing GCP artifact rejects malformed profile even when its lock SHA is recomputed
+ok 11 - existing GCP artifact rejects malformed profile even when its lock SHA is recomputed
+  ---
+  duration_ms: 918.6165
+  type: 'test'
+  ...
+# Subtest: existing GCP artifact rejects a legal but source-inconsistent node domain when its lock SHA is recomputed
+ok 12 - existing GCP artifact rejects a legal but source-inconsistent node domain when its lock SHA is recomputed
+  ---
+  duration_ms: 483.048584
+  type: 'test'
+  ...
+# Subtest: ACC-02 Candidate Manifest retains its exact nine-track identity against frozen baseline and migration manifest
+ok 13 - ACC-02 Candidate Manifest retains its exact nine-track identity against frozen baseline and migration manifest
+  ---
+  duration_ms: 0.253541
+  type: 'test'
+  ...
+# Subtest: canonical JSON sorts recursive object keys without reordering arrays
+ok 14 - canonical JSON sorts recursive object keys without reordering arrays
+  ---
+  duration_ms: 0.044834
+  type: 'test'
+  ...
+# Subtest: mutating one track does not rewrite another artifact or lock entry
+ok 15 - mutating one track does not rewrite another artifact or lock entry
+  ---
+  duration_ms: 19.503542
+  type: 'test'
+  ...
+# Subtest: builder rejects missing, empty, unknown and malformed inputs
+ok 16 - builder rejects missing, empty, unknown and malformed inputs
+  ---
+  duration_ms: 3.269833
+  type: 'test'
+  ...
+# Subtest: builder requires each mental-unit source file to be a non-empty question array
+ok 17 - builder requires each mental-unit source file to be a non-empty question array
+  ---
+  duration_ms: 2.163916
+  type: 'test'
+  ...
+# Subtest: builder rejects path identity, foreign track, duplicate and invalid questions
+ok 18 - builder rejects path identity, foreign track, duplicate and invalid questions
+  ---
+  duration_ms: 5.266667
+  type: 'test'
+  ...
+# Subtest: existing malformed lock is rejected before a single-track build
+ok 19 - existing malformed lock is rejected before a single-track build
+  ---
+  duration_ms: 2.082
+  type: 'test'
+  ...
+# Subtest: source discovery rejects a symlinked track, node directory, or question file
+ok 20 - source discovery rejects a symlinked track, node directory, or question file
+  ---
+  duration_ms: 4.343083
+  type: 'test'
+  ...
+# Subtest: a tampered existing artifact blocks another track before any write
+ok 21 - a tampered existing artifact blocks another track before any write
+  ---
+  duration_ms: 11.061917
+  type: 'test'
+  ...
+# Subtest: single-track build rejects orphan artifacts and temporary outputs before writing any target
+ok 22 - single-track build rejects orphan artifacts and temporary outputs before writing any target
+  ---
+  duration_ms: 4.734209
+  type: 'test'
+  ...
+# Subtest: single-track build rejects a symlinked output root without external writes
+ok 23 - single-track build rejects a symlinked output root without external writes
+  ---
+  duration_ms: 2.2455
+  type: 'test'
+  ...
+# Subtest: single-track output commit rolls back both files on an injected second rename failure
+ok 24 - single-track output commit rolls back both files on an injected second rename failure
+  ---
+  duration_ms: 5.651666
+  type: 'test'
+  ...
+# Subtest: build-all stages and rolls back the complete new output set on rename failure
+ok 25 - build-all stages and rolls back the complete new output set on rename failure
+  ---
+  duration_ms: 20.880625
+  type: 'test'
+  ...
+# Subtest: CLI parser requires track for single-track commands and rejects it for build-all
+ok 26 - CLI parser requires track for single-track commands and rejects it for build-all
+  ---
+  duration_ms: 0.243208
+  type: 'test'
+  ...
+# Subtest: CLI executes a hermetic single-track validate/test/build
+ok 27 - CLI executes a hermetic single-track validate/test/build
+  ---
+  duration_ms: 234.234125
+  type: 'test'
+  ...
+# Subtest: catalog accepts a valid optional package completion rule and rejects malformed or null rules
+ok 28 - catalog accepts a valid optional package completion rule and rejects malformed or null rules
+  ---
+  duration_ms: 1.390958
+  type: 'test'
+  ...
+# Subtest: builder transports the exact source rule, hashes it, and omits it when absent
+ok 29 - builder transports the exact source rule, hashes it, and omits it when absent
+  ---
+  duration_ms: 34.022417
+  type: 'test'
+  ...
+# Subtest: existing artifact rule must agree with catalog even after checksum is recomputed
+ok 30 - existing artifact rule must agree with catalog even after checksum is recomputed
+  ---
+  duration_ms: 22.771709
+  type: 'test'
+  ...
+# Subtest: catalog is the exact nine-track SIMP-01 catalog
+ok 31 - catalog is the exact nine-track SIMP-01 catalog
+  ---
+  duration_ms: 1.821084
+  type: 'test'
+  ...
+# Subtest: fixture validates as one family-neutral contract
+ok 32 - fixture validates as one family-neutral contract
+  ---
+  duration_ms: 1.078792
+  type: 'test'
+  ...
+# Subtest: schema documents five disjoint interaction branches
+ok 33 - schema documents five disjoint interaction branches
+  ---
+  duration_ms: 0.831209
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema rejects feedback type mismatches in every variant
+ok 34 - Draft 2020-12 schema rejects feedback type mismatches in every variant
+  ---
+  duration_ms: 166.197208
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text
+ok 35 - Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text
+  ---
+  duration_ms: 117.448917
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema and runtime agree on explicit learner whitespace code points
+ok 36 - Draft 2020-12 schema and runtime agree on explicit learner whitespace code points
+  ---
+  duration_ms: 149.487167
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace
+ok 37 - Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace
+  ---
+  duration_ms: 372.977125
+  type: 'test'
+  ...
+# Subtest: all five correct answers are scoreable
+ok 38 - all five correct answers are scoreable
+  ---
+  duration_ms: 0.715125
+  type: 'test'
+  ...
+# Subtest: choice_single scores correct, wrong and empty responses
+ok 39 - choice_single scores correct, wrong and empty responses
+  ---
+  duration_ms: 0.428709
+  type: 'test'
+  ...
+# Subtest: choice_multiple scores per correctly selected accepted option
+ok 40 - choice_multiple scores per correctly selected accepted option
+  ---
+  duration_ms: 0.87225
+  type: 'test'
+  ...
+# Subtest: ordering scores exact adjacent relations and incomplete answers
+ok 41 - ordering scores exact adjacent relations and incomplete answers
+  ---
+  duration_ms: 0.326875
+  type: 'test'
+  ...
+# Subtest: complexity scores every dimension and distinguishes missing values
+ok 42 - complexity scores every dimension and distinguishes missing values
+  ---
+  duration_ms: 0.40725
+  type: 'test'
+  ...
+# Subtest: decision_matrix scores every dimension independently
+ok 43 - decision_matrix scores every dimension independently
+  ---
+  duration_ms: 0.251125
+  type: 'test'
+  ...
+# Subtest: validator rejects missing identity and all family aliases
+ok 44 - validator rejects missing identity and all family aliases
+  ---
+  duration_ms: 0.209542
+  type: 'test'
+  ...
+# Subtest: learner text preserves surrounding whitespace while identity stays trim-clean
+ok 45 - learner text preserves surrounding whitespace while identity stays trim-clean
+  ---
+  duration_ms: 0.263958
+  type: 'test'
+  ...
+# Subtest: learner text rejects whitespace-only values in every canonical learner surface
+ok 46 - learner text rejects whitespace-only values in every canonical learner surface
+  ---
+  duration_ms: 0.395041
+  type: 'test'
+  ...
+# Subtest: validator permits internal newlines that the schema pattern explicitly permits
+ok 47 - validator permits internal newlines that the schema pattern explicitly permits
+  ---
+  duration_ms: 0.064041
+  type: 'test'
+  ...
+# Subtest: scoring rejects additional response keys and mismatched response types for every variant
+ok 48 - scoring rejects additional response keys and mismatched response types for every variant
+  ---
+  duration_ms: 0.371
+  type: 'test'
+  ...
+# Subtest: validator rejects extra fields and duplicate option/element/dimension IDs
+ok 49 - validator rejects extra fields and duplicate option/element/dimension IDs
+  ---
+  duration_ms: 0.168041
+  type: 'test'
+  ...
+# Subtest: validator rejects mismatched variants and foreign references
+ok 50 - validator rejects mismatched variants and foreign references
+  ---
+  duration_ms: 0.205583
+  type: 'test'
+  ...
+# Subtest: feedback messages are optional when no source map exists
+ok 51 - feedback messages are optional when no source map exists
+  ---
+  duration_ms: 0.08225
+  type: 'test'
+  ...
+# Subtest: fixture validator rejects a track outside the exact catalog
+ok 52 - fixture validator rejects a track outside the exact catalog
+  ---
+  duration_ms: 0.361166
+  type: 'test'
+  ...
+1..52
+# tests 52
+# suites 0
+# pass 52
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5380.00625

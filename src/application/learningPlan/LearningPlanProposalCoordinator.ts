@@ -1,3 +1,4 @@
+import { projectLearningEvidence } from "./learningEvidenceProjection";
 import { ContentError } from "../../content/errors";
 import type { ResolvedPackageRuntime } from "../contentPackageRuntimeOwner";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
@@ -6,6 +7,7 @@ import {
   generateLearningPlanProposal,
   type ProposalIdentity,
   type ProposalOutcome,
+  type PackageCompletionState,
   type TrackId,
 } from "../../domain";
 import { getTrackRegistration } from "../../domain/tracks/trackRegistry";
@@ -48,6 +50,7 @@ type ProposalContext = Readonly<{
   timezone: string;
   localToday: string;
   dueReviewCount: number;
+  completion: PackageCompletionState;
 }>;
 
 type StoredProposal = Readonly<{
@@ -111,8 +114,7 @@ export class LearningPlanProposalCoordinator {
         primaryModeId: primary.modeId,
         requestedLength: primary.defaultRequestedLength,
         sessionCapacity: capacity,
-        // The current canonical profiles do not supply an approved completion rule.
-        completionState: Object.freeze({ kind: "unknown" as const }),
+        completionState: context.completion,
         dueReviewCount: context.dueReviewCount,
         primaryScopeLabel: humanizeScope(primary.selection.kind === "node" ? primary.selection.nodeId : "track"),
         localToday: context.localToday,
@@ -225,18 +227,16 @@ function buildProposalContext(snapshot: LearningPlanInputSnapshot, resolved: Res
     contentVersion: resolved.track.contentVersion,
     artifactSha256: resolved.track.artifactSha256,
   };
-  const attempts = uniqueRecords(snapshot.attempts, "attempt").filter((attempt) =>
-    attempt.trackId === packageIdentity.trackId && attempt.item.trackId === packageIdentity.trackId &&
-    attempt.item.contentVersion === packageIdentity.contentVersion && attempt.item.artifactSha256 === packageIdentity.artifactSha256);
-  const reviews = uniqueRecords(snapshot.reviews, "review").filter((review) =>
-    review.trackId === packageIdentity.trackId && review.sourceItem.trackId === packageIdentity.trackId &&
-    review.sourceItem.contentVersion === packageIdentity.contentVersion && review.sourceItem.artifactSha256 === packageIdentity.artifactSha256);
-  const dueReviewCount = reviews.filter((review) => review.dueAt <= now).length;
+  const evidence = projectLearningEvidence({ profile: resolved.track, attempts: snapshot.attempts, reviews: snapshot.reviews, now });
+  const attempts = evidence.attempts;
+  const reviews = evidence.reviews;
+  const dueReviewCount = evidence.dueReviews.length;
   // Keep a bounded private digest rather than retaining a full history per proposal.
   const fingerprint = sha256Utf8(canonicalSerialize({
     goal: snapshot.goal,
     plan: snapshot.plan,
     package: packageIdentity,
+    completionRule: resolved.track.completionRule ?? null,
     modes: resolved.track.modes,
     primaryModeId: primary.modeId,
     primaryPoolQuestionIds: pool.map((question) => question.questionId),
@@ -246,24 +246,7 @@ function buildProposalContext(snapshot: LearningPlanInputSnapshot, resolved: Res
     localToday,
     timezone,
   }));
-  return Object.freeze({ storageScope: snapshot.storageScope, fingerprint, timezone, localToday, dueReviewCount });
-}
-
-function uniqueRecords<T extends Readonly<{ id: string }>>(records: readonly T[], label: string): readonly T[] {
-  const byId = new Map<string, T>();
-  const serializedById = new Map<string, string>();
-  for (const record of records) {
-    if (!record || typeof record.id !== "string" || !record.id.trim()) throw new Error(`Invalid ${label} identity.`);
-    const serialized = canonicalSerialize(record);
-    const previous = byId.get(record.id);
-    if (previous) {
-      if (serializedById.get(record.id) !== serialized) throw new Error(`Conflicting ${label} records share an ID.`);
-      continue;
-    }
-    byId.set(record.id, record);
-    serializedById.set(record.id, serialized);
-  }
-  return Object.freeze([...byId.values()]);
+  return Object.freeze({ storageScope: snapshot.storageScope, fingerprint, timezone, localToday, dueReviewCount, completion: evidence.completion });
 }
 
 function sameStorageScope(left: Pick<LearningPlanInputSnapshot, "storageScope">, right: Pick<LearningPlanInputSnapshot, "storageScope">): boolean {

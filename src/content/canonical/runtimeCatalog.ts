@@ -1,3 +1,4 @@
+import type { PackageCompletionRuleV1 } from "../../domain/learning/packageCompletionRule";
 import aws from "../generated/canonical-content/aws-certified-solutions-architect-associate.json";
 import backend from "../generated/canonical-content/backend-system-design-interview.json";
 import claude from "../generated/canonical-content/claude-certified-architect-professional-certification.json";
@@ -22,6 +23,7 @@ export type CanonicalTrackRuntime = Readonly<{
   artifactSha256: string;
   contentReleaseId: string;
   questions: readonly Question[];
+  completionRule?: PackageCompletionRuleV1;
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   modes: readonly ProductModeConfig[];
   getQuestion(questionId: string): Question | undefined;
@@ -106,6 +108,7 @@ function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly
     artifactSha256: catalog.artifactSha256,
     contentReleaseId: catalog.artifactMetadata.contentReleaseId,
     questions: catalog.questions,
+    ...(catalog.completionRule ? { completionRule: catalog.completionRule } : {}),
     ...(catalog.simulationProfiles ? { simulationProfiles: catalog.simulationProfiles } : {}),
     modes,
     getQuestion: catalog.getQuestionById,

@@ -1,0 +1,299 @@
+TAP version 13
+# Subtest: actual canonical producer preserves a versioned completion rule in the hashed artifact
+not ok 1 - actual canonical producer preserves a versioned completion rule in the hashed artifact
+  ---
+  duration_ms: 139.565583
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:33:1'
+  failureType: 'testCodeFailure'
+  error: 'content/catalog.json does not satisfy the canonical catalog contract'
+  code: 'ERR_TEST_FAILURE'
+  name: 'ContentBuildError'
+  stack: |-
+    fail (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/scripts/build.mjs:43:9)
+    loadValidatedCatalog (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/scripts/build.mjs:94:22)
+    validateTrack (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/scripts/build.mjs:509:25)
+    buildTrack (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/scripts/build.mjs:855:27)
+    TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:35:23)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: Home rejects a goal change during exact package resolution instead of publishing an old generation
+not ok 2 - Home rejects a goal change during exact package resolution instead of publishing an old generation
+  ---
+  duration_ms: 336.080208
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:39:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+    +   activeSession: null,
+    +   completion: {
+    +     kind: 'unknown'
+    +   },
+    +   day: {
+    +     date: '2026-10-02',
+    +     day: 'fri',
+    +     slot: {
+    +       day: 'fri',
+    +       localTime: '18:00',
+    +       sessionLength: 10,
+    +       slotId: 'projection-slot'
+    +     },
+    +     status: 'scheduled',
+    +     terminalSessionId: null
+    +   },
+    +   dueReviewCount: 0,
+    +   dueReviewIds: [],
+    +   goal: {
+    +     record: {
+    +       goalType: 'prepare_for_a_certification',
+    +       preferredDays: [
+    +         'mon',
+    +         'wed',
+    +         'sat'
+    +       ],
+    +       status: 'active',
+    +       targetDate: '2026-10-31',
+    +       trackId: 'aws-certified-solutions-architect-associate',
+    +       weeklySessionTarget: 3
+    +     },
+    +     revision: 1
+    +   },
+    +   guidance: {
+    +     facts: {
+    +       actualPace: {
+    +         kind: 'unavailable',
+    +         reason: 'unknown_completion_rule'
+    +       },
+    +       forecast: {
+    +         kind: 'unavailable',
+    +         reason: 'unknown_completion_rule'
+    +       },
+    +       requiredPace: {
+    +         kind: 'unavailable',
+    +         reason: 'unknown_completion_rule'
+    +       },
+    +       target: {
+    +         kind: 'date',
+    +         value: '2026-10-31'
+    +       }
+    +     },
+    +     home: {
+    +       primary: {
+    +         destination: 'GoalCadence',
+    +         kind: 'adjust_goal'
+    +       }
+    +     },
+    +     messageKey: 'targetDateGuidance.unavailable.unknownCompletionRule',
+    +     progress: {
+    +       primary: {
+    +         destination: 'GoalCadence',
+    +         kind: 'adjust_goal'
+    +       },
+    +       secondary: null
+    +     },
+    +     reason: 'unknown_completion_rule',
+    +     state: 'unavailable',
+    +     tone: 'neutral'
+    +   },
+    +   identity: {
+    +     artifactSha256: 'c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9',
+    +     contentVersion: 'aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096',
+    +     goalRevision: 1,
+    +     planId: 'projection-plan',
+    +     planRevision: 1,
+    +     planStorageRevision: 1,
+    +     timezone: 'Europe/Warsaw',
+    +     trackId: 'aws-certified-solutions-architect-associate'
+    +   },
+    +   kind: 'ready',
+    +   paceForecast: {
+    +     kind: 'unavailable',
+    +     reason: 'unknown_completion_rule'
+    +   },
+    +   plan: {
+    +     acceptedTarget: {
+    +       meaning: 'event',
+    +       targetDate: '2026-10-31'
+    +     },
+    +     artifactSha256: 'c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9',
+    +     commandId: 'projection-command',
+    +     contentVersion: 'aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096',
+    +     createdAt: '2026-10-01T12:00:00.000Z',
+    +     goalRevision: 1,
+    +     planId: 'projection-plan',
+    +     planRevision: 1,
+    +     schemaVersion: 1,
+    +     slots: [
+    +       {
+    +         day: 'fri',
+    +         localTime: '18:00',
+    +         sessionLength: 10,
+    +         slotId: 'projection-slot'
+    +       }
+    +     ],
+    +     status: 'accepted',
+    +     timezone: 'Europe/Warsaw',
+    +     trackId: 'aws-certified-solutions-architect-associate',
+    +     updatedAt: '2026-10-01T12:00:00.000Z'
+    +   },
+    +   planSnapshot: {
+    +     plan: {
+    +       acceptedTarget: {
+    +         meaning: 'event',
+    +         targetDate: '2026-10-31'
+    +       },
+    +       artifactSha256: 'c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9',
+    +       commandId: 'projection-command',
+    +       contentVersion: 'aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096',
+    +       createdAt: '2026-10-01T12:00:00.000Z',
+    +       goalRevision: 1,
+    +       planId: 'projection-plan',
+    +       planRevision: 1,
+    +       schemaVersion: 1,
+    +       slots: [
+    +         {
+    +           day: 'fri',
+    +           localTime: '18:00',
+    +           sessionLength: 10,
+    +           slotId: 'projection-slot'
+    +         }
+    +       ],
+    +       status: 'accepted',
+    +       timezone: 'Europe/Warsaw',
+    +       trackId: 'aws-certified-solutions-architect-associate',
+    +       updatedAt: '2026-10-01T12:00:00.000Z'
+    +     },
+    +     revision: 1
+    +   },
+    +   session: {
+    +     areaLabel: 'Aws secure architecture foundations',
+    +     modeId: 'certification-focus-practice',
+    +     sessionLength: 10,
+    +     topicId: 'aws_secure_architecture_foundations'
+    +   },
+    +   today: '2026-10-02',
+    -   kind: 'unavailable',
+    -   reason: 'concurrent_change',
+        trackId: 'aws-certified-solutions-architect-associate'
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    kind: 'unavailable'
+    trackId: 'aws-certified-solutions-architect-associate'
+    reason: 'concurrent_change'
+  actual:
+    kind: 'ready'
+    trackId: 'aws-certified-solutions-architect-associate'
+    identity:
+      trackId: 'aws-certified-solutions-architect-associate'
+      goalRevision: 1
+      planId: 'projection-plan'
+      planRevision: 1
+      planStorageRevision: 1
+      contentVersion: 'aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096'
+      artifactSha256: 'c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9'
+      timezone: 'Europe/Warsaw'
+    goal:
+      record:
+        goalType: 'prepare_for_a_certification'
+        preferredDays:
+          0: 'mon'
+          1: 'wed'
+          2: 'sat'
+        status: 'active'
+        trackId: 'aws-certified-solutions-architect-associate'
+        weeklySessionTarget: 3
+        targetDate: '2026-10-31'
+      revision: 1
+    plan:
+      schemaVersion: 1
+      planId: 'projection-plan'
+      trackId: 'aws-certified-solutions-architect-associate'
+      goalRevision: 1
+      status: 'accepted'
+      timezone: 'Europe/Warsaw'
+      contentVersion: 'aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096'
+      artifactSha256: 'c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9'
+      acceptedTarget:
+        meaning: 'event'
+        targetDate: '2026-10-31'
+      createdAt: '2026-10-01T12:00:00.000Z'
+      updatedAt: '2026-10-01T12:00:00.000Z'
+      planRevision: 1
+      commandId: 'projection-command'
+      slots:
+        0:
+          slotId: 'projection-slot'
+          day: 'fri'
+          localTime: '18:00'
+          sessionLength: 10
+    planSnapshot:
+      plan: <Circular>
+      revision: 1
+    today: '2026-10-02'
+    day:
+      date: '2026-10-02'
+      day: 'fri'
+      status: 'scheduled'
+      slot: <Circular>
+      terminalSessionId: ~
+    activeSession: ~
+    dueReviewCount: 0
+    dueReviewIds:
+    completion:
+      kind: 'unknown'
+    session:
+      modeId: 'certification-focus-practice'
+      topicId: 'aws_secure_architecture_foundations'
+      sessionLength: 10
+      areaLabel: 'Aws secure architecture foundations'
+    paceForecast:
+      kind: 'unavailable'
+      reason: 'unknown_completion_rule'
+    guidance:
+      state: 'unavailable'
+      reason: 'unknown_completion_rule'
+      tone: 'neutral'
+      messageKey: 'targetDateGuidance.unavailable.unknownCompletionRule'
+      home:
+        primary:
+          kind: 'adjust_goal'
+          destination: 'GoalCadence'
+      progress:
+        primary: <Circular>
+        secondary: ~
+      facts:
+        requiredPace:
+          kind: 'unavailable'
+          reason: 'unknown_completion_rule'
+        actualPace:
+          kind: 'unavailable'
+          reason: 'unknown_completion_rule'
+        forecast:
+          kind: 'unavailable'
+          reason: 'unknown_completion_rule'
+        target:
+          kind: 'date'
+          value: '2026-10-31'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:60:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 943.632458

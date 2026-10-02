@@ -1,3 +1,4 @@
+import { createPackageCompletionRuleV1 } from "../../domain/learning/packageCompletionRule";
 import type { CanonicalArtifact, CanonicalContentLockRecord, Question, QuestionInteractionType } from "./questionTypes";
 
 const WHITESPACE = "\\u0009-\\u000D\\u001C-\\u001F\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF";
@@ -103,11 +104,15 @@ export function assertValidQuestion(value: unknown): asserts value is Question {
 
 export function validateCanonicalArtifact(value: unknown, lock: CanonicalContentLockRecord, expectedTrackId: string): CanonicalArtifact {
   const errors: string[] = [];
-  if (!exact(value, ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles"], ["schemaVersion", "trackId", "contentVersion", "questions"], "artifact", errors)) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
+  if (!exact(value, ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles", "completionRule"], ["schemaVersion", "trackId", "contentVersion", "questions"], "artifact", errors)) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
   if (value.schemaVersion !== "patternly-content-artifact-v1") errors.push("artifact.schemaVersion: invalid version"); safeIdentity(expectedTrackId, "expectedTrackId", errors); if (value.trackId !== expectedTrackId) errors.push("artifact.trackId: foreign path identity"); safeIdentity(value.trackId, "artifact.trackId", errors); id(value.contentVersion, "artifact.contentVersion", errors);
   if (!exact(lock, ["trackId", "contentVersion", "questionCount", "sha256"], ["trackId", "contentVersion", "questionCount", "sha256"], "lock", errors)) throw new CanonicalQuestionValidationError("Artifact lock is invalid.", errors);
   if (lock.trackId !== expectedTrackId || lock.trackId !== value.trackId || lock.contentVersion !== value.contentVersion || !Number.isSafeInteger(lock.questionCount) || lock.questionCount < 1 || !SHA256.test(lock.sha256)) errors.push("lock: identity, version, count, or SHA-256 is inconsistent");
   if (!Array.isArray(value.questions)) errors.push("artifact.questions: must be an array"); else { if (value.questions.length !== lock.questionCount) errors.push("artifact.questions: count differs from lock"); const ids = new Set<string>(); for (const [i, question] of value.questions.entries()) { const child = validateQuestion(question); errors.push(...child.map((x) => `artifact.questions[${i}].${x.replace(/^question\.?/, "")}`)); if (record(question)) { if (question.trackId !== expectedTrackId) errors.push(`artifact.questions[${i}].trackId: foreign track`); if (typeof question.questionId === "string") { if (ids.has(question.questionId)) errors.push(`artifact.questions[${i}].questionId: duplicate identity`); ids.add(question.questionId); } const hasProfile = Object.hasOwn(value, "simulationProfiles"); if (Object.hasOwn(question, "contentDomainId") && (expectedTrackId !== "google-cloud-associate-cloud-engineer" || !hasProfile)) errors.push(`artifact.questions[${i}].contentDomainId: only valid for GCP artifacts with simulation profiles`); if (hasProfile && expectedTrackId === "google-cloud-associate-cloud-engineer" && !Object.hasOwn(question, "contentDomainId")) errors.push(`artifact.questions[${i}].contentDomainId: required for GCP simulation profile`); } } }
+  if (Object.hasOwn(value, "completionRule")) {
+    try { createPackageCompletionRuleV1(value.completionRule); }
+    catch { errors.push("artifact.completionRule: invalid versioned completion rule"); }
+  }
   if (Object.hasOwn(value, "simulationProfiles")) validateSimulationProfiles(value.simulationProfiles, Array.isArray(value.questions) ? value.questions : [], value.trackId, value.contentVersion, errors);
   if (errors.length) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
   return deepFreeze(value as CanonicalArtifact);

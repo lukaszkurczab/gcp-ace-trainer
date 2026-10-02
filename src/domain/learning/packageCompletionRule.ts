@@ -34,6 +34,17 @@ export function evaluatePackageCompletion(profile: VerifiedPackageCompletionProf
   const rule = profile.completionRule;
   if (rule === undefined) return Object.freeze({ kind: "unknown" });
   createPackageCompletionRuleV1(rule);
+  const qualifying = qualifyPackageAttempts(profile, attempts);
+  if (qualifying.length < rule.minimumAttemptCount || qualifying.length < rule.rollingWindowSize) return Object.freeze({ kind: "in_progress", qualifyingAttemptCount: qualifying.length, requiredAttemptCount: rule.minimumAttemptCount, rollingWindowSize: rule.rollingWindowSize });
+  const window = qualifying.slice(-rule.rollingWindowSize);
+  const quality = window.filter((attempt) => attempt.result.kind === "correct").length / rule.rollingWindowSize;
+  return quality >= rule.qualityThreshold
+    ? Object.freeze({ kind: "completed", qualifyingAttemptCount: qualifying.length, rollingWindowSize: rule.rollingWindowSize, quality })
+    : Object.freeze({ kind: "in_progress", qualifyingAttemptCount: qualifying.length, requiredAttemptCount: rule.minimumAttemptCount, rollingWindowSize: rule.rollingWindowSize });
+}
+
+/** Exact package qualification shared by completion and its application evidence projection. */
+export function qualifyPackageAttempts(profile: VerifiedPackageCompletionProfile, attempts: readonly TrainingAttempt<unknown>[]): readonly TrainingAttempt<unknown>[] {
   if (typeof profile.trackId !== "string" || !profile.trackId.trim() || typeof profile.contentVersion !== "string" || !profile.contentVersion.trim()) {
     throw new Error("Package completion profile content identity is invalid.");
   }
@@ -45,13 +56,7 @@ export function evaluatePackageCompletion(profile: VerifiedPackageCompletionProf
     if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(attempt)) throw new Error(`Conflicting durable attempts share id ${attempt.id}.`);
     byId.set(attempt.id, attempt);
   }
-  const qualifying = [...byId.values()].filter((attempt) => attempt.trackId === profile.trackId && isResolvedContentRef(attempt.item) && attempt.item.trackId === profile.trackId && attempt.item.contentVersion === profile.contentVersion && attempt.item.artifactSha256 === profile.artifactSha256).sort((left, right) => left.answeredAt.localeCompare(right.answeredAt) || left.id.localeCompare(right.id));
-  if (qualifying.length < rule.minimumAttemptCount || qualifying.length < rule.rollingWindowSize) return Object.freeze({ kind: "in_progress", qualifyingAttemptCount: qualifying.length, requiredAttemptCount: rule.minimumAttemptCount, rollingWindowSize: rule.rollingWindowSize });
-  const window = qualifying.slice(-rule.rollingWindowSize);
-  const quality = window.filter((attempt) => attempt.result.kind === "correct").length / rule.rollingWindowSize;
-  return quality >= rule.qualityThreshold
-    ? Object.freeze({ kind: "completed", qualifyingAttemptCount: qualifying.length, rollingWindowSize: rule.rollingWindowSize, quality })
-    : Object.freeze({ kind: "in_progress", qualifyingAttemptCount: qualifying.length, requiredAttemptCount: rule.minimumAttemptCount, rollingWindowSize: rule.rollingWindowSize });
+  return Object.freeze([...byId.values()].filter((attempt) => attempt.trackId === profile.trackId && isResolvedContentRef(attempt.item) && attempt.item.trackId === profile.trackId && attempt.item.contentVersion === profile.contentVersion && attempt.item.artifactSha256 === profile.artifactSha256).sort((left, right) => left.answeredAt.localeCompare(right.answeredAt) || left.id.localeCompare(right.id)));
 }
 
 function assertDurableAttempt(attempt: TrainingAttempt<unknown>): void {

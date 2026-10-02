@@ -1,3 +1,6 @@
+import { projectLearningEvidence } from "./learningPlan/learningEvidenceProjection";
+import { readLearningPlanInputSnapshot, type LearningPlanInputSnapshot } from "../storage/repositories/learningPlanInputSnapshot";
+import { calculatePaceForecast } from "../domain/learning/paceForecast";
 import {
   isIsoDate,
   normalizeGoalRecord,
@@ -17,14 +20,10 @@ import type { ResolvedContentRef } from "../domain/learning/resolvedContentRef";
 import type { PaceForecast, ImmutableCompletedFacts } from "../domain/learning/paceForecast";
 import {
   getActiveTrainingSession,
-  getGoalSnapshot,
-  getLearningPlanSnapshot,
-  getReviewQueueItems,
-  getTrainingAttempts,
   getTrainingSessions,
 } from "../storage/repositories";
 import type { StorageRepositoryResult } from "../storage/repositories/result";
-import { isReviewQueueEntryArray, isTrainingAttemptArray, isTrainingSessionArray } from "../storage/repositories/trainingModelGuards";
+import { isTrainingSessionArray } from "../storage/repositories/trainingModelGuards";
 import { canonicalSerialize } from "../infrastructure/identity/canonicalSerialization";
 import { contentPackageRuntimeOwner, type ResolvedPackageRuntime } from "./contentPackageRuntimeOwner";
 import {
@@ -111,16 +110,14 @@ type Awaitable<T> = T | Promise<T>;
 type ReadCollection<T> = readonly T[] | StorageRepositoryResult<T[]>;
 
 export type HomePlanSnapshotReaderDependencies = Readonly<{
-  getGoalSnapshot(trackId: TrackId): Awaitable<GoalSnapshot | null>;
-  getLearningPlanSnapshot(trackId: TrackId): Awaitable<LearningPlanSnapshot | null>;
+  readInputs(trackId: TrackId): LearningPlanInputSnapshot;
   getActiveTrainingSession(): Awaitable<TrainingSession | null>;
   getTrainingSessions(): Awaitable<ReadCollection<TrainingSession>>;
-  getTrainingAttempts(): Awaitable<ReadCollection<TrainingAttempt<unknown>>>;
-  getReviewQueueItems(): Awaitable<ReadCollection<ReviewQueueEntry>>;
   resolveExactArtifact(identity: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ResolvedPackageRuntime>;
 }>;
 
 type HomeReadGeneration = Readonly<{
+  storageScope: object;
   goal: GoalSnapshot | null;
   plan: LearningPlanSnapshot | null;
   activeSession: TrainingSession | null;
@@ -130,12 +127,9 @@ type HomeReadGeneration = Readonly<{
 }>;
 
 const defaultDependencies: HomePlanSnapshotReaderDependencies = {
-  getGoalSnapshot,
-  getLearningPlanSnapshot,
+  readInputs: readLearningPlanInputSnapshot,
   getActiveTrainingSession,
   getTrainingSessions: async () => (await getTrainingSessions()),
-  getTrainingAttempts: async () => (await getTrainingAttempts()),
-  getReviewQueueItems: async () => (await getReviewQueueItems()),
   resolveExactArtifact: (identity) => contentPackageRuntimeOwner.resolveExactArtifact(identity),
 };
 
@@ -173,21 +167,16 @@ export class HomePlanSnapshotReader {
   }
 
   private async readGeneration(trackId: TrackId): Promise<HomeReadGeneration> {
-    const [goal, plan, activeSession, sessionsRead, attemptsRead, reviewsRead] = await Promise.all([
-      this.dependencies.getGoalSnapshot(trackId),
-      this.dependencies.getLearningPlanSnapshot(trackId),
-      this.dependencies.getActiveTrainingSession(),
-      this.dependencies.getTrainingSessions(),
-      this.dependencies.getTrainingAttempts(),
-      this.dependencies.getReviewQueueItems(),
+    const inputs = this.dependencies.readInputs(trackId);
+    const [activeSession, sessionsRead] = await Promise.all([
+      this.dependencies.getActiveTrainingSession(), this.dependencies.getTrainingSessions(),
     ]);
+    if (!learningInputsEqual(inputs, this.dependencies.readInputs(trackId))) throw new HomePlanReadFailure("concurrent_change", "Home inputs changed while reading sessions.");
     return Object.freeze({
-      goal: goal ?? null,
-      plan: plan ?? null,
+      storageScope: inputs.storageScope, goal: inputs.goal, plan: inputs.plan,
       activeSession: activeSession ?? null,
       sessions: validateCollection(unwrapCollection(sessionsRead, "training sessions"), isTrainingSessionArray, "training sessions"),
-      attempts: validateCollection(unwrapCollection(attemptsRead, "training attempts"), isTrainingAttemptArray, "training attempts"),
-      reviews: validateCollection(unwrapCollection(reviewsRead, "review queue"), isReviewQueueEntryArray, "review queue"),
+      attempts: inputs.attempts, reviews: inputs.reviews,
     });
   }
 
@@ -230,6 +219,13 @@ export class HomePlanSnapshotReader {
     } catch (error) {
       return unavailable(trackId, isPackageUnavailable(error) ? "package_unavailable" : "package_error");
     }
+    // The awaited package read is inside the snapshot boundary, including the opaque A→B→A lease.
+    try {
+      const finalGeneration = await this.readGeneration(trackId);
+      if (!generationsEqual(generation, finalGeneration)) return unavailable(trackId, "concurrent_change");
+    } catch (error) {
+      return unavailable(trackId, error instanceof HomePlanReadFailure ? error.reason : "storage_error");
+    }
     if (!isResolvedPackageForPlan(resolved, plan)) return unavailable(trackId, "identity_mismatch");
 
     const primary = resolved.track.modes[0];
@@ -248,12 +244,9 @@ export class HomePlanSnapshotReader {
     if (sessions === null || attempts === null || reviews === null) return unavailable(trackId, "corrupt_record");
 
     const matchingSessions = sessions.filter((session) => matchesSessionIdentity(session, identity));
-    const matchingAttempts = attempts.filter((attempt) => matchesAttemptIdentity(attempt, identity));
-    const matchingReviews = reviews.filter((entry) => matchesReviewIdentity(entry, identity));
     const activeSession = selectActiveSession(generation.activeSession, identity, matchingSessions);
     if (activeSession === "corrupt") return unavailable(trackId, "corrupt_record");
 
-    const nowMs = Date.parse(instant);
     let today: string;
     try {
       today = requestedToday ?? localDateForInstant(instant, plan.timezone);
@@ -262,16 +255,21 @@ export class HomePlanSnapshotReader {
     }
     if (!isIsoDate(today)) return unavailable(trackId, "invalid_request");
 
-    const dueReviews = matchingReviews.filter((entry) => isDueReview(entry, nowMs));
+    let dueReviews: readonly ReviewQueueEntry[] = [];
     let paceForecast: PaceForecast;
     let c3Result: "unknown" | "in_progress" | "completed";
     let completion: PackageCompletionState;
     let completedFacts: ImmutableCompletedFacts;
     try {
-      completedFacts = buildCompletedFacts(matchingSessions, matchingAttempts);
-      completion = Object.freeze({ kind: "unknown" });
-      c3Result = "unknown";
-      paceForecast = Object.freeze({ kind: "unavailable", reason: "unknown_completion_rule" });
+      const evidence = projectLearningEvidence({ profile: resolved.track, attempts, reviews, now: instant });
+      completedFacts = evidence.completedFacts;
+      completion = evidence.completion;
+      c3Result = completion.kind;
+      dueReviews = evidence.dueReviews;
+      paceForecast = calculatePaceForecast({
+        acceptedPlan: plan, c3Result, requiredAttemptCount: resolved.track.completionRule?.minimumAttemptCount ?? 0,
+        today, timezone: plan.timezone, completedFacts,
+      });
     } catch {
       return unavailable(trackId, "calculation_error");
     }
@@ -295,6 +293,9 @@ export class HomePlanSnapshotReader {
     let day: HomePlanDay;
     try { day = buildHomeDay(plan, today, matchingSessions); }
     catch { return unavailable(trackId, "calculation_error"); }
+    try {
+      if (!learningInputsEqual(generation, this.dependencies.readInputs(trackId))) return unavailable(trackId, "concurrent_change");
+    } catch { return unavailable(trackId, "storage_error"); }
     return Object.freeze({
       kind: "ready",
       trackId,
@@ -405,14 +406,6 @@ function matchesSessionIdentity(session: TrainingSession, identity: HomePlanIden
   return session.trackId === identity.trackId && session.contentVersion === identity.contentVersion && session.artifactSha256 === identity.artifactSha256 && matchesOptionalIdentity(session, identity);
 }
 
-function matchesAttemptIdentity(attempt: TrainingAttempt<unknown>, identity: HomePlanIdentity): boolean {
-  return attempt.trackId === identity.trackId && attempt.item.trackId === identity.trackId && attempt.item.contentVersion === identity.contentVersion && attempt.item.artifactSha256 === identity.artifactSha256 && matchesOptionalIdentity(attempt, identity) && matchesOptionalIdentity(attempt.item, identity);
-}
-
-function matchesReviewIdentity(entry: ReviewQueueEntry, identity: HomePlanIdentity): boolean {
-  return entry.trackId === identity.trackId && entry.sourceItem.trackId === identity.trackId && entry.sourceItem.contentVersion === identity.contentVersion && entry.sourceItem.artifactSha256 === identity.artifactSha256 && matchesOptionalIdentity(entry, identity) && matchesOptionalIdentity(entry.sourceItem, identity);
-}
-
 function matchesOptionalIdentity(value: unknown, identity: HomePlanIdentity): boolean {
   if (!isRecord(value)) return false;
   const candidate = value as Record<string, unknown>;
@@ -433,17 +426,6 @@ function optionalEqual(value: Record<string, unknown>, nested: Record<string, un
   return (direct === undefined || direct === expected) && (nestedValue === undefined || nestedValue === expected);
 }
 
-function buildCompletedFacts(sessions: readonly TrainingSession[], attempts: readonly TrainingAttempt<unknown>[]): ImmutableCompletedFacts {
-  return Object.freeze({
-    sessions: Object.freeze(sessions.filter((session) => session.status === "completed" && session.completedAt !== undefined).map((session) => Object.freeze({
-      completedAt: session.completedAt!,
-      completedQuestions: session.actualLength,
-      plannedQuestions: session.requestedLength,
-    }))),
-    attempts: Object.freeze(attempts.map((attempt) => Object.freeze({ answeredAt: attempt.answeredAt, countsTowardCompletion: true }))),
-  });
-}
-
 function buildHomeDay(plan: LearningPlan, today: string, sessions: readonly TrainingSession[]): HomePlanDay {
   const day = dayForDate(today);
   const slot = plan.slots.find((candidate) => candidate.day === day) ?? null;
@@ -454,11 +436,6 @@ function buildHomeDay(plan: LearningPlan, today: string, sessions: readonly Trai
   const skipped = terminal.find((session) => session.status === "abandoned");
   const status: HomePlanDayStatus = completed ? "completed" : skipped ? "skipped" : slot ? "scheduled" : "rest";
   return Object.freeze({ date: today, day, status, slot, terminalSessionId: completed?.id ?? skipped?.id ?? null });
-}
-
-function isDueReview(entry: ReviewQueueEntry, nowMs: number): boolean {
-  const dueAt = Date.parse(entry.dueAt);
-  return Number.isFinite(dueAt) && dueAt <= nowMs;
 }
 
 function deduplicateById<T extends { id: string }>(values: readonly T[], source: string): readonly T[] | null {
@@ -479,8 +456,19 @@ function deduplicateById<T extends { id: string }>(values: readonly T[], source:
   return Object.freeze([...byId.values()]);
 }
 
+function learningInputsEqual(left: Pick<LearningPlanInputSnapshot, "storageScope" | "goal" | "plan" | "attempts" | "reviews">, right: LearningPlanInputSnapshot): boolean {
+  if (left.storageScope !== right.storageScope) return false;
+  try {
+    return canonicalSerialize({ goal: left.goal, plan: left.plan, attempts: left.attempts, reviews: left.reviews }) ===
+      canonicalSerialize({ goal: right.goal, plan: right.plan, attempts: right.attempts, reviews: right.reviews });
+  } catch { return false; }
+}
+
 function generationsEqual(left: HomeReadGeneration, right: HomeReadGeneration): boolean {
-  try { return canonicalSerialize(left) === canonicalSerialize(right); } catch { return false; }
+  if (left.storageScope !== right.storageScope) return false;
+  const { storageScope: _leftScope, ...leftFacts } = left;
+  const { storageScope: _rightScope, ...rightFacts } = right;
+  try { return canonicalSerialize(leftFacts) === canonicalSerialize(rightFacts); } catch { return false; }
 }
 
 function normalizeNow(value: HomePlanReadInput["now"]): string | null {

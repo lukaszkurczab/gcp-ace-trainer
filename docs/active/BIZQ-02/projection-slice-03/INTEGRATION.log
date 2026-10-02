@@ -1,0 +1,337 @@
+TAP version 13
+# Subtest: actual canonical producer preserves a versioned completion rule in the hashed artifact
+ok 1 - actual canonical producer preserves a versioned completion rule in the hashed artifact
+  ---
+  duration_ms: 235.257959
+  type: 'test'
+  ...
+# Subtest: Home rejects a goal change during exact package resolution instead of publishing an old generation
+ok 2 - Home rejects a goal change during exact package resolution instead of publishing an old generation
+  ---
+  duration_ms: 326.148833
+  type: 'test'
+  ...
+# Subtest: real producer → verified canonical runtime → persisted evidence → Home and proposal use the same rule
+ok 3 - real producer → verified canonical runtime → persisted evidence → Home and proposal use the same rule
+  ---
+  duration_ms: 740.662292
+  type: 'test'
+  ...
+# Subtest: shared evidence is package-wide across plan revisions, exact by artifact, deduplicated, and partial is not correct
+not ok 4 - shared evidence is package-wide across plan revisions, exact by artifact, deduplicated, and partial is not correct
+  ---
+  duration_ms: 623.230291
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:152:1'
+  failureType: 'testCodeFailure'
+  error: 'Training attempt is invalid.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    Object.addTrainingAttempt (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/storage/repositories/trainingAttemptRepository.ts:9:178)
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:155:63)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: absent actual policies stay unknown in both actual Home and proposal for all nine current tracks
+ok 5 - absent actual policies stay unknown in both actual Home and proposal for all nine current tracks
+  ---
+  duration_ms: 304.52525
+  type: 'test'
+  ...
+# Subtest: producer and actual consumer reject the same malformed v1 rule vectors and hash binds a valid rule
+ok 6 - producer and actual consumer reject the same malformed v1 rule vectors and hash binds a valid rule
+  ---
+  duration_ms: 321.116084
+  type: 'test'
+  ...
+# Subtest: Home rejects evidence changes, equal-data profile rebinding, and journal failure inside exact resolution
+not ok 7 - Home rejects evidence changes, equal-data profile rebinding, and journal failure inside exact resolution
+  ---
+  duration_ms: 666.311709
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:198:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      {
+    +   activeSession: null,
+    +   completion: {
+    +     kind: 'in_progress',
+    +     qualifyingAttemptCount: 0,
+    +     requiredAttemptCount: 20,
+    +     rollingWindowSize: 10
+    +   },
+    +   day: {
+    +     date: '2026-10-02',
+    +     day: 'fri',
+    +     slot: {
+    +       day: 'fri',
+    +       localTime: '18:00',
+    +       sessionLength: 10,
+    +       slotId: 'shared-projection-slot'
+    +     },
+    +     status: 'scheduled',
+    +     terminalSessionId: null
+    +   },
+    +   dueReviewCount: 0,
+    +   dueReviewIds: [],
+    +   goal: {
+    +     record: {
+    +       goalType: 'prepare_for_a_certification',
+    +       preferredDays: [
+    +         'mon',
+    +         'wed',
+    +         'sat'
+    +       ],
+    +       status: 'active',
+    +       targetDate: '2026-11-30',
+    +       trackId: 'aws-certified-solutions-architect-associate',
+    +       weeklySessionTarget: 3
+    +     },
+    +     revision: 1
+    +   },
+    +   guidance: {
+    +     facts: {
+    +       actualPace: {
+    +         kind: 'unavailable',
+    +         reason: 'insufficient_elapsed_evidence'
+    +       },
+    +       forecast: {
+    +         kind: 'unavailable',
+    +         reason: 'insufficient_elapsed_evidence'
+    +       },
+    +       requiredPace: {
+    +         kind: 'unavailable',
+    +         reason: 'insufficient_elapsed_evidence'
+    +       },
+    +       target: {
+    +         kind: 'date',
+    +         value: '2026-11-30'
+    +       }
+    +     },
+    +     home: {
+    +       primary: {
+    +         destination: 'Practice',
+    +         kind: 'continue_plan'
+    +       }
+    +     },
+    +     messageKey: 'targetDateGuidance.unavailable.insufficientElapsedEvidence',
+    +     progress: {
+    +       primary: {
+    +         destination: 'Practice',
+    +         kind: 'continue_plan'
+    +       },
+    +       secondary: null
+    +     },
+    +     reason: 'insufficient_elapsed_evidence',
+    +     state: 'unavailable',
+    +     tone: 'neutral'
+    +   },
+    +   identity: {
+    +     artifactSha256: '7a652bb21af5e73c29a0397e6067cd8d22b9ba76fea83c49ba6b78dd99654846',
+    +     contentVersion: 'aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096',
+    +     goalRevision: 1,
+    +     planId: 'shared-projection-plan',
+    +     planRevision: 1,
+    +     planStorageRevision: 1,
+    +     timezone: 'Europe/Warsaw',
+    +     trackId: 'aws-certified-solutions-architect-associate'
+    +   },
+    +   kind: 'ready',
+    +   paceForecast: {
+    +     kind: 'unavailable',
+    +     reason: 'insufficient_elapsed_evidence'
+    +   },
+    +   plan: {
+    +     acceptedTarget: {
+    +       meaning: 'event',
+    +       targetDate: '2026-11-30'
+    +     },
+    +     artifactSha256: '7a652bb21af5e73c29a0397e6067cd8d22b9ba76fea83c49ba6b78dd99654846',
+    +     commandId: 'shared-projection-command',
+    +     contentVersion: 'aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096',
+    +     createdAt: '2026-09-01T12:00:00.000Z',
+    +     goalRevision: 1,
+    +     planId: 'shared-projection-plan',
+    +     planRevision: 1,
+    +     schemaVersion: 1,
+    +     slots: [
+    +       {
+    +         day: 'fri',
+    +         localTime: '18:00',
+    +         sessionLength: 10,
+    +         slotId: 'shared-projection-slot'
+    +       }
+    +     ],
+    +     status: 'accepted',
+    +     timezone: 'Europe/Warsaw',
+    +     trackId: 'aws-certified-solutions-architect-associate',
+    +     updatedAt: '2026-09-01T12:00:00.000Z'
+    +   },
+    +   planSnapshot: {
+    +     plan: {
+    +       acceptedTarget: {
+    +         meaning: 'event',
+    +         targetDate: '2026-11-30'
+    +       },
+    +       artifactSha256: '7a652bb21af5e73c29a0397e6067cd8d22b9ba76fea83c49ba6b78dd99654846',
+    +       commandId: 'shared-projection-command',
+    +       contentVersion: 'aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096',
+    +       createdAt: '2026-09-01T12:00:00.000Z',
+    +       goalRevision: 1,
+    +       planId: 'shared-projection-plan',
+    +       planRevision: 1,
+    +       schemaVersion: 1,
+    +       slots: [
+    +         {
+    +           day: 'fri',
+    +           localTime: '18:00',
+    +           sessionLength: 10,
+    +           slotId: 'shared-projection-slot'
+    +         }
+    +       ],
+    +       status: 'accepted',
+    +       timezone: 'Europe/Warsaw',
+    +       trackId: 'aws-certified-solutions-architect-associate',
+    +       updatedAt: '2026-09-01T12:00:00.000Z'
+    +     },
+    +     revision: 1
+    +   },
+    +   session: {
+    +     areaLabel: 'Aws secure architecture foundations',
+    +     modeId: 'certification-focus-practice',
+    +     sessionLength: 10,
+    +     topicId: 'aws_secure_architecture_foundations'
+    +   },
+    +   today: '2026-10-02',
+    -   kind: 'unavailable',
+    -   reason: 'concurrent_change',
+        trackId: 'aws-certified-solutions-architect-associate'
+      }
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    kind: 'unavailable'
+    trackId: 'aws-certified-solutions-architect-associate'
+    reason: 'concurrent_change'
+  actual:
+    kind: 'ready'
+    trackId: 'aws-certified-solutions-architect-associate'
+    identity:
+      trackId: 'aws-certified-solutions-architect-associate'
+      goalRevision: 1
+      planId: 'shared-projection-plan'
+      planRevision: 1
+      planStorageRevision: 1
+      contentVersion: 'aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096'
+      artifactSha256: '7a652bb21af5e73c29a0397e6067cd8d22b9ba76fea83c49ba6b78dd99654846'
+      timezone: 'Europe/Warsaw'
+    goal:
+      record:
+        goalType: 'prepare_for_a_certification'
+        preferredDays:
+          0: 'mon'
+          1: 'wed'
+          2: 'sat'
+        status: 'active'
+        trackId: 'aws-certified-solutions-architect-associate'
+        weeklySessionTarget: 3
+        targetDate: '2026-11-30'
+      revision: 1
+    plan:
+      schemaVersion: 1
+      planId: 'shared-projection-plan'
+      trackId: 'aws-certified-solutions-architect-associate'
+      goalRevision: 1
+      status: 'accepted'
+      timezone: 'Europe/Warsaw'
+      contentVersion: 'aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096'
+      artifactSha256: '7a652bb21af5e73c29a0397e6067cd8d22b9ba76fea83c49ba6b78dd99654846'
+      acceptedTarget:
+        meaning: 'event'
+        targetDate: '2026-11-30'
+      createdAt: '2026-09-01T12:00:00.000Z'
+      updatedAt: '2026-09-01T12:00:00.000Z'
+      planRevision: 1
+      commandId: 'shared-projection-command'
+      slots:
+        0:
+          slotId: 'shared-projection-slot'
+          day: 'fri'
+          localTime: '18:00'
+          sessionLength: 10
+    planSnapshot:
+      plan: <Circular>
+      revision: 1
+    today: '2026-10-02'
+    day:
+      date: '2026-10-02'
+      day: 'fri'
+      status: 'scheduled'
+      slot: <Circular>
+      terminalSessionId: ~
+    activeSession: ~
+    dueReviewCount: 0
+    dueReviewIds:
+    completion:
+      kind: 'in_progress'
+      qualifyingAttemptCount: 0
+      requiredAttemptCount: 20
+      rollingWindowSize: 10
+    session:
+      modeId: 'certification-focus-practice'
+      topicId: 'aws_secure_architecture_foundations'
+      sessionLength: 10
+      areaLabel: 'Aws secure architecture foundations'
+    paceForecast:
+      kind: 'unavailable'
+      reason: 'insufficient_elapsed_evidence'
+    guidance:
+      state: 'unavailable'
+      reason: 'insufficient_elapsed_evidence'
+      tone: 'neutral'
+      messageKey: 'targetDateGuidance.unavailable.insufficientElapsedEvidence'
+      home:
+        primary:
+          kind: 'continue_plan'
+          destination: 'Practice'
+      progress:
+        primary: <Circular>
+        secondary: ~
+      facts:
+        requiredPace:
+          kind: 'unavailable'
+          reason: 'insufficient_elapsed_evidence'
+        actualPace:
+          kind: 'unavailable'
+          reason: 'insufficient_elapsed_evidence'
+        forecast:
+          kind: 'unavailable'
+          reason: 'insufficient_elapsed_evidence'
+        target:
+          kind: 'date'
+          value: '2026-11-30'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/application/learningPlan/learningPlanProjectionIntegration.test.mjs:212:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: matching-package phantom question IDs fail instead of contributing fabricated progress
+ok 8 - matching-package phantom question IDs fail instead of contributing fabricated progress
+  ---
+  duration_ms: 657.224834
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 6
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4322.711041

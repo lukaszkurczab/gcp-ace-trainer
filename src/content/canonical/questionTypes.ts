@@ -1,3 +1,4 @@
+import type { PackageCompletionRuleV1 } from "../../domain/learning/packageCompletionRule";
 export type JsonValue = string | number | boolean | null | readonly JsonValue[] | Readonly<{ [key: string]: JsonValue }>;
 
 export type CanonicalOption = Readonly<{ optionId: string; text: string; explanation?: string }>;
@@ -164,6 +165,7 @@ export type CanonicalArtifact = Readonly<{
   trackId: string;
   contentVersion: string;
   questions: readonly Question[];
+  completionRule?: PackageCompletionRuleV1;
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
 }>;
 
