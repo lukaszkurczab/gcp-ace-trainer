@@ -1,0 +1,52 @@
+{
+  "repositories": [
+    {
+      "repo": "patternly",
+      "head": "9b5340ebe19b46b24f475103a13f8c86e8aacc80",
+      "upstream": "200f8504c48df020d19937cad788d3961eb4caf7",
+      "distance": "7\t0",
+      "status": "M docs/PATTERNLY-WORKING-PLAN.md\n?? docs/active/BIZQ-01/scoring-slice-02/\n?? docs/active/SECURITY-PRIVACY-AUDIT/\n?? src/application/canonical/multipleChoiceScoringIntegration.test.ts",
+      "stashes": [
+        "acc4dd4b104d202e81064fabd2c268e28ffbf5cd",
+        "680df78d7014d76ccaaea221cb2022d4f1f50746",
+        "803672fc67aa8cab977030e63a29c3d5f599ca44",
+        "0f1a08fa36b628ffad19dea8e8e94fe4d6a76031",
+        "fa998da9bfc9dd04fa980c3048906d8642c5dfdb",
+        "f21e31454bdf33f0b09a33158f9d3ad1777e2ca7"
+      ]
+    },
+    {
+      "repo": "patternly-content",
+      "head": "2ceb2595903fceeb320eaf9cb3c98e369931ba3f",
+      "upstream": "78ba999098ea12704b74fe9de2eecdf89578e885",
+      "distance": "4\t0",
+      "status": "?? evidence/business-quality/full-content-audit-2026-10-02/",
+      "stashes": [
+        "8f1944f349449f1a7987f49b068eff2393a8e1c5",
+        "2b38e13f76ff561de18c5ee2c209ed31291ecba2"
+      ]
+    },
+    {
+      "repo": "patternly-backend",
+      "head": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "distance": "0\t0",
+      "status": "",
+      "stashes": [
+        "f706b6c18923f8a8ef0a862a903d08c548e7badc",
+        "a83361eba8048b5384cecdb412f466b6c6ed87de",
+        "d32f85fb95a97e030f0c93c053305767f605f575",
+        "0ab654cbb2e7ece519d8d34e739b50db8bb00e7d"
+      ]
+    },
+    {
+      "repo": "patternly-web",
+      "head": "9585919b7d0c1a8396e6d255e49850e64e129d0e",
+      "upstream": "9585919b7d0c1a8396e6d255e49850e64e129d0e",
+      "distance": "0\t0",
+      "status": "",
+      "stashes": []
+    }
+  ],
+  "docs17Sha256": "4ed626587a033a66ee234dca9727ceb81bf7f23dd4d08ea60d21134b19783cda"
+}

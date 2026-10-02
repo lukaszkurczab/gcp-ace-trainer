@@ -1,0 +1,244 @@
+TAP version 13
+# Subtest: real loader prepares all 29 modes across nine tracks
+ok 1 - real loader prepares all 29 modes across nine tracks
+  ---
+  duration_ms: 281.18125
+  type: 'test'
+  ...
+# Subtest: real canonical questions submit and score all five interaction types
+ok 2 - real canonical questions submit and score all five interaction types
+  ---
+  duration_ms: 25.281042
+  type: 'test'
+  ...
+# Subtest: evidence permits one item and coding includes committed misses
+ok 3 - evidence permits one item and coding includes committed misses
+  ---
+  duration_ms: 1.004584
+  type: 'test'
+  ...
+# Subtest: coding review preserves identity and resolves after two due successes
+ok 4 - coding review preserves identity and resolves after two due successes
+  ---
+  duration_ms: 2.120375
+  type: 'test'
+  ...
+# Subtest: resume and query boundaries reject tampering, foreign attempts and old pins
+ok 5 - resume and query boundaries reject tampering, foreign attempts and old pins
+  ---
+  duration_ms: 1.035375
+  type: 'test'
+  ...
+# Subtest: Claude Focus persists selectable feedback, scores single and multi-select, and finalizes complete evidence
+ok 6 - Claude Focus persists selectable feedback, scores single and multi-select, and finalizes complete evidence
+  ---
+  duration_ms: 27.884083
+  type: 'test'
+  ...
+# Subtest: reinsert resolves exact branch after three durable intervening submissions and preserves ordinary branch on correct
+ok 7 - reinsert resolves exact branch after three durable intervening submissions and preserves ordinary branch on correct
+  ---
+  duration_ms: 6.604625
+  type: 'test'
+  ...
+# Subtest: GCP simulation prepares the profile-weighted immutable 50-item plan and exact snapshot
+ok 8 - GCP simulation prepares the profile-weighted immutable 50-item plan and exact snapshot
+  ---
+  duration_ms: 9.323709
+  type: 'test'
+  ...
+# Subtest: GCP simulation validates draft occurrence keys, completeness, flags, revision, and deadline
+ok 9 - GCP simulation validates draft occurrence keys, completeness, flags, revision, and deadline
+  ---
+  duration_ms: 8.096875
+  type: 'test'
+  ...
+# Subtest: GCP simulation finalization scores only complete responses and partitions all 50 occurrences
+ok 10 - GCP simulation finalization scores only complete responses and partitions all 50 occurrences
+  ---
+  duration_ms: 8.163125
+  type: 'test'
+  ...
+# Subtest: Coding Mock consumes its exact ordered 40-question profile with foreground timer and shared draft runtime
+ok 11 - Coding Mock consumes its exact ordered 40-question profile with foreground timer and shared draft runtime
+  ---
+  duration_ms: 1.104084
+  type: 'test'
+  ...
+# Subtest: Design Interview Simulation uses each exact track profile, resumes durable stage text, and finalizes completeness only
+ok 12 - Design Interview Simulation uses each exact track profile, resumes durable stage text, and finalizes completeness only
+  ---
+  duration_ms: 1.055083
+  type: 'test'
+  ...
+# Subtest: Design Interview Simulation timeout can finalize a partial draft without assigning semantic correctness
+ok 13 - Design Interview Simulation timeout can finalize a partial draft without assigning semantic correctness
+  ---
+  duration_ms: 0.209958
+  type: 'test'
+  ...
+# Subtest: single choice feedback exposes selected incorrect, omitted correct and remaining neutral
+ok 14 - single choice feedback exposes selected incorrect, omitted correct and remaining neutral
+  ---
+  duration_ms: 4.082416
+  type: 'test'
+  ...
+# Subtest: multi choice feedback preserves every selected and correct combination
+ok 15 - multi choice feedback preserves every selected and correct combination
+  ---
+  duration_ms: 0.607292
+  type: 'test'
+  ...
+# Subtest: choice feedback rejects a mismatched response contract
+ok 16 - choice feedback rejects a mismatched response contract
+  ---
+  duration_ms: 0.559042
+  type: 'test'
+  ...
+# Subtest: journal durability precedes idempotent materialization and recovery
+ok 17 - journal durability precedes idempotent materialization and recovery
+  ---
+  duration_ms: 20.302708
+  type: 'test'
+  ...
+# Subtest: journal phase advances only one immutable step at a time
+ok 18 - journal phase advances only one immutable step at a time
+  ---
+  duration_ms: 7.411459
+  type: 'test'
+  ...
+# Subtest: journaled command rejects a conflicting pending command
+ok 19 - journaled command rejects a conflicting pending command
+  ---
+  duration_ms: 6.669125
+  type: 'test'
+  ...
+# Subtest: journal has a versioned SHA-256 command identity and rejects stale expected revisions
+ok 20 - journal has a versioned SHA-256 command identity and rejects stale expected revisions
+  ---
+  duration_ms: 2.730917
+  type: 'test'
+  ...
+# Subtest: journal construction rejects writes that cross exact resolved artifact identities
+ok 21 - journal construction rejects writes that cross exact resolved artifact identities
+  ---
+  duration_ms: 1.017583
+  type: 'test'
+  ...
+# Subtest: practice submission recovers identically after every durable write boundary
+ok 22 - practice submission recovers identically after every durable write boundary
+  ---
+  duration_ms: 32.879625
+  type: 'test'
+  ...
+# Subtest: concurrent conflicting journal persists use one CAS winner and ownership-checked clear
+ok 23 - concurrent conflicting journal persists use one CAS winner and ownership-checked clear
+  ---
+  duration_ms: 6.568208
+  type: 'test'
+  ...
+# Subtest: Free and unavailable Coding Mock access fail before package resolution, preparation, or mutation
+ok 24 - Free and unavailable Coding Mock access fail before package resolution, preparation, or mutation
+  ---
+  duration_ms: 524.163333
+  type: 'test'
+  ...
+# Subtest: Premium Coding Mock starts the exact 40-item product mode and immutable profile identity
+ok 25 - Premium Coding Mock starts the exact 40-item product mode and immutable profile identity
+  ---
+  duration_ms: 0.465167
+  type: 'test'
+  ...
+# Subtest: Coding Mock resume, draft save, and finalization each authorize once before one exact resolution
+ok 26 - Coding Mock resume, draft save, and finalization each authorize once before one exact resolution
+  ---
+  duration_ms: 0.95375
+  type: 'test'
+  ...
+# Subtest: expired Coding Mock draft-save boundary aborts before package resolution or draft persistence
+ok 27 - expired Coding Mock draft-save boundary aborts before package resolution or draft persistence
+  ---
+  duration_ms: 0.363625
+  type: 'test'
+  ...
+# Subtest: active Coding Mock reauthorizes before exact resolution and resume validation
+ok 28 - active Coding Mock reauthorizes before exact resolution and resume validation
+  ---
+  duration_ms: 0.318667
+  type: 'test'
+  ...
+# Subtest: all three Design simulations require Premium before create and resume, then prepare exact profile identity
+ok 29 - all three Design simulations require Premium before create and resume, then prepare exact profile identity
+  ---
+  duration_ms: 3.019958
+  type: 'test'
+  ...
+# Subtest: every Design mode denies before package resolution, preparation, and session mutation
+ok 30 - every Design mode denies before package resolution, preparation, and session mutation
+  ---
+  duration_ms: 1.185208
+  type: 'test'
+  ...
+# Subtest: all nine canonical artifacts validate with exact inventory and stable learner whitespace
+ok 31 - all nine canonical artifacts validate with exact inventory and stable learner whitespace
+  ---
+  duration_ms: 246.846875
+  type: 'test'
+  ...
+# Subtest: canonical scoring matches the producer oracle exhaustively
+ok 32 - canonical scoring matches the producer oracle exhaustively
+  ---
+  duration_ms: 431.573708
+  type: 'test'
+  ...
+# Subtest: all interactions expose completeness and immutable AttemptResult semantics
+ok 33 - all interactions expose completeness and immutable AttemptResult semantics
+  ---
+  duration_ms: 4.235417
+  type: 'test'
+  ...
+# Subtest: dimension scoring ignores inherited selections exactly like the producer oracle
+ok 34 - dimension scoring ignores inherited selections exactly like the producer oracle
+  ---
+  duration_ms: 5.243209
+  type: 'test'
+  ...
+# Subtest: dimension responses reject sparse arrays and alias-normalization collisions
+ok 35 - dimension responses reject sparse arrays and alias-normalization collisions
+  ---
+  duration_ms: 1.594917
+  type: 'test'
+  ...
+# Subtest: validator fails closed on exact keys, identities, membership and scoring consistency
+ok 36 - validator fails closed on exact keys, identities, membership and scoring consistency
+  ---
+  duration_ms: 93.687834
+  type: 'test'
+  ...
+# Subtest: catalog verifies bytes before exposing frozen lookups and exact artifact metadata
+ok 37 - catalog verifies bytes before exposing frozen lookups and exact artifact metadata
+  ---
+  duration_ms: 186.561792
+  type: 'test'
+  ...
+# Subtest: optional GCP simulation profile is strict, complete, immutable and covered by its artifact hash
+ok 38 - optional GCP simulation profile is strict, complete, immutable and covered by its artifact hash
+  ---
+  duration_ms: 678.111417
+  type: 'test'
+  ...
+# Subtest: Coding Mock profile validation requires its strict declared ordered 40-question pool
+ok 39 - Coding Mock profile validation requires its strict declared ordered 40-question pool
+  ---
+  duration_ms: 301.903209
+  type: 'test'
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 39
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3102.204042

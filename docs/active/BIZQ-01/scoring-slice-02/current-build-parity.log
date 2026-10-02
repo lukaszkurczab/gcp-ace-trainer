@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: bundled canonical release matches the current producer builder
+ok 1 - bundled canonical release matches the current producer builder
+  ---
+  duration_ms: 2327.630125
+  type: 'test'
+  ...
+# Subtest: current canonical builder preserves the ODK-096 inventory and approved AWS identity without repinning history
+ok 2 - current canonical builder preserves the ODK-096 inventory and approved AWS identity without repinning history
+  ---
+  duration_ms: 1075.192041
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4234.45125

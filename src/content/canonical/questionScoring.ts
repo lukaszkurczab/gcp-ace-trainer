@@ -44,7 +44,9 @@ export function scoreCanonicalQuestion(question: Question, response: unknown): A
 export function scoreChoiceSingleQuestion(question: ChoiceSingleQuestion, response: unknown): AttemptResult { return result(1, exactResponse(response, "choice_single", "optionId") && response.optionId === question.answer.optionId ? 1 : 0); }
 export function scoreChoiceMultipleQuestion(question: ChoiceMultipleQuestion, response: unknown): AttemptResult {
   const optionIds = question.interaction.options.map((x) => x.optionId); if (!exactResponse(response, "choice_multiple", "optionIds") || !Array.isArray(response.optionIds) || new Set(response.optionIds).size !== response.optionIds.length || response.optionIds.some((x) => typeof x !== "string" || !optionIds.includes(x))) return result(optionIds.length, 0);
-  const selected = new Set(response.optionIds as string[]), expected = new Set(question.answer.optionIds); return result(optionIds.length, optionIds.filter((x) => expected.has(x) ? selected.has(x) : !selected.has(x)).length);
+  const selected = new Set(response.optionIds as string[]), expected = new Set(question.answer.optionIds);
+  if (selected.size === 0 || [...selected].some((id) => !expected.has(id))) return result(optionIds.length, 0);
+  return result(optionIds.length, optionIds.filter((x) => expected.has(x) ? selected.has(x) : !selected.has(x)).length);
 }
 export function scoreOrderingQuestion(question: OrderingQuestion, response: unknown): AttemptResult {
   const expected = question.answer.orderedElementIds, max = expected.length - 1; if (!exactResponse(response, "ordering", "orderedElementIds") || !Array.isArray(response.orderedElementIds) || new Set(response.orderedElementIds).size !== response.orderedElementIds.length || response.orderedElementIds.some((x) => typeof x !== "string" || !expected.includes(x))) return result(max, 0);
