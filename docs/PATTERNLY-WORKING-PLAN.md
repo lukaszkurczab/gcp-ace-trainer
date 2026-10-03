@@ -9,6 +9,8 @@
 
 Ten dokument zawiera wyłącznie pracę pozostałą. Zakończone zadania, raporty, screenshoty i flow Maestro są dostępne w historii Git, ale nie należą do aktywnego planu. `docs/active/` służy tylko artefaktom bieżącego zadania; po jego zamknięciu pakiet jest usuwany z aktywnego drzewa.
 
+**Odbiór równoległy CH-04 (03.10.2026):** walidacja privacy admin odebrana, root38/38+config3/3, niezależny LunaHigh5/5 PASS. [Dowody](evidence/CH-04/REPORT.md). Zakres bez zmian content/admission/demo i bez przejęcia BIZQ; CH-04 nie pozostaje w kolejce.
+
 ## 1. Obowiązkowy checkpoint przed każdym zadaniem
 
 **BIZQ — dyspozycja PO03.10.2026 (aktualna):** celem jest pełny udokumentowany odbiór BIZQ-01..06. Utrzymywać jeden główny obszar; dobierać spójne pakiety pod jego pozostałe wymagania, po odbiorze kontynuować ten sam obszar. Przełączenie tylko z powodu konkretnej zależności, kolizji, wymaganej decyzji, wyższego priorytetu lub polecenia PO; sam push nie uzasadnia zmiany. Preflight→kanoniczny kontrakt→Cel/Ustalenia/Podejście i wymagany niezależny briefing Luna High→implementacja→rzeczywista weryfikacja→niezależny QA→commit/zwykły push. Ponawiać dowody dla zmienionego zachowania i konkretnego ryzyka, nie samego HEAD. Zwykłe pushe odebranych własnych pakietów autoryzowane; bez deploy/publikacji/produkcyjnych zakupów/zmian usług, force/stash i cudzych zmian. Zachować ownerów, jedną kolejkę i jeden zwięzły stan. Limit usageLimited celu aplikacji nie zostaje fałszywie zamknięty lub obchodzony.

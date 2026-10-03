@@ -1,0 +1,240 @@
+TAP version 13
+# 11:47:09 PM [vite] (client) ✨ new dependencies optimized: react/jsx-dev-runtime
+# 11:47:09 PM [vite] (client) ✨ optimized dependencies changed. reloading
+# Subtest: full cycle and callback-before-promise login/logout clear credentials
+ok 1 - full cycle and callback-before-promise login/logout clear credentials
+  ---
+  duration_ms: 1198.43825
+  type: 'test'
+  ...
+# Subtest: privacy queue opens details and runs only the server-owned export executor
+ok 2 - privacy queue opens details and runs only the server-owned export executor
+  ---
+  duration_ms: 511.753167
+  type: 'test'
+  ...
+# Subtest: CH-04 privacy list rejects malformed wire fields without rendering actions
+ok 3 - CH-04 privacy list rejects malformed wire fields without rendering actions
+  ---
+  duration_ms: 1513.505417
+  type: 'test'
+  ...
+# Subtest: CH-04 privacy detail rejects malformed or wrong-identity payloads and clears prior actions
+ok 4 - CH-04 privacy detail rejects malformed or wrong-identity payloads and clears prior actions
+  ---
+  duration_ms: 7398.935875
+  type: 'test'
+  ...
+# Subtest: CH-04 invalid PATCH confirmation clears mutation controls; valid nullable details remain usable
+ok 5 - CH-04 invalid PATCH confirmation clears mutation controls; valid nullable details remain usable
+  ---
+  duration_ms: 9150.7595
+  type: 'test'
+  ...
+# Subtest: CH-04 accepts producer-shaped minimal lists and canonical nullable/non-null detail states
+ok 6 - CH-04 accepts producer-shaped minimal lists and canonical nullable/non-null detail states
+  ---
+  duration_ms: 2484.970125
+  type: 'test'
+  ...
+# Subtest: legal request queue performs the canonical consumer-case actions with revisions
+ok 7 - legal request queue performs the canonical consumer-case actions with revisions
+  ---
+  duration_ms: 903.251583
+  type: 'test'
+  ...
+# Subtest: security incident list is minimal and details are lazy
+ok 8 - security incident list is minimal and details are lazy
+  ---
+  duration_ms: 3404.324875
+  type: 'test'
+  ...
+# Subtest: security incident creation sends the complete current assessment contract
+ok 9 - security incident creation sends the complete current assessment contract
+  ---
+  duration_ms: 1774.899375
+  type: 'test'
+  ...
+# Subtest: uncertain security incident creation blocks retry until a refresh
+ok 10 - uncertain security incident creation blocks retry until a refresh
+  ---
+  duration_ms: 1829.715417
+  type: 'test'
+  ...
+# Subtest: security incident writes send expectedRevision and a 409 locks until refresh
+ok 11 - security incident writes send expectedRevision and a 409 locks until refresh
+  ---
+  duration_ms: 664.077042
+  type: 'test'
+  ...
+# Subtest: security incident copy explains manual UODO handling and unknown SMTP is explicit
+ok 12 - security incident copy explains manual UODO handling and unknown SMTP is explicit
+  ---
+  duration_ms: 519.531417
+  type: 'test'
+  ...
+# Subtest: late incident details cannot restore sensitive UI after logout
+ok 13 - late incident details cannot restore sensitive UI after logout
+  ---
+  duration_ms: 331.073792
+  type: 'test'
+  ...
+# Subtest: delayed logout prevents another authentication operation
+ok 14 - delayed logout prevents another authentication operation
+  ---
+  duration_ms: 331.019333
+  type: 'test'
+  ...
+# Subtest: failed logout (failure) is explicit and retryable
+ok 15 - failed logout (failure) is explicit and retryable
+  ---
+  duration_ms: 321.144458
+  type: 'test'
+  ...
+# Subtest: failed logout (cleared-failure) is explicit and retryable
+ok 16 - failed logout (cleared-failure) is explicit and retryable
+  ---
+  duration_ms: 334.082042
+  type: 'test'
+  ...
+# Subtest: GET 401 removes previously visible data
+ok 17 - GET 401 removes previously visible data
+  ---
+  duration_ms: 330.339625
+  type: 'test'
+  ...
+# Subtest: GET 403 removes previously visible data
+ok 18 - GET 403 removes previously visible data
+  ---
+  duration_ms: 332.093
+  type: 'test'
+  ...
+# Subtest: PATCH 404 requires successful refresh before another write
+ok 19 - PATCH 404 requires successful refresh before another write
+  ---
+  duration_ms: 384.401708
+  type: 'test'
+  ...
+# Subtest: PATCH 409 requires successful refresh before another write
+ok 20 - PATCH 409 requires successful refresh before another write
+  ---
+  duration_ms: 400.398083
+  type: 'test'
+  ...
+# Subtest: uncertain PATCH and failed refresh keep writes locked until a successful read
+ok 21 - uncertain PATCH and failed refresh keep writes locked until a successful read
+  ---
+  duration_ms: 702.102958
+  type: 'test'
+  ...
+# Subtest: manual refresh asks Firebase for refreshed claims
+ok 22 - manual refresh asks Firebase for refreshed claims
+  ---
+  duration_ms: 331.2
+  type: 'test'
+  ...
+# Subtest: token timeout locks writes and a late token cannot issue a stale request
+ok 23 - token timeout locks writes and a late token cannot issue a stale request
+  ---
+  duration_ms: 638.351292
+  type: 'test'
+  ...
+# Subtest: duplicate sign-in and duplicate PATCH produce one operation each
+ok 24 - duplicate sign-in and duplicate PATCH produce one operation each
+  ---
+  duration_ms: 284.144792
+  type: 'test'
+  ...
+# Subtest: late GET cannot restore data after logout
+ok 25 - late GET cannot restore data after logout
+  ---
+  duration_ms: 330.959083
+  type: 'test'
+  ...
+# Subtest: late GET cannot restore data after user change
+ok 26 - late GET cannot restore data after user change
+  ---
+  duration_ms: 330.758875
+  type: 'test'
+  ...
+# Subtest: timeout covers a response body that never completes
+ok 27 - timeout covers a response body that never completes
+  ---
+  duration_ms: 380.894542
+  type: 'test'
+  ...
+# Subtest: late GET success ignoring abort cannot alter a different session
+ok 28 - late GET success ignoring abort cannot alter a different session
+  ---
+  duration_ms: 383.428291
+  type: 'test'
+  ...
+# Subtest: late PATCH success ignoring abort cannot alter a different session
+ok 29 - late PATCH success ignoring abort cannot alter a different session
+  ---
+  duration_ms: 1237.186458
+  type: 'test'
+  ...
+# Subtest: late login error cannot overwrite a newer auth session
+ok 30 - late login error cannot overwrite a newer auth session
+  ---
+  duration_ms: 300.840083
+  type: 'test'
+  ...
+# Subtest: late logout error cannot overwrite a newer auth session
+ok 31 - late logout error cannot overwrite a newer auth session
+  ---
+  duration_ms: 367.780166
+  type: 'test'
+  ...
+# Subtest: malformed queue and mismatched PATCH confirmation never unlock stale data
+ok 32 - malformed queue and mismatched PATCH confirmation never unlock stale data
+  ---
+  duration_ms: 395.391833
+  type: 'test'
+  ...
+# Subtest: GET and PATCH are serialized, so an older read cannot roll back a write
+ok 33 - GET and PATCH are serialized, so an older read cannot roll back a write
+  ---
+  duration_ms: 400.278917
+  type: 'test'
+  ...
+# Subtest: auth events after a settled logout failure restore the current session UI
+ok 34 - auth events after a settled logout failure restore the current session UI
+  ---
+  duration_ms: 368.134417
+  type: 'test'
+  ...
+# Subtest: administrator can inspect statistics, question content, search and usage
+ok 35 - administrator can inspect statistics, question content, search and usage
+  ---
+  duration_ms: 486.96225
+  type: 'test'
+  ...
+# Subtest: question inspection renders canonical interaction shapes and authored wrong-answer feedback
+ok 36 - question inspection renders canonical interaction shapes and authored wrong-answer feedback
+  ---
+  duration_ms: 664.654958
+  type: 'test'
+  ...
+# Subtest: overview clears previously loaded statistics when access is revoked
+ok 37 - overview clears previously loaded statistics when access is revoked
+  ---
+  duration_ms: 295.964208
+  type: 'test'
+  ...
+# Subtest: question read failure is explicit and retry restores results
+ok 38 - question read failure is explicit and retry restores results
+  ---
+  duration_ms: 359.984083
+  type: 'test'
+  ...
+1..38
+# tests 38
+# suites 0
+# pass 38
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 42783.449625
