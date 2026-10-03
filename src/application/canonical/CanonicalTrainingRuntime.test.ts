@@ -6,6 +6,7 @@ import type { CanonicalCodingInterviewSimulationProfile, CanonicalQuestionRespon
 import type { ReviewQueueEntry, TrainingAttempt } from "../../domain";
 import { createTrainingSession, createTrainingSessionDraft } from "../../domain";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
+import { prepareCanonicalOptionOrder } from "./canonicalOptionOrder";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const catalogPromise = loadCanonicalRuntimeCatalog();
@@ -41,6 +42,35 @@ test("real canonical questions submit and score all five interaction types", asy
     }
   }
   assert.deepEqual([...seen].sort(), ["choice_multiple", "choice_single", "complexity", "decision_matrix", "ordering"]);
+});
+
+test("actual Design runtime rejects a sparse ordering response before creating an outcome", async () => {
+  const track = (await catalogPromise).getTrack("frontend-system-design-interview");
+  const question = track.getQuestion("fesd-n01-b01-i003")!;
+  assert.ok(question && question.interaction.type === "ordering");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const prepared = await runtime.prepare({
+    trackId: track.trackId,
+    modeId: "design-interview-learn-framework",
+    request: { sessionId: "design-sparse-response", requestedLength: 10 },
+    attempts: [],
+    reviews: [],
+    now: NOW,
+  });
+  const first = prepared.session.itemOrder[0]!;
+  const itemOrder = prepared.session.itemOrder.map((entry, index) => index === 0
+    ? { ...entry, item: { ...entry.item, questionId: question.questionId } }
+    : entry);
+  const optionOrderByOccurrence = {
+    ...prepared.session.optionOrderByOccurrence,
+    [first.occurrenceId]: prepareCanonicalOptionOrder(question, first.occurrenceId, first.item),
+  };
+  const base = createTrainingSession({ ...prepared.session, itemOrder, optionOrderByOccurrence, planFingerprint: undefined, taxonomyVersion: undefined });
+  const session = createTrainingSession({ ...base, taxonomyVersion: "canonical-content-v1", planFingerprint: await createContentSessionPlanFingerprint({ ...base, taxonomyVersion: "canonical-content-v1" }) });
+  await runtime.validateResume({ session, draft: null });
+  const sparse = [...(question as Extract<Question, { interaction: { type: "ordering" } }>).answer.orderedElementIds];
+  delete sparse[1];
+  await assert.rejects(() => runtime.submitPractice({ session, response: { type: "ordering", orderedElementIds: sparse }, attempts: [], reviews: [], now: NOW }), /incomplete or invalid/u);
 });
 
 test("evidence permits one item and multi-source Coding review requires an explicit source", async () => {

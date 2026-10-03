@@ -1,5 +1,5 @@
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
-import { scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
+import { isCanonicalResponseComplete, scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
 
 export type CanonicalInteractionViewModel = Readonly<{
   accessibility: Readonly<{
@@ -57,6 +57,15 @@ export function projectCanonicalChoiceFeedbackControls(question: Question, respo
       ? correct.has(option.optionId) ? "correct" as const : "incorrect" as const
       : correct.has(option.optionId) ? "omitted_correct" as const : "neutral" as const,
   })));
+}
+
+/** Selects authored ordering relation messages only when the submitted adjacency is absent. */
+export function projectCanonicalOrderingFeedbackMessages(question: Question, response: unknown): readonly Readonly<{ kind: string; targetId: string; text: string }>[] | undefined {
+  if (question.interaction.type !== "ordering" || !question.feedback.messages) return undefined;
+  if (!isCanonicalResponseComplete(question, response)) throw new Error("Canonical response is incomplete or invalid.");
+  const orderedElementIds = (response as Extract<CanonicalQuestionResponse, { type: "ordering" }>).orderedElementIds;
+  const submittedRelations = new Set(orderedElementIds.slice(0, -1).map((elementId, index) => `${elementId}->${orderedElementIds[index + 1]}`));
+  return Object.freeze(question.feedback.messages.filter((message) => message.kind === "broken_relation" && !submittedRelations.has(message.targetId)));
 }
 
 /** Selects authored choice messages using the same stable-ID states exposed to answer controls. */

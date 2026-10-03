@@ -315,7 +315,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
   return <PracticeSessionSurface
     allowLeave={!completionFailure}
     exit={{ kind: exit }}
-    feedback={projection.feedback ? { details: projection.feedback.details, reason: projection.feedback.reason, result: projection.feedback.result, sources: projection.feedback.sources } : undefined}
+    feedback={projection.feedback ? { details: projection.feedback.details, messages: projection.feedback.messages, reason: projection.feedback.reason, result: projection.feedback.result, sources: projection.feedback.sources } : undefined}
     feedbackItem={projection.session.itemOrder[projection.session.currentItemIndex]?.item}
     isFinalPosition={projection.ordinal === projection.total}
     modeLabel={t(getDesignModeTitle(mode))}

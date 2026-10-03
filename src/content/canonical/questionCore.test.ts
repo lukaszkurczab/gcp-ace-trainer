@@ -71,6 +71,20 @@ test("dimension responses reject sparse arrays and alias-normalization collision
   assert.equal(isCanonicalResponseComplete(complexityQuestion, collidingResponse), false);
 });
 
+test("ordering response completeness rejects sparse own slots and inherited holes", () => {
+  const question = inputs.flatMap(({ artifact }) => (artifact as { questions: Question[] }).questions).find((candidate) => candidate.interaction.type === "ordering");
+  assert.ok(question && question.interaction.type === "ordering");
+  const correct = (question as Extract<Question, { interaction: { type: "ordering" } }>).answer.orderedElementIds;
+  const sparse = [...correct];
+  delete sparse[1];
+  assert.equal(isCanonicalResponseComplete(question, { type: "ordering", orderedElementIds: sparse }), false);
+
+  const inherited = [...correct];
+  delete inherited[1];
+  Object.setPrototypeOf(inherited, Object.assign(Object.create(Array.prototype), { 1: correct[1] }));
+  assert.equal(isCanonicalResponseComplete(question, { type: "ordering", orderedElementIds: inherited }), false);
+});
+
 test("validator fails closed on exact keys, identities, membership and scoring consistency", () => {
   const source = (inputs[0]!.artifact as { questions: Question[] }).questions[0]!;
   const mutations: unknown[] = [

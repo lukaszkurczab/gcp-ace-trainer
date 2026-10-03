@@ -5,6 +5,7 @@ import ts from "typescript";
 
 const certificationSource = readFileSync(new URL("./CertificationPracticeSessionScreen.tsx", import.meta.url), "utf8");
 const codingSource = readFileSync(new URL("./PracticeSessionScreen.tsx", import.meta.url), "utf8");
+const designSource = readFileSync(new URL("./DesignInterviewPracticeScreen.tsx", import.meta.url), "utf8");
 const feedbackBlockSource = readFileSync(new URL("./PracticeFeedbackBlock.tsx", import.meta.url), "utf8");
 
 function jsxAttributeExpression(source: string, componentName: string, attributeName: string): string {
@@ -38,6 +39,15 @@ test("both practice JSX adapters pass authored message arrays through unchanged"
     feedback: { correctness: "incorrect", details: "details", messages, reason: "reason", sources: [] },
   }) as { messages: typeof messages };
   assert.equal(codingFeedback.messages, messages);
+});
+
+test("Design practice JSX adapter forwards ordering messages only from existing feedback", () => {
+  const messages = Object.freeze([{ kind: "broken_relation", targetId: "preserve->expose", text: "Authored relation explanation." }]);
+  const expression = jsxAttributeExpression(designSource, "PracticeSessionSurface", "feedback");
+  const adapter = new Function("projection", `return (${expression});`);
+  const delivered = adapter({ feedback: { details: "details", messages, reason: "reason", result: "partial", sources: [] } }) as { messages: typeof messages };
+  assert.equal(delivered.messages, messages);
+  assert.equal(adapter({ feedback: null }), undefined);
 });
 
 test("Details JSX gates authored messages on expansion and keeps their text scalable", () => {
