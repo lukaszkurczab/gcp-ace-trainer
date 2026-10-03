@@ -1,0 +1,11 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 minutes09 verify deletion before insertion
+---
+- tapOn:
+    id: patternly:learning-plan:editor:time:mon
+- eraseText: 5
+- hideKeyboard
+- takeScreenshot: bizq02-minutes09-erased-field
+- assertVisible:
+    id: patternly:learning-plan:editor:time:mon
+    text: '^$'

@@ -1,0 +1,161 @@
+TAP version 13
+# Subtest: actual canonical proposal plus repositories: attempts arriving after async resolve cannot persist
+ok 1 - actual canonical proposal plus repositories: attempts arriving after async resolve cannot persist
+  ---
+  duration_ms: 338.036541
+  type: 'test'
+  ...
+# Subtest: calendar changing during plan construction is checked immediately before CAS
+ok 2 - calendar changing during plan construction is checked immediately before CAS
+  ---
+  duration_ms: 5.721417
+  type: 'test'
+  ...
+# Subtest: accepted-plan replacement after proposal creation cannot be overwritten
+ok 3 - accepted-plan replacement after proposal creation cannot be overwritten
+  ---
+  duration_ms: 5.762583
+  type: 'test'
+  ...
+# Subtest: evidence and calendar changes invalidate a proposal editor without writing
+ok 4 - evidence and calendar changes invalidate a proposal editor without writing
+  ---
+  duration_ms: 2.291458
+  type: 'test'
+  ...
+# Subtest: same-scope uncertain accept acknowledges exact durable command even with active journal, without another write
+ok 5 - same-scope uncertain accept acknowledges exact durable command even with active journal, without another write
+  ---
+  duration_ms: 2.846416
+  type: 'test'
+  ...
+# Subtest: same-scope uncertain editor acknowledgement does not re-run the write or proposal freshness
+ok 6 - same-scope uncertain editor acknowledgement does not re-run the write or proposal freshness
+  ---
+  duration_ms: 3.229625
+  type: 'test'
+  ...
+# Subtest: uncertain accepted result and editors do not leak into a replacement storage scope
+ok 7 - uncertain accepted result and editors do not leak into a replacement storage scope
+  ---
+  duration_ms: 2.14725
+  type: 'test'
+  ...
+# Subtest: actual profile router A/B/A republishes a new lease; old editor, in-flight and terminal result remain stale
+ok 8 - actual profile router A/B/A republishes a new lease; old editor, in-flight and terminal result remain stale
+  ---
+  duration_ms: 5.554041
+  type: 'test'
+  ...
+# Subtest: replay of a terminal acceptance after a later edit cannot reconcile old reminders
+ok 9 - replay of a terminal acceptance after a later edit cannot reconcile old reminders
+  ---
+  duration_ms: 2.921375
+  type: 'test'
+  ...
+# Subtest: goal changes after uncertain durable writes cannot acknowledge a stale pair or reconcile reminders
+    # Subtest: accept
+    ok 1 - accept
+      ---
+      duration_ms: 1.925333
+      type: 'test'
+      ...
+    # Subtest: editor
+    ok 2 - editor
+      ---
+      duration_ms: 2.228
+      type: 'test'
+      ...
+    1..2
+ok 10 - goal changes after uncertain durable writes cannot acknowledge a stale pair or reconcile reminders
+  ---
+  duration_ms: 4.331834
+  type: 'test'
+  ...
+# Subtest: uncertain editor retry rechecks goal synchronously after its async read
+ok 11 - uncertain editor retry rechecks goal synchronously after its async read
+  ---
+  duration_ms: 2.414833
+  type: 'test'
+  ...
+# Subtest: proposal editor preserves retained slot IDs, drops removed IDs, sorts days, and saves revision one
+ok 12 - proposal editor preserves retained slot IDs, drops removed IDs, sorts days, and saves revision one
+  ---
+  duration_ms: 17.300208
+  type: 'test'
+  ...
+# Subtest: accepted plan edit explicitly reads a snapshot, increments plan revision, and stale sessions do not commit
+ok 13 - accepted plan edit explicitly reads a snapshot, increments plan revision, and stale sessions do not commit
+  ---
+  duration_ms: 1.299458
+  type: 'test'
+  ...
+# Subtest: direct accept and proposal editor share plan CAS and retry after idempotent success
+ok 14 - direct accept and proposal editor share plan CAS and retry after idempotent success
+  ---
+  duration_ms: 0.484958
+  type: 'test'
+  ...
+# Subtest: parallel proposal acceptance shares one promise and one durable save
+ok 15 - parallel proposal acceptance shares one promise and one durable save
+  ---
+  duration_ms: 0.367167
+  type: 'test'
+  ...
+# Subtest: parallel acceptance for one proposal across tracks never shares the in-flight success
+ok 16 - parallel acceptance for one proposal across tracks never shares the in-flight success
+  ---
+  duration_ms: 0.37125
+  type: 'test'
+  ...
+# Subtest: accepted result cache is scoped by proposal and track identity
+ok 17 - accepted result cache is scoped by proposal and track identity
+  ---
+  duration_ms: 0.342292
+  type: 'test'
+  ...
+# Subtest: pending acceptance retry is scoped by proposal and track identity
+ok 18 - pending acceptance retry is scoped by proposal and track identity
+  ---
+  duration_ms: 0.386042
+  type: 'test'
+  ...
+# Subtest: storage uncertainty keeps the editor session and retries through durable command reconciliation
+ok 19 - storage uncertainty keeps the editor session and retries through durable command reconciliation
+  ---
+  duration_ms: 0.448334
+  type: 'test'
+  ...
+# Subtest: accepted-plan retry reconciles its durable command before checking refreshed content context
+ok 20 - accepted-plan retry reconciles its durable command before checking refreshed content context
+  ---
+  duration_ms: 0.971208
+  type: 'test'
+  ...
+# Subtest: a replacement proposal keeps plan identity and increments plan revision
+ok 21 - a replacement proposal keeps plan identity and increments plan revision
+  ---
+  duration_ms: 0.915375
+  type: 'test'
+  ...
+# Subtest: a target-date replacement remains explicit and atomically updates the accepted plan identity
+ok 22 - a target-date replacement remains explicit and atomically updates the accepted plan identity
+  ---
+  duration_ms: 0.685042
+  type: 'test'
+  ...
+# Subtest: accepted plan freshness checks content version, artifact SHA, and timezone
+ok 23 - accepted plan freshness checks content version, artifact SHA, and timezone
+  ---
+  duration_ms: 0.231625
+  type: 'test'
+  ...
+1..23
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 852.595375

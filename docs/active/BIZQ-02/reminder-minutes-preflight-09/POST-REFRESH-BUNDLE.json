@@ -1,0 +1,8 @@
+{
+  "origin": "http://localhost:8081",
+  "listenerAddress": "::1",
+  "ipv4Request": "connection_refused",
+  "http": 200,
+  "bytes": 69484067,
+  "nativeAcceptance": false
+}

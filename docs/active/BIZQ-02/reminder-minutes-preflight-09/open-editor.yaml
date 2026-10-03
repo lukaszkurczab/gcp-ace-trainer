@@ -1,0 +1,37 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 minutes09 actual GCP proposal editor no acceptance
+---
+- scrollUntilVisible:
+    element:
+      id: patternly:progress:goal
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: patternly:progress:goal
+- extendedWaitUntil:
+    visible:
+      id: patternly:goal:root
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: patternly:learning-plan:create
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: patternly:learning-plan:create
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:edit-schedule
+    timeout: 30000
+- tapOn:
+    id: patternly:learning-plan:edit-schedule
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:editor:commit
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: patternly:learning-plan:editor:time:mon
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: bizq02-minutes09-editor-baseline

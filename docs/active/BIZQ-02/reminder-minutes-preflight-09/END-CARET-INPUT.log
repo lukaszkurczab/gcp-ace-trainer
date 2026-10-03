@@ -1,0 +1,12 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ-02 minutes09 verified empty-field replacement
+Tap on point (87%,67%)... COMPLETED
+Erase 5 characters... COMPLETED
+Hide Keyboard... COMPLETED
+Take screenshot bizq02-minutes09-cleared-at-end... COMPLETED
+Assert that "00", id: patternly:learning-plan:editor:time:mon is not visible... COMPLETED
+Tap on id: patternly:learning-plan:editor:time:mon... COMPLETED
+Input text 09:15... COMPLETED
+Hide Keyboard... COMPLETED
+Take screenshot bizq02-minutes09-replaced-full-value... COMPLETED
+Assert that "09:15", id: patternly:learning-plan:editor:time:mon is visible... COMPLETED
