@@ -14,7 +14,7 @@ test("runtime admission resolves the exact candidate lock for every canonical la
   const contentLockBytes = await readFile(path.resolve("src/content/generated/canonical-content/content-lock.json"));
   const contentLock = JSON.parse(contentLockBytes.toString("utf8")) as { tracks: { trackId: string; sha256: string; contentVersion: string }[] };
   assert.equal(releaseLock.schemaVersion, 3);
-  assert.equal(releaseLock.candidateId, "22b98e6c929f187e3afcd94183685b702cff6c72110d0882ea3e9b267c9c3f0f");
+  assert.equal(releaseLock.candidateId, "15fd0a8d8f9a40d39e39c398f1896c6c425e8eb7f860382d3d9798033414549c");
   assert.equal(releaseLock.bundledContentLockSha256, createHash("sha256").update(contentLockBytes).digest("hex"));
   assert.deepEqual(releaseLock.artifacts.map((item) => item.trackId), contentLock.tracks.map((item) => item.trackId));
   for (const [index, item] of releaseLock.artifacts.entries()) {
