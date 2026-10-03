@@ -36,19 +36,6 @@ const reviewFor = (item: TrainingAttempt<unknown>["item"], id: string, dueAt = N
   persistent: false,
 });
 
-const incorrectAttemptFor = (item: TrainingAttempt<unknown>["item"], id: string): TrainingAttempt<unknown> => ({
-  id: `attempt:${id}`,
-  sessionId: `session:${id}`,
-  trackId: item.trackId,
-  modeId: "prior-mode",
-  occurrenceId: `occurrence:${id}`,
-  item,
-  response: {},
-  result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 },
-  reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] },
-  answeredAt: NOW,
-  committedAt: NOW,
-});
 
 test("ODK-097 Design Tradeoff sessions use the exact free node and unique 10/20/40 items", async () => {
   const catalog = await catalogPromise;
@@ -166,36 +153,36 @@ test("ODK-097 Review evidence rejects stale, wrong-artifact, and cross-track ent
   }
 });
 
-test("ODK-097 committed misses remain identity-scoped for modes that explicitly consume them", async () => {
+test("ODK-097 Coding due entries remain identity-scoped without consuming historical misses", async () => {
   const catalog = await catalogPromise;
   const track = catalog.getTrack("coding-interview-dsa-problem-solving");
   const modeId = "coding-interview-weak-area-review";
   const runtime = new CanonicalTrainingRuntime(track);
   const question = track.getPool(modeId)[0]!;
   const current = itemRef(track, question.questionId);
-  const validMiss = incorrectAttemptFor(current, "valid");
-  const staleMiss = incorrectAttemptFor({ ...current, artifactSha256: "e".repeat(64) }, "stale");
+  const validReview = reviewFor(current, "valid");
+  const staleReview = reviewFor({ ...current, artifactSha256: "e".repeat(64) }, "stale");
   const foreignTrack = catalog.getTrack("backend-system-design-interview");
-  const crossTrackMiss = incorrectAttemptFor(itemRef(foreignTrack, foreignTrack.getPool("design-interview-learn-framework")[0]!.questionId), "cross-track");
+  const crossTrackReview = reviewFor(itemRef(foreignTrack, foreignTrack.getPool("design-interview-learn-framework")[0]!.questionId), "cross-track");
 
   const prepared = await runtime.prepare({
     trackId: track.trackId,
     modeId,
-    request: { sessionId: "coding-review-valid-miss", requestedLength: 20 },
-    attempts: [validMiss],
-    reviews: [],
+    request: { sessionId: "coding-review-valid-due", requestedLength: 20, reviewSource: "due_queue" },
+    attempts: [],
+    reviews: [validReview],
     now: NOW,
   });
   assert.equal(prepared.session.actualLength, 1);
   assert.equal(prepared.session.itemOrder[0]!.item.questionId, question.questionId);
 
-  for (const [label, attempt] of [["stale", staleMiss], ["cross-track", crossTrackMiss]] as const) {
+  for (const [label, review] of [["stale", staleReview], ["cross-track", crossTrackReview]] as const) {
     await assert.rejects(runtime.prepare({
       trackId: track.trackId,
       modeId,
-      request: { sessionId: `coding-review-${label}`, requestedLength: 20 },
-      attempts: [attempt],
-      reviews: [],
+      request: { sessionId: `coding-review-${label}`, requestedLength: 20, reviewSource: "due_queue" },
+      attempts: [],
+      reviews: [review],
       now: NOW,
     }), /insufficient eligible content/u);
   }

@@ -9,3 +9,7 @@ Root first full baseline ran1729 tests:1724PASS/1FAIL/4 existingdedicatedSKIP. T
 
 ## Boundaries
 The local probe reused existing actual backend node_modules; fresh npmci installation is exercised by remote CI after the ordinary push. Currentmain QA must identify resolvedSHA and is not a release pin or deploy authorization. No backend/content/web source, runtime/service configuration, simulator/process/VoiceOver, production purchase or publication change. All stashes, other-owner audit directories and foreign queue append remain unstaged. BIZQ-01 full semantic-bank/native/admission acceptance remains partial. Next safe step is to observe actual pushed CI, and then continue an independent BIZQ preflight while spacing/CTA product decisions remain pending.
+
+## Actual post-push confirmation
+
+Ordinary source push5bb8fe7acba2706cab9a0354f8f630c821997909, hosted run37097439047 SUCCESS in both Recovery QA gate and Multi-track content release contract. Backend checkout/resolvedSHA/lockednpmci steps succeeded, nativeprebuild and unchanged fullbaseline succeeded. Exact jobs/steps in POST-PUSH-REMOTE-CI.json and raw post-push-remote-recovery-job.log. This confirms the workflow input repair, not full BIZQ-01 semantics, native app acceptance or release.

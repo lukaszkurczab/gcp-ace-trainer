@@ -106,7 +106,7 @@ test("all real 29 practice modes and canonical simulation profiles prepare valid
       const question = track.getPool(mode.modeId)[0]!;
       const sourceItem = { trackId, questionId: question.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 };
       const reviews = mode.selection.kind === "evidence_conditioned" ? [{ id: `review:${trackId}`, trackId, sourceAttemptId: "prior", sourceSessionId: "prior", sourceItem, taxonomyOrSkillRefs: [], reasons: ["incorrect" as const], dueAt: NOW, createdAt: NOW, consecutiveAfterDueSuccesses: 0, persistent: true }] : [];
-      const prepared = await runtime.prepare({ trackId, modeId: mode.modeId, request: { sessionId: `modes:${trackId}:${mode.modeId}`, requestedLength: mode.defaultRequestedLength }, attempts: [], reviews, now: NOW });
+      const prepared = await runtime.prepare({ trackId, modeId: mode.modeId, request: { sessionId: `modes:${trackId}:${mode.modeId}`, requestedLength: mode.defaultRequestedLength, ...(mode.selection.kind === "evidence_conditioned" ? { reviewSource: "due_queue" } : {}) }, attempts: [], reviews, now: NOW });
       await runtime.validateResume({ session: prepared.session, draft: null });
       for (const occurrence of prepared.session.itemOrder) assert.equal(isCanonicalOptionOrder(track.getQuestion(occurrence.item.questionId)!, prepared.session.optionOrderByOccurrence[occurrence.occurrenceId]), true);
       modes += 1;

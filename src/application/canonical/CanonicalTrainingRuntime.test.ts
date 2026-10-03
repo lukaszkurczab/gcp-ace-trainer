@@ -24,7 +24,7 @@ test("real loader prepares all 29 modes across nine tracks", async () => {
   for (const trackId of catalog.tracks) for (const mode of catalog.getTrack(trackId).modes) {
     const track = catalog.getTrack(trackId); const question = track.getPool(mode.modeId)[0]!;
     const reviews = mode.selection.kind === "evidence_conditioned" ? [reviewFor(itemRef(track, question.questionId), NOW)] : [];
-    const prepared = await new CanonicalTrainingRuntime(track).prepare({ trackId, modeId: mode.modeId, request: { sessionId: `${trackId}:${mode.modeId}`, requestedLength: mode.defaultRequestedLength }, attempts: [], reviews, now: NOW });
+    const prepared = await new CanonicalTrainingRuntime(track).prepare({ trackId, modeId: mode.modeId, request: { sessionId: `${trackId}:${mode.modeId}`, requestedLength: mode.defaultRequestedLength, ...(mode.selection.kind === "evidence_conditioned" ? { reviewSource: "due_queue" } : {}) }, attempts: [], reviews, now: NOW });
     assert.ok(prepared.session.actualLength > 0); await new CanonicalTrainingRuntime(track).validateResume({ session: prepared.session, draft: null }); modes += 1;
   }
   assert.equal(modes, 29);
@@ -43,12 +43,12 @@ test("real canonical questions submit and score all five interaction types", asy
   assert.deepEqual([...seen].sort(), ["choice_multiple", "choice_single", "complexity", "decision_matrix", "ordering"]);
 });
 
-test("evidence permits one item and coding includes committed misses", async () => {
+test("evidence permits one item and multi-source Coding review requires an explicit source", async () => {
   const catalog = await catalogPromise; const gcp = catalog.getTrack("google-cloud-associate-cloud-engineer"); const mode = gcp.modes.find((x) => x.selection.kind === "evidence_conditioned")!; const question = gcp.getPool(mode.modeId)[0]!;
   const prepared = await new CanonicalTrainingRuntime(gcp).prepare({ trackId: gcp.trackId, modeId: mode.modeId, request: { sessionId: "evidence", requestedLength: 20 }, attempts: [], reviews: [reviewFor(itemRef(gcp, question.questionId), NOW)], now: NOW }); assert.equal(prepared.session.actualLength, 1);
   const coding = catalog.getTrack("coding-interview-dsa-problem-solving"); const codingMode = coding.getMode("coding-interview-weak-area-review"); const codingQuestion = coding.getPool(codingMode.modeId)[0]!;
   const miss = { id: "miss", sessionId: "old", occurrenceId: "old:0", trackId: coding.trackId, modeId: "old", item: itemRef(coding, codingQuestion.questionId), response: {}, result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 }, reviewEvidence: { sourceItem: itemRef(coding, codingQuestion.questionId), taxonomyOrSkillRefs: [] }, answeredAt: NOW, committedAt: NOW } as TrainingAttempt<unknown>;
-  const codingPrepared = await new CanonicalTrainingRuntime(coding).prepare({ trackId: coding.trackId, modeId: codingMode.modeId, request: { sessionId: "coding-evidence", requestedLength: 20 }, attempts: [miss], reviews: [], now: NOW }); assert.ok(codingPrepared.session.actualLength > 0);
+  await assert.rejects(new CanonicalTrainingRuntime(coding).prepare({ trackId: coding.trackId, modeId: codingMode.modeId, request: { sessionId: "coding-evidence", requestedLength: 20 }, attempts: [miss], reviews: [], now: NOW }), /explicit reviewSource/);
 });
 
 test("coding review preserves identity and resolves after two due successes", async () => {

@@ -25,10 +25,20 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
 
   async prepare(input: Readonly<{ trackId: string; modeId: string; source?: string; request: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PreparedSession> {
     if (input.trackId !== this.catalog.trackId) throw new Error("Canonical runtime track mismatch.");
-    if (input.modeId === "certification-exam-simulation" || input.modeId === "coding-interview-simulation" || input.modeId === "design-interview-simulation") return this.prepareSimulation(input);
+    if (input.modeId === "certification-exam-simulation" || input.modeId === "coding-interview-simulation" || input.modeId === "design-interview-simulation") {
+      const request = input.request && typeof input.request === "object" ? input.request as Record<string, unknown> : {};
+      if (request.reviewSource !== undefined || request.reviewItemRefs !== undefined) throw new Error("Canonical reviewSource requires an evidence-conditioned mode.");
+      return this.prepareSimulation(input);
+    }
     let mode: ProductModeConfig; try { mode = this.catalog.getMode(input.modeId); } catch { throw new ProductModeUnavailableError(`Canonical mode ${input.trackId}/${input.modeId} is unavailable.`); } const req = requestOf(input.request, mode.defaultRequestedLength);
     if (!mode.requestedLengths.includes(req.requestedLength)) throw new Error("Requested length is unavailable for this canonical mode.");
-    const source = mode.selection.kind === "evidence_conditioned" ? eligibleEvidence(this.catalog, mode, input.reviews, input.attempts, input.now) : this.catalog.getPool(mode.modeId);
+    if (mode.selection.kind === "evidence_conditioned") {
+      if (mode.selection.evidenceSources.length > 1 && !req.reviewSource) throw new Error("Canonical multi-source review requires an explicit reviewSource.");
+      const evidenceSource = req.reviewSource === "session_misses" ? "committed_session_misses" : req.reviewSource;
+      if (evidenceSource && !mode.selection.evidenceSources.includes(evidenceSource)) throw new Error("Canonical reviewSource is unavailable for this mode.");
+    } else if (req.reviewSource) throw new Error("Canonical reviewSource requires an evidence-conditioned mode.");
+    if (req.reviewSource === "session_misses") throw new Error("Canonical session_misses is unavailable without verified completed-session evidence.");
+    const source = mode.selection.kind === "evidence_conditioned" ? eligibleEvidence(this.catalog, mode, input.reviews, input.now) : this.catalog.getPool(mode.modeId);
     const count = Math.min(req.requestedLength, source.length); if (count === 0 || (mode.selection.kind !== "evidence_conditioned" && count < mode.minimumActualLength)) throw new Error("Canonical mode has insufficient eligible content.");
     const questions = mode.selection.kind === "node"
       ? selectPracticeQuestions(source, input.attempts, { trackId: this.catalog.trackId, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256 }, count)
@@ -308,7 +318,15 @@ function requestSimulationProfileId(value: unknown): string | undefined {
   return typeof scope.simulationProfileId === "string" ? scope.simulationProfileId : undefined;
 }
 
-function requestOf(value: unknown, fallback: number): { requestedLength: number; feedbackTiming?: string } { const r = value && typeof value === "object" ? value as Record<string, unknown> : {}; if (r.requestedLength !== undefined && (!Number.isSafeInteger(r.requestedLength) || Number(r.requestedLength) <= 0)) throw new Error("Canonical requestedLength is invalid."); if (r.feedbackTiming !== undefined && r.feedbackTiming !== "after_each_durable_submit" && r.feedbackTiming !== "after_session_completion") throw new Error("Canonical feedbackTiming is invalid."); return { requestedLength: typeof r.requestedLength === "number" ? r.requestedLength : fallback, feedbackTiming: typeof r.feedbackTiming === "string" ? r.feedbackTiming : undefined }; }
+function requestOf(value: unknown, fallback: number): { requestedLength: number; feedbackTiming?: string; reviewSource?: "due_queue" | "session_misses" } {
+  const r = value && typeof value === "object" ? value as Record<string, unknown> : {};
+  if (r.requestedLength !== undefined && (!Number.isSafeInteger(r.requestedLength) || Number(r.requestedLength) <= 0)) throw new Error("Canonical requestedLength is invalid.");
+  if (r.feedbackTiming !== undefined && r.feedbackTiming !== "after_each_durable_submit" && r.feedbackTiming !== "after_session_completion") throw new Error("Canonical feedbackTiming is invalid.");
+  const reviewSource = r.reviewSource;
+  if (reviewSource !== undefined && reviewSource !== "due_queue" && reviewSource !== "session_misses") throw new Error("Canonical reviewSource is invalid.");
+  if (r.reviewItemRefs !== undefined && reviewSource !== "session_misses") throw new Error("Canonical review item refs require session_misses source.");
+  return { requestedLength: typeof r.requestedLength === "number" ? r.requestedLength : fallback, feedbackTiming: typeof r.feedbackTiming === "string" ? r.feedbackTiming : undefined, reviewSource };
+}
 function requestSessionId(value: unknown): string { const r = value && typeof value === "object" ? value as Record<string, unknown> : {}; if (typeof r.sessionId !== "string" || !r.sessionId.trim()) throw new Error("Canonical preparation requires sessionId."); return r.sessionId; }
 function ref(catalog: CanonicalTrackRuntime, question: Question): ResolvedContentRef { return createResolvedContentRef({ trackId: catalog.trackId, questionId: question.questionId, contentVersion: catalog.contentVersion, artifactSha256: catalog.artifactSha256 }); }
 function hasValidPreparedOrders(session: TrainingSession, catalog: CanonicalTrackRuntime): boolean {
@@ -327,7 +345,13 @@ function hasValidPreparedOrders(session: TrainingSession, catalog: CanonicalTrac
   return true;
 }
 function feedbackValue(policy: ProductFeedbackTiming, requested?: string): string { if (policy.kind === "fixed") { if (requested && requested !== "after_each_durable_submit") throw new Error("This mode has fixed feedback timing."); return "afterEachAnswer"; } return requested === "after_session_completion" ? "atSessionEnd" : "afterEachAnswer"; }
-function eligibleEvidence(catalog: CanonicalTrackRuntime, mode: ProductModeConfig, reviews: readonly ReviewQueueEntry[], attempts: readonly TrainingAttempt<unknown>[], now: string): readonly Question[] { const selection = mode.selection; if (selection.kind !== "evidence_conditioned") return catalog.getPool(mode.modeId); const ids = new Set<string>(); if (selection.evidenceSources.includes("due_queue")) scopedReviews(reviews, catalog).filter((r) => r.dueAt <= now).forEach((r) => ids.add(r.sourceItem.questionId)); if (selection.evidenceSources.includes("committed_session_misses")) scopedAttempts(attempts, catalog).filter((a) => a.result.kind !== "correct").forEach((a) => ids.add(a.item.questionId)); return catalog.getPool(mode.modeId).filter((q) => ids.has(q.questionId)); }
+function eligibleEvidence(catalog: CanonicalTrackRuntime, mode: ProductModeConfig, reviews: readonly ReviewQueueEntry[], now: string): readonly Question[] {
+  const selection = mode.selection;
+  if (selection.kind !== "evidence_conditioned") return catalog.getPool(mode.modeId);
+  const ids = new Set<string>();
+  if (selection.evidenceSources.includes("due_queue")) scopedReviews(reviews, catalog).filter((r) => r.dueAt <= now).forEach((r) => ids.add(r.sourceItem.questionId));
+  return catalog.getPool(mode.modeId).filter((q) => ids.has(q.questionId));
+}
 function reinsertionSlots(mode: ProductModeConfig, items: readonly { occurrenceId: string; item: ResolvedContentRef }[], orders: Readonly<Record<string, readonly string[]>>) { if (mode.reinsertPolicy !== "conditional_after_incorrect") return []; return items.slice(0, Math.max(0, items.length - 4)).map((source, i) => { const ordinary = items[i + 4]!; return { slotId: `${source.occurrenceId}:conditional:${i + 4}`, sourceOccurrenceId: source.occurrenceId, ordinaryBranch: { occurrence: ordinary, optionOrder: orders[ordinary.occurrenceId] ?? [] }, exactSourceBranch: { occurrence: { occurrenceId: `${source.occurrenceId}:conditional:${i + 4}:exact`, item: source.item }, optionOrder: orders[source.occurrenceId] ?? [] }, resolutionRule: "incorrect_or_partial_after_three_materialized_submissions" as const }; }); }
 function addDaysIso(value: string, days: number): string { const d = new Date(value); d.setUTCDate(d.getUTCDate() + days); return d.toISOString(); }
 function assertTrack(actual: string, expected: string): void { if (actual !== expected) throw new Error("Canonical query track mismatch."); }
