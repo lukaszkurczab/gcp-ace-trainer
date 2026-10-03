@@ -38,3 +38,7 @@ Implementation checkpoint03cf9a83 was pushed/upstream aligned. Actual hosted3711
 Root full matching local `baseline:report` then PASS:1770total/1766PASS/0FAIL/4existingdedicatedSKIP; inventory449sources/300tests/1718cases, qa:static includes finaltypecheck/alltests/bothboundaries. Inputs currentcontent237c143/historycc3efca/backend019e48e, existing locks retained. This broader run was justified by the concrete hostedfailure and added pending test; previous narrow production evidence remains matching. Raw [full baseline](ROOT-BASELINE-FINAL.log). Ordinary test-correction push and its hosted CI are next.
 
 Earlier documentation/preflight checkpoint2e2f9fe7 CI failed typecheck in root's probe callback narrowing; fixed in03cf9a83 before implementation acceptance. It was not an application behavior failure. OODsource11 accepted64b619fb hosted37116461215 remains successful; no old failure has been relabeled green.
+
+## Final pushed acceptance
+
+Ordinary correction push `98f244843b06511f6f5d167a6a630e4872987050` is aligned with upstream. Actual hosted run37119013818 completed both jobs SUCCESS: recovery1770total/1766PASS/0FAIL/4existingdedicatedSKIP and cross-repo3/3. Root inspected the actual hosted log and its matching facade bytes; [receipt](POST-PUSH-CI.json). The prior two failed runs remain accurately documented. Bounded integrity03 accepted; full BIZQ04/session_misses/native/provider requirements remain open.
