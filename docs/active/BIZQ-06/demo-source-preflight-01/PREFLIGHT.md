@@ -1,0 +1,11 @@
+# BIZQ-06 — canonical demo source preflight01
+
+Currentweb9585919 clean, app205b439b has only foreignqueue/security dir; content onlyforeignauditdir. Root/independentQA confirm hardcodedSQL question/optionIDs/answer/feedback/Details in InteractiveQuestion.jsx and no canonical matching prompt; existing verifylocal onlyasserts one radio group. This breaches BIZQ06 §4.2 ingress/no manualReasonDetails. CTA destination remainspending but independent sourceboundary can proceed.
+
+Root SSR first lacked mandatory legalartifact, then used existing app-produced publiclegalfixture and passed. Actual isolated Playwright/React/esbuild capability probe first sandboxMachPortdenial, then scopedescalationpassed: zero radios selected, click reveals generalleadingkeyprinciple. IndependentQA correctly found no concreteW04answerleak: old Details is neutralconcept rather than acceptedanswer. Do not gate/change it merely to manufacture a fix.
+
+Withdrawn first potential replacement was actual currentCoding canonical item alg-contrast-binary-scan-correctness-006, reviewed/admitted sourcecopy04 in current Codingversionv2026.10.02-bizq01-04; one-query completecost objective, stable scan/sort_binary/equal/binary_without_sort IDs, authored Reason/wrongmessages/Details. The initial Freepractice assumption was unproven: rootactualruntime found it outside allcurrentordinarypools. It must not be exposed merely because inartifact. Currentcandidatee7/producer0a4b/app612 admission all9; not authorization to deploy or claim marketing publication completed.
+
+NO-TOOLS independent LunaHigh proposal review dispatched; no code/sourcecontract changes yet. Proposed smallestcoherent outcome onegenerated pinned sample+identity failclosed/build+actualbrowser feedback/reset/parity tests; oldmanualSQL removed in samechange. Other2samples/goalpicker/CTA remain open, not replaced by thisbounded acceptance. No externalpublication/newdistributionURL/serviceconfig or whole06claim.
+
+Revised acceptedproposal selects alg-complexity-time-005 inactualcomplexity_and_constraints Free node. NO-TOOLS LunaHigh min.84 beforeimplementation; semantic/access-source reviewpending. [Brief](BRIEFING.md). No production changes or newpublicmarketingauthorization issued.
