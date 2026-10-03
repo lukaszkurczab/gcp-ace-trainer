@@ -1,0 +1,14 @@
+{
+  "metroPID": 88263,
+  "metroCwd": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly",
+  "backendPID": 39216,
+  "authPID": 38342,
+  "soleMetro": true,
+  "currentBundleHTTP": 200,
+  "currentBundleBytes": 69484684,
+  "currentBundleSha256": "b6bed03c2da0c292b54280d27cdf11dd59bd3fa33ac589cb80183d5d467c38f4",
+  "launchCommand": "CI=1 PATTERNLY_METRO_DISABLE_WATCHMAN=1 npm run start:smoke -- --port 8081 --clear",
+  "deviceUUID": "7F315654-3175-4F3C-BB24-B0263F59360C",
+  "appTerminatedBeforeRefresh": true,
+  "noDataClearOrInstall": true
+}

@@ -1,0 +1,12 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 existing accepted schedule remaining slot
+---
+- scrollUntilVisible:
+    element:
+      id: patternly:learning-plan:editor:time:sat
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:learning-plan:editor:time:sat
+    text: '18:00'
+- takeScreenshot: bizq02-persistence10-cold-remaining-slot

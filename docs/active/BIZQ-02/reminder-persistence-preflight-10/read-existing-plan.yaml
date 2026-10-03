@@ -1,0 +1,42 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 accepted schedule exact-minute cold read
+---
+- runFlow:
+    when:
+      visible: "Open debugger to view warnings."
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- tapOn:
+    id: main-tab-bar-progress
+- extendedWaitUntil:
+    visible:
+      id: patternly:progress:root
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: patternly:progress-plan:edit-schedule
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: bizq02-persistence10-existing-entry
+- tapOn:
+    id: patternly:progress-plan:edit-schedule
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:editor:state:ready
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: patternly:learning-plan:editor:time:mon
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:learning-plan:editor:time:mon
+    text: '09:15'
+- assertVisible:
+    id: patternly:learning-plan:editor:time:wed
+    text: '18:00'
+- assertVisible:
+    id: patternly:learning-plan:editor:time:sat
+    text: '18:00'
+- takeScreenshot: bizq02-persistence10-cold-accepted-schedule

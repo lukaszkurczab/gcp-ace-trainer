@@ -1,0 +1,43 @@
+{
+  "deviceUUID": "7F315654-3175-4F3C-BB24-B0263F59360C",
+  "device": "existing iPhone17/iOS26.4",
+  "profile": "current smoke",
+  "screens": [
+    {
+      "path": "screens/01-before-entry.png",
+      "sha256": "c5cd1386d8cbea736cef206cf6fda983acd8412b44a230e3ff0a255c5fc0b7da",
+      "originalPath": "/private/tmp/patternly-native10-progress/2026-10-03_081350/BIZQ-02 minutes09 progress after visible dev warning dismissal/takeScreenshot/bizq02-minutes09-progress-entry.png",
+      "unmodified": true
+    },
+    {
+      "path": "screens/02-current-cold-home.png",
+      "sha256": "7de9084f1d8136552794201ff76647e9b4a9946247fa90a90ec1a34c50c7ba6b",
+      "originalPath": "/private/tmp/patternly-native10-current-bootstrap/2026-10-03_082305/BIZQ-02 accepted plan cold-process bootstrap/takeScreenshot/bizq02-persistence10-cold-home.png",
+      "unmodified": true
+    },
+    {
+      "path": "screens/03-navigation-warning.png",
+      "sha256": "5dfe87d19bc78a4e031f3050b7cecea44e8bbe9ed8473a190274c8d5d85b043d",
+      "originalPath": "/private/tmp/patternly-native10-current-read/2026-10-03_082357/BIZQ-02 accepted schedule exact-minute cold read/screenshots/step-005-assertCondition-patternlyprogressroot.png",
+      "unmodified": true
+    },
+    {
+      "path": "screens/04-current-entry.png",
+      "sha256": "8967e40b14d19e7ffbd14f9efb2c7018d47087ce597408dea047d013a61156f4",
+      "originalPath": "/private/tmp/patternly-native10-current-read-dismissed/2026-10-03_082508/BIZQ-02 accepted schedule exact-minute cold read/takeScreenshot/bizq02-persistence10-existing-entry.png",
+      "unmodified": true
+    },
+    {
+      "path": "screens/05-cold-accepted-schedule.png",
+      "sha256": "fdd51156bf478b2f4ec06f42ea4810d4afd0fef43b3b8e31e2c8fac097d39959",
+      "originalPath": "/private/tmp/patternly-native10-current-read-dismissed/2026-10-03_082508/BIZQ-02 accepted schedule exact-minute cold read/takeScreenshot/bizq02-persistence10-cold-accepted-schedule.png",
+      "unmodified": true
+    },
+    {
+      "path": "screens/06-cold-remaining-slot.png",
+      "sha256": "ca754f1973006ed6e9eb78014cde9092f9fae7e0b396743aabb7b08b3c586eb0",
+      "originalPath": "/private/tmp/patternly-native10-saturday/2026-10-03_082714/BIZQ-02 existing accepted schedule remaining slot/takeScreenshot/bizq02-persistence10-cold-remaining-slot.png",
+      "unmodified": true
+    }
+  ]
+}

@@ -15,3 +15,5 @@ Only the independent authoring proposal and preflight evidence are accepted here
 ## Next safe steps
 
 After ARCH-03 delivers and independently validates its current attribution contract, recheck actual refs/source/question identity and primary sources, apply the exact accepted one-question change, implement fail-closed migration proof, and run the existing build/candidate/consumer/admission chain. Do not reuse stale hashes or admission. Meanwhile proceed with an independent BIZQ02 native cold-process exact-minute persistence probe using the existing saved09:15 test plan, one existing iPhone17 and current sole runtime.
+
+Accepted authoring/preflight checkpoint pushedbf69dd24459add2bb655d9ffb3a08f9521fea140. Actual hosted run37102271407 BOTHJOBS SUCCESS; recovery1734 PASS/0 FAIL/4 dedicated SKIP,1738 total. Exact metadata and summary in POST-PUSH-REMOTE-CI.json / POST-PUSH-SUITE.json; unchanged source/admission still baseline.

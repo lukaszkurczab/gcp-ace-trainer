@@ -1,0 +1,5 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ-02 existing accepted schedule remaining slot
+Scrolling DOWN until id: patternly:learning-plan:editor:time:sat is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Assert that "18:00", id: patternly:learning-plan:editor:time:sat is visible... COMPLETED
+Take screenshot bizq02-persistence10-cold-remaining-slot... COMPLETED

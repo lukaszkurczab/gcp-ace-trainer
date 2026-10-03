@@ -395,6 +395,7 @@ function ProgressPlanSection({ model, onAction, onRetry }: Readonly<{
 
         {action && onAction ? <Button onPress={() => onAction(action)} testID={runtimeSelectors.targetDateGuidance.primary("progress")}>{model.guidance.primaryLabel}</Button> : null}
         {secondary && onAction ? <Button onPress={() => onAction(secondary)} testID={runtimeSelectors.targetDateGuidance.secondary()} variant="secondary">{model.guidance.secondaryLabel}</Button> : null}
+        {model.kind === "ready" && onAction && action?.kind !== "adjust_schedule" && action?.kind !== "resume_plan" && secondary?.kind !== "adjust_schedule" && secondary?.kind !== "resume_plan" ? <Button onPress={() => onAction({ kind: "adjust_schedule", destination: "LearningPlanEditor" })} testID={runtimeSelectors.progressPlan.editSchedule()} variant="secondary">{t("Edit schedule")}</Button> : null}
       </Card>
     </View>
   );

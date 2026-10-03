@@ -159,6 +159,7 @@ export const runtimeSelectors = Object.freeze({
   }),
   progressPlan: Object.freeze({
     root: () => selector("progress-plan", "root"),
+    editSchedule: () => selector("progress-plan", "edit-schedule"),
     completion: (state: ProgressPlanCompletionState) => selector("progress-plan", "completion", progressPlanCompletionStateSegment(state)),
     day: (status: HomePlanDayStatus) => selector("progress-plan", "day", progressPlanDayStatusSegment(status)),
     session: () => selector("progress-plan", "session"),
