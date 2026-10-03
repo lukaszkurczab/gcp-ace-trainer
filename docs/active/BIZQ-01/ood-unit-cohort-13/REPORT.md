@@ -25,3 +25,7 @@ Root qa:staticexit0:1776total/1772PASS/0FAIL/4existingdedicatedSKIP, typecheck/r
 FullBIZQ-01 remains partial: expandedsemantic/template review, confirmedcriticalA1 repairs including GCP07/ARCH03dependency, otherinteractions andrequirednative/Premium/theme/large-text evidence. Baseline1411 malformedOOD occurrences→current1396 after15repairs (TEMPLATE-SCOPE-AFTER.json); automatedoccurrence inventory is notsemantic acceptance. Matching earlier renderer/UI proofs are reused only for their actualscope; no newdevice/SDK/provider claim.
 
 Preserved foreignaudit/queueappendix/stashes andotherowner positions. Oneexistingruntime andonlyauthorizediPhone17 unchanged. No deploy/publication/purchase/serviceconfig/VoiceOver/device reset. Mainarea remains01 afterpush; push alone doesnot justify switching.
+
+## Ordinary push and exact hosted delivery
+
+Normal pushes: app6f9ac94cd6fa12fe9eb064d8281dc067783e92b8/contentc272a4bfdcd419d5185e5b00e1fd3022772f073c/web1bbfdce; backend unchanged019e48e. All four HEAD/upstream aligned; stashes app6/content2/backend4/web0 and foreign queue body hash preserved. POST-PUSH-REMOTE.json records refs and hashes. Exact hosted37141893945 atapp6f9ac94c has BOTH JOBS SUCCESS (POST-PUSH-CI.json); actual downloaded log summary ROOT-HOSTED-SUMMARY.json. FullBIZQ01 remains partial; nextpreflight targets remaining32 A1 BESDseeditems, mainarea unchanged.
