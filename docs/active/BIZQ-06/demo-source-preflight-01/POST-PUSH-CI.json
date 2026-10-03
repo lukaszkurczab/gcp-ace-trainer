@@ -1,0 +1,31 @@
+{
+  "runId": 37123223723,
+  "headSha": "7b14b2d6bce2e4e0016e750e7567ee020787192e",
+  "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37123223723",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "Multi-track content release contract",
+      "conclusion": "success"
+    },
+    {
+      "name": "Recovery QA gate",
+      "conclusion": "success"
+    }
+  ],
+  "observedRawLog": "/private/tmp/patternly-bizq06-source01-ci.log",
+  "recoveryTests": {
+    "total": 1772,
+    "pass": 1768,
+    "fail": 0,
+    "existingDedicatedSkip": 4
+  },
+  "crossRepoTests": {
+    "pass": 3,
+    "fail": 0
+  },
+  "webCommit": "a703f3a11e70f0ac9da9aa4d9cc1cb1b63d9f584",
+  "webGitHubWorkflows": 0,
+  "releaseBoundary": "No deployment/publication; bounded local sample acceptance only"
+}
