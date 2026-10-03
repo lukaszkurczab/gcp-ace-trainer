@@ -1,0 +1,23 @@
+{
+  "appSourceCheckpoint": "f172ae03",
+  "device": "7F315654-3175-4F3C-BB24-B0263F59360C",
+  "alreadyBootedBeforeCapture": true,
+  "metroPID": 36855,
+  "metroSession": 42240,
+  "endpoint": "http://localhost:8081",
+  "authReady": true,
+  "apiReady": true,
+  "actualAppEntryBundleObserved": true,
+  "modules": 1857,
+  "firstCapture": "failed Progress root assertion; screenshot shows developer warning overlays navigation",
+  "secondCapture": "exit0 Home-to-Progress after dismissing observed developer warning",
+  "noSaveInputResetOrInstall": true,
+  "wholeStorePreservationProven": false,
+  "fullBIZQ02Accepted": false,
+  "screens": {
+    "01-home.png": "16af05732d471c1e517e046277a6cca3194ff1ce16e3d214a461cde1c9c5534e",
+    "02-progress.png": "9bdf2545bd047cde5123cff2cb9cf0e620afa681489dad4c0778a1489bb85475",
+    "03-completion-and-schedule.png": "57f86a8d288b957544f84be9ee4e38e6f30e46804dc840de9d650d75644e52d6",
+    "00-warning-overlay.png": "16af05732d471c1e517e046277a6cca3194ff1ce16e3d214a461cde1c9c5534e"
+  }
+}

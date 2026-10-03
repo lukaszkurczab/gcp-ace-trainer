@@ -1,0 +1,18 @@
+appId: com.lkurczab.patternly
+name: BIZQ-02 Progress after observed developer warning dismissal
+---
+- tapOn:
+    point: "92%,93%"
+- tapOn:
+    id: main-tab-bar-progress
+- extendedWaitUntil:
+    visible:
+      id: patternly:progress:root
+    timeout: 30000
+- takeScreenshot: 02-progress
+- scrollUntilVisible:
+    element:
+      id: patternly:progress-plan:edit-schedule
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: 03-completion-and-schedule
