@@ -1,0 +1,264 @@
+TAP version 13
+# Subtest: candidate lock binds the exact nine bundled artifacts
+ok 1 - candidate lock binds the exact nine bundled artifacts
+  ---
+  duration_ms: 3.83525
+  type: 'test'
+  ...
+# Subtest: candidate lock rejects bundled bytes outside the candidate
+ok 2 - candidate lock rejects bundled bytes outside the candidate
+  ---
+  duration_ms: 3.33525
+  type: 'test'
+  ...
+# Subtest: CI bootstrap binds the actual current v3 lock to all nine verified bundled artifacts
+ok 3 - CI bootstrap binds the actual current v3 lock to all nine verified bundled artifacts
+  ---
+  duration_ms: 573.909542
+  type: 'test'
+  ...
+# Subtest: CI bootstrap fails closed for malformed v3 metadata without an active v2 fallback
+    # Subtest: old schema
+    ok 1 - old schema
+      ---
+      duration_ms: 2.254792
+      type: 'test'
+      ...
+    # Subtest: extra root field
+    ok 2 - extra root field
+      ---
+      duration_ms: 1.595167
+      type: 'test'
+      ...
+    # Subtest: missing track
+    ok 3 - missing track
+      ---
+      duration_ms: 1.386209
+      type: 'test'
+      ...
+    # Subtest: extra track
+    ok 4 - extra track
+      ---
+      duration_ms: 1.346125
+      type: 'test'
+      ...
+    # Subtest: duplicate track
+    ok 5 - duplicate track
+      ---
+      duration_ms: 1.657125
+      type: 'test'
+      ...
+    # Subtest: mixed pin
+    ok 6 - mixed pin
+      ---
+      duration_ms: 1.368791
+      type: 'test'
+      ...
+    # Subtest: source mismatch
+    ok 7 - source mismatch
+      ---
+      duration_ms: 1.20225
+      type: 'test'
+      ...
+    # Subtest: malformed pin
+    ok 8 - malformed pin
+      ---
+      duration_ms: 1.51475
+      type: 'test'
+      ...
+    # Subtest: mixed release
+    ok 9 - mixed release
+      ---
+      duration_ms: 1.903542
+      type: 'test'
+      ...
+    # Subtest: bad checksum
+    ok 10 - bad checksum
+      ---
+      duration_ms: 2.066083
+      type: 'test'
+      ...
+    # Subtest: bad manifest digest
+    ok 11 - bad manifest digest
+      ---
+      duration_ms: 1.420833
+      type: 'test'
+      ...
+    # Subtest: bad candidate identity
+    ok 12 - bad candidate identity
+      ---
+      duration_ms: 1.30725
+      type: 'test'
+      ...
+    # Subtest: wrong candidate path
+    ok 13 - wrong candidate path
+      ---
+      duration_ms: 1.100083
+      type: 'test'
+      ...
+    1..13
+ok 4 - CI bootstrap fails closed for malformed v3 metadata without an active v2 fallback
+  ---
+  duration_ms: 21.966583
+  type: 'test'
+  ...
+# Subtest: CI bootstrap rejects valid-shaped metadata that disagrees with actual bundled hashes or versions
+    # Subtest: bundledContentLockSha256
+    ok 1 - bundledContentLockSha256
+      ---
+      duration_ms: 38.455667
+      type: 'test'
+      ...
+    # Subtest: checksumSha256
+    ok 2 - checksumSha256
+      ---
+      duration_ms: 245.460625
+      type: 'test'
+      ...
+    # Subtest: contentVersion
+    ok 3 - contentVersion
+      ---
+      duration_ms: 251.629792
+      type: 'test'
+      ...
+    1..3
+ok 5 - CI bootstrap rejects valid-shaped metadata that disagrees with actual bundled hashes or versions
+  ---
+  duration_ms: 536.156875
+  type: 'test'
+  ...
+# Subtest: both QA jobs share the strict pin reader and retain mandatory candidate and actual checkout identity gates
+ok 6 - both QA jobs share the strict pin reader and retain mandatory candidate and actual checkout identity gates
+  ---
+  duration_ms: 0.612375
+  type: 'test'
+  ...
+# Subtest: historical bootstrap preserves the exact frozen lock and distinct producer checkout
+ok 7 - historical bootstrap preserves the exact frozen lock and distinct producer checkout
+  ---
+  duration_ms: 287.133708
+  type: 'test'
+  ...
+# Subtest: sync replaces the whole generated directory with an exact validated set
+ok 8 - sync replaces the whole generated directory with an exact validated set
+  ---
+  duration_ms: 42.434
+  type: 'test'
+  ...
+# Subtest: sync accepts a complete GCP Exam envelope inside the artifact lock boundary
+ok 9 - sync accepts a complete GCP Exam envelope inside the artifact lock boundary
+  ---
+  duration_ms: 19.187541
+  type: 'test'
+  ...
+# Subtest: sync accepts the exact Coding Mock profile with its ordered 40-question pool
+ok 10 - sync accepts the exact Coding Mock profile with its ordered 40-question pool
+  ---
+  duration_ms: 15.529375
+  type: 'test'
+  ...
+# Subtest: sync accepts and preserves each exact per-track Design Interview simulation profile
+ok 11 - sync accepts and preserves each exact per-track Design Interview simulation profile
+  ---
+  duration_ms: 15.4765
+  type: 'test'
+  ...
+# Subtest: sync rejects Design profile identity, deadline, stage, response, criterion, rubric, and scoring drift
+ok 12 - sync rejects Design profile identity, deadline, stage, response, criterion, rubric, and scoring drift
+  ---
+  duration_ms: 54.825541
+  type: 'test'
+  ...
+# Subtest: sync rejects Coding Mock profiles that drift from the declared strict contract
+ok 13 - sync rejects Coding Mock profiles that drift from the declared strict contract
+  ---
+  duration_ms: 55.856375
+  type: 'test'
+  ...
+# Subtest: sync continues to accept a legacy GCP artifact without simulation metadata
+ok 14 - sync continues to accept a legacy GCP artifact without simulation metadata
+  ---
+  duration_ms: 13.549666
+  type: 'test'
+  ...
+# Subtest: sync rejects malformed GCP profiles before replacing the target even when lock SHA is recomputed
+ok 15 - sync rejects malformed GCP profiles before replacing the target even when lock SHA is recomputed
+  ---
+  duration_ms: 79.372167
+  type: 'test'
+  ...
+# Subtest: check mode proves byte parity and never writes inside the application root
+ok 16 - check mode proves byte parity and never writes inside the application root
+  ---
+  duration_ms: 23.611042
+  type: 'test'
+  ...
+# Subtest: check fails on byte drift without repairing it
+ok 17 - check fails on byte drift without repairing it
+  ---
+  duration_ms: 22.210667
+  type: 'test'
+  ...
+# Subtest: producer failure preserves the existing complete target and cleans staging
+ok 18 - producer failure preserves the existing complete target and cleans staging
+  ---
+  duration_ms: 15.619625
+  type: 'test'
+  ...
+# Subtest: failed second rename rolls back the previous directory
+ok 19 - failed second rename rolls back the previous directory
+  ---
+  duration_ms: 24.157625
+  type: 'test'
+  ...
+# Subtest: an interrupted target-to-backup move is recovered before replacement
+ok 20 - an interrupted target-to-backup move is recovered before replacement
+  ---
+  duration_ms: 24.948666
+  type: 'test'
+  ...
+# Subtest: validation rejects extra files, duplicate IDs, tampering, and symlink entries
+ok 21 - validation rejects extra files, duplicate IDs, tampering, and symlink entries
+  ---
+  duration_ms: 8.890625
+  type: 'test'
+  ...
+# Subtest: validation rejects a missing or misnamed artifact and an unsorted lock
+ok 22 - validation rejects a missing or misnamed artifact and an unsorted lock
+  ---
+  duration_ms: 5.459041
+  type: 'test'
+  ...
+# Subtest: failed first rename preserves the target byte-for-byte and leaves no transaction debris
+ok 23 - failed first rename preserves the target byte-for-byte and leaves no transaction debris
+  ---
+  duration_ms: 19.541375
+  type: 'test'
+  ...
+# Subtest: a symlinked target parent fails before staging and cannot write outside appRoot
+ok 24 - a symlinked target parent fails before staging and cannot write outside appRoot
+  ---
+  duration_ms: 3.227541
+  type: 'test'
+  ...
+# Subtest: dirty producer state fails before build or application write
+ok 25 - dirty producer state fails before build or application write
+  ---
+  duration_ms: 3.357083
+  type: 'test'
+  ...
+# Subtest: check rejects a temporary root inside appRoot before any app-tree write
+ok 26 - check rejects a temporary root inside appRoot before any app-tree write
+  ---
+  duration_ms: 18.402917
+  type: 'test'
+  ...
+1..26
+# tests 42
+# suites 0
+# pass 42
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1611.691792

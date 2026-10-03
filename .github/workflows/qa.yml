@@ -24,20 +24,40 @@ jobs:
         working-directory: app
         shell: bash
         run: |
-          node -e '
-            const lock = require("./integration/contracts/content-release/release.lock.json");
-            const expectedTrackIds = ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901", "claude-certified-architect-professional-certification"];
-            const trackIds = Array.isArray(lock.artifacts) ? lock.artifacts.map((artifact) => artifact.trackId) : [];
-            if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || trackIds.join(",") !== expectedTrackIds.join(",") || !lock.artifacts.every((artifact) => /^[a-f0-9]{40}$/.test(artifact.producerCommit) && /^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit) && /^[a-z][a-z0-9-]*$/.test(artifact.releaseId))) process.exit(1);
-            process.stdout.write(`commit=${lock.artifacts.at(-1).producerCommit}\n`);
-          ' >> "$GITHUB_OUTPUT"
+          content_producer_pin="$(node scripts/candidateContentReleaseLock.mjs producer-pin)"
+          historical_producer_pin="$(node scripts/candidateContentReleaseLock.mjs historical-producer-pin)"
+          printf 'commit=%s\nhistorical-commit=%s\n' "$content_producer_pin" "$historical_producer_pin" >> "$GITHUB_OUTPUT"
       - name: Checkout locked content producer
         uses: actions/checkout@v4
         with:
           repository: lukaszkurczab/patternly-content
-          ref: ${{ steps.content-lock.outputs.commit }}
+          ref: ${{ steps.content-lock.outputs.historical-commit }}
+          path: patternly-content-historical
+          fetch-depth: 0
+      - name: Checkout current content producer
+        uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-content
+          ref: master
           path: patternly-content
           fetch-depth: 0
+      - id: current-content
+        name: Record exact current and historical content inputs
+        shell: bash
+        env:
+          EXPECTED_HISTORICAL_CONTENT_SHA: ${{ steps.content-lock.outputs.historical-commit }}
+          EXPECTED_CANDIDATE_SOURCE_SHA: ${{ steps.content-lock.outputs.commit }}
+        run: |
+          current_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content" rev-parse HEAD)"
+          historical_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content-historical" rev-parse HEAD)"
+          [[ "$current_content_sha" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$historical_content_sha" == "$EXPECTED_HISTORICAL_CONTENT_SHA" ]]
+          git -C "$GITHUB_WORKSPACE/patternly-content" cat-file -e "${EXPECTED_CANDIDATE_SOURCE_SHA}^{commit}"
+          printf 'Current content input: %s\nHistorical content input: %s\n' "$current_content_sha" "$historical_content_sha"
+          printf 'sha=%s\nhistorical-sha=%s\n' "$current_content_sha" "$historical_content_sha" >> "$GITHUB_OUTPUT"
+      - name: Verify candidate-bound content release lock
+        working-directory: app
+        run: node scripts/candidateContentReleaseLock.mjs check
       - uses: actions/setup-node@v4
         with:
           node-version: 22.13.1
@@ -84,6 +104,9 @@ jobs:
         working-directory: app
         env:
           PATTERNLY_CONTENT_ROOT: ${{ github.workspace }}/patternly-content
+          PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
+          PATTERNLY_CONTENT_HISTORICAL_ROOT: ${{ github.workspace }}/patternly-content-historical
+          PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ steps.current-content.outputs.sha }}
         run: npm run baseline:report
 
   content-release-cross-repository-contract:
@@ -99,34 +122,40 @@ jobs:
         working-directory: app
         shell: bash
         run: |
-          node -e '
-            const lock = require("./integration/contracts/content-release/release.lock.json");
-            const expectedTrackIds = ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901", "claude-certified-architect-professional-certification"];
-            const trackIds = Array.isArray(lock.artifacts) ? lock.artifacts.map((artifact) => artifact.trackId) : [];
-            if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || trackIds.join(",") !== expectedTrackIds.join(",") || !lock.artifacts.every((artifact) => /^[a-f0-9]{40}$/.test(artifact.producerCommit) && /^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit) && /^[a-z][a-z0-9-]*$/.test(artifact.releaseId))) process.exit(1);
-            process.stdout.write(`commit=${lock.artifacts.at(-1).producerCommit}\n`);
-          ' >> "$GITHUB_OUTPUT"
+          content_producer_pin="$(node scripts/candidateContentReleaseLock.mjs producer-pin)"
+          historical_producer_pin="$(node scripts/candidateContentReleaseLock.mjs historical-producer-pin)"
+          printf 'commit=%s\nhistorical-commit=%s\n' "$content_producer_pin" "$historical_producer_pin" >> "$GITHUB_OUTPUT"
       - name: Checkout locked content producer
         uses: actions/checkout@v4
         with:
           repository: lukaszkurczab/patternly-content
-          ref: ${{ steps.content-lock.outputs.commit }}
-          path: patternly-content
+          ref: ${{ steps.content-lock.outputs.historical-commit }}
+          path: patternly-content-historical
           fetch-depth: 0
       - name: Checkout current content producer
         uses: actions/checkout@v4
         with:
           repository: lukaszkurczab/patternly-content
-          ref: main
-          path: patternly-content-current
+          ref: master
+          path: patternly-content
           fetch-depth: 0
       - id: current-content
-        name: Resolve current content producer commit
+        name: Record exact current and historical content inputs
+        shell: bash
+        env:
+          EXPECTED_HISTORICAL_CONTENT_SHA: ${{ steps.content-lock.outputs.historical-commit }}
+          EXPECTED_CANDIDATE_SOURCE_SHA: ${{ steps.content-lock.outputs.commit }}
         run: |
-          sha="$(git -C "$GITHUB_WORKSPACE/patternly-content-current" rev-parse HEAD)"
-          [[ "$sha" =~ ^[a-f0-9]{40}$ ]]
-          echo "Resolved current content producer commit: $sha"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          current_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content" rev-parse HEAD)"
+          historical_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content-historical" rev-parse HEAD)"
+          [[ "$current_content_sha" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$historical_content_sha" == "$EXPECTED_HISTORICAL_CONTENT_SHA" ]]
+          git -C "$GITHUB_WORKSPACE/patternly-content" cat-file -e "${EXPECTED_CANDIDATE_SOURCE_SHA}^{commit}"
+          printf 'Current content input: %s\nHistorical content input: %s\n' "$current_content_sha" "$historical_content_sha"
+          printf 'sha=%s\nhistorical-sha=%s\n' "$current_content_sha" "$historical_content_sha" >> "$GITHUB_OUTPUT"
+      - name: Verify candidate-bound content release lock
+        working-directory: app
+        run: node scripts/candidateContentReleaseLock.mjs check
       - uses: actions/setup-node@v4
         with:
           node-version: 22.13.1
@@ -139,7 +168,7 @@ jobs:
       - name: Run pinned multi-track release round-trip
         working-directory: app
         env:
-          PATTERNLY_CONTENT_HISTORICAL_ROOT: ${{ github.workspace }}/patternly-content
-          PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content-current
+          PATTERNLY_CONTENT_HISTORICAL_ROOT: ${{ github.workspace }}/patternly-content-historical
+          PATTERNLY_CONTENT_CURRENT_ROOT: ${{ github.workspace }}/patternly-content
           PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: ${{ steps.current-content.outputs.sha }}
         run: npm run test:content-release-cross-repo
