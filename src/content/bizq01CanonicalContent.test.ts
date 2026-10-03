@@ -14,7 +14,7 @@ const changed = [
 
 test("BIZQ-01 bundled loader and pre-submit projection preserve the corrected source contract", async () => {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(trackId);
-  assert.equal(track.contentVersion, "backend-system-design-interview-authoring-v2026.10.02-bizq01-01");
+  assert.equal(track.contentVersion, "backend-system-design-interview-authoring-v2026.10.03-bizq01-14");
   for (const expected of changed) {
     assert.equal(track.getQuestion(expected.replacedId), undefined, "replaced IDs must not resolve to new meanings");
     const question = track.getQuestion(expected.questionId)!;
