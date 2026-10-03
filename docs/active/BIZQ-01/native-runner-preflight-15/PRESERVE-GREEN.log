@@ -1,0 +1,34 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 preserve accepted schedule on current runner
+Stop com.lkurczab.patternly... COMPLETED
+Launch app "com.lkurczab.patternly"... COMPLETED
+Open com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081... COMPLETED
+Run flow when "Open|Otwórz" is visible...
+Run flow when "Open|Otwórz" is visible... SKIPPED
+Assert that id: main-tab-bar-home is visible... COMPLETED
+Take screenshot native15-current-guest... COMPLETED
+Tap on point (92%,93%)... COMPLETED
+Tap on id: main-tab-bar-progress... COMPLETED
+Assert that id: patternly:progress:root is visible... COMPLETED
+Scrolling DOWN until id: patternly:progress-plan:edit-schedule is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Take screenshot native15-existing-entry... COMPLETED
+Tap on id: patternly:progress-plan:edit-schedule... COMPLETED
+Assert that id: patternly:learning-plan:editor:state:ready is visible... COMPLETED
+Scrolling DOWN until id: patternly:learning-plan:editor:time:mon is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Assert that "09:15", id: patternly:learning-plan:editor:time:mon is visible... COMPLETED
+Assert that "18:00", id: patternly:learning-plan:editor:time:wed is visible... COMPLETED
+Assert that "18:00", id: patternly:learning-plan:editor:time:sat is visible... COMPLETED
+Take screenshot native15-cold-accepted-schedule... COMPLETED
+Tap on "Go back|Wróć"... COMPLETED
+Tap on id: main-tab-bar-settings... COMPLETED
+Assert that id: settings-identity is visible... COMPLETED
+Take screenshot native15-account-state... COMPLETED
+Scrolling DOWN until id: settings-premium is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: settings-premium... COMPLETED
+Assert that id: premium-account-required is visible... COMPLETED
+Assert that id: premium-offer-summary is visible... COMPLETED
+Assert that id: premium-success is not visible... COMPLETED
+Assert that id: patternly:session:root:.* is not visible... COMPLETED
+Take screenshot native15-real-guest-gate... COMPLETED
+Tap on "Go back|Wróć"... COMPLETED
+Tap on id: main-tab-bar-home... COMPLETED

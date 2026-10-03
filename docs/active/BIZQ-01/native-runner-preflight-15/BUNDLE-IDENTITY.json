@@ -1,0 +1,11 @@
+{
+  "http": 200,
+  "bytes": 69380822,
+  "sha256": "94f0a8f73879b7d1d1e25a35c2746acb4a71b1ff5498f01dd9d01a9b58de4173",
+  "appHead": "e682e95e564bed6a285519741c3fda521ba8ed7d",
+  "identityChecks": {
+    "backend-system-design-interview-authoring-v2026.10.03-bizq01-14": true,
+    "860afa4654d51e1a2b0e6da7f1f0043a054fed11486c78ae8ece9e36fc8a3c52": false
+  },
+  "valuesPrinted": false
+}
