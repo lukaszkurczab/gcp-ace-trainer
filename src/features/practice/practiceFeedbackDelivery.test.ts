@@ -1,0 +1,87 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+import ts from "typescript";
+
+const certificationSource = readFileSync(new URL("./CertificationPracticeSessionScreen.tsx", import.meta.url), "utf8");
+const codingSource = readFileSync(new URL("./PracticeSessionScreen.tsx", import.meta.url), "utf8");
+const feedbackBlockSource = readFileSync(new URL("./PracticeFeedbackBlock.tsx", import.meta.url), "utf8");
+
+function jsxAttributeExpression(source: string, componentName: string, attributeName: string): string {
+  const file = ts.createSourceFile("screen.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
+      if (node.tagName.getText(file) === componentName) {
+        const attribute = node.attributes.properties.find((property): property is ts.JsxAttribute => ts.isJsxAttribute(property) && property.name.getText(file) === attributeName);
+        if (attribute?.initializer && ts.isJsxExpression(attribute.initializer)) expression = attribute.initializer.expression;
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  assert.ok(expression, `${componentName}.${attributeName} JSX expression exists`);
+  return expression.getText(file);
+}
+
+test("both practice JSX adapters pass authored message arrays through unchanged", () => {
+  const messages = Object.freeze([{ kind: "wrong_option", targetId: "wrong", text: "Authored explanation." }]);
+  const certExpression = jsxAttributeExpression(certificationSource, "PracticeSessionSurface", "feedback");
+  const certificationFeedback = new Function("feedback", `return (${certExpression});`)(
+    { details: "details", messages, reason: "reason", result: "incorrect", sources: [] },
+  ) as { messages: typeof messages };
+  assert.equal(certificationFeedback.messages, messages);
+
+  const codingExpression = jsxAttributeExpression(codingSource, "PracticeSessionSurface", "feedback");
+  const codingFeedback = new Function("projection", `return (${codingExpression});`)({
+    session: { configurationSnapshot: { feedbackMode: "afterEachAnswer" } },
+    feedback: { correctness: "incorrect", details: "details", messages, reason: "reason", sources: [] },
+  }) as { messages: typeof messages };
+  assert.equal(codingFeedback.messages, messages);
+});
+
+test("Details JSX gates authored messages on expansion and keeps their text scalable", () => {
+  const file = ts.createSourceFile("PracticeFeedbackBlock.tsx", feedbackBlockSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const detailsConditionals: ts.ConditionalExpression[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isConditionalExpression(node) && node.condition.getText(file) === "detailsOpen") detailsConditionals.push(node);
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  const expandedBranch = detailsConditionals.find((node) => node.whenTrue.getText(file).includes("feedback.messages?.map"));
+  assert.ok(expandedBranch, "expanded Details branch renders feedback messages");
+  assert.equal(expandedBranch.whenFalse.kind, ts.SyntaxKind.NullKeyword);
+  const expression = `(${expandedBranch.getText(file)})`;
+  const javascript = ts.transpileModule(`return ${expression};`, {
+    compilerOptions: { jsx: ts.JsxEmit.React, jsxFactory: "jsx", target: ts.ScriptTarget.ES2020 },
+  }).outputText;
+  const hostJsx = (type: unknown, props: Record<string, unknown>, ...children: unknown[]) => ({
+    type,
+    props: { ...props, ...(children.length ? { children: children.length === 1 ? children[0] : children } : {}) },
+  });
+  const runtimeSelectors = { session: { details: (id: string) => `details-${id}` } };
+  const detailLines = () => [];
+  const evaluate = (detailsOpen: boolean) => new Function(
+    "detailsOpen", "jsx", "View", "Text", "Pressable", "styles", "runtimeSelectors", "itemId", "feedback", "detailLines", "sourceError", "t", "openCanonicalSourceLink", "openSource", "showReport", "ContentReportSheet", "item", "reportSurface", "setSourceError",
+    javascript,
+  )(
+    detailsOpen, hostJsx, "View", "Text", "Pressable", { details: "details-style", sources: "sources-style", sourceLabel: "label-style", sourceUnavailable: "unavailable-style", detailText: "message-style" },
+    runtimeSelectors, "item-1", { details: "details", messages: [{ kind: "wrong_option", targetId: "wrong", text: "Authored explanation." }], sources: [] },
+    detailLines, false, (value: string) => value, () => "opened", async () => "opened", false, "ContentReportSheet", "item", "report", () => undefined,
+  );
+  const collapsed = evaluate(false);
+  assert.equal(collapsed, null);
+  const expanded = evaluate(true) as { type: string; props: { children: unknown } };
+  assert.equal(expanded.type, "View");
+  const findMessage = (value: unknown): { props: Record<string, unknown> } | undefined => {
+    if (Array.isArray(value)) return value.map(findMessage).find(Boolean);
+    if (!value || typeof value !== "object") return undefined;
+    const element = value as { type?: unknown; props?: { children?: unknown } & Record<string, unknown> };
+    if (element.type === "Text" && element.props?.children === "Authored explanation.") return { props: element.props };
+    return findMessage(element.props?.children);
+  };
+  const messageElement = findMessage(expanded.props.children);
+  assert.ok(messageElement);
+  assert.equal(messageElement.props.key, "wrong_option:wrong");
+  assert.equal(messageElement.props.maxFontSizeMultiplier, 2);
+});

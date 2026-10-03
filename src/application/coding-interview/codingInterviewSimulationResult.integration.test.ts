@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import { getAlgorithmsPracticeResultProjection, getAlgorithmsPracticeReviewProjection, getAlgorithmsSimulationProjection, startAlgorithmsSession, saveAlgorithmsSimulationResponseAndContinue, finalizeAlgorithmsSimulation, toggleAlgorithmsSimulationFlag } from "./codingInterviewSessionFacade";
+import { getAlgorithmsPracticeProjection, getAlgorithmsPracticeResultProjection, getAlgorithmsPracticeReviewProjection, getAlgorithmsSimulationProjection, startAlgorithmsSession, submitAlgorithmsPracticeResponse, saveAlgorithmsSimulationResponseAndContinue, finalizeAlgorithmsSimulation, toggleAlgorithmsSimulationFlag } from "./codingInterviewSessionFacade";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import type { Question } from "../../content/canonical/questionTypes";
 import type { AlgorithmResponse } from "../../tracks/coding-interview/domain";
@@ -110,4 +110,36 @@ test("Coding Mock persists a response, finalizes, and reads all 40 completed rev
   assert.equal(review.feedbackItems.length, 40);
   assert.equal(review.feedbackItems[39]?.correctness, "unanswered");
   assert.equal(authorizationCount, 4);
+});
+
+test("Coding immediate practice feedback survives durable submit and lifecycle rebind", async () => {
+  installMemoryStorage();
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const dependencies = {
+    sessionIds: { create: async () => "coding-feedback-delivery-rebind" },
+    premiumSessionAdmission: { authorize: async () => "allowed" as const },
+  };
+  composeTrainingLifecycleUseCases(dependencies);
+  await startAlgorithmsSession({ modeId: "coding-interview-learn-approach", requestedLength: 10, source: "feedback-delivery-test" });
+
+  const before = await getAlgorithmsPracticeProjection();
+  assert.equal(before.feedback, null);
+  const question = await contentPackageRuntimeOwner.resolveItem(before.item);
+  if (question.interaction.type !== "choice_single" || question.answer.type !== "choice_single") throw new Error("Expected the actual Coding practice item to be single choice.");
+  const correctOptionId = question.answer.optionId;
+  const wrongOption = question.interaction.options.find((option) => option.optionId !== correctOptionId);
+  if (!wrongOption) throw new Error("Expected an authored incorrect Coding option.");
+  await submitAlgorithmsPracticeResponse({ kind: "choice", selectedOptionIds: [wrongOption.optionId] });
+
+  const committed = await getAlgorithmsPracticeProjection();
+  assert.equal(committed.response?.value.type, "choice_single");
+  const expectedMessages = question.feedback.messages?.filter((message) => message.kind === "wrong_option" && message.targetId === wrongOption.optionId);
+  assert.ok(expectedMessages?.length);
+  assert.deepEqual(committed.feedback?.messages, expectedMessages);
+  assert.equal(committed.feedback?.correctness, "incorrect");
+
+  composeTrainingLifecycleUseCases(dependencies);
+  const rebound = await getAlgorithmsPracticeProjection();
+  assert.deepEqual(rebound.response, committed.response);
+  assert.deepEqual(rebound.feedback, committed.feedback);
 });

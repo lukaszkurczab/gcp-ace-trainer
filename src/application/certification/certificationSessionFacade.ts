@@ -17,7 +17,7 @@ import {
 } from "../trainingLifecycle";
 import { isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
 import { type CanonicalQuestionResponse, type Question } from "../../content/canonical";
-import { projectCanonicalChoiceFeedbackControls, type CanonicalChoiceFeedbackState } from "../canonical/canonicalInteractionPresentation";
+import { projectCanonicalChoiceFeedbackControls, projectCanonicalChoiceFeedbackMessages, type CanonicalChoiceFeedbackState } from "../canonical/canonicalInteractionPresentation";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { projectCertificationExamReview, type CertificationExamReviewProjection } from "./certificationExamReviewProjection";
 import { projectCertificationPracticeReview, type CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
@@ -43,6 +43,7 @@ export type CertificationPracticeProjection = Readonly<{
   response: Readonly<{ source: "committed" | "materialized"; value: CanonicalQuestionResponse }> | null;
   feedback: Readonly<{
     controls: readonly Readonly<{ id: string; state: CanonicalChoiceFeedbackState }>[];
+    messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[];
     result: AttemptResultKind;
     reason: Question["feedback"]["reason"];
     details: Question["feedback"]["details"];
@@ -410,9 +411,10 @@ export function projectCertificationPracticeFeedback(
   attempt: Readonly<{ response: unknown; result: Readonly<{ kind: AttemptResultKind }> }> | null,
   question: Question,
 ): CertificationPracticeProjection["feedback"] {
-  return attempt && feedbackMode === "afterEachAnswer"
-    ? Object.freeze({ controls: projectCanonicalChoiceFeedbackControls(question, attempt.response as CanonicalQuestionResponse), result: attempt.result.kind, reason: question.feedback.reason, details: question.feedback.details, sources: projectCanonicalSourceLinks(question) })
-    : null;
+  if (!attempt || feedbackMode !== "afterEachAnswer") return null;
+  const response = attempt.response as CanonicalQuestionResponse;
+  const messages = projectCanonicalChoiceFeedbackMessages(question, response);
+  return Object.freeze({ controls: projectCanonicalChoiceFeedbackControls(question, response), ...(messages === undefined ? {} : { messages }), result: attempt.result.kind, reason: question.feedback.reason, details: question.feedback.details, sources: projectCanonicalSourceLinks(question) });
 }
 
 async function requireActive(): Promise<TrainingSession> {

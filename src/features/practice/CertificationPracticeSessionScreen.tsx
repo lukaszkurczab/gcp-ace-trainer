@@ -349,7 +349,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   return <PracticeSessionSurface
     allowLeave={!completionFailure}
     exit={{ kind: exit }}
-    feedback={feedback ? { details: feedback.details, reason: feedback.reason, result: feedback.result, sources: feedback.sources } : undefined}
+    feedback={feedback ? { details: feedback.details, messages: feedback.messages, reason: feedback.reason, result: feedback.result, sources: feedback.sources } : undefined}
     feedbackItem={projection.session.itemOrder[projection.session.currentItemIndex]?.item}
     isFinalPosition={projection.ordinal === projection.total}
     modeLabel={t(getCertificationMode(mode).title)}

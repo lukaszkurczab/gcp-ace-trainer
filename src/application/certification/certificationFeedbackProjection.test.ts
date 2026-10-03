@@ -61,6 +61,21 @@ test("deferred feedback remains absent after durable submit while immediate feed
   });
 });
 
+test("immediate Certification feedback returns only authored messages for selected incorrect IDs", () => {
+  const withMessages = {
+    ...question,
+    feedback: {
+      ...question.feedback,
+      messages: [
+        { kind: "wrong_option", targetId: "wrong", text: "Exact authored wrong explanation." },
+        { kind: "wrong_option", targetId: "correct", text: "Unrelated wrong explanation." },
+      ],
+    },
+  } as unknown as Question;
+  const attempt = Object.freeze({ response: Object.freeze({ optionId: "wrong", type: "choice_single" as const }), result: Object.freeze({ kind: "incorrect" as const }) });
+  assert.deepEqual(projectCertificationPracticeFeedback("afterEachAnswer", attempt, withMessages)?.messages, [withMessages.feedback.messages?.[0]]);
+});
+
 test("completed review evidence fails closed when durable outcome aggregates are missing or inconsistent", () => {
   const attempts = [
     { result: { earnedPoints: 1, kind: "correct" as const, maxPoints: 1 } },

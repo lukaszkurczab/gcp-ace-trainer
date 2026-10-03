@@ -4,7 +4,7 @@ import test from "node:test";
 import { loadCanonicalRuntimeCatalog, scoreCanonicalQuestion, type Question } from "./canonical";
 import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQuestionViewModel";
 import { detailLines } from "../features/practice/feedbackDetails";
-import { buildCanonicalInteractionViewModel, composeCanonicalFeedback } from "../application/canonical/canonicalInteractionPresentation";
+import { buildCanonicalInteractionViewModel, composeCanonicalFeedback, projectCanonicalChoiceFeedbackMessages } from "../application/canonical/canonicalInteractionPresentation";
 import { CanonicalTrainingRuntime } from "../application/canonical/CanonicalTrainingRuntime";
 
 const trackId = "coding-interview-dsa-problem-solving";
@@ -49,7 +49,7 @@ test("all24 saved legal permutations preserve every selected stable ID, score an
     assert.deepEqual(vm.accessibility.controls.filter((control) => control.checked).map((control) => control.id), [option.optionId]);
     const score = scoreCanonicalQuestion(question, response);
     assert.equal(score.kind, option.optionId === "scan" ? "correct" : "incorrect");
-    assert.deepEqual(composeCanonicalFeedback(question, response), { correctness: score.kind, reason: question.feedback.reason, details: question.feedback.details });
+    assert.deepEqual(composeCanonicalFeedback(question, response), { correctness: score.kind, reason: question.feedback.reason, details: question.feedback.details, messages: projectCanonicalChoiceFeedbackMessages(question, response) });
     if (option.optionId !== "scan") assert.equal(question.feedback.messages?.filter((message) => message.targetId === option.optionId).length, 1);
   }
 });

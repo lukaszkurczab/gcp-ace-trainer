@@ -1,0 +1,9 @@
+{
+  "command": "node --import tsx --test canonicalChoiceFeedbackPresentation certificationFeedbackProjection multipleChoiceScoringIntegration practiceSessionPresentation architectureBoundaries mutationArchitecture",
+  "pass": 50,
+  "fail": 1,
+  "failure": "Certification presentation source assertion required literal old ternary shape; new early-return still same null/deferred guard",
+  "correction": "adapted exact guard assertion; retained no-scorer/materialized-attempt checks and actual behavior tests",
+  "rawLogSha256": "f1fd8d0eb28fac53f8c03144c70192027b6962434489eeb1ef4d713fb1164e7c",
+  "subsequent": "ROOT-FOCUSED-FINAL.log 51/51 PASS"
+}

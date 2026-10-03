@@ -186,7 +186,7 @@ test("Certification presentation reads materialized feedback without owning fami
   }
   assert.match(runtime, /result = scoreCanonicalQuestion\(question, input\.response\)/);
   assert.match(facade, /const feedback = projectCertificationPracticeFeedback\(feedbackMode, materializedAttempt, resolvedQuestion\)/);
-  assert.match(facade, /return attempt && feedbackMode === "afterEachAnswer"[\s\S]*?reason: question\.feedback\.reason, details: question\.feedback\.details/);
+  assert.match(facade, /if \(!attempt \|\| feedbackMode !== "afterEachAnswer"\) return null;[\s\S]*?reason: question\.feedback\.reason, details: question\.feedback\.details/);
   assert.match(facade, /question: projectCertificationPracticeQuestion\(resolvedQuestion\)/);
   assert.match(screen, /const feedback = projection\.feedback/);
   assert.doesNotMatch(screen, /correctOptionIds|question\.feedback|const result = submitted|\bfeedback\b[^\n;]*\bselected\b/);

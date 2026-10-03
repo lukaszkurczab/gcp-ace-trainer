@@ -1,0 +1,202 @@
+TAP version 13
+# Subtest: session abandonment persists abandoned session before clearing active pointer
+ok 1 - session abandonment persists abandoned session before clearing active pointer
+  ---
+  duration_ms: 9.161042
+  type: 'test'
+  ...
+# Subtest: session abandonment replay is idempotent
+ok 2 - session abandonment replay is idempotent
+  ---
+  duration_ms: 7.507708
+  type: 'test'
+  ...
+# Subtest: abandonment recovers identically after every durable write boundary
+ok 3 - abandonment recovers identically after every durable write boundary
+  ---
+  duration_ms: 14.609125
+  type: 'test'
+  ...
+# Subtest: abandonment does not navigate before durability
+ok 4 - abandonment does not navigate before durability
+  ---
+  duration_ms: 0.594583
+  type: 'test'
+  ...
+# Subtest: configuration snapshot is validated, frozen, and preserved for deterministic resume
+ok 5 - configuration snapshot is validated, frozen, and preserved for deterministic resume
+  ---
+  duration_ms: 2.243375
+  type: 'test'
+  ...
+# Subtest: resume rejects a different mode or durable item and option plan
+ok 6 - resume rejects a different mode or durable item and option plan
+  ---
+  duration_ms: 0.426375
+  type: 'test'
+  ...
+# Subtest: content validation rejects missing, duplicate, and unknown durable option IDs
+ok 7 - content validation rejects missing, duplicate, and unknown durable option IDs
+  ---
+  duration_ms: 0.450375
+  type: 'test'
+  ...
+# Subtest: durable progress hydrates prior attempts and the answered current item in plan order
+ok 8 - durable progress hydrates prior attempts and the answered current item in plan order
+  ---
+  duration_ms: 0.559333
+  type: 'test'
+  ...
+# Subtest: duplicate exact content items are distinct through immutable occurrence identities
+ok 9 - duplicate exact content items are distinct through immutable occurrence identities
+  ---
+  duration_ms: 0.227333
+  type: 'test'
+  ...
+# Subtest: foreground accumulation persists only the supplied active interval
+ok 10 - foreground accumulation persists only the supplied active interval
+  ---
+  duration_ms: 0.139916
+  type: 'test'
+  ...
+# Subtest: start failure rejects without exposing a session
+ok 11 - start failure rejects without exposing a session
+  ---
+  duration_ms: 0.09675
+  type: 'test'
+  ...
+# Subtest: a new session is not returned before its durable write resolves
+ok 12 - a new session is not returned before its durable write resolves
+  ---
+  duration_ms: 0.091375
+  type: 'test'
+  ...
+# Subtest: advance failure rejects and cannot expose the next position
+ok 13 - advance failure rejects and cannot expose the next position
+  ---
+  duration_ms: 0.303333
+  type: 'test'
+  ...
+# Subtest: Practice presentation never discloses feedback before the durable feedback boundary
+ok 14 - Practice presentation never discloses feedback before the durable feedback boundary
+  ---
+  duration_ms: 0.636
+  type: 'test'
+  ...
+# Subtest: Practice presentation permits response edits before a journal exists
+ok 15 - Practice presentation permits response edits before a journal exists
+  ---
+  duration_ms: 0.075209
+  type: 'test'
+  ...
+# Subtest: Practice action model separates final feedback from the durable Finish command
+ok 16 - Practice action model separates final feedback from the durable Finish command
+  ---
+  duration_ms: 0.772541
+  type: 'test'
+  ...
+# Subtest: Deferred feedback keeps the submit CTA and saving status aligned
+ok 17 - Deferred feedback keeps the submit CTA and saving status aligned
+  ---
+  duration_ms: 0.098625
+  type: 'test'
+  ...
+# Subtest: Practice pending phases retain a stable unsafe-action lock
+ok 18 - Practice pending phases retain a stable unsafe-action lock
+  ---
+  duration_ms: 0.056417
+  type: 'test'
+  ...
+# Subtest: primary action carry-over guard blocks only fast phase changes and permits same-phase retries
+ok 19 - primary action carry-over guard blocks only fast phase changes and permits same-phase retries
+  ---
+  duration_ms: 0.110458
+  type: 'test'
+  ...
+# Subtest: Practice operation notice mapping remains one family-neutral interpretation
+ok 20 - Practice operation notice mapping remains one family-neutral interpretation
+  ---
+  duration_ms: 0.163833
+  type: 'test'
+  ...
+# Subtest: Durable recovery notices stay learner-facing in English and Polish
+ok 21 - Durable recovery notices stay learner-facing in English and Polish
+  ---
+  duration_ms: 1.537667
+  type: 'test'
+  ...
+# Subtest: Premium session preparation failures map to localized next steps
+ok 22 - Premium session preparation failures map to localized next steps
+  ---
+  duration_ms: 0.750542
+  type: 'test'
+  ...
+# Subtest: Practice local choice selection survives only the same editable occurrence
+ok 23 - Practice local choice selection survives only the same editable occurrence
+  ---
+  duration_ms: 0.321
+  type: 'test'
+  ...
+# Subtest: Scoped local response preserves all authored control types for the same editable occurrence
+ok 24 - Scoped local response preserves all authored control types for the same editable occurrence
+  ---
+  duration_ms: 0.083334
+  type: 'test'
+  ...
+# Subtest: Scoped local response resets when the session or occurrence identity changes
+ok 25 - Scoped local response resets when the session or occurrence identity changes
+  ---
+  duration_ms: 0.045083
+  type: 'test'
+  ...
+# Subtest: Scoped durable response is authoritative over an unsent local response
+ok 26 - Scoped durable response is authoritative over an unsent local response
+  ---
+  duration_ms: 0.043375
+  type: 'test'
+  ...
+# Subtest: Practice durable choice response wins and response-less locked state clears
+ok 27 - Practice durable choice response wins and response-less locked state clears
+  ---
+  duration_ms: 0.042958
+  type: 'test'
+  ...
+# Subtest: Practice response renderer consumes application feedback states without scoring in UI
+ok 28 - Practice response renderer consumes application feedback states without scoring in UI
+  ---
+  duration_ms: 0.116875
+  type: 'test'
+  ...
+# Subtest: Single-select feedback projects selected-correct and every remaining disabled state
+ok 29 - Single-select feedback projects selected-correct and every remaining disabled state
+  ---
+  duration_ms: 0.048084
+  type: 'test'
+  ...
+# Subtest: The visible ordering is a complete response before the learner moves an element
+ok 30 - The visible ordering is a complete response before the learner moves an element
+  ---
+  duration_ms: 0.147375
+  type: 'test'
+  ...
+# Subtest: Practice feedback labels distinguish selection from correctness
+ok 31 - Practice feedback labels distinguish selection from correctness
+  ---
+  duration_ms: 0.044875
+  type: 'test'
+  ...
+# Subtest: Practice checked semantics include only answers the learner selected
+ok 32 - Practice checked semantics include only answers the learner selected
+  ---
+  duration_ms: 5.250958
+  type: 'test'
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 32
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 575.515042

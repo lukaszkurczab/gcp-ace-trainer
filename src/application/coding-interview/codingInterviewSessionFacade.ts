@@ -41,8 +41,7 @@ export type AlgorithmsPracticeProjection = Readonly<{
     reason: string;
     details: Question["feedback"]["details"];
     sources?: readonly CanonicalSourceLink[];
-    wrongOptionExplanations: readonly Readonly<{ optionId: string; text: string }>[];
-    omittedCorrectOptionExplanations: readonly Readonly<{ optionId: string; text: string }>[];
+    messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[];
     controls: readonly Readonly<{ id: string; state: "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" }> [];
   }> | null;
   response: Readonly<{ source: "local" | "committed" | "materialized"; value: CanonicalQuestionResponse }> | null;
@@ -158,7 +157,7 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
   const attempt = materializedAttempt ?? committedAttempt;
   const response = (attempt?.response ?? null) as CanonicalQuestionResponse | null;
   const feedback = attempt && feedbackIsAvailableDuringPractice(session)
-    ? { ...composeCanonicalFeedback(question, response!), sources: projectCanonicalSourceLinks(question), wrongOptionExplanations: Object.freeze([]), omittedCorrectOptionExplanations: Object.freeze([]), controls: projectCanonicalChoiceFeedbackControls(question, response!) }
+    ? { ...composeCanonicalFeedback(question, response!), sources: projectCanonicalSourceLinks(question), controls: projectCanonicalChoiceFeedbackControls(question, response!) }
     : null;
   const [operation, time] = await Promise.all([
     lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),

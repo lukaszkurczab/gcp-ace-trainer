@@ -35,7 +35,8 @@ export function buildCanonicalInteractionViewModel(question: Question, response:
 }
 
 export function composeCanonicalFeedback(question: Question, response: CanonicalQuestionResponse) {
-  return Object.freeze({ correctness: scoreCanonicalQuestion(question, response).kind, reason: question.feedback.reason, details: question.feedback.details });
+  const messages = projectCanonicalChoiceFeedbackMessages(question, response);
+  return Object.freeze({ correctness: scoreCanonicalQuestion(question, response).kind, reason: question.feedback.reason, details: question.feedback.details, ...(messages === undefined ? {} : { messages }) });
 }
 
 export type CanonicalChoiceFeedbackState = "correct" | "incorrect" | "omitted_correct" | "neutral";
@@ -56,4 +57,14 @@ export function projectCanonicalChoiceFeedbackControls(question: Question, respo
       ? correct.has(option.optionId) ? "correct" as const : "incorrect" as const
       : correct.has(option.optionId) ? "omitted_correct" as const : "neutral" as const,
   })));
+}
+
+/** Selects authored choice messages using the same stable-ID states exposed to answer controls. */
+export function projectCanonicalChoiceFeedbackMessages(question: Question, response: CanonicalQuestionResponse): readonly Readonly<{ kind: string; targetId: string; text: string }>[] | undefined {
+  if ((question.interaction.type !== "choice_single" && question.interaction.type !== "choice_multiple") || !question.feedback.messages) return undefined;
+  const states = new Map(projectCanonicalChoiceFeedbackControls(question, response).map((control) => [control.id, control.state]));
+  return Object.freeze(question.feedback.messages.filter((message) =>
+    (message.kind === "wrong_option" && states.get(message.targetId) === "incorrect") ||
+    (message.kind === "omitted_option" && states.get(message.targetId) === "omitted_correct"),
+  ));
 }

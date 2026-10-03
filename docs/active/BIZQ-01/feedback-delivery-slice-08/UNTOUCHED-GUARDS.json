@@ -1,0 +1,6 @@
+{
+  "src/features/practice/practiceSessionPresentation.ts": "9f415ca46ac12a09df54cdbb9df4e45592f3bfe87504deea360308e6870f9f99",
+  "src/application/trainingSessions/sessionDurability.ts": "dd989565a67ed89bc108e4b477c82b05dcc09efeb074d8abc84cf2d5a7770a33",
+  "src/application/learningMutations/journaledSessionLifecycle.test.ts": "cc8a76d276509d8ee9e5d6390ad2aa293926f509c1761ad18dfd61869044d098",
+  "src/features/practice/PracticeSessionSurface.tsx": "5262a0c2a1e4be5c6d68fc707b90de60b82435f15aef08263800c05674f03a1e"
+}
