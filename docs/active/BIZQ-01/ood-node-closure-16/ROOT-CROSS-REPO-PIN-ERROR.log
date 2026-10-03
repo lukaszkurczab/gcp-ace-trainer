@@ -19,10 +19,10 @@ not ok 2 - bundled canonical release matches the current producer builder
   error: |-
     current content checkout must match its independently resolved SHA
     + actual - expected
-    
+
     + 'c2112775a1a9e8173202b921c027b9b43f754d74'
     - 'c211277d924b9601d94846025f827a736f59e08e'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'c211277d924b9601d94846025f827a736f59e08e'
@@ -47,10 +47,10 @@ not ok 3 - current canonical builder preserves the ODK-096 inventory and approve
   error: |-
     current content checkout must match its independently resolved SHA
     + actual - expected
-    
+
     + 'c2112775a1a9e8173202b921c027b9b43f754d74'
     - 'c211277d924b9601d94846025f827a736f59e08e'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'c211277d924b9601d94846025f827a736f59e08e'

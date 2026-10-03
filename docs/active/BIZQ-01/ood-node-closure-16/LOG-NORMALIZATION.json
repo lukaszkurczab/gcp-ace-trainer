@@ -1,0 +1,23 @@
+{
+  "reason": "raw diagnostic whitespace caught during staged diffcheck; forward correction before push; no verification claim based on failed diffcheck",
+  "logs": [
+    {
+      "path": "ROOT-CONSUMER-RED.log",
+      "beforeSha256": "b82db258438ab3c9f364507e19b9dd941629f6a05532e2c7a874dad7782a8f88",
+      "afterSha256": "a5284632628f28ecfdb58979a414dfb0848d4ddd6ff33e7952033d1b03933e81",
+      "operation": "trailing whitespace and trailing empty lines only, diagnostic tokens unchanged"
+    },
+    {
+      "path": "ROOT-CROSS-REPO-PIN-ERROR.log",
+      "beforeSha256": "ed1f53ac411ba985c4343c9c0a17cf578838810dfb0d1f29f4d16b4d11d4b2f4",
+      "afterSha256": "20173fba81c494f0e4c2a5b3eee04c42d1ff8dab0f8e3ad92eafa394659f49ff",
+      "operation": "trailing whitespace and trailing empty lines only, diagnostic tokens unchanged"
+    },
+    {
+      "path": "ROOT-TYPECHECK.log",
+      "beforeSha256": "22c83f1ac25b854ee6b451e80ec133d2e6b804f4f4a61055e5624328bff86ab3",
+      "afterSha256": "35bcf25cc4f04a4a9d0dbce3a28e166befebdebb85bbf87095b907f5500349e3",
+      "operation": "trailing whitespace and trailing empty lines only, diagnostic tokens unchanged"
+    }
+  ]
+}
