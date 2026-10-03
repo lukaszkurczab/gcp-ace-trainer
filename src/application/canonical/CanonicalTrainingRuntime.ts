@@ -106,11 +106,11 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
           ? retainReviewQueueEntryIdentity(existing, { ...existing, dueAt: addDaysIso(input.now, 1), lastReviewedAt: input.now, persistent: true, reasons: [result.kind], consecutiveAfterDueSuccesses: 0, sourceAttemptId: attempt.id, sourceSessionId: attempt.sessionId })
           : { id: `review:${attempt.id}`, trackId: input.session.trackId, sourceAttemptId: attempt.id, sourceSessionId: input.session.id, sourceItem: occurrence.item, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs, reasons: [result.kind], dueAt: addDaysIso(input.now, 1), createdAt: input.now, consecutiveAfterDueSuccesses: 0, persistent: true };
         reviewMutations.push({ kind: "upsert", entry, transitionAttemptId: attempt.id });
-      } else if (existing && Date.parse(input.now) >= Date.parse(existing.dueAt) && !(existing.persistent && existing.sourceSessionId === attempt.sessionId)) {
+      } else if (existing && Date.parse(attempt.answeredAt) >= Date.parse(existing.dueAt) && !(existing.persistent && existing.sourceSessionId === attempt.sessionId)) {
         const successes = existing.consecutiveAfterDueSuccesses + 1;
         reviewMutations.push(successes >= 2
           ? { kind: "remove", entry: existing, transitionAttemptId: attempt.id }
-          : { kind: "upsert", entry: retainReviewQueueEntryIdentity(existing, { ...existing, consecutiveAfterDueSuccesses: successes, lastReviewedAt: input.now }), transitionAttemptId: attempt.id });
+          : { kind: "upsert", entry: retainReviewQueueEntryIdentity(existing, { ...existing, consecutiveAfterDueSuccesses: successes, lastReviewedAt: attempt.answeredAt }), transitionAttemptId: attempt.id });
       }
     }
     const answeredOccurrenceIds = attempts.map((attempt) => attempt.occurrenceId);

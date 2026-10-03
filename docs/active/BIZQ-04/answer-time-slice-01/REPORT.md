@@ -1,0 +1,13 @@
+# BIZQ-04 — recorded answer time01
+
+The current GCP simulation incorrectly resolved an older persistent review: a correct answer recorded at09:59, due at10:00 with one prior success, finalized at10:05. Root and independent worker reproduced the wrong remove through real canonical runtime and journal-backed commit before changing production (root-red.log / actual-red.log). Initial GREEN exposed only an assertion comparing optional undefined with canonical JSON omission; corrected wire assertion preserves the scored result.
+
+## Change and acceptance
+Only two expressions in CanonicalTrainingRuntime.finalizeSimulation changed: correct-review qualification uses canonical attempt.answeredAt with inclusive >=dueAt; an eligible first-success update records lastReviewedAt from that same answer fact. Existing review identity, exact reference/same-session exclusion, dueAt, success counter rules, attempts/results/scoring, failure branches and journal writes remain. No replaced path or new production abstraction/import/store. Parent docs04 and17 received recorded-fact requirements before production; their actual hashes are in CONTRACT-HASHES.json, outside all four Git repositories.
+
+NO-TOOLS independent Luna High design PASS WITH GAPS minimum.88 and root minimum.88 preceded production. Root final actual catalog/runtime/repos/journal tests36/36 PASS (focused10 plus adjacent26), including before/equal/after ×counter0/1, same-session exclusion, canonical persisted attempt and draft-removal interruption followed by twice replay. recovery:check, typecheck, content boundary, runtime privacy boundary and scoped production diff-check PASS. Independent Luna High final PASS: focused10/10, adjacent26/26, typecheck and scoped diff-check; acceptance is recorded in QA.md; executor reporting alone is not acceptance.
+
+## Limits and next step
+Draft.updatedAt is one existing aggregate timestamp; no per-occurrence precision, historical rewrite or schema migration is claimed. Existing first-success dueAt remains unchanged: positive spacing requires an approved family/mode policy, not an inferred7-day default. Eligibility ownership, due_queue source scope and full BIZQ-04/native readiness remain open. No simulator, VoiceOver, process, service, Premium, reminders, content admission, publication or production purchase changes.
+
+Home08 pushed1a CI37096108113 passed content inputs/candidate/prebuild/inventory/typecheck and the cross-repo job, but full QA failed16 tests because backend sibling checkout was absent. This is a separate CI-input slice; current review tests do not establish global CI acceptance. Ordinary push of this independently accepted slice is authorized; observe its actual CI, then repair only the proven missing backend QA input.
