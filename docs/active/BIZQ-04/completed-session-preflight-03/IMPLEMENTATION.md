@@ -11,7 +11,7 @@ Changed owned files:
 
 Verification run from the repository root:
 
-- `node --import tsx --test src/application/coding-interview/codingInterviewCompletedResultIntegrity.test.ts src/application/coding-interview/codingInterviewSimulationResult.integration.test.ts` — passed, 13 tests. Covers valid completed practice, completed conditional reinsertion, the existing real 40-item Mock result path, the existing abandoned-summary path with no read writes, source-session orphan/duplicate/missing attempts, scorer mismatch, wrong family/session/time/coverage/counts/points, invalid response, track/mode/item/artifact mismatch, unrelated-session attempts, and no storage mutation on unavailable projections.
+- `node --import tsx --test src/application/coding-interview/codingInterviewCompletedResultIntegrity.test.ts src/application/coding-interview/codingInterviewSimulationResult.integration.test.ts` — passed, 14 tests. Covers valid completed practice, completed conditional reinsertion, the real 40-item Mock result path while exact content validation is deliberately pending, the existing abandoned-summary path with no read writes, source-session orphan/duplicate/missing attempts, scorer mismatch, wrong family/session/time/coverage/counts/points, invalid response, track/mode/item/artifact mismatch, unrelated-session attempts, and no storage mutation on unavailable projections.
 - `npm run typecheck` — passed.
 - `npm run validate:content-boundary` — passed.
 - `npm run validate:runtime-privacy-boundary` — passed.

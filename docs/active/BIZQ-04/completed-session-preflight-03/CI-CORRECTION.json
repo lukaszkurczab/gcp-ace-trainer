@@ -1,0 +1,30 @@
+{
+  "failedRun": 37118318254,
+  "failedAppCommit": "03cf9a8360824001cfb3971cdcbad95cd1f7a1af",
+  "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37118318254",
+  "counts": {
+    "tests": 1769,
+    "pass": 1764,
+    "fail": 1,
+    "skipped": 4
+  },
+  "failedStage": "Recovery QA gate / full baseline",
+  "cause": "One obsolete source assertion demanded the removed async unverified feedback join; production still awaits exact completed-result validation.",
+  "safeEvidenceLines": [
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T11:04:47.6983534Z not ok 1486 - Interview Simulation result reads stay pending until the verified 40-item projection",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T11:04:47.6986115Z     The input did not match the regular expression /feedbackItems: await completedFeedbackItems\\(session, attempts\\.value\\)/. Input:",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T11:04:58.5707594Z # tests 1769",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T11:04:58.5708107Z # pass 1764",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T11:04:58.5708315Z # fail 1",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T11:04:58.5708662Z # skipped 4"
+  ],
+  "rawFailedLogSha256": "4097cba6d48bf5249074f91bb6cef41c646f365c26fbf3d7a820ab378d95dba4",
+  "priorPreflightFailure": {
+    "run": 37117138223,
+    "commit": "2e2f9fe7624042675d72ef94814c66199407e8aa",
+    "cause": "Root versioned probe TS2339 optionId callback narrowing.",
+    "fixCommit": "03cf9a8360824001cfb3971cdcbad95cd1f7a1af"
+  },
+  "changedProduction": false,
+  "facadeSha256": "2ecce1bd61921aa62a0753f324dd89dc139d44dd7f39864d79fd0b1e43919553"
+}

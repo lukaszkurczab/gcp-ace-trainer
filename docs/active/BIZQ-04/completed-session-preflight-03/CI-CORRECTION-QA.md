@@ -1,0 +1,3 @@
+# Independent Luna High narrow CI-correction review
+
+PASS. Stable production facade hash remains2ecce1bd…19553, so previous core acceptance applies. Reviewer independently ran integrity + loading ownership36/36 PASS, typecheck exit0 and scoped diff check clean. Actual finalized40 Mock pending test delegates the real exact resolver behind a promise barrier, proves pending/no writes until validation finishes, then40 rows/exact answered partition/no writes. Finally releases and restores the method. Updated source assertions use awaited integrity followed by validated questions/attempts handoff; other loading/profile/40 guards retained. Test-only correction, no new gate or production change.

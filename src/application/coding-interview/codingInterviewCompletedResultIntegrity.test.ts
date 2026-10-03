@@ -11,6 +11,8 @@ import {
   getAlgorithmsPracticeResultProjection,
   getAlgorithmsPracticeReviewProjection,
   getAlgorithmsPracticeSummaryProjection,
+  finalizeAlgorithmsSimulation,
+  saveAlgorithmsSimulationResponseAndContinue,
   startAlgorithmsSession,
   submitAlgorithmsPracticeResponse,
 } from "./codingInterviewSessionFacade";
@@ -129,6 +131,58 @@ test("abandoned Coding summary keeps its separate existing projection and perfor
   assert.deepEqual(summary.feedbackItems, []);
   assert.equal(summary.score, null);
   assert.deepEqual(storage.snapshot(), stableSnapshot);
+});
+
+test("completed Mock result stays pending until exact saved content validation finishes", async () => {
+  const storage = installMemoryStorage();
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const mockSessionId = "completed-mock-integrity-pending";
+  composeTrainingLifecycleUseCases({ ...dependencies, sessionIds: { create: async () => mockSessionId } });
+  const prepared = await startAlgorithmsSession({
+    modeId: "coding-interview-simulation",
+    requestedLength: 40,
+    scope: { simulationProfileId: "algorithms-interview-simulation-v1" },
+    source: "completed-result-integrity-pending-test",
+  });
+  const first = prepared.session.itemOrder[0]!;
+  const question = await contentPackageRuntimeOwner.resolveItem(first.item);
+  await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: first.occurrenceId, response: correctResponse(question) });
+  await finalizeAlgorithmsSimulation();
+  const stableSnapshot = storage.snapshot();
+
+  let markEntered!: () => void;
+  const entered = new Promise<void>((resolve) => { markEntered = resolve; });
+  let release!: () => void;
+  const barrier = new Promise<void>((resolve) => { release = resolve; });
+  const originalResolver = contentPackageRuntimeOwner.resolveExactArtifact;
+  contentPackageRuntimeOwner.resolveExactArtifact = async function (input) {
+    markEntered();
+    await barrier;
+    return originalResolver.call(contentPackageRuntimeOwner, input);
+  };
+  try {
+    let settled = false;
+    const pendingProjection = getAlgorithmsPracticeResultProjection(mockSessionId).then((projection) => {
+      settled = true;
+      return projection;
+    });
+    await entered;
+    await Promise.resolve();
+    assert.equal(settled, false);
+    assert.deepEqual(storage.snapshot(), stableSnapshot);
+
+    release();
+    const projection = await pendingProjection;
+    assert.equal(projection.completionKind, "completed");
+    assert.equal(projection.totalOccurrences, 40);
+    assert.equal(projection.feedbackItems.length, 40);
+    assert.deepEqual(projection.answeredOccurrenceIds, [first.occurrenceId]);
+    assert.deepEqual(projection.unansweredOccurrenceIds, prepared.session.itemOrder.slice(1).map((item) => item.occurrenceId));
+    assert.deepEqual(storage.snapshot(), stableSnapshot);
+  } finally {
+    release();
+    contentPackageRuntimeOwner.resolveExactArtifact = originalResolver;
+  }
 });
 
 test("completed result rejects a source-session attempt outside the saved occurrence plan", async () => {

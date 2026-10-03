@@ -1,0 +1,160 @@
+TAP version 13
+# Subtest: the loading-state inventory stays complete as pending surfaces evolve
+ok 1 - the loading-state inventory stays complete as pending surfaces evolve
+  ---
+  duration_ms: 8.896791
+  type: 'test'
+  ...
+# Subtest: LoadingState is the compact accessible generic pending status
+ok 2 - LoadingState is the compact accessible generic pending status
+  ---
+  duration_ms: 0.328958
+  type: 'test'
+  ...
+# Subtest: EmptyState is the centered retained-content/unavailable status primitive
+ok 3 - EmptyState is the centered retained-content/unavailable status primitive
+  ---
+  duration_ms: 0.136083
+  type: 'test'
+  ...
+# Subtest: exactly the one remaining generic pending branch uses LoadingState
+ok 4 - exactly the one remaining generic pending branch uses LoadingState
+  ---
+  duration_ms: 5.772125
+  type: 'test'
+  ...
+# Subtest: C1 screens own local review and exam loading geometry
+ok 5 - C1 screens own local review and exam loading geometry
+  ---
+  duration_ms: 0.208333
+  type: 'test'
+  ...
+# Subtest: bootstrap, roadmap, and setup own their phase or screen loading geometry
+ok 6 - bootstrap, roadmap, and setup own their phase or screen loading geometry
+  ---
+  duration_ms: 0.853
+  type: 'test'
+  ...
+# Subtest: Home shell owns tab-specific glass loading geometry and keeps navigation usable
+ok 7 - Home shell owns tab-specific glass loading geometry and keeps navigation usable
+  ---
+  duration_ms: 0.694375
+  type: 'test'
+  ...
+# Subtest: Practice Hub keeps its local pending geometry while the scoped read model owns state
+ok 8 - Practice Hub keeps its local pending geometry while the scoped read model owns state
+  ---
+  duration_ms: 0.300458
+  type: 'test'
+  ...
+# Subtest: specialized practice sessions share one neutral question and response loading skeleton
+ok 9 - specialized practice sessions share one neutral question and response loading skeleton
+  ---
+  duration_ms: 0.422833
+  type: 'test'
+  ...
+# Subtest: Activity owns its glass loading skeleton
+ok 10 - Activity owns its glass loading skeleton
+  ---
+  duration_ms: 0.519958
+  type: 'test'
+  ...
+# Subtest: Coding Interview scope owns its glass loading skeleton
+ok 11 - Coding Interview scope owns its glass loading skeleton
+  ---
+  duration_ms: 0.1815
+  type: 'test'
+  ...
+# Subtest: exam review owns its glass loading skeleton
+ok 12 - exam review owns its glass loading skeleton
+  ---
+  duration_ms: 0.100333
+  type: 'test'
+  ...
+# Subtest: exam result owns its glass loading skeleton
+ok 13 - exam result owns its glass loading skeleton
+  ---
+  duration_ms: 0.229792
+  type: 'test'
+  ...
+# Subtest: coding practice result owns its glass loading skeleton
+ok 14 - coding practice result owns its glass loading skeleton
+  ---
+  duration_ms: 0.2155
+  type: 'test'
+  ...
+# Subtest: mistakes review owns its glass loading skeleton
+ok 15 - mistakes review owns its glass loading skeleton
+  ---
+  duration_ms: 0.211125
+  type: 'test'
+  ...
+# Subtest: SkeletonShape owns the shared clipped glass primitive
+ok 16 - SkeletonShape owns the shared clipped glass primitive
+  ---
+  duration_ms: 0.17875
+  type: 'test'
+  ...
+# Subtest: Skeleton glass motion uses one native driver loop and resets on lifecycle changes
+ok 17 - Skeleton glass motion uses one native driver loop and resets on lifecycle changes
+  ---
+  duration_ms: 0.147541
+  type: 'test'
+  ...
+# Subtest: Skeleton glass motion stays static while Reduce Motion is unresolved or fails
+ok 18 - Skeleton glass motion stays static while Reduce Motion is unresolved or fails
+  ---
+  duration_ms: 0.087292
+  type: 'test'
+  ...
+# Subtest: pending data is distinct from true empty and onboarding outcomes
+ok 19 - pending data is distinct from true empty and onboarding outcomes
+  ---
+  duration_ms: 0.317959
+  type: 'test'
+  ...
+# Subtest: the six read owners end rejected reads in explicit unavailable EmptyStates
+ok 20 - the six read owners end rejected reads in explicit unavailable EmptyStates
+  ---
+  duration_ms: 0.549958
+  type: 'test'
+  ...
+# Subtest: scoped practice reads honor explicit route identity and only load reviews on Hub
+ok 21 - scoped practice reads honor explicit route identity and only load reviews on Hub
+  ---
+  duration_ms: 0.3495
+  type: 'test'
+  ...
+# Subtest: route-keyed read states block A under B and publish only their captured request
+ok 22 - route-keyed read states block A under B and publish only their captured request
+  ---
+  duration_ms: 0.123875
+  type: 'test'
+  ...
+# Subtest: queue reads clear stale resolved data before pending or unavailable
+ok 23 - queue reads clear stale resolved data before pending or unavailable
+  ---
+  duration_ms: 0.1045
+  type: 'test'
+  ...
+# Subtest: specialized session preparation stays local while completion uses the generic status
+ok 24 - specialized session preparation stays local while completion uses the generic status
+  ---
+  duration_ms: 0.57325
+  type: 'test'
+  ...
+# Subtest: Interview Simulation result reads stay pending until the verified 40-item projection
+ok 25 - Interview Simulation result reads stay pending until the verified 40-item projection
+  ---
+  duration_ms: 0.196292
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 317.184959

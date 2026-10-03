@@ -528,6 +528,7 @@ test("Interview Simulation result reads stay pending until the verified 40-item 
   assert.match(review, /outcome === "unanswered" \? "Unanswered"/);
   assert.match(review, /ROUTES\.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY/);
   assert.match(facade, /async function validateCodingSimulationResult/);
-  assert.match(facade, /feedbackItems: await completedFeedbackItems\(session, attempts\.value\)/);
+  assert.match(facade, /integrity = await validateCompletedCodingResult\(session, result, attempts\.value\)/);
+  assert.match(facade, /feedbackItems: completedFeedbackItems\(session, integrity\.questions, integrity\.attemptsByOccurrenceId\)/);
   assert.match(facade, /session\.modeId === ALGORITHM_MODE_IDS\.interviewSimulation\) await validateCodingSimulationResult/);
 });
