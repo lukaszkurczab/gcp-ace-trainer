@@ -1,0 +1,18 @@
+{
+  "commit": "6a6de487c3228b5370d321b0803a4532d8197e01",
+  "run": 37119944684,
+  "conclusion": "success",
+  "recovery": {
+    "tests": 1770,
+    "pass": 1766,
+    "fail": 0,
+    "skipped": 4
+  },
+  "crossRepo": {
+    "tests": 3,
+    "pass": 3,
+    "fail": 0
+  },
+  "rawLogSha256": "7c0fb4bc9980bc65dd7b32dd2397513efd80a5fe32fead23b596b1d163de6703",
+  "noDeployment": true
+}

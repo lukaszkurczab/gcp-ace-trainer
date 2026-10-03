@@ -1,0 +1,29 @@
+{
+  "source": "actual pinned GCP package + production coordinator + private MemoryKeyValueStorage/default persisted goal",
+  "kind": "ready",
+  "mode": "certification-diagnostic-baseline",
+  "slots": [
+    {
+      "day": "mon",
+      "localTime": "18:00",
+      "sessionLength": 40
+    },
+    {
+      "day": "wed",
+      "localTime": "18:00",
+      "sessionLength": 40
+    },
+    {
+      "day": "sat",
+      "localTime": "18:00",
+      "sessionLength": 40
+    }
+  ],
+  "target": {
+    "kind": "open_ended"
+  },
+  "completionRule": null,
+  "writesOnlyPrivateFixture": true,
+  "deviceDataMutation": false,
+  "policyDecisionPending": "diagnostic once then practice versus practice from start"
+}

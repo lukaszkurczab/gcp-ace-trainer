@@ -1,0 +1,5 @@
+# Independent read-only preflight — Luna High
+
+/root/bizq_delivery gpt-6-luna high independently inspected actual coordinator/generator/goal/question/productMode contracts, UI and tests, resolved current GCP locally. No time budgets/costs or global question-to-minute conversion currently exist; target is question-count capacity, not shown minute feasibility. Actual GCP no rule means dated unknown/no-date open-ended. No fabricated current falseclaim.
+
+CONFIRMED separate defect: modes[0] selects fixed40 diagnostic for recurring plan; diagnostic precedes focus-practice10 in real mode config. No canonical goal→recurring mode policy. Diagnostic-once then practice and practice-from-start have different learner outcomes; do not sort modes or invent replacement silently. Actual policy decision pending PO. Existing source paths: application/learningPlan/LearningPlanProposalCoordinator.ts, domain/learning/learningPlanProposalGenerator.ts, domain/goals/goalContracts.ts, content/canonical/questionTypes.ts and productModeConfig.ts. No edits by reviewer.
