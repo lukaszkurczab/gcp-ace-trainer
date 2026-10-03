@@ -1,0 +1,38 @@
+{
+  "sourceCommit": "0a4b8cbcf51b40f0c33b6c699606e2c85998705a",
+  "contentHeadAtAdmission": "4ff3eb23550ce506561ba8ddb5b36931e4601cc3",
+  "appCommit": "61225d14e3930361dfcde3945057c88c2204b08e",
+  "results": [
+    {
+      "command": [
+        "npm",
+        "run",
+        "candidate:admission-v3",
+        "--",
+        "BIZQ-01/ADMISSION"
+      ],
+      "exitCode": 0,
+      "log": "ROOT-ADMISSION.log",
+      "tail": "\n> patternly-content@1.0.0 candidate:admission-v3\n> node scripts/review/candidate-admission-v3.mjs BIZQ-01/ADMISSION\n\nADMISSION_READY candidateId=e7fbd82b4afab18994e406175feb442842ccf06b41be3efec0ae92cf2d394fbe; boundary=local_verified_artifacts_no_deployment\nnpm notice\nnpm notice New major version of npm available! 10.9.8 -> 12.2.0\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0\nnpm notice To update run: npm install -g npm@12.2.0\nnpm notice\n"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "candidate:release-gate-v2"
+      ],
+      "exitCode": 0,
+      "log": "ROOT-RELEASE-GATE.log",
+      "tail": "\n> patternly-content@1.0.0 candidate:release-gate-v2\n> node scripts/review/candidate-release-gate-v2.mjs\n\nRELEASE_READY candidateId=e7fbd82b4afab18994e406175feb442842ccf06b41be3efec0ae92cf2d394fbe\n"
+    },
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "log": "ROOT-CANONICAL-FINAL.log",
+      "tail": ".\n# Subtest: rejects symlinked canonical paths before following them\nok 107 - rejects symlinked canonical paths before following them\n  ---\n  duration_ms: 422.906\n  type: 'test'\n  ...\n# Subtest: rejects a content root reached through a symlinked ancestor\nok 108 - rejects a content root reached through a symlinked ancestor\n  ---\n  duration_ms: 412.217292\n  type: 'test'\n  ...\n# Subtest: has no dependency on ephemeral output or the migration writer\nok 109 - has no dependency on ephemeral output or the migration writer\n  ---\n  duration_ms: 0.451208\n  type: 'test'\n  ...\n1..109\n# tests 109\n# suites 0\n# pass 109\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 25361.889666\nnpm notice\nnpm notice New major version of npm available! 10.9.8 -> 12.2.0\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0\nnpm notice To update run: npm install -g npm@12.2.0\nnpm notice\nnpm notice\nnpm notice New major version of npm available! 10.9.8 -> 12.2.0\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0\nnpm notice To update run: npm install -g npm@12.2.0\nnpm notice\n"
+    }
+  ]
+}
