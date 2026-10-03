@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "path": "patternly/docs/active/BIZQ-06/keyboard-text-preflight-03/screenshots/1440-correct.png",
+      "sha256": "78fb1a30ab16e8fa65194c0f136f605001c6e9a6a9f2232d31b11c68b8701f58"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-06/keyboard-text-preflight-03/screenshots/1440-keyboard-focus.png",
+      "sha256": "3a077eec836ae60405a1dad1594a27d5a8a3e546518ac2b20e41796071b99093"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-06/keyboard-text-preflight-03/screenshots/1440-neutral.png",
+      "sha256": "d9014053a3e103b10a86447a9e08574a5a6a47c641697cbbb48d5ba652c47fb6"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-06/keyboard-text-preflight-03/screenshots/1440-wrong-details.png",
+      "sha256": "ec55d9c35c38cddf430ec574ed586deec02d2743d5949dd7c08bbffbdf7ae991"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-06/keyboard-text-preflight-03/screenshots/390-correct.png",
+      "sha256": "26faa6edb75db90936879daee3bf8be8c95f093b2e6ae5c674674f5370991743"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-06/keyboard-text-preflight-03/screenshots/390-keyboard-focus.png",
+      "sha256": "7e79bb955d44dc22781bcafd16152ee945b4e552aa8712be3ef34ab58f49720f"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-06/keyboard-text-preflight-03/screenshots/390-neutral.png",
+      "sha256": "e7957a69200b4731bc3227c8c4d0f6c01f2048ecaece9afdbe7193210f64cf88"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-06/keyboard-text-preflight-03/screenshots/390-wrong-details.png",
+      "sha256": "59c064ee12f828464be8bea17201abaec08bbd5214f8fd01a66a257aa6ca40f4"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-06/keyboard-text-preflight-03/screenshots/zoom200-details.png",
+      "sha256": "e1d13c93f13f2ed23c546966a45b7836e44f5d0fd16554e1b34f1660ff51c0e3"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-06/keyboard-text-preflight-03/screenshots/zoom200-metrics.json",
+      "sha256": "230c835ef055ecf30a53c89010203e103b8dcb90e712311531aa214ac43b1da4"
+    },
+    {
+      "path": "patternly-web/styles.css",
+      "sha256": "fbb7ffa20def0a459821348888911ef898451d1910dc4329e5bf5e35f81654b8"
+    },
+    {
+      "path": "patternly-web/scripts/demo-site.browser.test.mjs",
+      "sha256": "51f948af7a9ed4861607ad11179355f21118e885495545d95140b7f8fd174750"
+    }
+  ]
+}
