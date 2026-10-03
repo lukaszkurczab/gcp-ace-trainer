@@ -1,0 +1,106 @@
+{
+  "scope": "read-only external audit reconciliation; no changes to foreign evidence and no admission authority",
+  "auditFile": "../patternly-content/evidence/business-quality/full-content-audit-2026-10-02/reviews/ood.jsonl",
+  "auditFileSha256": "22f1ddd314bef717298bff54759a9a76a32b1567610788834c8927d08740e8c6",
+  "currentSourceSha256": "46e72823ccc000657a4070193c4ef0bf7604f6508d9432208237471395657379",
+  "matchingCurrentUnitItems": [
+    {
+      "itemId": "ood-n01-b01-i003",
+      "auditItemSha256": "3cb652f28dd9a7c02fa0c0d8415454b6ef21787a7fc1ac5d007421853517fdb9",
+      "currentItemSha256": "3cb652f28dd9a7c02fa0c0d8415454b6ef21787a7fc1ac5d007421853517fdb9",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i004",
+      "auditItemSha256": "7e6b94d2442cd3d7dcb29f023acb67316670ee65ebe73aa5e7e310ab816f2836",
+      "currentItemSha256": "7e6b94d2442cd3d7dcb29f023acb67316670ee65ebe73aa5e7e310ab816f2836",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i005",
+      "auditItemSha256": "fe420efcbd401e15c29de9f194f4df95d10a037a4e9902a6206715fb05823cd2",
+      "currentItemSha256": "fe420efcbd401e15c29de9f194f4df95d10a037a4e9902a6206715fb05823cd2",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i006",
+      "auditItemSha256": "a1b4b753164c22164b91d4f4856d22cb107371fbe39b3799d4ea5d5e49cdb712",
+      "currentItemSha256": "a1b4b753164c22164b91d4f4856d22cb107371fbe39b3799d4ea5d5e49cdb712",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i007",
+      "auditItemSha256": "e37a039523b4435feb626c7661e9aec74845fb79c9e336fcab49282c23887d1f",
+      "currentItemSha256": "e37a039523b4435feb626c7661e9aec74845fb79c9e336fcab49282c23887d1f",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i008",
+      "auditItemSha256": "85710d6876d977007228d7e2fcf2046bc293cd8dce38034a152a71a475d8b1d5",
+      "currentItemSha256": "85710d6876d977007228d7e2fcf2046bc293cd8dce38034a152a71a475d8b1d5",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i009",
+      "auditItemSha256": "c0ff4a715ec33fb8fcc649fc78984ad63386aa33720a95fed94611d739fb7eae",
+      "currentItemSha256": "c0ff4a715ec33fb8fcc649fc78984ad63386aa33720a95fed94611d739fb7eae",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i010",
+      "auditItemSha256": "2182f6e52cb0f452145ad3d75420211efa14e8947219ae7d2a59f1bec2aed671",
+      "currentItemSha256": "2182f6e52cb0f452145ad3d75420211efa14e8947219ae7d2a59f1bec2aed671",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i011",
+      "auditItemSha256": "c7883dd2e3fc7db4bd33f7cd132a6ca96b992b38a203cd403fed6d7db3463338",
+      "currentItemSha256": "c7883dd2e3fc7db4bd33f7cd132a6ca96b992b38a203cd403fed6d7db3463338",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i012",
+      "auditItemSha256": "3c91da00beae139da7167d58577edb177c33b7bca139b99483308083e425c5a4",
+      "currentItemSha256": "3c91da00beae139da7167d58577edb177c33b7bca139b99483308083e425c5a4",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i013",
+      "auditItemSha256": "7fee962f02b6028d34038abb275e71bfdbd204f2c7d21dc86ce3dd85dda09271",
+      "currentItemSha256": "7fee962f02b6028d34038abb275e71bfdbd204f2c7d21dc86ce3dd85dda09271",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i014",
+      "auditItemSha256": "59dbd71c6c9eb012a879145d5c34e59677bef9bf4f616f73cca7677a44d2b7bd",
+      "currentItemSha256": "59dbd71c6c9eb012a879145d5c34e59677bef9bf4f616f73cca7677a44d2b7bd",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i015",
+      "auditItemSha256": "47072e1962749ced7c5cd75d4dbe6d1afdd59ca34877cac7ef863b09af8f710a",
+      "currentItemSha256": "47072e1962749ced7c5cd75d4dbe6d1afdd59ca34877cac7ef863b09af8f710a",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i016",
+      "auditItemSha256": "2a0e1d0713d2d9ab92eadeecb5812c0fb8be9bf47cff994dec60425db27b3f8f",
+      "currentItemSha256": "2a0e1d0713d2d9ab92eadeecb5812c0fb8be9bf47cff994dec60425db27b3f8f",
+      "hashMatches": true
+    },
+    {
+      "itemId": "ood-n01-b01-i017",
+      "auditItemSha256": "560ce39b885018592dbd05f0be063babf143dfa84c7e96a4a0c652b8108bba0a",
+      "currentItemSha256": "560ce39b885018592dbd05f0be063babf143dfa84c7e96a4a0c652b8108bba0a",
+      "hashMatches": true
+    }
+  ],
+  "specificDiscrepancy": {
+    "itemId": "ood-n01-b01-i003",
+    "dimension": "reason",
+    "externalEvidence": "Reason repeats ‘Choose one synchronization owner or immutable transfer model’ and a generic authority heuristic, then merely appends the review cue (a new caller without changing existing behavior is introduced.). It does not show how that choice enforces ‘skills and availability constraints hold for both assignments’ for shift manager swaps volunteer assignments or state an invariant boundary.",
+    "actualReason": "Treat the actor's goal and the system boundary as separate design inputs before naming collaborators. That keeps the decisive design property inside an owner with the information and authority to enforce it, even as a new caller without changing existing behavior is introduced.",
+    "resolution": "Actual source wins. The quoted synchronization rule is absent despite matching item hash; do not reuse that quotation as evidence. Root independently reproduces malformed wrong-option text, generic ownership alternatives and the missing concrete actor-goal-subject decision, retaining the known repair requirement."
+  },
+  "accepted018019": "Different new identities; old i001/i002 verdicts do not apply to accepted replacements."
+}

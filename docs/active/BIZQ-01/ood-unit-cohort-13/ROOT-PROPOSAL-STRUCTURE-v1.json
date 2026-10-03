@@ -1,0 +1,84 @@
+{
+  "scope": "actual producer validator/scorer on proposed objects, not semantic or runtime admission",
+  "validatedQuestions": 15,
+  "scoredOptions": 60,
+  "results": [
+    {
+      "questionId": "ood-n01-b01-i020",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i021",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i022",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i023",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i024",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i025",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i026",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i027",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i028",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i029",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i030",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i031",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i032",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i033",
+      "schemaValid": true,
+      "scoredOptions": 4
+    },
+    {
+      "questionId": "ood-n01-b01-i034",
+      "schemaValid": true,
+      "scoredOptions": 4
+    }
+  ],
+  "proposalSha256": "8545db0756d07894c8881119a429a174be934891fb997356c3f5c1437ccbfa00",
+  "semanticAcceptance": "FAIL, SEMANTIC-QA-v1.md"
+}

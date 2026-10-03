@@ -1,0 +1,5 @@
+# Independent actual producer review — PASS WITH GAPS (before negative-matrix completion)
+
+Reviewer /root/batch_design_review, gpt-6-luna high, read-only. Fixed15 verifier binds current source/track, current authored objects, exact source12 reconstruction and unchanged12→11 chain. Semantic V3 PASS applies. Root actual targeted29/29, nine-track build, eight-other-byte preservation and immutable11/12 proof preservation inspected.
+
+Hold producer acceptance: actual13 dispatch lacks direct negatives for missing11/12, added/duplicated replacements, tampered currentQuestion/current020 source, and extra source item. These are required by TESTS.md, not a new product/release gate. Earlier11/12 historical-fixture negatives do not establish13 dispatch behavior. Complete focused cases in existing13 fixture, retain safeguards, then independent reviewer inspects actual results. No production defect found so far; no checkpoint/candidate/admission yet. Broader full-BIZQ/native/provider gaps remain distinct.

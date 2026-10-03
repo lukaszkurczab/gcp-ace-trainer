@@ -1,0 +1,1144 @@
+{
+  "sourcePath": "patternly-content/content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B01.json",
+  "sourceSha256": "46e72823ccc000657a4070193c4ef0bf7604f6508d9432208237471395657379",
+  "stage": "authored proposal; not canonical source, admission, or semantic acceptance",
+  "unit": "OOD-N01-B01",
+  "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+  "preservation": {
+    "questionCount": 17,
+    "preservedIds": [
+      "ood-n01-b01-i018",
+      "ood-n01-b01-i019"
+    ],
+    "replacementMap": "old IDs i003–i017 map in order to new IDs i020–i034",
+    "contract": "Keep the existing choice_single interaction, exact_selected_set scoring, question fields, mental unit, node, and track. The changed decisions receive new question and option IDs. This proposal does not authorize any source, proof, runtime, content-version, release, or publishing change."
+  },
+  "replacementRationale": "Current i003–i017 share the same generic owner/invariant answer and implausible alternatives. Each proposed object instead tests an independently stated actor, goal, use-case outcome, or subject-boundary decision, with distractors naming a specific competing interpretation. The primary source is the normative OMG UML 2.5.1 specification already cited by accepted unit items; scenario guarantees are stated as authored facts, not attributed to UML.",
+  "replacements": [
+    {
+      "oldId": "ood-n01-b01-i003",
+      "newId": "ood-n01-b01-i020",
+      "learningObjective": "Distinguish the initiating business role from the individual person/account that happens to occupy that role.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "coordinator_exchange_subject"
+        },
+        "constraints": [
+          "Dana is acting with the shift-coordinator responsibility in this request.",
+          "RosterDesk is the system being modeled; its validation and schedule store are inside that subject.",
+          "A rejected exchange leaves both assignments unchanged."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "Model the responsibility that initiates the request, not the identity-provider record or the people whose data changes. The use case ends with the roster service reporting completion or a conflict.",
+          "details": {
+            "mechanismOrProperty": "An actor represents an external role interacting with the subject. A person may occupy that role, while an account or interface is only one means of interaction.",
+            "scenarioApplication": "The shift coordinator asks RosterDesk for a two-person exchange. RosterDesk validates both assignments and returns a result; both assignments stay intact on conflict.",
+            "boundaryOrTradeoff": "Calling the role the actor keeps the use case stable if Dana is replaced by another coordinator or signs in through a different client.",
+            "errorCorrection": "The volunteers are affected parties, the checker is an internal collaborator, and the account is session identity. None is the business role that submits this request.",
+            "transfer": "When a person, account, role, and UI appear together, name the external responsibility that asks the modeled subject for a result; record identity and channel details separately if the design needs them."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "dana_account_actor",
+              "text": "The account identifies a session, not the business responsibility that requests the schedule outcome; the screen is a channel, not the stated RosterDesk subject."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "volunteers_actor",
+              "text": "The prompt says the coordinator submits the request and that the volunteers are affected; it gives them no initiating role in this use case."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "qualification_checker_actor",
+              "text": "Validation is an internal step in RosterDesk’s response. It does not replace the coordinator’s request or the completed-exchange goal."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "coordinator_exchange_subject",
+              "text": "Actor: the shift coordinator role. Goal: exchange the two shifts and learn whether the exchange completed. Subject: RosterDesk."
+            },
+            {
+              "optionId": "dana_account_actor",
+              "text": "Actor: Dana’s signed-in account. Goal: use the schedule screen. Subject: the mobile application shell."
+            },
+            {
+              "optionId": "volunteers_actor",
+              "text": "Actor: both volunteers. Goal: exchange their own shifts. Subject: the schedule store."
+            },
+            {
+              "optionId": "qualification_checker_actor",
+              "text": "Actor: the qualification checker. Goal: validate availability. Subject: RosterDesk."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "At a volunteer exchange, Dana is signed in as the evening shift coordinator. She asks RosterDesk to exchange two named volunteers’ shifts. RosterDesk checks both volunteers’ qualifications and availability, then reports either a completed exchange or a specific conflict without changing either assignment. The volunteer is affected by the schedule but does not issue this request. Which model best captures the primary actor, goal, and subject?",
+        "questionId": "ood-n01-b01-i020",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i004",
+      "newId": "ood-n01-b01-i021",
+      "learningObjective": "Choose the subject boundary at the service whose externally requested behavior is modeled, rather than at an internal collaborator.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "cartographer_review_routreview"
+        },
+        "constraints": [
+          "The cartographer submits an edit and observes acceptance or the conflict requiring review.",
+          "RouteReview owns the externally visible review behavior.",
+          "The calculator and repository are private parts of RouteReview."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "Use the cartographer’s requested result to set the use-case scope. RouteReview is the subject; the calculator and repository participate internally but do not become separate subjects just because their names describe components.",
+          "details": {
+            "mechanismOrProperty": "A use case describes behavior offered by a subject to an external actor. Subject scope is a modeling choice that should match the behavior the actor can request and observe.",
+            "scenarioApplication": "RouteReview receives the edit, checks conflicts through internal collaborators, and returns acceptance or a segment to resolve.",
+            "boundaryOrTradeoff": "A component-level subject could be useful for a separate internal design model, but it would answer a different question than the city-facing route-review use case.",
+            "errorCorrection": "The diff calculator does not return the complete result, the repository does not make the conflict decision, and route geometry has no initiating role.",
+            "transfer": "Start from the external request and returned outcome; then include the internal work within the named subject unless the scenario explicitly models a collaborator as an independently offered system."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "calculator_subject",
+              "text": "The calculator performs one internal operation and cannot fulfill the cartographer’s stated request or return the whole review outcome."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "repository_subject",
+              "text": "Storage is one implementation responsibility. The prompt’s use case includes conflict evaluation and a review result, so the repository is too narrow a subject."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "accepted_geometry_actor",
+              "text": "The route is the data being protected, not an external role that asks the service to act."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "cartographer_review_routreview",
+              "text": "Actor: cartographer. Goal: obtain a decision on the submitted route edit. Subject: RouteReview."
+            },
+            {
+              "optionId": "calculator_subject",
+              "text": "Actor: cartographer. Goal: calculate geometric differences. Subject: the diff calculator."
+            },
+            {
+              "optionId": "repository_subject",
+              "text": "Actor: cartographer. Goal: store revised geometry. Subject: the geometry repository."
+            },
+            {
+              "optionId": "accepted_geometry_actor",
+              "text": "Actor: the accepted route. Goal: reject edits that differ. Subject: RouteReview."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A city map editor lets a cartographer submit an offline route edit. RouteReview accepts the edit only when no unresolved conflict would overwrite accepted geometry; otherwise it returns the conflicting segment for review. Inside RouteReview are a diff calculator and a geometry repository. Neither is callable by the cartographer. Which actor-goal-subject model describes “Review an offline route edit”?",
+        "questionId": "ood-n01-b01-i021",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i005",
+      "newId": "ood-n01-b01-i022",
+      "learningObjective": "Separate the actor that requests a service from the beneficiary who receives its value.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "clerk_requests_interlibrary"
+        },
+        "constraints": [
+          "The clerk initiates the system interaction.",
+          "The patron benefits, but has no interaction path in LendingExchange.",
+          "The partner library’s answer is represented as arrival or refusal."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "The request made within this subject is the clerk’s interlibrary transaction. The patron is its beneficiary and the partner is a responding organization; neither fact changes who initiates this particular use case.",
+          "details": {
+            "mechanismOrProperty": "Actor classification follows interaction with the modeled subject, not who ultimately benefits from the result.",
+            "scenarioApplication": "The clerk supplies a valid patron account and asks LendingExchange to request the title. The service reports arrival or refusal.",
+            "boundaryOrTradeoff": "If a separate patron-facing portal were introduced, patrons could be actors in that portal’s use cases. This prompt gives them no such path.",
+            "errorCorrection": "A beneficiary can motivate a request without being the actor. The partner participates in the broader transaction but is not the initiator for the specified clerk-facing service.",
+            "transfer": "For service requests made on another person’s behalf, identify the role that actually interacts with the subject and keep the beneficiary visible as a domain participant."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "patron_requests_book",
+              "text": "The patron’s broader need motivates the transaction, but the prompt explicitly assigns the system request to the clerk and names LendingExchange as the modeled service."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "partner_library_primary",
+              "text": "The partner supplies a response, but the use case in this system is initiated by the clerk; a partner-side lending workflow would have a different subject boundary."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "book_as_actor",
+              "text": "The book is the requested resource, not a role that interacts with the exchange service."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "clerk_requests_interlibrary",
+              "text": "Actor: interlibrary desk clerk. Goal: request the title for the validated patron and learn the partner’s result. Subject: LendingExchange."
+            },
+            {
+              "optionId": "patron_requests_book",
+              "text": "Actor: patron. Goal: obtain the rare title. Subject: the library catalog."
+            },
+            {
+              "optionId": "partner_library_primary",
+              "text": "Actor: partner library. Goal: decide whether to lend. Subject: LendingExchange."
+            },
+            {
+              "optionId": "book_as_actor",
+              "text": "Actor: requested book. Goal: travel to the patron. Subject: LendingExchange."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A public library’s interlibrary desk can request a rare book from a partner library for a patron. The desk clerk initiates the request and supplies a validated patron account. The patron receives the book but cannot contact the partner through this system. LendingExchange tracks the request and reports arrival or refusal to the clerk. Who is the primary actor, what is the goal, and what is the subject?",
+        "questionId": "ood-n01-b01-i022",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i006",
+      "newId": "ood-n01-b01-i023",
+      "learningObjective": "Express a use case as the actor’s meaningful outcome rather than a sequence of interface operations.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "end_subscription_at_boundary"
+        },
+        "constraints": [
+          "PlanDesk is the subject and the subscriber is the role requesting a business outcome.",
+          "A successful request has an effective date; access remains available until then.",
+          "The cancel button is only one interaction channel."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "Name the result the subscriber requests: scheduled termination with a confirmed effective date. The button press is merely one way to send that request, and the paid-through access rule makes immediate termination incorrect.",
+          "details": {
+            "mechanismOrProperty": "A use case should capture externally meaningful behavior and its result. Interface choreography can change without changing the actor’s goal.",
+            "scenarioApplication": "PlanDesk records the end at renewal and returns its date; it does not revoke current paid access when the subscriber submits the request.",
+            "boundaryOrTradeoff": "A separate refund workflow may exist under other terms, but it is outside this request because no refund condition appears here.",
+            "errorCorrection": "“Click Cancel” describes an input event, immediate disable contradicts the access constraint, and refund invents an unrequested outcome.",
+            "transfer": "Replace button-centered phrasing with the result the external role needs, then retain timing and state constraints that define successful completion."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "click_cancel",
+              "text": "A UI action is an interaction step, not the result the subscriber needs; it also cannot distinguish a completed request from an unsubmitted click."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "disable_access_now",
+              "text": "The scenario explicitly preserves access through the paid-through date, so immediate disabling violates a stated condition."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "process_refund",
+              "text": "No refund is requested or promised. Adding it changes the business outcome and the subject boundary."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "end_subscription_at_boundary",
+              "text": "Actor goal: end the subscription at the next renewal boundary and receive its effective date. Subject: PlanDesk."
+            },
+            {
+              "optionId": "click_cancel",
+              "text": "Actor goal: press the Cancel button. Subject: the cancellation screen."
+            },
+            {
+              "optionId": "disable_access_now",
+              "text": "Actor goal: lose access immediately. Subject: the account database."
+            },
+            {
+              "optionId": "process_refund",
+              "text": "Actor goal: receive a refund for the current term. Subject: billing provider."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A subscriber asks PlanDesk to end a subscription at the already-paid renewal boundary. The service confirms the effective end date and keeps access through that date. The subscriber can change their mind before the boundary; a click on “Cancel” alone does not mean the request completed. What should the primary use case capture?",
+        "questionId": "ood-n01-b01-i023",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i007",
+      "newId": "ood-n01-b01-i024",
+      "learningObjective": "Classify an external scheduler as an actor when it sends a signal across the stated subject boundary.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "calendar_service_actor"
+        },
+        "constraints": [
+          "CalendarService runs outside PermitOffice and sends it an event.",
+          "The clerk reads a later summary but does not initiate the midnight operation.",
+          "The deadline event is a message crossing the subject boundary."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "The relevant signal crosses from CalendarService into PermitOffice. That makes the external service the interacting actor for this system operation; midnight explains when the event occurs but does not send it.",
+          "details": {
+            "mechanismOrProperty": "An actor may be an external system, and actor status is relative to the subject boundary. A clock condition alone is not a participant.",
+            "scenarioApplication": "CalendarService sends the deadline message; PermitOffice handles it and later exposes the result to a clerk.",
+            "boundaryOrTradeoff": "If PermitOffice owned its own timer, the timer would be an internal mechanism and the use-case trigger would need to be described differently.",
+            "errorCorrection": "The clerk reads a summary, the timestamp is not a communicating role, and the deadline checker belongs to the external CalendarService.",
+            "transfer": "Trace the actual message sender across the chosen system boundary instead of turning timestamps or internal jobs into actors."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "midnight_actor",
+              "text": "A time is a condition for the event, not the external system interacting with PermitOffice; the stated message comes from CalendarService."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "permit_clerk_actor",
+              "text": "The clerk receives the later report. The prompt says the clerk does not initiate the automated midnight operation."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "deadline_checker_actor",
+              "text": "The deadline checker is described as part of CalendarService’s internal work, not an external participant of PermitOffice."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "calendar_service_actor",
+              "text": "Actor: CalendarService, an external system role. Goal: notify PermitOffice that the deadline has arrived. Subject: PermitOffice."
+            },
+            {
+              "optionId": "midnight_actor",
+              "text": "Actor: midnight. Goal: expire permits. Subject: PermitOffice."
+            },
+            {
+              "optionId": "permit_clerk_actor",
+              "text": "Actor: permit clerk. Goal: mark applications overdue at midnight. Subject: PermitOffice."
+            },
+            {
+              "optionId": "deadline_checker_actor",
+              "text": "Actor: PermitOffice’s deadline checker. Goal: send a deadline message. Subject: PermitOffice."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "In the overnight permit system, PermitOffice is the subject. A separate city CalendarService sends PermitOffice a “deadline reached” message at midnight. PermitOffice then marks overdue applications and reports a processing summary to the clerk the next morning. The clock and deadline calculation are internal to CalendarService; PermitOffice has no internal midnight timer. Which model identifies the initiator of “Mark applications overdue”?",
+        "questionId": "ood-n01-b01-i024",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i008",
+      "newId": "ood-n01-b01-i025",
+      "learningObjective": "Choose the actor by the external role interacting with a system, not by the human operator behind an external organization.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "gateway_reconcile_actor"
+        },
+        "constraints": [
+          "The gateway is outside ReconcileHub and exchanges the batch and result with it.",
+          "Human bank staff are not part of the described interaction.",
+          "ReconcileHub owns matching and the reconciliation result."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "The actor is the bank gateway because that external system sends data to and receives results from ReconcileHub. The human organization behind it does not interact directly in the described boundary.",
+          "details": {
+            "mechanismOrProperty": "External systems can play actor roles. The physical or organizational owner of an integration is not automatically an actor in every system boundary.",
+            "scenarioApplication": "The gateway submits a clearing batch, and ReconcileHub returns matched entries or unresolved rows.",
+            "boundaryOrTradeoff": "If staff later upload batches through a console, that would introduce a separate staff-facing interaction path and could add another actor.",
+            "errorCorrection": "Staff do not use this subject directly, the matching engine is internal, and a record has no role or communication intent.",
+            "transfer": "Draw the boundary first, then identify which external role or system actually exchanges information with the subject."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "bank_staff_actor",
+              "text": "The staff may own the broader business process, but the prompt excludes their direct interaction with this subject."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "matching_engine_actor",
+              "text": "The matching engine is internal behavior of ReconcileHub; it is not the external sender of the batch."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "clearing_record_actor",
+              "text": "Records are input data, not external roles that communicate with the subject."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "gateway_reconcile_actor",
+              "text": "Actor: bank settlement gateway. Goal: submit clearing records and receive reconciliation results. Subject: ReconcileHub."
+            },
+            {
+              "optionId": "bank_staff_actor",
+              "text": "Actor: bank operations staff. Goal: reconcile payments. Subject: ReconcileHub."
+            },
+            {
+              "optionId": "matching_engine_actor",
+              "text": "Actor: matching engine. Goal: compare payment entries. Subject: ReconcileHub."
+            },
+            {
+              "optionId": "clearing_record_actor",
+              "text": "Actor: each clearing record. Goal: be matched. Subject: ReconcileHub."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A bank settlement gateway sends clearing records to ReconcileHub each evening. ReconcileHub checks the records against posted payments and returns either a matched batch or a list of unresolved entries. Bank staff do not log into ReconcileHub or send these records manually. Which is the actor for “Reconcile settlement batch” in ReconcileHub?",
+        "questionId": "ood-n01-b01-i025",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i009",
+      "newId": "ood-n01-b01-i026",
+      "learningObjective": "Keep an external payment provider outside the booking subject when modeling a customer-facing booking outcome.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "traveler_book_staybook"
+        },
+        "constraints": [
+          "The traveler requests a reservation; StayBook is the subject and PayLine is an external supporting participant.",
+          "A booking succeeds only after authorization.",
+          "PayLine does not own StayBook’s reservation record."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "The traveler asks StayBook to book a room. PayLine is an external participant whose authorization affects success, but that dependency does not move the traveler-facing use case’s subject to PayLine.",
+          "details": {
+            "mechanismOrProperty": "A subject offers the behavior named by the use case. Collaborating external services may affect a path without becoming the subject of the primary actor’s goal.",
+            "scenarioApplication": "StayBook checks availability, requests authorization, and creates a reservation only after approval; a decline produces no reservation.",
+            "boundaryOrTradeoff": "A separate payment authorization use case could be modeled from PayLine’s API perspective if that system’s offered behavior were the topic.",
+            "errorCorrection": "The traveler wants a confirmed room, not authorization alone or a database write. PayLine returns a decision but does not own the booking record.",
+            "transfer": "State whose behavior the question models. Then show external dependencies as collaborators or supporting actors when they participate across that boundary."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "payline_subject",
+              "text": "This describes PayLine’s service, not the traveler-facing reservation behavior that StayBook offers."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "reservation_store_subject",
+              "text": "A stored row is an implementation result; availability, authorization, and confirmation comprise the requested booking behavior."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "payment_approval_is_booking",
+              "text": "PayLine authorizes a charge but does not create StayBook’s reservation; approval is a necessary condition, not the actor’s full goal."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "traveler_book_staybook",
+              "text": "Actor: traveler. Goal: reserve a room and receive confirmation. Subject: StayBook; PayLine participates across the boundary."
+            },
+            {
+              "optionId": "payline_subject",
+              "text": "Actor: traveler. Goal: authorize a payment. Subject: PayLine."
+            },
+            {
+              "optionId": "reservation_store_subject",
+              "text": "Actor: traveler. Goal: write a reservation row. Subject: StayBook’s reservation store."
+            },
+            {
+              "optionId": "payment_approval_is_booking",
+              "text": "Actor: PayLine. Goal: create a reservation after charging. Subject: StayBook."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A traveler uses StayBook to reserve a room. StayBook owns availability checks and reservation confirmation. It calls PayLine, an independently operated payment service, to authorize the charge; PayLine returns approval or decline. A declined authorization means no reservation is created. Which model fits “Book a room” from the traveler’s perspective?",
+        "questionId": "ood-n01-b01-i026",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i010",
+      "newId": "ood-n01-b01-i027",
+      "learningObjective": "Select the use-case goal that expresses a user-visible domain result rather than a hidden implementation action.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "issue_certified_copy"
+        },
+        "constraints": [
+          "ArchiveVault is the subject and the archivist is its external user.",
+          "The retrieval link is withheld until seal validation succeeds.",
+          "The requested deliverable is a certified copy."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "“Issue a certified digital copy” captures the deliverable and its required validation. The renderer and seal calculation support that outcome but are not separate goals for this actor in the described request.",
+          "details": {
+            "mechanismOrProperty": "Use cases capture externally observable value with relevant success conditions, not every internal procedure used to produce it.",
+            "scenarioApplication": "ArchiveVault renders and seals the record, verifies the seal, then returns the retrieval link.",
+            "boundaryOrTradeoff": "Internal cryptographic operations may deserve their own component-level specification, but that would not replace the archivist-facing service goal.",
+            "errorCorrection": "A PDF may be uncertified, a digest is not the requested record, and a premature link contradicts the validation constraint.",
+            "transfer": "Name the domain deliverable first, then retain the condition that determines when the subject may expose it."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "render_pdf",
+              "text": "Rendering produces bytes but does not establish the requested certification or deliver the verified copy."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "calculate_seal",
+              "text": "Seal calculation is an internal step; the archivist requests a certified record, not a digest value."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "get_any_link",
+              "text": "An immediate link would violate the stated validation condition and could expose an unverified copy."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "issue_certified_copy",
+              "text": "Archivist: obtain a certified digital copy and a retrieval link once its seal is verified. Subject: ArchiveVault."
+            },
+            {
+              "optionId": "render_pdf",
+              "text": "Archivist: render a PDF. Subject: the document renderer."
+            },
+            {
+              "optionId": "calculate_seal",
+              "text": "Archivist: calculate a seal digest. Subject: the cryptographic library."
+            },
+            {
+              "optionId": "get_any_link",
+              "text": "Archivist: receive a link immediately. Subject: ArchiveVault."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "An archivist asks ArchiveVault to issue a certified digital copy of a record. The copy must include a verification seal, and the archivist receives a retrieval link only after the seal is validated. Rendering bytes and calculating the seal are internal operations. What is the central actor goal?",
+        "questionId": "ood-n01-b01-i027",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i011",
+      "newId": "ood-n01-b01-i028",
+      "learningObjective": "Keep a person who operates a console distinct from an external organizational role that interacts with the modeled system.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "portlink_register_manifest"
+        },
+        "constraints": [
+          "PortLink is external to DockControl and sends the manifest for registration.",
+          "The clerk is a separate actor for a later discrepancy-resolution use case.",
+          "DockControl owns manifest validation and registration."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "For this narrowly scoped interaction, PortLink is the role crossing the DockControl boundary. The clerk is involved in a separate discrepancy workflow, so combining both interactions would blur the use-case objective.",
+          "details": {
+            "mechanismOrProperty": "An actor is a role external to a subject that interacts with it. Separate use cases can have different actors even when they belong to one end-to-end business process.",
+            "scenarioApplication": "PortLink delivers the manifest; DockControl validates and registers it. A clerk intervenes only if a discrepancy needs resolution.",
+            "boundaryOrTradeoff": "A broader “Manage vessel arrival” process might show both interactions, but the prompt deliberately isolates manifest receipt.",
+            "errorCorrection": "The clerk does not enter this manifest, the captain has no direct system interaction, and the document itself is not a communicating role.",
+            "transfer": "Use the interaction named in the question to choose actors; do not assume the person who appears somewhere in the surrounding workflow initiates every use case."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "clerk_register_manifest",
+              "text": "The clerk handles discrepancies, but the prompt says the external PortLink service delivers this manifest and scopes this use case to receipt."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "carrier_person_actor",
+              "text": "The carrier’s business activity motivates the data, but neither the captain nor the vessel sends this manifest directly to DockControl."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "manifest_actor",
+              "text": "The manifest is the exchanged data artifact; PortLink is the external participant that sends it."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "portlink_register_manifest",
+              "text": "Actor: PortLink. Goal: submit the carrier’s arrival manifest for registration. Subject: DockControl."
+            },
+            {
+              "optionId": "clerk_register_manifest",
+              "text": "Actor: clerk. Goal: enter the carrier’s manifest. Subject: DockControl."
+            },
+            {
+              "optionId": "carrier_person_actor",
+              "text": "Actor: carrier captain. Goal: dock the vessel. Subject: DockControl."
+            },
+            {
+              "optionId": "manifest_actor",
+              "text": "Actor: manifest document. Goal: register itself. Subject: DockControl."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A port authority clerk uses DockControl to register a vessel arrival. The vessel’s carrier has already sent an arrival manifest through an external PortLink service; DockControl imports it and asks the clerk only to resolve discrepancies. This use case concerns receipt of the manifest, not discrepancy handling. Which actor-goal-subject model applies?",
+        "questionId": "ood-n01-b01-i028",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i012",
+      "newId": "ood-n01-b01-i029",
+      "learningObjective": "Distinguish an external requester from the internal component that produces a requested domain artifact.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "registrar_transcript_request"
+        },
+        "constraints": [
+          "The registrar submits the request and observes issuance or pending-grade status.",
+          "RecordsDesk is the subject; its renderer is internal.",
+          "The student receives the transcript but has no direct interaction path here."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "The registrar asks RecordsDesk to issue an official artifact. The PDF renderer performs an internal step only after the posted-grade condition is met; the student remains the recipient rather than this use case’s actor.",
+          "details": {
+            "mechanismOrProperty": "Actor, recipient, and internal producer are different roles in a modeled interaction. Subject boundaries follow the offered behavior under discussion.",
+            "scenarioApplication": "RecordsDesk checks grade status, returns a blocking status when needed, and uses its renderer to produce the transcript when eligible.",
+            "boundaryOrTradeoff": "A student-facing self-service portal could define another transcript request use case with the student as actor.",
+            "errorCorrection": "The student has no request path, the renderer does not interact externally, and the grade store covers only a prerequisite check.",
+            "transfer": "Ask who requests the modeled behavior, who receives its output, and which collaborators operate behind the subject boundary."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "student_transcript_request",
+              "text": "The student benefits, but the prompt assigns the request and system interaction to the registrar."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "renderer_actor",
+              "text": "The renderer is internal to RecordsDesk and cannot request an official record or report pending-grade status to the registrar."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "grade_store_subject",
+              "text": "Grades are a precondition for issuance, not the requested subject behavior; the database cannot provide the full official transcript workflow."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "registrar_transcript_request",
+              "text": "Actor: registrar. Goal: obtain an official transcript for the student or learn what blocks issuance. Subject: RecordsDesk."
+            },
+            {
+              "optionId": "student_transcript_request",
+              "text": "Actor: student. Goal: download academic history. Subject: the student portal."
+            },
+            {
+              "optionId": "renderer_actor",
+              "text": "Actor: PDF renderer. Goal: create transcript files. Subject: RecordsDesk."
+            },
+            {
+              "optionId": "grade_store_subject",
+              "text": "Actor: registrar. Goal: inspect posted grades. Subject: the grade database."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A university’s RecordsDesk is the subject. A registrar requests an official transcript for a student and receives a status if required grades are still pending. RecordsDesk uses an internal PDF renderer after it confirms that all grades are posted. The student is the recipient but cannot request through this system. Which model describes “Issue official transcript”?",
+        "questionId": "ood-n01-b01-i029",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i013",
+      "newId": "ood-n01-b01-i030",
+      "learningObjective": "Identify the primary actor from the role whose goal the use case is scoped to, while recognizing a supporting external participant.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "dispatcher_publish_plan"
+        },
+        "constraints": [
+          "The dispatcher initiates publication and receives the revised plan.",
+          "SignalAuthority is external and supports the workflow with a capacity estimate.",
+          "RouteBoard is the subject that publishes the plan."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "The dispatcher’s goal determines the primary interaction: publish a revised plan. SignalAuthority remains visible as an external participant because it exchanges a capacity estimate, but its support does not make it the plan’s requester.",
+          "details": {
+            "mechanismOrProperty": "A use case can involve more than one actor. The primary actor is selected relative to the goal being modeled; supporting actors may provide services or information.",
+            "scenarioApplication": "RouteBoard uses SignalAuthority’s capacity estimate while preparing the dispatcher’s revised plan.",
+            "boundaryOrTradeoff": "A separate capacity-estimation use case, viewed from SignalAuthority’s subject boundary, could assign roles differently.",
+            "errorCorrection": "The authority answers rather than initiates publication; the closure is an event condition; RouteBoard is the subject, not an actor in its own use case.",
+            "transfer": "For multi-actor workflows, state whose goal this use case completes and retain other external roles that exchange information along the path."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "signal_authority_primary",
+              "text": "SignalAuthority supplies an estimate but does not request or own the published plan in this scenario."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "track_closure_actor",
+              "text": "The closure is a condition driving the request, not an interacting role that communicates with RouteBoard."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "routeboard_actor",
+              "text": "This reverses the modeled interaction: RouteBoard is the subject under discussion and requests information from an external participant."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "dispatcher_publish_plan",
+              "text": "Primary actor: rail dispatcher. Goal: publish a feasible revised plan for the closure. Subject: RouteBoard; SignalAuthority is a supporting actor."
+            },
+            {
+              "optionId": "signal_authority_primary",
+              "text": "Primary actor: SignalAuthority. Goal: publish the revised timetable. Subject: RouteBoard."
+            },
+            {
+              "optionId": "track_closure_actor",
+              "text": "Primary actor: the track closure. Goal: reroute trains. Subject: RouteBoard."
+            },
+            {
+              "optionId": "routeboard_actor",
+              "text": "Primary actor: RouteBoard. Goal: ask for capacity. Subject: SignalAuthority."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A rail dispatcher asks RouteBoard to publish a revised service plan after a track closure. RouteBoard requests a capacity estimate from an external SignalAuthority system and includes it in the plan. The authority does not ask RouteBoard to publish a plan; it answers the dispatcher’s planning request. Which model best describes “Publish revised service plan”?",
+        "questionId": "ood-n01-b01-i030",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i014",
+      "newId": "ood-n01-b01-i031",
+      "learningObjective": "Re-evaluate actor status when the modeled subject boundary changes, even if the external service name stays the same.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "boundary_relative_roles"
+        },
+        "constraints": [
+          "TaxQuote can be an actor in BookingProduct, then the subject in its own model; the merchant system is its external actor there.",
+          "Actor status is attached permanently to a service name.",
+          "ReservationCore remains the subject even when TaxQuote alone is selected for analysis."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "The same service can occupy different modeling roles under different subject boundaries. In the focused TaxQuote model, the merchant system interacts with TaxQuote from outside.",
+          "details": {
+            "mechanismOrProperty": "Actors are external to a subject and interact with it. Subject selection is relative to the model under consideration, not a permanent property of a component.",
+            "scenarioApplication": "In BookingProduct, TaxQuote is an external participant. In the TaxQuote-focused model, TaxQuote offers behavior to the merchant system.",
+            "boundaryOrTradeoff": "The broad product model preserves customer value across booking steps; the focused service model clarifies the tax-estimation contract.",
+            "errorCorrection": "“API” does not permanently mean actor, and a caller does not become internal merely because its request is machine-to-machine.",
+            "transfer": "Write down the current subject for each diagram or question before classifying its neighboring roles."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "service_name_fixed_actor",
+              "text": "An API can be an external actor in one model and the subject in another; the role follows the boundary, not the label “API.”"
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "merchant_inside_taxquote",
+              "text": "Sending a request across the selected subject boundary is evidence of an external participant, not internal membership."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "booking_product_still_subject",
+              "text": "The prompt changes the scope explicitly to TaxQuote itself; keeping the former subject ignores the revised modeling question."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "boundary_relative_roles",
+              "text": "Actor/subject labels depend on the chosen model boundary: TaxQuote is external to BookingProduct, but is the subject when its own behavior is modeled."
+            },
+            {
+              "optionId": "service_name_fixed_actor",
+              "text": "TaxQuote is always an actor because it is an API."
+            },
+            {
+              "optionId": "merchant_inside_taxquote",
+              "text": "The merchant system is internal to TaxQuote because it sends an API request."
+            },
+            {
+              "optionId": "booking_product_still_subject",
+              "text": "BookingProduct is still the subject because TaxQuote participates in its workflow."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A booking product contains ReservationCore and an independently operated TaxQuote API. In the full BookingProduct model, TaxQuote is called as an external service while a customer requests a priced reservation. A design exercise now models TaxQuote itself as the subject; a merchant system sends it a destination and receives a tax estimate. Which statement is correct for this revised model?",
+        "questionId": "ood-n01-b01-i031",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i015",
+      "newId": "ood-n01-b01-i032",
+      "learningObjective": "Model a policy-dependent request around the actor’s goal and stated decision outcome, not around an internal authorization mechanism.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "registrar_request_access"
+        },
+        "constraints": [
+          "The registrar requests a time-limited grant and receives either the grant or a specific unmet requirement.",
+          "The approval and training checks are internal facts evaluated by AccessDesk.",
+          "The conservator receives access but is not the requester in this described interaction."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "The use case should expose the registrar’s actual request and the decision AccessDesk returns. Approval and training are conditions for the result, not the goal themselves.",
+          "details": {
+            "mechanismOrProperty": "A use-case contract relates an external goal to observable outcomes and conditions. Internal policy inputs explain how the subject decides but should not replace the goal.",
+            "scenarioApplication": "AccessDesk grants access only when both current records are present; otherwise it reports the missing requirement and leaves access unchanged.",
+            "boundaryOrTradeoff": "A separate training-record query may exist, but it cannot fulfill the registrar’s temporary-access request on its own.",
+            "errorCorrection": "The conservator benefits but does not submit this request, a record is data rather than an actor, and checking one prerequisite is not the requested outcome.",
+            "transfer": "Keep the actor’s requested result central, then state each policy fact that changes the observable success or failure outcome."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "conservator_grants_self",
+              "text": "The conservator is the beneficiary, while the registrar is explicitly the requester in this AccessDesk interaction."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "approval_record_actor",
+              "text": "An approval record is evidence evaluated by the subject, not an external role interacting with it."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "check_training_only",
+              "text": "That narrows the request to one prerequisite and omits the actual grant decision and its second stated condition."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "registrar_request_access",
+              "text": "Actor: registrar. Goal: request temporary access for the conservator and learn whether it was granted. Subject: AccessDesk."
+            },
+            {
+              "optionId": "conservator_grants_self",
+              "text": "Actor: conservator. Goal: unlock the storage room. Subject: the lock controller."
+            },
+            {
+              "optionId": "approval_record_actor",
+              "text": "Actor: approval record. Goal: authorize entry. Subject: AccessDesk."
+            },
+            {
+              "optionId": "check_training_only",
+              "text": "Actor: registrar. Goal: inspect the training record. Subject: training database."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A museum registrar asks AccessDesk to grant a conservator temporary access to a storage room. The request is granted only when the registrar’s approval and the conservator’s training record are both current. If either check fails, AccessDesk reports which requirement is missing and grants no access. Which use-case model best states the registrar-facing interaction?",
+        "questionId": "ood-n01-b01-i032",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i016",
+      "newId": "ood-n01-b01-i033",
+      "learningObjective": "Keep a failed attempt as an alternate outcome of the same use case when it answers the same actor goal and leaves a defined recoverable state.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "reserve_with_alternate"
+        },
+        "constraints": [
+          "Reserve the requested slot, with either a committed reservation or an explicit unavailable result.",
+          "An unavailable result is a distinct goal because it is not success.",
+          "A reservation is successful when the request is accepted, before the slot is committed."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "The alternate result belongs in the reservation use case because it explains what the same request returns when the slot is no longer available. Acceptance before commit would not satisfy the explicit success condition.",
+          "details": {
+            "mechanismOrProperty": "A use case may describe alternate and exceptional outcomes of the actor’s goal. An unsuccessful path can still be part of the same goal when it resolves that request.",
+            "scenarioApplication": "SampleVault commits the slot if still free; otherwise it returns unavailable and creates no assignment, allowing the manager to retry.",
+            "boundaryOrTradeoff": "A separate availability query could answer a different question, but it would not replace the atomic reservation attempt described here.",
+            "errorCorrection": "An alternate outcome is not automatically a separate actor goal, request acceptance is not commit, and editing the database evades the subject behavior.",
+            "transfer": "Tie failure handling to the request that produced it; split it into a separate use case only when the actor has a distinct goal or interaction contract."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "unavailable_goal",
+              "text": "The unavailable result matters because it resolves the same reservation attempt and enables the manager to retry with another slot."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "accepted_request_success",
+              "text": "The prompt defines success at commit time and explicitly makes a competing reservation capable of defeating the request."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "manager_edits_database",
+              "text": "Directly editing storage bypasses the subject’s reservation decision and conflicts with the stated commit-time availability rule."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "reserve_with_alternate",
+              "text": "Actor goal: reserve a slot for the specimen. Subject: SampleVault. Alternate outcome: report unavailable without assigning it."
+            },
+            {
+              "optionId": "unavailable_goal",
+              "text": "Actor goal: learn that a slot is unavailable. Subject: SampleVault; reservation is a separate unrelated use case."
+            },
+            {
+              "optionId": "accepted_request_success",
+              "text": "Actor goal: submit a reservation request. Subject: SampleVault; commit can happen later without affecting success."
+            },
+            {
+              "optionId": "manager_edits_database",
+              "text": "Actor goal: inspect the store and mark a slot assigned. Subject: freezer database."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A laboratory manager asks SampleVault to reserve a freezer slot for a specimen. The slot must be unoccupied at commit time. If another reservation wins the race, SampleVault returns “slot unavailable” and leaves the specimen unassigned; the manager can choose another slot and submit again. Which use-case description best fits the stated contract?",
+        "questionId": "ood-n01-b01-i033",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    },
+    {
+      "oldId": "ood-n01-b01-i017",
+      "newId": "ood-n01-b01-i034",
+      "learningObjective": "Scope a use case to one coherent actor goal instead of bundling adjacent administrative capabilities into a feature list.",
+      "newQuestion": {
+        "answer": {
+          "type": "choice_single",
+          "optionId": "reschedule_appointment"
+        },
+        "constraints": [
+          "Reschedule the patient’s appointment, with the new time confirmed before the old booking is replaced.",
+          "VisitDesk is the subject and the receptionist initiates the request.",
+          "Payment and clinical-record work are outside the described goal."
+        ],
+        "difficulty": "intermediate_transfer",
+        "feedback": {
+          "reason": "Rescheduling is one coherent goal with a meaningful state transition: the replacement must be confirmed before the existing booking changes. The surrounding clinic capabilities do not belong in this interaction.",
+          "details": {
+            "mechanismOrProperty": "A use case is organized around an actor goal and observable result, rather than a broad inventory of features sharing a user or system.",
+            "scenarioApplication": "VisitDesk finds a replacement, confirms it, then updates the appointment and returns its details while preserving the old slot until confirmation.",
+            "boundaryOrTradeoff": "Insurance, payment, or clinical notes could be modeled in separate use cases if their own actor goals are in scope.",
+            "errorCorrection": "The feature bundle is too broad, releasing the old slot early violates the stated transition, and editing a row describes implementation rather than service behavior.",
+            "transfer": "Keep each use case centered on one actor outcome and include only adjacent behavior required to achieve that outcome safely."
+          },
+          "messages": [
+            {
+              "kind": "wrong_option",
+              "targetId": "manage_patient_everything",
+              "text": "This bundles neighboring responsibilities that the prompt excludes and obscures the single scheduling result under discussion."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "release_old_slot_first",
+              "text": "The prompt explicitly preserves the old booking until the replacement is confirmed; releasing it first can leave the patient without either time."
+            },
+            {
+              "kind": "wrong_option",
+              "targetId": "edit_calendar_row",
+              "text": "A database edit is an implementation operation and does not express the receptionist’s outcome or the confirmation boundary."
+            }
+          ],
+          "type": "choice_single"
+        },
+        "interaction": {
+          "type": "choice_single",
+          "scoringMethod": "exact_selected_set",
+          "options": [
+            {
+              "optionId": "reschedule_appointment",
+              "text": "Actor goal: reschedule one appointment and receive its confirmed details. Subject: VisitDesk. The old booking remains until replacement confirmation."
+            },
+            {
+              "optionId": "manage_patient_everything",
+              "text": "Actor goal: manage the patient, including appointment, insurance, payment, and clinical notes. Subject: the clinic system."
+            },
+            {
+              "optionId": "release_old_slot_first",
+              "text": "Actor goal: cancel the old booking, then search for another time. Subject: VisitDesk."
+            },
+            {
+              "optionId": "edit_calendar_row",
+              "text": "Actor goal: update a calendar record. Subject: appointment database."
+            }
+          ]
+        },
+        "mentalUnitId": "OOD-N01-B01",
+        "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+        "prompt": "A clinic receptionist uses VisitDesk to move one patient’s appointment to another available time. VisitDesk preserves the original booking unless the replacement time is confirmed and then returns the new appointment details. The receptionist does not edit insurance, collect payment, or update clinical notes in this interaction. What is the best scope for this use case?",
+        "questionId": "ood-n01-b01-i034",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ],
+        "trackId": "object-oriented-design-interview"
+      }
+    }
+  ]
+}

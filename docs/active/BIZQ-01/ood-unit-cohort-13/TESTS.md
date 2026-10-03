@@ -1,0 +1,13 @@
+# Exact changed behavior and verification scope
+
+Preflight uses the actual runtime catalog, not an inferred copy: ROOT-PREFLIGHT.json confirms15 source-equal eligible objects and malformed diagnostics. This does not prepare a Premium session.
+
+Producer ownership: content/object-oriented-design-interview/.../OOD-N01-B01.json, content/catalog.json, evidence/business-quality/bizq-01-ood-unit-cohort-13.json, scripts/content/verify-migration.mjs, tests/bizq01-ood-unit-cohort-13.test.mjs, existing migration/source11/source12/content-builder/ODK097 fixtures and canonical test registration where genuinely current-version-bound. Inspect exact references before updates. Immutable11/12 proof bytes/descriptors and frozen evidence stay unchanged.
+
+Checks: independently review all15 primary decisions/options/Reason/Details and cross-cohort distinctness; canonical schema and every answer score; exact current17→17, accepted018/019 objects and allother16062 unaffected objects; strict proof current/pred source hashes, old/new objects, exact15 membership, missing each required proof, tamper identities/current/old/unrelated item/pins/path/symlink. Current13 reconstructs byte-exact12 through private verified inputs, then unchanged12 reconstructs11; no public override. Earlier11/12 negative cases keep exact historical-generation fixtures rather than pretending current13 has only2 replacements. Full producer gate and all9 builder artifact parity for other8.
+
+Consumer ownership after source acceptance/build: generated OOD artifact/content-lock/release.lock, exactcandidate-pin assertions and new cohort regression; existing current12 consumer test remains meaningful for unchanged019. Source→app payload/options/authoreddiagnostics parity for every newID; direct memory Design runtime/journal/rebind and stale old pins reject without writes. Current memory probe may be generalized only to these fixed IDs/options and actual existing runtime, no selector or storage implementation changes.
+
+Then existing candidate/readiness/sync/exact runtime admission, provenance-only Coding/AWS web exporter, existing app required static/release/cross-repo and web local gates, independent actual acceptance and ordinary pushes. Matching prior UI/SDK proof reused only where byte/behavior/conditions match. Required native runner evidence remains distinct from memory tests; only the existing iPhone17 and authorized Premium path. Missing authorization/provider proof is not a reason to change Premium.
+
+Broader full BIZQ-01 semantic/render/native requirements are still open, maintained only in canonical queue. Tests are evidence for this cohort, not statistical proof of whole-bank educational quality.

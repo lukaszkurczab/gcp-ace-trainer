@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors
+ok 1 - validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors
+  ---
+  duration_ms: 1751.273334
+  type: 'test'
+  ...
+# Subtest: all fifteen new questions validate, score each option, and bind authored feedback to every distractor
+ok 2 - all fifteen new questions validate, score each option, and bind authored feedback to every distractor
+  ---
+  duration_ms: 1.71225
+  type: 'test'
+  ...
+# Subtest: requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence
+ok 3 - requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence
+  ---
+  duration_ms: 2140.840625
+  type: 'test'
+  ...
+# Subtest: source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership
+ok 4 - source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership
+  ---
+  duration_ms: 3951.062708
+  type: 'test'
+  ...
+# Subtest: rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths
+ok 5 - rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths
+  ---
+  duration_ms: 1307.714583
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9281.436875
