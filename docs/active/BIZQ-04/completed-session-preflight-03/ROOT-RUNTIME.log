@@ -1,0 +1,28 @@
+{
+  "outcome": "confirmed_projection_integrity_gap",
+  "injectedRecord": "shape-valid attempt in source session with out-of-plan occurrence",
+  "repositoryAccepted": true,
+  "projectionAccepted": true,
+  "hiddenExtraAttempt": "not-in-completed-source-plan",
+  "scope": "private memory fixture only; no production history changed"
+}
+{
+  "outcome": "confirmed_missing_capability",
+  "sourceSessionId": "bizq04-completed-source03-1",
+  "completed": true,
+  "totalOccurrences": 40,
+  "answered": 1,
+  "missed": 1,
+  "unanswered": 39,
+  "questionId": "alg-backtracking-base-contract-001",
+  "reviewPreparation": "rejected",
+  "reason": "Error: Canonical session_misses is unavailable without verified completed-session evidence.",
+  "reviewPreparationNoMutation": true,
+  "sourceHistoryPreserved": true,
+  "limits": [
+    "memory repositories",
+    "stub Premium authorizer",
+    "no native or provider proof",
+    "current request carries refs but no source-session identity"
+  ]
+}

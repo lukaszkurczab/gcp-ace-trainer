@@ -1,0 +1,10 @@
+{
+  "canonicalPath": "/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/17-training-runtime-and-interaction-spec.md",
+  "outsideFourGitRepositories": true,
+  "beforeSha256": "4dba1566d581bacd5d6d4188273657f5327055a57cc7050b4034392c2399013f",
+  "afterSha256": "f796b365bfbc16d82b5395d509a44a21ec86bd3a2adb2c29dc04ce8c7ace7c44",
+  "anchor": "- summary is not reconstructed from component state.",
+  "addedRequirement": "For the existing Coding completed result and answer-review queries, the application owner verifies the persisted completed session, canonical result and relevant attempts against the saved occurrence plan before publishing any feedback. Session/result identity, completion instant, Coding family, count and ordered answered/unanswered partition must agree. Every attempt belonging to that source session must join exactly one planned occurrence with matching track, mode and resolved content reference; duplicate, missing or out-of-plan attempts make the completed projection unavailable. Exact item content and the existing canonical scorer validate response completeness and stored result. Result counts and points must agree with these committed attempts using the existing answered-attempt denominator; unanswered items do not introduce a new points policy. Validation reuses the resolved content for feedback and performs no writes or replacement of history. Inconsistency returns the existing summary-unavailable state. This read contract does not grant completed-session selection, change abandoned-session summaries, or authorize a new runtime, policy, schema, admission or publication.",
+  "phase": "after independent proposal acceptance, before production implementation",
+  "task": "BIZQ-04/completed-result-integrity03"
+}

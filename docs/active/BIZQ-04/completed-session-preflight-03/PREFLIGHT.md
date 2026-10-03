@@ -1,0 +1,29 @@
+# BIZQ-04 — completed-session source preflight03
+
+Read-only production scope. The existing `session_misses` capability remains unavailable; this report does not accept an implementation or a new policy. The canonical working plan remains the only status queue.
+
+## Actual reproduction
+
+At app checkpoint `64b619fb1d74b839ab01c8ad9fc925f456979244`, the versioned [runtime probe](runtime-preflight.ts) used the actual composed lifecycle, canonical Coding artifact, memory repositories and mutation journal. It started the existing 40-question Coding Mock, durably submitted one authored wrong option, finalized the session, and read its existing completed result projection: one incorrect answered occurrence and 39 unanswered occurrences. The active session was cleared. Starting weak-area review with `session_misses` and the exact missed item ref then failed with `Canonical session_misses is unavailable without verified completed-session evidence`. The rejected preparation made no durable mutation and preserved sessions, attempts and reviews exactly. [Actual output](ROOT-RUNTIME.log).
+
+This reproduces a missing end-to-end capability, not a regression introduced by source11. The explicit rejection is the accepted guard from source02. Existing nine `CanonicalReviewSource.test.ts` cases pass on the current code, including due-only selection, no writes, invalid inputs and single-source defaults. The probe uses a stub Premium authorizer; it is not native/provider Premium evidence. Unanswered occurrences were not classified as mistakes by this probe; no new unanswered or eligibility policy is inferred.
+
+## Repository facts and implementation boundary
+
+- `codingInterviewContracts.ts` / `codingInterviewPreparationRequest.ts`: the preparation request carries selected refs and source but no completed source-session identity.
+- `codingInterviewSessionFacade.ts`: the existing completed result/review read path can resolve exact historical item content. `validateCodingSimulationResult` checks profile and coverage; `completedFeedbackItems` rejects duplicate occurrence attempts, but does not establish every attempt's item/session provenance, reject out-of-plan attempts, or verify the complete practice result. A projection name alone is insufficient proof of trusted completed evidence.
+- `trainingLifecycle/contracts.ts` and `TrainingLifecycleUseCases.startSession`: preparation currently receives attempts and reviews, not a completed source session/result. UI-supplied refs cannot become verified evidence by renaming a request field.
+- `CanonicalTrainingRuntime.prepare`: resolved mode capabilities distinguish `due_queue` and `committed_session_misses`; the explicit guard rejects the unsupported completed source before persistence.
+- `AlgorithmsPracticeSummaryScreen.tsx` presently offers answer review and return to practice; it does not start a session-misses review.
+
+A coherent implementation needs source-session identity, current-profile durable completion/result/attempt validation, exact artifact binding, family-owned selection and a learner entry path. It must preserve the existing active-session conflict, Premium admission, one lifecycle/journal, legal shortening and explicit unavailable states. Do not accept arbitrary route refs, union all historical misses, create a second runner, add a track-ID branch to the shared kernel, or infer a spacing policy from this preparation change.
+
+ARCH-01/02 own the neutral family port and eventual selection ownership; ARCH-05 owns broader summary integration. Their presence in the queue is not itself an approval gate. Before choosing an implementation slice, distinguish actual port/ownership needs from optional broader refactoring. Independent Luna High is investigating whether an existing-owner prerequisite can repair current completed review evidence without assuming that architecture work is already implemented. The bounded existing-owner completed-result integrity correction is now accepted by independent NO-TOOLS Luna High (minimum0.87); see BRIEFING.md and BRIEF-QA.md. It does not change selection ownership or complete session_misses.
+
+## Why this task is being investigated next
+
+After accepting and pushing the bounded OOD source11 correction, the controller reassessed all six BIZQ rows. BIZQ-01 still has content defects and larger reachability/native work; GCP artifact authoring remains tied to ARCH-03/F-18. BIZQ-02 production completion requires approved package rules and further recovery evidence; current nine packages have no approved completion rules. BIZQ-03 may prepare its contract earlier, but numeric policy proposals cannot become defaults. BIZQ-04 has this concrete unfinished source path and a separate pending PO decision on the first-success interval. BIZQ-05's earlier sample preflight identified exact-artifact mental-unit descriptors/summary dependencies. BIZQ-06 still lacks the authorized destination URL for its CTA. This is a selection rationale, not a replacement queue or blanket claim that every other task is blocked.
+
+The next decision is evidence-based: either review a bounded existing-owner correction and its canonical contract before implementation, or record the exact architecture dependency and proceed with another independent BIZQ requirement. Preserve foreign queue append/audit directories, all stashes, backend/web and the sole existing simulator/runtime. No deploy, publication, purchase, service configuration or VoiceOver test occurred.
+
+Independent Luna High also reproduced the extended orphan probe: a shape-valid out-of-plan attempt is persisted in the private fixture and silently omitted by the current completed projection. See [independent preflight](PREFLIGHT-QA.md). The accepted correction targets this actual read defect; normal finalization corruption is not claimed.
