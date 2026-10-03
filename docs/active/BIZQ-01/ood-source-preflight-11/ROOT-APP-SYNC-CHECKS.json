@@ -1,0 +1,39 @@
+[
+  {
+    "command": [
+      "node",
+      "scripts/syncBundledContentRelease.mjs",
+      "sync",
+      "--content-root",
+      "../patternly-content"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-APP-SYNC.log"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/candidateContentReleaseLock.mjs",
+      "write"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-APP-LOCK-WRITE.log"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/candidateContentReleaseLock.mjs",
+      "check"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-APP-LOCK-CHECK.log"
+  },
+  {
+    "command": [
+      "node",
+      "docs/active/BIZQ-01/ood-source-preflight-11/verify-preservation.mjs"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-PRESERVATION.json"
+  }
+]

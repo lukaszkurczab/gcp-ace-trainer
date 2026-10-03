@@ -1,0 +1,7 @@
+# Primary-source check for OOD source11 proposal
+
+Read 2026-10-03. [OMG UML2.5.1 normative PDF](https://www.omg.org/spec/UML/2.5.1/PDF), §§18.1.3.1,18.2.1,18.2.5 (PDFpages681,689,691; printed639,647,649): actor is an interacting user/system role; subject is system being considered; use-case behavior produces observable value without defining internal structure. This supports an explicit actor/goal/subject-boundary decision. It does not make naming the actor an implementation guarantee of an invariant.
+
+[Microsoft domain-model documentation](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model), Encapsulate data in Domain Entities: exposing mutable state/collections can bypass business rules; operations controlled by their owner can protect those invariants. This supports the original coordinator/state-export misconception, a different implementation concern from classifying actor/goal/subject. No claim that UML alone supplies concurrency or consistency guarantees.
+
+The OMG browser PDF view failed; a read-only HTTPS fetch succeeded200/application-pdf, and existing bundledpypdf located and read exactly the relevant normative sections. No new parser/tool/install was built. Download/extracted material stays private; this receipt contains short paraphrases/links only. Microsoft supplied full article content despite an authorization banner. These are technical source checks, not editorial/admission approval of a proposed item.

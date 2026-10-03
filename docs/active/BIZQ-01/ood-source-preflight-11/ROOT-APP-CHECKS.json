@@ -1,0 +1,99 @@
+[
+  {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "--test",
+      "src/content/bizq01OodSourceReplacement.test.ts",
+      "src/content/bizq01CanonicalContent.test.ts",
+      "src/content/bizq01CodingSourceCopy.test.ts",
+      "src/content/canonical/questionCore.test.ts",
+      "src/content/canonical/runtimeCatalog.test.ts",
+      "src/content/canonical/productModeConfig.test.ts",
+      "src/content/canonical/designInterviewSimulationProfile.test.ts",
+      "src/application/design-interview/designInterviewChoiceFeedback.test.ts",
+      "src/application/trainingLifecycle/premiumProductModeLifecycle.test.ts",
+      "src/application/trainingLifecycle/premiumProductModePolicy.test.ts",
+      "src/application/trainingLifecycle/premiumSessionAdmission.test.ts",
+      "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-APP-RELATED.log",
+    "tail": " cached load and then preserves cache identity\n  ---\n  duration_ms: 3193.028042\n  type: 'test'\n  ...\n# Subtest: canonical runtime catalog caches only a validated active catalog\nok 49 - canonical runtime catalog caches only a validated active catalog\n  ---\n  duration_ms: 0.192125\n  type: 'test'\n  ...\n# Subtest: runtime admission resolves the exact candidate lock for every canonical launch track\nok 50 - runtime admission resolves the exact candidate lock for every canonical launch track\n  ---\n  duration_ms: 412.838125\n  type: 'test'\n  ...\n1..50\n# tests 50\n# suites 0\n# pass 50\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 8021.94275\n"
+  },
+  {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "docs/active/BIZQ-01/ood-source-preflight-11/runtime-preflight.ts"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-RUNTIME-GREEN.json",
+    "tail": "r an explicit conflict from the whole EnergyReservationService, not a storage inspection.\"\n        }\n      ],\n      \"sessionVersion\": \"object-oriented-design-interview-authoring-v2026.10.03-bizq01-11\",\n      \"artifactSha256\": \"49e1bce7fe393145e04d46e4c3220b991c3f869be705e12cccdc2026490b08c4\"\n    }\n  ],\n  \"boundaries\": [\n    \"memory repositories; no native store/provider claim\",\n    \"Premium authorizer is an explicit test stub\",\n    \"existing N01-scoped eligible pool; direct pinned fixture does not establish random automatic selection\",\n    \"denied Premium-before-prepare behavior is covered by existing premiumProductModeLifecycle tests\"\n  ]\n}\n"
+  },
+  {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "--test",
+      "--test-name-pattern=bundled canonical release|current canonical builder",
+      "src/content/contentReleaseCrossRepo.test.ts"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-CROSS-REPO.log",
+    "tail": "TAP version 13\n# Subtest: bundled canonical release matches the current producer builder\nok 1 - bundled canonical release matches the current producer builder\n  ---\n  duration_ms: 1476.532583\n  type: 'test'\n  ...\n# Subtest: current canonical builder preserves the ODK-096 inventory and approved AWS identity without repinning history\nok 2 - current canonical builder preserves the ODK-096 inventory and approved AWS identity without repinning history\n  ---\n  duration_ms: 1067.636542\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 2936.104584\n"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-TYPECHECK.log",
+    "tail": "\n> patternly@0.1.0 typecheck\n> tsc --noEmit\n\nnpm notice\nnpm notice New major version of npm available! 10.9.8 -> 12.2.0\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0\nnpm notice To update run: npm install -g npm@12.2.0\nnpm notice\n"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "validate:content-boundary"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-CONTENT-BOUNDARY.log",
+    "tail": "\n> patternly@0.1.0 validate:content-boundary\n> node scripts/validateContentBoundary.mjs\n\nCONTENT_BOUNDARY_CHECK=passed\nnpm notice\nnpm notice New major version of npm available! 10.9.8 -> 12.2.0\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0\nnpm notice To update run: npm install -g npm@12.2.0\nnpm notice\n"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "validate:runtime-privacy-boundary"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-PRIVACY-BOUNDARY.log",
+    "tail": "\n> patternly@0.1.0 validate:runtime-privacy-boundary\n> node scripts/validateRuntimePrivacyBoundary.mjs\n\nRUNTIME_PRIVACY_BOUNDARY_CHECK=passed\n"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:inventory:check"
+    ],
+    "exitCode": 1,
+    "log": "ROOT-INVENTORY.log",
+    "tail": "npm error Missing script: \"test:inventory:check\"\nnpm error\nnpm error To see a list of scripts, run:\nnpm error   npm run\nnpm error Log files were not written due to an error writing to the directory: /Users/lukaszkurczab/.npm/_logs\nnpm error You can rerun the command with `--loglevel=verbose` to see the logs in your terminal\n"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "recovery:check"
+    ],
+    "exitCode": 0,
+    "log": "ROOT-INVENTORY-CORRECTED.log",
+    "correctsInvocation": "test:inventory:check is not defined in package.json"
+  }
+]

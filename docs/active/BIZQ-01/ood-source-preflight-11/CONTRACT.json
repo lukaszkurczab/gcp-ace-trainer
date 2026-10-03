@@ -1,0 +1,8 @@
+{
+  "canonicalPath": "/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/07-content-guidelines.md",
+  "outsideFourGitRepositories": true,
+  "beforeSha256": "dab7b4b293570d0c27494a4fe00192cd3fcdbaf8f3d65b48153a772d0d1a4f75",
+  "afterSha256": "98a3c7dae1fefaea7422cde86df1395789dcfff43d46c3fb11f7997489df47a7",
+  "addedRequirement": "For the bounded OOD source11 replacement, `ood-n01-b01-i001` is retired from active ingress and replaced by `ood-n01-b01-i018` in the same `OOD-N01-B01` mental unit and node. The assessed decision is the external actor role, observable reservation goal and stated system boundary; internal collaborators and a passive domain asset do not become actors merely because they participate in realization. The changed primary decision requires a new question ID and new option IDs. A separate fixed one-item semantic-replacement proof binds the frozen old whole question, exact new question, before/current source and content-version identities, and whole-track question hash; historical reconstruction remains verification-only. Every unaffected OOD question and all existing BESD/Coding proof and historical membership/aggregate checks remain unchanged. The other sixteen known unit defects remain explicit follow-up work, with no full-unit acceptance claim. The replacement follows the existing delegated candidate/readiness/app-lock/runtime-admission chain and grants no new admission or publishing authority.",
+  "beforeImplementation": true
+}

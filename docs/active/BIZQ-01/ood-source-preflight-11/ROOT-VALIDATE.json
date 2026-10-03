@@ -1,0 +1,9 @@
+{
+  "command": "npm run content:validate -- --track object-oriented-design-interview --root .",
+  "cwd": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content",
+  "exitCode": 0,
+  "validatedQuestions": 1413,
+  "output": "\n> patternly-content@1.0.0 content:validate\n> node scripts/build.mjs validate --track object-oriented-design-interview --root .\n\nValidated 1413 question(s) for object-oriented-design-interview\n",
+  "rawLogSha256": "8671f86a6303cb499e03f407395664358f3e4ee891e3349a2dd360dd76bd9207",
+  "scope": "Current known-bad source structurally valid, not semantic acceptance"
+}
