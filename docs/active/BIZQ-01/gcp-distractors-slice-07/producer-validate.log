@@ -1,0 +1,5 @@
+
+> patternly-content@1.0.0 content:validate
+> node scripts/build.mjs validate --track google-cloud-associate-cloud-engineer --root /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content
+
+GCP nodeDomainMap evidence does not match the current published artifact identity

@@ -17,3 +17,5 @@ Only existing iPhone17, existing install/guest, no clearState/newdevice/purchase
 After the probe, root terminated only Patternly and shut down the same iPhone17, retaining its saved test data. Metro remains the sole current listener; backend/Auth were not restarted.
 
 [Independent final acceptance](QA.md): LunaHigh PASS WITH ISSUES for bounded native input/save-result display; reviewer inspected05–09 and independently verified all5 manifest hashes. Root separately ran actual flows and inspectedscreens.
+
+Actual post-push hosted run37100509331 for d9932f1f00d80dc7f59cf73414f8e1167b97939a: both jobs SUCCESS; recovery suite1734 PASS/0 FAIL/4 existing dedicated SKIP (1738 total). Exact metadata in POST-PUSH-REMOTE-CI.json and raw job111138943876 log retained. This source-unchanged diagnostic checkpoint does not broaden native acceptance.
