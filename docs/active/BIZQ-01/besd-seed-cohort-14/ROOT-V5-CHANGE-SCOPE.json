@@ -1,0 +1,9 @@
+{
+  "proposalSha256": "21583d2cb41a3d82a919407f5332ceb0af07aaaa25b4fa03b3016a602e969fdc",
+  "changedWholeObjects": [
+    "besd-n04-b01-i021",
+    "besd-n04-b01-i028"
+  ],
+  "unchangedQuestions": 30,
+  "authoringNotesSha256": "a4e0fccfa17447f6e6c7a10c310ef404c31860c7fd6b9ef5ab33351edfef2212"
+}

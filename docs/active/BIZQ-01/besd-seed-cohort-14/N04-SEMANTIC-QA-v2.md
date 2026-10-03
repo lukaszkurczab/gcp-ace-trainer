@@ -1,0 +1,11 @@
+# Independent N04 semantic review — frozen v2
+
+Reviewer: closure02, gpt-6-luna high. Read-only whole-object review of17N04 and cross-cohort neighbors; SHA256da6d65308dd31fddad48a99bd9c3e23ba55d1d99ed420d3f2d1b66b045a379ed. Verdict REVISE before source implementation. Structural32/96 is not semantic approval.
+
+Findings: N04i034 has a defensible unconditional-origin alternative under the stated15s bound; outage tolerance is absent. N04i032 needs a current authoritative directory premise for the5s end-to-end revocation bound. Repeated primary decisions need differentiation: N04i021/N02i019 source-revision rollback guard; N04i023/i035 stale availability followed by atomicclaim; N04i036/acceptedN04i019 search snapshot freshness/age. N02i029 global3limit also meets the literal per-tenantmaximum unless independent capacity is stated. Most remaining objects have coherent keys, decisive facts and aligned feedback.
+
+Reviewer also reported missing unknown-field tolerance forN02i026/i031. Root rejected that finding against actual complete objects: constraints[0] explicitly establish tolerance in both cases. Learner-visible constraints are valid scenario premises; there is no requirement to put every premise only in prompt. A separate N02 review reports repeated additive-migration mechanism for026/031. Review findings are reconciled against implementation, not adopted wholesale.
+
+Primary checks: [CloudEvents](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md) event identity without ordering guarantee; [RFC9110](https://www.rfc-editor.org/rfc/rfc9110.html) conditional writes; [RFC9111](https://www.rfc-editor.org/rfc/rfc9111.html) freshness/revalidation; [RFC9457](https://www.rfc-editor.org/rfc/rfc9457.html) typed HTTP problem details. Application-specific revisions, TTLs and failure requirements remain authored scenario premises.
+
+Distinctness review concerns whether rewritten questions teach meaningful decisions rather than noun-swapped templates. It does not prohibit justified reinforcement, create a universal uniqueness rule or add a numeric similarity gate. Scope is source authoring; no admission, eligible/native session or fullBIZQ acceptance. Preserve frozenv2 and review changed final objects/cross-cohort assumptions before activation.

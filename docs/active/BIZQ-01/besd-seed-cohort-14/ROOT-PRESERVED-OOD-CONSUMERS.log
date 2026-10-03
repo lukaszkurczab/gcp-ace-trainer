@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: OOD source replacement is the exact bundled and eligible canonical item with new scored option identities
+ok 1 - OOD source replacement is the exact bundled and eligible canonical item with new scored option identities
+  ---
+  duration_ms: 372.286584
+  type: 'test'
+  ...
+# Subtest: OOD12 consumer resolves only the source-bound completed switch outcomes replacement in the existing learning pool
+ok 2 - OOD12 consumer resolves only the source-bound completed switch outcomes replacement in the existing learning pool
+  ---
+  duration_ms: 387.104125
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 891.001291

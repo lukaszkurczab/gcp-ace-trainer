@@ -1,0 +1,647 @@
+{
+  "evidence": "actual bundled catalog and pre-answer question view model; read-only, no session/storage/device/service actions",
+  "reproduced": 32,
+  "pools": [
+    {
+      "modeId": "design-interview-learn-framework",
+      "count": 145
+    },
+    {
+      "modeId": "design-interview-tradeoff-practice",
+      "count": 145
+    },
+    {
+      "modeId": "design-interview-weak-area-review",
+      "count": 145
+    }
+  ],
+  "items": [
+    {
+      "questionId": "besd-n02-b01-i001",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i003",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i004",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i005",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i006",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i007",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i008",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i009",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i010",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i011",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i012",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i013",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i014",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i015",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n02-b01-i016",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i001",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i003",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i004",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i005",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i006",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i007",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i008",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i009",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i010",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i011",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i012",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i013",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i014",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i015",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i016",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i017",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    },
+    {
+      "questionId": "besd-n04-b01-i018",
+      "sourceAndAppExact": true,
+      "preAnswerViewModelDisclosure": true,
+      "poolReachability": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "eligible": false
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "eligible": false
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    "source/render-props wiring, not installed native screenshot",
+    "current mode reachability observed separately from source defect",
+    "no manually widened session or Premium bypass"
+  ],
+  "implementationBindings": {
+    "appHead": "00759a8b909106192ad1cb6339ba239140867322",
+    "contentHead": "c272a4bfdcd419d5185e5b00e1fd3022772f073c",
+    "sourceFiles": [
+      {
+        "path": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+        "sha256": "164b3221fe641c16353339c0ef99772793f8866e195ea3cff976a633344e7e6d"
+      },
+      {
+        "path": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+        "sha256": "b8d9874fe7ff4dbcecf05519857aa57e9b828ec1eb4ba37a7ff8f789e2829c15"
+      }
+    ]
+  }
+}

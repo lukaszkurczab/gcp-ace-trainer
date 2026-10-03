@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: BESD14 exact two-unit payloads and preserved items match sources with retired identities absent
+ok 1 - BESD14 exact two-unit payloads and preserved items match sources with retired identities absent
+  ---
+  duration_ms: 453.34425
+  type: 'test'
+  ...
+# Subtest: BESD14 real pre-answer view models expose authored facts and controls without feedback or answer fields
+ok 2 - BESD14 real pre-answer view models expose authored facts and controls without feedback or answer fields
+  ---
+  duration_ms: 1.131625
+  type: 'test'
+  ...
+# Subtest: BESD14 fixed-ID scoring and authored Reason, Details and diagnostics survive every option and reversed order
+ok 3 - BESD14 fixed-ID scoring and authored Reason, Details and diagnostics survive every option and reversed order
+  ---
+  duration_ms: 1.224542
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 bundled loader and pre-submit projection preserve the corrected source contract
+ok 4 - BIZQ-01 bundled loader and pre-submit projection preserve the corrected source contract
+  ---
+  duration_ms: 416.449917
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 replaced identities from an old package do not enter current due retrieval
+ok 5 - BIZQ-01 replaced identities from an old package do not enter current due retrieval
+  ---
+  duration_ms: 0.19925
+  type: 'test'
+  ...
+# Subtest: OOD13 exact cohort is source-identical and eligible with retired identities absent
+ok 6 - OOD13 exact cohort is source-identical and eligible with retired identities absent
+  ---
+  duration_ms: 469.108833
+  type: 'test'
+  ...
+# Subtest: OOD13 reviewed answer identities score independently of option position with exact authored diagnostics
+ok 7 - OOD13 reviewed answer identities score independently of option position with exact authored diagnostics
+  ---
+  duration_ms: 1.004125
+  type: 'test'
+  ...
+# Subtest: runtime admission resolves the exact candidate lock for every canonical launch track
+ok 8 - runtime admission resolves the exact candidate lock for every canonical launch track
+  ---
+  duration_ms: 428.722583
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1010.457667

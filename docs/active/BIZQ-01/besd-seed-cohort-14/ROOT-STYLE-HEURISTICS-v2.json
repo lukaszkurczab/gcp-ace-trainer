@@ -1,0 +1,328 @@
+{
+  "scope": "Text heuristic requiring contextual semantic review, not automatic rejection",
+  "proposalSha256": "da6d65308dd31fddad48a99bd9c3e23ba55d1d99ed420d3f2d1b66b045a379ed",
+  "questions": 32,
+  "soleLongestCount": 31,
+  "results": [
+    {
+      "questionId": "besd-n02-b01-i018",
+      "acceptedWords": 29,
+      "optionWords": [
+        29,
+        19,
+        24
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i019",
+      "acceptedWords": 26,
+      "optionWords": [
+        26,
+        20,
+        14
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i020",
+      "acceptedWords": 31,
+      "optionWords": [
+        31,
+        15,
+        18
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i021",
+      "acceptedWords": 25,
+      "optionWords": [
+        25,
+        16,
+        14
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i022",
+      "acceptedWords": 19,
+      "optionWords": [
+        19,
+        14,
+        17
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i023",
+      "acceptedWords": 25,
+      "optionWords": [
+        25,
+        21,
+        18
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i024",
+      "acceptedWords": 21,
+      "optionWords": [
+        21,
+        13,
+        13
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i025",
+      "acceptedWords": 19,
+      "optionWords": [
+        19,
+        17,
+        16
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i026",
+      "acceptedWords": 16,
+      "optionWords": [
+        16,
+        17,
+        14
+      ],
+      "acceptedSoleLongest": false
+    },
+    {
+      "questionId": "besd-n02-b01-i027",
+      "acceptedWords": 22,
+      "optionWords": [
+        22,
+        15,
+        14
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i028",
+      "acceptedWords": 22,
+      "optionWords": [
+        22,
+        17,
+        14
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i029",
+      "acceptedWords": 24,
+      "optionWords": [
+        24,
+        15,
+        15
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i030",
+      "acceptedWords": 22,
+      "optionWords": [
+        22,
+        17,
+        17
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i031",
+      "acceptedWords": 17,
+      "optionWords": [
+        17,
+        15,
+        13
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n02-b01-i032",
+      "acceptedWords": 20,
+      "optionWords": [
+        20,
+        15,
+        17
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i020",
+      "acceptedWords": 29,
+      "optionWords": [
+        29,
+        17,
+        15
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i021",
+      "acceptedWords": 25,
+      "optionWords": [
+        25,
+        12,
+        15
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i022",
+      "acceptedWords": 17,
+      "optionWords": [
+        17,
+        14,
+        16
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i023",
+      "acceptedWords": 23,
+      "optionWords": [
+        23,
+        18,
+        12
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i024",
+      "acceptedWords": 20,
+      "optionWords": [
+        20,
+        18,
+        12
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i025",
+      "acceptedWords": 22,
+      "optionWords": [
+        22,
+        19,
+        14
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i026",
+      "acceptedWords": 22,
+      "optionWords": [
+        22,
+        17,
+        11
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i027",
+      "acceptedWords": 23,
+      "optionWords": [
+        23,
+        16,
+        17
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i028",
+      "acceptedWords": 18,
+      "optionWords": [
+        18,
+        13,
+        14
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i029",
+      "acceptedWords": 23,
+      "optionWords": [
+        23,
+        15,
+        13
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i030",
+      "acceptedWords": 18,
+      "optionWords": [
+        18,
+        14,
+        13
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i031",
+      "acceptedWords": 25,
+      "optionWords": [
+        25,
+        16,
+        12
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i032",
+      "acceptedWords": 26,
+      "optionWords": [
+        26,
+        16,
+        12
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i033",
+      "acceptedWords": 21,
+      "optionWords": [
+        21,
+        14,
+        15
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i034",
+      "acceptedWords": 25,
+      "optionWords": [
+        25,
+        15,
+        13
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i035",
+      "acceptedWords": 28,
+      "optionWords": [
+        28,
+        18,
+        16
+      ],
+      "acceptedSoleLongest": true
+    },
+    {
+      "questionId": "besd-n04-b01-i036",
+      "acceptedWords": 20,
+      "optionWords": [
+        20,
+        16,
+        19
+      ],
+      "acceptedSoleLongest": true
+    }
+  ]
+}

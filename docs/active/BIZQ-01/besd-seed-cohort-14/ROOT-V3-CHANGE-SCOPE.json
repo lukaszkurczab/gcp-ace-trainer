@@ -1,0 +1,40 @@
+{
+  "proposalSha256": "573c30ee6b0010927f6efca35b4bf8ea8c71eacbae6339a9f09ede375756b09f",
+  "comparisonSha256": "da6d65308dd31fddad48a99bd9c3e23ba55d1d99ed420d3f2d1b66b045a379ed",
+  "changedWholeObjects": [
+    "besd-n02-b01-i018",
+    "besd-n02-b01-i019",
+    "besd-n02-b01-i020",
+    "besd-n02-b01-i021",
+    "besd-n02-b01-i022",
+    "besd-n02-b01-i023",
+    "besd-n02-b01-i024",
+    "besd-n02-b01-i026",
+    "besd-n02-b01-i027",
+    "besd-n02-b01-i028",
+    "besd-n02-b01-i029",
+    "besd-n02-b01-i030",
+    "besd-n02-b01-i032",
+    "besd-n04-b01-i020",
+    "besd-n04-b01-i021",
+    "besd-n04-b01-i023",
+    "besd-n04-b01-i024",
+    "besd-n04-b01-i025",
+    "besd-n04-b01-i026",
+    "besd-n04-b01-i027",
+    "besd-n04-b01-i028",
+    "besd-n04-b01-i029",
+    "besd-n04-b01-i030",
+    "besd-n04-b01-i031",
+    "besd-n04-b01-i032",
+    "besd-n04-b01-i033",
+    "besd-n04-b01-i034",
+    "besd-n04-b01-i035",
+    "besd-n04-b01-i036"
+  ],
+  "unchangedWholeObjects": [
+    "besd-n02-b01-i025",
+    "besd-n02-b01-i031",
+    "besd-n04-b01-i022"
+  ]
+}

@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: accepts the fixed two-unit cohort and source01 predecessor chain
+ok 1 - accepts the fixed two-unit cohort and source01 predecessor chain
+  ---
+  duration_ms: 1752.184791
+  type: 'test'
+  ...
+# Subtest: requires both the new fixed proof and unchanged source01 proof
+ok 2 - requires both the new fixed proof and unchanged source01 proof
+  ---
+  duration_ms: 913.522167
+  type: 'test'
+  ...
+# Subtest: rejects changed current source items, old/current proof objects, source bytes, and versions
+ok 3 - rejects changed current source items, old/current proof objects, source bytes, and versions
+  ---
+  duration_ms: 3901.136542
+  type: 'test'
+  ...
+# Subtest: rejects missing, duplicate, extra and unrelated replacement/source membership
+ok 4 - rejects missing, duplicate, extra and unrelated replacement/source membership
+  ---
+  duration_ms: 2309.86225
+  type: 'test'
+  ...
+# Subtest: rejects canonical source moved behind a symlink
+ok 5 - rejects canonical source moved behind a symlink
+  ---
+  duration_ms: 43.215166
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9045.58525

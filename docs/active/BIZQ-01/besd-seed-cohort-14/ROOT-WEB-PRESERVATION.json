@@ -1,0 +1,36 @@
+{
+  "result": "PASS",
+  "scope": "existing two Coding/AWS demos, provenance only",
+  "previousFileSha256": "18885d6025d469f37d47cfcfd224c18e12c9d2190aa1c68fe29c6571c7fd872b",
+  "currentFileSha256": "dd78fcbca267870918236f7be0846a039e385f7007c121d6a98be728d17e0267",
+  "demos": [
+    {
+      "questionId": "alg-complexity-time-005",
+      "questionAndDetails": "unchanged",
+      "changedProvenanceFields": [
+        "appContentLockSha256",
+        "releaseLockSha256",
+        "admissionSha256",
+        "candidateId",
+        "sourceReleaseSha256",
+        "runtimeEvidenceSha256",
+        "releaseId",
+        "producerCommit"
+      ]
+    },
+    {
+      "questionId": "aws-saa-c03-architecture-001-odk096",
+      "questionAndDetails": "unchanged",
+      "changedProvenanceFields": [
+        "appContentLockSha256",
+        "releaseLockSha256",
+        "admissionSha256",
+        "candidateId",
+        "sourceReleaseSha256",
+        "runtimeEvidenceSha256",
+        "releaseId",
+        "producerCommit"
+      ]
+    }
+  ]
+}

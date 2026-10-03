@@ -1,0 +1,656 @@
+{
+  "scope": "fixed32 authored semantics accepted; source integration/admission pending",
+  "proposalSha256": "21583d2cb41a3d82a919407f5332ceb0af07aaaa25b4fa03b3016a602e969fdc",
+  "items": [
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i001",
+      "questionId": "besd-n02-b01-i018",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Choose a resource representation that exposes bounded freshness and distinguishes an absent asset from a temporarily unavailable metadata read.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i018_asset_resource_read",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9110.html",
+        "https://spec.openapis.org/oas/v3.1.1.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i003",
+      "questionId": "besd-n02-b01-i019",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Define an event identity and application ordering field so receivers can suppress redelivery and reject older shipment state without treating delivery order as guaranteed.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i019_shipment_event_identity_revision",
+      "sourceRefs": [
+        "https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i004",
+      "questionId": "besd-n02-b01-i020",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Use a representation version as a write precondition so concurrent document edits produce a visible conflict rather than silent last-write-wins.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i020_conditional_document_update",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9110.html",
+        "https://spec.openapis.org/oas/v3.1.1.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i005",
+      "questionId": "besd-n02-b01-i021",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Place the stock invariant in one atomic reserve command at the inventory authority, not in a preceding availability query.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i021_atomic_stock_reservation",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9110.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i006",
+      "questionId": "besd-n02-b01-i022",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Model one-time module completion as an idempotent desired-state resource rather than an incrementing submission counter.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i022_completion_state_resource",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9110.html",
+        "https://spec.openapis.org/oas/v3.1.1.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i007",
+      "questionId": "besd-n02-b01-i023",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Pin each checkout quote to an immutable price revision so a retry cannot silently substitute a newer price.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i023_quote_pinned_price_revision",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9110.html",
+        "https://spec.openapis.org/oas/v3.1.1.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i008",
+      "questionId": "besd-n02-b01-i024",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Define when a credential revocation response is success, given that copied credentials may still be presented to the service.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i024_revocation_epoch_contract",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9110.html",
+        "https://spec.openapis.org/oas/v3.1.1.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i009",
+      "questionId": "besd-n02-b01-i025",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Propagate a caller deadline through synchronous route computation and stop work when the caller no longer needs the result.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i025_propagated_route_deadline",
+      "sourceRefs": [
+        "https://grpc.io/docs/guides/deadlines/"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i010",
+      "questionId": "besd-n02-b01-i026",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Return a rollout decision without requiring each mobile client to implement the changing cohort rule.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i026_server_evaluated_feature_decision",
+      "sourceRefs": [
+        "https://spec.openapis.org/oas/v3.1.1.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i011",
+      "questionId": "besd-n02-b01-i027",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Specify time-window boundaries and timezone offsets in the appointment search contract so adjacent slots are not duplicated or skipped.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i027_half_open_offset_interval",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9110.html",
+        "https://www.rfc-editor.org/rfc/rfc3339.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i012",
+      "questionId": "besd-n02-b01-i028",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Bind search pagination to one query snapshot so records changing between page requests do not create duplicates or gaps.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i028_snapshot_bound_search_cursor",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9110.html",
+        "https://spec.openapis.org/oas/v3.1.1.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i013",
+      "questionId": "besd-n02-b01-i029",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Apply per-tenant concurrency admission to expensive route solves and return a retryable capacity outcome instead of silently queueing unbounded work.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i029_bounded_tenant_admission",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc6585.html#section-4",
+        "https://www.rfc-editor.org/rfc/rfc9457.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i014",
+      "questionId": "besd-n02-b01-i030",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Define machine-readable problem types for invalid payment input, a definitive issuer decline, and temporary capacity rejection without making clients parse human text.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i030_typed_payment_problem",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9457.html",
+        "https://www.rfc-editor.org/rfc/rfc9110.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i015",
+      "questionId": "besd-n02-b01-i031",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Evolve the fraud-case response additively while old and new workers coexist, preserving existing enum meanings and required fields.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i031_additive_case_schema",
+      "sourceRefs": [
+        "https://spec.openapis.org/oas/v3.1.1.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+      "beforeQuestionId": "besd-n02-b01-i016",
+      "questionId": "besd-n02-b01-i032",
+      "primaryMentalUnitId": "BESD-N02-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Address an export by an immutable snapshot that pins the payroll period, source watermark, and rules revision used to produce it.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n02-b01-i032_pinned_payroll_export_snapshot",
+      "sourceRefs": [
+        "https://spec.openapis.org/oas/v3.1.1.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i001",
+      "questionId": "besd-n04-b01-i020",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Keep a short-lived copy of low-sensitivity notification preferences in the signed-in client because local reuse is sufficient and cross-device sharing is not required.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i020_private_client_preference_cache",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i003",
+      "questionId": "besd-n04-b01-i021",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Prevent a pre-update cache fill from restoring stale parcel state after an acknowledged update.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i021_revision_fence",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i004",
+      "questionId": "besd-n04-b01-i022",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Reuse immutable extraction output by a key that includes the input digest and extractor version, while keeping tenant-private documents isolated.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i022_content_version_tenant_cache",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i005",
+      "questionId": "besd-n04-b01-i023",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Cache immutable venue layout separately from exact seat availability so static traffic does not freeze a changing inventory fact.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i023_versioned_layout_live_availability",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i006",
+      "questionId": "besd-n04-b01-i024",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Cache only tenant-scoped candidate case IDs and recheck each case\u2019s current per-agent authorization before returning case content.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i024_candidate_cache_reauthorize_content",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i007",
+      "questionId": "besd-n04-b01-i025",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Use conditional revalidation for frequently updated public metadata so edge copies can be reused briefly without presenting a representation beyond its freshness bound.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i025_short_cache_validator_recheck",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i008",
+      "questionId": "besd-n04-b01-i026",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Cache immutable device capability manifests by model and firmware build, while fetching each device\u2019s current operational state from its owning service.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i026_firmware_manifest_shared_cache",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i009",
+      "questionId": "besd-n04-b01-i027",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Keep unsent document edits in a client-local draft cache, but identify the server revision they were based on before attempting to publish them.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i027_local_draft_with_base_revision",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html",
+        "https://www.rfc-editor.org/rfc/rfc9110.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i010",
+      "questionId": "besd-n04-b01-i028",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Keep immutable topology and changing restrictions separately identified, with response provenance that lets a route reviewer verify both inputs.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i028_versioned_graph_separate_closures",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i011",
+      "questionId": "besd-n04-b01-i029",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Meet the planner response bound by reusing a forecast keyed to its dimensions and rules revision, while exposing its source watermark.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i029_scoped_versioned_forecast_cache",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i012",
+      "questionId": "besd-n04-b01-i030",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Cache a course outline under its immutable release identity, while resolving the current course alias and reading learner progress separately.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i030_versioned_catalog_private_progress",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i013",
+      "questionId": "besd-n04-b01-i031",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Publish public prices under immutable revision URLs and keep checkout on the authoritative current-price path for final acceptance.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i031_edge_price_revision_checkout_revalidate",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i014",
+      "questionId": "besd-n04-b01-i032",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Bound any authorization cache from a non-lagging identity source by the five-second revocation objective, and fail closed when current state cannot be established.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i032_bounded_fail_closed_auth_cache",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i015",
+      "questionId": "besd-n04-b01-i033",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Cache transcoded artifacts by immutable input digest and complete encoding recipe so a changed source or codec setting cannot reuse the wrong output.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i033_content_addressed_transcode_cache",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i016",
+      "questionId": "besd-n04-b01-i034",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Use a bounded edge cache for rollout configuration and make the emergency disable path meet the same 15-second staleness limit under failed invalidation.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i034_bounded_edge_config_ttl",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i017",
+      "questionId": "besd-n04-b01-i035",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Cache read-only appointment availability by provider and time window, but invalidate on schedule changes and recheck the authoritative slot when confirming a booking.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i035_provider_window_availability_cache",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sourcePath": "content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+      "beforeQuestionId": "besd-n04-b01-i018",
+      "questionId": "besd-n04-b01-i036",
+      "primaryMentalUnitId": "BESD-N04-B01",
+      "confirmedDefects": [
+        "literal author primary-decision instruction in learner-visible constraints",
+        "generic owner-answer template, shallow/caricature alternatives and feedback not bound to concrete mechanism"
+      ],
+      "intendedDecision": "Coalesce concurrent refreshes for the same expensive public query while serving a bounded stale result during one refresh.",
+      "answerChange": true,
+      "identityAction": "new question and option identities for changed primary semantics",
+      "acceptedOptionId": "besd-n04-b01-i036_per_key_refresh_coalescing",
+      "sourceRefs": [
+        "https://www.rfc-editor.org/rfc/rfc9111.html"
+      ],
+      "reviewer": "independent gpt-6-luna high; N02v3 matching and N04v3/v4/v5 targeted evidence",
+      "admissionAuthority": "existing delegated workflow; candidate/admission pending source/consumer verification"
+    }
+  ]
+}

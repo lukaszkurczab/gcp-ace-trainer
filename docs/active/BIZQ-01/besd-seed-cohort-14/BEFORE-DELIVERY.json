@@ -1,0 +1,110 @@
+{
+  "repositories": {
+    "patternly": {
+      "HEAD": "00759a8b909106192ad1cb6339ba239140867322",
+      "upstream": "00759a8b909106192ad1cb6339ba239140867322",
+      "stashes": [
+        "acc4dd4b104d202e81064fabd2c268e28ffbf5cd",
+        "680df78d7014d76ccaaea221cb2022d4f1f50746",
+        "803672fc67aa8cab977030e63a29c3d5f599ca44",
+        "0f1a08fa36b628ffad19dea8e8e94fe4d6a76031",
+        "fa998da9bfc9dd04fa980c3048906d8642c5dfdb",
+        "f21e31454bdf33f0b09a33158f9d3ad1777e2ca7"
+      ],
+      "status": [
+        "M .agent/WORKING_STATE.md",
+        " M docs/PATTERNLY-WORKING-PLAN.md",
+        " M docs/active/BIZQ-01/besd-seed-cohort-14/DEPENDENCIES.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/AUTHOR-PROBE-OUTPUT.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/AUTHORING-NOTES.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/BEFORE-BOUNDARY.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/CHANGE-MANIFEST.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/N02-SEMANTIC-QA-v2.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/N02-SEMANTIC-QA-v3.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/N04-SEMANTIC-QA-v2.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/N04-SEMANTIC-QA-v3.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/N04-SEMANTIC-QA-v4.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/N04-SEMANTIC-QA-v5.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/PRODUCER-PREFLIGHT.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/PROPOSAL.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/REVIEWED-PROPOSAL-v1.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/REVIEWED-PROPOSAL-v2.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/REVIEWED-PROPOSAL-v3.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/REVIEWED-PROPOSAL-v4.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/REVIEWED-PROPOSAL-v5.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-CONSUMER-RED.log",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-MIGRATION.log",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-PREFLIGHT.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-PRESERVED-BESD-FINAL.log",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-PRESERVED-BESD.log",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-PRODUCER-NARROW.log",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-PROPOSAL-STRUCTURE-v1.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-PROPOSAL-STRUCTURE-v2.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-PROPOSAL-STRUCTURE-v3.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-PROPOSAL-STRUCTURE-v4.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-PROPOSAL-STRUCTURE-v5.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-SEMANTIC-NOTES-v2.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-SEMANTIC-NOTES-v3.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-SOURCE-PRESERVATION.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-SOURCE-PRESERVATION.log",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-STYLE-HEURISTICS-v2.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-STYLE-HEURISTICS-v3.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-STYLE-HEURISTICS-v5.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-TYPECHECK-PREFLIGHT.log",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-TYPECHECK.log",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-V3-CHANGE-SCOPE.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-V4-CHANGE-SCOPE.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/ROOT-V5-CHANGE-SCOPE.json",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/SEMANTIC-QA-v5.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/TESTS.md",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/check-source-preservation.mjs",
+        "?? docs/active/BIZQ-01/besd-seed-cohort-14/source-preflight.ts",
+        "?? docs/active/SECURITY-PRIVACY-AUDIT/",
+        "?? src/content/bizq01BesdSeedCohort14.test.ts"
+      ]
+    },
+    "patternly-content": {
+      "HEAD": "c272a4bfdcd419d5185e5b00e1fd3022772f073c",
+      "upstream": "c272a4bfdcd419d5185e5b00e1fd3022772f073c",
+      "stashes": [
+        "8f1944f349449f1a7987f49b068eff2393a8e1c5",
+        "2b38e13f76ff561de18c5ee2c209ed31291ecba2"
+      ],
+      "status": [
+        "M content/backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B01.json",
+        " M content/backend-system-design-interview/caching_read_scaling_search_and_content_delivery/BESD-N04-B01.json",
+        " M content/catalog.json",
+        " M package.json",
+        " M scripts/content/verify-migration.mjs",
+        " M tests/bizq01-migration-proof.test.mjs",
+        " M tests/bizq01-ood-source-11.test.mjs",
+        " M tests/bizq01-ood-source-12.test.mjs",
+        " M tests/bizq01-ood-unit-cohort-13.test.mjs",
+        " M tests/bizq01-source-slice.test.mjs",
+        " M tests/content-builder.test.mjs",
+        " M tests/contentReviewConsole.test.mjs",
+        "?? evidence/business-quality/bizq-01-besd-seed-cohort-14.json",
+        "?? evidence/business-quality/full-content-audit-2026-10-02/",
+        "?? tests/bizq01-besd-seed-cohort-14.test.mjs"
+      ]
+    },
+    "patternly-backend": {
+      "HEAD": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "stashes": [
+        "f706b6c18923f8a8ef0a862a903d08c548e7badc",
+        "a83361eba8048b5384cecdb412f466b6c6ed87de",
+        "d32f85fb95a97e030f0c93c053305767f605f575",
+        "0ab654cbb2e7ece519d8d34e739b50db8bb00e7d"
+      ],
+      "status": []
+    },
+    "patternly-web": {
+      "HEAD": "1bbfdce14cf573812fbb82e328cb73ed5923b96a",
+      "upstream": "1bbfdce14cf573812fbb82e328cb73ed5923b96a",
+      "stashes": [],
+      "status": []
+    }
+  },
+  "foreignQueueBodySha256": "1e8576b9b57d6f4bed8067af21972fc4aac1ebd791a43a046dede0a5014aa4f8"
+}

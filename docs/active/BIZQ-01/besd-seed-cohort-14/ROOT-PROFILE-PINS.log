@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: ODK-097 producer profiles expose the approved Design session matrix
+ok 1 - ODK-097 producer profiles expose the approved Design session matrix
+  ---
+  duration_ms: 9.216
+  type: 'test'
+  ...
+# Subtest: ODK-097 producer changes preserve canonical Design question counts and hashes
+ok 2 - ODK-097 producer changes preserve canonical Design question counts and hashes
+  ---
+  duration_ms: 369.295166
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 469.231375

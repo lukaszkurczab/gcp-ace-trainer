@@ -1,0 +1,168 @@
+{
+  "scope": "actual producer validation/scoring; not semantic, pool eligibility, native or admission acceptance",
+  "proposalSha256": "21583d2cb41a3d82a919407f5332ceb0af07aaaa25b4fa03b3016a602e969fdc",
+  "validatedQuestions": 32,
+  "scoredOptions": 96,
+  "results": [
+    {
+      "questionId": "besd-n02-b01-i018",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i019",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i020",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i021",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i022",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i023",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i024",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i025",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i026",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i027",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i028",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i029",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i030",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i031",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n02-b01-i032",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i020",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i021",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i022",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i023",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i024",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i025",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i026",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i027",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i028",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i029",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i030",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i031",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i032",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i033",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i034",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i035",
+      "validated": true,
+      "scoredOptions": 3
+    },
+    {
+      "questionId": "besd-n04-b01-i036",
+      "validated": true,
+      "scoredOptions": 3
+    }
+  ]
+}
