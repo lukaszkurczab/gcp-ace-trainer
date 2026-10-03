@@ -1,0 +1,5 @@
+# Source12 primary reference check
+
+Root read the already-downloaded OMG UML2.5.1 normative PDF with existing bundled pypdf on2026-10-03, PDFpages681/691 (printed639/649), §§18.1.3.1/18.2.5. [Normative document](https://www.omg.org/spec/UML/2.5.1/PDF) specifies observable actor/stakeholder value, offered subject behavior without prescribing internal structure, and variations including exceptional behavior/error handling. This supports the outcome-versus-internal-milestone objective. It does not prescribe provider readiness, streaming guarantees or retryability; those are explicit authored scenario conditions.
+
+The browser PDF fetch failed because the18MB content exceeded its limit; the existing localPDF was read successfully, with no new tool/install. Root also opened the [official OMG issue UML25-519](https://issues.omg.org/issues/UML25-519), which discusses observable result/value and plural subjects; it is supplementary, not a substitute for the normative text. FullPDF/extracted text stays private. Previoussource11 reference receipt remains unchanged. This technical reference check grants no editorial/admission/publishing rights.

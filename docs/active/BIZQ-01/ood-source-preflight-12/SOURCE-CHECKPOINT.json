@@ -1,0 +1,17 @@
+{
+  "stage": "local producer source checkpoint after independent acceptance; no push or downstream admission",
+  "sourceCommit": "39420ca4d38a17556b168832e76b32dbf206d5d2",
+  "independentSourceProofVerdict": "PASS for bounded checkpoint",
+  "rootTargetedTests": {
+    "passed": 54,
+    "failed": 0
+  },
+  "fullPostCheckpointSuite": {
+    "passed": 116,
+    "failed": 0,
+    "skipped": 0
+  },
+  "candidateReadiness": "exact delegated candidate readiness created, separate runtime/publishing admission not granted",
+  "runtimeAdmission": "not newly granted",
+  "candidateId": "22b98e6c929f187e3afcd94183685b702cff6c72110d0882ea3e9b267c9c3f0f"
+}

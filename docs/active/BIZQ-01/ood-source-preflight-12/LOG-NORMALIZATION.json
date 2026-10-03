@@ -1,0 +1,16 @@
+[
+  {
+    "file": "ROOT-APP-STATIC.log",
+    "privateRawCopy": "/private/tmp/bizq01-source12-ROOT-APP-STATIC.log.raw",
+    "rawSha256": "17be07973a1d8cc9938d01a3a265073ba7b528711a0e3029166510c4982251e1",
+    "normalizedSha256": "0e9937884093462cb1ed19309ffc60fdad0c7e7d408076016ac4cf486c0f8da0",
+    "change": "trailing whitespace only; no result or wording changed"
+  },
+  {
+    "file": "ROOT-CROSS-REPO.log",
+    "privateRawCopy": "/private/tmp/bizq01-source12-ROOT-CROSS-REPO.log.raw",
+    "rawSha256": "cf557e12d0adfda183ada81b836db87705a014720ad6af3ed8fb22de612faff7",
+    "normalizedSha256": "d43fd70b08c7060398198ee1a85789712117343bf57c442964de1fdfeec61c6b",
+    "change": "trailing whitespace only; no result or wording changed"
+  }
+]

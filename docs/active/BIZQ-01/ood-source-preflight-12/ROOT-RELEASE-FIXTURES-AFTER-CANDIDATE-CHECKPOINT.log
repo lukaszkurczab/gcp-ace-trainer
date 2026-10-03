@@ -1,0 +1,345 @@
+TAP version 13
+# Subtest: launch readiness report is deterministic and exposes the unresolved release blockers
+not ok 1 - launch readiness report is deterministic and exposes the unresolved release blockers
+  ---
+  duration_ms: 669.304708
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseGate.test.mjs:170:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of null (reading 'headCommit')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseGate.test.mjs:191:42)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: release readiness reports missing, malformed, and complete public legal configuration safely
+ok 2 - release readiness reports missing, malformed, and complete public legal configuration safely
+  ---
+  duration_ms: 1854.907417
+  type: 'test'
+  ...
+# Subtest: launch readiness rejects a forged runtime admission
+ok 3 - launch readiness rejects a forged runtime admission
+  ---
+  duration_ms: 376.479917
+  type: 'test'
+  ...
+# Subtest: release gate fails while the readiness report contains blockers
+ok 4 - release gate fails while the readiness report contains blockers
+  ---
+  duration_ms: 315.605459
+  type: 'test'
+  ...
+# Subtest: enforced release gate requires a verified four-repository manifest
+ok 5 - enforced release gate requires a verified four-repository manifest
+  ---
+  duration_ms: 293.886208
+  type: 'test'
+  ...
+# Subtest: launch readiness fails closed when the content evidence checkout is dirty
+ok 6 - launch readiness fails closed when the content evidence checkout is dirty
+  ---
+  duration_ms: 161.751125
+  type: 'test'
+  ...
+# Subtest: explicit report output is written after inspection and does not dirty either worktree
+not ok 7 - explicit report output is written after inspection and does not dirty either worktree
+  ---
+  duration_ms: 365.63075
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseGate.test.mjs:321:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of null (reading 'repository')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseGate.test.mjs:331:42)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: owning validator rejects stale identity and malformed readiness semantics
+ok 8 - owning validator rejects stale identity and malformed readiness semantics
+  ---
+  duration_ms: 2143.181167
+  type: 'test'
+  ...
+# Subtest: enforced mode still writes a valid report before returning exit 1
+ok 9 - enforced mode still writes a valid report before returning exit 1
+  ---
+  duration_ms: 341.785542
+  type: 'test'
+  ...
+# Subtest: CLI rejects malformed arguments and physical output paths inside either worktree
+ok 10 - CLI rejects malformed arguments and physical output paths inside either worktree
+  ---
+  duration_ms: 748.938625
+  type: 'test'
+  ...
+# Subtest: launch readiness fails closed when the application release lock provenance is invalid
+ok 11 - launch readiness fails closed when the application release lock provenance is invalid
+  ---
+  duration_ms: 302.362833
+  type: 'test'
+  ...
+# Subtest: launch readiness fails closed when the application evidence checkout is dirty
+ok 12 - launch readiness fails closed when the application evidence checkout is dirty
+  ---
+  duration_ms: 323.584833
+  type: 'test'
+  ...
+# Subtest: launch readiness admits external evidence only when its envelope is bound and self-integral
+ok 13 - launch readiness admits external evidence only when its envelope is bound and self-integral
+  ---
+  duration_ms: 882.294708
+  type: 'test'
+  ...
+# Subtest: physical-device evidence is optional through freeze and mandatory at go
+ok 14 - physical-device evidence is optional through freeze and mandatory at go
+  ---
+  duration_ms: 866.443292
+  type: 'test'
+  ...
+# Subtest: stage contract keeps PO, provider, store, and device evidence out of local and freeze
+ok 15 - stage contract keeps PO, provider, store, and device evidence out of local and freeze
+  ---
+  duration_ms: 855.308584
+  type: 'test'
+  ...
+# Subtest: creates deterministic portable identity with repositories, locks, build, configuration, and evidence
+not ok 16 - creates deterministic portable identity with repositories, locks, build, configuration, and evidence
+  ---
+  duration_ms: 173.931208
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:172:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: verifies exact HEADs, clean worktrees, hashes and current content/OpenAPI owning checks
+not ok 17 - verifies exact HEADs, clean worktrees, hashes and current content/OpenAPI owning checks
+  ---
+  duration_ms: 5.505834
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:191:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: CLI create output can be copied to another external directory and verified
+not ok 18 - CLI create output can be copied to another external directory and verified
+  ---
+  duration_ms: 0.053542
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:199:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: enforced releaseGate reports a verified manifest identity without absolute paths
+not ok 19 - enforced releaseGate reports a verified manifest identity without absolute paths
+  ---
+  duration_ms: 0.022542
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:266:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: releaseGate accepts only a physical receipt for the exact embedded manifest and build
+not ok 20 - releaseGate accepts only a physical receipt for the exact embedded manifest and build
+  ---
+  duration_ms: 0.022333
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:286:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: runtime receipt rejects every mismatch with the verified embedded artifact
+not ok 21 - runtime receipt rejects every mismatch with the verified embedded artifact
+  ---
+  duration_ms: 0.0245
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:305:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: enforced releaseGate writes portable reports for invalid and missing manifests
+not ok 22 - enforced releaseGate writes portable reports for invalid and missing manifests
+  ---
+  duration_ms: 0.022334
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:314:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: rejects missing, extra and duplicate repository roles plus the legacy two-SHA shape
+not ok 23 - rejects missing, extra and duplicate repository roles plus the legacy two-SHA shape
+  ---
+  duration_ms: 0.077625
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:335:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: rejects wrong manifest identity, stale candidate/track scope and wrong repository SHA
+not ok 24 - rejects wrong manifest identity, stale candidate/track scope and wrong repository SHA
+  ---
+  duration_ms: 0.201375
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:356:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: rejects modified evidence before accepting a portable reference
+not ok 25 - rejects modified evidence before accepting a portable reference
+  ---
+  duration_ms: 0.155959
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:371:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: rejects changed iOS build, public configuration, and signing evidence bytes
+not ok 26 - rejects changed iOS build, public configuration, and signing evidence bytes
+  ---
+  duration_ms: 0.021667
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:379:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: rejects absolute, traversal and symlink references
+not ok 27 - rejects absolute, traversal and symlink references
+  ---
+  duration_ms: 0.020375
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:415:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+# Subtest: rejects dirty repositories and output paths inside or through symlinked parents
+not ok 28 - rejects dirty repositories and output paths inside or through symlinked parents
+  ---
+  duration_ms: 0.016208
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:439:1'
+  failureType: 'hookFailed'
+  error: 'Candidate admission release binding is stale.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    validateCandidateAdmissionV3 (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-admission-v3.mjs:98:200)
+    async Module.runCandidateReleaseGate (file:///private/tmp/patternly-gate03-Uz49yr/content/scripts/review/candidate-release-gate-v2.mjs:56:3)
+    async loadAndValidateContentContracts (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:435:23)
+    async createReleaseManifest (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.mjs:538:25)
+    async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/scripts/releaseManifest.test.mjs:163:19)
+    async TestHook.run (node:internal/test_runner/test:1054:7)
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 13
+# fail 15
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10695.045166

@@ -1,0 +1,237 @@
+{
+  "contentCommit": "237c14349d8bbe26aaed6d83ce58103b20761dd0",
+  "source11ProofSha256": "8218606f3667fc94aa161a05264923fe604b9be9ca81ca9f51a37a114a74f2ee",
+  "oodSourceSha256": "276dd399625cf56c95bbd6c595cd08f21d387742ff44650bc1c35de70e11d6ad",
+  "oodSourceObjects": {
+    "ood-n01-b01-i002": "e2fd505d93862a450c5c804fe4eb149b601ff363208d5b56305f6a882e150e61",
+    "ood-n01-b01-i003": "3cb652f28dd9a7c02fa0c0d8415454b6ef21787a7fc1ac5d007421853517fdb9",
+    "ood-n01-b01-i004": "7e6b94d2442cd3d7dcb29f023acb67316670ee65ebe73aa5e7e310ab816f2836",
+    "ood-n01-b01-i005": "fe420efcbd401e15c29de9f194f4df95d10a037a4e9902a6206715fb05823cd2",
+    "ood-n01-b01-i006": "a1b4b753164c22164b91d4f4856d22cb107371fbe39b3799d4ea5d5e49cdb712",
+    "ood-n01-b01-i007": "e37a039523b4435feb626c7661e9aec74845fb79c9e336fcab49282c23887d1f",
+    "ood-n01-b01-i008": "85710d6876d977007228d7e2fcf2046bc293cd8dce38034a152a71a475d8b1d5",
+    "ood-n01-b01-i009": "c0ff4a715ec33fb8fcc649fc78984ad63386aa33720a95fed94611d739fb7eae",
+    "ood-n01-b01-i010": "2182f6e52cb0f452145ad3d75420211efa14e8947219ae7d2a59f1bec2aed671",
+    "ood-n01-b01-i011": "c7883dd2e3fc7db4bd33f7cd132a6ca96b992b38a203cd403fed6d7db3463338",
+    "ood-n01-b01-i012": "3c91da00beae139da7167d58577edb177c33b7bca139b99483308083e425c5a4",
+    "ood-n01-b01-i013": "7fee962f02b6028d34038abb275e71bfdbd204f2c7d21dc86ce3dd85dda09271",
+    "ood-n01-b01-i014": "59dbd71c6c9eb012a879145d5c34e59677bef9bf4f616f73cca7677a44d2b7bd",
+    "ood-n01-b01-i015": "47072e1962749ced7c5cd75d4dbe6d1afdd59ca34877cac7ef863b09af8f710a",
+    "ood-n01-b01-i016": "2a0e1d0713d2d9ab92eadeecb5812c0fb8be9bf47cff994dec60425db27b3f8f",
+    "ood-n01-b01-i017": "560ce39b885018592dbd05f0be063babf143dfa84c7e96a4a0c652b8108bba0a",
+    "ood-n01-b01-i018": "ab0d832adaf853be0d0126b86d39d7061c259b87f6def2efaf3af73174f1a5d0"
+  },
+  "appArtifacts": [
+    {
+      "contentVersion": "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096",
+      "questionCount": 2604,
+      "sha256": "c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9",
+      "trackId": "aws-certified-solutions-architect-associate",
+      "fileSha256": "c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9"
+    },
+    {
+      "contentVersion": "backend-system-design-interview-authoring-v2026.10.02-bizq01-01",
+      "questionCount": 1569,
+      "sha256": "433246b061e1df9a4d96e28053e7e208ecae81a7319947edefd55a18157f5f49",
+      "trackId": "backend-system-design-interview",
+      "fileSha256": "433246b061e1df9a4d96e28053e7e208ecae81a7319947edefd55a18157f5f49"
+    },
+    {
+      "contentVersion": "ccarp-2026.09.03",
+      "questionCount": 300,
+      "sha256": "7d6d12a49d67642e3144d062a6d237bec4604917ab34124e4ee121263c6beb2d",
+      "trackId": "claude-certified-architect-professional-certification",
+      "fileSha256": "7d6d12a49d67642e3144d062a6d237bec4604917ab34124e4ee121263c6beb2d"
+    },
+    {
+      "contentVersion": "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04",
+      "questionCount": 3404,
+      "sha256": "4ceb71ebf2edd963dd6f1bdd274dface6da667dd7d3586fa44b52efe45f263f6",
+      "trackId": "coding-interview-dsa-problem-solving",
+      "fileSha256": "4ceb71ebf2edd963dd6f1bdd274dface6da667dd7d3586fa44b52efe45f263f6"
+    },
+    {
+      "contentVersion": "frontend-system-design-interview-candidate-v2026.08.15",
+      "questionCount": 1766,
+      "sha256": "7de3a0bd8860eef726c6bb11cbf8e0bbc88ff0282d1a4575cbf94cc5fb9dd9bf",
+      "trackId": "frontend-system-design-interview",
+      "fileSha256": "7de3a0bd8860eef726c6bb11cbf8e0bbc88ff0282d1a4575cbf94cc5fb9dd9bf"
+    },
+    {
+      "contentVersion": "google-cloud-associate-cloud-engineer-authoring-v2026.08.11",
+      "questionCount": 2981,
+      "sha256": "eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9",
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "fileSha256": "eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9"
+    },
+    {
+      "contentVersion": "microsoft-azure-administrator-associate-az-104-authoring-v2026.08.15",
+      "questionCount": 1288,
+      "sha256": "80e5b920beade4a9b540dfa505aa67368c07c99497998314935be53da9013975",
+      "trackId": "microsoft-azure-administrator-associate-az-104",
+      "fileSha256": "80e5b920beade4a9b540dfa505aa67368c07c99497998314935be53da9013975"
+    },
+    {
+      "contentVersion": "microsoft-azure-ai-fundamentals-ai-901-authoring-v2026.08.15",
+      "questionCount": 752,
+      "sha256": "ef25741799306c6cfbc7cc90cb7d76492f3df639c056b61b1c2b0492f5fbb9d4",
+      "trackId": "microsoft-azure-ai-fundamentals-ai-901",
+      "fileSha256": "ef25741799306c6cfbc7cc90cb7d76492f3df639c056b61b1c2b0492f5fbb9d4"
+    },
+    {
+      "contentVersion": "object-oriented-design-interview-authoring-v2026.10.03-bizq01-11",
+      "questionCount": 1413,
+      "sha256": "49e1bce7fe393145e04d46e4c3220b991c3f869be705e12cccdc2026490b08c4",
+      "trackId": "object-oriented-design-interview",
+      "fileSha256": "49e1bce7fe393145e04d46e4c3220b991c3f869be705e12cccdc2026490b08c4"
+    }
+  ],
+  "appContentLockFileSha256": "68ffaee5e89716877e438f3718f8a8d7c4b5a7060e929156992c829031500051",
+  "webRawQuestions": {
+    "alg-complexity-time-005": {
+      "answer": {
+        "optionId": "bounded_total_moves",
+        "type": "choice_single"
+      },
+      "difficulty": "foundational",
+      "feedback": {
+        "details": {
+          "blocks": [
+            {
+              "text": "Do not count the inner loop as n for every outer iteration unless it restarts. Instead, charge each iteration to a pointer advance. A left pointer can advance at most n positions and a right-moving pointer can also advance at most n positions, so there are at most 2n advances. If every loop iteration makes at least one such advance, there can be only O(n) iterations overall. This aggregate argument fails if an inner pointer resets and revisits the same elements for every outer iteration.",
+              "type": "paragraph"
+            }
+          ]
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "constant_body",
+            "text": "O(1) work per iteration still accumulates across at most 2n pointer-advancing iterations, giving O(n)."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "nested_never_matters",
+            "text": "Nested loops can be quadratic when inner work resets."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "pointer_names",
+            "text": "Names such as `left` and `right` provide no bound unless their movement and reset behavior are proved."
+          }
+        ],
+        "reason": "The nested shape is misleading here: each pointer only moves forward and can advance at most n times during the entire run.",
+        "type": "choice_single"
+      },
+      "interaction": {
+        "options": [
+          {
+            "optionId": "bounded_total_moves",
+            "text": "Across the whole run, each pointer advances at most n times."
+          },
+          {
+            "optionId": "nested_never_matters",
+            "text": "Nested loops are always linear."
+          },
+          {
+            "optionId": "pointer_names",
+            "text": "Variables named left and right imply O(n)."
+          },
+          {
+            "optionId": "constant_body",
+            "text": "The loop body is constant-time, so total time is constant."
+          }
+        ],
+        "scoringMethod": "exact_selected_set",
+        "type": "choice_single"
+      },
+      "mentalUnitId": "derive_time_complexity",
+      "nodeId": "complexity_and_constraints",
+      "prompt": "Two pointers each move only forward through an array, neither pointer moves backward, and every loop iteration advances at least one pointer. Why can a nested while loop still be O(n)?",
+      "questionId": "alg-complexity-time-005",
+      "trackId": "coding-interview-dsa-problem-solving"
+    },
+    "aws-saa-c03-architecture-001-odk096": {
+      "answer": {
+        "optionId": "A",
+        "type": "choice_single"
+      },
+      "constraints": [
+        "Three stateless application replicas are distributed across Availability Zones.",
+        "Every replica depends on one database with no failover or independent recovery path.",
+        "The review asks for the primary Well-Architected risk represented by the finding."
+      ],
+      "difficulty": null,
+      "feedback": {
+        "details": {
+          "boundaryOrTradeoff": "Replicating stateless frontends does not remove a hard dependency; a single nonredundant dependency can determine the availability of the invoking workload.",
+          "errorCorrection": "The finding is not primarily a cost or sustainability label. A database that can interrupt every replica is a reliability risk even when frontend capacity spans Availability Zones.",
+          "mechanismOrProperty": "AWS defines reliability as a workload performing its intended function consistently and notes that hard dependency interruptions directly translate into interruptions of the invoking system.",
+          "scenarioApplication": "The review records the database as a reliability risk and evaluates Multi-AZ, failover, backup, and recovery behavior for the data dependency rather than stopping at frontend redundancy.",
+          "url": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/availability.html"
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "B",
+            "text": "The scenario does not identify a measured resource-efficiency problem; the immediate issue is the single dependency that can take the whole service offline."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "C",
+            "text": "Extra frontend capacity may add cost, but cost is not the primary risk represented by a nonredundant database dependency."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "D",
+            "text": "The stated failure mode is loss of workload function through a hard dependency, which is a reliability concern rather than a sustainability finding."
+          }
+        ],
+        "reason": "A single database with no failover remains a hard shared dependency, so it is a reliability risk even though the stateless application tier is redundant.",
+        "type": "choice_single"
+      },
+      "interaction": {
+        "options": [
+          {
+            "optionId": "A",
+            "text": "Record a reliability risk: the nonredundant database is a hard dependency that can take down all application replicas."
+          },
+          {
+            "optionId": "B",
+            "text": "Record only a performance-efficiency risk because any database dependency is a query-latency issue."
+          },
+          {
+            "optionId": "C",
+            "text": "Record only a cost-optimization risk because the application has more than one frontend replica."
+          },
+          {
+            "optionId": "D",
+            "text": "Record only a sustainability risk because the database is shared by multiple replicas."
+          }
+        ],
+        "scoringMethod": "exact_selected_set",
+        "type": "choice_single"
+      },
+      "mentalUnitId": "architecture_review",
+      "nodeId": "aws_secure_architecture_foundations",
+      "prompt": "A review finds three stateless application replicas across Availability Zones, but all three depend on one database with no failover or independent recovery path. What is the primary Well-Architected finding?",
+      "questionId": "aws-saa-c03-architecture-001-odk096",
+      "sourceRefs": [
+        "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/availability.html",
+        "https://docs.aws.amazon.com/wellarchitected/latest/framework/definitions.html"
+      ],
+      "trackId": "aws-certified-solutions-architect-associate"
+    }
+  },
+  "webDetailsParagraphs": {
+    "alg-complexity-time-005": [
+      "Do not count the inner loop as n for every outer iteration unless it restarts. Instead, charge each iteration to a pointer advance. A left pointer can advance at most n positions and a right-moving pointer can also advance at most n positions, so there are at most 2n advances. If every loop iteration makes at least one such advance, there can be only O(n) iterations overall. This aggregate argument fails if an inner pointer resets and revisits the same elements for every outer iteration."
+    ],
+    "aws-saa-c03-architecture-001-odk096": [
+      "Replicating stateless frontends does not remove a hard dependency; a single nonredundant dependency can determine the availability of the invoking workload.",
+      "The finding is not primarily a cost or sustainability label. A database that can interrupt every replica is a reliability risk even when frontend capacity spans Availability Zones.",
+      "AWS defines reliability as a workload performing its intended function consistently and notes that hard dependency interruptions directly translate into interruptions of the invoking system.",
+      "The review records the database as a reliability risk and evaluates Multi-AZ, failover, backup, and recovery behavior for the data dependency rather than stopping at frontend redundancy."
+    ]
+  }
+}

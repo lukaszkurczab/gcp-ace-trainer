@@ -1,0 +1,23 @@
+{
+  "frontendCommit": "2a9eecf90b46cc9286b1b67bb01984710bc54c52",
+  "candidateId": "22b98e6c929f187e3afcd94183685b702cff6c72110d0882ea3e9b267c9c3f0f",
+  "status": "passed",
+  "releaseBoundary": "local_verified_artifacts_no_deployment",
+  "bindings": [
+    {
+      "path": "integration/contracts/content-release/release.lock.json",
+      "sha256": "5d9fc92885f4e5a7aaeb61de42f3d8aabc03bd02d23dfd640889213f65f95a3d",
+      "committedBytesMatch": true
+    },
+    {
+      "path": "src/content/generated/canonical-content/content-lock.json",
+      "sha256": "ca666784c16dc487c239a93ef64dbab8643d86d705075a96f551017e11254dcb",
+      "committedBytesMatch": true
+    },
+    {
+      "path": "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts",
+      "sha256": "83ef355f4c5aeb5f6161864d3486cc2cddb239bacbceced95f184640373c9480",
+      "committedBytesMatch": true
+    }
+  ]
+}

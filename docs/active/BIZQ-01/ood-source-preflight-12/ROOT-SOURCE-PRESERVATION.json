@@ -1,0 +1,15 @@
+{
+  "stage": "root actual source preservation before downstream pipeline",
+  "sourceCount": 17,
+  "unchangedUnitObjects": 16,
+  "retiredId": "ood-n01-b01-i002",
+  "replacementId": "ood-n01-b01-i019",
+  "source11ProofBytesUnchanged": true,
+  "source11ProofSha256": "8218606f3667fc94aa161a05264923fe604b9be9ca81ca9f51a37a114a74f2ee",
+  "onlySourceFilesChanged": [
+    "content/catalog.json",
+    "content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B01.json"
+  ],
+  "catalogOnlyOodVersionChanged": true,
+  "producerHelperAcceptance": false
+}

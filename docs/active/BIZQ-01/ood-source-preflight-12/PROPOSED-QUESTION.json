@@ -1,0 +1,71 @@
+{
+  "answer": {
+    "optionId": "completed_switch_outcomes",
+    "type": "choice_single"
+  },
+  "constraints": [
+    "CaptionStudio owns provider preparation and handover; the supervisor requests an outcome rather than running that internal protocol.",
+    "The request reports a completed switch result; receiving a request and preparing a provider are intermediate milestones.",
+    "The active stream's timing and error behavior remain available if preparation fails.",
+    "The current provider remains active until a ready replacement is activated; preparation failure keeps it active."
+  ],
+  "difficulty": "foundational_boundary",
+  "feedback": {
+    "details": {
+      "boundaryOrTradeoff": "The retryable failure is a requirement of this scenario, not a rule imposed by UML. An asynchronous accepted-request contract could expose a separate job-status outcome, but it would be a different contract from the completed switch requested here. A use-case description does not itself implement a safe handover.",
+      "errorCorrection": "Request received, provider ready, and provider active are different observations. The first two can be valuable goals under a different scope, but neither completes this supervisor's switch-provider goal. A preparation failure is an alternative outcome of this attempt, not a success followed by an unrelated problem.",
+      "mechanismOrProperty": "A use case describes behavior offered by its subject that produces observable value for an actor. It can include exceptional behavior and error handling without fixing the subject's internal structure. Success and failure outcomes therefore describe what the actor can observe, rather than which internal methods the actor must call.",
+      "scenarioApplication": "For CaptionStudio, success means that the requested ready provider is active while the stream contract still holds. If preparation fails, the current provider continues and the supervisor receives an explicit retryable failure. Provider readiness is only a condition for the handover, not evidence that the switch has finished.",
+      "transfer": "Before naming collaborators, identify the actor's completed goal, the state guaranteed if the attempt fails, and the system responsible for those outcomes. Test successful and failed attempts through those observations instead of requiring a particular internal call sequence."
+    },
+    "messages": [
+      {
+        "kind": "wrong_option",
+        "targetId": "supervisor_runs_protocol",
+        "text": "CaptionStudio owns preparation and handover. Requiring the supervisor to execute and recover its internal steps exposes the realization protocol instead of defining the observable success and failure of the subject's use case."
+      },
+      {
+        "kind": "wrong_option",
+        "targetId": "accepted_request_is_success",
+        "text": "An accepted request is not a completed provider switch. Under the stated completion contract, preparation failure is still an outcome of this attempt and must be reported while the current stream remains available."
+      },
+      {
+        "kind": "wrong_option",
+        "targetId": "provider_ready_is_success",
+        "text": "Readiness permits a handover; it does not complete the supervisor's goal. Reporting success while the current provider is still active describes an intermediate milestone, not the requested completed switch."
+      }
+    ],
+    "reason": "The use case must expose the result delivered by CaptionStudio to the supervisor. Success requires the requested ready provider to be active with the stream contract preserved. Failed preparation requires an explicit retryable failure while the current provider continues, rather than treating internal steps or readiness as completed success.",
+    "type": "choice_single"
+  },
+  "interaction": {
+    "type": "choice_single",
+    "scoringMethod": "exact_selected_set",
+    "options": [
+      {
+        "optionId": "completed_switch_outcomes",
+        "text": "Success: the requested ready provider is active and the stream contract still holds. Failure: preparation fails, the current provider remains active, and the supervisor receives a retryable failure result."
+      },
+      {
+        "optionId": "supervisor_runs_protocol",
+        "text": "Success: the supervisor prepares the provider and invokes the handover steps in order. Failure: the supervisor chooses recovery steps and reopens the stream; CaptionStudio reports which internal step failed."
+      },
+      {
+        "optionId": "accepted_request_is_success",
+        "text": "Success: CaptionStudio accepts the request and reports the requested provider as selected. Failure: only request validation fails; a later preparation problem belongs to a separate use case after success."
+      },
+      {
+        "optionId": "provider_ready_is_success",
+        "text": "Success: the requested provider reports ready while the current provider continues the stream. Failure: the readiness check reports unavailable; activating a ready provider is deferred to another supervisor-facing use case."
+      }
+    ]
+  },
+  "mentalUnitId": "OOD-N01-B01",
+  "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+  "prompt": "A caption supervisor asks CaptionStudio to replace the active caption provider during a live session. CaptionStudio owns provider preparation and handover. A new provider may become active only after it reports ready. Until that activation, including failed preparation, the current provider remains active and the stream retains its timing and error contract. The request returns a completed switch result, not just an acknowledgement; a failed preparation must be reported as retryable. Which success-and-failure definition belongs to the supervisor-facing ‘Switch caption provider’ use case?",
+  "questionId": "ood-n01-b01-i019",
+  "sourceRefs": [
+    "https://www.omg.org/spec/UML/2.5.1/PDF"
+  ],
+  "trackId": "object-oriented-design-interview"
+}

@@ -1,0 +1,57 @@
+{
+  "webUiUnchanged": true,
+  "rawQuestionsUnchanged": true,
+  "detailsParagraphsUnchanged": true,
+  "onlyFile": "src/generated/demoQuestions.json",
+  "demos": [
+    {
+      "questionId": "alg-complexity-time-005",
+      "provenance": {
+        "trackId": "coding-interview-dsa-problem-solving",
+        "nodeId": "complexity_and_constraints",
+        "questionId": "alg-complexity-time-005",
+        "contentVersion": "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04",
+        "artifactSha256": "4ceb71ebf2edd963dd6f1bdd274dface6da667dd7d3586fa44b52efe45f263f6",
+        "appContentLockSha256": "ca666784c16dc487c239a93ef64dbab8643d86d705075a96f551017e11254dcb",
+        "releaseLockSha256": "5d9fc92885f4e5a7aaeb61de42f3d8aabc03bd02d23dfd640889213f65f95a3d",
+        "admissionPath": "patternly-content/evidence/admissions/candidate-admission-v3.json",
+        "admissionSha256": "c60fb744fde7f70a3299565d9900c6d5bc0867cf38d07809e5097f3dd51c8252",
+        "candidateId": "22b98e6c929f187e3afcd94183685b702cff6c72110d0882ea3e9b267c9c3f0f",
+        "sourceReleaseSha256": "c8fb8e993c7c7b926cb76a298e845f84900a4ebd3f41056dd8b3b9c29abc97fa",
+        "runtimeEvidenceSha256": "35756a46ef658bc0b0887d8fa563ec5cf5b8da3a76ed2f1ab20491a576e0bd9e",
+        "releaseId": "patternly-candidate-39420ca4d38a",
+        "producerCommit": "39420ca4d38a17556b168832e76b32dbf206d5d2",
+        "sourcePath": "content/coding-interview-dsa-problem-solving/complexity_and_constraints/derive_time_complexity.json",
+        "modeIds": [
+          "coding-interview-learn-approach",
+          "coding-interview-guided-practice",
+          "coding-interview-custom-practice"
+        ]
+      }
+    },
+    {
+      "questionId": "aws-saa-c03-architecture-001-odk096",
+      "provenance": {
+        "trackId": "aws-certified-solutions-architect-associate",
+        "nodeId": "aws_secure_architecture_foundations",
+        "questionId": "aws-saa-c03-architecture-001-odk096",
+        "contentVersion": "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096",
+        "artifactSha256": "c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9",
+        "appContentLockSha256": "ca666784c16dc487c239a93ef64dbab8643d86d705075a96f551017e11254dcb",
+        "releaseLockSha256": "5d9fc92885f4e5a7aaeb61de42f3d8aabc03bd02d23dfd640889213f65f95a3d",
+        "admissionPath": "patternly-content/evidence/admissions/candidate-admission-v3.json",
+        "admissionSha256": "c60fb744fde7f70a3299565d9900c6d5bc0867cf38d07809e5097f3dd51c8252",
+        "candidateId": "22b98e6c929f187e3afcd94183685b702cff6c72110d0882ea3e9b267c9c3f0f",
+        "sourceReleaseSha256": "c8fb8e993c7c7b926cb76a298e845f84900a4ebd3f41056dd8b3b9c29abc97fa",
+        "runtimeEvidenceSha256": "35756a46ef658bc0b0887d8fa563ec5cf5b8da3a76ed2f1ab20491a576e0bd9e",
+        "releaseId": "patternly-candidate-39420ca4d38a",
+        "producerCommit": "39420ca4d38a17556b168832e76b32dbf206d5d2",
+        "sourcePath": "content/aws-certified-solutions-architect-associate/aws_secure_architecture_foundations/architecture_review.json",
+        "modeIds": [
+          "certification-focus-practice"
+        ]
+      }
+    }
+  ],
+  "probeCorrection": "Initial root comparison used the wrong baseline property/array shape; corrected to actual questionId-keyed webRawQuestions. No source changed."
+}
