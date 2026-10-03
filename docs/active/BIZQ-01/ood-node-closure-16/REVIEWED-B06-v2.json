@@ -1,0 +1,1141 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b06-i018",
+    "prompt": "An offline inspection is complete only when required readings and inspector sign-off are present. The screen and sync worker invoke the same operation; the application service queues offline work. Where should completeness be checked?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "screen_rule",
+          "text": "The screen checks the fields before enabling Submit."
+        },
+        {
+          "optionId": "inspection_rule",
+          "text": "Inspection owns completeness; the application service queues and syncs."
+        },
+        {
+          "optionId": "app_rule",
+          "text": "Each application entry point repeats the completeness predicate."
+        },
+        {
+          "optionId": "repo_rule",
+          "text": "The repository marks every saved inspection complete."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "inspection_rule"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The predicate is intrinsic to one Inspection and both callers reuse its operation; queueing is a separate workflow responsibility.",
+      "details": {
+        "mechanismOrProperty": "Completeness uses the Inspection's readings and sign-off; queueing is caller orchestration.",
+        "scenarioApplication": "The later sync worker reuses Inspection's completeness operation after it restores queued data; it does not trust a screen-only check.",
+        "errorCorrection": "The closest competing placement is The screen checks the fields before enabling Submit. The predicate is intrinsic to one Inspection and both callers reuse its operation; queueing is a separate workflow responsibility.",
+        "boundaryOrTradeoff": "If each entry point had materially different completion criteria, one common predicate might not suffice.",
+        "transfer": "For shared validation, ask whether the rule belongs to the data object every caller already uses, then leave queue scheduling to the application workflow."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "screen_rule",
+          "text": "A UI check can improve form feedback, but the sync worker also invokes the operation and needs the same completeness rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "app_rule",
+          "text": "Repeating the predicate in each caller invites screen and sync to disagree about a complete inspection."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repo_rule",
+          "text": "A write does not prove required readings and sign-off were supplied; storage should not invent the completion decision."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b06-i019",
+    "prompt": "A rejected invoice may be reissued with a new reference. The model validates rejection/reference policy; a billing API call and local payment record must be coordinated after a timeout. Which layer sequences the use case?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "entity_calls_api",
+          "text": "Invoice calls the billing SDK and writes its own payment record."
+        },
+        {
+          "optionId": "repo_retries",
+          "text": "The repository owns the retry and billing workflow because it stores the issue."
+        },
+        {
+          "optionId": "app_reissue",
+          "text": "The application service coordinates domain preparation, the billing call, and recording the outcome."
+        },
+        {
+          "optionId": "screen_retries",
+          "text": "The screen sequences the provider call, invoice update, and retry."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "app_reissue"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The flow crosses domain validation, an external API, and persistence; orchestration belongs to the application service.",
+      "details": {
+        "mechanismOrProperty": "A multi-effect use case sequences domain preparation, provider interaction, and persistence.",
+        "scenarioApplication": "The reissue use case obtains a domain-approved new reference, calls billing, and records the provider result; retry semantics remain separately specified.",
+        "errorCorrection": "The closest competing placement is Invoice calls the billing SDK and writes its own payment record. The flow crosses domain validation, an external API, and persistence; orchestration belongs to the application service.",
+        "boundaryOrTradeoff": "This placement alone does not establish idempotency or safe retry after an unknown provider result.",
+        "transfer": "For a multi-effect command, keep the domain decision reusable and identify which layer sequences external effects; retry guarantees must come from the actual contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "entity_calls_api",
+          "text": "Invoice should not call a provider SDK or persist its own payment record; those are infrastructure effects outside its domain rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repo_retries",
+          "text": "A repository stores data, but it does not own the sequence of a billing request and retrying use case."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "screen_retries",
+          "text": "A UI retry loop would couple the workflow to one caller and leave other entry points without the same coordination."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b06-i020",
+    "prompt": "A door vendor sends a signed access request using its own field names and status codes. The application contract uses AccessRequest; AccessPolicy decides allow/deny from a loaded Badge. Where should protocol fields and response codes be translated?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "policy_parses_wire",
+          "text": "AccessPolicy parses vendor field names and status codes while deciding allow or deny."
+        },
+        {
+          "optionId": "badge_knows_protocol",
+          "text": "Badge stores the vendor request schema and formats the response itself."
+        },
+        {
+          "optionId": "repository_maps_protocol",
+          "text": "The badge repository translates inbound access messages as it loads the record."
+        },
+        {
+          "optionId": "door_adapter_maps",
+          "text": "The door adapter maps vendor fields to AccessRequest and the policy result back."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "door_adapter_maps"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The vendor protocol is an inbound/outbound transport concern; the domain policy should receive the application's domain request, not vendor wire fields.",
+      "details": {
+        "mechanismOrProperty": "A protocol adapter translates external representations at the boundary; this keeps vendor-specific fields out of the domain model and policy.",
+        "scenarioApplication": "The adapter converts vendor status codes around the policy call; the Badge model and AccessPolicy receive application-shaped data.",
+        "errorCorrection": "The nearest alternative is putting vendor parsing in AccessPolicy: that would make the domain decision depend on the vendor's transport fields.",
+        "boundaryOrTradeoff": "The adapter does not decide access. It translates request and response shapes; AccessPolicy decides allow or deny from the loaded Badge as the prompt specifies.",
+        "transfer": "At protocol boundaries, translate provider or device messages before domain policy and translate the result on the way out."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "policy_parses_wire",
+          "text": "AccessPolicy should make the allow/deny decision from domain facts, not decode vendor field names or status codes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "badge_knows_protocol",
+          "text": "Badge carries domain state and behavior; embedding vendor serialization couples that model to a transport."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repository_maps_protocol",
+          "text": "A repository loads badge data. Translating an inbound access protocol belongs at the adapter boundary, not persistence."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b06-i021",
+    "prompt": "Carrier A returns a label reference as `shipment_label_ref`; Carrier B calls the equivalent value `tracking_label`. The application contract uses LabelReference. Which boundary should normalize those provider-specific response fields?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "carrier_adapter_maps",
+          "text": "Each carrier adapter maps its provider response into the shared LabelReference contract."
+        },
+        {
+          "optionId": "shipment_knows_wire",
+          "text": "Shipment stores both providers’ response field names and selects one after every call."
+        },
+        {
+          "optionId": "app_branches_wire",
+          "text": "The application service branches on provider JSON fields wherever it requests a label."
+        },
+        {
+          "optionId": "repository_normalizes",
+          "text": "The shipment repository renames provider response fields while saving all shipment data."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "carrier_adapter_maps"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The differing response shapes belong to provider adapters; callers should receive the shared application contract.",
+      "details": {
+        "mechanismOrProperty": "An adapter isolates a provider's protocol vocabulary from the application's stable contract. The two wire fields represent the same returned label reference in this scenario.",
+        "scenarioApplication": "Carrier A and Carrier B return different field names, but each adapter supplies the same LabelReference to the caller.",
+        "errorCorrection": "The nearest alternative is branching on provider JSON in the application: that spreads each carrier schema into the use case.",
+        "boundaryOrTradeoff": "This mapping does not claim the label is current or valid; it normalizes the response shape only.",
+        "transfer": "When providers expose equivalent values with different schemas, normalize at each adapter and keep callers on one internal contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "shipment_knows_wire",
+          "text": "Shipment should not retain multiple provider JSON schemas; adapters translate those into the one LabelReference representation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "app_branches_wire",
+          "text": "Provider-specific branches spread transport details into each use case instead of containing them in the adapter."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repository_normalizes",
+          "text": "The repository persists application data; it should not be responsible for interpreting carrier response payloads."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b06-i022",
+    "prompt": "A room-move rule compares a rehearsal's attendee count with a Room's capacity. Neither object alone has both facts; both web and admin flows use the same policy. Where does that decision belong?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "admin_service_rule",
+          "text": "Keep the rule in the admin service because administrators move most rehearsals."
+        },
+        {
+          "optionId": "domain_service_capacity",
+          "text": "A shared domain service evaluates capacity across Room and Rehearsal."
+        },
+        {
+          "optionId": "room_owns_all",
+          "text": "Make Room reach into each rehearsal and own the entire policy."
+        },
+        {
+          "optionId": "db_trigger_rule",
+          "text": "Encode the whole scheduling policy in a persistence trigger."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "domain_service_capacity"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The domain decision combines two object facts and is shared across callers, with no natural single-object owner.",
+      "details": {
+        "mechanismOrProperty": "The policy combines two domain facts and has no natural single-object owner.",
+        "scenarioApplication": "The same capacity decision can be requested by web and admin flows; neither caller must own a duplicate room/rehearsal comparison.",
+        "errorCorrection": "The closest competing placement is Keep the rule in the admin service because administrators move most rehearsals. The domain decision combines two object facts and is shared across callers, with no natural single-object owner.",
+        "boundaryOrTradeoff": "If the rule concerned only Room's own capacity property, a Room method could own it.",
+        "transfer": "A domain service is suitable here because the reusable rule combines multiple domain facts; if one object naturally owns it, consider that object instead."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "admin_service_rule",
+          "text": "The admin screen is one caller; the same capacity rule is also used by the web workflow, so caller ownership would duplicate domain policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "room_owns_all",
+          "text": "The prompt says neither Room nor Rehearsal alone owns the shared capacity decision; making Room own both facts crosses its stated boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "db_trigger_rule",
+          "text": "The rule is a reusable domain decision called by workflows; hiding it in a database trigger ties behavior to persistence execution."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n01-b06-i023",
+    "prompt": "An Exhibit model receives every unsafe command. Its maintenance state blocks those commands while maintenance is active. Where should this be enforced?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "screen_guard",
+          "text": "Each controller rejects unsafe commands before calling Exhibit."
+        },
+        {
+          "optionId": "repo_guard",
+          "text": "The repository rejects every write while maintenance is active."
+        },
+        {
+          "optionId": "exhibit_guard",
+          "text": "Exhibit checks its maintenance state when handling each unsafe command."
+        },
+        {
+          "optionId": "global_guard",
+          "text": "A new global service gates all operations while Exhibit remains unguarded."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "exhibit_guard"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The rule governs commands based on state owned by Exhibit, so every caller can share the same guard.",
+      "details": {
+        "mechanismOrProperty": "The object's state governs its own commands across callers.",
+        "scenarioApplication": "A background command caller reaches Exhibit through the same operation and receives the same maintenance guard as the screen.",
+        "errorCorrection": "The closest competing placement is Each controller rejects unsafe commands before calling Exhibit. The rule governs commands based on state owned by Exhibit, so every caller can share the same guard.",
+        "boundaryOrTradeoff": "If this were only a presentation warning with no domain command effect, the UI could own it.",
+        "transfer": "If every path must respect a state-dependent command restriction, put the guard at the operation boundary that owns that state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "screen_guard",
+          "text": "Another caller could bypass the screen and send the same unsafe command to Exhibit."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repo_guard",
+          "text": "The rule blocks unsafe commands, not every write; persistence does not know which domain command is unsafe."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "global_guard",
+          "text": "A global gate adds a caller-dependent check while leaving the command owner unprotected."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b06-i024",
+    "prompt": "A lesson's canonical ID appears in existing progress records. Catalog administration can retire a lesson but must keep that ID resolvable; the app loads a Lesson through a repository port. What should the infrastructure repository do?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "repo_deletes_retired",
+          "text": "Delete the stored row when the catalog stops offering the lesson to new learners."
+        },
+        {
+          "optionId": "screen_rewrites_progress",
+          "text": "Rewrite learner progress IDs in the catalog screen before saving retirement."
+        },
+        {
+          "optionId": "domain_queries_database",
+          "text": "Make Lesson issue database queries directly so its ID stays resolvable."
+        },
+        {
+          "optionId": "repository_maps_by_id",
+          "text": "Use the repository port to map stored Lesson data by canonical ID."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "repository_maps_by_id"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The repository implements the data access contract for stable-ID lookup and persistence; Lesson still owns its retirement meaning.",
+      "details": {
+        "mechanismOrProperty": "An infrastructure repository maps persisted records to the domain-facing contract. Keeping the key stable lets existing references resolve without making Lesson depend on a database.",
+        "scenarioApplication": "Existing progress still resolves through the original lesson ID because the repository maps and saves that identifier without deletion.",
+        "errorCorrection": "The nearest alternative is deleting the stored row. That makes the stable ID in existing progress unresolvable; mapping by ID through the repository preserves the stated contract.",
+        "boundaryOrTradeoff": "The repository preserves identity mapping, but the app use case and Lesson decide what retirement means; persistence does not determine availability policy.",
+        "transfer": "Keep storage lookup and persistence mapping in the repository; preserve the key the domain and existing references already use."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "repo_deletes_retired",
+          "text": "Deleting the row breaks the prompt’s requirement that existing progress still resolve the canonical lesson ID."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "screen_rewrites_progress",
+          "text": "The catalog screen should not rewrite learner progress IDs; retirement changes offering status while the canonical ID remains stable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "domain_queries_database",
+          "text": "Putting database access in Lesson couples the domain model to storage; the repository port owns lookup and persistence mapping."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b06-i025",
+    "prompt": "A session export needs a stable session snapshot, then a file writer stores it and returns a link. The Session model exposes snapshot contents. Who owns filesystem writes?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "infra_file_io",
+          "text": "A storage adapter writes the snapshot; the application coordinates the export."
+        },
+        {
+          "optionId": "session_writes_file",
+          "text": "Session serializes and writes itself to a filesystem path."
+        },
+        {
+          "optionId": "app_path_code",
+          "text": "The application service builds paths, encodes bytes, and writes the file inline."
+        },
+        {
+          "optionId": "repo_snapshot_policy",
+          "text": "The repository decides which session state belongs in the snapshot."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "infra_file_io"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The prompt separates domain snapshot meaning, use-case sequencing, and technical file access.",
+      "details": {
+        "mechanismOrProperty": "The Session defines snapshot contents; a storage adapter performs file I/O.",
+        "scenarioApplication": "The application supplies Session's snapshot to the file adapter, then returns the adapter's link to the requester.",
+        "errorCorrection": "The closest competing placement is Session serializes and writes itself to a filesystem path. The prompt separates domain snapshot meaning, use-case sequencing, and technical file access.",
+        "boundaryOrTradeoff": "If the export were an in-memory value with no storage boundary, a file adapter would not be needed.",
+        "transfer": "Have the domain model define what is exported, let the use case sequence the request, and isolate filesystem mechanics in an adapter."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "session_writes_file",
+          "text": "Session defines snapshot contents, but writing a filesystem path is technical I/O that the prompt assigns to a storage adapter."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "app_path_code",
+          "text": "The application sequences the export and returns the link; inline path and byte-writing code mixes orchestration with storage mechanics."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repo_snapshot_policy",
+          "text": "The repository stores or retrieves data; the Session model defines which state belongs in its domain snapshot."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b06-i026",
+    "prompt": "SupportCase owns the escalation policy. A use case must apply it, transfer a case to a queue, and request a customer notification. What belongs in the application service?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "duplicate_policy",
+          "text": "Copy the escalation rule into the service beside the queue call."
+        },
+        {
+          "optionId": "app_escalation",
+          "text": "Coordinate the policy call, queue transfer, and notification without reimplementing SupportCase's rule."
+        },
+        {
+          "optionId": "queue_decides",
+          "text": "Let the queue adapter decide eligibility and send the customer message."
+        },
+        {
+          "optionId": "case_sends",
+          "text": "Have SupportCase call the notification provider after changing ownership."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "app_escalation"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The service coordinates collaborators; the domain policy and technical adapters retain their own responsibilities.",
+      "details": {
+        "mechanismOrProperty": "Use-case coordination differs from SupportCase policy and adapter delivery.",
+        "scenarioApplication": "One use case asks SupportCase whether escalation qualifies, then coordinates queue transfer and a customer notification.",
+        "errorCorrection": "The closest competing placement is Copy the escalation rule into the service beside the queue call. The service coordinates collaborators; the domain policy and technical adapters retain their own responsibilities.",
+        "boundaryOrTradeoff": "No atomicity between queue transfer and notification is stated or implied.",
+        "transfer": "Keep a shared eligibility rule in its domain owner and let application orchestration connect that result to queues and notifications."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "duplicate_policy",
+          "text": "SupportCase already owns the rule; duplicating it in the use case can make queue and case callers disagree."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "queue_decides",
+          "text": "The queue adapter translates queue operations; it is not the domain authority for escalation eligibility."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "case_sends",
+          "text": "Calling a notification provider from SupportCase couples domain behavior to delivery infrastructure."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b06-i027",
+    "prompt": "A buyer asks for already-published produce listings in one region. The application use case accepts region and page size; the data store has indexed published-status and region columns. Which responsibility belongs in ListingRepository?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "repo_decides_publish",
+          "text": "Decide whether each draft should become published while reading the rows."
+        },
+        {
+          "optionId": "screen_scans_catalog",
+          "text": "Load the entire catalog into the screen and filter by region and publication status there."
+        },
+        {
+          "optionId": "repository_translates_query",
+          "text": "Translate the requested filter/page into the storage query and map returned rows to Listing objects."
+        },
+        {
+          "optionId": "listing_runs_sql",
+          "text": "Have each Listing instance query the database for neighboring records in its region."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "repository_translates_query"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The use case provides the query criteria; the repository translates them to persistence and returns domain-facing records.",
+      "details": {
+        "mechanismOrProperty": "A repository boundary adapts a domain-facing query to storage indexes and maps the result back. That is data access, not a decision to publish drafts.",
+        "scenarioApplication": "The query port receives region/page size, while its database implementation applies the indexed filter and maps rows to Listing.",
+        "errorCorrection": "The nearest alternative is having the screen scan the catalog: it moves the stated indexed query out of the data-access boundary.",
+        "boundaryOrTradeoff": "The premise says these stored columns represent already-published status and region; if publication required a richer policy check, query filtering alone would not decide it.",
+        "transfer": "An application query states what the use case needs; the repository translates it into storage operations and maps the result back."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "repo_decides_publish",
+          "text": "These rows are already published; the repository performs the requested filter and does not decide whether a draft may be published."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "screen_scans_catalog",
+          "text": "The prompt specifies an indexed query and page limit, so loading the full catalog into the screen bypasses the data-access boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "listing_runs_sql",
+          "text": "A Listing instance represents one record; querying neighboring rows from it couples a domain object to database access."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b06-i028",
+    "prompt": "A parts allocation compares several vendor limits and one shared delivery promise; no Vendor or Request contains all the facts. The workflow also saves the allocation and sends confirmations. Which responsibility split fits?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "app_calculates",
+          "text": "Calculate the allocation in the first application flow that needs it."
+        },
+        {
+          "optionId": "first_vendor_decides",
+          "text": "Let one Vendor decide the whole split for the others."
+        },
+        {
+          "optionId": "repo_splits",
+          "text": "Have the repository choose vendors during persistence."
+        },
+        {
+          "optionId": "allocation_service",
+          "text": "A domain service evaluates shared allocation policy; the application coordinates persistence."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "allocation_service"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The allocation is domain policy across several objects; persistence and notifications are later workflow coordination.",
+      "details": {
+        "mechanismOrProperty": "Cross-vendor policy and caller-specific workflow are separate decisions.",
+        "scenarioApplication": "The allocation decision is shared by two callers; each then saves and confirms it through its own workflow.",
+        "errorCorrection": "The closest competing placement is Calculate the allocation in the first application flow that needs it. The allocation is domain policy across several objects; persistence and notifications are later workflow coordination.",
+        "boundaryOrTradeoff": "If Request owned all applicable limits and facts, a separate domain service could be unnecessary.",
+        "transfer": "Use a domain service for a reusable business calculation over supplied domain facts, not as a general workflow coordinator."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "app_calculates",
+          "text": "The caller coordinates confirmation and saving, but duplicating a shared vendor-allocation policy in one flow gives other callers a different rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "first_vendor_decides",
+          "text": "One vendor's local limit does not give it the request promise and competing vendors' limits specified in the prompt."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repo_splits",
+          "text": "The repository persists a selected allocation; choosing vendors is a business decision, not a storage operation."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n01-b06-i029",
+    "prompt": "A steward's authorization is retrieved from an external approval service before Reservation applies a transfer. The repository saves the result and the user receives confirmation. What does the application service own?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "app_transfer",
+          "text": "Coordinate authorization lookup, invoke Reservation's transfer behavior, persist it, and return confirmation."
+        },
+        {
+          "optionId": "service_reimplements",
+          "text": "Move transfer policy into the application service so it can save the new plot."
+        },
+        {
+          "optionId": "reservation_auth",
+          "text": "Have Reservation call the external identity provider before changing itself."
+        },
+        {
+          "optionId": "repo_confirms",
+          "text": "Let the repository authorize the steward and send confirmation."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "app_transfer"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The application sequences an external lookup and domain operation while Reservation retains transfer semantics.",
+      "details": {
+        "mechanismOrProperty": "Authorization lookup, domain behavior, and save are coordinated across boundaries.",
+        "scenarioApplication": "After the approval service resolves authorization, the use case passes those facts to Reservation and persists its result.",
+        "errorCorrection": "The closest competing placement is Move transfer policy into the application service so it can save the new plot. The application sequences an external lookup and domain operation while Reservation retains transfer semantics.",
+        "boundaryOrTradeoff": "If authorization depended only on Reservation state, that part might be enforced inside the model.",
+        "transfer": "Resolve external authorization in the use case, pass the result into domain behavior, and keep persistence and confirmation in their own collaborators."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "service_reimplements",
+          "text": "Saving the new plot does not make the application service the owner of Reservation's transfer semantics."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "reservation_auth",
+          "text": "Reservation should receive domain-shaped authorization facts rather than call an external identity provider itself."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repo_confirms",
+          "text": "The repository persists; it neither grants steward authority nor produces the user-facing workflow confirmation."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b06-i030",
+    "prompt": "A clearance decision compares usage, territory, and date against several RightsRecords; no single record owns the combined rule. The use case then saves and returns the result. Where should the match policy live?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "controller_matches",
+          "text": "The API controller implements the policy from request fields."
+        },
+        {
+          "optionId": "clearance_domain_service",
+          "text": "A domain service evaluates clearance; the application coordinates retrieval and persistence."
+        },
+        {
+          "optionId": "record_approves_all",
+          "text": "Each RightsRecord independently approves the complete usage."
+        },
+        {
+          "optionId": "query_is_decision",
+          "text": "Treat the repository query's candidate rows as the final business decision."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "clearance_domain_service"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Retrieval finds records, but the combined business comparison has no single record owner in the stated model.",
+      "details": {
+        "mechanismOrProperty": "Retrieval is not the multi-record domain decision that follows it.",
+        "scenarioApplication": "A report preview and an approval flow can reuse the same multi-record clearance evaluator without moving I/O into it.",
+        "errorCorrection": "The closest competing placement is The API controller implements the policy from request fields. Retrieval finds records, but the combined business comparison has no single record owner in the stated model.",
+        "boundaryOrTradeoff": "If one record held every relevant fact and rule, the separate service could be unnecessary.",
+        "transfer": "Distinguish record retrieval from the reusable policy evaluation and from application save/response work."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "controller_matches",
+          "text": "The API controller transports request data; it should not own a domain decision combining rights records."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "record_approves_all",
+          "text": "No one RightsRecord contains the whole usage, territory, date, and comparison set stated here."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "query_is_decision",
+          "text": "A query finds candidate records, but the business rule must evaluate their meaning against the requested use."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b06-i031",
+    "prompt": "Two processes can assign the same battery. Both may pass an application read-before-write check; the shared database supports a unique active-assignment constraint. What closes this race?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "precheck_suffices",
+          "text": "Rely on both callers reading the battery as free before either write."
+        },
+        {
+          "optionId": "object_is_atomic",
+          "text": "Assume one in-memory Battery object serializes writes across processes."
+        },
+        {
+          "optionId": "db_unique_write",
+          "text": "Keep the domain check and use the database to reject concurrent duplicate writes."
+        },
+        {
+          "optionId": "local_mutex",
+          "text": "Add an app-local mutex and leave the shared unique constraint unused."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "db_unique_write"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The stated shared persistence boundary can reject one of two concurrent writes that passed an earlier read.",
+      "details": {
+        "mechanismOrProperty": "Two processes can race past a precheck; the shared write constraint addresses that risk.",
+        "scenarioApplication": "One concurrent request wins the unique constraint; the application maps the rejected write into the stated conflict outcome.",
+        "errorCorrection": "The closest competing placement is Rely on both callers reading the battery as free before either write. The stated shared persistence boundary can reject one of two concurrent writes that passed an earlier read.",
+        "boundaryOrTradeoff": "The constraint does not by itself define the user-facing explanation or retry policy.",
+        "transfer": "For concurrent writers, place shared uniqueness enforcement at the shared write boundary; a read check or local lock has narrower scope."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "precheck_suffices",
+          "text": "Both reads may see the battery as free before either write; the prompt explicitly gives that race."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "object_is_atomic",
+          "text": "A process-local object does not serialize writes from two independent processes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "local_mutex",
+          "text": "An app-local mutex cannot coordinate other processes; the shared database constraint is the common write boundary here."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b06-i032",
+    "prompt": "A referral can be sent externally only after the consent service authorizes it. A communications adapter delivers the message. Which layer coordinates the allowed send?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "adapter_checks",
+          "text": "The adapter decides permission from its own request fields."
+        },
+        {
+          "optionId": "referral_sends",
+          "text": "Referral calls the external provider after reading consent itself."
+        },
+        {
+          "optionId": "consent_delivers",
+          "text": "The consent service both authorizes and sends the specialist message."
+        },
+        {
+          "optionId": "app_consent_send",
+          "text": "The application awaits consent, then invokes outbound messaging."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "app_consent_send"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The use case coordinates a permission decision from one collaborator and a delivery effect through another.",
+      "details": {
+        "mechanismOrProperty": "Authorization and delivery are separate dependencies in one application flow.",
+        "scenarioApplication": "The use case calls the consent port first and invokes the message adapter only when that port allows disclosure.",
+        "errorCorrection": "The closest competing placement is The adapter decides permission from its own request fields. The use case coordinates a permission decision from one collaborator and a delivery effect through another.",
+        "boundaryOrTradeoff": "The prompt does not specify distributed atomicity or exactly-once delivery.",
+        "transfer": "An application service may coordinate authorization and an outbound message without making either authority or transport its own responsibility."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "adapter_checks",
+          "text": "The communications adapter transports a permitted message; the separate consent authority supplies the allow/deny decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "referral_sends",
+          "text": "Referral should not call a provider from the domain model or read consent through transport-specific code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "consent_delivers",
+          "text": "The consent service is specified as the authority, not as the communications transport or owner of the referral workflow."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b06-i033",
+    "prompt": "A bundle quote combines several component pricing policies and is reused by catalog and renewal flows. Each caller separately presents or stores the result. Where should calculation live?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "bundle_domain_calc",
+          "text": "A domain pricing service calculates the shared bundle quote."
+        },
+        {
+          "optionId": "catalog_only",
+          "text": "Calculate only in the catalog application flow because it needs the quote first."
+        },
+        {
+          "optionId": "repo_calculates",
+          "text": "Have the repository add prices while it reads component rows."
+        },
+        {
+          "optionId": "bundle_queries",
+          "text": "Make Bundle reach into pricing adapters for each component."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "bundle_domain_calc"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The calculation combines shared business policies; retrieval and caller-specific work remain separate.",
+      "details": {
+        "mechanismOrProperty": "The business calculation combines component pricing policies and is reused by two callers.",
+        "scenarioApplication": "Catalog and renewal provide component-policy inputs to one quote calculation, then handle presentation or persistence separately.",
+        "errorCorrection": "The closest competing placement is Calculate only in the catalog application flow because it needs the quote first. The calculation combines shared business policies; retrieval and caller-specific work remain separate.",
+        "boundaryOrTradeoff": "If Bundle owned all pricing facts as an intrinsic calculation, a method there could be simpler.",
+        "transfer": "Reuse domain calculation when its business meaning spans callers, but keep each caller's interaction flow outside that calculation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "catalog_only",
+          "text": "A renewal caller also needs the calculation, so putting it only in the catalog flow duplicates domain pricing logic."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repo_calculates",
+          "text": "Reading pricing inputs is data access; computing the customer quote is domain policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "bundle_queries",
+          "text": "Bundle should not reach into pricing adapters; component policy data should be supplied through the domain boundary."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B06",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b06-i034",
+    "prompt": "An approval provider returns `approved_by` and an ISO expiry string; the application contract uses ApprovalReference and an instant value. Grant validates its own approval/expiry consistency. Where should provider fields be translated?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "grant_parses_wire",
+          "text": "Grant parses provider field names and date strings whenever it validates itself."
+        },
+        {
+          "optionId": "approval_adapter_maps",
+          "text": "The approval adapter maps provider fields to domain-shaped approval and expiry values."
+        },
+        {
+          "optionId": "app_handles_json",
+          "text": "Every application service reads provider JSON and constructs Grant from those wire fields."
+        },
+        {
+          "optionId": "repo_maps_provider",
+          "text": "The grant repository translates provider responses while it persists the object."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "approval_adapter_maps"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The provider's wire format is translated at its adapter boundary; Grant validates domain-shaped approval and expiry data.",
+      "details": {
+        "mechanismOrProperty": "An integration adapter converts external representations to the application's contract. Parsing a date string is boundary translation, while checking Grant's internal consistency is domain behavior.",
+        "scenarioApplication": "The provider adapter converts its response before the application creates Grant; Grant checks the parsed approval/expiry pair.",
+        "errorCorrection": "The closest alternative is parsing provider JSON in Grant. That makes domain validation depend on the provider’s wire format; the adapter maps fields and dates before Grant checks its domain values.",
+        "boundaryOrTradeoff": "The adapter's parsing does not establish that the approval is still valid; the prompt only defines shape conversion before the domain check.",
+        "transfer": "Parse external formats at the adapter boundary; validate domain-shaped values in the object that owns their relationship."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "grant_parses_wire",
+          "text": "Grant validates domain-shaped values; parsing provider field names and date strings couples it to an external format."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "app_handles_json",
+          "text": "Having each application service parse provider JSON duplicates the integration mapping across callers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repo_maps_provider",
+          "text": "The repository persists Grant data; it should not translate a live provider response format."
+        }
+      ]
+    }
+  }
+]

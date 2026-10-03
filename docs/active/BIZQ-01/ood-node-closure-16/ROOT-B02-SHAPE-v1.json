@@ -1,0 +1,11 @@
+{
+  "proposalSha256": "5cc409f936786bdc5f57814cf8cafabb424d7fe0fbc409f3d49fcaa276d25545",
+  "questions": 17,
+  "scoreCases": 51,
+  "result": "PASS",
+  "interpretation": "schema/fixed-ID scoring only; semantic acceptance separate",
+  "probeCorrections": [
+    "initial root probe passed proposal metadata wrapper rather than actual question payload",
+    "second probe used nonexistent points field; existing score contract returns earnedPoints, confirmed against implementation and cohort13 tests"
+  ]
+}

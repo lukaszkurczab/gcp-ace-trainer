@@ -1,0 +1,1056 @@
+[
+  {
+    "beforeQuestionId": "ood-n01-b03-i001",
+    "questionId": "ood-n01-b03-i018",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i018",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A rights-clearance tool tracks each approved usage by a clearance number because an approval can be suspended or renewed while its territory and expiry values change. Two approvals may have identical territory and expiry but remain separately auditable. How should the model treat an approval?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i018_a",
+            "text": "Keep each approval under its clearance ID; model territory and expiry as editable values."
+          },
+          {
+            "optionId": "b03_i018_b",
+            "text": "Treat the territory-and-expiry pair as approval identity, replacing an older approval whenever either descriptive field changes."
+          },
+          {
+            "optionId": "b03_i018_c",
+            "text": "Keep approval as a stateless calculation result, so the review system need not retain separate records for each authorized use."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i018_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "The approval has a retained identity and lifecycle, so a transient calculation alone loses required history.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A rights-clearance tool tracks each approved usage by a clearance number because an approval can be suspended or renewed while its territory and expiry values change. Two approvals may have identical territory and expiry but remain separately auditable. In this case, model the approval as an entity with its own clearance identity and lifecycle; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "The clearance number and audit history distinguish approvals even when descriptive fields match; territory and expiry can change without replacing that approval identity. Equal descriptive fields do not make separately auditable approval records the same approval.",
+          "boundaryOrTradeoff": "A context that only displays current territory/expiry may use a value snapshot; the approval record still has identity here.",
+          "transfer": "Use the scenario’s continuity and audit facts to decide identity; matching fields alone do not settle whether two records are the same."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i018_b",
+            "text": "The clearance number and audit history distinguish approvals even when descriptive fields match; territory and expiry can change without replacing that approval identity."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i018_c",
+            "text": "Equal descriptive fields do not make separately auditable approval records the same approval."
+          }
+        ]
+      },
+      "difficulty": "foundational",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i002",
+    "questionId": "ood-n01-b03-i019",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i019",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A drone fleet records each battery by serial number through installation, removal, repair, and retirement. Charge percentage is a current measurement, not an identifier; two batteries can show the same percentage. Which model distinction fits?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i019_b",
+            "text": "Treat charge percentage as battery identity and serial as display metadata."
+          },
+          {
+            "optionId": "b03_i019_a",
+            "text": "The battery is an entity keyed by serial; charge percentage is a measured value associated with it."
+          },
+          {
+            "optionId": "b03_i019_c",
+            "text": "Treat battery and charge as one immutable value, making a new battery record for every reading."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i019_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Replacing battery identity on every reading would erase the continuity the lifecycle requires.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A drone fleet records each battery by serial number through installation, removal, repair, and retirement. Charge percentage is a current measurement, not an identifier; two batteries can show the same percentage. In this case, the battery is an entity keyed by serial; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "Serial continuity follows the physical battery through lifecycle changes, while charge readings vary and can match across units. A changing, nonunique measurement cannot identify which physical battery is being repaired or retired.",
+          "boundaryOrTradeoff": "A historical reading can itself be an immutable value record if timestamped; the battery remains the continuing entity.",
+          "transfer": "Separate the thing whose identity persists from values that describe it at a particular observation."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i019_b",
+            "text": "Serial continuity follows the physical battery through lifecycle changes, while charge readings vary and can match across units."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i019_c",
+            "text": "A changing, nonunique measurement cannot identify which physical battery is being repaired or retired."
+          }
+        ]
+      },
+      "difficulty": "foundational_boundary",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i003",
+    "questionId": "ood-n01-b03-i020",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i020",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A referral is tracked by referral ID from creation through routing and closure. Consent is a signed record with its own ID and revocation history; the requested specialty code is selected from a catalog. Which modeling choice preserves these facts?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i020_b",
+            "text": "Make specialty the referral identity and reduce consent to a boolean, since routing needs only a destination and current yes/no status."
+          },
+          {
+            "optionId": "b03_i020_c",
+            "text": "Flatten referral, consent, and specialty into one immutable tuple, recreating it on every routing change and losing revocation history."
+          },
+          {
+            "optionId": "b03_i020_a",
+            "text": "Keep referral and consent as separate identified records; specialty is a value."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i020_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "A single immutable tuple obscures independently changing referral and revocation histories.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A referral is tracked by referral ID from creation through routing and closure. Consent is a signed record with its own ID and revocation history; the requested specialty code is selected from a catalog. In this case, keep referral and consent as independently identified records; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "The referral and consent each have their own lifecycles and audit identity; specialty is a catalog value that describes the referral. A specialty can be shared by many referrals and does not identify one referral or consent history.",
+          "boundaryOrTradeoff": "A routing view may project consent status and specialty together without erasing underlying identities.",
+          "transfer": "Model independent lifecycles as distinct concepts; use values for shared descriptors that carry no separate continuity."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i020_b",
+            "text": "The referral and consent each have their own lifecycles and audit identity; specialty is a catalog value that describes the referral."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i020_c",
+            "text": "A specialty can be shared by many referrals and does not identify one referral or consent history."
+          }
+        ]
+      },
+      "difficulty": "intermediate",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i004",
+    "questionId": "ood-n01-b03-i021",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i021",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A practice tracker stores each published exercise revision by ID. Each completion points to that revision and the scoring-policy version used at the time; two revisions may display the same title. What should define a completed exercise’s association?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i021_a",
+            "text": "Keep the exact exercise-revision identity and policy version captured by the completion."
+          },
+          {
+            "optionId": "b03_i021_b",
+            "text": "Use the displayed title, with completion always resolving to whichever revision currently has that title."
+          },
+          {
+            "optionId": "b03_i021_c",
+            "text": "Copy only title and score, dropping revision and policy references after grading."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i021_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Dropping version references makes historical scores ambiguous under later revisions.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A practice tracker stores each published exercise revision by ID. Each completion points to that revision and the scoring-policy version used at the time; two revisions may display the same title. In this case, keep the exact exercise-revision identity and policy version captured by the completion; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "The completion must be interpretable against the exact revision and policy that produced it; title equality does not establish version equality. The premise allows multiple revisions with the same title, so title cannot resolve which content was completed.",
+          "boundaryOrTradeoff": "A display layer can show the current title while retaining immutable revision and policy associations.",
+          "transfer": "When history must remain explainable, retain the identities or versions that gave the result its meaning."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i021_b",
+            "text": "The completion must be interpretable against the exact revision and policy that produced it; title equality does not establish version equality."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i021_c",
+            "text": "The premise allows multiple revisions with the same title, so title cannot resolve which content was completed."
+          }
+        ]
+      },
+      "difficulty": "intermediate_transfer",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i005",
+    "questionId": "ood-n01-b03-i022",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i022",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "An exception request has a request ID, amount and scope that may be amended before review, and a final decision by a named approver. Each amendment remains in the audit trail. Which model best represents it?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i022_b",
+            "text": "An immutable value made only from amount and scope; discard earlier amendments when fields change."
+          },
+          {
+            "optionId": "b03_i022_a",
+            "text": "An identified exception request with versioned amount/scope values and a separately recorded decision."
+          },
+          {
+            "optionId": "b03_i022_c",
+            "text": "A single approval service object whose in-memory fields are the only record of the decision."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i022_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "An in-memory coordinator is not the durable request/decision record the facts call for.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "An exception request has a request ID, amount and scope that may be amended before review, and a final decision by a named approver. Each amendment remains in the audit trail. In this case, an identified exception request with versioned amount/scope values and a separately recorded decision; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "The request survives edits under one auditable identity, while the decision is a recorded outcome rather than mutable service state. Replacing the value would lose the amendment history required by the scenario.",
+          "boundaryOrTradeoff": "An application service can coordinate review without becoming the domain record or sole home of approval history.",
+          "transfer": "Choose identity for continuity across edits and model recorded decisions where audit facts require them; keep orchestration separate."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i022_b",
+            "text": "The request survives edits under one auditable identity, while the decision is a recorded outcome rather than mutable service state."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i022_c",
+            "text": "Replacing the value would lose the amendment history required by the scenario."
+          }
+        ]
+      },
+      "difficulty": "advanced_tradeoff",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i006",
+    "questionId": "ood-n01-b03-i023",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i023",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "An annotation follows a stable segment ID across recording replacements. Two annotations can contain the same text but remain separate because authors and creation records differ. Which representation is appropriate?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i023_b",
+            "text": "Use annotation text as identity and merge matching text, assuming identical words represent the same authored note."
+          },
+          {
+            "optionId": "b03_i023_c",
+            "text": "Key annotation by recording byte offset, replacing that key as recording layout shifts while preserving the displayed text."
+          },
+          {
+            "optionId": "b03_i023_a",
+            "text": "Keep annotation identity and stable-segment reference; text remains editable."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i023_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Byte offsets change during replacement and contradict the stable-segment association.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "An annotation follows a stable segment ID across recording replacements. Two annotations can contain the same text but remain separate because authors and creation records differ. In this case, give each annotation identity and a reference to the segment; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "The annotation has an individual authoring history and follows a stable segment; content and file location are not its identity. Identical text can represent two different authored notes under the stated facts.",
+          "boundaryOrTradeoff": "Text can be compared or edited as data while the annotation record’s continuity remains separate.",
+          "transfer": "Do not use mutable or nonunique attributes as identity when the scenario supplies a stable lifecycle key."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i023_b",
+            "text": "The annotation has an individual authoring history and follows a stable segment; content and file location are not its identity."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i023_c",
+            "text": "Identical text can represent two different authored notes under the stated facts."
+          }
+        ]
+      },
+      "difficulty": "advanced_failure",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i007",
+    "questionId": "ood-n01-b03-i024",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i024",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A role grant has a grant ID, expiry, and approval reference. Role name is chosen from a shared list and may be corrected without replacing the grant. How should these concepts be modeled?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i024_a",
+            "text": "Treat the grant as an entity; model role name as a value/code and retain the approval reference."
+          },
+          {
+            "optionId": "b03_i024_b",
+            "text": "Treat role name as grant identity and overwrite any prior grant for that role."
+          },
+          {
+            "optionId": "b03_i024_c",
+            "text": "Treat the complete grant as an untracked value recreated whenever expiry is adjusted."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i024_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Recreating an untracked value would lose grant ID and approval relationship.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A role grant has a grant ID, expiry, and approval reference. Role name is chosen from a shared list and may be corrected without replacing the grant. In this case, treat the grant as an entity; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "A grant has its own attributable lifecycle and can be amended, while role name is a reusable classification value. The same role may be granted through separate approvals or to different recipients; its name cannot identify a grant.",
+          "boundaryOrTradeoff": "Role definitions could have their own lifecycle elsewhere; this question concerns an individual grant record.",
+          "transfer": "Keep a lifecycle-bearing authorization record distinct from reusable labels that describe its scope."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i024_b",
+            "text": "A grant has its own attributable lifecycle and can be amended, while role name is a reusable classification value."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i024_c",
+            "text": "The same role may be granted through separate approvals or to different recipients; its name cannot identify a grant."
+          }
+        ]
+      },
+      "difficulty": "foundational",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i008",
+    "questionId": "ood-n01-b03-i025",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i025",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A notary records each seal by seal ID, signer, and timestamp. The signed revision is immutable and identified by a content digest; several seals may reference the same revision. Which distinction is sound?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i025_b",
+            "text": "Replace the request with a value made from its latest amount and scope, discarding amendments because only the current terms matter."
+          },
+          {
+            "optionId": "b03_i025_a",
+            "text": "Keep an identified request with amendable, versioned terms and a recorded decision."
+          },
+          {
+            "optionId": "b03_i025_c",
+            "text": "Use an in-memory approval coordinator as the only record, reconstructing the outcome from current service fields later."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i025_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "The revision is explicitly immutable; per-signature mutable copies confuse the target with the act.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A notary records each seal by seal ID, signer, and timestamp. The signed revision is immutable and identified by a content digest; several seals may reference the same revision. In this case, model each seal as its own identity-bearing record and the immutable revision digest as its target value/reference; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "Separate seal records remain auditable even for the same revision; the digest identifies immutable content being sealed. Multiple distinct seals may refer to one revision, so the digest cannot identify each seal.",
+          "boundaryOrTradeoff": "A document repository may have its own identity; the revision value remains fixed for this seal record.",
+          "transfer": "Model an action record with its own identity separately from the immutable value or version it acts on."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i025_b",
+            "text": "Separate seal records remain auditable even for the same revision; the digest identifies immutable content being sealed."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i025_c",
+            "text": "Multiple distinct seals may refer to one revision, so the digest cannot identify each seal."
+          }
+        ]
+      },
+      "difficulty": "foundational_boundary",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i009",
+    "questionId": "ood-n01-b03-i026",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i026",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A payout has a payout ID and transitions from proposed to released. Its money amount consists of currency and minor units, and equal amounts can belong to different sellers. Which model follows the domain facts?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i026_b",
+            "text": "Use amount as payout ID so equal amounts collapse into one payment."
+          },
+          {
+            "optionId": "b03_i026_c",
+            "text": "Let the release service request object be the only payout record and discard it after sending."
+          },
+          {
+            "optionId": "b03_i026_a",
+            "text": "Keep payout as an entity; represent money as a currency-and-amount value, not payout identity."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i026_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Discarding the request removes the identity and release state the scenario requires.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A payout has a payout ID and transitions from proposed to released. Its money amount consists of currency and minor units, and equal amounts can belong to different sellers. In this case, keep payout as an entity; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "Payout lifecycle and seller association persist under its ID; money compares as a value but cannot distinguish payouts. Two sellers may receive equal amounts while retaining different payout histories.",
+          "boundaryOrTradeoff": "A service can invoke release, but a retained payout record still tracks its lifecycle.",
+          "transfer": "Identify the lifecycle-bearing record first; represent quantities with their units and keep command coordination distinct."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i026_b",
+            "text": "Payout lifecycle and seller association persist under its ID; money compares as a value but cannot distinguish payouts."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i026_c",
+            "text": "Two sellers may receive equal amounts while retaining different payout histories."
+          }
+        ]
+      },
+      "difficulty": "intermediate",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i010",
+    "questionId": "ood-n01-b03-i027",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i027",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A disruption board records each platform-change notice by notice ID and effective time. Platform code is selected from a station list; corrections create a superseding notice while preserving the earlier notice. What is the right modeling choice?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i027_a",
+            "text": "Represent notice as an entity with supersession history; platform code and effective time describe each notice."
+          },
+          {
+            "optionId": "b03_i027_b",
+            "text": "Treat platform code plus time as notice identity and overwrite an earlier notice with the same pair."
+          },
+          {
+            "optionId": "b03_i027_c",
+            "text": "Treat each passenger notification as the domain notice and discard the controller’s accepted change record."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i027_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Passenger delivery is a consequence, not the accepted change record the controller manages.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A disruption board records each platform-change notice by notice ID and effective time. Platform code is selected from a station list; corrections create a superseding notice while preserving the earlier notice. In this case, represent notice as an entity with supersession history; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "The notice has retained identity and correction history; platform and time are attributes that can repeat across notices. Overwriting destroys the preserved earlier notice and assumes descriptive values uniquely identify the event.",
+          "boundaryOrTradeoff": "A delivery message may have its own retry ID, separate from the domain notice identity.",
+          "transfer": "Distinguish the business event record from its descriptive values and downstream communications."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i027_b",
+            "text": "The notice has retained identity and correction history; platform and time are attributes that can repeat across notices."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i027_c",
+            "text": "Overwriting destroys the preserved earlier notice and assumes descriptive values uniquely identify the event."
+          }
+        ]
+      },
+      "difficulty": "intermediate_transfer",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i011",
+    "questionId": "ood-n01-b03-i028",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i028",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A meter reservation selects a meter and time interval. Each confirmed reservation has its own ID and can be cancelled independently; interval equality is determined by start/end instants regardless of formatting. Which distinction fits?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i028_b",
+            "text": "Use interval as reservation identity and merge requests with equal start/end."
+          },
+          {
+            "optionId": "b03_i028_a",
+            "text": "Make reservation an entity; represent interval as a normalized value used in overlap checks."
+          },
+          {
+            "optionId": "b03_i028_c",
+            "text": "Treat formatted time string as identity and let equivalent formats create separate windows."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i028_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Formatting differences do not change the instants and should not create distinct intervals.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A meter reservation selects a meter and time interval. Each confirmed reservation has its own ID and can be cancelled independently; interval equality is determined by start/end instants regardless of formatting. In this case, make reservation an entity; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "Independent cancellation requires reservation identity, while normalized endpoints define the interval value for comparison. Two customers’ reservations may have identical intervals but remain separate requests with separate histories.",
+          "boundaryOrTradeoff": "The meter may also have a lifecycle identity; interval comparison remains a value-level rule.",
+          "transfer": "Use identity for independently managed records and canonical value equality for measurements or intervals."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i028_b",
+            "text": "Independent cancellation requires reservation identity, while normalized endpoints define the interval value for comparison."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i028_c",
+            "text": "Two customers’ reservations may have identical intervals but remain separate requests with separate histories."
+          }
+        ]
+      },
+      "difficulty": "advanced_tradeoff",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i012",
+    "questionId": "ood-n01-b03-i029",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i029",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A caption stream session has a session ID and history of provider changes. A provider configuration consists of endpoint, language, and timing parameters; replacing those values does not create a new stream session. Which model is appropriate?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i029_b",
+            "text": "Use the amount as payout ID, merging equal payments even when separate sellers and histories are involved."
+          },
+          {
+            "optionId": "b03_i029_c",
+            "text": "Discard the payout after sending and let the request object stand in for its released state only during the call."
+          },
+          {
+            "optionId": "b03_i029_a",
+            "text": "Keep the payout ID; treat currency and amount as values."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i029_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Removing the session record loses the provider-change history required by the scenario.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A caption stream session has a session ID and history of provider changes. A provider configuration consists of endpoint, language, and timing parameters; replacing those values does not create a new stream session. In this case, keep stream session as an entity and treat each provider configuration as a versioned descriptive value; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "The session continues across provider changes; configuration values describe how that session is served at a point in time. An endpoint may be shared across sessions and can change without changing session identity.",
+          "boundaryOrTradeoff": "A provider resource could have its own lifecycle; it does not replace the running session identity.",
+          "transfer": "Separate a continuing process identity from replaceable configuration snapshots."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i029_b",
+            "text": "The session continues across provider changes; configuration values describe how that session is served at a point in time."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i029_c",
+            "text": "An endpoint may be shared across sessions and can change without changing session identity."
+          }
+        ]
+      },
+      "difficulty": "advanced_failure",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i013",
+    "questionId": "ood-n01-b03-i030",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i030",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A volunteer shift contains two separately identified assignments. A swap must check both volunteers’ skill and availability; neither assignment alone can make that decision. What should the model use for the swap decision?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i030_a",
+            "text": "A domain operation evaluates both assignments, then changes both assignment records as one use case."
+          },
+          {
+            "optionId": "b03_i030_b",
+            "text": "Put scheduling behavior in the volunteer name value so each volunteer decides independently."
+          },
+          {
+            "optionId": "b03_i030_c",
+            "text": "Make one assignment inherit from the other so the pair can share a swap method."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i030_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Inheritance models a subtype relationship, not a temporary relationship between two assignments.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A volunteer shift contains two separately identified assignments. A swap must check both volunteers’ skill and availability; neither assignment alone can make that decision. In this case, a domain operation evaluates both assignments, then changes both assignment records as one use case; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "The decision spans two independent assignment identities and compares facts about both volunteers; an operation can coordinate without collapsing those entities. A display name neither owns availability nor represents the two-assignment decision.",
+          "boundaryOrTradeoff": "Each assignment can guard local facts; the cross-assignment decision needs information from both.",
+          "transfer": "Place an operation where all required decision facts are visible while retaining the identities it coordinates."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i030_b",
+            "text": "The decision spans two independent assignment identities and compares facts about both volunteers; an operation can coordinate without collapsing those entities."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i030_c",
+            "text": "A display name neither owns availability nor represents the two-assignment decision."
+          }
+        ]
+      },
+      "difficulty": "foundational",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i014",
+    "questionId": "ood-n01-b03-i031",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i031",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "An offline route edit has an edit ID and parent route revision. Its geometry is proposed content that can be revised before acceptance; after acceptance, a new route revision gets a new identity. How should the domain distinguish these records?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i031_b",
+            "text": "Use geometry equality as edit identity and merge identical shapes from different authors."
+          },
+          {
+            "optionId": "b03_i031_a",
+            "text": "Keep edit as an identified proposal linked to its parent revision; represent geometry as proposed content."
+          },
+          {
+            "optionId": "b03_i031_c",
+            "text": "Treat each geometry point as an independent route entity and discard edit-level history."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i031_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Point records do not preserve edit-level conflict and lineage.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "An offline route edit has an edit ID and parent route revision. Its geometry is proposed content that can be revised before acceptance; after acceptance, a new route revision gets a new identity. In this case, keep edit as an identified proposal linked to its parent revision; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "The proposal has authorship and parentage across revisions; geometry is the content being evaluated, not enough to identify its history. Identical geometry can arise from separate edits and does not erase author or parent-revision facts.",
+          "boundaryOrTradeoff": "Accepted route revisions can have durable identities; an unaccepted edit remains a separate proposal.",
+          "transfer": "Keep change proposals and lineage identifiable, while treating proposed structure as content subject to comparison."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i031_b",
+            "text": "The proposal has authorship and parentage across revisions; geometry is the content being evaluated, not enough to identify its history."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i031_c",
+            "text": "Identical geometry can arise from separate edits and does not erase author or parent-revision facts."
+          }
+        ]
+      },
+      "difficulty": "foundational_boundary",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i015",
+    "questionId": "ood-n01-b03-i032",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i032",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A campaign defines reward rules by version. Each claim stores which rule version was applied; a point bundle is a set of categories and quantities. A later rule revision must not rewrite old claims. Which representation is best?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i032_b",
+            "text": "Use endpoint as session identity and create a new session for each timing update, even though the stream continues."
+          },
+          {
+            "optionId": "b03_i032_c",
+            "text": "Discard session history and retain only current provider settings, making earlier changes unavailable for review."
+          },
+          {
+            "optionId": "b03_i032_a",
+            "text": "Keep the session identity; represent provider settings as replaceable configuration values."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i032_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Current service configuration cannot explain which rule a past claim used.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A campaign defines reward rules by version. Each claim stores which rule version was applied; a point bundle is a set of categories and quantities. A later rule revision must not rewrite old claims. In this case, give rule versions and claim records identities; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "Claims refer to a specific versioned rule, and the captured bundle describes granted values without replacing claim or rule identity. Different rules can grant the same bundle, and changing it must not rewrite historical claims.",
+          "boundaryOrTradeoff": "A rule catalog may have a separate lifecycle, but each claim retains the version it used.",
+          "transfer": "Use identity/version for concepts whose history matters and snapshot values for the exact result applied."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i032_b",
+            "text": "Claims refer to a specific versioned rule, and the captured bundle describes granted values without replacing claim or rule identity."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i032_c",
+            "text": "Different rules can grant the same bundle, and changing it must not rewrite historical claims."
+          }
+        ]
+      },
+      "difficulty": "intermediate",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i016",
+    "questionId": "ood-n01-b03-i033",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i033",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "Dispatch manages shipments with persistent shipment IDs. Carrier choices are independent entities; a temperature band is a pair of inclusive limits. Choosing a carrier compares the shipment band, carrier capability, and hand-off status. What model fits?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i033_a",
+            "text": "Model shipment and carrier identities separately, the band as a value, and eligibility as a domain operation."
+          },
+          {
+            "optionId": "b03_i033_b",
+            "text": "Make temperature-band value inherit from each carrier and decide assignment by subtype."
+          },
+          {
+            "optionId": "b03_i033_c",
+            "text": "Treat carrier name as shipment identity and overwrite shipment history whenever dispatch changes."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i033_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Changing carrier does not change which shipment is being tracked.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "Dispatch manages shipments with persistent shipment IDs. Carrier choices are independent entities; a temperature band is a pair of inclusive limits. Choosing a carrier compares the shipment band, carrier capability, and hand-off status. In this case, model shipment and carrier identities separately, the band as a value, and eligibility as a domain operation; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "Eligibility depends on facts from two continuing records and a comparable range; it is a domain decision spanning them. A range of limits describes compatibility and does not define a carrier subtype.",
+          "boundaryOrTradeoff": "The operation can coordinate dispatch while shipment and carrier retain their identities and local behavior.",
+          "transfer": "Model comparisons across independently identified concepts as an operation when neither alone has all decision facts."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i033_b",
+            "text": "Eligibility depends on facts from two continuing records and a comparable range; it is a domain decision spanning them."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i033_c",
+            "text": "A range of limits describes compatibility and does not define a carrier subtype."
+          }
+        ]
+      },
+      "difficulty": "intermediate_transfer",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n01-b03-i017",
+    "questionId": "ood-n01-b03-i034",
+    "learningObjective": "Classify domain concepts from explicit identity, continuity, equality, and lifecycle facts, and place a domain operation where the required decision spans concepts.",
+    "question": {
+      "questionId": "ood-n01-b03-i034",
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "mentalUnitId": "OOD-N01-B03",
+      "prompt": "A repayment is recorded under a transaction ID and can be allocated across several loan accounts. Currency and amount are value data; the allocation rule checks each account’s current balance. Which design is strongest?",
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i034_b",
+            "text": "Use amount as transaction identity and merge equal payments across borrowers, even when their sources differ."
+          },
+          {
+            "optionId": "b03_i034_a",
+            "text": "Identify the repayment by transaction ID; treat amounts as values and allocation as a balance-aware operation."
+          },
+          {
+            "optionId": "b03_i034_c",
+            "text": "Put allocation in the currency value, asking money itself to choose the accounts without access to their current balances."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i034_a"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Currency has no account balance or allocation context and cannot own this multi-account decision.",
+        "details": {
+          "mechanismOrProperty": "Domain classification follows identity and lifecycle facts, while value equality follows the described attributes. The decisive scenario facts are stated in this prompt.",
+          "scenarioApplication": "A repayment is recorded under a transaction ID and can be allocated across several loan accounts. Currency and amount are value data; the allocation rule checks each account’s current balance. In this case, retain repayment as an identified transaction, model each allocation amount as a value, and evaluate allocations against account state in a domain operation; the caller can follow the stated recovery or follow-up path.",
+          "errorCorrection": "The transaction ID distinguishes a financial event, while amounts are values and allocation needs both repayment and account balances. Equal amounts can be separate payments with different source and borrower histories.",
+          "boundaryOrTradeoff": "An account can enforce its own balance invariant; the operation determines division across accounts.",
+          "transfer": "Separate event identity, dimensional values, and cross-entity decisions instead of forcing all behavior into one concept."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i034_b",
+            "text": "The transaction ID distinguishes a financial event, while amounts are values and allocation needs both repayment and account balances."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i034_c",
+            "text": "Equal amounts can be separate payments with different source and borrower histories."
+          }
+        ]
+      },
+      "difficulty": "advanced_tradeoff",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  }
+]

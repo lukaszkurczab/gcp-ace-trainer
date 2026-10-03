@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "method": "Actual existing validateTrack and canonical sha256; private data-only predecessor comparison, no migration bypass or build/admission claim.",
+  "contentVersion": "object-oriented-design-interview-authoring-v2026.10.03-bizq01-16",
+  "questionCount": 1413,
+  "questionSetSha256": "533d11db8cbbe0a314359eb08c38b78193415da51d7594486f8082fcd485ecfe",
+  "source13QuestionSetSha256": "d2d7c6fa93658a8f38d18bb3fd65c0ca192dc04ded9a8f19aeda25f9cf576edc",
+  "nodeCount": 136,
+  "nodeQuestionSetSha256": "15d0ca1dff401af483bd52ed967376f0d64edad64cc55dbe58d12d29f82d41a9",
+  "sourceFiles": 79
+}

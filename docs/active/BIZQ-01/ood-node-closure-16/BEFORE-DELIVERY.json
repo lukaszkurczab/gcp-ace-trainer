@@ -1,0 +1,30 @@
+{
+  "patternly": {
+    "head": "52d4e4b6450c33335da99099aa276c57422b0a45",
+    "upstream": "52d4e4b6450c33335da99099aa276c57422b0a45",
+    "stashes": "stash@{0}: On main: UI-26-02B awaiting provider runtime matrix 2026-09-27\nstash@{1}: On main: UI-26-11 awaiting runtime matrix and physical VoiceOver 2026-09-27\nstash@{2}: On main: UI-26-09 awaiting runtime and physical VoiceOver 2026-09-27\nstash@{3}: On main: UI-26-08 awaiting physical VoiceOver 2026-09-27\nstash@{4}: On main: UI-26-07 awaiting physical VoiceOver 2026-09-27\nstash@{5}: On main: I18N-01 partial seven-locale runtime 2026-09-26",
+    "staged": "",
+    "status": "M .agent/WORKING_STATE.md\n M docs/PATTERNLY-WORKING-PLAN.md\n M docs/active/BIZQ-01/native-runner-preflight-15/REPORT.md\n?? docs/active/BIZQ-01/ood-node-closure-16/\n?? docs/active/SECURITY-PRIVACY-AUDIT/\n?? src/content/bizq01OodNodeClosure16.test.ts"
+  },
+  "patternly-content": {
+    "head": "fada384746dfdfeb3f3153e1ebdeddc9fea0a672",
+    "upstream": "fada384746dfdfeb3f3153e1ebdeddc9fea0a672",
+    "stashes": "stash@{0}: On agent/ai901-question-bank: preserve unrelated work before frontend master push\nstash@{1}: On agent/ai901-question-bank: codex-preserve-local-work-before-master-switch",
+    "staged": "",
+    "status": "M content/catalog.json\n M content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B02.json\n M content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B03.json\n M content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B04.json\n M content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B05.json\n M content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B06.json\n M content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B07.json\n M content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B08.json\n M package.json\n M scripts/content/verify-migration.mjs\n M tests/bizq01-besd-seed-cohort-14.test.mjs\n M tests/bizq01-migration-proof.test.mjs\n M tests/bizq01-ood-source-11.test.mjs\n M tests/bizq01-ood-source-12.test.mjs\n M tests/bizq01-ood-unit-cohort-13.test.mjs\n M tests/content-builder.test.mjs\n M tests/odk097-design-session-matrix.test.mjs\n?? evidence/business-quality/bizq-01-ood-node-closure-16.json\n?? evidence/business-quality/full-content-audit-2026-10-02/\n?? tests/bizq01-ood-node-closure-16.test.mjs\n?? tests/ood-cohort16-historical-fixture.mjs"
+  },
+  "patternly-backend": {
+    "head": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+    "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+    "stashes": "stash@{0}: On main: AUD-08-B2 pending producer before accepted OPS-B4 integration\nstash@{1}: On main: AUD-08-B2 pending producer before accepted OPS-B3 integration\nstash@{2}: On main: AUD-08-B2 pending producer before accepted OPS-B2 integration\nstash@{3}: On main: UI-26-02B exchange evidence awaiting provider runtime matrix 2026-09-27",
+    "staged": "",
+    "status": ""
+  },
+  "patternly-web": {
+    "head": "c5b321c5f655044e2a2b13627892dc4be11f06c0",
+    "upstream": "c5b321c5f655044e2a2b13627892dc4be11f06c0",
+    "stashes": "",
+    "staged": "",
+    "status": ""
+  }
+}

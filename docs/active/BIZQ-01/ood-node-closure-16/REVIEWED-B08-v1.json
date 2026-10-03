@@ -1,0 +1,1141 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b08-i018",
+    "prompt": "A product owner asks which external roles use the reservation service and what goals they achieve. The meeting is defining scope, not object collaboration. What should be sketched first?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "sequence_internal",
+          "text": "Trace internal repository and policy messages in request order."
+        },
+        {
+          "optionId": "class_fields",
+          "text": "List reservation fields and methods with their class associations."
+        },
+        {
+          "optionId": "use_case_scope",
+          "text": "Use-case view: service boundary, external roles, and goals."
+        },
+        {
+          "optionId": "deployment_nodes",
+          "text": "Show runtime nodes hosting the reservation service and database."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "use_case_scope"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The audience is establishing external goals and system scope; internal messages, classes, and runtime placement answer different questions.",
+      "details": {
+        "mechanismOrProperty": "Match the view to the audience's unresolved question; use-case scope centers external roles and goals.",
+        "scenarioApplication": "The owner learns the external roles and goals at the reservation-service boundary before the team chooses internal objects.",
+        "errorCorrection": "A sequence diagram would answer how participants interact, but the owner first asks which roles and goals are in scope.",
+        "boundaryOrTradeoff": "If the owner instead asked which service runs in each region, a deployment view would fit.",
+        "transfer": "Start with the external goal and system subject; add internal collaboration only when that becomes the audience's decision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "sequence_internal",
+          "text": "A sequence diagram would answer how participants interact, but the owner first asks which roles and goals are in scope."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "class_fields",
+          "text": "A class diagram would prematurely describe internal structure before the service boundary is agreed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "deployment_nodes",
+          "text": "A deployment map answers where software runs, not who uses the subject or why."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b08-i019",
+    "prompt": "Checkout review asks for the order of calls from cart submission through stock lookup and payment request, not class structure or host placement. Which diagram fits?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "class_static",
+          "text": "A class diagram listing Cart, Stock, and Payment attributes."
+        },
+        {
+          "optionId": "usecase_goal",
+          "text": "A use-case diagram showing only that a customer checks out."
+        },
+        {
+          "optionId": "deployment_topology",
+          "text": "A deployment diagram showing the app, database, and payment host."
+        },
+        {
+          "optionId": "sequence_checkout",
+          "text": "Sequence checkout participants and calls in required order."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "sequence_checkout"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The unresolved design question is interaction order; the sequence view makes participants and message order the focus.",
+      "details": {
+        "mechanismOrProperty": "A sequence diagram communicates an ordered interaction; it does not choose the domain classes.",
+        "scenarioApplication": "The checkout review sees Cart, Stock, and Payment participants in message order, with each message representing an interaction in the described flow.",
+        "errorCorrection": "Static attributes do not communicate the required order from cart submission to payment request.",
+        "boundaryOrTradeoff": "If reviewers only needed static type relationships, a class view would be more relevant.",
+        "transfer": "Use interaction notation when participants and message ordering are the question; distinguish it from static relationships and runtime placement."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "class_static",
+          "text": "Static attributes do not communicate the required order from cart submission to payment request."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "usecase_goal",
+          "text": "The use-case goal omits the message ordering the team must review."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "deployment_topology",
+          "text": "Runtime hosts do not show the calls' required order."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b08-i020",
+    "prompt": "An interviewer asks how Order, LineItem, and Money relate in the domain model. No request flow or runtime topology is in scope. What view communicates this?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "class_relations",
+          "text": "Class view: domain types, associations, and multiplicities."
+        },
+        {
+          "optionId": "sequence_submit",
+          "text": "One customer's submit-order messages."
+        },
+        {
+          "optionId": "deployment_hosts",
+          "text": "The order service and database hosts."
+        },
+        {
+          "optionId": "usecase_goals",
+          "text": "Customer and fulfillment goals against the system."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "class_relations"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The question concerns static domain structure and relationships, not behavior or deployment.",
+      "details": {
+        "mechanismOrProperty": "Static associations answer structure questions; they do not show when a method is called.",
+        "scenarioApplication": "The interviewer sees the static Order–LineItem–Money relationships without an unrelated host map or a single customer's trace.",
+        "errorCorrection": "A one-customer trace would not show the static associations asked about.",
+        "boundaryOrTradeoff": "If the interviewer asks how messages create and price an Order, an interaction view is more useful.",
+        "transfer": "For a static domain-structure question, show only the relevant types and associations; switch views when the question changes to behavior."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "sequence_submit",
+          "text": "A one-customer trace would not show the static associations asked about."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "deployment_hosts",
+          "text": "Hosts do not show Order, LineItem, and Money relationships."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "usecase_goals",
+          "text": "Actor goals do not communicate the requested domain-type structure."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b08-i021",
+    "prompt": "Operations asks where a mobile client, API, worker, and database run and which network nodes they cross. What should show this topology?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "class_per_server",
+          "text": "A class diagram with one class per server node."
+        },
+        {
+          "optionId": "deployment_view",
+          "text": "Map runtime nodes and deployed software artifacts."
+        },
+        {
+          "optionId": "host_messages",
+          "text": "A sequence diagram listing host names as messages."
+        },
+        {
+          "optionId": "usecase_servers",
+          "text": "A use-case diagram showing operators and server goals."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "deployment_view"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The requested information concerns runtime placement and nodes, not domain types or actor goals.",
+      "details": {
+        "mechanismOrProperty": "Deployment is a structural view of execution nodes and deployed artifacts, not a business workflow.",
+        "scenarioApplication": "Operations sees the client, API, worker, database, and their runtime placement on nodes and network boundaries.",
+        "errorCorrection": "A server is not a domain class; this view would misrepresent the runtime topology.",
+        "boundaryOrTradeoff": "If the question concerned module dependencies independent of hosts, a component view would be better.",
+        "transfer": "Show host/node placement for an operations topology question, not code classes or business actors."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "class_per_server",
+          "text": "A server is not a domain class; this view would misrepresent the runtime topology."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "host_messages",
+          "text": "Messages are not runtime node placement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "usecase_servers",
+          "text": "Actor goals do not show network nodes or where artifacts run."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b08-i022",
+    "prompt": "Two teams disagree about which module owns the catalog interface and which module depends on it. They need neither a request trace nor an infrastructure map. What view frames this discussion?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "deployment_only",
+          "text": "A deployment view showing only which machines run the modules."
+        },
+        {
+          "optionId": "single_call",
+          "text": "A sequence diagram showing one call but not module dependencies."
+        },
+        {
+          "optionId": "component_dependencies",
+          "text": "Component view: modules, interfaces, and dependency direction."
+        },
+        {
+          "optionId": "all_classes",
+          "text": "A class diagram of every implementation class in both modules."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "component_dependencies"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The decision is module-level structure and dependencies, so the view should stay at that scope.",
+      "details": {
+        "mechanismOrProperty": "A component view is useful here because interface ownership and dependency are the unresolved structural choices.",
+        "scenarioApplication": "Both teams can identify the catalog interface owner and which module depends on that interface.",
+        "errorCorrection": "Host placement can be added later, but it does not establish interface ownership or dependency direction.",
+        "boundaryOrTradeoff": "If reviewers need method-level collaboration, a narrower view can follow.",
+        "transfer": "Keep module interfaces and dependency direction in view; do not expand into every class or machine unless those are asked about."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "deployment_only",
+          "text": "Host placement can be added later, but it does not establish interface ownership or dependency direction."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "single_call",
+          "text": "One call trace is too narrow to show module-level interface dependency."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "all_classes",
+          "text": "Every implementation class adds detail without clarifying the module contract in dispute."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n01-b08-i023",
+    "prompt": "A workshop request passes among a coordinator and two participant teams, with a branch based on role. The question is who hands work to whom, not method signatures. What should be sketched?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "class_methods",
+          "text": "A class diagram listing every callable method."
+        },
+        {
+          "optionId": "deployment_lanes",
+          "text": "A deployment diagram using server nodes as business-responsibility lanes."
+        },
+        {
+          "optionId": "single_goal",
+          "text": "A use-case diagram with one goal and no internal flow."
+        },
+        {
+          "optionId": "activity_handoffs",
+          "text": "Activity view with role lanes, branch, and handoffs."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "activity_handoffs"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The review concerns a workflow path and responsibility handoffs, which an activity view can show.",
+      "details": {
+        "mechanismOrProperty": "Use an activity view when the decision centers steps, branch flow, and role handoffs.",
+        "scenarioApplication": "The candidate sketches the workshop steps, the role-based branch, and the handoff between participant teams.",
+        "errorCorrection": "Method signatures do not communicate the role-based branch or handoff.",
+        "boundaryOrTradeoff": "If the question narrows to message order among runtime objects, a sequence diagram may be sufficient.",
+        "transfer": "Choose a workflow view when steps, branches, and role handoffs are under discussion; do not imply that swimlanes enforce behavior."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "class_methods",
+          "text": "Method signatures do not communicate the role-based branch or handoff."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "deployment_lanes",
+          "text": "Runtime nodes are not the workshop's business responsibility lanes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "single_goal",
+          "text": "A single goal omits the internal activity path the reviewers need."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b08-i024",
+    "prompt": "A returns platform interacts with a customer and two external systems. Stakeholders have not agreed on its scope and are not ready to discuss internal services. What is the useful first sketch?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "returns_context",
+          "text": "Show the in-scope returns boundary, external actors, and their interactions."
+        },
+        {
+          "optionId": "refund_classes",
+          "text": "Expand into every refund and warehouse class."
+        },
+        {
+          "optionId": "cloud_regions",
+          "text": "Choose cloud regions and network segments first."
+        },
+        {
+          "optionId": "enterprise_map",
+          "text": "Include every enterprise app and data store even though only returns is being scoped."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "returns_context"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The meeting is about the system boundary and its external participants; internal detail would obscure that decision.",
+      "details": {
+        "mechanismOrProperty": "Start at the agreed subject boundary and include external participants relevant to the current scope.",
+        "scenarioApplication": "Stakeholders can agree which external returns interactions are in scope before internal modules are introduced.",
+        "errorCorrection": "Class-level detail assumes an internal boundary before stakeholders agreed on system scope.",
+        "boundaryOrTradeoff": "A later integration review can use a narrower component or sequence view.",
+        "transfer": "Begin with the system and relevant external participants, then add internal detail only after scope is agreed."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "refund_classes",
+          "text": "Class-level detail assumes an internal boundary before stakeholders agreed on system scope."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "cloud_regions",
+          "text": "Deployment choices do not answer which returns interactions are inside the platform."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "enterprise_map",
+          "text": "Unrelated enterprise systems broaden the scope beyond the interactions being decided."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b08-i025",
+    "prompt": "The panel asks what changes when a new courier is added and which existing contract must remain stable. A full class inventory would hide the extension point. What should the view include?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "every_class",
+          "text": "List every class so the panel can infer the extension point."
+        },
+        {
+          "optionId": "courier_contract",
+          "text": "Show the courier boundary, stable contract, and components that vary."
+        },
+        {
+          "optionId": "adapter_only",
+          "text": "Show the new adapter but omit the contract it must satisfy."
+        },
+        {
+          "optionId": "deployment_region",
+          "text": "Focus on the infrastructure region where the courier runs."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "courier_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The review is about change impact and contract stability, so the view must show the variation and its dependency.",
+      "details": {
+        "mechanismOrProperty": "A focused change view contains both the varying component and the stable boundary it must honor.",
+        "scenarioApplication": "The panel can see the courier variation and the stable contract that constrains its integration.",
+        "errorCorrection": "A full inventory would bury the variation point and stable contract in unrelated details.",
+        "boundaryOrTradeoff": "Measured scaling or latency concerns could justify a broader runtime view later.",
+        "transfer": "When explaining change impact, show both what varies and the existing contract that constrains it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "every_class",
+          "text": "A full inventory would bury the variation point and stable contract in unrelated details."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "adapter_only",
+          "text": "Without the stable contract, the view cannot show how the new adapter must integrate."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "deployment_region",
+          "text": "No runtime scaling or host-placement question is stated."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b08-i026",
+    "prompt": "An import design assumes every source file has a stable external record ID. The source owner can verify this before implementation, and the design changes if false. How should this be recorded?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "assume_as_fact",
+          "text": "Treat stable IDs as settled so the diagram stays simple."
+        },
+        {
+          "optionId": "design_both",
+          "text": "Build two complete architectures before asking whether IDs are stable."
+        },
+        {
+          "optionId": "stable_id_assumption",
+          "text": "Mark stable IDs unverified; name verifier and failure consequence."
+        },
+        {
+          "optionId": "generic_caveat",
+          "text": "Write ‘implementation may vary’ without naming the premise or consequence."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "stable_id_assumption"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "This is a testable premise with an identified source and decision impact; recording all three makes uncertainty actionable.",
+      "details": {
+        "mechanismOrProperty": "A useful assumption is falsifiable, attributable, and tied to a choice that changes if it is false.",
+        "scenarioApplication": "The design review records who can verify stable source IDs and what must change if that fact is false.",
+        "errorCorrection": "This hides an unresolved fact that can invalidate the chosen identity approach.",
+        "boundaryOrTradeoff": "If the source contract guaranteed stable IDs, it could be stated as a constraint rather than an open assumption.",
+        "transfer": "Record each assumption with its verifiable source and the design choice it can reverse."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "assume_as_fact",
+          "text": "This hides an unresolved fact that can invalidate the chosen identity approach."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "design_both",
+          "text": "Building both designs before checking the source premise creates work the stated verification can avoid."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "generic_caveat",
+          "text": "A generic caveat cannot be tested or tied to the ID decision."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b08-i027",
+    "prompt": "A referral proposal lacks the consent condition; only the clinic privacy lead can confirm it. The team has not selected external delivery behavior. What should the review record?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "assume_permitted",
+          "text": "Assume every referral may be sent to complete the diagram."
+        },
+        {
+          "optionId": "empty_gateway",
+          "text": "Add an undefined consent gateway and call the design complete."
+        },
+        {
+          "optionId": "omit_policy",
+          "text": "Leave consent off the view because it is not code."
+        },
+        {
+          "optionId": "consent_open",
+          "text": "Record the consent condition and decision owner; keep delivery conditional."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "consent_open"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Consent determines whether the external interaction is permitted; a generic box conceals rather than resolves the missing rule.",
+      "details": {
+        "mechanismOrProperty": "Keep unresolved constraints visible when they change the path or authority in the proposed design.",
+        "scenarioApplication": "The delivery path remains undecided until the privacy lead confirms the consent condition that controls whether sending is allowed.",
+        "errorCorrection": "This assumes the exact permission rule the privacy lead has not confirmed.",
+        "boundaryOrTradeoff": "If an approved consent policy existed, its defined behavior could be shown directly.",
+        "transfer": "When an unresolved policy controls whether an effect is allowed, identify its authority before sketching the effect as unconditional."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "assume_permitted",
+          "text": "This assumes the exact permission rule the privacy lead has not confirmed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "empty_gateway",
+          "text": "An empty gateway box names no consent condition or authority and leaves the decision unresolved."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "omit_policy",
+          "text": "The unknown policy controls an external effect, so omitting it makes the path falsely appear permitted."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b08-i028",
+    "prompt": "One membership service serves one club. A proposal splits it into three services for possible future club types, but no separate ownership, deployment, or scaling need is stated. Which trade-off should be explained?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "service_split_tradeoff",
+          "text": "Compare today’s boundary and coordination cost; name evidence for independent services."
+        },
+        {
+          "optionId": "split_for_future",
+          "text": "Create three services now because future club types may differ."
+        },
+        {
+          "optionId": "never_split",
+          "text": "Keep one service forever because fewer services are always better."
+        },
+        {
+          "optionId": "pattern_name",
+          "text": "Choose microservices because the pattern name implies scalability."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "service_split_tradeoff"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Current facts do not establish a need for independent boundaries; explain present simplicity and a concrete future trigger.",
+      "details": {
+        "mechanismOrProperty": "A useful trade-off identifies the current evidence and the condition that would reverse the choice.",
+        "scenarioApplication": "Reviewers can compare current service coordination costs and the evidence that would justify independent boundaries later.",
+        "errorCorrection": "Future difference alone is not evidence for three independent operational boundaries.",
+        "boundaryOrTradeoff": "Separate release ownership or measured scaling needs could change the decision.",
+        "transfer": "Trade off today's coordination cost against a concrete trigger for changing the boundary; neither split nor unity is universal."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "split_for_future",
+          "text": "Future difference alone is not evidence for three independent operational boundaries."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "never_split",
+          "text": "Fewer services may be simpler now, but 'forever' ignores evidence that could justify a split later."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "pattern_name",
+          "text": "A pattern name does not provide workload, ownership, or deployment facts."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n01-b08-i029",
+    "prompt": "Old-client contract tests confirm that one client ignores unknown response fields. A design adds one optional field. What note makes compatibility reviewable without overgeneralizing?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "all_ignore",
+          "text": "Assume every client ignores every new field because one old client does."
+        },
+        {
+          "optionId": "bounded_client_fact",
+          "text": "State tested-client evidence and the unknown-field rejection case."
+        },
+        {
+          "optionId": "version_everything",
+          "text": "Rename the API version without using the known compatibility evidence."
+        },
+        {
+          "optionId": "no_note",
+          "text": "Leave the optional-field decision unexplained."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "bounded_client_fact"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The evidence supports only clients covered by that contract; name its scope and the counterexample that would reverse the choice.",
+      "details": {
+        "mechanismOrProperty": "State evidence boundaries so a narrow observation is not presented as a universal client guarantee.",
+        "scenarioApplication": "The compatibility note applies to clients with the tested behavior and identifies a rejecting client as a counterexample.",
+        "errorCorrection": "One client's contract does not establish that every supported client accepts unknown fields.",
+        "boundaryOrTradeoff": "If every supported client were verified to ignore unknown fields, the premise could cover that larger set.",
+        "transfer": "State exactly which clients the evidence covers and what client behavior would invalidate the compatibility decision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "all_ignore",
+          "text": "One client's contract does not establish that every supported client accepts unknown fields."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "version_everything",
+          "text": "Changing API version without explaining the known behavior ignores relevant evidence and the actual compatibility question."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "no_note",
+          "text": "The optional field still relies on a compatibility premise reviewers should be able to inspect."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b08-i030",
+    "prompt": "Transit routes update schedules independently, while dispatchers need a combined view every minute. What should the architecture sketch make visible?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "shared_everything",
+          "text": "Put updates and reads in one service because dispatchers need one view."
+        },
+        {
+          "optionId": "separate_everything",
+          "text": "Split routes into services and omit how dispatchers get the combined view."
+        },
+        {
+          "optionId": "read_write_tradeoff",
+          "text": "Show route ownership, combined-read assembly, and its coordination cost."
+        },
+        {
+          "optionId": "database_only",
+          "text": "Draw only the shared store because both designs persist there."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "read_write_tradeoff"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The facts create two competing needs: independent updates and a frequent combined read. A useful view communicates both.",
+      "details": {
+        "mechanismOrProperty": "Expose both sides of a trade-off instead of selecting a boundary from one workload dimension.",
+        "scenarioApplication": "The architecture view preserves both independent route updates and the dispatcher's frequent combined read.",
+        "errorCorrection": "A shared service handles combined reads but the prompt also requires independently updated routes.",
+        "boundaryOrTradeoff": "If the dispatcher no longer needed a combined view, read coordination would matter less.",
+        "transfer": "Make the update and read requirements both visible so the chosen boundary does not optimize away one of them."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "shared_everything",
+          "text": "A shared service handles combined reads but the prompt also requires independently updated routes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "separate_everything",
+          "text": "Separate writers alone leave the frequent dispatcher view and its assembly cost unexplained."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "database_only",
+          "text": "One shared store does not show who owns writes or how the cross-route read is assembled."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b08-i031",
+    "prompt": "A stakeholder asks whether a diagram connecting account service, ledger, and notification means the effects commit atomically. What should the candidate clarify?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "connected_atomic",
+          "text": "Confirm that one connected path means all effects commit atomically."
+        },
+        {
+          "optionId": "remove_box",
+          "text": "Remove the notification box so reviewers do not ask about atomicity."
+        },
+        {
+          "optionId": "uml_no_behavior",
+          "text": "Say UML cannot represent interactions or behavior."
+        },
+        {
+          "optionId": "diagram_not_atomic",
+          "text": "Clarify diagram scope; state atomicity needs its own contract."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "diagram_not_atomic"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A model communicates selected design information but does not itself guarantee runtime transaction semantics.",
+      "details": {
+        "mechanismOrProperty": "Use diagrams to communicate a design claim at a stated level; do not confuse notation with enforcement.",
+        "scenarioApplication": "The account, ledger, and notification interaction stays visible while atomicity remains an implementation contract to verify.",
+        "errorCorrection": "A drawn connection does not show that separate provider effects share an atomic commit.",
+        "boundaryOrTradeoff": "An agreed transaction boundary may be drawn, but implementation evidence is still separate.",
+        "transfer": "A diagram can communicate a transaction boundary if agreed; it does not prove implementation behavior or atomic effects."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "connected_atomic",
+          "text": "A drawn connection does not show that separate provider effects share an atomic commit."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "remove_box",
+          "text": "Omitting a real notification effect hides rather than resolves the transaction question."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "uml_no_behavior",
+          "text": "UML includes interaction and behavior views; the limitation is that a model is not execution proof."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b08-i032",
+    "prompt": "A ten-minute migration review asks only which system owns SKU identity during cutover. A draft includes every UI call and database column. How should it be narrowed?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "sku_cutover_scope",
+          "text": "Show SKU mapping and cutover across both systems; omit unrelated detail."
+        },
+        {
+          "optionId": "keep_all_details",
+          "text": "Retain every detail so reviewers can discover identity ownership themselves."
+        },
+        {
+          "optionId": "new_db_only",
+          "text": "Show only the new database because it owns data after cutover."
+        },
+        {
+          "optionId": "team_chart",
+          "text": "Replace the design view with a team organization chart."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "sku_cutover_scope"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The decision concerns identity across systems during cutover; keep that dependency and omit unrelated detail.",
+      "details": {
+        "mechanismOrProperty": "Scope the diagram to the decision and retain each dependency that can change its result.",
+        "scenarioApplication": "The cutover view follows SKU identity between old and new systems, the only decision required in this review.",
+        "errorCorrection": "Unrelated call/column detail makes the one cross-system identity dependency harder to review.",
+        "boundaryOrTradeoff": "UI impact or schema compatibility can be handled in a follow-up view if requested.",
+        "transfer": "Scope a review to the identity dependency under decision; move unrelated interface and schema detail into another view."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "keep_all_details",
+          "text": "Unrelated call/column detail makes the one cross-system identity dependency harder to review."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "new_db_only",
+          "text": "Only showing the new store loses the mapping between old and new SKU identities during cutover."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "team_chart",
+          "text": "An organization chart does not answer which system owns the SKU identity."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b08-i033",
+    "prompt": "A media team compares caching thumbnails with computing them per request. Volume, image size, and freshness are given, but no latency target is. What belongs in the trade-off explanation?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "cache_always_fast",
+          "text": "Choose caching because cached responses are always fast enough."
+        },
+        {
+          "optionId": "latency_unknown",
+          "text": "Compare freshness and cost; flag the missing latency target."
+        },
+        {
+          "optionId": "compute_always_fresh",
+          "text": "Choose request-time computation because freshness outweighs every other cost."
+        },
+        {
+          "optionId": "diagram_only",
+          "text": "Provide only a sequence diagram and omit cost and freshness assumptions."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "latency_unknown"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The facts give several dimensions but omit the target needed to conclude response acceptability; do not guess it.",
+      "details": {
+        "mechanismOrProperty": "Name the missing metric when its value would change the design recommendation.",
+        "scenarioApplication": "The candidate compares compute/storage and freshness while asking for the latency target needed to judge response acceptability.",
+        "errorCorrection": "No response bound supports the claim that cache latency is sufficient.",
+        "boundaryOrTradeoff": "A stated response-time bound and measured options could support a decisive selection.",
+        "transfer": "When the missing target would change the recommendation, label it and ask for it rather than choosing by intuition."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "cache_always_fast",
+          "text": "No response bound supports the claim that cache latency is sufficient."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "compute_always_fresh",
+          "text": "This assumes freshness dominates despite stated size/volume costs and an unknown latency requirement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "diagram_only",
+          "text": "Call order does not resolve the missing metric or the cost/freshness trade-off."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B08",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b08-i034",
+    "prompt": "A receipt service depends on a tax provider, but outage behavior and legal fallback are unknown. What note prevents the design from promising an unsupported result?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://www.omg.org/uml/what-is-uml.htm",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "always_available",
+          "text": "Draw a provider call and assume it always responds."
+        },
+        {
+          "optionId": "invent_fallback",
+          "text": "Add an offline tax table without confirming its legal validity."
+        },
+        {
+          "optionId": "provider_assumption",
+          "text": "Mark provider/fallback assumptions, decision owner, and conditional flow."
+        },
+        {
+          "optionId": "omit_provider",
+          "text": "Leave the provider off the view because its behavior is unknown."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "provider_assumption"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "An unknown outage/fallback condition can change the receipt contract; an unconditional path overstates what is known.",
+      "details": {
+        "mechanismOrProperty": "Show the dependency and mark uncertain behavior instead of either inventing guarantees or hiding the dependency.",
+        "scenarioApplication": "The provider remains visible as a dependency while its unconfirmed availability and legal fallback are labeled open.",
+        "errorCorrection": "The design would promise successful provider behavior without evidence about outage response.",
+        "boundaryOrTradeoff": "A confirmed provider contract could replace these open assumptions with specified behavior.",
+        "transfer": "Show unverified provider behavior as conditional and obtain its governing contract before claiming a fallback."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "always_available",
+          "text": "The design would promise successful provider behavior without evidence about outage response."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "invent_fallback",
+          "text": "The fallback may be legally invalid; convenience does not establish authorization."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "omit_provider",
+          "text": "The dependency exists and uncertainty should be shown rather than hidden."
+        }
+      ]
+    }
+  }
+]

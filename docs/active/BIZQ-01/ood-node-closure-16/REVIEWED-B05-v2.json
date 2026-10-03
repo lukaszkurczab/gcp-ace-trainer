@@ -1,0 +1,1107 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b05-i018",
+    "prompt": "In the invoice desk, finance calls an account-balance credit a ‘refund’, while the payment team uses ‘refund’ for money returned to a card. The ledger stores the two as different outcomes and reports them separately. Which vocabulary should the command and event use for a balance-only correction?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "call_both_refund",
+          "text": "Name both operations ‘refund’ because they help the customer recover value."
+        },
+        {
+          "optionId": "issue_account_credit",
+          "text": "Name a balance correction ‘AccountCredit’; reserve ‘Refund’ for money returned to its original payment method."
+        },
+        {
+          "optionId": "use_ledger_adjustment",
+          "text": "Expose the storage term ‘ledger adjustment’ as the customer-facing business action."
+        },
+        {
+          "optionId": "rename_refund_globally",
+          "text": "Replace ‘refund’ everywhere with ‘credit’ to establish one term across finance and payments."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "issue_account_credit"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The decisive distinction is the destination of value: a balance change is an account credit, while a card return is a refund.",
+      "details": {
+        "mechanismOrProperty": "The event name distinguishes outcomes with different reporting meaning; this prompt defines the destination of value as the discriminator.",
+        "scenarioApplication": "A command named ‘issue account credit’ matches the ledger outcome; the payment report can continue to count card refunds separately.",
+        "errorCorrection": "The nearest tempting alternative is call both refund. The prompt distinguishes balance value from money returned to the card; a shared word would make reports and command intent ambiguous.",
+        "boundaryOrTradeoff": "If both actions later became one legally and operationally identical outcome, the distinction could be reconsidered; the stated separate reporting rules make that false here.",
+        "transfer": "If a neighboring finance workflow uses the same word for a different result, check the recorded business outcome before standardizing names."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "call_both_refund",
+          "text": "The prompt distinguishes balance value from money returned to the card; a shared word would make reports and command intent ambiguous."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "use_ledger_adjustment",
+          "text": "A storage label says where data moves, not which of the two business outcomes occurred."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "rename_refund_globally",
+          "text": "That would erase the payment team's distinct card-return meaning instead of aligning each term with its own outcome."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b05-i019",
+    "prompt": "In the support desk, an escalation moves a conversation to a specialist queue and keeps its current owner and response deadline; it does not change priority. A plain reassignment changes the owner but does not change queue priority or deadline. Which event name best records the first operation?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_changed_means_escalated",
+          "text": "Call both actions ‘ConversationEscalated’ whenever the owner field changes."
+        },
+        {
+          "optionId": "generic_status_updated",
+          "text": "Emit ‘ConversationUpdated’ for both actions and infer the business meaning from changed fields."
+        },
+        {
+          "optionId": "conversation_escalated",
+          "text": "‘ConversationEscalated’ records the queue move; ‘OwnerReassigned’ records an ownership change."
+        },
+        {
+          "optionId": "sla_reset",
+          "text": "Name the event ‘ResponseDeadlineReset’ because escalation concerns response timing."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "conversation_escalated"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Escalation changes the queue while preserving owner, deadline, and priority; reassignment changes ownership alone.",
+      "details": {
+        "mechanismOrProperty": "Queue move and owner change are independent business facts, so neither event should be inferred from the other.",
+        "scenarioApplication": "The event log says ConversationEscalated when the specialist queue changes, while OwnerReassigned describes an independent owner change.",
+        "errorCorrection": "The nearest tempting alternative is owner changed means escalated. Ownership can change without a queue move; that name would overstate what happened.",
+        "boundaryOrTradeoff": "If escalation actually changed the owner as an invariant, the event could report both effects, but this scenario expressly keeps the current owner.",
+        "transfer": "Use a name that reports the business action and its stated meaning, not an incidental field that may change for other reasons."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "owner_changed_means_escalated",
+          "text": "Ownership can change without a queue move; this name would overstate what happened."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "generic_status_updated",
+          "text": "The premise distinguishes two meaningful actions; a generic update loses that distinction for consumers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "sla_reset",
+          "text": "The deadline is preserved, not reset, so this label claims a fact the prompt rules out."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b05-i020",
+    "prompt": "A learning catalog can retire a lesson from new assignments while existing learner records still point to its stable lesson ID. Deletion removes the record and breaks those references. Which lifecycle term should the catalog command use?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "delete_lesson",
+          "text": "Call it ‘delete lesson’ because learners can no longer choose it."
+        },
+        {
+          "optionId": "hide_lesson",
+          "text": "Call it ‘hide lesson’ and leave lifecycle state unspecified."
+        },
+        {
+          "optionId": "complete_lesson",
+          "text": "Call it ‘complete lesson’ because existing learners may finish it."
+        },
+        {
+          "optionId": "retire_lesson",
+          "text": "Retire the lesson from new assignments while retaining its ID and existing learner assignments."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "retire_lesson"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Retirement removes a lesson from new assignment while keeping its stable identity for prior progress.",
+      "details": {
+        "mechanismOrProperty": "Retirement preserves the stable identity used by prior progress while the prompt separately states which existing assignments continue.",
+        "scenarioApplication": "The catalog retires the lesson from new assignments while existing learner records continue to resolve through the retained lesson ID.",
+        "errorCorrection": "The nearest tempting alternative is delete lesson. The prompt says the record and stable identity remain; deletion describes a stronger, incorrect outcome.",
+        "boundaryOrTradeoff": "Retirement preserves prior references and the stated in-flight assignments; it is not physical deletion. If the policy instead revoked existing assignments, the lifecycle and learner-facing message would need to say so.",
+        "transfer": "Name lifecycle operations from the business-visible effect, and keep learner completion distinct from catalog availability."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "delete_lesson",
+          "text": "The prompt says the record and stable identity remain; deletion describes a stronger, incorrect outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "hide_lesson",
+          "text": "Hiding describes presentation and does not tell downstream assignment rules that the lesson is retired."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "complete_lesson",
+          "text": "Learner completion is a personal progress event, not the catalog's lifecycle decision."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b05-i021",
+    "prompt": "Exhibit operators use a ‘maintenance mode’ to reject unsafe commands while a technician works. ‘Offline’ also covers network loss and an unplugged controller, neither of which is maintenance. What should the domain state be named?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "maintenance_mode",
+          "text": "Use ‘MaintenanceMode’ for the operator-controlled state; keep ‘Offline’ for connectivity or power loss."
+        },
+        {
+          "optionId": "offline_for_all",
+          "text": "Use ‘offline’ for every condition in which an exhibit cannot accept commands."
+        },
+        {
+          "optionId": "unsafe_commands_blocked",
+          "text": "Name the state ‘unsafe commands blocked’ because it describes the visible effect."
+        },
+        {
+          "optionId": "technician_present",
+          "text": "Name the state ‘technician present’ because maintenance usually involves a technician."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "maintenance_mode"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The premise defines maintenance as an operator-selected state distinct from connectivity and power failures.",
+      "details": {
+        "mechanismOrProperty": "A controlled maintenance condition and connectivity loss have different causes, even if both can block commands.",
+        "scenarioApplication": "Naming the state MaintenanceMode lets the command policy reject unsafe actions for the intended reason without treating a disconnected controller as under maintenance.",
+        "errorCorrection": "The nearest tempting alternative is offline for all. That collapses a deliberate maintenance state with unrelated loss-of-connectivity and power states, which the premise keeps distinct.",
+        "boundaryOrTradeoff": "If the product intentionally modeled every command-unavailable reason as one undifferentiated state, ‘offline’ might suffice; requirements here explicitly separate them.",
+        "transfer": "When two labels have different causes or consequences, keep them separate in state, messages, and tests even if both block one action."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "offline_for_all",
+          "text": "That collapses a deliberate maintenance state with unrelated loss-of-connectivity and power states, which the premise keeps distinct."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "unsafe_commands_blocked",
+          "text": "That describes one policy outcome but not why the operator entered the state or how maintenance reporting identifies it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "technician_present",
+          "text": "Presence is not the stated condition: the operator's maintenance mode remains the decision input."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b05-i022",
+    "prompt": "A whiteboard host ends an active collaboration session, but the session transcript remains searchable under the same session ID. A separate retention action permanently removes old transcripts. Which command name fits ending the collaboration session?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "delete_board",
+          "text": "Use ‘delete board’ because no participant can edit after closure."
+        },
+        {
+          "optionId": "close_board_session",
+          "text": "Close the live session; reserve ‘DeleteTranscript’ for the separate record-removal operation."
+        },
+        {
+          "optionId": "archive_transcript",
+          "text": "Use ‘archive transcript’ for both closing the live session and changing its retention state."
+        },
+        {
+          "optionId": "save_session",
+          "text": "Use ‘save session’ because the transcript is preserved."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "close_board_session"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Closing ends the live session; transcript retention is a separate operation with a different consequence.",
+      "details": {
+        "mechanismOrProperty": "Active-session closure and transcript retention are different lifecycles, so one must not imply deletion of the other.",
+        "scenarioApplication": "CloseBoardSession stops collaboration while preserving the transcript under the same identity; DeleteTranscript remains a later retention command.",
+        "errorCorrection": "The nearest tempting alternative is delete board. Editability ending does not mean the transcript is removed; the same ID remains searchable.",
+        "boundaryOrTradeoff": "If closing always triggered transcript deletion under an explicit policy, a destructive name might fit, but preservation is explicit here.",
+        "transfer": "Separate a workflow's active state from the retention lifecycle of its historical record."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "delete_board",
+          "text": "Editability ending does not mean the transcript is removed; the same ID remains searchable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "archive_transcript",
+          "text": "The prompt assigns permanent removal to a separate retention action; archiving would conflate session state and record retention."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "save_session",
+          "text": "The transcript may already be saved while the session is open; saving does not name the active-session transition."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n01-b05-i023",
+    "prompt": "A marketplace listing becomes visible only after both its price and available-stock checks pass. ‘Save draft’ persists edits but does not make the listing visible. Which command name should the seller invoke for the visibility decision?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "save_listing",
+          "text": "Use ‘save listing’ for both draft persistence and making the listing visible."
+        },
+        {
+          "optionId": "validate_listing",
+          "text": "Call the action ‘validate listing’ because price and stock checks are prerequisites."
+        },
+        {
+          "optionId": "publish_listing",
+          "text": "Use ‘PublishListing’ for buyer visibility; keep ‘SaveDraft’ for unpublished persistence."
+        },
+        {
+          "optionId": "set_visible_flag",
+          "text": "Expose ‘set visible flag’ as the seller's operation."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "publish_listing"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Publishing is the business action that makes the listing visible after the two named checks; saving a draft is not publication.",
+      "details": {
+        "mechanismOrProperty": "Publishing changes buyer visibility; saving and validating a draft describe different steps.",
+        "scenarioApplication": "The seller calls PublishListing; when the checks pass the listing becomes visible, whereas SaveDraft can still persist an unpublished change.",
+        "errorCorrection": "The nearest tempting alternative is save listing. The prompt gives those actions different effects; ‘save’ cannot tell callers whether buyers can see the listing.",
+        "boundaryOrTradeoff": "If save itself made every valid listing public, a shared operation might work; the scenario explicitly keeps draft persistence separate.",
+        "transfer": "Use the term for the observable business result and avoid making a storage or validation step stand in for that result."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "save_listing",
+          "text": "The prompt gives those actions different effects; ‘save’ cannot tell callers whether buyers can see the listing."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "validate_listing",
+          "text": "Validation is a prerequisite result, not the visibility change the seller requests."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "set_visible_flag",
+          "text": "The flag is a representation detail and does not express the business action or its validation preconditions."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b05-i024",
+    "prompt": "A parts request is split across two vendors, but both shipments retain the original request ID and promised delivery date. ‘Backorder’ is the name of the stock-unavailable condition; it is not the act that allocates vendors. Which operation name best describes the split?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "mark_backordered",
+          "text": "Name the split ‘mark backordered’ because it began with unavailable stock."
+        },
+        {
+          "optionId": "duplicate_request",
+          "text": "Create two new requests and name each ‘duplicate request’ to simplify vendor ownership."
+        },
+        {
+          "optionId": "split_delivery_promise",
+          "text": "Call it ‘split promise’ because the delivery date is the main customer concern."
+        },
+        {
+          "optionId": "allocate_request_lines",
+          "text": "Name the vendor operation ‘AllocateRequestLines’; reserve ‘Backorder’ for the stock condition."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "allocate_request_lines"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The operation allocates request lines to vendors; backorder names the stock-unavailable condition, not that allocation act.",
+      "details": {
+        "mechanismOrProperty": "A stock condition and the operation responding to it are different business facts; the operation name should identify vendor allocation.",
+        "scenarioApplication": "AllocateRequestLines records the vendor split under the original request ID and delivery date; Backordered identifies the stock condition that led to this workflow.",
+        "errorCorrection": "The nearest tempting alternative is mark backordered. The prompt states that backorder is the stock condition; the command performs vendor allocation.",
+        "boundaryOrTradeoff": "If each vendor received an independently promised request with new identities, a request split might describe the result; that is excluded here.",
+        "transfer": "Keep condition terms, command names, and resulting business events distinct when the scenario assigns them different meanings."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "mark_backordered",
+          "text": "The prompt states that backorder is the stock condition; the command performs vendor allocation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "duplicate_request",
+          "text": "This would change the stable request identity and delivery promise the scenario requires to retain."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "split_delivery_promise",
+          "text": "The promise remains one shared date; the operation assigns lines to vendors rather than splitting the promise."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b05-i025",
+    "prompt": "A garden plot reservation moves from one plot to another after the steward's approval. The system retains the reservation ID and approval history; merely changing the assigned plot is a different admin correction. What should the business action be called?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "transfer_reservation",
+          "text": "Call the approved move ‘TransferReservation’; keep plot-field correction as a separate action."
+        },
+        {
+          "optionId": "reassign_plot",
+          "text": "Use ‘reassign plot’ for both the approved reservation transfer and the admin correction."
+        },
+        {
+          "optionId": "new_reservation",
+          "text": "Cancel the old reservation and create a new one, calling the result ‘new reservation’."
+        },
+        {
+          "optionId": "plot_updated",
+          "text": "Record ‘plot updated’ because the plot field changes."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "transfer_reservation"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The approval, retained identity, and history make this a transfer operation distinct from a field correction.",
+      "details": {
+        "mechanismOrProperty": "Approval, retained identity, and transfer distinguish this action from a field correction.",
+        "scenarioApplication": "TransferReservation records the approved plot move against the existing reservation; ReassignPlot can remain a separate correction with its own audit meaning.",
+        "errorCorrection": "The nearest tempting alternative is reassign plot. The term loses the approval-history business event that distinguishes the steward's transfer.",
+        "boundaryOrTradeoff": "If approvals and reservation history were intentionally discarded on every move, a new reservation could be appropriate; the stated record policy preserves them.",
+        "transfer": "Name actions so a reviewer can distinguish different business reasons that happen to alter the same field."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "reassign_plot",
+          "text": "The term loses the approval-history business event that distinguishes the steward's transfer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "new_reservation",
+          "text": "That changes the stable reservation identity and breaks the retained approval history."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "plot_updated",
+          "text": "A field update describes storage mutation but not whether the change was an approved transfer or correction."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b05-i026",
+    "prompt": "A subscription catalog sells a regional bundle. Pricing staff distinguish its quoted ‘bundle price’ from the sum of component list prices, and customer invoices use the quote. Which label should the price field and quote event share?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "component_total_is_bundle_price",
+          "text": "Call the component sum ‘bundle price’ because it is calculated from the bundle's parts."
+        },
+        {
+          "optionId": "quoted_bundle_price",
+          "text": "Use ‘QuotedBundlePrice’ for the customer amount; label the component sum separately."
+        },
+        {
+          "optionId": "discounted_total",
+          "text": "Use ‘discounted total’ even when no discount policy is part of the quote."
+        },
+        {
+          "optionId": "price_everywhere",
+          "text": "Call both numbers simply ‘price’ and require each caller to infer the intended one."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "quoted_bundle_price"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The customer quote is a distinct commercial amount, not an automatic synonym for the sum of component prices.",
+      "details": {
+        "mechanismOrProperty": "Customer quote and component list total are separate values under the stated regional pricing policy.",
+        "scenarioApplication": "The event and invoice use QuotedBundlePrice; ComponentListTotal can be reported separately for comparison without implying it is the amount charged.",
+        "errorCorrection": "The nearest tempting alternative is component total is bundle price. The prompt says customers are invoiced at the distinct quote, not the raw component sum.",
+        "boundaryOrTradeoff": "If the business defines bundle price as exactly the component total in every region, one label may suffice; the stated pricing rules contradict that assumption.",
+        "transfer": "Where one domain has similarly named quantities, include the business qualifier that distinguishes their calculation and use."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "component_total_is_bundle_price",
+          "text": "The prompt says customers are invoiced at the distinct quote, not the raw component sum."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discounted_total",
+          "text": "That label asserts a discount calculation the scenario does not supply."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "price_everywhere",
+          "text": "The invoice and catalog use two different amounts; callers cannot reliably infer which one a generic label denotes."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b05-i027",
+    "prompt": "A charging station may be occupied now while a different future time window is reserved. ‘Occupied now’ means a vehicle is connected; a reservation refers only to its named future interval and expires at that interval's deadline. Which pair of labels preserves both facts without treating them as mutually exclusive states?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "reserved_means_occupied",
+          "text": "Use ‘occupied’ as soon as a reservation is accepted so capacity reporting has one state."
+        },
+        {
+          "optionId": "available_until_plugged",
+          "text": "Keep the charger ‘available’ until a vehicle connects and store reservations only as comments."
+        },
+        {
+          "optionId": "reserved_then_occupied",
+          "text": "Record ‘OccupiedNow’ and ‘ReservedForWindow’ separately; their time scopes can coexist."
+        },
+        {
+          "optionId": "in_use_for_both",
+          "text": "Use ‘in use’ for both reservation and physical connection."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "reserved_then_occupied"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The terms describe different time-scoped facts: current physical connection and a future capacity hold can both be true.",
+      "details": {
+        "mechanismOrProperty": "Current occupancy and a future reservation interval can coexist; the time scope must remain in the terms.",
+        "scenarioApplication": "The station can report OccupiedNow for the connected vehicle and ReservedForWindow for a later interval, so one does not overwrite the other.",
+        "errorCorrection": "The nearest tempting alternative is reserved means occupied. A reservation can exist while the station is physically empty; the premise defines occupancy by connection.",
+        "boundaryOrTradeoff": "This is a vocabulary distinction for two facts and intervals; it does not decide whether the station can accept overlapping future reservations or guarantee a later connection.",
+        "transfer": "When apparent statuses overlap, check their subject and time interval before modeling them as exclusive alternatives. Qualify each term only as much as the business distinction requires."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "reserved_means_occupied",
+          "text": "A reservation can exist while the station is physically empty; the premise defines occupancy by connection."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "available_until_plugged",
+          "text": "This hides a valid capacity hold from reservation decisions even though a reservation has been accepted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "in_use_for_both",
+          "text": "That erases the arrival distinction needed for expiry and occupancy reporting."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b05-i028",
+    "prompt": "An archive curator merges duplicate metadata records that describe the same photo. The asset ID and stored image remain unchanged, and curator notes from both records are retained. Which operation name expresses this limited merge?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "merge_assets",
+          "text": "Use ‘merge assets’ because the curator is resolving duplicate photo records."
+        },
+        {
+          "optionId": "replace_metadata",
+          "text": "Call it ‘replace metadata’ and discard the duplicate record's curator notes."
+        },
+        {
+          "optionId": "deduplicate_photo",
+          "text": "Use ‘deduplicate photo’ for any cleanup involving similar descriptions."
+        },
+        {
+          "optionId": "merge_metadata_records",
+          "text": "Merge metadata records; do not name it as merging photo assets whose ID stays unchanged."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "merge_metadata_records"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The changed concept is the metadata record set; the underlying photo asset remains the same.",
+      "details": {
+        "mechanismOrProperty": "The operation consolidates metadata records while preserving the photo asset identity.",
+        "scenarioApplication": "MergeMetadataRecords consolidates the two descriptions and their notes while leaving the asset ID and image intact.",
+        "errorCorrection": "The nearest tempting alternative is merge assets. The prompt preserves the image and asset identity; only descriptive records are consolidated.",
+        "boundaryOrTradeoff": "If matching records proved to be duplicate image assets and the image identity changed, ‘merge assets’ could be accurate; the prompt says that did not happen.",
+        "transfer": "When naming a merge, state which domain object is consolidated and which identity remains untouched."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "merge_assets",
+          "text": "The prompt preserves the image and asset identity; only descriptive records are consolidated."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "replace_metadata",
+          "text": "That loses information the scenario explicitly requires to retain."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "deduplicate_photo",
+          "text": "The photos are not duplicates; the metadata records are, so the label would claim an unsupported asset match."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n01-b05-i029",
+    "prompt": "A licensing team approves use of a film in a named territory until a date. Its business glossary uses ‘clearance’ for this scoped permission; ‘license’ means the separate signed agreement. Which event term should the approval publish?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "territory_clearance_granted",
+          "text": "Publish ‘TerritoryClearanceGranted’ for scoped permission; keep ‘LicenseSigned’ for the agreement."
+        },
+        {
+          "optionId": "license_granted",
+          "text": "Publish ‘LicenseGranted’ because any permission to use a film is a license."
+        },
+        {
+          "optionId": "usage_updated",
+          "text": "Publish ‘UsageUpdated’ so the event remains independent of the team's terminology."
+        },
+        {
+          "optionId": "film_approved",
+          "text": "Publish ‘FilmApproved’ because the film itself received approval."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "territory_clearance_granted"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The event represents scoped clearance, not the separately defined signed license or an unrestricted film approval.",
+      "details": {
+        "mechanismOrProperty": "The glossary assigns clearance and signed license to different outcomes, so the event must preserve the scoped meaning.",
+        "scenarioApplication": "TerritoryClearanceGranted carries the territory and expiry, so a consumer does not mistake it for LicenseSigned or global FilmApproved.",
+        "errorCorrection": "The nearest tempting alternative is license granted. The glossary distinguishes a clearance decision from the signed agreement; the event would imply the wrong legal artifact.",
+        "boundaryOrTradeoff": "If the approval legally created the signed agreement as one inseparable outcome, ‘LicenseSigned’ might apply; the prompt says those are separate.",
+        "transfer": "Respect the business glossary's term boundaries and retain qualifiers that delimit the approved scope."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "license_granted",
+          "text": "The glossary distinguishes a clearance decision from the signed agreement; the event would imply the wrong legal artifact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "usage_updated",
+          "text": "The approved territory and expiration are the business meaning consumers need; this generic label hides both."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "film_approved",
+          "text": "The approval is scoped to one territory and period, not a global approval of the film."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b05-i030",
+    "prompt": "A fulfillment desk sends a vendor an order dispatch request, but the vendor has not accepted it yet. ‘Dispatched’ means the request left the desk; ‘confirmed’ means the vendor acknowledged a quantity and date. Which pair of event names preserves that distinction?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "confirmation_on_send",
+          "text": "Emit ‘VendorOrderConfirmed’ as soon as the request leaves the desk, then correct it if no reply arrives."
+        },
+        {
+          "optionId": "dispatch_and_confirmation_distinct",
+          "text": "Emit ‘VendorOrderDispatched’ on send and ‘VendorOrderConfirmed’ only after acknowledgement."
+        },
+        {
+          "optionId": "generic_order_update",
+          "text": "Use ‘OrderUpdated’ for both events and make consumers infer acknowledgement from a timestamp."
+        },
+        {
+          "optionId": "request_means_acceptance",
+          "text": "Call the first event ‘VendorAccepted’ because the request contains the desired quantity and date."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "dispatch_and_confirmation_distinct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Sending is an action by the desk; confirmation is a later fact supplied by the vendor. Vocabulary must not report acknowledgement before it occurs.",
+      "details": {
+        "mechanismOrProperty": "Dispatch by the desk and confirmation from the vendor are distinct milestones; do not claim a reply at send time.",
+        "scenarioApplication": "VendorOrderDispatched records the outbound request; VendorOrderConfirmed is emitted only when the vendor acknowledges its quantity and date.",
+        "errorCorrection": "Treating the outbound request as acceptance claims a response that has not arrived. A generic update also discards the distinction the operations team needs.",
+        "boundaryOrTradeoff": "This does not define timeout, retry, or eventual confirmation behavior; it distinguishes only the two events when they occur.",
+        "transfer": "Use one term per distinct business state when the distinction changes permitted actions or reporting."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "confirmation_on_send",
+          "text": "Dispatch is the desk sending the request; the vendor has not acknowledged it yet, so this name reports a later fact too early."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "generic_order_update",
+          "text": "A generic update loses whether the vendor received a request or confirmed its quantity and date."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "request_means_acceptance",
+          "text": "The request contains desired values, not evidence that the vendor accepted them."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b05-i031",
+    "prompt": "A clinic navigator may send a referral to a specialist only after recording the patient's consent. ‘Route referral’ is the internal queue action; external disclosure is a distinct governed action. Which command vocabulary makes the boundary clear?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "route_means_disclose",
+          "text": "Use ‘route referral’ for both placing it in an internal queue and sending it externally."
+        },
+        {
+          "optionId": "share_referral",
+          "text": "Use the generic command ‘share referral’ and let each caller decide if consent is needed."
+        },
+        {
+          "optionId": "disclose_consented_referral",
+          "text": "Use ‘DiscloseReferral’ for the external transfer; ‘RouteReferral’ remains internal."
+        },
+        {
+          "optionId": "consent_sent",
+          "text": "Name the disclosure action ‘consent sent’ because consent precedes it."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "disclose_consented_referral"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Internal routing and external disclosure have different actors and consent consequences in the stated vocabulary.",
+      "details": {
+        "mechanismOrProperty": "Internal referral routing and external disclosure have different consent consequences.",
+        "scenarioApplication": "After consent is recorded, DiscloseReferral names the transfer to the specialist; RouteReferral remains an internal assignment that does not itself disclose the record.",
+        "errorCorrection": "The nearest tempting alternative is route means disclose. The action crosses a consent-controlled boundary only in the second case; one term conceals whether disclosure occurred.",
+        "boundaryOrTradeoff": "If the specialist queue were internal and had the same consent boundary as external transfer, the vocabulary could be simplified; here those operations are explicitly distinct.",
+        "transfer": "Name sensitive actions by the information movement that occurs, and keep authorization facts separate from the operation they permit."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "route_means_disclose",
+          "text": "The action crosses a consent-controlled boundary only in the second case; one term conceals whether disclosure occurred."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "share_referral",
+          "text": "The prompt makes consent a precondition for external disclosure, so the command should not leave that boundary implicit."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "consent_sent",
+          "text": "Consent is the authorization fact; it is not the referral transfer itself."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b05-i032",
+    "prompt": "A practice app records each timed attempt with the exercise version and score policy. A learner may make several attempts before the course records completion. Which event vocabulary avoids treating an attempt as completion?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "attempt_is_completion",
+          "text": "Emit ‘ExerciseCompleted’ whenever an attempt is submitted, even if the learner will retry."
+        },
+        {
+          "optionId": "score_is_event_name",
+          "text": "Use ‘ScoreSaved’ for both attempts and completion because score is stored in either case."
+        },
+        {
+          "optionId": "one_generic_progress_event",
+          "text": "Emit ‘ProgressUpdated’ and require consumers to inspect attempt history to infer completion."
+        },
+        {
+          "optionId": "attempt_and_completion_events",
+          "text": "Emit ‘ExerciseAttemptSubmitted’ per try; reserve ‘ExerciseCompleted’ for the completion rule."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "attempt_and_completion_events"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "An attempt is evidence of work; completion is a distinct course decision made under its completion rule.",
+      "details": {
+        "mechanismOrProperty": "Attempt submission and course completion are separate learner events under the retry policy.",
+        "scenarioApplication": "ExerciseAttemptSubmitted carries version and scoring policy for each try; ExerciseCompleted is emitted only when the course's rule says the learner has completed the exercise.",
+        "errorCorrection": "The nearest tempting alternative is attempt is completion. The premise separates repeated attempts from the later completion decision.",
+        "boundaryOrTradeoff": "If every single submitted attempt automatically completed the exercise, one event could represent both; retries are expressly allowed here.",
+        "transfer": "Keep event names aligned with the business outcome, not merely the fact that some data was saved."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "attempt_is_completion",
+          "text": "The premise separates repeated attempts from the later completion decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "score_is_event_name",
+          "text": "Saving a score does not tell consumers whether the course considers the exercise complete."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "one_generic_progress_event",
+          "text": "Consumers need an explicit completion outcome; the generic event forces them to reconstruct a meaning the producer already knows."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b05-i033",
+    "prompt": "A procurement system records a manager's decision to allow a specific exception; a separate authorization grants the buyer permission to place the resulting order. Which terms keep these decisions distinct?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "exception_approved_order_authorized",
+          "text": "Record ‘ExceptionApproved’; reserve ‘OrderAuthorized’ for the separate buyer permission."
+        },
+        {
+          "optionId": "approval_equals_authorization",
+          "text": "Use ‘OrderAuthorized’ for the exception decision because the manager approved it."
+        },
+        {
+          "optionId": "generic_approved",
+          "text": "Use ‘Approved’ for both decisions and store a numeric stage to distinguish them."
+        },
+        {
+          "optionId": "exception_granted",
+          "text": "Name both events ‘ExceptionGranted’ because the order depends on the exception."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "exception_approved_order_authorized"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The exception decision and order permission are sequential but distinct business outcomes.",
+      "details": {
+        "mechanismOrProperty": "An exception decision and later order authorization come from separate authorities.",
+        "scenarioApplication": "ExceptionApproved records the manager's allowed exception; OrderAuthorized records the separate permission the buyer needs before placing the order.",
+        "errorCorrection": "The nearest tempting alternative is approval equals authorization. The prompt says approval permits a later, separate authorization; recording authorization early would overstate the granted permission.",
+        "boundaryOrTradeoff": "If the manager's exception decision automatically granted order permission under the policy, a single combined outcome could be accurate; that is not this contract.",
+        "transfer": "When one approval is a prerequisite for another decision, name each event for the authority and result it actually records."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "approval_equals_authorization",
+          "text": "The prompt says approval permits a later, separate authorization; recording authorization early would overstate the granted permission."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "generic_approved",
+          "text": "The event names should carry the separate business meanings instead of relying on a consumer-only stage convention."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "exception_granted",
+          "text": "The exception decision does not itself grant the buyer permission to order, so this name collapses two authorities."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B05",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b05-i034",
+    "prompt": "A temporary security role is granted only after a named approval, and it expires at a specified time. Removing it early is a separate revocation. Which command and event names preserve those facts?",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "set_roles",
+          "text": "Use ‘SetUserRoles’ to replace the full role list without preserving the approval reference or expiry."
+        },
+        {
+          "optionId": "grant_approved_temporary_role",
+          "text": "Use ‘GrantRole’ with approval/expiry data; ‘RevokeRole’ represents early removal."
+        },
+        {
+          "optionId": "role_revoked",
+          "text": "Emit ‘RoleRevoked’ at grant time because the role is scheduled to expire later."
+        },
+        {
+          "optionId": "permanent_role_granted",
+          "text": "Use ‘GrantRole’ with no approval or expiry data and let consumers infer that the grant is temporary."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "grant_approved_temporary_role"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "‘GrantRole’ can be accurate when its payload carries approval and expiry; early removal remains a separate revocation.",
+      "details": {
+        "mechanismOrProperty": "A concise GrantRole name can be clear when the payload retains approval and expiry; naming is not a length contest.",
+        "scenarioApplication": "GrantRole records the approved temporary grant with its approval reference and expiry; RevokeRole records an early removal.",
+        "errorCorrection": "A short verb is not wrong when event data supplies the qualifiers. Emitting revocation before expiry or dropping the approval facts would misstate this case.",
+        "boundaryOrTradeoff": "If consumers receive only the event name and no approval/expiry data, a more explicit event name may be needed; this proposal assumes the described payload is preserved.",
+        "transfer": "Check both the name and its payload before judging ambiguity; do not turn a preference for longer names into a domain rule."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "set_roles",
+          "text": "Replacing the entire list drops the named grant approval attribution and expiry facts."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "role_revoked",
+          "text": "A scheduled future expiry is not a revocation that has already happened."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "permanent_role_granted",
+          "text": "A concise GrantRole name can work, but this option drops the required approval and expiry data."
+        }
+      ]
+    }
+  }
+]

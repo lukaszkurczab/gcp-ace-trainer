@@ -1,0 +1,828 @@
+
+> patternly-content@1.0.0 test
+> npm run test:canonical
+
+
+> patternly-content@1.0.0 test:canonical
+> node --test tests/content-builder.test.mjs tests/packageCompletionTransport.test.mjs tests/contentReviewConsole.test.mjs tests/bizq01-source-slice.test.mjs tests/bizq01-source-copy.test.mjs tests/bizq01-migration-proof.test.mjs tests/bizq01-besd-seed-cohort-14.test.mjs tests/bizq01-ood-source-11.test.mjs tests/bizq01-ood-source-12.test.mjs tests/bizq01-ood-unit-cohort-13.test.mjs tests/bizq01-ood-node-closure-16.test.mjs tests/shared-contract.test.mjs tests/simp03-phase-a.test.mjs tests/simp03-verifier.test.mjs tests/content-boundary.test.mjs tests/odk123-claude-focus-feedback.test.mjs tests/odk096-canonical-approval.test.mjs tests/odk097-design-session-matrix.test.mjs tests/model-evaluation-inventory.test.mjs tests/candidate-draft-v2.test.mjs tests/candidate-readiness-v2.test.mjs tests/candidate-admission-v3.test.mjs tests/candidate-release-gate-v2.test.mjs
+
+TAP version 13
+# Subtest: accepts the fixed two-unit cohort and source01 predecessor chain
+ok 1 - accepts the fixed two-unit cohort and source01 predecessor chain
+  ---
+  duration_ms: 4124.5075
+  type: 'test'
+  ...
+# Subtest: requires both the new fixed proof and unchanged source01 proof
+ok 2 - requires both the new fixed proof and unchanged source01 proof
+  ---
+  duration_ms: 2487.39575
+  type: 'test'
+  ...
+# Subtest: rejects changed current source items, old/current proof objects, source bytes, and versions
+ok 3 - rejects changed current source items, old/current proof objects, source bytes, and versions
+  ---
+  duration_ms: 9407.398375
+  type: 'test'
+  ...
+# Subtest: rejects missing, duplicate, extra and unrelated replacement/source membership
+ok 4 - rejects missing, duplicate, extra and unrelated replacement/source membership
+  ---
+  duration_ms: 5576.3475
+  type: 'test'
+  ...
+# Subtest: rejects canonical source moved behind a symlink
+ok 5 - rejects canonical source moved behind a symlink
+  ---
+  duration_ms: 121.745042
+  type: 'test'
+  ...
+# Subtest: accepts the real BIZQ-01 replacement proof while preserving current and historical counts
+ok 6 - accepts the real BIZQ-01 replacement proof while preserving current and historical counts
+  ---
+  duration_ms: 6553.855917
+  type: 'test'
+  ...
+# Subtest: keeps the original migration verifier behavior when no BIZQ proof is present
+ok 7 - keeps the original migration verifier behavior when no BIZQ proof is present
+  ---
+  duration_ms: 1044.751
+  type: 'test'
+  ...
+# Subtest: rejects changes to a current replacement and its frozen old object
+ok 8 - rejects changes to a current replacement and its frozen old object
+  ---
+  duration_ms: 2759.2795
+  type: 'test'
+  ...
+# Subtest: rejects stale batch identity, duplicate mappings, and a missing replacement
+ok 9 - rejects stale batch identity, duplicate mappings, and a missing replacement
+  ---
+  duration_ms: 4417.587
+  type: 'test'
+  ...
+# Subtest: rejects changes to an unrelated item in the proven current track
+ok 10 - rejects changes to an unrelated item in the proven current track
+  ---
+  duration_ms: 1281.788917
+  type: 'test'
+  ...
+# Subtest: accepts only the real same-ID Coding wording correction alongside the unchanged BESD proof
+ok 11 - accepts only the real same-ID Coding wording correction alongside the unchanged BESD proof
+  ---
+  duration_ms: 2726.105833
+  type: 'test'
+  ...
+# Subtest: rejects the same-ID correction without its proof and rejects tampered frozen old objects
+ok 12 - rejects the same-ID correction without its proof and rejects tampered frozen old objects
+  ---
+  duration_ms: 3634.004041
+  type: 'test'
+  ...
+# Subtest: rejects unapproved wording, answer, options, feedback and taxonomy changes in the corrected source
+ok 13 - rejects unapproved wording, answer, options, feedback and taxonomy changes in the corrected source
+  ---
+  duration_ms: 8229.344833
+  type: 'test'
+  ...
+# Subtest: rejects stale Coding version, proof identity/hashes/source location and unexpected proof fields
+ok 14 - rejects stale Coding version, proof identity/hashes/source location and unexpected proof fields
+  ---
+  duration_ms: 6331.195042
+  type: 'test'
+  ...
+# Subtest: rejects a corrected source moved away from its canonical mental-unit filename
+ok 15 - rejects a corrected source moved away from its canonical mental-unit filename
+  ---
+  duration_ms: 115.37575
+  type: 'test'
+  ...
+# Subtest: rejects unreviewed primary-source pages even under the same publisher domain
+ok 16 - rejects unreviewed primary-source pages even under the same publisher domain
+  ---
+  duration_ms: 812.948875
+  type: 'test'
+  ...
+# Subtest: accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain
+ok 17 - accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain
+  ---
+  duration_ms: 4180.275041
+  type: 'test'
+  ...
+# Subtest: validates, scores, and binds targeted feedback for every replacement option
+ok 18 - validates, scores, and binds targeted feedback for every replacement option
+  ---
+  duration_ms: 26.864333
+  type: 'test'
+  ...
+# Subtest: requires every fixed OOD generation proof in the v16 predecessor chain
+ok 19 - requires every fixed OOD generation proof in the v16 predecessor chain
+  ---
+  duration_ms: 6182.695458
+  type: 'test'
+  ...
+# Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+ok 20 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+  ---
+  duration_ms: 14379.832334
+  type: 'test'
+  ...
+# Subtest: rejects changed canonical source membership and unsupported catalog versions
+ok 21 - rejects changed canonical source membership and unsupported catalog versions
+  ---
+  duration_ms: 2929.764
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked fixed proof path
+ok 22 - rejects a symlinked fixed proof path
+  ---
+  duration_ms: 614.15175
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked current source path
+ok 23 - rejects a symlinked current source path
+  ---
+  duration_ms: 412.518541
+  type: 'test'
+  ...
+# Subtest: accepts the exact OOD source11 replacement and retains historical inventory
+ok 24 - accepts the exact OOD source11 replacement and retains historical inventory
+  ---
+  duration_ms: 3933.115084
+  type: 'test'
+  ...
+# Subtest: replacement uses the authored single-choice scoring and feedback contract
+ok 25 - replacement uses the authored single-choice scoring and feedback contract
+  ---
+  duration_ms: 25.59575
+  type: 'test'
+  ...
+# Subtest: rejects the replacement when its fixed proof is absent
+ok 26 - rejects the replacement when its fixed proof is absent
+  ---
+  duration_ms: 2503.742917
+  type: 'test'
+  ...
+# Subtest: rejects a tampered frozen question and a changed current replacement
+ok 27 - rejects a tampered frozen question and a changed current replacement
+  ---
+  duration_ms: 2747.656583
+  type: 'test'
+  ...
+# Subtest: rejects stale catalog or track hashes, duplicate mappings, and an absent new item
+ok 28 - rejects stale catalog or track hashes, duplicate mappings, and an absent new item
+  ---
+  duration_ms: 6221.058333
+  type: 'test'
+  ...
+# Subtest: rejects changes to an unaffected OOD item and unapproved proof fields
+ok 29 - rejects changes to an unaffected OOD item and unapproved proof fields
+  ---
+  duration_ms: 3844.502667
+  type: 'test'
+  ...
+# Subtest: rejects an unapproved proof source path and a physically relocated source file
+ok 30 - rejects an unapproved proof source path and a physically relocated source file
+  ---
+  duration_ms: 2251.282584
+  type: 'test'
+  ...
+# Subtest: validates the exact source12 fixture and preserves its source11 predecessor
+ok 31 - validates the exact source12 fixture and preserves its source11 predecessor
+  ---
+  duration_ms: 3977.662792
+  type: 'test'
+  ...
+# Subtest: source12 question validates, scores all options, and supplies authored wrong-option feedback
+ok 32 - source12 question validates, scores all options, and supplies authored wrong-option feedback
+  ---
+  duration_ms: 3.216
+  type: 'test'
+  ...
+# Subtest: source12 cannot fall back when either fixed generation proof is absent
+ok 33 - source12 cannot fall back when either fixed generation proof is absent
+  ---
+  duration_ms: 2839.896209
+  type: 'test'
+  ...
+# Subtest: rejects tampered current content, predecessor proof, and source identity
+ok 34 - rejects tampered current content, predecessor proof, and source identity
+  ---
+  duration_ms: 3947.508334
+  type: 'test'
+  ...
+# Subtest: rejects unreviewed successor proof identity, hashes, paths, and fields
+ok 35 - rejects unreviewed successor proof identity, hashes, paths, and fields
+  ---
+  duration_ms: 6162.194125
+  type: 'test'
+  ...
+# Subtest: rejects a changed unrelated OOD source item instead of reconstructing around it
+ok 36 - rejects a changed unrelated OOD source item instead of reconstructing around it
+  ---
+  duration_ms: 1549.1895
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked current source before following it
+ok 37 - rejects a symlinked current source before following it
+  ---
+  duration_ms: 851.428458
+  type: 'test'
+  ...
+# Subtest: validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors
+ok 38 - validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors
+  ---
+  duration_ms: 4064.113667
+  type: 'test'
+  ...
+# Subtest: all fifteen new questions validate, score each option, and bind authored feedback to every distractor
+ok 39 - all fifteen new questions validate, score each option, and bind authored feedback to every distractor
+  ---
+  duration_ms: 2.300042
+  type: 'test'
+  ...
+# Subtest: requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence
+ok 40 - requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence
+  ---
+  duration_ms: 5645.360084
+  type: 'test'
+  ...
+# Subtest: source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership
+ok 41 - source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership
+  ---
+  duration_ms: 9855.59875
+  type: 'test'
+  ...
+# Subtest: rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths
+ok 42 - rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths
+  ---
+  duration_ms: 3547.8915
+  type: 'test'
+  ...
+# Subtest: same-ID source correction changes only the three reviewed texts and preserves all other mental-unit items
+ok 43 - same-ID source correction changes only the three reviewed texts and preserves all other mental-unit items
+  ---
+  duration_ms: 26.654833
+  type: 'test'
+  ...
+# Subtest: canonical single-track builder carries the exact corrected object and new immutable content identity
+ok 44 - canonical single-track builder carries the exact corrected object and new immutable content identity
+  ---
+  duration_ms: 539.722834
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 cohort14 preserves source01 as the exact accepted predecessor
+ok 45 - BIZQ-01 cohort14 preserves source01 as the exact accepted predecessor
+  ---
+  duration_ms: 52.012417
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 preserves both accepted source01 objects and their scored, built, and projected behavior
+ok 46 - BIZQ-01 preserves both accepted source01 objects and their scored, built, and projected behavior
+  ---
+  duration_ms: 1467.621833
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 changed items keep concrete learner constraints and one scoreable authored answer
+ok 47 - BIZQ-01 changed items keep concrete learner constraints and one scoreable authored answer
+  ---
+  duration_ms: 3.542375
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 canonical builder carries the exact cohort and new content identity
+ok 48 - BIZQ-01 canonical builder carries the exact cohort and new content identity
+  ---
+  duration_ms: 364.208542
+  type: 'test'
+  ...
+# Subtest: BIZQ-01 advisory console distinguishes corrected cohort from remaining warnings
+ok 49 - BIZQ-01 advisory console distinguishes corrected cohort from remaining warnings
+  ---
+  duration_ms: 1667.725458
+  type: 'test'
+  ...
+# Subtest: admission binds verified local publishing bytes, app lock, and runtime test
+ok 50 - admission binds verified local publishing bytes, app lock, and runtime test
+  ---
+  duration_ms: 210.60325
+  type: 'test'
+  ...
+# Subtest: committed admission and runtime evidence remain hash-bound
+ok 51 - committed admission and runtime evidence remain hash-bound
+  ---
+  duration_ms: 6.738833
+  type: 'test'
+  ...
+# Subtest: candidate draft v2 binds all nine canonical artifacts and exact ODK-096 AWS identity deterministically
+ok 52 - candidate draft v2 binds all nine canonical artifacts and exact ODK-096 AWS identity deterministically
+  ---
+  duration_ms: 7064.147917
+  type: 'test'
+  ...
+# Subtest: canonical source snapshot rejects a valid untracked mental-unit JSON in an isolated Git fixture
+ok 53 - canonical source snapshot rejects a valid untracked mental-unit JSON in an isolated Git fixture
+  ---
+  duration_ms: 188.975375
+  type: 'test'
+  ...
+# Subtest: Codex candidate decision v2 binds exact candidate, source snapshot, release and nine artifact hashes
+ok 54 - Codex candidate decision v2 binds exact candidate, source snapshot, release and nine artifact hashes
+  ---
+  duration_ms: 3273.9045
+  type: 'test'
+  ...
+# Subtest: release gate verifies exact decision-bound evidence and requires separate admission
+ok 55 - release gate verifies exact decision-bound evidence and requires separate admission
+  ---
+  duration_ms: 662.744583
+  type: 'test'
+  ...
+# Subtest: release gate accepts the exact v3 admission without mutating readiness v2
+ok 56 - release gate accepts the exact v3 admission without mutating readiness v2
+  ---
+  duration_ms: 403.032084
+  type: 'test'
+  ...
+# Subtest: bundled Free-node control validates pinned source items and bounds decompression
+ok 57 - bundled Free-node control validates pinned source items and bounds decompression
+  ---
+  duration_ms: 3424.006292
+  type: 'test'
+  ...
+# Subtest: Free-node acceptance evidence rejects authority changes and unsupported fields
+ok 58 - Free-node acceptance evidence rejects authority changes and unsupported fields
+  ---
+  duration_ms: 18.003792
+  type: 'test'
+  ...
+# Subtest: workflow contract rebuilds v2 evidence and release gate without legacy publisher or deployment commands
+ok 59 - workflow contract rebuilds v2 evidence and release gate without legacy publisher or deployment commands
+  ---
+  duration_ms: 5.279166
+  type: 'test'
+  ...
+# Subtest: active canonical ingress has no legacy publisher and historical references are verifier-only
+ok 60 - active canonical ingress has no legacy publisher and historical references are verifier-only
+  ---
+  duration_ms: 25.025667
+  type: 'test'
+  ...
+# Subtest: each catalogued track validates, tests and builds independently
+ok 61 - each catalogued track validates, tests and builds independently
+  ---
+  duration_ms: 134.034
+  type: 'test'
+  ...
+# Subtest: build-all emits exactly nine deterministic artifacts and lock entries
+ok 62 - build-all emits exactly nine deterministic artifacts and lock entries
+  ---
+  duration_ms: 58.59575
+  type: 'test'
+  ...
+# Subtest: GCP simulation profile binds a complete unambiguous node map to the same-version published artifact
+ok 63 - GCP simulation profile binds a complete unambiguous node map to the same-version published artifact
+  ---
+  duration_ms: 660.212042
+  type: 'test'
+  ...
+# Subtest: Coding Interview simulation profile emits the blueprint and exact checksum-verified pool identities
+ok 64 - Coding Interview simulation profile emits the blueprint and exact checksum-verified pool identities
+  ---
+  duration_ms: 577.799167
+  type: 'test'
+  ...
+# Subtest: malformed Coding Interview simulation blueprint fails closed
+ok 65 - malformed Coding Interview simulation blueprint fails closed
+  ---
+  duration_ms: 254.379125
+  type: 'test'
+  ...
+# Subtest: Coding Interview simulation selection policies reject stale pools and invalid identities
+ok 66 - Coding Interview simulation selection policies reject stale pools and invalid identities
+  ---
+  duration_ms: 1367.104875
+  type: 'test'
+  ...
+# Subtest: Design Interview simulation profiles emit one strict text-response case per track
+ok 67 - Design Interview simulation profiles emit one strict text-response case per track
+  ---
+  duration_ms: 1632.548
+  type: 'test'
+  ...
+# Subtest: Design simulation availability requires the canonical text profile and does not imply question-bank capacity
+ok 68 - Design simulation availability requires the canonical text profile and does not imply question-bank capacity
+  ---
+  duration_ms: 22.616542
+  type: 'test'
+  ...
+# Subtest: malformed Design Interview simulation sources fail closed
+ok 69 - malformed Design Interview simulation sources fail closed
+  ---
+  duration_ms: 31.488041
+  type: 'test'
+  ...
+# Subtest: malformed present GCP simulation profile fails closed on incomplete node coverage
+ok 70 - malformed present GCP simulation profile fails closed on incomplete node coverage
+  ---
+  duration_ms: 236.597875
+  type: 'test'
+  ...
+# Subtest: existing GCP artifact rejects malformed profile even when its lock SHA is recomputed
+ok 71 - existing GCP artifact rejects malformed profile even when its lock SHA is recomputed
+  ---
+  duration_ms: 1407.844375
+  type: 'test'
+  ...
+# Subtest: existing GCP artifact rejects a legal but source-inconsistent node domain when its lock SHA is recomputed
+ok 72 - existing GCP artifact rejects a legal but source-inconsistent node domain when its lock SHA is recomputed
+  ---
+  duration_ms: 743.830083
+  type: 'test'
+  ...
+# Subtest: ACC-02 Candidate Manifest retains its exact nine-track identity against frozen baseline and migration manifest
+ok 73 - ACC-02 Candidate Manifest retains its exact nine-track identity against frozen baseline and migration manifest
+  ---
+  duration_ms: 0.320625
+  type: 'test'
+  ...
+# Subtest: canonical JSON sorts recursive object keys without reordering arrays
+ok 74 - canonical JSON sorts recursive object keys without reordering arrays
+  ---
+  duration_ms: 0.062041
+  type: 'test'
+  ...
+# Subtest: mutating one track does not rewrite another artifact or lock entry
+ok 75 - mutating one track does not rewrite another artifact or lock entry
+  ---
+  duration_ms: 33.510458
+  type: 'test'
+  ...
+# Subtest: builder rejects missing, empty, unknown and malformed inputs
+ok 76 - builder rejects missing, empty, unknown and malformed inputs
+  ---
+  duration_ms: 5.314292
+  type: 'test'
+  ...
+# Subtest: builder requires each mental-unit source file to be a non-empty question array
+ok 77 - builder requires each mental-unit source file to be a non-empty question array
+  ---
+  duration_ms: 4.358791
+  type: 'test'
+  ...
+# Subtest: builder rejects path identity, foreign track, duplicate and invalid questions
+ok 78 - builder rejects path identity, foreign track, duplicate and invalid questions
+  ---
+  duration_ms: 10.4805
+  type: 'test'
+  ...
+# Subtest: existing malformed lock is rejected before a single-track build
+ok 79 - existing malformed lock is rejected before a single-track build
+  ---
+  duration_ms: 3.786792
+  type: 'test'
+  ...
+# Subtest: source discovery rejects a symlinked track, node directory, or question file
+ok 80 - source discovery rejects a symlinked track, node directory, or question file
+  ---
+  duration_ms: 11.330083
+  type: 'test'
+  ...
+# Subtest: a tampered existing artifact blocks another track before any write
+ok 81 - a tampered existing artifact blocks another track before any write
+  ---
+  duration_ms: 22.753292
+  type: 'test'
+  ...
+# Subtest: single-track build rejects orphan artifacts and temporary outputs before writing any target
+ok 82 - single-track build rejects orphan artifacts and temporary outputs before writing any target
+  ---
+  duration_ms: 11.586
+  type: 'test'
+  ...
+# Subtest: single-track build rejects a symlinked output root without external writes
+ok 83 - single-track build rejects a symlinked output root without external writes
+  ---
+  duration_ms: 4.84975
+  type: 'test'
+  ...
+# Subtest: single-track output commit rolls back both files on an injected second rename failure
+ok 84 - single-track output commit rolls back both files on an injected second rename failure
+  ---
+  duration_ms: 11.464791
+  type: 'test'
+  ...
+# Subtest: build-all stages and rolls back the complete new output set on rename failure
+ok 85 - build-all stages and rolls back the complete new output set on rename failure
+  ---
+  duration_ms: 42.522916
+  type: 'test'
+  ...
+# Subtest: CLI parser requires track for single-track commands and rejects it for build-all
+ok 86 - CLI parser requires track for single-track commands and rejects it for build-all
+  ---
+  duration_ms: 0.300458
+  type: 'test'
+  ...
+# Subtest: CLI executes a hermetic single-track validate/test/build
+ok 87 - CLI executes a hermetic single-track validate/test/build
+  ---
+  duration_ms: 247.200583
+  type: 'test'
+  ...
+# Subtest: review console surfaces a remaining BESD constraint disclosure without recording an outcome
+ok 88 - review console surfaces a remaining BESD constraint disclosure without recording an outcome
+  ---
+  duration_ms: 1374.125584
+  type: 'test'
+  ...
+# Subtest: constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback
+ok 89 - constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback
+  ---
+  duration_ms: 1488.912125
+  type: 'test'
+  ...
+# Subtest: review console exposes exactly nine launch tracks, navigable coverage, and advisory signals
+ok 90 - review console exposes exactly nine launch tracks, navigable coverage, and advisory signals
+  ---
+  duration_ms: 1187.3285
+  type: 'test'
+  ...
+# Subtest: review console records one current explicit outcome and invalidates it when source identity changes
+ok 91 - review console records one current explicit outcome and invalidates it when source identity changes
+  ---
+  duration_ms: 1089.889166
+  type: 'test'
+  ...
+# Subtest: review console serves a local UI and bounded JSON API without fabricating approval
+ok 92 - review console serves a local UI and bounded JSON API without fabricating approval
+  ---
+  duration_ms: 1304.058333
+  type: 'test'
+  ...
+# Subtest: nine canonical banks produce a repeatable inventory with an explicit AWS baseline mismatch
+ok 93 - nine canonical banks produce a repeatable inventory with an explicit AWS baseline mismatch
+  ---
+  duration_ms: 4742.765792
+  type: 'test'
+  ...
+# Subtest: ODK-096 approval binds one AWS Free node to exact canonical hashes and IDs
+ok 94 - ODK-096 approval binds one AWS Free node to exact canonical hashes and IDs
+  ---
+  duration_ms: 310.478208
+  type: 'test'
+  ...
+# Subtest: ODK-097 producer profiles expose the approved Design session matrix
+ok 95 - ODK-097 producer profiles expose the approved Design session matrix
+  ---
+  duration_ms: 18.280917
+  type: 'test'
+  ...
+# Subtest: ODK-097 producer changes preserve canonical Design question counts and hashes
+ok 96 - ODK-097 producer changes preserve canonical Design question counts and hashes
+  ---
+  duration_ms: 654.081208
+  type: 'test'
+  ...
+# Subtest: Claude Focus Practice v2 is the only selectable-feedback mode in its immutable Free-node profile
+ok 97 - Claude Focus Practice v2 is the only selectable-feedback mode in its immutable Free-node profile
+  ---
+  duration_ms: 1.451292
+  type: 'test'
+  ...
+# Subtest: catalog accepts a valid optional package completion rule and rejects malformed or null rules
+ok 98 - catalog accepts a valid optional package completion rule and rejects malformed or null rules
+  ---
+  duration_ms: 1.301542
+  type: 'test'
+  ...
+# Subtest: builder transports the exact source rule, hashes it, and omits it when absent
+ok 99 - builder transports the exact source rule, hashes it, and omits it when absent
+  ---
+  duration_ms: 32.663458
+  type: 'test'
+  ...
+# Subtest: existing artifact rule must agree with catalog even after checksum is recomputed
+ok 100 - existing artifact rule must agree with catalog even after checksum is recomputed
+  ---
+  duration_ms: 23.70825
+  type: 'test'
+  ...
+# Subtest: catalog is the exact nine-track SIMP-01 catalog
+ok 101 - catalog is the exact nine-track SIMP-01 catalog
+  ---
+  duration_ms: 1.949125
+  type: 'test'
+  ...
+# Subtest: fixture validates as one family-neutral contract
+ok 102 - fixture validates as one family-neutral contract
+  ---
+  duration_ms: 1.183208
+  type: 'test'
+  ...
+# Subtest: schema documents five disjoint interaction branches
+ok 103 - schema documents five disjoint interaction branches
+  ---
+  duration_ms: 0.682
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema rejects feedback type mismatches in every variant
+ok 104 - Draft 2020-12 schema rejects feedback type mismatches in every variant
+  ---
+  duration_ms: 493.185292
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text
+ok 105 - Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text
+  ---
+  duration_ms: 136.916042
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema and runtime agree on explicit learner whitespace code points
+ok 106 - Draft 2020-12 schema and runtime agree on explicit learner whitespace code points
+  ---
+  duration_ms: 205.323666
+  type: 'test'
+  ...
+# Subtest: Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace
+ok 107 - Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace
+  ---
+  duration_ms: 453.425667
+  type: 'test'
+  ...
+# Subtest: all five correct answers are scoreable
+ok 108 - all five correct answers are scoreable
+  ---
+  duration_ms: 0.99275
+  type: 'test'
+  ...
+# Subtest: choice_single scores correct, wrong and empty responses
+ok 109 - choice_single scores correct, wrong and empty responses
+  ---
+  duration_ms: 0.450875
+  type: 'test'
+  ...
+# Subtest: choice_multiple preserves valid partial points and gives zero for any wrong selection
+ok 110 - choice_multiple preserves valid partial points and gives zero for any wrong selection
+  ---
+  duration_ms: 1.375834
+  type: 'test'
+  ...
+# Subtest: multiple-choice wrong selections and empty response earn zero independently of app parity
+ok 111 - multiple-choice wrong selections and empty response earn zero independently of app parity
+  ---
+  duration_ms: 0.7045
+  type: 'test'
+  ...
+# Subtest: ordering scores exact adjacent relations and incomplete answers
+ok 112 - ordering scores exact adjacent relations and incomplete answers
+  ---
+  duration_ms: 0.211166
+  type: 'test'
+  ...
+# Subtest: complexity scores every dimension and distinguishes missing values
+ok 113 - complexity scores every dimension and distinguishes missing values
+  ---
+  duration_ms: 0.529625
+  type: 'test'
+  ...
+# Subtest: decision_matrix scores every dimension independently
+ok 114 - decision_matrix scores every dimension independently
+  ---
+  duration_ms: 0.150458
+  type: 'test'
+  ...
+# Subtest: validator rejects missing identity and all family aliases
+ok 115 - validator rejects missing identity and all family aliases
+  ---
+  duration_ms: 0.216125
+  type: 'test'
+  ...
+# Subtest: learner text preserves surrounding whitespace while identity stays trim-clean
+ok 116 - learner text preserves surrounding whitespace while identity stays trim-clean
+  ---
+  duration_ms: 0.146167
+  type: 'test'
+  ...
+# Subtest: learner text rejects whitespace-only values in every canonical learner surface
+ok 117 - learner text rejects whitespace-only values in every canonical learner surface
+  ---
+  duration_ms: 0.358458
+  type: 'test'
+  ...
+# Subtest: validator permits internal newlines that the schema pattern explicitly permits
+ok 118 - validator permits internal newlines that the schema pattern explicitly permits
+  ---
+  duration_ms: 0.056833
+  type: 'test'
+  ...
+# Subtest: scoring rejects additional response keys and mismatched response types for every variant
+ok 119 - scoring rejects additional response keys and mismatched response types for every variant
+  ---
+  duration_ms: 0.361667
+  type: 'test'
+  ...
+# Subtest: validator rejects extra fields and duplicate option/element/dimension IDs
+ok 120 - validator rejects extra fields and duplicate option/element/dimension IDs
+  ---
+  duration_ms: 0.16675
+  type: 'test'
+  ...
+# Subtest: validator rejects mismatched variants and foreign references
+ok 121 - validator rejects mismatched variants and foreign references
+  ---
+  duration_ms: 0.946167
+  type: 'test'
+  ...
+# Subtest: feedback messages are optional when no source map exists
+ok 122 - feedback messages are optional when no source map exists
+  ---
+  duration_ms: 0.114416
+  type: 'test'
+  ...
+# Subtest: fixture validator rejects a track outside the exact catalog
+ok 123 - fixture validator rejects a track outside the exact catalog
+  ---
+  duration_ms: 0.37225
+  type: 'test'
+  ...
+# Subtest: oracle covers every single-choice option
+ok 124 - oracle covers every single-choice option
+  ---
+  duration_ms: 2.7345
+  type: 'test'
+  ...
+# Subtest: oracle covers every multiple-choice subset, including empty and all-selected
+ok 125 - oracle covers every multiple-choice subset, including empty and all-selected
+  ---
+  duration_ms: 1.05325
+  type: 'test'
+  ...
+# Subtest: oracle freezes adjacent-relation ordering semantics
+ok 126 - oracle freezes adjacent-relation ordering semantics
+  ---
+  duration_ms: 1.203958
+  type: 'test'
+  ...
+# Subtest: oracle covers accepted, wrong, alias and missing dimension values
+ok 127 - oracle covers accepted, wrong, alias and missing dimension values
+  ---
+  duration_ms: 2.222958
+  type: 'test'
+  ...
+# Subtest: canonical answers retain the complete accepted set for multi-accepted complexity
+ok 128 - canonical answers retain the complete accepted set for multi-accepted complexity
+  ---
+  duration_ms: 1.880667
+  type: 'test'
+  ...
+# Subtest: details remain arbitrary exact JSON, difficulty may be null, and aliases stay complexity-only
+ok 129 - details remain arbitrary exact JSON, difficulty may be null, and aliases stay complexity-only
+  ---
+  duration_ms: 0.241833
+  type: 'test'
+  ...
+# Subtest: verifies the complete canonical tree and durable evidence without external inputs
+ok 130 - verifies the complete canonical tree and durable evidence without external inputs
+  ---
+  duration_ms: 2755.2615
+  type: 'test'
+  ...
+# Subtest: rejects canonical question tampering without changing evidence
+ok 131 - rejects canonical question tampering without changing evidence
+  ---
+  duration_ms: 1116.290791
+  type: 'test'
+  ...
+# Subtest: rejects evidence hash tampering and missing membership
+ok 132 - rejects evidence hash tampering and missing membership
+  ---
+  duration_ms: 962.33925
+  type: 'test'
+  ...
+# Subtest: rejects symlinked canonical paths before following them
+ok 133 - rejects symlinked canonical paths before following them
+  ---
+  duration_ms: 495.389
+  type: 'test'
+  ...
+# Subtest: rejects a content root reached through a symlinked ancestor
+ok 134 - rejects a content root reached through a symlinked ancestor
+  ---
+  duration_ms: 291.973625
+  type: 'test'
+  ...
+# Subtest: has no dependency on ephemeral output or the migration writer
+ok 135 - has no dependency on ephemeral output or the migration writer
+  ---
+  duration_ms: 0.399542
+  type: 'test'
+  ...
+1..135
+# tests 135
+# suites 0
+# pass 135
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 38135.473

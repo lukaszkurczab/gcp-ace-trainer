@@ -1,0 +1,1124 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b07-i018",
+    "prompt": "Concert request trace: Buyer → TicketController → ReserveSeatsUseCase. The request has section and party size; only SeatInventory has current free-seat facts. Which message comes next?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "controller_scans_seats",
+          "text": "Have TicketController scan records and choose seats before calling the use case."
+        },
+        {
+          "optionId": "query_seat_inventory",
+          "text": "Ask SeatInventory for candidate seats matching the requested section and party size."
+        },
+        {
+          "optionId": "buyer_supplies_ids",
+          "text": "Ask the buyer for internal seat IDs without showing current availability."
+        },
+        {
+          "optionId": "repository_reserves",
+          "text": "Let the repository choose seats during the initial request load."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "query_seat_inventory"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The controller has request criteria, while SeatInventory owns current availability; the trace needs candidate seats before any reservation decision.",
+      "details": {
+        "mechanismOrProperty": "A sequence trace distinguishes the request's known inputs from the next unresolved value and follows the responsibility assigned to that value's participant.",
+        "scenarioApplication": "The use case sends section and party size to SeatInventory and receives candidate seat IDs for the next step.",
+        "errorCorrection": "The closest competing response is ‘Have TicketController scan records and choose seats before calling the use case.’ because it uses a real participant in the trace; The controller has only section and party size in this trace; SeatInventory owns the current candidate set.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If the controller already held an authoritative current inventory snapshot, a separate lookup could be unnecessary.",
+        "transfer": "When a request has selection criteria but not current availability, send those criteria to the inventory source before choosing or reserving."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "controller_scans_seats",
+          "text": "The controller has only section and party size in this trace; SeatInventory owns the current candidate set."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "buyer_supplies_ids",
+          "text": "The buyer cannot select internal seat IDs that the inventory query has not returned."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repository_reserves",
+          "text": "A request load is not a seat search or a reservation decision; the use case still needs candidates."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b07-i019",
+    "prompt": "A library HoldUseCase has loaded the patron and book. LoanPolicy reports no active-loan conflict; LibraryCalendar alone tracks available pickup windows. Which collaborator should receive the next query?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "patron_chooses",
+          "text": "Ask the patron to select a valid window before retrieving the available windows."
+        },
+        {
+          "optionId": "loan_policy_calculates",
+          "text": "Ask LoanPolicy to calculate a window because it was already called."
+        },
+        {
+          "optionId": "calendar_windows",
+          "text": "Ask LibraryCalendar for the next pickup window for this book."
+        },
+        {
+          "optionId": "usecase_picks",
+          "text": "Have HoldUseCase choose a date from its clock and pass it to storage."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "calendar_windows"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The previous message resolved the loan rule; the missing result is calendar availability, so the trace moves to LibraryCalendar.",
+      "details": {
+        "mechanismOrProperty": "Walk the interaction by noting what the previous reply established and what the next operation still needs.",
+        "scenarioApplication": "After the no-loan result, HoldUseCase uses the loaded book identity to request an available pickup window.",
+        "errorCorrection": "The closest competing response is ‘Ask the patron to select a valid window before retrieving the available windows.’ because it uses a real participant in the trace; The patron cannot choose a valid pickup window until LibraryCalendar supplies the available windows.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If pickup time were computed solely from a book-owned rule, the calendar collaborator would not be needed.",
+        "transfer": "After one policy result, identify the distinct data needed next; do not ask the previous collaborator to answer a different question."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "patron_chooses",
+          "text": "The patron cannot choose a valid pickup window until LibraryCalendar supplies the available windows."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "loan_policy_calculates",
+          "text": "LoanPolicy has already answered its eligibility question; the prompt assigns calendar windows to another collaborator."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "usecase_picks",
+          "text": "A use-case clock does not provide the library's current pickup availability."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b07-i020",
+    "prompt": "RepairIntakeUseCase knows the device serial and reported fault. WarrantyLedger owns purchase coverage; RepairPlanner owns technician skills and slots. The service contract requires the customer to see coverage before any appointment is offered. Which request must the trace make first?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "planner_checks_coverage",
+          "text": "Have RepairPlanner infer coverage while searching for a technician."
+        },
+        {
+          "optionId": "technician_decides",
+          "text": "Send the serial to a technician and ask them to decide warranty coverage."
+        },
+        {
+          "optionId": "schedule_first",
+          "text": "Reserve the first technician slot and check coverage after booking."
+        },
+        {
+          "optionId": "check_coverage",
+          "text": "Ask WarrantyLedger whether this serial covers the requested repair."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "check_coverage"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Coverage is unresolved and WarrantyLedger is its stated source; scheduling uses a different collaborator after that fact is known.",
+      "details": {
+        "mechanismOrProperty": "The responsibility follows the stated source of the missing fact, not the last object mentioned in the trace.",
+        "scenarioApplication": "WarrantyLedger answers the required coverage precondition before RepairPlanner is asked to offer appointment slots.",
+        "errorCorrection": "The closest competing response is ‘Have RepairPlanner infer coverage while searching for a technician.’ because it uses a real participant in the trace; RepairPlanner owns skills and slots, not the purchase-coverage fact assigned to WarrantyLedger.",
+        "boundaryOrTradeoff": "Coverage-before-scheduling is an explicit service-contract premise in this prompt, not a universal repair-workflow rule. If paid appointments could be offered before coverage is known, this ordering would change.",
+        "transfer": "When the use-case contract names a required precondition, resolve it before offering the dependent action; do not infer that order for other workflows."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "planner_checks_coverage",
+          "text": "RepairPlanner owns skills and slots, not the purchase-coverage fact assigned to WarrantyLedger."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "technician_decides",
+          "text": "The service contract requires coverage before scheduling; a technician is not the stated coverage authority."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "schedule_first",
+          "text": "This violates the explicit contract that coverage is shown before any appointment is offered."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b07-i021",
+    "prompt": "CheckInUseCase has loaded a hotel booking. RoomAssignment owns current housekeeping readiness and matching rooms; the guest has not selected a room. Which participant should provide the next candidate?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "find_ready_room",
+          "text": "Ask RoomAssignment for a ready room matching the booking's room type."
+        },
+        {
+          "optionId": "booking_repository_selects",
+          "text": "Have BookingRepository select a room because it loaded the booking."
+        },
+        {
+          "optionId": "guest_names_room",
+          "text": "Ask the guest to name a room before showing ready rooms."
+        },
+        {
+          "optionId": "housekeeping_reloads_booking",
+          "text": "Ask housekeeping to reload the booking and decide the match."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "find_ready_room"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The reservation data is known; room readiness and assignment are the missing output owned by RoomAssignment.",
+      "details": {
+        "mechanismOrProperty": "A message order should reflect data dependencies: load the booking, discover a candidate, then continue with the resulting value.",
+        "scenarioApplication": "The loaded reservation's room type becomes input to RoomAssignment; the guest sees only its returned ready candidates.",
+        "errorCorrection": "The closest competing response is ‘Have BookingRepository select a room because it loaded the booking.’ because it uses a real participant in the trace; BookingRepository already returned the reservation; the prompt assigns room readiness/matching to RoomAssignment.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If the booking already contained a prevalidated room assignment, another candidate lookup would be redundant.",
+        "transfer": "Avoid repeating a completed booking lookup; pass its relevant room-type output to the participant that owns readiness."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "booking_repository_selects",
+          "text": "BookingRepository already returned the reservation; the prompt assigns room readiness/matching to RoomAssignment."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "guest_names_room",
+          "text": "The guest cannot choose a ready room before the system has produced matching candidates."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "housekeeping_reloads_booking",
+          "text": "Housekeeping supplies readiness; it is not the booking lookup or room-match participant in this trace."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b07-i022",
+    "prompt": "An event organizer requests an accessible seating map. The trace has already sent the venue layout to AccessibilityRules and received a filtered layout. MapRenderer converts a selected layout to an image. Which value should the use case pass next?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "raw_layout_to_renderer",
+          "text": "Pass the original unfiltered layout to MapRenderer and ask it to infer accessibility rules."
+        },
+        {
+          "optionId": "filtered_layout_to_renderer",
+          "text": "Pass the filtered layout returned by AccessibilityRules to MapRenderer for image creation."
+        },
+        {
+          "optionId": "rules_to_renderer",
+          "text": "Pass the rule definitions to MapRenderer and skip the filtered layout result."
+        },
+        {
+          "optionId": "layout_to_repository",
+          "text": "Pass the filtered layout back to the layout repository and ask it to render the image."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "filtered_layout_to_renderer"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "AccessibilityRules has already returned the filtered layout, so the next message supplies that value to MapRenderer.",
+      "details": {
+        "mechanismOrProperty": "In a sequence trace, pass a collaborator output to the next participant that consumes that output; do not repeat a completed policy step.",
+        "scenarioApplication": "The use case forwards AccessibilityRules' filtered layout to MapRenderer, which turns that output into the image.",
+        "errorCorrection": "The closest competing response is ‘Pass the original unfiltered layout to MapRenderer and ask it to infer accessibility rules.’ because it uses a real participant in the trace; This drops the filtered result already returned by AccessibilityRules and asks the renderer to invent policy.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If MapRenderer were explicitly the accessibility policy owner, it could return the filtered layout itself.",
+        "transfer": "Route each collaborator's output to the next consumer that needs that specific form; do not ask rendering to redo policy."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "raw_layout_to_renderer",
+          "text": "This drops the filtered result already returned by AccessibilityRules and asks the renderer to invent policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "rules_to_renderer",
+          "text": "The renderer consumes a selected layout, not the rule definitions; AccessibilityRules already applied them."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "layout_to_repository",
+          "text": "The repository stores layout data; MapRenderer owns image creation from the filtered result."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n01-b07-i023",
+    "prompt": "RenewalUseCase has loaded a subscription plan and billing method. RenewalPolicy computes the amount; PaymentGateway charges that amount; ReceiptWriter records the result. What is the next call?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "gateway_sets_amount",
+          "text": "Let PaymentGateway choose the amount while charging."
+        },
+        {
+          "optionId": "receipt_prices",
+          "text": "Ask ReceiptWriter to calculate the amount it will record."
+        },
+        {
+          "optionId": "calculate_renewal",
+          "text": "Ask RenewalPolicy to calculate the amount for this plan."
+        },
+        {
+          "optionId": "screen_submits_price",
+          "text": "Use the plan price displayed in the screen as the charge amount."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "calculate_renewal"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A charge cannot be requested from the given trace until RenewalPolicy supplies the plan-specific amount.",
+      "details": {
+        "mechanismOrProperty": "The participant that defines a calculation supplies its result before the external effect uses that amount.",
+        "scenarioApplication": "RenewalPolicy returns a plan-specific amount; the use case supplies that amount to PaymentGateway before recording a receipt.",
+        "errorCorrection": "The closest competing response is ‘Let PaymentGateway choose the amount while charging.’ because it uses a real participant in the trace; PaymentGateway performs the charge for a supplied amount; the prompt gives pricing to RenewalPolicy.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If the gateway contract supplied the authoritative tariff quote, that quote could become the next input.",
+        "transfer": "A side effect that needs a calculated value follows the policy call and uses its returned amount."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "gateway_sets_amount",
+          "text": "PaymentGateway performs the charge for a supplied amount; the prompt gives pricing to RenewalPolicy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "receipt_prices",
+          "text": "ReceiptWriter records the charge result and does not calculate a plan's renewal amount."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "screen_submits_price",
+          "text": "A displayed plan value is not the versioned policy result assigned to RenewalPolicy."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b07-i024",
+    "prompt": "ReferralUseCase has a consent result and a referral draft. SpecialistDirectory maps the specialty to accepting clinics; MessageAdapter delivers to a selected destination. Which message resolves the route?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "adapter_routes",
+          "text": "Ask MessageAdapter to choose a clinic as it sends the referral."
+        },
+        {
+          "optionId": "consent_selects",
+          "text": "Ask the consent record to choose a clinic because it was loaded first."
+        },
+        {
+          "optionId": "navigator_guesses",
+          "text": "Have the navigator pick a clinic from memory and pass it to the adapter."
+        },
+        {
+          "optionId": "lookup_specialist",
+          "text": "Ask SpecialistDirectory for accepting clinics for the referral specialty."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "lookup_specialist"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Consent is known but destination is not; the trace uses the directory for its distinct routing information.",
+      "details": {
+        "mechanismOrProperty": "Authorization, destination discovery, and delivery are distinct messages even when they belong to one use case.",
+        "scenarioApplication": "SpecialistDirectory returns accepting clinics for the specialty, after which the selected destination goes to MessageAdapter.",
+        "errorCorrection": "The closest competing response is ‘Ask MessageAdapter to choose a clinic as it sends the referral.’ because it uses a real participant in the trace; MessageAdapter transports to a chosen destination; SpecialistDirectory supplies accepting clinics.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If the patient already selected a validated clinic, the directory query might be unnecessary.",
+        "transfer": "Keep consent, destination lookup, and message delivery distinct, and route each output to the next step."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "adapter_routes",
+          "text": "MessageAdapter transports to a chosen destination; SpecialistDirectory supplies accepting clinics."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "consent_selects",
+          "text": "Consent establishes permission and does not map a specialty to a clinic."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "navigator_guesses",
+          "text": "The directory is the stated source of accepting clinics, so memory is not the route evidence in this trace."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b07-i025",
+    "prompt": "An archive curator's trace resolved two metadata IDs to records. DuplicateMatcher compares descriptive fields; MergePreview presents proposed changes. What message produces the comparison result?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "compare_records",
+          "text": "Send both resolved metadata records to DuplicateMatcher."
+        },
+        {
+          "optionId": "catalog_merges",
+          "text": "Have AssetCatalog merge the records while resolving their IDs."
+        },
+        {
+          "optionId": "preview_decides",
+          "text": "Let MergePreview decide whether they match while formatting its screen."
+        },
+        {
+          "optionId": "curator_uses_ids",
+          "text": "Ask the curator to decide from the two opaque record IDs."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "compare_records"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Identity resolution is complete; the outstanding decision compares record descriptions, which DuplicateMatcher owns.",
+      "details": {
+        "mechanismOrProperty": "Resolve identities before comparison; a presentation component consumes the comparison result rather than deciding it.",
+        "scenarioApplication": "DuplicateMatcher returns the comparison result for two resolved records; MergePreview receives the proposal, not raw IDs.",
+        "errorCorrection": "The closest competing response is ‘Have AssetCatalog merge the records while resolving their IDs.’ because it uses a real participant in the trace; AssetCatalog resolved the IDs; it does not own the descriptive comparison or merge proposal.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If AssetCatalog itself implemented the comparison contract, a separate matcher call would add no value.",
+        "transfer": "Resolve opaque identities before passing records to a comparison collaborator; send proposals to presentation only after the comparison."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "catalog_merges",
+          "text": "AssetCatalog resolved the IDs; it does not own the descriptive comparison or merge proposal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "preview_decides",
+          "text": "MergePreview presents the result; DuplicateMatcher performs the comparison specified here."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "curator_uses_ids",
+          "text": "The resolved record descriptions are available; opaque IDs alone omit the comparison data."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b07-i026",
+    "prompt": "ReturnDeskUseCase has an item and return date. FeeSchedule calculates the amount; PaymentAdapter collects a confirmed fee; BorrowerRepository stores account records. What result must be obtained before deciding whether to call PaymentAdapter?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "adapter_decides_fee",
+          "text": "Let PaymentAdapter choose and collect any fee it considers appropriate."
+        },
+        {
+          "optionId": "compute_fee",
+          "text": "Ask FeeSchedule to calculate the return fee for the item and date."
+        },
+        {
+          "optionId": "repository_updates_balance",
+          "text": "Ask BorrowerRepository to update the balance directly."
+        },
+        {
+          "optionId": "screen_hardcodes_fee",
+          "text": "Read the overdue amount from the UI label and submit it."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "compute_fee"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The external collection needs an amount; FeeSchedule is the business calculation participant in this trace.",
+      "details": {
+        "mechanismOrProperty": "Compute the domain amount before requesting an external collection effect.",
+        "scenarioApplication": "FeeSchedule returns the amount for this item/date before ReturnDeskUseCase considers the collection call.",
+        "errorCorrection": "The closest competing response is ‘Let PaymentAdapter choose and collect any fee it considers appropriate.’ because it uses a real participant in the trace; PaymentAdapter collects an amount but does not set the business fee under this flow.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If PaymentAdapter returned the legally authoritative fee quote, that result could be the amount source.",
+        "transfer": "Obtain the domain amount before deciding on external collection; the prompt does not state return-status ordering."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "adapter_decides_fee",
+          "text": "PaymentAdapter collects an amount but does not set the business fee under this flow."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repository_updates_balance",
+          "text": "A balance write does not calculate the return fee or perform the collection action."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "screen_hardcodes_fee",
+          "text": "A UI label is not the FeeSchedule result for this item and return date."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b07-i027",
+    "prompt": "TransferUseCase has already loaded a current ApprovalRecord for the steward and destination plot, and it is bound to this request. PlotDirectory supplied the candidate; Reservation owns the transfer operation. Which message should follow without repeating a completed lookup?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "load_approval_again",
+          "text": "Ask ApprovalRepository to load the same approval record again before using it."
+        },
+        {
+          "optionId": "directory_authorizes",
+          "text": "Ask PlotDirectory to authorize the steward because it found the destination plot."
+        },
+        {
+          "optionId": "apply_reservation_transfer",
+          "text": "Pass the loaded authorization facts and approved destination to Reservation to apply the transfer."
+        },
+        {
+          "optionId": "trust_only_reference",
+          "text": "Discard the loaded record and invoke Reservation using only the approval ID."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "apply_reservation_transfer"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The current ApprovalRecord is already loaded and bound to this request, so pass its authorization facts to Reservation without repeating the lookup.",
+      "details": {
+        "mechanismOrProperty": "When a required collaborator result is already present in the trace, use it at the next step rather than fetching the same result again.",
+        "scenarioApplication": "The existing current ApprovalRecord is passed to Reservation with the selected plot; no second lookup is made.",
+        "errorCorrection": "The closest competing response is ‘Ask ApprovalRepository to load the same approval record again before using it.’ because it uses a real participant in the trace; The current ApprovalRecord is already loaded and bound to this request; repeating the lookup adds no missing evidence.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If current approval evidence were already loaded and bound to the request, fetching it again would be redundant.",
+        "transfer": "If current evidence is already loaded and bound to the request, use that evidence rather than repeating the lookup or discarding it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "load_approval_again",
+          "text": "The current ApprovalRecord is already loaded and bound to this request; repeating the lookup adds no missing evidence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "directory_authorizes",
+          "text": "PlotDirectory found a candidate plot; the loaded approval is the authority for the steward's transfer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "trust_only_reference",
+          "text": "The prompt says the full current approval is already available; reducing it to an ID discards the required authorization facts."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b07-i028",
+    "prompt": "A tutoring submission contains an answer and exercise version. AttemptScorer applies that version's policy; ProgressJournal records a completed attempt. Which message happens first?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "journal_infers_score",
+          "text": "Write the raw answer to ProgressJournal and ask it to infer a score later."
+        },
+        {
+          "optionId": "screen_scores",
+          "text": "Have the screen calculate the score and pass only a number to the journal."
+        },
+        {
+          "optionId": "scorer_writes_journal",
+          "text": "Have AttemptScorer update ProgressJournal directly as it computes."
+        },
+        {
+          "optionId": "score_attempt",
+          "text": "Send answer and version to AttemptScorer before recording the result."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "score_attempt"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "ProgressJournal needs the scored result; the trace first invokes the owner of versioned scoring.",
+      "details": {
+        "mechanismOrProperty": "The scoring participant must return a result before the journal can store a completed attempt.",
+        "scenarioApplication": "AttemptScorer receives answer and exercise version, then ProgressJournal receives its scored result.",
+        "errorCorrection": "The closest competing response is ‘Write the raw answer to ProgressJournal and ask it to infer a score later.’ because it uses a real participant in the trace; ProgressJournal stores a completed attempt; it does not apply the exercise-version scoring policy.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If ProgressJournal itself owned the version policy, the separate scorer message could be removed.",
+        "transfer": "Pass a completed calculation result to persistence; do not move scoring policy into a screen or journal."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "journal_infers_score",
+          "text": "ProgressJournal stores a completed attempt; it does not apply the exercise-version scoring policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "screen_scores",
+          "text": "A transient screen does not own the versioned scoring policy assigned to AttemptScorer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "scorer_writes_journal",
+          "text": "The prompt separates score calculation and progress persistence; the submission flow passes the returned result between them."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n01-b07-i029",
+    "prompt": "A quote request has item IDs. Catalog resolves descriptions and current prices; QuoteFormatter renders a completed quote. Which collaborator returns the next required data?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "resolve_catalog_items",
+          "text": "Ask Catalog for descriptions and current prices for those IDs."
+        },
+        {
+          "optionId": "formatter_queries",
+          "text": "Have QuoteFormatter look up item IDs while generating the document."
+        },
+        {
+          "optionId": "form_prices",
+          "text": "Use prices copied from the user's form as the quote values."
+        },
+        {
+          "optionId": "repository_formats",
+          "text": "Have the item repository write the final quote while reading records."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "resolve_catalog_items"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The trace contains identifiers, not authoritative quote values; Catalog supplies those before formatting.",
+      "details": {
+        "mechanismOrProperty": "A formatter consumes resolved data; it does not become the source of current business values.",
+        "scenarioApplication": "Catalog resolves the IDs to current item details and prices; QuoteFormatter gets the assembled quote data next.",
+        "errorCorrection": "The closest competing response is ‘Have QuoteFormatter look up item IDs while generating the document.’ because it uses a real participant in the trace; QuoteFormatter consumes resolved data and should not perform Catalog lookup while rendering.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If the request carried a verified immutable price snapshot, catalog resolution could be skipped.",
+        "transfer": "Resolve authoritative business values from their source before asking a formatter to produce output."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "formatter_queries",
+          "text": "QuoteFormatter consumes resolved data and should not perform Catalog lookup while rendering."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "form_prices",
+          "text": "The request form does not provide the current catalog values required by the prompt."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "repository_formats",
+          "text": "The repository retrieves data; QuoteFormatter owns document formatting."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "foundational",
+    "questionId": "ood-n01-b07-i030",
+    "prompt": "MoveRehearsalUseCase has a rehearsal and a destination studio. CapacityPolicy compares room capacity with attendee count; ScheduleWriter persists a confirmed move. What must happen before the write?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "writer_checks_capacity",
+          "text": "Have ScheduleWriter infer capacity while persisting the schedule."
+        },
+        {
+          "optionId": "evaluate_capacity",
+          "text": "Ask CapacityPolicy whether the destination fits the rehearsal."
+        },
+        {
+          "optionId": "rehearsal_reads_room",
+          "text": "Ask Rehearsal to derive attendee count from room capacity."
+        },
+        {
+          "optionId": "write_then_check",
+          "text": "Persist first and ask the policy to check afterward."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "evaluate_capacity"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The write depends on a cross-object comparison; the trace obtains the policy result before persistence.",
+      "details": {
+        "mechanismOrProperty": "A dependent write follows its required policy result in the interaction trace.",
+        "scenarioApplication": "CapacityPolicy returns the destination decision using rehearsal attendance and room facts before ScheduleWriter is called.",
+        "errorCorrection": "The closest competing response is ‘Have ScheduleWriter infer capacity while persisting the schedule.’ because it uses a real participant in the trace; ScheduleWriter persists the confirmed move; CapacityPolicy supplies the cross-object decision.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If the destination were already prevalidated for this exact rehearsal, another capacity check might not be needed.",
+        "transfer": "A write that depends on a policy result must follow the evaluation; the trace alone says nothing about concurrent moves."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "writer_checks_capacity",
+          "text": "ScheduleWriter persists the confirmed move; CapacityPolicy supplies the cross-object decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "rehearsal_reads_room",
+          "text": "Attendee count belongs to the rehearsal, while room capacity belongs to the destination/policy inputs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "write_then_check",
+          "text": "This persists before obtaining the required policy result, reversing the dependency in the trace."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n01-b07-i031",
+    "prompt": "ExportUseCase has a session ID. SessionRepository loads the session; SnapshotBuilder creates a point-in-time view; ArchiveWriter stores the file. What is the next message?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "builder_queries_db",
+          "text": "Have SnapshotBuilder query the database and construct its own input."
+        },
+        {
+          "optionId": "writer_loads_session",
+          "text": "Ask ArchiveWriter to retrieve the session before writing."
+        },
+        {
+          "optionId": "load_session",
+          "text": "Ask SessionRepository to load the session for the ID."
+        },
+        {
+          "optionId": "controller_builds",
+          "text": "Have ExportController build a snapshot directly from the raw ID."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "load_session"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The snapshot builder needs session data, and retrieval belongs to SessionRepository in this trace.",
+      "details": {
+        "mechanismOrProperty": "Retrieval, snapshot creation, and storage are separate collaborations with ordered inputs.",
+        "scenarioApplication": "SessionRepository returns the session; SnapshotBuilder then creates the view that ArchiveWriter stores.",
+        "errorCorrection": "The closest competing response is ‘Have SnapshotBuilder query the database and construct its own input.’ because it uses a real participant in the trace; SnapshotBuilder consumes loaded session data; SessionRepository owns retrieval in the given trace.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If the request already contained a complete immutable session snapshot, loading from the repository could be omitted.",
+        "transfer": "Load the domain data before building a snapshot, then pass the completed snapshot to its storage collaborator."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "builder_queries_db",
+          "text": "SnapshotBuilder consumes loaded session data; SessionRepository owns retrieval in the given trace."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "writer_loads_session",
+          "text": "ArchiveWriter stores a completed snapshot and should not absorb session retrieval."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "controller_builds",
+          "text": "The controller has an ID, not the session data required to build the snapshot."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "intermediate",
+    "questionId": "ood-n01-b07-i032",
+    "prompt": "A tenant admin requests an active-badge report. The authenticated tenant ID is known; BadgeQuery filters by tenant and revocation status; CsvPresenter formats rows. Which collaborator should return the row set?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "presenter_filters",
+          "text": "Have CsvPresenter filter all badges while formatting the CSV."
+        },
+        {
+          "optionId": "controller_reads_table",
+          "text": "Let the controller load storage rows and remove revoked badges."
+        },
+        {
+          "optionId": "admin_uploads_rows",
+          "text": "Ask the admin to supply the badge rows for the report."
+        },
+        {
+          "optionId": "query_badges",
+          "text": "Ask BadgeQuery for active, non-revoked badges for this tenant."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "query_badges"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The selection facts are part of BadgeQuery's stated role; CsvPresenter can then format the returned rows.",
+      "details": {
+        "mechanismOrProperty": "Data selection supplies a row set; output formatting consumes that set.",
+        "scenarioApplication": "BadgeQuery returns the tenant-filtered active rows, which CsvPresenter formats without redoing the selection.",
+        "errorCorrection": "The closest competing response is ‘Have CsvPresenter filter all badges while formatting the CSV.’ because it uses a real participant in the trace; CsvPresenter formats the row set; BadgeQuery owns the tenant/status selection.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If CsvPresenter were intentionally a combined query-and-render boundary, the separate query call could be absent.",
+        "transfer": "Send only the selected result to the formatter; keep filters and output shaping in their distinct collaborators."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "presenter_filters",
+          "text": "CsvPresenter formats the row set; BadgeQuery owns the tenant/status selection."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "controller_reads_table",
+          "text": "This moves the stated query out of BadgeQuery into a protocol caller."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "admin_uploads_rows",
+          "text": "The report is derived from stored badge records, not rows supplied by the requester."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n01-b07-i033",
+    "prompt": "RolloutUseCase knows a deployment ID. DeploymentHistory provides ordered deployment events; SummaryComposer turns events into a narrative. What must be requested before composing?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "load_deployment_history",
+          "text": "Ask DeploymentHistory for events associated with this deployment."
+        },
+        {
+          "optionId": "composer_queries",
+          "text": "Have SummaryComposer query event storage as it writes the summary."
+        },
+        {
+          "optionId": "id_is_summary",
+          "text": "Return the deployment ID as the requested summary."
+        },
+        {
+          "optionId": "usecase_infers_history",
+          "text": "Infer the timeline from the deployment's current status."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "load_deployment_history"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The summary needs event history; a current status or identifier cannot supply the missing sequence.",
+      "details": {
+        "mechanismOrProperty": "A narrative based on events needs the history before the composer can construct it.",
+        "scenarioApplication": "DeploymentHistory returns ordered events to SummaryComposer, which constructs the rollout narrative.",
+        "errorCorrection": "The closest competing response is ‘Have SummaryComposer query event storage as it writes the summary.’ because it uses a real participant in the trace; SummaryComposer needs the event list; DeploymentHistory is the stated source of those events.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If the user asked only for current status, an event-history lookup might not be needed.",
+        "transfer": "A summary of changes needs the ordered events, not merely the current state or subject ID."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "composer_queries",
+          "text": "SummaryComposer needs the event list; DeploymentHistory is the stated source of those events."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "id_is_summary",
+          "text": "A deployment ID identifies the subject but is not the history used to form the summary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "usecase_infers_history",
+          "text": "Current status cannot reconstruct the ordered events the requested summary needs."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "mentalUnitId": "OOD-N01-B07",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n01-b07-i034",
+    "prompt": "A parts-return trace has a condition classification and sale record. RefundPolicy evaluates eligibility; RefundPresenter explains the result. Classification is complete, but eligibility is not. Which call follows?",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "presenter_decides",
+          "text": "Ask RefundPresenter to decide eligibility while drafting its explanation."
+        },
+        {
+          "optionId": "evaluate_refund",
+          "text": "Ask RefundPolicy to evaluate the classification against the sale record."
+        },
+        {
+          "optionId": "classifier_approves",
+          "text": "Have ConditionClassifier approve the refund because it classified the item."
+        },
+        {
+          "optionId": "usecase_maps_label",
+          "text": "Map the condition label directly to a refund result in the use case."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "evaluate_refund"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The case explicitly separates physical classification from refund eligibility; the trace must ask the policy for the second decision.",
+      "details": {
+        "mechanismOrProperty": "Classification and policy eligibility are separate decisions, so the trace requests both outputs.",
+        "scenarioApplication": "RefundPolicy receives the classification and sale record; RefundPresenter gets the resulting eligibility decision.",
+        "errorCorrection": "The closest competing response is ‘Ask RefundPresenter to decide eligibility while drafting its explanation.’ because it uses a real participant in the trace; RefundPresenter explains eligibility; RefundPolicy owns the decision against the sale record.",
+        "boundaryOrTradeoff": "This selection follows only the stated participant contract; it does not infer an unstated consistency, atomicity, timing, or delivery guarantee. If eligibility were defined solely by the condition label, the policy could use that result without another sale-record input.",
+        "transfer": "Treat classification as input to a separate eligibility rule when the scenario distinguishes those decisions."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "presenter_decides",
+          "text": "RefundPresenter explains eligibility; RefundPolicy owns the decision against the sale record."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "classifier_approves",
+          "text": "ConditionClassifier labels the physical return; the prompt separates that from refund eligibility."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "usecase_maps_label",
+          "text": "ReturnUseCase must not invent a condition-to-refund mapping where RefundPolicy owns the rule."
+        }
+      ]
+    }
+  }
+]

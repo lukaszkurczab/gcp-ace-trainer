@@ -1,0 +1,125 @@
+{
+  "status": "PASS",
+  "admission": {
+    "appReleaseLockUpdated": true,
+    "application": {
+      "bundledContentLockSha256": "bd4766a6d401de4027a1318b861018a771ea1d103bc9303ab89f9029713948a5",
+      "frontendCommit": "2a4054ee86968bf3bae78375f720a0d920685ec4",
+      "releaseLockPath": "integration/contracts/content-release/release.lock.json",
+      "releaseLockSha256": "fb7329118a89f8d1bc8432ab114d84671b1155a291d33e42e04be456a36992e3"
+    },
+    "candidateId": "daa6d34ea79a893e8c9481be8884719d32b1372aace46fd692d580a8abd1854f",
+    "candidatePath": "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json",
+    "publishingAdmission": "granted",
+    "release": {
+      "boundary": "local_verified_artifacts_no_deployment",
+      "checksumSha256": "92b385dcadfeb0b40ce9503d6fccbd30cfe800b99000177c6350beac20d8252f",
+      "releaseId": "patternly-candidate-d887958d0422",
+      "releasePath": "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json"
+    },
+    "runtimeAdmission": "granted",
+    "runtimeEvidence": {
+      "path": "evidence/admissions/runtime/daa6d34ea79a893e8c9481be8884719d32b1372aace46fd692d580a8abd1854f-2a4054ee86968bf3bae78375f720a0d920685ec4.json",
+      "sha256": "66f8765bba771ebf24b245132f5977d8a5305de4f9b0cec489996b83ed9a0146"
+    },
+    "schemaVersion": "patternly-candidate-admission-v3",
+    "taskId": "BIZQ-01/ADMISSION",
+    "trackIds": [
+      "aws-certified-solutions-architect-associate",
+      "backend-system-design-interview",
+      "claude-certified-architect-professional-certification",
+      "coding-interview-dsa-problem-solving",
+      "frontend-system-design-interview",
+      "google-cloud-associate-cloud-engineer",
+      "microsoft-azure-administrator-associate-az-104",
+      "microsoft-azure-ai-fundamentals-ai-901",
+      "object-oriented-design-interview"
+    ],
+    "tracks": [
+      {
+        "artifactSha256": "c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9",
+        "publishingAdmission": "granted",
+        "runtimeAdmission": "granted",
+        "trackId": "aws-certified-solutions-architect-associate"
+      },
+      {
+        "artifactSha256": "5a202c133d78b908e2e73870e426c379f529b65ad89add0ebdfec0be72e92942",
+        "publishingAdmission": "granted",
+        "runtimeAdmission": "granted",
+        "trackId": "backend-system-design-interview"
+      },
+      {
+        "artifactSha256": "7d6d12a49d67642e3144d062a6d237bec4604917ab34124e4ee121263c6beb2d",
+        "publishingAdmission": "granted",
+        "runtimeAdmission": "granted",
+        "trackId": "claude-certified-architect-professional-certification"
+      },
+      {
+        "artifactSha256": "4ceb71ebf2edd963dd6f1bdd274dface6da667dd7d3586fa44b52efe45f263f6",
+        "publishingAdmission": "granted",
+        "runtimeAdmission": "granted",
+        "trackId": "coding-interview-dsa-problem-solving"
+      },
+      {
+        "artifactSha256": "7de3a0bd8860eef726c6bb11cbf8e0bbc88ff0282d1a4575cbf94cc5fb9dd9bf",
+        "publishingAdmission": "granted",
+        "runtimeAdmission": "granted",
+        "trackId": "frontend-system-design-interview"
+      },
+      {
+        "artifactSha256": "eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9",
+        "publishingAdmission": "granted",
+        "runtimeAdmission": "granted",
+        "trackId": "google-cloud-associate-cloud-engineer"
+      },
+      {
+        "artifactSha256": "80e5b920beade4a9b540dfa505aa67368c07c99497998314935be53da9013975",
+        "publishingAdmission": "granted",
+        "runtimeAdmission": "granted",
+        "trackId": "microsoft-azure-administrator-associate-az-104"
+      },
+      {
+        "artifactSha256": "ef25741799306c6cfbc7cc90cb7d76492f3df639c056b61b1c2b0492f5fbb9d4",
+        "publishingAdmission": "granted",
+        "runtimeAdmission": "granted",
+        "trackId": "microsoft-azure-ai-fundamentals-ai-901"
+      },
+      {
+        "artifactSha256": "1f1d26deab562de663e2cc47b0ebd82e5c0313b13d4ff961c815d5416da95087",
+        "publishingAdmission": "granted",
+        "runtimeAdmission": "granted",
+        "trackId": "object-oriented-design-interview"
+      }
+    ]
+  },
+  "runtimeEvidence": {
+    "applicationReleaseLock": {
+      "path": "integration/contracts/content-release/release.lock.json",
+      "sha256": "fb7329118a89f8d1bc8432ab114d84671b1155a291d33e42e04be456a36992e3"
+    },
+    "bundledContentLock": {
+      "path": "src/content/generated/canonical-content/content-lock.json",
+      "sha256": "bd4766a6d401de4027a1318b861018a771ea1d103bc9303ab89f9029713948a5"
+    },
+    "candidateId": "daa6d34ea79a893e8c9481be8884719d32b1372aace46fd692d580a8abd1854f",
+    "command": "node --import tsx --test src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts",
+    "frontendCommit": "2a4054ee86968bf3bae78375f720a0d920685ec4",
+    "runtimeTest": {
+      "path": "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts",
+      "sha256": "f0288b0f7f7e97cf33697eab30959b2074bb912ed828fa7a1ceaab91443100d5"
+    },
+    "schemaVersion": "patternly-runtime-admission-evidence-v3",
+    "status": "passed",
+    "trackIds": [
+      "aws-certified-solutions-architect-associate",
+      "backend-system-design-interview",
+      "claude-certified-architect-professional-certification",
+      "coding-interview-dsa-problem-solving",
+      "frontend-system-design-interview",
+      "google-cloud-associate-cloud-engineer",
+      "microsoft-azure-administrator-associate-az-104",
+      "microsoft-azure-ai-fundamentals-ai-901",
+      "object-oriented-design-interview"
+    ]
+  }
+}

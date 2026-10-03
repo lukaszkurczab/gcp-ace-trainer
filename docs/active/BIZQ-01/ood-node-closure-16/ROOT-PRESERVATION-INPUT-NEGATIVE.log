@@ -1,0 +1,44 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Accepted frozen payload order/names
++ actual - expected
+
+  [
+    'REVIEWED-B02-v4.json',
+    'REVIEWED-B03-v4.json',
++   'REVIEWED-B04-v2.json',
+-   'REVIEWED-B04-v3.json',
+    'REVIEWED-B05-v3.json',
+    'REVIEWED-B06-v2.json',
+    'REVIEWED-B07-v1.json',
+    'REVIEWED-B08-v1.json'
+  ]
+
+    at file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/ood-node-closure-16/check-source-preservation.mjs:23:8 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'REVIEWED-B02-v4.json',
+    'REVIEWED-B03-v4.json',
+    'REVIEWED-B04-v2.json',
+    'REVIEWED-B05-v3.json',
+    'REVIEWED-B06-v2.json',
+    'REVIEWED-B07-v1.json',
+    'REVIEWED-B08-v1.json'
+  ],
+  expected: [
+    'REVIEWED-B02-v4.json',
+    'REVIEWED-B03-v4.json',
+    'REVIEWED-B04-v3.json',
+    'REVIEWED-B05-v3.json',
+    'REVIEWED-B06-v2.json',
+    'REVIEWED-B07-v1.json',
+    'REVIEWED-B08-v1.json'
+  ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.22.3
