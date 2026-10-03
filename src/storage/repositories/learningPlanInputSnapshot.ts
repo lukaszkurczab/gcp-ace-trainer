@@ -1,5 +1,9 @@
 import type { GoalSnapshot, ReviewQueueEntry, TrackId, TrainingAttempt } from "../../domain";
 import { getKeyValueStorage, isProfileTransitionActive } from "../../infrastructure/storage/mmkvClient";
+import { readActiveTrackId } from "./activeTrackRepository";
+import { isGoalOnboardingDismissed } from "./goalOnboardingPreferenceRepository";
+import { readActiveTrainingSession, readTrainingSessions } from "./trainingSessionRepository";
+import { readTrainingSessionResult } from "./trainingSessionResultRepository";
 import { readGoalSnapshot } from "./goalRepository";
 import { getLearningPlanSnapshot, type LearningPlanSnapshot } from "./learningPlanRepository";
 import { readActiveMutationJournal } from "./mutationJournalRepository";
@@ -21,14 +25,34 @@ export function readLearningPlanStorageScope(): object {
 }
 
 /** No await between validated canonical reads; journaled materialization is not an empty history. */
-export function readLearningPlanInputSnapshot(trackId: TrackId): LearningPlanInputSnapshot {
+export function readLearningPlanInputSnapshot(trackId: TrackId | null): LearningPlanInputSnapshot {
   const storageScope = readLearningPlanStorageScope();
   if (readActiveMutationJournal()) throw new Error("Learning plan evidence is being materialized.");
-  const goal = readGoalSnapshot(trackId);
-  const plan = getLearningPlanSnapshot(trackId);
+  const goal = trackId === null ? null : readGoalSnapshot(trackId);
+  const plan = trackId === null ? null : getLearningPlanSnapshot(trackId);
   const attempts = readTrainingAttempts();
   const reviews = readReviewQueueItems();
   if (attempts.issues?.length || reviews.issues?.length) throw new Error("Learning plan evidence could not be read.");
   if (readLearningPlanStorageScope() !== storageScope) throw new Error("Learning plan storage scope changed.");
   return Object.freeze({ storageScope, goal, plan, attempts: Object.freeze(attempts.value), reviews: Object.freeze(reviews.value) });
+}
+
+/** Validated persistent sources used by the full Home shell; no await or raw projection cache. */
+export function readHomeShellInputSnapshot(trackId: TrackId | null) {
+  const { storageScope, ...learningInputs } = readLearningPlanInputSnapshot(trackId);
+  if (readActiveTrackId() !== trackId) throw new Error("Home selected track changed.");
+  const sessions = readTrainingSessions();
+  if (sessions.issues?.length) throw new Error("Home session evidence could not be read.");
+  const activeSession = readActiveTrainingSession();
+  // Only result facts read by Home Activity belong to this boundary.
+  const results = sessions.value.filter(session => session.status !== "active" &&
+    (session.status === "completed" || learningInputs.attempts.some(attempt => attempt.sessionId === session.id)))
+    .map(session => ({ sessionId: session.id, result: readTrainingSessionResult(session.id) }));
+  let goalOnboardingDismissed = true;
+  if (trackId !== null) {
+    try { goalOnboardingDismissed = isGoalOnboardingDismissed(trackId); }
+    catch { goalOnboardingDismissed = true; }
+  }
+  if (readLearningPlanStorageScope() !== storageScope) throw new Error("Home storage scope changed.");
+  return Object.freeze({ storageScope, facts: Object.freeze({ trackId, ...learningInputs, sessions: sessions.value, activeSession, results, goalOnboardingDismissed }) });
 }

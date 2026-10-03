@@ -1,0 +1,59 @@
+TAP version 13
+# Subtest: actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+    # Subtest: same profile publishes actual persisted answers
+    ok 1 - same profile publishes actual persisted answers
+      ---
+      duration_ms: 40.787375
+      type: 'test'
+      ...
+    # Subtest: same-profile attempt committed after parallel reads rejects stale HomeShell publication
+    ok 2 - same-profile attempt committed after parallel reads rejects stale HomeShell publication
+      ---
+      duration_ms: 21.916625
+      type: 'test'
+      ...
+    # Subtest: same-profile session evidence committed after the final dashboard await rejects publication
+    ok 3 - same-profile session evidence committed after the final dashboard await rejects publication
+      ---
+      duration_ms: 14.264291
+      type: 'test'
+      ...
+    # Subtest: A→B after Activity read rejects publication
+    ok 4 - A→B after Activity read rejects publication
+      ---
+      duration_ms: 8.496459
+      type: 'test'
+      ...
+    # Subtest: A→B→A after Activity read rejects publication
+    ok 5 - A→B→A after Activity read rejects publication
+      ---
+      duration_ms: 9.167459
+      type: 'test'
+      ...
+    # Subtest: active transition at entry prevents reads and publication
+    ok 6 - active transition at entry prevents reads and publication
+      ---
+      duration_ms: 4.829208
+      type: 'test'
+      ...
+    # Subtest: transition starts during the last read and prevents publication
+    ok 7 - transition starts during the last read and prevents publication
+      ---
+      duration_ms: 10.025417
+      type: 'test'
+      ...
+    1..7
+ok 1 - actual Home command rejects profile changes after Activity reads and before publication, including A/B/A
+  ---
+  duration_ms: 436.863583
+  type: 'test'
+  ...
+1..1
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1080.545041

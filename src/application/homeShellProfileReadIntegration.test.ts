@@ -7,6 +7,7 @@ import ts from "typescript";
 import * as reads from "./learningReadModels";
 import { loadActivitySessionRecords } from "./activityReadModels";
 import { captureProfileReadFence } from "./profileReadFence";
+import { captureHomeShellReadFence } from "./homeShellReadFence";
 import { homePlanSnapshotReader } from "./homePlanSnapshotReader";
 import { describeOperationalFailure } from "./operationalDiagnostics";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
@@ -34,17 +35,24 @@ function commandSource() {
   return ts.transpileModule(command.getText(ast), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 }
 
-async function runHome(changeProfile: () => Promise<void>) {
+async function runHome(
+  changeAfterGoal: () => Promise<void> = async () => {},
+  changeAfterDashboard: () => Promise<void> = async () => {},
+) {
   const outcome: { published: { trainingAttempts: readonly TrainingAttempt[] } | null; readError: string | null } = { published: null, readError: null };
   const context = {
     isActive: true, accountRef: { current: { state: { kind: "guest" } } },
     getActiveTrackId: reads.loadActiveTrackId, getAttempts: reads.loadExamSummaries, getPracticeHistory: reads.loadPracticeHistory,
     loadActiveTrainingSession: reads.loadActiveTrainingSession, loadCloudCertificationProgressViewModel: reads.loadCloudCertificationProgress,
     getReviewQueueItems: reads.loadReviewQueueItems, getTrainingAttempts: reads.loadTrainingAttempts,
-    loadActivitySessionRecords, homePlanSnapshotReader, captureProfileReadFence,
-    loadGoal: async (trackId: string) => { const result = await reads.loadGoal(trackId); await changeProfile(); return result; },
+    loadActivitySessionRecords, homePlanSnapshotReader, captureProfileReadFence, captureHomeShellReadFence,
+    loadGoal: async (trackId: string) => { const result = await reads.loadGoal(trackId); await changeAfterGoal(); return result; },
     loadGoalOnboardingDismissed: reads.loadGoalOnboardingDismissed,
-    loadCodingInterviewDashboard: reads.loadCodingInterviewDashboard, describeOperationalFailure, CODING_INTERVIEW_TRACK_ID,
+    loadCodingInterviewDashboard: async () => {
+      try { return await reads.loadCodingInterviewDashboard(); }
+      finally { await changeAfterDashboard(); }
+    },
+    describeOperationalFailure, CODING_INTERVIEW_TRACK_ID,
     setActiveTrackId: () => {}, setData: (value: typeof outcome.published) => { outcome.published = value; },
     setHasLoadedActiveTrack: () => {}, setShellReadError: (value: string) => { outcome.readError = value; },
   };
@@ -73,6 +81,44 @@ test("actual Home command rejects profile changes after Activity reads and befor
       const unchanged = await runHome(async () => {});
       assert.equal(unchanged.readError, null);
       assert.equal(unchanged.published?.trainingAttempts[0]?.id, "a-answer");
+    });
+    await t.test("same-profile attempt committed after parallel reads rejects stale HomeShell publication", async () => {
+      const freshItem = { ...item, questionId: track.questions[1]!.questionId };
+      const changed = await runHome(async () => {
+        await addTrainingAttempt(createTrainingAttempt({
+          id: "b-answer", sessionId: "b-answer", trackId: CODING_INTERVIEW_TRACK_ID,
+          modeId: track.modes[0]!.modeId, occurrenceId: "b-answer", item: freshItem,
+          response: { answer: "fixture" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
+          reviewEvidence: { sourceItem: freshItem, taxonomyOrSkillRefs: [] },
+          answeredAt: "2026-10-02T10:01:00.000Z", committedAt: "2026-10-02T10:01:00.000Z",
+        }));
+      });
+      const stored = await reads.loadTrainingAttempts();
+      assert.deepEqual(stored.value.map((attempt) => attempt.id).sort(), ["a-answer", "b-answer"]);
+      assert.equal(changed.published, null, "Home must not publish pre-write evidence as current same-profile data");
+      assert.ok(changed.readError);
+      const retry = await runHome();
+      assert.equal(retry.readError, null);
+      assert.deepEqual(retry.published?.trainingAttempts.map((attempt) => attempt.id).sort(), ["a-answer", "b-answer"]);
+    });
+    await t.test("same-profile attempt committed after the final dashboard await rejects publication", async () => {
+      const sessionItem = { ...item, questionId: track.questions[2]!.questionId };
+      const changed = await runHome(async () => {}, async () => {
+        await addTrainingAttempt(createTrainingAttempt({
+          id: "c-answer", sessionId: "c-answer", trackId: CODING_INTERVIEW_TRACK_ID,
+          modeId: track.modes[0]!.modeId, occurrenceId: "c-answer", item: sessionItem,
+          response: { answer: "fixture" }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
+          reviewEvidence: { sourceItem: sessionItem, taxonomyOrSkillRefs: [] },
+          answeredAt: "2026-10-02T10:02:00.000Z", committedAt: "2026-10-02T10:02:00.000Z",
+        }));
+      });
+      const stored = await reads.loadTrainingAttempts();
+      assert.deepEqual(stored.value.map((attempt) => attempt.id).sort(), ["a-answer", "b-answer", "c-answer"]);
+      assert.equal(changed.published, null, "the final synchronous source check must cover changes after the last awaited read");
+      assert.ok(changed.readError);
+      const retry = await runHome();
+      assert.equal(retry.readError, null);
+      assert.deepEqual(retry.published?.trainingAttempts.map((attempt) => attempt.id).sort(), ["a-answer", "b-answer", "c-answer"]);
     });
     await t.test("A→B after Activity read rejects publication", async () => {
       const switched = await runHome(() => select("home-read-fixture-b"));

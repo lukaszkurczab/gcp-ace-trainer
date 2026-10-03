@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: Activity read model keeps terminal history semantics and includes completed sessions without answers
+ok 1 - Activity read model keeps terminal history semantics and includes completed sessions without answers
+  ---
+  duration_ms: 13.435375
+  type: 'test'
+  ...
+# Subtest: Activity read model surfaces a corrupt canonical result instead of presenting an empty history
+ok 2 - Activity read model surfaces a corrupt canonical result instead of presenting an empty history
+  ---
+  duration_ms: 0.577333
+  type: 'test'
+  ...
+# Subtest: Activity read model treats repository issues as an explicit storage failure
+ok 3 - Activity read model treats repository issues as an explicit storage failure
+  ---
+  duration_ms: 0.182
+  type: 'test'
+  ...
+# Subtest: Activity read model reuses the caller's attempts read when supplied
+ok 4 - Activity read model reuses the caller's attempts read when supplied
+  ---
+  duration_ms: 0.213333
+  type: 'test'
+  ...
+# Subtest: Activity full history keeps unavailable sessions as immutable summaries
+ok 5 - Activity full history keeps unavailable sessions as immutable summaries
+  ---
+  duration_ms: 1.170166
+  type: 'test'
+  ...
+# Subtest: Activity read owner invalidates late focus reads and lets the newest retry win
+ok 6 - Activity read owner invalidates late focus reads and lets the newest retry win
+  ---
+  duration_ms: 0.231958
+  type: 'test'
+  ...
+# Subtest: Activity read owner keeps current read failures explicit
+ok 7 - Activity read owner keeps current read failures explicit
+  ---
+  duration_ms: 0.14125
+  type: 'test'
+  ...
+# Subtest: home snapshot resolves canonical track metadata
+ok 8 - home snapshot resolves canonical track metadata
+  ---
+  duration_ms: 336.812458
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 815.365042

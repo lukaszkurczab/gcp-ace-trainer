@@ -3,10 +3,12 @@ import { STORAGE_KEYS } from "../keys";
 import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { isTrainingSessionResult } from "./trainingModelGuards";
 
-export async function getTrainingSessionResult(sessionId: string): Promise<TrainingSessionResult | null> {
+export function readTrainingSessionResult(sessionId: string): TrainingSessionResult | null {
   const value = readCanonicalJson(STORAGE_KEYS.trainingSessionResult(sessionId), isTrainingSessionResult);
   return value ? createTrainingSessionResult(value) : null;
 }
+
+export async function getTrainingSessionResult(sessionId: string): Promise<TrainingSessionResult | null> { return readTrainingSessionResult(sessionId); }
 
 export async function saveTrainingSessionResult(result: TrainingSessionResult): Promise<void> {
   if (!isTrainingSessionResult(result)) throw new Error("Training session result is invalid.");

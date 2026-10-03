@@ -43,6 +43,7 @@ import {
   type GuidanceAction,
 } from "../../application/learningPlan";
 import { loadActivitySessionRecords, type ActivitySessionRecord } from "../../application/activityReadModels";
+import { captureHomeShellReadFence } from "../../application/homeShellReadFence";
 import { captureProfileReadFence } from "../../application/profileReadFence";
 import { type CloudCertificationProgressViewModel } from "../../tracks/certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/certification";
@@ -168,6 +169,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             }
           }
           const savedTrackId = await getActiveTrackId();
+          const assertCurrentSources = captureHomeShellReadFence(savedTrackId);
           const trainingAttemptsRead = getTrainingAttempts();
           const [
             savedAttempts,
@@ -203,6 +205,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
 
           if (isActive) {
             assertCurrentProfile();
+            assertCurrentSources();
             setActiveTrackId(savedTrackId ?? null);
             setData({
               activityRecords,

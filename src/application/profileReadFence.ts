@@ -1,13 +1,9 @@
-import { getKeyValueStorage, isProfileTransitionActive } from "../infrastructure/storage/mmkvClient";
+import { readLearningPlanStorageScope } from "../storage/repositories/learningPlanInputSnapshot";
 
 /** Existing opaque published lease; no raw data, persistent revision or retry. */
 export function captureProfileReadFence(): () => void {
-  const readScope = () => {
-    if (isProfileTransitionActive()) throw new Error("Profile is transitioning during read.");
-    return getKeyValueStorage();
-  };
-  const expected = readScope();
+  const expected = readLearningPlanStorageScope();
   return () => {
-    if (readScope() !== expected) throw new Error("Profile changed during read.");
+    if (readLearningPlanStorageScope() !== expected) throw new Error("Profile changed during read.");
   };
 }
