@@ -1,0 +1,32 @@
+# BIZQ-04 — completed Coding result integrity03
+
+The existing completed Coding result and answer-review query now verifies its persisted session/result/attempt join before publishing feedback. An attempt belonging to the completed session but absent from its immutable occurrence plan previously disappeared silently; it now produces `summary_unavailable`, without rewriting history. This is a bounded learner-facing correction, not implementation or acceptance of `session_misses` or the full BIZQ-04 policy.
+
+## Evidence and approach
+
+Root actual Coding Mock starts40, submits1wrong and finalizes with39unanswered. The pre-change projection accepted a domain-shape-valid orphan inserted through the real repository in a private memory fixture. Independent Luna High reproduced the same defect. Baseline app production bytes match64b619fb and are hashed in [BASELINE](BASELINE.json); the RED tool/log is preserved at the accepted preflight checkpoint2e2f9fe7. Current versioned [probe](runtime-preflight.ts) asserts the corrected rejection: clean completed result readable, orphan unavailable, no read mutation, source history retained. [RED](ROOT-RUNTIME.log), [GREEN](ROOT-RUNTIME-GREEN.log), [independent preflight](PREFLIGHT-QA.md).
+
+Cel/Ustalenia/Podejście accepted before code: rootminimum0.85, independent NO-TOOLS Luna Highminimum0.87 PASS WITH GAPS. Parent canonical docs17 precise join requirement was written before implementation; exact before/after hash and text are in [CONTRACT](CONTRACT.json), outside all four Git repositories. No new release gate, policy or permission was introduced. [Accepted briefing](BRIEFING.md), [proposal QA](BRIEF-QA.md).
+
+## Exact change
+
+Production file: `src/application/coding-interview/codingInterviewSessionFacade.ts`. Its existing completed-query owner validates completed session/result identity, completion instant, Coding family, unique plan occurrences, actual count and ordered answered/unanswered partition. It resolves the saved exact artifact, matches each source-session attempt to a planned occurrence/track/mode/item, verifies complete response and result against the existing canonical scorer, then matches aggregate counts/points. Feedback reuses the same resolved questions and verified attempt map. The prior unverified occurrence-only join is replaced in this same path; no second scorer/runtime/selector/projection entry point was added. The existing helper remains used by its sole caller. Existing Mock profile verification retained; abandoned summary code unchanged.
+
+Routine root review removed incidental producer formatting constraints: no fixed result-ID string convention, mandatory new historical fingerprint or foreground-time equality. Existing optional fingerprints are checked when present; completion timestamps compare as instants and scorer component fields compare independently of object key insertion order. Existing answered-attempt points denominator preserved. No generated content, locks, schemas, mutations, queue policy, intervals, Premium authorization, goal-plan, reminders, UI or services changed.
+
+Dedicated `codingInterviewCompletedResultIntegrity.test.ts` uses actual lifecycle/content/repositories for valid completed practice, conditional reinsertion and early-ended practice, plus private corrupt-record fixtures for negative joins. It proves explicit unavailable and unchanged storage for orphan/duplicate/missing, track/mode/item/artifact, invalid response/stored score, result identity/family/time/coverage/count/points inconsistencies. Valid unrelated-session attempts are ignored. Completed answer review uses the same validated projection; abandoned summary retains its actual answered/unanswered metadata, empty feedback and null score.
+
+## Actual root verification
+
+- Related suite22/22: integrity9 before the final added abandoned test, existing facade/Mock results4, existing explicit review-source9. The final dedicated suite10/10 then covers the actual abandoned lifecycle too. Production bytes remained unchanged for that test-only addition.
+- Versioned actual facade/journal/memory probe RED→GREEN, with orphan rejection/no writes and clean40 result preserved; `session_misses` still explicitly rejects before preparation writes.
+- Final typecheck, content boundary and runtime privacy boundary PASS. Inventory after the added test:449sources/300tests/1717cases PASS. Earlier1716 inventory is retained as a before-final-test checkpoint, not claimed current.
+- Scoped diff check PASS. Root verified all4stashlists unchanged; backend/web HEAD unchanged and other3 repositories tracked clean. Generated content and release-lock bytes match the existing committed checkpoint; foreign queue append body hash remains1e8576b9…4f8. [Preservation](ROOT-PRESERVATION.json).
+
+Independent Luna High **PASS WITH ISSUES** on exact final facadeSHA2ecce1bd…19553: actual focused14/14, exact-owner4/4, runtimeprobe/typecheck/diff PASS. [Final QA](FINAL-QA.md). Root final byte hash matches the independent receipt and preservation record. Worker13/13 remains separate implementation evidence. Root accepts the bounded scope; ordinary push/hosted CI pending.
+
+## Limits and next safe step
+
+Tests use memory storage and a stub Premium authorizer; they establish no native SDK durability, interrupted device recovery, provider Premium, layout or VoiceOver result. Exact historical item reading still requires the corresponding verified bundled/retained installed artifact; arbitrary old artifact availability is not established. Positive fixtures have valid persisted option orders; missing-order legacy rows fail closed and have no proven user-data fixture, so complete historical compatibility is not claimed. Shape-valid orphan corruption is a controlled fixture, not a claim that normal finalization creates such records. No deploy, external publication, purchase, service configuration, native device/runtime restart or other-agent queue movement occurred.
+
+`session_misses` remains unavailable. Its completion needs an indicated source-session identity and verified source context integrated into the existing family-owned selection/neutral port, linked to ARCH-01/02; this read correction supplies trustworthy displayed evidence but does not stand in for that integration. First-success spacing policy is a separate pending PO decision. After independent acceptance and push, inspect the next available canonical requirement without transferring another agent's active ownership.

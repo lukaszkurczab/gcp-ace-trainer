@@ -1,0 +1,11 @@
+{
+  "redImplementationCommit": "64b619fb1d74b839ab01c8ad9fc925f456979244",
+  "redSourceSha256": "29a90849af0393aee53a6278cc46c9da8710ab1d5d79ba3c1e6d749d4fa5274e",
+  "preflightCommand": "node --import tsx docs/active/BIZQ-04/completed-session-preflight-03/runtime-preflight.ts",
+  "rootRedLogSha256": "f3efe07f8cd603b29de47869b59088d6ccb5bff3629464c4a94b1e443cbf0e41",
+  "redMeaning": "Projection accepted shape-valid source-session attempt absent from immutable source plan; session_misses still rejects before writes.",
+  "independentPreflightModel": "gpt-6-luna",
+  "independentPreflightReasoning": "high",
+  "approvedBriefMinimum": 0.87,
+  "productionChangesAtAcceptance": false
+}

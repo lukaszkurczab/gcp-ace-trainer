@@ -22,7 +22,8 @@ async function main() {
   const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
   assert.equal(question.interaction.type, "choice_single", "current real first Coding Mock item must support this probe response");
   if (question.interaction.type !== "choice_single" || question.answer.type !== "choice_single") throw new Error("Current probe item shape changed.");
-  const wrong = question.interaction.options.find(option => option.optionId !== question.answer.optionId);
+  const correctOptionId = question.answer.optionId;
+  const wrong = question.interaction.options.find(option => option.optionId !== correctOptionId);
   assert.ok(wrong);
   await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response: { kind: "choice", selectedOptionIds: [wrong.optionId] } });
   await finalizeAlgorithmsSimulation();
@@ -54,10 +55,12 @@ async function main() {
   assert.ok(storedAttempt);
   const orphan = createTrainingAttempt({ ...storedAttempt, id: `${storedAttempt.id}-orphan-preflight`, occurrenceId: "not-in-completed-source-plan" });
   await addTrainingAttempt(orphan);
-  const acceptedOrphan = await getAlgorithmsPracticeResultProjection(source.session.id);
-  assert.equal(acceptedOrphan.feedbackItems.length, 40);
-  assert.deepEqual(acceptedOrphan.answeredOccurrenceIds, result.answeredOccurrenceIds);
-  console.log(JSON.stringify({ outcome: "confirmed_projection_integrity_gap", injectedRecord: "shape-valid attempt in source session with out-of-plan occurrence", repositoryAccepted: true, projectionAccepted: true, hiddenExtraAttempt: orphan.occurrenceId, scope: "private memory fixture only; no production history changed" }, null, 2));
+  const corruptedHistory = JSON.stringify({ sessions: (await getTrainingSessions()).value, attempts: (await getTrainingAttempts()).value, reviews: (await getReviewQueueItems()).value });
+  storage.resetCounters();
+  await assert.rejects(getAlgorithmsPracticeResultProjection(source.session.id), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "summary_unavailable");
+  assert.equal(storage.operations.some(operation => operation.kind !== "read"), false);
+  assert.equal(JSON.stringify({ sessions: (await getTrainingSessions()).value, attempts: (await getTrainingAttempts()).value, reviews: (await getReviewQueueItems()).value }), corruptedHistory);
+  console.log(JSON.stringify({ outcome: "integrity_orphan_rejected", injectedRecord: "shape-valid attempt in source session with out-of-plan occurrence", repositoryAccepted: true, projectionAccepted: false, explicitFailure: "summary_unavailable", noReadMutation: true, orphanOccurrence: orphan.occurrenceId, scope: "private memory fixture only; no production history changed" }, null, 2));
   console.log(JSON.stringify({ outcome: "confirmed_missing_capability", sourceSessionId: source.session.id, completed: true, totalOccurrences: 40, answered: result.answeredOccurrenceIds.length, missed: misses.length, unanswered: result.unansweredOccurrenceIds.length, questionId: occurrence.item.questionId, reviewPreparation: "rejected", reason, reviewPreparationNoMutation: true, sourceHistoryPreserved: true, limits: ["memory repositories", "stub Premium authorizer", "no native or provider proof", "current request carries refs but no source-session identity"] }, null, 2));
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

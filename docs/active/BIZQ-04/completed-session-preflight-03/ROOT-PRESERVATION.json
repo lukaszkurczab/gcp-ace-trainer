@@ -1,0 +1,26 @@
+{
+  "patternly": {
+    "HEAD": "2e2f9fe7624042675d72ef94814c66199407e8aa",
+    "upstream": "2e2f9fe7624042675d72ef94814c66199407e8aa",
+    "stashesUnchanged": true
+  },
+  "patternly-content": {
+    "HEAD": "237c14349d8bbe26aaed6d83ce58103b20761dd0",
+    "upstream": "237c14349d8bbe26aaed6d83ce58103b20761dd0",
+    "stashesUnchanged": true
+  },
+  "patternly-backend": {
+    "HEAD": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+    "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+    "stashesUnchanged": true
+  },
+  "patternly-web": {
+    "HEAD": "9585919b7d0c1a8396e6d255e49850e64e129d0e",
+    "upstream": "9585919b7d0c1a8396e6d255e49850e64e129d0e",
+    "stashesUnchanged": true
+  },
+  "foreignQueueBodySha256": "1e8576b9b57d6f4bed8067af21972fc4aac1ebd791a43a046dede0a5014aa4f8",
+  "generatedContentAndReleaseLockUnchanged": 11,
+  "productionFacadeSha256": "2ecce1bd61921aa62a0753f324dd89dc139d44dd7f39864d79fd0b1e43919553",
+  "integrityTestSha256": "89de90ea8a8a73e2eb5cda589694eb2aff6ce11f34af03b223a5fca534377c47"
+}

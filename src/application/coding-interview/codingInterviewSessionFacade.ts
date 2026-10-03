@@ -12,13 +12,15 @@ import {
   type SimulationCommandAuthorization,
 } from "../trainingLifecycle";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import type { ResolvedContentRef, TrainingSession } from "../../domain";
+import { resolvedContentRefsEqual, type ResolvedContentRef, type TrainingAttempt, type TrainingSession, type TrainingSessionResult } from "../../domain";
 import { buildCanonicalInteractionViewModel, composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls } from "../canonical/canonicalInteractionPresentation";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/coding-interview/domain";
 import type { AlgorithmsLifecyclePreparationRequest } from "./codingInterviewContracts";
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
-import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
+import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalQuestionResponse, type Question } from "../../content/canonical";
+import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
+import { isCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
 import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 
@@ -534,17 +536,25 @@ export function subscribeAlgorithmsPracticeProjectionRefresh(listener: (event: F
 }
 
 export async function getAlgorithmsPracticeResultProjection(sessionId: string): Promise<AlgorithmsSessionResultProjection> {
-  const lifecycle = getTrainingLifecycleUseCases();
-  const [result, history, attempts] = await Promise.all([
-    lifecycle.loadSummary(sessionId),
-    lifecycle.queryHistory(),
-    loadTrainingAttempts(),
-  ]);
-  const session = history.find((candidate) => candidate.id === sessionId);
-  if (!session || session.trackId !== "coding-interview-dsa-problem-solving" || session.status !== "completed" || result.trackId !== "coding-interview-dsa-problem-solving") {
-    throw new Error("The completed session is not an Algorithms result.");
+  let session: TrainingSession;
+  let result: TrainingSessionResult;
+  let integrity: ValidatedCompletedResult;
+  try {
+    const lifecycle = getTrainingLifecycleUseCases();
+    const [loadedResult, history, attempts] = await Promise.all([
+      lifecycle.loadSummary(sessionId),
+      lifecycle.queryHistory(),
+      loadTrainingAttempts(),
+    ]);
+    result = loadedResult;
+    const found = history.find((candidate) => candidate.id === sessionId);
+    if (!found) throw completedResultUnavailable();
+    session = found;
+    integrity = await validateCompletedCodingResult(session, result, attempts.value);
+  } catch (error) {
+    if (error instanceof TrainingApplicationFailure && error.code === "summary_unavailable") throw error;
+    throw completedResultUnavailable(error);
   }
-  if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) await validateCodingSimulationResult(session, result);
   const feedbackTiming = feedbackTimingFromSession(session);
   return Object.freeze({
     completionKind: "completed",
@@ -560,7 +570,7 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
       feedbackTiming,
       requestedLength: session.requestedLength,
     }),
-    feedbackItems: await completedFeedbackItems(session, attempts.value),
+    feedbackItems: completedFeedbackItems(session, integrity.questions, integrity.attemptsByOccurrenceId),
     score: resultScore(result.evidence.details),
   });
 }
@@ -653,14 +663,104 @@ function feedbackTimingFromSession(session: TrainingSession): "afterEachAnswer" 
   throw new Error("Algorithms session is missing its canonical feedback timing.");
 }
 
-async function completedFeedbackItems(session: TrainingSession, attempts: readonly import("../../domain").TrainingAttempt<unknown>[]): Promise<AlgorithmsSessionResultProjection["feedbackItems"]> {
-  const attemptsByOccurrenceId = new Map<string, import("../../domain").TrainingAttempt<unknown>>();
-  for (const attempt of attempts) {
+type ValidatedCompletedResult = Readonly<{
+  questions: readonly Question[];
+  attemptsByOccurrenceId: ReadonlyMap<string, TrainingAttempt<unknown>>;
+}>;
+
+function completedResultUnavailable(cause?: unknown): TrainingApplicationFailure {
+  return new TrainingApplicationFailure("summary_unavailable", "Completed Coding result does not match its saved session plan and committed attempts.", cause);
+}
+
+async function validateCompletedCodingResult(
+  session: TrainingSession,
+  result: TrainingSessionResult,
+  allAttempts: readonly TrainingAttempt<unknown>[],
+): Promise<ValidatedCompletedResult> {
+  const trackId = "coding-interview-dsa-problem-solving";
+  const details = result.evidence?.details as Record<string, unknown> | undefined;
+  const occurrenceIds = session.itemOrder.map((occurrence) => occurrence.occurrenceId);
+  const occurrenceIdSet = new Set(occurrenceIds);
+  const answered = new Set(result.answeredOccurrenceIds);
+  const unanswered = new Set(result.unansweredOccurrenceIds);
+  const validTime = (value: unknown): value is string => typeof value === "string" && Number.isFinite(Date.parse(value));
+
+  if (session.trackId !== trackId || session.status !== "completed" || !validTime(session.completedAt) ||
+    !Number.isInteger(session.actualLength) || session.actualLength !== session.itemOrder.length || session.itemOrder.length === 0 ||
+    occurrenceIdSet.size !== occurrenceIds.length ||
+    !result.id.trim() || result.sessionId !== session.id || result.trackId !== trackId ||
+    !validTime(result.completedAt) || Date.parse(result.completedAt) !== Date.parse(session.completedAt) || result.totalOccurrences !== session.actualLength ||
+    !details || result.evidence.familyId !== "coding_interview" ||
+    answered.size !== result.answeredOccurrenceIds.length || unanswered.size !== result.unansweredOccurrenceIds.length ||
+    [...answered].some((id) => unanswered.has(id)) || answered.size + unanswered.size !== session.actualLength ||
+    [...answered, ...unanswered].some((id) => !occurrenceIdSet.has(id)) ||
+    JSON.stringify(result.answeredOccurrenceIds) !== JSON.stringify(occurrenceIds.filter((id) => answered.has(id))) ||
+    JSON.stringify(result.unansweredOccurrenceIds) !== JSON.stringify(occurrenceIds.filter((id) => unanswered.has(id)))) {
+    throw completedResultUnavailable();
+  }
+
+  if (session.planFingerprint !== undefined) {
+    if (!session.taxonomyVersion || await createContentSessionPlanFingerprint(session as TrainingSession & { taxonomyVersion: string }) !== session.planFingerprint) throw completedResultUnavailable();
+  }
+
+  const exact = await contentPackageRuntimeOwner.resolveExactArtifact({ trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 });
+  if (exact.track.trackId !== trackId || exact.track.contentVersion !== session.contentVersion || exact.track.artifactSha256 !== session.artifactSha256) throw completedResultUnavailable();
+  const questions = session.itemOrder.map((occurrence) => {
+    if (occurrence.item.trackId !== trackId || occurrence.item.contentVersion !== session.contentVersion || occurrence.item.artifactSha256 !== session.artifactSha256) throw completedResultUnavailable();
+    const question = exact.track.getQuestion(occurrence.item.questionId);
+    if (!question || question.trackId !== occurrence.item.trackId || question.questionId !== occurrence.item.questionId ||
+      !isCanonicalOptionOrder(question, session.optionOrderByOccurrence[occurrence.occurrenceId])) throw completedResultUnavailable();
+    return question;
+  });
+
+  const attemptsByOccurrenceId = new Map<string, TrainingAttempt<unknown>>();
+  for (const attempt of allAttempts) {
     if (attempt.sessionId !== session.id) continue;
-    if (attemptsByOccurrenceId.has(attempt.occurrenceId)) throw new Error("Completed Algorithms session has duplicate attempts for one occurrence.");
+    const index = occurrenceIds.indexOf(attempt.occurrenceId);
+    const question = index >= 0 ? questions[index] : undefined;
+    const occurrence = index >= 0 ? session.itemOrder[index] : undefined;
+    if (!question || !occurrence || attemptsByOccurrenceId.has(attempt.occurrenceId) || attempt.trackId !== trackId || attempt.modeId !== session.modeId ||
+      !resolvedContentRefsEqual(attempt.item, occurrence.item) || !isCanonicalResponseComplete(question, attempt.response)) throw completedResultUnavailable();
+    const scored = scoreCanonicalQuestion(question, attempt.response);
+    const scoredComponents = scored.components ?? [];
+    const storedComponents = attempt.result.components ?? [];
+    if (scored.kind !== attempt.result.kind || scored.earnedPoints !== attempt.result.earnedPoints || scored.maxPoints !== attempt.result.maxPoints ||
+      scoredComponents.length !== storedComponents.length || scoredComponents.some((component, componentIndex) => {
+        const stored = storedComponents[componentIndex];
+        return !stored || component.id !== stored.id || component.earnedPoints !== stored.earnedPoints || component.maxPoints !== stored.maxPoints;
+      })) throw completedResultUnavailable();
     attemptsByOccurrenceId.set(attempt.occurrenceId, attempt);
   }
-  const questions: readonly Question[] = await Promise.all(session.itemOrder.map((occurrence) => contentPackageRuntimeOwner.resolveItem(occurrence.item)));
+
+  const expectedAnswered = occurrenceIds.filter((id) => attemptsByOccurrenceId.has(id));
+  const expectedUnanswered = occurrenceIds.filter((id) => !attemptsByOccurrenceId.has(id));
+  if (JSON.stringify(expectedAnswered) !== JSON.stringify(result.answeredOccurrenceIds) ||
+    JSON.stringify(expectedUnanswered) !== JSON.stringify(result.unansweredOccurrenceIds)) throw completedResultUnavailable();
+
+  const totals = [...attemptsByOccurrenceId.values()].reduce((current, attempt) => ({
+    correctCount: current.correctCount + Number(attempt.result.kind === "correct"),
+    partialCount: current.partialCount + Number(attempt.result.kind === "partial"),
+    incorrectCount: current.incorrectCount + Number(attempt.result.kind === "incorrect"),
+    pointsEarned: current.pointsEarned + attempt.result.earnedPoints,
+    maxPoints: current.maxPoints + attempt.result.maxPoints,
+  }), { correctCount: 0, partialCount: 0, incorrectCount: 0, pointsEarned: 0, maxPoints: 0 });
+  if (Object.entries(totals).some(([key, value]) => details[key] !== value)) throw completedResultUnavailable();
+
+  if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) await validateCodingSimulationResult(session, result);
+  else if (session.configurationSnapshot.kind !== "practice" || session.configurationSnapshot.submission !== "perItem" ||
+    !Object.values(ALGORITHM_MODE_IDS).includes(session.modeId as AlgorithmModeId)) throw completedResultUnavailable();
+
+  try { feedbackTimingFromSession(session); }
+  catch { throw completedResultUnavailable(); }
+
+  return Object.freeze({ questions: Object.freeze(questions), attemptsByOccurrenceId });
+}
+
+function completedFeedbackItems(
+  session: TrainingSession,
+  questions: readonly Question[],
+  attemptsByOccurrenceId: ReadonlyMap<string, TrainingAttempt<unknown>>,
+): AlgorithmsSessionResultProjection["feedbackItems"] {
   return Object.freeze(session.itemOrder.map((occurrence, index) => {
     const attempt = attemptsByOccurrenceId.get(occurrence.occurrenceId);
     const question = questions[index]!;
