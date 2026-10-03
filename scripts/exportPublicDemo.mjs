@@ -8,16 +8,32 @@ import "tsx/cjs";
 const require = createRequire(import.meta.url);
 const { contentPackageRuntimeOwner } = require("../src/application/contentPackageRuntimeOwner.ts");
 const { validateQuestion } = require("../src/content/canonical/questionValidation.ts");
+const { projectCanonicalSourceLinks } = require("../src/application/canonical/canonicalSourceLinks.ts");
+const { detailLines } = require("../src/features/practice/feedbackDetails.ts");
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const contentRoot = resolve(appRoot, "../patternly-content");
-const webOutput = resolve(appRoot, "../patternly-web/src/generated/codingDemoQuestion.json");
-const trackId = "coding-interview-dsa-problem-solving";
-const nodeId = "complexity_and_constraints";
-const questionId = "alg-complexity-time-005";
-const sourcePath = resolve(contentRoot, "content", trackId, nodeId, "derive_time_complexity.json");
+const webOutput = resolve(appRoot, "../patternly-web/src/generated/demoQuestions.json");
 const contentLockPath = resolve(appRoot, "src/content/generated/canonical-content/content-lock.json");
 const releaseLockPath = resolve(appRoot, "integration/contracts/content-release/release.lock.json");
 const admissionPath = resolve(contentRoot, "evidence/admissions/candidate-admission-v3.json");
+const demos = Object.freeze([
+  Object.freeze({
+    trackId: "coding-interview-dsa-problem-solving",
+    familyId: "coding_interview",
+    nodeId: "complexity_and_constraints",
+    questionId: "alg-complexity-time-005",
+    sourcePath: "content/coding-interview-dsa-problem-solving/complexity_and_constraints/derive_time_complexity.json",
+    modeIds: ["coding-interview-learn-approach", "coding-interview-guided-practice", "coding-interview-custom-practice"],
+  }),
+  Object.freeze({
+    trackId: "aws-certified-solutions-architect-associate",
+    familyId: "certification",
+    nodeId: "aws_secure_architecture_foundations",
+    questionId: "aws-saa-c03-architecture-001-odk096",
+    sourcePath: "content/aws-certified-solutions-architect-associate/aws_secure_architecture_foundations/architecture_review.json",
+    modeIds: ["certification-focus-practice"],
+  }),
+]);
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const readJson = (path, label) => {
   if (!existsSync(path)) throw new Error(`Public demo export unavailable: ${label} is missing.`);
@@ -35,12 +51,13 @@ function sortJson(value) {
   return value;
 }
 
-export function buildPublicDemoProjection({ question, sourceQuestion, track, generatedLock, releaseLock, admission, candidateManifest, sourceRelease, runtimeEvidence, admissionSha, releaseManifestSha, runtimeEvidenceSha, releaseLockSha, contentLockSha, producerCommit }) {
+export function buildPublicDemoProjection({ selection, question, sourceQuestion, track, runtimeFamilyId, generatedLock, releaseLock, admission, candidateManifest, sourceRelease, runtimeEvidence, admissionSha, releaseManifestSha, runtimeEvidenceSha, releaseLockSha, contentLockSha, producerCommit }) {
+  const { trackId, familyId, nodeId, questionId, sourcePath, modeIds } = selection;
   const trackLock = generatedLock.tracks?.find((entry) => entry.trackId === trackId);
   const releaseEntry = releaseLock.artifacts?.find((entry) => entry.trackId === trackId);
   const admissionTrack = admission.tracks?.find((entry) => entry.trackId === trackId);
-  const poolModes = ["coding-interview-learn-approach", "coding-interview-guided-practice", "coding-interview-custom-practice"];
   if (!track || track.trackId !== trackId || !question || question.questionId !== questionId) throw new Error("Public demo source item is missing or has an unexpected identity.");
+  if (runtimeFamilyId !== familyId) throw new Error("Public demo source item resolved to an unexpected content family.");
   const issues = validateQuestion(question);
   if (issues.length) throw new Error(`Public demo source item is invalid (${issues.join(", ")}).`);
   if (!sameJson(question, sourceQuestion)) throw new Error("Public demo source item does not match the canonical source file.");
@@ -51,11 +68,14 @@ export function buildPublicDemoProjection({ question, sourceQuestion, track, gen
   if (runtimeEvidence?.schemaVersion !== "patternly-runtime-admission-evidence-v3" || runtimeEvidence.status !== "passed" || runtimeEvidence.candidateId !== admission.candidateId || runtimeEvidence.frontendCommit !== admission.application?.frontendCommit || runtimeEvidence.bundledContentLock?.sha256 !== contentLockSha || runtimeEvidence.applicationReleaseLock?.sha256 !== releaseLockSha || !runtimeEvidenceSha || runtimeEvidenceSha !== admission.runtimeEvidence?.sha256) throw new Error("Public demo source has no matching existing app runtime admission evidence.");
   if (admission.runtimeAdmission !== "granted" || !admissionSha) throw new Error("Public demo source has no matching existing runtime admission receipt.");
   if (admission.release?.releaseId !== releaseEntry.releaseId || releaseEntry.producerCommit !== producerCommit || releaseEntry.producerCommit !== releaseEntry.sourceRepositoryCommit) throw new Error("Public demo producer does not match the locked current release.");
-  for (const modeId of poolModes) {
+  for (const modeId of modeIds) {
     const mode = track.modes.find((entry) => entry.modeId === modeId);
-    if (!mode || mode.availability !== "immediate" || mode.selection.kind !== "node" || mode.selection.nodeId !== nodeId || !track.getPool(modeId).some((entry) => entry.questionId === questionId)) throw new Error("Public demo item is outside the existing ordinary Free Coding practice pools.");
+    if (!mode || mode.availability !== "immediate" || mode.selection.kind !== "node" || mode.selection.nodeId !== nodeId || !track.getPool(modeId).some((entry) => entry.questionId === questionId)) throw new Error("Public demo item is outside the existing ordinary Free node practice pools.");
   }
   if (question.interaction.type !== "choice_single" || question.feedback.type !== "choice_single" || question.answer.type !== "choice_single") throw new Error("Public demo item is not a canonical single-choice question.");
+  const sourceUrls = new Set(projectCanonicalSourceLinks(question).map((source) => source.url));
+  const detailsParagraphs = detailLines(question.feedback.details).filter((line) => !sourceUrls.has(line));
+  if (detailsParagraphs.length === 0) throw new Error("Public demo item has no authored explanatory Details paragraphs.");
   return {
     schemaVersion: "patternly-canonical-demo-question-v1",
     provenance: {
@@ -71,49 +91,63 @@ export function buildPublicDemoProjection({ question, sourceQuestion, track, gen
       runtimeEvidenceSha256: runtimeEvidenceSha,
       releaseId: releaseEntry.releaseId,
       producerCommit,
-      sourcePath: `content/${trackId}/${nodeId}/derive_time_complexity.json`,
+      sourcePath,
+      modeIds: [...modeIds],
     },
+    detailsParagraphs,
     question,
   };
 }
 
-export async function createPublicDemoProjection() {
-  const { track, runtime } = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "coding_interview");
-  if (runtime.familyId !== "coding_interview") throw new Error("Public demo source is outside the Coding Interview package family.");
-  const question = track.getQuestion(questionId);
-  const sourceFile = readJson(sourcePath, "canonical source");
-  const sourceQuestion = Array.isArray(sourceFile) ? sourceFile.find((entry) => entry.questionId === questionId) : undefined;
-  if (!sourceQuestion) throw new Error("Public demo source item is missing from its canonical source file.");
+export async function createPublicDemoCatalog() {
   const lockBytes = readBytes(contentLockPath, "app content lock");
   const releaseBytes = readBytes(releaseLockPath, "app release lock");
   const admissionBytes = readBytes(admissionPath, "candidate admission receipt");
   const generatedLock = JSON.parse(lockBytes.toString("utf8"));
   const releaseLock = JSON.parse(releaseBytes.toString("utf8"));
   const admission = JSON.parse(admissionBytes.toString("utf8"));
-  const producerCommit = releaseLock.artifacts?.find((entry) => entry.trackId === trackId)?.producerCommit;
   const candidateManifestBytes = readBytes(resolve(contentRoot, admission.candidatePath), "candidate manifest");
   const releaseManifestBytes = readBytes(resolve(contentRoot, admission.release.releasePath), "candidate release manifest");
   const runtimeEvidenceBytes = readBytes(resolve(contentRoot, admission.runtimeEvidence.path), "app runtime admission evidence");
   const candidateManifest = JSON.parse(candidateManifestBytes.toString("utf8"));
   const sourceRelease = JSON.parse(releaseManifestBytes.toString("utf8"));
   const runtimeEvidence = JSON.parse(runtimeEvidenceBytes.toString("utf8"));
-  return buildPublicDemoProjection({ question, sourceQuestion, track, generatedLock, releaseLock, admission, candidateManifest, sourceRelease, runtimeEvidence, admissionSha: sha256(admissionBytes), releaseManifestSha: sha256(releaseManifestBytes), runtimeEvidenceSha: sha256(runtimeEvidenceBytes), releaseLockSha: sha256(releaseBytes), contentLockSha: sha256(lockBytes), producerCommit });
+  const contentLockSha = sha256(lockBytes);
+  const releaseLockSha = sha256(releaseBytes);
+  const projections = [];
+  for (const selection of demos) {
+    const { track, runtime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
+    if (runtime.familyId !== selection.familyId) throw new Error("Public demo source is outside its admitted content package family.");
+    const question = track.getQuestion(selection.questionId);
+    const sourceQuestionFile = readJson(resolve(contentRoot, selection.sourcePath), "canonical source");
+    const sourceQuestion = Array.isArray(sourceQuestionFile) ? sourceQuestionFile.find((entry) => entry.questionId === selection.questionId) : undefined;
+    if (!sourceQuestion) throw new Error("Public demo source item is missing from its canonical source file.");
+    const releaseEntry = releaseLock.artifacts?.find((entry) => entry.trackId === selection.trackId);
+    projections.push(buildPublicDemoProjection({
+      selection, question, sourceQuestion, track, runtimeFamilyId: runtime.familyId, generatedLock, releaseLock, admission, candidateManifest, sourceRelease, runtimeEvidence,
+      admissionSha: sha256(admissionBytes), releaseManifestSha: sha256(releaseManifestBytes), runtimeEvidenceSha: sha256(runtimeEvidenceBytes), releaseLockSha, contentLockSha, producerCommit: releaseEntry?.producerCommit,
+    }));
+  }
+  return { schemaVersion: "patternly-canonical-demo-questions-v1", demos: projections };
+}
+
+export function assertSnapshotCurrent(actualContents, expectedContents) {
+  if (actualContents !== expectedContents) throw new Error("Generated public demo snapshot is stale; regenerate it with npm run export:demo.");
 }
 
 function outputFromArgs(args) {
-  if (args.length === 0) return webOutput;
-  if (args.length === 1 && args[0] === "--check") return webOutput;
+  if (args.length === 0 || (args.length === 1 && args[0] === "--check")) return webOutput;
   throw new Error("Usage: exportPublicDemo.mjs [--check]");
 }
 
 export async function runPublicDemoExporter(args = process.argv.slice(2)) {
   const check = args[0] === "--check";
   const outputPath = outputFromArgs(args);
-  const projection = await createPublicDemoProjection();
-  const contents = `${JSON.stringify(projection, null, 2)}\n`;
+  const catalog = await createPublicDemoCatalog();
+  const contents = `${JSON.stringify(catalog, null, 2)}\n`;
   if (check) {
-    if (!existsSync(outputPath) || readFileSync(outputPath, "utf8") !== contents) throw new Error("Generated public demo snapshot is stale; regenerate it with npm run export:demo.");
-    return { outputPath, projection, checked: true };
+    assertSnapshotCurrent(existsSync(outputPath) ? readFileSync(outputPath, "utf8") : undefined, contents);
+    return { outputPath, catalog, checked: true };
   }
   mkdirSync(dirname(outputPath), { recursive: true });
   const temporaryPath = `${outputPath}.tmp-${process.pid}`;
@@ -124,11 +158,11 @@ export async function runPublicDemoExporter(args = process.argv.slice(2)) {
     try { rmSync(temporaryPath, { force: true }); } catch { /* retain the original write error */ }
     throw error;
   }
-  return { outputPath, projection, checked: false };
+  return { outputPath, catalog, checked: false };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  runPublicDemoExporter().then(({ outputPath, projection, checked }) => {
-    process.stdout.write(`${JSON.stringify({ status: checked ? "current" : "written", outputPath, questionId: projection.provenance.questionId, artifactSha256: projection.provenance.artifactSha256 })}\n`);
+  runPublicDemoExporter().then(({ outputPath, catalog, checked }) => {
+    process.stdout.write(`${JSON.stringify({ status: checked ? "current" : "written", outputPath, questionIds: catalog.demos.map((demo) => demo.provenance.questionId) })}\n`);
   }).catch((error) => { process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`); process.exitCode = 1; });
 }

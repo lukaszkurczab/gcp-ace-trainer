@@ -1,0 +1,7 @@
+{
+  "path": "/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/07-content-guidelines.md",
+  "sha256": "a0eb56e2a57996aab31c5b1ef168a8c1110d169874e4d870fd13eb4f857f72e3",
+  "addedText": "The web demonstration may project a bounded set of at most three explicitly selected items, with every item satisfying the same source, identity, version, admission and ordinary Free-pool checks. Visitor choices reuse the existing track catalog and expose only available examples; the screen renders one selected item at a time. Changing its canonical track/item identity clears the preceding answer, feedback and expanded Details. A source-owned display projection may prepare authored Details paragraphs with the existing canonical formatting and source-link helpers, preserving their explanatory text and order without rendering schema metadata or source URLs as prose. This changes no canonical question or learning-session schema.\n\n",
+  "beforeProductionImplementation": true,
+  "scope": "BIZQ06 local bounded set, existing catalog selection, change/reset and source-owned Details display only; authorization/Premium/admission/release rules unchanged"
+}

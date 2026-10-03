@@ -1,0 +1,28 @@
+# BIZQ-06 — local Coding/AWS demonstration05
+
+## Delivered outcome
+
+The existing Coding and AWS catalog cards select their corresponding source-owned ordinary Free practice example. Exactly one question is rendered. Changing canonical track/item identity clears answer, authored feedback, Details and the page-specific access notice. Selecting the current card returns focus to the question while preserving its answer. The seven other cards remain informational. No full certification session, progress, reminders, new access link or publication is claimed.
+
+App production changes: `scripts/exportPublicDemo.mjs` exports a fixed two-item catalog and reuses the existing runtime owner, validator, current source/artifact/version/lock/admission/receipt/producer checks and immediate Free node pools for each item. Existing app `detailLines` and `projectCanonicalSourceLinks` prepare authored display paragraphs, excluding source URLs from prose. The raw questions retain exact source parity. The small intentional raw/display text duplication is accounted for by the bundle guard; no bank or parallel formatter is included. `scripts/exportPublicDemo.test.mjs` covers both items and rejection paths, plus exact/missing/stale snapshot bytes without a sibling-web dependency in the app CI tests.
+
+Web production changes: new generated `src/generated/demoQuestions.json`; deleted `src/generated/codingDemoQuestion.json` and all active consumers. `PublicPage.jsx` selects the existing cards and moves focus after selection. `InteractiveQuestion.jsx` receives one projection and renders authored Details as individual ordered paragraphs. `styles.css` adds scoped card action and paragraph spacing. Existing mounted/browser tests and `verify-demo-bundle.mjs` cover this bounded payload, feedback, switching, focus and visible paragraph structure. No content, backend, artifact locks, admission evidence, runtime schema, Premium, sales, authorization or service configuration changed. Parent canonical `docs/07-content-guidelines.md` was amended before implementation, recorded in `CONTRACT.json`.
+
+## Actual verification
+
+- Root exporter: 3/3 PASS, zero skips; both canonical items, authored paragraphs, identity/source/current versions/checksums/admission/receipt/family/ordinary Free pool negative matrices and missing/stale snapshot. Actual CLI `--check` also passed with exactly the Coding and AWS IDs.
+- Root final `npm run verify:local`: PASS, including actual build, exact two-item bundle, legal pages, locale/route/public-admin boundaries. Local legal fixtures confer no publication authorization.
+- Root final installed-Chrome built-site test: 1/1 PASS at 1440 and 390, actual keyboard interaction, same-card focus/answer preservation, Coding↔AWS reset, exact paragraph DOM and actual native browser zoom 200% with AWS Details fit. Screenshots and zoom metrics are under `screenshots/chrome/`.
+- Independent Luna High mounted test: 1/1 PASS after paragraph correction, both demos × 24 option permutations × all four responses, exact stable-ID feedback, ordered paragraph nodes and switching. This supplements root actual built-site/device checks; it is not only a worker report.
+- Root existing iPhone 17 `7F315654-3175-4F3C-BB24-B0263F59360C`, iOS26.4 Safari: main flow exit0, 41/41 command entries completed; supplemental Details-bottom/reset exit0, 17/17 entries completed. These are command counts, not separate test cases. Wrong and correct AWS feedback, Details, Coding reset, AWS neutral return and retry are evidenced by logs, actual evaluated commands and screenshots. Last paragraph is readable without the address pill in the supplemental capture.
+- Scoped app and whole web diff whitespace checks passed. Active old payload/helper references are absent. Foreign app queue appendix hash remains `1e8576b9b57d6f4bed8067af21972fc4aac1ebd791a43a046dede0a5014aa4f8`; content/backend and all existing stashes preserved.
+
+## Corrections and limits
+
+Root visual inspection and independent QA found that the initial joined Details string collapsed into one HTML paragraph despite passing textContent checks. The accepted correction renders separate paragraph nodes; tests now check exact node count and order. Initial logs/screens remain under `ROOT-*-INITIAL.log` and `screenshots/initial/`; they do not establish final acceptance.
+
+The first Safari attempt timed out while traversing the long page before the AWS card. The next centered-answer tap did not establish feedback. Actual compact navigation and direct tapping of the already-visible option produced the successful flow. These failures are retained as `ROOT-SAFARI-INITIAL.log` and `SAFARI-CENTER-FAILED.log`, not counted as PASS. The first successful Details screenshot has an address-pill overlap over part of the last paragraph; `06-aws-details-bottom.png` shows that paragraph unobscured.
+
+Only the existing device was used, with no VoiceOver, installation, app reset or learning-session operation. The temporary localhost4173 preview was closed and existing Patternly PID37357 returned to foreground. Sole existing Metro PID36855 was retained. This does not prove whole-store equality or full W12/W13 accessibility, locale/theme/device coverage. Prior runtime/admission receipts remain unchanged; this exporter/web change does not create a new content admission.
+
+Final independent verdict and ordinary push receipts are recorded separately. Full BIZQ-06 remains open: a real access destination/public release needs its existing authorization; no approved Design public example or general bank/session coverage is inferred. Next safe step after accepted delivery is to select the next independent canonical queue slice, preserving pending PO and ARCH ownership dependencies.

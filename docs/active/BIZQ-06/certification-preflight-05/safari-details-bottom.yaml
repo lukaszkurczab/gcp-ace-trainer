@@ -1,0 +1,34 @@
+appId: com.apple.mobilesafari
+name: BIZQ06 AWS Details bottom and reset
+---
+- tapOn: "Open navigation"
+- tapOn: "Tracks"
+- scrollUntilVisible:
+    element: "Try an AWS question.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 45000
+- tapOn: "Try an AWS question.*"
+- assertVisible: "A review finds three stateless application replicas.*"
+- tapOn: "Record a reliability risk.*"
+- scrollUntilVisible:
+    element: "See the key idea.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn: "See the key idea.*"
+- scrollUntilVisible:
+    element: "The review records the database as a reliability risk.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- assertVisible: "The review records the database as a reliability risk.*"
+- takeScreenshot: 06-aws-details-bottom
+- scrollUntilVisible:
+    element: "Try again.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn: "Try again.*"
+- assertNotVisible: "The review records the database as a reliability risk.*"
+- assertNotVisible: "This page does not offer a link to access the app yet.*"
