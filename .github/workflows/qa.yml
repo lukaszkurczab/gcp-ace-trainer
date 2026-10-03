@@ -58,14 +58,33 @@ jobs:
       - name: Verify candidate-bound content release lock
         working-directory: app
         run: node scripts/candidateContentReleaseLock.mjs check
+      - name: Checkout current backend QA input
+        uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-backend
+          ref: main
+          path: patternly-backend
+          fetch-depth: 0
+      - id: current-backend
+        name: Record exact backend QA input
+        shell: bash
+        run: |
+          backend_sha="$(git -C "$GITHUB_WORKSPACE/patternly-backend" rev-parse HEAD)"
+          [[ "$backend_sha" =~ ^[a-f0-9]{40}$ ]]
+          printf 'Current backend QA input: %s\n' "$backend_sha"
+          printf 'sha=%s\n' "$backend_sha" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with:
           node-version: 22.13.1
           cache: npm
           cache-dependency-path: |
             app/package-lock.json
+            patternly-backend/package-lock.json
       - name: Install application dependencies
         working-directory: app
+        run: npm ci
+      - name: Install backend QA dependencies
+        working-directory: patternly-backend
         run: npm ci
       - name: Verify clean generated native platform contract
         working-directory: app

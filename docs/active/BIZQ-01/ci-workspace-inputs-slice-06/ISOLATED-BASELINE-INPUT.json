@@ -1,0 +1,11 @@
+{
+  "appHead": "3262d8e5bb959e22c86f1f4a35e4123d8f53bcd8",
+  "probe": "/private/tmp/patternly-ci06-ckdeyiv9",
+  "patchPaths": [
+    ".github/workflows/qa.yml",
+    "scripts/candidateContentReleaseLock.test.mjs"
+  ],
+  "reason": "Concurrent evidence log creation changed worktree count during original releaseGate comparison; stable checkout used without changing the assertion",
+  "backend": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+  "content": "570eb490eaf194fa61ad380155cfd16c0377aaf2"
+}

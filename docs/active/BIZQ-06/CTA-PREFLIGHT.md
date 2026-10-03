@@ -1,0 +1,5 @@
+# BIZQ-06 — next CTA preflight
+
+Read-only Luna High inspection at web9585919b7d0c1a8396e6d255e49850e64e129d0e, cleanorigin/main, no webAGENTS found. Existing anchors in PublicPage.jsx navigate working page sections/demo; they are not brokenURLs. InteractiveQuestion.jsx ends with Try again afterfeedback and has no next action to application/store/TestFlight/waitlist. No authorizeddistributionURL or existingwaitlistendpoint found in readsource/configuration. README calls websitebrochure and excludeslogin/purchase/learningstate; publicfooterpurchase unavailable onweb. No external publication status verified or inferred from old backendinventory.
+
+Concrete dependency: user must supply an existing authorized destination (storelisting withregionalavailability, TestFlight or approvedwaitlist). Asked textinput duringHome08 work; answerpending, no URL invented. No code/config/publish/servicechange or fakeconversionsuccess. Sourcefunctionalcorrection awaitsactualdestination; fullbankdemo/readiness/transfer dependBIZQ01/05, copyplannerBIZQ03. Onecanonicalqueue retainsstatus/dependency; this file is evidenceonly.

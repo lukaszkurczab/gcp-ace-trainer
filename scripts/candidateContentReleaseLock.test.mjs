@@ -95,7 +95,10 @@ test("both QA jobs share the strict pin reader and retain mandatory candidate an
     assert.match(job, /PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: \$\{\{ steps\.current-content\.outputs\.sha \}\}/);
     assert.match(job, /PATTERNLY_CONTENT_HISTORICAL_ROOT:.*patternly-content-historical/);
     assert.match(job, /PATTERNLY_CONTENT_CURRENT_ROOT:.*patternly-content\n/);
-    assert.doesNotMatch(job, /lock\.schemaVersion !== 2|ref: main|continue-on-error/);
+    assert.doesNotMatch(job, /lock\.schemaVersion !== 2|continue-on-error/);
+    for (const step of job.split(/\n      - /).filter((step) => /repository: lukaszkurczab\/patternly-content(?:\n|$)/.test(step))) {
+      assert.doesNotMatch(step, /ref: main(?:\n|$)/);
+    }
   }
   assert.match(workflow, /npx expo prebuild --no-install --clean/);
   assert.match(workflow, /npm run baseline:report/);

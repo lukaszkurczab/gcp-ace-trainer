@@ -1,0 +1,8 @@
+{
+  "temporaryRoot": "/private/tmp/patternly-ci06-ckdeyiv9",
+  "appHead": "1a1e0dfb06c996baccd5a33e468dfa7484a96d33",
+  "backendHead": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+  "redExit": 1,
+  "greenExit": 0,
+  "dependencyEvidence": "existing actual backend locked node_modules reused; npm ci will run fresh in CI; no emulator started"
+}

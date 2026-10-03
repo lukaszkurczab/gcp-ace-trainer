@@ -1,0 +1,30 @@
+{
+  "app": {
+    "head": "3262d8e5bb959e22c86f1f4a35e4123d8f53bcd8",
+    "upstream": "3262d8e5bb959e22c86f1f4a35e4123d8f53bcd8",
+    "aheadBehind": "0\t0",
+    "status": "M docs/PATTERNLY-WORKING-PLAN.md\n?? docs/active/BIZQ-01/ci-workspace-inputs-slice-06/\n?? docs/active/BIZQ-02/home-consistency-preflight-08/remote-recovery-job.log\n?? docs/active/BIZQ-06/\n?? docs/active/SECURITY-PRIVACY-AUDIT/",
+    "stashes": "acc4dd4b104d202e81064fabd2c268e28ffbf5cd\n680df78d7014d76ccaaea221cb2022d4f1f50746\n803672fc67aa8cab977030e63a29c3d5f599ca44\n0f1a08fa36b628ffad19dea8e8e94fe4d6a76031\nfa998da9bfc9dd04fa980c3048906d8642c5dfdb\nf21e31454bdf33f0b09a33158f9d3ad1777e2ca7"
+  },
+  "backend": {
+    "head": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+    "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+    "aheadBehind": "0\t0",
+    "status": "",
+    "stashes": "f706b6c18923f8a8ef0a862a903d08c548e7badc\na83361eba8048b5384cecdb412f466b6c6ed87de\nd32f85fb95a97e030f0c93c053305767f605f575\n0ab654cbb2e7ece519d8d34e739b50db8bb00e7d"
+  },
+  "content": {
+    "head": "570eb490eaf194fa61ad380155cfd16c0377aaf2",
+    "upstream": "570eb490eaf194fa61ad380155cfd16c0377aaf2",
+    "aheadBehind": "0\t0",
+    "status": "?? evidence/business-quality/full-content-audit-2026-10-02/",
+    "stashes": "8f1944f349449f1a7987f49b068eff2393a8e1c5\n2b38e13f76ff561de18c5ee2c209ed31291ecba2"
+  },
+  "web": {
+    "head": "9585919b7d0c1a8396e6d255e49850e64e129d0e",
+    "upstream": "9585919b7d0c1a8396e6d255e49850e64e129d0e",
+    "aheadBehind": "0\t0",
+    "status": "",
+    "stashes": ""
+  }
+}
