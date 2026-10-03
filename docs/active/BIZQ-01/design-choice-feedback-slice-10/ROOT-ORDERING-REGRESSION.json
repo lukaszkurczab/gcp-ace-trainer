@@ -1,0 +1,230 @@
+{
+  "fixture": "current locked frontend Design canonical artifact; exact pool-eligible question pinned into a canonical-runtime-prepared session, resume-validated, memory-journal-started, submitted through Design facade, then read after lifecycle rebind",
+  "mode": "acceptance: selected authored broken_relation messages must reach materialized Design feedback",
+  "track": {
+    "trackId": "frontend-system-design-interview",
+    "contentVersion": "frontend-system-design-interview-candidate-v2026.08.15",
+    "artifactSha256": "7de3a0bd8860eef726c6bb11cbf8e0bbc88ff0282d1a4575cbf94cc5fb9dd9bf"
+  },
+  "question": {
+    "questionId": "fesd-n01-b01-i003",
+    "nodeId": "requirements_user_journeys_constraints_and_frontend_decomposition",
+    "mentalUnitId": "FESD-N01-B01",
+    "correctOrder": [
+      "observe",
+      "preserve",
+      "expose",
+      "recover"
+    ]
+  },
+  "eligibleMode": {
+    "modeId": "design-interview-learn-framework",
+    "selection": {
+      "kind": "node",
+      "nodeId": "requirements_user_journeys_constraints_and_frontend_decomposition"
+    },
+    "poolSize": 150,
+    "containsQuestion": true
+  },
+  "cases": [
+    {
+      "name": "correct",
+      "response": [
+        "observe",
+        "preserve",
+        "expose",
+        "recover"
+      ],
+      "preservedRelations": [
+        "observe->preserve",
+        "preserve->expose",
+        "expose->recover"
+      ],
+      "expectedEarnedPoints": 3,
+      "actualScore": {
+        "kind": "correct",
+        "earnedPoints": 3,
+        "maxPoints": 3
+      },
+      "persistedAttemptsAfterRebind": 1,
+      "activeJournalAfterRebind": false,
+      "authoredBrokenRelationMessages": [],
+      "facadeFeedbackKeys": [
+        "details",
+        "messages",
+        "reason",
+        "result",
+        "sources"
+      ],
+      "facadeMessages": [],
+      "expectedMessagesDelivered": true
+    },
+    {
+      "name": "swap-last-two",
+      "response": [
+        "observe",
+        "preserve",
+        "recover",
+        "expose"
+      ],
+      "preservedRelations": [
+        "observe->preserve",
+        "preserve->recover",
+        "recover->expose"
+      ],
+      "expectedEarnedPoints": 1,
+      "actualScore": {
+        "kind": "partial",
+        "earnedPoints": 1,
+        "maxPoints": 3
+      },
+      "persistedAttemptsAfterRebind": 1,
+      "activeJournalAfterRebind": false,
+      "authoredBrokenRelationMessages": [
+        {
+          "kind": "broken_relation",
+          "targetId": "expose->recover",
+          "text": "Breaking expose->recover loses the explicit ownership or recovery boundary for price tampering; the learner must preserve the sequence before claiming success."
+        },
+        {
+          "kind": "broken_relation",
+          "targetId": "preserve->expose",
+          "text": "Breaking preserve->expose loses the explicit ownership or recovery boundary for price tampering; the learner must preserve the sequence before claiming success."
+        }
+      ],
+      "facadeFeedbackKeys": [
+        "details",
+        "messages",
+        "reason",
+        "result",
+        "sources"
+      ],
+      "facadeMessages": [
+        {
+          "kind": "broken_relation",
+          "targetId": "expose->recover",
+          "text": "Breaking expose->recover loses the explicit ownership or recovery boundary for price tampering; the learner must preserve the sequence before claiming success."
+        },
+        {
+          "kind": "broken_relation",
+          "targetId": "preserve->expose",
+          "text": "Breaking preserve->expose loses the explicit ownership or recovery boundary for price tampering; the learner must preserve the sequence before claiming success."
+        }
+      ],
+      "expectedMessagesDelivered": true
+    },
+    {
+      "name": "shift-preserved-block",
+      "response": [
+        "expose",
+        "recover",
+        "observe",
+        "preserve"
+      ],
+      "preservedRelations": [
+        "expose->recover",
+        "recover->observe",
+        "observe->preserve"
+      ],
+      "expectedEarnedPoints": 2,
+      "actualScore": {
+        "kind": "partial",
+        "earnedPoints": 2,
+        "maxPoints": 3
+      },
+      "persistedAttemptsAfterRebind": 1,
+      "activeJournalAfterRebind": false,
+      "authoredBrokenRelationMessages": [
+        {
+          "kind": "broken_relation",
+          "targetId": "preserve->expose",
+          "text": "Breaking preserve->expose loses the explicit ownership or recovery boundary for price tampering; the learner must preserve the sequence before claiming success."
+        }
+      ],
+      "facadeFeedbackKeys": [
+        "details",
+        "messages",
+        "reason",
+        "result",
+        "sources"
+      ],
+      "facadeMessages": [
+        {
+          "kind": "broken_relation",
+          "targetId": "preserve->expose",
+          "text": "Breaking preserve->expose loses the explicit ownership or recovery boundary for price tampering; the learner must preserve the sequence before claiming success."
+        }
+      ],
+      "expectedMessagesDelivered": true
+    },
+    {
+      "name": "reject-sparse",
+      "stage": "actual Design facade invalid submission",
+      "rejected": true,
+      "persistedAttempts": 0,
+      "reviewEntries": 0,
+      "activeJournal": false,
+      "response": null,
+      "feedback": null,
+      "expectedMessagesDelivered": true,
+      "scope": "foreground-time checkpoint may change; no whole-store preservation claim"
+    },
+    {
+      "name": "reject-inherited-hole",
+      "stage": "actual Design facade invalid submission",
+      "rejected": true,
+      "persistedAttempts": 0,
+      "reviewEntries": 0,
+      "activeJournal": false,
+      "response": null,
+      "feedback": null,
+      "expectedMessagesDelivered": true,
+      "scope": "foreground-time checkpoint may change; no whole-store preservation claim"
+    },
+    {
+      "name": "fail-journal-write",
+      "stage": "submit_journal_failed",
+      "beforeMaterialization": {
+        "attemptCount": 0,
+        "reviewCount": 0,
+        "feedback": null,
+        "responseSource": null,
+        "activeJournal": false
+      },
+      "afterRecovery": null,
+      "expectedMessagesDelivered": true,
+      "scope": "composed lifecycle outcome boundary after actual facade foreground checkpoint; memory fault injection, not SDK/native interruption"
+    },
+    {
+      "name": "fail-attempt-write",
+      "stage": "commit_materialization_failed",
+      "beforeMaterialization": {
+        "attemptCount": 0,
+        "reviewCount": 0,
+        "feedback": null,
+        "responseSource": "committed",
+        "activeJournal": true
+      },
+      "afterRecovery": {
+        "attemptCount": 1,
+        "activeJournal": false,
+        "messages": [
+          {
+            "kind": "broken_relation",
+            "targetId": "preserve->expose",
+            "text": "Breaking preserve->expose loses the explicit ownership or recovery boundary for price tampering; the learner must preserve the sequence before claiming success."
+          }
+        ]
+      },
+      "expectedMessagesDelivered": true,
+      "scope": "composed lifecycle outcome boundary after actual facade foreground checkpoint; memory fault injection, not SDK/native interruption"
+    }
+  ],
+  "sourceSha256": {
+    "src/application/canonical/CanonicalTrainingRuntime.ts": "cc980c835227e253c287a1dd841b0892861d5ab8f9491b1c35d5b870253a2e83",
+    "src/application/design-interview/designInterviewSessionFacade.ts": "4ff9001ce690486e60ecc2c8ebe47d19c7caf1a054bfdc01c57eaf93b271fa1a",
+    "src/features/practice/DesignInterviewPracticeScreen.tsx": "a18f3881c56b79ee2988c9bd4ee913f733822f715f96b72f4ff2d7d3b4b3feb9",
+    "src/content/generated/canonical-content/frontend-system-design-interview.json": "7de3a0bd8860eef726c6bb11cbf8e0bbc88ff0282d1a4575cbf94cc5fb9dd9bf"
+  },
+  "expectedRed": []
+}

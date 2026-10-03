@@ -16,7 +16,7 @@ import {
 } from "../trainingLifecycle";
 import { DESIGN_INTERVIEW_MODE_IDS, type DesignInterviewModeId } from "../../tracks/design-interview/designModes";
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
-import { projectCanonicalOrderingFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
+import { projectCanonicalChoiceFeedbackMessages, projectCanonicalOrderingFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 
 type DesignOpenInput = Readonly<{ modeId: DesignInterviewModeId; requestedLength?: number; source?: string; expectedSessionId?: string; trackId: TrackId }>;
@@ -75,7 +75,11 @@ export async function getDesignInterviewPracticeProjection(): Promise<DesignInte
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const responseAttempt = materializedAttempt ?? committedAttempt;
   const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
-  const messages = materializedAttempt ? projectCanonicalOrderingFeedbackMessages(question, materializedAttempt.response) : undefined;
+  const messages = materializedAttempt
+    ? question.interaction.type === "choice_single" || question.interaction.type === "choice_multiple"
+      ? projectCanonicalChoiceFeedbackMessages(question, materializedAttempt.response as CanonicalQuestionResponse)
+      : projectCanonicalOrderingFeedbackMessages(question, materializedAttempt.response)
+    : undefined;
   const feedback = materializedAttempt ? Object.freeze({ result: materializedAttempt.result.kind, reason: question.feedback.reason, details: question.feedback.details, sources: projectCanonicalSourceLinks(question), ...(messages === undefined ? {} : { messages }) }) : null;
   const [operation, time] = await Promise.all([lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)), getForegroundSessionTimerFacade().projection(session)]);
   const response = responseAttempt ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: responseAttempt.response as CanonicalQuestionResponse }) : null;

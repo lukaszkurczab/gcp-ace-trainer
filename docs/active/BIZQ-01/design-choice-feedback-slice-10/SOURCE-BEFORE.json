@@ -1,0 +1,8 @@
+{
+  "src/application/design-interview/designInterviewSessionFacade.ts": "055c58e1149c21ea3a32195e4249caaa7187482ea66b9adc0eb7321dd7102371",
+  "src/application/canonical/canonicalInteractionPresentation.ts": "1608a8fd76eedfacd401d8a781360b47771f8d416d1fb0da94dc4f051077b2ae",
+  "src/features/practice/DesignInterviewPracticeScreen.tsx": "a18f3881c56b79ee2988c9bd4ee913f733822f715f96b72f4ff2d7d3b4b3feb9",
+  "src/features/practice/PracticeFeedbackBlock.tsx": "a0cd2b14e08d63260808727ac2fc775588f52b9e7101ce41e78cc604febbede5",
+  "src/features/practice/practiceSessionPresentation.ts": "9f415ca46ac12a09df54cdbb9df4e45592f3bfe87504deea360308e6870f9f99",
+  "src/content/canonical/questionScoring.ts": "941e9a283789ddc73d46be50f1009770c72760f0d674847aafdc15110892be17"
+}

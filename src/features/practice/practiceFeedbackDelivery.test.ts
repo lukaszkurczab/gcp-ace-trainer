@@ -41,10 +41,14 @@ test("both practice JSX adapters pass authored message arrays through unchanged"
   assert.equal(codingFeedback.messages, messages);
 });
 
-test("Design practice JSX adapter forwards ordering messages only from existing feedback", () => {
-  const messages = Object.freeze([{ kind: "broken_relation", targetId: "preserve->expose", text: "Authored relation explanation." }]);
+test("Design practice JSX adapter forwards optional choice and ordering messages only from existing feedback", () => {
+  const choiceMessages = Object.freeze([{ kind: "wrong_option", targetId: "wrong", text: "Authored choice explanation." }]);
   const expression = jsxAttributeExpression(designSource, "PracticeSessionSurface", "feedback");
   const adapter = new Function("projection", `return (${expression});`);
+  const choiceDelivered = adapter({ feedback: { details: "details", messages: choiceMessages, reason: "reason", result: "incorrect", sources: [] } }) as { messages: typeof choiceMessages };
+  assert.equal(choiceDelivered.messages, choiceMessages);
+
+  const messages = Object.freeze([{ kind: "broken_relation", targetId: "preserve->expose", text: "Authored relation explanation." }]);
   const delivered = adapter({ feedback: { details: "details", messages, reason: "reason", result: "partial", sources: [] } }) as { messages: typeof messages };
   assert.equal(delivered.messages, messages);
   assert.equal(adapter({ feedback: null }), undefined);

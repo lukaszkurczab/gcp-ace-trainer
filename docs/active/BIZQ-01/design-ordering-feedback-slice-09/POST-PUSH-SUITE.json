@@ -1,0 +1,13 @@
+{
+  "run": 37106319740,
+  "headSha": "5b6eae61ee0c6bd01e44ecb0ac138d8cd083ebe2",
+  "rawLogSha256": "06098d56c535d8591e373e0ece38666c4540c03e62d98647c83b692549c81301",
+  "suiteSummary": [
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T07:29:50.0359550Z # tests 1756",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T07:29:50.0360386Z # pass 1752",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T07:29:50.0360743Z # fail 0",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T07:29:50.0361110Z # cancelled 0",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T07:29:50.0361486Z # skipped 4",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T07:29:50.0361828Z # todo 0"
+  ]
+}
