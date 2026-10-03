@@ -1,0 +1,124 @@
+{
+  "files": [
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/ANCHOR-FAILED.json",
+      "sha256": "601365ce789b98cba123895128c8177360734fe39b44a994eaa20b0ddf8270fc"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/BUILD.json",
+      "sha256": "e2452114df9bdb4f81b29b926ba7e421deff555beaab8aa54a7ac3b5e826ba39"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/ENLARGED-COMMANDS.json",
+      "sha256": "217d62dc3133956ed0ba896987d317759f5e8120b1358c748944cf37f2fd31a5"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/FINAL-QA.md",
+      "sha256": "3667ca10efb35a5315323a700ceb997357f3694d8d610a4a369d7bd84eae96a1"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/INITIAL-PARTIAL.json",
+      "sha256": "35adec795282b8771e149383c4b1b46d97c07b4a507ee222aec99a02881c42e8"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/NORMAL-COMMANDS.json",
+      "sha256": "9f03ebefb18cbcd9c7eadf99faa59bfc123d2758061989cbf148484e25c699f0"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/NORMAL.log",
+      "sha256": "9abe9a0edb4f7e9d94ec41a5019a42505680df7d13535e62bbcf21088a2a3985"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/OFFSCREEN-FAILED.log",
+      "sha256": "c76f7c1bb827034e26d11ba246e9b0abe35c58b5fb16fe1bd71a983f73fe22be"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/READER-FAILED.log",
+      "sha256": "eaa67e82e02fa60160964d2dfd4af991c1f074e261f40bcb3ea96a77119b8726"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/REPORT.md",
+      "sha256": "b0ce5ba8c9ed8530d8e772acb184fb36e2e6125b797f25b0d64b9f3638fdc834"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/REPRO.md",
+      "sha256": "72cecd96611f4197cc3710489457aabcd7163699d7e7e55afa2f38e62456608a"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/RESTORE.log",
+      "sha256": "f437341379a67e88c7fe067125cd6f0c8fc67ec157c80816c57d7b02c3cd2574"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/enlarged.yaml",
+      "sha256": "5c15bddaeff87d90bd1bec9656ca33344e5bb6512382f1fdd20b2e0f482db841"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/flow.yaml",
+      "sha256": "e5381d28ca07734125b1aa99614b18f96c0c50d797b66d1f385b14c8c9f23006"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/menu.yaml",
+      "sha256": "bbddda567d36410ddfb0a5f04c622c4cfc2cc1a496e7e97b5fddbd8cae8e47f8"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/restore-final-ids.yaml",
+      "sha256": "49670d84a224bc19577d22ad06d58e0ed955216fe83f2436270eaf170eaba052"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/restore-size.yaml",
+      "sha256": "e51a443ab8a025d87163e35abcf4460168386476f79d843bde5e572435083da2"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/enlarged/01-before-details.png",
+      "sha256": "2e443e0d85e6c510f0cb79691e97fbab5a8d9ce31cfec318528e67166a2e03a2"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/enlarged/02-expanded-details.png",
+      "sha256": "4eea991119aace5e4af7d7f1b2e2d60427356fab9d0d12dceb8aa97b7a9eacb6"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/enlarged/03-actions.png",
+      "sha256": "4eea991119aace5e4af7d7f1b2e2d60427356fab9d0d12dceb8aa97b7a9eacb6"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/enlarged/04-wrong-expanded-details.png",
+      "sha256": "4c391f3424f0d66e0eb6ee90505e63430319413ba5382ab78c66335d13ddcd86"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/normal/01-neutral.png",
+      "sha256": "64c1d22ffd32a1e166fa6c28aadd1df23e721b23ef39f23fe32da506ad161bab"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/normal/02-wrong-reason.png",
+      "sha256": "09c3409175c285f36bcb70903c27bec8bd1b90c31a7412e17494e2c904880328"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/normal/03-details-reset.png",
+      "sha256": "83f2ae2e91964e898d2f60aa4b45f585d8acf0788d2afaa2cc5555268e4cb208"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/normal/03-expanded-details.png",
+      "sha256": "83f2ae2e91964e898d2f60aa4b45f585d8acf0788d2afaa2cc5555268e4cb208"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/normal/04-correct-reason.png",
+      "sha256": "00bfbd6bbcee59eabd51a3de1f2a014c2e854c1fe6452b484f0cd80e7348260b"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/restore-ids/01-restored-page-size.png",
+      "sha256": "e64f66f2d270c46e74f2c48d1f7a6636aa7f460b2cde2233bdf7c87fe74adcb1"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/screenshots/size-probe/01-size-step.png",
+      "sha256": "43590081462e4670afbc5f3e5b8782c9796b6410731592df37a1bd4b27f3b6b4"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/size-probe-historical.yaml",
+      "sha256": "d9dbdfca7be16b508b48163146f93e6b7bc1215e7fa1d6693014188971dd5674"
+    },
+    {
+      "path": "docs/active/BIZQ-06/safari-preflight-04/size-probe.yaml",
+      "sha256": "8fa4859f458d5bd02dbf7530c9bd223a218bf2f85178571e4cc2b1e2d1f34287"
+    }
+  ]
+}

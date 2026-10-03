@@ -1,0 +1,55 @@
+appId: com.apple.mobilesafari
+name: BIZQ06 Safari canonical demo normal size
+---
+- scrollUntilVisible:
+    element: "Try again.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn: "Try again.*"
+- scrollUntilVisible:
+    element: "Across the whole run.*"
+    direction: UP
+    centerElement: true
+    timeout: 15000
+- takeScreenshot: 01-neutral
+- scrollUntilVisible:
+    element: "Nested loops are always linear.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- tapOn: "Nested loops are always linear.*"
+- scrollUntilVisible:
+    element: "See the key idea.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- assertVisible: "Nested loops can be quadratic when inner work resets.*"
+- takeScreenshot: 02-wrong-reason
+- tapOn: "See the key idea.*"
+- extendedWaitUntil:
+    visible: "Do not count the inner loop.*"
+    timeout: 10000
+- takeScreenshot: 03-expanded-details
+- scrollUntilVisible:
+    element: "Try again.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- takeScreenshot: 03-details-reset
+- assertVisible: "This page does not offer a link to access the app yet.*"
+- tapOn: "Try again.*"
+- assertNotVisible: "Nested loops can be quadratic when inner work resets.*"
+- scrollUntilVisible:
+    element: "Across the whole run.*"
+    direction: UP
+    centerElement: true
+    timeout: 15000
+- tapOn: "Across the whole run.*"
+- scrollUntilVisible:
+    element: "See the key idea.*"
+    direction: DOWN
+    centerElement: true
+    timeout: 15000
+- assertVisible: "The nested shape is misleading here.*"
+- takeScreenshot: 04-correct-reason

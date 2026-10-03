@@ -1,0 +1,10 @@
+appId: com.apple.mobilesafari
+name: BIZQ06 Safari enlarge one native page size step
+---
+- swipe:
+    direction: DOWN
+- tapOn:
+    id: PageFormatMenuButton
+- tapOn:
+    id: Increment
+- takeScreenshot: 01-size-step
