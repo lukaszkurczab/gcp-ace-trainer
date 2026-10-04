@@ -1,0 +1,225 @@
+{
+  "verdict": "PASS",
+  "actualCommand": "node docs/active/BIZQ-01/closure-review-18/sample-current.mjs --check",
+  "actualExitCode": 0,
+  "sampleSha256": "d2c083f3f3ac02fdaa38de725c717d31c88ad227365c30fb54bd121c16241ad4",
+  "contentHead": "90a1d83859c2be83c5266ffe981f487d3c29aeeb",
+  "population": 16077,
+  "sampleCount": 216,
+  "trackCoverage": [
+    {
+      "trackId": "coding-interview-dsa-problem-solving",
+      "population": 3404,
+      "selected": 24,
+      "populationNodes": 26,
+      "selectedNodes": 24,
+      "selectedUnits": 24,
+      "populationInteractions": [
+        "choice_multiple",
+        "choice_single",
+        "complexity",
+        "ordering"
+      ],
+      "selectedInteractions": [
+        "choice_multiple",
+        "choice_single",
+        "complexity",
+        "ordering"
+      ],
+      "selectedDifficulties": [
+        "advanced",
+        "easy",
+        "foundational",
+        "foundational-boundary",
+        "intermediate",
+        "intro",
+        "introductory"
+      ],
+      "explicitOverrides": [
+        "alg-binary-search-bounds-020"
+      ]
+    },
+    {
+      "trackId": "claude-certified-architect-professional-certification",
+      "population": 300,
+      "selected": 24,
+      "populationNodes": 7,
+      "selectedNodes": 7,
+      "selectedUnits": 24,
+      "populationInteractions": [
+        "choice_multiple",
+        "choice_single"
+      ],
+      "selectedInteractions": [
+        "choice_multiple",
+        "choice_single"
+      ],
+      "selectedDifficulties": [
+        null
+      ],
+      "explicitOverrides": [
+        "CCARP-D03-O01-selection"
+      ]
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "population": 1569,
+      "selected": 24,
+      "populationNodes": 10,
+      "selectedNodes": 10,
+      "selectedUnits": 24,
+      "populationInteractions": [
+        "choice_single"
+      ],
+      "selectedInteractions": [
+        "choice_single"
+      ],
+      "selectedDifficulties": [
+        "advanced",
+        "advanced_evolution",
+        "advanced_failure",
+        "advanced_operations",
+        "advanced_security",
+        "advanced_tradeoff",
+        "advanced_transfer",
+        "foundational",
+        "intermediate"
+      ],
+      "explicitOverrides": [
+        "besd-n02-b01-i032",
+        "besd-n04-b01-i022",
+        "besd-n01-b01-i005"
+      ]
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "population": 1413,
+      "selected": 24,
+      "populationNodes": 9,
+      "selectedNodes": 9,
+      "selectedUnits": 24,
+      "populationInteractions": [
+        "choice_single"
+      ],
+      "selectedInteractions": [
+        "choice_single"
+      ],
+      "selectedDifficulties": [
+        "advanced_failure",
+        "advanced_tradeoff",
+        "foundational",
+        "foundational_boundary",
+        "intermediate",
+        "intermediate_transfer"
+      ],
+      "explicitOverrides": [
+        "ood-n01-b01-i024",
+        "ood-n02-b01-i021",
+        "ood-n03-b01-i017",
+        "ood-n06-b01-i017"
+      ]
+    },
+    {
+      "trackId": "frontend-system-design-interview",
+      "population": 1766,
+      "selected": 24,
+      "populationNodes": 10,
+      "selectedNodes": 10,
+      "selectedUnits": 24,
+      "populationInteractions": [
+        "choice_single",
+        "decision_matrix",
+        "ordering"
+      ],
+      "selectedInteractions": [
+        "choice_single",
+        "decision_matrix",
+        "ordering"
+      ],
+      "selectedDifficulties": [
+        "advanced_failure",
+        "advanced_tradeoff",
+        "foundational",
+        "foundational_boundary",
+        "intermediate",
+        "intermediate_transfer"
+      ],
+      "explicitOverrides": []
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "population": 2981,
+      "selected": 24,
+      "populationNodes": 20,
+      "selectedNodes": 20,
+      "selectedUnits": 24,
+      "populationInteractions": [
+        "choice_single"
+      ],
+      "selectedInteractions": [
+        "choice_single"
+      ],
+      "selectedDifficulties": [
+        null
+      ],
+      "explicitOverrides": [
+        "gcp-ace-gcpace-n01-b02-001"
+      ]
+    },
+    {
+      "trackId": "aws-certified-solutions-architect-associate",
+      "population": 2604,
+      "selected": 24,
+      "populationNodes": 21,
+      "selectedNodes": 21,
+      "selectedUnits": 24,
+      "populationInteractions": [
+        "choice_single"
+      ],
+      "selectedInteractions": [
+        "choice_single"
+      ],
+      "selectedDifficulties": [
+        null
+      ],
+      "explicitOverrides": []
+    },
+    {
+      "trackId": "microsoft-azure-administrator-associate-az-104",
+      "population": 1288,
+      "selected": 24,
+      "populationNodes": 9,
+      "selectedNodes": 9,
+      "selectedUnits": 24,
+      "populationInteractions": [
+        "choice_single"
+      ],
+      "selectedInteractions": [
+        "choice_single"
+      ],
+      "selectedDifficulties": [
+        null
+      ],
+      "explicitOverrides": []
+    },
+    {
+      "trackId": "microsoft-azure-ai-fundamentals-ai-901",
+      "population": 752,
+      "selected": 24,
+      "populationNodes": 5,
+      "selectedNodes": 5,
+      "selectedUnits": 24,
+      "populationInteractions": [
+        "choice_single"
+      ],
+      "selectedInteractions": [
+        "choice_single"
+      ],
+      "selectedDifficulties": [
+        null
+      ],
+      "explicitOverrides": []
+    }
+  ],
+  "stageCoverage": "Not established: canonical question sources have no authored stage field. Node/difficulty spread is not stage stratification."
+}

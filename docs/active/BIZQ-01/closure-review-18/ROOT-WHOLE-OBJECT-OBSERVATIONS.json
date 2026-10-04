@@ -1,0 +1,24 @@
+{
+  "scope": "Root direct bounded observations; not completed216review or wholebankverdict",
+  "observations": [
+    {
+      "questionId": "besd-n01-b01-i005",
+      "itemFingerprint": "603191fb70acd29c9548befdddbabd50420133814383ba93316ddc3cc70538a4",
+      "finding": "Confirmed learner-visible constraint directly gives accepted direction; accepted key does not explain how revocation is enforced. Not a blanket verdict on all1535warnings.",
+      "basis": "Read actual whole frozen/source object; visible constraint and key exact semantic overlap."
+    },
+    {
+      "questionId": "fesd-n10-b04-i003",
+      "itemFingerprint": "69df4298327b7fba682ac826a05d20c3297199c8a6aef4d437beb95329406c7d",
+      "finding": "Feedback for observe says first OR only hides boundary although accepted ordering begins observe; errorCorrection describes choice distractors absent from ordering interaction. Prompt provides no concrete requirement forcing every accepted adjacency.",
+      "basis": "Whole-object prompt/elements/ordered answer/feedback read; local internal contradiction requires no external technical assumption.",
+      "runtimeBoundary": "Independent actual source trace ORDERING-SCOPE-QA: Design Interview ordering projection emits broken_relation, not wrong_element. Authored inconsistency confirmed; present learner display of this message not established."
+    },
+    {
+      "questionId": "CCARP-D02-O04-scenario-05",
+      "itemFingerprint": "293ccc7f72cce2f5d2f7155486c7bad8e1a8c06caa46345ae33c85e34e9ccfed",
+      "finding": "Two feedback leaves claim eager schemas alone exceed budget by7000 before reserve. Schemas alone18000<32000; eager total before reserve33000 exceeds by1000; total withreserve39000 exceeds by7000. Accepted defer-irrelevant-tools decision remains supported.",
+      "basis": "Root read whole frozen question; explicit arithmetic from prompt, not model/service limits inference. Smallest correction two identical feedback leaves (details.errorCorrection and wrong_option a), preserving intendeddecision/IDs."
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+# Pozostały OOD — odtworzony lead, nie blanket verdict
+
+Read-only Luna High preflight /root/ood_cohort_author i root existing template-scope actual scan:1125 current matches,63 units, N03–N09 (162/162/153/180/144/162/162). Denominator1413 = accepted N01 136 + accepted N02 152 + remaining1125. Exact current objects matched foreign audit item hashes, lecz tamte FIX_MAJOR nie są niezależnym admission ani automatycznym krytycznym verdict.
+
+Przykłady całych obecnych obiektów: N03b01i001 wymienia composition przy samym nonnegative repayment invariant; N04b01i001 interface bez variation; N05b01i001 factory bez zmiennej creation/family; N06b01i001 Strategy bez alternate policies; N07b01i001 repository bez query/storagetradeoff; N08b01i001 generic shared-state lens mimo konkretnej policy; N09b01i001 test seam bez uncontrolledclock/IO. Wszystkie mają malformedwrong-option prefix `It moves … is the primary decision;`. [Actual pełny inventory z hashami](CURRENT-OOD-TEMPLATE-SCOPE.json) nie oznacza semantycznego odbioru wszystkich obiektów.
+
+Istniejące trzy OOD pools nadal wyłącznie N01,136 IDs. Źródłowe N03–N09 nie uzyskują eligibility przez naprawę; selector/policy należy do istniejącego ownera. N03-only162 to bounded step z963remaining, nie zamknięcie sharedtemplate. Nie rozpoczynać wholesale1125authoring na podstawie counts/capacity. Pakiet18 najpierw uzgadnia wymagany review9track/matrix/currentcriticalmap; kolejny repairscope wynika z rzeczywistych findings i kontraktów. Brak zmian source/pool/Premium/service.

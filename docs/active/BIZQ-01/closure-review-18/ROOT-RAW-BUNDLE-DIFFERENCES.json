@@ -1,0 +1,246 @@
+{
+  "scope": "Raw source versus bundled field differences; cause/expected-normalization not yet resolved",
+  "count": 24,
+  "rows": [
+    {
+      "id": "gcp-ace-gcpace-n01-b02-001",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-1"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n12-b08-007",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n13-b03-009",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n03-b02-004",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-1"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n14-b07-004",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-2"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n19-b07-018",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-4"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n16-b02-002",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n09-b08-008",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n17-b06-005",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n08-b03-006",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n18-b02-019",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-4"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n10-b06-010",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n15-b07-006",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n05-b02-013",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n11-b05-016",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n06-b04-010",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-2"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n02-b04-019",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-1"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n07-b05-010",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n20-b08-012",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-4"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n04-b07-003",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n01-b04-017",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-1"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n12-b04-011",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n16-b07-011",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    },
+    {
+      "id": "gcp-ace-gcpace-n10-b02-003",
+      "track": "google-cloud-associate-cloud-engineer",
+      "diff": {
+        "contentDomainId": {
+          "source": null,
+          "bundle": "gcp-ace-standard-domain-3"
+        }
+      }
+    }
+  ]
+}
