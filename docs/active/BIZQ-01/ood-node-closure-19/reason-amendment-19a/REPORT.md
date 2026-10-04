@@ -1,6 +1,6 @@
 # BIZQ-01 — korekta Reason 19a
 
-Status: **pakiet odebrany lokalnie; zwykłe pushe w toku**. [Independent finalQA](FINAL-QA.md) PASS. Cały BIZQ-01 pozostaje `partial` w jedynej [kolejce](../../../../PATTERNLY-WORKING-PLAN.md).
+Status: **pakiet odebrany i zwyczajnie pushed w trzech dotkniętych repozytoriach**. [Independent finalQA](FINAL-QA.md) PASS. Cały BIZQ-01 pozostaje `partial` w jedynej [kolejce](../../../../PATTERNLY-WORKING-PLAN.md).
 
 ## Przyczyna i zakres
 
@@ -23,7 +23,7 @@ Zmienione źródła: `OOD-N03-B02.json`, `OOD-N03-B03.json`, `OOD-N03-B08.json`.
 
 [Root pełne bramki](ROOT-GATES.json): qa:static ma1837total/1833PASS/0FAIL/4existingSKIP i pełny script exit0. Recovery/typecheck/content+runtimeprivacy boundaries PASS. Kontekst currentcontent98a7d05/historicalcc3efca z istniejącego AUD08 miał oba wymagane releasefiles przed uruchomieniem. Exporter3/3/checkcurrent/webverifylocal PASS. Dwa istniejące Coding/AWS przykłady zmieniły wyłącznie provenance; nie dodano Designpreview.
 
-Początkowy consumerRED, błędne wywołanie content:test bez --track, nieistniejąca nazwa check:content oraz nieaktualna asercja kategorii błędu taksonomii pozostają w logach. Retry wskazały właściwy track/script i zamrożony finaltest; nie osłabiono zabezpieczeń. Końcowy independentQA PASS. Content98a7d05 i web592098c już zwyczajnie pushed; appconsumer2d0fec61 oraz własna dokumentacja czekają na zwykły push app. Sam typecheck ani raport wykonawcy nie zamykają pakietu.
+Początkowy consumerRED, błędne wywołanie content:test bez --track, nieistniejąca nazwa check:content oraz nieaktualna asercja kategorii błędu taksonomii pozostają w logach. Retry wskazały właściwy track/script i zamrożony finaltest; nie osłabiono zabezpieczeń. Końcowy independentQA PASS. Pushed: app80a7e719 (consumer2d0fec61), content98a7d05, web592098c. [Remote heads i stashe](POST-PUSH-REMOTE.json) exact; backend019e48e7 unchanged. [ExactCI37180963106](POST-PUSH-CI.json) oba jobs SUCCESS. Następujące wyłącznie metadata/docs mogą użyć tych dowodów dla niezmienionych source/fixtures/config; nie jest to twierdzenie o exactCI późniejszego HEAD. Sam typecheck ani raport wykonawcy nie zamykają pakietu.
 
 ## Ograniczenia i kontynuacja
 

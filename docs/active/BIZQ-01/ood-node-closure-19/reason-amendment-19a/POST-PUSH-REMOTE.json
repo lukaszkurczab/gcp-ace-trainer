@@ -1,0 +1,40 @@
+{
+  "result": "PASS",
+  "ordinaryPushesVerified": 3,
+  "repositories": [
+    {
+      "repository": "patternly",
+      "branch": "main",
+      "head": "80a7e71911cfc7c57028e7124319192f0bcc0663",
+      "upstream": "80a7e71911cfc7c57028e7124319192f0bcc0663",
+      "remoteHead": "80a7e71911cfc7c57028e7124319192f0bcc0663",
+      "stashCount": 6
+    },
+    {
+      "repository": "patternly-content",
+      "branch": "master",
+      "head": "98a7d0519005290cd2c0380d04b08a7b1bdebcde",
+      "upstream": "98a7d0519005290cd2c0380d04b08a7b1bdebcde",
+      "remoteHead": "98a7d0519005290cd2c0380d04b08a7b1bdebcde",
+      "stashCount": 2
+    },
+    {
+      "repository": "patternly-web",
+      "branch": "main",
+      "head": "592098cad36eb12a8b9c5426e1b2869c3d93a303",
+      "upstream": "592098cad36eb12a8b9c5426e1b2869c3d93a303",
+      "remoteHead": "592098cad36eb12a8b9c5426e1b2869c3d93a303",
+      "stashCount": 0
+    },
+    {
+      "repository": "patternly-backend",
+      "branch": "main",
+      "head": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "remoteHead": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "stashCount": 4
+    }
+  ],
+  "foreignPlanDiffBodySha256": "b80bfd45c75be76aa4a34c6da524a6ca716046db2dd994847a0149bb89be59d2",
+  "limits": "Exact ordinary remote heads/stashes; fullBIZQ/native/public release not accepted"
+}

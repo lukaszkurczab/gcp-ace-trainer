@@ -1,0 +1,18 @@
+{
+  "runId": 37180963106,
+  "headSha": "80a7e71911cfc7c57028e7124319192f0bcc0663",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "Multi-track content release contract",
+      "conclusion": "success"
+    },
+    {
+      "name": "Recovery QA gate",
+      "conclusion": "success"
+    }
+  ],
+  "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37180963106",
+  "scope": "Exact pushed package19a application head; subsequent metadata-only docs may reuse matching source/fixtures/config evidence, without claiming exact newer-head CI"
+}
