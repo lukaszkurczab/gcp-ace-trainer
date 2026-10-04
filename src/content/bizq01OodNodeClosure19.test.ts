@@ -15,6 +15,8 @@ import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
 
 const PACKET = "docs/active/BIZQ-01/ood-node-closure-19";
+const REASON_AMENDMENT = `${PACKET}/reason-amendment-19a/PROPOSED-REASONS.json`;
+const REASON_AMENDMENT_SHA256 = "76fd88c540bd1b6ffe83eb2034cbf565b2ac030454e80511e56a341555edfa15";
 const TRACK = "object-oriented-design-interview";
 const N01_NODE = "requirements_use_cases_domain_vocabulary_and_model_boundaries";
 const N02_NODE = "objects_responsibilities_encapsulation_and_invariants";
@@ -40,6 +42,30 @@ const UNITS = [
 
 type BoundQuestion = Readonly<{ beforeQuestionId: string; question: Question }>;
 type UnitPayload = (typeof UNITS)[number];
+type ReasonAmendment = Readonly<{ questionId: string; beforeReason: string; reason: string }>;
+
+function readReasonAmendment(): readonly ReasonAmendment[] {
+  const bytes = readFileSync(path.resolve(REASON_AMENDMENT));
+  assert.equal(createHash("sha256").update(bytes).digest("hex"), REASON_AMENDMENT_SHA256, "fixed 19a proposal bytes");
+  const entries = JSON.parse(bytes.toString("utf8")) as readonly ReasonAmendment[];
+  assert.equal(entries.length, 25, "fixed 19a Reason-only amendment count");
+  assert.equal(new Set(entries.map((entry) => entry.questionId)).size, entries.length, "19a question IDs are unique");
+  return entries;
+}
+
+const REASON_AMENDMENTS = readReasonAmendment();
+
+function currentExpectedQuestion(question: Question): Question {
+  const amendment = REASON_AMENDMENTS.find((entry) => entry.questionId === question.questionId);
+  if (!amendment) return question;
+  assert.ok(isSingleChoice(question), `${question.questionId} Reason amendment is single-choice`);
+  assert.equal(question.feedback.type, "choice_single", `${question.questionId} feedback matches its single-choice contract`);
+  assert.equal(question.feedback.reason, amendment.beforeReason, `${question.questionId} frozen v19 Reason baseline`);
+  return {
+    ...question,
+    feedback: { ...question.feedback, reason: amendment.reason },
+  };
+}
 
 function unitSuffix(unit: UnitPayload): string {
   return unit.id.slice(-3).toLowerCase();
@@ -132,10 +158,11 @@ for (const unit of UNITS) {
     assert.equal(source.length, 18, `${unit.id} source question count`);
     for (const [index, question] of reviewed.entries()) {
       const predecessorId = oldQuestionId(unit, index);
+      const expectedCurrent = currentExpectedQuestion(question);
       const sourceQuestion = source.find((candidate) => candidate.questionId === question.questionId);
       assert.ok(sourceQuestion, `${unit.id} source contains ${question.questionId}`);
-      assert.deepEqual(sourceQuestion, question, `${question.questionId} is the frozen reviewed whole object`);
-      assert.deepEqual(track.getQuestion(question.questionId), question, `${question.questionId} runtime artifact matches source`);
+      assert.deepEqual(sourceQuestion, expectedCurrent, `${question.questionId} source matches the frozen payload with only the fixed 19a Reason overlay`);
+      assert.deepEqual(track.getQuestion(question.questionId), expectedCurrent, `${question.questionId} runtime artifact matches source`);
       assert.equal(source.some((candidate) => candidate.questionId === predecessorId), false, `${predecessorId} is retired from source`);
       assert.equal(track.getQuestion(predecessorId), undefined, `${predecessorId} is retired from runtime`);
     }
@@ -150,6 +177,7 @@ for (const unit of UNITS) {
       assert.ok(isSingleChoice(reviewed));
       const optionIds = reviewed.interaction.options.map((option) => option.optionId);
       const answerId = reviewed.answer.optionId;
+      assert.equal(question.feedback.reason, currentExpectedQuestion(reviewed).feedback.reason, `${reviewed.questionId} uses its current fixed Reason expectation`);
       assert.deepEqual(question.interaction.options.map((option) => option.optionId), optionIds);
       assert.equal(question.answer.optionId, answerId);
       assert.deepEqual(
